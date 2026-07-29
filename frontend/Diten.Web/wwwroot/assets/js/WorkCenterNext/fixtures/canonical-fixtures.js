@@ -66,7 +66,7 @@
         lifecycleOwner: null,
         personal: personal(),
         relatedWorkItems: [],
-        priority: 'medium',
+        priority: 'Medium',
         requester: { id: 'USR-REQ', displayName: 'Deniz Koç' },
         assignee: { id: 'USR-OWN', displayName: 'Selin Aras' },
         dueAt: '2026-07-27',
@@ -145,7 +145,7 @@
         }),
         base('WC-TASK-BLOCKED', 'task', 'FixtureTitleTaskBlocked', {
             workItemCapabilities: ['execution', 'dependencies', 'activity', 'businessContext', 'relatedRecords'],
-            dependencies: [{ id: 'DEP-1', title: resource('FixtureDependencyContract'), type: 'FS', state: 'inProgress', blocking: true }],
+            dependencies: [{ id: 'DEP-1', title: resource('FixtureDependencyContract'), type: 'FinishToStart', state: 'in-progress', direction: 'pred', blocking: true }],
             actions: [disabledAction('start', 'DEPENDENCY_BLOCKED', 'ActionDisabledDependencyBlocked')],
             concurrency: null,
             blockedState: {

@@ -98,3 +98,20 @@ public sealed record AddChecklistItemCommand(
 public sealed record CreateTaskItemFromTemplateCommand(
     CreateTaskFromTemplateRequest Request,
     string CorrelationId) : IRequest<Response<Guid>>;
+
+// ── Dependencies (BL-028, pack §12 Y3) ───────────────────────────────────────
+
+/// <summary>
+/// Add a typed edge between two of MOD-0024's own tasks. The handler refuses self-edges, duplicates and anything
+/// that would close a CYCLE — a cycle is not a modelling curiosity here, it is work that can never start.
+/// </summary>
+public sealed record AddTaskDependencyCommand(
+    Guid TaskItemId,
+    AddTaskDependencyRequest Request,
+    string CorrelationId) : IRequest<Response<Guid>>;
+
+/// <summary>Remove one edge. Removing an edge that is not on this task is a 404, not a silent success.</summary>
+public sealed record RemoveTaskDependencyCommand(
+    Guid TaskItemId,
+    Guid DependencyId,
+    string CorrelationId) : IRequest<Response<NoContent>>;

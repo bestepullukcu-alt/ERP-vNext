@@ -752,6 +752,33 @@
   <data name="DepNotStarted" xml:space="preserve">
     <value>başlamadı</value>
   </data>
+  <data name="DepCancelled" xml:space="preserve">
+    <value>İptal edildi</value>
+  </data>
+  <data name="BlockedBannerCount" xml:space="preserve">
+    <value>{0} sorun ilerlemeyi engelliyor</value>
+  </data>
+  <data name="BlockerFinishToStart" xml:space="preserve">
+    <value>“{0}” kapanmadan başlanamaz</value>
+  </data>
+  <data name="BlockerFinishToFinish" xml:space="preserve">
+    <value>“{0}” kapanmadan tamamlanamaz</value>
+  </data>
+  <data name="BlockerStartToStart" xml:space="preserve">
+    <value>“{0}” başlamadan başlanamaz</value>
+  </data>
+  <data name="BlockerStartToFinish" xml:space="preserve">
+    <value>“{0}” başlamadan tamamlanamaz</value>
+  </data>
+  <data name="BlockedAffectsStart" xml:space="preserve">
+    <value>başlatmayı engelliyor</value>
+  </data>
+  <data name="BlockedAffectsComplete" xml:space="preserve">
+    <value>tamamlamayı engelliyor</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DependencyBlocked" xml:space="preserve">
+    <value>Bir bağımlılık henüz karşılanmadı</value>
+  </data>
   <data name="DepsReadonlyHint" xml:space="preserve">
     <value>Bağımlılık ilişkisi kaynağında yönetilir</value>
   </data>

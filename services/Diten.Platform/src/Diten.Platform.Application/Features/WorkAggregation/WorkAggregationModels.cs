@@ -22,6 +22,10 @@ public static class WorkAggregationReasonCodes
 {
     public const string PermissionDenied = "PERMISSION_DENIED";
     public const string EvidenceRequired = "EVIDENCE_REQUIRED";
+
+    /// <summary>An unsatisfied dependency edge. Used as the ACTION's disabled reason and as the BLOCKER's code,
+    /// deliberately the same string: they describe one fact from two directions.</summary>
+    public const string DependencyBlocked = "DEPENDENCY_BLOCKED";
 }
 
 // Mirror of the executable contract's enumerations (fixture-contract.js). Used by the projection AND by the
@@ -262,7 +266,71 @@ public sealed record WorkItemProjectionDto(
     /// that has no gates (MOD-0023's own items) serializes unchanged and the field is simply absent.
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    WorkItemGatesDto? Gates = null);
+    WorkItemGatesDto? Gates = null,
+    /// <summary>
+    /// How urgent the work is: Low|Medium|High, the engine's own <c>TaskPriority</c> spelling (BL-032, owner
+    /// decision 2026-07-29). Optional and omitted when null, because a provider that does not rank its work must
+    /// say nothing rather than imply Medium.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? Priority = null,
+    /// <summary>
+    /// Typed dependency edges, read-only. Container ⇔ the <c>dependencies</c> capability, like every other
+    /// Phase 2 container.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemDependencyDto>? Dependencies = null,
+    /// <summary>
+    /// What is stopping this work, and which actions it stops. Absent when nothing blocks — a
+    /// <c>blocked: false</c> object would make every unblocked item carry a blocked state.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemBlockedStateDto? BlockedState = null);
+
+/// <summary>
+/// One typed dependency edge. <c>State</c> is the OTHER task's state in the subtask vocabulary
+/// (not-started|in-progress|done|cancelled) because that is the same question, and <c>Direction</c> says which
+/// way the arrow points: <c>pred</c> is a task this one waits on, <c>succ</c> is one that waits on this.
+/// </summary>
+public sealed record WorkItemDependencyDto(
+    string Id,
+    WorkItemLabelDto Title,
+    string Type,
+    string State,
+    string Direction,
+    /// <summary>Whether this edge is what actually holds the work up right now.</summary>
+    bool Blocking);
+
+/// <summary>
+/// blockedState { blocked, affectedActionCodes[], blockers[] } — the shape the executable contract validates.
+///
+/// <para>Every code in <c>AffectedActionCodes</c> MUST appear in <c>actions[]</c>, disabled, with a reason: the
+/// contract rejects a blocker that points at an action nobody can see. Blocked work therefore shows its button
+/// greyed out WITH the reason beside it, never a hidden button — a control that vanishes teaches the reader
+/// nothing about why.</para>
+/// </summary>
+public sealed record WorkItemBlockedStateDto(
+    bool Blocked,
+    IReadOnlyList<string> AffectedActionCodes,
+    IReadOnlyList<WorkItemBlockerDto> Blockers);
+
+/// <summary>
+/// One reason work cannot move. <c>Label</c> names the thing in the way (a task title, so a DISPLAY label);
+/// the three optional fields let the client build a typed sentence — "FS: X must close before this can start" —
+/// without any localized text crossing the wire.
+///
+/// <para>They are optional because a blocker is not always a dependency: a blocking checklist item, and later a
+/// subtask (BL-035), fit this same shape with those fields left null.</para>
+/// </summary>
+public sealed record WorkItemBlockerDto(
+    string Code,
+    WorkItemLabelDto Label,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? TaskItemId = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? DependencyType = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? AffectedActionCode = null);
 
 /// <summary>
 /// The task's live checklist. An empty <c>items</c> list is valid when the capability is declared.

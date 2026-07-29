@@ -76,6 +76,18 @@ public static class TaskReasonCodes
     /// <summary>The checklist item code does not exist on this task's run.</summary>
     public const string ChecklistItemNotFound = "CHECKLIST_ITEM_NOT_FOUND";
     public const string DependencyInvalid = "TASK_DEPENDENCY_INVALID";
+
+    /// <summary>The other end of the edge does not exist, or belongs to another tenant.</summary>
+    public const string DependencyTaskNotFound = "TASK_DEPENDENCY_TASK_NOT_FOUND";
+
+    /// <summary>A task cannot depend on itself — a cycle of length one.</summary>
+    public const string DependencySelf = "TASK_DEPENDENCY_SELF";
+
+    /// <summary>The edge would close a cycle (A→B→A): the work could then never start.</summary>
+    public const string DependencyCycle = "TASK_DEPENDENCY_CYCLE";
+
+    /// <summary>That edge already exists; adding it twice would double every blocker sentence.</summary>
+    public const string DependencyDuplicate = "TASK_DEPENDENCY_DUPLICATE";
 }
 
 /// <summary>
@@ -200,6 +212,12 @@ public sealed record AddChecklistItemRequest(
     string Text,
     ChecklistItemRequirement Requirement,
     int ExpectedVersion);
+
+/// <summary>
+/// Add a typed dependency edge. Both ends are MOD-0024 tasks — a dependency on another module's object is
+/// deliberately not expressible (pack §12 Y3): MOD-0024 may manage these edges only because it owns both ends.
+/// </summary>
+public sealed record AddTaskDependencyRequest(Guid DependsOnTaskItemId, TaskDependencyType DependencyType);
 
 /// <summary>Create from a template; the template supplies the shape and (optionally) the checklist.</summary>
 public sealed record CreateTaskFromTemplateRequest(

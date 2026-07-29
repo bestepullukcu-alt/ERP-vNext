@@ -274,7 +274,7 @@ public sealed class TaskHandoverTests
             new TaskAssignmentResolver(),
             new FakeUserDisplayNameResolver(),
             new FakeChecklistRunRepository(),
-            new FakeTaskApprovalService());
+            new FakeTaskApprovalService(), new FakeTaskDependencyRepository());
 
     private static WorkItemActor Actor(Guid userId) => new(userId, IsPlatformActor: true, new HashSet<string>());
 

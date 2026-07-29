@@ -752,6 +752,33 @@
   <data name="DepNotStarted" xml:space="preserve">
     <value>not started</value>
   </data>
+  <data name="DepCancelled" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+  <data name="BlockedBannerCount" xml:space="preserve">
+    <value>{0} issue(s) are holding this work up</value>
+  </data>
+  <data name="BlockerFinishToStart" xml:space="preserve">
+    <value>Cannot start until “{0}” is closed</value>
+  </data>
+  <data name="BlockerFinishToFinish" xml:space="preserve">
+    <value>Cannot be completed until “{0}” is closed</value>
+  </data>
+  <data name="BlockerStartToStart" xml:space="preserve">
+    <value>Cannot start until “{0}” has started</value>
+  </data>
+  <data name="BlockerStartToFinish" xml:space="preserve">
+    <value>Cannot be completed until “{0}” has started</value>
+  </data>
+  <data name="BlockedAffectsStart" xml:space="preserve">
+    <value>blocks starting</value>
+  </data>
+  <data name="BlockedAffectsComplete" xml:space="preserve">
+    <value>blocks completion</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DependencyBlocked" xml:space="preserve">
+    <value>A dependency has not been met yet</value>
+  </data>
   <data name="DepsReadonlyHint" xml:space="preserve">
     <value>Dependency links are managed in the source</value>
   </data>

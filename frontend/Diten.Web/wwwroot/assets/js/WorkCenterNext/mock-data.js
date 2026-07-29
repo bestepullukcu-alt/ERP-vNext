@@ -328,6 +328,17 @@
             ...entry,
             title: resolveLabel(entry.title) || entry.title || ''
         })) : null;
+        // A blocker's label is a contract label like any other. Left unresolved it reached the banner as an
+        // object and rendered as "[object Object]" — the same failure the dependency titles above already had.
+        item.blockedState = item.blockedState
+            ? {
+                ...item.blockedState,
+                blockers: (item.blockedState.blockers || []).map((blocker) => ({
+                    ...blocker,
+                    labelText: resolveLabel(blocker.label) || ''
+                }))
+            }
+            : item.blockedState;
         item.attachments = item.attachments ? item.attachments.map((entry) => ({
             ...entry,
             name: resolveLabel(entry.label) || entry.name || entry.id,

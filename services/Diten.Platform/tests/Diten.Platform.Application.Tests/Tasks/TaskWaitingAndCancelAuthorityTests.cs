@@ -235,7 +235,7 @@ public sealed class TaskWaitingAndCancelAuthorityTests
             new TaskAssignmentResolver(),
             new FakeUserDisplayNameResolver(),
             new FakeChecklistRunRepository(),
-            new FakeTaskApprovalService());
+            new FakeTaskApprovalService(), new FakeTaskDependencyRepository());
 
     private static WorkItemActor Actor() => new(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>());
 

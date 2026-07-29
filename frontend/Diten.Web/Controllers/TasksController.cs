@@ -138,6 +138,26 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiCreateFromTemplate()
         => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/from-template", readBody: true);
 
+    // ── Dependencies (BL-028) ────────────────────────────────────────────────
+    //
+    // Not transitions, so they are NOT in TaskTransitionRoutes: these are their own resource under a task
+    // (POST .../dependencies, DELETE .../dependencies/{id}) rather than a code appended to the task's URL. The
+    // proxy still has to carry them explicitly — a route that exists on Platform and not here answers 404 before
+    // the request ever leaves Diten.Web, which is exactly how `inquire` shipped unreachable.
+
+    /// <summary>Add a typed dependency edge between two MOD-0024 tasks.</summary>
+    [HttpPost("api/{id:guid}/dependencies")]
+    public Task<IActionResult> ApiAddDependency(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/{id}/dependencies", readBody: true);
+
+    /// <summary>Remove one dependency edge.</summary>
+    [HttpDelete("api/{id:guid}/dependencies/{dependencyId:guid}")]
+    public Task<IActionResult> ApiRemoveDependency(Guid id, Guid dependencyId)
+        => ProxyAsync(
+            HttpMethod.Delete,
+            $"{_gatewayUrl}/api/v1/tasks/{id}/dependencies/{dependencyId}",
+            readBody: false);
+
     /// <summary>
     /// People a task may be assigned to (whoever holds a position). Carries the display name, position and
     /// organization unit so the picker never has to show a user GUID.

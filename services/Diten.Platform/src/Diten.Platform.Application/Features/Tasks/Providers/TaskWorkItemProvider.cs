@@ -46,6 +46,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private const string DisabledPermissionKey = "WorkAggregation_ActionDisabled_PermissionDenied";
     private const string DisabledApprovalKey = "WorkAggregation_ActionDisabled_ApprovalPending";
     private const string DisabledChecklistKey = "WorkAggregation_ActionDisabled_ChecklistIncomplete";
+    /// <summary>An unfinished predecessor. The BLOCKER carries which task and which edge; this is the button's own reason.</summary>
+    private const string DisabledDependencyKey = "WorkAggregation_ActionDisabled_DependencyBlocked";
     // `complete` needs its OWN wording: "waiting for approval, cannot be started" is wrong on a task already
     // in progress, and the server refuses Done for the same reason it refuses InProgress.
     private const string DisabledApprovalCompleteKey = "WorkAggregation_ActionDisabled_ApprovalPendingComplete";
@@ -66,6 +68,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private readonly IUserDisplayNameResolver _displayNames;
     private readonly IChecklistRunRepository _checklistRuns;
     private readonly ITaskApprovalService _approvals;
+    private readonly ITaskDependencyRepository _dependencies;
 
     public TaskWorkItemProvider(
         ITaskItemRepository tasks,
@@ -74,8 +77,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         ITaskAssignmentResolver assignmentResolver,
         IUserDisplayNameResolver displayNames,
         IChecklistRunRepository checklistRuns,
-        ITaskApprovalService approvals)
+        ITaskApprovalService approvals,
+        ITaskDependencyRepository dependencies)
     {
+        _dependencies = dependencies;
         _tasks = tasks;
         _positionAssignments = positionAssignments;
         _lifecycle = lifecycle;
@@ -156,6 +161,28 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             .ToList();
         var approvalStates = await _approvals.GetStatesAsync(instanceIds, ct);
 
+        /*
+         * Dependency edges for the whole page in ONE read, plus a second read for the tasks at the FAR end of
+         * those edges. The far end is fetched because a blocker has to name a real task and report its real
+         * state: "something is blocking this" with nothing behind it is the invented-data failure in banner form.
+         * An edge whose far end cannot be read (another tenant's task, a deleted one) is dropped rather than
+         * rendered as an unnamed blocker.
+         */
+        var edges = await _dependencies.ListByTaskIdsAsync(taskIds, ct);
+        var edgeTaskIds = edges
+            .SelectMany(edge => new[] { edge.TaskItemId, edge.DependsOnTaskItemId })
+            .Distinct()
+            .Where(id => !taskIds.Contains(id))
+            .ToList();
+        var edgeTasks = tasks
+            .Concat(await _tasks.ListByIdsAsync(edgeTaskIds, ct))
+            .DistinctBy(t => t.Id)
+            .ToDictionary(t => t.Id);
+        var edgesByTask = edges
+            .SelectMany(edge => new[] { (Key: edge.TaskItemId, Edge: edge), (Key: edge.DependsOnTaskItemId, Edge: edge) })
+            .GroupBy(pair => pair.Key)
+            .ToDictionary(group => group.Key, group => (IReadOnlyList<TaskDependency>)group.Select(p => p.Edge).Distinct().ToList());
+
         return tasks
             .Select(t =>
             {
@@ -167,7 +194,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     checklistByTask.GetValueOrDefault(t.Id),
                     childrenByParent.GetValueOrDefault(t.Id, []),
                     outstanding,
-                    rejected);
+                    rejected,
+                    edgesByTask.GetValueOrDefault(t.Id, []),
+                    edgeTasks);
             })
             .ToList();
     }
@@ -188,7 +217,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         ChecklistRun? checklist,
         IReadOnlyList<TaskItem> children,
         bool approvalOutstanding,
-        bool approvalRejected = false)
+        bool approvalRejected = false,
+        IReadOnlyList<TaskDependency>? edges = null,
+        IReadOnlyDictionary<Guid, TaskItem>? edgeTasks = null)
     {
         var assignment = _assignmentResolver.Resolve(task);
         var normalized = _lifecycle.ToNormalizedStatus(task, approvalOutstanding, approvalRejected);
@@ -201,9 +232,35 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // hidden — and the server refuses the write too, so this is a hint, never the enforcement.
         var checklistBlocks = ChecklistBlocksCompletion(checklist);
 
-        var (actions, primaryActionCode, overflowActionCodes) = terminal
+        // Dependencies are resolved BEFORE the actions are built, because an unfinished predecessor changes which
+        // actions may be offered — and the contract requires every blocked action to be present and disabled,
+        // never hidden. A hidden button teaches the reader nothing about why the work will not move.
+        var dependencies = ToDependencies(task, edges ?? [], edgeTasks);
+        var blockers = ResolveBlockers(task, edges ?? [], edgeTasks);
+
+        var (built, primaryActionCode, overflowActionCodes) = terminal
             ? ([], null, (IReadOnlyList<string>)[])
             : BuildActions(task, actor, checklistBlocks, approvalOutstanding);
+
+        /*
+         * Apply the blocks LAST, as a rewrite over whatever was offered. Done here rather than inside BuildActions
+         * because it is one rule — "an unsatisfied predecessor disables the act it gates" — and threading it
+         * through five branches would let a new branch forget it.
+         *
+         * A blocker whose action is not on offer is DROPPED: a FinishToFinish edge does not stop a task that has
+         * not started, because `complete` is not being offered anyway. Keeping it would also break the contract,
+         * which requires every affected code to name an action the reader can actually see disabled.
+         */
+        var offered = built.Select(action => action.Code).ToHashSet();
+        var effectiveBlockers = blockers.Where(b => offered.Contains(b.AffectedActionCode!)).ToList();
+        var blockedCodes = effectiveBlockers.Select(b => b.AffectedActionCode!).ToHashSet();
+        var actions = blockedCodes.Count == 0
+            ? built
+            : built
+                .Select(action => blockedCodes.Contains(action.Code) && action.Enabled
+                    ? AsDisabled(action, WorkAggregationReasonCodes.DependencyBlocked, DisabledDependencyKey)
+                    : action)
+                .ToList();
 
         return new WorkItemProjectionDto(
             FixtureKind: WorkItemContract.FixtureKindWorkItem,
@@ -260,7 +317,19 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             Checklist: checklist is null ? null : ToChecklist(checklist),
             Subtasks: task.ParentTaskItemId is null ? ToSubtasks(children, actor, displayNames) : null,
             ParentTaskItemId: task.ParentTaskItemId?.ToString(),
-            Gates: BuildGates(task, actor, displayNames, approvalOutstanding, approvalRejected));
+            Gates: BuildGates(task, actor, displayNames, approvalOutstanding, approvalRejected),
+            // The engine's own spelling, straight through — the contract's PRIORITIES are that enum (BL-032).
+            Priority: task.Priority.ToString(),
+            // Container ⇔ capability again: emitted only when `dependencies` is declared, and then even if empty.
+            Dependencies: dependencies.Count == 0 ? null : dependencies,
+            // Absent when nothing blocks. A terminal task offers no actions at all, so a blocker pointing at one
+            // would break the contract's "every affected code is a disabled action" rule.
+            BlockedState: effectiveBlockers.Count == 0
+                ? null
+                : new WorkItemBlockedStateDto(
+                    Blocked: true,
+                    AffectedActionCodes: blockedCodes.ToList(),
+                    Blockers: effectiveBlockers));
     }
 
     /// <summary>
@@ -417,6 +486,77 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     && ((child.CreatedByUserId is not null && child.CreatedByUserId == actor.UserId)
                         || actor.Has(TaskPermissions.Delete))))
             .ToList());
+
+    /// <summary>
+    /// Every edge touching this task, in BOTH directions: what it waits on (<c>pred</c>) and what waits on it
+    /// (<c>succ</c>). Both, because "who am I holding up" is as much a part of the picture as "who is holding me
+    /// up", and only the shell knows which of the two the reader is looking for.
+    ///
+    /// <para>An edge whose far end cannot be read is DROPPED. A row that can only say "a task" is worse than no
+    /// row: it asserts a dependency exists without letting anyone check it.</para>
+    /// </summary>
+    private static IReadOnlyList<WorkItemDependencyDto> ToDependencies(
+        TaskItem task,
+        IReadOnlyList<TaskDependency> edges,
+        IReadOnlyDictionary<Guid, TaskItem>? edgeTasks)
+    {
+        if (edges.Count == 0 || edgeTasks is null)
+        {
+            return [];
+        }
+
+        var result = new List<WorkItemDependencyDto>();
+        foreach (var edge in edges)
+        {
+            var isPredecessorEdge = edge.TaskItemId == task.Id;
+            var otherId = isPredecessorEdge ? edge.DependsOnTaskItemId : edge.TaskItemId;
+            if (!edgeTasks.TryGetValue(otherId, out var other))
+            {
+                continue;
+            }
+
+            result.Add(new WorkItemDependencyDto(
+                Id: edge.Id.ToString(),
+                // The other task's title is text a person typed, so it crosses as a DISPLAY label.
+                Title: WorkItemLabelDto.Display(other.Title),
+                Type: edge.DependencyType.ToString(),
+                State: TaskDependencyRules.StateOf(other),
+                Direction: isPredecessorEdge ? "pred" : "succ",
+                // Only an edge this task WAITS on can block it, and only while its predecessor is unsatisfied.
+                Blocking: isPredecessorEdge && !TaskDependencyRules.IsSatisfied(edge.DependencyType, other)));
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// The blockers this task actually has right now: unsatisfied PREDECESSOR edges only. Each one names the task
+    /// in the way, the edge type, and which action it stops, so the client can build a typed sentence without any
+    /// localized text crossing the wire.
+    /// </summary>
+    private static IReadOnlyList<WorkItemBlockerDto> ResolveBlockers(
+        TaskItem task,
+        IReadOnlyList<TaskDependency> edges,
+        IReadOnlyDictionary<Guid, TaskItem>? edgeTasks)
+    {
+        if (edges.Count == 0 || edgeTasks is null)
+        {
+            return [];
+        }
+
+        return edges
+            .Where(edge => edge.TaskItemId == task.Id)
+            .Select(edge => (Edge: edge, Other: edgeTasks.GetValueOrDefault(edge.DependsOnTaskItemId)))
+            .Where(pair => pair.Other is not null
+                           && !TaskDependencyRules.IsSatisfied(pair.Edge.DependencyType, pair.Other))
+            .Select(pair => new WorkItemBlockerDto(
+                Code: WorkAggregationReasonCodes.DependencyBlocked,
+                Label: WorkItemLabelDto.Display(pair.Other!.Title),
+                TaskItemId: pair.Other.Id.ToString(),
+                DependencyType: pair.Edge.DependencyType.ToString(),
+                AffectedActionCode: TaskDependencyRules.AffectedActionCode(pair.Edge.DependencyType)))
+            .ToList();
+    }
 
     private static string ResolveExecutionState(TaskItem task) => task.Lifecycle switch
     {
@@ -633,6 +773,18 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 SupportsBulk: false,
                 RiskLevel: riskLevel)
             : Disabled(code, labelKey, WorkAggregationReasonCodes.PermissionDenied, DisabledPermissionKey);
+
+    /// <summary>
+    /// Turn an offered action into a disabled one, KEEPING its own label. The resume button says "Resume", not
+    /// "Start", and rebuilding the label from a code would rename the button at the moment it is blocked.
+    /// </summary>
+    private static WorkItemActionDto AsDisabled(WorkItemActionDto action, string reasonCode, string reasonKey)
+        => action with
+        {
+            Enabled = false,
+            DisabledReasonCode = reasonCode,
+            DisabledReason = WorkItemLabelDto.Resource(reasonKey)
+        };
 
     private static WorkItemActionDto Disabled(string code, string labelKey, string reasonCode, string reasonKey)
         => new(

@@ -1228,3 +1228,133 @@ describe("the guidance banner says what the task needs from the reader", () => {
     });
   });
 });
+
+/*
+ * BL-028 on screen: what is stopping this work, said in words, with the blocked control still visible.
+ *
+ * The banner used to read `reasonKey` and `blockedBy` — fields the contract has never declared and no provider
+ * has ever sent — so a correctly-shaped blockedState produced a red box with an empty sentence in it.
+ */
+describe("the blocked banner says what is in the way", () => {
+  const blockedItem = (overrides) => projectionItem(Object.assign({
+    normalizedStatus: "Pending",
+    taskLifecycle: "Open",
+    executionState: "notStarted",
+    workItemCapabilities: ["planning", "execution", "subtasks", "dependencies"],
+    dependencies: [{
+      id: "DEP-1",
+      title: { kind: "display", text: "Sözleşme imzası", locale: "und" },
+      type: "FinishToStart",
+      state: "in-progress",
+      direction: "pred"
+    }],
+    actions: [{
+      code: "start",
+      label: { kind: "resource", key: "WorkAggregation_Action_Start" },
+      semanticType: "start",
+      enabled: false,
+      source: "provider",
+      disabledReasonCode: "DEPENDENCY_BLOCKED",
+      disabledReason: { kind: "resource", key: "WorkAggregation_ActionDisabled_DependencyBlocked" },
+      requiresConfirmation: false,
+      requiresReason: false,
+      requiresEvidence: false,
+      supportsBulk: false,
+      riskLevel: "normal"
+    }],
+    blockedState: {
+      blocked: true,
+      affectedActionCodes: ["start"],
+      blockers: [{
+        code: "DEPENDENCY_BLOCKED",
+        label: { kind: "display", text: "Sözleşme imzası", locale: "und" },
+        taskItemId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        dependencyType: "FinishToStart",
+        affectedActionCode: "start"
+      }]
+    }
+  }, overrides));
+
+  it("counts the blockers and names each one", async () => {
+    await bootDetailPage(blockedItem());
+
+    const banner = app().querySelector(".wcn-blocked");
+    expect(banner).not.toBeNull();
+    expect(banner.querySelector(".wcn-blocked-title").textContent).toContain("BlockedBannerCount");
+
+    const row = banner.querySelector(".wcn-blocked-item");
+    expect(row).not.toBeNull();
+    // The typed sentence, keyed by edge type — not a generic "blocked" line.
+    expect(row.querySelector(".wcn-blocked-why").textContent).toContain("BlockerFinishToStart");
+    // ...and WHICH act it stops.
+    expect(row.querySelector(".wcn-blocked-affects").textContent).toBe("BlockedAffectsStart");
+    // The edge type is shown as its display abbreviation, never the wire spelling.
+    expect(row.querySelector(".wcn-dep-type").textContent).toBe("FS");
+  });
+
+  it("keeps the blocked action visible and disabled", async () => {
+    await bootDetailPage(blockedItem());
+
+    const button = app().querySelector('.wcn-actrail [data-wcn-action="start"]');
+    expect(button).not.toBeNull();
+    expect(button.disabled).toBe(true);
+  });
+
+  it("prints no banner when nothing is blocking", async () => {
+    await bootDetailPage(projectionItem());
+
+    expect(app().querySelector(".wcn-blocked")).toBeNull();
+  });
+
+  it("lists the dependency with its type and state", async () => {
+    await bootDetailPage(blockedItem());
+
+    const dep = app().querySelector(".wcn-dep");
+    expect(dep).not.toBeNull();
+    expect(dep.querySelector(".wcn-dep-title").textContent).toBe("Sözleşme imzası");
+    expect(dep.querySelector(".wcn-dep-type").textContent).toBe("FS");
+    expect(dep.querySelector(".wcn-badge").textContent).toBe("DepInProgress");
+  });
+
+  it("de-emphasises a cancelled predecessor instead of dropping it", async () => {
+    // Called-off work blocks nothing, but it is still part of the record — hiding it would erase the history.
+    await bootDetailPage(blockedItem({
+      dependencies: [{
+        id: "DEP-1",
+        title: { kind: "display", text: "Sözleşme imzası", locale: "und" },
+        type: "FinishToStart",
+        state: "cancelled",
+        direction: "pred"
+      }],
+      blockedState: null,
+      actions: []
+    }));
+
+    const dep = app().querySelector(".wcn-dep");
+    expect(dep.className).toContain("is-cancelled");
+    expect(dep.querySelector(".wcn-badge").textContent).toBe("DepCancelled");
+    expect(app().querySelector(".wcn-blocked")).toBeNull();
+  });
+});
+
+describe("priority is shown where it exists and nowhere else (BL-032)", () => {
+  it("renders the chip for a ranked item", async () => {
+    await bootDetailPage(projectionItem({ priority: "High" }));
+
+    const chip = Array.from(app().querySelectorAll(".wcn-chip"))
+      .find((el) => el.textContent.includes("PriorityHigh"));
+    expect(chip).not.toBeUndefined();
+    // Colour carries the rank, and it has to come from the map the contract's spelling keys.
+    expect(chip.className).toContain("wcn-chip-danger");
+  });
+
+  it("shows nothing at all when the provider did not rank the work", async () => {
+    await bootDetailPage(projectionItem());
+
+    // The FLAG CHIP itself must be absent, not merely empty of text: an unranked item used to render the chip
+    // with no label and no colour, which is what got the whole column hidden.
+    const flagChips = Array.from(app().querySelectorAll(".wcn-chip"))
+      .filter((el) => el.querySelector("i.bx-flag"));
+    expect(flagChips).toHaveLength(0);
+  });
+});

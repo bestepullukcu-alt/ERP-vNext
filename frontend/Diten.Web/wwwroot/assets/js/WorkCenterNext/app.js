@@ -36,8 +36,12 @@
     const SLA_ORDER = ['overdue', 'due-soon', 'on-track', 'no-sla'];
     const SLA_KIND = { 'overdue': 'danger', 'due-soon': 'warning', 'on-track': 'success', 'no-sla': 'secondary' };
     const SLA_GROUP_KEY = { 'overdue': 'GroupOverdue', 'due-soon': 'GroupDueSoon', 'on-track': 'GroupOnTrack', 'no-sla': 'GroupNoDate' };
-    const PRIORITY_KIND = { high: 'danger', medium: 'warning', low: 'secondary' };
-    const PRIORITY_KEY = { high: 'PriorityHigh', medium: 'PriorityMedium', low: 'PriorityLow' };
+    // Keys are the CONTRACT's spelling (fixture-contract PRIORITIES = Low|Medium|High, the engine's own enum).
+    // They used to be lowercase, matched nothing a provider emits, and that mismatch is why the column was hidden.
+    const PRIORITY_KIND = { High: 'danger', Medium: 'warning', Low: 'secondary' };
+    const PRIORITY_KEY = { High: 'PriorityHigh', Medium: 'PriorityMedium', Low: 'PriorityLow' };
+    // Most-urgent-first, for sorting and for the filter's option order.
+    const PRIORITY_ORDER = ['High', 'Medium', 'Low'];
     const STATUS_KIND = { 'Pending': 'primary', 'In Progress': 'info', 'Waiting': 'warning', 'Done': 'success', 'Cancelled': 'secondary' };
     const STATUS_KEY = { 'Pending': 'StatusPending', 'In Progress': 'StatusInProgress', 'Waiting': 'StatusWaiting', 'Done': 'StatusDone', 'Cancelled': 'StatusCancelled' };
     const TYPE_KEY = { approval: 'TypeApproval', task: 'TypeTask', review: 'TypeReview', issue: 'TypeIssue', exception: 'TypeException', meetingInvite: 'ChipMeetingInvite' };
@@ -120,7 +124,7 @@
         tab: ['inbox', 'islerim', 'havuz', 'history'],
         segment: ['aktif', 'bekleyen', 'planli'],
         view: ['list', 'table', 'focus'],
-        priority: ['all', 'high', 'medium', 'low'],
+        priority: ['all', 'High', 'Medium', 'Low'],
         mode: ['all', 'direct', 'approval', 'groupQueue', 'offered'],
         panel: ['', 'agenda', 'notes']
     };
@@ -201,18 +205,27 @@
     const priorityLabel = (item) => t(PRIORITY_KEY[item.priority] || item.priority);
 
     /*
-     * A real work item has NO priority: the field is absent from the projection and is not even declared in the
-     * executable contract, so every real row rendered an empty flag chip in an undefined colour. Show it only
-     * where it exists (showcase fixtures carry one).
-     *
-     * Giving the provider a priority field is a contract change with a casing decision attached — fixtures use
-     * 'high', the MOD-0024 enum uses 'High' — and is tracked as BL-032. Do NOT add the field here to make the
-     * chip come back.
+     * Priority is now a declared, optional projection field (BL-032, closed 2026-07-29): PRIORITIES =
+     * Low|Medium|High, the engine's own spelling. It is still only rendered where it EXISTS — a provider that
+     * does not rank its work omits the field, and an absent priority must stay absent rather than default to
+     * Medium, which would tell the reader something nobody said.
      */
     const hasPriority = (item) => !!item && PRIORITY_KIND[item.priority] !== undefined;
     const priorityChip = (item) => (hasPriority(item)
         ? chip(PRIORITY_KIND[item.priority], 'bx-flag', priorityLabel(item))
         : '');
+
+    /*
+     * One line for the row chip's tooltip: the first blocker, in the same typed wording the detail banner uses.
+     * Falls back to the generic sentence only when there is genuinely nothing more specific to say.
+     */
+    const blockedTooltip = (item) => {
+        const first = (item.blockedState?.blockers || [])[0];
+        if (!first) { return t('BlockedBanner'); }
+        const key = { FinishToStart: 'BlockerFinishToStart', FinishToFinish: 'BlockerFinishToFinish',
+            StartToStart: 'BlockerStartToStart', StartToFinish: 'BlockerStartToFinish' }[first.dependencyType];
+        return key ? tf(key, first.labelText || '') : (first.labelText || t('BlockedBanner'));
+    };
 
     const slaLabel = (item) => {
         const d = item.slaDiffDays;
@@ -747,7 +760,7 @@
             ${state.items.some(hasPriority) ? `<div class="filter-chip">
                 <select class="form-select form-select-sm select2 wcn-select" data-wcn-filter="priority" data-placeholder="${esc(t('FilterAllPriorities'))}" aria-label="${esc(t('FilterPriority'))}">
                     <option value=""></option>
-                    ${['high', 'medium', 'low'].map((p) => `<option value="${p}"${draft.priority === p ? ' selected' : ''}>${esc(t(PRIORITY_KEY[p]))}</option>`).join('')}
+                    ${PRIORITY_ORDER.map((p) => `<option value="${p}"${draft.priority === p ? ' selected' : ''}>${esc(t(PRIORITY_KEY[p]))}</option>`).join('')}
                 </select>
             </div>` : ''}
             ${state.tab === 'inbox' ? '' : `<div class="filter-chip">
@@ -776,7 +789,9 @@
         chip('type', item.typeIcon, typeLabel(item)),
         chip(SLA_KIND[item.slaState], 'bx-time-five', slaLabel(item)),
         priorityChip(item),
-        isBlocked(item) ? chip('danger', 'bx-lock-alt', t('BlockedLabel'), t(item.blockedState.reasonKey || 'BlockedBanner')) : '',
+        // The row chip's tooltip comes from the FIRST blocker's own sentence — `reasonKey` was never a declared
+        // field, so this used to fall through to a generic line on every blocked row.
+        isBlocked(item) ? chip('danger', 'bx-lock-alt', t('BlockedLabel'), blockedTooltip(item)) : '',
         // Same two facts as the detail note: the person if we know one, otherwise the holder's own sentence.
         item.waitingOn ? chip('warning', 'bx-time-five', tf('WaitingOn', item.waitingOn))
             : item.waitingReason ? chip('warning', 'bx-time-five', item.waitingReason) : '',
@@ -1472,18 +1487,74 @@
         </div>`;
     };
 
-    // Typed dependencies — READONLY display; editing the graph is the source's job.
-    const DEP_TYPE_KEY = { FS: 'DepTypeFS', FF: 'DepTypeFF', SS: 'DepTypeSS', SF: 'DepTypeSF' };
-    const DEP_STATE_KEY = { done: 'DepDone', 'in-progress': 'DepInProgress', 'not-started': 'DepNotStarted' };
-    const DEP_STATE_KIND = { done: 'success', 'in-progress': 'info', 'not-started': 'secondary' };
+    /*
+     * The red banner: what is stopping this work, and what exactly it stops.
+     *
+     * Written against the CONTRACT shape { blocked, affectedActionCodes[], blockers[] }. It used to read
+     * `reasonKey` and `blockedBy`, which the contract has never declared and no provider has ever sent — so a
+     * correctly-shaped blockedState produced a banner with an empty sentence and no blockers in it. Nothing here
+     * is invented: a blocker that does not say which edge type it is simply shows its own label, and one that
+     * does not name the action it stops omits that clause.
+     */
+    const BLOCKER_SENTENCE_KEY = {
+        FinishToStart: 'BlockerFinishToStart', FinishToFinish: 'BlockerFinishToFinish',
+        StartToStart: 'BlockerStartToStart', StartToFinish: 'BlockerStartToFinish'
+    };
+    const BLOCKED_AFFECTS_KEY = { start: 'BlockedAffectsStart', complete: 'BlockedAffectsComplete' };
+    const renderBlocked = (item) => {
+        if (!isBlocked(item)) { return ''; }
+        const blockers = item.blockedState.blockers || [];
+        if (!blockers.length) { return ''; }
+        const rows = blockers.map((b) => {
+            const name = b.labelText || '';
+            const sentenceKey = BLOCKER_SENTENCE_KEY[b.dependencyType];
+            const affectsKey = BLOCKED_AFFECTS_KEY[b.affectedActionCode];
+            return `<li class="wcn-blocked-item">
+                ${b.dependencyType ? `<span class="wcn-chip wcn-chip-danger wcn-dep-type" title="${esc(t(DEP_TYPE_KEY[b.dependencyType] || b.dependencyType))}">${esc(DEP_TYPE_ABBR[b.dependencyType] || b.dependencyType)}</span>` : ''}
+                <span class="wcn-blocked-why">${esc(sentenceKey ? tf(sentenceKey, name) : name)}</span>
+                ${affectsKey ? `<span class="wcn-blocked-affects">${esc(t(affectsKey))}</span>` : ''}
+            </li>`;
+        }).join('');
+        return `<div class="wcn-blocked" role="alert">
+            <i class="bx bx-lock-alt"></i>
+            <div class="wcn-blocked-body">
+                <span class="wcn-blocked-title">${esc(tf('BlockedBannerCount', blockers.length))}</span>
+                <ul class="wcn-blocked-list">${rows}</ul>
+            </div>
+        </div>`;
+    };
+
+    /*
+     * Typed dependencies — READONLY display. MOD-0024 owns its own edges and may add or remove them from its own
+     * detail surface, but the Task Center aggregates other modules' work too and hosts no dependency EDITOR: a
+     * Gantt or graph editor here is on the spec's never list.
+     *
+     * Keys are the contract's spelling (DEPENDENCY_TYPES, the engine's TaskDependencyType). The two-letter form
+     * is a DISPLAY abbreviation built here, next to the seven languages — it never crosses the wire.
+     */
+    const DEP_TYPE_KEY = {
+        FinishToStart: 'DepTypeFS', FinishToFinish: 'DepTypeFF',
+        StartToStart: 'DepTypeSS', StartToFinish: 'DepTypeSF'
+    };
+    const DEP_TYPE_ABBR = {
+        FinishToStart: 'FS', FinishToFinish: 'FF', StartToStart: 'SS', StartToFinish: 'SF'
+    };
+    // A dependency's state IS the predecessor task's state, so this is the subtask vocabulary — including
+    // `cancelled`, which reads differently from every other value: called-off work blocks nothing.
+    const DEP_STATE_KEY = {
+        done: 'DepDone', 'in-progress': 'DepInProgress', 'not-started': 'DepNotStarted', cancelled: 'DepCancelled'
+    };
+    const DEP_STATE_KIND = {
+        done: 'success', 'in-progress': 'info', 'not-started': 'secondary', cancelled: 'secondary'
+    };
     const renderDependencies = (item) => {
         if (!hasCap(item, 'dependencies') || !item.dependencies || !item.dependencies.length) { return ''; }
         const rows = item.dependencies.map((d) =>
-            `<li class="wcn-dep">
+            `<li class="wcn-dep${d.state === 'cancelled' ? ' is-cancelled' : ''}">
                 <span class="wcn-dep-dir">${esc(t(d.direction === 'pred' ? 'DepPredecessor' : 'DepSuccessor'))}</span>
                 <span class="wcn-dep-title">${esc(d.title)}</span>
-                <span class="wcn-chip wcn-chip-secondary wcn-dep-type" title="${esc(t(DEP_TYPE_KEY[d.type] || d.type))}">${esc(d.type)}</span>
-                <span class="wcn-badge wcn-badge-${DEP_STATE_KIND[d.state]}">${esc(t(DEP_STATE_KEY[d.state] || d.state))}</span>
+                <span class="wcn-chip wcn-chip-secondary wcn-dep-type" title="${esc(t(DEP_TYPE_KEY[d.type] || d.type))}">${esc(DEP_TYPE_ABBR[d.type] || d.type)}</span>
+                <span class="wcn-badge wcn-badge-${DEP_STATE_KIND[d.state] || 'secondary'}">${esc(t(DEP_STATE_KEY[d.state] || d.state))}</span>
             </li>`).join('');
         return `<div class="wcn-detail-section">
             <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('DependenciesLabel'))}</h6>
@@ -1775,17 +1846,7 @@
             </div>`;
         }
         // Dependency banner (spec v2 §5): source-computed block, read-only here.
-        const blockedBanner = isBlocked(item)
-            ? `<div class="wcn-blocked" role="note">
-                <i class="bx bx-lock-alt"></i>
-                <div class="wcn-blocked-body">
-                    <span class="wcn-blocked-title">${esc(t(item.blockedState.reasonKey || 'BlockedBanner'))}</span>
-                    ${(item.blockedState.blockedBy || []).length
-                        ? `<span class="wcn-blocked-by">${esc(t('BlockedByLabel'))}: ${item.blockedState.blockedBy.map((b) => `<button type="button" class="btn btn-sm btn-link p-0 m-0 align-baseline wcn-internal-link" data-wcn-jump="${b.id}">${esc(b.title)}</button>`).join(' · ')}</span>`
-                        : ''}
-                </div>
-            </div>`
-            : '';
+        const blockedBanner = renderBlocked(item);
         // System/stale state (spec v3 §3) — "record changed", "source unreachable",
         // "your authority ended". Mock representation; the source resolves the truth.
         const bannerCode = surface.criticalBanner?.code || null;
@@ -2267,7 +2328,7 @@
         module: (a, b) => a.sourceModule.localeCompare(b.sourceModule),
         type: (a, b) => a.itemType.localeCompare(b.itemType),
         status: (a, b) => a.status.localeCompare(b.status),
-        priority: (a, b) => ['high', 'medium', 'low'].indexOf(a.priority) - ['high', 'medium', 'low'].indexOf(b.priority),
+        priority: (a, b) => PRIORITY_ORDER.indexOf(a.priority) - PRIORITY_ORDER.indexOf(b.priority),
         requester: (a, b) => a.requester.localeCompare(b.requester)
     };
 
@@ -2363,7 +2424,7 @@
                 { data: 'status', name: 'status', visible: state.tableColumnVisibility[4], render: (value, type, row) => type === 'display' ? `<span class="wcn-badge wcn-badge-${row.fixtureKind === 'triggerOnly' ? 'info' : STATUS_KIND[displayStatus(row)]}">${esc(statusLabel(row))}</span>` : value },
                 // Hidden outright when nothing on the surface has a priority — otherwise every real row shows an
                 // empty flag chip under a column header promising data the projection does not carry (BL-032).
-                { data: 'priority', name: 'priority', visible: state.tableColumnVisibility[5] && items.some(hasPriority), render: (value, type, row) => type === 'display' ? (row.fixtureKind === 'triggerOnly' ? '—' : priorityChip(row)) : ['high', 'medium', 'low'].indexOf(value) },
+                { data: 'priority', name: 'priority', visible: state.tableColumnVisibility[5] && items.some(hasPriority), render: (value, type, row) => type === 'display' ? (row.fixtureKind === 'triggerOnly' ? '—' : priorityChip(row)) : PRIORITY_ORDER.indexOf(value) },
                 { data: 'slaDiffDays', name: 'sla', visible: state.tableColumnVisibility[6], render: (value, type, row) => type === 'display' ? (row.fixtureKind === 'triggerOnly' ? '—' : chip(SLA_KIND[row.slaState], 'bx-time-five', slaLabel(row))) : (value == null ? Number.MAX_SAFE_INTEGER : value) },
                 { data: 'requester', name: 'requester', visible: state.tableColumnVisibility[7], render: (value) => esc(value) },
                 { data: 'id', name: 'action', orderable: false, searchable: false, className: 'cell-fit', render: (id, type, row) => type === 'display' ? tableActionCell(row) : '' }
@@ -3550,7 +3611,7 @@
 
     const createMeetingFollowup = (meeting) => {
         if (!meeting) { return; }
-        createSelfTask({ title: tf('MeetingFollowupTitle', meeting.title), date: null, priority: 'medium' }, { sourceModule: t('MeetingSource') });
+        createSelfTask({ title: tf('MeetingFollowupTitle', meeting.title), date: null, priority: 'Medium' }, { sourceModule: t('MeetingSource') });
     };
 
     const addGlobalNote = () => {
@@ -3588,7 +3649,7 @@
     const convertGlobalNote = (note) => {
         if (!note || note.converted) { return; }
         note.converted = true;
-        createSelfTask({ title: note.text, date: null, priority: 'medium' }, { sourceModule: t('NotesSource') });
+        createSelfTask({ title: note.text, date: null, priority: 'Medium' }, { sourceModule: t('NotesSource') });
     };
 
     const performAction = (item, actionKey) => {

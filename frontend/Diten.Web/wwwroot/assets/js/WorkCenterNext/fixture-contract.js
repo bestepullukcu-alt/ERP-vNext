@@ -36,6 +36,30 @@
      * BL-035's "a cancelled subtask does not gate its parent" rule needs the two to be different values.
      */
     const SUBTASK_STATUSES = ['not-started', 'in-progress', 'done', 'cancelled'];
+    /*
+     * How urgent the work is. Three levels, PascalCase (owner decision, 2026-07-29 / BL-032).
+     *
+     * PascalCase because the ENGINE already stores exactly this (TaskPriority = Low|Medium|High) and both write
+     * surfaces already post it — only the fixtures said 'high', which is why nothing ever matched and the column
+     * was hidden rather than fixed. Display is a separate concern: Turkish screens read Düşük/Orta/Yüksek, the
+     * contract stays Low/Medium/High.
+     *
+     * Three rather than five: with no SLA engine yet (WC-2) more levels would be false precision, and "P1"
+     * promises a response we cannot make. Three→five is additive; five→three is a migration.
+     */
+    const PRIORITIES = ['Low', 'Medium', 'High'];
+    /*
+     * A typed dependency edge, in the ENGINE's vocabulary (TaskDependencyType) for the same reason priority is:
+     * one canonical spelling on the wire, display abbreviations ("FS") built in the shell where the 7 languages
+     * live. Fixtures said 'FS' and the engine said 'FinishToStart', so a real dependency would have reached the
+     * shell's type map as a miss and rendered as a bare unknown token.
+     *
+     * A dependency's STATE is the predecessor task's state, so it reuses SUBTASK_STATUSES rather than declaring a
+     * second vocabulary for the same idea — and that is what gives it `cancelled`, which the blocking rule needs:
+     * a called-off predecessor blocks nothing.
+     */
+    const DEPENDENCY_TYPES = ['FinishToStart', 'FinishToFinish', 'StartToStart', 'StartToFinish'];
+    const DEPENDENCY_DIRECTIONS = ['pred', 'succ'];
 
     /*
      * WHO a work item is waiting on: a TYPED identity, or nothing at all.
@@ -214,6 +238,18 @@
         if (fixture.personal?.snoozedUntil && fixture.normalizedStatus === 'Waiting' && fixture.waitingContext?.type === 'personalSnooze') {
             push(errors, fixture, 'SNOOZE_MUST_NOT_CREATE_WAITING', 'personal.snoozedUntil');
         }
+        // Optional field: a provider that does not rank its work omits it. Present-but-unknown is an error —
+        // that is the state the shell used to render as an empty flag chip in an undefined colour.
+        if (fixture.priority !== undefined && fixture.priority !== null && !PRIORITIES.includes(fixture.priority)) {
+            push(errors, fixture, 'PRIORITY_INVALID', 'priority');
+        }
+        (fixture.dependencies || []).forEach((dependency, index) => {
+            const path = `dependencies[${index}]`;
+            if (!dependency.id) { push(errors, fixture, 'DEPENDENCY_ID_REQUIRED', `${path}.id`); }
+            if (!DEPENDENCY_TYPES.includes(dependency.type)) { push(errors, fixture, 'DEPENDENCY_TYPE_INVALID', `${path}.type`); }
+            if (!SUBTASK_STATUSES.includes(dependency.state)) { push(errors, fixture, 'DEPENDENCY_STATE_INVALID', `${path}.state`); }
+            if (!DEPENDENCY_DIRECTIONS.includes(dependency.direction)) { push(errors, fixture, 'DEPENDENCY_DIRECTION_INVALID', `${path}.direction`); }
+        });
         (fixture.subtasks?.items || []).forEach((subtask, index) => {
             if (!SUBTASK_STATUSES.includes(subtask.status)) {
                 push(errors, fixture, 'SUBTASK_STATUS_INVALID', `subtasks.items[${index}].status`);
@@ -248,6 +284,37 @@
         validateBusinessContext(fixture, errors);
         validatePlacement(fixture, errors);
         if ((fixture.relatedRecords || []).length > LIMITS.maxRelatedRecords) { push(errors, fixture, 'RELATED_RECORDS_MAX', 'relatedRecords'); }
+        /*
+         * blockedState { blocked, affectedActionCodes[], blockers[] }. The SHAPE is declared here because it was
+         * not: the shell read `reasonKey` and `blockedBy`, nothing in the contract said either existed, and a
+         * contract-shaped blockedState therefore rendered a banner with no sentence and no blockers in it.
+         *
+         * Each blocker may additionally name WHICH task, WHICH edge type and WHICH action it stops. Those three
+         * are optional so a blocker that is not a dependency (a checklist item, later a subtask — BL-035) fits the
+         * same shape, and so the enterprise-strategy example still validates unchanged.
+         */
+        if (fixture.blockedState) {
+            const blocked = fixture.blockedState;
+            if (typeof blocked.blocked !== 'boolean') { push(errors, fixture, 'BLOCKED_STATE_FLAG_REQUIRED', 'blockedState.blocked'); }
+            if (!Array.isArray(blocked.affectedActionCodes) || !Array.isArray(blocked.blockers)) {
+                push(errors, fixture, 'BLOCKED_STATE_SHAPE_INVALID', 'blockedState');
+            }
+            if (blocked.blocked && !(blocked.blockers || []).length) {
+                // "Blocked, but nothing is blocking it" is the invented-data failure in banner form.
+                push(errors, fixture, 'BLOCKED_STATE_BLOCKER_REQUIRED', 'blockedState.blockers');
+            }
+            (blocked.blockers || []).forEach((blocker, index) => {
+                const path = `blockedState.blockers[${index}]`;
+                if (!blocker.code || !isLabel(blocker.label)) { push(errors, fixture, 'BLOCKER_INVALID', path); }
+                if (blocker.dependencyType !== undefined && !DEPENDENCY_TYPES.includes(blocker.dependencyType)) {
+                    push(errors, fixture, 'BLOCKER_DEPENDENCY_TYPE_INVALID', `${path}.dependencyType`);
+                }
+                if (blocker.affectedActionCode !== undefined
+                    && !(blocked.affectedActionCodes || []).includes(blocker.affectedActionCode)) {
+                    push(errors, fixture, 'BLOCKER_ACTION_REFERENCE_INVALID', `${path}.affectedActionCode`);
+                }
+            });
+        }
         if (fixture.blockedState?.affectedActionCodes) {
             const byCode = new Map((fixture.actions || []).map((action) => [action.code, action]));
             fixture.blockedState.affectedActionCodes.forEach((code) => {
@@ -285,7 +352,7 @@
     };
 
     global.WorkCenterNextContract = {
-        enums: { WORK_INTENTS, ASSIGNMENT_MODES, OWNERSHIP_STATES, ADMISSION_STATES, NORMALIZED_STATUSES, TASK_LIFECYCLES, EXECUTION_STATES, TIMER_STATES, SYSTEM_STATES, ACTION_DEPTHS, REVIEW_MEETING_REQUIREMENTS, WAITING_CONTEXT_TYPES, SUBTASK_STATUSES, CAPABILITIES, VALUE_TYPES },
+        enums: { WORK_INTENTS, ASSIGNMENT_MODES, OWNERSHIP_STATES, ADMISSION_STATES, NORMALIZED_STATUSES, TASK_LIFECYCLES, EXECUTION_STATES, TIMER_STATES, SYSTEM_STATES, ACTION_DEPTHS, REVIEW_MEETING_REQUIREMENTS, WAITING_CONTEXT_TYPES, SUBTASK_STATUSES, PRIORITIES, DEPENDENCY_TYPES, DEPENDENCY_DIRECTIONS, CAPABILITIES, VALUE_TYPES },
         limits: LIMITS,
         isLabel,
         isSafeLink,

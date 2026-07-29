@@ -5542,6 +5542,13 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 .wcn-blocked-body { display: flex; flex-direction: column; gap: .1875rem; min-width: 0; }
 .wcn-blocked-title { font-size: .8125rem; font-weight: 600; color: color-mix(in sRGB, var(--bs-danger) 85%, var(--bs-body-color)); }
 .wcn-blocked-by { font-size: .75rem; color: var(--bs-secondary-color); }
+/* One row per blocker: edge-type chip, the typed sentence, and which act it stops. */
+.wcn-blocked-list { list-style: none; margin: .25rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .25rem; }
+.wcn-blocked-item { display: flex; align-items: center; gap: .375rem; flex-wrap: wrap; font-size: .75rem; }
+.wcn-blocked-why { color: var(--bs-body-color); }
+.wcn-blocked-affects { color: var(--bs-danger); font-weight: 600; }
+/* A cancelled predecessor is still shown — it just no longer holds anything up. */
+.wcn-dep.is-cancelled .wcn-dep-title { text-decoration: line-through; color: var(--bs-secondary-color); }
 .wcn-confirm-body { font-size: .9375rem; color: var(--bs-body-color); line-height: 1.5; }
 
 /* Parked notes (waiting-on / snoozed) --------------------------------------- */

@@ -752,6 +752,33 @@
   <data name="DepNotStarted" xml:space="preserve">
     <value>sin iniciar</value>
   </data>
+  <data name="DepCancelled" xml:space="preserve">
+    <value>Cancelada</value>
+  </data>
+  <data name="BlockedBannerCount" xml:space="preserve">
+    <value>{0} problema(s) impiden avanzar</value>
+  </data>
+  <data name="BlockerFinishToStart" xml:space="preserve">
+    <value>No se puede iniciar hasta que se cierre «{0}»</value>
+  </data>
+  <data name="BlockerFinishToFinish" xml:space="preserve">
+    <value>No se puede completar hasta que se cierre «{0}»</value>
+  </data>
+  <data name="BlockerStartToStart" xml:space="preserve">
+    <value>No se puede iniciar hasta que «{0}» haya empezado</value>
+  </data>
+  <data name="BlockerStartToFinish" xml:space="preserve">
+    <value>No se puede completar hasta que «{0}» haya empezado</value>
+  </data>
+  <data name="BlockedAffectsStart" xml:space="preserve">
+    <value>impide iniciar</value>
+  </data>
+  <data name="BlockedAffectsComplete" xml:space="preserve">
+    <value>impide completar</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DependencyBlocked" xml:space="preserve">
+    <value>Una dependencia aún no se cumple</value>
+  </data>
   <data name="DepsReadonlyHint" xml:space="preserve">
     <value>Los vínculos de dependencia se gestionan en el origen</value>
   </data>

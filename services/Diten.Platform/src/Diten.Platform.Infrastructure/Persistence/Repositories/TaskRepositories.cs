@@ -39,6 +39,21 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
         return await Collection.Find(filter).SortBy(x => x.CreatedAt).ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<TaskItem>> ListByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken ct = default)
+    {
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<TaskItem>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskItem>.Filter.In(x => x.Id, ids));
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
+
     public async Task<IReadOnlyList<TaskItem>> ListByParentsAsync(
         IReadOnlyCollection<Guid> parentTaskItemIds,
         CancellationToken ct = default)
@@ -115,6 +130,24 @@ public sealed class TaskDependencyRepository : TenantRepository<TaskDependency>,
         var filter = Builders<TaskDependency>.Filter.And(
             ExecutionFilter,
             Builders<TaskDependency>.Filter.Eq(x => x.TaskItemId, taskItemId));
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<TaskDependency>> ListByTaskIdsAsync(
+        IReadOnlyCollection<Guid> taskItemIds,
+        CancellationToken ct = default)
+    {
+        if (taskItemIds.Count == 0)
+        {
+            return [];
+        }
+
+        // EITHER end: an edge is part of both tasks' stories, and the cycle check walks it forwards too.
+        var filter = Builders<TaskDependency>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskDependency>.Filter.Or(
+                Builders<TaskDependency>.Filter.In(x => x.TaskItemId, taskItemIds),
+                Builders<TaskDependency>.Filter.In(x => x.DependsOnTaskItemId, taskItemIds)));
         return await Collection.Find(filter).ToListAsync(ct);
     }
 }

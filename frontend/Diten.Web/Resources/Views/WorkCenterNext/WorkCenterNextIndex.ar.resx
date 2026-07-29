@@ -752,6 +752,33 @@
   <data name="DepNotStarted" xml:space="preserve">
     <value>لم يبدأ</value>
   </data>
+  <data name="DepCancelled" xml:space="preserve">
+    <value>أُلغيت</value>
+  </data>
+  <data name="BlockedBannerCount" xml:space="preserve">
+    <value>{0} مشكلة تعيق التقدم</value>
+  </data>
+  <data name="BlockerFinishToStart" xml:space="preserve">
+    <value>لا يمكن البدء قبل إغلاق «{0}»</value>
+  </data>
+  <data name="BlockerFinishToFinish" xml:space="preserve">
+    <value>لا يمكن الإكمال قبل إغلاق «{0}»</value>
+  </data>
+  <data name="BlockerStartToStart" xml:space="preserve">
+    <value>لا يمكن البدء قبل أن تبدأ «{0}»</value>
+  </data>
+  <data name="BlockerStartToFinish" xml:space="preserve">
+    <value>لا يمكن الإكمال قبل أن تبدأ «{0}»</value>
+  </data>
+  <data name="BlockedAffectsStart" xml:space="preserve">
+    <value>يمنع البدء</value>
+  </data>
+  <data name="BlockedAffectsComplete" xml:space="preserve">
+    <value>يمنع الإكمال</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DependencyBlocked" xml:space="preserve">
+    <value>لم يتم استيفاء أحد الاعتمادات بعد</value>
+  </data>
   <data name="DepsReadonlyHint" xml:space="preserve">
     <value>تُدار روابط الاعتمادية في المصدر</value>
   </data>

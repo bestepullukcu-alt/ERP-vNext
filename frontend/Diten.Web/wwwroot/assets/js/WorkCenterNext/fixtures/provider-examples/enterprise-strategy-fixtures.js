@@ -91,7 +91,7 @@
         }),
         base('ES-DEC-BLOCK-01', 'task', 'FixtureTitleEsDecompositionBlocked', {
             workItemCapabilities: ['execution', 'dependencies', 'activity', 'businessContext', 'relatedRecords'],
-            dependencies: [{ id: 'NODE-70', title: resource('FixtureDependencyValidation'), type: 'FS', state: 'inProgress', blocking: true }],
+            dependencies: [{ id: 'NODE-70', title: resource('FixtureDependencyValidation'), type: 'FinishToStart', state: 'in-progress', direction: 'pred', blocking: true }],
             source: source('enterprise-strategy', 'DecompositionNode', 'NODE-78', {
                 sourceSystem: 'Diten.EnterpriseStrategyService',
                 deepLink: '/DecompositionStructures/NODE-78'

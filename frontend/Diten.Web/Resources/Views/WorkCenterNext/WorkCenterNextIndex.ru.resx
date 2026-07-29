@@ -752,6 +752,33 @@
   <data name="DepNotStarted" xml:space="preserve">
     <value>не начато</value>
   </data>
+  <data name="DepCancelled" xml:space="preserve">
+    <value>Отменена</value>
+  </data>
+  <data name="BlockedBannerCount" xml:space="preserve">
+    <value>{0} проблем(ы) мешают продвижению</value>
+  </data>
+  <data name="BlockerFinishToStart" xml:space="preserve">
+    <value>Нельзя начать, пока не закрыта «{0}»</value>
+  </data>
+  <data name="BlockerFinishToFinish" xml:space="preserve">
+    <value>Нельзя завершить, пока не закрыта «{0}»</value>
+  </data>
+  <data name="BlockerStartToStart" xml:space="preserve">
+    <value>Нельзя начать, пока не начата «{0}»</value>
+  </data>
+  <data name="BlockerStartToFinish" xml:space="preserve">
+    <value>Нельзя завершить, пока не начата «{0}»</value>
+  </data>
+  <data name="BlockedAffectsStart" xml:space="preserve">
+    <value>блокирует начало</value>
+  </data>
+  <data name="BlockedAffectsComplete" xml:space="preserve">
+    <value>блокирует завершение</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DependencyBlocked" xml:space="preserve">
+    <value>Зависимость ещё не выполнена</value>
+  </data>
   <data name="DepsReadonlyHint" xml:space="preserve">
     <value>Связи зависимостей управляются в источнике</value>
   </data>

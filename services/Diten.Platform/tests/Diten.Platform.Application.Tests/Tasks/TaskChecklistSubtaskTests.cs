@@ -432,7 +432,7 @@ public sealed class TaskChecklistSubtaskTests
         FakeTaskApprovalService? approvals = null)
         => new(tasks, new FakePositionAssignmentRepository(), new TaskLifecycleService(),
             new TaskAssignmentResolver(), new FakeUserDisplayNameResolver(), runs,
-            approvals ?? new FakeTaskApprovalService());
+            approvals ?? new FakeTaskApprovalService(), new FakeTaskDependencyRepository());
 
     private static Task<Application.Common.Response<Application.Common.NoContent>> Transition(
         FakeTaskItemRepository tasks,

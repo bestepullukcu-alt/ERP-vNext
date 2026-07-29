@@ -26,7 +26,7 @@ public sealed class TaskWorkItemProviderWireContractTests
             new TaskLifecycleService(),
             new TaskAssignmentResolver(),
             new FakeUserDisplayNameResolver(),
-            new FakeChecklistRunRepository(), new FakeTaskApprovalService());
+            new FakeChecklistRunRepository(), new FakeTaskApprovalService(), new FakeTaskDependencyRepository());
 
         var items = await provider.GetWorkItemsAsync(
             new WorkItemActor(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>()));
@@ -150,7 +150,7 @@ public sealed class TaskWorkItemProviderWireContractTests
             new TaskLifecycleService(),
             new TaskAssignmentResolver(),
             new FakeUserDisplayNameResolver(),
-            new FakeChecklistRunRepository(), new FakeTaskApprovalService());
+            new FakeChecklistRunRepository(), new FakeTaskApprovalService(), new FakeTaskDependencyRepository());
 
         var items = await provider.GetWorkItemsAsync(
             new WorkItemActor(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>()));

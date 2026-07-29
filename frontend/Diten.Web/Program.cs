@@ -479,3 +479,10 @@ static bool IsPasswordChangeAllowedPath(PathString path)
            || path.StartsWithSegments("/account/logout", StringComparison.OrdinalIgnoreCase)
            || path.StartsWithSegments("/assets", StringComparison.OrdinalIgnoreCase);
 }
+
+/// <summary>
+/// Named so the integration tests can host this application (WebApplicationFactory&lt;Program&gt;). A top-level
+/// program's implicit Program class is internal, and the proxy's routes can only be proven to EXIST by sending a
+/// real request through the real pipeline — which is the gap `inquire` slipped through.
+/// </summary>
+public partial class Program { }

@@ -232,6 +232,30 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    // ── Dependencies (BL-028, pack §12 Y3) ───────────────────────────────────
+
+    /// <summary>
+    /// Add a typed dependency between two of this module's own tasks. Guarded by UPDATE: an edge changes what the
+    /// task may DO next, which is a change to the task, not the creation of a new record.
+    /// </summary>
+    [HttpPost("{id:guid}/dependencies")]
+    [HasPermission(TaskPermissions.Update)]
+    public async Task<IActionResult> AddDependency(
+        Guid id, [FromBody] AddTaskDependencyRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new AddTaskDependencyCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>Remove one dependency edge from this task.</summary>
+    [HttpDelete("{id:guid}/dependencies/{dependencyId:guid}")]
+    [HasPermission(TaskPermissions.Update)]
+    public async Task<IActionResult> RemoveDependency(Guid id, Guid dependencyId, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new RemoveTaskDependencyCommand(id, dependencyId, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpGet("lookups/assignable-positions")]
     [HasPermission(TaskPermissions.Create)]
     public async Task<IActionResult> GetAssignablePositions(CancellationToken ct)

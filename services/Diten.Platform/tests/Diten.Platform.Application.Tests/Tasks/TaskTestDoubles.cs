@@ -61,6 +61,11 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
         return Task.FromResult(task);
     }
 
+    public Task<IReadOnlyList<TaskItem>> ListByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<TaskItem>>(_items.Where(x => ids.Contains(x.Id)).ToList());
+
     // Mirrors the tenant + IsDeleted execution filter: another tenant's row is invisible, not an error.
     //
     // Returns a DETACHED copy, like the real repository: Mongo deserializes a fresh document per read, so a
@@ -279,15 +284,50 @@ internal sealed class FakeTaskWatcherRepository : ITaskWatcherRepository
     public Task DeleteAsync(Guid id, CancellationToken ct = default) => Task.CompletedTask;
 }
 
+/// <summary>
+/// In-memory dependency edges. It STORES what it is given, because the cycle check walks the graph it wrote —
+/// a double that always answered "no edges" would report every A→B→A as acceptable.
+/// </summary>
 internal sealed class FakeTaskDependencyRepository : ITaskDependencyRepository
 {
+    private readonly List<TaskDependency> _edges = [];
+
+    public FakeTaskDependencyRepository(params TaskDependency[] seed) => _edges.AddRange(seed);
+
+    public IReadOnlyList<TaskDependency> Edges => _edges.Where(e => e.DeletedAt is null).ToList();
+
     public Task<TaskDependency> CreateAsync(TaskDependency d, CancellationToken ct = default)
-        => Task.FromResult(d);
+    {
+        _edges.Add(d);
+        return Task.FromResult(d);
+    }
 
     public Task<IReadOnlyList<TaskDependency>> ListByTaskIdAsync(Guid taskItemId, CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<TaskDependency>>([]);
+        => Task.FromResult<IReadOnlyList<TaskDependency>>(
+            Edges.Where(e => e.TaskItemId == taskItemId).ToList());
 
-    public Task DeleteAsync(Guid id, CancellationToken ct = default) => Task.CompletedTask;
+    // BOTH directions, exactly like the real filter — the cycle walk depends on the far end coming back too.
+    public Task<IReadOnlyList<TaskDependency>> ListByTaskIdsAsync(
+        IReadOnlyCollection<Guid> taskItemIds,
+        CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<TaskDependency>>(
+            Edges.Where(e => taskItemIds.Contains(e.TaskItemId) || taskItemIds.Contains(e.DependsOnTaskItemId))
+                .ToList());
+
+    public Task<TaskDependency?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => Task.FromResult(Edges.FirstOrDefault(e => e.Id == id));
+
+    // Soft delete, like the base repository: a removed edge disappears from every read above.
+    public Task DeleteAsync(Guid id, CancellationToken ct = default)
+    {
+        var edge = _edges.FirstOrDefault(e => e.Id == id);
+        if (edge is not null)
+        {
+            edge.DeletedAt = DateTimeOffset.UtcNow;
+        }
+
+        return Task.CompletedTask;
+    }
 }
 
 internal sealed class FakeTaskFieldDefinitionRepository(params TaskFieldDefinition[] seed)

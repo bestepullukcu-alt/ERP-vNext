@@ -26,6 +26,12 @@ public interface ITaskItemRepository
         IReadOnlyCollection<Guid> parentTaskItemIds,
         CancellationToken ct = default);
 
+    /// <summary>
+    /// Tasks by id, in one read. Dependency edges point at tasks that need not be on the current page, so the
+    /// projection has to fetch the OTHER end of every edge without an N+1.
+    /// </summary>
+    Task<IReadOnlyList<TaskItem>> ListByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default);
+
     /// <summary>Unclaimed pool tasks offered to any of the supplied positions.</summary>
     Task<IReadOnlyList<TaskItem>> ListUnclaimedByPositionsAsync(
         IReadOnlyCollection<Guid> positionIds,
@@ -50,6 +56,18 @@ public interface ITaskDependencyRepository
 {
     Task<TaskDependency> CreateAsync(TaskDependency dependency, CancellationToken ct = default);
     Task<IReadOnlyList<TaskDependency>> ListByTaskIdAsync(Guid taskItemId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Every edge touching any of these tasks, in EITHER direction, in one read. Both directions because a task's
+    /// detail names what it waits on AND what waits on it, and one read because the list projection needs the
+    /// edges for a whole page at once.
+    /// </summary>
+    Task<IReadOnlyList<TaskDependency>> ListByTaskIdsAsync(
+        IReadOnlyCollection<Guid> taskItemIds,
+        CancellationToken ct = default);
+
+    /// <summary>Satisfied by the base repository — declared so the handler can read an edge before removing it.</summary>
+    Task<TaskDependency?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task DeleteAsync(Guid id, CancellationToken ct = default);
 }
 

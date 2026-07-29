@@ -752,6 +752,33 @@
   <data name="DepNotStarted" xml:space="preserve">
     <value>未开始</value>
   </data>
+  <data name="DepCancelled" xml:space="preserve">
+    <value>已取消</value>
+  </data>
+  <data name="BlockedBannerCount" xml:space="preserve">
+    <value>{0} 个问题阻碍了进展</value>
+  </data>
+  <data name="BlockerFinishToStart" xml:space="preserve">
+    <value>在“{0}”关闭之前无法开始</value>
+  </data>
+  <data name="BlockerFinishToFinish" xml:space="preserve">
+    <value>在“{0}”关闭之前无法完成</value>
+  </data>
+  <data name="BlockerStartToStart" xml:space="preserve">
+    <value>在“{0}”开始之前无法开始</value>
+  </data>
+  <data name="BlockerStartToFinish" xml:space="preserve">
+    <value>在“{0}”开始之前无法完成</value>
+  </data>
+  <data name="BlockedAffectsStart" xml:space="preserve">
+    <value>阻止开始</value>
+  </data>
+  <data name="BlockedAffectsComplete" xml:space="preserve">
+    <value>阻止完成</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DependencyBlocked" xml:space="preserve">
+    <value>某项依赖尚未满足</value>
+  </data>
   <data name="DepsReadonlyHint" xml:space="preserve">
     <value>依赖关系在来源中管理</value>
   </data>

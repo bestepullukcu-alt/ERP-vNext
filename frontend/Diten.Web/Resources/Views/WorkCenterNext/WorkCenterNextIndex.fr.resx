@@ -752,6 +752,33 @@
   <data name="DepNotStarted" xml:space="preserve">
     <value>non démarré</value>
   </data>
+  <data name="DepCancelled" xml:space="preserve">
+    <value>Annulée</value>
+  </data>
+  <data name="BlockedBannerCount" xml:space="preserve">
+    <value>{0} problème(s) bloquent l’avancement</value>
+  </data>
+  <data name="BlockerFinishToStart" xml:space="preserve">
+    <value>Impossible de démarrer tant que « {0} » n’est pas clôturée</value>
+  </data>
+  <data name="BlockerFinishToFinish" xml:space="preserve">
+    <value>Impossible de terminer tant que « {0} » n’est pas clôturée</value>
+  </data>
+  <data name="BlockerStartToStart" xml:space="preserve">
+    <value>Impossible de démarrer tant que « {0} » n’a pas démarré</value>
+  </data>
+  <data name="BlockerStartToFinish" xml:space="preserve">
+    <value>Impossible de terminer tant que « {0} » n’a pas démarré</value>
+  </data>
+  <data name="BlockedAffectsStart" xml:space="preserve">
+    <value>empêche le démarrage</value>
+  </data>
+  <data name="BlockedAffectsComplete" xml:space="preserve">
+    <value>empêche la clôture</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DependencyBlocked" xml:space="preserve">
+    <value>Une dépendance n’est pas encore satisfaite</value>
+  </data>
   <data name="DepsReadonlyHint" xml:space="preserve">
     <value>Les liens de dépendance se gèrent dans la source</value>
   </data>

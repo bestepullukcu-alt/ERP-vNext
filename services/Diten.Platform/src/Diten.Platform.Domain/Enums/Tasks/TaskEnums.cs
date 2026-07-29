@@ -63,7 +63,14 @@ public enum TaskAssignmentEventType
     Reassigned = 6
 }
 
-/// <summary>Typed dependency edge between two MOD-0024 tasks (pack §12 Y3 — own tasks only).</summary>
+/// <summary>
+/// Typed dependency edge between two MOD-0024 tasks (pack §12 Y3 — own tasks only).
+///
+/// <para>String-serialized because it now CROSSES THE WIRE both ways (AddTaskDependencyRequest in, the work-item
+/// projection out). Without the converter it would travel as 0..3, and the executable contract's
+/// DEPENDENCY_TYPES are names — the same defect that once sent a numeric status to the Task Center.</para>
+/// </summary>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
 public enum TaskDependencyType
 {
     FinishToStart = 0,
