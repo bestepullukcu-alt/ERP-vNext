@@ -801,7 +801,7 @@
     <value>Активность и комментарии</value>
   </data>
   <data name="CommentPlaceholder" xml:space="preserve">
-    <value>Написать комментарий… (также в источник)</value>
+    <value>Написать комментарий…</value>
   </data>
   <data name="CommentPost" xml:space="preserve">
     <value>Отправить</value>

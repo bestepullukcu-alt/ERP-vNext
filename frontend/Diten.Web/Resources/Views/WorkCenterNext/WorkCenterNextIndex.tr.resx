@@ -801,7 +801,7 @@
     <value>Etkinlik &amp; Yorum</value>
   </data>
   <data name="CommentPlaceholder" xml:space="preserve">
-    <value>Yorum yaz… (kaynağa da yazılır)</value>
+    <value>Yorum yaz…</value>
   </data>
   <data name="CommentPost" xml:space="preserve">
     <value>Gönder</value>

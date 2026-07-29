@@ -801,7 +801,7 @@
     <value>النشاط والتعليقات</value>
   </data>
   <data name="CommentPlaceholder" xml:space="preserve">
-    <value>اكتب تعليقًا… (يُنشر أيضًا في المصدر)</value>
+    <value>اكتب تعليقًا…</value>
   </data>
   <data name="CommentPost" xml:space="preserve">
     <value>نشر</value>

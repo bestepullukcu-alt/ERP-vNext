@@ -801,7 +801,7 @@
     <value>Actividad y comentarios</value>
   </data>
   <data name="CommentPlaceholder" xml:space="preserve">
-    <value>Escribe un comentario… (también en el origen)</value>
+    <value>Escribe un comentario…</value>
   </data>
   <data name="CommentPost" xml:space="preserve">
     <value>Enviar</value>

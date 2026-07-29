@@ -801,7 +801,7 @@
     <value>Activité et commentaires</value>
   </data>
   <data name="CommentPlaceholder" xml:space="preserve">
-    <value>Écrire un commentaire… (aussi publié à la source)</value>
+    <value>Écrire un commentaire…</value>
   </data>
   <data name="CommentPost" xml:space="preserve">
     <value>Publier</value>
