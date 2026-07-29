@@ -1313,6 +1313,24 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Aucun élément de liste de contrôle.</value>
   </data>
+  <data name="GuidancePendingAcceptance" xml:space="preserve">
+    <value>Cette tâche attend que vous l'acceptiez. Prenez-la en charge, ou réattribuez-la si elle n'est pas pour vous.</value>
+  </data>
+  <data name="GuidancePendingClaim" xml:space="preserve">
+    <value>Cette tâche est dans le pool. Réclamez-la pour qu’elle soit la vôtre.</value>
+  </data>
+  <data name="GuidanceApprovalPending" xml:space="preserve">
+    <value>Une décision d'approbation est en attente ; impossible de démarrer pour l'instant.</value>
+  </data>
+  <data name="GuidanceReviewPending" xml:space="preserve">
+    <value>Cette tâche est chez son relecteur ; rien à faire tant qu'il n'a pas répondu.</value>
+  </data>
+  <data name="GuidanceWaiting" xml:space="preserve">
+    <value>Cette tâche est en pause, en attente de quelqu'un d'autre.</value>
+  </data>
+  <data name="GuidanceWaitingBecause" xml:space="preserve">
+    <value>Cette tâche est en pause : {0}</value>
+  </data>
   <data name="SubtaskAddDetailed" xml:space="preserve">
     <value>Ajouter en détail</value>
   </data>

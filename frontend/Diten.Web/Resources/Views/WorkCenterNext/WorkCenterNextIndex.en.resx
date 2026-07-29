@@ -1313,6 +1313,24 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>No checklist items yet.</value>
   </data>
+  <data name="GuidancePendingAcceptance" xml:space="preserve">
+    <value>This task is waiting for you to accept it. Take it on, or reassign it if it is not yours.</value>
+  </data>
+  <data name="GuidancePendingClaim" xml:space="preserve">
+    <value>This task is in the pool. Claim it to make it yours.</value>
+  </data>
+  <data name="GuidanceApprovalPending" xml:space="preserve">
+    <value>An approval decision is pending; this cannot be started yet.</value>
+  </data>
+  <data name="GuidanceReviewPending" xml:space="preserve">
+    <value>This task is with its reviewer; there is nothing to do until they answer.</value>
+  </data>
+  <data name="GuidanceWaiting" xml:space="preserve">
+    <value>This task is paused, waiting on someone else.</value>
+  </data>
+  <data name="GuidanceWaitingBecause" xml:space="preserve">
+    <value>This task is paused: {0}</value>
+  </data>
   <data name="SubtaskAddDetailed" xml:space="preserve">
     <value>Add in detail</value>
   </data>

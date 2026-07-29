@@ -1313,6 +1313,24 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Henüz kontrol listesi maddesi yok.</value>
   </data>
+  <data name="GuidancePendingAcceptance" xml:space="preserve">
+    <value>Bu görev kabulünü bekliyor. Kabul edin, ya da size ait değilse başkasına atayın.</value>
+  </data>
+  <data name="GuidancePendingClaim" xml:space="preserve">
+    <value>Bu görev havuzda. Sizin olması için üstlenin.</value>
+  </data>
+  <data name="GuidanceApprovalPending" xml:space="preserve">
+    <value>Onay kararı bekleniyor; henüz başlatılamaz.</value>
+  </data>
+  <data name="GuidanceReviewPending" xml:space="preserve">
+    <value>Görev incelemede; onlar cevaplayana kadar yapılacak bir şey yok.</value>
+  </data>
+  <data name="GuidanceWaiting" xml:space="preserve">
+    <value>Bu görev duraklatıldı, başkası bekleniyor.</value>
+  </data>
+  <data name="GuidanceWaitingBecause" xml:space="preserve">
+    <value>Bu görev duraklatıldı: {0}</value>
+  </data>
   <data name="SubtaskAddDetailed" xml:space="preserve">
     <value>Detaylı ekle</value>
   </data>

@@ -5721,12 +5721,8 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 }
 .wcn-focus-intro i { font-size: 1.125rem; color: var(--bs-primary); }
 
-/* Detail page header -------------------------------------------------------
-   The heading is the TASK, not the page type — the page type is already stated by the breadcrumb above it. */
-.wcn-detail-pagetitle {
-    margin: .25rem 0 0; font-size: 1.25rem; font-weight: 600; color: var(--bs-heading-color);
-}
-.wcn-detail-breadcrumb .breadcrumb { margin-block-end: 0; }
+/* Detail page header: no rules of its own. It now uses the Golden Reference Compact detail markup
+   (d-flex justify-content-between + h5.mb-0 + .breadcrumb.mb-0), which the theme already styles. */
 
 /* A subtask's status in words, beside its title: the icon alone encodes it in colour only. */
 .wcn-subtask-status {
@@ -6162,3 +6158,9 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 .wcn-subtask:hover .wcn-subtask-cancel,
 .wcn-subtask-cancel:focus-visible { opacity: 1; }
 .wcn-subtask-cancel:hover { color: var(--bs-danger); }
+
+/* Guidance banner: what the task needs from the viewer right now, directly under the title. */
+.wcn-guidance { margin-block: .75rem 0; }
+.wcn-guidance i { font-size: 1.125rem; line-height: 1.45; }
+/* Destructive actions live behind their own menu, apart from the explained actions above. */
+.wcn-actrail-menu .dropdown-toggle { inline-size: 100%; }

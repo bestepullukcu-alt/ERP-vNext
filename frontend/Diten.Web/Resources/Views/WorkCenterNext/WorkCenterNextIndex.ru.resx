@@ -1313,6 +1313,24 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Пунктов чек-листа пока нет.</value>
   </data>
+  <data name="GuidancePendingAcceptance" xml:space="preserve">
+    <value>Эта задача ждёт вашего принятия. Возьмите её или переназначьте, если она не ваша.</value>
+  </data>
+  <data name="GuidancePendingClaim" xml:space="preserve">
+    <value>Эта задача в пуле. Возьмите её, чтобы она стала вашей.</value>
+  </data>
+  <data name="GuidanceApprovalPending" xml:space="preserve">
+    <value>Ожидается решение по согласованию; начать пока нельзя.</value>
+  </data>
+  <data name="GuidanceReviewPending" xml:space="preserve">
+    <value>Задача у проверяющего; до его ответа делать нечего.</value>
+  </data>
+  <data name="GuidanceWaiting" xml:space="preserve">
+    <value>Задача приостановлена и ожидает другого человека.</value>
+  </data>
+  <data name="GuidanceWaitingBecause" xml:space="preserve">
+    <value>Задача приостановлена: {0}</value>
+  </data>
   <data name="SubtaskAddDetailed" xml:space="preserve">
     <value>Добавить подробно</value>
   </data>

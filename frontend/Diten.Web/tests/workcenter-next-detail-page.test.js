@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const { loadScript } = require("./load-script");
 
 /*
@@ -255,9 +257,23 @@ describe("the detail page header states the task, not the page type", () => {
   beforeEach(async () => { await bootDetailPage(projectionItem()); });
 
   it("puts the task name in the heading", () => {
-    const heading = app().querySelector(".wcn-detail-pagetitle");
+    // Golden Reference Compact header markup: h5.mb-0 above the breadcrumb, no bespoke title class.
+    const heading = app().querySelector(".wcn-details-page h5.mb-0");
     expect(heading).not.toBeNull();
     expect(heading.textContent).toBe("Yeni maliyet merkezi açılış talebi");
+  });
+
+  it("wears the Golden Reference detail header, not a header of its own invention", () => {
+    // Same block the reference detail page uses. A detail page that styles its own header drifts from every
+    // other detail page in the tenant, which is exactly what this pass was for.
+    const header = app().querySelector(".wcn-details-page .d-flex.align-items-center.justify-content-between.mb-3");
+    expect(header).not.toBeNull();
+    expect(header.querySelector("h5.mb-0")).not.toBeNull();
+    expect(header.querySelector("nav .breadcrumb.mb-0")).not.toBeNull();
+    // The page type is said once, by the breadcrumb's active item — the heading is the task.
+    // The harness's t() echoes the key back (there is no dictionary in jsdom), so the KEY is what to assert.
+    expect(header.querySelector(".breadcrumb-item.active").textContent.trim()).toBe("DetailPageTitle");
+    expect(header.querySelector(".breadcrumb-item.active").textContent).not.toContain("Yeni maliyet");
   });
 
   it("offers ONE way back, not a Back button and a breadcrumb for the same place", () => {
@@ -270,7 +286,7 @@ describe("the detail page header states the task, not the page type", () => {
     window.sessionStorage.setItem("wcn:list-return-url", "/WorkCenterNext?tab=havuz&segment=bekleyen");
     await bootDetailPage(projectionItem());
 
-    const crumb = app().querySelector('.wcn-detail-breadcrumb a');
+    const crumb = app().querySelector('.wcn-details-page .breadcrumb a');
     expect(crumb.getAttribute("href")).toBe("/WorkCenterNext?tab=havuz&segment=bekleyen");
     window.sessionStorage.removeItem("wcn:list-return-url");
   });
@@ -279,7 +295,7 @@ describe("the detail page header states the task, not the page type", () => {
     window.sessionStorage.setItem("wcn:list-return-url", "https://evil.example/steal");
     await bootDetailPage(projectionItem());
 
-    expect(app().querySelector('.wcn-detail-breadcrumb a').getAttribute("href")).toBe("/WorkCenterNext");
+    expect(app().querySelector('.wcn-details-page .breadcrumb a').getAttribute("href")).toBe("/WorkCenterNext");
     window.sessionStorage.removeItem("wcn:list-return-url");
   });
 
@@ -968,5 +984,247 @@ describe("cancelled subtasks do not read as work", () => {
     expect(rows[0].className).toContain("wcn-subtask-in-progress");
     expect(rows[1].className).toContain("wcn-subtask-cancelled");
     expect(rows[2].className).toContain("wcn-subtask-cancelled");
+  });
+});
+
+
+/*
+ * The Golden Reference alignment pass: this page is one of the tenant's detail pages and has to be built out of
+ * the same parts as the rest of them, not out of lookalikes. Reference:
+ * Views/DevEnablement/GoldenReferenceCompact/Details.cshtml.
+ */
+describe("the detail page is built from Golden Reference parts", () => {
+  beforeEach(async () => { await bootDetailPage(projectionItem()); });
+
+  it("states the source context in reference preview fields, with icons", () => {
+    const fields = Array.from(app().querySelectorAll(".backbone-preview-field"));
+    expect(fields.length).toBeGreaterThan(0);
+    fields.forEach((field) => {
+      expect(field.querySelector("i.bx")).not.toBeNull();
+      expect(field.querySelector(".backbone-preview-label")).not.toBeNull();
+      expect(field.querySelector(".backbone-preview-value")).not.toBeNull();
+    });
+  });
+
+  it("omits a field it has no value for instead of printing a dash", async () => {
+    // The reference prints "-" for an empty column because its row set is fixed. Here the row set is not fixed:
+    // an absent requester means the projection did not state one, and a dash would dress that up as an answer.
+    await bootDetailPage(projectionItem({ requester: null }));
+
+    const labels = Array.from(app().querySelectorAll(".backbone-preview-label")).map((el) => el.textContent);
+    expect(labels).not.toContain("DetailRequester");
+    Array.from(app().querySelectorAll(".backbone-preview-value"))
+      .forEach((el) => { expect(el.textContent.trim()).not.toBe("-"); });
+  });
+
+  it("uses the reference section headings, not a heading class of its own", () => {
+    const headings = Array.from(app().querySelectorAll(".wcn-detail-section h6"));
+    expect(headings.length).toBeGreaterThan(0);
+    headings.forEach((h) => {
+      expect(h.className).toContain("text-uppercase");
+      expect(h.className).toContain("text-heading");
+      expect(h.className).toContain("fw-semibold");
+    });
+    expect(app().querySelector(".wcn-detail-h6")).toBeNull();
+  });
+});
+
+describe("the subtask card is a list card", () => {
+  const withSubtasks = (items) => projectionItem({ subtasks: { mode: "full", items } });
+  const child = (overrides) => Object.assign({
+    id: "11111111-1111-1111-1111-111111111111",
+    title: "Bütçe kalemini doğrula",
+    status: "not-started",
+    assignee: null,
+    dueAt: null,
+    canCancel: true
+  }, overrides);
+
+  it("heads the card with its count and its add controls", async () => {
+    await bootDetailPage(withSubtasks([child(), child({ id: "22222222-2222-2222-2222-222222222222" })]));
+
+    const heading = Array.from(app().querySelectorAll(".wcn-detail-section h6"))
+      .find((h) => h.textContent.includes("SubtasksLabel"));
+    expect(heading).not.toBeNull();
+    expect(heading.querySelector(".wcn-count-inline").textContent).toBe("2");
+
+    const header = heading.parentElement;
+    expect(header.querySelector("[data-wcn-subtask-add-inline]")).not.toBeNull();
+    expect(header.querySelector("[data-wcn-subtask-add-detailed]")).not.toBeNull();
+  });
+
+  // Deliberate: a task carries a handful of subtasks. A filter earns its space at fifteen, and this is not that.
+  it("carries no search box", async () => {
+    await bootDetailPage(withSubtasks([child()]));
+
+    expect(app().querySelector('input[type="search"]')).toBeNull();
+    Array.from(app().querySelectorAll("input")).forEach((input) => {
+      expect((input.getAttribute("placeholder") || "").toLowerCase()).not.toContain("search");
+      expect((input.getAttribute("placeholder") || "")).not.toContain("Ara");
+    });
+  });
+
+  it("keeps exactly one quick-add control, which the header button focuses", async () => {
+    await bootDetailPage(withSubtasks([child()]));
+
+    expect(app().querySelectorAll("[data-wcn-subtask-input]")).toHaveLength(1);
+    expect(app().querySelectorAll("[data-wcn-subtask-add]")).toHaveLength(1);
+
+    app().querySelector("[data-wcn-subtask-add-inline]").click();
+    // onClick is async and the listener defers it through a promise, so the effect lands a tick later.
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    expect(document.activeElement).toBe(app().querySelector("[data-wcn-subtask-input]"));
+  });
+});
+
+describe("the action rail hides only what is destructive", () => {
+  const action = (overrides) => Object.assign({
+    code: "complete",
+    label: { kind: "resource", key: "WorkAggregation_Action_Complete" },
+    semanticType: "complete",
+    enabled: true,
+    source: "provider",
+    disabledReasonCode: null,
+    disabledReason: null,
+    requiresConfirmation: false,
+    requiresReason: false,
+    requiresEvidence: false,
+    supportsBulk: false,
+    riskLevel: "normal"
+  }, overrides);
+
+  const cancelAction = action({
+    code: "cancel",
+    label: { kind: "resource", key: "WorkAggregation_Action_Cancel" },
+    semanticType: "cancel",
+    riskLevel: "destructive"
+  });
+
+  it("puts a destructive action in the overflow menu, not on the rail", async () => {
+    await bootDetailPage(projectionItem({ actions: [action(), cancelAction] }));
+
+    const menu = app().querySelector(".wcn-actrail-menu .dropdown-menu");
+    expect(menu).not.toBeNull();
+    expect(menu.querySelector('[data-wcn-action="cancel"]')).not.toBeNull();
+    // ...and NOT also on the open rail, which would be the duplicate-action defect all over again.
+    expect(app().querySelector('.wcn-actrail [data-wcn-action="cancel"]')).toBeNull();
+  });
+
+  it("leaves the ordinary actions open, with the sentence that says what they do", async () => {
+    await bootDetailPage(projectionItem({ actions: [action(), cancelAction] }));
+
+    const open = app().querySelector('.wcn-actrail [data-wcn-action="complete"]');
+    expect(open).not.toBeNull();
+    expect(app().querySelector('.dropdown-menu [data-wcn-action="complete"]')).toBeNull();
+    // The outcome line is the reason the rail is open in the first place; a kebab would swallow it.
+    expect(open.closest(".wcn-act").querySelector(".wcn-act-outcome")).not.toBeNull();
+  });
+
+  it("grows no overflow menu when nothing on offer is destructive", async () => {
+    await bootDetailPage(projectionItem({ actions: [action()] }));
+
+    expect(app().querySelector(".wcn-actrail-menu")).toBeNull();
+  });
+});
+
+describe("the guidance banner says what the task needs from the reader", () => {
+  const bannerText = () => {
+    const banner = app().querySelector(".wcn-guidance");
+    return banner ? banner.textContent.trim() : null;
+  };
+
+  it("asks an unaccepted task's holder to accept it", async () => {
+    await bootDetailPage(projectionItem({
+      admissionState: "pendingAcceptance",
+      assignmentMode: "offered",
+      ownershipState: "assigned",
+      normalizedStatus: "Pending",
+      taskLifecycle: "Open",
+      executionState: "notStarted"
+    }));
+    expect(bannerText()).toBe("GuidancePendingAcceptance");
+  });
+
+  it("tells a pooled task's reader to claim it", async () => {
+    await bootDetailPage(projectionItem({
+      admissionState: "pendingClaim",
+      assignmentMode: "groupQueue",
+      ownershipState: "unowned",
+      normalizedStatus: "Pending",
+      taskLifecycle: "Open",
+      executionState: "notStarted",
+      assignee: null
+    }));
+    expect(bannerText()).toBe("GuidancePendingClaim");
+  });
+
+  it("names the holder's own reason when the task is paused with one", async () => {
+    await bootDetailPage(projectionItem({
+      normalizedStatus: "Waiting",
+      taskLifecycle: "Waiting",
+      executionState: "paused",
+      waitingContext: {
+        type: "approval",
+        waitingOn: { id: "cccccccc-cccc-cccc-cccc-cccccccccccc", isCurrentUser: false },
+        reason: { kind: "display", text: "Bütçe onayı bekleniyor", locale: "tr" },
+        since: "2026-07-25T09:00:00+00:00",
+        expectedUntil: null
+      }
+    }));
+    // The "...because X" wording, not the bare one — the reason is the whole point when there is one.
+    expect(bannerText()).toBe("GuidanceWaitingBecause");
+  });
+
+  it("falls back to the bare wording when the pause carries no reason", async () => {
+    await bootDetailPage(projectionItem({
+      normalizedStatus: "Waiting",
+      taskLifecycle: "Waiting",
+      executionState: "paused",
+      waitingContext: {
+        type: "approval",
+        waitingOn: { id: "cccccccc-cccc-cccc-cccc-cccccccccccc", isCurrentUser: false },
+        reason: null,
+        since: "2026-07-25T09:00:00+00:00",
+        expectedUntil: null
+      }
+    }));
+    expect(bannerText()).toBe("GuidanceWaiting");
+  });
+
+  // A banner for every state would be noise; a banner that guesses would be a lie. Silence is the correct output.
+  it("says nothing for a state it has no guidance for", async () => {
+    await bootDetailPage(projectionItem());
+    expect(app().querySelector(".wcn-guidance")).toBeNull();
+  });
+
+  it("says nothing for an admission state outside its map", async () => {
+    await bootDetailPage(projectionItem({
+      admissionState: "pendingOffer",
+      assignmentMode: "offered",
+      ownershipState: "unowned",
+      normalizedStatus: "Pending",
+      taskLifecycle: "Open",
+      executionState: "notStarted",
+      assignee: null
+    }));
+    expect(app().querySelector(".wcn-guidance")).toBeNull();
+  });
+
+  // Tenant-side strings ship in all seven languages or they ship broken for five of them.
+  it("carries its wording in every tenant language", () => {
+    const keys = [
+      "GuidancePendingAcceptance", "GuidancePendingClaim", "GuidanceApprovalPending",
+      "GuidanceReviewPending", "GuidanceWaiting", "GuidanceWaitingBecause"
+    ];
+    ["en", "tr", "fr", "es", "zh", "ar", "ru"].forEach((locale) => {
+      const xml = fs.readFileSync(
+        path.join(__dirname, "..", "Resources", "Views", "WorkCenterNext", `WorkCenterNextIndex.${locale}.resx`),
+        "utf8");
+      keys.forEach((key) => {
+        const match = new RegExp(`<data name="${key}"[^>]*>\\s*<value>([^<]+)</value>`).exec(xml);
+        expect(match, `${key} missing from ${locale}`).not.toBeNull();
+        expect(match[1].trim().length).toBeGreaterThan(0);
+      });
+    });
   });
 });

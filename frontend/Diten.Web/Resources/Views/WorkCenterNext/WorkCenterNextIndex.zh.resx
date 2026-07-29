@@ -1313,6 +1313,24 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>暂无清单项。</value>
   </data>
+  <data name="GuidancePendingAcceptance" xml:space="preserve">
+    <value>该任务正在等待你接受。接手它，或者如果不属于你，请重新分配。</value>
+  </data>
+  <data name="GuidancePendingClaim" xml:space="preserve">
+    <value>该任务在任务池中。认领它即可归你负责。</value>
+  </data>
+  <data name="GuidanceApprovalPending" xml:space="preserve">
+    <value>审批决定尚未做出，暂时无法开始。</value>
+  </data>
+  <data name="GuidanceReviewPending" xml:space="preserve">
+    <value>该任务正在评审人手中，在其答复前无需操作。</value>
+  </data>
+  <data name="GuidanceWaiting" xml:space="preserve">
+    <value>该任务已暂停，正在等待他人。</value>
+  </data>
+  <data name="GuidanceWaitingBecause" xml:space="preserve">
+    <value>该任务已暂停：{0}</value>
+  </data>
   <data name="SubtaskAddDetailed" xml:space="preserve">
     <value>详细添加</value>
   </data>

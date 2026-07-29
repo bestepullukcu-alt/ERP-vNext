@@ -1045,6 +1045,60 @@
     // stage is matched by lifecycle; earlier stages are marked done.
 
 
+
+    // ── Golden Reference Compact primitives ────────────────────────────────────────────────────────────────
+    // These are the reference's OWN classes, not a lookalike: sizes and colours come from
+    // Views/DevEnablement/GoldenReferenceCompact/Details.cshtml via CSS, never from values retyped here.
+
+    /*
+     * One labelled field: icon, label, value.
+     *
+     * The reference prints "-" for an empty value; we print NOTHING and drop the row. A dash asserts "I looked and
+     * it was empty", which is a claim about data we do not have — the rule this page has been corrected under all
+     * week. That is the ONE deliberate divergence from the reference.
+     */
+    const previewField = (icon, labelKey, value, col) => {
+        if (value === null || value === undefined || value === '') { return ''; }
+        return `<div class="col-12 ${col || 'col-md-6'}">
+            <div class="backbone-preview-field">
+                <i class="bx ${icon}"></i>
+                <div>
+                    <div class="backbone-preview-label">${esc(t(labelKey))}</div>
+                    <div class="backbone-preview-value mt-1">${esc(value)}</div>
+                </div>
+            </div>
+        </div>`;
+    };
+
+    /*
+     * What this task needs from the viewer RIGHT NOW, in a sentence.
+     *
+     * The page can already show a dozen true facts without answering "so what do I do?". Keyed by state, and an
+     * unmapped state prints NO banner — a guidance box that guesses is worse than none.
+     */
+    const guidanceFor = (item) => {
+        if (item.admissionState === 'pendingAcceptance') { return { kind: 'primary', key: 'GuidancePendingAcceptance' }; }
+        if (item.admissionState === 'pendingClaim') { return { kind: 'primary', key: 'GuidancePendingClaim' }; }
+        if (item.gates?.approval?.status === 'pending') { return { kind: 'warning', key: 'GuidanceApprovalPending' }; }
+        if (item.gates?.review?.status === 'pending') { return { kind: 'warning', key: 'GuidanceReviewPending' }; }
+        if (item.lifecycle === 'Waiting') {
+            // The holder's own sentence when they gave one — nothing here is invented on their behalf.
+            return item.waitingReason
+                ? { kind: 'warning', text: tf('GuidanceWaitingBecause', item.waitingReason) }
+                : { kind: 'warning', key: 'GuidanceWaiting' };
+        }
+        return null;
+    };
+
+    const renderGuidance = (item) => {
+        const guidance = guidanceFor(item);
+        if (!guidance) { return ''; }
+        const text = guidance.text || t(guidance.key);
+        return `<div class="alert alert-${guidance.kind} wcn-guidance d-flex align-items-start gap-2" role="note">
+            <i class="bx bx-info-circle"></i><span>${esc(text)}</span>
+        </div>`;
+    };
+
     // ── Detail layout: content on the left, everything you can DO on the right ──────────────────────────────
 
     /*
@@ -1116,20 +1170,30 @@
         const available = (primary ? actionButton(item, primary, 'primary') : '')
             + secondary.map((a) => actionButton(item, a, 'secondary')).join('');
 
-        const other = destructive.map((a) => actionButton(item, a, 'danger')).join('');
+        /*
+         * Primary and secondary actions stay OPEN, each with its outcome line — those sentences are why the rail
+         * exists, and a kebab would hide them. Only DESTRUCTIVE actions fold into the menu: calling work off
+         * should take a deliberate second click, not sit at the same weight as accepting it.
+         */
+        const destructiveMenu = destructive.length
+            ? `<div class="dropdown wcn-actrail-menu">
+                <button type="button" class="btn btn-sm btn-label-secondary dropdown-toggle" data-bs-toggle="dropdown"
+                        aria-expanded="false">${esc(t('ActionsOther'))}</button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    ${destructive.map((a) => `<li><button type="button" class="dropdown-item text-danger"
+                        data-wcn-action="${esc(a.key)}" data-wcn-id="${esc(item.id)}"${a.disabled ? ' disabled' : ''}>
+                        <i class="bx ${inboxActionIcon(a)} me-1"></i>${esc(actionLabel(a))}</button></li>`).join('')}
+                </ul>
+            </div>`
+            : '';
 
         return `${available
             ? `<div class="wcn-detail-section">
-                <h6 class="wcn-detail-h6">${esc(t('ActionsAvailable'))}</h6>
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('ActionsAvailable'))}</h6>
                 <ul class="wcn-actrail">${available}</ul>
             </div>`
             : ''}
-        ${other
-            ? `<div class="wcn-detail-section wcn-actrail-other">
-                <h6 class="wcn-detail-h6">${esc(t('ActionsOther'))}</h6>
-                <ul class="wcn-actrail">${other}</ul>
-            </div>`
-            : ''}`;
+        ${destructiveMenu ? `<div class="wcn-detail-section wcn-actrail-other">${destructiveMenu}</div>` : ''}`;
     };
 
     /*
@@ -1188,7 +1252,7 @@
             : '';
 
         return `<div class="wcn-detail-section">
-            <h6 class="wcn-detail-h6">${esc(t('StepBarLabel'))}</h6>
+            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('StepBarLabel'))}</h6>
             <ol class="wcn-steps${cancelled ? ' wcn-steps-cancelled' : ''}">${rendered}</ol>
             ${paused}
         </div>`;
@@ -1204,7 +1268,7 @@
         const cell = (labelKey, value, emptyKey, cls) =>
             `<div class="wcn-date-cell${cls ? ' ' + cls : ''}"><span class="wcn-date-label">${esc(t(labelKey))}</span><span class="wcn-date-value">${esc(value || t(emptyKey))}</span></div>`;
         return `<div class="wcn-detail-section">
-            <h6 class="wcn-detail-h6">${esc(t('DatesLabel'))}</h6>
+            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('DatesLabel'))}</h6>
             <div class="wcn-dates">
                 ${cell('SourceDueLabel', item.dueAt, 'SlaNoSla', item.slaState === 'overdue' ? 'wcn-date-overdue' : '')}
                 ${cell('PlannedDateLabel', item.plannedDate, 'PlannedDateNone', conflict ? 'wcn-date-conflict' : '')}
@@ -1225,7 +1289,7 @@
         const items = item.checklist.items || [];
         if (!items.length) {
             return `<div class="wcn-detail-section">
-                <h6 class="wcn-detail-h6">${esc(t('ChecklistLabel'))}</h6>
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('ChecklistLabel'))}</h6>
                 <p class="wcn-block-hint">${esc(t('ChecklistEmpty'))}</p>
             </div>`;
         }
@@ -1245,7 +1309,7 @@
             ? `<p class="wcn-block-hint" role="note"><i class="bx bx-error-circle"></i>${esc(t('WorkAggregation_ActionDisabled_ChecklistIncomplete'))}</p>`
             : '';
         return `<div class="wcn-detail-section">
-            <h6 class="wcn-detail-h6">${esc(t('ChecklistLabel'))} <span class="wcn-count-inline">${done}/${items.length}</span></h6>
+            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('ChecklistLabel'))} <span class="wcn-count-inline">${done}/${items.length}</span></h6>
             <p class="wcn-block-hint">${esc(t(items.some((c) => c.blocking) ? 'ChecklistBlocksCompletion' : 'ChecklistDoesNotBlock'))}</p>
             <progress class="wcn-progress" value="${done}" max="${items.length}" aria-label="${esc(t('ChecklistLabel'))}"></progress>
             <ul class="wcn-checks">${rows}</ul>
@@ -1295,7 +1359,7 @@
         const rows = gateRow('GateApproval', gates.approval) + gateRow('GateReview', gates.review);
         if (!rows) { return ''; }
         return `<div class="wcn-detail-section">
-            <h6 class="wcn-detail-h6">${esc(t('GatesLabel'))}</h6>
+            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('GatesLabel'))}</h6>
             <ul class="wcn-gates">${rows}</ul>
         </div>`;
     };
@@ -1368,11 +1432,12 @@
                        </button>`
                     : ''}
             </li>`).join('');
+        // The one-line add stays where it is; the header's "Add" simply focuses it, so there is still exactly one
+        // quick-add control rather than two that could disagree.
         const adder = full
             ? `<div class="wcn-subtask-add">
                 <input type="text" class="form-control form-control-sm" data-wcn-subtask-input placeholder="${esc(t('SubtaskAddPlaceholder'))}">
                 <button type="button" class="btn btn-sm btn-label-primary" data-wcn-subtask-add="${item.id}">${esc(t('SubtaskAdd'))}</button>
-                <button type="button" class="btn btn-sm btn-label-secondary" data-wcn-subtask-add-detailed="${item.id}">${esc(t('SubtaskAddDetailed'))}</button>
                </div>`
             : `<p class="wcn-block-hint"><i class="bx bx-link-external"></i>${esc(t('SubtasksReadonlyHint'))}</p>`;
         // Open subtasks NEVER block the parent — they are reported, not enforced. Blocking belongs to the
@@ -1383,8 +1448,25 @@
         const body = subtaskItems.length
             ? `<ul class="wcn-subtasks">${rows}</ul>${openNotice}`
             : `<p class="wcn-block-hint">${esc(t('SubtasksEmpty'))}</p>`;
+        /*
+         * A LIST card, not a checklist: heading and count on the left, its add controls on the right — the shape
+         * the main page's list cards already use. Read as a checklist while the quick-add input sat under a bare
+         * heading with no count.
+         *
+         * NO search box, deliberately. A task has three to ten subtasks; a filter earns its space at fifteen or
+         * more, and that is rare. Same reasoning that kept a full DataTable out.
+         */
         return `<div class="wcn-detail-section">
-            <h6 class="wcn-detail-h6">${esc(t('SubtasksLabel'))}</h6>
+            <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+                <h6 class="text-uppercase text-heading fw-semibold mb-0">
+                    ${esc(t('SubtasksLabel'))}
+                    ${subtaskItems.length ? `<span class="wcn-count-inline">${subtaskItems.length}</span>` : ''}
+                </h6>
+                ${full ? `<div class="d-flex align-items-center gap-2 flex-shrink-0">
+                    <button type="button" class="btn btn-sm btn-label-primary" data-wcn-subtask-add-inline="${item.id}">${esc(t('SubtaskAdd'))}</button>
+                    <button type="button" class="btn btn-sm btn-label-secondary" data-wcn-subtask-add-detailed="${item.id}">${esc(t('SubtaskAddDetailed'))}</button>
+                </div>` : ''}
+            </div>
             ${body}
             ${adder}
         </div>`;
@@ -1404,7 +1486,7 @@
                 <span class="wcn-badge wcn-badge-${DEP_STATE_KIND[d.state]}">${esc(t(DEP_STATE_KEY[d.state] || d.state))}</span>
             </li>`).join('');
         return `<div class="wcn-detail-section">
-            <h6 class="wcn-detail-h6">${esc(t('DependenciesLabel'))}</h6>
+            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('DependenciesLabel'))}</h6>
             <ul class="wcn-deps">${rows}</ul>
             <p class="wcn-block-hint"><i class="bx bx-link-external"></i>${esc(t('DepsReadonlyHint'))}</p>
         </div>`;
@@ -1416,7 +1498,7 @@
         const rows = item.attachments.map((a) =>
             `<li class="wcn-attach" data-wcn-attach="${esc(a.name)}"><i class="bx bx-paperclip"></i><span class="wcn-attach-name">${esc(a.name)}</span><span class="wcn-attach-size">${esc(a.size)}</span></li>`).join('');
         return `<div class="wcn-detail-section">
-            <h6 class="wcn-detail-h6">${esc(t('AttachmentsLabel'))}</h6>
+            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('AttachmentsLabel'))}</h6>
             <ul class="wcn-attachments">${rows}</ul>
         </div>`;
     };
@@ -1427,7 +1509,7 @@
             `<li class="wcn-attach"><i class="bx bx-shield-quarter"></i><span class="wcn-attach-name">${esc(data.resolveLabel(entry.label) || entry.id)}</span></li>`
         ).join('');
         return `<div class="wcn-detail-section">
-            <h6 class="wcn-detail-h6">${esc(t('EvidenceMissing'))}</h6>
+            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('EvidenceMissing'))}</h6>
             ${entries ? `<ul class="wcn-attachments">${entries}</ul>` : `<p class="text-muted mb-0">${esc(t('ActionDisabledEvidenceIncomplete'))}</p>`}
         </div>`;
     };
@@ -1436,7 +1518,7 @@
     const renderNote = (item) => {
         if (isTerminal(item)) { return ''; }
         return `<div class="wcn-detail-section">
-            <h6 class="wcn-detail-h6">${esc(t('NoteLabel'))}</h6>
+            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('NoteLabel'))}</h6>
             <div class="wcn-note">
                 <textarea class="form-control form-control-sm" data-wcn-note-input rows="2" placeholder="${esc(t('NotePlaceholder'))}">${esc(item.note || '')}</textarea>
                 <button type="button" class="btn btn-sm btn-label-secondary" data-wcn-note-save="${item.id}">${esc(t('NoteSave'))}</button>
@@ -1466,7 +1548,7 @@
             ? `<span class="wcn-ts-live"><span class="wcn-ts-dot"></span><span id="wcnTimerValue">00:00</span><span class="wcn-ts-runtxt">${esc(t('TimerRunning'))}</span></span>`
             : '';
         return `<div class="wcn-detail-section">
-            <h6 class="wcn-detail-h6">${esc(t('TimesheetLabel'))}</h6>
+            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('TimesheetLabel'))}</h6>
             <div class="wcn-timesheet">
                 <span class="wcn-ts-icon"><i class="bx bx-time"></i></span>
                 <span class="wcn-ts-total">${esc(formatMinutes(ts.loggedMinutes))}</span>
@@ -1491,7 +1573,7 @@
     };
 
     const sectionHead = (icon, titleKey) =>
-        `<div class="wcn-business-head"><span class="wcn-business-icon"><i class="bx ${icon}"></i></span><h6 class="wcn-detail-h6">${esc(t(titleKey))}</h6></div>`;
+        `<div class="wcn-business-head"><span class="wcn-business-icon"><i class="bx ${icon}"></i></span><h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t(titleKey))}</h6></div>`;
 
     const renderApprovalContext = (item) => {
         if (item.itemType !== 'approval' || !hasCap(item, 'approvalContext') || item.amount == null) { return ''; }
@@ -1646,19 +1728,29 @@
     };
 
     // Source/system context block — the "where this came from" meta grid + open-source jump.
-    const renderSourceContext = (item, meta) => `<div class="wcn-detail-section">
-            <h6 class="wcn-detail-h6">${esc(t('DetailContext'))}</h6>
-            <div class="wcn-meta-grid">
-                ${meta('DetailRequester', item.requester)}
-                ${meta('DetailAssignee', item.assignee || '—')}
-                ${meta('DetailNativeStatus', item.nativeStatusText)}
-                ${meta('DetailSourceId', item.sourceId)}
-                ${meta('DetailModuleName', item.sourceModuleName || item.sourceModule)}
-                ${meta('DetailModuleId', item.sourceModuleId || t('SourceIdentityPending'))}
-                ${meta('DetailSourceType', item.sourceObjectType || item.sourceType)}
-                ${meta('DetailActionDepth', t(item.actionDepth === 'deeplink' ? 'ActionDepthDeeplink' : 'ActionDepthInline'))}
-                ${meta('DetailSourceVersion', item.concurrency ? `${item.concurrency.kind}: ${item.concurrency.token}` : '—')}
-                ${item.lifecycleOwner ? meta('DetailLifecycleOwner', item.lifecycleOwner.providerCode) : ''}
+    /*
+     * Source context in the Golden Reference field pattern: icon, label, value — the reference's own classes, so
+     * the type sizes and colours come from one place.
+     *
+     * Every row is dropped when its value is empty. The reference would print "-"; here an absent field simply
+     * does not appear, because a dash claims the value was checked and found empty. That is the page's standing
+     * rule and the one place it diverges from the reference on purpose.
+     */
+    const renderSourceContext = (item) => `<div class="wcn-detail-section">
+            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('DetailContext'))}</h6>
+            <div class="row g-4">
+                ${previewField('bx-user', 'DetailRequester', item.requester)}
+                ${previewField('bx-user-check', 'DetailAssignee', item.assignee)}
+                ${previewField('bx-flag', 'DetailNativeStatus', item.nativeStatusText)}
+                ${previewField('bx-hash', 'DetailSourceId', item.sourceId)}
+                ${previewField('bx-cube', 'DetailModuleName', item.sourceModuleName || item.sourceModule)}
+                ${previewField('bx-purchase-tag-alt', 'DetailModuleId', item.sourceModuleId)}
+                ${previewField('bx-category', 'DetailSourceType', item.sourceObjectType || item.sourceType)}
+                ${previewField('bx-link-external', 'DetailActionDepth',
+                    t(item.actionDepth === 'deeplink' ? 'ActionDepthDeeplink' : 'ActionDepthInline'))}
+                ${previewField('bx-git-branch', 'DetailSourceVersion',
+                    item.concurrency ? `${item.concurrency.kind}: ${item.concurrency.token}` : '')}
+                ${previewField('bx-cog', 'DetailLifecycleOwner', item.lifecycleOwner?.providerCode)}
             </div>
             <button type="button" class="btn btn-sm btn-label-primary wcn-opensource" data-wcn-open="${item.id}" aria-label="${esc(tf('OpenSourceAria', item.sourceModuleName || item.sourceModule, item.sourceId))}">
                 <i class="bx bx-link-external"></i><span>${esc(t('DetailOpenSource'))}</span>
@@ -1773,7 +1865,7 @@
          */
         const summarySection = item.summary
             ? `<div class="wcn-detail-section">
-                <h6 class="wcn-detail-h6">${esc(t('DetailSummary'))}</h6>
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('DetailSummary'))}</h6>
                 <p class="wcn-detail-summary">${esc(item.summary)}</p>
             </div>`
             : '';
@@ -1783,7 +1875,7 @@
         // stays behind its own gate.)
         const activitySection = hasCap(item, 'activity')
             ? `<div class="wcn-detail-section">
-                <h6 class="wcn-detail-h6">${esc(t('ActivityLabel'))}</h6>
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('ActivityLabel'))}</h6>
                 ${renderComposer(item)}
                 ${item.activity.length
                     ? `<ul class="wcn-audit">${auditRows}</ul>`
@@ -1846,26 +1938,34 @@
             // Personal note sits UNDER the actions: it is something the viewer writes, not something the task says.
             card(`${renderNote(item)}${personal}`),
             card(renderPlanDates(item)),
-            card(renderSourceContext(item, meta)),
+            card(renderSourceContext(item)),
             card(`${renderDelegation(item)}${renderApprovalChain(item)}`)
         ].filter(Boolean).join('');
 
         /*
-         * The page header, rendered here because only this code knows the task's NAME.
+         * The page header, in the Golden Reference Compact detail shape: heading block on the left with its
+         * breadcrumb underneath, inside a d-flex justify-content-between row. Same markup, same classes — this
+         * page is one of the tenant's detail pages and must not look like its own species.
          *
-         * ONE navigation control, not two: there used to be a breadcrumb and a Back button pointing at the same
-         * place. The breadcrumb is kept because it also states where you are, and its Task Center link returns to
-         * the list AS THE USER LEFT IT (tab, segment, filters) instead of a default view.
-         *
-         * The h1 is the task, not the page type — "Task detail" was said twice and the task's own name nowhere.
+         * Two departures from the reference, both deliberate:
+         *  - The heading is the TASK's name, not the word "Details". A task is identified by what it asks for;
+         *    the page type is already said by the breadcrumb's active item.
+         *  - No Back button on the right. The reference's Back and its breadcrumb parent go to the same place,
+         *    and the breadcrumb's Task Center link additionally restores the list AS THE USER LEFT IT (tab,
+         *    segment, filters). Two controls, one destination, one of them worse — so only the breadcrumb stays.
          */
-        const pageHeader = `<nav class="wcn-detail-breadcrumb" aria-label="${esc(t('BreadcrumbLabel'))}">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="${esc(listReturnUrl())}">${esc(t('Title'))}</a></li>
-                <li class="breadcrumb-item active" aria-current="page">${esc(item.title)}</li>
-            </ol>
-        </nav>
-        <h1 class="wcn-detail-pagetitle">${esc(item.title)}</h1>`;
+        const pageHeader = `<div class="d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <h5 class="mb-0">${esc(item.title)}</h5>
+                <nav aria-label="${esc(t('BreadcrumbLabel'))}">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="${esc(listReturnUrl())}">${esc(t('Title'))}</a></li>
+                        <li class="breadcrumb-item active text-primary" aria-current="page">${esc(t('DetailPageTitle'))}</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        ${renderGuidance(item)}`;
 
         return `<div class="wcn-detail wcn-details-page">
             <div class="row g-4 wcn-detail-grid">
@@ -3983,6 +4083,12 @@
             // A subtask is a FULL task, so "tick it" means completing that task through the same endpoint any
             // other task uses — there is no separate half-lifecycle for children.
             completeSubtask(subtaskId);
+            return;
+        }
+        const subAddInlineEl = event.target.closest('[data-wcn-subtask-add-inline]');
+        if (subAddInlineEl) {
+            const input = document.querySelector('#wcnApp [data-wcn-subtask-input]');
+            if (input) { input.focus(); }
             return;
         }
         const subAddDetailedEl = event.target.closest('[data-wcn-subtask-add-detailed]');

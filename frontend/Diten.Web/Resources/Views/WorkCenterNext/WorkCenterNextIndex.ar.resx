@@ -1313,6 +1313,24 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>لا توجد عناصر في قائمة التحقق بعد.</value>
   </data>
+  <data name="GuidancePendingAcceptance" xml:space="preserve">
+    <value>تنتظر هذه المهمة قبولك. تولَّها، أو أعد إسنادها إن لم تكن لك.</value>
+  </data>
+  <data name="GuidancePendingClaim" xml:space="preserve">
+    <value>هذه المهمة في التجمّع. تولَّها لتصبح لك.</value>
+  </data>
+  <data name="GuidanceApprovalPending" xml:space="preserve">
+    <value>قرار الموافقة معلّق؛ لا يمكن البدء بعد.</value>
+  </data>
+  <data name="GuidanceReviewPending" xml:space="preserve">
+    <value>المهمة لدى المراجع؛ لا شيء لفعله حتى يردّ.</value>
+  </data>
+  <data name="GuidanceWaiting" xml:space="preserve">
+    <value>هذه المهمة متوقفة مؤقتًا، في انتظار شخص آخر.</value>
+  </data>
+  <data name="GuidanceWaitingBecause" xml:space="preserve">
+    <value>هذه المهمة متوقفة مؤقتًا: {0}</value>
+  </data>
   <data name="SubtaskAddDetailed" xml:space="preserve">
     <value>إضافة بالتفصيل</value>
   </data>

@@ -1313,6 +1313,24 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Aún no hay elementos de verificación.</value>
   </data>
+  <data name="GuidancePendingAcceptance" xml:space="preserve">
+    <value>Esta tarea espera que la aceptes. Asúmela o reasígnala si no te corresponde.</value>
+  </data>
+  <data name="GuidancePendingClaim" xml:space="preserve">
+    <value>Esta tarea está en el grupo. Recláma­la para que sea tuya.</value>
+  </data>
+  <data name="GuidanceApprovalPending" xml:space="preserve">
+    <value>Hay una decisión de aprobación pendiente; todavía no se puede iniciar.</value>
+  </data>
+  <data name="GuidanceReviewPending" xml:space="preserve">
+    <value>La tarea está con quien la revisa; no hay nada que hacer hasta que responda.</value>
+  </data>
+  <data name="GuidanceWaiting" xml:space="preserve">
+    <value>Esta tarea está en pausa, a la espera de otra persona.</value>
+  </data>
+  <data name="GuidanceWaitingBecause" xml:space="preserve">
+    <value>Esta tarea está en pausa: {0}</value>
+  </data>
   <data name="SubtaskAddDetailed" xml:space="preserve">
     <value>Añadir con detalle</value>
   </data>
