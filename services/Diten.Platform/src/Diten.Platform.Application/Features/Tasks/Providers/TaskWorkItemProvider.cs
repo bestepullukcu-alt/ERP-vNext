@@ -71,6 +71,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private readonly IChecklistRunRepository _checklistRuns;
     private readonly ITaskApprovalService _approvals;
     private readonly ITaskDependencyRepository _dependencies;
+    private readonly ITaskCommentRepository _comments;
 
     public TaskWorkItemProvider(
         ITaskItemRepository tasks,
@@ -80,9 +81,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         IUserDisplayNameResolver displayNames,
         IChecklistRunRepository checklistRuns,
         ITaskApprovalService approvals,
-        ITaskDependencyRepository dependencies)
+        ITaskDependencyRepository dependencies,
+        ITaskCommentRepository comments)
     {
         _dependencies = dependencies;
+        _comments = comments;
         _tasks = tasks;
         _positionAssignments = positionAssignments;
         _lifecycle = lifecycle;
@@ -170,6 +173,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          * An edge whose far end cannot be read (another tenant's task, a deleted one) is dropped rather than
          * rendered as an unnamed blocker.
          */
+        // One read for the whole page's conversation, like every other container here.
+        var commentsByTask = (await _comments.ListByTaskIdsAsync(taskIds, ct))
+            .GroupBy(comment => comment.TaskItemId)
+            .ToDictionary(group => group.Key, group => (IReadOnlyList<TaskComment>)group.ToList());
+
         var edges = await _dependencies.ListByTaskIdsAsync(taskIds, ct);
         var edgeTaskIds = edges
             .SelectMany(edge => new[] { edge.TaskItemId, edge.DependsOnTaskItemId })
@@ -198,7 +206,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     outstanding,
                     rejected,
                     edgesByTask.GetValueOrDefault(t.Id, []),
-                    edgeTasks);
+                    edgeTasks,
+                    commentsByTask.GetValueOrDefault(t.Id, []));
             })
             .ToList();
     }
@@ -221,7 +230,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         bool approvalOutstanding,
         bool approvalRejected = false,
         IReadOnlyList<TaskDependency>? edges = null,
-        IReadOnlyDictionary<Guid, TaskItem>? edgeTasks = null)
+        IReadOnlyDictionary<Guid, TaskItem>? edgeTasks = null,
+        IReadOnlyList<TaskComment>? comments = null)
     {
         var assignment = _assignmentResolver.Resolve(task);
         var normalized = _lifecycle.ToNormalizedStatus(task, approvalOutstanding, approvalRejected);
@@ -238,6 +248,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // actions may be offered — and the contract requires every blocked action to be present and disabled,
         // never hidden. A hidden button teaches the reader nothing about why the work will not move.
         var dependencies = ToDependencies(task, edges ?? [], edgeTasks);
+        var activity = ToActivity(comments ?? []);
         var blockers = ResolveBlockers(task, edges ?? [], edgeTasks, children);
 
         var (built, primaryActionCode, overflowActionCodes) = terminal
@@ -344,7 +355,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 : new WorkItemBlockedStateDto(
                     Blocked: true,
                     AffectedActionCodes: reasonByAction.Keys.ToList(),
-                    Blockers: effectiveBlockers));
+                    Blockers: effectiveBlockers),
+            // Always emitted, because the capability is always declared: MOD-0024 owns the conversation, so the
+            // feed exists even before anyone has said anything. Declared-and-empty is the valid state the
+            // contract models; a HALF (one without the other) is what it rejects.
+            Activity: activity);
     }
 
     /// <summary>
@@ -404,6 +419,17 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         {
             capabilities.Add("subtasks");
         }
+
+        /*
+         * Activity is declared UNCONDITIONALLY, unlike the checklist. MOD-0024 is the source of its own comments,
+         * so the feed exists for every task whether or not anyone has written in it yet — the same reasoning that
+         * declares `subtasks` on a parent with no children. Declaring it only when comments exist would hide the
+         * composer on exactly the tasks nobody has commented on, which is where it is needed most.
+         *
+         * What the feed does NOT contain is a lifecycle event log: none exists, and deriving one from the
+         * timestamps a task happens to carry would omit accept/plan/claim/release/inquire silently.
+         */
+        capabilities.Add("activity");
 
         return capabilities;
     }
@@ -605,6 +631,22 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 AffectedActionCode: TaskBlockingRules.AffectedActionCode(pair.Edge.DependencyType)))
             .ToList();
     }
+
+    /// <summary>
+    /// The feed, newest first (the repository already orders it that way, and the composer sits at the top).
+    /// Comments only — see <see cref="WorkItemActivityEntryDto"/> for why there is no derived event history.
+    /// </summary>
+    private static IReadOnlyList<WorkItemActivityEntryDto> ToActivity(IReadOnlyList<TaskComment> comments)
+        => comments
+            .Select(comment => new WorkItemActivityEntryDto(
+                Id: comment.Id.ToString(),
+                Kind: "comment",
+                Text: comment.Text,
+                // Null rather than a GUID when the name was never resolved: the client has a label for "name
+                // unavailable" and an id is not a person.
+                Actor: string.IsNullOrWhiteSpace(comment.AuthorDisplayName) ? null : comment.AuthorDisplayName,
+                At: comment.CreatedAt))
+            .ToList();
 
     private static string ResolveExecutionState(TaskItem task) => task.Lifecycle switch
     {

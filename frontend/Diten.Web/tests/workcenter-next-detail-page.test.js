@@ -87,17 +87,19 @@ const bootDetailPage = (item, options) => {
     : () => Promise.resolve({ status: "ok", httpStatus: 200, items: mapped.items, errors: [] });
 
   const created = [];
+  const posted = [];
   // The Details view used to omit these entirely; `withoutTasksScripts` reproduces that page exactly.
   if (options && options.withoutTasksScripts) {
     delete global.TasksApi;
     delete global.TaskForm;
     loadScript(scriptRoot + "app.js");
-    return new Promise((resolve) => setTimeout(() => resolve({ created }), 0));
+    return new Promise((resolve) => setTimeout(() => resolve({ created, posted }), 0));
   }
   global.TasksApi = {
     create: (payload) => { created.push(payload); return Promise.resolve({ ok: true, status: 201, data: { id: "new" } }); },
     get: () => Promise.resolve({ ok: true, status: 200, data: {} }),
     transition: () => Promise.resolve({ ok: true, status: 204 }),
+    addComment: (taskId, payload) => { posted.push({ taskId, payload }); return Promise.resolve({ ok: true, status: 201, data: { id: "c1" } }); },
     isConcurrencyConflict: () => false,
     isTransitionBlocked: () => false,
     failureMessage: () => "error"
@@ -106,7 +108,7 @@ const bootDetailPage = (item, options) => {
 
   loadScript(scriptRoot + "app.js");
   // boot() is async (it awaits loadWorkItems); let its microtasks drain.
-  return new Promise((resolve) => setTimeout(() => resolve({ created }), 0));
+  return new Promise((resolve) => setTimeout(() => resolve({ created, posted }), 0));
 };
 
 const app = () => document.getElementById("wcnApp");
@@ -1443,5 +1445,101 @@ describe("an open subtask is named in the blocked banner", () => {
       .find((el) => el.textContent.includes("SubtasksBlockingNotice"));
     expect(notice).toBeUndefined();
     expect(app().querySelector(".wcn-blocked")).toBeNull();
+  });
+});
+
+/*
+ * BL-034 item 7 — the composer, wired.
+ *
+ * Both halves of this feed existed behind the `activity` capability that no provider declared, so neither had
+ * ever rendered. The write half is the one that matters here: a post that is not awaited swallows its own
+ * rejection and looks exactly like a button nobody wired, which is how the subtask writer shipped broken.
+ */
+describe("the comment composer writes to the engine", () => {
+  const withActivity = (overrides) => projectionItem(Object.assign({
+    workItemCapabilities: ["planning", "execution", "subtasks", "activity"],
+    activity: []
+  }, overrides));
+
+  it("offers the composer on an open task", async () => {
+    await bootDetailPage(withActivity());
+
+    expect(app().querySelector("[data-wcn-comment-input]")).not.toBeNull();
+    expect(app().querySelector("[data-wcn-comment-post]")).not.toBeNull();
+  });
+
+  it("hides the composer on a closed task but still shows what was said", async () => {
+    await bootDetailPage(withActivity({
+      normalizedStatus: "Done",
+      taskLifecycle: "Done",
+      executionState: "notApplicable",
+      actions: [],
+      activity: [{ id: "C1", kind: "comment", text: "Kapanmadan önce söylenmiş", actor: "Deniz Koç", at: "2026-07-24T09:10:00+00:00" }]
+    }));
+
+    expect(app().querySelector("[data-wcn-comment-post]")).toBeNull();
+    // History is finished, not sealed.
+    expect(app().textContent).toContain("Kapanmadan önce söylenmiş");
+  });
+
+  it("posts the typed text to the engine and re-reads the projection", async () => {
+    const { posted } = await bootDetailPage(withActivity());
+
+    app().querySelector("[data-wcn-comment-input]").value = "Bütçe onayını bekliyoruz.";
+    app().querySelector("[data-wcn-comment-post]").click();
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+    /*
+     * CONTENT, not count: every bootDetailPage in this file leaves another delegated document listener behind, so
+     * one click reaches all of them and each posts through the CURRENT stub. What matters is that the click
+     * produced a post at all and that it carried the typed text — the "refuses an empty comment" case below is
+     * what proves a post is not unconditional.
+     */
+    expect(posted.length).toBeGreaterThan(0);
+    posted.forEach((entry) => {
+      expect(entry).toEqual({ taskId: TASK_ID, payload: { text: "Bütçe onayını bekliyoruz." } });
+    });
+  });
+
+  it("refuses an empty comment without troubling the engine", async () => {
+    const { posted } = await bootDetailPage(withActivity());
+
+    app().querySelector("[data-wcn-comment-input]").value = "   ";
+    app().querySelector("[data-wcn-comment-post]").click();
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+    expect(posted).toHaveLength(0);
+  });
+
+  it("refuses a comment past the length limit locally, and the server refuses it too", async () => {
+    // The client check is a courtesy that saves a round trip; the rule lives on the server (TaskCommentLimits).
+    const { posted } = await bootDetailPage(withActivity());
+
+    app().querySelector("[data-wcn-comment-input]").value = "x".repeat(2001);
+    app().querySelector("[data-wcn-comment-post]").click();
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+    expect(posted).toHaveLength(0);
+  });
+
+  it("renders an entry's time from its absolute instant, not from a server-sent day count", async () => {
+    // A "3 days ago" computed anywhere but here goes stale while the tab stays open.
+    await bootDetailPage(withActivity({
+      activity: [{ id: "C1", kind: "comment", text: "dün", actor: "Deniz Koç", at: "2026-07-24T09:10:00+00:00" }]
+    }));
+
+    const meta = app().querySelector(".wcn-audit-meta");
+    expect(meta).not.toBeNull();
+    expect(meta.textContent).toContain("Deniz Koç");
+    // TimeToday / TimeYesterday / TimeDaysAgo — whichever, it must be DERIVED and not blank.
+    expect(meta.textContent).toMatch(/Time(Today|Yesterday|DaysAgo)/);
+  });
+
+  it("names an author the server could not resolve, rather than printing nothing", async () => {
+    await bootDetailPage(withActivity({
+      activity: [{ id: "C1", kind: "comment", text: "anonim", at: "2026-07-24T09:10:00+00:00" }]
+    }));
+
+    expect(app().querySelector(".wcn-audit-meta").textContent).toContain("CommentAuthorUnknown");
   });
 });

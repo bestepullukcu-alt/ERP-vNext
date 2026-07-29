@@ -308,6 +308,6 @@ public sealed class TaskApprovalGateTests
         public Application.Features.Tasks.Providers.TaskWorkItemProvider Build()
             => new(new FakeTaskItemRepository(task), new FakePositionAssignmentRepository(),
                 new TaskLifecycleService(), new TaskAssignmentResolver(),
-                new FakeUserDisplayNameResolver(), new FakeChecklistRunRepository(), new FakeTaskApprovalService(), new FakeTaskDependencyRepository());
+                new FakeUserDisplayNameResolver(), new FakeChecklistRunRepository(), new FakeTaskApprovalService(), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository());
     }
 }

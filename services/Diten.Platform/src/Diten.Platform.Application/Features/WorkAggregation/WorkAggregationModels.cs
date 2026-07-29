@@ -288,7 +288,34 @@ public sealed record WorkItemProjectionDto(
     /// <c>blocked: false</c> object would make every unblocked item carry a blocked state.
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    WorkItemBlockedStateDto? BlockedState = null);
+    WorkItemBlockedStateDto? BlockedState = null,
+    /// <summary>
+    /// The activity feed. Container ⇔ the <c>activity</c> capability: declared and empty is a valid state (a task
+    /// nobody has commented on yet), declared-without-container and container-without-capability are both contract
+    /// errors.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemActivityEntryDto>? Activity = null);
+
+/// <summary>
+/// One entry in the activity feed. Today MOD-0024 emits only <c>kind: "comment"</c>: there is no lifecycle event
+/// log to draw from, and deriving a timeline from the four timestamps a task happens to carry
+/// (created/started/completed/cancelled) would silently omit accept, plan, claim, release and inquire. A partial
+/// history is worse than none, because it is read as complete.
+///
+/// <para><c>At</c> is ABSOLUTE, and there is deliberately no "3 days ago" field. A relative count computed on the
+/// server is already stale by the time it is rendered, and stays wrong for as long as the tab is open — the same
+/// defect class as a frozen "today".</para>
+/// </summary>
+public sealed record WorkItemActivityEntryDto(
+    string Id,
+    string Kind,
+    /// <summary>The comment text — what a person typed, so never a resource key.</summary>
+    string Text,
+    /// <summary>Author's name as recorded when it was written, or null when it could not be resolved.</summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? Actor,
+    DateTimeOffset At);
 
 /// <summary>
 /// One typed dependency edge. <c>State</c> is the OTHER task's state in the subtask vocabulary

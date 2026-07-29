@@ -806,6 +806,15 @@
   <data name="CommentPost" xml:space="preserve">
     <value>Gönder</value>
   </data>
+  <data name="CommentTextRequired" xml:space="preserve">
+    <value>Göndermeden önce bir şey yazın</value>
+  </data>
+  <data name="CommentTooLong" xml:space="preserve">
+    <value>Bir yorum en fazla {0} karakter olabilir</value>
+  </data>
+  <data name="CommentAuthorUnknown" xml:space="preserve">
+    <value>İsim bulunamadı</value>
+  </data>
   <data name="ToastCommentPosted" xml:space="preserve">
     <value>Yorum eklendi (mock)</value>
   </data>

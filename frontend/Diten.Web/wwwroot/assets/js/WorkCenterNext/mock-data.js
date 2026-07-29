@@ -344,15 +344,18 @@
             name: resolveLabel(entry.label) || entry.name || entry.id,
             size: entry.version ? `v${entry.version}` : ''
         })) : null;
-        // Canonical activity carries `at` (ISO-ish timestamp); the shell renders a
-        // relative "N days ago" from `ago`. Derive it once here so entries without an
-        // explicit `ago` don't surface as "undefined days ago".
+        /*
+         * Activity carries an ABSOLUTE `at`; "3 days ago" is computed where it is rendered.
+         *
+         * It used to be derived here, once, into a day count. That is the frozen-date class of bug: a projection
+         * held in memory while a tab stays open — or served from a cache — keeps saying "today" tomorrow. The
+         * server does not send a day count either, for the same reason.
+         *
+         * Parsed once here (fixtures write "2026-07-24 09:10", not ISO) and left as a timestamp.
+         */
         item.activity = (item.activity || []).map((entry) => {
-            if (entry.ago != null) { return entry; }
-            const at = entry.at ? new Date(String(entry.at).replace(' ', 'T')) : null;
-            const reference = referenceDate(provenance);
-            const ago = (at && !isNaN(at)) ? Math.max(0, Math.round((reference - at) / 86400000)) : 0;
-            return { ...entry, ago };
+            const parsed = entry.at ? new Date(String(entry.at).replace(' ', 'T')) : null;
+            return { ...entry, atMs: (parsed && !isNaN(parsed)) ? parsed.getTime() : null };
         });
         item.stages = item.processStages || null;
         item.timesheet = item.workItemCapabilities.includes('timeTracking')
@@ -421,6 +424,9 @@
         },
         tabFor,
         segmentFor,
+        // Exposed so the RENDER can measure "how long ago" against the same clock the rest of the surface uses:
+        // the showcase's frozen date for fixtures, the real one for real work.
+        referenceDate,
         getActions,
         setNowProvider,
         toPresentation,

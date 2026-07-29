@@ -71,6 +71,22 @@ public interface ITaskDependencyRepository
     Task DeleteAsync(Guid id, CancellationToken ct = default);
 }
 
+public interface ITaskCommentRepository
+{
+    Task<TaskComment> CreateAsync(TaskComment comment, CancellationToken ct = default);
+
+    /// <summary>
+    /// A task's comments, NEWEST FIRST and stably ordered (ties broken by id), because the composer sits at the
+    /// top of the feed and a wobbling order on equal timestamps reads as the list rearranging itself.
+    /// </summary>
+    Task<IReadOnlyList<TaskComment>> ListByTaskIdAsync(Guid taskItemId, CancellationToken ct = default);
+
+    /// <summary>Comments for a whole page of tasks in ONE read — the projection renders many tasks at once.</summary>
+    Task<IReadOnlyList<TaskComment>> ListByTaskIdsAsync(
+        IReadOnlyCollection<Guid> taskItemIds,
+        CancellationToken ct = default);
+}
+
 public interface ITaskWatcherRepository
 {
     Task<TaskWatcher> CreateAsync(TaskWatcher watcher, CancellationToken ct = default);

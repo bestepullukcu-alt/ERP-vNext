@@ -291,7 +291,7 @@ public sealed class TaskWorkItemProviderTests
             new TaskAssignmentResolver(),
             new FakeUserDisplayNameResolver(),
             new FakeChecklistRunRepository(),
-            new FakeTaskApprovalService().Pending(instanceId), new FakeTaskDependencyRepository());
+            new FakeTaskApprovalService().Pending(instanceId), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository());
 
         var items = await provider.GetWorkItemsAsync(Actor(), CancellationToken.None);
 
@@ -318,7 +318,7 @@ public sealed class TaskWorkItemProviderTests
             new TaskLifecycleService(),
             new TaskAssignmentResolver(),
             new FakeUserDisplayNameResolver(),
-            new FakeChecklistRunRepository(), new FakeTaskApprovalService(), new FakeTaskDependencyRepository());
+            new FakeChecklistRunRepository(), new FakeTaskApprovalService(), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository());
 
     private static WorkItemActor Actor() => new(
         TaskTestData.Me,

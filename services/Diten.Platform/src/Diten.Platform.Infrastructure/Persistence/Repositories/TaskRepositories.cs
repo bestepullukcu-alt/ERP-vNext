@@ -152,6 +152,57 @@ public sealed class TaskDependencyRepository : TenantRepository<TaskDependency>,
     }
 }
 
+/// <summary>
+/// Task comments. Its own collection (see <see cref="TaskComment"/> for why it is not embedded).
+/// </summary>
+public sealed class TaskCommentRepository : TenantRepository<TaskComment>, ITaskCommentRepository
+{
+    public TaskCommentRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, "task_comments")
+    {
+    }
+
+    public async Task<IReadOnlyList<TaskComment>> ListByTaskIdAsync(
+        Guid taskItemId,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<TaskComment>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskComment>.Filter.Eq(x => x.TaskItemId, taskItemId));
+        return Order(await Collection.Find(filter).ToListAsync(ct));
+    }
+
+    public async Task<IReadOnlyList<TaskComment>> ListByTaskIdsAsync(
+        IReadOnlyCollection<Guid> taskItemIds,
+        CancellationToken ct = default)
+    {
+        if (taskItemIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<TaskComment>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskComment>.Filter.In(x => x.TaskItemId, taskItemIds));
+        return Order(await Collection.Find(filter).ToListAsync(ct));
+    }
+
+    /*
+     * Sorted IN MEMORY, deliberately (BL-030). CreatedAt is a DateTimeOffset, which this driver stores as a BSON
+     * ARRAY [ticks, offsetMinutes]; a server-side sort that touches a second date key fails at runtime with
+     * "cannot sort with keys that are parallel arrays", and the tie-break on Id below would be exactly that kind
+     * of multi-key sort. A comment list is bounded by one task's conversation, so ordering it here costs nothing.
+     *
+     * Newest first, because the composer sits at the top of the feed. The tie-break on Id makes it STABLE: two
+     * comments written in the same instant must not swap places between reads.
+     */
+    private static IReadOnlyList<TaskComment> Order(IEnumerable<TaskComment> comments)
+        => comments
+            .OrderByDescending(comment => comment.CreatedAt)
+            .ThenByDescending(comment => comment.Id)
+            .ToList();
+}
+
 public sealed class TaskWatcherRepository : TenantRepository<TaskWatcher>, ITaskWatcherRepository
 {
     public TaskWatcherRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)

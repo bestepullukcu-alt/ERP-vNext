@@ -223,7 +223,7 @@ public sealed class TaskGatesAndSubtaskStatusTests
             new TaskAssignmentResolver(),
             new FakeUserDisplayNameResolver(),
             new FakeChecklistRunRepository(),
-            approvals ?? new FakeTaskApprovalService(), new FakeTaskDependencyRepository());
+            approvals ?? new FakeTaskApprovalService(), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository());
 
         var items = await provider.GetWorkItemsAsync(
             new WorkItemActor(TaskTestData.Me, actorIsPlatform, new HashSet<string>()),

@@ -806,6 +806,15 @@
   <data name="CommentPost" xml:space="preserve">
     <value>Enviar</value>
   </data>
+  <data name="CommentTextRequired" xml:space="preserve">
+    <value>Escribe algo antes de publicar</value>
+  </data>
+  <data name="CommentTooLong" xml:space="preserve">
+    <value>Un comentario puede tener como máximo {0} caracteres</value>
+  </data>
+  <data name="CommentAuthorUnknown" xml:space="preserve">
+    <value>Nombre no disponible</value>
+  </data>
   <data name="ToastCommentPosted" xml:space="preserve">
     <value>Comentario enviado (mock)</value>
   </data>

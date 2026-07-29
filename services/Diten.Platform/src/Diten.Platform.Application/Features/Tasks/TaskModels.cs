@@ -107,12 +107,32 @@ public static class TaskReasonCodes
     /// second entry in the client's message map — the one nobody adds is the one that reaches a user raw.</para>
     /// </summary>
     public const string SubtaskBlocked = "SUBTASK_BLOCKED";
+
+    /// <summary>
+    /// The task is closed, so nothing more can be said on it. The composer is already hidden for a terminal task,
+    /// but hiding a control is presentation and refusing the write is the rule — three separate gaps of exactly
+    /// this shape have been closed in this module already.
+    /// </summary>
+    public const string CommentTaskClosed = "TASK_COMMENT_TASK_CLOSED";
+
+    /// <summary>Empty, whitespace-only, or longer than <see cref="TaskCommentLimits.MaxTextLength"/>.</summary>
+    public const string CommentTextInvalid = "TASK_COMMENT_TEXT_INVALID";
 }
 
 /// <summary>
 /// Notification event codes this module declares in its manifest (pack §14). Email only — there is no in-app
 /// channel (<c>NotificationChannelCode { Email = 0 }</c>); the header bell is BL-025.
 /// </summary>
+/// <summary>Shared between the handler and its tests, so the limit cannot be asserted at a value nobody enforces.</summary>
+public static class TaskCommentLimits
+{
+    /// <summary>
+    /// 2000 characters — the same ceiling the executable contract puts on a business-context text field. Long
+    /// enough for a real explanation, short enough that one paste cannot bloat every read of the task.
+    /// </summary>
+    public const int MaxTextLength = 2000;
+}
+
 public static class TaskNotificationEvents
 {
     // NOTE: event codes are validated against ^[a-z0-9]+(\.[a-z0-9]+)*$ — HYPHENS ARE NOT ALLOWED (unlike
@@ -237,6 +257,12 @@ public sealed record AddChecklistItemRequest(
 /// deliberately not expressible (pack §12 Y3): MOD-0024 may manage these edges only because it owns both ends.
 /// </summary>
 public sealed record AddTaskDependencyRequest(Guid DependsOnTaskItemId, TaskDependencyType DependencyType);
+
+/// <summary>
+/// Post a comment. Text only: no mentions are parsed, because there is no notification channel to deliver one
+/// (WC-4) and a mention nobody is told about is a promise the system does not keep.
+/// </summary>
+public sealed record AddTaskCommentRequest(string Text);
 
 /// <summary>Create from a template; the template supplies the shape and (optionally) the checklist.</summary>
 public sealed record CreateTaskFromTemplateRequest(

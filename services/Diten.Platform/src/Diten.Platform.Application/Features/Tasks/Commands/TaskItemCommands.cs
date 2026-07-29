@@ -115,3 +115,14 @@ public sealed record RemoveTaskDependencyCommand(
     Guid TaskItemId,
     Guid DependencyId,
     string CorrelationId) : IRequest<Response<NoContent>>;
+
+// ── Comments (BL-034 item 7) ─────────────────────────────────────────────────
+
+/// <summary>
+/// Add a comment. There is no Update or Delete counterpart, and that is a decision rather than an omission: a
+/// comment is a record of what was said, and removing it after someone has acted on it rewrites the past.
+/// </summary>
+public sealed record AddTaskCommentCommand(
+    Guid TaskItemId,
+    AddTaskCommentRequest Request,
+    string CorrelationId) : IRequest<Response<Guid>>;

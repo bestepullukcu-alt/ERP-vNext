@@ -60,6 +60,15 @@
      */
     const DEPENDENCY_TYPES = ['FinishToStart', 'FinishToFinish', 'StartToStart', 'StartToFinish'];
     const DEPENDENCY_DIRECTIONS = ['pred', 'succ'];
+    /*
+     * One feed, two kinds — the shape SAP, Oracle and ServiceNow all use: an audit trail and the notes people
+     * write are read together, because "what happened" and "what someone said about it" answer one question.
+     *
+     * MOD-0024 emits only `comment` today. `event` is declared because the fixtures demonstrate it and the
+     * renderer already handles it, but no provider produces one: there is no lifecycle event log, and deriving a
+     * timeline from the timestamps a task happens to carry would silently omit accept/plan/claim/release/inquire.
+     */
+    const ACTIVITY_KINDS = ['comment', 'event'];
 
     /*
      * WHO a work item is waiting on: a TYPED identity, or nothing at all.
@@ -243,6 +252,20 @@
         if (fixture.priority !== undefined && fixture.priority !== null && !PRIORITIES.includes(fixture.priority)) {
             push(errors, fixture, 'PRIORITY_INVALID', 'priority');
         }
+        /*
+         * Activity entries. `at` is ABSOLUTE and a pre-computed "N days ago" is forbidden outright: whoever
+         * computes it freezes it, and a projection that sat in a cache or a tab left open overnight then says
+         * "today" about yesterday. Same defect class as the frozen showcase date.
+         */
+        (fixture.activity || []).forEach((entry, index) => {
+            const path = `activity[${index}]`;
+            if (!ACTIVITY_KINDS.includes(entry.kind)) { push(errors, fixture, 'ACTIVITY_KIND_INVALID', `${path}.kind`); }
+            if (!entry.at) { push(errors, fixture, 'ACTIVITY_TIMESTAMP_REQUIRED', `${path}.at`); }
+            if (entry.ago !== undefined) { push(errors, fixture, 'ACTIVITY_RELATIVE_TIME_FORBIDDEN', `${path}.ago`); }
+            if (entry.kind === 'comment' && !String(entry.text || '').trim()) {
+                push(errors, fixture, 'ACTIVITY_COMMENT_TEXT_REQUIRED', `${path}.text`);
+            }
+        });
         (fixture.dependencies || []).forEach((dependency, index) => {
             const path = `dependencies[${index}]`;
             if (!dependency.id) { push(errors, fixture, 'DEPENDENCY_ID_REQUIRED', `${path}.id`); }
@@ -362,7 +385,7 @@
     };
 
     global.WorkCenterNextContract = {
-        enums: { WORK_INTENTS, ASSIGNMENT_MODES, OWNERSHIP_STATES, ADMISSION_STATES, NORMALIZED_STATUSES, TASK_LIFECYCLES, EXECUTION_STATES, TIMER_STATES, SYSTEM_STATES, ACTION_DEPTHS, REVIEW_MEETING_REQUIREMENTS, WAITING_CONTEXT_TYPES, SUBTASK_STATUSES, PRIORITIES, DEPENDENCY_TYPES, DEPENDENCY_DIRECTIONS, CAPABILITIES, VALUE_TYPES },
+        enums: { WORK_INTENTS, ASSIGNMENT_MODES, OWNERSHIP_STATES, ADMISSION_STATES, NORMALIZED_STATUSES, TASK_LIFECYCLES, EXECUTION_STATES, TIMER_STATES, SYSTEM_STATES, ACTION_DEPTHS, REVIEW_MEETING_REQUIREMENTS, WAITING_CONTEXT_TYPES, SUBTASK_STATUSES, PRIORITIES, DEPENDENCY_TYPES, DEPENDENCY_DIRECTIONS, ACTIVITY_KINDS, CAPABILITIES, VALUE_TYPES },
         limits: LIMITS,
         isLabel,
         isSafeLink,

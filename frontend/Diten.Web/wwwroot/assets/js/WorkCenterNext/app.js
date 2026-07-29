@@ -42,6 +42,9 @@
     const PRIORITY_KEY = { High: 'PriorityHigh', Medium: 'PriorityMedium', Low: 'PriorityLow' };
     // Most-urgent-first, for sorting and for the filter's option order.
     const PRIORITY_ORDER = ['High', 'Medium', 'Low'];
+    // Mirrors TaskCommentLimits.MaxTextLength. Checked here so an over-long comment is refused before a round
+    // trip; the server refuses it too, because a client-side check is a courtesy and not a rule.
+    const COMMENT_MAX_LENGTH = 2000;
     const STATUS_KIND = { 'Pending': 'primary', 'In Progress': 'info', 'Waiting': 'warning', 'Done': 'success', 'Cancelled': 'secondary' };
     const STATUS_KEY = { 'Pending': 'StatusPending', 'In Progress': 'StatusInProgress', 'Waiting': 'StatusWaiting', 'Done': 'StatusDone', 'Cancelled': 'StatusCancelled' };
     const TYPE_KEY = { approval: 'TypeApproval', task: 'TypeTask', review: 'TypeReview', issue: 'TypeIssue', exception: 'TypeException', meetingInvite: 'ChipMeetingInvite' };
@@ -239,10 +242,23 @@
         }
     };
 
-    const agoLabel = (ago) => {
-        if (ago === 0) { return t('TimeToday'); }
-        if (ago === 1) { return t('TimeYesterday'); }
-        return tf('TimeDaysAgo', ago);
+    /*
+     * "How long ago", measured AT RENDER TIME from an absolute timestamp.
+     *
+     * It used to take a pre-computed day count. Whoever computed it — the mapper, or worse the server — froze it:
+     * a tab left open overnight, or a cached projection, would still say "today". This is the same class of defect
+     * as the frozen showcase date, and the cure is the same: keep the absolute instant, derive the words late.
+     *
+     * The clock is provenance-aware, so showcase entries are measured from the showcase's date and real ones from
+     * the real today.
+     */
+    const agoLabel = (atMs, provenance) => {
+        if (atMs === null || atMs === undefined) { return ''; }
+        const reference = data.referenceDate(provenance);
+        const days = Math.max(0, Math.round((reference - atMs) / 86400000));
+        if (days === 0) { return t('TimeToday'); }
+        if (days === 1) { return t('TimeYesterday'); }
+        return tf('TimeDaysAgo', days);
     };
 
     // actions[] is the single effective command projection. The browser never
@@ -1905,7 +1921,7 @@
                 <span class="wcn-audit-dot"><i class="bx ${isComment ? 'bx-message-rounded' : 'bx-git-commit'}"></i></span>
                 <div class="wcn-audit-body">
                     <span class="wcn-audit-text">${esc(text)}</span>
-                    <span class="wcn-audit-meta">${esc(entry.actor)} · ${esc(agoLabel(entry.ago))}</span>
+                    <span class="wcn-audit-meta">${esc(entry.actor || t('CommentAuthorUnknown'))}${entry.atMs ? ` · ${esc(agoLabel(entry.atMs, item.provenance))}` : ''}</span>
                 </div>
             </li>`;
         }).join('');
@@ -1940,8 +1956,8 @@
             : '';
         // Capability declared but empty is a VALID state and gets an explanation instead of vanishing — the same
         // distinction renderChecklist makes. Not declared at all means the provider does not offer activity, and
-        // then there is nothing to head. (Posting a comment is not built yet — BL-034 item 7 — so renderComposer
-        // stays behind its own gate.)
+        // then there is nothing to head. The composer keeps its own gate because it is the WRITE half: a closed
+        // task still shows its feed and no longer offers the box.
         const activitySection = hasCap(item, 'activity')
             ? `<div class="wcn-detail-section">
                 <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('ActivityLabel'))}</h6>
@@ -3228,6 +3244,32 @@
         await afterPhase2Write(result, 'ToastActionApplied', subtask.title);
     };
 
+    const postComment = async (taskId, text) => {
+        const value = String(text || '').trim();
+        if (!value) { toast(t('CommentTextRequired'), 'error'); return; }
+        if (value.length > COMMENT_MAX_LENGTH) { toast(tf('CommentTooLong', COMMENT_MAX_LENGTH), 'error'); return; }
+
+        const item = itemById(taskId);
+        if (!isRealTaskItem(item)) {
+            /*
+             * Showcase items have no engine behind them, so a comment on one is a demonstration and stays local.
+             * Real items go to the server and nothing is applied optimistically — the refreshed projection is the
+             * only source of what the feed now says.
+             */
+            if (item) {
+                item.activity.unshift({
+                    actor: data.currentUser.name, kind: 'comment', text: value, atMs: data.referenceDate(item.provenance)
+                });
+                render();
+                toast(t('ToastCommentPosted'));
+            }
+            return;
+        }
+
+        const result = await global.TasksApi.addComment(taskId, { text: value });
+        await afterPhase2Write(result, 'ToastCommentPosted');
+    };
+
     const addSubtask = async (parentId, title) => {
         const text = String(title || '').trim();
         if (!text) { toast(t('SubtaskTitleRequired'), 'error'); return; }
@@ -4197,10 +4239,10 @@
         }
         const commentEl = event.target.closest('[data-wcn-comment-post]');
         if (commentEl) {
-            const it = itemById(commentEl.getAttribute('data-wcn-comment-post'));
             const inp = document.querySelector('#wcnApp [data-wcn-comment-input]');
-            const val = inp && inp.value.trim();
-            if (it && val) { it.activity.push({ actor: data.currentUser.name, kind: 'comment', text: val, ago: 0 }); render(); toast(t('ToastCommentPosted')); }
+            // AWAITED. An un-awaited promise here would swallow its own rejection, and a failed post would look
+            // exactly like a button that was never wired — which is how the subtask writer shipped broken.
+            await postComment(commentEl.getAttribute('data-wcn-comment-post'), inp && inp.value);
             return;
         }
         const attachEl = event.target.closest('[data-wcn-attach]');

@@ -806,6 +806,15 @@
   <data name="CommentPost" xml:space="preserve">
     <value>نشر</value>
   </data>
+  <data name="CommentTextRequired" xml:space="preserve">
+    <value>اكتب شيئًا قبل النشر</value>
+  </data>
+  <data name="CommentTooLong" xml:space="preserve">
+    <value>يمكن أن يبلغ التعليق {0} حرفًا كحد أقصى</value>
+  </data>
+  <data name="CommentAuthorUnknown" xml:space="preserve">
+    <value>الاسم غير متاح</value>
+  </data>
   <data name="ToastCommentPosted" xml:space="preserve">
     <value>نُشر التعليق (تجريبي)</value>
   </data>

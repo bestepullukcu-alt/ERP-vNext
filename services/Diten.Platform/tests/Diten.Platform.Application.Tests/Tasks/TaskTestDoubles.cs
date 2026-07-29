@@ -19,6 +19,9 @@ internal static class TaskTestData
     internal static readonly Guid Me = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
     internal static readonly Guid Rival = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
 
+    /// <summary>The name the resolver hands back for <see cref="Me"/>, so a snapshot can be told from a re-resolve.</summary>
+    internal const string MeDisplayName = "Ali Tufanoğlu";
+
     /// <summary>
     /// A THIRD person. Handing work on needs one: with only two users, "the holder", "the requester" and "the new
     /// assignee" collapse into each other and an authority rule can pass by coincidence.
@@ -333,6 +336,36 @@ internal sealed class FakeTaskDependencyRepository : ITaskDependencyRepository
     }
 }
 
+/// <summary>
+/// In-memory comments. It ORDERS like the real repository does (newest first, ties broken by id) — a double that
+/// returned insertion order would let an ordering defect pass every test that reads the feed.
+/// </summary>
+internal sealed class FakeTaskCommentRepository : ITaskCommentRepository
+{
+    private readonly List<TaskComment> _comments = [];
+
+    public FakeTaskCommentRepository(params TaskComment[] seed) => _comments.AddRange(seed);
+
+    public IReadOnlyList<TaskComment> Comments => _comments;
+
+    public Task<TaskComment> CreateAsync(TaskComment comment, CancellationToken ct = default)
+    {
+        _comments.Add(comment);
+        return Task.FromResult(comment);
+    }
+
+    public Task<IReadOnlyList<TaskComment>> ListByTaskIdAsync(Guid taskItemId, CancellationToken ct = default)
+        => Task.FromResult(Order(_comments.Where(c => c.TaskItemId == taskItemId)));
+
+    public Task<IReadOnlyList<TaskComment>> ListByTaskIdsAsync(
+        IReadOnlyCollection<Guid> taskItemIds,
+        CancellationToken ct = default)
+        => Task.FromResult(Order(_comments.Where(c => taskItemIds.Contains(c.TaskItemId))));
+
+    private static IReadOnlyList<TaskComment> Order(IEnumerable<TaskComment> comments)
+        => comments.OrderByDescending(c => c.CreatedAt).ThenByDescending(c => c.Id).ToList();
+}
+
 internal sealed class FakeTaskFieldDefinitionRepository(params TaskFieldDefinition[] seed)
     : ITaskFieldDefinitionRepository
 {
@@ -539,16 +572,29 @@ internal sealed class FakeTaskApprovalService : Diten.Platform.Application.Featu
 }
 
 /// <summary>Routes the one command under test to the real handler; anything else is a mistake, loudly.</summary>
+/// <summary>
+/// Routes the commands under test to their REAL handlers, so the command a CONTROLLER builds is the one the
+/// handler receives — the URL→command mapping is part of what the endpoint tests are for. Anything unexpected
+/// throws rather than being quietly swallowed.
+/// </summary>
 internal sealed class DirectMediator : IMediator
 {
-    private readonly TransitionTaskItemHandler _handler;
+    private readonly TransitionTaskItemHandler? _transition;
+    private readonly AddTaskCommentHandler? _comment;
 
-    public DirectMediator(TransitionTaskItemHandler handler) => _handler = handler;
+    public DirectMediator(TransitionTaskItemHandler handler) => _transition = handler;
+
+    public DirectMediator(AddTaskCommentHandler handler) => _comment = handler;
 
     public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken ct = default)
-        => request is TransitionTaskItemCommand command
-            ? (Task<TResponse>)(object)_handler.Handle(command, ct)
-            : throw new InvalidOperationException($"Unexpected request {request.GetType().Name}.");
+        => request switch
+        {
+            TransitionTaskItemCommand command when _transition is not null
+                => (Task<TResponse>)(object)_transition.Handle(command, ct),
+            AddTaskCommentCommand command when _comment is not null
+                => (Task<TResponse>)(object)_comment.Handle(command, ct),
+            _ => throw new InvalidOperationException($"Unexpected request {request.GetType().Name}.")
+        };
 
     public Task<object?> Send(object request, CancellationToken ct = default)
         => throw new NotSupportedException();
@@ -570,7 +616,6 @@ internal sealed class DirectMediator : IMediator
         => Task.CompletedTask;
 }
 
-/// <summary>The approval gate is not what is under test here, so it always lets the transition through.</summary>
 internal sealed class PassingWorkflowGate : IWorkflowTransitionGate
 {
     public Task<WorkflowGateResult> EvaluateAsync(WorkflowGateRequest request, CancellationToken ct = default)

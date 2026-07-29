@@ -806,6 +806,15 @@
   <data name="CommentPost" xml:space="preserve">
     <value>发送</value>
   </data>
+  <data name="CommentTextRequired" xml:space="preserve">
+    <value>发布前请输入内容</value>
+  </data>
+  <data name="CommentTooLong" xml:space="preserve">
+    <value>评论最多 {0} 个字符</value>
+  </data>
+  <data name="CommentAuthorUnknown" xml:space="preserve">
+    <value>姓名不可用</value>
+  </data>
   <data name="ToastCommentPosted" xml:space="preserve">
     <value>评论已发送（模拟）</value>
   </data>

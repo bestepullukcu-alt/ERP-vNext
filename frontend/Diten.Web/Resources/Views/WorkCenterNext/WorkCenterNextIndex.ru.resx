@@ -806,6 +806,15 @@
   <data name="CommentPost" xml:space="preserve">
     <value>Отправить</value>
   </data>
+  <data name="CommentTextRequired" xml:space="preserve">
+    <value>Напишите что-нибудь перед отправкой</value>
+  </data>
+  <data name="CommentTooLong" xml:space="preserve">
+    <value>Комментарий может содержать не более {0} символов</value>
+  </data>
+  <data name="CommentAuthorUnknown" xml:space="preserve">
+    <value>Имя недоступно</value>
+  </data>
   <data name="ToastCommentPosted" xml:space="preserve">
     <value>Комментарий отправлен (макет)</value>
   </data>

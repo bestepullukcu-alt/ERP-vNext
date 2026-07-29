@@ -138,6 +138,15 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiCreateFromTemplate()
         => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/from-template", readBody: true);
 
+    /// <summary>
+    /// Post a comment. Its own resource under a task, so it is NOT a transition code and not in
+    /// TaskTransitionRoutes — but it still has to be listed here explicitly, or the composer posts into a 404 that
+    /// never leaves the web tier. That is how `inquire` shipped unreachable.
+    /// </summary>
+    [HttpPost("api/{id:guid}/comments")]
+    public Task<IActionResult> ApiAddComment(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/{id}/comments", readBody: true);
+
     // ── Dependencies (BL-028) ────────────────────────────────────────────────
     //
     // Not transitions, so they are NOT in TaskTransitionRoutes: these are their own resource under a task

@@ -232,6 +232,23 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    // ── Comments (BL-034 item 7) ─────────────────────────────────────────────
+
+    /// <summary>
+    /// Post a comment. Guarded by READ, not Update: commenting is not a change to the work, and the person asking
+    /// "why is this still waiting?" is usually not the one holding it.
+    ///
+    /// <para>There is deliberately no PUT and no DELETE. A comment is immutable — see <c>TaskComment</c>.</para>
+    /// </summary>
+    [HttpPost("{id:guid}/comments")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> AddComment(
+        Guid id, [FromBody] AddTaskCommentRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new AddTaskCommentCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     // ── Dependencies (BL-028, pack §12 Y3) ───────────────────────────────────
 
     /// <summary>

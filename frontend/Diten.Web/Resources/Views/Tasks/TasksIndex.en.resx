@@ -85,6 +85,8 @@
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>A required checklist item is still unticked, so the task cannot be completed.</value></data>
   <data name="ErrorDependencyBlocked" xml:space="preserve"><value>A task this one depends on is not finished yet, so it cannot move forward.</value></data>
   <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>A subtask is still open, so this task cannot be completed yet.</value></data>
+  <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>This task is closed, so it can no longer be commented on.</value></data>
+  <data name="ErrorCommentTextInvalid" xml:space="preserve"><value>A comment cannot be empty and must be at most 2000 characters.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>The task is waiting for the approver's decision.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Only the person who requested this task can cancel it. If you do not want the work, return it instead.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Say what the task is waiting for.</value></data>

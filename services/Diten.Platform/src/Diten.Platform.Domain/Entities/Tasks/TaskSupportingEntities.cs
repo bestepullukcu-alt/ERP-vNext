@@ -48,6 +48,32 @@ public sealed class TaskDependency : TenantScopedEntity
 }
 
 /// <summary>
+/// A comment on a task (BL-034 item 7). Its OWN collection, not an array on <see cref="TaskItem"/>: an embedded
+/// list would make every task read carry the whole conversation, and <c>UpdateTaskItemRequest</c> is a FULL
+/// REPLACE — a writer that forgot to round-trip the array would delete the history. That has happened here before.
+///
+/// <para><b>Immutable by design.</b> There is no edit and no delete, and no endpoint for either. ServiceNow work
+/// notes and SAP workflow notes behave the same way: once somebody has acted on what a comment said, removing it
+/// rewrites the past. If retraction is ever needed it arrives as a "withdrawn" MARK, never as a deletion.</para>
+///
+/// <para>The author's display name is COPIED at write time rather than resolved on read. A comment is a record of
+/// what was said and by whom at that moment; re-resolving would silently rename the speaker when a person is
+/// renamed, and would also make reading a task depend on AuthService being up.</para>
+/// </summary>
+public sealed class TaskComment : TenantScopedEntity
+{
+    public required Guid TaskItemId { get; set; }
+
+    /// <summary>The text the user typed. Never a resource key — a person wrote it.</summary>
+    public required string Text { get; set; }
+
+    public Guid? AuthorUserId { get; set; }
+
+    /// <summary>Snapshot of the author's name, or null when it could not be resolved (never a GUID).</summary>
+    public string? AuthorDisplayName { get; set; }
+}
+
+/// <summary>
 /// Watcher/consultant participation. Grants VISIBILITY only — never action rights (pack §12 K3, OD-4:
 /// summary + read-only). Phase 1 persists it; the "İzlediklerim" filter is a later phase.
 /// </summary>

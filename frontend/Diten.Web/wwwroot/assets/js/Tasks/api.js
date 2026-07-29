@@ -46,6 +46,9 @@
         // MOD-0024's own refusals.
         TASK_CONCURRENCY_CONFLICT: 'errorConcurrencyRefreshed',
         CHECKLIST_INCOMPLETE: 'errorChecklistIncomplete',
+        // Commenting on a closed task, and a comment that is empty or over the length limit.
+        TASK_COMMENT_TASK_CLOSED: 'errorCommentTaskClosed',
+        TASK_COMMENT_TEXT_INVALID: 'errorCommentTextInvalid',
         APPROVAL_PENDING: 'errorApprovalPending',
         // An unmet predecessor. Same string the PROJECTION uses to disable the button, deliberately: the greyed
         // control and this refusal are one fact seen from two sides.
@@ -84,6 +87,7 @@
         'CHECKLIST_INCOMPLETE',
         'DEPENDENCY_BLOCKED',
         'SUBTASK_BLOCKED',
+        'TASK_COMMENT_TASK_CLOSED',
         'WORKFLOW_PENDING_APPROVAL',
         'WORKFLOW_WAITING_EVIDENCE',
         'WORKFLOW_REJECTED',
@@ -147,6 +151,8 @@
         setChecklistItemState: (taskId, payload) =>
             request('POST', `/${taskId}/checklist/items/state`, payload),
         addChecklistItem: (taskId, payload) => request('POST', `/${taskId}/checklist/items`, payload),
+        // Comments are POST-only, deliberately: they are immutable, so there is no update or delete to call.
+        addComment: (taskId, payload) => request('POST', `/${taskId}/comments`, payload),
         createFromTemplate: (payload) => request('POST', '/from-template', payload)
     };
 })(typeof window !== 'undefined' ? window : globalThis);
