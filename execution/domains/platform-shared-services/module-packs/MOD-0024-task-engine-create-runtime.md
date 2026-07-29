@@ -565,8 +565,26 @@ proxy returns 503 — a release blocker.
 > system the Task Center deep-links to. A subtask appears BOTH as its own row (it is assigned to someone) and
 > inside its parent's `subtasks` container, which carries `parentTaskItemId` so the shell can show the context.
 >
-> **Open subtasks do NOT block the parent.** Blocking belongs to the checklist alone; two competing mechanisms
-> make "why can't I finish this?" unanswerable. Guarded by a regression test.
+> ~~**Open subtasks do NOT block the parent.** Blocking belongs to the checklist alone; two competing mechanisms
+> make "why can't I finish this?" unanswerable. Guarded by a regression test.~~
+>
+> **REVERSED by the capability owner, 2026-07-28; built 2026-07-29 (`e531b24b`) — BL-035.** An open subtask now
+> BLOCKS the parent's completion (409 + `SUBTASK_BLOCKED`); a **cancelled** subtask does not count, or work that
+> was called off would lock the parent forever. Rationale for the reversal: *"the work was split in three, two
+> were not done, but the whole is complete"* is an incoherent sentence — a subtask is a DECOMPOSITION of the
+> work, not an auxiliary list, and that is the distinction the original ruling turned on.
+>
+> The original objection — two competing mechanisms leave "why can't I finish this?" unanswerable — was valid
+> when it was written, because there was no blocker list. `blockedState.blockers[]` (BL-028) now names every
+> blocker with its identity and the action it stops, so the question is answerable with both mechanisms live.
+> The order is contractual: **dependency blockers first, subtask blockers second**, in the projection AND in the
+> handler, so the disabled button and the 409 never blame different things.
+>
+> International practice is split and was weighed: Jira/Asana warn, ServiceNow blocks, MS Project derives the
+> parent's state from its children. **Blocking** was chosen.
+>
+> The regression test that guarded the old rule was replaced by tests asserting the new one; removing the
+> handler rule drops 4 tests, reversing the blocker order drops 1.
 >
 > **Parent cancellation cascades to OPEN children** (Open/Planned/InProgress/Waiting/PendingReview → Cancelled),
 > and leaves `Done`/`Cancelled` children untouched — a subtask exists to serve its parent, so leaving it open
