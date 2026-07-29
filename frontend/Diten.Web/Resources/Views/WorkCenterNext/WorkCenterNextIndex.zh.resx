@@ -1313,6 +1313,42 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>暂无清单项。</value>
   </data>
+  <data name="SubtaskAddDetailed" xml:space="preserve">
+    <value>详细添加</value>
+  </data>
+  <data name="SubtaskCreateTitle" xml:space="preserve">
+    <value>新建子任务</value>
+  </data>
+  <data name="SubtaskCreateSubmit" xml:space="preserve">
+    <value>创建子任务</value>
+  </data>
+  <data name="SubtaskCreateParentFixed" xml:space="preserve">
+    <value>将在你当前查看的任务下创建。</value>
+  </data>
+  <data name="SubtaskAssignToMe" xml:space="preserve">
+    <value>我</value>
+  </data>
+  <data name="SubtaskFieldPriority" xml:space="preserve">
+    <value>优先级</value>
+  </data>
+  <data name="SubtaskFieldDescription" xml:space="preserve">
+    <value>描述</value>
+  </data>
+  <data name="SubtaskCancel" xml:space="preserve">
+    <value>取消子任务</value>
+  </data>
+  <data name="SubtaskCancelAria" xml:space="preserve">
+    <value>取消子任务：{0}</value>
+  </data>
+  <data name="SubtaskCancelConfirm" xml:space="preserve">
+    <value>取消子任务“{0}”？它会保留在历史记录中，并不再是待办工作。</value>
+  </data>
+  <data name="SubtaskCancelConfirmYes" xml:space="preserve">
+    <value>取消它</value>
+  </data>
+  <data name="ToastSubtaskCancelled" xml:space="preserve">
+    <value>子任务已取消：{0}</value>
+  </data>
   <data name="SubtaskSave" xml:space="preserve">
     <value>保存</value>
   </data>

@@ -1313,6 +1313,42 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>No checklist items yet.</value>
   </data>
+  <data name="SubtaskAddDetailed" xml:space="preserve">
+    <value>Add in detail</value>
+  </data>
+  <data name="SubtaskCreateTitle" xml:space="preserve">
+    <value>New subtask</value>
+  </data>
+  <data name="SubtaskCreateSubmit" xml:space="preserve">
+    <value>Create subtask</value>
+  </data>
+  <data name="SubtaskCreateParentFixed" xml:space="preserve">
+    <value>This will be created under the task you are viewing.</value>
+  </data>
+  <data name="SubtaskAssignToMe" xml:space="preserve">
+    <value>Me</value>
+  </data>
+  <data name="SubtaskFieldPriority" xml:space="preserve">
+    <value>Priority</value>
+  </data>
+  <data name="SubtaskFieldDescription" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="SubtaskCancel" xml:space="preserve">
+    <value>Cancel subtask</value>
+  </data>
+  <data name="SubtaskCancelAria" xml:space="preserve">
+    <value>Cancel subtask: {0}</value>
+  </data>
+  <data name="SubtaskCancelConfirm" xml:space="preserve">
+    <value>Cancel the subtask "{0}"? It stays in the history and stops being work.</value>
+  </data>
+  <data name="SubtaskCancelConfirmYes" xml:space="preserve">
+    <value>Cancel it</value>
+  </data>
+  <data name="ToastSubtaskCancelled" xml:space="preserve">
+    <value>Subtask cancelled: {0}</value>
+  </data>
   <data name="SubtaskSave" xml:space="preserve">
     <value>Save</value>
   </data>

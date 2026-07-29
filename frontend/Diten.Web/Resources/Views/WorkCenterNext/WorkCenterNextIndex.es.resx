@@ -1313,6 +1313,42 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Aún no hay elementos de verificación.</value>
   </data>
+  <data name="SubtaskAddDetailed" xml:space="preserve">
+    <value>Añadir con detalle</value>
+  </data>
+  <data name="SubtaskCreateTitle" xml:space="preserve">
+    <value>Nueva subtarea</value>
+  </data>
+  <data name="SubtaskCreateSubmit" xml:space="preserve">
+    <value>Crear subtarea</value>
+  </data>
+  <data name="SubtaskCreateParentFixed" xml:space="preserve">
+    <value>Se creará bajo la tarea que estás viendo.</value>
+  </data>
+  <data name="SubtaskAssignToMe" xml:space="preserve">
+    <value>Yo</value>
+  </data>
+  <data name="SubtaskFieldPriority" xml:space="preserve">
+    <value>Prioridad</value>
+  </data>
+  <data name="SubtaskFieldDescription" xml:space="preserve">
+    <value>Descripción</value>
+  </data>
+  <data name="SubtaskCancel" xml:space="preserve">
+    <value>Cancelar subtarea</value>
+  </data>
+  <data name="SubtaskCancelAria" xml:space="preserve">
+    <value>Cancelar subtarea: {0}</value>
+  </data>
+  <data name="SubtaskCancelConfirm" xml:space="preserve">
+    <value>¿Cancelar la subtarea «{0}»? Permanece en el historial y deja de ser trabajo pendiente.</value>
+  </data>
+  <data name="SubtaskCancelConfirmYes" xml:space="preserve">
+    <value>Cancelarla</value>
+  </data>
+  <data name="ToastSubtaskCancelled" xml:space="preserve">
+    <value>Subtarea cancelada: {0}</value>
+  </data>
   <data name="SubtaskSave" xml:space="preserve">
     <value>Guardar</value>
   </data>

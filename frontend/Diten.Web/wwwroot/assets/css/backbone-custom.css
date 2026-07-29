@@ -6146,3 +6146,19 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 /* Subtask quick-edit panel: the slim offcanvas, holding only fields that change often. */
 .wcn-subtask-panel { inline-size: min(24rem, 100vw); }
 .wcn-subtask-panel .offcanvas-footer { margin-block-start: auto; }
+
+/* A cancelled subtask is history, not work. It stays visible — the record matters — but it must not read as
+   something waiting to be done, which is how three of them came to fill a live list. FG-003: class, not inline. */
+.wcn-subtask-cancelled .wcn-subtask-title { text-decoration: line-through; }
+.wcn-subtask-cancelled { opacity: .55; }
+.wcn-subtask-cancelled .wcn-subtask-toggle i { color: var(--bs-secondary-color); }
+
+/* Row-level cancel: quiet until the row is hovered or focused, so the list reads as work and not as a row of
+   delete buttons. */
+.wcn-subtask-cancel {
+    margin-inline-start: .25rem; border: 0; background: none; padding: .125rem .25rem; line-height: 1;
+    color: var(--bs-secondary-color); opacity: 0; transition: opacity .15s ease;
+}
+.wcn-subtask:hover .wcn-subtask-cancel,
+.wcn-subtask-cancel:focus-visible { opacity: 1; }
+.wcn-subtask-cancel:hover { color: var(--bs-danger); }

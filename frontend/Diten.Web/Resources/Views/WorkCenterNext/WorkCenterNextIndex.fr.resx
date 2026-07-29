@@ -1313,6 +1313,42 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Aucun élément de liste de contrôle.</value>
   </data>
+  <data name="SubtaskAddDetailed" xml:space="preserve">
+    <value>Ajouter en détail</value>
+  </data>
+  <data name="SubtaskCreateTitle" xml:space="preserve">
+    <value>Nouvelle sous-tâche</value>
+  </data>
+  <data name="SubtaskCreateSubmit" xml:space="preserve">
+    <value>Créer la sous-tâche</value>
+  </data>
+  <data name="SubtaskCreateParentFixed" xml:space="preserve">
+    <value>Elle sera créée sous la tâche que vous consultez.</value>
+  </data>
+  <data name="SubtaskAssignToMe" xml:space="preserve">
+    <value>Moi</value>
+  </data>
+  <data name="SubtaskFieldPriority" xml:space="preserve">
+    <value>Priorité</value>
+  </data>
+  <data name="SubtaskFieldDescription" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="SubtaskCancel" xml:space="preserve">
+    <value>Annuler la sous-tâche</value>
+  </data>
+  <data name="SubtaskCancelAria" xml:space="preserve">
+    <value>Annuler la sous-tâche : {0}</value>
+  </data>
+  <data name="SubtaskCancelConfirm" xml:space="preserve">
+    <value>Annuler la sous-tâche « {0} » ? Elle reste dans l’historique et cesse d’être du travail.</value>
+  </data>
+  <data name="SubtaskCancelConfirmYes" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="ToastSubtaskCancelled" xml:space="preserve">
+    <value>Sous-tâche annulée : {0}</value>
+  </data>
   <data name="SubtaskSave" xml:space="preserve">
     <value>Enregistrer</value>
   </data>

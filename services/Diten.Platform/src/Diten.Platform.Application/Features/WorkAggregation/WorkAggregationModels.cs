@@ -309,7 +309,13 @@ public sealed record WorkItemSubtaskDto(
     WorkItemPersonDto? Assignee = null,
     /// <summary>When the subtask is due, omitted when it has no date of its own.</summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    DateTimeOffset? DueAt = null);
+    DateTimeOffset? DueAt = null,
+    /// <summary>
+    /// Whether THIS actor may call the subtask off, evaluated by the same rule as any other task: the requester,
+    /// or administrative authority. Sent per row because the shell cannot work it out — a subtask's requester is
+    /// its own, not the parent's — and a row must not offer an action the server will refuse.
+    /// </summary>
+    bool CanCancel = false);
 
 /// <summary>
 /// The governance gates on a work item: what must happen before it can proceed, and where that stands.

@@ -410,7 +410,12 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 // A subtask carries its OWN holder and date; without them the row can only repeat its title,
                 // and "who is doing this and by when" is the reason to look at the list at all.
                 Assignee: Person(child.AssigneeUserId, actor, displayNames),
-                DueAt: child.DueAt))
+                DueAt: child.DueAt,
+                // Same rule as the parent's own cancel action, applied to the SUBTASK's requester. Terminal work
+                // cannot be called off again — it has already stopped.
+                CanCancel: child.Lifecycle is not (TaskLifecycle.Done or TaskLifecycle.Cancelled)
+                    && ((child.CreatedByUserId is not null && child.CreatedByUserId == actor.UserId)
+                        || actor.Has(TaskPermissions.Delete))))
             .ToList());
 
     private static string ResolveExecutionState(TaskItem task) => task.Lifecycle switch

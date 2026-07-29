@@ -1313,6 +1313,42 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>لا توجد عناصر في قائمة التحقق بعد.</value>
   </data>
+  <data name="SubtaskAddDetailed" xml:space="preserve">
+    <value>إضافة بالتفصيل</value>
+  </data>
+  <data name="SubtaskCreateTitle" xml:space="preserve">
+    <value>مهمة فرعية جديدة</value>
+  </data>
+  <data name="SubtaskCreateSubmit" xml:space="preserve">
+    <value>إنشاء المهمة الفرعية</value>
+  </data>
+  <data name="SubtaskCreateParentFixed" xml:space="preserve">
+    <value>ستُنشأ ضمن المهمة التي تعرضها.</value>
+  </data>
+  <data name="SubtaskAssignToMe" xml:space="preserve">
+    <value>أنا</value>
+  </data>
+  <data name="SubtaskFieldPriority" xml:space="preserve">
+    <value>الأولوية</value>
+  </data>
+  <data name="SubtaskFieldDescription" xml:space="preserve">
+    <value>الوصف</value>
+  </data>
+  <data name="SubtaskCancel" xml:space="preserve">
+    <value>إلغاء المهمة الفرعية</value>
+  </data>
+  <data name="SubtaskCancelAria" xml:space="preserve">
+    <value>إلغاء المهمة الفرعية: {0}</value>
+  </data>
+  <data name="SubtaskCancelConfirm" xml:space="preserve">
+    <value>إلغاء المهمة الفرعية «{0}»؟ ستبقى في السجل ولن تعود عملًا مطلوبًا.</value>
+  </data>
+  <data name="SubtaskCancelConfirmYes" xml:space="preserve">
+    <value>ألغِها</value>
+  </data>
+  <data name="ToastSubtaskCancelled" xml:space="preserve">
+    <value>أُلغيت المهمة الفرعية: {0}</value>
+  </data>
   <data name="SubtaskSave" xml:space="preserve">
     <value>حفظ</value>
   </data>

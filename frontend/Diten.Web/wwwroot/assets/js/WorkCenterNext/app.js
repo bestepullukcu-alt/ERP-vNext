@@ -85,6 +85,10 @@
         subtaskPanelDraft: null,
         subtaskPanelRecord: null,
         subtaskPanelSaving: false,
+        subtaskCreateParentId: null,
+        subtaskCreateDraft: null,
+        subtaskCreateSaving: false,
+        assignablePeople: [],
         bulkFailedIds: new Set(),
         sortKey: 'sla',
         sortDir: 'asc',
@@ -1335,7 +1339,11 @@
          * each row carries them WHEN THEY EXIST. An absent holder or date renders nothing at all; a dash would
          * be a claim that the field was checked and found empty.
          */
-        const rows = subtaskItems.map((s) =>
+        // Cancelled subtasks sink below the live ones. They are history, and three of them at the top of a list
+        // reads as work waiting to be done.
+        const ordered = subtaskItems.slice().sort((a, b) =>
+            (a.status === 'cancelled' ? 1 : 0) - (b.status === 'cancelled' ? 1 : 0));
+        const rows = ordered.map((s) =>
             `<li class="wcn-subtask wcn-subtask-${s.status}">
                 <button type="button" class="wcn-subtask-toggle" ${full ? `data-wcn-subtask="${item.id}:${s.id}"` : 'disabled'}
                         aria-label="${esc(tf('SubtaskToggleAria', s.title))}">
@@ -1352,11 +1360,19 @@
                 ${SUBTASK_STATUS_KEY[s.status]
                     ? `<span class="wcn-subtask-status">${esc(t(SUBTASK_STATUS_KEY[s.status]))}</span>`
                     : ''}
+                ${s.canCancel
+                    ? `<button type="button" class="wcn-subtask-cancel" data-wcn-subtask-cancel="${esc(s.id)}"
+                               data-wcn-subtask-title="${esc(s.title)}"
+                               title="${esc(t('SubtaskCancel'))}" aria-label="${esc(tf('SubtaskCancelAria', s.title))}">
+                        <i class="bx bx-x-circle"></i>
+                       </button>`
+                    : ''}
             </li>`).join('');
         const adder = full
             ? `<div class="wcn-subtask-add">
                 <input type="text" class="form-control form-control-sm" data-wcn-subtask-input placeholder="${esc(t('SubtaskAddPlaceholder'))}">
                 <button type="button" class="btn btn-sm btn-label-primary" data-wcn-subtask-add="${item.id}">${esc(t('SubtaskAdd'))}</button>
+                <button type="button" class="btn btn-sm btn-label-secondary" data-wcn-subtask-add-detailed="${item.id}">${esc(t('SubtaskAddDetailed'))}</button>
                </div>`
             : `<p class="wcn-block-hint"><i class="bx bx-link-external"></i>${esc(t('SubtasksReadonlyHint'))}</p>`;
         // Open subtasks NEVER block the parent — they are reported, not enforced. Blocking belongs to the
@@ -1859,6 +1875,7 @@
                 <div class="col-12 col-lg-4 wcn-detail-rail">${rail}</div>
             </div>
             ${subtaskPanel()}
+            ${subtaskCreatePanel()}
         </div>`;
     };
 
@@ -1988,6 +2005,159 @@
         state.subtaskPanelRecord = null;
         toast(t('SubtaskSaved'));
         await loadWorkItems();
+    };
+
+
+    /*
+     * DETAILED subtask creation.
+     *
+     * Quick-add stays: for most subtasks one line is the whole thought, and it inherits the parent's holder and
+     * priority. But inheriting is exactly why it cannot hand work to someone ELSE — the point of this panel.
+     *
+     * It reuses TaskForm.buildCreatePayload and the ordinary create endpoint, because a subtask IS a task; the
+     * only thing that makes it one is parentTaskItemId, which is fixed here and deliberately not editable.
+     */
+    const subtaskCreatePanel = () => {
+        if (!state.subtaskCreateParentId) { return ''; }
+        const draft = state.subtaskCreateDraft || {};
+        const people = state.assignablePeople || [];
+        const options = people.map((person) =>
+            `<option value="${esc(person.userId || person.id)}"${draft.assigneeUserId === (person.userId || person.id) ? ' selected' : ''}>`
+            + `${esc(person.displayName || person.name || '')}</option>`).join('');
+        return `<div class="offcanvas offcanvas-end wcn-subtask-panel" tabindex="-1" id="wcnSubtaskCreatePanel"
+                     aria-labelledby="wcnSubtaskCreateLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="wcnSubtaskCreateLabel">${esc(t('SubtaskCreateTitle'))}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
+                        aria-label="${esc(t('ReasonCancel'))}"></button>
+            </div>
+            <div class="offcanvas-body">
+                <div class="mb-3">
+                    <label class="form-label" for="wcnNewSubtaskTitle">
+                        ${esc(t('SubtaskFieldTitle'))} <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control" id="wcnNewSubtaskTitle" maxlength="200"
+                           data-wcn-newsubtask-field="title" value="${esc(draft.title || '')}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="wcnNewSubtaskAssignee">${esc(t('SubtaskFieldAssignee'))}</label>
+                    <select class="form-select" id="wcnNewSubtaskAssignee" data-wcn-newsubtask-field="assigneeUserId">
+                        <option value="">${esc(t('SubtaskAssignToMe'))}</option>
+                        ${options}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="wcnNewSubtaskDue">${esc(t('SubtaskFieldDue'))}</label>
+                    <input type="date" class="form-control" id="wcnNewSubtaskDue"
+                           data-wcn-newsubtask-field="dueAt" value="${esc(draft.dueAt || '')}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="wcnNewSubtaskPriority">${esc(t('SubtaskFieldPriority'))}</label>
+                    <select class="form-select" id="wcnNewSubtaskPriority" data-wcn-newsubtask-field="priority">
+                        ${['Low', 'Medium', 'High'].map((level) =>
+                            `<option value="${level}"${(draft.priority || 'Medium') === level ? ' selected' : ''}>`
+                            + `${esc(t('Priority' + level))}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="wcnNewSubtaskDesc">${esc(t('SubtaskFieldDescription'))}</label>
+                    <textarea class="form-control" id="wcnNewSubtaskDesc" rows="3"
+                              data-wcn-newsubtask-field="description">${esc(draft.description || '')}</textarea>
+                </div>
+                <p class="wcn-block-hint">${esc(t('SubtaskCreateParentFixed'))}</p>
+            </div>
+            <div class="offcanvas-footer p-3 border-top">
+                <button type="button" class="btn btn-primary w-100"
+                        data-wcn-newsubtask-save="${esc(state.subtaskCreateParentId)}"${state.subtaskCreateSaving ? ' disabled' : ''}>
+                    ${esc(t('SubtaskCreateSubmit'))}
+                </button>
+            </div>
+        </div>`;
+    };
+
+    const openSubtaskCreatePanel = async (parentId) => {
+        state.subtaskCreateParentId = parentId;
+        state.subtaskCreateDraft = { priority: 'Medium' };
+        render();
+        showPanel('wcnSubtaskCreatePanel', () => {
+            state.subtaskCreateParentId = null;
+            state.subtaskCreateDraft = null;
+        });
+
+        // The picker is the SAME list the server will accept — reassign validates against it, so offering anyone
+        // else here would build a form whose submit is refused.
+        const people = await global.TasksApi.assignablePeople();
+        state.assignablePeople = (people.ok && people.data) ? people.data : [];
+        if (!people.ok) { console.warn('[WorkCenterNext] Assignable people could not be read; the picker is empty.'); }
+        render();
+    };
+
+    const saveNewSubtask = async (parentId) => {
+        const draft = state.subtaskCreateDraft || {};
+        const title = String(draft.title || '').trim();
+        if (!title) { toast(t('SubtaskTitleRequired'), 'error'); return; }
+
+        state.subtaskCreateSaving = true;
+        render();
+
+        const payload = global.TaskForm.buildCreatePayload({
+            title,
+            // Explicitly chosen here, unlike quick-add which inherits — that is the whole reason this panel exists.
+            assignmentTarget: draft.assigneeUserId ? 'Person' : 'SelfAssigned',
+            assigneeUserId: draft.assigneeUserId || null,
+            dueAt: draft.dueAt || null,
+            priority: draft.priority || 'Medium',
+            description: draft.description || null
+        });
+        // What makes it a SUBTASK. Fixed, never editable: moving a task under a different parent is a different
+        // operation with its own rules.
+        payload.parentTaskItemId = parentId;
+
+        const result = await global.TasksApi.create(payload);
+        state.subtaskCreateSaving = false;
+        if (!result.ok) { toast(global.TasksApi.failureMessage(result), 'error'); render(); return; }
+
+        state.subtaskCreateParentId = null;
+        state.subtaskCreateDraft = null;
+        toast(tf('ToastSubtaskAdded', title));
+        await loadWorkItems();
+    };
+
+    /*
+     * Cancelling a subtask, from its row. NOT deleting: a subtask is a task, its history stays, and BL-035's
+     * "a cancelled subtask does not gate its parent" rule needs it to still exist. Permanent deletion, if it is
+     * ever wanted, belongs on the full page where the whole record is in view.
+     */
+    const cancelSubtask = async (subtaskId, title) => {
+        const confirmed = await confirmDestructive(tf('SubtaskCancelConfirm', title));
+        if (!confirmed) { return; }
+
+        const result = await global.TasksApi.transition(subtaskId, 'cancel', {});
+        if (!result.ok) { toast(global.TasksApi.failureMessage(result), 'error'); return; }
+        toast(tf('ToastSubtaskCancelled', title));
+        await loadWorkItems();
+    };
+
+    /* MOD-0013 is the ONE confirm implementation in the app; a page-local dialog would be a second one. */
+    const confirmDestructive = (message) => new Promise((resolve) => {
+        if (typeof global.showConfirm === 'function') {
+            global.showConfirm(message, () => resolve(true), { confirmButtonText: t('SubtaskCancelConfirmYes') });
+            // showConfirm does not report dismissal, so a cancelled dialog simply never resolves true; resolve
+            // false on the next tick if the callback has not fired.
+            global.setTimeout(() => resolve(false), 0);
+            return;
+        }
+        console.warn('[WorkCenterNext] window.showConfirm is unavailable; the destructive action was not offered.');
+        resolve(false);
+    });
+
+    /* Shared offcanvas plumbing for both subtask panels. */
+    const showPanel = (id, onHidden) => {
+        const node = document.getElementById(id);
+        if (!node || !global.bootstrap?.Offcanvas) { return; }
+        const panel = global.bootstrap.Offcanvas.getOrCreateInstance(node);
+        node.addEventListener('hidden.bs.offcanvas', () => { onHidden(); render(); }, { once: true });
+        panel.show();
     };
 
     // ── Table view ────────────────────────────────────────────────────────────
@@ -3815,6 +3985,23 @@
             completeSubtask(subtaskId);
             return;
         }
+        const subAddDetailedEl = event.target.closest('[data-wcn-subtask-add-detailed]');
+        if (subAddDetailedEl) {
+            await openSubtaskCreatePanel(subAddDetailedEl.getAttribute('data-wcn-subtask-add-detailed'));
+            return;
+        }
+        const newSubSaveEl = event.target.closest('[data-wcn-newsubtask-save]');
+        if (newSubSaveEl) {
+            await saveNewSubtask(newSubSaveEl.getAttribute('data-wcn-newsubtask-save'));
+            return;
+        }
+        const subCancelEl = event.target.closest('[data-wcn-subtask-cancel]');
+        if (subCancelEl) {
+            await cancelSubtask(
+                subCancelEl.getAttribute('data-wcn-subtask-cancel'),
+                subCancelEl.getAttribute('data-wcn-subtask-title'));
+            return;
+        }
         const subAddEl = event.target.closest('[data-wcn-subtask-add]');
         if (subAddEl) {
             // Read the input from the card the button belongs to, not from the document: one card per page today,
@@ -3936,6 +4123,14 @@
     };
 
     const onChange = (event) => {
+        // A <select> emits change, not input, so the create panel's pickers would otherwise never reach the draft.
+        const newFieldEl = event.target.closest('[data-wcn-newsubtask-field]');
+        if (newFieldEl) {
+            state.subtaskCreateDraft = Object.assign({}, state.subtaskCreateDraft, {
+                [newFieldEl.getAttribute('data-wcn-newsubtask-field')]: newFieldEl.value
+            });
+            return;
+        }
         const pageLengthEl = event.target.closest('[data-wcn-page-length]');
         if (pageLengthEl) {
             state.pageLength = [10, 25, 50, 100].includes(Number(pageLengthEl.value)) ? Number(pageLengthEl.value) : 10;
@@ -3980,6 +4175,13 @@
 
     let searchTimer = null;
     const onInput = (event) => {
+        const newFieldEl = event.target.closest('[data-wcn-newsubtask-field]');
+        if (newFieldEl) {
+            state.subtaskCreateDraft = Object.assign({}, state.subtaskCreateDraft, {
+                [newFieldEl.getAttribute('data-wcn-newsubtask-field')]: newFieldEl.value
+            });
+            return;
+        }
         const fieldEl = event.target.closest('[data-wcn-subtask-field]');
         if (fieldEl) {
             state.subtaskPanelDraft = Object.assign({}, state.subtaskPanelDraft, {

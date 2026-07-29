@@ -821,3 +821,152 @@ describe("the contract declares the shapes that kept drifting", () => {
     expect(result.errors.map((e) => e.code)).toContain("SUBTASK_ASSIGNEE_INVALID");
   });
 });
+
+/*
+ * Subtask creation, cancellation and the weight cancelled rows carry.
+ *
+ * Quick-add inherits the parent's holder, which is why it cannot hand a subtask to someone ELSE — the whole
+ * reason the detailed panel exists.
+ */
+describe("creating a subtask in detail", () => {
+  const openCreate = async () => {
+    app().querySelector("[data-wcn-subtask-add-detailed]").click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  };
+
+  it("keeps quick-add and offers the detailed panel beside it", async () => {
+    await bootDetailPage(projectionItem());
+
+    expect(app().querySelector("[data-wcn-subtask-add]")).not.toBeNull();
+    expect(app().querySelector("[data-wcn-subtask-add-detailed]")).not.toBeNull();
+  });
+
+  it("can assign the new subtask to somebody else", async () => {
+    const { created } = await bootDetailPage(projectionItem());
+    await openCreate();
+
+    const title = app().querySelector('[data-wcn-newsubtask-field="title"]');
+    title.value = "Ekstreyi Merve istesin";
+    title.dispatchEvent(new window.Event("input", { bubbles: true }));
+
+    const assignee = app().querySelector('[data-wcn-newsubtask-field="assigneeUserId"]');
+    // The picker offers whoever the server would accept; the option list arrives from assignablePeople.
+    assignee.innerHTML = '<option value="u-merve">Merve</option>';
+    assignee.value = "u-merve";
+    assignee.dispatchEvent(new window.Event("change", { bubbles: true }));
+
+    app().querySelector("[data-wcn-newsubtask-save]").click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(created.length).toBeGreaterThan(0);
+    const payload = created[created.length - 1];
+    expect(payload.title).toBe("Ekstreyi Merve istesin");
+    expect(payload.assigneeUserId).toBe("u-merve");
+    // Quick-add inherits and so can only ever assign to the parent's holder — this is the path that cannot.
+    expect(payload.assignmentTarget).toBe("Person");
+  });
+
+  it("links the new subtask to the task being viewed, and does not let that be changed", async () => {
+    const { created } = await bootDetailPage(projectionItem());
+    await openCreate();
+
+    const title = app().querySelector('[data-wcn-newsubtask-field="title"]');
+    title.value = "Alt iş";
+    title.dispatchEvent(new window.Event("input", { bubbles: true }));
+    app().querySelector("[data-wcn-newsubtask-save]").click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(created[created.length - 1].parentTaskItemId).toBe(TASK_ID);
+    // Moving a task under a different parent is a different operation with its own rules.
+    expect(app().querySelector('[data-wcn-newsubtask-field="parentTaskItemId"]')).toBeNull();
+  });
+
+  it("refuses to create without a title", async () => {
+    const { created } = await bootDetailPage(projectionItem());
+    await openCreate();
+
+    app().querySelector("[data-wcn-newsubtask-save]").click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(created).toHaveLength(0);
+  });
+
+  it("is covered by the write-dependency check, so a page missing its scripts says so", async () => {
+    const errors = [];
+    const original = console.error;
+    console.error = (...args) => errors.push(args.join(" "));
+    try {
+      await bootDetailPage(projectionItem(), { withoutTasksScripts: true });
+    } finally {
+      console.error = original;
+    }
+
+    expect(errors.some((line) => line.includes("Missing required script"))).toBe(true);
+  });
+});
+
+describe("cancelling a subtask from its row", () => {
+  const withSubtask = (overrides) => projectionItem({
+    subtasks: {
+      mode: "full",
+      items: [Object.assign({ id: "s1", title: "Ekstreyi iste", status: "in-progress" }, overrides)]
+    }
+  });
+
+  it("offers cancel when the server says this actor may", async () => {
+    await bootDetailPage(withSubtask({ canCancel: true }));
+    expect(app().querySelector("[data-wcn-subtask-cancel]")).not.toBeNull();
+  });
+
+  // The authority is the server's to state; a row must not offer what the server will refuse.
+  it("offers nothing when the actor may not", async () => {
+    await bootDetailPage(withSubtask({ canCancel: false }));
+    expect(app().querySelector("[data-wcn-subtask-cancel]")).toBeNull();
+  });
+
+  it("asks before doing it, through the one confirm the app has", async () => {
+    const asked = [];
+    global.showConfirm = (message) => { asked.push(message); };
+    await bootDetailPage(withSubtask({ canCancel: true }));
+
+    app().querySelector("[data-wcn-subtask-cancel]").click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    /*
+     * Content, not count: every boot in this file leaves another delegated document listener behind (jsdom keeps
+     * one document per file), so a single click reaches every instance loaded so far. What matters is that the
+     * click asked BEFORE acting, through the app's single MOD-0013 confirm rather than a page-local dialog.
+     */
+    expect(asked.length).toBeGreaterThan(0);
+    asked.forEach((message) => expect(message).toContain("SubtaskCancelConfirm"));
+    delete global.showConfirm;
+  });
+
+  // It cancels; it does not delete. A subtask is a task, its history stays, and BL-035 will rest on that.
+  it("offers no permanent delete on the row", async () => {
+    await bootDetailPage(withSubtask({ canCancel: true }));
+    expect(app().querySelector("[data-wcn-subtask-delete]")).toBeNull();
+  });
+});
+
+describe("cancelled subtasks do not read as work", () => {
+  it("marks them and sinks them below the live ones", async () => {
+    await bootDetailPage(projectionItem({
+      subtasks: {
+        mode: "full",
+        items: [
+          { id: "c1", title: "İptal 1", status: "cancelled" },
+          { id: "c2", title: "İptal 2", status: "cancelled" },
+          { id: "a1", title: "Canlı iş", status: "in-progress" }
+        ]
+      }
+    }));
+
+    const rows = Array.from(app().querySelectorAll(".wcn-subtask"));
+    expect(rows).toHaveLength(3);
+    // The live one leads; three cancelled rows at the top read as a queue of things to do.
+    expect(rows[0].className).toContain("wcn-subtask-in-progress");
+    expect(rows[1].className).toContain("wcn-subtask-cancelled");
+    expect(rows[2].className).toContain("wcn-subtask-cancelled");
+  });
+});

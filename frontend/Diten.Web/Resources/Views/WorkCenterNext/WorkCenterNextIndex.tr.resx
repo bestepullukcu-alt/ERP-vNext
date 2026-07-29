@@ -1313,6 +1313,42 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Henüz kontrol listesi maddesi yok.</value>
   </data>
+  <data name="SubtaskAddDetailed" xml:space="preserve">
+    <value>Detaylı ekle</value>
+  </data>
+  <data name="SubtaskCreateTitle" xml:space="preserve">
+    <value>Yeni alt görev</value>
+  </data>
+  <data name="SubtaskCreateSubmit" xml:space="preserve">
+    <value>Alt görevi oluştur</value>
+  </data>
+  <data name="SubtaskCreateParentFixed" xml:space="preserve">
+    <value>Görüntülediğiniz görevin altında oluşturulacak.</value>
+  </data>
+  <data name="SubtaskAssignToMe" xml:space="preserve">
+    <value>Ben</value>
+  </data>
+  <data name="SubtaskFieldPriority" xml:space="preserve">
+    <value>Öncelik</value>
+  </data>
+  <data name="SubtaskFieldDescription" xml:space="preserve">
+    <value>Açıklama</value>
+  </data>
+  <data name="SubtaskCancel" xml:space="preserve">
+    <value>Alt görevi iptal et</value>
+  </data>
+  <data name="SubtaskCancelAria" xml:space="preserve">
+    <value>Alt görevi iptal et: {0}</value>
+  </data>
+  <data name="SubtaskCancelConfirm" xml:space="preserve">
+    <value>"{0}" alt görevi iptal edilsin mi? Geçmişte kalır ve yapılacak iş olmaktan çıkar.</value>
+  </data>
+  <data name="SubtaskCancelConfirmYes" xml:space="preserve">
+    <value>İptal et</value>
+  </data>
+  <data name="ToastSubtaskCancelled" xml:space="preserve">
+    <value>Alt görev iptal edildi: {0}</value>
+  </data>
   <data name="SubtaskSave" xml:space="preserve">
     <value>Kaydet</value>
   </data>

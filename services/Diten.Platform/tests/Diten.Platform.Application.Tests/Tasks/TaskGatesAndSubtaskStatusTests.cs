@@ -56,6 +56,46 @@ public sealed class TaskGatesAndSubtaskStatusTests
         Assert.Contains("not-started", statuses);
     }
 
+    /*
+     * Whether a row may offer "cancel". Sent per subtask because the shell cannot work it out: a subtask's
+     * requester is its OWN, not the parent's, and a row must never offer an action the server will refuse.
+     */
+    [Fact]
+    public async Task A_subtask_the_actor_requested_may_be_cancelled()
+    {
+        var parent = ParentTask();
+        var child = SubtaskOf(parent.Id, TaskLifecycle.InProgress);
+
+        var item = await ProjectAsync(new FakeTaskItemRepository(parent, child), parent.Id);
+
+        Assert.True(Assert.Single(item.Subtasks!.Items).CanCancel);
+    }
+
+    [Fact]
+    public async Task A_subtask_somebody_else_requested_may_not()
+    {
+        var parent = ParentTask();
+        var child = SubtaskOf(parent.Id, TaskLifecycle.InProgress);
+        child.CreatedByUserId = TaskTestData.Rival;
+
+        var item = await ProjectAsync(new FakeTaskItemRepository(parent, child), parent.Id, actorIsPlatform: false);
+
+        Assert.False(Assert.Single(item.Subtasks!.Items).CanCancel);
+    }
+
+    [Theory]
+    [InlineData(TaskLifecycle.Done)]
+    [InlineData(TaskLifecycle.Cancelled)]
+    public async Task Work_that_has_already_stopped_cannot_be_called_off_again(TaskLifecycle lifecycle)
+    {
+        var parent = ParentTask();
+        var child = SubtaskOf(parent.Id, lifecycle);
+
+        var item = await ProjectAsync(new FakeTaskItemRepository(parent, child), parent.Id);
+
+        Assert.False(Assert.Single(item.Subtasks!.Items).CanCancel);
+    }
+
     // ── Gates ───────────────────────────────────────────────────────────────────────────────────────────────
 
     [Fact]
@@ -173,7 +213,8 @@ public sealed class TaskGatesAndSubtaskStatusTests
         FakeTaskItemRepository tasks,
         Guid parentId,
         bool single = false,
-        FakeTaskApprovalService? approvals = null)
+        FakeTaskApprovalService? approvals = null,
+        bool actorIsPlatform = true)
     {
         var provider = new TaskWorkItemProvider(
             tasks,
@@ -185,7 +226,7 @@ public sealed class TaskGatesAndSubtaskStatusTests
             approvals ?? new FakeTaskApprovalService());
 
         var items = await provider.GetWorkItemsAsync(
-            new WorkItemActor(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>()),
+            new WorkItemActor(TaskTestData.Me, actorIsPlatform, new HashSet<string>()),
             CancellationToken.None);
 
         return single ? Assert.Single(items) : items.Single(i => i.Id == parentId.ToString());

@@ -1313,6 +1313,42 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Пунктов чек-листа пока нет.</value>
   </data>
+  <data name="SubtaskAddDetailed" xml:space="preserve">
+    <value>Добавить подробно</value>
+  </data>
+  <data name="SubtaskCreateTitle" xml:space="preserve">
+    <value>Новая подзадача</value>
+  </data>
+  <data name="SubtaskCreateSubmit" xml:space="preserve">
+    <value>Создать подзадачу</value>
+  </data>
+  <data name="SubtaskCreateParentFixed" xml:space="preserve">
+    <value>Будет создана внутри задачи, которую вы просматриваете.</value>
+  </data>
+  <data name="SubtaskAssignToMe" xml:space="preserve">
+    <value>Мне</value>
+  </data>
+  <data name="SubtaskFieldPriority" xml:space="preserve">
+    <value>Приоритет</value>
+  </data>
+  <data name="SubtaskFieldDescription" xml:space="preserve">
+    <value>Описание</value>
+  </data>
+  <data name="SubtaskCancel" xml:space="preserve">
+    <value>Отменить подзадачу</value>
+  </data>
+  <data name="SubtaskCancelAria" xml:space="preserve">
+    <value>Отменить подзадачу: {0}</value>
+  </data>
+  <data name="SubtaskCancelConfirm" xml:space="preserve">
+    <value>Отменить подзадачу «{0}»? Она останется в истории и перестанет быть работой.</value>
+  </data>
+  <data name="SubtaskCancelConfirmYes" xml:space="preserve">
+    <value>Отменить</value>
+  </data>
+  <data name="ToastSubtaskCancelled" xml:space="preserve">
+    <value>Подзадача отменена: {0}</value>
+  </data>
   <data name="SubtaskSave" xml:space="preserve">
     <value>Сохранить</value>
   </data>
