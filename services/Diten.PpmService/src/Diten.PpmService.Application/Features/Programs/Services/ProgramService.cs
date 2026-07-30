@@ -7,11 +7,12 @@ namespace Diten.PpmService.Application.Features.Programs;
 
 public sealed class ProgramService(
     IProgramRepository repository, IPortfolioRepository portfolios, IAuditIntentRepository audit, IPpmUnitOfWork unitOfWork,
-    ITenantContext tenant, ICurrentActorContext actor, IEffectivePermissionEvaluator permissions)
+    ITenantContext tenant, ICurrentActorContext actor, IPpmAccessAuthorizer access)
 {
     public async Task<Response<ProgramDto>> Create(CreateProgramCommand r, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.ProgramsCreate, ct)) return Response<ProgramDto>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.ProgramsCreate, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<ProgramDto>();
         return await unitOfWork.ExecuteInTransactionAsync(async token =>
         {
             if (!await PortfolioExists(r.PortfolioId, token)) return Response<ProgramDto>.Fail("Portfolio was not found.", 404);
@@ -24,7 +25,8 @@ public sealed class ProgramService(
     }
     public async Task<Response<ProgramDto>> Update(UpdateProgramCommand r, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.ProgramsUpdate, ct)) return Response<ProgramDto>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.ProgramsUpdate, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<ProgramDto>();
         var e = await repository.GetByIdAsync(tenant.TenantId, r.Id, ct);
         if (e is null) return Response<ProgramDto>.Fail("Program was not found.", 404);
         return await unitOfWork.ExecuteInTransactionAsync(async token =>
@@ -39,7 +41,8 @@ public sealed class ProgramService(
     }
     public async Task<Response<ProgramDto>> Transition(TransitionProgramLifecycleCommand r, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.ProgramsLifecycle, ct)) return Response<ProgramDto>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.ProgramsLifecycle, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<ProgramDto>();
         var e = await repository.GetByIdAsync(tenant.TenantId, r.Id, ct);
         if (e is null) return Response<ProgramDto>.Fail("Program was not found.", 404);
         if (!e.CanTransitionTo(r.TargetState)) return Response<ProgramDto>.Fail("Invalid lifecycle transition.", 409);
@@ -48,7 +51,8 @@ public sealed class ProgramService(
     }
     public async Task<Response<NoContent>> SoftDelete(SoftDeleteProgramCommand r, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.ProgramsLifecycle, ct)) return Response<NoContent>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.ProgramsLifecycle, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<NoContent>();
         var e = await repository.GetByIdAsync(tenant.TenantId, r.Id, ct);
         if (e is null) return Response<NoContent>.Fail("Program was not found.", 404);
         e.SoftDelete(actor.ActorId);
@@ -56,17 +60,18 @@ public sealed class ProgramService(
     }
     public async Task<Response<ProgramDto>> GetById(GetProgramByIdQuery r, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.ProgramsRead, ct)) return Response<ProgramDto>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.ProgramsRead, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<ProgramDto>();
         var e = await repository.GetByIdAsync(tenant.TenantId, r.Id, ct);
         return e is null ? Response<ProgramDto>.Fail("Program was not found.", 404) : Response<ProgramDto>.Success(e.ToDto());
     }
     public async Task<Response<IReadOnlyList<ProgramDto>>> List(ListProgramsQuery r, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.ProgramsRead, ct)) return Response<IReadOnlyList<ProgramDto>>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.ProgramsRead, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<IReadOnlyList<ProgramDto>>();
         var items = await repository.ListAsync(tenant.TenantId, ct);
         return Response<IReadOnlyList<ProgramDto>>.Success(items.Select(x => x.ToDto()).ToArray());
     }
-    private Task<bool> Allowed(string p, CancellationToken ct) => ApplicationGuard.InvalidContext(tenant, actor) ? Task.FromResult(false) : permissions.HasPermissionAsync(p, ct);
     private async Task<bool> PortfolioExists(Guid? id, CancellationToken ct) => id is null || await portfolios.GetByIdAsync(tenant.TenantId, id.Value, ct) is not null;
     private AuditIntent Intent(Program e, string m) => new(Guid.NewGuid(), tenant.TenantId, actor.ActorId, nameof(Program), e.Id, m, DateTime.UtcNow);
     private Task<Response<ProgramDto>> Persist(Program e, int version, string mutation, CancellationToken ct)

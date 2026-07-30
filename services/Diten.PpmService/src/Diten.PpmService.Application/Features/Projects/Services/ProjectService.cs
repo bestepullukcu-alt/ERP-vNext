@@ -8,11 +8,12 @@ namespace Diten.PpmService.Application.Features.Projects;
 public sealed class ProjectService(
     IProjectRepository repository, IInitiativeRepository initiatives, IProgramRepository programs,
     IAuditIntentRepository audit, IPpmUnitOfWork unitOfWork, ITenantContext tenant,
-    ICurrentActorContext actor, IEffectivePermissionEvaluator permissions)
+    ICurrentActorContext actor, IPpmAccessAuthorizer access)
 {
     public async Task<Response<ProjectDto>> Create(CreateProjectCommand r, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.ProjectsCreate, ct)) return Response<ProjectDto>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.ProjectsCreate, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<ProjectDto>();
         return await unitOfWork.ExecuteInTransactionAsync(async token =>
         {
             if (!await ParentExists(r.ParentType, r.ParentId, token)) return Response<ProjectDto>.Fail("Project parent was not found.", 404);
@@ -25,7 +26,8 @@ public sealed class ProjectService(
     }
     public async Task<Response<ProjectDto>> Update(UpdateProjectCommand r, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.ProjectsUpdate, ct)) return Response<ProjectDto>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.ProjectsUpdate, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<ProjectDto>();
         var e = await repository.GetByIdAsync(tenant.TenantId, r.Id, ct);
         if (e is null) return Response<ProjectDto>.Fail("Project was not found.", 404);
         return await unitOfWork.ExecuteInTransactionAsync(async token =>
@@ -40,7 +42,8 @@ public sealed class ProjectService(
     }
     public async Task<Response<ProjectDto>> Transition(TransitionProjectLifecycleCommand r, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.ProjectsLifecycle, ct)) return Response<ProjectDto>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.ProjectsLifecycle, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<ProjectDto>();
         var e = await repository.GetByIdAsync(tenant.TenantId, r.Id, ct);
         if (e is null) return Response<ProjectDto>.Fail("Project was not found.", 404);
         if (!e.CanTransitionTo(r.TargetState)) return Response<ProjectDto>.Fail("Invalid lifecycle transition.", 409);
@@ -49,7 +52,8 @@ public sealed class ProjectService(
     }
     public async Task<Response<NoContent>> SoftDelete(SoftDeleteProjectCommand r, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.ProjectsLifecycle, ct)) return Response<NoContent>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.ProjectsLifecycle, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<NoContent>();
         var e = await repository.GetByIdAsync(tenant.TenantId, r.Id, ct);
         if (e is null) return Response<NoContent>.Fail("Project was not found.", 404);
         e.SoftDelete(actor.ActorId);
@@ -57,17 +61,18 @@ public sealed class ProjectService(
     }
     public async Task<Response<ProjectDto>> GetById(GetProjectByIdQuery r, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.ProjectsRead, ct)) return Response<ProjectDto>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.ProjectsRead, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<ProjectDto>();
         var e = await repository.GetByIdAsync(tenant.TenantId, r.Id, ct);
         return e is null ? Response<ProjectDto>.Fail("Project was not found.", 404) : Response<ProjectDto>.Success(e.ToDto());
     }
     public async Task<Response<IReadOnlyList<ProjectDto>>> List(ListProjectsQuery r, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.ProjectsRead, ct)) return Response<IReadOnlyList<ProjectDto>>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.ProjectsRead, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<IReadOnlyList<ProjectDto>>();
         var items = await repository.ListAsync(tenant.TenantId, ct);
         return Response<IReadOnlyList<ProjectDto>>.Success(items.Select(x => x.ToDto()).ToArray());
     }
-    private Task<bool> Allowed(string p, CancellationToken ct) => ApplicationGuard.InvalidContext(tenant, actor) ? Task.FromResult(false) : permissions.HasPermissionAsync(p, ct);
     private async Task<bool> ParentExists(ProjectParentType type, Guid id, CancellationToken ct)
         => type switch
         {

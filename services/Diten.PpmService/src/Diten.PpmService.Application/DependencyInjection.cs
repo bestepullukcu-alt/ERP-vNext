@@ -6,6 +6,7 @@ using Diten.PpmService.Application.Features.Portfolios;
 using Diten.PpmService.Application.Features.Programs;
 using Diten.PpmService.Application.Features.Projects;
 using Diten.PpmService.Application.Behaviors;
+using Diten.PpmService.Application.Common;
 
 namespace Diten.PpmService.Application;
 
@@ -19,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<InitiativeService>();
         services.AddScoped<ProgramService>();
         services.AddScoped<ProjectService>();
+        services.AddScoped<IPpmAccessAuthorizer, PpmAccessAuthorizer>();
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ExceptionHandlingBehavior<,>));

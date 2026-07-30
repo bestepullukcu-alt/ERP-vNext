@@ -269,10 +269,15 @@ public sealed class MongoPersistenceIntegrationTests
     private sealed record RequestContext(Guid TenantId, Guid ActorId)
         : ITenantContext, ICurrentActorContext;
 
-    private sealed class PermissionEvaluator : IEffectivePermissionEvaluator
+    private sealed class PermissionEvaluator : IEffectivePermissionEvaluator, IPpmAccessAuthorizer
     {
         public Task<bool> HasPermissionAsync(
             string permission,
             CancellationToken cancellationToken) => Task.FromResult(true);
+
+        public Task<PpmAccessDecision> AuthorizeAsync(
+            string permission,
+            CancellationToken cancellationToken) =>
+            Task.FromResult(PpmAccessDecision.Allowed);
     }
 }

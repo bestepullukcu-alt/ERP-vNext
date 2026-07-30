@@ -7,18 +7,20 @@ namespace Diten.PpmService.Application.Features.Portfolios;
 
 public sealed class PortfolioService(
     IPortfolioRepository repository, IAuditIntentRepository audit, IPpmUnitOfWork unitOfWork,
-    ITenantContext tenant, ICurrentActorContext actor, IEffectivePermissionEvaluator permissions)
+    ITenantContext tenant, ICurrentActorContext actor, IPpmAccessAuthorizer access)
 {
     public async Task<Response<PortfolioDto>> Create(CreatePortfolioCommand request, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.PortfoliosCreate, ct)) return Response<PortfolioDto>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.PortfoliosCreate, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<PortfolioDto>();
         if (await repository.CodeExistsAsync(tenant.TenantId, ApplicationGuard.NormalizeCode(request.Code), null, ct)) return Response<PortfolioDto>.Fail("Portfolio code already exists.", 409);
         var entity = new Portfolio(tenant.TenantId, actor.ActorId, request.Code, request.Name, request.Description, request.VisibilityPolicyKey);
         return await unitOfWork.ExecuteInTransactionAsync(async token => { await repository.AddAsync(entity, token); await audit.AddAsync(Intent(entity, "created"), token); return Response<PortfolioDto>.Success(entity.ToDto(), 201); }, ct);
     }
     public async Task<Response<PortfolioDto>> Update(UpdatePortfolioCommand request, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.PortfoliosUpdate, ct)) return Response<PortfolioDto>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.PortfoliosUpdate, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<PortfolioDto>();
         var entity = await repository.GetByIdAsync(tenant.TenantId, request.Id, ct);
         if (entity is null) return Response<PortfolioDto>.Fail("Portfolio was not found.", 404);
         if (await repository.CodeExistsAsync(tenant.TenantId, ApplicationGuard.NormalizeCode(request.Code), request.Id, ct)) return Response<PortfolioDto>.Fail("Portfolio code already exists.", 409);
@@ -27,7 +29,8 @@ public sealed class PortfolioService(
     }
     public async Task<Response<PortfolioDto>> Transition(TransitionPortfolioLifecycleCommand request, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.PortfoliosArchive, ct)) return Response<PortfolioDto>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.PortfoliosLifecycle, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<PortfolioDto>();
         var entity = await repository.GetByIdAsync(tenant.TenantId, request.Id, ct);
         if (entity is null) return Response<PortfolioDto>.Fail("Portfolio was not found.", 404);
         if (!entity.CanTransitionTo(request.TargetState)) return Response<PortfolioDto>.Fail("Invalid lifecycle transition.", 409);
@@ -36,7 +39,8 @@ public sealed class PortfolioService(
     }
     public async Task<Response<NoContent>> SoftDelete(SoftDeletePortfolioCommand request, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.PortfoliosArchive, ct)) return Response<NoContent>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.PortfoliosLifecycle, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<NoContent>();
         var entity = await repository.GetByIdAsync(tenant.TenantId, request.Id, ct);
         if (entity is null) return Response<NoContent>.Fail("Portfolio was not found.", 404);
         entity.SoftDelete(actor.ActorId);
@@ -44,17 +48,18 @@ public sealed class PortfolioService(
     }
     public async Task<Response<PortfolioDto>> GetById(GetPortfolioByIdQuery request, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.PortfoliosRead, ct)) return Response<PortfolioDto>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.PortfoliosRead, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<PortfolioDto>();
         var entity = await repository.GetByIdAsync(tenant.TenantId, request.Id, ct);
         return entity is null ? Response<PortfolioDto>.Fail("Portfolio was not found.", 404) : Response<PortfolioDto>.Success(entity.ToDto());
     }
     public async Task<Response<IReadOnlyList<PortfolioDto>>> List(ListPortfoliosQuery request, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.PortfoliosRead, ct)) return Response<IReadOnlyList<PortfolioDto>>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.PortfoliosRead, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<IReadOnlyList<PortfolioDto>>();
         var items = await repository.ListAsync(tenant.TenantId, ct);
         return Response<IReadOnlyList<PortfolioDto>>.Success(items.Select(x => x.ToDto()).ToArray());
     }
-    private Task<bool> Allowed(string permission, CancellationToken ct) => ApplicationGuard.InvalidContext(tenant, actor) ? Task.FromResult(false) : permissions.HasPermissionAsync(permission, ct);
     private AuditIntent Intent(Portfolio x, string mutation) => new(Guid.NewGuid(), tenant.TenantId, actor.ActorId, nameof(Portfolio), x.Id, mutation, DateTime.UtcNow);
     private Task<Response<PortfolioDto>> Persist(Portfolio entity, int expectedVersion, string mutation, CancellationToken ct)
         => unitOfWork.ExecuteInTransactionAsync(async token => { await repository.ReplaceAsync(entity, expectedVersion, token); await audit.AddAsync(Intent(entity, mutation), token); return Response<PortfolioDto>.Success(entity.ToDto()); }, ct);

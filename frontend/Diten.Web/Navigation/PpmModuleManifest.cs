@@ -20,7 +20,7 @@ public static class PpmModuleManifest
         "ppm.initiatives.create",
         "ppm.initiatives.read",
         "ppm.initiatives.update",
-        "ppm.portfolios.archive",
+        "ppm.portfolios.change-lifecycle",
         "ppm.portfolios.create",
         "ppm.portfolios.read",
         "ppm.portfolios.update",

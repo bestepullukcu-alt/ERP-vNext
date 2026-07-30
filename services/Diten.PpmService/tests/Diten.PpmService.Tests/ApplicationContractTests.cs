@@ -36,6 +36,22 @@ public sealed class ApplicationContractTests
     }
 
     [Fact]
+    public async Task Entitlement_dependency_failure_returns_503_before_repository_access()
+    {
+        var repository = new PortfolioRepository();
+        var service = new PortfolioService(
+            repository, new AuditRepository(), new UnitOfWork(),
+            new RequestContext(Guid.NewGuid(), Guid.NewGuid()),
+            new RequestContext(Guid.NewGuid(), Guid.NewGuid()),
+            new FixedAccessAuthorizer(PpmAccessDecision.DependencyUnavailable));
+
+        var response = await service.Create(new("P-1", "Portfolio", null, null), default);
+
+        Assert.Equal(503, response.StatusCode);
+        Assert.Empty(repository.Items);
+    }
+
+    [Fact]
     public async Task Denied_read_does_not_probe_repository_or_disclose_existence()
     {
         var repository = new PortfolioRepository();
@@ -77,6 +93,32 @@ public sealed class ApplicationContractTests
         Assert.False(await evaluator.HasPermissionAsync(PpmPermissions.ProjectsCreate, default));
     }
 
+    [Theory]
+    [InlineData("PPM.PORTFOLIOS.CREATE")]
+    [InlineData(" ppm.portfolios.create")]
+    [InlineData("ppm.portfolios.create ")]
+    [InlineData("ppm.portfolios.*")]
+    [InlineData("ppm.portfolios.archive")]
+    public async Task Permission_matching_rejects_case_whitespace_wildcard_and_alias(string claim)
+    {
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(
+        [
+            new Claim("sub", Guid.NewGuid().ToString()),
+            new Claim("tenant_id", Guid.NewGuid().ToString()),
+            new Claim("permission", claim)
+        ], "Bearer"));
+        var evaluator = new SharedPermissionClaimEvaluatorAdapter(
+            new HttpContextAccessor
+            {
+                HttpContext = new DefaultHttpContext { User = principal }
+            },
+            new SignedJwtPermissionClaimEvaluator());
+
+        Assert.False(await evaluator.HasPermissionAsync(
+            PpmPermissions.PortfoliosCreate,
+            default));
+    }
+
     [Fact]
     public void Production_registration_uses_shared_permission_adapter()
     {
@@ -109,7 +151,7 @@ public sealed class ApplicationContractTests
             "ppm.initiatives.create",
             "ppm.initiatives.read",
             "ppm.initiatives.update",
-            "ppm.portfolios.archive",
+            "ppm.portfolios.change-lifecycle",
             "ppm.portfolios.create",
             "ppm.portfolios.read",
             "ppm.portfolios.update",
@@ -231,10 +273,23 @@ public sealed class ApplicationContractTests
     }
 
     private sealed record RequestContext(Guid TenantId, Guid ActorId) : ITenantContext, ICurrentActorContext;
-    private sealed class PermissionEvaluator(bool allowed) : IEffectivePermissionEvaluator
+    private sealed class PermissionEvaluator(bool allowed)
+        : IEffectivePermissionEvaluator, IPpmAccessAuthorizer
     {
         public Task<bool> HasPermissionAsync(string permission, CancellationToken cancellationToken) =>
             Task.FromResult(allowed);
+
+        public Task<PpmAccessDecision> AuthorizeAsync(
+            string permission,
+            CancellationToken cancellationToken) =>
+            Task.FromResult(allowed ? PpmAccessDecision.Allowed : PpmAccessDecision.Forbidden);
+    }
+
+    private sealed class FixedAccessAuthorizer(PpmAccessDecision decision) : IPpmAccessAuthorizer
+    {
+        public Task<PpmAccessDecision> AuthorizeAsync(
+            string permission,
+            CancellationToken cancellationToken) => Task.FromResult(decision);
     }
 
     private sealed class AuditRepository : IAuditIntentRepository

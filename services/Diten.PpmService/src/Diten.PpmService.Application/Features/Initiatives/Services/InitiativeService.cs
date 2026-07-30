@@ -7,11 +7,12 @@ namespace Diten.PpmService.Application.Features.Initiatives;
 
 public sealed class InitiativeService(
     IInitiativeRepository repository, IPortfolioRepository portfolios, IAuditIntentRepository audit, IPpmUnitOfWork unitOfWork,
-    ITenantContext tenant, ICurrentActorContext actor, IEffectivePermissionEvaluator permissions)
+    ITenantContext tenant, ICurrentActorContext actor, IPpmAccessAuthorizer access)
 {
     public async Task<Response<InitiativeDto>> Create(CreateInitiativeCommand r, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.InitiativesCreate, ct)) return Response<InitiativeDto>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.InitiativesCreate, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<InitiativeDto>();
         return await unitOfWork.ExecuteInTransactionAsync(async token =>
         {
             if (!await PortfolioExists(r.PortfolioId, token)) return Response<InitiativeDto>.Fail("Portfolio was not found.", 404);
@@ -24,7 +25,8 @@ public sealed class InitiativeService(
     }
     public async Task<Response<InitiativeDto>> Update(UpdateInitiativeCommand r, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.InitiativesUpdate, ct)) return Response<InitiativeDto>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.InitiativesUpdate, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<InitiativeDto>();
         var e = await repository.GetByIdAsync(tenant.TenantId, r.Id, ct);
         if (e is null) return Response<InitiativeDto>.Fail("Initiative was not found.", 404);
         return await unitOfWork.ExecuteInTransactionAsync(async token =>
@@ -39,7 +41,8 @@ public sealed class InitiativeService(
     }
     public async Task<Response<InitiativeDto>> Transition(TransitionInitiativeLifecycleCommand r, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.InitiativesLifecycle, ct)) return Response<InitiativeDto>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.InitiativesLifecycle, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<InitiativeDto>();
         var e = await repository.GetByIdAsync(tenant.TenantId, r.Id, ct);
         if (e is null) return Response<InitiativeDto>.Fail("Initiative was not found.", 404);
         if (!e.CanTransitionTo(r.TargetState)) return Response<InitiativeDto>.Fail("Invalid lifecycle transition.", 409);
@@ -48,7 +51,8 @@ public sealed class InitiativeService(
     }
     public async Task<Response<NoContent>> SoftDelete(SoftDeleteInitiativeCommand r, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.InitiativesLifecycle, ct)) return Response<NoContent>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.InitiativesLifecycle, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<NoContent>();
         var e = await repository.GetByIdAsync(tenant.TenantId, r.Id, ct);
         if (e is null) return Response<NoContent>.Fail("Initiative was not found.", 404);
         e.SoftDelete(actor.ActorId);
@@ -56,17 +60,18 @@ public sealed class InitiativeService(
     }
     public async Task<Response<InitiativeDto>> GetById(GetInitiativeByIdQuery r, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.InitiativesRead, ct)) return Response<InitiativeDto>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.InitiativesRead, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<InitiativeDto>();
         var e = await repository.GetByIdAsync(tenant.TenantId, r.Id, ct);
         return e is null ? Response<InitiativeDto>.Fail("Initiative was not found.", 404) : Response<InitiativeDto>.Success(e.ToDto());
     }
     public async Task<Response<IReadOnlyList<InitiativeDto>>> List(ListInitiativesQuery r, CancellationToken ct)
     {
-        if (!await Allowed(PpmPermissions.InitiativesRead, ct)) return Response<IReadOnlyList<InitiativeDto>>.Fail("Forbidden.", 403);
+        var decision = await access.AuthorizeAsync(PpmPermissions.InitiativesRead, ct);
+        if (decision != PpmAccessDecision.Allowed) return decision.Failure<IReadOnlyList<InitiativeDto>>();
         var items = await repository.ListAsync(tenant.TenantId, ct);
         return Response<IReadOnlyList<InitiativeDto>>.Success(items.Select(x => x.ToDto()).ToArray());
     }
-    private Task<bool> Allowed(string p, CancellationToken ct) => ApplicationGuard.InvalidContext(tenant, actor) ? Task.FromResult(false) : permissions.HasPermissionAsync(p, ct);
     private async Task<bool> PortfolioExists(Guid? id, CancellationToken ct) => id is null || await portfolios.GetByIdAsync(tenant.TenantId, id.Value, ct) is not null;
     private AuditIntent Intent(Initiative e, string m) => new(Guid.NewGuid(), tenant.TenantId, actor.ActorId, nameof(Initiative), e.Id, m, DateTime.UtcNow);
     private Task<Response<InitiativeDto>> Persist(Initiative e, int version, string mutation, CancellationToken ct)

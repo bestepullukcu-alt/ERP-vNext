@@ -1,5 +1,6 @@
 using Diten.PpmService.Application.Common;
 using Diten.PpmService.Infrastructure.Authorization;
+using Diten.PpmService.Infrastructure.Entitlements;
 using Diten.Platform.Common.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +16,7 @@ public static class DependencyInjection
         services.AddScoped<ICurrentActorContext>(provider => provider.GetRequiredService<JwtRequestContext>());
         services.AddSingleton<IPermissionClaimEvaluator, SignedJwtPermissionClaimEvaluator>();
         services.AddScoped<IEffectivePermissionEvaluator, SharedPermissionClaimEvaluatorAdapter>();
+        services.AddHttpClient<IPpmEntitlementDecisionClient, PpmEntitlementDecisionClient>();
         return services;
     }
 }
