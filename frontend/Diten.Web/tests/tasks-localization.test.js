@@ -44,6 +44,18 @@ describe("MOD-0024 task localization", () => {
     expect(byLocale.tr.ReviewRequiredHint).not.toBe(byLocale.en.ReviewRequiredHint);
   });
 
+  it("ships the reviewer field's label and hint in all seven languages", () => {
+    // The field is mandatory whenever the review switch is on, so an untranslated label is a required field the
+    // user cannot read.
+    LOCALES.forEach((locale) => {
+      expect(byLocale[locale].FieldReviewer).toBeTruthy();
+      expect(byLocale[locale].ReviewerHint).toBeTruthy();
+    });
+
+    expect(byLocale.tr.FieldReviewer).not.toBe(byLocale.en.FieldReviewer);
+    expect(byLocale.ru.ReviewerHint).not.toBe(byLocale.en.ReviewerHint);
+  });
+
   it("leaves the review switch enabled on the form", () => {
     // The string alone proves nothing: the hint could be correct while the control stays disabled, which is the
     // state this slice replaced.

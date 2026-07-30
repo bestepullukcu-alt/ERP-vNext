@@ -34,6 +34,8 @@
   <data name="FieldTags" xml:space="preserve"><value>Теги</value></data>
   <data name="FieldReviewRequired" xml:space="preserve"><value>Требуется проверка</value></data>
   <data name="ReviewRequiredHint" xml:space="preserve"><value>Если включено, задача проходит проверку до завершения.</value></data>
+  <data name="FieldReviewer" xml:space="preserve"><value>Проверяющий</value></data>
+  <data name="ReviewerHint" xml:space="preserve"><value>Обязательно, если требуется проверка: без получателя её нельзя открыть. Кто действительно может проверять, решает рабочий процесс.</value></data>
   <data name="FieldApprovalRequired" xml:space="preserve"><value>Требуется согласование руководителя</value></data>
   <data name="FieldApprovalManager" xml:space="preserve"><value>Согласующий руководитель</value></data>
   <data name="ApprovalHint" xml:space="preserve"><value>Согласование выполняется в движке процессов; до его получения задачу нельзя начать.</value></data>

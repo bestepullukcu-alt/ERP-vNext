@@ -34,6 +34,8 @@
   <data name="FieldTags" xml:space="preserve"><value>الوسوم</value></data>
   <data name="FieldReviewRequired" xml:space="preserve"><value>مراجعة مطلوبة</value></data>
   <data name="ReviewRequiredHint" xml:space="preserve"><value>عند التفعيل، تنتقل المهمة إلى مراجع قبل أن يمكن إكمالها.</value></data>
+  <data name="FieldReviewer" xml:space="preserve"><value>المراجع</value></data>
+  <data name="ReviewerHint" xml:space="preserve"><value>مطلوب عند طلب مراجعة — لا يمكن فتح المراجعة دون شخص تُرسل إليه. ومن يحق له المراجعة فعليًا يقرره سير العمل.</value></data>
   <data name="FieldApprovalRequired" xml:space="preserve"><value>موافقة المدير مطلوبة</value></data>
   <data name="FieldApprovalManager" xml:space="preserve"><value>مدير الموافقة</value></data>
   <data name="ApprovalHint" xml:space="preserve"><value>تُدار الموافقة في محرك سير العمل؛ ولا يمكن بدء المهمة قبل منحها.</value></data>

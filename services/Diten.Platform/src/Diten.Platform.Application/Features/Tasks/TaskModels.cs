@@ -75,6 +75,19 @@ public static class TaskReasonCodes
     /// <summary>Review was submitted on a task that never asked for one.</summary>
     public const string ReviewNotRequired = "REVIEW_NOT_REQUIRED";
 
+    /// <summary>
+    /// A review was requested with nobody to route it to. MOD-0023 refuses to start an instance with an empty
+    /// candidate list, so this is caught at the WRITE rather than left to surface as a review that will not start.
+    /// </summary>
+    public const string ReviewerRequired = "REVIEW_REVIEWER_REQUIRED";
+
+    /// <summary>
+    /// The review could not be OPENED — deliberately distinct from <see cref="ReviewPending"/>, which means a
+    /// reviewer is holding the work. Nothing is waiting here; the handoff failed and the caller can retry. Telling
+    /// someone "waiting for the reviewer" when no reviewer was ever asked sends them to wait on nobody.
+    /// </summary>
+    public const string ReviewStartFailed = "REVIEW_START_FAILED";
+
     /// <summary>A subtask may not itself have subtasks — one level only (pack §12 E2).</summary>
     public const string SubtaskDepthExceeded = "SUBTASK_DEPTH_EXCEEDED";
 
@@ -208,7 +221,13 @@ public sealed record CreateTaskItemRequest(
     // Phase-1 caller and payload stays valid.
     Guid? ParentTaskItemId = null,
     /// <summary>Instantiate this checklist template onto the new task (pack §12 E1/E5).</summary>
-    Guid? ChecklistTemplateId = null);
+    Guid? ChecklistTemplateId = null,
+    /// <summary>
+    /// Who the requester SUGGESTS should review — required whenever <c>ReviewRequired</c> is set, because
+    /// MOD-0023 cannot start a review with nobody to route it to. A candidate hint, not a decision: MOD-0023 and
+    /// MOD-0018 resolve who may actually act.
+    /// </summary>
+    Guid? ReviewerCandidateUserId = null);
 
 public sealed record UpdateTaskItemRequest(
     string Title,
@@ -229,7 +248,14 @@ public sealed record UpdateTaskItemRequest(
     // a form that never renders the toggle must not be able to silently drop an approval that is already running.
     // Trailing and optional so every Phase 1-2 payload stays valid.
     bool? ApprovalRequired = null,
-    Guid? ApprovalManagerUserId = null);
+    Guid? ApprovalManagerUserId = null,
+    /// <summary>
+    /// The reviewer candidate, on the same terms as creation. Unlike <c>ApprovalRequired</c> above this is NOT
+    /// nullable-means-untouched: <c>ReviewRequired</c> is a plain bool here, so this request is a FULL REPLACE of
+    /// the review requirement and the reviewer has to travel with it. An edit that drops the reviewer while the
+    /// requirement stays on is refused rather than silently stripping it.
+    /// </summary>
+    Guid? ReviewerCandidateUserId = null);
 
 public sealed record TaskWatcherRequest(Guid UserId, TaskWatcherRole Role, Guid? PositionId);
 
@@ -351,7 +377,14 @@ public sealed record TaskItemDetailDto(
     string? ClosureReasonCode,
     int Version,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt);
+    DateTimeOffset? UpdatedAt,
+    /// <summary>
+    /// The reviewer candidate, so the edit form can re-render what is already on the task. Without it the form
+    /// comes back blank and the next save — a FULL REPLACE — is refused, or worse, silently strips it.
+    /// </summary>
+    Guid? ReviewerCandidateUserId = null,
+    /// <summary>The review's MOD-0023 instance. The LINK only; the verdict is read from MOD-0023.</summary>
+    Guid? ReviewWorkflowInstanceId = null);
 
 public sealed record TaskWatcherDto(Guid Id, Guid UserId, string Role, Guid? PositionId);
 

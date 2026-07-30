@@ -124,13 +124,25 @@
         <h6 class="text-muted text-uppercase small mb-3">@Localizer["SectionGovernance"]</h6>
         <div class="row g-3 mb-4">
             <div class="col-md-6">
-                @* Faz 3b: review is implemented, so the switch is live and the hint says what it DOES rather than
-                   when it might arrive. The reviewer is not chosen here — MOD-0023 resolves who may act. *@
+                @* Faz 3b: review is implemented, so the switch is live and the hint says what it DOES rather
+                   than when it might arrive. *@
                 <div class="form-check form-switch mb-2">
                     <input class="form-check-input" type="checkbox" id="taskReviewRequired" name="reviewRequired"
                            aria-describedby="taskReviewRequiredHint" />
                     <label class="form-check-label" for="taskReviewRequired">@Localizer["FieldReviewRequired"]</label>
                     <div class="form-text" id="taskReviewRequiredHint">@Localizer["ReviewRequiredHint"]</div>
+                </div>
+                @* The reviewer CANDIDATE — same pattern as the approval manager below, deliberately: same kind of
+                   field, same d-none toggle keyed off its own switch, same required marker. It is mandatory
+                   because MOD-0023 refuses to start a review with nobody to route it to, so a task saved without
+                   one could never be submitted. Who may ACTUALLY review is still MOD-0023's decision. *@
+                <div class="d-none mb-2" data-task-field="reviewer">
+                    <label class="form-label" for="taskReviewer">
+                        @Localizer["FieldReviewer"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control" id="taskReviewer"
+                           name="reviewerCandidateUserId" autocomplete="off" />
+                    <div class="form-text">@Localizer["ReviewerHint"]</div>
                 </div>
                 <div class="form-check form-switch mb-2">
                     <input class="form-check-input" type="checkbox" id="taskApprovalRequired"

@@ -1352,6 +1352,12 @@
   <data name="WorkAggregation_Action_SubmitReview" xml:space="preserve">
     <value>Отправить на проверку</value>
   </data>
+  <data name="WorkAggregation_ReviewError_StartFailed" xml:space="preserve">
+    <value>Не удалось начать проверку. Никто не ожидает — попробуйте снова.</value>
+  </data>
+  <data name="WorkAggregation_ReviewError_ReviewerRequired" xml:space="preserve">
+    <value>При запросе проверки необходимо указать проверяющего.</value>
+  </data>
   <data name="WorkAggregation_ActionDisabled_ReviewPending" xml:space="preserve">
     <value>У проверяющего — завершить пока нельзя.</value>
   </data>

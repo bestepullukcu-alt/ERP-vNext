@@ -1352,6 +1352,12 @@
   <data name="WorkAggregation_Action_SubmitReview" xml:space="preserve">
     <value>Enviar a revisión</value>
   </data>
+  <data name="WorkAggregation_ReviewError_StartFailed" xml:space="preserve">
+    <value>No se pudo iniciar la revisión. Nadie está esperando: inténtelo de nuevo.</value>
+  </data>
+  <data name="WorkAggregation_ReviewError_ReviewerRequired" xml:space="preserve">
+    <value>Se requiere un revisor cuando se solicita una revisión.</value>
+  </data>
   <data name="WorkAggregation_ActionDisabled_ReviewPending" xml:space="preserve">
     <value>En manos del revisor: aún no se puede completar.</value>
   </data>

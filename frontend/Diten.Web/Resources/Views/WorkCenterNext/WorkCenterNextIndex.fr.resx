@@ -1352,6 +1352,12 @@
   <data name="WorkAggregation_Action_SubmitReview" xml:space="preserve">
     <value>Soumettre pour revue</value>
   </data>
+  <data name="WorkAggregation_ReviewError_StartFailed" xml:space="preserve">
+    <value>La revue n'a pas pu être lancée. Personne n'est en attente — réessayez.</value>
+  </data>
+  <data name="WorkAggregation_ReviewError_ReviewerRequired" xml:space="preserve">
+    <value>Un relecteur est obligatoire lorsqu’une revue est demandée.</value>
+  </data>
   <data name="WorkAggregation_ActionDisabled_ReviewPending" xml:space="preserve">
     <value>Chez le relecteur — ne peut pas encore être terminée.</value>
   </data>

@@ -34,6 +34,8 @@
   <data name="FieldTags" xml:space="preserve"><value>Etiquetas</value></data>
   <data name="FieldReviewRequired" xml:space="preserve"><value>Requiere revisión</value></data>
   <data name="ReviewRequiredHint" xml:space="preserve"><value>Si se activa, la tarea pasa por un revisor antes de poder completarse.</value></data>
+  <data name="FieldReviewer" xml:space="preserve"><value>Revisor</value></data>
+  <data name="ReviewerHint" xml:space="preserve"><value>Obligatorio cuando se solicita una revisión: no se puede abrir sin alguien a quien enviarla. Quién puede revisar realmente lo decide el flujo de trabajo.</value></data>
   <data name="FieldApprovalRequired" xml:space="preserve"><value>Requiere aprobación del responsable</value></data>
   <data name="FieldApprovalManager" xml:space="preserve"><value>Responsable de aprobación</value></data>
   <data name="ApprovalHint" xml:space="preserve"><value>La aprobación se ejecuta en el motor de flujo de trabajo; la tarea no puede iniciarse hasta concederse.</value></data>

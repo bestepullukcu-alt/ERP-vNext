@@ -1352,6 +1352,12 @@
   <data name="WorkAggregation_Action_SubmitReview" xml:space="preserve">
     <value>Submit for review</value>
   </data>
+  <data name="WorkAggregation_ReviewError_StartFailed" xml:space="preserve">
+    <value>The review could not be started. Nothing is waiting on anyone — try again.</value>
+  </data>
+  <data name="WorkAggregation_ReviewError_ReviewerRequired" xml:space="preserve">
+    <value>A reviewer is required when a review is requested.</value>
+  </data>
   <data name="WorkAggregation_ActionDisabled_ReviewPending" xml:space="preserve">
     <value>With the reviewer — it cannot be completed yet.</value>
   </data>

@@ -34,6 +34,8 @@
   <data name="FieldTags" xml:space="preserve"><value>Étiquettes</value></data>
   <data name="FieldReviewRequired" xml:space="preserve"><value>Revue requise</value></data>
   <data name="ReviewRequiredHint" xml:space="preserve"><value>Si activé, la tâche passe par un relecteur avant de pouvoir être terminée.</value></data>
+  <data name="FieldReviewer" xml:space="preserve"><value>Relecteur</value></data>
+  <data name="ReviewerHint" xml:space="preserve"><value>Obligatoire lorsqu'une revue est demandée — la revue ne peut pas être ouverte sans destinataire. Qui peut réellement relire est décidé par le flux de travail.</value></data>
   <data name="FieldApprovalRequired" xml:space="preserve"><value>Approbation du responsable requise</value></data>
   <data name="FieldApprovalManager" xml:space="preserve"><value>Responsable de l'approbation</value></data>
   <data name="ApprovalHint" xml:space="preserve"><value>L'approbation est gérée par le moteur de workflow ; la tâche ne peut pas démarrer avant son octroi.</value></data>

@@ -80,6 +80,30 @@ describe("WorkCenterNext localization resources", () => {
     });
   });
 
+  it("keeps 'the review could not start' separate from 'the reviewer is holding it'", () => {
+    /*
+     * They are different facts and they send the reader to different places: one is a retry, the other is a
+     * person to wait on. Live, the start failure reported itself as REVIEW_PENDING and pointed the user at a
+     * reviewer who had never been asked. Approval already draws this line (ApprovalError_StartFailed vs
+     * ActionDisabled_ApprovalPending); this holds review to it.
+     */
+    const valueOf = (locale, key) => {
+      const xml = fs.readFileSync(path.join(resourceRoot, `WorkCenterNextIndex.${locale}.resx`), "utf8");
+      const match = new RegExp(`name="${key}"[^>]*>\\s*<value>([\\s\\S]*?)</value>`).exec(xml);
+      return match ? match[1].trim() : null;
+    };
+
+    ["WorkAggregation_ReviewError_StartFailed", "WorkAggregation_ReviewError_ReviewerRequired"].forEach((key) => {
+      locales.forEach((locale) => expect(valueOf(locale, key)).toBeTruthy());
+      expect(valueOf("tr", key)).not.toBe(valueOf("en", key));
+    });
+
+    locales.forEach((locale) => {
+      expect(valueOf(locale, "WorkAggregation_ReviewError_StartFailed"))
+        .not.toBe(valueOf(locale, "WorkAggregation_ActionDisabled_ReviewPending"));
+    });
+  });
+
   it("wires each date cell to its OWN empty text", () => {
     // Having the strings is not enough — the detail pane must actually use the plan-specific one. The bug was a
     // single shared placeholder in renderPlanDates, so this pins the call sites.

@@ -91,6 +91,9 @@
             estimateHours: parseNumberOrNull(draft.estimateHours),
             tags: parseTags(draft.tags),
             reviewRequired: !!draft.reviewRequired,
+            // Dropped with the requirement, exactly as the approval manager is: sending a reviewer for a task
+            // that needs no review would store a candidate nothing will ever route to.
+            reviewerCandidateUserId: draft.reviewRequired ? trimOrNull(draft.reviewerCandidateUserId) : null,
             approvalRequired: !!draft.approvalRequired,
             approvalManagerUserId: draft.approvalRequired ? trimOrNull(draft.approvalManagerUserId) : null,
             emailNotificationsEnabled: draft.emailNotificationsEnabled !== false,
@@ -116,6 +119,11 @@
         if (visible.poolPosition && !trimOrNull(draft.poolPositionId)) { errors.push('poolPositionId'); }
         if (draft.approvalRequired && !trimOrNull(draft.approvalManagerUserId)) {
             errors.push('approvalManagerUserId');
+        }
+        // Mirrors the server's rule so the user is told before the round trip. The server stays authoritative:
+        // it refuses with REVIEW_REVIEWER_REQUIRED whatever the client believes.
+        if (draft.reviewRequired && !trimOrNull(draft.reviewerCandidateUserId)) {
+            errors.push('reviewerCandidateUserId');
         }
 
         return { valid: errors.length === 0, errors };

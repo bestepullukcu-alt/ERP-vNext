@@ -176,6 +176,17 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
                 TaskReasonCodes.ValidationFailed, command.CorrelationId);
         }
 
+        /*
+         * The review's symmetric rule. Its own reason code rather than the generic VALIDATION_FAILED approval
+         * uses, because this one names a field the form has to point at — and because "a review was requested
+         * with nobody to review it" is a specific mistake the client can explain, not a generic bad payload.
+         */
+        if (TaskReviewRules.ReviewerMissing(request.ReviewRequired, request.ReviewerCandidateUserId))
+        {
+            return Fail(TaskReviewRules.ReviewerRequiredMessage,
+                TaskReasonCodes.ReviewerRequired, command.CorrelationId);
+        }
+
         // ── Subtask link (pack §12 E2): validated before anything is written ──
         if (request.ParentTaskItemId is { } parentId && parentId != Guid.Empty)
         {
@@ -219,6 +230,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
             SpentHours = 0m,
             Tags = (request.Tags ?? []).Select(t => t.Trim()).Where(t => t.Length > 0).Distinct().ToList(),
             ReviewRequired = request.ReviewRequired,
+            ReviewerCandidateUserId = request.ReviewerCandidateUserId,
             ApprovalRequired = request.ApprovalRequired,
             ApprovalManagerUserId = request.ApprovalManagerUserId,
             EmailNotificationsEnabled = request.EmailNotificationsEnabled,

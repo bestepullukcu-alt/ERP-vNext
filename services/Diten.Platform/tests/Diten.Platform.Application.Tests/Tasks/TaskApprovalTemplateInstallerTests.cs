@@ -425,6 +425,19 @@ internal sealed class FakeWorkflowMediator(FakeWorkflowTemplateStore templates, 
             throw new InvalidOperationException("MOD-0023 is unreachable.");
         }
 
+        /*
+         * MOD-0023's REAL validators run first, before this double answers anything.
+         *
+         * Without this the double was the end of the chain, and a chain that ends in a fake proves nothing about
+         * the request MOD-0024 actually sends. That is not hypothetical: review shipped sending an EMPTY
+         * candidate list, MOD-0023's validator refuses one, and every test here was green because this double
+         * happily started an instance no real engine would have started.
+         *
+         * Nothing else about the double changes — it still answers with the shaped responses below. It just
+         * stops accepting requests the engine would reject.
+         */
+        Validate(request);
+
         return request switch
         {
             CreateWorkflowDefinitionCommand create => Task.FromResult((TResponse)Create(create)),
@@ -505,6 +518,32 @@ internal sealed class FakeWorkflowMediator(FakeWorkflowTemplateStore templates, 
                 row.Status.ToString(), DateTime.UtcNow, "tester", command.CorrelationId),
             200,
             command.CorrelationId);
+    }
+
+    /// <summary>
+    /// Runs the request through MOD-0023's own FluentValidation validator when one exists, and throws exactly the
+    /// way the real MediatR validation pipeline does. MOD-0023's files are read, never modified.
+    /// </summary>
+    private static void Validate<TRequest>(TRequest request)
+    {
+        var validatorType = typeof(Diten.Platform.Application.Features.Workflow.Validators.StartWorkflowInstanceValidator)
+            .Assembly
+            .GetTypes()
+            .FirstOrDefault(t => !t.IsAbstract
+                && t.BaseType is { IsGenericType: true } baseType
+                && baseType.GetGenericTypeDefinition() == typeof(FluentValidation.AbstractValidator<>)
+                && baseType.GetGenericArguments()[0] == request!.GetType());
+
+        if (validatorType is null || Activator.CreateInstance(validatorType) is not FluentValidation.IValidator validator)
+        {
+            return;
+        }
+
+        var result = validator.Validate(new FluentValidation.ValidationContext<object>(request!));
+        if (!result.IsValid)
+        {
+            throw new FluentValidation.ValidationException(result.Errors);
+        }
     }
 
     private object Start(StartWorkflowInstanceCommand command)

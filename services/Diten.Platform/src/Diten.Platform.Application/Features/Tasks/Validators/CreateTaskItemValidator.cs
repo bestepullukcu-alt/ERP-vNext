@@ -49,6 +49,18 @@ public sealed class CreateTaskItemValidator : AbstractValidator<CreateTaskItemCo
             .When(x => x.Request.ApprovalRequired)
             .WithMessage("An approval manager is required when approval is requested.");
 
+        /*
+         * The review's symmetric rule is deliberately NOT here — it lives in TaskReviewRules and is applied by
+         * the create and update HANDLERS instead.
+         *
+         * Measured reason: ValidationBehavior looks for a `Response<T>.Fail(IReadOnlyList<string>, int)` overload
+         * that does not exist (the real one takes four parameters), so its reflective lookup always misses and
+         * every FluentValidation failure in this codebase is THROWN and rendered by GlobalExceptionHandler as a
+         * ValidationProblemDetails — a 400 with no reason code. A rule here would therefore shadow the handler's
+         * refusal with a differently-shaped response the client cannot route on, which is the whole point of
+         * having REVIEW_REVIEWER_REQUIRED. The approval rule above predates that discovery and is left alone.
+         */
+
         RuleFor(x => x.Request.EstimateHours)
             .GreaterThanOrEqualTo(0).When(x => x.Request.EstimateHours is not null);
 

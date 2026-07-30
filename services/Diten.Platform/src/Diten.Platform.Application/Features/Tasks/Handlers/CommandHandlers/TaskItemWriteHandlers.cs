@@ -91,10 +91,24 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
          * reviewer waiting on work nobody needs reviewed. Same decide-here / act-after-the-write shape as approval
          * below, and for the same reason — no workflow is cancelled for an edit that then loses its race.
          */
+        /*
+         * The SAME rule as creation, from the same source. This request is a full replace of the review
+         * requirement — ReviewRequired is a plain bool, not the nullable "not editing this" ApprovalRequired uses
+         * — so an edit that omits the reviewer while leaving the requirement on would otherwise strip a task's
+         * reviewer and leave a review that can never start.
+         */
+        if (TaskReviewRules.ReviewerMissing(request.ReviewRequired, request.ReviewerCandidateUserId))
+        {
+            return Response<NoContent>.Fail(
+                TaskReviewRules.ReviewerRequiredMessage,
+                400, TaskReasonCodes.ReviewerRequired, command.CorrelationId);
+        }
+
         var cancelReview = task.ReviewRequired
             && !request.ReviewRequired
             && task.ReviewWorkflowInstanceId is not null;
         task.ReviewRequired = request.ReviewRequired;
+        task.ReviewerCandidateUserId = request.ReviewerCandidateUserId;
         task.EmailNotificationsEnabled = request.EmailNotificationsEnabled;
         task.DelegationAllowed = request.DelegationAllowed;
         task.FieldValues = fields.Values.ToList();

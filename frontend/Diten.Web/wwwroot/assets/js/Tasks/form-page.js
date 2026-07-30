@@ -28,6 +28,7 @@
         estimateHours: el('taskEstimateHours')?.value,
         tags: el('taskTags')?.value,
         reviewRequired: el('taskReviewRequired')?.checked,
+        reviewerCandidateUserId: el('taskReviewer')?.value,
         approvalRequired: el('taskApprovalRequired')?.checked,
         approvalManagerUserId: el('taskApprovalManager')?.value,
         emailNotificationsEnabled: el('taskEmailNotifications')?.checked,
@@ -49,6 +50,7 @@
         setValue('taskEstimateHours', draft.estimateHours);
         setValue('taskTags', Array.isArray(draft.tags) ? draft.tags.join(', ') : draft.tags);
         setChecked('taskReviewRequired', draft.reviewRequired);
+        setValue('taskReviewer', draft.reviewerCandidateUserId);
         setChecked('taskApprovalRequired', draft.approvalRequired);
         setValue('taskApprovalManager', draft.approvalManagerUserId);
         if (draft.emailNotificationsEnabled !== undefined) {
@@ -63,6 +65,10 @@
         // The approval manager only matters when approval is actually requested.
         form?.querySelectorAll('[data-task-field="approvalManager"]').forEach((node) => {
             node.classList.toggle('d-none', !el('taskApprovalRequired')?.checked);
+        });
+        // Same rule for the reviewer, keyed off its OWN switch.
+        form?.querySelectorAll('[data-task-field="reviewer"]').forEach((node) => {
+            node.classList.toggle('d-none', !el('taskReviewRequired')?.checked);
         });
     };
 
@@ -111,6 +117,7 @@
 
         el('taskAssignmentTarget')?.addEventListener('change', syncVisibility);
         el('taskApprovalRequired')?.addEventListener('change', syncVisibility);
+        el('taskReviewRequired')?.addEventListener('change', syncVisibility);
         syncVisibility();
 
         el('taskSubmit')?.addEventListener('click', async () => {

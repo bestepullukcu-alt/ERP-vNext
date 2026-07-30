@@ -79,5 +79,7 @@ public static class TaskItemMapper
         task.ClosureReasonCode,
         task.Version,
         task.CreatedAt,
-        task.UpdatedAt);
+        task.UpdatedAt,
+        task.ReviewerCandidateUserId,
+        task.ReviewWorkflowInstanceId);
 }

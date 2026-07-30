@@ -34,6 +34,8 @@
   <data name="FieldTags" xml:space="preserve"><value>标签</value></data>
   <data name="FieldReviewRequired" xml:space="preserve"><value>需要复核</value></data>
   <data name="ReviewRequiredHint" xml:space="preserve"><value>启用后，任务需经审核人审核才能完成。</value></data>
+  <data name="FieldReviewer" xml:space="preserve"><value>审核人</value></data>
+  <data name="ReviewerHint" xml:space="preserve"><value>请求审核时必填 — 没有接收人就无法发起审核。实际由谁审核由工作流决定。</value></data>
   <data name="FieldApprovalRequired" xml:space="preserve"><value>需要经理审批</value></data>
   <data name="FieldApprovalManager" xml:space="preserve"><value>审批经理</value></data>
   <data name="ApprovalHint" xml:space="preserve"><value>审批在工作流引擎中执行；未获批准前任务无法开始。</value></data>

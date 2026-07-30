@@ -581,9 +581,15 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
             _logger.LogWarning(
                 "Review could not be started for task {TaskId}; it stays in progress rather than waiting on nobody.",
                 task.Id);
+            /*
+             * REVIEW_START_FAILED, not REVIEW_PENDING. Nothing is waiting: the handoff was refused, so there is
+             * no reviewer to wait on and the caller can simply retry. Reporting it as "pending" pointed the user
+             * at a reviewer who was never asked — the same distinction approval already draws between its
+             * start-failed and approver-pending texts.
+             */
             return Response<NoContent>.Fail(
                 "The review could not be started. The task is unchanged; try again.",
-                409, TaskReasonCodes.ReviewPending, command.CorrelationId);
+                409, TaskReasonCodes.ReviewStartFailed, command.CorrelationId);
         }
 
         task.ReviewWorkflowInstanceId = instanceId;
