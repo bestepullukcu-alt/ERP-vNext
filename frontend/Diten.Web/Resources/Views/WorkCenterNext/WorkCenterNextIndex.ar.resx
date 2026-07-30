@@ -878,6 +878,12 @@
   <data name="ToastSelfTaskCreated" xml:space="preserve">
     <value>{0} · أُضيف إلى مهامي (تجريبي)</value>
   </data>
+  <data name="ToastCommentPostedReal" xml:space="preserve">
+    <value>نُشر التعليق</value>
+  </data>
+  <data name="ToastSelfTaskCreatedReal" xml:space="preserve">
+    <value>{0} · أُضيف إلى مهامي</value>
+  </data>
   <data name="ToastCreateInSource" xml:space="preserve">
     <value>سيُفتح الإنشاء في وحدة {0} (تجريبي)</value>
   </data>

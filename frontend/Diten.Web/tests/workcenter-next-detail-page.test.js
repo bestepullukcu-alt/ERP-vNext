@@ -1503,6 +1503,23 @@ describe("the comment composer writes to the engine", () => {
     });
   });
 
+  it("does not tell the user a real write was a mock", async () => {
+    // The real path used to share 'ToastCommentPosted' with the fixture path, which says "(mock)" in all seven
+    // languages — a lie for a comment that really reached the engine. t()/tf() echo the key verbatim in this
+    // harness, so the toast message IS the key.
+    const toasts = [];
+    global.showToast = (message) => { toasts.push(message); };
+    await bootDetailPage(withActivity());
+
+    app().querySelector("[data-wcn-comment-input]").value = "Bütçe onayını bekliyoruz.";
+    app().querySelector("[data-wcn-comment-post]").click();
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+    expect(toasts).toContain("ToastCommentPostedReal");
+    expect(toasts).not.toContain("ToastCommentPosted");
+    delete global.showToast;
+  });
+
   it("refuses an empty comment without troubling the engine", async () => {
     const { posted } = await bootDetailPage(withActivity());
 

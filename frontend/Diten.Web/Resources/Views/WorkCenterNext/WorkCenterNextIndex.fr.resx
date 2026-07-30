@@ -878,6 +878,12 @@
   <data name="ToastSelfTaskCreated" xml:space="preserve">
     <value>{0} · ajouté à Mes tâches (mock)</value>
   </data>
+  <data name="ToastCommentPostedReal" xml:space="preserve">
+    <value>Commentaire publié</value>
+  </data>
+  <data name="ToastSelfTaskCreatedReal" xml:space="preserve">
+    <value>{0} · ajouté à Mes tâches</value>
+  </data>
   <data name="ToastCreateInSource" xml:space="preserve">
     <value>La création s'ouvrirait dans le module {0} (mock)</value>
   </data>

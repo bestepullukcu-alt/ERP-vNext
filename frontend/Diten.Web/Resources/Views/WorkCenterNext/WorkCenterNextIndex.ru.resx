@@ -878,6 +878,12 @@
   <data name="ToastSelfTaskCreated" xml:space="preserve">
     <value>{0} · добавлено в «Мои задачи» (макет)</value>
   </data>
+  <data name="ToastCommentPostedReal" xml:space="preserve">
+    <value>Комментарий отправлен</value>
+  </data>
+  <data name="ToastSelfTaskCreatedReal" xml:space="preserve">
+    <value>{0} · добавлено в «Мои задачи»</value>
+  </data>
   <data name="ToastCreateInSource" xml:space="preserve">
     <value>Создание открылось бы в модуле {0} (макет)</value>
   </data>

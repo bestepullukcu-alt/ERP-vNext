@@ -878,6 +878,12 @@
   <data name="ToastSelfTaskCreated" xml:space="preserve">
     <value>{0} · 已加入我的工作（模拟）</value>
   </data>
+  <data name="ToastCommentPostedReal" xml:space="preserve">
+    <value>评论已发送</value>
+  </data>
+  <data name="ToastSelfTaskCreatedReal" xml:space="preserve">
+    <value>{0} · 已加入我的工作</value>
+  </data>
   <data name="ToastCreateInSource" xml:space="preserve">
     <value>将在 {0} 模块中打开创建（模拟）</value>
   </data>

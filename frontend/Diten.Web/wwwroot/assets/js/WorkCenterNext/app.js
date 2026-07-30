@@ -3267,7 +3267,10 @@
         }
 
         const result = await global.TasksApi.addComment(taskId, { text: value });
-        await afterPhase2Write(result, 'ToastCommentPosted');
+        // A DIFFERENT key from the fixture branch above: this comment really was posted to the engine, and
+        // 'ToastCommentPosted' says "(mock)" in all seven languages — correct for the local-only path, a lie
+        // here.
+        await afterPhase2Write(result, 'ToastCommentPostedReal');
     };
 
     const addSubtask = async (parentId, title) => {
@@ -3333,12 +3336,13 @@
             const outcome = applyTransition(item, action.key);
             markSeen(item);
             item.activity = item.activity || [];
+            // atMs, not a pre-computed `ago` — ACTIVITY_RELATIVE_TIME_FORBIDDEN, same reasoning as applyPlan.
             item.activity.push({
                 actor: data.currentUser.name,
                 kind: 'event',
                 eventKey: 'AuditActionStamp',
                 actionLabel: label,
-                ago: 0
+                atMs: data.referenceDate(item.provenance)
             });
             state.submittingItemId = null;
             state.submittingActionCode = null;
@@ -3494,7 +3498,7 @@
                 const mins = parseInt(res.value, 10);
                 item.timesheet = item.timesheet || { running: false, startedAt: null, loggedMinutes: 0 };
                 item.timesheet.loggedMinutes += mins;
-                item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: label, ago: 0 });
+                item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: label, atMs: data.referenceDate(item.provenance) });
                 render();
                 toast(tf('ToastTimeLogged', formatMinutes(mins)));
             }
@@ -3508,7 +3512,7 @@
         if (item.snoozedUntil && item.snoozedUntil > data.todayIso) {
             item.snoozedUntil = null;
             item.personal.snoozedUntil = null;
-            item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: t('Unsnooze'), ago: 0 });
+            item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: t('Unsnooze'), atMs: data.referenceDate(item.provenance) });
             render();
             toast(tf('ToastUnsnoozed', item.title));
             return;
@@ -3516,7 +3520,7 @@
         const apply = (dateStr) => {
             item.snoozedUntil = dateStr;
             item.personal.snoozedUntil = dateStr;
-            item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: t('Snooze'), ago: 0 });
+            item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: t('Snooze'), atMs: data.referenceDate(item.provenance) });
             const prevOrder = state.visibleOrder.slice();
             const prevIdx = prevOrder.indexOf(item.id);
             if (state.view === 'split') { state.selectedId = prevOrder[prevIdx + 1] || prevOrder[prevIdx - 1] || null; }
@@ -3609,14 +3613,19 @@
         return null;
     };
 
-    /** Re-reads the projection so a new task appears exactly as the Task Center sees it. */
+    /*
+     * Re-reads the projection so a new task appears exactly as the Task Center sees it. Both callers
+     * (createSelfTaskViaApi and the quick-create offcanvas's `wcn:task-created` event) are REAL engine writes —
+     * neither exists for a showcase item — so this always uses the non-mock toast; 'ToastSelfTaskCreated' (which
+     * says "(mock)" in all seven languages) stays reserved for createSelfTask's own fixture-only branch.
+     */
     const refreshAfterTaskCreated = async (title) => {
         await loadWorkItems();
         state.tab = 'islerim';
         state.segment = 'aktif';
         state.view = 'list';
         render();
-        toast(title ? tf('ToastSelfTaskCreated', title) : tf('ToastSelfTaskCreated', ''));
+        toast(title ? tf('ToastSelfTaskCreatedReal', title) : tf('ToastSelfTaskCreatedReal', ''));
     };
 
     const createSelfTask = (v, origin) => {
@@ -3643,7 +3652,9 @@
             dueAt: v.date || null,
             requester: { id: data.currentUser.id, displayName: data.currentUser.name },
             assignee: { id: data.currentUser.id, displayName: data.currentUser.name },
-            activity: [{ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditSelfCreated', ago: 0 }]
+            // 'fixture' directly, not item.provenance: this fixture object is built before toPresentation tags
+            // it, and the branch above already fixes its provenance to 'fixture' unconditionally.
+            activity: [{ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditSelfCreated', atMs: data.referenceDate('fixture') }]
         });
         // This branch only runs with the showcase catalogue on (see the guard at the top of createSelfTask), so
         // the item IS a fixture and says so rather than inheriting the 'api' default.
@@ -3858,7 +3869,7 @@
             }
             applyTransition(item, action.key);
             markSeen(item);
-            item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: actionLabel(action), ago: 0 });
+            item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: actionLabel(action), atMs: data.referenceDate(item.provenance) });
             ok += 1;
         });
         state.tableSelected.clear();

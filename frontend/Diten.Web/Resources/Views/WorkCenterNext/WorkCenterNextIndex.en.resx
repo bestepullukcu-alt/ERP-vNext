@@ -878,6 +878,12 @@
   <data name="ToastSelfTaskCreated" xml:space="preserve">
     <value>{0} · added to My Work (mock)</value>
   </data>
+  <data name="ToastCommentPostedReal" xml:space="preserve">
+    <value>Comment posted</value>
+  </data>
+  <data name="ToastSelfTaskCreatedReal" xml:space="preserve">
+    <value>{0} · added to My Work</value>
+  </data>
   <data name="ToastCreateInSource" xml:space="preserve">
     <value>Create would open in the {0} module (mock)</value>
   </data>

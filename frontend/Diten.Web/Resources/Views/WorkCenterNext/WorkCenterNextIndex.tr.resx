@@ -878,6 +878,12 @@
   <data name="ToastSelfTaskCreated" xml:space="preserve">
     <value>{0} · İşlerim'e eklendi (mock)</value>
   </data>
+  <data name="ToastCommentPostedReal" xml:space="preserve">
+    <value>Yorum eklendi</value>
+  </data>
+  <data name="ToastSelfTaskCreatedReal" xml:space="preserve">
+    <value>{0} · İşlerim'e eklendi</value>
+  </data>
   <data name="ToastCreateInSource" xml:space="preserve">
     <value>{0} modülünde oluşturma açılacaktı (mock)</value>
   </data>
