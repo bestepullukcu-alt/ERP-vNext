@@ -291,6 +291,61 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    // ── Configurable field definitions (Phase 5) ─────────────────────────────
+    //
+    // Their own resource under tasks, guarded by the manage permission the pack declares — reading the catalogue
+    // is an ordinary task read, but shaping it is an administrative act.
+    //
+    // Each route has to be listed on the Diten.Web proxy too: one that exists here and not there answers 404
+    // before the request leaves the web tier, which is how `inquire` shipped unreachable.
+
+    [HttpGet("field-definitions")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> GetFieldDefinitions(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetTaskFieldDefinitionListQuery(CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("field-definitions/{id:guid}")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> GetFieldDefinition(Guid id, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetTaskFieldDefinitionByIdQuery(id, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpPost("field-definitions")]
+    [HasPermission(TaskPermissions.FieldDefinitionsManage)]
+    public async Task<IActionResult> CreateFieldDefinition(
+        [FromBody] CreateTaskFieldDefinitionRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new CreateTaskFieldDefinitionCommand(request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// Edit a definition. The request carries no <c>Code</c>: values already stored join to their definition by
+    /// code, so an edited code orphans them all.
+    /// </summary>
+    [HttpPut("field-definitions/{id:guid}")]
+    [HasPermission(TaskPermissions.FieldDefinitionsManage)]
+    public async Task<IActionResult> UpdateFieldDefinition(
+        Guid id, [FromBody] UpdateTaskFieldDefinitionRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new UpdateTaskFieldDefinitionCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>Retire a definition. Always a deactivation — never a destruction (see the handler).</summary>
+    [HttpDelete("field-definitions/{id:guid}")]
+    [HasPermission(TaskPermissions.FieldDefinitionsManage)]
+    public async Task<IActionResult> DeleteFieldDefinition(Guid id, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new DeleteTaskFieldDefinitionCommand(id, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     // ── Recurrence rules (Phase 4) ───────────────────────────────────────────
     //
     // Their own resource under tasks, not transition codes. The Diten.Web proxy has to carry each of these

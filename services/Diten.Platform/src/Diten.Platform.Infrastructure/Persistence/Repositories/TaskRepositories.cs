@@ -247,8 +247,27 @@ public sealed class TaskFieldDefinitionRepository
     {
         var filter = Builders<TaskFieldDefinition>.Filter.And(
             ExecutionFilter,
-            Builders<TaskFieldDefinition>.Filter.Eq(x => x.IsActive, true));
+            Builders<TaskFieldDefinition>.Filter.Eq(x => x.IsActive, true),
+            // A retired definition must not be offered to the value validator, even if somebody flipped IsActive
+            // back on afterwards: DeletedAt is the stronger statement of the two.
+            Builders<TaskFieldDefinition>.Filter.Eq(x => x.DeletedAt, null));
         return await Collection.Find(filter).SortBy(x => x.SortOrder).ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<TaskFieldDefinition>> ListAllAsync(CancellationToken ct = default)
+        => await Collection.Find(ExecutionFilter).SortBy(x => x.SortOrder).ToListAsync(ct);
+
+    public async Task<bool> UpdateAsync(
+        TaskFieldDefinition definition, int expectedVersion, CancellationToken ct = default)
+    {
+        definition.Version = expectedVersion + 1;
+        definition.UpdatedAt = DateTimeOffset.UtcNow;
+        var filter = Builders<TaskFieldDefinition>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskFieldDefinition>.Filter.Eq(x => x.Id, definition.Id),
+            Builders<TaskFieldDefinition>.Filter.Eq(x => x.Version, expectedVersion));
+        var result = await Collection.ReplaceOneAsync(filter, definition, new ReplaceOptions(), ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
     }
 }
 

@@ -78,6 +78,27 @@ public static class TaskReasonCodes
     /// <summary>The recurrence rule does not exist, or belongs to another tenant.</summary>
     public const string RecurrenceRuleNotFound = "RECURRENCE_RULE_NOT_FOUND";
 
+    /// <summary>The field definition does not exist, or belongs to another tenant.</summary>
+    public const string FieldDefinitionNotFound = "FIELD_DEFINITION_NOT_FOUND";
+
+    /// <summary>Another definition already uses this code. Codes are the join key for stored values.</summary>
+    public const string FieldDefinitionCodeTaken = "FIELD_DEFINITION_CODE_TAKEN";
+
+    /// <summary>
+    /// Neither label source was given, or both were. Exactly one — a resource key for a system field, text for a
+    /// tenant field — because the projection has to know which contract label form to emit.
+    /// </summary>
+    public const string FieldLabelSourceInvalid = "FIELD_LABEL_SOURCE_INVALID";
+
+    /// <summary>
+    /// The definition would take the tenant past the contract's six-section cap. Refused at the write, because
+    /// past it the surface DROPS the whole item rather than trimming a section.
+    /// </summary>
+    public const string FieldSectionLimitExceeded = "FIELD_SECTION_LIMIT_EXCEEDED";
+
+    /// <summary>A definition's code was edited. It is the join key for every value already stored under it.</summary>
+    public const string FieldCodeImmutable = "FIELD_CODE_IMMUTABLE";
+
     /// <summary>A recurrence rule was defined with no repeat — a schedule that never fires.</summary>
     public const string RecurrenceFrequencyRequired = "RECURRENCE_FREQUENCY_REQUIRED";
 
@@ -429,6 +450,72 @@ public sealed record AssignablePositionDto(
     string OrganizationUnitName,
     Guid LegalEntityId,
     int ActiveHolderCount);
+
+// ── Phase 5: configurable field definitions ──────────────────────────────────
+
+/// <summary>
+/// Define a configurable field. Exactly ONE label source: <c>LabelResourceKey</c> for a system field we ship
+/// translations for, <c>LabelText</c> for a tenant's own words. A tenant administrator cannot add a line to our
+/// resx files, so demanding a key from them would put the raw key on screen.
+/// </summary>
+public sealed record CreateTaskFieldDefinitionRequest(
+    string Code,
+    string? LabelResourceKey,
+    string? LabelText,
+    TaskFieldValueType ValueType,
+    string Section,
+    TaskFieldImportance Importance,
+    bool IsRequired,
+    int SortOrder,
+    TaskFieldOptionsSourceKind OptionsSourceKind,
+    string? OptionsSourceKey,
+    string? AppliesToModuleCode,
+    /// <summary>
+    /// STORED, never evaluated. Field-level authorization is BL-024; carrying the metadata now keeps that work
+    /// additive, and deciding anything with it today would be half an access-control system.
+    /// </summary>
+    TaskFieldClassification Classification,
+    TaskFieldAccessState DefaultAccessState,
+    bool IsActive = true);
+
+/// <summary>
+/// Full replace — except <c>Code</c>, which is absent on purpose. Every <c>TaskFieldValue</c> already stored
+/// joins to its definition BY CODE, so an edited code orphans them all and the data loses its label.
+/// </summary>
+public sealed record UpdateTaskFieldDefinitionRequest(
+    string? LabelResourceKey,
+    string? LabelText,
+    TaskFieldValueType ValueType,
+    string Section,
+    TaskFieldImportance Importance,
+    bool IsRequired,
+    int SortOrder,
+    TaskFieldOptionsSourceKind OptionsSourceKind,
+    string? OptionsSourceKey,
+    string? AppliesToModuleCode,
+    TaskFieldClassification Classification,
+    TaskFieldAccessState DefaultAccessState,
+    bool IsActive,
+    int ExpectedVersion);
+
+public sealed record TaskFieldDefinitionDto(
+    Guid Id,
+    string Code,
+    string? LabelResourceKey,
+    string? LabelText,
+    string ValueType,
+    string Section,
+    string Importance,
+    bool IsRequired,
+    int SortOrder,
+    string OptionsSourceKind,
+    string? OptionsSourceKey,
+    string? AppliesToModuleCode,
+    string Classification,
+    string DefaultAccessState,
+    bool IsActive,
+    int Version,
+    DateTimeOffset CreatedAt);
 
 // ── Phase 4: recurrence ──────────────────────────────────────────────────────
 

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="FieldDefinitionsTitle" xml:space="preserve"><value>Görev Alan Tanımları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Görev motorunun sunduğu yapılandırılabilir alanlar. Tanım asla bir kolon değildir: eklemek şemayı değiştirmez.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Tanım Ekle</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Tanımı Düzenle</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Tanım Ekle</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Tanımı Düzenle</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>örn. regulatory.phase</value></data>
+  <data name="CodeImmutableHint" xml:space="preserve"><value>Kod değiştirilemez: kayıtlı her değer bu tanıma kod üzerinden bağlıdır.</value></data>
+  <data name="Label" xml:space="preserve"><value>Etiket</value></data>
+  <data name="LabelText" xml:space="preserve"><value>Etiket (kendi sözcükleriniz)</value></data>
+  <data name="LabelTextPlaceholder" xml:space="preserve"><value>örn. Mevzuat Aşaması</value></data>
+  <data name="LabelTextHint" xml:space="preserve"><value>Kendi tanımladığınız alanlar için. Tek dilde yazılır, yazıldığı gibi gösterilir.</value></data>
+  <data name="LabelResourceKey" xml:space="preserve"><value>Etiket kaynak anahtarı</value></data>
+  <data name="LabelResourceKeyPlaceholder" xml:space="preserve"><value>örn. Tasks_Field_RegulatoryPhase</value></data>
+  <data name="LabelResourceKeyHint" xml:space="preserve"><value>Çevirilerini bizim sağladığımız sistem alanları için. Kendi alanlarınızda boş bırakın.</value></data>
+  <data name="LabelSourceSystem" xml:space="preserve"><value>Sistem alanı</value></data>
+  <data name="LabelSourceTenant" xml:space="preserve"><value>Kendi alanınız</value></data>
+  <data name="ValueType" xml:space="preserve"><value>Değer tipi</value></data>
+  <data name="Section" xml:space="preserve"><value>Bölüm</value></data>
+  <data name="SectionPlaceholder" xml:space="preserve"><value>örn. Uyum</value></data>
+  <data name="SectionLimitHint" xml:space="preserve"><value>Bir görev en fazla altı bölüm gösterebilir.</value></data>
+  <data name="Required" xml:space="preserve"><value>Zorunlu</value></data>
+  <data name="Optional" xml:space="preserve"><value>İsteğe bağlı</value></data>
+  <data name="Importance" xml:space="preserve"><value>Önem</value></data>
+  <data name="ImportanceSecondary" xml:space="preserve"><value>İkincil</value></data>
+  <data name="ImportancePrimary" xml:space="preserve"><value>Birincil</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Sıra</value></data>
+  <data name="OptionsSourceKind" xml:space="preserve"><value>Seçenek kaynağı</value></data>
+  <data name="OptionsSourceNone" xml:space="preserve"><value>Yok</value></data>
+  <data name="OptionsSourcePlatformLookup" xml:space="preserve"><value>Platform listesi</value></data>
+  <data name="OptionsSourceBusinessReferenceData" xml:space="preserve"><value>İş referans verisi</value></data>
+  <data name="OptionsSourceHint" xml:space="preserve"><value>Seçenek listesinin nereden geldiği. Koda gömülü liste asla kabul edilmez.</value></data>
+  <data name="OptionsSourceKey" xml:space="preserve"><value>Seçenek kaynak anahtarı</value></data>
+  <data name="OptionsSourceKeyPlaceholder" xml:space="preserve"><value>örn. REGULATORY_PHASES</value></data>
+  <data name="AppliesToModuleCode" xml:space="preserve"><value>Modülle sınırlı</value></data>
+  <data name="AppliesToModuleCodePlaceholder" xml:space="preserve"><value>örn. MOD-0220</value></data>
+  <data name="AppliesToModuleCodeHint" xml:space="preserve"><value>Alanı her modüle açmak için boş bırakın.</value></data>
+  <data name="Classification" xml:space="preserve"><value>Sınıflandırma</value></data>
+  <data name="ClassificationNormal" xml:space="preserve"><value>Normal</value></data>
+  <data name="ClassificationInternal" xml:space="preserve"><value>Şirket içi</value></data>
+  <data name="ClassificationConfidential" xml:space="preserve"><value>Gizli</value></data>
+  <data name="ClassificationRestricted" xml:space="preserve"><value>Kısıtlı</value></data>
+  <data name="ClassificationNotEnforcedHint" xml:space="preserve"><value>İleride kullanılmak üzere kaydedilir. Bugün bunlardan hiçbir yetki kararı üretilmez.</value></data>
+  <data name="DefaultAccessState" xml:space="preserve"><value>Varsayılan erişim durumu</value></data>
+  <data name="AccessStateVisible" xml:space="preserve"><value>Görünür</value></data>
+  <data name="AccessStateMasked" xml:space="preserve"><value>Maskeli</value></data>
+  <data name="AccessStateHidden" xml:space="preserve"><value>Gizli</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="ValueSection" xml:space="preserve"><value>Değer</value></data>
+  <data name="PresentationSection" xml:space="preserve"><value>Sunum</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Sınıflandırma</value></data>
+  <data name="ValueTypeText" xml:space="preserve"><value>Metin</value></data>
+  <data name="ValueTypeNumber" xml:space="preserve"><value>Sayı</value></data>
+  <data name="ValueTypeCurrency" xml:space="preserve"><value>Para birimi</value></data>
+  <data name="ValueTypePercentage" xml:space="preserve"><value>Yüzde</value></data>
+  <data name="ValueTypeDate" xml:space="preserve"><value>Tarih</value></data>
+  <data name="ValueTypeDateTime" xml:space="preserve"><value>Tarih ve saat</value></data>
+  <data name="ValueTypeBoolean" xml:space="preserve"><value>Evet / Hayır</value></data>
+  <data name="ValueTypeStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="ValueTypePerson" xml:space="preserve"><value>Kişi</value></data>
+  <data name="ValueTypeReference" xml:space="preserve"><value>Referans</value></data>
+  <data name="ValueTypeLink" xml:space="preserve"><value>Bağlantı</value></data>
+</root>

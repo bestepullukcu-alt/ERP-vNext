@@ -42,3 +42,13 @@ public sealed record GetTaskRecurrenceRuleListQuery(string CorrelationId)
 
 public sealed record GetTaskRecurrenceRuleByIdQuery(Guid Id, string CorrelationId)
     : IRequest<Response<TaskRecurrenceRuleDto>>;
+
+/// <summary>
+/// Every field definition the tenant can see, ACTIVE OR NOT — a retired definition must stay visible so the
+/// values already stored under it keep an explanation, and so it can be switched back on.
+/// </summary>
+public sealed record GetTaskFieldDefinitionListQuery(string CorrelationId)
+    : IRequest<Response<IReadOnlyList<TaskFieldDefinitionDto>>>;
+
+public sealed record GetTaskFieldDefinitionByIdQuery(Guid Id, string CorrelationId)
+    : IRequest<Response<TaskFieldDefinitionDto>>;

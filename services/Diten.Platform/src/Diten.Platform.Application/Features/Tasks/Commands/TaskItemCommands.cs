@@ -148,3 +148,20 @@ public sealed record AddTaskCommentCommand(
     Guid TaskItemId,
     AddTaskCommentRequest Request,
     string CorrelationId) : IRequest<Response<Guid>>;
+
+// ── Phase 5: configurable field definitions ──────────────────────────────────
+
+public sealed record CreateTaskFieldDefinitionCommand(
+    CreateTaskFieldDefinitionRequest Request, string CorrelationId) : IRequest<Response<Guid>>;
+
+/// <summary>
+/// Edit a definition. <c>Code</c> is deliberately NOT on the request — see UpdateTaskFieldDefinitionRequest.
+/// </summary>
+public sealed record UpdateTaskFieldDefinitionCommand(
+    Guid Id, UpdateTaskFieldDefinitionRequest Request, string CorrelationId) : IRequest<Response<NoContent>>;
+
+/// <summary>
+/// Retire a definition. SOFT — see the handler for why a definition in use is never hard-deleted.
+/// </summary>
+public sealed record DeleteTaskFieldDefinitionCommand(Guid Id, string CorrelationId)
+    : IRequest<Response<NoContent>>;

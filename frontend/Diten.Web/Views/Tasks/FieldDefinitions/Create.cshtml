@@ -1,0 +1,16 @@
+@model Diten.Web.Models.TaskFieldDefinitions.TaskFieldDefinitionEditViewModel
+@using Diten.Web.Views.Tasks.FieldDefinitions
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskFieldDefinitionsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleCreate"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "create";
+}
+
+<partial name="~/Views/Tasks/FieldDefinitions/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/js/Tasks/FieldDefinitions/form.js" asp-append-version="true"></script>
+}

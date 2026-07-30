@@ -366,20 +366,96 @@ internal sealed class FakeTaskCommentRepository : ITaskCommentRepository
         => comments.OrderByDescending(c => c.CreatedAt).ThenByDescending(c => c.Id).ToList();
 }
 
-internal sealed class FakeTaskFieldDefinitionRepository(params TaskFieldDefinition[] seed)
-    : ITaskFieldDefinitionRepository
+internal sealed class FakeTaskFieldDefinitionRepository : ITaskFieldDefinitionRepository
 {
+    private readonly List<TaskFieldDefinition> _definitions = [];
+
+    public FakeTaskFieldDefinitionRepository(params TaskFieldDefinition[] seed) => _definitions.AddRange(seed);
+
+    /// <summary>Everything stored, retired rows included — for assertions, never for the code under test.</summary>
+    public IReadOnlyList<TaskFieldDefinition> All => _definitions;
+
     public Task<TaskFieldDefinition> CreateAsync(TaskFieldDefinition d, CancellationToken ct = default)
-        => Task.FromResult(d);
+    {
+        _definitions.Add(d);
+        return Task.FromResult(d);
+    }
 
     public Task<TaskFieldDefinition?> GetByIdAsync(Guid id, CancellationToken ct = default)
-        => Task.FromResult(seed.FirstOrDefault(x => x.Id == id));
+    {
+        var stored = _definitions.FirstOrDefault(x => x.Id == id);
+        return Task.FromResult(stored is null ? null : Detach(stored));
+    }
 
     public Task<TaskFieldDefinition?> GetByCodeAsync(string code, CancellationToken ct = default)
-        => Task.FromResult(seed.FirstOrDefault(x => x.Code == code));
+        => Task.FromResult(_definitions.FirstOrDefault(
+            x => string.Equals(x.Code, code, StringComparison.OrdinalIgnoreCase)));
 
+    /// <summary>
+    /// Mirrors the real filter: a RETIRED definition is never offered to the value validator, even if its
+    /// IsActive flag says otherwise. DeletedAt is the stronger of the two statements.
+    /// </summary>
     public Task<IReadOnlyList<TaskFieldDefinition>> ListActiveAsync(CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<TaskFieldDefinition>>(seed.Where(x => x.IsActive).ToList());
+        => Task.FromResult<IReadOnlyList<TaskFieldDefinition>>(
+            _definitions.Where(x => x.IsActive && x.DeletedAt is null).ToList());
+
+    public Task<IReadOnlyList<TaskFieldDefinition>> ListAllAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<TaskFieldDefinition>>(_definitions.Select(Detach).ToList());
+
+    public Task<bool> UpdateAsync(TaskFieldDefinition definition, int expectedVersion, CancellationToken ct = default)
+    {
+        var stored = _definitions.FirstOrDefault(x => x.Id == definition.Id);
+        if (stored is null || stored.Version != expectedVersion)
+        {
+            return Task.FromResult(false);
+        }
+
+        stored.Version = expectedVersion + 1;
+        stored.Code = definition.Code;
+        stored.LabelResourceKey = definition.LabelResourceKey;
+        stored.LabelText = definition.LabelText;
+        stored.ValueType = definition.ValueType;
+        stored.Section = definition.Section;
+        stored.Importance = definition.Importance;
+        stored.IsRequired = definition.IsRequired;
+        stored.SortOrder = definition.SortOrder;
+        stored.OptionsSourceKind = definition.OptionsSourceKind;
+        stored.OptionsSourceKey = definition.OptionsSourceKey;
+        stored.AppliesToModuleCode = definition.AppliesToModuleCode;
+        stored.Classification = definition.Classification;
+        stored.DefaultAccessState = definition.DefaultAccessState;
+        stored.IsActive = definition.IsActive;
+        stored.DeletedAt = definition.DeletedAt;
+        return Task.FromResult(true);
+    }
+
+    /// <summary>
+    /// A detached copy, like the real repository. A handler that mutates an entity and then LOSES the
+    /// expected-version write must not have changed the stored state — the recurrence double learned this the
+    /// hard way, twice.
+    /// </summary>
+    private static TaskFieldDefinition Detach(TaskFieldDefinition d) => new()
+    {
+        Id = d.Id,
+        TenantId = d.TenantId,
+        Code = d.Code,
+        LabelResourceKey = d.LabelResourceKey,
+        LabelText = d.LabelText,
+        ValueType = d.ValueType,
+        Section = d.Section,
+        Importance = d.Importance,
+        IsRequired = d.IsRequired,
+        SortOrder = d.SortOrder,
+        OptionsSourceKind = d.OptionsSourceKind,
+        OptionsSourceKey = d.OptionsSourceKey,
+        AppliesToModuleCode = d.AppliesToModuleCode,
+        Classification = d.Classification,
+        DefaultAccessState = d.DefaultAccessState,
+        IsActive = d.IsActive,
+        DeletedAt = d.DeletedAt,
+        Version = d.Version,
+        CreatedAt = d.CreatedAt
+    };
 }
 
 /// <summary>

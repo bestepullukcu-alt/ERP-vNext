@@ -113,6 +113,32 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiTransition(Guid id, string transition)
         => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/{id}/{transition}", readBody: true);
 
+    // ── Configurable field definitions (Phase 5) ─────────────────────────────
+    //
+    // Their own resource, so NOT transition codes and not in TaskTransitionRoutes — each one has to be listed
+    // here by hand. A route Platform exposes and this proxy does not answers 404 inside the web tier, which is
+    // how `inquire` shipped unreachable.
+
+    [HttpGet("api/field-definitions")]
+    public Task<IActionResult> ApiFieldDefinitions()
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/field-definitions", readBody: false);
+
+    [HttpGet("api/field-definitions/{id:guid}")]
+    public Task<IActionResult> ApiFieldDefinition(Guid id)
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/field-definitions/{id}", readBody: false);
+
+    [HttpPost("api/field-definitions")]
+    public Task<IActionResult> ApiCreateFieldDefinition()
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/field-definitions", readBody: true);
+
+    [HttpPut("api/field-definitions/{id:guid}")]
+    public Task<IActionResult> ApiUpdateFieldDefinition(Guid id)
+        => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/tasks/field-definitions/{id}", readBody: true);
+
+    [HttpDelete("api/field-definitions/{id:guid}")]
+    public Task<IActionResult> ApiDeleteFieldDefinition(Guid id)
+        => ProxyAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/v1/tasks/field-definitions/{id}", readBody: false);
+
     // ── Recurrence rules (Phase 4) ───────────────────────────────────────────
     //
     // Their own resource, so NOT transition codes and not in TaskTransitionRoutes — and therefore each one has

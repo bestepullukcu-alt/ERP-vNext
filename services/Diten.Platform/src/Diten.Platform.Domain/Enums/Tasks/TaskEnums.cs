@@ -114,6 +114,9 @@ public enum TaskFieldValueType
 }
 
 /// <summary>businessContext importance: `primary` fields are capped by the contract (max 8 per item).</summary>
+// Crosses the wire in the Phase 5 field-definition requests, so it serializes as a STRING. An enum
+// reaching a client as a number is a defect this module has already shipped twice.
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
 public enum TaskFieldImportance
 {
     Secondary = 0,
@@ -121,6 +124,9 @@ public enum TaskFieldImportance
 }
 
 /// <summary>Where a field's option list comes from. FG-004: a hard-coded list is never allowed.</summary>
+// Crosses the wire in the Phase 5 field-definition requests, so it serializes as a STRING. An enum
+// reaching a client as a number is a defect this module has already shipped twice.
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
 public enum TaskFieldOptionsSourceKind
 {
     None = 0,
@@ -132,6 +138,9 @@ public enum TaskFieldOptionsSourceKind
 /// Field-level authorization metadata carried from day one so BL-024 becomes additive with NO migration
 /// (pack §12 K1). Phase 1 stores it; no evaluation happens yet.
 /// </summary>
+// Crosses the wire in the Phase 5 field-definition requests, so it serializes as a STRING. An enum
+// reaching a client as a number is a defect this module has already shipped twice.
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
 public enum TaskFieldClassification
 {
     Normal = 0,
@@ -140,6 +149,9 @@ public enum TaskFieldClassification
     Restricted = 3
 }
 
+// Crosses the wire in the Phase 5 field-definition requests, so it serializes as a STRING. An enum
+// reaching a client as a number is a defect this module has already shipped twice.
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
 public enum TaskFieldAccessState
 {
     Visible = 0,

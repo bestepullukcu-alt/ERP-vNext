@@ -100,7 +100,18 @@ public interface ITaskFieldDefinitionRepository
     Task<TaskFieldDefinition> CreateAsync(TaskFieldDefinition definition, CancellationToken ct = default);
     Task<TaskFieldDefinition?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<TaskFieldDefinition?> GetByCodeAsync(string code, CancellationToken ct = default);
+
+    /// <summary>Definitions the value validator offers — active and not retired.</summary>
     Task<IReadOnlyList<TaskFieldDefinition>> ListActiveAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Every definition, retired ones included. The management surface needs them: a definition that vanished
+    /// when it was switched off could not be switched back on, and the section cap has to be counted against
+    /// what actually exists.
+    /// </summary>
+    Task<IReadOnlyList<TaskFieldDefinition>> ListAllAsync(CancellationToken ct = default);
+
+    Task<bool> UpdateAsync(TaskFieldDefinition definition, int expectedVersion, CancellationToken ct = default);
 }
 
 // ── Phase 2+ seams. Declared now so the schema and repository surface are stable; no Phase-1 caller. ──

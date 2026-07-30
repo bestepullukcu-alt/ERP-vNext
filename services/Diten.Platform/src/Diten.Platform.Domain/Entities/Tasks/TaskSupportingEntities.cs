@@ -101,8 +101,31 @@ public sealed class TaskFieldDefinition : TenantScopedEntity
     /// <summary>Tenant-unique, lowercase-dotted (e.g. <c>regulatory.phase</c>).</summary>
     public required string Code { get; set; }
 
-    /// <summary>Resource key — the label is localized, never stored as display text.</summary>
-    public required string LabelResourceKey { get; set; }
+    /*
+     * TWO label sources, exactly one set — the same split ChecklistTemplateItem already makes, and for the same
+     * reason its comment gives: conflating them is how a raw resource key reaches the screen.
+     *
+     * The reason it had to arrive here: a tenant administrator cannot add a line to OUR resx files. With only a
+     * resource key on the entity, every field a tenant defined would have rendered as the literal key —
+     * "regulatory.phase" where a label belongs. A tenant's own words are not translatable content we own; they
+     * are content, and the contract already carries that distinction (WorkItemLabelDto resource vs display).
+     */
+
+    /// <summary>
+    /// SYSTEM definitions. Translated in all seven languages, identical in every tenant. Null when
+    /// <see cref="LabelText"/> is used.
+    /// </summary>
+    public string? LabelResourceKey { get; set; }
+
+    /// <summary>
+    /// TENANT definitions — the administrator's own words, in the language they typed them in. Null when
+    /// <see cref="LabelResourceKey"/> is used.
+    ///
+    /// <para>Single-language on purpose. A tenant field that translates into seven languages is a separate piece
+    /// of work with its own editor and its own storage; inventing half of it here — a key that only one tenant
+    /// has strings for, say — would put us straight back to raw keys on screen.</para>
+    /// </summary>
+    public string? LabelText { get; set; }
 
     public required TaskFieldValueType ValueType { get; set; }
 
