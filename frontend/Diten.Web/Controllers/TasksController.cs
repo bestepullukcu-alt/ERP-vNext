@@ -109,7 +109,7 @@ public sealed class TasksController : Controller
     /// <para>The route parameter is named <c>transition</c>, not <c>action</c>: <c>action</c> is reserved by MVC
     /// routing and combining it with a constraint fails endpoint construction at startup.</para>
     /// </summary>
-    [HttpPost("api/{id:guid}/{transition:regex(^(accept|claim|release|plan|start|inquire|return|reassign|complete|cancel)$)}")]
+    [HttpPost("api/{id:guid}/{transition:regex(^(accept|claim|release|plan|start|inquire|submitReview|return|reassign|complete|cancel)$)}")]
     public Task<IActionResult> ApiTransition(Guid id, string transition)
         => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/{id}/{transition}", readBody: true);
 

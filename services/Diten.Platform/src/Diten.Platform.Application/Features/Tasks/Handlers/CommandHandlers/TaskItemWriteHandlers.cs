@@ -2,6 +2,7 @@ using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Application.Features.Tasks.Services;
+using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -19,6 +20,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
     private readonly ITaskFieldDefinitionService _fieldDefinitions;
     private readonly ICurrentUserContext _currentUser;
     private readonly ITaskApprovalService _approvals;
+    private readonly ITaskReviewService _reviews;
     private readonly ILogger<UpdateTaskItemHandler> _logger;
 
     public UpdateTaskItemHandler(
@@ -27,6 +29,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
         ITaskFieldDefinitionService fieldDefinitions,
         ICurrentUserContext currentUser,
         ITaskApprovalService approvals,
+        ITaskReviewService reviews,
         ILogger<UpdateTaskItemHandler> logger)
     {
         _tasks = tasks;
@@ -34,6 +37,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
         _fieldDefinitions = fieldDefinitions;
         _currentUser = currentUser;
         _approvals = approvals;
+        _reviews = reviews;
         _logger = logger;
     }
 
@@ -82,6 +86,14 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
         task.PlannedDate = request.PlannedDate;
         task.EstimateHours = request.EstimateHours;
         task.Tags = (request.Tags ?? []).Select(t => t.Trim()).Where(t => t.Length > 0).Distinct().ToList();
+        /*
+         * Review switched OFF while one is running: the instance has to be called off too, or the task keeps a
+         * reviewer waiting on work nobody needs reviewed. Same decide-here / act-after-the-write shape as approval
+         * below, and for the same reason — no workflow is cancelled for an edit that then loses its race.
+         */
+        var cancelReview = task.ReviewRequired
+            && !request.ReviewRequired
+            && task.ReviewWorkflowInstanceId is not null;
         task.ReviewRequired = request.ReviewRequired;
         task.EmailNotificationsEnabled = request.EmailNotificationsEnabled;
         task.DelegationAllowed = request.DelegationAllowed;
@@ -163,7 +175,25 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
                     + "the task stays blocked until it is retried.", task.Id);
             }
         }
-        else if (cancelApproval)
+        if (cancelReview)
+        {
+            await _reviews.CancelReviewAsync(task, ct);
+            task.ReviewWorkflowInstanceId = null;
+            // A task left in PendingReview with no review would be waiting on nobody, with no action to clear it.
+            if (task.Lifecycle == TaskLifecycle.PendingReview)
+            {
+                task.Lifecycle = TaskLifecycle.InProgress;
+            }
+
+            if (!await _tasks.UpdateAsync(task, task.Version, ct))
+            {
+                _logger.LogWarning(
+                    "Review was switched off for task {TaskId} and cancelled, but clearing the instance link failed.",
+                    task.Id);
+            }
+        }
+
+        if (cancelApproval)
         {
             await _approvals.CancelApprovalAsync(task, ct);
             task.WorkflowInstanceId = null;

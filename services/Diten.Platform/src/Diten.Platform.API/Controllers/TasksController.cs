@@ -133,6 +133,19 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// Hand finished work to a reviewer. The route segment MUST match the projected action code
+    /// (<c>submitReview</c>): the client turns the code straight into the URL, and Diten.Web's proxy has to list
+    /// it too — a code missing from either is a 404 on a button the user can see.
+    /// </summary>
+    [HttpPost("{id:guid}/submitReview")]
+    [HasPermission(TaskPermissions.Update)]
+    public async Task<IActionResult> SubmitReview(Guid id, [FromBody] TaskTransitionRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new SubmitTaskForReviewCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpPost("{id:guid}/complete")]
     [HasPermission(TaskPermissions.Complete)]
     public async Task<IActionResult> Complete(Guid id, [FromBody] TaskTransitionRequest request, CancellationToken ct)

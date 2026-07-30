@@ -26,12 +26,14 @@ public static class TaskTransitionRoutes
     /// Route-constraint pattern for the <c>transition</c> segment. MUST list exactly <see cref="All"/>.
     /// Anchored so a code is matched whole — an unanchored pattern would forward <c>cancel-everything</c>.
     /// </summary>
-    public const string Pattern = "^(accept|claim|release|plan|start|inquire|return|reassign|complete|cancel)$";
+    public const string Pattern = "^(accept|claim|release|plan|start|inquire|submitReview|return|reassign|complete|cancel)$";
 
     /// <summary>
     /// Every transition code the proxy forwards, in the order they appear in <see cref="Pattern"/>.
     ///
-    /// <para><c>inquire</c> parks a task in Waiting; <c>return</c> hands work back to its requester and
+    /// <para><c>submitReview</c> hands finished work to a reviewer — it moves MOD-0024's lifecycle AND opens the
+    /// MOD-0023 instance that carries the review decision, which is why it is a transition rather than a resource;
+    /// <c>inquire</c> parks a task in Waiting; <c>return</c> hands work back to its requester and
     /// <c>reassign</c> hands it to someone else; <c>start</c> also serves the "resume" button, because the
     /// resume action is projected with the code <c>start</c> — same endpoint, different label.</para>
     /// </summary>
@@ -43,6 +45,7 @@ public static class TaskTransitionRoutes
         "plan",
         "start",
         "inquire",
+        "submitReview",
         "return",
         "reassign",
         "complete",

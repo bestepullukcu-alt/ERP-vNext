@@ -69,8 +69,37 @@ public sealed class TaskItem : TenantScopedEntity
     /// <summary>Manager CANDIDATE hint only — MOD-0023/MOD-0018 resolve actual authority.</summary>
     public Guid? ApprovalManagerUserId { get; set; }
 
-    /// <summary>The MOD-0023 instance when an approval/review is running (set in Phase 3).</summary>
+    /// <summary>
+    /// Who the requester SUGGESTS should review — a candidate hint, exactly like
+    /// <see cref="ApprovalManagerUserId"/> is for approval, and deliberately not called a reviewer.
+    ///
+    /// <para>It is handed to MOD-0023 as a candidate principal when the review starts, and MOD-0023/MOD-0018
+    /// decide from there who may actually act. Nothing reads this field to work out whether a review has been
+    /// given, or by whom: that answer lives on the workflow instance, and a copy of it here would be a second
+    /// source of truth that goes stale the moment a reviewer decides.</para>
+    /// </summary>
+    public Guid? ReviewerCandidateUserId { get; set; }
+
+    /// <summary>
+    /// The MOD-0023 instance for this task's APPROVAL (set in Phase 3).
+    ///
+    /// <para>Approval only, despite the unqualified name it has carried since Phase 1 — review keeps its own
+    /// link below. One field could not hold both: every reader here would have to say which decision it meant,
+    /// and the ones that forgot would silently read the other decision's verdict.</para>
+    /// </summary>
     public Guid? WorkflowInstanceId { get; set; }
+
+    /// <summary>
+    /// The MOD-0023 instance for this task's REVIEW (Faz 3b).
+    ///
+    /// <para>A LINK, not a status. Which is the same thing <see cref="WorkflowInstanceId"/> is, and deliberately
+    /// not a "review state" field: the state belongs to MOD-0023 and is read from the instance, so a copy here
+    /// would be a second source of truth that goes stale the moment a reviewer decides.</para>
+    ///
+    /// <para>Separate from the approval link because the two decisions run CONCURRENTLY on one task — see
+    /// <c>TaskReviewService</c> for why their object references are disjoint too.</para>
+    /// </summary>
+    public Guid? ReviewWorkflowInstanceId { get; set; }
 
     public bool EmailNotificationsEnabled { get; set; } = true;
 

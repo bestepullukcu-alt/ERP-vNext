@@ -124,14 +124,13 @@
         <h6 class="text-muted text-uppercase small mb-3">@Localizer["SectionGovernance"]</h6>
         <div class="row g-3 mb-4">
             <div class="col-md-6">
-                @* Phase 3b: nothing implements review yet. An enabled switch that silently does nothing is worse
-                   than an honest one, so it is disabled and says so. Remove `disabled` and this hint together
-                   with the review flow. *@
+                @* Faz 3b: review is implemented, so the switch is live and the hint says what it DOES rather than
+                   when it might arrive. The reviewer is not chosen here — MOD-0023 resolves who may act. *@
                 <div class="form-check form-switch mb-2">
                     <input class="form-check-input" type="checkbox" id="taskReviewRequired" name="reviewRequired"
-                           disabled aria-describedby="taskReviewRequiredHint" />
-                    <label class="form-check-label text-muted" for="taskReviewRequired">@Localizer["FieldReviewRequired"]</label>
-                    <div class="form-text" id="taskReviewRequiredHint">@Localizer["ReviewComingSoonHint"]</div>
+                           aria-describedby="taskReviewRequiredHint" />
+                    <label class="form-check-label" for="taskReviewRequired">@Localizer["FieldReviewRequired"]</label>
+                    <div class="form-text" id="taskReviewRequiredHint">@Localizer["ReviewRequiredHint"]</div>
                 </div>
                 <div class="form-check form-switch mb-2">
                     <input class="form-check-input" type="checkbox" id="taskApprovalRequired"

@@ -43,13 +43,29 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
         var dependencies = await _dependencies.ListByTaskIdAsync(task.Id, ct);
 
         // Same shared rule as the list and the projection, for one task.
-        var approvalStates = task.ApprovalRequired && task.WorkflowInstanceId is { } instanceId
-            ? await _approvals.GetStatesAsync([instanceId], ct)
+        // Both decisions in ONE read: GetStatesAsync keys off the instance id and never asks what the instance
+        // decides, so approval and review share it (Faz 3b).
+        var gatedInstanceIds = new List<Guid>();
+        if (task.ApprovalRequired && task.WorkflowInstanceId is { } instanceId)
+        {
+            gatedInstanceIds.Add(instanceId);
+        }
+
+        if (task.ReviewRequired && task.ReviewWorkflowInstanceId is { } reviewInstanceId)
+        {
+            gatedInstanceIds.Add(reviewInstanceId);
+        }
+
+        var approvalStates = gatedInstanceIds.Count > 0
+            ? await _approvals.GetStatesAsync(gatedInstanceIds, ct)
             : new Dictionary<Guid, TaskApprovalState>();
         var (approvalOutstanding, approvalRejected) = TaskApprovalView.Resolve(task, approvalStates);
+        var (reviewOutstanding, reviewRejected) = TaskReviewView.Resolve(task, approvalStates);
 
         return Response<TaskItemDetailDto>.Success(
-            TaskItemMapper.ToDetail(task, _lifecycle, approvalOutstanding, approvalRejected, watchers, dependencies),
+            TaskItemMapper.ToDetail(
+                task, _lifecycle, approvalOutstanding, approvalRejected, watchers, dependencies,
+                reviewOutstanding, reviewRejected),
             correlationId: request.CorrelationId);
     }
 }

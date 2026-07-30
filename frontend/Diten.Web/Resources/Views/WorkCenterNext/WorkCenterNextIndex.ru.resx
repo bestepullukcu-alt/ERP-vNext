@@ -1349,6 +1349,12 @@
   <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
     <value>Остался незавершённый обязательный пункт чек-листа.</value>
   </data>
+  <data name="WorkAggregation_Action_SubmitReview" xml:space="preserve">
+    <value>Отправить на проверку</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewPending" xml:space="preserve">
+    <value>У проверяющего — завершить пока нельзя.</value>
+  </data>
   <data name="WorkAggregation_ActionDisabled_ApprovalPendingComplete" xml:space="preserve">
     <value>Ожидает утверждения — завершить пока нельзя.</value>
   </data>

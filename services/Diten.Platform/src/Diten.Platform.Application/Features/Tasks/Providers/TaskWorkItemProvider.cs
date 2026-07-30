@@ -39,6 +39,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private const string ActionResumeKey = "WorkAggregation_Action_Resume";
     /// <summary>Label for parking a task in Waiting. Code and endpoint are both <c>inquire</c>.</summary>
     private const string ActionInquireKey = "WorkAggregation_Action_Inquire";
+
+    /// <summary>Faz 3b — hand finished work to a reviewer. The code doubles as the URL segment.</summary>
+    private const string ActionSubmitReviewKey = "WorkAggregation_Action_SubmitReview";
     /// <summary>Give assigned work back to whoever asked for it. Code and endpoint are both <c>return</c>.</summary>
     private const string ActionReturnKey = "WorkAggregation_Action_Return";
     /// <summary>Hand work to a different person. Code and endpoint are both <c>reassign</c>.</summary>
@@ -53,6 +56,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     // `complete` needs its OWN wording: "waiting for approval, cannot be started" is wrong on a task already
     // in progress, and the server refuses Done for the same reason it refuses InProgress.
     private const string DisabledApprovalCompleteKey = "WorkAggregation_ActionDisabled_ApprovalPendingComplete";
+
+    /// <summary>Faz 3b — the work is with a reviewer, so completion is not the holder's to press yet.</summary>
+    private const string DisabledReviewCompleteKey = "WorkAggregation_ActionDisabled_ReviewPending";
     // An approval that never STARTED is a different fact from one that is running, and the user can act on it
     // (retry the save) instead of waiting for an approver who was never asked.
     private const string DisabledApprovalStartFailedKey = "WorkAggregation_ApprovalError_StartFailed";
@@ -165,9 +171,16 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // Approval state comes from MOD-0023, in ONE read for the whole page. It must be READ, never inferred:
         // ApprovalRequired records that approval was asked for, not whether it has been given, so deriving from
         // the flag left an APPROVED task still showing Waiting with `start` disabled.
+        //
+        // Review joins the SAME read rather than getting one of its own: GetStatesAsync keys off the INSTANCE id
+        // and never asks what the instance decides, so it serves both decisions unchanged. Two calls would be two
+        // round-trips for one page, and a per-item read would be an N+1 across every gated row on the surface.
         var instanceIds = tasks
             .Where(t => t.ApprovalRequired && t.WorkflowInstanceId is not null)
             .Select(t => t.WorkflowInstanceId!.Value)
+            .Concat(tasks
+                .Where(t => t.ReviewRequired && t.ReviewWorkflowInstanceId is not null)
+                .Select(t => t.ReviewWorkflowInstanceId!.Value))
             .Distinct()
             .ToList();
         var approvalStates = await _approvals.GetStatesAsync(instanceIds, ct);
@@ -210,6 +223,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             .Select(t =>
             {
                 var (outstanding, rejected) = ApprovalView(t, approvalStates);
+                var (reviewOutstanding, reviewRejected) = TaskReviewView.Resolve(t, approvalStates);
                 return Project(
                     t,
                     actor,
@@ -218,6 +232,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     childrenByParent.GetValueOrDefault(t.Id, []),
                     outstanding,
                     rejected,
+                    reviewOutstanding,
+                    reviewRejected,
                     edgesByTask.GetValueOrDefault(t.Id, []),
                     edgeTasks,
                     commentsByTask.GetValueOrDefault(t.Id, []),
@@ -242,15 +258,19 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         ChecklistRun? checklist,
         IReadOnlyList<TaskItem> children,
         bool approvalOutstanding,
-        bool approvalRejected = false,
+        bool approvalRejected,
+        bool reviewOutstanding,
+        bool reviewRejected,
         IReadOnlyList<TaskDependency>? edges = null,
         IReadOnlyDictionary<Guid, TaskItem>? edgeTasks = null,
         IReadOnlyList<TaskComment>? comments = null,
         IReadOnlyDictionary<Guid, string>? poolLabels = null)
     {
         var assignment = _assignmentResolver.Resolve(task);
-        var normalized = _lifecycle.ToNormalizedStatus(task, approvalOutstanding, approvalRejected);
-        var waiting = _lifecycle.ResolveWaitingContext(task, approvalOutstanding, approvalRejected);
+        var normalized = _lifecycle.ToNormalizedStatus(
+            task, approvalOutstanding, approvalRejected, reviewOutstanding, reviewRejected);
+        var waiting = _lifecycle.ResolveWaitingContext(
+            task, approvalOutstanding, approvalRejected, reviewOutstanding, reviewRejected);
         // A rejected approval is terminal too: refused work must not keep offering start/complete.
         var terminal = _lifecycle.IsTerminal(task) || approvalRejected;
 
@@ -268,7 +288,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
 
         var (built, primaryActionCode, overflowActionCodes) = terminal
             ? ([], null, (IReadOnlyList<string>)[])
-            : BuildActions(task, actor, checklistBlocks, approvalOutstanding);
+            : BuildActions(task, actor, checklistBlocks, approvalOutstanding, reviewOutstanding, reviewRejected);
 
         /*
          * Apply the blocks LAST, as a rewrite over whatever was offered. Done here rather than inside BuildActions
@@ -358,7 +378,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             Checklist: checklist is null ? null : ToChecklist(checklist),
             Subtasks: task.ParentTaskItemId is null ? ToSubtasks(children, actor, displayNames) : null,
             ParentTaskItemId: task.ParentTaskItemId?.ToString(),
-            Gates: BuildGates(task, actor, displayNames, approvalOutstanding, approvalRejected),
+            Gates: BuildGates(
+                task, actor, displayNames, approvalOutstanding, approvalRejected, reviewOutstanding, reviewRejected),
             // The engine's own spelling, straight through — the contract's PRIORITIES are that enum (BL-032).
             Priority: task.Priority.ToString(),
             // Container ⇔ capability again: emitted only when `dependencies` is declared, and then even if empty.
@@ -485,16 +506,23 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// <c>ApprovalRequired</c>: that flag records only that approval was ASKED FOR. Deriving status from it is
     /// exactly the mistake that once left an approved task still showing as waiting.</para>
     ///
-    /// <para>Review carries no decider. A TaskItem records that a review is required but not WHO reviews —
-    /// MOD-0023 resolves that — so the field is null rather than filled with the approval manager, who is a
-    /// different person answering a different question.</para>
+    /// <para>Review status is read the SAME way, from the review instance (Faz 3b). It used to be derived from
+    /// <c>task.Lifecycle == PendingReview</c>, which is the same mistake in the same shape: the lifecycle records
+    /// that the work was HANDED OVER, never what came back, so a released review and a refused one were both
+    /// reported as "pending" and neither could ever be told from the other.</para>
+    ///
+    /// <para>Review's decider is a CANDIDATE hint, exactly like approval's manager: it is who the requester
+    /// suggested, and MOD-0023/MOD-0018 decide who may actually act. It is never who DID review — that answer
+    /// belongs to the instance.</para>
     /// </summary>
     private static WorkItemGatesDto BuildGates(
         TaskItem task,
         WorkItemActor actor,
         IReadOnlyDictionary<Guid, string> displayNames,
         bool approvalOutstanding,
-        bool approvalRejected)
+        bool approvalRejected,
+        bool reviewOutstanding,
+        bool reviewRejected)
     {
         var approvalStatus = !task.ApprovalRequired ? GateNotRequired
             : approvalRejected ? GateRejected
@@ -503,10 +531,13 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             : GateApproved;
 
         var reviewStatus = !task.ReviewRequired ? GateNotRequired
-            // The task is sitting with a reviewer right now.
-            : task.Lifecycle == TaskLifecycle.PendingReview ? GatePending
-            // Declared, but the work has not reached review yet.
-            : GateRequired;
+            : reviewRejected ? GateRejected
+            // Sitting with a reviewer right now — an instance exists and MOD-0023 has not answered it.
+            : reviewOutstanding && task.ReviewWorkflowInstanceId is not null ? GatePending
+            // Declared, but the work has not been submitted yet: no instance, so nobody is holding it.
+            : task.ReviewWorkflowInstanceId is null ? GateRequired
+            // Required, not outstanding and not refused: MOD-0023 released it.
+            : GateApproved;
 
         return new WorkItemGatesDto(
             Approval: new WorkItemGateDto(
@@ -515,7 +546,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 // A CANDIDATE approver hint (MOD-0018/MOD-0023 resolve real authority) — a typed identity, so the
                 // client can render a person instead of a raw id, and null when there is none.
                 Person(task.ApprovalManagerUserId, actor, displayNames)),
-            Review: new WorkItemGateDto(task.ReviewRequired, reviewStatus, Decider: null));
+            Review: new WorkItemGateDto(
+                task.ReviewRequired,
+                reviewStatus,
+                Person(task.ReviewerCandidateUserId, actor, displayNames)));
     }
 
     private static WorkItemSubtasksDto ToSubtasks(
@@ -771,7 +805,13 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
            && checklist.Items.Any(i => i.Requirement == ChecklistItemRequirement.Blocking && !i.Completed);
 
     private static (IReadOnlyList<WorkItemActionDto> Actions, string? Primary, IReadOnlyList<string> Overflow)
-        BuildActions(TaskItem task, WorkItemActor actor, bool checklistBlocks, bool approvalOutstanding)
+        BuildActions(
+            TaskItem task,
+            WorkItemActor actor,
+            bool checklistBlocks,
+            bool approvalOutstanding,
+            bool reviewOutstanding,
+            bool reviewRejected)
     {
         var actions = new List<WorkItemActionDto>();
         string? primary = null;
@@ -836,19 +876,78 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
 
             if (task.Lifecycle is TaskLifecycle.InProgress)
             {
-                // Approval is checked BEFORE the checklist: it is the gate the user cannot clear themselves, so
-                // pointing them at unticked items they can complete without unblocking anything would be a lie.
-                // The server refuses Done in both cases (409), so this is a hint about a real refusal, never the
-                // enforcement.
-                actions.Add(approvalOutstanding
-                    ? Disabled("complete", ActionCompleteKey,
-                        TaskReasonCodes.ApprovalPending, DisabledApprovalCompleteKey)
-                    : checklistBlocks
+                /*
+                 * Review-gated work does not offer `complete` from here at all — the next step is `submitReview`,
+                 * and offering both would put two "I am finished" buttons side by side where only one can work.
+                 * `complete` reappears once MOD-0023 has released the review, below.
+                 *
+                 * Approval is still checked FIRST: it is the gate the user cannot clear themselves.
+                 */
+                if (task.ReviewRequired && task.ReviewWorkflowInstanceId is null)
+                {
+                    actions.Add(approvalOutstanding
+                        ? Disabled("submitReview", ActionSubmitReviewKey,
+                            TaskReasonCodes.ApprovalPending, DisabledApprovalCompleteKey)
+                        : checklistBlocks
+                            ? Disabled("submitReview", ActionSubmitReviewKey,
+                                TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
+                            : Build("submitReview", ActionSubmitReviewKey, actor.Has(TaskPermissions.Update),
+                                requiresConfirmation: true));
+                    primary = "submitReview";
+                }
+                else
+                {
+                    // Approval is checked BEFORE the checklist: it is the gate the user cannot clear themselves, so
+                    // pointing them at unticked items they can complete without unblocking anything would be a lie.
+                    // The server refuses Done in both cases (409), so this is a hint about a real refusal, never the
+                    // enforcement.
+                    actions.Add(approvalOutstanding
+                        ? Disabled("complete", ActionCompleteKey,
+                            TaskReasonCodes.ApprovalPending, DisabledApprovalCompleteKey)
+                        : checklistBlocks
+                            ? Disabled("complete", ActionCompleteKey,
+                                TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
+                            : Build("complete", ActionCompleteKey, actor.Has(TaskPermissions.Complete),
+                                requiresConfirmation: true));
+                    primary = "complete";
+                }
+            }
+
+            /*
+             * Sitting with a reviewer, or back from one (Faz 3b).
+             *
+             * VISIBLE BUT DISABLED while the review is open, never hidden: the whole point of the state is that
+             * someone else is holding the work, and a vanished button teaches the reader nothing about who. The
+             * server refuses the same write with REVIEW_PENDING, so this is the hint and that is the rule.
+             *
+             * A REFUSED review offers `submitReview` again rather than a dead end. Unlike a refused approval —
+             * which kills the request — a refused review hands the WORK back to the person holding it, and work
+             * that came back with nothing to press would be a trap.
+             */
+            if (task.Lifecycle is TaskLifecycle.PendingReview)
+            {
+                if (reviewRejected)
+                {
+                    actions.Add(Build("submitReview", ActionSubmitReviewKey, actor.Has(TaskPermissions.Update),
+                        requiresConfirmation: true));
+                    primary = "submitReview";
+                }
+                else if (reviewOutstanding)
+                {
+                    actions.Add(Disabled("complete", ActionCompleteKey,
+                        TaskReasonCodes.ReviewPending, DisabledReviewCompleteKey));
+                    primary = "complete";
+                }
+                else
+                {
+                    // Released: the reviewer is done, so completion is the holder's again.
+                    actions.Add(checklistBlocks
                         ? Disabled("complete", ActionCompleteKey,
                             TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
                         : Build("complete", ActionCompleteKey, actor.Has(TaskPermissions.Complete),
                             requiresConfirmation: true));
-                primary = "complete";
+                    primary = "complete";
+                }
             }
         }
 

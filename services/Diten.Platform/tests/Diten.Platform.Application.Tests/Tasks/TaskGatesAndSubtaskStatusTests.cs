@@ -19,6 +19,9 @@ public sealed class TaskGatesAndSubtaskStatusTests
 {
     private static readonly Guid InstanceId = Guid.Parse("abcdabcd-abcd-abcd-abcd-abcdabcdabcd");
 
+    /// <summary>The REVIEW instance — distinct from the approval one, because a task can carry both at once.</summary>
+    private static readonly Guid ReviewInstanceId = Guid.Parse("beefbeef-beef-beef-beef-beefbeefbeef");
+
     // ── Subtask status ──────────────────────────────────────────────────────────────────────────────────────
 
     [Theory]
@@ -177,13 +180,35 @@ public sealed class TaskGatesAndSubtaskStatusTests
     [Fact]
     public async Task A_task_sitting_with_its_reviewer_reports_pending()
     {
+        /*
+         * The instance is what makes this "pending" (Faz 3b). The lifecycle alone used to decide it, which records
+         * only that the work was HANDED OVER and never what came back — so a released review reported itself as
+         * still waiting, forever.
+         */
         var task = ParentTask();
         task.ReviewRequired = true;
         task.Lifecycle = TaskLifecycle.PendingReview;
+        task.ReviewWorkflowInstanceId = ReviewInstanceId;
 
         var item = await ProjectAsync(new FakeTaskItemRepository(task), task.Id, single: true);
 
         Assert.Equal("pending", item.Gates!.Review.Status);
+    }
+
+    [Fact]
+    public async Task The_SAME_task_reports_approved_once_MOD0023_releases_the_review()
+    {
+        // Non-vacuity for the test above: identical task, identical lifecycle, and only MOD-0023's answer differs.
+        var task = ParentTask();
+        task.ReviewRequired = true;
+        task.Lifecycle = TaskLifecycle.PendingReview;
+        task.ReviewWorkflowInstanceId = ReviewInstanceId;
+
+        var item = await ProjectAsync(
+            new FakeTaskItemRepository(task), task.Id, single: true,
+            approvals: new FakeTaskApprovalService().Approved(ReviewInstanceId));
+
+        Assert.Equal("approved", item.Gates!.Review.Status);
     }
 
     /*

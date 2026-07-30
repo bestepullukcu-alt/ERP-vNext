@@ -20,7 +20,10 @@ public sealed class TaskLifecycleServiceTests
     [InlineData(TaskLifecycle.Planned, "Pending")]
     [InlineData(TaskLifecycle.InProgress, "InProgress")]
     [InlineData(TaskLifecycle.Waiting, "Waiting")]
-    [InlineData(TaskLifecycle.PendingReview, "Waiting")]
+    // PendingReview maps by REVIEW STATE, not by the lifecycle alone (Faz 3b) — the theory passes no review
+    // flags, so this row is the "review already answered" case: the work is back with its holder. The
+    // reviewer-is-holding-it case is asserted explicitly below, where the flag can be supplied.
+    [InlineData(TaskLifecycle.PendingReview, "InProgress")]
     [InlineData(TaskLifecycle.Done, "Done")]
     [InlineData(TaskLifecycle.Cancelled, "Cancelled")]
     public void Maps_every_lifecycle_value_to_a_contract_normalized_status(TaskLifecycle lifecycle, string expected)
@@ -100,8 +103,36 @@ public sealed class TaskLifecycleServiceTests
     public void PendingReview_waits_on_the_reviewer()
     {
         var task = MakeTask(TaskLifecycle.PendingReview);
-        var context = _sut.ResolveWaitingContext(task, approvalOutstanding: false);
+        var context = _sut.ResolveWaitingContext(task, approvalOutstanding: false, reviewOutstanding: true);
         Assert.Equal(TaskWaitingTypes.Review, context!.Type);
+        Assert.Equal("Waiting", _sut.ToNormalizedStatus(task, approvalOutstanding: false, reviewOutstanding: true));
+    }
+
+    [Fact]
+    public void A_review_that_has_ANSWERED_stops_the_task_waiting_on_it()
+    {
+        /*
+         * Faz 3b. The lifecycle stays PendingReview — nothing writes it back — so the answer can only come from
+         * MOD-0023's instance. Before this, a released review and a refused one were both reported as "waiting on
+         * the reviewer", and neither could ever be told from the other.
+         *
+         * A refused review reads InProgress rather than Cancelled: unlike a refused approval, which kills the
+         * request, it hands the WORK back to the person holding it.
+         */
+        var task = MakeTask(TaskLifecycle.PendingReview);
+
+        Assert.Equal("InProgress", _sut.ToNormalizedStatus(
+            task, approvalOutstanding: false, reviewOutstanding: false));
+        Assert.Equal("InProgress", _sut.ToNormalizedStatus(
+            task, approvalOutstanding: false, approvalRejected: false,
+            reviewOutstanding: false, reviewRejected: true));
+
+        // The contract pairs Waiting with a waitingContext in BOTH directions, so a task that no longer reads
+        // Waiting must not keep one.
+        Assert.Null(_sut.ResolveWaitingContext(task, approvalOutstanding: false, reviewOutstanding: false));
+        Assert.Null(_sut.ResolveWaitingContext(
+            task, approvalOutstanding: false, approvalRejected: false,
+            reviewOutstanding: true, reviewRejected: true));
     }
 
     [Theory]

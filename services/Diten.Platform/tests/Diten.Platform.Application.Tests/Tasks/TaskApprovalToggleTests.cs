@@ -173,6 +173,7 @@ public sealed class TaskApprovalToggleTests
             new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository()),
             new FakeCurrentUserContext(TaskTestData.Me),
             approvals,
+            new FakeTaskReviewService(),
             NullLogger<UpdateTaskItemHandler>.Instance);
         return (handler, tasks, approvals);
     }

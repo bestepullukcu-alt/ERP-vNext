@@ -196,6 +196,9 @@ public static class DependencyInjection
         // owns approval state.
         services.AddScoped<Features.Tasks.Services.ITaskApprovalService,
             Features.Tasks.Services.TaskApprovalService>();
+        // Faz 3b — the REVIEW handoff: the same engine asked a second question, never a second engine.
+        services.AddScoped<Features.Tasks.Services.ITaskReviewService,
+            Features.Tasks.Services.TaskReviewService>();
 
         // MC-3b — Platform-internal modules that self-register their catalog manifest in-process. Collected by
         // PlatformModuleSelfRegistrationWorker at startup. Add a line here for each new self-registering module.

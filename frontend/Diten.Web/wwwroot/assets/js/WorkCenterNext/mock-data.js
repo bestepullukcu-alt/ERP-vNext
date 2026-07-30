@@ -190,7 +190,7 @@
          */
         destructive: ['danger', 'destructive'].includes(action.riskLevel),
         kind: ['danger', 'destructive'].includes(action.riskLevel) ? 'danger'
-            : ['approve', 'complete', 'resolve', 'signoff'].includes(action.code) ? 'success'
+            : ['approve', 'complete', 'resolve', 'signoff', 'submitReview'].includes(action.code) ? 'success'
                 : action.code === 'requestInfo' ? 'warning'
                     : action.code === 'accept' || action.code === 'claim' || action.code === 'start' || action.code === 'resume' ? 'primary'
                         : 'secondary',
@@ -218,7 +218,7 @@
          */
         depth: action.depth || null,
         role: ['reject', 'return', 'declineMeeting'].includes(action.code) ? 'reject'
-            : ['approve', 'accept', 'claim', 'complete', 'resolve', 'signoff', 'start', 'resume', 'acceptMeeting'].includes(action.code) ? 'accept'
+            : ['approve', 'accept', 'claim', 'complete', 'resolve', 'signoff', 'start', 'resume', 'acceptMeeting', 'submitReview'].includes(action.code) ? 'accept'
                 : null
     });
     const allFixtureGroups = () => {

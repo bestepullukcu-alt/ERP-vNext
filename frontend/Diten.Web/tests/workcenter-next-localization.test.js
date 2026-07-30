@@ -55,6 +55,31 @@ describe("WorkCenterNext localization resources", () => {
       expect(valueOf("tr", key)).not.toBe(valueOf("en", key));
     });
   });
+  it("ships the review action and its blocked reason in all seven languages", () => {
+    // Faz 3b. A projected action carries a resource KEY, and t() falls back to the key itself when it is
+    // missing — so a button whose label was never translated renders as "WorkAggregation_Action_SubmitReview"
+    // rather than failing loudly. Only this gate catches that.
+    const valueOf = (locale, key) => {
+      const xml = fs.readFileSync(path.join(resourceRoot, `WorkCenterNextIndex.${locale}.resx`), "utf8");
+      const match = new RegExp(`name="${key}"[^>]*>\\s*<value>([\\s\\S]*?)</value>`).exec(xml);
+      return match ? match[1].trim() : null;
+    };
+
+    ["WorkAggregation_Action_SubmitReview", "WorkAggregation_ActionDisabled_ReviewPending"].forEach((key) => {
+      locales.forEach((locale) => expect(valueOf(locale, key)).toBeTruthy());
+      // Not English left in place.
+      expect(valueOf("tr", key)).not.toBe(valueOf("en", key));
+      expect(valueOf("ru", key)).not.toBe(valueOf("en", key));
+    });
+
+    // The two reasons must not share a string: they are cleared by different people, and telling a holder
+    // "waiting for approval" while a REVIEWER holds their work sends them to the wrong person.
+    locales.forEach((locale) => {
+      expect(valueOf(locale, "WorkAggregation_ActionDisabled_ReviewPending"))
+        .not.toBe(valueOf(locale, "WorkAggregation_ActionDisabled_ApprovalPendingComplete"));
+    });
+  });
+
   it("wires each date cell to its OWN empty text", () => {
     // Having the strings is not enough — the detail pane must actually use the plan-specific one. The bug was a
     // single shared placeholder in renderPlanDates, so this pins the call sites.

@@ -1349,6 +1349,12 @@
   <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
     <value>Queda un elemento bloqueante de la lista de verificación.</value>
   </data>
+  <data name="WorkAggregation_Action_SubmitReview" xml:space="preserve">
+    <value>Enviar a revisión</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewPending" xml:space="preserve">
+    <value>En manos del revisor: aún no se puede completar.</value>
+  </data>
   <data name="WorkAggregation_ActionDisabled_ApprovalPendingComplete" xml:space="preserve">
     <value>Pendiente de aprobación: aún no se puede completar.</value>
   </data>

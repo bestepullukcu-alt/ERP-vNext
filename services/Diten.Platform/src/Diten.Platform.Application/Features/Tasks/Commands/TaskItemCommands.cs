@@ -46,6 +46,17 @@ public sealed record ReleaseTaskItemCommand(Guid Id, TaskTransitionRequest Reque
 public sealed record PlanTaskItemCommand(Guid Id, PlanTaskItemRequest Request, string CorrelationId)
     : IRequest<Response<NoContent>>;
 
+/// <summary>
+/// Hand finished work to a reviewer: InProgress → PendingReview.
+///
+/// <para>Deliberately NOT routed through <see cref="TransitionTaskItemCommand"/>, for the same reason
+/// <see cref="InquireTaskItemCommand"/> is not: this transition has a SIDE EFFECT the generic one has no business
+/// carrying — it opens a MOD-0023 instance. Folding it in would put "start a workflow" inside the handler that
+/// serves start/complete/cancel, where the next reader would reasonably assume it fires for all of them.</para>
+/// </summary>
+public sealed record SubmitTaskForReviewCommand(Guid Id, TaskTransitionRequest Request, string CorrelationId)
+    : IRequest<Response<NoContent>>;
+
 public sealed record TransitionTaskItemCommand(
     Guid Id,
     TaskLifecycle Target,

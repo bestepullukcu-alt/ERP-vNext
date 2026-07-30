@@ -22,14 +22,29 @@ public interface ITaskLifecycleService
     /// the caller: <c>ApprovalRequired</c> only records that approval was asked for, never whether it was given, so
     /// deriving it here left an approved task permanently "Waiting".
     /// </summary>
-    string ToNormalizedStatus(TaskItem task, bool approvalOutstanding, bool approvalRejected = false);
+    /// <remarks>
+    /// The review flags are inputs for the same reason (Faz 3b): the lifecycle records that work was HANDED to a
+    /// reviewer, never what came back, so a released review and a refused one are indistinguishable from the task
+    /// alone.
+    /// </remarks>
+    string ToNormalizedStatus(
+        TaskItem task,
+        bool approvalOutstanding,
+        bool approvalRejected = false,
+        bool reviewOutstanding = false,
+        bool reviewRejected = false);
 
     /// <summary>
     /// The waiting reason, or null. The contract treats <c>normalizedStatus == "Waiting"</c> and
     /// <c>waitingContext</c> as a BIDIRECTIONAL pair, so this must be non-null exactly when the normalized
     /// status is Waiting.
     /// </summary>
-    TaskWaitingContext? ResolveWaitingContext(TaskItem task, bool approvalOutstanding, bool approvalRejected = false);
+    TaskWaitingContext? ResolveWaitingContext(
+        TaskItem task,
+        bool approvalOutstanding,
+        bool approvalRejected = false,
+        bool reviewOutstanding = false,
+        bool reviewRejected = false);
 
     /// <summary>Remaining effort = Estimate − Spent, floored at 0. Derived, never stored (pack §12 E4).</summary>
     decimal? CalculateRemainingHours(TaskItem task);

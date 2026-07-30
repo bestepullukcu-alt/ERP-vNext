@@ -33,7 +33,7 @@
   <data name="SpentHoursReadOnlyHint" xml:space="preserve"><value>İş yapılırken kaydedilir — yeni görevde her zaman sıfırdır.</value></data>
   <data name="FieldTags" xml:space="preserve"><value>Etiketler</value></data>
   <data name="FieldReviewRequired" xml:space="preserve"><value>Review gerekli</value></data>
-  <data name="ReviewComingSoonHint" xml:space="preserve"><value>Tamamlama sonrası review henüz kullanılamıyor; sonraki bir sürümde gelecek.</value></data>
+  <data name="ReviewRequiredHint" xml:space="preserve"><value>İşaretlendiğinde görev, tamamlanmadan önce bir inceleyene gider.</value></data>
   <data name="FieldApprovalRequired" xml:space="preserve"><value>Yönetici onayı gerekli</value></data>
   <data name="FieldApprovalManager" xml:space="preserve"><value>Onay yöneticisi</value></data>
   <data name="ApprovalHint" xml:space="preserve"><value>Onay, iş akışı motorunda yürür; onay verilmeden görev başlatılamaz.</value></data>

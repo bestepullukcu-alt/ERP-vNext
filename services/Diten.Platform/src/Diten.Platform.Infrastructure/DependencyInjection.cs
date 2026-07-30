@@ -124,6 +124,10 @@ public static class DependencyInjection
         // the Workflow Designer overrides Tasks:Approval:TemplateCode; the built-in default is only a fallback.
         services.Configure<Diten.Platform.Application.Features.Tasks.Services.TaskApprovalOptions>(
             configuration.GetSection(Diten.Platform.Application.Features.Tasks.Services.TaskApprovalOptions.SectionName));
+        // Faz 3b — which workflow template task REVIEW starts. Same override story as approval above, under its
+        // own section so a tenant can point review and approval at different flows.
+        services.Configure<Diten.Platform.Application.Features.Tasks.Services.TaskReviewOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.Tasks.Services.TaskReviewOptions.SectionName));
         services.Configure<MdmServiceOptions>(configuration.GetSection(MdmServiceOptions.SectionName));
         services.Configure<FakeMessagingProviderOptions>(configuration.GetSection(FakeMessagingProviderOptions.SectionName));
         services.AddOptions<SmtpProviderOptions>()

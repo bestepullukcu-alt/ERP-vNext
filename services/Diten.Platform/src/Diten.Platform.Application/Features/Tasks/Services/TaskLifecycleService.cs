@@ -26,7 +26,12 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
         // this — the system does (pack §12 Y2).
         => TaskLifecycle.Open;
 
-    public string ToNormalizedStatus(TaskItem task, bool approvalOutstanding, bool approvalRejected = false)
+    public string ToNormalizedStatus(
+        TaskItem task,
+        bool approvalOutstanding,
+        bool approvalRejected = false,
+        bool reviewOutstanding = false,
+        bool reviewRejected = false)
     {
         ArgumentNullException.ThrowIfNull(task);
 
@@ -53,7 +58,17 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
             TaskLifecycle.Planned => Pending,
             TaskLifecycle.InProgress => InProgress,
             TaskLifecycle.Waiting => Waiting,
-            // The owner still sees a review-pending task, but it is waiting on the reviewer.
+            /*
+             * Handed to a reviewer — and WHICH of the three review outcomes this is cannot be read from the
+             * lifecycle, which records only that the handover happened (Faz 3b). The caller supplies it from
+             * MOD-0023's instance state.
+             *
+             * A REFUSED review reads InProgress, not Cancelled: this is the one place review deliberately does not
+             * mirror approval. A refused approval kills the request outright, while a refused review sends the
+             * WORK back to the person holding it — they still have it, and it is still theirs to fix.
+             */
+            TaskLifecycle.PendingReview when reviewRejected => InProgress,
+            TaskLifecycle.PendingReview when !reviewOutstanding => InProgress,
             TaskLifecycle.PendingReview => Waiting,
             TaskLifecycle.Done => Done,
             TaskLifecycle.Cancelled => Cancelled,
@@ -61,7 +76,12 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
         };
     }
 
-    public TaskWaitingContext? ResolveWaitingContext(TaskItem task, bool approvalOutstanding, bool approvalRejected = false)
+    public TaskWaitingContext? ResolveWaitingContext(
+        TaskItem task,
+        bool approvalOutstanding,
+        bool approvalRejected = false,
+        bool reviewOutstanding = false,
+        bool reviewRejected = false)
     {
         ArgumentNullException.ThrowIfNull(task);
 
@@ -90,7 +110,9 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
 
         return task.Lifecycle switch
         {
-            TaskLifecycle.PendingReview => new TaskWaitingContext(
+            // Only while a reviewer is actually holding it. A refused or released review is no longer a wait, and
+            // the contract forbids a waitingContext on an item that does not read as Waiting.
+            TaskLifecycle.PendingReview when reviewOutstanding && !reviewRejected => new TaskWaitingContext(
                 TaskWaitingTypes.Review, WaitingOn: null, Reason: null,
                 task.UpdatedAt ?? task.CreatedAt, ExpectedUntil: null),
             // WaitingReason is what the holder typed when they parked it (InquireTaskItemHandler makes it

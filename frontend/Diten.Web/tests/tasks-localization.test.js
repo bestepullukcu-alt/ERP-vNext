@@ -30,6 +30,32 @@ describe("MOD-0024 task localization", () => {
     });
   });
 
+  it("says what the review switch DOES, and keeps no key for what it used to promise", () => {
+    /*
+     * Faz 3b. The switch was disabled with a "coming soon" hint; review is now implemented, so the hint had to
+     * change and its key had to GO. A leftover key is not harmless here — it is a translated sentence promising
+     * a later release, one edit away from being rendered again beside a feature that already shipped.
+     */
+    LOCALES.forEach((locale) => {
+      expect(byLocale[locale].ReviewRequiredHint).toBeTruthy();
+      expect(byLocale[locale].ReviewComingSoonHint).toBeUndefined();
+    });
+
+    expect(byLocale.tr.ReviewRequiredHint).not.toBe(byLocale.en.ReviewRequiredHint);
+  });
+
+  it("leaves the review switch enabled on the form", () => {
+    // The string alone proves nothing: the hint could be correct while the control stays disabled, which is the
+    // state this slice replaced.
+    const form = fs.readFileSync(
+      path.resolve(__dirname, "..", "Views", "Tasks", "_Form.cshtml"), "utf8");
+    const block = form.slice(form.indexOf('id="taskReviewRequired"'), form.indexOf('id="taskApprovalRequired"'));
+
+    expect(block).not.toContain("disabled");
+    expect(block).toContain("ReviewRequiredHint");
+    expect(form).not.toContain("ReviewComingSoonHint");
+  });
+
   it("has an identical key set across all seven languages", () => {
     const baseKeys = Object.keys(byLocale.en).sort();
     expect(baseKeys.length).toBeGreaterThan(0);

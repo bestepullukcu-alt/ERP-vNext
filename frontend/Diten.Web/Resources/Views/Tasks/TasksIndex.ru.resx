@@ -33,7 +33,7 @@
   <data name="SpentHoursReadOnlyHint" xml:space="preserve"><value>Фиксируется в процессе работы — у новой задачи всегда ноль.</value></data>
   <data name="FieldTags" xml:space="preserve"><value>Теги</value></data>
   <data name="FieldReviewRequired" xml:space="preserve"><value>Требуется проверка</value></data>
-  <data name="ReviewComingSoonHint" xml:space="preserve"><value>Проверка после завершения пока недоступна — появится в одном из следующих выпусков.</value></data>
+  <data name="ReviewRequiredHint" xml:space="preserve"><value>Если включено, задача проходит проверку до завершения.</value></data>
   <data name="FieldApprovalRequired" xml:space="preserve"><value>Требуется согласование руководителя</value></data>
   <data name="FieldApprovalManager" xml:space="preserve"><value>Согласующий руководитель</value></data>
   <data name="ApprovalHint" xml:space="preserve"><value>Согласование выполняется в движке процессов; до его получения задачу нельзя начать.</value></data>

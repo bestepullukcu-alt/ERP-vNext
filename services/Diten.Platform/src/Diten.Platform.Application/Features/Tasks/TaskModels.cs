@@ -64,6 +64,17 @@ public static class TaskReasonCodes
     /// <summary>The workflow gate refused: approval is outstanding (MOD-0023 owns the decision).</summary>
     public const string ApprovalPending = "APPROVAL_PENDING";
 
+    /// <summary>
+    /// The workflow gate refused completion: a REVIEW is outstanding. Separate from
+    /// <see cref="ApprovalPending"/> because the two gates block different acts and are cleared by different
+    /// people — telling a holder "approval pending" when a reviewer is holding the work would send them to the
+    /// wrong person.
+    /// </summary>
+    public const string ReviewPending = "REVIEW_PENDING";
+
+    /// <summary>Review was submitted on a task that never asked for one.</summary>
+    public const string ReviewNotRequired = "REVIEW_NOT_REQUIRED";
+
     /// <summary>A subtask may not itself have subtasks — one level only (pack §12 E2).</summary>
     public const string SubtaskDepthExceeded = "SUBTASK_DEPTH_EXCEEDED";
 

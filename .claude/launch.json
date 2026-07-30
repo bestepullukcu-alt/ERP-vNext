@@ -1,0 +1,84 @@
+{
+  "version": "0.0.1",
+  "autoPort": false,
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "frontend/Diten.Web/Diten.Web.csproj",
+        "--no-build",
+        "--urls",
+        "http://0.0.0.0:5001"
+      ],
+      "port": 5001
+    },
+    {
+      "name": "web-verify",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "frontend/Diten.Web/Diten.Web.csproj",
+        "--no-build",
+        "--urls",
+        "http://localhost:5011"
+      ],
+      "port": 5011
+    },
+    {
+      "name": "gateway",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "gateway/Diten.ApiGateway/Diten.ApiGateway.csproj",
+        "--no-build",
+        "--urls",
+        "http://localhost:5000"
+      ],
+      "port": 5000
+    },
+    {
+      "name": "auth",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "services/Diten.AuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj",
+        "--no-build",
+        "--urls",
+        "http://localhost:5056"
+      ],
+      "port": 5056
+    },
+    {
+      "name": "platform",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj",
+        "--no-build",
+        "--urls",
+        "http://localhost:5057"
+      ],
+      "port": 5057
+    },
+    {
+      "name": "mdm",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj",
+        "--no-build",
+        "--urls",
+        "http://localhost:5059"
+      ],
+      "port": 5059
+    }
+  ]
+}

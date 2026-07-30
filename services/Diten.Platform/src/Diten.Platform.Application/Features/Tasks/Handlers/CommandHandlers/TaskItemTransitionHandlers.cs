@@ -7,6 +7,7 @@ using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.Tasks.Handlers.CommandHandlers;
 
@@ -267,6 +268,68 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         }
 
         /*
+         * Review gate (Faz 3b) — the SAME engine, a SECOND decision.
+         *
+         * Asked only on `complete`, because that is the act a review gates: approval releases the work to START,
+         * review releases it to CLOSE. Both go to MOD-0023 through the identical IWorkflowTransitionGate call and
+         * differ only in WHICH object reference they name — MOD-0024 owns no review engine and reads no review
+         * status of its own.
+         *
+         * The separate ObjectType is load-bearing rather than tidy: the gate resolves an instance with
+         * GetLatestByObjectRefAsync, which returns the latest instance for one reference, so a shared reference
+         * would make each gate read whichever decision started last. See TaskReviewService.
+         *
+         * FAIL-CLOSED like approval: an unevaluable gate counts as blocked, so a workflow outage cannot let
+         * unreviewed work close.
+         */
+        if (task.ReviewRequired && command.Target == TaskLifecycle.Done)
+        {
+            /*
+             * No instance means the work was never SUBMITTED for review, and the gate cannot speak for a decision
+             * nobody was asked for: with no instance it answers NotApplicable, which the gate contract treats as
+             * allowed. So the requirement itself is enforced here first.
+             *
+             * That is not MOD-0024 deciding a review — `ReviewRequired` is MOD-0024's own flag, and all this says
+             * is "this work has to go through review", never whether the review passed. The verdict is still read
+             * from the instance, immediately below.
+             */
+            if (task.ReviewWorkflowInstanceId is null)
+            {
+                return Response<NoContent>.Fail(
+                    "This task must be submitted for review before it can be completed.",
+                    409, TaskReasonCodes.ReviewPending, command.CorrelationId);
+            }
+
+            var reviewGate = await _workflowGate.EvaluateAsync(new WorkflowGateRequest(
+                ObjectType: TaskReviewService.ReviewObjectType,
+                ObjectId: task.Id.ToString(),
+                ObjectRef: TaskReviewService.BuildObjectRef(task.Id),
+                RequestedTransition: "complete",
+                RequestedTargetState: command.Target.ToString(),
+                ActorId: _currentUser.UserId.ToString(),
+                ReasonCode: command.Request.ReasonCode,
+                CorrelationId: command.CorrelationId), ct);
+
+            if (reviewGate.IsBlocked)
+            {
+                /*
+                 * The engine's own reason code is NOT passed through here, unlike the approval branch above.
+                 * MOD-0023 answers in its own vocabulary — a blocked instance reports WORKFLOW_PENDING_APPROVAL
+                 * whatever question it was asked — so forwarding it would tell a holder waiting on a REVIEWER that
+                 * they are waiting for approval, and send them to the wrong person.
+                 *
+                 * The engine's MESSAGE is still forwarded: that is its description of its own state, and it is the
+                 * useful half. Only the code, which the client routes on, is restated in MOD-0024's terms.
+                 */
+                return Response<NoContent>.Fail(
+                    reviewGate.BlockingMessage ?? "This task cannot be completed while its review is open.",
+                    409,
+                    TaskReasonCodes.ReviewPending,
+                    command.CorrelationId);
+            }
+        }
+
+        /*
          * Dependency gate — the RULE, not the hint.
          *
          * The projection already computes this and ships `start` disabled with DEPENDENCY_BLOCKED beside it. That
@@ -422,6 +485,125 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         }
 
         return null;
+    }
+}
+
+/// <summary>
+/// Hand finished work to a reviewer — InProgress → PendingReview, and the MOD-0023 instance that carries the
+/// decision.
+///
+/// <para><b>The whole point of the slice.</b> The transition is MOD-0024's (its own lifecycle moves), the DECISION
+/// is MOD-0023's (an instance is opened and MOD-0023 answers it). Nothing here approves, rejects, or records a
+/// verdict; there is no review status to write, because the status is the instance's.</para>
+/// </summary>
+public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForReviewCommand, Response<NoContent>>
+{
+    private readonly ITaskItemRepository _tasks;
+    private readonly ITaskLifecycleService _lifecycle;
+    private readonly ICurrentUserContext _currentUser;
+    private readonly ITaskReviewService _reviews;
+    // Read-only access to what MOD-0023 says about an instance. The approval service owns this read because it is
+    // keyed by INSTANCE id and never asks what the instance decides, so it serves both decisions unchanged.
+    private readonly ITaskApprovalService _reviewStates;
+    private readonly ILogger<SubmitTaskForReviewHandler> _logger;
+
+    public SubmitTaskForReviewHandler(
+        ITaskItemRepository tasks,
+        ITaskLifecycleService lifecycle,
+        ICurrentUserContext currentUser,
+        ITaskReviewService reviews,
+        ITaskApprovalService reviewStates,
+        ILogger<SubmitTaskForReviewHandler> logger)
+    {
+        _reviewStates = reviewStates;
+        _tasks = tasks;
+        _lifecycle = lifecycle;
+        _currentUser = currentUser;
+        _reviews = reviews;
+        _logger = logger;
+    }
+
+    public async Task<Response<NoContent>> Handle(SubmitTaskForReviewCommand command, CancellationToken ct)
+    {
+        var task = await _tasks.GetByIdAsync(command.Id, ct);
+        if (task is null)
+        {
+            return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        /*
+         * A task that never asked for a review cannot be submitted for one. The projection simply does not offer
+         * the action, but a caller can post straight to this endpoint — and a hidden control is presentation while
+         * the refusal is the rule. Without this, any task could be parked in PendingReview with a workflow nobody
+         * asked for, and `complete` would then be gated by it.
+         */
+        if (!task.ReviewRequired)
+        {
+            return Response<NoContent>.Fail(
+                "This task does not require a review.",
+                409, TaskReasonCodes.ReviewNotRequired, command.CorrelationId);
+        }
+
+        /*
+         * RESUBMISSION after a refusal. A task refused by its reviewer stays in PendingReview on the record while
+         * the projection reports it as InProgress — the work is back with its holder — so the lifecycle matrix,
+         * which has no PendingReview → PendingReview edge, would refuse the second round and leave the work with
+         * nothing to press.
+         *
+         * Allowed ONLY when MOD-0023 says the current review was refused. That verdict is READ from the instance,
+         * never assumed from the lifecycle: a task still waiting on its reviewer takes the ordinary path below and
+         * is refused, because resubmitting work someone is holding right now would silently replace their review.
+         */
+        var resubmitting = false;
+        if (task.Lifecycle == TaskLifecycle.PendingReview && task.ReviewWorkflowInstanceId is { } openInstance)
+        {
+            var states = await _reviewStates.GetStatesAsync([openInstance], ct);
+            resubmitting = TaskReviewView.Resolve(task, states).Rejected;
+        }
+
+        if (!resubmitting && !_lifecycle.CanTransition(task, TaskLifecycle.PendingReview, out var reasonCode))
+        {
+            return Response<NoContent>.Fail(
+                "This transition is not allowed in the task's current state.",
+                409, reasonCode ?? TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        /*
+         * The instance is opened BEFORE the lifecycle moves, which is the opposite order to the approval toggle on
+         * an edit — and deliberately so. There, the edit is the user's work and must survive a workflow outage, so
+         * the write commits first and the handoff follows. Here the handoff IS the act: a task sitting in
+         * PendingReview with no instance is a task waiting on a reviewer who was never asked, and `complete` would
+         * then refuse forever with no way to clear it.
+         */
+        var instanceId = await _reviews.TryStartReviewAsync(task, ct);
+        if (instanceId is null)
+        {
+            _logger.LogWarning(
+                "Review could not be started for task {TaskId}; it stays in progress rather than waiting on nobody.",
+                task.Id);
+            return Response<NoContent>.Fail(
+                "The review could not be started. The task is unchanged; try again.",
+                409, TaskReasonCodes.ReviewPending, command.CorrelationId);
+        }
+
+        task.ReviewWorkflowInstanceId = instanceId;
+        task.Lifecycle = TaskLifecycle.PendingReview;
+        task.UpdatedBy = _currentUser.ActorName;
+
+        if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))
+        {
+            // The review IS open; only the task's move lost the race. Cancelling it back out would be a second
+            // failure path on an already-failed write, so it is left running and named in the log — the retry
+            // finds it by the same idempotency key rather than opening a second one.
+            _logger.LogWarning(
+                "Review instance {InstanceId} started for task {TaskId} but the task lost a concurrency race.",
+                instanceId, task.Id);
+            return Response<NoContent>.Fail(
+                "The task changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
+        return Response<NoContent>.Success(204, command.CorrelationId);
     }
 }
 

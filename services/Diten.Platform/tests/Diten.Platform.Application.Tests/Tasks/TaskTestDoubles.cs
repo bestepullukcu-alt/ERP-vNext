@@ -478,6 +478,17 @@ internal sealed class FakeWorkflowTransitionGate : Diten.Platform.Application.Co
     public bool Throws { get; set; }
     public List<Diten.Platform.Application.Contracts.WorkflowGateRequest> Calls { get; } = [];
 
+    /// <summary>
+    /// Block only the named object types (Faz 3b). A task can carry TWO live decisions at once — approval and
+    /// review — and <see cref="Blocked"/> alone cannot tell them apart, so a test using it could not prove that
+    /// blocking one leaves the other alone. Empty means "fall back to <see cref="Blocked"/>", so every existing
+    /// test behaves exactly as before.
+    /// </summary>
+    public HashSet<string> BlockedObjectTypes { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>Object types the gate reports as REFUSED rather than merely pending.</summary>
+    public HashSet<string> RejectedObjectTypes { get; } = new(StringComparer.Ordinal);
+
     public Task<Diten.Platform.Application.Contracts.WorkflowGateResult> EvaluateAsync(
         Diten.Platform.Application.Contracts.WorkflowGateRequest request, CancellationToken ct = default)
     {
@@ -493,12 +504,24 @@ internal sealed class FakeWorkflowTransitionGate : Diten.Platform.Application.Co
                 BlockingMessage: "The workflow gate could not be evaluated.", CorrelationId: null));
         }
 
+        if (RejectedObjectTypes.Contains(request.ObjectType))
+        {
+            return Task.FromResult(new Diten.Platform.Application.Contracts.WorkflowGateResult(
+                IsAllowed: false, Decision: "blocked", GateStatus: "rejected",
+                BlockingReasonCode: "WORKFLOW_REJECTED",
+                BlockingMessage: "The workflow was rejected.", CorrelationId: null));
+        }
+
+        var blocked = BlockedObjectTypes.Count > 0
+            ? BlockedObjectTypes.Contains(request.ObjectType)
+            : Blocked;
+
         return Task.FromResult(new Diten.Platform.Application.Contracts.WorkflowGateResult(
-            IsAllowed: !Blocked,
-            Decision: Blocked ? "blocked" : "allowed",
-            GateStatus: Blocked ? "pendingApproval" : "noWorkflow",
-            BlockingReasonCode: Blocked ? "APPROVAL_PENDING" : null,
-            BlockingMessage: Blocked ? "Approval is still pending." : null,
+            IsAllowed: !blocked,
+            Decision: blocked ? "blocked" : "allowed",
+            GateStatus: blocked ? "pendingApproval" : "noWorkflow",
+            BlockingReasonCode: blocked ? "APPROVAL_PENDING" : null,
+            BlockingMessage: blocked ? "Approval is still pending." : null,
             CorrelationId: null));
     }
 
@@ -514,6 +537,32 @@ internal sealed class FakeWorkflowTransitionGate : Diten.Platform.Application.Co
 }
 
 /// <summary>Approval-service double: records starts/cancels and can simulate a workflow that will not start.</summary>
+/// <summary>
+/// Faz 3b — the REVIEW handoff, stubbed. Deliberately separate from <see cref="FakeTaskApprovalService"/>: the
+/// two record their calls independently, so a test can prove that starting a review did NOT touch approval.
+/// </summary>
+internal sealed class FakeTaskReviewService : Diten.Platform.Application.Features.Tasks.Services.ITaskReviewService
+{
+    public bool CannotStart { get; set; }
+    public List<Guid> Started { get; } = [];
+    public List<Guid> Cancelled { get; } = [];
+
+    /// <summary>What the NEXT start returns. A second round after a refusal hands back a different id.</summary>
+    public Guid InstanceId { get; set; } = Guid.Parse("beefbeef-beef-beef-beef-beefbeefbeef");
+
+    public Task<Guid?> TryStartReviewAsync(TaskItem task, CancellationToken ct)
+    {
+        Started.Add(task.Id);
+        return Task.FromResult<Guid?>(CannotStart ? null : InstanceId);
+    }
+
+    public Task CancelReviewAsync(TaskItem task, CancellationToken ct)
+    {
+        Cancelled.Add(task.Id);
+        return Task.CompletedTask;
+    }
+}
+
 internal sealed class FakeTaskApprovalService : Diten.Platform.Application.Features.Tasks.Services.ITaskApprovalService
 {
     /// <summary>Instance id → state, as MOD-0023 would report it. Seeded per test.</summary>

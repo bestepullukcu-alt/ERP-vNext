@@ -11,11 +11,16 @@ namespace Diten.Platform.Application.Features.Tasks;
 public static class TaskItemMapper
 {
     public static TaskItemListItemDto ToListItem(
-        TaskItem task, ITaskLifecycleService lifecycle, bool approvalOutstanding, bool approvalRejected = false) => new(
+        TaskItem task,
+        ITaskLifecycleService lifecycle,
+        bool approvalOutstanding,
+        bool approvalRejected = false,
+        bool reviewOutstanding = false,
+        bool reviewRejected = false) => new(
         task.Id,
         task.Title,
         task.Lifecycle.ToString(),
-        lifecycle.ToNormalizedStatus(task, approvalOutstanding, approvalRejected),
+        lifecycle.ToNormalizedStatus(task, approvalOutstanding, approvalRejected, reviewOutstanding, reviewRejected),
         task.Priority.ToString(),
         task.AssignmentTarget.ToString(),
         task.AssigneeUserId,
@@ -33,12 +38,14 @@ public static class TaskItemMapper
         bool approvalOutstanding,
         bool approvalRejected,
         IReadOnlyList<TaskWatcher> watchers,
-        IReadOnlyList<TaskDependency> dependencies) => new(
+        IReadOnlyList<TaskDependency> dependencies,
+        bool reviewOutstanding = false,
+        bool reviewRejected = false) => new(
         task.Id,
         task.Title,
         task.Description,
         task.Lifecycle.ToString(),
-        lifecycle.ToNormalizedStatus(task, approvalOutstanding, approvalRejected),
+        lifecycle.ToNormalizedStatus(task, approvalOutstanding, approvalRejected, reviewOutstanding, reviewRejected),
         task.Priority.ToString(),
         task.AssignmentTarget.ToString(),
         task.AssigneeUserId,

@@ -51,9 +51,13 @@ public sealed class GetTaskItemListHandler
 
         // ONE approval-state read for the whole list — the same rule the Task Center projection follows. Reading
         // per task would be an N+1, and inferring from ApprovalRequired would report an approved task as Waiting.
+        // Review rides the same read (Faz 3b): the state lookup is keyed by instance id and decision-agnostic.
         var approvalStates = await _approvals.GetStatesAsync(
             visible.Where(t => t.ApprovalRequired && t.WorkflowInstanceId is not null)
-                .Select(t => t.WorkflowInstanceId!.Value).Distinct().ToList(), ct);
+                .Select(t => t.WorkflowInstanceId!.Value)
+                .Concat(visible.Where(t => t.ReviewRequired && t.ReviewWorkflowInstanceId is not null)
+                    .Select(t => t.ReviewWorkflowInstanceId!.Value))
+                .Distinct().ToList(), ct);
 
         IReadOnlyList<TaskItemListItemDto> result = visible
             .OrderBy(t => t.DueAt ?? DateTimeOffset.MaxValue)
@@ -61,7 +65,8 @@ public sealed class GetTaskItemListHandler
             {
                 // One shared fail-closed rule (TaskApprovalView) — the list must not disagree with the Task Center.
                 var (outstanding, rejected) = TaskApprovalView.Resolve(t, approvalStates);
-                return TaskItemMapper.ToListItem(t, _lifecycle, outstanding, rejected);
+                var (reviewOutstanding, reviewRejected) = TaskReviewView.Resolve(t, approvalStates);
+                return TaskItemMapper.ToListItem(t, _lifecycle, outstanding, rejected, reviewOutstanding, reviewRejected);
             })
             .ToList();
 

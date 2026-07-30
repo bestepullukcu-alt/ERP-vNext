@@ -33,7 +33,7 @@
   <data name="SpentHoursReadOnlyHint" xml:space="preserve"><value>Logged while the work is done — it is always zero on a new task.</value></data>
   <data name="FieldTags" xml:space="preserve"><value>Tags</value></data>
   <data name="FieldReviewRequired" xml:space="preserve"><value>Review required</value></data>
-  <data name="ReviewComingSoonHint" xml:space="preserve"><value>Review after completion is not available yet — it arrives in a later release.</value></data>
+  <data name="ReviewRequiredHint" xml:space="preserve"><value>When set, the task goes to a reviewer before it can be completed.</value></data>
   <data name="FieldApprovalRequired" xml:space="preserve"><value>Manager approval required</value></data>
   <data name="FieldApprovalManager" xml:space="preserve"><value>Approval manager</value></data>
   <data name="ApprovalHint" xml:space="preserve"><value>Approval runs in the workflow engine; the task cannot start until it is granted.</value></data>
