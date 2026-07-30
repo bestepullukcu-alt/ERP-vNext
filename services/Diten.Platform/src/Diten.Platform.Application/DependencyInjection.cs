@@ -200,6 +200,18 @@ public static class DependencyInjection
         services.AddScoped<Features.Tasks.Services.ITaskReviewService,
             Features.Tasks.Services.TaskReviewService>();
 
+        /*
+         * WC-2 — the working-time seam and the SLA decision that rides on it.
+         *
+         * THIS LINE is what the working calendar (BL: Calendar) replaces: swap the implementation and every SLA
+         * answer follows, because nothing downstream does date arithmetic of its own. The 24/7 calculator is a
+         * deliberate, honest stand-in — see its own summary before deleting it as a placeholder.
+         */
+        services.AddSingleton<Features.WorkAggregation.Services.IWorkingTimeCalculator,
+            Features.WorkAggregation.Services.TwentyFourSevenWorkingTimeCalculator>();
+        services.AddScoped<Features.WorkAggregation.Services.IWorkItemSlaCalculator,
+            Features.WorkAggregation.Services.WorkItemSlaCalculator>();
+
         // MC-3b — Platform-internal modules that self-register their catalog manifest in-process. Collected by
         // PlatformModuleSelfRegistrationWorker at startup. Add a line here for each new self-registering module.
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.Workflow.SelfRegistration.WorkflowManifestProvider>();

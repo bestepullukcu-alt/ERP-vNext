@@ -70,6 +70,13 @@ public static class WorkItemContract
     // BCP-47 "undetermined": correct for content typed by a user, whose language we do not record.
     public const string LocaleUndetermined = "und";
 
+    // slaState (WC-2). The C# mirror of fixture-contract.js SLA_STATES — one vocabulary, declared on both sides,
+    // because a value spelled differently across the seam is the defect this session met four times.
+    public const string SlaOverdue = "overdue";
+    public const string SlaDueSoon = "due-soon";
+    public const string SlaOnTrack = "on-track";
+    public const string SlaNoSla = "no-sla";
+
     // action source
     public const string ActionSourceProvider = "provider";
 
@@ -314,7 +321,27 @@ public sealed record WorkItemProjectionDto(
     /// meaningless — it was answered for a while with a fabricated team name (BL-031).
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    WorkItemPoolDto? Pool = null);
+    WorkItemPoolDto? Pool = null,
+    /// <summary>
+    /// How this work stands against its deadline: overdue | due-soon | on-track | no-sla (WC-2).
+    ///
+    /// <para>Computed on the SERVER, through <c>IWorkingTimeCalculator</c>, because it is a decision and the
+    /// surface's own law is that the browser renders decisions rather than making them. It used to be derived in
+    /// <c>mock-data.js</c> from calendar-day subtraction against a hard-coded threshold, which meant the working
+    /// calendar (BL: Calendar) had nothing on the server to arrive at.</para>
+    ///
+    /// <para><b>No remaining-day COUNT travels with it, deliberately.</b> A count computed on the server is
+    /// frozen the moment it is serialized: a tab left open overnight would still read "due in 2 days". This
+    /// project already shipped that exact shape once (the <c>ago</c> field) and banned it. The absolute
+    /// <see cref="DueAt"/> is on the wire already, so the client derives the WORDS late from it and takes only
+    /// the STATE from here.</para>
+    ///
+    /// <para>Optional and omitted when null: a provider that does not track deadlines (MOD-0023's own approval
+    /// items) says nothing rather than claiming <c>on-track</c>, and — the BL-038 lesson — the contract rule
+    /// validates this field only when it is PRESENT, so a silent provider's items are never dropped.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? SlaState = null);
 
 /// <summary>
 /// The queue a pooled item waits in (WC-3 / BL-031).

@@ -2,6 +2,7 @@ using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Application.Features.WorkAggregation;
 using Diten.Platform.Application.Features.WorkAggregation.Providers;
+using Diten.Platform.Application.Features.WorkAggregation.Services;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Domain.Repositories;
@@ -92,8 +93,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         ITaskDependencyRepository dependencies,
         ITaskCommentRepository comments,
         IPositionRepository positions,
-        IOrganizationUnitRepository organizationUnits)
+        IOrganizationUnitRepository organizationUnits,
+        IWorkItemSlaCalculator sla)
     {
+        _sla = sla;
         _positions = positions;
         _organizationUnits = organizationUnits;
         _dependencies = dependencies;
@@ -106,6 +109,12 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         _checklistRuns = checklistRuns;
         _approvals = approvals;
     }
+
+    /// <summary>
+    /// WC-2 — the SLA decision, made here rather than in the browser. Injected rather than called statically so
+    /// the working-time seam behind it can be swapped, which is the entire point of the slice.
+    /// </summary>
+    private readonly IWorkItemSlaCalculator _sla;
 
     public string ProviderCode => TaskProviderCode;
 
@@ -399,7 +408,13 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // Straight through — never DueAt. A plan write that stored the date but never showed it back would
             // be real on the server and invisible on the screen.
             PlannedDate: task.PlannedDate,
-            Pool: ToPool(task, poolLabels));
+            Pool: ToPool(task, poolLabels),
+            /*
+             * Measured against the wall clock at PROJECTION time, and stated as a state rather than a countdown.
+             * The reader's tab may outlive this answer; the absolute DueAt travels with it so the words on screen
+             * can be re-derived, and no frozen day count is sent (see the DTO's own note, and the `ago` ban).
+             */
+            SlaState: _sla.Resolve(task.DueAt, DateTimeOffset.UtcNow));
     }
 
     /// <summary>

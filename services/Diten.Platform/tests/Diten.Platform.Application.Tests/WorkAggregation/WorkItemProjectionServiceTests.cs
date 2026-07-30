@@ -18,7 +18,9 @@ public sealed class WorkItemProjectionServiceTests
     private const string ProviderCode = "workflow";
     private const string ContractVersion = "1.0";
 
-    private readonly WorkItemProjectionService _sut = new();
+    // WC-2 — the production SLA decision, not a stub: this suite asserts the projection MOD-0023's items carry,
+    // and slaState is now part of it.
+    private readonly WorkItemProjectionService _sut = new(Tasks.SlaForTests.Real());
 
     [Theory]
     [InlineData(ApprovalTaskStatus.WaitingApproval, WorkItemContract.StatusPending)]

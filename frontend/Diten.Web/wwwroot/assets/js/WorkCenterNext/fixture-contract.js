@@ -49,6 +49,21 @@
      */
     const PRIORITIES = ['Low', 'Medium', 'High'];
     /*
+     * How work stands against its deadline (WC-2). Declared here because it was NOT: the state existed in the
+     * browser's own SLA maths, in the shell's colour map, in its group-heading map and in its filter, and in none
+     * of them as a stated contract — the fifth value anyone added on one side would have reached the other as an
+     * uncoloured chip with a blank heading. That is the same disease this session met four times over.
+     *
+     * The vocabulary is declared; the THRESHOLD is not. Where the warning window opens is a policy a tenant may
+     * tune (WorkAggregation:Sla:DueSoonWithinWorkingDays on the server), and freezing a business rule into a
+     * shape validator would have made changing it a frontend edit. The two sides must agree on the WORDS, not on
+     * the number of days.
+     *
+     * `no-sla` is a first-class state, not an absence: work with no deadline is a legitimate, common situation
+     * and reporting it as on-track would claim a comfort nobody measured.
+     */
+    const SLA_STATES = ['overdue', 'due-soon', 'on-track', 'no-sla'];
+    /*
      * A typed dependency edge, in the ENGINE's vocabulary (TaskDependencyType) for the same reason priority is:
      * one canonical spelling on the wire, display abbreviations ("FS") built in the shell where the 7 languages
      * live. Fixtures said 'FS' and the engine said 'FinishToStart', so a real dependency would have reached the
@@ -277,6 +292,20 @@
             push(errors, fixture, 'PRIORITY_INVALID', 'priority');
         }
         /*
+         * slaState — validated WHEN PRESENT, never required (WC-2).
+         *
+         * The distinction is load-bearing, and BL-038 is why it is written down. validateItems DROPS an item
+         * that fails validation, so a required field is not a nudge to providers — it is a delete. MOD-0023's
+         * approval provider and MOD-0024's task provider both emit this today, but a third provider that does
+         * not track deadlines must be able to stay silent and still have its work appear on the surface.
+         *
+         * Present-but-unknown IS an error: that is the state the shell renders as an uncoloured chip under a
+         * blank group heading, which teaches the reader nothing and hides the drift that caused it.
+         */
+        if (fixture.slaState !== undefined && fixture.slaState !== null && !SLA_STATES.includes(fixture.slaState)) {
+            push(errors, fixture, 'SLA_STATE_INVALID', 'slaState');
+        }
+        /*
          * Activity entries. `at` is ABSOLUTE and a pre-computed "N days ago" is forbidden outright: whoever
          * computes it freezes it, and a projection that sat in a cache or a tab left open overnight then says
          * "today" about yesterday. Same defect class as the frozen showcase date.
@@ -409,7 +438,7 @@
     };
 
     global.WorkCenterNextContract = {
-        enums: { WORK_INTENTS, ASSIGNMENT_MODES, OWNERSHIP_STATES, ADMISSION_STATES, NORMALIZED_STATUSES, TASK_LIFECYCLES, EXECUTION_STATES, TIMER_STATES, SYSTEM_STATES, ACTION_DEPTHS, REVIEW_MEETING_REQUIREMENTS, WAITING_CONTEXT_TYPES, SUBTASK_STATUSES, PRIORITIES, DEPENDENCY_TYPES, DEPENDENCY_DIRECTIONS, ACTIVITY_KINDS, CAPABILITIES, VALUE_TYPES },
+        enums: { WORK_INTENTS, ASSIGNMENT_MODES, OWNERSHIP_STATES, ADMISSION_STATES, NORMALIZED_STATUSES, TASK_LIFECYCLES, EXECUTION_STATES, TIMER_STATES, SYSTEM_STATES, ACTION_DEPTHS, REVIEW_MEETING_REQUIREMENTS, WAITING_CONTEXT_TYPES, SUBTASK_STATUSES, PRIORITIES, SLA_STATES, DEPENDENCY_TYPES, DEPENDENCY_DIRECTIONS, ACTIVITY_KINDS, CAPABILITIES, VALUE_TYPES },
         limits: LIMITS,
         isLabel,
         isSafeLink,

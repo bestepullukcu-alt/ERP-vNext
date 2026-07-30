@@ -256,7 +256,8 @@ public sealed class TaskReviewProjectionTests
             new FakeTaskDependencyRepository(),
             new FakeTaskCommentRepository(),
             new FakePositionRepository(),
-            new FakeOrganizationUnitRepository());
+            new FakeOrganizationUnitRepository(),
+            SlaForTests.Real());
 
     private static WorkItemActor Actor()
         => new(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>());

@@ -113,7 +113,7 @@ public sealed class GetMyWorkItemsHandlerTests
         IWorkflowInstanceRepository instances)
     {
         var provider = new WorkflowApprovalWorkItemProvider(
-            tasks, snapshots, instances, new WorkItemProjectionService());
+            tasks, snapshots, instances, new WorkItemProjectionService(Tasks.SlaForTests.Real()));
         return new GetMyWorkItemsHandler(new IWorkItemProvider[] { provider }, new FakeCurrentUserContext(Me));
     }
 

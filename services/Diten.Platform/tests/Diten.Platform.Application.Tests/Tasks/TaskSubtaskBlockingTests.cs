@@ -353,7 +353,7 @@ public sealed class TaskSubtaskBlockingTests
                 new FakeUserDisplayNameResolver(),
                 new FakeChecklistRunRepository(),
                 new FakeTaskApprovalService(),
-                _edges, new FakeTaskCommentRepository(), new FakePositionRepository(), new FakeOrganizationUnitRepository());
+                _edges, new FakeTaskCommentRepository(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real());
 
             var items = await provider.GetWorkItemsAsync(Actor(), CancellationToken.None);
             return Assert.Single(items.Where(item => item.Id == Parent.Id.ToString()));

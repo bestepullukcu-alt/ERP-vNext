@@ -79,23 +79,28 @@ describe("the clock: real items are measured from the real today", () => {
   beforeEach(loadRealMode);
   afterEach(() => global.WorkCenterNextData?.setNowProvider(null));
 
-  // The reported symptom: due 2026-07-30 read "6 days left" because it was measured from the fixture reference
-  // day (2026-07-24) instead of the real one (2026-07-26). Every real date was two days optimistic, and the gap
-  // grew by a day every day.
+  /*
+   * The reported symptom: due 2026-07-30 read "6 days left" because it was measured from the fixture reference
+   * day (2026-07-24) instead of the real one (2026-07-26). Every real date was two days optimistic, and the gap
+   * grew by a day every day.
+   *
+   * WC-2 CHANGED WHAT THIS TEST GUARDS, and the change is worth stating. The day COUNT is still derived here,
+   * late, from the absolute due date — that is the half this test was written for and it still holds. The
+   * STATE is no longer derived here at all; it is the server's answer, asserted below. So this now pins the
+   * count and nothing else.
+   */
   it("counts the days from now, not from the day the fixtures were authored", () => {
     const [item] = global.WorkCenterNextApi.mapPayload([realItem()]).items;
 
     expect(item.slaDiffDays).toBe(4);
     expect(item.slaDiffDays).not.toBe(6);
-    expect(item.slaState).toBe("on-track");
   });
 
-  // The dangerous direction: work that is already late must not read as merely upcoming.
-  it("calls an already-late item overdue instead of due-soon", () => {
+  it("still counts backwards for work that is already late", () => {
+    // The dangerous direction: the wording must say how late, not how soon.
     const [item] = global.WorkCenterNextApi
       .mapPayload([realItem({ dueAt: "2026-07-22T00:00:00+00:00" })]).items;
 
-    expect(item.slaState).toBe("overdue");
     expect(item.slaDiffDays).toBe(-4);
   });
 

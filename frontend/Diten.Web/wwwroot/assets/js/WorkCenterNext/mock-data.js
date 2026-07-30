@@ -150,16 +150,40 @@
         return global.WCN?.t?.('PersonNameUnavailable') || '';
     };
 
-    // `provenance` picks the reference day: the authored one for showcase fixtures, the real one for real work.
-    // The projection carries no slaState of its own (WC-2 seam), so this is the only thing deciding whether a
-    // genuine item reads as overdue — which is why it must not be measured from a frozen day.
-    const computeSla = (dueAt, provenance) => {
+    /*
+     * SHOWCASE ONLY (WC-2). The SLA state of REAL work is decided by the server, through IWorkingTimeCalculator,
+     * and arrives as `slaState` on the projection.
+     *
+     * This used to decide it for everything, which inverted the surface's own law — the browser renders
+     * decisions, it does not make them — and left the working calendar (BL: Calendar) with nothing on the server
+     * to arrive at. It survives because the showcase catalogue has no server behind it: its fixtures are authored
+     * against a fixed reference day and must keep reading correctly. Its `<= 2` is a DEMO threshold; the real one
+     * is a server policy (WorkAggregation:Sla:DueSoonWithinWorkingDays) and is not mirrored here on purpose —
+     * two copies of a threshold is how the copies start disagreeing.
+     */
+    const computeShowcaseSla = (dueAt) => {
         if (!dueAt) { return { state: 'no-sla', diffDays: null }; }
         const due = new Date(`${dueAt}T00:00:00`);
-        const reference = referenceDate(provenance);
+        const reference = referenceDate('fixture');
         const base = new Date(reference.getFullYear(), reference.getMonth(), reference.getDate());
         const diffDays = Math.round((due - base) / 86400000);
         return { state: diffDays < 0 ? 'overdue' : diffDays <= 2 ? 'due-soon' : 'on-track', diffDays };
+    };
+
+    /*
+     * How many days away a deadline is, measured AT RENDER TIME from the absolute due date.
+     *
+     * Only the WORDING uses this — "3 gün kaldı". The STATE is the server's. That split is the cure for the
+     * frozen-count defect this project already shipped once (`ago`): a day count computed on the server is a lie
+     * the moment the tab outlives it, so the count is derived late here from the absolute date the projection
+     * already carries, and the count never decides anything.
+     */
+    const daysUntil = (dueAt, provenance) => {
+        if (!dueAt) { return null; }
+        const due = new Date(`${dueAt}T00:00:00`);
+        const reference = referenceDate(provenance);
+        const base = new Date(reference.getFullYear(), reference.getMonth(), reference.getDate());
+        return Math.round((due - base) / 86400000);
     };
     const tabFor = (item) => {
         if (['Done', 'Cancelled'].includes(item.normalizedStatus)) { return 'history'; }
@@ -256,7 +280,7 @@
                 + 'that changes origin also changes which guards apply to it.');
         }
         const item = clone(fixture);
-        const sla = computeSla(item.dueAt, provenance);
+        const showcaseSla = provenance === 'fixture' ? computeShowcaseSla(item.dueAt) : null;
         item.itemType = item.workIntent;
         item.lifecycle = item.taskLifecycle;
         item.status = item.normalizedStatus === 'InProgress' ? 'In Progress' : item.normalizedStatus;
@@ -316,8 +340,16 @@
         item.waitingOn = item.waitingContext?.waitingOn?.displayName || null;
         item.waitingReason = resolveLabel(item.waitingContext?.reason) || null;
         item.note = item.personal?.note || null;
-        item.slaState = item.slaState || sla.state;
-        item.slaDiffDays = item.slaDiffDays ?? sla.diffDays;
+        /*
+         * WC-2. The state comes from the PROJECTION for real work and is never re-derived here; a real item whose
+         * provider said nothing reads `no-sla`, which is the honest answer — "this provider does not track
+         * deadlines" — rather than a number this file invented.
+         *
+         * The showcase catalogue keeps its own answer because it has no server behind it.
+         */
+        item.slaState = showcaseSla ? (item.slaState || showcaseSla.state) : (item.slaState || 'no-sla');
+        // Derived late, for the LABEL only — see daysUntil.
+        item.slaDiffDays = daysUntil(item.dueAt, provenance);
         item.actions = item.actions.map((candidate) => {
             const mapped = actionForPresentation(candidate);
             mapped.primary = candidate.code === item.primaryActionCode;
@@ -400,8 +432,11 @@
     };
     /*
      * WC-1b DEC-1 — FIXTURE SOURCE vs PRESENTATION MAPPER.
-     * The mapper (toPresentation + tabFor/segmentFor/computeSla/computeBlocked/getActions/resolveLabel) is NOT
-     * mock-specific: the real API path maps canonical work items through exactly the same code. Only the fixture
+     * The mapper (toPresentation + tabFor/segmentFor/computeBlocked/getActions/resolveLabel) is NOT
+     * mock-specific: the real API path maps canonical work items through exactly the same code.
+     *
+     * `computeShowcaseSla` is the one part that is NOT shared (WC-2): a real item's slaState is decided by the
+     * server and only read here, so the two paths deliberately diverge at that one point. Only the fixture
      * SOURCE below is showcase data, and it is reachable ONLY when the server says so.
      *
      * The switch is decided SERVER-side (IWebHostEnvironment → data-wcn-fixtures on #wcnApp) and re-read on each
@@ -458,7 +493,7 @@
         : []);
 
     /*
-     * `onBehalfOf`, `status`, `computeSla` and `computeBlocked` used to be exported here and were read from
+     * `onBehalfOf`, `status`, the old `computeSla` and `computeBlocked` used to be exported here and were read from
      * nowhere (0 references in app.js and in the tests). They are gone rather than kept "just in case": a mock
      * export nobody consumes is a standing invitation to consume it.
      *

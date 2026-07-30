@@ -378,7 +378,7 @@ public sealed class TaskCommentTests
                 new FakeChecklistRunRepository(),
                 new FakeTaskApprovalService(),
                 new FakeTaskDependencyRepository(),
-                Comments, new FakePositionRepository(), new FakeOrganizationUnitRepository());
+                Comments, new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real());
 
             var actor = new WorkItemActor(TaskTestData.Me, IsPlatformActor: false, new HashSet<string>(
                 new[] { TaskPermissions.Update, TaskPermissions.Complete, TaskPermissions.Cancel },

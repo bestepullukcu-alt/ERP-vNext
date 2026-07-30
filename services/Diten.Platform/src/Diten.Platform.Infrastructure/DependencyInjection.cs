@@ -128,6 +128,11 @@ public static class DependencyInjection
         // own section so a tenant can point review and approval at different flows.
         services.Configure<Diten.Platform.Application.Features.Tasks.Services.TaskReviewOptions>(
             configuration.GetSection(Diten.Platform.Application.Features.Tasks.Services.TaskReviewOptions.SectionName));
+        // WC-2 — how far ahead of a deadline the warning window opens. A POLICY a tenant may tune, which is why
+        // it is here and not declared in the executable contract (the contract declares the state VOCABULARY).
+        services.Configure<Diten.Platform.Application.Features.WorkAggregation.Services.WorkItemSlaOptions>(
+            configuration.GetSection(
+                Diten.Platform.Application.Features.WorkAggregation.Services.WorkItemSlaOptions.SectionName));
         services.Configure<MdmServiceOptions>(configuration.GetSection(MdmServiceOptions.SectionName));
         services.Configure<FakeMessagingProviderOptions>(configuration.GetSection(FakeMessagingProviderOptions.SectionName));
         services.AddOptions<SmtpProviderOptions>()

@@ -541,6 +541,47 @@ internal sealed class FakeWorkflowTransitionGate : Diten.Platform.Application.Co
 /// Faz 3b — the REVIEW handoff, stubbed. Deliberately separate from <see cref="FakeTaskApprovalService"/>: the
 /// two record their calls independently, so a test can prove that starting a review did NOT touch approval.
 /// </summary>
+/// <summary>
+/// WC-2 — a working-time calculator that answers in a way NO real calendar would, so a test can prove the seam
+/// is load-bearing rather than decorative: if swapping this changes nothing, the interface is a comment.
+///
+/// <para>Every day counts as ten working days here. The number is absurd on purpose — it cannot be arrived at by
+/// accident, and it is far enough from the real answer that a threshold comparison lands on the other side.</para>
+/// </summary>
+internal sealed class TenfoldWorkingTimeCalculator
+    : Diten.Platform.Application.Features.WorkAggregation.Services.IWorkingTimeCalculator
+{
+    public decimal UnitsBetween(DateTimeOffset from, DateTimeOffset to) => (decimal)(to - from).TotalDays * 10m;
+
+    public DateTimeOffset Add(DateTimeOffset from, decimal units) => from.AddDays((double)units / 10d);
+}
+
+/// <summary>
+/// A stand-in SLA decision, for tests about everything EXCEPT the SLA. Records what it was asked so a test can
+/// prove the provider consults it instead of doing the arithmetic itself.
+/// </summary>
+internal sealed class FakeWorkItemSlaCalculator
+    : Diten.Platform.Application.Features.WorkAggregation.Services.IWorkItemSlaCalculator
+{
+    public FakeWorkItemSlaCalculator(string? answer = null) => Answer = answer;
+
+    /// <summary>Returned for every item with a deadline. Null means "behave like the real one would on no-sla".</summary>
+    public string? Answer { get; }
+
+    public List<DateTimeOffset?> Asked { get; } = [];
+
+    public string Resolve(DateTimeOffset? dueAt, DateTimeOffset now)
+    {
+        Asked.Add(dueAt);
+        if (dueAt is null)
+        {
+            return Diten.Platform.Application.Features.WorkAggregation.WorkItemContract.SlaNoSla;
+        }
+
+        return Answer ?? Diten.Platform.Application.Features.WorkAggregation.WorkItemContract.SlaOnTrack;
+    }
+}
+
 internal sealed class FakeTaskReviewService : Diten.Platform.Application.Features.Tasks.Services.ITaskReviewService
 {
     public bool CannotStart { get; set; }
@@ -683,4 +724,33 @@ internal sealed class PassingWorkflowGate : IWorkflowTransitionGate
 
     public Task EnsureAllowedOrThrowAsync(WorkflowGateRequest request, CancellationToken ct = default)
         => Task.CompletedTask;
+}
+
+/// <summary>
+/// WC-2 — the REAL SLA decision, wired the way production wires it (24/7 working time, the default window).
+/// Existing provider harnesses take this rather than a stub, so the seam is exercised by the whole suite.
+/// </summary>
+internal static class SlaForTests
+{
+    public static Diten.Platform.Application.Features.WorkAggregation.Services.IWorkItemSlaCalculator Real(
+        decimal dueSoonWithinWorkingDays = 2m)
+        => new Diten.Platform.Application.Features.WorkAggregation.Services.WorkItemSlaCalculator(
+            new Diten.Platform.Application.Features.WorkAggregation.Services.TwentyFourSevenWorkingTimeCalculator(),
+            Microsoft.Extensions.Options.Options.Create(
+                new Diten.Platform.Application.Features.WorkAggregation.Services.WorkItemSlaOptions
+                {
+                    DueSoonWithinWorkingDays = dueSoonWithinWorkingDays
+                }));
+
+    /// <summary>The same decision over an ARBITRARY working-time implementation — the seam-is-real proof.</summary>
+    public static Diten.Platform.Application.Features.WorkAggregation.Services.IWorkItemSlaCalculator Over(
+        Diten.Platform.Application.Features.WorkAggregation.Services.IWorkingTimeCalculator workingTime,
+        decimal dueSoonWithinWorkingDays = 2m)
+        => new Diten.Platform.Application.Features.WorkAggregation.Services.WorkItemSlaCalculator(
+            workingTime,
+            Microsoft.Extensions.Options.Options.Create(
+                new Diten.Platform.Application.Features.WorkAggregation.Services.WorkItemSlaOptions
+                {
+                    DueSoonWithinWorkingDays = dueSoonWithinWorkingDays
+                }));
 }

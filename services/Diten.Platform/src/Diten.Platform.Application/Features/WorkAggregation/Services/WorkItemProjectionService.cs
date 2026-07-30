@@ -10,6 +10,17 @@ namespace Diten.Platform.Application.Features.WorkAggregation.Services;
 // §10.3 source/lifecycleOwner split. No state is written; the same input always yields the same output.
 public sealed class WorkItemProjectionService : IWorkItemProjectionService
 {
+    /*
+     * WC-2 — the SAME SLA decision MOD-0024's provider makes, over the SAME working-time seam.
+     *
+     * Both providers answer, deliberately. Leaving this one silent would have left the browser deriving a state
+     * for approval items — the exact split this slice exists to end — and would have quietly meant "no provider
+     * speaks here, so the client still decides" for half the surface.
+     */
+    private readonly IWorkItemSlaCalculator _sla;
+
+    public WorkItemProjectionService(IWorkItemSlaCalculator sla) => _sla = sla;
+
     // Localization resource keys (resource-key form; wiring is WC-1b).
     private const string TitleApprovalKey = "WorkAggregation_Title_Approval";
     private const string NativeStatusKeyPrefix = "WorkAggregation_NativeStatus_";
@@ -112,7 +123,8 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
             Concurrency: new WorkItemConcurrencyDto("version", task.Version.ToString()),
             WaitingContext: waitingContext,
             Escalation: escalation,
-            DueAt: task.DueAt);
+            DueAt: task.DueAt,
+            SlaState: _sla.Resolve(task.DueAt, DateTimeOffset.UtcNow));
     }
 
     // Charter §10.1 — raw ApprovalTaskStatus is mapped by the enum, never by parsing status text.

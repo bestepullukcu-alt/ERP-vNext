@@ -189,7 +189,7 @@ public sealed class ProviderActionPermissionTests
             new Application.Features.Tasks.Services.TaskLifecycleService(),
             new Application.Features.Tasks.Services.TaskAssignmentResolver(),
             new Tasks.FakeUserDisplayNameResolver(),
-            new Tasks.FakeChecklistRunRepository(), new Tasks.FakeTaskApprovalService(), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakePositionRepository(), new FakeOrganizationUnitRepository());
+            new Tasks.FakeChecklistRunRepository(), new Tasks.FakeTaskApprovalService(), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), Tasks.SlaForTests.Real());
 
     private static WorkItemActor GrantedActor(IEnumerable<string> permissions)
         => new(TaskTestData.Me, IsPlatformActor: false,
