@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { loadScript } = require("./load-script");
+const { bootSurface, app } = require("./wcn-boot");
 
 /*
  * The WorkCenterNext FULL-PAGE detail view, driven through the real DOM.
@@ -10,8 +10,6 @@ const { loadScript } = require("./load-script");
  * "enter a title" for a title that had been entered. This boots the real module against jsdom and drives it the
  * way a person does — type, click — so those are reproducible instead of argued about.
  */
-const scriptRoot = "wwwroot/assets/js/WorkCenterNext/";
-
 const TASK_ID = "98d1f94e-1848-4539-8a99-774e72651b8a";
 
 const projectionItem = (overrides) => Object.assign({
@@ -62,58 +60,19 @@ const projectionItem = (overrides) => Object.assign({
   dueAt: "2026-07-30T00:00:00+00:00"
 }, overrides);
 
-/** Boots the real app.js on a detail page holding one projection item. */
-const bootDetailPage = (item, options) => {
-  ["WorkCenterNextData", "WorkCenterNextApi", "WorkCenterNextContract", "WorkCenterNextFixtures"]
-    .forEach((key) => { delete global[key]; });
-
-  global.WCN = { t: (key) => key, tf: (key) => key, tn: (key) => key };
-  document.body.innerHTML =
-    `<div id="wcnApp" data-wcn-page="detail" data-wcn-item-id="${TASK_ID}" data-wcn-fixtures=""></div>`;
-
-  loadScript(scriptRoot + "fixture-contract.js");
-  // detailHtml bails to an "invalid" placeholder without the resolver, which would make every
-  // "this card is absent" assertion below pass for the wrong reason.
-  loadScript(scriptRoot + "task-detail-resolver.js");
-  loadScript(scriptRoot + "trigger-response-resolver.js");
-  loadScript(scriptRoot + "mock-data.js");
-  loadScript(scriptRoot + "work-items-api.js");
-
-  const mapped = global.WorkCenterNextApi.mapPayload([item]);
-  expect(mapped.errors).toEqual([]);
-  // Stub the network at the module seam; everything downstream is the real code.
-  global.WorkCenterNextApi.fetchWorkItems = (options && options.neverResolve)
-    ? () => new Promise(() => { /* a request that never settles — the page must stay in its loading state */ })
-    : () => Promise.resolve({ status: "ok", httpStatus: 200, items: mapped.items, errors: [] });
-
-  const created = [];
-  const posted = [];
+/**
+ * Boots the real app.js on a detail page holding one projection item.
+ *
+ * The surface is selected by `data-wcn-page="detail"` alone — everything else (module order, the network seam,
+ * the TasksApi stub) is shared with the list harness through wcn-boot, so the two cannot drift apart.
+ */
+const bootDetailPage = (item, options) => bootSurface({
+  rootAttrs: `data-wcn-page="detail" data-wcn-item-id="${TASK_ID}"`,
+  items: [item],
+  neverResolve: !!(options && options.neverResolve),
   // The Details view used to omit these entirely; `withoutTasksScripts` reproduces that page exactly.
-  if (options && options.withoutTasksScripts) {
-    delete global.TasksApi;
-    delete global.TaskForm;
-    loadScript(scriptRoot + "app.js");
-    return new Promise((resolve) => setTimeout(() => resolve({ created, posted }), 0));
-  }
-  global.TasksApi = {
-    create: (payload) => { created.push(payload); return Promise.resolve({ ok: true, status: 201, data: { id: "new" } }); },
-    get: () => Promise.resolve({ ok: true, status: 200, data: {} }),
-    transition: () => Promise.resolve({ ok: true, status: 204 }),
-    addComment: (taskId, payload) => { posted.push({ taskId, payload }); return Promise.resolve({ ok: true, status: 201, data: { id: "c1" } }); },
-    // Individual tests below override this to assert the exact call, or to simulate a refusal.
-    plan: () => Promise.resolve({ ok: true, status: 204 }),
-    isConcurrencyConflict: () => false,
-    isTransitionBlocked: () => false,
-    failureMessage: () => "error"
-  };
-  global.TaskForm = { buildCreatePayload: (draft) => Object.assign({}, draft) };
-
-  loadScript(scriptRoot + "app.js");
-  // boot() is async (it awaits loadWorkItems); let its microtasks drain.
-  return new Promise((resolve) => setTimeout(() => resolve({ created, posted }), 0));
-};
-
-const app = () => document.getElementById("wcnApp");
+  withoutTasksScripts: !!(options && options.withoutTasksScripts)
+});
 
 describe("the detail page shows only what the provider declared", () => {
   beforeEach(async () => { await bootDetailPage(projectionItem()); });
