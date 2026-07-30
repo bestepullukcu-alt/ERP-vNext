@@ -3672,7 +3672,9 @@
         moduleOptions().forEach((m) => { opts[m] = m; });
         global.Swal.fire({
             title: t('NewInSource'), input: 'select', inputOptions: opts, inputPlaceholder: t('NewPickModule'),
-            showCancelButton: true, confirmButtonText: t('NewOpenSource'), cancelButtonText: t('ReasonCancel')
+            // The button names CREATING, not opening: nothing is opened here any more (see below), and the old
+            // 'NewOpenSource' label promised an act this dialog no longer performs.
+            showCancelButton: true, confirmButtonText: t('NewCreateInSource'), cancelButtonText: t('ReasonCancel')
         }).then((res) => {
             if (res.isConfirmed && res.value) {
                 /*

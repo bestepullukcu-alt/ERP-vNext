@@ -852,7 +852,7 @@
     <value>Crear en el módulo de origen</value>
   </data>
   <data name="NewInSourceDesc" xml:space="preserve">
-    <value>Elige un módulo, crea en su pantalla</value>
+    <value>Un registro del módulo — vive en ese módulo</value>
   </data>
   <data name="NewTaskTitlePlaceholder" xml:space="preserve">
     <value>Título de la tarea…</value>
@@ -863,8 +863,8 @@
   <data name="NewPickModule" xml:space="preserve">
     <value>Elegir módulo</value>
   </data>
-  <data name="NewOpenSource" xml:space="preserve">
-    <value>Abrir en origen</value>
+  <data name="NewCreateInSource" xml:space="preserve">
+    <value>Crear en el origen</value>
   </data>
   <data name="SelfSource" xml:space="preserve">
     <value>Personal</value>

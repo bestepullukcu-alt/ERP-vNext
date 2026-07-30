@@ -67,4 +67,37 @@ describe("WorkCenterNext localization resources", () => {
     // The old shape hardcoded the fallback inside cell() instead of taking it per call.
     expect(fn).not.toMatch(/value \|\| t\('SlaNoSla'\)/);
   });
+
+  /*
+   * The "create in source module" dialog names CREATING, and nothing else.
+   *
+   * Its confirm button used to read 'NewOpenSource' ("Open in source") while the handler opened an arbitrary
+   * EXISTING record from the chosen module. That open was removed as the wrong act, which left the label
+   * promising something the dialog no longer did. The key is deleted rather than left unused, so it cannot be
+   * picked up again by someone looking for a plausible-sounding label.
+   */
+  it("confirms with a CREATE label, and the retired open-label key is gone", () => {
+    const app = fs.readFileSync(
+      path.resolve(__dirname, "../wwwroot/assets/js/WorkCenterNext/app.js"), "utf8");
+    const fn = app.slice(app.indexOf("const openCreateInSource"), app.indexOf("const openMeetingForm"));
+
+    expect(fn).toContain("confirmButtonText: t('NewCreateInSource')");
+    // The LOOKUP, not the bare name: a comment in that function still explains the history on purpose.
+    expect(app).not.toContain("t('NewOpenSource')");
+
+    // And the dead key must not reappear in any language.
+    locales.forEach((locale) => {
+      expect(names(locale)).not.toContain("NewOpenSource");
+      expect(names(locale)).toContain("NewCreateInSource");
+    });
+  });
+
+  it("opens nothing from that dialog, so the CREATE label stays true", () => {
+    // Non-vacuity for the label above: if the open were restored, "Create in source" would be a lie again.
+    const app = fs.readFileSync(
+      path.resolve(__dirname, "../wwwroot/assets/js/WorkCenterNext/app.js"), "utf8");
+    const fn = app.slice(app.indexOf("const openCreateInSource"), app.indexOf("const openMeetingForm"));
+
+    expect(fn).not.toContain("global.open");
+  });
 });

@@ -852,7 +852,7 @@
     <value>Kaynak modülde oluştur</value>
   </data>
   <data name="NewInSourceDesc" xml:space="preserve">
-    <value>Bir modül seç, kendi ekranında oluştur</value>
+    <value>Modülün kendi kaydı — o modülde yaşar</value>
   </data>
   <data name="NewTaskTitlePlaceholder" xml:space="preserve">
     <value>Görev başlığı…</value>
@@ -863,8 +863,8 @@
   <data name="NewPickModule" xml:space="preserve">
     <value>Modül seç</value>
   </data>
-  <data name="NewOpenSource" xml:space="preserve">
-    <value>Kaynakta aç</value>
+  <data name="NewCreateInSource" xml:space="preserve">
+    <value>Kaynakta oluştur</value>
   </data>
   <data name="SelfSource" xml:space="preserve">
     <value>Kişisel</value>
