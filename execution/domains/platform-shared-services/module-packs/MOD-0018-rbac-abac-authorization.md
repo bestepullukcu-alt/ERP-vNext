@@ -1,6 +1,6 @@
 ---
 id: MOD-0018
-name: RBAC / Entitlement Production Wiring
+name: RBAC / ABAC Authorization
 domain: platform-shared-services
 service: Diten.Platform.Common
 shell: none
@@ -14,15 +14,21 @@ target: 2026-06-05
 form_field_count: 0
 ---
 
-# MOD-0018 - RBAC / Entitlement Production Wiring
+# MOD-0018 — RBAC / ABAC Authorization
 
 > **Draft note:** Bu pack, mevcut MOD-0018 enforcement altyapisini yeni kapsam kararina gore yeniden sozlesmelestirir. Kod yazimi bu pack `approved` veya `ready-for-dev` yapilmadan baslamaz.
 
 > **Golden Reference karari:** Bu is UI/DataTable modulu degildir. `shell: none`, `golden_reference: none`, `form_field_count: 0`. Razor layout, DataTable verifier, RESX ve frontend dosya seti bu pack icin N/A'dir.
 
+> **Canonical parent identity:** This file is the parent pack for `MOD-0018 — RBAC / ABAC Authorization`.
+> The existing RBAC / Entitlement Production Wiring content remains a phase/slice of that parent capability;
+> it is not moved to or treated as a separately allocated follow-up.
+
 ## 1. Module Summary
 
-MOD-0018, permission check ile tenant/module/feature entitlement kararini birlestiren backend-only production wiring isidir. Amac; ileride HR, CRM, BPM gibi tenant modulleri geldiginde RBAC/entitlement, data scope ve process-based temporary access icin yeniden kokten refactor gerektirmeyecek contract foundation'i kurmaktir.
+This pack's current phase is the backend-only production-wiring slice that combines permission checks with
+tenant/module/feature entitlement decisions. Its purpose is to establish a contract foundation that avoids a
+later root-level authorization refactor when tenant modules such as HR, CRM and BPM arrive.
 
 Bu pack mevcut authorization davranisini kirmadan ilerler:
 - Mevcut `[RequiresModule]`, `[RequiresFeature]`, `IEntitlementChecker`, `EntitlementCacheService`, `AuthorizationProbeController` korunur.
@@ -270,6 +276,21 @@ Gateway route degisikligi gerekli degildir.
 **Repo reconciliation notu:**
 - Master-plan MOD-0018 bolumundeki "`IEntitlementAuditSink` sadece Null sink" ifadesi artik repo gercegiyle uyumlu degildir; `PlatformEntitlementAuditSink` mevcuttur.
 - Current gap daha cok cache invalidation, event publish/consume ve future-proof contract foundation tarafindadir.
+- MOD-0117 uses canonical entitlement `ModuleCode = PPM` and requires explicit tenant-scoped permission
+  grants with dormant grants after entitlement removal. Current `EntitlementPermissionSyncService` instead
+  auto-targets Admin/Viewer and destructively removes module-source grants on revoke/reconcile. Therefore
+  `GrantModuleWithKeysAsync`, `RevokeModuleAsync` and generic reconcile are not an authorized unchanged PPM
+  implementation. A PPM-specific strategy versus a generic bridge revision is an open PSS/security decision;
+  the latter cannot alter working MDM/other-module behavior without separate migration/regression authority.
+  Re-entitlement with dormant grants requires explicit human review of reactivation versus re-approval.
+
+**Control Tower resolution — PPM-specific strategy:** PPM uses a dedicated dispatch strategy, not a generic
+bridge revision. For `ModuleCode = PPM`, entitlement events mutate no permissions: enable creates no grant,
+disable/removal deletes no grant, and reconcile does neither. Explicit `ppm.*` grants use the existing
+tenant-scoped auditable RolePermission administration path. Re-entitlement makes only current, still-existing
+grants/current role memberships effective and creates nothing. MDM and every other module retain existing
+generic behavior. Runtime implementation remains blocked until the PSS branch/worktree and explicit user
+authorization gate below are satisfied.
 
 **Event naming taslagi:**
 - `tenant.entitlement.added.v1`

@@ -13,6 +13,25 @@ golden_reference: slim
 # CAND-CAP-0002-FU05 — Tenant Module Entitlements
 
 > **Canonicalization (DCP-002):** Governance identity is now **CAND-CAP-0002-FU05**, a child of **CAND-CAP-0002 (SaaS Subscription, Plan & Entitlement Management)**. Prior repo ID **MOD-0298** is a deprecated alias. Temporary candidate identity pending EA MOD-xxxx; never written into runtime literals. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
+> **Ledger preflight:** Parent `CAND-CAP-0002`, child `CAND-CAP-0002-FU05`, name
+> `Tenant Module Entitlements`, deprecated alias `MOD-0298`, owner `platform-shared-services`, and
+> governance-only/pending-EA/no-runtime-literal constraints are reconciled in the canonical ledger.
+
+### PPM audit transport dependency lock
+
+The separately owned transport uses **5 total attempts**: 10 seconds after the first failure, then
+exponential backoff with jitter up to 5 minutes; the fifth failed attempt causes DLQ plus alarm. The initial
+attempt is included, leaving four retry attempts. Shared `EventEnvelope`, `IEventBus`, outbox and inbox mechanics belong to
+`Diten.BuildingBlocks.Eventing`. MOD-0117 owns the logical PPM event at the planned
+`services/Diten.PpmService/src/Diten.PpmService.Contracts/Events/**` path; Platform is consumer-only and
+`Diten.Platform.Contracts` does not own this PPM event.
+
+The final **Minimal Mutation Audit v1** payload contains exactly `auditIntentId`, `actorId`, `entityType`,
+`entityId`, `mutation` and `occurredAtUtc`, and evidences only actor, minimal mutation, PPM aggregate and
+time. Authorized replay preserves the same `EventId` and identical canonical bytes; changed bytes are
+rejected. A first delivery not accepted may yield exactly one `AuditEvent`; an accepted delivery yields
+none on replay. Idempotency is `ConsumerName + EventId`. Unauthorized replay is forbidden; no replay UI/API
+is authorized.
 Bu module pack, tenant bazlı modül yetkilendirme (Module Entitlement) yönetiminin tasarım, kural ve entegrasyon sınırlarını belirler. Amacı, tenant'ların sistemdeki modüllere (ör: MDM, İK, CRM) erişim haklarını tutmak, plan kaynaklı haklarla manuel eklentileri (override/addon) birleştirerek gerçek zamanlı bir "Effective Access" (Geçerli Erişim) kararı üretmek ve bu kararı arka uç (backend) yetkilendirme altyapısı ile arayüz görünümlerine entegre etmektir. 
 
 # 2. Business Objective
@@ -147,6 +166,19 @@ Aşağıdaki kontratlar eksiksiz olarak oluşturulmalı ve Controller seviyesine
 # 10. RBAC and Runtime Enforcement
 `TenantModuleEntitlement`, RBAC öncesi bir **tenant-level gate**'dir. Sadece menüde gizlemek güvenlik için yeterli kabul edilemez, backend API seviyesinde doğrudan enforcement zorunludur.
 
+### PPM-specific entitlement strategy
+
+- Canonical module identity is exactly `ModuleCode = PPM`.
+- Entitlement enablement creates no `ppm.*` permission grant. Permission assignment is a separate,
+  tenant-scoped, explicit and auditable AuthService administration operation.
+- Entitlement removal denies immediately at the entitlement gate and does not delete explicit
+  `RolePermission` rows. Existing grants become dormant.
+- Re-entitlement makes only still-existing grants held by current role memberships effective again; deleted
+  grants are never reconstructed and no new grant is generated. The re-entitlement operation is audited and
+  exposes a read-only current grant/role inventory to the authorized administrator.
+- The current generic Admin/Viewer auto-grant and destructive module-revoke bridge remains unchanged for MDM
+  and other existing modules; it cannot process `PPM`.
+
 **Runtime kontrol sırası:**
 1. Tenant active check
 2. Tenant module effective access check
@@ -268,6 +300,9 @@ Bu özellik geliştirilirken dokunulacak ve dokunulmaması gereken öncelikli he
 - Disabled/Blocked modül için direkt URL/API çağrısı yapıldığında engelleniyor mu.
 - RBAC yetkisi, bloke edilmiş modül kuralını aşmayı engelleyebiliyor mu.
 - Süresi dolmuş (expired) modüle erişim engelleniyor ve işlem audit'e yazılıyor mu.
+- PPM enablement creates zero RolePermission rows; PPM removal preserves explicit rows but access is 403.
+- PPM re-entitlement restores only access represented by current explicit grants/current role membership,
+  creates no grant, and records the re-entitlement plus inventory visibility audit.
 
 # 18. Assumptions
 - UI için DataTable v2 (Slim) standartı benimsenecek olup, 8'den az form alanı olduğu için `Offcanvas` yapısı kullanılacaktır.

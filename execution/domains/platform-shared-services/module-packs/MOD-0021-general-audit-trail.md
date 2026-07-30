@@ -1,6 +1,6 @@
 ---
 id: MOD-0021
-name: General Audit Trail
+name: Audit Trail Service
 domain: platform-shared-services
 service: Diten.Platform
 shell: platform-admin
@@ -15,10 +15,12 @@ form_field_count: 6
 tier: 2
 ---
 
-# MOD-0021 - General Audit Trail
+# MOD-0021 — Audit Trail Service
 
 ## Module Summary
-MOD-0021 is the master-plan General Audit Trail module for Platform & Shared Services. Do not create a new PSS ID for this work.
+MOD-0021 is the canonical parent Audit Trail Service capability for Platform & Shared Services. The General
+Audit Trail scope in this file is its current delivery phase/slice; it is not a separate module or follow-up.
+Do not create a new PSS or FU identity for this parent scope.
 
 Purpose: provide a generic, immutable, tenant-aware audit trail for platform-significant operations across Diten ERP vNext. The module owns the append path, async/outbox audit write model, sensitive-field redaction, meta-audit, authorized query/export surfaces, and platform-level retention policy management.
 
@@ -61,7 +63,9 @@ Tenant retention preference scope decision (confirmed):
 
 Result: tenant retention is *server-side configurable* (platform admin sets it per tenant), not *tenant-self-service* in MOD-0021 baseline.
 
-Existing legacy note: `execution/domains/platform-shared-services/module-packs/MOD-0021-audit-trail-service.md` is a historical skeletal reference only. This file is the detailed draft pack for the master-plan MOD-0021 General Audit Trail implementation.
+Historical source note: the former `MOD-0021-audit-trail-service.md` skeletal artifact is historical reference
+only and is not a competing source of truth. This file is the active parent pack for
+`MOD-0021 — Audit Trail Service`; “General Audit Trail” names the current delivery phase/slice.
 
 ## Owned Objects
 Domain objects:
@@ -311,6 +315,100 @@ Lookup decision:
 - Volume guardrail baseline: heartbeat/noise/system retry events are excluded from Tier 2 audit capture unless explicitly registered as significant security/compliance events. Advanced rate limiting, sampling, aggregation, and retry-storm suppression are future guardrails and must not complicate the baseline implementation.
 - Hot/cold storage is preparation metadata in Tier 2. Dedicated cold-storage migration job is Tier 3 and out of scope.
 
+## Cross-service producer integration baseline
+
+### Platform-local General Audit Trail phase
+
+- The existing `AuditBehavior` and Platform `audit_outbox` behavior belong to the Platform-local General
+  Audit Trail delivery phase.
+- The rule that an audit enqueue failure does not break a business command by default applies only to that
+  Platform-local behavior. It does not authorize a cross-service producer to commit a required audited
+  mutation without first persisting its local audit intent.
+- Frontmatter `status: ready-for-dev` describes this existing Platform-local General Audit Trail phase. It
+  does not make the cross-service producer integration subset ready, grant production authority or close
+  DCP-006 OD-04.
+
+### Cross-service producers, including DWS
+
+- A required audited mutation and its producer-local technical audit intent/outbox persist in the same
+  replica-set transaction. If the local intent cannot be written, the mutation rolls back.
+- After commit, the producer publishes through a versioned semantic provider/consumer contract. Delivery is
+  asynchronous and durable at-least-once, and the MOD-0021 consumer is idempotent; exactly-once is not
+  claimed.
+- A broker, consumer or Platform failure after commit does not roll back the business mutation or sealed
+  baseline. Retry, dead-letter, alarm and authorized replay are mandatory.
+- Producers cannot access Platform `audit_outbox`, `audit_events` or other MOD-0021 collections directly.
+  The shared-key `/api/internal/audit/append` endpoint is not the authoritative cross-service baseline.
+- Publisher service identity, tenant and actor come only from authenticated server/transport context and
+  are matched fail-closed to the allowed source/module. Client-supplied identity values are not trusted.
+- Payloads are minimal, allowlist-based and redacted, with explicit byte, depth, collection-count and
+  string-length limits. Full business/DWS tree or revision snapshots and unrestricted dictionaries are
+  forbidden.
+- `AuditIntentPersisted` and `AuditEventAcceptedByMOD0021` are technical observability states only. They
+  cannot become a business lifecycle, revision status, task, workflow or approval state.
+- For the MOD-0117 producer only, the event type is `PpmAuditIntentSubmittedV1` and EventName/routing key is
+  `ppm.audit-intent.submitted.v1`. This locks the supplied type/name/version identity without allocating a
+  new module/FU or authorizing implementation.
+- Compatibility fixtures, authenticated publisher credential and production rollout remain runtime
+  evidence gates. The final payload and MOD-0021 consumer mapping are fixed below. The producer worker may
+  use only MOD-0035's public `IEventBus`/outbox abstraction; PPM handlers/controllers cannot call RabbitMQ or
+  MassTransit directly.
+- This cross-service subset remains `PARTIAL`; no implementation permission or production authority is
+  created here, and DCP-006 OD-04 remains open.
+
+#### `PpmAuditIntentSubmittedV1` — Minimal Mutation Audit v1 (final)
+
+MOD-0035 envelope values: `EventId` equals the immutable producer-local `AuditIntentId`; `EventName` is
+`ppm.audit-intent.submitted.v1`; `EventVersion` is `1`; `TenantId` is required; `Producer` is exactly
+`Diten.PpmService`; `CorrelationId`, optional `CausationId`, and UTC `OccurredAtUtc` use the shared envelope.
+
+Payload is an exact object with six properties and no extensions:
+
+| Property | Type | Rule |
+|---|---|---|
+| `auditIntentId` | non-empty Guid | Must equal envelope `EventId` |
+| `actorId` | non-empty Guid | From the authenticated mutation context persisted in the immutable local intent |
+| `entityType` | closed ASCII string | `Portfolio`, `Initiative`, `Program`, `Project` |
+| `entityId` | non-empty Guid | PPM aggregate identity only |
+| `mutation` | closed ASCII string | `created`, `updated`, `lifecycle-changed`, `soft-deleted` |
+| `occurredAtUtc` | UTC DateTime | Must equal envelope `OccurredAtUtc` |
+
+Tenant and actor are never accepted from a client request at publish time: they originate in the
+transactional local intent written from authenticated server context. The MOD-0035 transport authenticates
+publisher service identity and authorizes only `Diten.PpmService` for this EventName. The consumer rejects
+identity/envelope mismatches fail-closed.
+
+Canonical UTF-8 payload is at most 2048 bytes, depth at most 2, exactly six properties, no arrays,
+dictionaries or unknown fields; strings are ASCII and at most 32 bytes. Full aggregate snapshots,
+before/after values, descriptions, permission inventories, tokens, secrets and exception text are forbidden.
+
+Idempotency key is `ConsumerName + EventId` and `auditIntentId == EventId`. Delivery is at-least-once and
+uses 5 total attempts. The delay after the first failed attempt is 10 seconds, then exponential backoff with
+jitter applies up to a 5-minute maximum. Failure of the fifth attempt causes DLQ plus alarm; the initial
+attempt is included, leaving four retry attempts.
+
+Authorized replay preserves the same EventId and identical canonical payload bytes; changed bytes are
+rejected. If the first delivery was not accepted, replay may create exactly one `AuditEvent`; if accepted,
+replay creates none. Unauthorized replay is forbidden and no replay UI/API is authorized. Schema/identity
+failure is not retried until a compatible consumer or corrected authorized disposition exists. V1 rejects
+unknown properties/versions; any payload change requires compatibility fixtures and a new event version.
+
+This six-field event provides limited evidence only of who performed which minimal mutation against which
+PPM aggregate and when. It is not authorization/entitlement evidence, a business snapshot, before/after
+record, permission inventory or complete lifecycle history.
+
+Shared `EventEnvelope`, `IEventBus`, outbox and inbox mechanics are owned by
+`Diten.BuildingBlocks.Eventing`. MOD-0117 owns the logical PPM event at the planned
+`services/Diten.PpmService/src/Diten.PpmService.Contracts/Events/**` path. Platform is consumer-only for
+this event; `Diten.Platform.Contracts` owns other Platform events where applicable, but not the PPM event.
+
+Runtime repo scope for this proposed consumer is limited to
+`services/Diten.Platform.Contracts/**`, narrow
+`services/Diten.Platform/src/Diten.Platform.Infrastructure/Eventing/**`,
+`services/Diten.Platform/src/Diten.Platform.Application/Features/Audit/**` and their PSS tests. It does not
+authorize PPM service changes, direct producer access to Platform collections, frontend or Gateway work.
+The subset remains non-executable until MOD-0035's status gate and explicit user runtime approval close.
+
 ## Layout & Shell Contract
 - `shell: platform-admin`.
 - Razor layout: every `.cshtml` page in `Views/Platform/AuditLog/` and `Views/Platform/AuditRetention/` must explicitly set `Layout = "_LayoutPlatformAdmin";`.
@@ -440,6 +538,16 @@ Compact adaptation rules:
 - Duplicate auditable command processing does not create duplicate audit events for the same idempotency key.
 - Heartbeat/health/retry/outbox worker operations are not audited unless explicitly registered as significant events.
 - Audit outbox enqueue failure is handled according to runtime constraint and does not create a fake audit timeline.
+- Platform-local enqueue failure follows the General Audit Trail phase rule; a cross-service required
+  audit-intent insert failure instead rolls back the producer mutation.
+- Cross-service duplicate delivery creates at most one effective MOD-0021 append through the idempotent
+  consumer.
+- Unknown contract major version fails closed to dead-letter; no guessed deserialization occurs.
+- Post-commit broker/consumer/Platform failure leaves the business mutation committed and enters
+  retry/dead-letter/alarm/authorized-replay handling.
+- Forged publisher service, tenant or actor fails closed and cannot create an accepted audit event.
+- Cross-service payload outside its allowlist or byte/depth/count/string limits fails closed before
+  publication; no full business/DWS snapshot is emitted.
 - Unauthorized export attempts are blocked and, where safe, security-audited without exposing data.
 - Audit query/read/export latency remains bounded by pagination and export limits.
 
@@ -534,6 +642,19 @@ Bu modül greenfield ama benzer/önceki sistemlerden çıkarılan dersler. **Tek
 - Duplicate audit prevention uses an idempotency key so one completed significant command does not enqueue duplicate audit records.
 - Sensitive fields are redacted before persistence and before export.
 - `audit_outbox` collection stores pending audit writes and `AuditOutboxWorker` persists them asynchronously.
+- The Platform-local General Audit Trail phase and cross-service producer integration are explicitly
+  separated; Platform-local non-blocking enqueue behavior cannot be applied to a required cross-service
+  audit intent.
+- A required cross-service audited mutation and producer-local technical audit intent persist atomically;
+  intent failure rolls back the mutation.
+- Cross-service delivery is versioned, asynchronous, durable at-least-once and idempotently consumed without
+  an exactly-once claim.
+- Cross-service producers do not access Platform audit collections or treat the shared-key internal append
+  endpoint as authoritative.
+- Cross-service identity is server/transport-bound and payloads are minimal, allowlisted, redacted and
+  explicitly bounded; full snapshots and unrestricted dictionaries are absent.
+- Technical delivery observations do not become business lifecycle, revision, task, workflow or approval
+  state.
 - Audit failure does not unnecessarily break business commands; critical failure behavior is explicitly documented and tested.
 - Tenant isolation works for list, detail, export, redaction, and retention preference paths.
 - Platform admin can query/export cross-tenant audit events only with `Platform.Audit.Read` / `Platform.Audit.Export`.
@@ -561,6 +682,19 @@ Static/UI verification:
 - Run RESX checker used by the repo for Platform en/tr resources.
 - Verify no browser JS calls `localhost:5057` or service port directly.
 
+Cross-service architecture and contract tests:
+- Architecture scan proves cross-service producers have no direct reference to Platform `audit_outbox`,
+  `audit_events`, audit repositories or collection-name literals and do not use the shared-key internal
+  append endpoint as an authoritative contract.
+- Contract tests prove publisher service identity, tenant and actor are bound from authenticated
+  server/transport context and reject forged or client-supplied values.
+- Payload tests enforce allowlist, redaction and byte/depth/collection-count/string-length limits and reject
+  full business/DWS snapshots and unrestricted dictionaries.
+- Provider/consumer compatibility vectors cover supported version evolution and unknown-major
+  fail-closed/dead-letter behavior. `PpmAuditIntentSubmittedV1` /
+  `ppm.audit-intent.submitted.v1` is already allocated for MOD-0117; these vectors must define and verify the
+  final Minimal Mutation Audit v1 contract without changing that event identity.
+
 Unit tests:
 - `AuditBehavior` opt-in marker/registration captures only marked significant commands.
 - `AuditBehavior` excludes unmarked requests and all queries by default.
@@ -578,6 +712,14 @@ Unit tests:
 
 Integration tests:
 - Marked significant command creates one audit outbox message; unmarked command creates none.
+- Cross-service required audit-intent failure rolls back the producer mutation in the same replica-set
+  transaction.
+- Idempotent consumer tests cover duplicate delivery, concurrent duplicate handling, crash after append
+  before acknowledgement and authorized replay.
+- Post-commit unavailability tests prove retry, dead-letter, alarm and replay without rolling back the
+  committed producer mutation.
+- Observability tests distinguish `AuditIntentPersisted` from `AuditEventAcceptedByMOD0021` without creating
+  business status or lifecycle fields.
 - Export query creates explicit meta-audit without enabling blanket query auditing.
 - `GET /api/platform/audit/events` filters by date range, actor, tenant, category, entity type, operation.
 - `GET /api/platform/audit/events/{id}` returns detail and 404 for cross-tenant/missing.
@@ -604,6 +746,20 @@ Browser smoke:
 - [x] Tenant retention preference scope confirmed: `TenantAuditPreference` backend entity + validation + persistence + platform-admin-controlled update IS in initial scope. Tenant-facing UI and tenant-self-service API are follow-up.
 - [ ] Confirm category/tier options source: Domain enum localization vs PSS-011 lookup keys.
 - [x] Confirm route ownership: MOD-0021 Ocelot audit routes recorded as integration-agent-owned route work; Phase 5C final hardening did not modify `ocelot.json`.
+- [x] PSS owner/Enterprise Architect approved the cross-service producer integration governance baseline:
+  producer-local transactional audit intent, asynchronous durable at-least-once delivery, idempotent
+  consumer, fail-closed identity binding and bounded payload. This is not runtime evidence.
+- [x] `status: ready-for-dev` is explicitly limited to the existing Platform-local General Audit Trail
+  phase; the cross-service integration subset remains `PARTIAL` and DCP-006 OD-04 remains open.
+- [ ] Exact versioned semantic provider/consumer contract is approved and implemented.
+- [ ] Producer-local transactional outbox and real Mongo rollback/crash evidence are proven.
+- [ ] Idempotent consumer duplicate-delivery and consumer-crash evidence are proven.
+- [ ] Unknown-major-version fail-closed/dead-letter evidence is proven.
+- [ ] Publisher service identity, tenant and actor negative tests pass.
+- [ ] Payload allowlist, redaction and byte/depth/count/string-limit evidence passes.
+- [ ] Dead-letter alarm, authorized replay and acceptance-observability evidence passes.
+- [ ] Architecture test proves no direct Platform collection access or authoritative use of the shared-key
+  internal append endpoint.
 - [ ] Confirm maximum export range/row limit for CSV/JSON.
 - [ ] Confirm critical audit categories, if any, that should fail the business command when audit enqueue fails.
 - [ ] Confirm redaction policy for actor email/display name/IP/user agent.

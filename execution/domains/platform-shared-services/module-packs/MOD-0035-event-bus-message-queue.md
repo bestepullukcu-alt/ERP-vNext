@@ -1,6 +1,6 @@
 ---
 id: MOD-0035
-name: Event Bus / Internal Events
+name: Event Bus / Message Queue
 domain: platform-shared-services
 service: Diten.Platform
 shell: none
@@ -14,7 +14,7 @@ target: 2026-05-30
 form_field_count: 0
 ---
 
-# MOD-0035 — Event Bus / Internal Events
+# MOD-0035 — Event Bus / Message Queue
 
 ## 1. Module Summary
 - **Purpose:** Platform & Shared Services domain owns the central event bus capability for ERP-vNext. Platform modules publish domain/integration events through a shared eventing standard; other ERP domains consume/produce through the same standard and must not fork their own broker infrastructure.
@@ -283,7 +283,8 @@ This is a backend/infrastructure module, not a CRUD DataTable module. `golden_re
 - **RabbitMQ unavailable**
   - Expected: business transaction is not rolled back after the outbox row is committed; outbox remains `Pending` or moves to `Failed` with retry metadata.
 - **Consumer failure**
-  - Expected: retry policy applies; after 5 attempts the message transitions to dead-letter behavior.
+  - Expected: retry policy applies; after 5 total attempts the message transitions to dead-letter behavior
+    and raises an alarm.
 - **Unauthorized direct API access**
   - Expected: no public publish endpoint exists; event publishing is service/internal code path only.
 - **Full entity payload**
@@ -337,7 +338,7 @@ This is a backend/infrastructure module, not a CRUD DataTable module. `golden_re
 - [ ] Full entity payload is rejected by contract test.
 - [ ] Payload DTO contract tests reject `BaseEntity`, navigation properties, large collections, binary/blob fields, password/token/secret fields, and aggregate graphs.
 - [ ] No public publish endpoint exists.
-- [ ] Retry defaults are configured: count 5, exponential backoff, initial delay 10 seconds, max delay 5 minutes.
+- [ ] Retry defaults are configured: 5 total attempts (initial attempt included), exponential backoff with jitter, initial delay 10 seconds, max delay 5 minutes.
 - [ ] Dead-letter transition happens after max retry; DLQ retention default is 30 days.
 - [ ] Logs never include payload; only approved metadata fields are logged.
 
@@ -362,7 +363,7 @@ This is a backend/infrastructure module, not a CRUD DataTable module. `golden_re
   - RabbitMQ integration test is skipped with a clear reason when `Eventing__RabbitMq__IntegrationTestsEnabled` is not `true`.
   - RabbitMQ unavailable scenario keeps outbox retry state.
   - Outbox worker publishes pending event when RabbitMQ becomes available.
-  - Consumer failure retries with exponential backoff and transitions to DLQ after 5 attempts.
+  - Consumer failure uses 5 total attempts and transitions to DLQ plus alarm after the fifth failed attempt.
 - Contract tests:
   - `EventName` and `EventVersion` are mandatory.
   - `CorrelationId` is propagated from publish to consume.
@@ -378,7 +379,8 @@ This is a backend/infrastructure module, not a CRUD DataTable module. `golden_re
 - [x] Contract location set to `Diten.BuildingBlocks.Eventing` + `Diten.Platform.Contracts/Events`.
 - [x] Cross-service event marker naming clarified: prefer `IIntegrationEvent` / `IInternalEvent`; `IDomainEvent` is envelope-only if retained.
 - [x] MVP outbox decision set: custom MongoDB `outbox_events` + `OutboxPublisherWorker`; MassTransit native outbox/inbox out-of-scope.
-- [x] Retry defaults set: 5 attempts, exponential backoff, 10s initial delay, 5m max delay.
+- [x] Retry defaults set: 5 total attempts, 10s after the first failure, exponential backoff with jitter,
+  5m maximum delay, then DLQ plus alarm after the fifth failed attempt.
 - [x] DLQ retention default set to 30 days.
 - [x] Event naming/versioning standard set to `{domain-or-aggregate}.{action}.{tense}.v{version}`.
 - [x] Outbox transaction boundary is specified.
@@ -403,6 +405,24 @@ This is a backend/infrastructure module, not a CRUD DataTable module. `golden_re
 ## 20. Follow-up Items
 - [ ] Update `execution/domains/platform-shared-services/domain-config.md` Event Bus runtime decision after user approval.
 - [ ] Update `docs/platform/master-plan.md` MOD-0035 status after implementation begins.
+
+### PPM runtime slice authority gate
+
+**Named slice status: `ready-for-dev`.** The parent MOD-0035 frontmatter and overall module status remain
+`partial`; only the **PPM Audit Transport Slice** is promoted. Runtime still requires the recorded explicit
+user approval and the separate PSS worktree.
+
+The existing MOD-0035 identity owns mechanics for
+`PpmAuditIntentSubmittedV1` / `ppm.audit-intent.submitted.v1`; no new identity is needed. A PPM handler or
+controller cannot publish directly. The PPM producer worker writes/publishes only through the existing
+producer-local outbox and public `IEventBus`; the MOD-0021 consumer uses inbox idempotency, retry, DLQ and
+authorized replay.
+
+The event/type is `PpmAuditIntentSubmittedV1` / `ppm.audit-intent.submitted.v1`. Scope is exactly shared
+eventing mechanics, the PPM producer contract boundary and the Platform MOD-0021 consumer integration.
+Frontend, Gateway, public replay endpoints/UI, generic Admin/Viewer grant-revoke changes, grant migration,
+and unrelated events/modules are excluded. Explicit user runtime approval, the PSS worktree boundary and
+the complete AuthService plus PPM regression gate remain mandatory and fail closed.
 - [ ] Prepare/update MOD-0009 Tenant Registry Lifecycle Events pack to emit events through `IEventBus`.
 - [ ] Optional technical spike: evaluate MassTransit native outbox/inbox against the custom MongoDB outbox after MVP.
 - [ ] Prepare MOD-0038 Event Taxonomy/Naming pack for machine-readable event catalog.
@@ -461,11 +481,11 @@ This is a backend/infrastructure module, not a CRUD DataTable module. `golden_re
 - Payload replay, if introduced later, requires sensitive field redaction before display, log, replay, or persistence.
 
 ## Retry / DLQ Defaults
-- Default retry count: `5`
-- Retry strategy: exponential backoff
-- Initial retry delay: `10 seconds`
-- Max retry delay: `5 minutes`
-- Dead-letter transition: after max retry attempts
+- Total delivery attempts: `5` (initial attempt included; four retry attempts)
+- Delay after first failed attempt: `10 seconds`
+- Retry strategy: exponential backoff with jitter
+- Maximum retry delay: `5 minutes`
+- Dead-letter transition: after the fifth failed attempt, with alarm
 - DLQ retention default: `30 days`
 - `LastError` max length: `4000` chars
 - Sensitive data must be redacted from errors.
@@ -523,6 +543,7 @@ This is a backend/infrastructure module, not a CRUD DataTable module. `golden_re
 
 ## Final Readiness
 - **Overall module status:** `partial`.
+- **PPM Audit Transport Slice:** `ready-for-dev`, subject to its explicit user-runtime and worktree gates.
 - **Docker/Testcontainers:** N/A by project decision. They are not required or expected validation paths for this project.
 - **Core in-memory/fake transport tests:** PASS.
 - **External RabbitMQ test:** Implemented; skipped unless `Eventing__RabbitMq__IntegrationTestsEnabled=true`.
@@ -531,3 +552,19 @@ This is a backend/infrastructure module, not a CRUD DataTable module. `golden_re
 - **Final readiness score:** Core foundation 90/100; overall module remains partial until external/local RabbitMQ live publish-consume proof passes.
 - **Remaining non-blocking notes:** Domain-config still contains stale broker-deferred language; MassTransit native outbox/inbox is intentionally out-of-scope and can be evaluated later by spike; live broker proof uses external/local RabbitMQ.
 - **First next task recommendation:** Run the external/local RabbitMQ integration test with broker credentials; only after it passes, start broker-backed MOD-0009 Tenant Registry Lifecycle emission.
+
+### PPM Audit Transport Slice final contract
+
+Shared `EventEnvelope`, `IEventBus`, outbox and inbox mechanics belong to
+`Diten.BuildingBlocks.Eventing`. MOD-0117 owns the logical PPM event, planned at
+`services/Diten.PpmService/src/Diten.PpmService.Contracts/Events/**`. Platform is consumer-only for this
+event. `Diten.Platform.Contracts` owns other Platform events where applicable, but not this PPM event.
+
+The final payload is **Minimal Mutation Audit v1**, with exactly `auditIntentId`, `actorId`, `entityType`,
+`entityId`, `mutation` and `occurredAtUtc`. It proves only actor, minimal mutation, PPM aggregate and time;
+it does not prove authorization/entitlement and is not an aggregate snapshot or lifecycle history.
+
+Authorized replay preserves the same `EventId` and identical canonical payload bytes; changed bytes are
+rejected. If the first delivery was not accepted, replay may create exactly one `AuditEvent`; if accepted,
+replay creates none. Idempotency is `ConsumerName + EventId`. Unauthorized replay is forbidden; no replay
+UI/API is in scope.

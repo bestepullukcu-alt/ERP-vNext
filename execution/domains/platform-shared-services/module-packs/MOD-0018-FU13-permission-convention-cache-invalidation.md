@@ -179,6 +179,14 @@ expires (≤15 min) or is refreshed — the `permission`/`role` claims are baked
 
 ## 6. Fail-Closed Behavior (mandatory)
 
+### PPM entitlement invalidation
+
+For canonical `ModuleCode = PPM`, entitlement invalidation must evict/refresh the module decision on every
+instance so a disabled/suspended/expired/removed entitlement denies immediately even when a JWT still
+contains `ppm.*`. This event path must not call permission grant/revoke synchronization. Dormant explicit
+RolePermission rows remain untouched; token refresh/revocation cannot substitute for the entitlement deny.
+Re-entitlement is audited and creates no grant.
+
 1. **No stale cache may widen access.** A delayed/missed invalidation must never grant access that a fresh evaluation
    would deny. C1 entitlement misses are bounded by TTL and never auto-grant beyond the cached *positive*; the
    enforcement path must treat an unknown/expired cache entry as **re-evaluate**, not **allow**.
@@ -293,6 +301,18 @@ implementation is performed here** — FU13 only ensures the events/timestamps e
 ---
 
 ## 15. Implementation Scope & Checklist (v1) — exact atomic groups
+
+### Group E — PPM-specific entitlement/grant dispatch *(future explicit authorization required)*
+
+- Scope: `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/EntitlementPermissionSyncService.cs`,
+  `services/Diten.AuthService/src/Diten.AuthService.Infrastructure/Eventing/EntitlementSyncConsumer.cs`,
+  the narrow explicit tenant-scoped grant administration handler/service paths, Platform PPM entitlement
+  invalidation paths, and corresponding AuthService/Platform tests.
+- For exact `ModuleCode = PPM`, grant/revoke/reconcile permission mutation is bypassed; entitlement
+  invalidation still executes fail-closed.
+- Generic MDM/other-module dispatch and tests are protected and must remain behaviorally unchanged.
+- This group is not authorized by FU13 frontmatter alone. It requires the DCP-006 handoff gate, separate PSS
+  branch/worktree and explicit user runtime approval.
 
 **Scope summary.** Four atomic groups: (A) Platform per-instance fan-out for the entitlement invalidation consumer;
 (B) AuthService single-user revoke-on-role-removal; (C) AuthService role-permission revoke via a new users-by-role seam;
