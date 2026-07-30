@@ -479,9 +479,10 @@ public static class DependencyInjection
         }
     }
 
-    private static IReadOnlyList<RequiredSecretDefinition> BuildSecretRequirements(IConfiguration configuration)
+    internal static IReadOnlyList<RequiredSecretDefinition> BuildSecretRequirements(IConfiguration configuration)
     {
         var smtpEnabled = configuration.GetValue<bool>("Smtp:Enabled");
+        var ppmEntitlementDecisionEnabled = configuration.GetValue<bool>("PpmEntitlementDecision:Enabled");
 
         return
         [
@@ -489,6 +490,12 @@ public static class DependencyInjection
             new("JwtSettings:PreviousSecrets", "Platform", SecretRequirementKind.JwtPreviousCollection, Required: false),
             new("MongoDbSettings:ConnectionString", "Platform", SecretRequirementKind.ConnectionString),
             new("AuthService:InternalApiKey", "Platform", SecretRequirementKind.InternalApiKey),
+            new(
+                "PpmEntitlementDecision:ServiceCredential",
+                "Platform",
+                SecretRequirementKind.InternalApiKey,
+                Required: ppmEntitlementDecisionEnabled,
+                IsEnabled: () => ppmEntitlementDecisionEnabled),
             new("Smtp:Password", "Platform", MinimumLength: 8, Required: smtpEnabled, IsEnabled: () => smtpEnabled)
         ];
     }

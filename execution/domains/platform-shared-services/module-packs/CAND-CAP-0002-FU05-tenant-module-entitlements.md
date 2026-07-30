@@ -353,6 +353,31 @@ Bu özellik geliştirilirken dokunulacak ve dokunulmaması gereken öncelikli he
 
 ---
 
+## PSS-B1 — PPM authoritative decision provider
+
+The PSS-owned physical contract is `platform.ppm-entitlement-decision.v1` at
+`GET /api/internal/ppm/tenants/{tenantId:guid}/entitlement-decision`. It evaluates only the fixed canonical
+`ModuleCode = PPM` through the existing `IEntitlementChecker`; it neither evaluates RBAC nor mutates
+`RolePermission`.
+
+- The caller uses an endpoint-specific PPM service credential validated by the shared secret-validation
+  baseline. The AuthService internal key is not accepted and no literal or development fallback is allowed.
+- `PpmEntitlementDecision:Enabled` defaults to `false`. A disabled deployment returns `503` before
+  entitlement lookup and can start without the PPM credential; this is infrastructure unavailability, not
+  business entitlement denial. Enabling the provider makes the dedicated credential mandatory and
+  fail-closed under the shared minimum-length and forbidden-placeholder validation rules.
+- The exact response is `tenantId: Guid`, `moduleCode: "PPM"`, `isAllowed: bool`,
+  `resolvedAtUtc: UTC DateTimeOffset`, and `expiresAtUtc: nullable UTC DateTimeOffset`. Deny reason and
+  commercial-plan detail are not disclosed.
+- Missing/wrong credentials return `401`; empty/invalid tenant input returns `400`; authoritative allow or
+  deny returns `200`; an `IsCacheable=false` dependency/indeterminate result returns `503` and is never
+  represented as a cacheable business denial.
+- Entitlement cache invalidation is a local idempotent side effect on every Platform instance. It is not
+  guarded by the shared persistent `(EventId, ConsumerName)` business-consumer dedupe. Recognized malformed
+  payloads fail closed into retry/DLQ; unknown event names remain safely ignored.
+- This provider contract does not authorize or implement the PPM-service consumer, Gateway routing, PPM
+  permission enforcement, or audit delivery.
+
 ## Revision Summary
 - **Physical Source ile Projection Source Ayrımı:** `Source` enumunun fiziksel kayıtlarda (`ManualOverride`, `Addon`, `Trial`, `System`) kullanılması ile read-model/UI üzerinde görüntülenen (`Plan` dahil) ayrımı netleştirildi.
 - **Plan Kayıt Persistansı:** Plan source’un fiziksel `TenantModuleEntitlement` entity'si olarak asla DB'ye kaydedilmeyeceği açıklandı ve `TenantModuleEntitlementRowDto` eklendi.

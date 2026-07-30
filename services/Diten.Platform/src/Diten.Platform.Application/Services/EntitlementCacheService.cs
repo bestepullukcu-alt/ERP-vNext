@@ -88,8 +88,9 @@ public sealed class EntitlementCacheService
         var result = await factory();
         if (result.IsCacheable)
         {
-            cache.Set(cacheKey, result, CreateEntryOptions(cacheKey));
-            registeredKeys[cacheKey] = RegisteredCacheKey.From(cacheKey);
+            var registration = RegisteredCacheKey.From(cacheKey);
+            cache.Set(cacheKey, result, CreateEntryOptions(cacheKey, registration));
+            registeredKeys[cacheKey] = registration;
         }
 
         return result;
@@ -101,18 +102,22 @@ public sealed class EntitlementCacheService
         cache.Remove(cacheKey);
     }
 
-    private MemoryCacheEntryOptions CreateEntryOptions(string cacheKey)
+    private MemoryCacheEntryOptions CreateEntryOptions(string cacheKey, RegisteredCacheKey registration)
     {
         return new MemoryCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = options.GetCacheTtl()
         }.RegisterPostEvictionCallback(static (key, _, _, state) =>
         {
-            if (key is string cacheKey && state is EntitlementCacheService cacheService)
+            if (key is string cacheKey && state is CacheEntryRegistration callback)
             {
-                cacheService.registeredKeys.TryRemove(cacheKey, out _);
+                if (callback.CacheService.registeredKeys.TryGetValue(cacheKey, out var current)
+                    && ReferenceEquals(current, callback.Registration))
+                {
+                    callback.CacheService.registeredKeys.TryRemove(cacheKey, out _);
+                }
             }
-        }, this);
+        }, new CacheEntryRegistration(this, registration));
     }
 
     private static string NormalizeCode(string code) => code.Trim().ToUpperInvariant();
@@ -125,4 +130,8 @@ public sealed class EntitlementCacheService
             return new RegisteredCacheKey(Guid.Parse(parts[2]));
         }
     }
+
+    private sealed record CacheEntryRegistration(
+        EntitlementCacheService CacheService,
+        RegisteredCacheKey Registration);
 }

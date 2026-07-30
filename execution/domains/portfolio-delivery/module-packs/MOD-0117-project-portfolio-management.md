@@ -704,9 +704,13 @@ block only their named runtime boundaries. This pack is not unconditional `ready
 
 ### Open technical decisions
 
-1. PSS-owned AuthService registration of the 16 PPM catalog keys, explicit tenant-scoped role-grant
-   provisioning, and real-token evidence; no automatic tenant-admin grant. PPM entitlement enforcement,
-   invalidation and provider-specific S2S actor delegation remain separate evidence.
+1. PSS-owned AuthService registration of the 16 PPM catalog keys and explicit tenant-scoped role-grant
+   provisioning remains evidenced by PSS-A. The PSS-owned
+   `platform.ppm-entitlement-decision.v1` provider uses the fixed `ModuleCode = PPM`, an endpoint-specific
+   PPM service credential, and fail-closed `200 allow/deny` versus `503 indeterminate` semantics. The
+   provider is default-disabled; disabled deployments return `503` without entitlement lookup, while enabled
+   deployments require a valid dedicated secret at startup. Disabled is not a business entitlement deny.
+   The PPM-service consumer and final normal-port evidence remain separate work.
 2. Executable PSS authority for the selected PPM-specific strategy and MOD-0035 slice; existing generic
    MDM/other-module behavior remains unchanged.
 3. ExternalContextReference provider transport, route and compatibility/security evidence.
@@ -728,6 +732,7 @@ block only their named runtime boundaries. This pack is not unconditional `ready
 | 2026-07-29 | Formally dispositioned the four repeated DataTable verifier findings per Phase 2A surface as approved policy/profile mismatches: bulk delete is prohibited, and authentication uses a same-origin MVC proxy plus HttpOnly cookie rather than browser-side `getAuthHeaders()`. No bulk-delete surface, browser JWT exposure or verifier change is authorized. | User / Enterprise Strategy Control Tower |
 | 2026-07-30 | Locked independent PPM tenant-entitlement and user-permission gates, dormant grants after entitlement removal, and the `PpmAuditIntentSubmittedV1` / `ppm.audit-intent.submitted.v1` producer identity. Minimal Mutation Audit v1 is final; publisher credential, runtime evidence and PSS production authorization remain open. | User / Enterprise Strategy Control Tower |
 | 2026-07-30 | Code-reality correction fixed `ModuleCode = PPM` and blocked the existing generic Admin/Viewer auto-grant plus destructive revoke/reconcile flow from unchanged PPM use. PPM-specific versus generic bridge revision and dormant-grant reactivation remain PSS/security human-review decisions. | User / Enterprise Strategy Control Tower |
+| 2026-07-30 | Recorded PSS-B1 physical provider contract `platform.ppm-entitlement-decision.v1`, dedicated PPM caller credential, exact minimal response and fail-closed `503` boundary. PSS owns the provider and every-instance invalidation; the PPM-service consumer remains unimplemented and this pack stays `review`. | User / Enterprise Strategy Control Tower |
 | 2026-07-29 | Promoted the authorized Phase 2A slice to `review` after shared JWT 21/21, PPM 17/17, targeted Gateway 1/1, isolated Mongo replica-set 9/9, Web 22/22, delegated jsdom PASS and real browser CRUD evidence. The smoke used an ephemeral signed JWT bootstrap because the real tenant-admin token has zero PPM permissions; AuthService grant provisioning and MOD-0021 delivery remain open. DataTable reports 60 PASS plus four policy/profile findings per surface. | Orchestrator — Phase 2A verification evidence |
 | 2026-07-29 | Promoted pack to `approved` and recorded explicit user authorization for the `Diten.PpmService` scaffold plus Phase 2A backend/frontend. Fixed lifecycle, cardinality, referenceability, Golden Slim surfaces, port `5061`, Gateway `5000` boundary and transactional local audit-intent foundation. Provider transport, DWS runtime integration, Phase 2B and WorkCenter hazards remain blocked. | User / Enterprise Strategy Control Tower |
 | 2026-07-29 | Reconciled stale pack branch metadata to the active Enterprise Strategy worktree `feature/es/enterprise-strategy`; scope and authorization are unchanged. | Orchestrator — active Enterprise Strategy worktree reconciliation |

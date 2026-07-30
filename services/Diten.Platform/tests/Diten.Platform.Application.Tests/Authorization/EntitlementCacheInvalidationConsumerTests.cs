@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Text.Json;
 using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Contracts.Eventing;
@@ -83,7 +82,7 @@ public sealed class EntitlementCacheInvalidationConsumerTests
     }
 
     [Fact]
-    public async Task EntitlementCacheInvalidationConsumer_SkipsDuplicateEventWithoutEvictingAgain()
+    public async Task EntitlementCacheInvalidationConsumer_DuplicateDeliveryIsSafeAndEvictsAgain()
     {
         var cacheService = CreateCacheService();
         var consumer = CreateConsumer(cacheService);
@@ -97,9 +96,42 @@ public sealed class EntitlementCacheInvalidationConsumerTests
         await ReadTenantAndOtherTenantCacheAsync(cacheService, calls);
 
         Assert.Equal(ConsumedEventExecutionResult.Consumed, first);
-        Assert.Equal(ConsumedEventExecutionResult.Duplicate, duplicate);
-        Assert.Equal(2, calls.TenantModule);
-        Assert.Equal(2, calls.TenantFeature);
+        Assert.Equal(ConsumedEventExecutionResult.Consumed, duplicate);
+        Assert.Equal(3, calls.TenantModule);
+        Assert.Equal(3, calls.TenantFeature);
+    }
+
+    [Fact]
+    public async Task SharedConsumedEventStoreCannotBlockSameEventEvictionOnTwoInstances()
+    {
+        Assert.DoesNotContain(
+            typeof(ConsumedEventStore),
+            typeof(EntitlementCacheInvalidationConsumer)
+                .GetConstructors()
+                .SelectMany(constructor => constructor.GetParameters())
+                .Select(parameter => parameter.ParameterType));
+
+        var firstCache = CreateCacheService();
+        var secondCache = CreateCacheService();
+        var firstCalls = new CacheFactoryCalls();
+        var secondCalls = new CacheFactoryCalls();
+        var message = CreateMessage(new TenantEntitlementDisabledV1(
+            Guid.NewGuid(), OccurredAtUtc, TenantId, Guid.NewGuid(), ActorId, "PPM"));
+
+        await SeedTenantAndOtherTenantCacheAsync(firstCache, firstCalls);
+        await SeedTenantAndOtherTenantCacheAsync(secondCache, secondCalls);
+
+        await CreateConsumer(firstCache).ConsumeAsync(message);
+        await CreateConsumer(secondCache).ConsumeAsync(message);
+        await ReadTenantAndOtherTenantCacheAsync(firstCache, firstCalls);
+        await ReadTenantAndOtherTenantCacheAsync(secondCache, secondCalls);
+
+        Assert.Equal(2, firstCalls.TenantModule);
+        Assert.Equal(2, firstCalls.TenantFeature);
+        Assert.Equal(2, secondCalls.TenantModule);
+        Assert.Equal(2, secondCalls.TenantFeature);
+        Assert.Equal(1, firstCalls.OtherTenantModule);
+        Assert.Equal(1, secondCalls.OtherTenantModule);
     }
 
     [Fact]
@@ -124,7 +156,7 @@ public sealed class EntitlementCacheInvalidationConsumerTests
     }
 
     [Fact]
-    public async Task EntitlementCacheInvalidationConsumer_LogsAndIgnoresInvalidPayload()
+    public async Task EntitlementCacheInvalidationConsumer_RecognizedInvalidPayloadFailsForRetryAndDeadLetter()
     {
         var cacheService = CreateCacheService();
         var consumer = CreateConsumer(cacheService);
@@ -139,17 +171,15 @@ public sealed class EntitlementCacheInvalidationConsumerTests
             OccurredAtUtc,
             "{}");
 
-        var result = await consumer.ConsumeAsync(message);
+        var exception = await Record.ExceptionAsync(() => consumer.ConsumeAsync(message));
 
-        Assert.Null(result);
+        Assert.NotNull(exception);
+        Assert.True(exception is JsonException or ArgumentException or InvalidOperationException);
     }
 
     private static EntitlementCacheInvalidationConsumer CreateConsumer(EntitlementCacheService cacheService)
     {
         return new EntitlementCacheInvalidationConsumer(
-            new ConsumedEventStore(
-                new InMemoryConsumedEventRepository(),
-                NullLogger<ConsumedEventStore>.Instance),
             cacheService,
             NullLogger<EntitlementCacheInvalidationConsumer>.Instance);
     }
@@ -220,59 +250,4 @@ public sealed class EntitlementCacheInvalidationConsumerTests
         public int OtherTenantFeature { get; set; }
     }
 
-    private sealed class InMemoryConsumedEventRepository : IConsumedEventRepository
-    {
-        private readonly ConcurrentDictionary<(Guid EventId, string ConsumerName), ConsumedEvent> _items = [];
-
-        public Task<ConsumedEventStartResult> TryStartAsync(ConsumedEvent consumedEvent, CancellationToken cancellationToken = default)
-        {
-            var key = (consumedEvent.EventId, consumedEvent.ConsumerName);
-            var existing = _items.GetOrAdd(key, consumedEvent);
-            if (!ReferenceEquals(existing, consumedEvent))
-            {
-                var status = existing.Status == ConsumedEventStatus.Consumed
-                    ? ConsumedEventStartStatus.ConsumedDuplicate
-                    : ConsumedEventStartStatus.InFlightDuplicate;
-                return Task.FromResult(new ConsumedEventStartResult(status, existing));
-            }
-
-            return Task.FromResult(new ConsumedEventStartResult(ConsumedEventStartStatus.Started, consumedEvent));
-        }
-
-        public Task MarkConsumedAsync(Guid eventId, string consumerName, CancellationToken cancellationToken = default)
-        {
-            if (_items.TryGetValue((eventId, consumerName), out var item))
-            {
-                item.MarkConsumed();
-            }
-
-            return Task.CompletedTask;
-        }
-
-        public Task MarkSkippedDuplicateAsync(Guid eventId, string consumerName, CancellationToken cancellationToken = default)
-        {
-            if (_items.TryGetValue((eventId, consumerName), out var item))
-            {
-                item.MarkSkippedDuplicate();
-            }
-
-            return Task.CompletedTask;
-        }
-
-        public Task MarkFailedAsync(Guid eventId, string consumerName, string error, CancellationToken cancellationToken = default)
-        {
-            if (_items.TryGetValue((eventId, consumerName), out var item))
-            {
-                item.MarkFailed(error);
-            }
-
-            return Task.CompletedTask;
-        }
-
-        public Task<ConsumedEvent?> GetAsync(Guid eventId, string consumerName, CancellationToken cancellationToken = default)
-        {
-            _items.TryGetValue((eventId, consumerName), out var item);
-            return Task.FromResult(item);
-        }
-    }
 }
