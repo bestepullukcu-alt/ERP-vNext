@@ -353,6 +353,10 @@ Lookup decision:
   evidence gates. The final payload and MOD-0021 consumer mapping are fixed below. The producer worker may
   use only MOD-0035's public `IEventBus`/outbox abstraction; PPM handlers/controllers cannot call RabbitMQ or
   MassTransit directly.
+- PSS-C1 provides that public canonical payload/outbox/trusted-metadata seam in
+  `Diten.BuildingBlocks.Eventing` and propagates its allowlisted headers through Platform transport
+  adapters. It does not implement the PPM producer, allocate a signing key, or close the cross-service
+  producer integration subset; live RabbitMQ delivery and producer-local transaction evidence remain open.
 - This cross-service subset remains `PARTIAL`; no implementation permission or production authority is
   created here, and DCP-006 OD-04 remains open.
 

@@ -527,6 +527,10 @@ pending-EA, no-runtime-literal constraints. No replacement identity is invented.
 Shared `EventEnvelope`, `IEventBus`, outbox and inbox mechanics are owned by
 `Diten.BuildingBlocks.Eventing`. MOD-0117 owns the logical PPM event; Platform is consumer-only.
 `Diten.Platform.Contracts` owns other Platform events where applicable, but not the PPM event.
+PSS-C1 supplies the shared canonical UTF-8 event, trusted allowlisted transport-metadata and reusable
+outbox-writer contracts plus Platform transport adapters. This infrastructure evidence does not supply the
+MOD-0117 event DTO/signer/producer worker, live RabbitMQ evidence, operational replay or external paging,
+and therefore does not close OD-04 or change any module/DCP status.
 
 The final Minimal Mutation Audit v1 evidence is limited to actor, minimal mutation, PPM aggregate and time;
 it is not authorization/entitlement evidence, a business snapshot or lifecycle history. Delivery uses 5

@@ -1,5 +1,6 @@
 using System.Text;
 using Diten.BuildingBlocks.BackgroundJobs;
+using Diten.BuildingBlocks.Eventing;
 using Diten.BuildingBlocks.Security.Secrets;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Contracts.Audit;
@@ -325,6 +326,9 @@ public static class DependencyInjection
         PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
 
         services.AddScoped<IOutboxEventRepository, OutboxEventRepository>();
+        services.AddScoped<IEventOutboxWriter>(sp => sp.GetRequiredService<IOutboxEventRepository>());
+        services.AddScoped<IEventOutboxStore>(sp => sp.GetRequiredService<IOutboxEventRepository>());
+        services.AddSingleton<ITrustedTransportMetadataProvider, EmptyTrustedTransportMetadataProvider>();
         services.AddScoped<IOutboxObservabilityReader>(sp => (IOutboxObservabilityReader)sp.GetRequiredService<IOutboxEventRepository>());
         services.AddScoped<IConsumedEventRepository, ConsumedEventRepository>();
         services.AddScoped<IJobExecutionLogRepository, JobExecutionLogRepository>();
