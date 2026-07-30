@@ -100,6 +100,8 @@ const bootDetailPage = (item, options) => {
     get: () => Promise.resolve({ ok: true, status: 200, data: {} }),
     transition: () => Promise.resolve({ ok: true, status: 204 }),
     addComment: (taskId, payload) => { posted.push({ taskId, payload }); return Promise.resolve({ ok: true, status: 201, data: { id: "c1" } }); },
+    // Individual tests below override this to assert the exact call, or to simulate a refusal.
+    plan: () => Promise.resolve({ ok: true, status: 204 }),
     isConcurrencyConflict: () => false,
     isTransitionBlocked: () => false,
     failureMessage: () => "error"
@@ -1541,5 +1543,170 @@ describe("the comment composer writes to the engine", () => {
     }));
 
     expect(app().querySelector(".wcn-audit-meta").textContent).toContain("CommentAuthorUnknown");
+  });
+});
+
+/*
+ * BL-034-adjacent: the personal plan date now actually reaches the engine.
+ *
+ * Before this, the picker was never shown to a real user at all — `!isRealTaskItem(item)` kept it fixture-only,
+ * because `/plan` accepted no date and asking for one we then discarded would have been a new lie. Now the
+ * engine stores it, so the same picker opens for real work and writes through TasksApi rather than a local push.
+ */
+describe("the plan date picker writes to the engine for a real task", () => {
+  // A minimal but faithful SweetAlert stand-in: it runs `didOpen` SYNCHRONOUSLY (so the seeded input can be
+  // inspected the instant the click returns, exactly as real SweetAlert would have it in the DOM by then) and
+  // resolves with a fixed confirm value rather than re-implementing SweetAlert's own confirm/cancel machinery.
+  const stubSwal = (confirmed) => {
+    global.Swal = {
+      fire: (options) => {
+        const container = document.createElement("div");
+        container.innerHTML = options.html || "";
+        document.body.appendChild(container);
+        if (options.didOpen) { options.didOpen(); }
+        return Promise.resolve(confirmed);
+      }
+    };
+  };
+
+  afterEach(() => {
+    // Several OTHER action flows in this module (reject/return/inquire) also branch on `global.Swal` presence;
+    // leaving a stub behind would silently change their behaviour in a later, unrelated test.
+    delete global.Swal;
+  });
+
+  const planAction = () => ({
+    code: "plan",
+    label: { kind: "resource", key: "WorkAggregation_Action_Plan" },
+    semanticType: "plan",
+    enabled: true,
+    source: "provider",
+    disabledReasonCode: null,
+    disabledReason: null,
+    requiresConfirmation: false,
+    requiresReason: false,
+    requiresEvidence: false,
+    supportsBulk: false,
+    riskLevel: "normal"
+  });
+
+  const clickPlan = async () => {
+    app().querySelector('[data-wcn-action="plan"]').click();
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+  };
+
+  it("opens the picker for a real task and seeds it with the existing planned date", async () => {
+    stubSwal({ isConfirmed: false });
+    await bootDetailPage(projectionItem({
+      actions: [planAction()],
+      plannedDate: "2026-08-01",
+      dueAt: "2026-08-10T00:00:00+00:00"
+    }));
+
+    app().querySelector('[data-wcn-action="plan"]').click();
+    // onClick runs via a queued microtask (Promise.resolve().then(...)), not synchronously inside click() — the
+    // input does not exist yet the instant click() returns.
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+    // The existing plan wins over the source due date, matching openDatePicker's own fallback order.
+    expect(document.getElementById("wcnPlanDate").value).toBe("2026-08-01");
+  });
+
+  it("seeds correctly even when the wire sends a full instant, not a bare date", async () => {
+    // The engine's PlannedDate is a DateTimeOffset and serializes with a time and an offset. adaptProjection has
+    // to normalize it the same way it already normalizes dueAt, or a type="date" input rejects the value outright
+    // (an invalid value for that input type sets .value to "", which a same-day midnight fixture would not catch).
+    stubSwal({ isConfirmed: false });
+    await bootDetailPage(projectionItem({
+      actions: [planAction()],
+      plannedDate: "2026-08-01T14:30:00+03:00",
+      dueAt: null
+    }));
+
+    app().querySelector('[data-wcn-action="plan"]').click();
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+    expect(document.getElementById("wcnPlanDate").value).toBe("2026-08-01");
+  });
+
+  it("falls back to the source due date when there is no plan yet", async () => {
+    stubSwal({ isConfirmed: false });
+    await bootDetailPage(projectionItem({
+      actions: [planAction()],
+      plannedDate: null,
+      dueAt: "2026-08-10T00:00:00+00:00"
+    }));
+
+    app().querySelector('[data-wcn-action="plan"]').click();
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+    // dueAt is normalized to date-only by adaptProjection before openDatePicker ever sees it (the SLA math and
+    // the date input both expect a date, not a full instant) — so the seed is already just the date.
+    expect(document.getElementById("wcnPlanDate").value).toBe("2026-08-10");
+  });
+
+  it("posts the chosen date to the engine, not a local mutation", async () => {
+    const planCalls = [];
+    stubSwal({ isConfirmed: true, value: "2026-08-20" });
+    // A token no other test in this file uses, so a call carrying it can only have come from THIS item —
+    // decisive even though the same click also reaches every other "plan"-capable instance booted so far (see
+    // the "content, not count" note used throughout this file for the same accumulated-listener reason).
+    await bootDetailPage(projectionItem({ actions: [planAction()], concurrency: { kind: "version", token: "424242" } }));
+    global.TasksApi.plan = (taskId, payload) => {
+      planCalls.push({ taskId, payload });
+      return Promise.resolve({ ok: true, status: 204 });
+    };
+
+    await clickPlan();
+
+    const mine = planCalls.filter((call) => call.payload.expectedVersion === 424242);
+    expect(mine).toHaveLength(1);
+    expect(mine[0]).toEqual({ taskId: TASK_ID, payload: { expectedVersion: 424242, plannedDate: "2026-08-20" } });
+  });
+
+  it("shows no plan date at all when the write is refused", async () => {
+    // No optimistic apply: a refused write must leave the screen exactly as it was, or a rejected write would
+    // look identical to an accepted one.
+    stubSwal({ isConfirmed: true, value: "2026-08-20" });
+    await bootDetailPage(projectionItem({
+      actions: [planAction()],
+      plannedDate: null,
+      dueAt: null
+    }));
+    global.TasksApi.plan = () => Promise.resolve({
+      ok: false, status: 400, reasonCode: "TASK_PLAN_DATE_REQUIRED"
+    });
+
+    await clickPlan();
+
+    const cell = Array.from(app().querySelectorAll(".wcn-date-cell"))
+      .find((el) => el.textContent.includes("PlannedDateLabel"));
+    // No dueAt and no plannedDate means renderPlanDates prints nothing at all for this item — the empty state,
+    // not a value that was never actually stored.
+    expect(cell).toBeUndefined();
+  });
+});
+
+/*
+ * The showcase/fixture side of `plan` cannot be exercised through bootDetailPage: that harness always projects
+ * through the real API path (mapPayload → provenance "api"), and forcing a raw `provenance: "fixture"` field
+ * onto its item is exactly the mistake toPresentation's own guard warns about ("an item that changes origin also
+ * changes which guards apply to it"). These two facts are pinned at the SOURCE level instead — the same
+ * technique this file already uses for other code-shape guarantees (grep the "carries its wording" tests above).
+ */
+describe("the fixture-only plan path (source-level, no engine call)", () => {
+  const app = fs.readFileSync(
+    path.resolve(__dirname, "..", "wwwroot", "assets", "js", "WorkCenterNext", "app.js"), "utf8");
+  const applyPlan = app.slice(app.indexOf("const applyPlan"), app.indexOf("const submitPlan"));
+
+  it("never calls the engine — it is a local mutation only", () => {
+    expect(applyPlan).not.toContain("TasksApi");
+  });
+
+  it("carries no pre-computed relative time on the event it writes", () => {
+    // ACTIVITY_RELATIVE_TIME_FORBIDDEN: an `ago` written at plan-time freezes and goes stale the moment the tab
+    // stays open. Same shape the real (engine) comment path already had to fix.
+    expect(applyPlan).not.toMatch(/ago:\s*0/);
+    expect(applyPlan).toContain("atMs");
   });
 });

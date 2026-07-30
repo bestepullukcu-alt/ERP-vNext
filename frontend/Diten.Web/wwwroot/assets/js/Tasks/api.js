@@ -49,6 +49,8 @@
         // Commenting on a closed task, and a comment that is empty or over the length limit.
         TASK_COMMENT_TASK_CLOSED: 'errorCommentTaskClosed',
         TASK_COMMENT_TEXT_INVALID: 'errorCommentTextInvalid',
+        // A plan write with no date at all (a 400, not a 409 — it never reaches BLOCKING_REASON_CODES).
+        TASK_PLAN_DATE_REQUIRED: 'errorPlanDateRequired',
         APPROVAL_PENDING: 'errorApprovalPending',
         // An unmet predecessor. Same string the PROJECTION uses to disable the button, deliberately: the greyed
         // control and this refusal are one fact seen from two sides.
@@ -143,6 +145,9 @@
         create: (payload) => request('POST', '', payload),
         update: (id, payload) => request('PUT', `/${id}`, payload),
         transition: (id, action, payload) => request('POST', `/${id}/${action}`, payload || {}),
+        // Its own method, not `transition(id, 'plan', ...)`: the body shape is different (plannedDate, not a
+        // reason code), and there is no ExpectedVersion-carrying generic path that would let a caller forget it.
+        plan: (id, payload) => request('POST', `/${id}/plan`, payload),
         assignablePositions: () => request('GET', '/assignable-positions'),
         assignablePeople: () => request('GET', '/assignable-people'),
 

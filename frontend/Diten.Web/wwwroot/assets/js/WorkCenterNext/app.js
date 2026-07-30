@@ -3347,26 +3347,52 @@
         }, 350);
     };
 
-    // Plan / re-plan — sets the PERSONAL planned date (spec v2 §4), which is
-    // distinct from the source due date; SLA (source) is never overwritten.
+    // Plan / re-plan for a SHOWCASE item only — sets the PERSONAL planned date (spec v2 §4), which is distinct
+    // from the source due date; SLA (source) is never overwritten. Local and optimistic on purpose: there is no
+    // engine behind a fixture, so this IS the whole write.
     const applyPlan = (item, dateStr, label) => {
         item.plannedDate = dateStr;
         if (item.lifecycle === 'Open') { setProjectionState(item, item.normalizedStatus, 'Planned', item.nativeStatusText); }
         markSeen(item);
-        item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: label, ago: 0 });
+        // `atMs`, not a pre-computed `ago` — the contract forbids a relative count (ACTIVITY_RELATIVE_TIME_FORBIDDEN):
+        // whoever computes it freezes it, and it goes stale the moment the tab stays open.
+        item.activity.push({
+            actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: label,
+            atMs: data.referenceDate(item.provenance)
+        });
         render();
         toast(tf('ToastPlanned', item.title, dateStr));
     };
 
+    /*
+     * Plan / re-plan for a REAL task — posts to the engine and applies NOTHING optimistically. The date is only
+     * ever shown once the server has actually stored it and the projection has been re-read; a request that fails
+     * must leave the screen exactly as it was, or a rejected write would look identical to an accepted one.
+     */
+    const submitPlan = async (item, dateStr) => {
+        const result = await global.TasksApi.plan(item.id, {
+            expectedVersion: Number(item.concurrency?.token ?? 0),
+            plannedDate: dateStr
+        });
+        await afterPhase2Write(result, 'ToastPlanSaved', dateStr);
+    };
+
     const openDatePicker = (item, action) => {
         const label = actionLabel(action);
-        if (!global.Swal) { applyPlan(item, item.dueAt || data.todayIso, label); return; }
+        const real = isRealTaskItem(item);
+        if (!global.Swal) {
+            if (real) { submitPlan(item, item.dueAt || data.todayIso).catch(reportSwalFailure); return; }
+            applyPlan(item, item.dueAt || data.todayIso, label);
+            return;
+        }
         global.Swal.fire({
             title: label,
             html: '<input id="wcnPlanDate" class="form-control" autocomplete="off">',
             showCancelButton: true, confirmButtonText: t('PlanConfirm'), cancelButtonText: t('ReasonCancel'),
             didOpen: () => {
                 const input = document.getElementById('wcnPlanDate');
+                // Re-planning opens the picker seeded with the EXISTING plan, so moving a date is an edit of it
+                // rather than starting blank; falling back to the source due date only when there is no plan yet.
                 const seed = item.plannedDate || item.dueAt;
                 if (global.flatpickr) {
                     global.flatpickr(input, { dateFormat: 'Y-m-d', defaultDate: seed || undefined, disableMobile: true });
@@ -3380,7 +3406,17 @@
                 if (!v) { global.Swal.showValidationMessage(t('PlanDateLabel')); return false; }
                 return v;
             }
-        }).then((res) => { if (res.isConfirmed && res.value) { applyPlan(item, res.value, label); } });
+        }).then((res) => {
+            if (!res.isConfirmed || !res.value) { return null; }
+            return real ? submitPlan(item, res.value) : applyPlan(item, res.value, label);
+        }).catch(reportSwalFailure);
+    };
+
+    // Swal's own promise chain runs well after the click that opened it, outside onClick's try/catch — so a
+    // failure inside submitPlan needs its OWN net, the same one onClick's own catch gives every other write.
+    const reportSwalFailure = (error) => {
+        console.error('WorkCenterNext date picker failed.', error);
+        toast(t('ErrorTitle'), 'error');
     };
 
     // Review meeting is a collaboration command, not a lifecycle transition. The
@@ -3705,10 +3741,9 @@
     const performAction = (item, actionKey) => {
         const action = actionByKey(item, actionKey);
         if (!item || !action || action.disabled || state.submittingItemId === item.id) { return; }
-        // The date picker feeds a PERSONAL planned date that only the fixture path stores; the engine's /plan
-        // endpoint accepts no date (it moves the lifecycle Open→Planned). Asking a real user for a date we then
-        // discard would be a new lie, so a real task goes straight to the transition.
-        if (action.input === 'date' && !isRealTaskItem(item)) { openDatePicker(item, action); return; }
+        // The engine now stores the personal plan date (POST .../plan), so the picker opens for a real task too —
+        // openDatePicker itself decides whether to write to the engine or, for a showcase item, only locally.
+        if (action.input === 'date') { openDatePicker(item, action); return; }
         if (action.input === 'meeting') { openMeetingScheduler(item, action); return; }
         if (action.input === 'minutes') { openLogTime(item, action); return; }
 

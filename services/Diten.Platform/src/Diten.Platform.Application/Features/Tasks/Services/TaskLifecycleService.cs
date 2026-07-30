@@ -158,8 +158,11 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
         {
             TaskLifecycle.Open => target is TaskLifecycle.Planned or TaskLifecycle.InProgress
                 or TaskLifecycle.Waiting or TaskLifecycle.Cancelled,
+            // Planned → Planned is RE-PLANNING: the date moves, the phase does not. Without this self-loop the
+            // /plan endpoint could set a date once and never again — a slipped date is the normal case, not the
+            // exception.
             TaskLifecycle.Planned => target is TaskLifecycle.InProgress or TaskLifecycle.Waiting
-                or TaskLifecycle.Open or TaskLifecycle.Cancelled,
+                or TaskLifecycle.Open or TaskLifecycle.Cancelled or TaskLifecycle.Planned,
             TaskLifecycle.InProgress => target is TaskLifecycle.Waiting or TaskLifecycle.PendingReview
                 or TaskLifecycle.Done or TaskLifecycle.Cancelled,
             TaskLifecycle.Waiting => target is TaskLifecycle.InProgress or TaskLifecycle.Cancelled,

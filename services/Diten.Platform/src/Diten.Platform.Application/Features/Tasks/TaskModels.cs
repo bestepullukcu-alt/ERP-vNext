@@ -117,6 +117,14 @@ public static class TaskReasonCodes
 
     /// <summary>Empty, whitespace-only, or longer than <see cref="TaskCommentLimits.MaxTextLength"/>.</summary>
     public const string CommentTextInvalid = "TASK_COMMENT_TEXT_INVALID";
+
+    /// <summary>
+    /// No planned date was supplied — including a JSON body that omits the field, which deserializes
+    /// <see cref="PlanTaskItemRequest.PlannedDate"/> to its zero value rather than throwing. Deliberately the
+    /// ONLY thing this endpoint refuses: a date in the past, or one after the source due date, is a real personal
+    /// plan and is accepted (see the handler for why).
+    /// </summary>
+    public const string PlanDateRequired = "TASK_PLAN_DATE_REQUIRED";
 }
 
 /// <summary>
@@ -221,6 +229,13 @@ public sealed record BulkDeleteTaskItemRequest(IReadOnlyList<Guid> Ids);
 public sealed record ClaimTaskItemRequest(int ExpectedVersion);
 
 public sealed record TaskTransitionRequest(int ExpectedVersion, string? ReasonCode, string? Note);
+
+/// <summary>
+/// Set (or move) a personal plan date. Its OWN request type rather than an optional field bolted onto
+/// <see cref="TaskTransitionRequest"/>: the date is REQUIRED for this one transition and meaningless for the
+/// other nine — same reasoning that gives <see cref="InquireTaskItemRequest"/> its own mandatory <c>Reason</c>.
+/// </summary>
+public sealed record PlanTaskItemRequest(int ExpectedVersion, DateTimeOffset PlannedDate);
 
 /// <summary>
 /// Park a task in Waiting. <paramref name="Reason"/> is REQUIRED and is the user's own words, so it is stored as

@@ -512,6 +512,9 @@
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · مجدول ليوم {1} (تجريبي)</value>
   </data>
+  <data name="ToastPlanSaved" xml:space="preserve">
+    <value>تم حفظ الخطة لـ {0}</value>
+  </data>
   <data name="ToastTimerStarted" xml:space="preserve">
     <value>{0} · بدأ المؤقّت (تجريبي)</value>
   </data>

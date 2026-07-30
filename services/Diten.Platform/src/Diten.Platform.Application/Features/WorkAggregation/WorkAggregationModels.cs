@@ -295,7 +295,19 @@ public sealed record WorkItemProjectionDto(
     /// errors.
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    IReadOnlyList<WorkItemActivityEntryDto>? Activity = null);
+    IReadOnlyList<WorkItemActivityEntryDto>? Activity = null,
+    /// <summary>
+    /// The holder's OWN plan for when to do this, distinct from <see cref="DueAt"/> — the source's deadline and
+    /// the basis for SLA. Optional and omitted when nobody has planned yet: a task nobody has scheduled has no
+    /// plan, not today's date and not the due date.
+    ///
+    /// <para>This is a projection of what <c>POST .../plan</c> writes. Without it, a plan write would be REAL on
+    /// the server and INVISIBLE on the screen — the reader could never see their own plan again, and re-planning
+    /// could never seed from the date they actually chose, only ever from the source due date. That is the same
+    /// half-a-feature shape a declared-but-empty capability with no container would be.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    DateTimeOffset? PlannedDate = null);
 
 /// <summary>
 /// One entry in the activity feed. Today MOD-0024 emits only <c>kind: "comment"</c>: there is no lifecycle event

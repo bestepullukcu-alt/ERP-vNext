@@ -512,6 +512,9 @@
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · 已计划于 {1}（模拟）</value>
   </data>
+  <data name="ToastPlanSaved" xml:space="preserve">
+    <value>已为 {0} 保存计划</value>
+  </data>
   <data name="ToastTimerStarted" xml:space="preserve">
     <value>{0} · 计时已开始（模拟）</value>
   </data>

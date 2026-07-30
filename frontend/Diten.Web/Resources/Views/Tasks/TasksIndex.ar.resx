@@ -87,6 +87,7 @@
   <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>ما تزال إحدى المهام الفرعية مفتوحة، لذا لا يمكن إكمال هذه المهمة بعد.</value></data>
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>أُغلقت هذه المهمة، لذا لم يعد بالإمكان التعليق عليها.</value></data>
   <data name="ErrorCommentTextInvalid" xml:space="preserve"><value>لا يمكن أن يكون التعليق فارغًا ويجب ألا يتجاوز 2000 حرف.</value></data>
+  <data name="ErrorPlanDateRequired" xml:space="preserve"><value>التاريخ مطلوب لتعيين خطتك الشخصية.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>المهمة في انتظار قرار المعتمِد.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>لا يمكن إلغاء هذه المهمة إلا من قِبل الشخص الذي طلبها. إذا كنت لا تريد العمل، فأعده بدلاً من ذلك.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>اذكر ما تنتظره المهمة.</value></data>

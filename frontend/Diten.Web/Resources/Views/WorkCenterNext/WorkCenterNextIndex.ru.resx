@@ -512,6 +512,9 @@
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · запланировано на {1} (макет)</value>
   </data>
+  <data name="ToastPlanSaved" xml:space="preserve">
+    <value>План сохранён на {0}</value>
+  </data>
   <data name="ToastTimerStarted" xml:space="preserve">
     <value>{0} · таймер запущен (макет)</value>
   </data>

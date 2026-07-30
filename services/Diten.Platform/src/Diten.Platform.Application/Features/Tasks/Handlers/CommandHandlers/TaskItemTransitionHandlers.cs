@@ -426,6 +426,83 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
 }
 
 /// <summary>
+/// Set (or move) a personal plan date. The FIRST plan (Open → Planned) and a RE-plan (Planned → Planned) are the
+/// same write — both just record a date — so one handler covers both rather than the create/update split every
+/// other transition has.
+///
+/// <para>Deliberately NOT routed through <see cref="TransitionTaskItemCommand"/>: the date is required here and
+/// meaningless for the other nine transitions, and Planned→Planned is a self-loop no other caller of that
+/// command needs (see <see cref="TaskLifecycleService.CanTransition"/>).</para>
+/// </summary>
+public sealed class PlanTaskItemHandler : IRequestHandler<PlanTaskItemCommand, Response<NoContent>>
+{
+    private readonly ITaskItemRepository _tasks;
+    private readonly ITaskLifecycleService _lifecycle;
+    private readonly ICurrentUserContext _currentUser;
+
+    public PlanTaskItemHandler(
+        ITaskItemRepository tasks,
+        ITaskLifecycleService lifecycle,
+        ICurrentUserContext currentUser)
+    {
+        _tasks = tasks;
+        _lifecycle = lifecycle;
+        _currentUser = currentUser;
+    }
+
+    public async Task<Response<NoContent>> Handle(PlanTaskItemCommand command, CancellationToken ct)
+    {
+        // A JSON body that omits `plannedDate` deserializes this to DateTimeOffset's zero value rather than
+        // throwing — nobody types year 1, so treating the zero value as "not supplied" is safe and gives the
+        // caller our own reason code instead of a framework-shaped validation error.
+        if (command.Request.PlannedDate == default)
+        {
+            return Response<NoContent>.Fail(
+                "A planned date is required.", 400, TaskReasonCodes.PlanDateRequired, command.CorrelationId);
+        }
+
+        var task = await _tasks.GetByIdAsync(command.Id, ct);
+        if (task is null)
+        {
+            return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        if (!_lifecycle.CanTransition(task, TaskLifecycle.Planned, out var reasonCode))
+        {
+            return Response<NoContent>.Fail(
+                "This transition is not allowed in the task's current state.",
+                409, reasonCode ?? TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        /*
+         * Validation here is deliberately LOOSE: nothing compares PlannedDate against DueAt or against today.
+         *
+         * A plan after the source due date is a real situation — "I won't make it, planning for the 5th instead"
+         * — and refusing it would force the user to pick an earlier date just to get the write accepted, which is
+         * a lie the system would be asking for. The screen already surfaces the mismatch as a visible warning
+         * (renderPlanDates / wcn-date-conflict); that is the right place for the judgement, not a blocked write.
+         *
+         * A date in the past is accepted for the same reason: PlannedDate is a personal note, not a commitment
+         * the system enforces. The ONLY thing refused is no date at all (checked above).
+         *
+         * If a future reader is tempted to add a range check here, that is this comment telling them not to.
+         */
+        task.Lifecycle = TaskLifecycle.Planned;
+        task.PlannedDate = command.Request.PlannedDate;
+        task.UpdatedBy = _currentUser.ActorName;
+
+        if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))
+        {
+            return Response<NoContent>.Fail(
+                "The task changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
+        return Response<NoContent>.Success(204, command.CorrelationId);
+    }
+}
+
+/// <summary>
 /// Park a task in <see cref="TaskLifecycle.Waiting"/> because the holder is blocked on someone else.
 ///
 /// <para>This is the ENTRY to Waiting. The lifecycle and its transition matrix have always allowed the state, and

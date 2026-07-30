@@ -35,6 +35,17 @@ public sealed record ClaimTaskItemCommand(Guid Id, ClaimTaskItemRequest Request,
 public sealed record ReleaseTaskItemCommand(Guid Id, TaskTransitionRequest Request, string CorrelationId)
     : IRequest<Response<NoContent>>;
 
+/// <summary>
+/// Set or move a personal plan date.
+///
+/// <para>Separate from <see cref="TransitionTaskItemCommand"/> for the same reason <see cref="InquireTaskItemCommand"/>
+/// is: the date is REQUIRED here and the shared transition request has no field for it. It also targets
+/// <c>Planned</c> from BOTH <c>Open</c> (first plan) and <c>Planned</c> itself (re-plan) — a self-loop the generic
+/// transition matrix would otherwise have to special-case for every other caller of <c>Target</c>.</para>
+/// </summary>
+public sealed record PlanTaskItemCommand(Guid Id, PlanTaskItemRequest Request, string CorrelationId)
+    : IRequest<Response<NoContent>>;
+
 public sealed record TransitionTaskItemCommand(
     Guid Id,
     TaskLifecycle Target,

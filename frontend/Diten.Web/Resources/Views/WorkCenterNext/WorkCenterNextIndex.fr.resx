@@ -512,6 +512,9 @@
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · planifié pour {1} (mock)</value>
   </data>
+  <data name="ToastPlanSaved" xml:space="preserve">
+    <value>Plan enregistré pour le {0}</value>
+  </data>
   <data name="ToastTimerStarted" xml:space="preserve">
     <value>{0} · minuteur démarré (mock)</value>
   </data>

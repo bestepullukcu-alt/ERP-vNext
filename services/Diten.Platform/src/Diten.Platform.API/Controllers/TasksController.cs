@@ -110,12 +110,17 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// Set or move a personal plan date. Its own request type, not <see cref="TaskTransitionRequest"/> — the date
+    /// is required here and this is the one transition that also targets its OWN current state (re-planning a
+    /// task that is already Planned), so it is routed through <see cref="PlanTaskItemCommand"/> rather than
+    /// <see cref="TransitionTaskItemCommand"/>.
+    /// </summary>
     [HttpPost("{id:guid}/plan")]
     [HasPermission(TaskPermissions.Update)]
-    public async Task<IActionResult> Plan(Guid id, [FromBody] TaskTransitionRequest request, CancellationToken ct)
+    public async Task<IActionResult> Plan(Guid id, [FromBody] PlanTaskItemRequest request, CancellationToken ct)
     {
-        var response = await _mediator.Send(
-            new TransitionTaskItemCommand(id, TaskLifecycle.Planned, request, CorrelationId), ct);
+        var response = await _mediator.Send(new PlanTaskItemCommand(id, request, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 

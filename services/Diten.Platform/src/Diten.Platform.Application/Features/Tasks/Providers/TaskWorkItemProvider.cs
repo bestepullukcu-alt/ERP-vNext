@@ -359,7 +359,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // Always emitted, because the capability is always declared: MOD-0024 owns the conversation, so the
             // feed exists even before anyone has said anything. Declared-and-empty is the valid state the
             // contract models; a HALF (one without the other) is what it rejects.
-            Activity: activity);
+            Activity: activity,
+            // Straight through — never DueAt. A plan write that stored the date but never showed it back would
+            // be real on the server and invisible on the screen.
+            PlannedDate: task.PlannedDate);
     }
 
     /// <summary>

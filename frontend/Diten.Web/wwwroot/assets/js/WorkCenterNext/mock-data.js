@@ -203,7 +203,13 @@
         reason: action.requiresReason,
         evidence: action.requiresEvidence,
         bulk: action.supportsBulk,
-        input: action.input || null,
+        /*
+         * `plan` ALWAYS wants a date picker, on every provenance — derived from the CODE rather than trusted from
+         * the wire, the same way `kind` and `role` above are. The engine's WorkItemActionDto carries no `input`
+         * field at all, so a real `plan` action would otherwise never open the picker; only a raw fixture that
+         * happened to set `input: 'date'` would, and none ever did. This is what actually wires the picker up.
+         */
+        input: action.input || (action.code === 'plan' ? 'date' : null),
         role: ['reject', 'return', 'declineMeeting'].includes(action.code) ? 'reject'
             : ['approve', 'accept', 'claim', 'complete', 'resolve', 'signoff', 'start', 'resume', 'acceptMeeting'].includes(action.code) ? 'accept'
                 : null
@@ -280,7 +286,11 @@
         item.isUnread = item.personal?.seen === false;
         item.pinned = !!item.personal?.pinned;
         item.snoozedUntil = item.personal?.snoozedUntil || null;
-        item.plannedDate = item.personal?.plannedDate || null;
+        // A REAL item's plan date arrives on the wire (item.plannedDate, normalized by adaptProjection) and must
+        // WIN here — this used to overwrite it unconditionally with `personal?.plannedDate`, which real work
+        // never carries, silently discarding a plan the moment it left the write path: stored on the server,
+        // invisible on every screen that reads it back. Fixtures still set theirs via `personal`.
+        item.plannedDate = item.plannedDate || item.personal?.plannedDate || null;
         // Two different questions, two different fields. `waitingOn` is WHO (a typed identity, so a name can be
         // rendered); `reason` is WHY, in the holder's own words. The reason text used to be sent inside
         // waitingOn, where this line reads `.displayName` off a string — so the sentence the user typed was on

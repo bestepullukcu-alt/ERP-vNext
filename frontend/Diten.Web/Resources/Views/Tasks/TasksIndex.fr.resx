@@ -87,6 +87,7 @@
   <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>Une sous-tâche est encore ouverte, cette tâche ne peut donc pas encore être terminée.</value></data>
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>Cette tâche est clôturée, elle ne peut plus être commentée.</value></data>
   <data name="ErrorCommentTextInvalid" xml:space="preserve"><value>Un commentaire ne peut pas être vide et ne doit pas dépasser 2000 caractères.</value></data>
+  <data name="ErrorPlanDateRequired" xml:space="preserve"><value>Une date est requise pour définir votre plan personnel.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>La tâche attend la décision de l'approbateur.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Seule la personne qui a demandé cette tâche peut l'annuler. Si vous ne voulez pas ce travail, renvoyez-le.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Indiquez ce que la tâche attend.</value></data>

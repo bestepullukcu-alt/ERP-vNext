@@ -512,6 +512,9 @@
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · {1} tarihine planlandı (mock)</value>
   </data>
+  <data name="ToastPlanSaved" xml:space="preserve">
+    <value>{0} için plan kaydedildi</value>
+  </data>
   <data name="ToastTimerStarted" xml:space="preserve">
     <value>{0} · zamanlayıcı başladı (mock)</value>
   </data>

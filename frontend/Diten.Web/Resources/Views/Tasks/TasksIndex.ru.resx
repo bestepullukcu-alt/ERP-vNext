@@ -87,6 +87,7 @@
   <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>Подзадача ещё открыта, поэтому эту задачу пока нельзя завершить.</value></data>
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>Задача закрыта, комментировать её больше нельзя.</value></data>
   <data name="ErrorCommentTextInvalid" xml:space="preserve"><value>Комментарий не может быть пустым и должен быть не длиннее 2000 символов.</value></data>
+  <data name="ErrorPlanDateRequired" xml:space="preserve"><value>Чтобы задать личный план, укажите дату.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>Задача ожидает решения согласующего.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Отменить эту задачу может только тот, кто её запросил. Если вы не хотите эту работу, верните её.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Укажите, чего ожидает задача.</value></data>

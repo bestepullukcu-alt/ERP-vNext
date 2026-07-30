@@ -581,10 +581,13 @@ internal sealed class DirectMediator : IMediator
 {
     private readonly TransitionTaskItemHandler? _transition;
     private readonly AddTaskCommentHandler? _comment;
+    private readonly PlanTaskItemHandler? _plan;
 
     public DirectMediator(TransitionTaskItemHandler handler) => _transition = handler;
 
     public DirectMediator(AddTaskCommentHandler handler) => _comment = handler;
+
+    public DirectMediator(PlanTaskItemHandler handler) => _plan = handler;
 
     public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken ct = default)
         => request switch
@@ -593,6 +596,8 @@ internal sealed class DirectMediator : IMediator
                 => (Task<TResponse>)(object)_transition.Handle(command, ct),
             AddTaskCommentCommand command when _comment is not null
                 => (Task<TResponse>)(object)_comment.Handle(command, ct),
+            PlanTaskItemCommand command when _plan is not null
+                => (Task<TResponse>)(object)_plan.Handle(command, ct),
             _ => throw new InvalidOperationException($"Unexpected request {request.GetType().Name}.")
         };
 

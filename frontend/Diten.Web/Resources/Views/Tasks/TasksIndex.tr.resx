@@ -87,6 +87,7 @@
   <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>Bir alt görev hâlâ açık, bu yüzden bu görev henüz tamamlanamaz.</value></data>
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>Bu görev kapandı, artık yorum yazılamaz.</value></data>
   <data name="ErrorCommentTextInvalid" xml:space="preserve"><value>Yorum boş olamaz ve en fazla 2000 karakter olabilir.</value></data>
+  <data name="ErrorPlanDateRequired" xml:space="preserve"><value>Kişisel planınızı ayarlamak için bir tarih gerekli.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>Görev, onaylayan kişinin kararını bekliyor.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Bu görevi yalnızca talep eden kişi iptal edebilir. İşi istemiyorsanız iade edin.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Görevin neyi beklediğini yazın.</value></data>

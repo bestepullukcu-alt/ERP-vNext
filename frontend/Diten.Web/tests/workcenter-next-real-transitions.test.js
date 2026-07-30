@@ -176,8 +176,20 @@ describe("work item actions reach the engine", () => {
       expect(fn).toContain("MOCK transition");
     });
 
-    it("does not ask for a plan date the engine would discard", () => {
-      expect(app).toContain("action.input === 'date' && !isRealTaskItem(item)");
+    it("opens the plan date picker for a real task too — the engine now stores the date", () => {
+      // This used to read `action.input === 'date' && !isRealTaskItem(item)`: the engine accepted no date, so a
+      // real user was never asked for one. POST .../plan now stores it, so the guard is gone; openDatePicker
+      // itself decides whether to write to the engine or, for a showcase item, only locally.
+      expect(app).not.toContain("!isRealTaskItem(item)) { openDatePicker");
+      expect(app).toContain("if (action.input === 'date') { openDatePicker(item, action); return; }");
+    });
+
+    it("does not apply a real plan optimistically", () => {
+      const fn = app.slice(app.indexOf("const openDatePicker"), app.indexOf("const reportSwalFailure"));
+      expect(fn).toContain("submitPlan");
+      // The real branch calls the engine and nothing else; applyPlan (the local mutation) is reserved for the
+      // non-real branch only.
+      expect(fn).toContain("real ? submitPlan(item, res.value) : applyPlan(item, res.value, label)");
     });
   });
 

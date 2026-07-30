@@ -38,6 +38,9 @@
     const adaptProjection = (dto) => {
         const item = Object.assign({}, dto);
         item.dueAt = toDateOnly(dto.dueAt);
+        // Same normalization as dueAt, and for the same reason: the wire carries a full ISO instant, the date
+        // input and renderPlanDates both expect a date-only string.
+        item.plannedDate = toDateOnly(dto.plannedDate);
         item.escalated = !!(dto.escalated || (dto.escalation && dto.escalation.escalated));
         return item;
     };
