@@ -3675,8 +3675,18 @@
             showCancelButton: true, confirmButtonText: t('NewOpenSource'), cancelButtonText: t('ReasonCancel')
         }).then((res) => {
             if (res.isConfirmed && res.value) {
-                const target = state.items.find((item) => item.sourceModule === res.value);
-                if (target && target.deepLink) { global.open(target.deepLink, '_blank', 'noopener,noreferrer'); }
+                /*
+                 * Nothing is opened here, DELIBERATELY — do not "restore" this.
+                 *
+                 * It used to find an arbitrary EXISTING item from the chosen module and open that record's detail
+                 * page. The user asked to CREATE something in that module; showing them an unrelated record they
+                 * did not ask for is not a lesser version of creating one, it is the wrong act.
+                 *
+                 * Creating in another module needs that module's CREATE url, and the projection does not carry
+                 * one (`deepLink` addresses an existing object). Until a provider supplies it, the honest
+                 * behaviour is to say this is not wired yet and do nothing — which is exactly what the "(mock)"
+                 * toast below already says.
+                 */
                 toast(tf('ToastCreateInSource', res.value), 'info');
             }
         });

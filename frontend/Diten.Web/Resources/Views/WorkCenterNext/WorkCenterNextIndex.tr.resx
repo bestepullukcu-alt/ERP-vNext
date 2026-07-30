@@ -417,7 +417,7 @@
     <value>{0} öğe işlendi (deneme)</value>
   </data>
   <data name="ToastOpenSource" xml:space="preserve">
-    <value>{0} · {1} açılacaktı (deneme bağlantısı)</value>
+    <value>{0} · {1} yeni sekmede açıldı</value>
   </data>
   <data name="TabsLabel" xml:space="preserve">
     <value>Sekmeler</value>

@@ -417,7 +417,7 @@
     <value>{0} items actioned (mock)</value>
   </data>
   <data name="ToastOpenSource" xml:space="preserve">
-    <value>Would open {0} · {1} (mock deep-link)</value>
+    <value>Opened {0} · {1} in a new tab</value>
   </data>
   <data name="TabsLabel" xml:space="preserve">
     <value>Tabs</value>

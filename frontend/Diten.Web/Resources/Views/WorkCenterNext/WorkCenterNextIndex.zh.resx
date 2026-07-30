@@ -417,7 +417,7 @@
     <value>已处理 {0} 项（模拟）</value>
   </data>
   <data name="ToastOpenSource" xml:space="preserve">
-    <value>将打开 {0} · {1}（模拟深链接）</value>
+    <value>已在新标签页打开 {0} · {1}</value>
   </data>
   <data name="TabsLabel" xml:space="preserve">
     <value>标签页</value>

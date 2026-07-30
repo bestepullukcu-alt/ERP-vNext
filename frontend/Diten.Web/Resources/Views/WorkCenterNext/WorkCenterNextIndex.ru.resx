@@ -417,7 +417,7 @@
     <value>Обработано элементов: {0} (демо)</value>
   </data>
   <data name="ToastOpenSource" xml:space="preserve">
-    <value>Открыло бы {0} · {1} (демо-ссылка)</value>
+    <value>{0} · {1} открыт в новой вкладке</value>
   </data>
   <data name="TabsLabel" xml:space="preserve">
     <value>Вкладки</value>

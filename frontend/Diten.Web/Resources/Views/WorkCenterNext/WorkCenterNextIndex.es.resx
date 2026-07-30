@@ -417,7 +417,7 @@
     <value>{0} elementos procesados (simulación)</value>
   </data>
   <data name="ToastOpenSource" xml:space="preserve">
-    <value>Abriría {0} · {1} (enlace simulado)</value>
+    <value>{0} · {1} abierto en una pestaña nueva</value>
   </data>
   <data name="TabsLabel" xml:space="preserve">
     <value>Pestañas</value>

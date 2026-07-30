@@ -1727,3 +1727,36 @@ describe("the fixture-only plan path (source-level, no engine call)", () => {
     expect(applyPlan).toContain("atMs");
   });
 });
+
+/*
+ * The runtime half of ACTIVITY_RELATIVE_TIME_FORBIDDEN.
+ *
+ * fixture-contract.js already forbids a pre-computed `ago` on an activity entry — but validateWorkItem runs
+ * exactly twice, both at INGESTION: work-items-api's mapPayload when a real projection arrives, and
+ * task-detail-resolver when a fixture is resolved. Every writer in app.js mutates an item that was already
+ * validated (`item.activity.push(...)`), so the contract never sees what they wrote and cannot reject it.
+ *
+ * Six such writers existed and were converted to `atMs`. This is a SOURCE SCAN rather than a behavioural test
+ * because there is no seam to observe: the offending value would simply render as a frozen "today" forever, on a
+ * surface no assertion currently watches. Guarding the source is what keeps the seventh from being written.
+ */
+describe("no activity writer freezes its own timestamp", () => {
+  const source = fs.readFileSync(
+    path.resolve(__dirname, "..", "wwwroot", "assets", "js", "WorkCenterNext", "app.js"), "utf8");
+
+  it("writes no `ago` field anywhere in app.js", () => {
+    // Matches `ago:` as an object KEY — `ago: 0`, `ago : 3`, `ago:someVar`. Deliberately not anchored to 0: any
+    // pre-computed relative count is the same defect, whatever its value.
+    const offenders = source
+      .split("\n")
+      .map((line, index) => ({ line: line.trim(), number: index + 1 }))
+      .filter((entry) => /(^|[{,\s])ago\s*:/.test(entry.line));
+
+    expect(offenders).toEqual([]);
+  });
+
+  it("still writes an absolute instant, so the guard above is not passing by writing nothing", () => {
+    // Non-vacuity: "no ago" would also be satisfied by an app.js that recorded no timestamps at all.
+    expect(source).toContain("atMs: data.referenceDate(");
+  });
+});

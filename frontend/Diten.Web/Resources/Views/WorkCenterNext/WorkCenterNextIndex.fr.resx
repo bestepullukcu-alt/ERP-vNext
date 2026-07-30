@@ -417,7 +417,7 @@
     <value>{0} éléments traités (démo)</value>
   </data>
   <data name="ToastOpenSource" xml:space="preserve">
-    <value>Ouvrirait {0} · {1} (lien de démo)</value>
+    <value>{0} · {1} ouvert dans un nouvel onglet</value>
   </data>
   <data name="TabsLabel" xml:space="preserve">
     <value>Onglets</value>

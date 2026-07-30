@@ -417,7 +417,7 @@
     <value>تمت معالجة {0} عنصر (تجريبي)</value>
   </data>
   <data name="ToastOpenSource" xml:space="preserve">
-    <value>سيفتح {0} · {1} (رابط تجريبي)</value>
+    <value>تم فتح {0} · {1} في تبويب جديد</value>
   </data>
   <data name="TabsLabel" xml:space="preserve">
     <value>علامات التبويب</value>
