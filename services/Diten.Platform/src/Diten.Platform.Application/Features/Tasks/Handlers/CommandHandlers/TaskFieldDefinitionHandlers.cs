@@ -6,6 +6,7 @@ using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.Tasks.Handlers.CommandHandlers;
 
@@ -222,5 +223,102 @@ public sealed class DeleteTaskFieldDefinitionHandler
         }
 
         return Response<NoContent>.Success(204, command.CorrelationId);
+    }
+}
+
+/// <summary>
+/// Retire several definitions in one request.
+///
+/// <para><b>It is a LOOP over the single command, not a second implementation.</b> The retire semantics — soft,
+/// never destructive, <c>DeletedAt</c> and <c>IsActive</c> together, expected-version — live in
+/// <see cref="DeleteTaskFieldDefinitionHandler"/>, and the reason they must not exist twice is the reason they
+/// exist at all: values already stored join to their definition by code, so a second path that hard-deleted
+/// would strip their explanation while the single path kept it. One behaviour, reached two ways.</para>
+///
+/// <para><b>Partial success is REPORTED, not smoothed over.</b> Five ids of which two do not exist retires three
+/// and says so. The two traps both refuse themselves: claiming five would be a lie the screen repeats, and
+/// rejecting the whole request would punish three valid ids for two stale ones — a bulk selection is exactly
+/// where a stale row is most likely, because the list was rendered before the user finished choosing.</para>
+/// </summary>
+public sealed class BulkDeleteTaskFieldDefinitionHandler
+    : IRequestHandler<BulkDeleteTaskFieldDefinitionCommand, Response<BulkDeactivateFieldDefinitionsResponse>>
+{
+    /// <summary>
+    /// The most ids one request may carry. Chosen to be far above any real selection on a catalogue this size,
+    /// so it never bites a user and only ever stops a runaway caller.
+    /// </summary>
+    public const int MaxIdsPerRequest = 200;
+
+    private readonly IMediator _mediator;
+    private readonly ILogger<BulkDeleteTaskFieldDefinitionHandler> _logger;
+
+    public BulkDeleteTaskFieldDefinitionHandler(
+        IMediator mediator, ILogger<BulkDeleteTaskFieldDefinitionHandler> logger)
+    {
+        _mediator = mediator;
+        _logger = logger;
+    }
+
+    public async Task<Response<BulkDeactivateFieldDefinitionsResponse>> Handle(
+        BulkDeleteTaskFieldDefinitionCommand command, CancellationToken ct)
+    {
+        var ids = (command.Request?.Ids ?? []).Distinct().ToList();
+
+        // Nothing asked for, nothing done. Not an error: a bulk bar can fire with an empty selection after a
+        // reload, and answering 400 for it would put a red toast on a user who did nothing wrong.
+        if (ids.Count == 0)
+        {
+            return Response<BulkDeactivateFieldDefinitionsResponse>.Success(
+                new BulkDeactivateFieldDefinitionsResponse(0, 0), 200, command.CorrelationId);
+        }
+
+        /*
+         * Over the cap the request is REFUSED, never truncated.
+         *
+         * Processing the first two hundred and reporting success is the same lie as reporting five when three
+         * were retired — the caller believes the rest are gone. A refusal is visible, and the log says exactly
+         * how many were asked for.
+         */
+        if (ids.Count > MaxIdsPerRequest)
+        {
+            _logger.LogWarning(
+                "task.field_definition.bulk_delete_refused Requested={Requested} Max={Max} CorrelationId={CorrelationId}",
+                ids.Count, MaxIdsPerRequest, command.CorrelationId);
+
+            return Response<BulkDeactivateFieldDefinitionsResponse>.Fail(
+                $"At most {MaxIdsPerRequest} definitions can be retired in one request.",
+                400, TaskReasonCodes.BulkLimitExceeded, command.CorrelationId);
+        }
+
+        var deactivated = 0;
+        var notFound = 0;
+
+        foreach (var id in ids)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            // THE single retire, unchanged. Its 404 for an id this tenant cannot see is what makes the
+            // not-found count meaningful — and a cross-tenant id resolves to nothing, so it lands here too.
+            var response = await _mediator.Send(new DeleteTaskFieldDefinitionCommand(id, command.CorrelationId), ct);
+
+            if (response.IsSuccessful)
+            {
+                deactivated++;
+            }
+            else
+            {
+                notFound++;
+            }
+        }
+
+        if (notFound > 0)
+        {
+            _logger.LogInformation(
+                "task.field_definition.bulk_delete_partial Deactivated={Deactivated} NotFound={NotFound} CorrelationId={CorrelationId}",
+                deactivated, notFound, command.CorrelationId);
+        }
+
+        return Response<BulkDeactivateFieldDefinitionsResponse>.Success(
+            new BulkDeactivateFieldDefinitionsResponse(deactivated, notFound), 200, command.CorrelationId);
     }
 }

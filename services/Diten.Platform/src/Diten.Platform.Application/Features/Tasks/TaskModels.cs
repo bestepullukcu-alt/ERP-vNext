@@ -99,6 +99,12 @@ public static class TaskReasonCodes
     /// <summary>A definition's code was edited. It is the join key for every value already stored under it.</summary>
     public const string FieldCodeImmutable = "FIELD_CODE_IMMUTABLE";
 
+    /// <summary>
+    /// A bulk retire named more definitions than one request may carry. REFUSED rather than truncated: silently
+    /// processing the first N and reporting success is the "5 deleted" lie in another form.
+    /// </summary>
+    public const string BulkLimitExceeded = "BULK_LIMIT_EXCEEDED";
+
     /// <summary>A recurrence rule was defined with no repeat — a schedule that never fires.</summary>
     public const string RecurrenceFrequencyRequired = "RECURRENCE_FREQUENCY_REQUIRED";
 
@@ -497,6 +503,27 @@ public sealed record UpdateTaskFieldDefinitionRequest(
     TaskFieldAccessState DefaultAccessState,
     bool IsActive,
     int ExpectedVersion);
+
+/// <summary>
+/// Retire several definitions at once.
+///
+/// <para><b>Envelope, and POST, matching <see cref="BulkDeleteTaskItemRequest"/> on the same controller.</b> The
+/// client was sending a bare array over DELETE; that shape was inherited from the golden-reference script, not
+/// designed here. Two bulk shapes in ONE controller is a worse cost than adapting four lines of a hand-written
+/// fetch handler — and a body on DELETE is the shape proxies and frameworks treat least predictably, which is
+/// presumably why the existing precedent avoided it.</para>
+/// </summary>
+public sealed record BulkDeleteTaskFieldDefinitionRequest(IReadOnlyList<Guid> Ids);
+
+/// <summary>
+/// What a bulk retire actually did.
+///
+/// <para>The task precedent answers 204 and tells the caller nothing, so a request naming five definitions of
+/// which two do not exist reports the same success as one where all five were retired — and the screen then says
+/// "5 deleted". That is the trap this response exists to avoid: the counts are reported, and the client says
+/// what happened rather than what was asked for.</para>
+/// </summary>
+public sealed record BulkDeactivateFieldDefinitionsResponse(int Deactivated, int NotFound);
 
 public sealed record TaskFieldDefinitionDto(
     Guid Id,

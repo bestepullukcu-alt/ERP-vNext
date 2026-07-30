@@ -165,3 +165,11 @@ public sealed record UpdateTaskFieldDefinitionCommand(
 /// </summary>
 public sealed record DeleteTaskFieldDefinitionCommand(Guid Id, string CorrelationId)
     : IRequest<Response<NoContent>>;
+
+/// <summary>
+/// Retire several. Deliberately a LOOP over the single command rather than a second write path — the retire
+/// semantics (soft, never destructive, IsActive and DeletedAt together) must not exist twice.
+/// </summary>
+public sealed record BulkDeleteTaskFieldDefinitionCommand(
+    BulkDeleteTaskFieldDefinitionRequest Request, string CorrelationId)
+    : IRequest<Response<BulkDeactivateFieldDefinitionsResponse>>;

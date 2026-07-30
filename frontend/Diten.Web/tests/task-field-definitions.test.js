@@ -178,6 +178,133 @@ describe("MOD-0024 field definitions: the form states the rules it cannot enforc
   });
 });
 
+describe("MOD-0024 field definitions: the bulk retire actually reaches a server", () => {
+  /*
+   * THE DEFECT: the button was live — checkboxes rendered, the bar appeared, the confirm fired — and the request
+   * 404'd. Different from WorkCenterNext's dead bulk path (BL-039), where no checkbox was ever produced: here the
+   * whole path worked and only the endpoint was missing.
+   *
+   * These drive the shipped handler, extracted from its own source, so a change to the request shape is a change
+   * to this test.
+   */
+  const bulkHandler = () => {
+    const source = read(path.join(JS, "index.js"));
+    const start = source.indexOf("const bulkOptions");
+    const end = source.indexOf("const reloadWithSuccessToast");
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+
+    const calls = { fetches: [], toasts: [], reloads: [], pending: [] };
+    const scope = {
+      apiUrl: "/Tasks/api",
+      L: { BulkDeleteConfirm: "{0} kayıt silinecek", Delete: "Sil", ErrorOccurred: "Hata" },
+      getAuthHeaders: () => ({ "Content-Type": "application/json" }),
+      /*
+       * Fires the confirmation immediately and REMEMBERS the promise. The shell's showConfirm is fire-and-forget,
+       * so the script's own `await` chain lives inside the callback — a harness that dropped it would assert on
+       * an empty world and pass for the wrong reason.
+       */
+      showConfirm: (_text, onConfirm) => { calls.pending.push(onConfirm()); },
+      showToast: (message, kind) => calls.toasts.push({ message, kind }),
+      reloadWithSuccessToast: (key, value) => calls.reloads.push({ key, value }),
+      fetchImpl: null
+    };
+
+    // eslint-disable-next-line no-new-func
+    const factory = new Function(
+      "apiUrl", "L", "getAuthHeaders", "window", "fetch", "reloadWithSuccessToast",
+      `${source.slice(start, end)} return bulkOptions;`);
+
+    return {
+      calls,
+      build: (fetchImpl) => factory(
+        scope.apiUrl, scope.L, scope.getAuthHeaders,
+        { showConfirm: scope.showConfirm, showToast: scope.showToast },
+        async (...args) => { calls.fetches.push(args); return fetchImpl(...args); },
+        (key, value) => calls.reloads.push({ key, value }))
+    };
+  };
+
+  it("POSTs an envelope to the bulk-delete endpoint", async () => {
+    /*
+     * The shape decision, pinned. The script was copied sending a bare array over DELETE; MOD-0024's controller
+     * already had POST bulk-delete with { ids }, and two bulk shapes in one controller costs more than these
+     * few lines.
+     */
+    const harness = bulkHandler();
+    const options = harness.build(async () => ({
+      ok: true, json: async () => ({ data: { deactivated: 2, notFound: 0 } })
+    }));
+
+    await options.onBulkAction.delete({ ids: ["a", "b"] });
+    await Promise.all(harness.calls.pending);
+
+    const [url, init] = harness.calls.fetches[0];
+    expect(url).toBe("/Tasks/api/field-definitions/bulk-delete");
+    expect(init.method).toBe("POST");
+    expect(JSON.parse(init.body)).toEqual({ ids: ["a", "b"] });
+  });
+
+  it("tells the user what HAPPENED, not what was asked for", async () => {
+    // Three selected, two actually retired. Echoing ids.length would repeat the server's own honesty back as a
+    // lie — the exact trap the counted response exists to close.
+    const harness = bulkHandler();
+    const options = harness.build(async () => ({
+      ok: true, json: async () => ({ data: { deactivated: 2, notFound: 1 } })
+    }));
+
+    await options.onBulkAction.delete({ ids: ["a", "b", "c"] });
+    await Promise.all(harness.calls.pending);
+
+    expect(harness.calls.reloads).toEqual([{ key: "BulkDeleteSuccess", value: "2" }]);
+    expect(harness.calls.toasts).toEqual([]);
+  });
+
+  it("falls back to the selected count only when the server says nothing", async () => {
+    // Non-vacuity for the test above: a client that ALWAYS echoed ids.length would pass it if the server
+    // happened to agree. Here the payload carries no count and the old behaviour is the safe floor.
+    const harness = bulkHandler();
+    const options = harness.build(async () => ({ ok: true, json: async () => ({}) }));
+
+    await options.onBulkAction.delete({ ids: ["a", "b", "c"] });
+    await Promise.all(harness.calls.pending);
+
+    expect(harness.calls.reloads).toEqual([{ key: "BulkDeleteSuccess", value: "3" }]);
+  });
+
+  it("surfaces a refusal instead of claiming success", async () => {
+    // What live did on the 404, and still must do on any real refusal — the difference is that there is now a
+    // success path for it to fail away from.
+    const harness = bulkHandler();
+    const options = harness.build(async () => ({ ok: false, status: 404, json: async () => ({}) }));
+
+    await options.onBulkAction.delete({ ids: ["a"] });
+    await Promise.all(harness.calls.pending);
+
+    expect(harness.calls.reloads).toEqual([]);
+    expect(harness.calls.toasts[0].kind).toBe("error");
+  });
+
+  it("sends nothing at all for an empty selection", async () => {
+    const harness = bulkHandler();
+    const options = harness.build(async () => ({ ok: true, json: async () => ({}) }));
+
+    await options.onBulkAction.delete({ ids: [] });
+
+    expect(harness.calls.fetches).toEqual([]);
+  });
+
+  it("keeps the bulk bar's declared endpoint in step with the fetch", () => {
+    // Two places name the endpoint — the view model and the script. They drifted once already (that is this
+    // ticket), so the pairing is asserted rather than assumed.
+    const index = read(path.join(VIEWS, "Index.cshtml"));
+
+    expect(index).toContain('Endpoint = "/Tasks/api/field-definitions/bulk-delete"');
+    expect(index).toContain('Method = "POST"');
+    expect(read(path.join(JS, "index.js"))).toContain("field-definitions/bulk-delete");
+  });
+});
+
 describe("MOD-0024 field definitions: seven languages", () => {
   const LOCALES = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
 

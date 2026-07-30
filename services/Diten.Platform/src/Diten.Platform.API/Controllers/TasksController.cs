@@ -337,6 +337,25 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// Retire several definitions. POST with an envelope, matching this controller's existing
+    /// <c>bulk-delete</c> rather than the bare-array DELETE the list script inherited from the golden reference:
+    /// two bulk shapes in one controller costs more than adapting the client, and a body on DELETE is the shape
+    /// proxies treat least predictably.
+    ///
+    /// <para>The SAME permission as the single retire. Doing it to several at once is not a higher authority,
+    /// and a separate key would be one more thing to grant and forget.</para>
+    /// </summary>
+    [HttpPost("field-definitions/bulk-delete")]
+    [HasPermission(TaskPermissions.FieldDefinitionsManage)]
+    public async Task<IActionResult> BulkDeleteFieldDefinitions(
+        [FromBody] BulkDeleteTaskFieldDefinitionRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(
+            new BulkDeleteTaskFieldDefinitionCommand(request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     /// <summary>Retire a definition. Always a deactivation — never a destruction (see the handler).</summary>
     [HttpDelete("field-definitions/{id:guid}")]
     [HasPermission(TaskPermissions.FieldDefinitionsManage)]

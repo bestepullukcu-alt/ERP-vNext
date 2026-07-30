@@ -135,6 +135,13 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiUpdateFieldDefinition(Guid id)
         => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/tasks/field-definitions/{id}", readBody: true);
 
+    // The bulk retire. It exists here because it did NOT, and the button was live: the user could select rows,
+    // press "Bulk delete", and the request 404'd inside the web tier. Second time in this module — `inquire` was
+    // the first.
+    [HttpPost("api/field-definitions/bulk-delete")]
+    public Task<IActionResult> ApiBulkDeleteFieldDefinitions()
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/field-definitions/bulk-delete", readBody: true);
+
     [HttpDelete("api/field-definitions/{id:guid}")]
     public Task<IActionResult> ApiDeleteFieldDefinition(Guid id)
         => ProxyAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/v1/tasks/field-definitions/{id}", readBody: false);

@@ -318,12 +318,162 @@ public sealed class TaskFieldDefinitionManagementTests
         Assert.Equal(TaskFieldAccessState.Hidden, harness.Definitions.All.Single().DefaultAccessState);
     }
 
+    // ── Retiring several at once ─────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_bulk_retire_deactivates_every_one_and_destroys_none()
+    {
+        /*
+         * The button that started this: it was live on screen and its endpoint did not exist — select rows,
+         * press, 404. The behaviour it now reaches is the SINGLE retire's, because the bulk handler loops that
+         * command rather than implementing a second one.
+         */
+        var harness = new Harness();
+        var first = await harness.CreateAsync(code: "field.1", labelText: "Alan 1");
+        var second = await harness.CreateAsync(code: "field.2", labelText: "Alan 2", section: "Bölüm 2");
+
+        var result = await harness.BulkDeleteAsync(first.Data, second.Data);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(2, result.Data!.Deactivated);
+        Assert.Equal(0, result.Data.NotFound);
+        Assert.Empty((await harness.ListAsync()).Data!);
+        // The ROWS survive — values already stored point at them.
+        Assert.Equal(2, harness.Definitions.All.Count);
+        Assert.All(harness.Definitions.All, d =>
+        {
+            Assert.NotNull(d.DeletedAt);
+            Assert.False(d.IsActive);
+        });
+    }
+
+    [Fact]
+    public async Task Values_stored_under_a_BULK_retired_definition_are_still_readable()
+    {
+        /*
+         * THE regression of this ticket. Retiring is not deletion precisely so the values keep their
+         * explanation, and a second bulk path that hard-deleted would have taken that away while the single path
+         * kept it. Proved through the real validator, not asserted.
+         */
+        var harness = new Harness();
+        var created = await harness.CreateAsync(code: "regulatory.phase", labelText: "Mevzuat Aşaması");
+
+        var before = await harness.ValidateValueAsync("regulatory.phase", "Faz 2");
+        var stored = Assert.Single(before.Values);
+
+        await harness.BulkDeleteAsync(created.Data);
+
+        Assert.Equal("regulatory.phase", stored.DefinitionCode);
+        Assert.Equal("Faz 2", stored.Value);
+        // …and the definition row is still there to render it against.
+        Assert.Single(harness.Definitions.All);
+    }
+
+    [Fact]
+    public async Task A_bulk_retired_definition_stops_being_offered_to_new_work()
+    {
+        // The other half, exactly as the single retire has it: readable backwards, not offered forwards.
+        var harness = new Harness();
+        var created = await harness.CreateAsync(code: "regulatory.phase", labelText: "Mevzuat Aşaması");
+
+        await harness.BulkDeleteAsync(created.Data);
+
+        var after = await harness.ValidateValueAsync("regulatory.phase", "Faz 3");
+        Assert.False(after.IsValid);
+    }
+
+    [Fact]
+    public async Task A_PARTIAL_selection_retires_what_it_can_and_reports_what_it_could_not()
+    {
+        /*
+         * Both traps refuse themselves here. Claiming three would be a lie the toast repeats; rejecting the
+         * whole request would punish two valid ids for one stale one — and a bulk selection is exactly where a
+         * stale row is most likely, because the list was rendered before the user finished choosing.
+         */
+        var harness = new Harness();
+        var first = await harness.CreateAsync(code: "field.1", labelText: "Alan 1");
+        var second = await harness.CreateAsync(code: "field.2", labelText: "Alan 2", section: "Bölüm 2");
+
+        var result = await harness.BulkDeleteAsync(first.Data, Guid.NewGuid(), second.Data);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(2, result.Data!.Deactivated);
+        Assert.Equal(1, result.Data.NotFound);
+        // The two real ones DID get retired — a partial result is not a rollback.
+        Assert.Empty((await harness.ListAsync()).Data!);
+    }
+
+    [Fact]
+    public async Task An_EMPTY_selection_is_harmless()
+    {
+        // A bulk bar can fire with an empty selection after a reload. Answering 400 would put a red toast on a
+        // user who did nothing wrong.
+        var harness = new Harness();
+
+        var result = await harness.BulkDeleteAsync();
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(0, result.Data!.Deactivated);
+        Assert.Equal(0, result.Data.NotFound);
+    }
+
+    [Fact]
+    public async Task A_selection_over_the_cap_is_REFUSED_rather_than_truncated()
+    {
+        /*
+         * Silently processing the first two hundred and reporting success is the "5 deleted" lie in another
+         * form: the caller believes the rest are gone. The refusal is visible and the log names the count.
+         */
+        var harness = new Harness();
+        var ids = Enumerable.Range(0, BulkDeleteTaskFieldDefinitionHandler.MaxIdsPerRequest + 1)
+            .Select(_ => Guid.NewGuid())
+            .ToArray();
+
+        var result = await harness.BulkDeleteAsync(ids);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(400, result.StatusCode);
+        Assert.Equal(TaskReasonCodes.BulkLimitExceeded, result.ReasonCode);
+    }
+
+    [Fact]
+    public async Task A_selection_AT_the_cap_is_accepted()
+    {
+        // Non-vacuity for the refusal above: an off-by-one that refused the allowed maximum would pass it.
+        var harness = new Harness();
+        var ids = Enumerable.Range(0, BulkDeleteTaskFieldDefinitionHandler.MaxIdsPerRequest)
+            .Select(_ => Guid.NewGuid())
+            .ToArray();
+
+        var result = await harness.BulkDeleteAsync(ids);
+
+        Assert.True(result.IsSuccessful);
+    }
+
+    [Fact]
+    public void The_bulk_retire_LOOPS_the_single_command()
+    {
+        /*
+         * Structural, because the risk is structural: a second retire implementation could hard-delete while the
+         * single one soft-deletes, and the two would drift apart silently. The handler takes a mediator and no
+         * repository at all — it cannot write a definition even if someone tried.
+         */
+        var parameters = typeof(BulkDeleteTaskFieldDefinitionHandler)
+            .GetConstructors().Single().GetParameters().Select(p => p.ParameterType).ToList();
+
+        Assert.Contains(typeof(IMediator), parameters);
+        Assert.DoesNotContain(typeof(Diten.Platform.Domain.Repositories.ITaskFieldDefinitionRepository), parameters);
+    }
+
     // ── The write side is permission-gated ───────────────────────────────────
 
     [Theory]
     [InlineData(nameof(TasksController.CreateFieldDefinition))]
     [InlineData(nameof(TasksController.UpdateFieldDefinition))]
     [InlineData(nameof(TasksController.DeleteFieldDefinition))]
+    // The bulk retire carries the SAME key: doing it to several at once is not a higher authority, and a
+    // separate key would be one more thing to grant and forget.
+    [InlineData(nameof(TasksController.BulkDeleteFieldDefinitions))]
     public void Shaping_the_catalogue_requires_the_MANAGE_permission(string action)
     {
         /*
@@ -434,6 +584,11 @@ public sealed class TaskFieldDefinitionManagementTests
         public async Task<Response<NoContent>> DeleteAsync(Guid id)
             => Unwrap<NoContent>(await _controller.DeleteFieldDefinition(id, CancellationToken.None));
 
+        public async Task<Response<BulkDeactivateFieldDefinitionsResponse>> BulkDeleteAsync(params Guid[] ids)
+            => Unwrap<BulkDeactivateFieldDefinitionsResponse>(
+                await _controller.BulkDeleteFieldDefinitions(
+                    new BulkDeleteTaskFieldDefinitionRequest(ids), CancellationToken.None));
+
         public async Task<Response<TaskFieldDefinitionDto>> GetAsync(Guid id)
             => Unwrap<TaskFieldDefinitionDto>(await _controller.GetFieldDefinition(id, CancellationToken.None));
 
@@ -465,6 +620,13 @@ public sealed class TaskFieldDefinitionManagementTests
                     new UpdateTaskFieldDefinitionHandler(definitions, user).Handle(c, ct),
                 DeleteTaskFieldDefinitionCommand c => (Task<TResponse>)(object)
                     new DeleteTaskFieldDefinitionHandler(definitions, user).Handle(c, ct),
+                // The bulk handler is given THIS mediator, so its loop reaches the real single handler above —
+                // a stub here would prove nothing about the semantics being shared.
+                BulkDeleteTaskFieldDefinitionCommand c => (Task<TResponse>)(object)
+                    new BulkDeleteTaskFieldDefinitionHandler(
+                        this,
+                        Microsoft.Extensions.Logging.Abstractions
+                            .NullLogger<BulkDeleteTaskFieldDefinitionHandler>.Instance).Handle(c, ct),
                 GetTaskFieldDefinitionListQuery q => (Task<TResponse>)(object)
                     new GetTaskFieldDefinitionListHandler(definitions).Handle(q, ct),
                 GetTaskFieldDefinitionByIdQuery q => (Task<TResponse>)(object)

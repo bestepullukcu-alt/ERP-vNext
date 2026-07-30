@@ -375,6 +375,8 @@ internal sealed class FakeTaskFieldDefinitionRepository : ITaskFieldDefinitionRe
     /// <summary>Everything stored, retired rows included — for assertions, never for the code under test.</summary>
     public IReadOnlyList<TaskFieldDefinition> All => _definitions;
 
+    public void Remove(Guid id) => _definitions.RemoveAll(x => x.Id == id);
+
     public Task<TaskFieldDefinition> CreateAsync(TaskFieldDefinition d, CancellationToken ct = default)
     {
         _definitions.Add(d);

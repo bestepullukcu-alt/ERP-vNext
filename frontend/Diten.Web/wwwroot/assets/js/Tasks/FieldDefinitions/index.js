@@ -503,14 +503,33 @@ const TaskFieldDefinitionList = (function () {
                 const confirmText = (L.BulkDeleteConfirm || '').replace('{0}', ids.length);
                 window.showConfirm?.(confirmText, async () => {
                     try {
-                        const res = await fetch(`${apiUrl}/field-definitions/bulk`, {
-                            method: 'DELETE',
+                        /*
+                         * POST with an envelope, NOT the bare-array DELETE this script was copied with. That
+                         * shape came from the golden reference; MOD-0024's own controller already had a bulk
+                         * endpoint (POST bulk-delete + { ids }), and two bulk shapes in one controller costs
+                         * more than adapting these few lines. A body on DELETE is also the shape proxies treat
+                         * least predictably.
+                         */
+                        const res = await fetch(`${apiUrl}/field-definitions/bulk-delete`, {
+                            method: 'POST',
                             credentials: 'include',
                             headers: getAuthHeaders(true),
-                            body: JSON.stringify(ids)
+                            body: JSON.stringify({ ids })
                         });
                         if (!res.ok) throw new Error('Bulk delete failed.');
-                        reloadWithSuccessToast('BulkDeleteSuccess', String(ids.length));
+
+                        /*
+                         * Report what HAPPENED, not what was asked for.
+                         *
+                         * Five ids of which two were already gone retires three, and the server says so. Echoing
+                         * ids.length here would tell the user five definitions were retired — the exact lie the
+                         * counted response exists to prevent.
+                         */
+                        const payload = await res.json().catch(() => null);
+                        const deactivated = payload?.data?.deactivated;
+                        reloadWithSuccessToast(
+                            'BulkDeleteSuccess',
+                            String(typeof deactivated === 'number' ? deactivated : ids.length));
                     } catch (error) {
                         console.error(error);
                         window.showToast?.(L.ErrorOccurred, 'error');

@@ -19,8 +19,10 @@
                 Icon = "bx bx-trash",
                 ButtonClass = "btn btn-label-danger",
                 ConfirmKey = "BulkDeleteConfirm",
-                Endpoint = "/Tasks/api/field-definitions/bulk",
-                Method = "DELETE"
+                // Kept in step with the script's own fetch — POST + envelope, matching this module's existing
+                // bulk-delete rather than the reference's bare-array DELETE.
+                Endpoint = "/Tasks/api/field-definitions/bulk-delete",
+                Method = "POST"
             }
         ]
     };
