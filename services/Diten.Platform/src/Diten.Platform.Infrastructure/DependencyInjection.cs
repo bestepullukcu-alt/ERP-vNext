@@ -132,6 +132,10 @@ public static class DependencyInjection
         services.AddSingleton<IValidateOptions<SmtpProviderOptions>, SmtpProviderOptionsValidator>();
         services.Configure<EventBusOptions>(configuration.GetSection(EventBusOptions.SectionName));
         services.Configure<RabbitMqEventingOptions>(configuration.GetSection(RabbitMqEventingOptions.SectionName));
+        services.AddOptions<PpmAuditConsumerOptions>()
+            .Bind(configuration.GetSection(PpmAuditConsumerOptions.SectionName))
+            .ValidateOnStart();
+        services.AddSingleton<IValidateOptions<PpmAuditConsumerOptions>, PpmAuditConsumerOptionsValidator>();
         services.Configure<BackgroundJobSchedulerOptions>(configuration.GetSection(BackgroundJobSchedulerOptions.SectionName));
         // MOD-0029-FU01 — controlled-document feature flags + Phase 1 content-storage options.
         services.Configure<Diten.Platform.Application.Features.DocumentManagementControlledDocuments.ControlledDocumentsFeatureFlagOptions>(
@@ -325,17 +329,22 @@ public static class DependencyInjection
         services.AddScoped<IConsumedEventRepository, ConsumedEventRepository>();
         services.AddScoped<IJobExecutionLogRepository, JobExecutionLogRepository>();
         services.AddScoped<OutboxPublisherProcessor>();
+        services.AddScoped<PpmAuditSignatureVerifier>();
+        services.AddScoped<IPpmAuditAcceptanceRepository, PpmAuditAcceptanceRepository>();
+        services.AddScoped<IPpmAuditDeadLetterObserver, PpmAuditDeadLetterObserver>();
+        services.AddScoped<PpmAuditConsumerProcessor>();
         services.AddScoped<HangfireBackgroundJobExecutor>();
 
         ConfigureHangfire(services, configuration, mongoSettings);
 
         var eventingOptions = configuration.GetSection(RabbitMqEventingOptions.SectionName).Get<RabbitMqEventingOptions>()
                               ?? new RabbitMqEventingOptions();
+        var ppmAuditConsumerEnabled = configuration.GetValue<bool>($"{PpmAuditConsumerOptions.SectionName}:Enabled");
         if (eventingOptions.UseRabbitMq)
         {
             services.AddMassTransit(x =>
             {
-                AddPlatformEventConsumers(x);
+                AddPlatformEventConsumers(x, ppmAuditConsumerEnabled);
                 x.UsingRabbitMq((context, cfg) =>
                 {
                     cfg.Host(eventingOptions.Host, eventingOptions.Port, eventingOptions.VirtualHost, h =>
@@ -348,11 +357,27 @@ public static class DependencyInjection
                         }
                     });
 
-                    cfg.UseMessageRetry(r => r.Exponential(
-                        eventingOptions.RetryCount,
-                        TimeSpan.FromSeconds(eventingOptions.InitialRetryDelaySeconds),
-                        TimeSpan.FromSeconds(eventingOptions.MaxRetryDelaySeconds),
-                        TimeSpan.FromSeconds(eventingOptions.InitialRetryDelaySeconds)));
+                    // Configure the PPM endpoint before the generic bus retry specification. Its definition
+                    // owns the exact 5-attempt policy and fail-fast contract/security exclusions.
+                    if (ppmAuditConsumerEnabled)
+                    {
+                        cfg.ReceiveEndpoint("platform-ppm-audit-intent-v1", endpoint =>
+                            endpoint.ConfigureConsumer<PpmAuditIntentSubmittedV1Consumer>(context));
+                    }
+
+                    cfg.UseMessageRetry(r =>
+                    {
+                        // PPM failures are fully owned by the endpoint-local policy above. Excluding both
+                        // PPM families here prevents retry multiplication without changing any other
+                        // Platform consumer's generic exponential policy.
+                        r.Ignore<PpmAuditContractException>();
+                        r.Ignore<PpmAuditTransientException>();
+                        r.Exponential(
+                            eventingOptions.RetryCount,
+                            TimeSpan.FromSeconds(eventingOptions.InitialRetryDelaySeconds),
+                            TimeSpan.FromSeconds(eventingOptions.MaxRetryDelaySeconds),
+                            TimeSpan.FromSeconds(eventingOptions.InitialRetryDelaySeconds));
+                    });
                     cfg.ConfigureEndpoints(context);
                 });
             });
@@ -377,7 +402,9 @@ public static class DependencyInjection
         return services;
     }
 
-    internal static void AddPlatformEventConsumers(IBusRegistrationConfigurator configurator)
+    internal static void AddPlatformEventConsumers(
+        IBusRegistrationConfigurator configurator,
+        bool ppmAuditConsumerEnabled = false)
     {
         // Default competing-consumer topology: each of these runs once cluster-wide (no duplicate side-effects).
         configurator.AddConsumer<TenantActivatedV1Consumer>();
@@ -396,6 +423,13 @@ public static class DependencyInjection
                 endpoint.InstanceId = PlatformInstanceIdentity.InstanceId;
                 endpoint.Temporary = true;
             });
+
+        if (ppmAuditConsumerEnabled)
+        {
+            configurator
+                .AddConsumer<PpmAuditIntentSubmittedV1Consumer, PpmAuditIntentSubmittedV1ConsumerDefinition>()
+                .ExcludeFromConfigureEndpoints();
+        }
     }
 
     private static void RunMongoStartupInitialization(IMongoDatabase database, MongoDbSettings mongoSettings)
@@ -483,6 +517,7 @@ public static class DependencyInjection
     {
         var smtpEnabled = configuration.GetValue<bool>("Smtp:Enabled");
         var ppmEntitlementDecisionEnabled = configuration.GetValue<bool>("PpmEntitlementDecision:Enabled");
+        var ppmAuditConsumerEnabled = configuration.GetValue<bool>($"{PpmAuditConsumerOptions.SectionName}:Enabled");
 
         return
         [
@@ -496,6 +531,13 @@ public static class DependencyInjection
                 SecretRequirementKind.InternalApiKey,
                 Required: ppmEntitlementDecisionEnabled,
                 IsEnabled: () => ppmEntitlementDecisionEnabled),
+            new(
+                $"{PpmAuditConsumerOptions.SectionName}:ActiveSecret",
+                "Platform",
+                SecretRequirementKind.Generic,
+                Required: ppmAuditConsumerEnabled,
+                IsEnabled: () => ppmAuditConsumerEnabled,
+                MinimumLength: 44),
             new("Smtp:Password", "Platform", MinimumLength: 8, Required: smtpEnabled, IsEnabled: () => smtpEnabled)
         ];
     }

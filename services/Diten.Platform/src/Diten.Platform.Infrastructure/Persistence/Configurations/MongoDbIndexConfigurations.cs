@@ -56,6 +56,7 @@ public static class MongoDbIndexConfigurations
         var auditOutboxCollection = database.GetCollection<AuditOutboxMessage>(AuditCollectionNames.AuditOutbox);
         var outboxEventCollection = database.GetCollection<OutboxEvent>("outbox_events");
         var consumedEventCollection = database.GetCollection<ConsumedEvent>("consumed_events");
+        var ppmAuditInboxCollection = database.GetCollection<PpmAuditInboxMessage>("ppm_audit_inbox");
         var jobExecutionLogCollection = database.GetCollection<JobExecutionLog>("job_execution_logs");
         var tenantMessagingSettingsCollection = database.GetCollection<TenantMessagingSettings>("notification_tenant_messaging_settings");
         var notificationTemplateCollection = database.GetCollection<NotificationTemplate>("notification_templates");
@@ -920,6 +921,17 @@ public static class MongoDbIndexConfigurations
                     .Ascending(x => x.ConsumerName),
                 new CreateIndexOptions { Unique = true, Name = "ux_consumed_events_event_consumer" })
         });
+
+        await ppmAuditInboxCollection.Indexes.CreateOneAsync(
+            new CreateIndexModel<PpmAuditInboxMessage>(
+                Builders<PpmAuditInboxMessage>.IndexKeys
+                    .Ascending(x => x.ConsumerName)
+                    .Ascending(x => x.EventId),
+                new CreateIndexOptions
+                {
+                    Unique = true,
+                    Name = "ux_ppm_audit_inbox_consumer_event"
+                }));
 
         await jobExecutionLogCollection.Indexes.CreateManyAsync(new[]
         {

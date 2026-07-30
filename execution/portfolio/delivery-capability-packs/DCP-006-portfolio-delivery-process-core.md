@@ -405,6 +405,9 @@ mapping is fixed to that contract. Compatibility fixtures and authenticated publ
 runtime evidence gates. PPM handlers/controllers cannot call RabbitMQ
 or MassTransit directly. A producer worker may publish only through MOD-0035's public `IEventBus` plus
 outbox abstraction.
+The versioned HMAC signs, in exact newline-delimited UTF-8 order, scheme, EventId, EventName, EventVersion,
+TenantId, CorrelationId, Producer, CausationId (or literal `-`), OccurredAtUtc and payload byte length,
+followed by exact canonical payload bytes; only a lowercase 64-hex signature is valid.
 
 The integration governance design is approved, but the MOD-0021 subset remains `PARTIAL` until the
 implementation, compatibility, transaction, idempotency, security, payload-limit,

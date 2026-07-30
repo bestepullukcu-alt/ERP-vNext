@@ -347,8 +347,8 @@ Lookup decision:
 - `AuditIntentPersisted` and `AuditEventAcceptedByMOD0021` are technical observability states only. They
   cannot become a business lifecycle, revision status, task, workflow or approval state.
 - For the MOD-0117 producer only, the event type is `PpmAuditIntentSubmittedV1` and EventName/routing key is
-  `ppm.audit-intent.submitted.v1`. This locks the supplied type/name/version identity without allocating a
-  new module/FU or authorizing implementation.
+  `ppm.audit-intent.submitted.v1`. This locks the supplied type/name/version identity; only the remaining
+  payload-schema/runtime evidence may be completed without allocating a new module/FU or widening authority.
 - Compatibility fixtures, authenticated publisher credential and production rollout remain runtime
   evidence gates. The final payload and MOD-0021 consumer mapping are fixed below. The producer worker may
   use only MOD-0035's public `IEventBus`/outbox abstraction; PPM handlers/controllers cannot call RabbitMQ or
@@ -361,6 +361,13 @@ Lookup decision:
 MOD-0035 envelope values: `EventId` equals the immutable producer-local `AuditIntentId`; `EventName` is
 `ppm.audit-intent.submitted.v1`; `EventVersion` is `1`; `TenantId` is required; `Producer` is exactly
 `Diten.PpmService`; `CorrelationId`, optional `CausationId`, and UTC `OccurredAtUtc` use the shared envelope.
+
+The HMAC signing input is versioned by `ppm-event-hmac-sha256.v1` and is the exact UTF-8 concatenation of
+newline-terminated fields in this order: scheme, canonical `EventId`, `EventName`, invariant `EventVersion`,
+canonical `TenantId`, canonical `CorrelationId`, exact `Producer`, canonical `CausationId` or literal `-`
+when absent, UTC round-trip `OccurredAtUtc`, invariant canonical-payload byte length, then the exact canonical
+payload bytes. The signature is exactly 64 lowercase hexadecimal characters (`[0-9a-f]{64}`); uppercase or
+alternative representations fail closed.
 
 Payload is an exact object with six properties and no extensions:
 

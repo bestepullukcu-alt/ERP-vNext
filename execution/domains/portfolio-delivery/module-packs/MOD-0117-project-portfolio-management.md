@@ -331,6 +331,10 @@ malformed response and all non-success responses into 404 must not be copied.
 - The approved producer event identity is `PpmAuditIntentSubmittedV1`; EventName/routing key is
   `ppm.audit-intent.submitted.v1`. PPM handlers/controllers never call RabbitMQ or MassTransit directly;
   a future authorized producer worker uses only MOD-0035's public `IEventBus`/outbox abstraction.
+- Its `ppm-event-hmac-sha256.v1` input signs exact newline-delimited envelope provenance in this order:
+  scheme, EventId, EventName, EventVersion, TenantId, CorrelationId, Producer, CausationId (or literal `-`),
+  OccurredAtUtc and payload byte length, followed by exact canonical payload bytes. The wire signature is
+  lowercase `[0-9a-f]{64}` only.
 - Shared `EventEnvelope`, `IEventBus`, outbox and inbox mechanics belong to
   `Diten.BuildingBlocks.Eventing`. MOD-0117 owns this logical PPM event at the planned
   `services/Diten.PpmService/src/Diten.PpmService.Contracts/Events/**` path. Platform is consumer-only;
