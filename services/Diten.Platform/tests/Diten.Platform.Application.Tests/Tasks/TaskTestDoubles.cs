@@ -401,8 +401,14 @@ internal sealed class FakeTaskFieldDefinitionRepository : ITaskFieldDefinitionRe
         => Task.FromResult<IReadOnlyList<TaskFieldDefinition>>(
             _definitions.Where(x => x.IsActive && x.DeletedAt is null).ToList());
 
+    /// <summary>Batched reads issued — the N+1 assertion reads this.</summary>
+    public int ListAllCalls { get; private set; }
+
     public Task<IReadOnlyList<TaskFieldDefinition>> ListAllAsync(CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<TaskFieldDefinition>>(_definitions.Select(Detach).ToList());
+    {
+        ListAllCalls++;
+        return Task.FromResult<IReadOnlyList<TaskFieldDefinition>>(_definitions.Select(Detach).ToList());
+    }
 
     public Task<bool> UpdateAsync(TaskFieldDefinition definition, int expectedVersion, CancellationToken ct = default)
     {

@@ -1349,6 +1349,12 @@
   <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
     <value>A blocking checklist item is still open.</value>
   </data>
+  <data name="WorkAggregation_BusinessContext_Unfiled" xml:space="preserve">
+    <value>Other details</value>
+  </data>
+  <data name="WorkAggregation_BusinessContext_UnknownField" xml:space="preserve">
+    <value>Withdrawn field</value>
+  </data>
   <data name="WorkAggregation_Action_SubmitReview" xml:space="preserve">
     <value>Submit for review</value>
   </data>

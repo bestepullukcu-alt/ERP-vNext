@@ -1349,6 +1349,12 @@
   <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
     <value>لا يزال هناك عنصر إلزامي في قائمة التحقق غير مكتمل.</value>
   </data>
+  <data name="WorkAggregation_BusinessContext_Unfiled" xml:space="preserve">
+    <value>معلومات أخرى</value>
+  </data>
+  <data name="WorkAggregation_BusinessContext_UnknownField" xml:space="preserve">
+    <value>حقل مسحوب</value>
+  </data>
   <data name="WorkAggregation_Action_SubmitReview" xml:space="preserve">
     <value>إرسال للمراجعة</value>
   </data>

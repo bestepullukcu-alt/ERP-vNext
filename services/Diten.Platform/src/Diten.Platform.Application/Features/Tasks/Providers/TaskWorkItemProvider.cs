@@ -43,6 +43,12 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
 
     /// <summary>Faz 3b — hand finished work to a reviewer. The code doubles as the URL segment.</summary>
     private const string ActionSubmitReviewKey = "WorkAggregation_Action_SubmitReview";
+
+    /// <summary>Heading for values whose definition declares no section, or cannot be read at all.</summary>
+    private const string SectionUnfiledKey = "WorkAggregation_BusinessContext_Unfiled";
+
+    /// <summary>Label for a value whose definition has vanished — never its raw code.</summary>
+    private const string FieldUnknownKey = "WorkAggregation_BusinessContext_UnknownField";
     /// <summary>Give assigned work back to whoever asked for it. Code and endpoint are both <c>return</c>.</summary>
     private const string ActionReturnKey = "WorkAggregation_Action_Return";
     /// <summary>Hand work to a different person. Code and endpoint are both <c>reassign</c>.</summary>
@@ -94,9 +100,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         ITaskCommentRepository comments,
         IPositionRepository positions,
         IOrganizationUnitRepository organizationUnits,
-        IWorkItemSlaCalculator sla)
+        IWorkItemSlaCalculator sla,
+        ITaskFieldDefinitionRepository fieldDefinitions)
     {
         _sla = sla;
+        _fieldDefinitions = fieldDefinitions;
         _positions = positions;
         _organizationUnits = organizationUnits;
         _dependencies = dependencies;
@@ -115,6 +123,13 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// the working-time seam behind it can be swapped, which is the entire point of the slice.
     /// </summary>
     private readonly IWorkItemSlaCalculator _sla;
+
+    /// <summary>
+    /// The configurable-field catalogue (Phase 5). Read ONCE per page — a stored value carries only its code, so
+    /// its section, order, label and type all come from here, and a per-item lookup would be an N+1 across every
+    /// row that has any configurable value at all.
+    /// </summary>
+    private readonly ITaskFieldDefinitionRepository _fieldDefinitions;
 
     public string ProviderCode => TaskProviderCode;
 
@@ -213,6 +228,18 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          */
         var poolLabels = await ResolvePoolLabelsAsync(tasks, ct);
 
+        /*
+         * The field catalogue, ONE read for the page — including retired definitions.
+         *
+         * Retired ones are needed precisely because they are retired: a value written before a definition was
+         * withdrawn still has to render with the label it was written under. Dropping it would delete data from
+         * the screen that the API still returns, and printing its raw code would put `regulatory.phase` where a
+         * heading belongs — the two exits this codebase has already ruled out.
+         */
+        var fieldDefinitions = tasks.Any(t => t.FieldValues.Count > 0)
+            ? (await _fieldDefinitions.ListAllAsync(ct)).ToDictionary(d => d.Code, StringComparer.OrdinalIgnoreCase)
+            : new Dictionary<string, TaskFieldDefinition>(StringComparer.OrdinalIgnoreCase);
+
         var edges = await _dependencies.ListByTaskIdsAsync(taskIds, ct);
         var edgeTaskIds = edges
             .SelectMany(edge => new[] { edge.TaskItemId, edge.DependsOnTaskItemId })
@@ -246,7 +273,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     edgesByTask.GetValueOrDefault(t.Id, []),
                     edgeTasks,
                     commentsByTask.GetValueOrDefault(t.Id, []),
-                    poolLabels);
+                    poolLabels,
+                    fieldDefinitions);
             })
             .ToList();
     }
@@ -273,7 +301,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         IReadOnlyList<TaskDependency>? edges = null,
         IReadOnlyDictionary<Guid, TaskItem>? edgeTasks = null,
         IReadOnlyList<TaskComment>? comments = null,
-        IReadOnlyDictionary<Guid, string>? poolLabels = null)
+        IReadOnlyDictionary<Guid, string>? poolLabels = null,
+        IReadOnlyDictionary<string, TaskFieldDefinition>? fieldDefinitions = null)
     {
         var assignment = _assignmentResolver.Resolve(task);
         var normalized = _lifecycle.ToNormalizedStatus(
@@ -409,6 +438,13 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // be real on the server and invisible on the screen.
             PlannedDate: task.PlannedDate,
             Pool: ToPool(task, poolLabels),
+            /*
+             * Container ⇔ capability, from ONE decision. ResolveCapabilities declares `businessContext` when a
+             * task has configurable values, and this produces the container under the same condition — the two
+             * used to be independent, and the contract's CAPABILITY_CONTAINER_REQUIRED then made validateItems
+             * drop the entire item.
+             */
+            BusinessContext: ToBusinessContext(task, fieldDefinitions),
             /*
              * Measured against the wall clock at PROJECTION time, and stated as a state rather than a countdown.
              * The reader's tab may outlive this answer; the absolute DueAt travels with it so the words on screen
@@ -565,6 +601,90 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 task.ReviewRequired,
                 reviewStatus,
                 Person(task.ReviewerCandidateUserId, actor, displayNames)));
+    }
+
+    /// <summary>
+    /// The configurable values, grouped into the sections their definitions declare.
+    ///
+    /// <para><b>The label source split is carried straight through.</b> A SYSTEM definition names a resource key
+    /// and becomes a <c>resource</c> label; a TENANT definition carries the administrator's own words and becomes
+    /// a <c>display</c> one. Collapsing them is how a raw key reaches the screen, which this codebase has done
+    /// once already — the contract models both forms precisely so it never has to happen again.</para>
+    ///
+    /// <para><b>Nothing is invented for a value whose definition cannot be read.</b> It keeps its value and is
+    /// grouped under an "unfiled" section with no title, rather than being dropped (the data exists and the API
+    /// returns it) or labelled with its own code (a raw code where a heading belongs).</para>
+    /// </summary>
+    private static WorkItemBusinessContextDto? ToBusinessContext(
+        TaskItem task,
+        IReadOnlyDictionary<string, TaskFieldDefinition>? definitions)
+    {
+        if (task.FieldValues.Count == 0)
+        {
+            return null;
+        }
+
+        var catalogue = definitions ?? new Dictionary<string, TaskFieldDefinition>(StringComparer.OrdinalIgnoreCase);
+
+        var grouped = task.FieldValues
+            .Select(value => (Value: value, Definition: catalogue.GetValueOrDefault(value.DefinitionCode)))
+            // A definition with no section, and a value with no definition at all, both land in one unnamed
+            // group rather than inventing a heading nobody wrote.
+            .GroupBy(pair => pair.Definition?.Section?.Trim() is { Length: > 0 } section ? section : null)
+            .OrderBy(group => group.Key is null)             // the unfiled group goes last
+            .ThenBy(group => group.Min(pair => pair.Definition?.SortOrder ?? int.MaxValue))
+            .ThenBy(group => group.Key, StringComparer.OrdinalIgnoreCase)
+            /*
+             * The contract caps sections at six and the catalogue enforces that at the WRITE — but older data
+             * predates the rule, so the projection defends itself too. Taking the first six is the one exit that
+             * keeps the item on the surface: exceeding the cap makes validateItems drop the WHOLE task, values
+             * and title and actions with it.
+             */
+            .Take(TaskFieldDefinitionRules.MaxSections)
+            .Select(group => new WorkItemBusinessSectionDto(
+                group.Key is { } title
+                    // A section name is something a tenant administrator typed. It is content, not a key we own.
+                    ? WorkItemLabelDto.Display(title)
+                    : WorkItemLabelDto.Resource(SectionUnfiledKey),
+                group
+                    .OrderBy(pair => pair.Definition?.SortOrder ?? int.MaxValue)
+                    .ThenBy(pair => pair.Value.DefinitionCode, StringComparer.OrdinalIgnoreCase)
+                    .Select(pair => ToBusinessField(pair.Value, pair.Definition))
+                    .ToList())
+            )
+            .ToList();
+
+        return new WorkItemBusinessContextDto(grouped);
+    }
+
+    private static WorkItemBusinessFieldDto ToBusinessField(TaskFieldValue value, TaskFieldDefinition? definition)
+        => new(
+            ResolveFieldLabel(definition),
+            // The CONTRACT's spelling, not the enum's. The two vocabularies were declared to match value-for-value
+            // on purpose; shipping PascalCase here is the shape that has cost this module twice.
+            value.ValueType.ToString().ToLowerInvariant(),
+            // A redacted value is OMITTED, never sent and hidden — the contract rejects a redacted field that
+            // still carries its value.
+            value.Redacted ? null : value.Value,
+            definition?.Importance == TaskFieldImportance.Primary ? "primary" : "secondary");
+
+    /// <summary>
+    /// The label, from whichever source the definition has — and NEITHER is a fallback for the other.
+    ///
+    /// <para>A value whose definition cannot be read (retired and since purged, or written before the catalogue
+    /// existed) gets a stated "unknown field" label rather than its own code. The code is an identifier, not a
+    /// name, and printing one where a heading belongs is the defect this split exists to prevent.</para>
+    /// </summary>
+    private static WorkItemLabelDto ResolveFieldLabel(TaskFieldDefinition? definition)
+    {
+        if (definition?.LabelText is { Length: > 0 } text)
+        {
+            return WorkItemLabelDto.Display(text);
+        }
+
+        return definition?.LabelResourceKey is { Length: > 0 } key
+            ? WorkItemLabelDto.Resource(key)
+            : WorkItemLabelDto.Resource(FieldUnknownKey);
     }
 
     private static WorkItemSubtasksDto ToSubtasks(

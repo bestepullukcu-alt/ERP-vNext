@@ -220,7 +220,8 @@ public sealed class WorkItemSlaTests
             new FakeTaskCommentRepository(),
             new FakePositionRepository(),
             new FakeOrganizationUnitRepository(),
-            sla);
+            sla,
+            new FakeTaskFieldDefinitionRepository());
 
         var actor = new WorkItemActor(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>());
         return Assert.Single(await provider.GetWorkItemsAsync(actor, CancellationToken.None));

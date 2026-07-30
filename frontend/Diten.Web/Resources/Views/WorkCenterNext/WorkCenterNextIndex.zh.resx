@@ -1349,6 +1349,12 @@
   <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
     <value>仍有未完成的必办清单项。</value>
   </data>
+  <data name="WorkAggregation_BusinessContext_Unfiled" xml:space="preserve">
+    <value>其他信息</value>
+  </data>
+  <data name="WorkAggregation_BusinessContext_UnknownField" xml:space="preserve">
+    <value>已撤销的字段</value>
+  </data>
   <data name="WorkAggregation_Action_SubmitReview" xml:space="preserve">
     <value>提交审核</value>
   </data>

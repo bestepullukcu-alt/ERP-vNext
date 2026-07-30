@@ -190,7 +190,7 @@ public sealed class TaskPoolIdentityTests
             new FakeTaskCommentRepository(),
             new FakePositionRepository(positions ?? DefaultPositions()),
             new FakeOrganizationUnitRepository(units ?? [Unit()]),
-            SlaForTests.Real());
+            SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
 
         var actor = new WorkItemActor(TaskTestData.Me, IsPlatformActor: false, new HashSet<string>(
             new[] { TaskPermissions.Update, TaskPermissions.Claim, TaskPermissions.Complete },

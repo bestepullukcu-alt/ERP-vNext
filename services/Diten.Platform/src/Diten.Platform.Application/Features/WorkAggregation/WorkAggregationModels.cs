@@ -341,7 +341,41 @@ public sealed record WorkItemProjectionDto(
     /// validates this field only when it is PRESENT, so a silent provider's items are never dropped.</para>
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    string? SlaState = null);
+    string? SlaState = null,
+    /// <summary>
+    /// The configurable field values, grouped into the sections the definitions declare (Phase 5).
+    ///
+    /// <para>Container ⇔ the <c>businessContext</c> capability, BOTH ways, like every other Phase 2 container.
+    /// That coupling is not decoration: the capability was declared without this field for a while, and the
+    /// contract's CAPABILITY_CONTAINER_REQUIRED made <c>validateItems</c> DROP the whole item — so a task that
+    /// had configurable values disappeared from the surface entirely. Half a capability is worse than none.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemBusinessContextDto? BusinessContext = null);
+
+/// <summary>The configurable-field container. Sections cap at six — the contract's LIMITS.maxSections.</summary>
+public sealed record WorkItemBusinessContextDto(IReadOnlyList<WorkItemBusinessSectionDto> Sections);
+
+/// <summary>
+/// One section. <c>Title</c> follows the same two-source label rule the fields do: a section name typed by a
+/// tenant administrator is DISPLAY content, not a resource key we own.
+/// </summary>
+public sealed record WorkItemBusinessSectionDto(
+    WorkItemLabelDto Title,
+    IReadOnlyList<WorkItemBusinessFieldDto> Fields);
+
+/// <summary>
+/// One configurable value, rendered.
+///
+/// <para><c>ValueType</c> is the CONTRACT's spelling — lowercase (<c>text</c>, <c>datetime</c>) — not the
+/// engine's PascalCase enum. The two vocabularies were declared to match value-for-value on purpose, and
+/// shipping the enum's casing straight onto the wire is the shape that has already cost this module twice.</para>
+/// </summary>
+public sealed record WorkItemBusinessFieldDto(
+    WorkItemLabelDto Label,
+    string ValueType,
+    string? Value,
+    string Importance);
 
 /// <summary>
 /// The queue a pooled item waits in (WC-3 / BL-031).

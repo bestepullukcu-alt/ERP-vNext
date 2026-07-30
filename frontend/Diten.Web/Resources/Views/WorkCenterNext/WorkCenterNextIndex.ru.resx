@@ -1349,6 +1349,12 @@
   <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
     <value>Остался незавершённый обязательный пункт чек-листа.</value>
   </data>
+  <data name="WorkAggregation_BusinessContext_Unfiled" xml:space="preserve">
+    <value>Прочие сведения</value>
+  </data>
+  <data name="WorkAggregation_BusinessContext_UnknownField" xml:space="preserve">
+    <value>Отозванное поле</value>
+  </data>
   <data name="WorkAggregation_Action_SubmitReview" xml:space="preserve">
     <value>Отправить на проверку</value>
   </data>

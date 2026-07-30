@@ -1701,6 +1701,18 @@
     const sectionHead = (icon, titleKey) =>
         `<div class="wcn-business-head"><span class="wcn-business-icon"><i class="bx ${icon}"></i></span><h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t(titleKey))}</h6></div>`;
 
+    /*
+     * The same heading, from an already-resolved string.
+     *
+     * A business-context section's title is a LABEL, and a label has two forms: a system section names a
+     * resource key we translate, a tenant section carries the words an administrator typed. sectionHead takes a
+     * key and only a key, so a display title routed through it would be looked up, missed, and fall back to a
+     * generic heading — the tenant's own section name silently replaced. resolveLabel picks the right form and
+     * this renders whatever comes out.
+     */
+    const sectionHeadText = (icon, title) =>
+        `<div class="wcn-business-head"><span class="wcn-business-icon"><i class="bx ${icon}"></i></span><h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(title)}</h6></div>`;
+
     const renderApprovalContext = (item) => {
         if (item.itemType !== 'approval' || !hasCap(item, 'approvalContext') || item.amount == null) { return ''; }
         const lines = (item.lineItems || []).map((line) => `<tr>
@@ -1809,7 +1821,10 @@
             const rows = (section.fields || []).map((field) =>
                 `<div class="wcn-fact"><span>${esc(data.resolveLabel(field.label))}</span><strong>${renderValue(field)}</strong></div>`
             ).join('');
-            return `<section class="wcn-detail-section wcn-business-section">${sectionHead('bx-grid-alt', section.title?.key || 'BusinessContextLabel')}<div class="wcn-facts-grid">${rows}</div></section>`;
+            // The section's own name, in whichever label form it arrived as — never the generic fallback when a
+            // real title exists.
+            const title = data.resolveLabel(section.title) || t('BusinessContextLabel');
+            return `<section class="wcn-detail-section wcn-business-section">${sectionHeadText('bx-grid-alt', title)}<div class="wcn-facts-grid">${rows}</div></section>`;
         }).join('');
     };
 
