@@ -169,6 +169,17 @@ Aşağıdaki kontratlar eksiksiz olarak oluşturulmalı ve Controller seviyesine
 ### PPM-specific entitlement strategy
 
 - Canonical module identity is exactly `ModuleCode = PPM`.
+- The Phase 2A PPM permission catalog contract is the following exact closed set:
+  `ppm.portfolios.read`, `ppm.portfolios.create`, `ppm.portfolios.update`,
+  `ppm.portfolios.change-lifecycle`, `ppm.initiatives.read`, `ppm.initiatives.create`,
+  `ppm.initiatives.update`, `ppm.initiatives.change-lifecycle`, `ppm.programs.read`,
+  `ppm.programs.create`, `ppm.programs.update`, `ppm.programs.change-lifecycle`,
+  `ppm.projects.read`, `ppm.projects.create`, `ppm.projects.update`, and
+  `ppm.projects.change-lifecycle`.
+- Wildcards, aliases and additional keys are forbidden in this PSS-A slice.
+  `ppm.portfolios.archive` is non-canonical and remains a PPM-branch reconciliation blocker; no PSS
+  runtime alias may be created. Phase 2B investment/benefit permissions and external-context validation
+  permissions are excluded.
 - Entitlement enablement creates no `ppm.*` permission grant. Permission assignment is a separate,
   tenant-scoped, explicit and auditable AuthService administration operation.
 - Entitlement removal denies immediately at the entitlement gate and does not delete explicit
@@ -178,6 +189,8 @@ Aşağıdaki kontratlar eksiksiz olarak oluşturulmalı ve Controller seviyesine
   exposes a read-only current grant/role inventory to the authorized administrator.
 - The current generic Admin/Viewer auto-grant and destructive module-revoke bridge remains unchanged for MDM
   and other existing modules; it cannot process `PPM`.
+- Registration of the 16 catalog entries proves availability only: it creates no grant, does not modify
+  `DataSeeder` or the FU9 default-role template, and grants neither Admin nor Viewer implicit PPM access.
 
 **Runtime kontrol sırası:**
 1. Tenant active check

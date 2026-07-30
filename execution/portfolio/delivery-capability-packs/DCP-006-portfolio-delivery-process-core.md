@@ -423,10 +423,19 @@ PPM access requires two independent, ordered, fail-closed decisions:
 The canonical tenant-module entitlement/catalog identity is exactly `ModuleCode = PPM`. Lowercase `ppm.*`
 values are permission keys, not aliases for the module-code contract.
 
-The 16 lowercase-dotted keys declared by the MOD-0117 manifest may be registered in the global AuthService
+The MOD-0117 Phase 2A permission contract is the exact closed set
+`ppm.portfolios.read`, `ppm.portfolios.create`, `ppm.portfolios.update`,
+`ppm.portfolios.change-lifecycle`, `ppm.initiatives.read`, `ppm.initiatives.create`,
+`ppm.initiatives.update`, `ppm.initiatives.change-lifecycle`, `ppm.programs.read`,
+`ppm.programs.create`, `ppm.programs.update`, `ppm.programs.change-lifecycle`,
+`ppm.projects.read`, `ppm.projects.create`, `ppm.projects.update`, and
+`ppm.projects.change-lifecycle`. These 16 lowercase-dotted keys may be registered in the global AuthService
 permission catalog. Catalog presence grants no access. PPM is not added to FU9's locked Auth+MDM default
-grant template, and tenant administrators receive no implicit PPM grant. Alias keys, raw-token exposure,
-role-name bypasses and hard-coded allow paths are forbidden.
+grant template, and tenant administrators or Viewer roles receive no implicit PPM grant. Wildcards, alias
+keys, raw-token exposure, role-name bypasses and hard-coded allow paths are forbidden. In particular,
+`ppm.portfolios.archive` is non-canonical and must be reconciled to
+`ppm.portfolios.change-lifecycle` on the PPM branch; the PSS slice cannot create an alias. Phase 2B
+investment/benefit and external-context permission keys remain outside this runtime slice.
 
 `IEntitlementChecker` owns only module/feature entitlement evaluation; AuthService remains the permission
 grant and signed-JWT permission-claim SoR. PPM consumes both decisions and recalculates neither. Entitlement
@@ -475,7 +484,9 @@ Shared contract fixtures must be identical before integration. Gateway, frontend
 Runtime acceptance requires:
 
 1. `ModuleCode = PPM`; enable/reconcile creates zero grants and removal deletes zero explicit grants.
-2. Only an explicit tenant-scoped auditable administration command creates/removes `ppm.*` grants.
+2. The AuthService catalog exposes exactly the 16 canonical Phase 2A keys above—no missing, extra,
+   duplicate, wildcard or alias key—and catalog registration creates zero grants. Only an explicit
+   tenant-scoped auditable administration command creates/removes `ppm.*` grants.
 3. Re-entitlement restores only current grant/current membership effect, creates nothing, and writes audit
    plus authorized read-only inventory evidence.
 4. Entitlement is checked before permission; both deny as `403`; object lookup follows and preserves `404`.
@@ -489,7 +500,7 @@ Required test matrix:
 
 | Layer | Required evidence |
 |---|---|
-| AuthService unit/contract | PPM dispatch bypasses generic auto-grant/revoke; explicit grant audit; role/tenant isolation; re-entitlement current-grant behavior; MDM/generic regression |
+| AuthService unit/contract | Exact 16-key equality (no missing/extra/duplicate), rejection of wildcard/alias and `ppm.portfolios.archive`, catalog-presence-with-zero-grant, PPM dispatch bypasses generic auto-grant/revoke, no Admin/Viewer implicit grant, explicit grant audit, role/tenant isolation, re-entitlement current-grant behavior, MDM/generic regression |
 | Platform entitlement | active/disabled/suspended/expired/missing decisions; every-instance invalidation; stale JWT cannot bypass; no permission mutation |
 | PPM application/API | gate order; entitlement/permission `403`; object `404`; no role/effective-permission recomputation |
 | Mongo integration | mutation+intent commit; intent failure rollback; worker lease/idempotency; no intent loss |

@@ -4,6 +4,7 @@ using Diten.AuthService.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
+using Diten.AuthService.Application.Tests.Roles;
 
 namespace Diten.AuthService.Application.Tests.Permissions;
 
@@ -12,6 +13,36 @@ public sealed class InternalPermissionsControllerTests
 {
     private const string ApiKey = "internal-key";
     private const string Header = "X-Internal-Api-Key";
+    private static readonly string[] PpmPhase2AKeys =
+    [
+        "ppm.portfolios.read", "ppm.portfolios.create", "ppm.portfolios.update", "ppm.portfolios.change-lifecycle",
+        "ppm.initiatives.read", "ppm.initiatives.create", "ppm.initiatives.update", "ppm.initiatives.change-lifecycle",
+        "ppm.programs.read", "ppm.programs.create", "ppm.programs.update", "ppm.programs.change-lifecycle",
+        "ppm.projects.read", "ppm.projects.create", "ppm.projects.update", "ppm.projects.change-lifecycle"
+    ];
+
+    [Fact]
+    public async Task Ppm_exact_phase2a_contract_registers_through_internal_catalog_without_default_role_grants()
+    {
+        var repo = new FakePermissionRepository();
+        var controller = Build(repo, authorized: true);
+        foreach (var key in PpmPhase2AKeys)
+        {
+            var result = await controller.Sync(
+                new InternalPermissionsController.SyncPermissionRequest(key, key, null, "PPM", "Tenant"),
+                CancellationToken.None);
+            Assert.IsType<OkObjectResult>(result);
+        }
+
+        Assert.Equal(PpmPhase2AKeys.Order(), repo.Items.Select(x => x.Key).Order());
+        Assert.All(repo.Items, permission => Assert.Equal("ppm", permission.Module));
+
+        var (sync, grants, _) = PpmEntitlementTestHarness.Create(
+            Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), repo.Items);
+        await sync.GrantModuleWithKeysAsync(
+            Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), "PPM", PpmPhase2AKeys, "sync");
+        Assert.Empty(grants.Rows);
+    }
 
     [Fact]
     public async Task Missing_api_key_is_unauthorized_and_no_permission_written()

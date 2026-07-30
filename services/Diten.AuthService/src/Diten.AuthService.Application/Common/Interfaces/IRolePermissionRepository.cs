@@ -7,6 +7,17 @@ public interface IRolePermissionRepository
     Task<IEnumerable<string>> GetPermissionsByRoleAsync(Guid roleId, Guid tenantId, CancellationToken ct);
     Task<IEnumerable<string>> GetPermissionsByRolesAsync(List<Guid> roleIds, Guid tenantId, CancellationToken ct);
     Task AssignAsync(RolePermission rolePermission, CancellationToken ct);
+
+    /// <summary>
+    /// Inserts an exact tenant/role/permission tuple once. Returns false when that exact effective
+    /// tuple already exists, including a unique-index race; unrelated persistence failures propagate.
+    /// </summary>
+    async Task<bool> TryAssignAsync(RolePermission rolePermission, CancellationToken ct)
+    {
+        await AssignAsync(rolePermission, ct);
+        return true;
+    }
+
     Task RevokeAsync(Guid roleId, Guid permissionId, Guid tenantId, CancellationToken ct);
 
     /// <summary>

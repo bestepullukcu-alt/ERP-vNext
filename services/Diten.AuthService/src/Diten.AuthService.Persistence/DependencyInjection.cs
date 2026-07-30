@@ -51,7 +51,6 @@ public static class DependencyInjection
 
         // Drivers
         var clientSettings = MongoClientSettings.FromConnectionString(mongoSettings.ConnectionString);
-        clientSettings.GuidRepresentation = GuidRepresentation.Standard;
         var client = new MongoClient(clientSettings);
         var database = client.GetDatabase(mongoSettings.DatabaseName);
 

@@ -1,4 +1,5 @@
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Common.Authorization;
 using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.Extensions.Logging;
@@ -22,17 +23,20 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
     private readonly IPermissionRepository _permissions;
     private readonly IRoleRepository _roles;
     private readonly IRolePermissionRepository _rolePermissions;
+    private readonly IEntitlementPermissionPolicy _policy;
     private readonly ILogger<EntitlementPermissionSyncService> _logger;
 
     public EntitlementPermissionSyncService(
         IPermissionRepository permissions,
         IRoleRepository roles,
         IRolePermissionRepository rolePermissions,
+        IEntitlementPermissionPolicy policy,
         ILogger<EntitlementPermissionSyncService> logger)
     {
         _permissions = permissions;
         _roles = roles;
         _rolePermissions = rolePermissions;
+        _policy = policy;
         _logger = logger;
     }
 
@@ -42,6 +46,10 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         if (code.Length == 0)
         {
             return; // fail-safe: blank module code is a no-op
+        }
+        if (_policy.Resolve(code) == EntitlementPermissionMode.ExplicitOnlyPreserveOnEntitlementRemoval)
+        {
+            return;
         }
 
         var catalog = await _permissions.GetAllAsync(ct);
@@ -61,6 +69,10 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         if (code.Length == 0)
         {
             return; // fail-safe: blank module code is a no-op
+        }
+        if (_policy.Resolve(code) == EntitlementPermissionMode.ExplicitOnlyPreserveOnEntitlementRemoval)
+        {
+            return;
         }
 
         var keySet = (permissionKeys ?? Array.Empty<string>())
@@ -140,6 +152,10 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
     {
         var code = ModulePermissionResolver.NormalizeModuleCode(moduleCode);
         if (code.Length == 0)
+        {
+            return;
+        }
+        if (_policy.Resolve(code) == EntitlementPermissionMode.ExplicitOnlyPreserveOnEntitlementRemoval)
         {
             return;
         }

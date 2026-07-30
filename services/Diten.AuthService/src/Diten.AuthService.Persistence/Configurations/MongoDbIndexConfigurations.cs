@@ -1,4 +1,5 @@
 using Diten.AuthService.Domain.Entities;
+using Diten.AuthService.Persistence.Repositories;
 using MongoDB.Driver;
 
 namespace Diten.AuthService.Persistence.Configurations;
@@ -62,7 +63,9 @@ public static class MongoDbIndexConfigurations
         var rolePermissionsCol = database.GetCollection<RolePermission>("rolePermissions");
         await rolePermissionsCol.Indexes.CreateManyAsync(new[]
         {
-            new CreateIndexModel<RolePermission>(Builders<RolePermission>.IndexKeys.Ascending("RoleId").Ascending("PermissionId").Ascending("TenantId"), new CreateIndexOptions { Unique = true }),
+            new CreateIndexModel<RolePermission>(
+                Builders<RolePermission>.IndexKeys.Ascending("RoleId").Ascending("PermissionId").Ascending("TenantId"),
+                new CreateIndexOptions { Unique = true, Name = RolePermissionRepository.AssignmentUniqueIndexName }),
             new CreateIndexModel<RolePermission>(Builders<RolePermission>.IndexKeys.Ascending("RoleId").Ascending("TenantId"))
         });
 

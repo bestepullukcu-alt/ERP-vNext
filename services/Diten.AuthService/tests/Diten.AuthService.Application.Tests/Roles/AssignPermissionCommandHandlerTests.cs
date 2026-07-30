@@ -6,15 +6,15 @@ using Diten.AuthService.Domain.Entities;
 
 namespace Diten.AuthService.Application.Tests.Roles;
 
-// FEAT-ROLEPERMS-TENANT-SCOPE — manual permission assignment must honor the same platform-escalation boundary
-// as default provisioning: in a TENANT context a tenant role may only receive tenant-assignable permissions;
-// a platform-admin permission (or an unknown one) is rejected. Platform-admin context bypasses the guard, and
-// the guard is assign-only (revoke stays unguarded, covered by RevokePermissionCommandHandlerTests).
+// FEAT-ROLEPERMS-TENANT-SCOPE — manual assignment to a tenant role always requires a tenant-assignable
+// permission, including requests initiated from platform context. The guard is assign-only; revoke stays
+// unguarded so an invalid historical grant can still be removed (covered by RevokePermissionCommandHandlerTests).
 public sealed class AssignPermissionCommandHandlerTests
 {
     private static readonly Guid TenantId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid RoleId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
     private static readonly Guid PermissionId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+    private static readonly Guid ActorId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
     private static Permission TenantPermission() => new("auth", "users", "read", "Read User", null);
     private static Permission PlatformPermission() => new("platform", "tenants", "read", "Read Tenant", null);
@@ -50,7 +50,7 @@ public sealed class AssignPermissionCommandHandlerTests
     }
 
     [Fact]
-    public async Task Platform_context_bypasses_the_guard_and_assigns_platform_permission()
+    public async Task Platform_context_cannot_assign_non_tenant_permission_to_tenant_role()
     {
         var rolePerms = new FakeRolePermissionRepository();
         var version = new FakeRoleAssignmentVersionService();
@@ -58,9 +58,9 @@ public sealed class AssignPermissionCommandHandlerTests
 
         var result = await handler.Handle(new AssignPermissionCommand(RoleId, PermissionId), CancellationToken.None);
 
-        Assert.True(result.IsSuccessful);
-        Assert.Equal(204, result.StatusCode);
-        Assert.Equal((RoleId, PermissionId, TenantId), rolePerms.AssignedCall);
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(403, result.StatusCode);
+        Assert.Null(rolePerms.AssignedCall);
     }
 
     [Fact]
@@ -89,6 +89,71 @@ public sealed class AssignPermissionCommandHandlerTests
         Assert.Null(rolePerms.AssignedCall);
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    public async Task Missing_or_empty_authenticated_actor_fails_closed(string? actor)
+    {
+        var rolePerms = new FakeRolePermissionRepository();
+        var handler = CreateHandler(Role(), TenantPermission(), rolePerms,
+            new FakeRoleAssignmentVersionService(), false,
+            actor is null ? null : Guid.Parse(actor),
+            authenticated: actor is not null);
+
+        var result = await handler.Handle(new AssignPermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(401, result.StatusCode);
+        Assert.Null(rolePerms.AssignedCall);
+    }
+
+    [Fact]
+    public async Task First_grant_attributes_actor_and_changes_version_and_audit_once()
+    {
+        var rolePerms = new FakeRolePermissionRepository();
+        var version = new FakeRoleAssignmentVersionService();
+        var audit = new CountingRbacAuditRecorder();
+        var handler = CreateHandler(Role(), TenantPermission(), rolePerms, version, false, ActorId, audit);
+
+        var result = await handler.Handle(new AssignPermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(ActorId.ToString("D"), rolePerms.AssignedRolePermission!.AssignedBy);
+        Assert.Equal(1, version.IncrementCount);
+        Assert.Equal(1, audit.Count);
+    }
+
+    [Fact]
+    public async Task Exact_duplicate_is_stable_no_op_without_version_or_audit()
+    {
+        var rolePerms = new FakeRolePermissionRepository { Exists = true };
+        var version = new FakeRoleAssignmentVersionService();
+        var audit = new CountingRbacAuditRecorder();
+        var handler = CreateHandler(Role(), TenantPermission(), rolePerms, version, false, ActorId, audit);
+
+        var result = await handler.Handle(new AssignPermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Null(rolePerms.AssignedCall);
+        Assert.Equal(0, version.IncrementCount);
+        Assert.Equal(0, audit.Count);
+    }
+
+    [Fact]
+    public async Task Unique_index_race_for_exact_tuple_is_stable_no_op()
+    {
+        var rolePerms = new FakeRolePermissionRepository { RaceDuplicate = true };
+        var version = new FakeRoleAssignmentVersionService();
+        var audit = new CountingRbacAuditRecorder();
+        var handler = CreateHandler(Role(), TenantPermission(), rolePerms, version, false, ActorId, audit);
+
+        var result = await handler.Handle(new AssignPermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(0, version.IncrementCount);
+        Assert.Equal(0, audit.Count);
+    }
+
     private static Role Role() => new("admin", "Admin", null, TenantId);
 
     private static AssignPermissionCommandHandler CreateHandler(
@@ -96,7 +161,10 @@ public sealed class AssignPermissionCommandHandlerTests
         Permission? permission,
         FakeRolePermissionRepository rolePerms,
         FakeRoleAssignmentVersionService version,
-        bool platformContext)
+        bool platformContext,
+        Guid? actorId = null,
+        IRbacAuditRecorder? audit = null,
+        bool authenticated = true)
     {
         var tenantContext = new TestTenantContext();
         if (platformContext) tenantContext.SetPlatformContext(TenantId);
@@ -108,7 +176,8 @@ public sealed class AssignPermissionCommandHandlerTests
             rolePerms,
             version,
             tenantContext,
-            new NoOpRbacAuditRecorder());
+            audit ?? new NoOpRbacAuditRecorder(),
+            new FakeCurrentUserAccessor(authenticated ? actorId ?? ActorId : null));
     }
 
     // ── Minimal inline fakes (codebase convention: hand-written, no Moq) ──
@@ -140,11 +209,23 @@ public sealed class AssignPermissionCommandHandlerTests
     private sealed class FakeRolePermissionRepository : IRolePermissionRepository
     {
         public (Guid roleId, Guid permissionId, Guid tenantId)? AssignedCall { get; private set; }
+        public RolePermission? AssignedRolePermission { get; private set; }
+        public bool Exists { get; init; }
+        public bool RaceDuplicate { get; init; }
 
         public Task AssignAsync(RolePermission rolePermission, CancellationToken ct)
         {
             AssignedCall = (rolePermission.RoleId, rolePermission.PermissionId, rolePermission.TenantId);
+            AssignedRolePermission = rolePermission;
             return Task.CompletedTask;
+        }
+
+        public Task<bool> TryAssignAsync(RolePermission rolePermission, CancellationToken ct)
+        {
+            if (Exists || RaceDuplicate) return Task.FromResult(false);
+            AssignedCall = (rolePermission.RoleId, rolePermission.PermissionId, rolePermission.TenantId);
+            AssignedRolePermission = rolePermission;
+            return Task.FromResult(true);
         }
 
         public Task<IReadOnlyList<RolePermission>> GetByRoleAsync(Guid roleId, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
@@ -158,6 +239,21 @@ public sealed class AssignPermissionCommandHandlerTests
     private sealed class NoOpRbacAuditRecorder : IRbacAuditRecorder
     {
         public Task RecordAsync(string eventName, Guid tenantId, object metadata, CancellationToken ct = default) => Task.CompletedTask;
+    }
+
+    private sealed class CountingRbacAuditRecorder : IRbacAuditRecorder
+    {
+        public int Count { get; private set; }
+        public Task RecordAsync(string eventName, Guid tenantId, object metadata, CancellationToken ct = default)
+        {
+            Count++;
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class FakeCurrentUserAccessor(Guid? userId) : ICurrentUserAccessor
+    {
+        public Guid? UserId { get; } = userId;
     }
 
     private sealed class TestTenantContext : ITenantContext

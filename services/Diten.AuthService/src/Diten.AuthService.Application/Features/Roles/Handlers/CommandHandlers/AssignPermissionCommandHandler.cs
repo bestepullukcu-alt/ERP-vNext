@@ -15,6 +15,7 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
     private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
     private readonly IRbacAuditRecorder _rbacAudit;
+    private readonly ICurrentUserAccessor _currentUser;
 
     public AssignPermissionCommandHandler(
         IRoleRepository roleRepository,
@@ -22,7 +23,8 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
         IRolePermissionRepository rolePermissionRepository,
         IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
-        IRbacAuditRecorder rbacAudit)
+        IRbacAuditRecorder rbacAudit,
+        ICurrentUserAccessor currentUser)
     {
         _roleRepository = roleRepository;
         _permissionRepository = permissionRepository;
@@ -30,28 +32,37 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
         _versionService = versionService;
         _tenantContext = tenantContext;
         _rbacAudit = rbacAudit;
+        _currentUser = currentUser;
     }
 
     public async Task<Response<NoContent>> Handle(AssignPermissionCommand request, CancellationToken ct)
     {
+        var actorId = _currentUser.UserId;
+        if (actorId is null || actorId == Guid.Empty)
+        {
+            return Response<NoContent>.Fail("Authentication required.", 401);
+        }
+
         var role = await _roleRepository.GetByIdAndTenantAsync(request.RoleId, _tenantContext.TenantId, ct);
         if (role == null) return Response<NoContent>.Fail("Role not found.", 404);
 
         // Permissions are global, so we use ID directly.
         var permission = await _permissionRepository.GetByIdAsync(request.PermissionId, ct);
 
-        // FEAT-ROLEPERMS-TENANT-SCOPE — manual assignment must honor the same platform-escalation boundary
-        // that DefaultRolePermissionTemplate enforces during default provisioning. In a TENANT context
-        // (not platform-admin), a tenant role may only receive tenant-assignable permissions; a platform-admin
-        // permission (or an unknown/missing one we cannot vet) is rejected. Platform-admin context is exempt,
-        // and the REVOKE path is intentionally NOT guarded so a mis-granted permission can always be removed.
-        if (!_tenantContext.IsPlatformContext &&
-            (permission is null || !DefaultRolePermissionTemplate.IsTenantAssignable(permission)))
+        // Manual assignment to a tenant role always honors the tenant-assignable boundary, including when
+        // initiated by a platform operator. The REVOKE path remains unguarded so a mis-grant can be removed.
+        if (permission is null || !DefaultRolePermissionTemplate.IsTenantAssignable(permission))
         {
             return Response<NoContent>.Fail("This permission cannot be assigned to a tenant role.", 403);
         }
 
-        await _rolePermissionRepository.AssignAsync(new RolePermission(request.RoleId, request.PermissionId, _tenantContext.TenantId, "System"), ct);
+        var inserted = await _rolePermissionRepository.TryAssignAsync(
+            RolePermission.ManualGrant(request.RoleId, request.PermissionId, _tenantContext.TenantId, actorId.Value.ToString("D")),
+            ct);
+        if (!inserted)
+        {
+            return Response<NoContent>.Success(204);
+        }
 
         // FU13 — bump the tenant role-assignment version so every holder's cached snapshot is invalidated at once.
         await _versionService.IncrementAsync(_tenantContext.TenantId, ct);

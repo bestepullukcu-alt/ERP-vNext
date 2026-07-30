@@ -503,15 +503,30 @@ MOD-0354 revision/baseline history.
 - Actor: authenticated tenant user; exact service-to-service identity + actor delegation remains OPEN.
 - DWS permission is evaluated by MOD-0018 before MOD-0117 provider invocation.
 - MOD-0117 evaluates only PPM context visibility/referenceability; it does not recalculate DWS permission.
-- Proposed permission families, subject to PSS/owner review:
-  - `ppm.portfolios.*`
-  - `ppm.initiatives.*`
-  - `ppm.programs.*`
-  - `ppm.projects.*`
-  - `ppm.investment-decisions.*`
-  - `ppm.benefit-value-links.*`
-  - `ppm.external-context-references.validate`
-- Exact action keys and permission catalog registration must be closed before promotion.
+- **Phase 2A canonical permission contract (closed set):**
+  - `ppm.portfolios.read`
+  - `ppm.portfolios.create`
+  - `ppm.portfolios.update`
+  - `ppm.portfolios.change-lifecycle`
+  - `ppm.initiatives.read`
+  - `ppm.initiatives.create`
+  - `ppm.initiatives.update`
+  - `ppm.initiatives.change-lifecycle`
+  - `ppm.programs.read`
+  - `ppm.programs.create`
+  - `ppm.programs.update`
+  - `ppm.programs.change-lifecycle`
+  - `ppm.projects.read`
+  - `ppm.projects.create`
+  - `ppm.projects.update`
+  - `ppm.projects.change-lifecycle`
+- The list above is exact and exhaustive for Phase 2A. Wildcards and alias permissions are forbidden.
+  `ppm.portfolios.archive` is not canonical and must be reconciled to
+  `ppm.portfolios.change-lifecycle` in the PPM branch before final Phase 2A closure. Phase 2B
+  investment/benefit permissions and the external-context validation permission are not part of this
+  contract and cannot be added through the PSS-A runtime slice.
+- Catalog registration may contain exactly these 16 keys under `ModuleCode = PPM`; catalog presence does
+  not grant access and cannot add PPM to default Admin/Viewer role templates.
 - Service-specific HasPermission/filter/evaluator code cannot be copied from another service.
 - Existing shared `X-Internal-Api-Key` alone is insufficient for actor visibility and cannot be adopted as
   the authoritative decision without an approved service-identity + actor-delegation design.

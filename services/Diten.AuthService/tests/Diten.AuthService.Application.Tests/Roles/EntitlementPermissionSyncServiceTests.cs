@@ -1,5 +1,6 @@
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Common.Services;
+using Diten.AuthService.Application.Common.Authorization;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -12,6 +13,87 @@ public sealed class EntitlementPermissionSyncServiceTests
     private static readonly Guid TenantA = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid TenantB = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
     private const string Actor = "entitlement-sync";
+
+    [Theory]
+    [InlineData("PPM")]
+    [InlineData("ppm")]
+    [InlineData(" PpM ")]
+    public async Task Ppm_enable_never_grants_default_roles(string moduleCode)
+    {
+        var catalog = new List<Permission>
+        {
+            new("ppm", "projects", "read", "", null),
+            new("ppm", "projects", "create", "", null)
+        };
+        var (svc, _, rolePerms) = BuildWith(catalog);
+
+        await svc.GrantModuleAsync(TenantA, moduleCode, Actor);
+        await svc.GrantModuleWithKeysAsync(TenantA, moduleCode, catalog.Select(x => x.Key).ToArray(), Actor);
+
+        Assert.Empty(rolePerms.Rows);
+    }
+
+    [Fact]
+    public async Task Ppm_disable_preserves_manual_and_module_grants()
+    {
+        var catalog = new List<Permission> { new("ppm", "projects", "read", "", null) };
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var roleId = roles.IdOf(TenantA, "Admin");
+        rolePerms.Seed(RolePermission.ManualGrant(roleId, catalog[0].Id, TenantA, "actor"));
+        rolePerms.Seed(RolePermission.ModuleGrant(roleId, catalog[0].Id, TenantA, "legacy", "PPM"));
+
+        await svc.RevokeModuleAsync(TenantA, "ppm", Actor);
+
+        Assert.Equal(2, rolePerms.Rows.Count);
+    }
+
+    [Fact]
+    public async Task Ppm_convention_reconcile_is_zero_mutation_and_preserves_grants()
+    {
+        var catalog = new List<Permission> { new("ppm", "projects", "read", "", null) };
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        rolePerms.Seed(RolePermission.ManualGrant(roles.IdOf(TenantA, "Admin"), catalog[0].Id, TenantA, "actor"));
+
+        await svc.SyncTenantModulesAsync(TenantA, new[] { "PPM" }, Actor);
+        await svc.SyncTenantModulesAsync(TenantA, Array.Empty<string>(), Actor);
+
+        Assert.Single(rolePerms.Rows);
+        Assert.Equal(GrantSource.Manual, rolePerms.Rows[0].GrantSource);
+    }
+
+    [Fact]
+    public async Task Ppm_key_reconcile_is_zero_mutation_and_does_not_block_generic_module()
+    {
+        var catalog = new List<Permission>
+        {
+            new("ppm", "projects", "read", "", null),
+            new("mdm", "legal-entities", "read", "", null)
+        };
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+
+        await svc.SyncTenantModulesWithKeysAsync(TenantA,
+        [
+            new("PPM", [catalog[0].Key]),
+            new("MDM", [catalog[1].Key])
+        ], Actor);
+
+        Assert.DoesNotContain(rolePerms.Rows, x => x.PermissionId == catalog[0].Id);
+        Assert.Contains(rolePerms.Rows, x => x.PermissionId == catalog[1].Id
+            && x.RoleId == roles.IdOf(TenantA, "Admin"));
+    }
+
+    [Fact]
+    public async Task Ppm_stale_source_reconcile_preserves_existing_grant()
+    {
+        var catalog = new List<Permission> { new("ppm", "projects", "read", "", null) };
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        rolePerms.Seed(RolePermission.ModuleGrant(
+            roles.IdOf(TenantA, "Admin"), catalog[0].Id, TenantA, "legacy", "PPM"));
+
+        await svc.SyncTenantModulesAsync(TenantA, Array.Empty<string>(), Actor);
+
+        Assert.Single(rolePerms.Rows);
+    }
 
     // Catalog spanning two modules that SHARE one permission key shape (different modules, so distinct
     // Permission rows) is not needed; sharing across modules is modelled via two ModuleGrant rows for
@@ -220,7 +302,7 @@ public sealed class EntitlementPermissionSyncServiceTests
         Assert.Contains("goldenslim.records.create", adminKeys);              // new Module grant
         Assert.Contains("platform.workflow.definitions.view", adminKeys);    // proves the sync did NOT abort
         // The overlapping permission keeps exactly one row (the System baseline) — never duplicated.
-        Assert.Single(rolePerms.Rows.Where(rp => rp.RoleId == adminId && rp.PermissionId == gsRead));
+        Assert.Single(rolePerms.Rows, rp => rp.RoleId == adminId && rp.PermissionId == gsRead);
         Assert.Equal(GrantSource.System,
             rolePerms.Rows.Single(rp => rp.RoleId == adminId && rp.PermissionId == gsRead).GrantSource);
 
@@ -310,7 +392,7 @@ public sealed class EntitlementPermissionSyncServiceTests
     {
         var roles = new FakeRoleRepository(TenantA, TenantB);
         var rolePerms = new FakeRolePermissionRepository();
-        var svc = new EntitlementPermissionSyncService(new FakePermissionRepository(catalog), roles, rolePerms, NullLogger<EntitlementPermissionSyncService>.Instance);
+        var svc = new EntitlementPermissionSyncService(new FakePermissionRepository(catalog), roles, rolePerms, new EntitlementPermissionPolicy(), NullLogger<EntitlementPermissionSyncService>.Instance);
         return (svc, roles, rolePerms);
     }
 
@@ -322,7 +404,7 @@ public sealed class EntitlementPermissionSyncServiceTests
         var catalog = SharedCatalog;
         var roles = new FakeRoleRepository(TenantA, TenantB);
         var rolePerms = new FakeRolePermissionRepository();
-        var svc = new EntitlementPermissionSyncService(new FakePermissionRepository(catalog), roles, rolePerms, NullLogger<EntitlementPermissionSyncService>.Instance);
+        var svc = new EntitlementPermissionSyncService(new FakePermissionRepository(catalog), roles, rolePerms, new EntitlementPermissionPolicy(), NullLogger<EntitlementPermissionSyncService>.Instance);
         return (svc, roles, rolePerms, catalog);
     }
 

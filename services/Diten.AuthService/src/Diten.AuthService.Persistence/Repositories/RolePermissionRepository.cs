@@ -7,6 +7,8 @@ namespace Diten.AuthService.Persistence.Repositories;
 
 public sealed class RolePermissionRepository : RepositoryBase<RolePermission>, IRolePermissionRepository
 {
+    public const string AssignmentUniqueIndexName = "RoleId_1_PermissionId_1_TenantId_1";
+
     private readonly IMongoCollection<Permission> _permissionCollection;
 
     public RolePermissionRepository(IMongoDatabase database, ITenantContext tenantContext) 
@@ -42,6 +44,21 @@ public sealed class RolePermissionRepository : RepositoryBase<RolePermission>, I
     public async Task AssignAsync(RolePermission rolePermission, CancellationToken ct)
     {
         await InsertOneAsync(rolePermission, ct);
+    }
+
+    public async Task<bool> TryAssignAsync(RolePermission rolePermission, CancellationToken ct)
+    {
+        try
+        {
+            await InsertOneAsync(rolePermission, ct);
+            return true;
+        }
+        catch (MongoWriteException ex) when (
+            ex.WriteError?.Category == ServerErrorCategory.DuplicateKey &&
+            ex.WriteError.Message.Contains(AssignmentUniqueIndexName, StringComparison.Ordinal))
+        {
+            return false;
+        }
     }
 
     public async Task RevokeAsync(Guid roleId, Guid permissionId, Guid tenantId, CancellationToken ct)

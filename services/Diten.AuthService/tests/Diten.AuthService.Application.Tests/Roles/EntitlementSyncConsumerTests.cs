@@ -3,6 +3,7 @@ using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Infrastructure.Eventing;
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Contracts.Events;
+using Diten.AuthService.Domain.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Diten.AuthService.Application.Tests.Roles;
@@ -114,6 +115,36 @@ public sealed class EntitlementSyncConsumerTests
         await consumer.ConsumeAsync(Message(TenantSubscriptionChangedV1.Name, TenantA, moduleCode: ""));
 
         Assert.Null(sync.Synced); // never strip grants on an empty pull
+    }
+
+    [Theory]
+    [InlineData("tenant.entitlement.added.v1")]
+    [InlineData("tenant.entitlement.enabled.v1")]
+    [InlineData("tenant.entitlement.disabled.v1")]
+    public async Task Ppm_real_policy_path_through_consumer_never_mutates_default_role_grants(string eventName)
+    {
+        var permission = new Permission("ppm", "projects", "read", "Read projects", null);
+        var (sync, grants, _) = PpmEntitlementTestHarness.Create(TenantA, [permission]);
+        var client = new FakeEntitlementClient(["PPM"]);
+        var consumer = new EntitlementSyncConsumer(sync, client, new FakeInbox(true),
+            NullLogger<EntitlementSyncConsumer>.Instance);
+
+        await consumer.ConsumeAsync(Message(eventName, TenantA, "PPM"));
+
+        Assert.Empty(grants.Rows);
+    }
+
+    [Fact]
+    public async Task Ppm_real_policy_path_through_subscription_reconcile_never_mutates_default_role_grants()
+    {
+        var permission = new Permission("ppm", "projects", "read", "Read projects", null);
+        var (sync, grants, _) = PpmEntitlementTestHarness.Create(TenantA, [permission]);
+        var consumer = new EntitlementSyncConsumer(sync, new FakeEntitlementClient(["PPM"]), new FakeInbox(true),
+            NullLogger<EntitlementSyncConsumer>.Instance);
+
+        await consumer.ConsumeAsync(Message(TenantSubscriptionChangedV1.Name, TenantA, ""));
+
+        Assert.Empty(grants.Rows);
     }
 
     // ── harness ──
