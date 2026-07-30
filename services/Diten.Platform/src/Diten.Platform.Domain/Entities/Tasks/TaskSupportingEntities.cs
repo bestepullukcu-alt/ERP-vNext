@@ -225,6 +225,31 @@ public sealed class TaskRecurrenceRule : TenantScopedEntity
     public DateTimeOffset? EndsAt { get; set; }
     public Guid? TaskTemplateId { get; set; }
 
+    /*
+     * WHO the generated work belongs to.
+     *
+     * These were missing, and their absence was not cosmetic: with no assignment on the rule the generator fell
+     * back to SelfAssigned, and a background sweep has no "self" — the current-user context answers Guid.Empty
+     * with no HTTP request behind it. Every task a template-less rule produced was therefore assigned to nobody,
+     * appeared in no list, and still consumed its period. Invisible work that can never be regenerated.
+     *
+     * SelfAssigned is deliberately NOT a legal value here — see TaskAssignmentIntentRules.
+     */
+    public TaskAssignmentTarget AssignmentTarget { get; set; } = TaskAssignmentTarget.Person;
+
+    /// <summary>The person each generated task goes to. Required when the target is a person.</summary>
+    public Guid? AssigneeUserId { get; set; }
+
+    /// <summary>The queue each generated task waits in. Required when the target is a pool.</summary>
+    public Guid? PoolPositionId { get; set; }
+
+    /// <summary>
+    /// Optional. Task creation resolves a unit on its own (from the pool's position, the assignee's position, or
+    /// the tenant root), so this is an override rather than a requirement — the same graded fallback a manual
+    /// create gets, not a second rule.
+    /// </summary>
+    public Guid? OrganizationUnitId { get; set; }
+
     /// <summary>Last instance stamp, used to avoid duplicate generation on a rerun.</summary>
     public string? LastProcessInstanceId { get; set; }
 

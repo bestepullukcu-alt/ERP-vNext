@@ -88,6 +88,19 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         Guid? poolPositionId = null;
         Guid organizationUnitId;
 
+        /*
+         * The SHARED rule. It used to be written out inline here, which was fine while creation was the only
+         * thing that assigned work — recurrence rules now carry an assignment too, and a second copy there is
+         * how the reviewer defect happened a slice ago. `allowSelfAssigned: true` because this path HAS a
+         * caller; the recurring sweep does not, which is the one thing the two callers disagree about.
+         */
+        if (TaskAssignmentIntentRules.Validate(
+                request.AssignmentTarget, request.AssigneeUserId, request.PoolPositionId, allowSelfAssigned: true)
+            is { } invalid)
+        {
+            return Fail(invalid.Message, invalid.ReasonCode, command.CorrelationId);
+        }
+
         switch (request.AssignmentTarget)
         {
             case TaskAssignmentTarget.SelfAssigned:
@@ -95,22 +108,10 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
                 break;
 
             case TaskAssignmentTarget.Person:
-                if (request.AssigneeUserId is null || request.AssigneeUserId == Guid.Empty)
-                {
-                    return Fail("An assignee is required when assigning to a person.",
-                        TaskReasonCodes.AssignmentTargetInvalid, command.CorrelationId);
-                }
-
                 assigneeUserId = request.AssigneeUserId;
                 break;
 
             case TaskAssignmentTarget.PositionPool:
-                if (request.PoolPositionId is null || request.PoolPositionId == Guid.Empty)
-                {
-                    return Fail("A position is required when pooling a task.",
-                        TaskReasonCodes.AssignmentTargetInvalid, command.CorrelationId);
-                }
-
                 // A pool task has NO holder until someone claims it — that is the point of a pool.
                 assigneeUserId = null;
                 poolPositionId = request.PoolPositionId;

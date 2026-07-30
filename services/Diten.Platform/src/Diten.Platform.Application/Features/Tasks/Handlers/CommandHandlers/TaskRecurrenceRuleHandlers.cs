@@ -1,6 +1,7 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tasks.Commands;
+using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
@@ -20,20 +21,39 @@ public static class TaskRecurrenceRules
     /// A rule with no frequency is a schedule that never fires — accepting it would put a row in the list that
     /// looks live and produces nothing, which reads as a broken sweep rather than a misconfigured rule.
     /// </summary>
-    public static string? Validate(TaskRecurrenceFrequency frequency, DateTimeOffset? startsAt, DateTimeOffset? endsAt)
+    public static (string ReasonCode, string Message)? Validate(
+        TaskRecurrenceFrequency frequency,
+        DateTimeOffset? startsAt,
+        DateTimeOffset? endsAt,
+        TaskAssignmentTarget assignmentTarget,
+        Guid? assigneeUserId,
+        Guid? poolPositionId)
     {
         if (frequency == TaskRecurrenceFrequency.None)
         {
-            return TaskReasonCodes.RecurrenceFrequencyRequired;
+            return (TaskReasonCodes.RecurrenceFrequencyRequired,
+                "A recurrence rule needs a frequency; without one it would never fire.");
         }
 
         // Ends before it starts: no occurrence can ever fall inside the window.
         if (startsAt is { } start && endsAt is { } end && end < start)
         {
-            return TaskReasonCodes.RecurrenceWindowInvalid;
+            return (TaskReasonCodes.RecurrenceWindowInvalid,
+                "The rule ends before it starts, so no occurrence can fall inside it.");
         }
 
-        return null;
+        /*
+         * The SAME assignment rule task creation uses — shared, not re-implemented, because a second copy is
+         * exactly how the reviewer defect happened a slice ago.
+         *
+         * `allowSelfAssigned: false` is the one thing the two callers disagree about, and it is the whole reason
+         * this defect existed: the generator fell back to SelfAssigned and a background sweep has no "self", so
+         * every task a template-less rule produced belonged to Guid.Empty and appeared in no list. Refusing the
+         * RULE is the fix — a rule that cannot say who the work is for must not be creatable, exactly as a task
+         * that asks for a review with no reviewer is not.
+         */
+        return TaskAssignmentIntentRules.Validate(
+            assignmentTarget, assigneeUserId, poolPositionId, allowSelfAssigned: false);
     }
 }
 
@@ -58,10 +78,11 @@ public sealed class CreateTaskRecurrenceRuleHandler
     {
         var request = command.Request;
 
-        if (TaskRecurrenceRules.Validate(request.Frequency, request.StartsAt, request.EndsAt) is { } reasonCode)
+        if (TaskRecurrenceRules.Validate(
+                request.Frequency, request.StartsAt, request.EndsAt,
+                request.AssignmentTarget, request.AssigneeUserId, request.PoolPositionId) is { } invalid)
         {
-            return Response<Guid>.Fail(
-                "The recurrence rule cannot produce any occurrence.", 400, reasonCode, command.CorrelationId);
+            return Response<Guid>.Fail(invalid.Message, 400, invalid.ReasonCode, command.CorrelationId);
         }
 
         var rule = new TaskRecurrenceRule
@@ -74,6 +95,10 @@ public sealed class CreateTaskRecurrenceRuleHandler
             StartsAt = request.StartsAt,
             EndsAt = request.EndsAt,
             TaskTemplateId = request.TaskTemplateId,
+            AssignmentTarget = request.AssignmentTarget,
+            AssigneeUserId = request.AssigneeUserId,
+            PoolPositionId = request.PoolPositionId,
+            OrganizationUnitId = request.OrganizationUnitId,
             IsActive = request.IsActive,
             CreatedBy = _currentUser.ActorName
         };
@@ -105,10 +130,11 @@ public sealed class UpdateTaskRecurrenceRuleHandler
                 "Recurrence rule not found.", 404, TaskReasonCodes.RecurrenceRuleNotFound, command.CorrelationId);
         }
 
-        if (TaskRecurrenceRules.Validate(request.Frequency, request.StartsAt, request.EndsAt) is { } reasonCode)
+        if (TaskRecurrenceRules.Validate(
+                request.Frequency, request.StartsAt, request.EndsAt,
+                request.AssignmentTarget, request.AssigneeUserId, request.PoolPositionId) is { } invalid)
         {
-            return Response<NoContent>.Fail(
-                "The recurrence rule cannot produce any occurrence.", 400, reasonCode, command.CorrelationId);
+            return Response<NoContent>.Fail(invalid.Message, 400, invalid.ReasonCode, command.CorrelationId);
         }
 
         rule.Name = request.Name.Trim();
@@ -117,6 +143,10 @@ public sealed class UpdateTaskRecurrenceRuleHandler
         rule.StartsAt = request.StartsAt;
         rule.EndsAt = request.EndsAt;
         rule.TaskTemplateId = request.TaskTemplateId;
+        rule.AssignmentTarget = request.AssignmentTarget;
+        rule.AssigneeUserId = request.AssigneeUserId;
+        rule.PoolPositionId = request.PoolPositionId;
+        rule.OrganizationUnitId = request.OrganizationUnitId;
         rule.IsActive = request.IsActive;
         rule.UpdatedBy = _currentUser.ActorName;
 

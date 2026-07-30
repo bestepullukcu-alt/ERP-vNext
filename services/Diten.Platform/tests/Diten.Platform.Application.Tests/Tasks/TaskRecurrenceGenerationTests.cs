@@ -35,7 +35,6 @@ public sealed class TaskRecurrenceGenerationTests
     public async Task A_due_rule_produces_exactly_one_task()
     {
         var harness = new Harness(DailyRule());
-
         var result = await harness.GenerateAsync(Now);
 
         Assert.Equal(1, result.TasksGenerated);
@@ -179,6 +178,106 @@ public sealed class TaskRecurrenceGenerationTests
         Assert.Equal(TenantA, Assert.Single(harness.Tasks.Items).TenantId);
     }
 
+    // ── The work has an OWNER (the defect this slice fixes) ─────────────────
+
+    [Fact]
+    public async Task A_generated_task_lands_in_the_ASSIGNEES_list()
+    {
+        /*
+         * THE DEFECT, live: a template-less rule produced a task assigned to nobody. The generator fell back to
+         * SelfAssigned, and a background sweep has no "self" — the current-user context answers Guid.Empty with
+         * no HTTP request behind it. The task was created, appeared in no list, and still consumed its period,
+         * so it could never be regenerated either.
+         */
+        var harness = new Harness(DailyRule());
+
+        await harness.GenerateAsync(Now);
+
+        var task = Assert.Single(harness.Tasks.Items);
+        Assert.Equal(TaskTestData.Rival, task.AssigneeUserId);
+        // The value the defect produced. Named explicitly because "not null" would have passed on Guid.Empty.
+        Assert.NotEqual(Guid.Empty, task.AssigneeUserId!.Value);
+    }
+
+    [Fact]
+    public async Task A_POOLED_rule_puts_the_work_in_its_QUEUE()
+    {
+        // The pool half of the same defect: the queue has to survive from the rule onto the task, or a pooled
+        // schedule produces work nobody can claim.
+        var rule = DailyRule();
+        rule.AssignmentTarget = TaskAssignmentTarget.PositionPool;
+        rule.AssigneeUserId = null;
+        rule.PoolPositionId = Harness.PoolPositionId;
+        var harness = new Harness(rule);
+
+        await harness.GenerateAsync(Now);
+
+        var task = Assert.Single(harness.Tasks.Items);
+        Assert.Equal(TaskAssignmentTarget.PositionPool, task.AssignmentTarget);
+        Assert.Equal(Harness.PoolPositionId, task.PoolPositionId);
+        // A pool task has no holder until it is claimed — that is what makes it a pool.
+        Assert.Null(task.AssigneeUserId);
+    }
+
+    [Fact]
+    public async Task A_generated_task_carries_an_ORGANIZATION_UNIT()
+    {
+        /*
+         * Never null. Creation resolves it through the same graded fallback a manual create gets — the pool's
+         * position, the assignee's position, then the tenant root — so the background path does NOT skip the
+         * validation, it satisfies it. That is worth pinning: a task with no unit is misfiled work.
+         */
+        var harness = new Harness(DailyRule());
+
+        await harness.GenerateAsync(Now);
+
+        var task = Assert.Single(harness.Tasks.Items);
+        Assert.NotEqual(Guid.Empty, task.OrganizationUnitId);
+    }
+
+    [Fact]
+    public async Task A_LEGACY_rule_with_no_assignment_is_SKIPPED_without_burning_its_period()
+    {
+        /*
+         * New rules cannot reach this state — the write path refuses them — but rules written before assignment
+         * existed on the entity can. Skipping BEFORE the claim is what keeps them recoverable: the period is
+         * still there, so fixing the rule regenerates it. Claiming first would have burnt it for good.
+         */
+        var rule = DailyRule();
+        rule.AssignmentTarget = TaskAssignmentTarget.SelfAssigned;
+        rule.AssigneeUserId = null;
+        var harness = new Harness(rule);
+
+        var result = await harness.GenerateAsync(Now);
+
+        Assert.Equal(0, result.TasksGenerated);
+        Assert.Equal(1, result.SkippedUnassigned);
+        Assert.Empty(harness.Tasks.Items);
+        // The period was NOT consumed.
+        Assert.Null(harness.Rules.All.Single().LastProcessInstanceId);
+    }
+
+    [Fact]
+    public async Task And_once_that_legacy_rule_is_FIXED_its_period_is_still_available()
+    {
+        // The point of skipping rather than claiming, stated as behaviour.
+        var rule = DailyRule();
+        rule.AssignmentTarget = TaskAssignmentTarget.SelfAssigned;
+        rule.AssigneeUserId = null;
+        var harness = new Harness(rule);
+
+        await harness.GenerateAsync(Now);
+
+        var stored = harness.Rules.All.Single();
+        stored.AssignmentTarget = TaskAssignmentTarget.Person;
+        stored.AssigneeUserId = TaskTestData.Rival;
+
+        var afterFix = await harness.GenerateAsync(Now);
+
+        Assert.Equal(1, afterFix.TasksGenerated);
+        Assert.Equal(TaskTestData.Rival, Assert.Single(harness.Tasks.Items).AssigneeUserId);
+    }
+
     // ── The generated task is recognisable ───────────────────────────────────
 
     [Fact]
@@ -228,6 +327,23 @@ public sealed class TaskRecurrenceGenerationTests
     }
 
     // ── From a template ──────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_TEMPLATE_rule_still_carries_the_rules_assignment()
+    {
+        /*
+         * The rule's assignment is passed as an OVERRIDE to the from-template path, which already treats an
+         * explicit value as winning over the template's default. That precedence is the right way round: a
+         * template says how work is SHAPED, a rule says who this particular schedule is FOR.
+         */
+        var rule = DailyRule();
+        rule.TaskTemplateId = Harness.TemplateId;
+        var harness = new Harness(rule);
+
+        await harness.GenerateAsync(Now);
+
+        Assert.Equal(TaskTestData.Rival, Assert.Single(harness.Tasks.Items).AssigneeUserId);
+    }
 
     [Fact]
     public async Task A_rule_with_a_TEMPLATE_produces_the_templates_shape()
@@ -302,6 +418,8 @@ public sealed class TaskRecurrenceGenerationTests
         Id = Guid.Parse("11111111-2222-3333-4444-555555555555"),
         TenantId = TenantA,
         Name = "Günlük kontrol",
+        AssignmentTarget = TaskAssignmentTarget.Person,
+        AssigneeUserId = TaskTestData.Rival,
         Frequency = TaskRecurrenceFrequency.Daily,
         Interval = 1,
         StartsAt = Anchor,
@@ -317,7 +435,7 @@ public sealed class TaskRecurrenceGenerationTests
     {
         public static readonly Guid TemplateId = Guid.Parse("77777777-7777-7777-7777-777777777777");
 
-        private readonly FakeTaskRecurrenceRuleRepository _rules;
+        public static readonly Guid PoolPositionId = Guid.Parse("33333333-3333-3333-3333-333333333333");
 
         public Harness(TaskRecurrenceRule rule)
         {
@@ -325,7 +443,7 @@ public sealed class TaskRecurrenceGenerationTests
             Tenant = new FakeTenantContext(TenantA);
             Tasks = new FakeTaskItemRepository();
             ChecklistRuns = new FakeChecklistRunRepository();
-            _rules = new FakeTaskRecurrenceRuleRepository(Tenant, rule);
+            Rules = new FakeTaskRecurrenceRuleRepository(Tenant, rule);
 
             var templates = new FakeTaskTemplateRepository(new TaskTemplate
             {
@@ -343,6 +461,9 @@ public sealed class TaskRecurrenceGenerationTests
 
         public TaskRecurrenceRule Rule { get; }
 
+        /// <summary>The stored rules, for assertions about what a pass DID or did not claim.</summary>
+        public FakeTaskRecurrenceRuleRepository Rules { get; }
+
         public FakeTenantContext Tenant { get; }
 
         public FakeTaskItemRepository Tasks { get; }
@@ -352,7 +473,7 @@ public sealed class TaskRecurrenceGenerationTests
         public IMediator Mediator { get; }
 
         public GenerateDueRecurringTasksHandler NewHandler()
-            => new(_rules, Tasks, Mediator, NullLogger<GenerateDueRecurringTasksHandler>.Instance);
+            => new(Rules, Tasks, Mediator, NullLogger<GenerateDueRecurringTasksHandler>.Instance);
 
         public async Task<GenerateDueRecurringTasksResponse> GenerateAsync(DateTimeOffset now)
         {
@@ -365,7 +486,19 @@ public sealed class TaskRecurrenceGenerationTests
             Tasks,
             new FakeTaskAssignmentRepository(),
             new FakeTaskWatcherRepository(),
-            new FakePositionRepository(),
+            // A genuinely assignable position, so a pooled rule reaches the create rather than failing the
+            // position check for an unrelated reason.
+            new FakePositionRepository(new Position
+            {
+                Id = PoolPositionId,
+                TenantId = Tenant.TenantId,
+                Code = "OPS",
+                Name = "Operasyon",
+                // Draft is the enum default, and creation refuses a position that is not assignable — so an
+                // unset status here would fail the pool test for a reason that has nothing to do with recurrence.
+                Status = Diten.Platform.Domain.Entities.Organization.PositionStatus.Active,
+                OrganizationUnitId = Unit
+            }),
             new FakeOrganizationUnitRepository(new OrganizationUnit
             {
                 Id = Unit,

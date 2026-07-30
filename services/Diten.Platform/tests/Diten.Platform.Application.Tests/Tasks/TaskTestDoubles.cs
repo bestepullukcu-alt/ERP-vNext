@@ -678,6 +678,10 @@ internal sealed class FakeTaskRecurrenceRuleRepository : ITaskRecurrenceRuleRepo
         stored.StartsAt = rule.StartsAt;
         stored.EndsAt = rule.EndsAt;
         stored.TaskTemplateId = rule.TaskTemplateId;
+        stored.AssignmentTarget = rule.AssignmentTarget;
+        stored.AssigneeUserId = rule.AssigneeUserId;
+        stored.PoolPositionId = rule.PoolPositionId;
+        stored.OrganizationUnitId = rule.OrganizationUnitId;
         stored.IsActive = rule.IsActive;
         stored.DeletedAt = rule.DeletedAt;
         stored.LastProcessInstanceId = rule.LastProcessInstanceId;
@@ -701,6 +705,12 @@ internal sealed class FakeTaskRecurrenceRuleRepository : ITaskRecurrenceRuleRepo
         StartsAt = rule.StartsAt,
         EndsAt = rule.EndsAt,
         TaskTemplateId = rule.TaskTemplateId,
+        // The assignment travels with the copy. It did not, briefly, and every generation test went silent:
+        // the detached rule carried a Person target with no assignee, so the generator skipped it as unusable.
+        AssignmentTarget = rule.AssignmentTarget,
+        AssigneeUserId = rule.AssigneeUserId,
+        PoolPositionId = rule.PoolPositionId,
+        OrganizationUnitId = rule.OrganizationUnitId,
         IsActive = rule.IsActive,
         DeletedAt = rule.DeletedAt,
         LastProcessInstanceId = rule.LastProcessInstanceId,

@@ -76,6 +76,110 @@ public sealed class TaskRecurrenceRuleCrudTests
         Assert.Equal(TaskReasonCodes.RecurrenceWindowInvalid, created.ReasonCode);
     }
 
+    // ── The work must have an owner ──────────────────────────────────────────
+
+    [Fact]
+    public async Task A_rule_with_NO_assignment_is_refused()
+    {
+        /*
+         * THE defect this slice fixes, refused at the WRITE. Live, such a rule was accepted and then produced a
+         * task assigned to Guid.Empty: created, in nobody's list, and its period consumed so it could never be
+         * regenerated. Silent invisible work.
+         *
+         * Same shape as a review requested with no reviewer: refuse the rule, do not produce the ghost.
+         */
+        var harness = new Harness();
+
+        var created = await harness.CreateAsync(
+            TaskRecurrenceFrequency.Daily, interval: 1,
+            target: TaskAssignmentTarget.Person, assignee: Guid.Empty);
+
+        Assert.False(created.IsSuccessful);
+        Assert.Equal(400, created.StatusCode);
+        Assert.Equal(TaskReasonCodes.AssignmentTargetInvalid, created.ReasonCode);
+    }
+
+    [Fact]
+    public async Task A_rule_that_assigns_to_SELF_is_refused()
+    {
+        /*
+         * "Self" is the value the generator used to fall back to, and a sweep has no self — the current-user
+         * context answers Guid.Empty with no request behind it. Accepting it here would put the defect back one
+         * layer up, where it would look like a deliberate choice.
+         */
+        var harness = new Harness();
+
+        var created = await harness.CreateAsync(
+            TaskRecurrenceFrequency.Daily, interval: 1, target: TaskAssignmentTarget.SelfAssigned);
+
+        Assert.False(created.IsSuccessful);
+        Assert.Equal(400, created.StatusCode);
+        Assert.Equal(TaskReasonCodes.AssignmentTargetInvalid, created.ReasonCode);
+        Assert.Contains("self", created.Errors.Single(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task A_POOLED_rule_needs_a_position()
+    {
+        var harness = new Harness();
+
+        var created = await harness.CreateAsync(
+            TaskRecurrenceFrequency.Daily, interval: 1, target: TaskAssignmentTarget.PositionPool);
+
+        Assert.False(created.IsSuccessful);
+        Assert.Equal(TaskReasonCodes.AssignmentTargetInvalid, created.ReasonCode);
+    }
+
+    [Fact]
+    public async Task A_POOLED_rule_must_not_ALSO_name_a_person()
+    {
+        // A pool is claimed, not handed out. An assignee travelling with one means the caller misunderstood the
+        // target — the same rule task creation applies, from the same shared source.
+        var harness = new Harness();
+
+        var created = await harness.CreateAsync(
+            TaskRecurrenceFrequency.Daily, interval: 1,
+            target: TaskAssignmentTarget.PositionPool,
+            assignee: TaskTestData.Rival,
+            poolPosition: Guid.Parse("33333333-3333-3333-3333-333333333333"));
+
+        Assert.False(created.IsSuccessful);
+        Assert.Equal(TaskReasonCodes.AssignmentTargetInvalid, created.ReasonCode);
+    }
+
+    [Fact]
+    public async Task A_properly_assigned_rule_is_accepted_and_reports_its_owner()
+    {
+        // Non-vacuity for the four refusals above: if the rule simply refused everything, they would all pass
+        // while recurrence became impossible to configure at all.
+        var harness = new Harness();
+
+        var created = await harness.CreateAsync(TaskRecurrenceFrequency.Daily, interval: 1);
+
+        Assert.True(created.IsSuccessful);
+        var stored = (await harness.GetAsync(created.Data)).Data!;
+        Assert.Equal("Person", stored.AssignmentTarget);
+        Assert.Equal(TaskTestData.Rival, stored.AssigneeUserId);
+    }
+
+    [Fact]
+    public async Task An_EDIT_that_drops_the_assignment_is_refused_too()
+    {
+        // Full replace, so the rule has to travel with every edit — the same trap the reviewer field had.
+        var harness = new Harness();
+        var created = await harness.CreateAsync(TaskRecurrenceFrequency.Daily, interval: 1);
+        var current = (await harness.GetAsync(created.Data)).Data!;
+
+        var updated = await harness.UpdateAsync(
+            created.Data, current.Version, TaskRecurrenceFrequency.Daily, 1, true,
+            target: TaskAssignmentTarget.Person, assignee: Guid.Empty);
+
+        Assert.False(updated.IsSuccessful);
+        Assert.Equal(400, updated.StatusCode);
+        // The stored assignment survived the refused edit.
+        Assert.Equal(TaskTestData.Rival, harness.Rules.All.Single().AssigneeUserId);
+    }
+
     [Fact]
     public async Task An_interval_below_one_is_normalised_rather_than_stored()
     {
@@ -207,7 +311,10 @@ public sealed class TaskRecurrenceRuleCrudTests
             int interval,
             DateTimeOffset? startsAt = null,
             DateTimeOffset? endsAt = null,
-            bool isActive = true)
+            bool isActive = true,
+            TaskAssignmentTarget target = TaskAssignmentTarget.Person,
+            Guid? assignee = null,
+            Guid? poolPosition = null)
             => Unwrap<Guid>(await _controller.CreateRecurrenceRule(
                 new CreateTaskRecurrenceRuleRequest(
                     Name: "Tekrarlayan iş",
@@ -215,12 +322,23 @@ public sealed class TaskRecurrenceRuleCrudTests
                     Interval: interval,
                     StartsAt: startsAt,
                     EndsAt: endsAt,
+                    AssignmentTarget: target,
+                    // Person is the default target, so the default assignee makes the happy path the short call.
+                    AssigneeUserId: assignee ?? (target == TaskAssignmentTarget.Person ? TaskTestData.Rival : null),
+                    PoolPositionId: poolPosition,
+                    OrganizationUnitId: null,
                     TaskTemplateId: null,
                     IsActive: isActive),
                 CancellationToken.None));
 
         public async Task<Response<NoContent>> UpdateAsync(
-            Guid id, int expectedVersion, TaskRecurrenceFrequency frequency, int interval, bool isActive)
+            Guid id,
+            int expectedVersion,
+            TaskRecurrenceFrequency frequency,
+            int interval,
+            bool isActive,
+            TaskAssignmentTarget target = TaskAssignmentTarget.Person,
+            Guid? assignee = null)
             => Unwrap<NoContent>(await _controller.UpdateRecurrenceRule(
                 id,
                 new UpdateTaskRecurrenceRuleRequest(
@@ -229,6 +347,10 @@ public sealed class TaskRecurrenceRuleCrudTests
                     Interval: interval,
                     StartsAt: null,
                     EndsAt: null,
+                    AssignmentTarget: target,
+                    AssigneeUserId: assignee ?? (target == TaskAssignmentTarget.Person ? TaskTestData.Rival : null),
+                    PoolPositionId: null,
+                    OrganizationUnitId: null,
                     TaskTemplateId: null,
                     IsActive: isActive,
                     ExpectedVersion: expectedVersion),

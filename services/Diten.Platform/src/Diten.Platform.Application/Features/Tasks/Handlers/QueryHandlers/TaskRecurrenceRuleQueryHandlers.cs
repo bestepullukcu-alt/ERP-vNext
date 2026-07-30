@@ -64,6 +64,11 @@ public static class TaskRecurrenceRuleMapper
         rule.StartsAt,
         rule.EndsAt,
         rule.TaskTemplateId,
+        // Enum as a STRING, like Frequency and for the same reason.
+        rule.AssignmentTarget.ToString(),
+        rule.AssigneeUserId,
+        rule.PoolPositionId,
+        rule.OrganizationUnitId,
         rule.IsActive,
         rule.LastProcessInstanceId,
         rule.LastGeneratedAt,

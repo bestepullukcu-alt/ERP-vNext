@@ -443,6 +443,15 @@ public sealed record CreateTaskRecurrenceRuleRequest(
     DateTimeOffset? StartsAt,
     DateTimeOffset? EndsAt,
     /// <summary>
+    /// WHO the generated work goes to. <c>SelfAssigned</c> is not accepted: a sweep has no "self", and a rule
+    /// that said so produced work assigned to nobody, in nobody's list, while still consuming its period.
+    /// </summary>
+    TaskAssignmentTarget AssignmentTarget,
+    Guid? AssigneeUserId,
+    Guid? PoolPositionId,
+    /// <summary>Optional override. Creation resolves a unit on its own when this is null.</summary>
+    Guid? OrganizationUnitId,
+    /// <summary>
     /// The template each generated task is built from. Optional: without one the rule generates a bare task
     /// carrying only the rule's name, which is a legitimate simple reminder.
     /// </summary>
@@ -456,6 +465,10 @@ public sealed record UpdateTaskRecurrenceRuleRequest(
     int Interval,
     DateTimeOffset? StartsAt,
     DateTimeOffset? EndsAt,
+    TaskAssignmentTarget AssignmentTarget,
+    Guid? AssigneeUserId,
+    Guid? PoolPositionId,
+    Guid? OrganizationUnitId,
     Guid? TaskTemplateId,
     bool IsActive,
     int ExpectedVersion);
@@ -468,6 +481,10 @@ public sealed record TaskRecurrenceRuleDto(
     DateTimeOffset? StartsAt,
     DateTimeOffset? EndsAt,
     Guid? TaskTemplateId,
+    string AssignmentTarget,
+    Guid? AssigneeUserId,
+    Guid? PoolPositionId,
+    Guid? OrganizationUnitId,
     bool IsActive,
     /// <summary>
     /// The last occurrence this rule produced, by NAME. Exposed because it is the answer to "why did nothing
@@ -484,4 +501,10 @@ public sealed record GenerateDueRecurringTasksResponse(
     int RulesConsidered,
     int TasksGenerated,
     int AlreadyGenerated,
-    int Failed);
+    int Failed,
+    /// <summary>
+    /// Rules that owed work but could not say WHO it belongs to, so their period was left unclaimed. Only rules
+    /// written before assignment existed on the entity can be in this state; counting them separately from
+    /// <c>Failed</c> keeps "needs fixing, nothing lost" distinct from "something went wrong".
+    /// </summary>
+    int SkippedUnassigned = 0);

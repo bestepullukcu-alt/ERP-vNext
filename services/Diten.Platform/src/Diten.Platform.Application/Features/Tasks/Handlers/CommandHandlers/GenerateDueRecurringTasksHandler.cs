@@ -65,6 +65,7 @@ public sealed class GenerateDueRecurringTasksHandler
         var generated = 0;
         var alreadyDone = 0;
         var failed = 0;
+        var skipped = 0;
 
         foreach (var rule in rules)
         {
@@ -72,6 +73,26 @@ public sealed class GenerateDueRecurringTasksHandler
 
             if (TaskRecurrenceSchedule.LatestDueOccurrence(rule, now) is not { } occurrence)
             {
+                continue;
+            }
+
+            /*
+             * A rule that cannot say WHO the work belongs to is skipped BEFORE the claim, so it does not burn a
+             * period it cannot fill.
+             *
+             * New rules cannot reach this state — the write path refuses them — but rules created before
+             * assignment existed on the entity can, and the claim-first ordering means a burnt period is gone for
+             * good. Skipping keeps those rules recoverable: fix the assignment and the period is still there.
+             */
+            if (TaskAssignmentIntentRules.Validate(
+                    rule.AssignmentTarget, rule.AssigneeUserId, rule.PoolPositionId, allowSelfAssigned: false)
+                is { } unusable)
+            {
+                skipped++;
+                _logger.LogWarning(
+                    "task.recurrence.rule_unassigned RuleId={RuleId} ReasonCode={ReasonCode} Message={Message} "
+                    + "CorrelationId={CorrelationId}. No period was claimed, so fixing the rule recovers it.",
+                    rule.Id, unusable.ReasonCode, unusable.Message, command.CorrelationId);
                 continue;
             }
 
@@ -133,7 +154,7 @@ public sealed class GenerateDueRecurringTasksHandler
         }
 
         return Response<GenerateDueRecurringTasksResponse>.Success(
-            new GenerateDueRecurringTasksResponse(rules.Count, generated, alreadyDone, failed),
+            new GenerateDueRecurringTasksResponse(rules.Count, generated, alreadyDone, failed, skipped),
             200,
             command.CorrelationId);
     }
@@ -165,15 +186,21 @@ public sealed class GenerateDueRecurringTasksHandler
             // The template's own shape wins, checklist included. DueAt is left to the template when it defines an
             // offset — a template that says "due in 3 days" is a more specific statement of intent than the
             // schedule's default.
+            /*
+             * The RULE's assignment is passed as an override. The from-template path already treats an explicit
+             * value as winning over the template's default, which is the right precedence: a template says how
+             * work is SHAPED, a rule says who this particular schedule is FOR. A rule that names nobody cannot
+             * reach here at all, so there is no case where this silently blanks a template's own default.
+             */
             response = await _mediator.Send(
                 new CreateTaskItemFromTemplateCommand(
                     new CreateTaskFromTemplateRequest(
                         TaskTemplateId: templateId,
                         TitleOverride: null,
                         DueAt: dueAt,
-                        AssignmentTargetOverride: null,
-                        AssigneeUserId: null,
-                        PoolPositionId: null),
+                        AssignmentTargetOverride: rule.AssignmentTarget,
+                        AssigneeUserId: rule.AssigneeUserId,
+                        PoolPositionId: rule.PoolPositionId),
                     correlationId),
                 ct);
         }
@@ -185,10 +212,18 @@ public sealed class GenerateDueRecurringTasksHandler
                         Title: rule.Name,
                         Description: null,
                         Priority: TaskPriority.Medium,
-                        AssignmentTarget: TaskAssignmentTarget.SelfAssigned,
-                        AssigneeUserId: null,
-                        PoolPositionId: null,
-                        OrganizationUnitId: null,
+                        /*
+                         * The rule's own assignment. This used to be SelfAssigned with a null assignee, and a
+                         * background sweep has no "self": the current-user context answers Guid.Empty, so every
+                         * task a template-less rule produced belonged to nobody and appeared in no list — while
+                         * still consuming its period.
+                         */
+                        AssignmentTarget: rule.AssignmentTarget,
+                        AssigneeUserId: rule.AssigneeUserId,
+                        PoolPositionId: rule.PoolPositionId,
+                        // Null is fine and usually right: creation resolves a unit from the pool's position, the
+                        // assignee's position, or the tenant root. The rule only overrides that when it says so.
+                        OrganizationUnitId: rule.OrganizationUnitId,
                         DueAt: dueAt,
                         StartAt: null,
                         PlannedDate: null,
