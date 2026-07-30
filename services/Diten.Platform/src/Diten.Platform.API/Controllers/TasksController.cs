@@ -291,6 +291,58 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    // ── Recurrence rules (Phase 4) ───────────────────────────────────────────
+    //
+    // Their own resource under tasks, not transition codes. The Diten.Web proxy has to carry each of these
+    // explicitly: a route that exists here and not there answers 404 before the request ever leaves the web
+    // tier, which is exactly how `inquire` shipped unreachable.
+    //
+    // The SWEEP that acts on these rules is off unless BackgroundJobs:RegisterStandardJobs and
+    // EnabledJobs["Diten.Platform.MOD-0024.TaskRecurrenceSweepJob"] are BOTH true. A rule created here does
+    // nothing until then, and that is configuration rather than a defect.
+
+    [HttpGet("recurrence-rules")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> GetRecurrenceRules(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetTaskRecurrenceRuleListQuery(CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("recurrence-rules/{id:guid}")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> GetRecurrenceRule(Guid id, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetTaskRecurrenceRuleByIdQuery(id, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpPost("recurrence-rules")]
+    [HasPermission(TaskPermissions.Create)]
+    public async Task<IActionResult> CreateRecurrenceRule(
+        [FromBody] CreateTaskRecurrenceRuleRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new CreateTaskRecurrenceRuleCommand(request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpPut("recurrence-rules/{id:guid}")]
+    [HasPermission(TaskPermissions.Update)]
+    public async Task<IActionResult> UpdateRecurrenceRule(
+        Guid id, [FromBody] UpdateTaskRecurrenceRuleRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new UpdateTaskRecurrenceRuleCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpDelete("recurrence-rules/{id:guid}")]
+    [HasPermission(TaskPermissions.Delete)]
+    public async Task<IActionResult> DeleteRecurrenceRule(Guid id, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new DeleteTaskRecurrenceRuleCommand(id, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpGet("lookups/assignable-positions")]
     [HasPermission(TaskPermissions.Create)]
     public async Task<IActionResult> GetAssignablePositions(CancellationToken ct)

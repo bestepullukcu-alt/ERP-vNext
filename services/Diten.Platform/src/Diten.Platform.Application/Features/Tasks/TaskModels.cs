@@ -75,6 +75,15 @@ public static class TaskReasonCodes
     /// <summary>Review was submitted on a task that never asked for one.</summary>
     public const string ReviewNotRequired = "REVIEW_NOT_REQUIRED";
 
+    /// <summary>The recurrence rule does not exist, or belongs to another tenant.</summary>
+    public const string RecurrenceRuleNotFound = "RECURRENCE_RULE_NOT_FOUND";
+
+    /// <summary>A recurrence rule was defined with no repeat — a schedule that never fires.</summary>
+    public const string RecurrenceFrequencyRequired = "RECURRENCE_FREQUENCY_REQUIRED";
+
+    /// <summary>The rule ends before it starts, so it can never produce an occurrence.</summary>
+    public const string RecurrenceWindowInvalid = "RECURRENCE_WINDOW_INVALID";
+
     /// <summary>
     /// A review was requested with nobody to route it to. MOD-0023 refuses to start an instance with an empty
     /// candidate list, so this is caught at the WRITE rather than left to surface as a review that will not start.
@@ -420,3 +429,59 @@ public sealed record AssignablePositionDto(
     string OrganizationUnitName,
     Guid LegalEntityId,
     int ActiveHolderCount);
+
+// ── Phase 4: recurrence ──────────────────────────────────────────────────────
+
+/// <summary>
+/// Define a recurring task. The rule says WHEN and WHAT SHAPE; it never says "make one now" — the sweep does
+/// that, and only for periods that have actually begun.
+/// </summary>
+public sealed record CreateTaskRecurrenceRuleRequest(
+    string Name,
+    TaskRecurrenceFrequency Frequency,
+    int Interval,
+    DateTimeOffset? StartsAt,
+    DateTimeOffset? EndsAt,
+    /// <summary>
+    /// The template each generated task is built from. Optional: without one the rule generates a bare task
+    /// carrying only the rule's name, which is a legitimate simple reminder.
+    /// </summary>
+    Guid? TaskTemplateId,
+    bool IsActive = true);
+
+/// <summary>Full replace, like every other MOD-0024 update.</summary>
+public sealed record UpdateTaskRecurrenceRuleRequest(
+    string Name,
+    TaskRecurrenceFrequency Frequency,
+    int Interval,
+    DateTimeOffset? StartsAt,
+    DateTimeOffset? EndsAt,
+    Guid? TaskTemplateId,
+    bool IsActive,
+    int ExpectedVersion);
+
+public sealed record TaskRecurrenceRuleDto(
+    Guid Id,
+    string Name,
+    string Frequency,
+    int Interval,
+    DateTimeOffset? StartsAt,
+    DateTimeOffset? EndsAt,
+    Guid? TaskTemplateId,
+    bool IsActive,
+    /// <summary>
+    /// The last occurrence this rule produced, by NAME. Exposed because it is the answer to "why did nothing
+    /// appear today?" — and because a support engineer comparing it against the current period is doing exactly
+    /// what the sweep does.
+    /// </summary>
+    string? LastProcessInstanceId,
+    DateTimeOffset? LastGeneratedAt,
+    int Version,
+    DateTimeOffset CreatedAt);
+
+/// <summary>What one sweep pass did for one tenant.</summary>
+public sealed record GenerateDueRecurringTasksResponse(
+    int RulesConsidered,
+    int TasksGenerated,
+    int AlreadyGenerated,
+    int Failed);

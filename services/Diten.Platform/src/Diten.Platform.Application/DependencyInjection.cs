@@ -165,6 +165,9 @@ public static class DependencyInjection
         services.AddScoped<EmailDispatchJob>();
         services.AddScoped<EmailDispatchSweepJob>();
         services.AddScoped<Features.Workflow.BackgroundJobs.WorkflowEscalationSweepJob>();
+        // MOD-0024 Phase 4 — the recurrence sweep. Registered here so Hangfire can resolve it; whether it RUNS
+        // is decided by BackgroundJobs:RegisterStandardJobs + EnabledJobs, both of which default to off.
+        services.AddScoped<Features.Tasks.BackgroundJobs.TaskRecurrenceSweepJob>();
         services.AddSingleton<IRecurringJobRegistrar, PlatformRecurringJobRegistrar>();
 
         // A3 — workflow transition gate (defence-in-depth): business modules inject this and must check it

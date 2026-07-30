@@ -170,7 +170,12 @@ public enum ChecklistRunStatus
     Completed = 2
 }
 
-/// <summary>Recurrence cadence (Phase 4 behaviour; schema only in Phase 1).</summary>
+/// <summary>
+/// Recurrence cadence. Crosses the wire in CreateTaskRecurrenceRuleRequest and UpdateTaskRecurrenceRuleRequest
+/// as of Phase 4, so it serializes as a STRING — an enum that reaches a client as a number is a defect this
+/// module has already shipped once, and TaskJsonContractTests caught this one before it left the branch.
+/// </summary>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
 public enum TaskRecurrenceFrequency
 {
     None = 0,

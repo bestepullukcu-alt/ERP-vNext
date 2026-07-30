@@ -113,6 +113,32 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiTransition(Guid id, string transition)
         => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/{id}/{transition}", readBody: true);
 
+    // ── Recurrence rules (Phase 4) ───────────────────────────────────────────
+    //
+    // Their own resource, so NOT transition codes and not in TaskTransitionRoutes — and therefore each one has
+    // to be listed here by hand. A route Platform exposes and this proxy does not answers 404 inside the web
+    // tier, which is how `inquire` shipped unreachable.
+
+    [HttpGet("api/recurrence-rules")]
+    public Task<IActionResult> ApiRecurrenceRules()
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/recurrence-rules", readBody: false);
+
+    [HttpGet("api/recurrence-rules/{id:guid}")]
+    public Task<IActionResult> ApiRecurrenceRule(Guid id)
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/recurrence-rules/{id}", readBody: false);
+
+    [HttpPost("api/recurrence-rules")]
+    public Task<IActionResult> ApiCreateRecurrenceRule()
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/recurrence-rules", readBody: true);
+
+    [HttpPut("api/recurrence-rules/{id:guid}")]
+    public Task<IActionResult> ApiUpdateRecurrenceRule(Guid id)
+        => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/tasks/recurrence-rules/{id}", readBody: true);
+
+    [HttpDelete("api/recurrence-rules/{id:guid}")]
+    public Task<IActionResult> ApiDeleteRecurrenceRule(Guid id)
+        => ProxyAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/v1/tasks/recurrence-rules/{id}", readBody: false);
+
     /// <summary>
     /// Assignable positions. Carries the organization unit code+name so the picker renders
     /// "QA Specialist — Facility A"; without it a pooled task can silently reach the wrong facility.

@@ -1,5 +1,6 @@
 using Diten.BuildingBlocks.BackgroundJobs;
 using Diten.Platform.Application.Features.Notifications.BackgroundJobs;
+using Diten.Platform.Application.Features.Tasks.BackgroundJobs;
 using Diten.Platform.Application.Features.Workflow.BackgroundJobs;
 using Microsoft.Extensions.Options;
 
@@ -27,6 +28,7 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
             CreateDeferred("Diten.Platform.MOD-0021.AuditLogArchiveJob", "AuditLogArchiveJob", "MOD-0021", "0 4 * * 0"),
             CreateEmailDispatchSweepRegistration(),
             CreateWorkflowEscalationSweepRegistration(),
+            CreateTaskRecurrenceSweepRegistration(),
             CreateDeferred("Diten.Platform.MOD-0009.ProvisioningRetryJob", "ProvisioningRetryJob", "MOD-0009", "*/2 * * * *")
         };
 
@@ -99,6 +101,53 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
             typeof(WorkflowEscalationSweepJob),
             typeof(WorkflowEscalationSweepJobArgs),
             new WorkflowEscalationSweepJobArgs(MaxItemsPerTenant: 100),
+            new BackgroundJobContext(
+                TriggerType: BackgroundJobTriggerTypes.Recurring,
+                TriggeredBy: nameof(PlatformRecurringJobRegistrar),
+                Metadata: new Dictionary<string, string>
+                {
+                    ["owner"] = owner,
+                    ["execution"] = "sweep"
+                }));
+    }
+
+    private RecurringJobRegistration CreateTaskRecurrenceSweepRegistration()
+    {
+        // The id is the CONFIGURATION KEY as well as the job's name — EnabledJobs is keyed by exactly this
+        // string, so a typo here is a job that silently never runs.
+        const string id = "Diten.Platform.MOD-0024.TaskRecurrenceSweepJob";
+        const string jobName = "TaskRecurrenceSweepJob";
+        const string owner = "MOD-0024";
+        // Hourly. Recurrence granularity is a day at the finest, so a minute-by-minute sweep would spend its
+        // whole life finding nothing; an hour still catches a daily rule on the day it is due.
+        const string cron = "0 * * * *";
+
+        // BOTH, not either. RegisterStandardJobs is the master switch and EnabledJobs is the per-job one, so a
+        // job is off by default twice over — which is why "recurrence doesn't work" must be checked against this
+        // configuration before it is filed as a defect.
+        var enabled = _options.RegisterStandardJobs
+                      && _options.EnabledJobs.TryGetValue(id, out var configuredEnabled)
+                      && configuredEnabled;
+
+        var descriptor = new BackgroundJobDescriptor(
+            Id: id,
+            ServiceName: ServiceName,
+            JobName: jobName,
+            Owner: owner,
+            CronExpression: cron,
+            // UTC, matching the schedule arithmetic. Nothing records a tenant's time zone, so anything else
+            // would be a guess — see TaskRecurrenceSchedule.
+            TimeZoneId: "UTC",
+            IsEnabled: enabled,
+            Queue: "platform",
+            MaxRetryAttempts: _options.DefaultRetryAttempts,
+            TriggerType: BackgroundJobTriggerTypes.Recurring);
+
+        return new RecurringJobRegistration(
+            descriptor,
+            typeof(TaskRecurrenceSweepJob),
+            typeof(TaskRecurrenceSweepJobArgs),
+            new TaskRecurrenceSweepJobArgs(MaxRulesPerTenant: 200),
             new BackgroundJobContext(
                 TriggerType: BackgroundJobTriggerTypes.Recurring,
                 TriggeredBy: nameof(PlatformRecurringJobRegistrar),

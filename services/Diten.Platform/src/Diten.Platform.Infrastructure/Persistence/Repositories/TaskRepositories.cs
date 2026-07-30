@@ -345,6 +345,21 @@ public sealed class TaskRecurrenceRuleRepository
         return await Collection.Find(filter).ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<TaskRecurrenceRule>> ListAllAsync(CancellationToken ct = default)
+    {
+        /*
+         * Sorted by ONE DateTimeOffset field, in the driver.
+         *
+         * BL-030: this entity carries three of them (StartsAt, EndsAt, LastGeneratedAt) and MongoDB serializes a
+         * DateTimeOffset as an ARRAY, so a two-key server-side sort over any pair of them fails at runtime with
+         * "cannot sort with keys that are parallel arrays". That is exactly how GetLatestByObjectRefAsync broke.
+         * One key is safe; a second one belongs in memory.
+         */
+        return await Collection.Find(ExecutionFilter)
+            .SortByDescending(x => x.CreatedAt)
+            .ToListAsync(ct);
+    }
+
     public async Task<bool> UpdateAsync(TaskRecurrenceRule rule, int expectedVersion, CancellationToken ct = default)
     {
         rule.Version = expectedVersion + 1;

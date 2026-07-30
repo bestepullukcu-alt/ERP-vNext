@@ -136,5 +136,12 @@ public interface ITaskRecurrenceRuleRepository
     Task<TaskRecurrenceRule> CreateAsync(TaskRecurrenceRule rule, CancellationToken ct = default);
     Task<TaskRecurrenceRule?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<IReadOnlyList<TaskRecurrenceRule>> ListActiveAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Every rule the tenant can see, active or not. The management surface has to show a paused rule — a rule
+    /// that vanishes when it is switched off cannot be switched back on.
+    /// </summary>
+    Task<IReadOnlyList<TaskRecurrenceRule>> ListAllAsync(CancellationToken ct = default);
+
     Task<bool> UpdateAsync(TaskRecurrenceRule rule, int expectedVersion, CancellationToken ct = default);
 }

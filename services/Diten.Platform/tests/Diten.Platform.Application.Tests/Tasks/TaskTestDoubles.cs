@@ -455,13 +455,45 @@ internal sealed class FakeChecklistRunRepository(params ChecklistRun[] seed) : I
     }
 }
 
+/// <summary>Task templates, tenant-filtered like the real repository.</summary>
+internal sealed class FakeTaskTemplateRepository(params TaskTemplate[] seed) : ITaskTemplateRepository
+{
+    public Task<TaskTemplate> CreateAsync(TaskTemplate template, CancellationToken ct = default)
+        => Task.FromResult(template);
+
+    public Task<TaskTemplate?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => Task.FromResult(seed.FirstOrDefault(x => x.Id == id && x.TenantId == TaskTestData.Tenant));
+
+    public Task<IReadOnlyList<TaskTemplate>> ListActiveAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<TaskTemplate>>(
+            seed.Where(x => x.TenantId == TaskTestData.Tenant && x.IsActive).ToList());
+}
+
 internal sealed class FakeChecklistTemplateRepository(params ChecklistTemplate[] seed) : IChecklistTemplateRepository
 {
+    /// <summary>
+    /// A checklist template every instance answers for, so a caller that only needs "a template exists" does not
+    /// have to build one. Seeded templates still win — passing one in overrides this entirely.
+    /// </summary>
+    public static readonly Guid SeededId = Guid.Parse("9c9c9c9c-9c9c-9c9c-9c9c-9c9c9c9c9c9c");
+
+    private static readonly ChecklistTemplate Seeded = new()
+    {
+        Id = SeededId,
+        TenantId = TaskTestData.Tenant,
+        Name = "Varsayılan kontrol listesi",
+        IsActive = true,
+        Code = "DEFAULT-CHECKLIST",
+        Items = [new ChecklistTemplateItem { Code = "step-1", LabelText = "İlk adım" }]
+    };
+
     public Task<ChecklistTemplate> CreateAsync(ChecklistTemplate template, CancellationToken ct = default)
         => Task.FromResult(template);
 
     public Task<ChecklistTemplate?> GetByIdAsync(Guid id, CancellationToken ct = default)
-        => Task.FromResult(seed.FirstOrDefault(x => x.Id == id && x.TenantId == TaskTestData.Tenant));
+        => Task.FromResult(
+            seed.FirstOrDefault(x => x.Id == id && x.TenantId == TaskTestData.Tenant)
+            ?? (id == SeededId ? Seeded : null));
 
     public Task<IReadOnlyList<ChecklistTemplate>> ListActiveAsync(CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<ChecklistTemplate>>(
@@ -580,6 +612,102 @@ internal sealed class FakeWorkItemSlaCalculator
 
         return Answer ?? Diten.Platform.Application.Features.WorkAggregation.WorkItemContract.SlaOnTrack;
     }
+}
+
+/// <summary>
+/// Phase 4 — recurrence rules, stored in one list and READ THROUGH THE TENANT CONTEXT.
+///
+/// <para>The tenant filter is the point of this double, not decoration. The sweep runs with no user context, so
+/// a read that ignored the current tenant would hand one tenant's rules to another's pass and create their work
+/// in the wrong place — a leak of WORK rather than of information, and far harder to notice. Honouring
+/// ITenantContext here is what lets a test prove TenantScope is load-bearing.</para>
+///
+/// <para>The expected-version write is real too: it is the mechanism that makes two concurrent sweeps produce
+/// one task, so a double that always accepted the write would make the duplicate guard untestable.</para>
+/// </summary>
+internal sealed class FakeTaskRecurrenceRuleRepository : ITaskRecurrenceRuleRepository
+{
+    private readonly List<TaskRecurrenceRule> _rules = [];
+    private readonly ITenantContext _tenantContext;
+
+    public FakeTaskRecurrenceRuleRepository(ITenantContext tenantContext, params TaskRecurrenceRule[] seed)
+    {
+        _tenantContext = tenantContext;
+        _rules.AddRange(seed);
+    }
+
+    /// <summary>Everything stored, across every tenant — for assertions, never for the code under test.</summary>
+    public IReadOnlyList<TaskRecurrenceRule> All => _rules;
+
+    public Task<TaskRecurrenceRule> CreateAsync(TaskRecurrenceRule rule, CancellationToken ct = default)
+    {
+        _rules.Add(rule);
+        return Task.FromResult(rule);
+    }
+
+    public Task<TaskRecurrenceRule?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        var stored = _rules.FirstOrDefault(r => r.Id == id && r.TenantId == _tenantContext.TenantId);
+        return Task.FromResult(stored is null ? null : Detach(stored));
+    }
+
+    public Task<IReadOnlyList<TaskRecurrenceRule>> ListActiveAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<TaskRecurrenceRule>>(_rules
+            .Where(r => r.TenantId == _tenantContext.TenantId && r.IsActive && r.DeletedAt is null)
+            .Select(Detach)
+            .ToList());
+
+    public Task<IReadOnlyList<TaskRecurrenceRule>> ListAllAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<TaskRecurrenceRule>>(_rules
+            .Where(r => r.TenantId == _tenantContext.TenantId)
+            .Select(Detach)
+            .ToList());
+
+    public Task<bool> UpdateAsync(TaskRecurrenceRule rule, int expectedVersion, CancellationToken ct = default)
+    {
+        var stored = _rules.FirstOrDefault(r => r.Id == rule.Id && r.TenantId == _tenantContext.TenantId);
+        if (stored is null || stored.Version != expectedVersion)
+        {
+            return Task.FromResult(false);
+        }
+
+        stored.Version = expectedVersion + 1;
+        stored.Name = rule.Name;
+        stored.Frequency = rule.Frequency;
+        stored.Interval = rule.Interval;
+        stored.StartsAt = rule.StartsAt;
+        stored.EndsAt = rule.EndsAt;
+        stored.TaskTemplateId = rule.TaskTemplateId;
+        stored.IsActive = rule.IsActive;
+        stored.DeletedAt = rule.DeletedAt;
+        stored.LastProcessInstanceId = rule.LastProcessInstanceId;
+        stored.LastGeneratedAt = rule.LastGeneratedAt;
+        return Task.FromResult(true);
+    }
+
+    /// <summary>
+    /// A detached copy, like the real repository: Mongo deserializes a fresh document per read, so a caller that
+    /// mutates an entity and then LOSES the expected-version write must not have changed the stored state. The
+    /// task repository double learned this the hard way — handing out the stored reference made a rejected write
+    /// still appear to take effect.
+    /// </summary>
+    private static TaskRecurrenceRule Detach(TaskRecurrenceRule rule) => new()
+    {
+        Id = rule.Id,
+        TenantId = rule.TenantId,
+        Name = rule.Name,
+        Frequency = rule.Frequency,
+        Interval = rule.Interval,
+        StartsAt = rule.StartsAt,
+        EndsAt = rule.EndsAt,
+        TaskTemplateId = rule.TaskTemplateId,
+        IsActive = rule.IsActive,
+        DeletedAt = rule.DeletedAt,
+        LastProcessInstanceId = rule.LastProcessInstanceId,
+        LastGeneratedAt = rule.LastGeneratedAt,
+        Version = rule.Version,
+        CreatedAt = rule.CreatedAt
+    };
 }
 
 internal sealed class FakeTaskReviewService : Diten.Platform.Application.Features.Tasks.Services.ITaskReviewService

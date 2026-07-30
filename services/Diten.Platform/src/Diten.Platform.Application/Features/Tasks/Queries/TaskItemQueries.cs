@@ -32,3 +32,13 @@ public sealed record GetTaskAssignmentPositionLookupQuery(string CorrelationId)
 /// </summary>
 public sealed record GetTaskAssignmentPersonLookupQuery(string CorrelationId)
     : IRequest<Response<IReadOnlyList<AssignablePersonDto>>>;
+
+/// <summary>
+/// Every recurrence rule the tenant can see, ACTIVE OR NOT — a paused rule that vanished from the list could
+/// never be resumed (Phase 4).
+/// </summary>
+public sealed record GetTaskRecurrenceRuleListQuery(string CorrelationId)
+    : IRequest<Response<IReadOnlyList<TaskRecurrenceRuleDto>>>;
+
+public sealed record GetTaskRecurrenceRuleByIdQuery(Guid Id, string CorrelationId)
+    : IRequest<Response<TaskRecurrenceRuleDto>>;
