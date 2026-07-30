@@ -335,8 +335,9 @@
         state.scope === 'all' ? true
             : state.scope === 'mine' ? !item.delegator
                 : item.delegator === state.scope;
-    const isTerminal = (item) => ['Done', 'Cancelled'].includes(item.normalizedStatus)
-        || item.lifecycle === 'Done' || item.lifecycle === 'Cancelled';
+    // ONE definition of "closed", owned by the data module. It used to be duplicated here, and the action filter
+    // getActions now applies (BL-038) depends on this surface agreeing with it exactly — two copies would drift.
+    const isTerminal = (item) => data.isTerminal(item);
     const inTab = (item, tab) => item.catalogVisible !== false && !item.dismissed && itemInScope(item)
         && (tab === 'history' ? isTerminal(item) : item.tab === tab && !isTerminal(item));
     // Tab counters ignore in-tab filters so they reflect the true load per scope.

@@ -210,6 +210,13 @@
          * happened to set `input: 'date'` would, and none ever did. This is what actually wires the picker up.
          */
         input: action.input || (action.code === 'plan' ? 'date' : null),
+        /*
+         * Where the action HAPPENS: 'inline' acts here, 'deeplink' sends the reader to the source. Carried
+         * through because getActions needs it — a closed item may still offer "open in source" while offering
+         * nothing to press here (BL-038). Left unresolved (null, not 'inline') so getActions can apply the
+         * item-level `actionDepth` default itself, exactly the way the contract resolves it.
+         */
+        depth: action.depth || null,
         role: ['reject', 'return', 'declineMeeting'].includes(action.code) ? 'reject'
             : ['approve', 'accept', 'claim', 'complete', 'resolve', 'signoff', 'start', 'resume', 'acceptMeeting'].includes(action.code) ? 'accept'
                 : null
@@ -398,7 +405,43 @@
         // Showcase fixtures declare their provenance so the curated allowlist applies to them alone.
         ? allFixtureGroups().map((fixture) => toPresentation(fixture, { provenance: 'fixture' }))
         : []);
-    const getActions = (item) => clone(item?.actions || []);
+    /*
+     * Is this work finished? Terminal means Done or Cancelled, read from EITHER the normalized status or the task
+     * lifecycle, because the two can disagree on the wire and "finished" is the stronger claim.
+     *
+     * Exported so app.js reads the same definition instead of keeping a second copy: two definitions of "closed"
+     * would drift, and the tab routing, the read-only rules and the action filter below all depend on it agreeing.
+     */
+    const isTerminal = (item) => ['Done', 'Cancelled'].includes(item?.normalizedStatus)
+        || item?.lifecycle === 'Done' || item?.lifecycle === 'Cancelled';
+
+    /*
+     * The actions a surface may offer for an item.
+     *
+     * This is the ONE place both surfaces read from — app.js's `itemActions` wraps it, and the list rows, the
+     * table, the bulk bar and the detail rail all go through that — so a rule written here reaches every surface
+     * at once and no surface can forget it.
+     *
+     * BL-038: a CLOSED item offers no INLINE action. History is meant to be read-only, and until now that held
+     * only because TaskWorkItemProvider happens to send an empty action set for terminal work — the surface
+     * itself would happily render a disabled button if one ever arrived. This makes the rule the surface's own.
+     *
+     * `deeplink` actions survive deliberately: opening the SOURCE record of a finished task is a legitimate
+     * thing to want, and the depth axis already means exactly "acts here / goes elsewhere". The default is
+     * `inline` (resolved against the item, then the action, the same order the contract uses), so an action that
+     * declares no depth is filtered.
+     *
+     * Why here and NOT in fixture-contract.js: validateItems DROPS an item that fails validation
+     * (work-items-api.js), so a contract rule would make a mis-projected task VANISH from History. A lost task is
+     * worse than a leaked disabled button — and this codebase has already lost real items that way once, to
+     * `catalogVisible`.
+     */
+    const getActions = (item) => {
+        const actions = clone(item?.actions || []);
+        if (!isTerminal(item)) { return actions; }
+        const itemDepth = item?.actionDepth || 'inline';
+        return actions.filter((action) => (action.depth || itemDepth) === 'deeplink');
+    };
     const buildTriggers = () => (showcaseFixturesEnabled()
         ? clone(global.WorkCenterNextFixtures?.triggerOnly || [])
         : []);
@@ -434,6 +477,8 @@
         },
         tabFor,
         segmentFor,
+        // One definition of "closed", shared with app.js — see isTerminal for why it must not be duplicated.
+        isTerminal,
         // Exposed so the RENDER can measure "how long ago" against the same clock the rest of the surface uses:
         // the showcase's frozen date for fixtures, the real one for real work.
         referenceDate,

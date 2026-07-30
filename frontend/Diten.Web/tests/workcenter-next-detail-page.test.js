@@ -1719,3 +1719,68 @@ describe("no activity writer freezes its own timestamp", () => {
     expect(source).toContain("atMs: data.referenceDate(");
   });
 });
+
+/*
+ * BL-038 on the DETAIL surface.
+ *
+ * The rule lives in one place — mock-data's getActions, which app.js's `itemActions` wraps — so the list rows
+ * and this page's action rail read the same filtered set. These two cases are the list's cases repeated here:
+ * that is the whole point of the ticket, and a rule written on one surface only is how the two drift.
+ */
+describe("a closed task's actions on the detail page (BL-038)", () => {
+  const closedTask = (actions) => projectionItem({
+    normalizedStatus: "Done",
+    taskLifecycle: "Done",
+    executionState: "notApplicable",
+    actions
+  });
+
+  const disabledInline = {
+    code: "complete",
+    label: { kind: "resource", key: "WorkAggregation_Action_Complete" },
+    semanticType: "complete",
+    enabled: false,
+    source: "provider",
+    disabledReasonCode: "TERMINAL",
+    disabledReason: { kind: "resource", key: "WorkAggregation_ActionDisabled_PermissionDenied" },
+    requiresConfirmation: false,
+    requiresReason: false,
+    requiresEvidence: false,
+    supportsBulk: false,
+    riskLevel: "normal"
+  };
+
+  it("offers no inline action, even when the provider sends a disabled one", async () => {
+    await bootDetailPage(closedTask([disabledInline]));
+
+    expect(app().querySelectorAll("[data-wcn-action]")).toHaveLength(0);
+  });
+
+  it("still offers a deeplink action — the source record stays reachable", async () => {
+    await bootDetailPage(closedTask([Object.assign({}, disabledInline, {
+      code: "openSource",
+      semanticType: "openSource",
+      enabled: true,
+      disabledReasonCode: null,
+      disabledReason: null,
+      depth: "deeplink"
+    })]));
+
+    expect(app().querySelectorAll("[data-wcn-action]").length).toBeGreaterThan(0);
+  });
+
+  it("still renders the task itself — the rule removes buttons, not the page", async () => {
+    // Same reasoning as the list: the filter must never cost the reader the record.
+    await bootDetailPage(closedTask([disabledInline]));
+
+    expect(app().textContent).toContain("Yeni maliyet merkezi");
+  });
+
+  it("leaves an OPEN task's inline actions alone", async () => {
+    // Non-vacuity for all three above: the filter must be about being closed, not about this selector never
+    // matching. projectionItem() is InProgress and carries one enabled inline action.
+    await bootDetailPage(projectionItem());
+
+    expect(app().querySelectorAll("[data-wcn-action]").length).toBeGreaterThan(0);
+  });
+});

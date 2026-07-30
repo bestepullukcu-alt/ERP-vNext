@@ -129,6 +129,35 @@ const historyItem = (n, lifecycle = "Done") => item(n, {
   actions: []
 });
 
+/**
+ * A DISABLED inline action on closed work — what the contract permits (it forbids only ENABLED inline actions on
+ * a terminal item) and therefore exactly the shape that used to leak a button into History.
+ */
+const terminalInlineAction = () => ({
+  code: "complete",
+  label: { kind: "resource", key: "WorkAggregation_Action_Complete" },
+  semanticType: "complete",
+  enabled: false,
+  source: "provider",
+  disabledReasonCode: "TERMINAL",
+  disabledReason: { kind: "resource", key: "WorkAggregation_ActionDisabled_PermissionDenied" },
+  requiresConfirmation: false,
+  requiresReason: false,
+  requiresEvidence: false,
+  supportsBulk: false,
+  riskLevel: "normal"
+});
+
+/** "Open in the source" — allowed on closed work, because reading a finished record is not acting on it. */
+const terminalDeeplinkAction = () => Object.assign(terminalInlineAction(), {
+  code: "openSource",
+  semanticType: "openSource",
+  enabled: true,
+  disabledReasonCode: null,
+  disabledReason: null,
+  depth: "deeplink"
+});
+
 /** Parked on someone else — the "Bekleyen" segment. */
 const waitingItem = (n) => item(n, {
   normalizedStatus: "Waiting",
@@ -389,37 +418,52 @@ describe("which tab an item belongs to", () => {
     expect(app().querySelectorAll("[data-wcn-action]").length).toBeGreaterThan(0);
   });
 
-  it("MEASURED: the list does not itself strip actions in History (reported, not fixed)", async () => {
+  it("strips a closed item's INLINE action, even when the provider sends one (BL-038)", async () => {
     /*
-     * FINDING. History being read-only rests entirely on the provider sending no actions. Hand the list a
-     * terminal item carrying a DISABLED action — which the contract permits, since it only forbids ENABLED
-     * inline ones — and the row renders that button in History anyway.
+     * This assertion used to pin the OPPOSITE, as a measured finding: History was read-only only because
+     * TaskWorkItemProvider happens to send an empty action set for terminal work, and the surface itself would
+     * render a disabled button if one ever arrived. BL-038 made the rule the surface's own — it now lives in
+     * getActions, the single point both surfaces read actions through.
      *
-     * Nothing reaches this state today: TaskWorkItemProvider returns an empty action set for terminal items. But
-     * it is one provider bug away, and the surface would not catch it. Pinned as the current truth rather than
-     * repaired, because this ticket weaves the net and reports what it catches; the fix is a product decision
-     * (strip in the list, or forbid disabled actions on terminal items in the contract too).
+     * The action here is DISABLED, which the contract permits: it only forbids ENABLED inline actions on a
+     * terminal item, so this is precisely the case that used to leak through.
      */
     const closedWithDisabledAction = historyItem(1);
-    closedWithDisabledAction.actions = [{
-      code: "complete",
-      label: { kind: "resource", key: "WorkAggregation_Action_Complete" },
-      semanticType: "complete",
-      enabled: false,
-      source: "provider",
-      disabledReasonCode: "TERMINAL",
-      disabledReason: { kind: "resource", key: "WorkAggregation_ActionDisabled_PermissionDenied" },
-      requiresConfirmation: false,
-      requiresReason: false,
-      requiresEvidence: false,
-      supportsBulk: false,
-      riskLevel: "normal"
-    }];
+    closedWithDisabledAction.actions = [terminalInlineAction()];
     await bootListPage([closedWithDisabledAction]);
     await clickTab("history");
 
-    // Today's behaviour, pinned so the day someone decides to strip it, this test says where to look.
+    expect(app().querySelectorAll("[data-wcn-action]")).toHaveLength(0);
+  });
+
+  it("keeps a closed item's DEEPLINK action — opening the source is still legitimate", async () => {
+    /*
+     * The direction half of the rule, and the reason it is a filter rather than a blanket "no actions on closed
+     * work": a finished task's source record is a real thing to want to open. Without this case, a mutation that
+     * filtered EVERYTHING would pass the test above and nobody would notice.
+     */
+    const closedWithDeeplink = historyItem(1);
+    closedWithDeeplink.actions = [terminalDeeplinkAction()];
+    await bootListPage([closedWithDeeplink]);
+    await clickTab("history");
+
     expect(app().querySelectorAll("[data-wcn-action]").length).toBeGreaterThan(0);
+  });
+
+  it("still SHOWS the closed item — the rule removes its button, never the row", async () => {
+    /*
+     * The reason BL-038 put this rule in getActions instead of the contract. validateItems DROPS an item that
+     * fails validation, so a contract rule would have made a mis-projected task disappear from History
+     * altogether. A lost task is worse than a leaked disabled button, and this codebase has already lost real
+     * items exactly that way once (catalogVisible).
+     */
+    const closedWithDisabledAction = historyItem(1);
+    closedWithDisabledAction.actions = [terminalInlineAction()];
+    await bootListPage([closedWithDisabledAction]);
+    await clickTab("history");
+
+    expect(rowIds()).toEqual([ID(1)]);
+    expect(tabCount("history")).toBe(1);
   });
 });
 
