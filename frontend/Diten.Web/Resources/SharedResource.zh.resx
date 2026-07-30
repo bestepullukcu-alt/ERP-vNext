@@ -545,6 +545,12 @@
   <data name="Nav.Domain.WORKSPACE" xml:space="preserve">
     <value>工作区</value>
   </data>
+  <data name="Nav.Module.PPM" xml:space="preserve"><value>项目与项目组合管理</value></data>
+  <data name="Nav.Page.PPM" xml:space="preserve"><value>PPM 概览</value></data>
+  <data name="Nav.Page.PORTFOLIOS" xml:space="preserve"><value>项目组合</value></data>
+  <data name="Nav.Page.INITIATIVES" xml:space="preserve"><value>举措</value></data>
+  <data name="Nav.Page.PROGRAMS" xml:space="preserve"><value>项目群</value></data>
+  <data name="Nav.Page.PROJECTS" xml:space="preserve"><value>项目</value></data>
   <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
     <value>任务中心</value>
   </data>

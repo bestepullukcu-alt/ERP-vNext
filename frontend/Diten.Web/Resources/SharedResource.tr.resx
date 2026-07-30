@@ -604,6 +604,12 @@
   <data name="Nav.Domain.WORKSPACE" xml:space="preserve">
     <value>Çalışma Alanı</value>
   </data>
+  <data name="Nav.Module.PPM" xml:space="preserve"><value>Proje ve Portföy Yönetimi</value></data>
+  <data name="Nav.Page.PPM" xml:space="preserve"><value>PPM Genel Bakış</value></data>
+  <data name="Nav.Page.PORTFOLIOS" xml:space="preserve"><value>Portföyler</value></data>
+  <data name="Nav.Page.INITIATIVES" xml:space="preserve"><value>Girişimler</value></data>
+  <data name="Nav.Page.PROGRAMS" xml:space="preserve"><value>Programlar</value></data>
+  <data name="Nav.Page.PROJECTS" xml:space="preserve"><value>Projeler</value></data>
   <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
     <value>Görev Merkezi</value>
   </data>

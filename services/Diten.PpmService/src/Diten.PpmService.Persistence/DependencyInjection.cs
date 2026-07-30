@@ -1,0 +1,53 @@
+using Diten.PpmService.Domain.Repositories;
+using Diten.PpmService.Persistence.Mongo;
+using Diten.PpmService.Persistence.Repositories;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using MongoDB.Bson;
+using MongoDB.Driver;
+
+namespace Diten.PpmService.Persistence;
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddPpmPersistence(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        PpmBsonConfiguration.Configure();
+
+        services.AddOptions<PpmMongoOptions>()
+            .Bind(configuration.GetSection(PpmMongoOptions.SectionName))
+            .Validate(options => !string.IsNullOrWhiteSpace(options.ConnectionString),
+                "Mongo:ConnectionString is required.")
+            .Validate(options => !string.IsNullOrWhiteSpace(options.DatabaseName),
+                "Mongo:DatabaseName is required.")
+            .ValidateOnStart();
+
+        services.AddSingleton<IMongoClient>(provider =>
+        {
+            var options = provider.GetRequiredService<IOptions<PpmMongoOptions>>().Value;
+            var settings = MongoClientSettings.FromConnectionString(options.ConnectionString);
+            return new MongoClient(settings);
+        });
+        services.AddSingleton(provider =>
+        {
+            var options = provider.GetRequiredService<IOptions<PpmMongoOptions>>().Value;
+            return provider.GetRequiredService<IMongoClient>().GetDatabase(options.DatabaseName);
+        });
+
+        services.AddScoped<PpmMongoContext>();
+        services.AddScoped<IPortfolioRepository, PortfolioRepository>();
+        services.AddScoped<IInitiativeRepository, InitiativeRepository>();
+        services.AddScoped<IProgramRepository, ProgramRepository>();
+        services.AddScoped<IProjectRepository, ProjectRepository>();
+        services.AddScoped<IAuditIntentRepository, AuditIntentRepository>();
+        services.AddScoped<IPpmUnitOfWork, PpmUnitOfWork>();
+        services.AddHostedService<PpmMongoIndexInitializer>();
+        services.AddHealthChecks()
+            .AddCheck<PpmMongoTransactionHealthCheck>("ppm-mongo-transactions");
+
+        return services;
+    }
+}

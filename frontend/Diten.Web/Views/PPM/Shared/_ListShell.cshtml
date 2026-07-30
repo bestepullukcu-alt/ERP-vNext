@@ -1,0 +1,41 @@
+@model Diten.Web.Models.PPM.PpmListPageViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["SelectedText"] = SharedLocalizer["SelectedCount"].Value;
+    ViewData["ClearSelectionText"] = SharedLocalizer["ClearSelection"].Value;
+    ViewData["ShowAllText"] = SharedLocalizer["ShowAll"].Value;
+    ViewData["ApplyText"] = SharedLocalizer["Apply"].Value;
+    ViewData["ResetText"] = SharedLocalizer["Reset"].Value;
+    ViewData["CancelText"] = SharedLocalizer["Cancel"].Value;
+    ViewData["SaveText"] = SharedLocalizer["Save"].Value;
+    ViewData["SelectText"] = SharedLocalizer["SelectPlaceholder"].Value;
+    ViewData["EditText"] = SharedLocalizer["EditRecord"].Value;
+    ViewData["DeleteText"] = SharedLocalizer["Delete"].Value;
+    ViewData["ActionsText"] = SharedLocalizer["ViewDetails"].Value;
+    ViewData["VisibilityBlockedText"] = SharedLocalizer["NotAvailable"].Value;
+}
+
+<partial name="~/Views/PPM/Shared/_Filter.cshtml" model="Model" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@ViewData["TitleText"]</h5>
+    <p class="mb-0 text-muted">@ViewData["PageDescription"]</p>
+</div>
+
+<div id="bulkActionBar" class="card mb-4 d-none">
+    <div class="card-body d-flex align-items-center justify-content-between py-3">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bx bx-check-circle text-primary icon-md"></i>
+            <span id="bulkSelectedCount" class="fw-medium text-heading">0</span>
+            <span class="text-muted">@ViewData["SelectedText"]</span>
+        </div>
+        <button type="button" id="btnClearSelection" class="btn btn-label-secondary">
+            @ViewData["ClearSelectionText"]
+        </button>
+    </div>
+</div>
+
+<partial name="~/Views/PPM/Shared/_DataTable.cshtml" model="Model" />
+<partial name="~/Views/PPM/Shared/_DetailsQuickView.cshtml" model="Model" />
+<partial name="~/Views/PPM/Shared/_CreateEditOffcanvas.cshtml" model="Model" />

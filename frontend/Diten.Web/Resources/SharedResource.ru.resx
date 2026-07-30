@@ -545,6 +545,12 @@
   <data name="Nav.Domain.WORKSPACE" xml:space="preserve">
     <value>Рабочая область</value>
   </data>
+  <data name="Nav.Module.PPM" xml:space="preserve"><value>Управление проектами и портфелями</value></data>
+  <data name="Nav.Page.PPM" xml:space="preserve"><value>Обзор PPM</value></data>
+  <data name="Nav.Page.PORTFOLIOS" xml:space="preserve"><value>Портфели</value></data>
+  <data name="Nav.Page.INITIATIVES" xml:space="preserve"><value>Инициативы</value></data>
+  <data name="Nav.Page.PROGRAMS" xml:space="preserve"><value>Программы</value></data>
+  <data name="Nav.Page.PROJECTS" xml:space="preserve"><value>Проекты</value></data>
   <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
     <value>Центр задач</value>
   </data>

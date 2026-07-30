@@ -545,6 +545,12 @@
   <data name="Nav.Domain.WORKSPACE" xml:space="preserve">
     <value>Espacio de trabajo</value>
   </data>
+  <data name="Nav.Module.PPM" xml:space="preserve"><value>Gestión de proyectos y carteras</value></data>
+  <data name="Nav.Page.PPM" xml:space="preserve"><value>Resumen de PPM</value></data>
+  <data name="Nav.Page.PORTFOLIOS" xml:space="preserve"><value>Carteras</value></data>
+  <data name="Nav.Page.INITIATIVES" xml:space="preserve"><value>Iniciativas</value></data>
+  <data name="Nav.Page.PROGRAMS" xml:space="preserve"><value>Programas</value></data>
+  <data name="Nav.Page.PROJECTS" xml:space="preserve"><value>Proyectos</value></data>
   <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
     <value>Centro de tareas</value>
   </data>

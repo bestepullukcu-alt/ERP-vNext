@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader>
+  <data name="WorkspaceTitle"><value>مساحة عمل المشروع</value></data><data name="BackToProjects"><value>العودة إلى المشاريع</value></data><data name="Loading"><value>جارٍ تحميل المشروع…</value></data>
+  <data name="Overview"><value>نظرة عامة</value></data><data name="CharterGeneral"><value>الميثاق / عام</value></data><data name="Context"><value>سياق المشروع</value></data>
+  <data name="Code"><value>الرمز</value></data><data name="Name"><value>الاسم</value></data><data name="Description"><value>الوصف</value></data><data name="ParentType"><value>نوع الأصل</value></data><data name="ParentId"><value>معرّف الأصل</value></data><data name="Parent"><value>السجل الأصل</value></data>
+  <data name="Lifecycle"><value>دورة الحياة</value></data><data name="VisibilityPolicy"><value>سياسة الظهور</value></data><data name="Referenceability"><value>قابلية الإسناد</value></data><data name="Version"><value>الإصدار</value></data>
+  <data name="Referenceable"><value>متاح للإسنادات الجديدة</value></data><data name="NotReferenceable"><value>غير متاح للإسنادات الجديدة</value></data><data name="NotAvailable"><value>غير متاح</value></data>
+  <data name="Error400"><value>طلب المشروع غير صالح.</value></data><data name="Error401"><value>سجّل الدخول لعرض هذا المشروع.</value></data><data name="Error403"><value>ليست لديك صلاحية عرض هذا المشروع.</value></data><data name="Error404"><value>لم يتم العثور على المشروع.</value></data><data name="Error409"><value>تغيّر المشروع. عُد إلى القائمة.</value></data><data name="Error503"><value>خدمة المشروع غير متاحة مؤقتًا.</value></data><data name="ErrorGeneric"><value>تعذر تحميل مساحة عمل المشروع.</value></data>
+</root>

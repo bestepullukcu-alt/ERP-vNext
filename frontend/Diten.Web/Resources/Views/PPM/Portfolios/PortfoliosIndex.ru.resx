@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PortfoliosTitle" xml:space="preserve"><value>Портфели</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Управляйте объектами «Портфели» арендатора, их жизненным циклом и возможностью ссылок.</value></data>
+  <data name="AddNewPortfolio" xml:space="preserve"><value>Добавить: портфель</value></data>
+  <data name="EditPortfolio" xml:space="preserve"><value>Изменить: портфель</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="Name" xml:space="preserve"><value>Наименование</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Жизненный цикл</value></data>
+  <data name="VisibilityPolicyKey" xml:space="preserve"><value>Политика видимости</value></data>
+  <data name="Referenceability" xml:space="preserve"><value>Возможность ссылок</value></data>
+  <data name="Referenceable" xml:space="preserve"><value>Доступно для новых ссылок</value></data>
+  <data name="NotReferenceable" xml:space="preserve"><value>Недоступно для новых ссылок</value></data>
+  <data name="PortfoliosLoadingState" xml:space="preserve"><value>Загрузка: Портфели…</value></data>
+  <data name="PortfoliosEmptyState" xml:space="preserve"><value>Объекты «Портфели» не найдены.</value></data>
+  <data name="PortfoliosErrorState" xml:space="preserve"><value>Не удалось загрузить список «Портфели».</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Активный</value></data>
+  <data name="LifecycleArchived" xml:space="preserve"><value>Архивный</value></data>
+  <data name="ArchivePortfolioConfirmation" xml:space="preserve"><value>Архивировать портфель? Новые ссылки будут запрещены.</value></data>
+</root>

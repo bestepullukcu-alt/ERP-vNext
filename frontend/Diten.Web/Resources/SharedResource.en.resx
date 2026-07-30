@@ -604,6 +604,12 @@
   <data name="Nav.Domain.WORKSPACE" xml:space="preserve">
     <value>Workspace</value>
   </data>
+  <data name="Nav.Module.PPM" xml:space="preserve"><value>Project &amp; Portfolio Management</value></data>
+  <data name="Nav.Page.PPM" xml:space="preserve"><value>PPM Overview</value></data>
+  <data name="Nav.Page.PORTFOLIOS" xml:space="preserve"><value>Portfolios</value></data>
+  <data name="Nav.Page.INITIATIVES" xml:space="preserve"><value>Initiatives</value></data>
+  <data name="Nav.Page.PROGRAMS" xml:space="preserve"><value>Programs</value></data>
+  <data name="Nav.Page.PROJECTS" xml:space="preserve"><value>Projects</value></data>
   <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
     <value>Task Center</value>
   </data>
