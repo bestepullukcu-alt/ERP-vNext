@@ -9,9 +9,10 @@ not production authorization or production-readiness acceptance.
 
 - Phase 2A evidence promotes the module pack to `review`, not `done`.
 - The implemented scope is Phase 2A Context & Referenceability Core only.
-- The temporary browser-to-database chain is evidenced; production deployment,
-  real AuthService PPM grant provisioning, and production-environment
-  replica-set rollback readiness are not claimed.
+- The temporary browser-to-database chain and isolated live PSS-B1 → PPM-I1
+  entitlement chain are evidenced; production deployment/configuration,
+  branch integration, and production-environment replica-set rollback
+  readiness are not claimed.
 - Phase 2B, the typed ExternalContextReference provider, MOD-0354/DWS runtime integration, WorkCenter integration, and all four protected WorkCenter hazards remain excluded.
 
 ## 2. Implemented repository surfaces
@@ -129,13 +130,22 @@ shared signed-JWT evaluator and the PPM adapter now implement the reusable
 in-process enforcement path; their focused suites pass **21/21** and **17/17**
 respectively.
 
-This does not establish production grant readiness. The real AuthService
-tenant-administrator token used during verification contained **zero** PPM
-permissions. The successful end-to-end smoke used an ephemeral,
-environment-only signed JWT bootstrap. It did not alter repository seed data,
-AuthService data, roles, grants, or tenant configuration. Actual PPM permission
-grant provisioning therefore remains open and must not be inferred from the
-smoke result.
+The authorization and entitlement code reality has advanced beyond the
+original browser smoke. PSS-A implements exact, explicit PPM grants without
+implicit entitlement-to-grant creation (`23d56efb`). PSS-B1 supplies the
+authoritative PPM entitlement provider (`90eec003`), PSS-B2A supplies the
+secure PPM audit consumer foundation (`121fa2bf`), the shared permission
+evaluator is present (`5d183069`), and the PPM consumer enforces entitlement
+before exact permission evaluation (`11aa3766`).
+
+These checkpoints establish executable repository behavior, not completed
+production deployment. The original real AuthService tenant-administrator
+token used during browser verification contained **zero** PPM permissions,
+and that smoke used an ephemeral, environment-only signed JWT. No AuthService
+data, roles, grants, or tenant configuration were changed by that smoke or by
+the live evidence recorded below. Production configuration, deployment,
+authorized tenant-scoped grant administration, and branch integration must
+not be inferred from these commits.
 
 The service does not calculate roles, grants, or effective permissions and
 does not repurpose `IEntitlementChecker` as a permission engine. Missing tenant
@@ -179,35 +189,97 @@ and Mongo ports are verification-only; the governed production-facing browser
 boundary remains Gateway `5000`, and service port `5061` remains non-browser
 facing.
 
-The successful smoke used the ephemeral signed JWT bootstrap described in
-§6. It is real UI-to-database CRUD evidence, but it is not evidence that
-AuthService currently provisions the required PPM grants.
+The successful browser smoke used the ephemeral signed JWT bootstrap described
+in §6. It is real UI-to-database CRUD evidence, but it is not evidence that
+the PSS/Auth/PPM checkpoints have been merged, configured, and deployed in a
+production environment.
 
 DataTable verification now reports **60 PASS / 4 known policy/profile false
 positives per resource surface**. The four remaining findings are recorded as
 verifier-policy/profile incompatibilities rather than silently treated as
 passes.
 
-## 8. Remaining blockers
+## 8. Live PSS-B1 → PPM-I1 Entitlement Evidence — 2026-07-30
+
+This runtime evidence was produced from commit `11aa3766` in an isolated local
+topology. It exercised the real
+`Diten.Platform.API` PSS-B1
+`InternalPpmEntitlementDecisionController`, its real `IEntitlementChecker`,
+the real `Diten.PpmService` PPM-I1 consumer, and real Mongo repositories.
+No mock provider, stub controller, or fake PASS was used.
+
+The isolated ports were:
+
+| Runtime | Port |
+|---|---:|
+| Disposable Mongo replica set | `27028` |
+| Real Platform provider — enabled | `5257` |
+| Real Platform provider — disabled | `5258` |
+| Real PPM consumer — correct credential | `5261` |
+| Real PPM consumer — wrong credential | `5262` |
+| Real PPM consumer — disabled provider | `5263` |
+| Real PPM consumer — unreachable provider | `5264` |
+
+The observed HTTP matrix was:
+
+| Scenario | Platform result | PPM result |
+|---|---:|---:|
+| Active PPM entitlement + exact permission | `200`, `isAllowed=true` | `201` |
+| PPM entitlement deny + permission present | `200`, `isAllowed=false` | `403` |
+| Active entitlement + permission absent | `200`, `isAllowed=true` | `403` |
+| Expired entitlement + stale permission | `200`, `isAllowed=false` | `403` |
+| Wrong dedicated credential | `401` | `503` |
+| Provider disabled | `503` | `503` |
+| Provider unreachable | Not reachable | `503` |
+| Missing object after both gates | Not applicable | `404` |
+| Cross-tenant object after both gates | Not applicable | `404` |
+| Soft-deleted object after both gates | Not applicable | `404` |
+
+The allow path created a real Portfolio and then soft-deleted it; the persisted
+record remained with `IsDeleted=true` and version `2`. Its create and
+soft-delete mutations produced two transaction-local audit intents. The
+entitlement-deny, permission-deny, and expired-entitlement attempts produced
+no repository records. Provider authentication/dependency failures also
+failed closed before repository mutation.
+
+The caller correlation ID was forwarded by PPM and observed in the real
+Platform controller/request logs under distinct runtime traces. Exact-value
+scanning of the service logs found **0** matches for the ephemeral dedicated
+credential, wrong credential, or JWT signing secret. No secret, JWT, or
+temporary credential value is retained in this audit.
+
+After the matrix completed, all six disposable API processes were stopped,
+the replica-set process was stopped, all three disposable databases were
+dropped, and the temporary script, logs, and response artifacts were removed.
+The existing `5000`, `5001`, `5056`, `5057`, and `27017` processes were
+observed before and after the run and were not restarted, killed, or modified.
+
+This evidence does not claim production deployment/configuration or merged
+branch state. The PPM audit producer worker, live RabbitMQ delivery, governed
+Gateway normal route, normal-port final integration, Phase 2B, and
+ExternalContextReference remain open. MOD-0117 is not `done`.
+
+## 9. Remaining blockers
 
 | Blocker | Current result |
 |---|---|
-| AuthService PPM grant provisioning | **OPEN.** Shared JWT evaluation and the PPM adapter are evidenced, but the real tenant-admin token has zero PPM permissions; the smoke bootstrap was ephemeral and changed no Auth data. |
-| Gateway `/api/v1/ppm/**` route | **EVIDENCED FOR PHASE 2A.** The targeted route test passes 1/1 and the temporary real chain reached PPM through Gateway; the unrelated pre-existing HCM full-suite failure remains outside MOD-0117. |
+| AuthService PPM grant provisioning | **IMPLEMENTED CHECKPOINTS; PRODUCTION DEPLOYMENT/CONFIG OPEN.** PSS-A exact explicit-grant behavior (`23d56efb`), PSS-B1 provider (`90eec003`), shared evaluator (`5d183069`), and PPM consumer (`11aa3766`) exist. The original tenant-admin token still evidenced zero PPM permissions; production merge, configuration, and authorized tenant grant administration are not claimed. |
+| Gateway `/api/v1/ppm/**` route | **ISOLATED EVIDENCE ONLY; NORMAL ROUTE OPEN.** The earlier targeted temporary route test passed, but governed Gateway `5000` normal-route and final normal-port integration evidence remain open. |
 | Mongo replica-set runtime proof | **EVIDENCED FOR PHASE 2A.** Isolated integration tests pass 9/9 and the real CRUD chain reached Mongo replica set `27018`. |
-| MOD-0021 semantic audit contract and delivery | **BLOCKED.** Only producer-local transactional audit intent exists. |
+| MOD-0021 semantic audit contract and delivery | **PARTIAL / BLOCKED FOR PPM PRODUCER.** PSS-B2A consumer foundation exists at `121fa2bf`; the PPM audit producer worker and live RabbitMQ delivery remain open. |
 | DataTable verifier | **PARTIAL.** Each resource surface reports 60 PASS and 4 known policy/profile false positives. |
 | End-to-end UI/API acceptance | **EVIDENCED WITH AUTH CAVEAT.** Real browser CRUD passed through the full temporary chain with zero console errors/warnings, using an ephemeral signed JWT bootstrap rather than a real AuthService PPM grant. |
 | ExternalContextReference provider and DWS integration | **EXCLUDED.** Requires a later explicit implementation authorization. |
 | Phase 2B and MOD-0136/MOD-0138/MOD-0072 runtime links | **EXCLUDED.** No implementation authority in this slice. |
 | WorkCenter projection or protected task/approval behavior | **EXCLUDED.** Any protected hazard requires Gate 2 before production changes. |
 
-## 9. Closure statement
+## 10. Closure statement
 
 Phase 2A now has automated, isolated replica-set, and real browser-to-database
 evidence sufficient to recommend `review`. The pack may move from `approved`
-to `review`, but not `done`: AuthService PPM grant provisioning is still open,
-the DataTable verifier retains four known policy/profile false positives per
-surface, and MOD-0021 cross-service delivery remains blocked. Phase 2B, the
-ExternalContextReference provider, DWS runtime integration, and WorkCenter
-scope remain outside this review.
+to `review`, but not `done`: production PSS/Auth/PPM deployment and
+configuration, the PPM audit producer worker, live RabbitMQ delivery, governed
+Gateway normal-route evidence, and final normal-port integration remain open.
+The DataTable verifier retains four known policy/profile false positives per
+surface. Phase 2B, the ExternalContextReference provider, DWS runtime
+integration, and WorkCenter scope remain outside this review.
