@@ -692,7 +692,50 @@ proxy returns 503 — a release blocker.
 > **Rule for anyone extending this:** MOD-0024 may *report* approval state and *hand off* to MOD-0023. It may never
 > *decide* it. Any local `if (ApprovalRequired)` that blocks a transition is this bug returning.
 >
-> #### Phase 3b — review (not built)
+> #### Phase 3b — review — **BUILT 2026-07-30** (`bbfda71a`, `57c9aa6a`)
+>
+> **Review is MOD-0023's SECOND decision, not a second engine.** Binding A holds: MOD-0024 owns the
+> `ReviewRequired` flag and the lifecycle, never the verdict. `TaskItem` carries a LINK
+> (`ReviewWorkflowInstanceId`) and no review status, no reviewer-of-record — asserted by a test on the type
+> itself. Not one MOD-0023 file was modified.
+>
+> **The collision that had to be solved first.** `TaskItem.WorkflowInstanceId` was a single field and the gate
+> reads `GetLatestByObjectRefAsync`, keyed on an ObjectRef built from the task id alone. Two live decisions on one
+> task would have made each gate read whichever started last — an approved task reporting "awaiting review", or
+> worse. Solved with **two references**: approval keeps `task` / `tasks|task|{id}` **unchanged** so every historical
+> instance stays reachable and no migration is needed; review gets `task-review` / `tasks|task-review|{id}` in its
+> own field. The symmetric rename to `task-approval` was rejected deliberately — it would have orphaned every
+> historical record, and reachability of existing data outranks naming symmetry. Backward compatibility is a test,
+> not a claim: a historical ObjectRef is seeded as a **literal string** against real MongoDB, so a change to the
+> builder cannot move the goalposts.
+>
+> **A reviewer is mandatory when review is required** (`REVIEW_REVIEWER_REQUIRED`, both write paths). Without it
+> `StartWorkflowInstanceCommand` refuses — it requires at least one candidate principal — and `submitReview` would
+> refuse forever in exactly the shape the create form produces. Found by CT live verification, not by tests: the
+> suite's fake review service returned an instance id unconditionally, so MOD-0023's validator was never on the
+> path. The fake now runs MOD-0023's real validators, which also turns 11 existing approval tests into verified
+> chains.
+>
+> **Three reason codes, deliberately distinct:** `REVIEW_REVIEWER_REQUIRED` (asked for a review, named nobody) ·
+> `REVIEW_START_FAILED` (the handoff could not be opened — nobody is waiting, retry works) · `REVIEW_PENDING` (a
+> reviewer is holding the work). Collapsing any two was mutation-tested. MOD-0023 answers every blocked instance
+> with `WORKFLOW_PENDING_APPROVAL` regardless of which decision was asked about, so the review branch re-states the
+> code rather than passing it through — otherwise work waiting on a reviewer told its holder "awaiting approval".
+>
+> **A refused review is not a refused approval.** A refused approval kills the request (Cancelled, terminal); a
+> refused review hands the work back (InProgress, resubmittable). The idempotency key is therefore per ROUND —
+> it names the instance being replaced — so a crash mid-handoff still resolves to one instance while a second
+> round after a refusal legitimately opens a new one.
+>
+> The create form's review toggle is **enabled** and `ReviewComingSoonHint` is gone; a test catches both the
+> toggle being disabled again and the dead key returning.
+>
+> **Known gap, reported not fixed:** on the APPROVAL path, `ApprovalRequired == true` with a null
+> `WorkflowInstanceId` makes the gate answer "no workflow → allowed", so a transient start failure could let
+> unapproved work begin. Unreachable through the API today (creation requires an approval manager, so the instance
+> always opens), so the trigger is an outage rather than a configuration. Recorded for its own slice.
+>
+> <details><summary>Original deferral note (superseded)</summary>
 >
 > Review has no engine, no reviewer resolution and no endpoint. Rather than ship a switch that writes a flag nothing
 > reads, `taskReviewRequired` renders **disabled** with a visible "coming soon" hint (`ReviewComingSoonHint`,
@@ -716,6 +759,8 @@ proxy returns 503 — a release blocker.
 > outstanding — the gate refuses `Done` as well as `InProgress`, so an enabled button promised what the server
 > answers with 409. Approval is checked **before** the checklist there, because pointing a user at unticked items
 > they *can* clear, when clearing them unblocks nothing, is worse than naming the gate they cannot.
+>
+> </details>
 
 ### Phase 4 — recurrence
 - [ ] Recurring instances are distinct (`ProcessInstanceId`); a rerun does not duplicate.
