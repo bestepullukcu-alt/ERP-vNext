@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Contracts.Eventing;
+using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Common.Tenancy;
 using MongoDB.Driver;
 
@@ -14,6 +15,29 @@ public sealed class OutboxEventRepository : RepositoryBase<OutboxEvent>, IOutbox
     public Task AddAsync(OutboxEvent outboxEvent, CancellationToken cancellationToken = default)
     {
         return Collection.InsertOneAsync(outboxEvent, cancellationToken: cancellationToken);
+    }
+
+    public async Task<EventOutboxWriteResult> EnqueueAsync(
+        EventOutboxWriteRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var candidate = OutboxEvent.FromWriteRequest(request);
+        try
+        {
+            await Collection.InsertOneAsync(candidate, cancellationToken: cancellationToken);
+            return EventOutboxWriteResult.Inserted;
+        }
+        catch (MongoWriteException exception) when (
+            exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            var existing = await GetByEventIdAsync(candidate.EventId, cancellationToken);
+            if (existing is not null && existing.HasSameImmutableContent(candidate))
+            {
+                return EventOutboxWriteResult.Duplicate;
+            }
+
+            throw new EventOutboxConflictException(candidate.EventId);
+        }
     }
 
     public async Task<IReadOnlyList<OutboxEvent>> GetPendingAsync(DateTimeOffset nowUtc, int batchSize, CancellationToken cancellationToken = default)
@@ -81,5 +105,55 @@ public sealed class OutboxEventRepository : RepositoryBase<OutboxEvent>, IOutbox
     public Task<OutboxEvent?> GetByEventIdAsync(Guid eventId, CancellationToken cancellationToken = default)
     {
         return Collection.Find(x => x.EventId == eventId).FirstOrDefaultAsync(cancellationToken)!;
+    }
+
+    public async Task<EventOutboxPublishItem?> ClaimForPublishAsync(
+        DateTimeOffset nowUtc,
+        DateTimeOffset stalePublishingCutoffUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var item = await ClaimNextAsync(nowUtc, stalePublishingCutoffUtc, cancellationToken);
+        return item is null ? null : ToPublicPublishItem(item);
+    }
+
+    public async Task CompletePublishAsync(Guid eventId, CancellationToken cancellationToken = default)
+    {
+        var item = await GetByEventIdAsync(eventId, cancellationToken)
+                   ?? throw new InvalidOperationException($"Outbox event '{eventId}' was not found.");
+        item.MarkPublished();
+        await UpdateAsync(item, cancellationToken);
+    }
+
+    public async Task FailPublishAsync(
+        Guid eventId,
+        string error,
+        DateTimeOffset nextAttemptAtUtc,
+        int maxAttempts,
+        CancellationToken cancellationToken = default)
+    {
+        var item = await GetByEventIdAsync(eventId, cancellationToken)
+                   ?? throw new InvalidOperationException($"Outbox event '{eventId}' was not found.");
+        item.MarkPublishFailed(error, nextAttemptAtUtc, maxAttempts);
+        await UpdateAsync(item, cancellationToken);
+    }
+
+    private static EventOutboxPublishItem ToPublicPublishItem(OutboxEvent item)
+    {
+        var metadata = new EventMetadata(
+            item.EventId,
+            item.EventName,
+            item.EventVersion,
+            item.CorrelationId,
+            item.CausationId,
+            item.TenantId,
+            item.Producer,
+            item.OccurredAtUtc);
+        return new EventOutboxPublishItem(
+            metadata,
+            System.Text.Encoding.UTF8.GetBytes(item.PayloadJson),
+            new TrustedTransportMetadata(item.TransportHeaders),
+            (EventOutboxDeliveryStatus)(int)item.Status,
+            item.AttemptCount,
+            item.LastError);
     }
 }

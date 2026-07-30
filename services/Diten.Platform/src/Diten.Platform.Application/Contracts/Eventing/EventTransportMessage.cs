@@ -9,4 +9,5 @@ public sealed record EventTransportMessage(
     Guid? TenantId,
     string Producer,
     DateTimeOffset OccurredAtUtc,
-    string PayloadJson);
+    string PayloadJson,
+    IReadOnlyDictionary<string, string>? TransportHeaders = null);

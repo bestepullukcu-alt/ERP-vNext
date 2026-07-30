@@ -423,6 +423,19 @@ eventing mechanics, the PPM producer contract boundary and the Platform MOD-0021
 Frontend, Gateway, public replay endpoints/UI, generic Admin/Viewer grant-revoke changes, grant migration,
 and unrelated events/modules are excluded. Explicit user runtime approval, the PSS worktree boundary and
 the complete AuthService plus PPM regression gate remain mandatory and fail closed.
+
+PSS-C1 implements the shared producer seam without changing the parent or slice status:
+`Diten.BuildingBlocks.Eventing` owns the single public `IEventBus`, reusable `OutboxEventBus`,
+`ICanonicalIntegrationEvent`, `IEventOutboxWriter` and trusted transport-metadata provider contracts.
+Canonical events supply bounded exact UTF-8 bytes that are never reserialized. Business publish options
+cannot inject raw headers; an infrastructure DI provider may emit only the allowlisted signature scheme,
+key-id and derived signature after duplicate, CR/LF and byte-limit validation. Domain services retain their
+own transactional Mongo persistence adapter. `EventId` plus identical immutable envelope, canonical bytes
+and trusted metadata is an idempotent no-op; different immutable content is a fail-closed conflict. The
+custom Mongo state sequence remains Pending/Publishing/Published/Failed/DeadLettered; MassTransit native
+outbox remains forbidden. Platform's MassTransit and in-memory adapters propagate the persisted trusted
+metadata while legacy unsigned events remain source-compatible. The PPM-specific event DTO and signing
+provider remain MOD-0117-owned follow-up work and are not moved into Platform.
 - [ ] Prepare/update MOD-0009 Tenant Registry Lifecycle Events pack to emit events through `IEventBus`.
 - [ ] Optional technical spike: evaluate MassTransit native outbox/inbox against the custom MongoDB outbox after MVP.
 - [ ] Prepare MOD-0038 Event Taxonomy/Naming pack for machine-readable event catalog.

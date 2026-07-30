@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text;
 using Diten.BuildingBlocks.Eventing;
 
 namespace Diten.Platform.Application.Contracts.Eventing;
@@ -22,6 +23,8 @@ public sealed class OutboxEvent
     public string Producer { get; init; } = string.Empty;
 
     public string PayloadJson { get; init; } = string.Empty;
+
+    public Dictionary<string, string> TransportHeaders { get; init; } = new(StringComparer.OrdinalIgnoreCase);
 
     public OutboxEventStatus Status { get; private set; } = OutboxEventStatus.Pending;
 
@@ -56,6 +59,26 @@ public sealed class OutboxEvent
         };
     }
 
+    public static OutboxEvent FromWriteRequest(EventOutboxWriteRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return new OutboxEvent
+        {
+            EventId = request.Metadata.EventId,
+            EventName = request.Metadata.EventName,
+            EventVersion = request.Metadata.EventVersion,
+            CorrelationId = request.Metadata.CorrelationId,
+            CausationId = request.Metadata.CausationId,
+            TenantId = request.Metadata.TenantId,
+            Producer = request.Metadata.Producer,
+            OccurredAtUtc = request.Metadata.OccurredAtUtc,
+            PayloadJson = new UTF8Encoding(false, true).GetString(request.CanonicalPayloadUtf8.Span),
+            TransportHeaders = new Dictionary<string, string>(
+                request.TransportMetadata.Headers,
+                StringComparer.OrdinalIgnoreCase)
+        };
+    }
+
     public EventTransportMessage ToTransportMessage()
     {
         return new EventTransportMessage(
@@ -67,7 +90,26 @@ public sealed class OutboxEvent
             TenantId,
             Producer,
             OccurredAtUtc,
-            PayloadJson);
+            PayloadJson,
+            new Dictionary<string, string>(TransportHeaders, StringComparer.OrdinalIgnoreCase));
+    }
+
+    public bool HasSameImmutableContent(OutboxEvent other)
+    {
+        ArgumentNullException.ThrowIfNull(other);
+        return EventId == other.EventId
+               && EventName == other.EventName
+               && EventVersion == other.EventVersion
+               && CorrelationId == other.CorrelationId
+               && CausationId == other.CausationId
+               && TenantId == other.TenantId
+               && Producer == other.Producer
+               && OccurredAtUtc.Equals(other.OccurredAtUtc)
+               && PayloadJson == other.PayloadJson
+               && TransportHeaders.Count == other.TransportHeaders.Count
+               && TransportHeaders.All(pair =>
+                   other.TransportHeaders.TryGetValue(pair.Key, out var value)
+                   && string.Equals(pair.Value, value, StringComparison.Ordinal));
     }
 
     public void MarkPublishing(DateTime? updatedAtUtc = null)
