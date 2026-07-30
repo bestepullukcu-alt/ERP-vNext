@@ -370,9 +370,13 @@ hot path. `IEntitlementChecker` remains limited to module/feature entitlement an
 evaluator; JWT freshness and revocation follow MOD-0018-FU13.
 
 DWS consumes this enforcement result and never calculates roles, grants, RBAC/ABAC or effective permission.
-Because the reusable shared integration has not yet been allocated and implemented, the MOD-0018 portion of
-the DWS Wave 1 blocker is `PARTIAL`. OD-04 remains open. This decision allocates no new follow-up identity and
-grants no production authority.
+The reusable shared evaluator is now implemented in `Diten.Platform.Common` as
+`IPermissionClaimEvaluator` / `SignedJwtPermissionClaimEvaluator`: it evaluates only exact, case-sensitive
+AuthService `permission` claims from an already authenticated principal and fails closed on invalid tenant or
+subject identity. It performs no JWT validation, remote decision, role/grant/entitlement calculation,
+wildcard, prefix, alias or normalization. The MOD-0018 portion of the DWS Wave 1 blocker remains `PARTIAL`
+until an authorized DWS host wires and proves this shared evaluator; OD-04 remains open. This decision
+allocates no new follow-up identity and grants no DWS production authority.
 
 The permanent MOD-0117 business-owner role is **Portfolio Governance Process Owner (PPM Business Owner)**.
 The Enterprise Architect remains technical/governance owner only and does not replace PPM business acceptance.

@@ -276,6 +276,13 @@ Gateway route degisikligi gerekli degildir.
 **Repo reconciliation notu:**
 - Master-plan MOD-0018 bolumundeki "`IEntitlementAuditSink` sadece Null sink" ifadesi artik repo gercegiyle uyumlu degildir; `PlatformEntitlementAuditSink` mevcuttur.
 - Current gap daha cok cache invalidation, event publish/consume ve future-proof contract foundation tarafindadir.
+- Shared signed-JWT permission enforcement evidence (2026-07-30): `Diten.Platform.Common.Authorization`
+  now provides `IPermissionClaimEvaluator` and the dependency-free `SignedJwtPermissionClaimEvaluator`.
+  It consumes only an already authenticated `ClaimsPrincipal`, requires non-empty Guid `tenant_id` plus
+  canonical `sub` (or `ClaimTypes.NameIdentifier` only when `sub` is absent), and compares separate
+  AuthService `permission` claims with exact case-sensitive ordinal semantics. It performs no JWT parsing,
+  remote call, role/grant/entitlement calculation, wildcard expansion, aliasing or normalization. Parent
+  status remains `ready-for-dev`; host-policy wiring and consumer-specific runtime evidence remain separate.
 - MOD-0117 uses canonical entitlement `ModuleCode = PPM` and requires explicit tenant-scoped permission
   grants with dormant grants after entitlement removal. Current `EntitlementPermissionSyncService` instead
   auto-targets Admin/Viewer and destructively removes module-source grants on revoke/reconcile. Therefore
