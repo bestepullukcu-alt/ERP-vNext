@@ -289,7 +289,18 @@
         // synthesized any more: buildGroupSelector then renders nothing, and the Havuz tab stops asserting a team
         // it cannot know. Giving the provider a pool-identity field is WC-3 contract work (BL-031 a/b), NOT this
         // slice. A showcase fixture may still declare its own `group` and keep it; none does today.
-        item.group = provenance === 'fixture' ? (item.group || null) : null;
+        /*
+         * WHICH queue this work waits in. It now comes from the projection (WC-3 / BL-031): `pool.label` is the
+         * position joined to its organization unit, resolved server-side.
+         *
+         * Still NOTHING is synthesized. A pool whose position could not be read arrives with an id and no label,
+         * and an unlabelled queue shows no group — the same silence that replaced the fabricated "Operasyon
+         * Kuyruğu", which named a team that does not exist for every pooled item. A showcase fixture may still
+         * declare its own `group` and keep it.
+         */
+        item.group = provenance === 'fixture'
+            ? (item.group || item.pool?.label?.text || null)
+            : (item.pool?.label?.text || null);
         item.isUnread = item.personal?.seen === false;
         item.pinned = !!item.personal?.pinned;
         item.snoozedUntil = item.personal?.snoozedUntil || null;

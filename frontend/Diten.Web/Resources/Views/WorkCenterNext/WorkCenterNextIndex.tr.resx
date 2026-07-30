@@ -902,6 +902,9 @@
   <data name="GroupAll" xml:space="preserve">
     <value>Tüm gruplar</value>
   </data>
+  <data name="GroupUnnamed" xml:space="preserve">
+    <value>Kuyruk adsız</value>
+  </data>
   <data name="PoolUnassigned" xml:space="preserve">
     <value>Atanmadı — havuzda</value>
   </data>

@@ -364,7 +364,11 @@
         if (state.modeFilter !== 'all' && item.assignmentMode !== state.modeFilter) { return false; }
         if (state.slaFilter.length && !state.slaFilter.includes(item.slaState)) { return false; }
         if (state.pinnedFilter && !item.pinned) { return false; }
-        if (state.tab === 'havuz' && state.group !== 'all' && item.group !== state.group) { return false; }
+        if (state.tab === 'havuz' && state.group !== 'all') {
+            // The unnamed bucket matches items with NO queue name, which no plain string comparison can express.
+            const matches = state.group === GROUP_UNNAMED ? !item.group : item.group === state.group;
+            if (!matches) { return false; }
+        }
         const q = state.search.trim().toLowerCase();   // ignore leading/trailing space
         if (q) {
             const hay = (item.title + ' ' + item.summary + ' ' + item.sourceModule + ' ' + item.sourceId + ' ' + item.requester).toLowerCase();
@@ -506,15 +510,41 @@
     };
 
     // Havuz group-queue selector (spec v3) — filter the pool by team queue.
+    /*
+     * WHICH queue — the Pool tab's whole question (WC-3 / BL-031). The queue names come from the projection's
+     * `pool.label`; nothing is synthesized, so a tab whose items name no queue renders no selector at all.
+     *
+     * Collected from the items IN THIS TAB rather than from every item on the surface. A claimed pool task keeps
+     * assignmentMode "groupQueue" and its pool identity — correctly, since that is how it arrived — but it lives
+     * under İşlerim now, and listing its queue here would offer a filter that matches nothing in the Pool tab.
+     */
+    /*
+     * The sentinel for "this queue has no name".
+     *
+     * A plain STRING, not a Symbol: `state.group` is mirrored into the query string by syncUrl, and a Symbol
+     * cannot be converted to one — searchParams.set throws, the whole render dies, and the click looks like it
+     * did nothing. It is also never written into `data-wcn-group` (the unnamed button carries its own
+     * `data-wcn-group-unnamed` attribute instead), so attribute encoding cannot mangle it. A real position label
+     * is "{position} — {unit}"; this value colliding with one would only mis-target a filter, never lose a row.
+     */
+    const GROUP_UNNAMED = '__wcn-unnamed';
     const buildGroupSelector = () => {
         if (state.tab !== 'havuz') { return ''; }
+        const inTabItems = tabItems();
         const groups = [];
-        state.items.forEach((i) => { if (i.group && groups.indexOf(i.group) < 0) { groups.push(i.group); } });
+        inTabItems.forEach((i) => { if (i.group && groups.indexOf(i.group) < 0) { groups.push(i.group); } });
+        // Nothing to choose between: with no NAMED queue there is no distinction a selector could offer, so the
+        // tab shows none rather than a lone "all" button that filters nothing.
         if (!groups.length) { return ''; }
-        const btn = (key, label) =>
-            `<button type="button" class="wcn-seg${state.group === key ? ' active' : ''}" data-wcn-group="${esc(key)}"><span>${esc(label)}</span></button>`;
+        const btn = (key, label, extraAttr) =>
+            `<button type="button" class="wcn-seg${state.group === key ? ' active' : ''}" data-wcn-group="${esc(String(key))}"${extraAttr || ''}><span>${esc(label)}</span></button>`;
+        // A pooled item whose position could not be read has an identity but no name. Beside named queues it
+        // still needs to be reachable, so it gets its own bucket rather than only "all".
+        const unnamedBtn = inTabItems.some((i) => !i.group)
+            ? `<button type="button" class="wcn-seg${state.group === GROUP_UNNAMED ? ' active' : ''}" data-wcn-group-unnamed><span>${esc(t('GroupUnnamed'))}</span></button>`
+            : '';
         return `<div class="wcn-segments" role="group" aria-label="${esc(t('GroupLabel'))}">
-            ${btn('all', t('GroupAll'))}${groups.map((g) => btn(g, g)).join('')}
+            ${btn('all', t('GroupAll'))}${groups.map((g) => btn(g, g)).join('')}${unnamedBtn}
         </div>`;
     };
 
@@ -4120,6 +4150,9 @@
         const segEl = event.target.closest('[data-wcn-seg]');
         if (segEl) { state.segment = segEl.getAttribute('data-wcn-seg'); state.selectedId = null; render(); return; }
 
+        if (event.target.closest('[data-wcn-group-unnamed]')) {
+            state.group = GROUP_UNNAMED; state.selectedId = null; render(); return;
+        }
         const groupEl = event.target.closest('[data-wcn-group]');
         if (groupEl) { state.group = groupEl.getAttribute('data-wcn-group'); state.selectedId = null; render(); return; }
 

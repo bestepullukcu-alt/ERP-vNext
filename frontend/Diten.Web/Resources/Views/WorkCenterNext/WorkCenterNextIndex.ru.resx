@@ -902,6 +902,9 @@
   <data name="GroupAll" xml:space="preserve">
     <value>Все группы</value>
   </data>
+  <data name="GroupUnnamed" xml:space="preserve">
+    <value>Очередь без названия</value>
+  </data>
   <data name="PoolUnassigned" xml:space="preserve">
     <value>Не назначено — в пуле</value>
   </data>

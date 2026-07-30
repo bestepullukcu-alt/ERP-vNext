@@ -96,8 +96,16 @@ const inboxItem = (n) => item(n, {
   }]
 });
 
+/** A queue identity, as the projection now emits it (WC-3 / BL-031). */
+const pool = (id, label) => ({
+  id,
+  label: label === null ? null : { kind: "display", text: label, locale: "und" }
+});
+
 /** Unowned pool work — nobody has claimed it. */
-const poolItem = (n) => item(n, {
+const poolItem = (n, poolIdentity) => item(n, Object.assign({
+  pool: poolIdentity === undefined ? pool(`pos-${n}`, `Kuyruk ${n}`) : poolIdentity
+}, {
   admissionState: "pendingClaim",
   assignmentMode: "groupQueue",
   ownershipState: "unowned",
@@ -119,7 +127,7 @@ const poolItem = (n) => item(n, {
     supportsBulk: false,
     riskLevel: "normal"
   }]
-});
+}));
 
 /** Closed work — history. A terminal item offers no state-changing action (contract rule). */
 const historyItem = (n, lifecycle = "Done") => item(n, {
@@ -515,5 +523,109 @@ describe("the other views render without throwing (BL-015 stops here)", () => {
     await new Promise((resolve) => { setTimeout(resolve, 0); });
 
     expect(app().querySelector(".wcn-tabs")).not.toBeNull();
+  });
+});
+
+/*
+ * WC-3 / BL-031 — the Pool tab answers "which queue is this in".
+ *
+ * The projection carries `pool: { id, label }` now. Before it did, the screen filled the silence with a
+ * fabricated team name for every pooled item; workcenter-next-pool-group.test.js guards that name's grave and is
+ * deliberately untouched. These tests cover the replacement: the real identity, and the fact that NOTHING is
+ * invented when it is missing.
+ */
+describe("the Pool tab names the queue each item waits in", () => {
+  const groupButtons = () => Array.from(app().querySelectorAll("[data-wcn-group],[data-wcn-group-unnamed]"))
+    .map((el) => el.textContent.trim());
+
+  const bootOnPool = async (items) => {
+    const result = await bootListPage(items);
+    await clickTab("havuz");
+    return result;
+  };
+
+  it("shows each queue as its own group — three pools do not collapse into one", async () => {
+    /*
+     * BL-031 (b). The fabricated label gave every pooled item the SAME group, so the tab could not tell a CFO
+     * queue from an accounting one. Three real queues must stay three.
+     */
+    await bootOnPool([
+      poolItem(1, pool("pos-cfo", "CFO — Genel Merkez")),
+      poolItem(2, pool("pos-acc", "Muhasebe Müdürü — Genel Merkez")),
+      poolItem(3, pool("pos-eng", "E2E Engineer — Genel Merkez"))
+    ]);
+
+    expect(rowIds()).toHaveLength(3);
+    expect(groupButtons()).toEqual([
+      "GroupAll", "CFO — Genel Merkez", "Muhasebe Müdürü — Genel Merkez", "E2E Engineer — Genel Merkez"
+    ]);
+  });
+
+  it("filters the list down to one queue when that queue is picked", async () => {
+    // Non-vacuity for the group buttons: they have to DO something, not just be rendered.
+    await bootOnPool([
+      poolItem(1, pool("pos-cfo", "CFO — Genel Merkez")),
+      poolItem(2, pool("pos-acc", "Muhasebe Müdürü — Genel Merkez"))
+    ]);
+
+    app().querySelector('[data-wcn-group="CFO — Genel Merkez"]').click();
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+    expect(rowIds()).toEqual([ID(1)]);
+  });
+
+  it("invents nothing when the queue has no name — no group selector at all", async () => {
+    /*
+     * An unresolvable position arrives with an id and no label. The screen must show NO queue name rather than
+     * a placeholder or a GUID; with nothing to tell apart, there is nothing to select between either.
+     */
+    await bootOnPool([poolItem(1, pool("pos-unknown", null))]);
+
+    expect(rowIds()).toHaveLength(1);
+    expect(groupButtons()).toEqual([]);
+    expect(app().textContent).not.toContain("pos-unknown");
+  });
+
+  it("offers an explicit bucket for unnamed queues when named ones exist beside them", async () => {
+    // Mixed: without its own bucket, the unnamed item would be reachable only through "all".
+    await bootOnPool([
+      poolItem(1, pool("pos-cfo", "CFO — Genel Merkez")),
+      poolItem(2, pool("pos-unknown", null))
+    ]);
+
+    expect(groupButtons()).toEqual(["GroupAll", "CFO — Genel Merkez", "GroupUnnamed"]);
+
+    app().querySelector("[data-wcn-group-unnamed]").click();
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+    expect(rowIds()).toEqual([ID(2)]);
+  });
+
+  it("still LISTS an item whose queue has no name — the row is never the price of a missing label", async () => {
+    /*
+     * Written before the contract rule exists, and kept afterwards. `validateItems` drops what it cannot
+     * validate, so requiring a pool identity is one mis-projection away from making a task disappear from the
+     * Pool tab. The label may be absent; the row may not.
+     */
+    await bootOnPool([poolItem(1, pool("pos-unknown", null)), poolItem(2, pool("pos-cfo", "CFO"))]);
+
+    expect(rowIds()).toHaveLength(2);
+    expect(tabCount("havuz")).toBe(2);
+  });
+
+  it("does not offer a queue that belongs to another tab's work", async () => {
+    /*
+     * A CLAIMED pool task keeps assignmentMode "groupQueue" and its pool identity — that is how it arrived — but
+     * it lives under Mine now. Listing its queue in the Pool selector would offer a filter matching no pool row.
+     */
+    const claimed = poolItem(2, pool("pos-claimed", "Devralınmış Kuyruk"));
+    claimed.admissionState = "admitted";
+    claimed.ownershipState = "owned";
+    claimed.assignee = { id: "dddddddd-dddd-dddd-dddd-dddddddddddd", isCurrentUser: true };
+    claimed.actions = [];
+
+    await bootOnPool([poolItem(1, pool("pos-cfo", "CFO")), claimed]);
+
+    expect(groupButtons()).toEqual(["GroupAll", "CFO"]);
   });
 });

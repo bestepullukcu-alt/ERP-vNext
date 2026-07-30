@@ -278,3 +278,60 @@ describe("an open subtask is a blocker like any other (BL-035)", () => {
     expect(codesOf(contract().validateWorkItem(item))).toContain("BLOCKER_ACTION_REFERENCE_INVALID");
   });
 });
+
+describe("the contract declares which queue pooled work waits in (WC-3 / BL-031)", () => {
+  const queued = (poolValue) => {
+    const base = workItem({
+      assignmentMode: "groupQueue",
+      ownershipState: "unowned",
+      admissionState: "pendingClaim",
+      normalizedStatus: "Pending",
+      taskLifecycle: "Open",
+      executionState: "notStarted",
+      assignee: null,
+      actions: []
+    });
+    if (poolValue !== undefined) { base.pool = poolValue; }
+    return base;
+  };
+
+  const namedPool = { id: "pos-cfo", label: { kind: "display", text: "CFO — Genel Merkez", locale: "und" } };
+
+  it("accepts a queue that names itself", () => {
+    expect(codesOf(contract().validateWorkItem(queued(namedPool)))).toEqual([]);
+  });
+
+  it("accepts a queue that could not be named, as long as it is identified", () => {
+    /*
+     * The third way, and the reason this rule can exist at all. A position the server could not read yields an
+     * id with no label; requiring the label instead would make validateItems DROP the task, and it would vanish
+     * from the Pool tab rather than merely lose its name.
+     */
+    expect(codesOf(contract().validateWorkItem(queued({ id: "pos-unknown", label: null })))).toEqual([]);
+    expect(codesOf(contract().validateWorkItem(queued({ id: "pos-unknown" })))).toEqual([]);
+  });
+
+  it("refuses queued work that names no queue at all", () => {
+    // The Pool tab's whole question is "which queue is this in". An item that cannot answer it is what the
+    // fabricated "Operasyon Kuyruğu" label used to paper over.
+    expect(codesOf(contract().validateWorkItem(queued()))).toContain("POOL_REQUIRED_FOR_GROUP_QUEUE");
+    expect(codesOf(contract().validateWorkItem(queued(null)))).toContain("POOL_REQUIRED_FOR_GROUP_QUEUE");
+    expect(codesOf(contract().validateWorkItem(queued({ label: namedPool.label }))))
+      .toContain("POOL_REQUIRED_FOR_GROUP_QUEUE");
+  });
+
+  it("refuses a queue on work that is not queued", () => {
+    // A directly-assigned task has no queue; claiming one would be inventing a fact.
+    expect(codesOf(contract().validateWorkItem(workItem({ pool: namedPool }))))
+      .toContain("POOL_ON_NON_QUEUE_ITEM");
+  });
+
+  it("refuses a RESOURCE label for a queue name", () => {
+    // A position's name is data someone typed. Routing it through a resource key puts the raw key on screen —
+    // the same defect the item title had.
+    const result = contract().validateWorkItem(
+      queued({ id: "pos-cfo", label: { kind: "resource", key: "SomePositionKey" } }));
+
+    expect(codesOf(result)).toContain("POOL_LABEL_INVALID");
+  });
+});

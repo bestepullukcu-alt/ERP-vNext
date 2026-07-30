@@ -902,6 +902,9 @@
   <data name="GroupAll" xml:space="preserve">
     <value>Tous les groupes</value>
   </data>
+  <data name="GroupUnnamed" xml:space="preserve">
+    <value>File non nommée</value>
+  </data>
   <data name="PoolUnassigned" xml:space="preserve">
     <value>Non attribué — dans la file partagée</value>
   </data>

@@ -307,7 +307,31 @@ public sealed record WorkItemProjectionDto(
     /// half-a-feature shape a declared-but-empty capability with no container would be.</para>
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    DateTimeOffset? PlannedDate = null);
+    DateTimeOffset? PlannedDate = null,
+    /// <summary>
+    /// WHICH queue this work is waiting in. Present exactly when <c>assignmentMode</c> is <c>groupQueue</c>: the
+    /// Pool tab's entire question is "which queue is this in", and an item that cannot answer it makes the tab
+    /// meaningless — it was answered for a while with a fabricated team name (BL-031).
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemPoolDto? Pool = null);
+
+/// <summary>
+/// The queue a pooled item waits in (WC-3 / BL-031).
+///
+/// <para><c>Label</c> is a DISPLAY label: a position's name is data someone typed, not translatable content, so
+/// routing it through a resource key would put the raw key on screen.</para>
+///
+/// <para><b>Label may be null while Id is not.</b> A position that cannot be read — archived out from under the
+/// task, or in an organization unit that no longer resolves — leaves the queue UNNAMED rather than taking either
+/// wrong exit: printing the GUID as if it were a team name, or omitting the field so the contract drops the task
+/// and it vanishes from the Pool tab entirely. The identity stays on the wire; the screen just shows no queue
+/// name for it.</para>
+/// </summary>
+public sealed record WorkItemPoolDto(
+    string Id,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemLabelDto? Label);
 
 /// <summary>
 /// One entry in the activity feed. Today MOD-0024 emits only <c>kind: "comment"</c>: there is no lifecycle event

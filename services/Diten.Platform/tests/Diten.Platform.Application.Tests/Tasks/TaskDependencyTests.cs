@@ -398,7 +398,7 @@ public sealed class TaskDependencyTests
             new FakeUserDisplayNameResolver(),
             new FakeChecklistRunRepository(),
             new FakeTaskApprovalService(),
-            edges, new FakeTaskCommentRepository());
+            edges, new FakeTaskCommentRepository(), new FakePositionRepository(), new FakeOrganizationUnitRepository());
 
     private static WorkItemActor Actor()
         => new(TaskTestData.Me, IsPlatformActor: false, new HashSet<string>(

@@ -902,6 +902,9 @@
   <data name="GroupAll" xml:space="preserve">
     <value>Todos los grupos</value>
   </data>
+  <data name="GroupUnnamed" xml:space="preserve">
+    <value>Cola sin nombre</value>
+  </data>
   <data name="PoolUnassigned" xml:space="preserve">
     <value>Sin asignar — en la bandeja común</value>
   </data>

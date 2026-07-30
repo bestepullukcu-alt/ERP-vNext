@@ -72,6 +72,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private readonly ITaskApprovalService _approvals;
     private readonly ITaskDependencyRepository _dependencies;
     private readonly ITaskCommentRepository _comments;
+    private readonly IPositionRepository _positions;
+    private readonly IOrganizationUnitRepository _organizationUnits;
 
     public TaskWorkItemProvider(
         ITaskItemRepository tasks,
@@ -82,8 +84,12 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         IChecklistRunRepository checklistRuns,
         ITaskApprovalService approvals,
         ITaskDependencyRepository dependencies,
-        ITaskCommentRepository comments)
+        ITaskCommentRepository comments,
+        IPositionRepository positions,
+        IOrganizationUnitRepository organizationUnits)
     {
+        _positions = positions;
+        _organizationUnits = organizationUnits;
         _dependencies = dependencies;
         _comments = comments;
         _tasks = tasks;
@@ -178,6 +184,13 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             .GroupBy(comment => comment.TaskItemId)
             .ToDictionary(group => group.Key, group => (IReadOnlyList<TaskComment>)group.ToList());
 
+        /*
+         * Pool queue names, resolved in TWO reads for the whole page rather than one per task — the same batching
+         * rule the display names and the checklist runs follow. A per-item lookup here would be an N+1 across
+         * every pooled row on the surface.
+         */
+        var poolLabels = await ResolvePoolLabelsAsync(tasks, ct);
+
         var edges = await _dependencies.ListByTaskIdsAsync(taskIds, ct);
         var edgeTaskIds = edges
             .SelectMany(edge => new[] { edge.TaskItemId, edge.DependsOnTaskItemId })
@@ -207,7 +220,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     rejected,
                     edgesByTask.GetValueOrDefault(t.Id, []),
                     edgeTasks,
-                    commentsByTask.GetValueOrDefault(t.Id, []));
+                    commentsByTask.GetValueOrDefault(t.Id, []),
+                    poolLabels);
             })
             .ToList();
     }
@@ -231,7 +245,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         bool approvalRejected = false,
         IReadOnlyList<TaskDependency>? edges = null,
         IReadOnlyDictionary<Guid, TaskItem>? edgeTasks = null,
-        IReadOnlyList<TaskComment>? comments = null)
+        IReadOnlyList<TaskComment>? comments = null,
+        IReadOnlyDictionary<Guid, string>? poolLabels = null)
     {
         var assignment = _assignmentResolver.Resolve(task);
         var normalized = _lifecycle.ToNormalizedStatus(task, approvalOutstanding, approvalRejected);
@@ -362,7 +377,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             Activity: activity,
             // Straight through — never DueAt. A plan write that stored the date but never showed it back would
             // be real on the server and invisible on the screen.
-            PlannedDate: task.PlannedDate);
+            PlannedDate: task.PlannedDate,
+            Pool: ToPool(task, poolLabels));
     }
 
     /// <summary>
@@ -650,6 +666,81 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 Actor: string.IsNullOrWhiteSpace(comment.AuthorDisplayName) ? null : comment.AuthorDisplayName,
                 At: comment.CreatedAt))
             .ToList();
+
+    /// <summary>
+    /// Queue names for every pool position on the page, in TWO reads total (positions, then organization units)
+    /// rather than one per task.
+    ///
+    /// <para>The label is "{position} — {unit}", the same composition the assignable-position lookup uses, and for
+    /// the same reason: "QA Specialist" alone cannot be told apart across facilities, and pooling is exactly where
+    /// that ambiguity routes work to the wrong place.</para>
+    ///
+    /// <para>Unlike that lookup, this does NOT skip archived or draft positions. That lookup answers "where may
+    /// this be pooled", where an unusable position must not be offered; this answers "where is this already
+    /// pooled", and work sitting in a queue that has since been archived still needs its queue named. A position
+    /// whose unit cannot be resolved simply gets no entry here, and the caller emits an unnamed queue.</para>
+    /// </summary>
+    private async Task<IReadOnlyDictionary<Guid, string>> ResolvePoolLabelsAsync(
+        IReadOnlyList<TaskItem> tasks,
+        CancellationToken ct)
+    {
+        var poolPositionIds = tasks
+            .Where(task => task.PoolPositionId is not null)
+            .Select(task => task.PoolPositionId!.Value)
+            .Distinct()
+            .ToHashSet();
+
+        if (poolPositionIds.Count == 0)
+        {
+            return new Dictionary<Guid, string>();
+        }
+
+        var positions = (await _positions.GetAllAsync(ct)).Where(p => poolPositionIds.Contains(p.Id)).ToList();
+        if (positions.Count == 0)
+        {
+            return new Dictionary<Guid, string>();
+        }
+
+        var unitById = (await _organizationUnits.GetAllAsync(ct)).ToDictionary(unit => unit.Id);
+
+        var labels = new Dictionary<Guid, string>();
+        foreach (var position in positions)
+        {
+            if (!unitById.TryGetValue(position.OrganizationUnitId, out var unit))
+            {
+                // Left out deliberately: an unresolvable unit means the queue stays UNNAMED, never half-named.
+                continue;
+            }
+
+            labels[position.Id] = $"{position.Name} — {unit.Name}";
+        }
+
+        return labels;
+    }
+
+    /// <summary>
+    /// The queue a pooled task waits in. Emitted for pool work only — a directly-assigned task has no queue, and
+    /// saying it belongs to one would be inventing a fact.
+    ///
+    /// <para>An unresolvable position still yields a pool WITH its id and WITHOUT a label. The two tempting
+    /// alternatives are both defects this codebase has already paid for: putting the GUID in the label renders a
+    /// raw id where a team name belongs, and omitting the field entirely makes the contract reject the item so
+    /// the task disappears from the Pool tab (BL-038's lesson — validateItems drops what it cannot validate).</para>
+    /// </summary>
+    private static WorkItemPoolDto? ToPool(TaskItem task, IReadOnlyDictionary<Guid, string>? poolLabels)
+    {
+        if (task.AssignmentTarget != TaskAssignmentTarget.PositionPool || task.PoolPositionId is null)
+        {
+            return null;
+        }
+
+        var positionId = task.PoolPositionId.Value;
+        var label = poolLabels is not null && poolLabels.TryGetValue(positionId, out var name)
+            ? WorkItemLabelDto.Display(name)
+            : null;
+
+        return new WorkItemPoolDto(positionId.ToString(), label);
+    }
 
     private static string ResolveExecutionState(TaskItem task) => task.Lifecycle switch
     {

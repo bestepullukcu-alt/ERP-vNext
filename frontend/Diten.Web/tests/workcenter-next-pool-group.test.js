@@ -31,6 +31,13 @@ const REAL_POOL_ITEM = {
     deepLink: "/Tasks/0b4f6d21-9d4a-4c7e-9a1f-1b2c3d4e5f60"
   },
   assignee: null,
+  /*
+   * The queue identity WC-3 added, in its unnamed form: a real position id whose name could not be resolved.
+   * That is exactly the case this file guards — the screen must still invent nothing. Before WC-3 the field did
+   * not exist at all and this fixture omitted it; the contract now requires one for groupQueue work, so omitting
+   * it would make the item invalid and DROPPED, which would make every assertion below vacuous.
+   */
+  pool: { id: "7c1e5a90-3f2b-4d18-9e77-2a5b6c8d0e13", label: null },
   requester: { id: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee", isCurrentUser: false },
   lifecycleOwner: "tasks",
   workItemCapabilities: ["planning", "execution"],
@@ -73,14 +80,28 @@ describe("the pool never shows a queue the projection does not name", () => {
     expect(result.valid).toBe(true);
   });
 
-  it("gives a real group-queue item NO group name", () => {
+  it("gives a group-queue item whose queue is UNNAMED no group name", () => {
     const { items, errors } = global.WorkCenterNextApi.mapPayload([REAL_POOL_ITEM]);
 
     expect(errors).toEqual([]);
     expect(items).toHaveLength(1);
     expect(items[0].assignmentMode).toBe("groupQueue");
-    // The regression: this used to be "Operasyon Kuyruğu".
+    // The regression: this used to be "Operasyon Kuyruğu". An unnamed queue still names nothing — and the id is
+    // never promoted into the label's place either.
     expect(items[0].group).toBeNull();
+    expect(items[0].group).not.toBe(items[0].pool.id);
+  });
+
+  it("DOES use the queue name once the projection supplies one (WC-3)", () => {
+    // The other half, added with WC-3: refusing to invent a name was never a refusal to SHOW one. Without this,
+    // "group is always null" would satisfy the file and the real feature could quietly not work.
+    const named = JSON.parse(JSON.stringify(REAL_POOL_ITEM));
+    named.pool.label = { kind: "display", text: "CFO — Genel Merkez", locale: "und" };
+
+    const { items, errors } = global.WorkCenterNextApi.mapPayload([named]);
+
+    expect(errors).toEqual([]);
+    expect(items[0].group).toBe("CFO — Genel Merkez");
   });
 
   it("never puts the showcase queue name on real work", () => {

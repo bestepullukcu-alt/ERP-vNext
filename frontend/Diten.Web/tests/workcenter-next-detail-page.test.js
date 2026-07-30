@@ -1116,7 +1116,9 @@ describe("the guidance banner says what the task needs from the reader", () => {
       normalizedStatus: "Pending",
       taskLifecycle: "Open",
       executionState: "notStarted",
-      assignee: null
+      assignee: null,
+      // WC-3: groupQueue work must name its queue, or the contract rejects it and mapPayload drops the item.
+      pool: { id: "7c1e5a90-3f2b-4d18-9e77-2a5b6c8d0e13", label: { kind: "display", text: "CFO — Genel Merkez", locale: "und" } }
     }));
     expect(bannerText()).toBe("GuidancePendingClaim");
   });

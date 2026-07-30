@@ -247,6 +247,30 @@
         if (fixture.personal?.snoozedUntil && fixture.normalizedStatus === 'Waiting' && fixture.waitingContext?.type === 'personalSnooze') {
             push(errors, fixture, 'SNOOZE_MUST_NOT_CREATE_WAITING', 'personal.snoozedUntil');
         }
+        /*
+         * WHICH queue (WC-3 / BL-031). The Pool tab's entire question is "which queue is this in", so a
+         * groupQueue item that cannot answer it makes the tab meaningless — that silence is what the fabricated
+         * "Operasyon Kuyruğu" label filled for every pooled item.
+         *
+         * `label` is OPTIONAL while `id` is not: a position that cannot be read leaves the queue unnamed, which
+         * is the only honest third option beside printing a GUID and dropping the task. It is a DISPLAY label —
+         * a position name is data someone typed, so a resource key would render as itself.
+         *
+         * This rule was added only AFTER the provider was verified to emit the field, deliberately: validateItems
+         * DROPS an item it cannot validate, so requiring a field the provider does not yet send would have made
+         * every pooled task vanish from the Pool tab for as long as the two were out of step.
+         */
+        if (fixture.assignmentMode === 'groupQueue') {
+            if (!fixture.pool || typeof fixture.pool.id !== 'string' || !fixture.pool.id) {
+                push(errors, fixture, 'POOL_REQUIRED_FOR_GROUP_QUEUE', 'pool');
+            } else if (fixture.pool.label !== undefined && fixture.pool.label !== null
+                && !(isLabel(fixture.pool.label) && fixture.pool.label.kind === 'display')) {
+                push(errors, fixture, 'POOL_LABEL_INVALID', 'pool.label');
+            }
+        } else if (fixture.pool !== undefined && fixture.pool !== null) {
+            // Work that is not queued has no queue. Saying it belongs to one is inventing a fact.
+            push(errors, fixture, 'POOL_ON_NON_QUEUE_ITEM', 'pool');
+        }
         // Optional field: a provider that does not rank its work omits it. Present-but-unknown is an error —
         // that is the state the shell used to render as an empty flag chip in an undefined colour.
         if (fixture.priority !== undefined && fixture.priority !== null && !PRIORITIES.includes(fixture.priority)) {

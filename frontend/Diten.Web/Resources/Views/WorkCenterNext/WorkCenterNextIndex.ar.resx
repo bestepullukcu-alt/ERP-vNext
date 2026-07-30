@@ -902,6 +902,9 @@
   <data name="GroupAll" xml:space="preserve">
     <value>كل المجموعات</value>
   </data>
+  <data name="GroupUnnamed" xml:space="preserve">
+    <value>الطابور بلا اسم</value>
+  </data>
   <data name="PoolUnassigned" xml:space="preserve">
     <value>غير مُسند — في قائمة الانتظار</value>
   </data>

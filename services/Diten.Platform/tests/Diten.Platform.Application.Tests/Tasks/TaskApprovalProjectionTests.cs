@@ -235,7 +235,7 @@ public sealed class TaskApprovalProjectionTests
             new TaskAssignmentResolver(),
             new FakeUserDisplayNameResolver(),
             new FakeChecklistRunRepository(),
-            approvals, new FakeTaskDependencyRepository(), new FakeTaskCommentRepository());
+            approvals, new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakePositionRepository(), new FakeOrganizationUnitRepository());
 
     // Platform actor: permissions are covered by ProviderActionPermissionTests, and bypassing them here keeps
     // approval the only variable.

@@ -290,7 +290,7 @@ public sealed class TaskPlanTests
                 new FakeChecklistRunRepository(),
                 new FakeTaskApprovalService(),
                 new FakeTaskDependencyRepository(),
-                new FakeTaskCommentRepository());
+                new FakeTaskCommentRepository(), new FakePositionRepository(), new FakeOrganizationUnitRepository());
 
             var actor = new WorkItemActor(TaskTestData.Me, IsPlatformActor: false, new HashSet<string>(
                 new[] { TaskPermissions.Update, TaskPermissions.Claim, TaskPermissions.Complete },
