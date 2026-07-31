@@ -469,9 +469,30 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
              * Measured against the wall clock at PROJECTION time, and stated as a state rather than a countdown.
              * The reader's tab may outlive this answer; the absolute DueAt travels with it so the words on screen
              * can be re-derived, and no frozen day count is sent (see the DTO's own note, and the `ago` ban).
+             *
+             * BL-046 — EXCEPT once the work is closed. A finished task was still measured against today, so the
+             * History list read "Completed · 11 days late" and would read "12 days late" tomorrow. Finished work
+             * does not keep getting later. For a terminal task the clock stops at the moment it closed, which
+             * makes the badge a fact about that task rather than a fact about today.
+             *
+             * The badge is NOT dropped: closing late is exactly what reporting wants to see. Freezing it keeps
+             * the information and removes the lie.
              */
-            SlaState: _sla.Resolve(task.DueAt, DateTimeOffset.UtcNow));
+            SlaState: _sla.Resolve(task.DueAt, SlaReferenceInstant(task, terminal)));
     }
+
+    /// <summary>
+    /// When to measure the SLA from. For live work that is now; for closed work it is the moment it closed
+    /// (BL-046), so a finished task cannot go on getting later every day it sits in History.
+    ///
+    /// <para>Cancelled falls back to CompletedAt and vice versa, and both fall back to now: a terminal task with
+    /// no closing timestamp is old data, and measuring it from today is no worse than the state it was already
+    /// in — whereas throwing would take the whole item off the surface.</para>
+    /// </summary>
+    private static DateTimeOffset SlaReferenceInstant(TaskItem task, bool terminal)
+        => terminal
+            ? task.CompletedAt ?? task.CancelledAt ?? DateTimeOffset.UtcNow
+            : DateTimeOffset.UtcNow;
 
     /// <summary>
     /// A person reference for the projection. The id is always real; the display NAME is left null because Platform

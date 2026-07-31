@@ -247,6 +247,80 @@ public sealed class TaskHandoverTests
                 new ReturnTaskItemCommand(task.Id, new ReturnTaskItemRequest(task.Version, reason), "corr-return"),
                 CancellationToken.None);
 
+    // ── BL-046: a finished task is measured from when it closed, not from today ──────────────────────────
+    //
+    // SCOPE, stated: slaState is a STRING (overdue / due-soon / on-track / no-sla). The day COUNT the user reads
+    // ("11 days late") is derived client-side from dueAt against today, and the projection sends no closing
+    // timestamp, so freezing that number needs a contract addition — recorded, not done here. What IS fixed is
+    // the state itself, which was equally wrong and is the half the server owns.
+
+    [Fact]
+    public async Task Work_finished_ON_TIME_does_not_drift_into_overdue_as_the_calendar_moves()
+    {
+        /*
+         * The sharp end of BL-046. A task closed two days BEFORE its deadline was still measured against today,
+         * so once today passed the deadline it began reporting overdue — History accusing someone of missing a
+         * deadline they actually beat. The clock now stops when the task closes.
+         */
+        var task = AssignedTask();
+        task.DueAt = DateTimeOffset.UtcNow.AddDays(-30);
+        task.CompletedAt = DateTimeOffset.UtcNow.AddDays(-32);   // two days early, a month ago
+        task.Lifecycle = TaskLifecycle.Done;
+        var repository = new FakeTaskItemRepository(task);
+
+        var item = Assert.Single(await Provider(repository).GetWorkItemsAsync(Actor(TaskTestData.Me)));
+
+        Assert.NotEqual("overdue", item.SlaState);
+    }
+
+    [Fact]
+    public async Task Work_that_closed_LATE_still_reports_overdue_because_that_is_worth_recording()
+    {
+        // The badge is frozen, not deleted: closing late is exactly what reporting wants to see. A fix that made
+        // every closed task read "on track" would hide the thing the badge exists for.
+        var task = AssignedTask();
+        task.DueAt = DateTimeOffset.UtcNow.AddDays(-40);
+        task.CompletedAt = DateTimeOffset.UtcNow.AddDays(-39);   // closed one day late
+        task.Lifecycle = TaskLifecycle.Done;
+        var repository = new FakeTaskItemRepository(task);
+
+        var item = Assert.Single(await Provider(repository).GetWorkItemsAsync(Actor(TaskTestData.Me)));
+
+        Assert.Equal("overdue", item.SlaState);
+    }
+
+    [Fact]
+    public async Task LIVE_work_is_still_measured_against_today()
+    {
+        /*
+         * Non-vacuity, and the regression the freeze could easily have caused: an open task past its due date must
+         * go on counting. If this passed while the two above did too, the fix would have frozen everything.
+         */
+        var task = AssignedTask();
+        task.DueAt = DateTimeOffset.UtcNow.AddDays(-5);
+        task.Lifecycle = TaskLifecycle.InProgress;
+        var repository = new FakeTaskItemRepository(task);
+
+        var item = Assert.Single(await Provider(repository).GetWorkItemsAsync(Actor(TaskTestData.Me)));
+
+        Assert.Equal("overdue", item.SlaState);
+    }
+
+    [Fact]
+    public async Task A_terminal_task_with_no_closing_timestamp_falls_back_to_today_rather_than_vanishing()
+    {
+        // Old data has no CompletedAt. Measuring it from today is no worse than the state it was already in,
+        // whereas throwing would take the whole item off the surface — the contract drops what it cannot validate.
+        var task = AssignedTask();
+        task.DueAt = DateTimeOffset.UtcNow.AddDays(-10);
+        task.Lifecycle = TaskLifecycle.Done;
+        var repository = new FakeTaskItemRepository(task);
+
+        var item = Assert.Single(await Provider(repository).GetWorkItemsAsync(Actor(TaskTestData.Me)));
+
+        Assert.Equal("overdue", item.SlaState);
+    }
+
     // ── BL-051: the acceptance gate must REOPEN when work changes hands ──────────────────────────────────
     //
     // The two tests above named "…lands in the … inbox unaccepted" pass without proving anything about this:
