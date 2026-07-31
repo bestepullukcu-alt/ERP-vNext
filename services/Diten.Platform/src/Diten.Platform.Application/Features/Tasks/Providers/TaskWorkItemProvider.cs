@@ -1179,9 +1179,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          * platform.tasks.cancel-any would say it more precisely, but adding a permission is a manifest + role-sync
          * change, not a projection one — recorded rather than smuggled in here.
          *
-         * NOTE: this is the PROJECTION only. The /cancel endpoint still accepts a direct POST from anyone holding
-         * platform.tasks.cancel, so this hides a button without yet refusing the write. Enforcing it in
-         * TransitionTaskItemHandler is the follow-up; a hidden control is presentation, the refusal is the rule.
+         * The refusal is ENFORCED, not merely projected: TransitionTaskItemHandler answers a /cancel POST from a
+         * non-requester with 403 CANCEL_NOT_REQUESTER (TaskWaitingAndCancelAuthorityTests). This note used to say
+         * enforcement was a follow-up and stayed behind after it shipped — a hidden control is presentation, the
+         * refusal is the rule, and both are in place here.
          */
         if (isRequester || actor.Has(TaskPermissions.Delete))
         {

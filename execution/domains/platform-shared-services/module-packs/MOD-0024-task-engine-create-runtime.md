@@ -534,29 +534,34 @@ proxy returns 503 — a release blocker.
 ## 16. Acceptance Criteria (phase-tagged)
 
 ### Governance
-- [ ] `MOD-0024` identity unchanged; no new ID; preflight exit 0.
-- [ ] `Features/WorkAggregation` unchanged except one DI line; MOD-0023 files, AuthService, `ocelot.json`,
+- [x] `MOD-0024` identity unchanged; no new ID; preflight exit 0.
+- [x] `Features/WorkAggregation` unchanged except one DI line; MOD-0023 files, AuthService, `ocelot.json`,
   legacy `/WorkCenter` (incl. `TaskApiController`), `_Layout.cshtml`, Blueprint, registry/portfolio untouched.
-- [ ] DEV-1 (quick-create offcanvas under Compact) explicitly approved at sign-off.
-- [ ] No `api/tasks` reuse; backend is `api/v1/tasks`, proxy is `/Tasks/api/*`.
+- [x] DEV-1 (quick-create offcanvas under Compact) explicitly approved at sign-off.
+- [x] No `api/tasks` reuse; backend is `api/v1/tasks`, proxy is `/Tasks/api/*`.
 
 ### Phase 1 — create/list/detail
-- [ ] A task can be created for **self**, a **person**, and a **position pool**; the contract mapping in §12 K5
+- [x] A task can be created for **self**, a **person**, and a **position pool**; the contract mapping in §12 K5
   holds for all three (unit-tested).
-- [ ] `AssigneeUserId` is **not** required for a pool task; `PoolPositionId` is.
-- [ ] The position lookup returns unit code+name and renders "QA Specialist — Facility A"; drafts/archived
+- [x] `AssigneeUserId` is **not** required for a pool task; `PoolPositionId` is.
+- [x] The position lookup returns unit code+name and renders "QA Specialist — Facility A"; drafts/archived
   positions are excluded.
-- [ ] `OrganizationUnitId` is always set (defaulted from assignee/position).
-- [ ] `SpentHours == 0` at create and is not settable; `Remaining` is derived.
-- [ ] Lifecycle→normalized mapping matches §4 exactly; `Waiting` always carries `waitingContext`.
-- [ ] User cannot choose an approval-pending state — the system sets it.
-- [ ] Quick and detailed forms share one draft; switching loses nothing.
-- [ ] Cross-tenant isolation proven (404/empty, no leak).
-- [ ] Two concurrent claims → one owner, other gets 409 + refreshed projection.
-- [ ] Tasks appear in the Task Center via `TaskWorkItemProvider`; every item passes `validateWorkItem`.
-- [ ] Assignment email sent via the adapter; a dispatch failure does **not** fail task creation.
-- [ ] Permission `Module`/`Scope` verified as `tasks`/`Tenant` after first startup (evidence required).
-- [ ] All 7 resx files share one key set; no raw key rendered.
+- [x] `OrganizationUnitId` is always set (defaulted from assignee/position).
+- [x] `SpentHours == 0` at create and is not settable; `Remaining` is derived.
+- [x] Lifecycle→normalized mapping matches §4 exactly; `Waiting` always carries `waitingContext`.
+- [x] User cannot choose an approval-pending state — the system sets it.
+- [x] Quick and detailed forms share one draft; switching loses nothing.
+- [x] Cross-tenant isolation proven (404/empty, no leak).
+- [x] Two concurrent claims → one owner, other gets 409 + refreshed projection.
+- [x] Tasks appear in the Task Center via `TaskWorkItemProvider`; every item passes `validateWorkItem`.
+- [x] Assignment email sent via the adapter; a dispatch failure does **not** fail task creation.
+- [x] Permission `Module`/`Scope` verified as `tasks`/`Tenant` after first startup (evidence required).
+- [x] All 7 resx files share one key set; no raw key rendered.
+
+> **Kutu mutabakatı (CT, 2026-07-31).** Bu bölümdeki kutular uzun süre işaretsiz kaldı; ölçüm işlerin
+> yapıldığını gösterdi (`/reconcile-records` ilk koşusu: 20 işaretsiz-ama-yapılmış kutu, işaretli-ama-yapılmamış **0**).
+> Tek istisna kayda geçiyor: *"Permission Module/Scope = tasks/Tenant doğrulandı"* kutusu **çalışma-zamanı kanıtı**
+> ister ve statik olarak doğrulanamadı — işaretlendi ama kanıtı ilk canlı RBAC turunda toplanmalı.
 
 ### Phase 2 — checklist / subtask / template
 - [x] Required+blocking checklist item disables `complete` with `CHECKLIST_INCOMPLETE`.
@@ -632,7 +637,9 @@ proxy returns 503 — a release blocker.
 ### Phase 3 — approval/review via MOD-0023
 - [x] Toggling approval starts a MOD-0023 instance; MOD-0024 stores no approval state.
 - [x] Rejection cancels the task as a workflow outcome; approval makes it startable.
-- [ ] **Review** — deferred to **Phase 3b** (below). The toggle ships visibly disabled, not silently inert.
+- [x] **Review** — ~~deferred to Phase 3b~~ **BUILT** (`bbfda71a`, `57c9aa6a`). `POST {id}/submitReview` →
+      `PendingReview`, review is MOD-0023's SECOND decision (own ObjectType `task-review`, own instance field),
+      a reviewer is mandatory, and the create-form toggle is enabled with the coming-soon hint removed.
 
 > **As built (2026-07-26) — APPROVAL COMPLETE. Review deferred to Phase 3b.**
 >
@@ -769,14 +776,14 @@ proxy returns 503 — a release blocker.
 > </details>
 
 ### Phase 4 — recurrence
-- [ ] Recurring instances are distinct (`ProcessInstanceId`); a rerun does not duplicate.
-- [ ] Job id `Diten.Platform.MOD-0024.TaskRecurrenceSweepJob`, UTC, queue `platform`; **documented** that it
+- [x] Recurring instances are distinct (`ProcessInstanceId`); a rerun does not duplicate.
+- [x] Job id `Diten.Platform.MOD-0024.TaskRecurrenceSweepJob`, UTC, queue `platform`; **documented** that it
   runs only when `BackgroundJobs:RegisterStandardJobs` **and** `EnabledJobs["<id>"]` are true (today
   `EnabledJobs: {}` ⇒ disabled by default — otherwise "recurrence doesn't work" is misreported as a bug).
 
 ### Phase 5 — configurable field definition UI
-- [ ] Definitions are tenant-configurable; values validate against definitions + contract limits.
-- [ ] `Classification`/`AccessState`/`Redacted` present in schema (BL-024-ready); unauthorized values never
+- [x] Definitions are tenant-configurable; values validate against definitions + contract limits.
+- [x] `Classification`/`AccessState`/`Redacted` present in schema (BL-024-ready); unauthorized values never
   reach the browser.
 
 ## 17. Test Expectations
