@@ -5,6 +5,8 @@ using MassTransit;
 using MassTransit.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using EventTransportMessage = Diten.BuildingBlocks.Eventing.EventTransportMessage;
+using LegacyEventTransportMessage = Diten.Platform.Application.Contracts.Eventing.EventTransportMessage;
 
 namespace Diten.Platform.Application.Tests.Eventing;
 
@@ -36,7 +38,7 @@ public sealed class SignedCanonicalTransportPropagationTests
                 "Diten.Platform.Tests",
                 DateTimeOffset.UtcNow,
                 "{\"a\":1}",
-                headers);
+                new TrustedTransportMetadata(headers));
 
             await new MassTransitRabbitMqEventPublisher(harness.Bus).PublishAsync(message);
 
@@ -44,6 +46,60 @@ public sealed class SignedCanonicalTransportPropagationTests
             Assert.Equal("hmac-sha256-v1", published.Context.Headers.Get<string>(TrustedTransportMetadata.SignatureSchemeHeader));
             Assert.Equal("ppm-key-2026", published.Context.Headers.Get<string>(TrustedTransportMetadata.KeyIdHeader));
             Assert.Equal(new string('b', 64), published.Context.Headers.Get<string>(TrustedTransportMetadata.SignatureHeader));
+            Assert.Contains(
+                "urn:message:Diten.BuildingBlocks.Eventing:EventTransportMessage",
+                published.Context.SupportedMessageTypes);
+            Assert.DoesNotContain(
+                "urn:message:Diten.Platform.Application.Contracts.Eventing:EventTransportMessage",
+                published.Context.SupportedMessageTypes);
+            Assert.False(await harness.Published.Any<LegacyEventTransportMessage>());
+        }
+        finally
+        {
+            await harness.Stop();
+        }
+    }
+
+    [Fact]
+    public async Task MassTransit_ComputesPermanentAndLegacyContractUrnsExactly()
+    {
+        await using var provider = new ServiceCollection()
+            .AddMassTransitTestHarness()
+            .BuildServiceProvider(true);
+        var harness = provider.GetRequiredService<ITestHarness>();
+        await harness.Start();
+        try
+        {
+            await harness.Bus.Publish(new EventTransportMessage(
+                Guid.NewGuid(),
+                "test.permanent.v1",
+                1,
+                Guid.NewGuid(),
+                null,
+                null,
+                "Diten.Platform.Tests",
+                DateTimeOffset.UtcNow,
+                "{}"));
+            await harness.Bus.Publish(new LegacyEventTransportMessage(
+                Guid.NewGuid(),
+                "test.legacy.v1",
+                1,
+                Guid.NewGuid(),
+                null,
+                null,
+                "Diten.Platform.Tests",
+                DateTimeOffset.UtcNow,
+                "{}"));
+
+            var permanent = await harness.Published.SelectAsync<EventTransportMessage>().First();
+            var legacy = await harness.Published.SelectAsync<LegacyEventTransportMessage>().First();
+
+            Assert.Contains(
+                "urn:message:Diten.BuildingBlocks.Eventing:EventTransportMessage",
+                permanent.Context.SupportedMessageTypes);
+            Assert.Contains(
+                "urn:message:Diten.Platform.Application.Contracts.Eventing:EventTransportMessage",
+                legacy.Context.SupportedMessageTypes);
         }
         finally
         {
@@ -70,11 +126,11 @@ public sealed class SignedCanonicalTransportPropagationTests
             "Diten.Platform.Tests",
             DateTimeOffset.UtcNow,
             "{}",
-            headers);
+            new TrustedTransportMetadata(headers));
         var transport = new InMemoryEventBus();
 
         await transport.PublishAsync(message);
 
-        Assert.Same(headers, Assert.Single(transport.Messages).TransportHeaders);
+        Assert.Equal(headers, Assert.Single(transport.Messages).TransportMetadata.Headers);
     }
 }

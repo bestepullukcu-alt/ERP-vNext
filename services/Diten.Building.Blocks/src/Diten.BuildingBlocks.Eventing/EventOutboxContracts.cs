@@ -20,6 +20,44 @@ public enum EventOutboxDeliveryStatus
     DeadLettered = 4
 }
 
+public enum EventOutboxTerminalFailureKind
+{
+    Contract = 0,
+    Security = 1,
+    Validation = 2,
+    Unsupported = 3
+}
+
+public sealed record EventOutboxTerminalFailure
+{
+    public EventOutboxTerminalFailure(
+        EventOutboxTerminalFailureKind kind,
+        string reasonCode,
+        string? safeDescription = null)
+    {
+        if (string.IsNullOrWhiteSpace(reasonCode)
+            || reasonCode.Length > 128
+            || reasonCode.Any(character =>
+                !(character is >= 'a' and <= 'z'
+                  or >= '0' and <= '9'
+                  or '.'
+                  or '-')))
+        {
+            throw new EventValidationException("Terminal failure reason code is invalid.");
+        }
+
+        Kind = kind;
+        ReasonCode = reasonCode;
+        SafeDescription = safeDescription is null
+            ? null
+            : EventErrorRedactor.RedactAndTruncate(safeDescription);
+    }
+
+    public EventOutboxTerminalFailureKind Kind { get; }
+    public string ReasonCode { get; }
+    public string? SafeDescription { get; }
+}
+
 public interface IEventOutboxWriter
 {
     Task<EventOutboxWriteResult> EnqueueAsync(
@@ -49,6 +87,11 @@ public interface IEventOutboxStore : IEventOutboxWriter
         string error,
         DateTimeOffset nextAttemptAtUtc,
         int maxAttempts,
+        CancellationToken cancellationToken = default);
+
+    Task DeadLetterPublishAsync(
+        Guid eventId,
+        EventOutboxTerminalFailure failure,
         CancellationToken cancellationToken = default);
 }
 

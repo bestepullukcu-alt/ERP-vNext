@@ -1,5 +1,6 @@
 namespace Diten.Platform.Application.Contracts.Eventing;
 
+[Obsolete("Temporary inbound-only MassTransit compatibility contract. New producers must use Diten.BuildingBlocks.Eventing.EventTransportMessage.")]
 public sealed record EventTransportMessage(
     Guid EventId,
     string EventName,

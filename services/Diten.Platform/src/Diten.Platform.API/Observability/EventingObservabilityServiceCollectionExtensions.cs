@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Contracts.Eventing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 

@@ -118,10 +118,19 @@ public sealed class OutboxEventRepository : RepositoryBase<OutboxEvent>, IOutbox
 
     public async Task CompletePublishAsync(Guid eventId, CancellationToken cancellationToken = default)
     {
-        var item = await GetByEventIdAsync(eventId, cancellationToken)
-                   ?? throw new InvalidOperationException($"Outbox event '{eventId}' was not found.");
-        item.MarkPublished();
-        await UpdateAsync(item, cancellationToken);
+        var filter = Builders<OutboxEvent>.Filter.And(
+            Builders<OutboxEvent>.Filter.Eq(x => x.EventId, eventId),
+            Builders<OutboxEvent>.Filter.Eq(x => x.Status, OutboxEventStatus.Publishing));
+        var update = Builders<OutboxEvent>.Update
+            .Set(x => x.Status, OutboxEventStatus.Published)
+            .Set(x => x.LastError, null)
+            .Set(x => x.NextAttemptAtUtc, null)
+            .Set(x => x.UpdatedAt, DateTime.UtcNow);
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        if (result.ModifiedCount != 1)
+        {
+            throw await CreateStateConflictAsync(eventId, "complete", cancellationToken);
+        }
     }
 
     public async Task FailPublishAsync(
@@ -133,8 +142,63 @@ public sealed class OutboxEventRepository : RepositoryBase<OutboxEvent>, IOutbox
     {
         var item = await GetByEventIdAsync(eventId, cancellationToken)
                    ?? throw new InvalidOperationException($"Outbox event '{eventId}' was not found.");
-        item.MarkPublishFailed(error, nextAttemptAtUtc, maxAttempts);
-        await UpdateAsync(item, cancellationToken);
+        if (item.Status != OutboxEventStatus.Publishing)
+        {
+            throw new InvalidOperationException($"Outbox event '{eventId}' is not in Publishing state.");
+        }
+
+        var nextAttemptCount = item.AttemptCount + 1;
+        var isTerminal = nextAttemptCount >= maxAttempts;
+        var filter = Builders<OutboxEvent>.Filter.And(
+            Builders<OutboxEvent>.Filter.Eq(x => x.EventId, eventId),
+            Builders<OutboxEvent>.Filter.Eq(x => x.Status, OutboxEventStatus.Publishing),
+            Builders<OutboxEvent>.Filter.Eq(x => x.AttemptCount, item.AttemptCount));
+        var update = Builders<OutboxEvent>.Update
+            .Set(x => x.Status, isTerminal ? OutboxEventStatus.DeadLettered : OutboxEventStatus.Failed)
+            .Set(x => x.LastError, EventErrorRedactor.RedactAndTruncate(error))
+            .Set(x => x.NextAttemptAtUtc, isTerminal ? null : nextAttemptAtUtc)
+            .Set(x => x.UpdatedAt, DateTime.UtcNow)
+            .Inc(x => x.AttemptCount, 1);
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        if (result.ModifiedCount != 1)
+        {
+            throw await CreateStateConflictAsync(eventId, "fail", cancellationToken);
+        }
+    }
+
+    public async Task DeadLetterPublishAsync(
+        Guid eventId,
+        EventOutboxTerminalFailure failure,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(failure);
+        var safeError = EventErrorRedactor.RedactAndTruncate(
+            $"{failure.Kind}:{failure.ReasonCode}:{failure.SafeDescription}");
+        var filter = Builders<OutboxEvent>.Filter.And(
+            Builders<OutboxEvent>.Filter.Eq(x => x.EventId, eventId),
+            Builders<OutboxEvent>.Filter.Eq(x => x.Status, OutboxEventStatus.Publishing));
+        var update = Builders<OutboxEvent>.Update
+            .Set(x => x.Status, OutboxEventStatus.DeadLettered)
+            .Set(x => x.LastError, safeError)
+            .Set(x => x.NextAttemptAtUtc, null)
+            .Set(x => x.UpdatedAt, DateTime.UtcNow)
+            .Inc(x => x.AttemptCount, 1);
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        if (result.ModifiedCount == 1)
+        {
+            return;
+        }
+
+        var existing = await GetByEventIdAsync(eventId, cancellationToken)
+                       ?? throw new InvalidOperationException($"Outbox event '{eventId}' was not found.");
+        if (existing.Status == OutboxEventStatus.DeadLettered
+            && string.Equals(existing.LastError, safeError, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(
+            $"Outbox event '{eventId}' cannot transition from {existing.Status} to DeadLettered.");
     }
 
     private static EventOutboxPublishItem ToPublicPublishItem(OutboxEvent item)
@@ -155,5 +219,17 @@ public sealed class OutboxEventRepository : RepositoryBase<OutboxEvent>, IOutbox
             (EventOutboxDeliveryStatus)(int)item.Status,
             item.AttemptCount,
             item.LastError);
+    }
+
+    private async Task<Exception> CreateStateConflictAsync(
+        Guid eventId,
+        string operation,
+        CancellationToken cancellationToken)
+    {
+        var existing = await GetByEventIdAsync(eventId, cancellationToken);
+        return existing is null
+            ? new InvalidOperationException($"Outbox event '{eventId}' was not found.")
+            : new InvalidOperationException(
+                $"Outbox event '{eventId}' cannot {operation} from {existing.Status}.");
     }
 }

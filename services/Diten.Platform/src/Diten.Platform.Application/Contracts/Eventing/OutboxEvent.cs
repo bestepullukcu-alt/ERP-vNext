@@ -79,9 +79,9 @@ public sealed class OutboxEvent
         };
     }
 
-    public EventTransportMessage ToTransportMessage()
+    public Diten.BuildingBlocks.Eventing.EventTransportMessage ToTransportMessage()
     {
-        return new EventTransportMessage(
+        return new Diten.BuildingBlocks.Eventing.EventTransportMessage(
             EventId,
             EventName,
             EventVersion,
@@ -90,8 +90,8 @@ public sealed class OutboxEvent
             TenantId,
             Producer,
             OccurredAtUtc,
-            PayloadJson,
-            new Dictionary<string, string>(TransportHeaders, StringComparer.OrdinalIgnoreCase));
+            new UTF8Encoding(false, true).GetBytes(PayloadJson),
+            new TrustedTransportMetadata(TransportHeaders));
     }
 
     public bool HasSameImmutableContent(OutboxEvent other)
@@ -132,6 +132,27 @@ public sealed class OutboxEvent
         LastError = EventErrorRedactor.RedactAndTruncate(error);
         Status = AttemptCount >= maxAttempts ? OutboxEventStatus.DeadLettered : OutboxEventStatus.Failed;
         NextAttemptAtUtc = AttemptCount >= maxAttempts ? null : nextAttemptAtUtc;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void MarkDeadLettered(EventOutboxTerminalFailure failure)
+    {
+        ArgumentNullException.ThrowIfNull(failure);
+        if (Status == OutboxEventStatus.Published)
+        {
+            throw new InvalidOperationException("A published outbox event cannot be dead-lettered.");
+        }
+
+        if (Status == OutboxEventStatus.DeadLettered)
+        {
+            return;
+        }
+
+        AttemptCount++;
+        LastError = EventErrorRedactor.RedactAndTruncate(
+            $"{failure.Kind}:{failure.ReasonCode}:{failure.SafeDescription}");
+        Status = OutboxEventStatus.DeadLettered;
+        NextAttemptAtUtc = null;
         UpdatedAt = DateTime.UtcNow;
     }
 }

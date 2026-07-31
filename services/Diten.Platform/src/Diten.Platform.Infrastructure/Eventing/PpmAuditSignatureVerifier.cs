@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using Diten.Platform.Application.Contracts.Eventing;
 using Microsoft.Extensions.Options;
+using EventTransportMessage = Diten.BuildingBlocks.Eventing.EventTransportMessage;
 
 namespace Diten.Platform.Infrastructure.Eventing;
 

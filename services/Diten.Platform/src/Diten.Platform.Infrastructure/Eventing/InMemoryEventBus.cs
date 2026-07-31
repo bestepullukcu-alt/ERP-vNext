@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using Diten.Platform.Application.Contracts.Eventing;
+using Diten.BuildingBlocks.Eventing;
 
 namespace Diten.Platform.Infrastructure.Eventing;
 
