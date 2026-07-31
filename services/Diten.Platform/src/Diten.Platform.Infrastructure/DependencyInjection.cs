@@ -336,6 +336,10 @@ public static class DependencyInjection
                 database,
                 configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions())
             .GetAwaiter().GetResult();
+        // BL-042 — stamp AcceptedByUserId on tasks accepted under the OLD inferred rule. Without this every
+        // already-accepted task reverts to pendingAcceptance on deploy and the tenant's My Work empties into the
+        // Inbox. Idempotent: only unstamped rows are touched.
+        TaskAcceptanceBackfillMigration.MigrateAsync(database).GetAwaiter().GetResult();
         // MOD-0027-FU03A (Bridge) — PlatformSeed/SystemSeed notification events; runs after templates exist. No-op
         // until FU04A adds seed content.
         NotificationEventSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
@@ -452,6 +456,10 @@ public static class DependencyInjection
             // Smtp section so that block finally configures what it appears to configure. Idempotent; never overrides a
             // row an operator created.
             NotificationMessagingSettingsSeed.EnsureSeededAsync(database, smtpOptions).GetAwaiter().GetResult();
+            // BL-042 — stamp AcceptedByUserId on tasks accepted under the OLD inferred rule. Without this every
+            // already-accepted task reverts to pendingAcceptance on deploy and the tenant's My Work empties into the
+            // Inbox. Idempotent: only unstamped rows are touched.
+            TaskAcceptanceBackfillMigration.MigrateAsync(database).GetAwaiter().GetResult();
             // MOD-0027-FU03A (Bridge) — PlatformSeed/SystemSeed notification events; runs after templates exist. No-op
             // until FU04A adds seed content.
             NotificationEventSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();

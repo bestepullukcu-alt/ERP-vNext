@@ -1634,4 +1634,16 @@
   <data name="GecmisChkPublish" xml:space="preserve">
     <value>Publish the results</value>
   </data>
+  <data name="ReassignAssigneeLabel" xml:space="preserve">
+    <value>New assignee</value>
+  </data>
+  <data name="ReassignAssigneePlaceholder" xml:space="preserve">
+    <value>Select a person</value>
+  </data>
+  <data name="ReassignAssigneeRequired" xml:space="preserve">
+    <value>Choose who this task is being handed to.</value>
+  </data>
+  <data name="ReassignNoAssignableUsers" xml:space="preserve">
+    <value>There is nobody this task can be handed to.</value>
+  </data>
 </root>

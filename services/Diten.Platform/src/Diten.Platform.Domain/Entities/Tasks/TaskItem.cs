@@ -33,6 +33,21 @@ public sealed class TaskItem : TenantScopedEntity
     /// <summary>The holder. NULL for an unclaimed pool task — that is the whole point of a pool.</summary>
     public Guid? AssigneeUserId { get; set; }
 
+    /// <summary>
+    /// Who accepted this task. Its PRESENCE is the acceptance mark — null means not accepted.
+    ///
+    /// <para><b>BL-042.</b> Acceptance used to be inferred from the lifecycle (<c>not (Open or Planned)</c>), so a
+    /// task that was PLANNED before it was accepted could never leave the Inbox: it was not Open, so accept did
+    /// not promote it, and it was Planned, so it did not count as accepted. The endpoint answered 204 every time
+    /// and changed nothing — six consecutive attempts, six successes, no movement. Two meanings on one field is
+    /// what produced that, so acceptance now carries its own.</para>
+    ///
+    /// <para><b>No timestamp here, deliberately (BL-030).</b> A <c>DateTimeOffset</c> lands on disk as a BSON
+    /// array and breaks sorting and querying. The moment of acceptance is already recorded on the
+    /// <c>TaskAssignment</c> row (EventType = Accepted); storing it twice would buy nothing and cost that.</para>
+    /// </summary>
+    public Guid? AcceptedByUserId { get; set; }
+
     /// <summary>The offered POSITION for a pool task (MOD-0288 Position; always unit-bound — §12 K4).</summary>
     public Guid? PoolPositionId { get; set; }
 

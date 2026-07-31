@@ -35,15 +35,38 @@ public sealed class TaskAssignmentResolverTests
     }
 
     [Fact]
-    public void Person_assigned_becomes_owned_once_work_has_started()
+    public void Person_assigned_becomes_owned_once_it_is_ACCEPTED()
     {
+        /*
+         * BL-042 — this test used to set Lifecycle = InProgress and expect "admitted", because acceptance was
+         * INFERRED from the lifecycle. That inference is the defect: it made a task that was planned before it was
+         * accepted permanently unacceptable, and the endpoint reported success while nothing moved.
+         *
+         * The test is not weakened, it is re-pointed at the real signal. Acceptance is now a fact the task carries.
+         */
         var task = MakeTask(TaskAssignmentTarget.Person, assignee: Me);
-        task.Lifecycle = TaskLifecycle.InProgress;
+        task.AcceptedByUserId = Me;
 
         var projection = _sut.Resolve(task);
 
         Assert.Equal("owned", projection.OwnershipState);
         Assert.Equal("admitted", projection.AdmissionState);
+    }
+
+    [Fact]
+    public void Work_that_has_STARTED_but_was_never_accepted_is_still_pending()
+    {
+        /*
+         * The half the old rule could not express, and the one BL-042 is about: lifecycle progress is not consent.
+         * A task can be planned — or even moved along by someone else — without its assignee having taken it on,
+         * and the Inbox must keep offering it until they do.
+         */
+        var task = MakeTask(TaskAssignmentTarget.Person, assignee: Me);
+        task.Lifecycle = TaskLifecycle.Planned;
+
+        var projection = _sut.Resolve(task);
+
+        Assert.Equal("pendingAcceptance", projection.AdmissionState);
     }
 
     [Fact]

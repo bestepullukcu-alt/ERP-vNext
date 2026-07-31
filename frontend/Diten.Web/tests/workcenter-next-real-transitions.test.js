@@ -147,7 +147,10 @@ describe("work item actions reach the engine", () => {
     it("routes a real task action to TasksApi.transition, not to the mock state machine", () => {
       expect(app).toContain("const isRealTaskItem");
       expect(app).toMatch(/isRealTaskItem\(item\)\s*\)\s*\{\s*submitRealTransition/);
-      expect(app).toContain("global.TasksApi.transition(item.id, action.code");
+      // Matched across newlines: BL-043 split this call over several lines so the body comes from the declared
+      // TRANSITION_BODIES vocabulary rather than a literal at the call site. The RULE is unchanged — a real task
+      // action still goes to the engine — so the assertion follows the refactor instead of pinning its formatting.
+      expect(app).toMatch(/global\.TasksApi\.transition\(\s*item\.id,\s*action\.code/);
     });
 
     it("sends the projection's concurrency token as the expected version", () => {

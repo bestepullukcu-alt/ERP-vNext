@@ -3175,7 +3175,47 @@
      * Send the transition to the engine and re-read the projection. Nothing is applied optimistically: the server
      * decides, and the refreshed projection is the only source of the new state.
      */
-    const submitRealTransition = async (item, action, reason) => {
+    /*
+     * ══ TRANSITION BODY VOCABULARY (BL-043) ═══════════════════════════════════════════════════════════════
+     * The shape of the body each action sends, declared ONCE, here.
+     *
+     * THE DEFECT. Every transition used to post the same generic body — {expectedVersion, reasonCode, note} —
+     * while three endpoints ask for something else entirely: InquireTaskItemRequest(ExpectedVersion, Reason),
+     * ReturnTaskItemRequest(ExpectedVersion, Reason), ReassignTaskItemRequest(ExpectedVersion, AssigneeUserId,
+     * Reason). All three answered 400 "The Reason field is required." — so `inquire`, `return` and `reassign`
+     * had never worked from the UI at all, and the Waiting segment could not be filled by any means.
+     *
+     * THE DIRECTION IS DELIBERATE: the client was fixed, not the server. `Reason` is required on purpose —
+     * TaskModels.cs says why ("a refusal the requester cannot understand only moves the problem"). Making the
+     * field optional to match the client would have deleted that rule silently.
+     *
+     * WHY A DECLARED MAP RATHER THAN A COMMENT. This is the WC-1 lesson: a value that lives in two places and is
+     * declared in neither drifts, and nothing notices. task-transition-contract.test.js reads THIS map and the
+     * C# records in TaskModels.cs and asserts they agree field for field — so the next endpoint that changes its
+     * DTO fails a test instead of a user's click.
+     */
+    const TRANSITION_BODIES = {
+        // The three that were broken: a REQUIRED reason, named `reason` because that is what the DTO calls it.
+        inquire: ({ expectedVersion, reason }) => ({ expectedVersion, reason }),
+        return: ({ expectedVersion, reason }) => ({ expectedVersion, reason }),
+        // Plus the person being handed the work — see the picker in the reason dialog.
+        reassign: ({ expectedVersion, reason, assigneeUserId }) => ({ expectedVersion, assigneeUserId, reason }),
+
+        // Everything else takes TaskTransitionRequest(ExpectedVersion, ReasonCode, Note) — the generic body that
+        // was being sent to all ten. It is correct for these; it was only ever wrong for the three above.
+        __default: ({ expectedVersion, reason }) => ({ expectedVersion, reasonCode: null, note: reason || null })
+    };
+
+    /** Actions whose DTO requires a non-empty Reason — the dialog must not let them through empty. */
+    const REASON_REQUIRED_ACTIONS = ['inquire', 'return', 'reassign'];
+
+    /** Actions that must also name the person receiving the work. */
+    const ASSIGNEE_REQUIRED_ACTIONS = ['reassign'];
+
+    const buildTransitionBody = (actionCode, parts) =>
+        (TRANSITION_BODIES[actionCode] || TRANSITION_BODIES.__default)(parts);
+
+    const submitRealTransition = async (item, action, reason, assigneeUserId) => {
         const label = actionLabel(action);
         state.submittingItemId = item.id;
         state.submittingActionCode = action.code;
@@ -3183,11 +3223,11 @@
 
         // The concurrency token from the projection — an expected-version write, so a stale screen loses cleanly.
         const expectedVersion = Number(item.concurrency?.token ?? 0);
-        const result = await global.TasksApi.transition(item.id, action.code, {
-            expectedVersion,
-            reasonCode: null,
-            note: reason || null
-        });
+        // The body's shape comes from the vocabulary above, never from a guess at this call site.
+        const result = await global.TasksApi.transition(
+            item.id,
+            action.code,
+            buildTransitionBody(action.code, { expectedVersion, reason, assigneeUserId }));
 
         state.submittingItemId = null;
         state.submittingActionCode = null;
@@ -3363,8 +3403,8 @@
         await afterPhase2Write(await global.TasksApi.create(payload), 'ToastSubtaskAdded', text);
     };
 
-    const applyAction = (item, action, reason) => {
-        if (isRealTaskItem(item)) { submitRealTransition(item, action, reason); return; }
+    const applyAction = (item, action, reason, assigneeUserId) => {
+        if (isRealTaskItem(item)) { submitRealTransition(item, action, reason, assigneeUserId); return; }
 
         // Everything below only ever simulates. Real items from other providers still land here (their engines
         // are not wired yet) — say so rather than letting a fake transition look real.
@@ -3807,7 +3847,7 @@
         createSelfTask({ title: note.text, date: null, priority: 'Medium' }, { sourceModule: t('NotesSource') });
     };
 
-    const performAction = (item, actionKey) => {
+    const performAction = async (item, actionKey) => {
         const action = actionByKey(item, actionKey);
         if (!item || !action || action.disabled || state.submittingItemId === item.id) { return; }
         // The engine now stores the personal plan date (POST .../plan), so the picker opens for a real task too —
@@ -3820,20 +3860,61 @@
         // a mandatory-rationale textarea, which also serves as the confirm step.
         if (action.reason) {
             if (!global.Swal) { return; }
+
+            /*
+             * BL-043 — `reassign` also has to name the PERSON. The dialog used to ask only for a rationale, so
+             * AssigneeUserId was never sent and the call was refused even once the field names were right.
+             *
+             * The picker offers the SAME list the create form uses (TasksApi.assignablePeople) because that is
+             * the list the server validates against — offering anyone else would build a dialog whose confirm is
+             * refused, which is the shape of defect this ticket exists to close.
+             */
+            const needsAssignee = ASSIGNEE_REQUIRED_ACTIONS.includes(action.code);
+            let people = [];
+            if (needsAssignee) {
+                const res = await global.TasksApi.assignablePeople();
+                people = (res.ok && res.data) ? res.data : [];
+                if (!people.length) {
+                    // Refusing beats opening a dialog that cannot be confirmed.
+                    toast(t('ReassignNoAssignableUsers'), 'error');
+                    return;
+                }
+            }
+
+            const options = people
+                .map((person) => `<option value="${esc(person.id)}">${esc(person.displayName || person.id)}</option>`)
+                .join('');
+            const assigneeField = needsAssignee
+                ? `<label class="form-label d-block text-start" for="wcnReassignAssignee">${esc(t('ReassignAssigneeLabel'))}</label>`
+                  + `<select id="wcnReassignAssignee" class="form-select mb-3">`
+                  + `<option value="">${esc(t('ReassignAssigneePlaceholder'))}</option>${options}</select>`
+                : '';
+
             global.Swal.fire({
                 title: actionLabel(action),
-                input: 'textarea',
-                inputLabel: t('ReasonLabel'),
-                inputPlaceholder: t('ReasonPlaceholder'),
+                html: assigneeField
+                    + `<label class="form-label d-block text-start" for="wcnReasonText">${esc(t('ReasonLabel'))}</label>`
+                    + `<textarea id="wcnReasonText" class="form-control" rows="3" `
+                    + `placeholder="${esc(t('ReasonPlaceholder'))}"></textarea>`,
                 showCancelButton: true,
                 confirmButtonText: t('ReasonConfirm'),
                 cancelButtonText: t('ReasonCancel'),
-                preConfirm: (value) => {
-                    const reason = String(value || '').trim();
+                preConfirm: () => {
+                    const reason = String(document.getElementById('wcnReasonText')?.value || '').trim();
                     if (!reason) { global.Swal.showValidationMessage(t('ReasonRequired')); return false; }
-                    return reason;
+
+                    if (!needsAssignee) { return { reason }; }
+
+                    const assigneeUserId = String(document.getElementById('wcnReassignAssignee')?.value || '').trim();
+                    // Cannot be confirmed without a person: the server requires it and a silent 400 helps nobody.
+                    if (!assigneeUserId) { global.Swal.showValidationMessage(t('ReassignAssigneeRequired')); return false; }
+                    return { reason, assigneeUserId };
                 }
-            }).then((res) => { if (res.isConfirmed && res.value) { applyAction(item, action, res.value); } });
+            }).then((res) => {
+                if (res.isConfirmed && res.value) {
+                    applyAction(item, action, res.value.reason, res.value.assigneeUserId);
+                }
+            });
             return;
         }
 

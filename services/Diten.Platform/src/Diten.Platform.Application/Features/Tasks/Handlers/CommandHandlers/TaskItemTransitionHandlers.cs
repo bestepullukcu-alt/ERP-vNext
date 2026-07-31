@@ -48,7 +48,30 @@ public sealed class AcceptTaskItemHandler : IRequestHandler<AcceptTaskItemComman
                 "Only the assignee can accept this task.", 403, TaskReasonCodes.InvalidState, command.CorrelationId);
         }
 
-        // Acceptance is signalled by leaving the pre-acceptance lifecycle; Planned is preserved if already planned.
+        /*
+         * BL-042 — an accept that would change nothing must NOT answer 204.
+         *
+         * Reporting success for a no-op is what hid this defect for a whole test round: six accepts, six 204s,
+         * and the task never left the Inbox. A caller that asks twice is working from a stale view, and the only
+         * useful answer is to say so — the same shape as the concurrency conflict below, which the client already
+         * knows how to handle by reloading.
+         */
+        if (task.AcceptedByUserId is not null)
+        {
+            return Response<NoContent>.Fail(
+                "This task has already been accepted.",
+                409, TaskReasonCodes.AlreadyAccepted, command.CorrelationId);
+        }
+
+        /*
+         * The acceptance mark, written explicitly rather than inferred (BL-042). Its presence IS acceptance.
+         *
+         * The lifecycle promotion stays a SEPARATE decision: Open work starts when it is accepted, but a task that
+         * was planned first stays Planned. Accepting a task must not erase its plan — collapsing the two is
+         * exactly the conflation that produced the defect.
+         */
+        task.AcceptedByUserId = _currentUser.UserId;
+
         if (task.Lifecycle == TaskLifecycle.Open)
         {
             task.Lifecycle = TaskLifecycle.InProgress;

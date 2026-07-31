@@ -1634,4 +1634,16 @@
   <data name="GecmisChkPublish" xml:space="preserve">
     <value>Sonuçları yayınla</value>
   </data>
+  <data name="ReassignAssigneeLabel" xml:space="preserve">
+    <value>Yeni sorumlu</value>
+  </data>
+  <data name="ReassignAssigneePlaceholder" xml:space="preserve">
+    <value>Bir kişi seçin</value>
+  </data>
+  <data name="ReassignAssigneeRequired" xml:space="preserve">
+    <value>Görevin kime devredileceğini seçin.</value>
+  </data>
+  <data name="ReassignNoAssignableUsers" xml:space="preserve">
+    <value>Bu görevin devredilebileceği kimse yok.</value>
+  </data>
 </root>

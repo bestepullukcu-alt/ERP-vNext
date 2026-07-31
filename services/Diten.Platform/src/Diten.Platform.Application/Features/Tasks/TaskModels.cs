@@ -52,6 +52,7 @@ public static class TaskReasonCodes
     public const string AssigneeInvalid = "ASSIGNEE_INVALID";
     public const string OrganizationUnitUnresolved = "ORGANIZATION_UNIT_UNRESOLVED";
     public const string AlreadyClaimed = "TASK_ALREADY_CLAIMED";
+    public const string AlreadyAccepted = "TASK_ALREADY_ACCEPTED";
     public const string NotClaimable = "TASK_NOT_CLAIMABLE";
     public const string InvalidState = "TASK_INVALID_STATE";
     public const string ConcurrencyConflict = "TASK_CONCURRENCY_CONFLICT";

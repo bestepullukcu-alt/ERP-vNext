@@ -1634,4 +1634,16 @@
   <data name="GecmisChkPublish" xml:space="preserve">
     <value>发布结果</value>
   </data>
+  <data name="ReassignAssigneeLabel" xml:space="preserve">
+    <value>新负责人</value>
+  </data>
+  <data name="ReassignAssigneePlaceholder" xml:space="preserve">
+    <value>请选择人员</value>
+  </data>
+  <data name="ReassignAssigneeRequired" xml:space="preserve">
+    <value>请选择此任务移交给谁。</value>
+  </data>
+  <data name="ReassignNoAssignableUsers" xml:space="preserve">
+    <value>没有可以移交此任务的人员。</value>
+  </data>
 </root>

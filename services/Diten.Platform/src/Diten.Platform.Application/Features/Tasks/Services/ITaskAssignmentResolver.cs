@@ -67,9 +67,17 @@ public sealed class TaskAssignmentResolver : ITaskAssignmentResolver
     }
 
     /// <summary>
-    /// A person-assigned task counts as accepted once work has actually moved past the acceptance gate. Phase 1
-    /// has no separate Accepted flag; lifecycle progression is the signal (Open/Planned = not yet accepted).
+    /// Acceptance is a FACT the task carries, not something read off its lifecycle.
+    ///
+    /// <para><b>BL-042 — what this used to say and why it was wrong.</b> The rule was
+    /// <c>Lifecycle is not (Open or Planned)</c>, on the reasoning that work moving past the gate implied
+    /// acceptance. It does not: planning a task moves it to Planned WITHOUT accepting it, and from there accept
+    /// could never take effect — the handler only promoted Open, so a planned task stayed Planned, stayed
+    /// "not accepted", and stayed in the Inbox forever while the endpoint reported success.</para>
+    ///
+    /// <para>Lifecycle answers "how far along is this work". Acceptance answers "did the assignee take it on".
+    /// They are different questions, and every extra meaning hung on the lifecycle field reproduces this class.
+    /// </para>
     /// </summary>
-    private static bool IsAccepted(TaskItem task)
-        => task.Lifecycle is not (TaskLifecycle.Open or TaskLifecycle.Planned);
+    private static bool IsAccepted(TaskItem task) => task.AcceptedByUserId is not null;
 }
