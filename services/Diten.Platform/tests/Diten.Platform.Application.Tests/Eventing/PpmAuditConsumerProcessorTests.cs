@@ -149,6 +149,58 @@ public sealed class PpmAuditConsumerProcessorTests
         Assert.Equal(0, observer.Count);
     }
 
+    [Fact]
+    public async Task FuturePpmV2EventIdentityIsSafelyIgnoredByV1Consumer()
+    {
+        var repository = new StubRepository();
+        var observer = new StubObserver();
+        var message = new EventTransportMessage(
+            EventId, "ppm.audit-intent.submitted.v2", 2,
+            Guid.Parse("55555555-5555-5555-5555-555555555555"), null, TenantId,
+            PpmAuditIntentParser.Producer,
+            DateTimeOffset.Parse("2026-07-30T10:20:30.0000000Z"),
+            Payload());
+
+        await Processor(repository, observer).ProcessAsync(
+            message, null, null, null, 0, CancellationToken.None);
+
+        Assert.Equal(0, repository.Attempts);
+        Assert.Equal(0, observer.Count);
+    }
+
+    [Fact]
+    public async Task ExactV1IdentityWithWrongProducerIsContractFailure()
+    {
+        var repository = new StubRepository();
+        var observer = new StubObserver();
+        var message = new EventTransportMessage(
+            EventId, PpmAuditIntentParser.EventName, 1,
+            Guid.Parse("55555555-5555-5555-5555-555555555555"), null, TenantId,
+            "Other.Producer",
+            DateTimeOffset.Parse("2026-07-30T10:20:30.0000000Z"),
+            Payload());
+
+        await Assert.ThrowsAsync<PpmAuditContractException>(() =>
+            Processor(repository, observer).ProcessAsync(
+                message, PpmAuditIntentParser.SignatureScheme, "current",
+                new string('0', 64), 0, CancellationToken.None));
+
+        Assert.Equal(0, repository.Attempts);
+        Assert.Equal(1, observer.Count);
+    }
+
+    [Fact]
+    public void ExactV1NameWithVersion2IsRejectedBySharedTransportContract()
+    {
+        Assert.Throws<Diten.BuildingBlocks.Eventing.EventValidationException>(() =>
+            new EventTransportMessage(
+                EventId, PpmAuditIntentParser.EventName, 2,
+                Guid.Parse("55555555-5555-5555-5555-555555555555"), null, TenantId,
+                PpmAuditIntentParser.Producer,
+                DateTimeOffset.Parse("2026-07-30T10:20:30.0000000Z"),
+                Payload()));
+    }
+
     private static PpmAuditConsumerProcessor Processor(
         StubRepository repository,
         StubObserver observer,
