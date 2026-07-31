@@ -1,5 +1,6 @@
 using Diten.BuildingBlocks.Eventing;
 using Diten.PpmService.Domain.Repositories;
+using Diten.PpmService.Application.Features.ExternalContextReferences;
 using Diten.PpmService.Persistence.Mongo;
 using Diten.PpmService.Persistence.Repositories;
 using Microsoft.Extensions.Configuration;
@@ -43,6 +44,7 @@ public static class DependencyInjection
         services.AddScoped<IInitiativeRepository, InitiativeRepository>();
         services.AddScoped<IProgramRepository, ProgramRepository>();
         services.AddScoped<IProjectRepository, ProjectRepository>();
+        services.AddScoped<IExternalContextReferenceLookup, ExternalContextReferenceLookup>();
         services.AddScoped<IAuditIntentRepository, AuditIntentRepository>();
         services.AddScoped<PpmEventOutboxStore>();
         services.AddScoped<IEventOutboxWriter>(provider =>

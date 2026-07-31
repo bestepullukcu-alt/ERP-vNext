@@ -2,6 +2,7 @@ using System.Reflection;
 using Diten.PpmService.Application.Common;
 using Diten.PpmService.Application.Features.Portfolios;
 using Diten.PpmService.Application.Features.Projects;
+using Diten.PpmService.Application.Features.ExternalContextReferences;
 using Diten.PpmService.Domain.Entities;
 using Diten.PpmService.Domain.Exceptions;
 using Diten.PpmService.Domain.Repositories;
@@ -186,6 +187,55 @@ public sealed class MongoPersistenceIntegrationTests
         Assert.Contains(nameof(CreateProjectCommand.ParentId), properties);
         Assert.DoesNotContain("InitiativeId", properties);
         Assert.DoesNotContain("ProgramId", properties);
+    }
+
+    [Fact]
+    public async Task External_context_lookup_is_tenant_first_soft_delete_and_visibility_fail_closed()
+    {
+        var fixture = await Fixture.Create();
+        var portfolio = new Portfolio(fixture.TenantId, fixture.ActorId, "P-REF", "Portfolio", null, null);
+        var initiative = new Initiative(fixture.TenantId, fixture.ActorId, "I-REF", "Initiative", null, null, null);
+        var program = new Diten.PpmService.Domain.Entities.Program(fixture.TenantId, fixture.ActorId, "PG-REF", "Program", null, null, null);
+        var project = new Project(fixture.TenantId, fixture.ActorId, "PRJ-REF", "Project", null, ProjectParentType.Initiative, initiative.Id, null);
+        var restricted = new Portfolio(fixture.TenantId, fixture.ActorId, "P-POLICY", "Restricted", null, "policy-v1");
+
+        await fixture.UnitOfWork.ExecuteInTransactionAsync(async ct =>
+        {
+            await fixture.Portfolios.AddAsync(portfolio, ct);
+            await fixture.Initiatives.AddAsync(initiative, ct);
+            await fixture.Programs.AddAsync(program, ct);
+            await fixture.Projects.AddAsync(project, ct);
+            await fixture.Portfolios.AddAsync(restricted, ct);
+            return true;
+        }, default);
+
+        var lookup = new ExternalContextReferenceLookup(
+            fixture.Portfolios, fixture.Initiatives, fixture.Programs, fixture.Projects);
+
+        Assert.True((await lookup.FindAsync(fixture.TenantId, "Portfolio", portfolio.Id, default))?.IsReferenceable);
+        Assert.True((await lookup.FindAsync(fixture.TenantId, "Initiative", initiative.Id, default))?.IsReferenceable);
+        Assert.True((await lookup.FindAsync(fixture.TenantId, "Program", program.Id, default))?.IsReferenceable);
+        Assert.True((await lookup.FindAsync(fixture.TenantId, "Project", project.Id, default))?.IsReferenceable);
+        Assert.Null(await lookup.FindAsync(Guid.NewGuid(), "Portfolio", portfolio.Id, default));
+
+        var restrictedResult = await lookup.FindAsync(fixture.TenantId, "Portfolio", restricted.Id, default);
+        Assert.Equal("policy-v1", restrictedResult?.VisibilityPolicyKey);
+
+        portfolio.SoftDelete(fixture.ActorId);
+        await fixture.UnitOfWork.ExecuteInTransactionAsync(async ct =>
+        {
+            await fixture.Portfolios.ReplaceAsync(portfolio, 1, ct);
+            return true;
+        }, default);
+        Assert.Null(await lookup.FindAsync(fixture.TenantId, "Portfolio", portfolio.Id, default));
+
+        initiative.Transition(fixture.ActorId, InitiativeLifecycleState.Cancelled);
+        await fixture.UnitOfWork.ExecuteInTransactionAsync(async ct =>
+        {
+            await fixture.Initiatives.ReplaceAsync(initiative, 1, ct);
+            return true;
+        }, default);
+        Assert.False((await lookup.FindAsync(fixture.TenantId, "Initiative", initiative.Id, default))?.IsReferenceable);
     }
 
     [Fact]

@@ -28,6 +28,16 @@ public static class DependencyInjection
         services.AddScoped<IEffectivePermissionEvaluator, SharedPermissionClaimEvaluatorAdapter>();
         services.AddHttpClient<IPpmEntitlementDecisionClient, PpmEntitlementDecisionClient>();
 
+        var externalContextSection = configuration?.GetSection(ExternalContextProviderOptions.SectionName);
+        services.AddSingleton<IValidateOptions<ExternalContextProviderOptions>, ExternalContextProviderOptionsValidator>();
+        var externalContextOptions = services.AddOptions<ExternalContextProviderOptions>();
+        if (externalContextSection is not null)
+        {
+            externalContextOptions.Bind(externalContextSection);
+        }
+        externalContextOptions.ValidateOnStart();
+        services.AddScoped<ExternalContextProviderSecurityFilter>();
+
         var auditSection = configuration?.GetSection(PpmAuditProducerOptions.SectionName);
         var auditOptions = auditSection?.Get<PpmAuditProducerOptions>() ?? new PpmAuditProducerOptions();
         services.AddSingleton<IValidateOptions<PpmAuditProducerOptions>, PpmAuditProducerOptionsValidator>();
