@@ -2,6 +2,7 @@
 
 // TaskFieldDefinitions Create/Edit form init (flatpickr + Select2).
 // Shared by Create.cshtml and Edit.cshtml so the views carry no inline script.
+(function () {
 document.addEventListener('DOMContentLoaded', function () {
     // Flatpickr
     var flatpickrDate = document.querySelectorAll('.flatpickr-date');
@@ -25,3 +26,4 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+})();

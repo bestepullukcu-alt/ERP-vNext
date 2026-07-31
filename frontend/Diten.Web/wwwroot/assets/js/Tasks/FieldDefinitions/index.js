@@ -208,7 +208,7 @@ const TaskFieldDefinitionList = (function () {
             return defaultViewState;
         } catch (error) {
             if (error?.authHandled) return null;
-            console.error('[GoldenReferenceCompact SaveView] Failed to load saved views.', error);
+            console.error('[FieldDefinitions SaveView] Failed to load saved views.', error);
             return null;
         }
     };
@@ -266,10 +266,8 @@ const TaskFieldDefinitionList = (function () {
             const row = rowData || dt?.row(dataIndex)?.data?.() || null;
             if (!row) return true;
             return matchesStatusFilter(appliedFilters.status, row.isActive)
-                && matchesMultiFilter(appliedFilters.referenceType, row.referenceType)
-                && matchesMultiFilter(appliedFilters.category, row.category)
-                && matchesMultiFilter(appliedFilters.owner, row.owner)
-                && matchesSingleFilter(appliedFilters.priority, row.priority);
+                && matchesMultiFilter(appliedFilters.valueType, row.valueType)
+                && matchesMultiFilter(appliedFilters.section, row.section);
         });
     };
 
@@ -304,7 +302,7 @@ const TaskFieldDefinitionList = (function () {
     const initSelect2Filters = () => {
         if (!window.jQuery || !$.fn.select2) return;
         const $body = $(document.body);
-        $('#filterStatus, #filterReferenceType, #filterCategory, #filterOwner').each(function () {
+        $('#filterStatus, #filterValueType, #filterSection').each(function () {
             const $s = $(this);
             if ($s.hasClass('select2-hidden-accessible')) $s.select2('destroy');
             $s.select2({
@@ -320,30 +318,15 @@ const TaskFieldDefinitionList = (function () {
             $s.on('change.select2-summary', function () { syncMultiSelectSummary($s); });
             requestAnimationFrame(() => syncMultiSelectSummary($s));
         });
-        $('#filterPriority').each(function () {
-            const $s = $(this);
-            if ($s.hasClass('select2-hidden-accessible')) $s.select2('destroy');
-            $s.select2({
-                dropdownParent: $body,
-                dropdownCssClass: 'dt-inline-filter-dropdown',
-                selectionCssClass: 'form-select form-select-sm',
-                placeholder: $s.data('placeholder') || '',
-                minimumResultsForSearch: Infinity,
-                width: 'element',
-                allowClear: true
-            });
-        });
     };
 
     const syncFilterControls = (values) => {
         $('#filterStatus').val(normalizeArray(values.status)).trigger('change');
-        $('#filterReferenceType').val(normalizeArray(values.referenceType)).trigger('change');
-        $('#filterCategory').val(normalizeArray(values.category)).trigger('change');
-        $('#filterOwner').val(normalizeArray(values.owner)).trigger('change');
-        $('#filterPriority').val(values.priority || '').trigger('change');
+        $('#filterValueType').val(normalizeArray(values.valueType)).trigger('change');
+        $('#filterSection').val(normalizeArray(values.section)).trigger('change');
     };
     const getAppliedFilterCount = () =>
-        [appliedFilters.status, appliedFilters.referenceType, appliedFilters.category, appliedFilters.owner, appliedFilters.priority].filter(hasFilterValue).length;
+        [appliedFilters.status, appliedFilters.valueType, appliedFilters.section].filter(hasFilterValue).length;
 
     const applySavedTableState = (api, view) => {
         if (!api || !view) return;
@@ -371,51 +354,49 @@ const TaskFieldDefinitionList = (function () {
             select.appendChild(opt);
         });
     };
-    const loadLookupOptions = async () => {
-        const refSelect = document.getElementById('filterReferenceType');
-        const categorySelect = document.getElementById('filterCategory');
-        const ownerSelect = document.getElementById('filterOwner');
-        const prioritySelect = document.getElementById('filterPriority');
-        if (!refSelect || !categorySelect || !ownerSelect || !prioritySelect) return;
-        try {
-            const res = await fetch('/GoldenReferenceCompact/lookups', {
-                method: 'GET',
-                credentials: 'same-origin',
-                headers: getAuthHeaders()
-            });
-            if (!res.ok) return;
-            const data = await res.json();
-            appendOptions(refSelect, Array.isArray(data?.referenceTypes) ? data.referenceTypes : []);
-            appendOptions(categorySelect, Array.isArray(data?.categories) ? data.categories : []);
-            appendOptions(ownerSelect, Array.isArray(data?.owners) ? data.owners : []);
-            prioritySelect.innerHTML = '';
-            const showAll = document.createElement('option');
-            showAll.value = '';
-            showAll.textContent = L.ShowAll || '';
-            prioritySelect.appendChild(showAll);
-            (Array.isArray(data?.priorities) ? data.priorities : []).forEach((item) => {
-                if (item?.value == null) return;
-                const opt = document.createElement('option');
-                opt.value = String(item.value);
-                opt.textContent = item.text || `${L.LevelPrefix || ''} ${item.value}`.trim();
-                prioritySelect.appendChild(opt);
-            });
-        } catch (error) {
-            console.error('[GoldenReferenceCompact Lookup] Failed.', error);
-        }
+    /*
+     * Filter options come from the ROWS THIS TABLE ALREADY HAS, not from a lookup endpoint.
+     *
+     * The copied version fetched /GoldenReferenceCompact/lookups — a SIBLING MODULE's endpoint — for
+     * referenceType/category/owner/priority, none of which a field definition has. It then looked for four
+     * selects this screen never renders and returned early every time, so the Value type and Section filters
+     * were permanently empty and inert: declared in the markup, never populated, never applied.
+     *
+     * `valueType` and `section` are closed sets that arrive with the row data and the catalogue is small enough
+     * to load in one page, so a second round-trip would buy nothing and could disagree with what is on screen.
+     */
+    const collectDistinct = (rows, field) => Array.from(new Set(
+        rows.map((row) => row?.[field]).filter((value) => value !== null && value !== undefined && value !== '')))
+        .sort((a, b) => String(a).localeCompare(String(b), window.CurrentLanguage || undefined));
+
+    const populateFilterOptions = (api) => {
+        const valueTypeSelect = document.getElementById('filterValueType');
+        const sectionSelect = document.getElementById('filterSection');
+        if (!valueTypeSelect && !sectionSelect) return;
+
+        const rows = api ? api.rows().data().toArray() : [];
+        // Selections survive a repopulate — a redraw must never silently drop an applied filter.
+        const fill = (select, field) => {
+            if (!select) return;
+            const selected = Array.from(select.selectedOptions || []).map((option) => option.value);
+            appendOptions(select, collectDistinct(rows, field).map((value) => ({ value, text: value })));
+            $(select).val(selected).trigger('change');
+        };
+        fill(valueTypeSelect, 'valueType');
+        fill(sectionSelect, 'section');
     };
 
     const setupFilters = async (api) => {
-        await loadLookupOptions();
         initSelect2Filters();
+        // Options derive from row data, so they can only be built once the table has drawn.
+        populateFilterOptions(api);
+        api.on('draw.dt.fieldDefinitionFilters', () => populateFilterOptions(api));
         applySavedTableState(api, defaultViewState || { filters: appliedFilters });
         document.getElementById('btnFilterApply')?.addEventListener('click', () => {
             appliedFilters = {
                 status: $('#filterStatus').val() || [],
-                referenceType: $('#filterReferenceType').val() || [],
-                category: $('#filterCategory').val() || [],
-                owner: $('#filterOwner').val() || [],
-                priority: document.getElementById('filterPriority')?.value || ''
+                valueType: $('#filterValueType').val() || [],
+                section: $('#filterSection').val() || []
             };
             api.draw();
             window.DtDefaults.updateVisualState(api, getAppliedFilterCount());
@@ -434,11 +415,6 @@ const TaskFieldDefinitionList = (function () {
         true: { title: L.Active, class: 'bg-label-success' },
         false: { title: L.Passive, class: 'bg-label-secondary' }
     });
-    const getReferenceTypeMap = () => ({
-        'Standard': L.ReferenceTypeStandard || 'Standard',
-        'Custom': L.ReferenceTypeCustom || 'Custom',
-        'Pro': L.ReferenceTypePro || 'Pro'
-    });
     const formatDate = (v) => {
         if (!v) return '-';
         const d = new Date(v);
@@ -447,47 +423,6 @@ const TaskFieldDefinitionList = (function () {
     const setText = (id, value) => {
         const el = document.getElementById(id);
         if (el) el.innerText = value || '-';
-    };
-
-    const closeResponsiveModal = () => {
-        const modalEl = document.querySelector('.modal.dtr-bs-modal.show');
-        if (!modalEl) return false;
-        const modal = bootstrap.Modal.getInstance(modalEl);
-        if (modal) modal.hide();
-        else modalEl.querySelector('[data-bs-dismiss="modal"], .btn-close')?.click();
-        return true;
-    };
-    const populateDetailsOffcanvas = (data) => {
-        if (!data) return;
-        setText('oc-title', data.name);
-        setText('oc-subtitle', data.code);
-        setText('oc-code', data.code);
-        setText('oc-name', data.name);
-        setText('oc-type', getReferenceTypeMap()[data.referenceType] || data.referenceType);
-        setText('oc-category', data.category);
-        setText('oc-group-key', data.groupKey);
-        setText('oc-source-system', data.sourceSystem);
-        setText('oc-owner', data.owner);
-        setText('oc-version', data.version);
-        setText('oc-effective-date', formatDate(data.effectiveDate));
-        setText('oc-expiration-date', formatDate(data.expirationDate));
-        setText('oc-priority', data.priority != null ? String(data.priority) : '-');
-        setText('oc-desc', data.description);
-        const statusEl = document.getElementById('oc-status');
-        const status = getStatusMap()[String(!!data.isActive)] || { title: L.Unknown, class: 'bg-label-primary' };
-        if (statusEl) {
-            statusEl.className = `badge ${status.class}`;
-            statusEl.innerText = status.title || '-';
-        }
-        const priorityDot = document.getElementById('oc-priority-dot');
-        if (priorityDot) {
-            const priority = Number(data.priority || 0);
-            priorityDot.className = 'backbone-priority-dot';
-            if (priority >= 70) priorityDot.classList.add('is-high');
-            else if (priority > 0) priorityDot.classList.add('is-medium');
-        }
-        const editBtn = document.getElementById('oc-btn-edit');
-        if (editBtn) editBtn.href = `/Tasks/FieldDefinitions/Edit/${data.id}`;
     };
 
     const bulkOptions = {
@@ -562,7 +497,9 @@ const TaskFieldDefinitionList = (function () {
                     console.error(error);
                     window.showToast?.(L.ErrorOccurred, 'error');
                 }
-            }, { entityName: row.name, type: 'danger', confirmButtonText: L.Delete });
+            // `code`, not `name`: a field definition has no `name` — that was the copied entity's field, and the
+                // confirm dialog printed the word "undefined" where the record should have been.
+                }, { entityName: row.code, type: 'danger', confirmButtonText: L.Delete });
         }
     };
 
@@ -601,7 +538,7 @@ const TaskFieldDefinitionList = (function () {
                         window.showToast?.(L.RecordSaved || L.SaveView || '', 'success');
                     } catch (error) {
                         if (error?.authHandled) return;
-                        console.error('[GoldenReferenceCompact SaveView] Failed to save default view.', error);
+                        console.error('[FieldDefinitions SaveView] Failed to save default view.', error);
                         window.showToast?.(L.ErrorOccurred || '', 'error');
                     }
                 }

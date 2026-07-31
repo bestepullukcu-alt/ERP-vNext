@@ -6,7 +6,7 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
   <data name="FieldDefinitionsTitle" xml:space="preserve"><value>Définitions de champs de tâche</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Champs configurables proposés par le moteur de tâches. Une définition n'est jamais une colonne : en ajouter une ne change aucun schéma.</value></data>
-  <data name="AddNew" xml:space="preserve"><value>Ajouter une définition</value></data>
+  <data name="AddNewFieldDefinitions" xml:space="preserve"><value>Ajouter une définition</value></data>
   <data name="EditItem" xml:space="preserve"><value>Modifier la définition</value></data>
   <data name="FormTitleCreate" xml:space="preserve"><value>Ajouter une définition</value></data>
   <data name="FormTitleEdit" xml:space="preserve"><value>Modifier la définition</value></data>
@@ -69,4 +69,7 @@
   <data name="ValueTypePerson" xml:space="preserve"><value>Personne</value></data>
   <data name="ValueTypeReference" xml:space="preserve"><value>Référence</value></data>
   <data name="ValueTypeLink" xml:space="preserve"><value>Lien</value></data>
+  <data name="EditBtn" xml:space="preserve">
+    <value>Modifier</value>
+  </data>
 </root>

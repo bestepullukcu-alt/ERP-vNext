@@ -5,7 +5,7 @@
     const requiredKeys = [
         'Active', 'AddNew', 'Actions', 'Apply', 'AreYouSure', 'BulkDelete',
         'BulkDeleteConfirm', 'BulkDeleteSuccess', 'Cancel', 'Code',
-        'Category', 'ColumnVisibility', 'ComingSoon', 'Delete', 'Description', 'Edit',
+        'ColumnVisibility', 'ComingSoon', 'Delete', 'Description', 'Edit',
         'EditItem', 'ErrorOccurred', 'Export', 'Filter', 'FormTitleCreate',
         'FormTitleEdit', 'FormValidationError', 'Import', 'LevelPrefix',
         'Label', 'NotAvailable', 'Optional', 'Passive', 'QuickView', 'RecordCreated',

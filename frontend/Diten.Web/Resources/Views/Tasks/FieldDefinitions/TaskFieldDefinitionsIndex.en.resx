@@ -6,7 +6,7 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
   <data name="FieldDefinitionsTitle" xml:space="preserve"><value>Task Field Definitions</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Configurable fields the task engine offers. A definition is never a column: adding one changes no schema.</value></data>
-  <data name="AddNew" xml:space="preserve"><value>Add Definition</value></data>
+  <data name="AddNewFieldDefinitions" xml:space="preserve"><value>Add Definition</value></data>
   <data name="EditItem" xml:space="preserve"><value>Edit Definition</value></data>
   <data name="FormTitleCreate" xml:space="preserve"><value>Add Definition</value></data>
   <data name="FormTitleEdit" xml:space="preserve"><value>Edit Definition</value></data>
@@ -69,4 +69,7 @@
   <data name="ValueTypePerson" xml:space="preserve"><value>Person</value></data>
   <data name="ValueTypeReference" xml:space="preserve"><value>Reference</value></data>
   <data name="ValueTypeLink" xml:space="preserve"><value>Link</value></data>
+  <data name="EditBtn" xml:space="preserve">
+    <value>Edit</value>
+  </data>
 </root>

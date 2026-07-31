@@ -29,6 +29,7 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
     private const string PageTaskCreate = "TASK_CREATE";
     private const string PageTaskDetail = "TASK_DETAIL";
     private const string PageTaskEdit = "TASK_EDIT";
+    private const string PageTaskFieldDefinitions = "TASK_FIELD_DEFINITIONS";
 
     public ModuleManifestDocument GetManifest() =>
         new(
@@ -109,7 +110,46 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                     IsNavigationVisible: false,
                     PageType: "Detail",
                     SortOrder: 13,
-                    Actions: [])
+                    Actions: []),
+
+                /*
+                 * The configurable-field admin surface, registered HERE rather than as a hand-written <li> in
+                 * _LayoutTenantShell.cshtml. That shell renders this area's menu DATA-DRIVEN from the module
+                 * catalog (see the WC-1b note beside the Task Center entry); a hard-coded link would be a second,
+                 * unmanaged entry that Menu Settings could neither reorder nor hide.
+                 *
+                 * IsNavigationVisible stays FALSE, and that leaves the screen still unreachable from the menu.
+                 * That is deliberate: TaskManifestProviderTests.Pages_are_nav_invisible_so_they_do_not_compete_
+                 * with_the_Task_Center asserts it of EVERY page in this manifest, on the recorded ground that
+                 * "Görev Merkezi is the single personal entry point". Flipping this one to true would have meant
+                 * editing that assertion — changing a recorded product decision to make a fix pass, which is not
+                 * a code change. Registering the page is still worth doing on its own: it puts the route and its
+                 * permission in the catalogue, which is what Menu Settings needs before it can ever surface it.
+                 *
+                 * The remaining question — should a tenant-settings surface count as "competing with the Task
+                 * Center" at all? — is CT's, and one flag is the whole change once answered.
+                 */
+                new ModuleManifestPage(
+                    PageCode: PageTaskFieldDefinitions,
+                    DisplayName: "Field Definitions",
+                    RoutePath: "/Tasks/FieldDefinitions",
+                    RequiredPermission: TaskPermissions.FieldDefinitionsManage,
+                    ParentPageCode: PageTasks,
+                    IsNavigationVisible: false,
+                    PageType: "List",
+                    SortOrder: 20,
+                    Actions:
+                    [
+                        new ModuleManifestAction("CREATE", "Create Field Definition",
+                            TaskPermissions.FieldDefinitionsManage, "Toolbar", 10,
+                            IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("EDIT", "Edit Field Definition",
+                            TaskPermissions.FieldDefinitionsManage, "Row", 20,
+                            IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("DELETE", "Delete Field Definition",
+                            TaskPermissions.FieldDefinitionsManage, "Row", 30,
+                            IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
+                    ])
             ],
             NotificationEvents:
             [

@@ -6,7 +6,7 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
   <data name="FieldDefinitionsTitle" xml:space="preserve"><value>任务字段定义</value></data>
   <data name="PageDescription" xml:space="preserve"><value>任务引擎提供的可配置字段。定义永远不是数据库列：新增定义不会改变任何架构。</value></data>
-  <data name="AddNew" xml:space="preserve"><value>新增定义</value></data>
+  <data name="AddNewFieldDefinitions" xml:space="preserve"><value>新增定义</value></data>
   <data name="EditItem" xml:space="preserve"><value>编辑定义</value></data>
   <data name="FormTitleCreate" xml:space="preserve"><value>新增定义</value></data>
   <data name="FormTitleEdit" xml:space="preserve"><value>编辑定义</value></data>
@@ -69,4 +69,7 @@
   <data name="ValueTypePerson" xml:space="preserve"><value>人员</value></data>
   <data name="ValueTypeReference" xml:space="preserve"><value>引用</value></data>
   <data name="ValueTypeLink" xml:space="preserve"><value>链接</value></data>
+  <data name="EditBtn" xml:space="preserve">
+    <value>编辑</value>
+  </data>
 </root>

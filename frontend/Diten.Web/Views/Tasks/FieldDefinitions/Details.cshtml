@@ -14,18 +14,18 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item">
-                        <a href="/Tasks/FieldDefinitions">@Localizer["FieldDefinitionsTitle"]</a>
+                        <a asp-controller="TaskFieldDefinitions" asp-action="Index">@Localizer["FieldDefinitionsTitle"]</a>
                     </li>
                     <li class="breadcrumb-item active text-primary">@SharedLocalizer["Details"]</li>
                 </ol>
             </nav>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <a href="/Tasks/FieldDefinitions" class="btn btn-label-secondary">
+            <a asp-controller="TaskFieldDefinitions" asp-action="Index" class="btn btn-label-secondary">
                 @SharedLocalizer["Back"]
             </a>
-            <a href="/Tasks/FieldDefinitions/Edit/@Model.Id" class="btn btn-primary">
-                @SharedLocalizer["Edit"]
+            <a asp-controller="TaskFieldDefinitions" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                @Localizer["EditBtn"]
             </a>
         </div>
     </div>

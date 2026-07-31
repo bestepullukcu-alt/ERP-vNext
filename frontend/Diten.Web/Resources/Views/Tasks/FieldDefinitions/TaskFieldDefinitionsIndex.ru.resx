@@ -6,7 +6,7 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
   <data name="FieldDefinitionsTitle" xml:space="preserve"><value>Определения полей задач</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Настраиваемые поля, которые предлагает движок задач. Определение — это не столбец: добавление не меняет схему.</value></data>
-  <data name="AddNew" xml:space="preserve"><value>Добавить определение</value></data>
+  <data name="AddNewFieldDefinitions" xml:space="preserve"><value>Добавить определение</value></data>
   <data name="EditItem" xml:space="preserve"><value>Изменить определение</value></data>
   <data name="FormTitleCreate" xml:space="preserve"><value>Добавить определение</value></data>
   <data name="FormTitleEdit" xml:space="preserve"><value>Изменить определение</value></data>
@@ -69,4 +69,7 @@
   <data name="ValueTypePerson" xml:space="preserve"><value>Человек</value></data>
   <data name="ValueTypeReference" xml:space="preserve"><value>Ссылка на запись</value></data>
   <data name="ValueTypeLink" xml:space="preserve"><value>Ссылка</value></data>
+  <data name="EditBtn" xml:space="preserve">
+    <value>Изменить</value>
+  </data>
 </root>

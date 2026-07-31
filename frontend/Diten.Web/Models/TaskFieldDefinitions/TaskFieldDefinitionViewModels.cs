@@ -35,7 +35,9 @@ public sealed class TaskFieldDefinitionEditViewModel : IValidatableObject
 
     public bool IsRequired { get; set; }
 
-    public int SortOrder { get; set; }
+    // Nullable ON PURPOSE (UI-020). A non-nullable int makes MVC emit data-val-required, so a field the form
+    // presents as optional refuses to submit when left blank — a required rule nobody wrote and nobody can see.
+    public int? SortOrder { get; set; }
 
     public string OptionsSourceKind { get; set; } = "None";
 

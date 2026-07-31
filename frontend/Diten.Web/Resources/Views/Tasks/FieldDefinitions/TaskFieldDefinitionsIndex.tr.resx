@@ -6,7 +6,7 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
   <data name="FieldDefinitionsTitle" xml:space="preserve"><value>Görev Alan Tanımları</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Görev motorunun sunduğu yapılandırılabilir alanlar. Tanım asla bir kolon değildir: eklemek şemayı değiştirmez.</value></data>
-  <data name="AddNew" xml:space="preserve"><value>Tanım Ekle</value></data>
+  <data name="AddNewFieldDefinitions" xml:space="preserve"><value>Tanım Ekle</value></data>
   <data name="EditItem" xml:space="preserve"><value>Tanımı Düzenle</value></data>
   <data name="FormTitleCreate" xml:space="preserve"><value>Tanım Ekle</value></data>
   <data name="FormTitleEdit" xml:space="preserve"><value>Tanımı Düzenle</value></data>
@@ -69,4 +69,7 @@
   <data name="ValueTypePerson" xml:space="preserve"><value>Kişi</value></data>
   <data name="ValueTypeReference" xml:space="preserve"><value>Referans</value></data>
   <data name="ValueTypeLink" xml:space="preserve"><value>Bağlantı</value></data>
+  <data name="EditBtn" xml:space="preserve">
+    <value>Düzenle</value>
+  </data>
 </root>

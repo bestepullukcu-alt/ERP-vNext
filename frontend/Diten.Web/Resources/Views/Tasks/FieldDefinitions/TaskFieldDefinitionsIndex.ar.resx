@@ -6,7 +6,7 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
   <data name="FieldDefinitionsTitle" xml:space="preserve"><value>تعريفات حقول المهام</value></data>
   <data name="PageDescription" xml:space="preserve"><value>حقول قابلة للتهيئة يوفّرها محرك المهام. التعريف ليس عمودًا أبدًا: إضافته لا تغيّر أي مخطط.</value></data>
-  <data name="AddNew" xml:space="preserve"><value>إضافة تعريف</value></data>
+  <data name="AddNewFieldDefinitions" xml:space="preserve"><value>إضافة تعريف</value></data>
   <data name="EditItem" xml:space="preserve"><value>تعديل التعريف</value></data>
   <data name="FormTitleCreate" xml:space="preserve"><value>إضافة تعريف</value></data>
   <data name="FormTitleEdit" xml:space="preserve"><value>تعديل التعريف</value></data>
@@ -69,4 +69,7 @@
   <data name="ValueTypePerson" xml:space="preserve"><value>شخص</value></data>
   <data name="ValueTypeReference" xml:space="preserve"><value>مرجع</value></data>
   <data name="ValueTypeLink" xml:space="preserve"><value>رابط</value></data>
+  <data name="EditBtn" xml:space="preserve">
+    <value>تعديل</value>
+  </data>
 </root>

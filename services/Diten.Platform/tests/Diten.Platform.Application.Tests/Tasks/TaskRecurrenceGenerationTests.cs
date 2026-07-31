@@ -88,10 +88,10 @@ public sealed class TaskRecurrenceGenerationTests
 
         var a = first.Handle(new GenerateDueRecurringTasksCommand(Now, 100, "corr-a"), CancellationToken.None);
         var b = second.Handle(new GenerateDueRecurringTasksCommand(Now, 100, "corr-b"), CancellationToken.None);
-        await Task.WhenAll(a, b);
+        var results = await Task.WhenAll(a, b);
 
         Assert.Single(harness.Tasks.Items);
-        Assert.Equal(1, a.Result.Data!.TasksGenerated + b.Result.Data!.TasksGenerated);
+        Assert.Equal(1, results[0].Data!.TasksGenerated + results[1].Data!.TasksGenerated);
     }
 
     [Fact]
