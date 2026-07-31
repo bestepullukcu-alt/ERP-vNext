@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.ModuleRegistration;
+using Diten.Platform.Application.Features.Notifications.Commands;
 using Diten.Platform.Common.Tenancy;
 using MediatR;
 
@@ -37,6 +38,9 @@ public sealed class PlatformModuleSelfRegistrationWorker : BackgroundService
         try
         {
             await ReconcileAllAsync(stoppingToken).ConfigureAwait(false);
+
+            // AFTER the modules exist in the catalog — the event sync reads their manifests.
+            await SyncNotificationEventsAsync(stoppingToken).ConfigureAwait(false);
         }
         finally
         {
@@ -95,6 +99,54 @@ public sealed class PlatformModuleSelfRegistrationWorker : BackgroundService
                 // Best-effort: one module's failure must not block the others or startup.
                 _logger.LogError(ex, "Self-registration failed for module {ModuleCode}.", manifest.ModuleCode);
             }
+        }
+    }
+
+    /// <summary>
+    /// WC-4 — reconcile every manifest-declared notification event into the catalog at STARTUP.
+    ///
+    /// <para><b>Why it had to become automatic.</b> The sync only ran when somebody POSTed
+    /// <c>/api/platform/notifications/events/sync-from-manifest</c> by hand. An event declared in a manifest but
+    /// absent from the catalog does not error — the dispatch simply returns a reason code and nothing is sent —
+    /// so a module could ship, register its pages and permissions, and have every one of its notifications
+    /// silently do nothing until an operator happened to run a command nobody documented. That is precisely the
+    /// "believed to work, does not" class this ticket exists to end.</para>
+    ///
+    /// <para>Idempotent, like the module reconcile it follows, and best-effort for the same reason: a failure
+    /// here must not block startup. It is logged loudly because the symptom otherwise is silence.</para>
+    /// </summary>
+    private async Task SyncNotificationEventsAsync(CancellationToken stoppingToken)
+    {
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+            var tenantContext = scope.ServiceProvider.GetRequiredService<ITenantContext>();
+            tenantContext.SetPlatformContext(Guid.Empty);
+
+            var response = await mediator.Send(new SyncNotificationEventsFromManifestCommand(), stoppingToken);
+            if (response.IsSuccessful)
+            {
+                _logger.LogInformation("Notification events synced from module manifests at startup.");
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "Notification event sync returned failure at startup: {Errors}. "
+                    + "Events declared in a manifest but missing from the catalog will NOT dispatch.",
+                    string.Join("; ", response.Errors));
+            }
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            // Shutting down; nothing to report.
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Notification event sync threw at startup. Events declared in a manifest but missing from the "
+                + "catalog will NOT dispatch until this is resolved.");
         }
     }
 }

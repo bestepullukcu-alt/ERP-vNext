@@ -37,7 +37,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
     private readonly IChecklistTemplateRepository _checklistTemplates;
     private readonly IChecklistRunRepository _checklistRuns;
     private readonly ITaskChecklistService _checklistService;
-    private readonly INotificationEventDispatchAdapter _notifications;
+    private readonly ITaskNotificationService _taskNotifications;
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<CreateTaskItemHandler> _logger;
@@ -55,7 +55,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         IChecklistTemplateRepository checklistTemplates,
         IChecklistRunRepository checklistRuns,
         ITaskChecklistService checklistService,
-        INotificationEventDispatchAdapter notifications,
+        ITaskNotificationService taskNotifications,
         ICurrentUserContext currentUser,
         ITenantContext tenantContext,
         ILogger<CreateTaskItemHandler> logger)
@@ -72,7 +72,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         _checklistTemplates = checklistTemplates;
         _checklistRuns = checklistRuns;
         _checklistService = checklistService;
-        _notifications = notifications;
+        _taskNotifications = taskNotifications;
         _currentUser = currentUser;
         _tenantContext = tenantContext;
         _logger = logger;
@@ -313,92 +313,34 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
     }
 
     /// <summary>
-    /// Assignment email. A dispatch failure must NEVER fail task creation: the adapter returns a controlled
-    /// Response and never throws, so we log and move on (pack §13).
+    /// Assignment email, through the shared notification service (WC-4).
+    ///
+    /// <para>This used to be written out here, and it put the recipient's USER ID into the email address field —
+    /// the comment said so — so no assignment notification had ever been delivered. The rules that matter (the
+    /// task's opt-out, skipping the actor's own action, resolving real addresses, never failing the write) live
+    /// in one place now because four events need them.</para>
     /// </summary>
     private async Task NotifyAssignedAsync(TaskItem task, CancellationToken ct)
     {
-        if (!task.EmailNotificationsEnabled)
-        {
-            return;
-        }
+        // Self-assigned work needs no "you were assigned" email — but that is the SERVICE's actor rule now, so
+        // the audience is simply whoever the work went to and the actor filters themselves out.
+        var audience = task.AssignmentTarget == TaskAssignmentTarget.PositionPool
+            ? await TaskNotificationSafely.ResolvePoolHoldersAsync(_taskNotifications, _logger, task, ct)
+            : task.AssigneeUserId is { } assignee ? new[] { assignee } : [];
 
-        // Self-assigned work needs no "you were assigned" email — the actor just created it.
-        if (task.AssignmentTarget == TaskAssignmentTarget.SelfAssigned)
-        {
-            return;
-        }
+        await TaskNotificationSafely.NotifyAsync(
+            _taskNotifications, _logger, task, TaskNotificationEvents.Assigned, audience, _currentUser.UserId, ct);
 
-        try
+        /*
+         * Approval requested (WC-4). A task that needs a manager's approval before work may start has an
+         * audience of exactly one — the manager — and they have not acted, so they are always told.
+         */
+        if (task.ApprovalRequired && task.ApprovalManagerUserId is { } manager)
         {
-            var recipients = await ResolveRecipientsAsync(task, ct);
-            if (recipients.Count == 0)
-            {
-                return;
-            }
-
-            var response = await _notifications.DispatchByEventCodeAsync(new NotificationEventDispatchRequest(
-                TenantId: _tenantContext.TenantId,
-                EventCode: TaskNotificationEvents.Assigned,
-                To: recipients,
-                Variables: new Dictionary<string, object?>
-                {
-                    ["TaskTitle"] = task.Title,
-                    ["TaskId"] = task.Id.ToString(),
-                    ["DueAt"] = task.DueAt?.ToString("yyyy-MM-dd") ?? string.Empty
-                }),
-                ct);
-
-            if (!response.IsSuccessful)
-            {
-                // Most common in a fresh environment: the manifest-declared event is still Draft
-                // (EVENT_NOT_ACTIVE). That is an ops condition, not a task failure.
-                _logger.LogWarning(
-                    "task.assigned notification not dispatched. TaskId={TaskId} ReasonCode={ReasonCode}",
-                    task.Id, response.ReasonCode);
-            }
+            await TaskNotificationSafely.NotifyAsync(
+                _taskNotifications, _logger, task, TaskNotificationEvents.ApprovalRequested,
+                new[] { manager }, _currentUser.UserId, ct);
         }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "task.assigned notification failed. TaskId={TaskId}", task.Id);
-        }
-    }
-
-    /// <summary>
-    /// Person target → the assignee. Pool target → every active holder of the position (OD-2). After a claim,
-    /// the other holders are not notified again.
-    /// </summary>
-    private async Task<IReadOnlyList<EmailRecipientDto>> ResolveRecipientsAsync(TaskItem task, CancellationToken ct)
-    {
-        var userIds = new List<Guid>();
-
-        if (task.AssignmentTarget == TaskAssignmentTarget.Person && task.AssigneeUserId is { } assignee)
-        {
-            userIds.Add(assignee);
-        }
-        else if (task.AssignmentTarget == TaskAssignmentTarget.PositionPool && task.PoolPositionId is { } positionId)
-        {
-            var now = DateTimeOffset.UtcNow;
-            var assignments = await _positionAssignments.GetAllAsync(ct);
-            userIds.AddRange(assignments
-                .Where(a => a.PositionId == positionId
-                            && !a.IsCancelled
-                            && a.EffectiveFrom <= now
-                            && (a.EffectiveTo is null || a.EffectiveTo > now))
-                .Select(a => a.UserId)
-                .Distinct());
-        }
-
-        // The email address itself lives in AuthService; MOD-0024 does not hold a user directory. Until a
-        // resolver seam exists, the recipient identity is the user id and the notification layer resolves it.
-        return userIds
-            .Where(id => id != Guid.Empty)
-            .Select(id => new EmailRecipientDto(id.ToString(), null))
-            .ToList();
     }
 
     private async Task<Guid?> ResolveUnitForUserAsync(Guid userId, CancellationToken ct)

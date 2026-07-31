@@ -11,6 +11,7 @@ using Diten.Platform.Domain.Enums.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.Tasks;
@@ -297,7 +298,7 @@ public sealed class TaskSubtaskBlockingTests
                 new FakeChecklistRunRepository(),
                 new TaskChecklistService(),
                 new PassingWorkflowGate(),
-                _edges);
+                _edges, new FakeTaskNotificationService(), NullLogger<TransitionTaskItemHandler>.Instance);
 
             var correlation = new CorrelationContext();
             correlation.SetCorrelationId("corr");

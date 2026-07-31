@@ -420,6 +420,9 @@
   <data name="Notification" xml:space="preserve">
     <value>Уведомление</value>
   </data>
+  <data name="NoNotifications" xml:space="preserve">
+    <value>Уведомлений нет</value>
+  </data>
   <data name="NewNotifications" xml:space="preserve">
     <value>{0} новых</value>
   </data>

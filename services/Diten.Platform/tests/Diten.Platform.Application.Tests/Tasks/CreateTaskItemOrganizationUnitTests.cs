@@ -270,7 +270,7 @@ public sealed class CreateTaskItemOrganizationUnitTests
             new FakeChecklistTemplateRepository(),
             new FakeChecklistRunRepository(),
             new TaskChecklistService(),
-            new NoOpNotificationDispatchAdapter(),
+            new FakeTaskNotificationService(),
             new FakeCurrentUserContext(TaskTestData.Me),
             new FakeTenantContext(TaskTestData.Tenant),
             NullLogger<CreateTaskItemHandler>.Instance);

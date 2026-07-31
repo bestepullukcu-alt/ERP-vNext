@@ -6,6 +6,7 @@ using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Application.Features.WorkAggregation;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.Tasks;
@@ -415,7 +416,7 @@ public sealed class TaskChecklistSubtaskTests
             new FakePositionAssignmentRepository(),
             new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository()),
             new TaskLifecycleService(), new FakeTaskApprovalService(), templates, runs, new TaskChecklistService(),
-            new NoOpNotificationDispatchAdapter(),
+            new FakeTaskNotificationService(),
             new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant),
             Microsoft.Extensions.Logging.Abstractions.NullLogger<CreateTaskItemHandler>.Instance);
 
@@ -454,7 +455,8 @@ public sealed class TaskChecklistSubtaskTests
         int expectedVersion)
         => new TransitionTaskItemHandler(
                 tasks, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
-                runs, new TaskChecklistService(), new FakeWorkflowTransitionGate(), new FakeTaskDependencyRepository())
+                runs, new TaskChecklistService(), new FakeWorkflowTransitionGate(),
+                new FakeTaskDependencyRepository(), new FakeTaskNotificationService(), NullLogger<TransitionTaskItemHandler>.Instance)
             .Handle(
                 new TransitionTaskItemCommand(id, target, new TaskTransitionRequest(expectedVersion, null, null), "corr"),
                 CancellationToken.None);
@@ -482,7 +484,7 @@ public sealed class TaskChecklistSubtaskTests
             new FakeChecklistTemplateRepository(),
             new FakeChecklistRunRepository(),
             new TaskChecklistService(),
-            new NoOpNotificationDispatchAdapter(),
+            new FakeTaskNotificationService(),
             new FakeCurrentUserContext(TaskTestData.Me),
             new FakeTenantContext(TaskTestData.Tenant),
             Microsoft.Extensions.Logging.Abstractions.NullLogger<CreateTaskItemHandler>.Instance);

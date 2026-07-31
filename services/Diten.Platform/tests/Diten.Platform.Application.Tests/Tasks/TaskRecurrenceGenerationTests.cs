@@ -514,7 +514,7 @@ public sealed class TaskRecurrenceGenerationTests
             new FakeChecklistTemplateRepository(),
             ChecklistRuns,
             new TaskChecklistService(),
-            new NoOpNotificationDispatchAdapter(),
+            new FakeTaskNotificationService(),
             new FakeCurrentUserContext(TaskTestData.Me),
             Tenant,
             NullLogger<CreateTaskItemHandler>.Instance);

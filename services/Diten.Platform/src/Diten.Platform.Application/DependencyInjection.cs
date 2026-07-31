@@ -165,6 +165,11 @@ public static class DependencyInjection
         services.AddScoped<EmailDispatchJob>();
         services.AddScoped<EmailDispatchSweepJob>();
         services.AddScoped<Features.Workflow.BackgroundJobs.WorkflowEscalationSweepJob>();
+        // WC-4 — the ONE place a task notification is sent from (opt-out, actor skip, real addresses,
+        // never fails the write).
+        services.AddScoped<Features.Tasks.Services.ITaskNotificationService,
+            Features.Tasks.Services.TaskNotificationService>();
+
         // MOD-0024 Phase 4 — the recurrence sweep. Registered here so Hangfire can resolve it; whether it RUNS
         // is decided by BackgroundJobs:RegisterStandardJobs + EnabledJobs, both of which default to off.
         services.AddScoped<Features.Tasks.BackgroundJobs.TaskRecurrenceSweepJob>();

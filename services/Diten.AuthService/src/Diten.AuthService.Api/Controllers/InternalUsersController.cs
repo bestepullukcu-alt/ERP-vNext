@@ -118,6 +118,79 @@ public sealed class InternalUsersController : ControllerBase
         return Ok(resolved);
     }
 
+    /// <summary>
+    /// <c>GET internal/users/contacts?tenantId={guid}&amp;ids=guid,guid</c> →
+    /// <c>[{ "id": "...", "displayName": "...", "email": "..." }]</c>.
+    ///
+    /// <para><b>A SIBLING of display-names, not a widening of it.</b> That endpoint's contract is deliberately
+    /// "id and display name — the entire contract", and adding an address to it would hand an email to every
+    /// caller that only ever wanted a label. This one exists for callers that must actually DELIVER something,
+    /// and its own doc comment is where that is stated.</para>
+    ///
+    /// <para>Same tenant-first sweep, so a foreign id is never in the set and cross-tenant resolution is
+    /// impossible rather than merely filtered. A user with no address is OMITTED — the caller learns it cannot
+    /// reach them, instead of receiving a blank to send to.</para>
+    /// </summary>
+    [HttpGet("contacts")]
+    public async Task<IActionResult> GetContacts(
+        [FromQuery] Guid tenantId,
+        [FromQuery] string? ids,
+        CancellationToken ct)
+    {
+        if (!_internalEventAuthService.IsAuthorized(Request.Headers[InternalApiKeyHeader].FirstOrDefault()))
+        {
+            return Unauthorized(new { message = "internal authentication failed" });
+        }
+
+        if (tenantId == Guid.Empty)
+        {
+            return BadRequest(new { message = "tenantId is required" });
+        }
+
+        var requested = ParseIds(ids);
+        if (requested.Count == 0)
+        {
+            // An explicit id set is required: this resolves contacts the caller already knows about, it is not
+            // a directory dump — and an address list is exactly the thing that must never be dumpable.
+            return BadRequest(new { message = "ids is required" });
+        }
+
+        if (requested.Count > MaxRequestedIds)
+        {
+            return BadRequest(new { message = $"ids exceeds the maximum of {MaxRequestedIds}" });
+        }
+
+        var resolved = new List<InternalUserContactDto>(requested.Count);
+
+        for (var page = 1; page <= MaxSweepPages && resolved.Count < requested.Count; page++)
+        {
+            var batch = (await _userRepository.GetAllByTenantAsync(tenantId, page, SweepPageSize, ct)).ToList();
+            if (batch.Count == 0)
+            {
+                break;
+            }
+
+            foreach (var user in batch.Where(u => requested.Contains(u.Id) && !string.IsNullOrWhiteSpace(u.Email)))
+            {
+                resolved.Add(new InternalUserContactDto(
+                    user.Id,
+                    BuildDisplayName(user.FirstName, user.LastName, user.UserName),
+                    user.Email));
+            }
+
+            if (batch.Count < SweepPageSize)
+            {
+                break;
+            }
+        }
+
+        _logger.LogDebug(
+            "Resolved {ResolvedCount}/{RequestedCount} contacts for TenantId={TenantId}.",
+            resolved.Count, requested.Count, tenantId);
+
+        return Ok(resolved);
+    }
+
     private static HashSet<Guid> ParseIds(string? ids)
     {
         var parsed = new HashSet<Guid>();
@@ -147,3 +220,9 @@ public sealed class InternalUsersController : ControllerBase
 
 /// <summary>Id and display name — the entire contract. Adding a field here widens what S2S callers can read.</summary>
 public sealed record InternalUserDisplayNameDto(Guid Id, string DisplayName);
+
+/// <summary>
+/// Id, display name and DELIVERABLE ADDRESS. Separate from <see cref="InternalUserDisplayNameDto"/> on purpose:
+/// a caller that needs a label must not receive an address as a side effect of asking for one.
+/// </summary>
+public sealed record InternalUserContactDto(Guid Id, string DisplayName, string Email);

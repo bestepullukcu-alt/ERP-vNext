@@ -255,6 +255,16 @@ public static class DependencyInjection
         services.AddScoped<ITaskTemplateRepository, TaskTemplateRepository>();
         services.AddScoped<ITaskRecurrenceRuleRepository, TaskRecurrenceRuleRepository>();
 
+        /*
+         * WC-4 — task notification recipients, resolved from AuthService.
+         *
+         * THIS LINE is the seam: swap the implementation and every task notification is addressed differently.
+         * Before it existed, MOD-0024 put the recipient's user GUID into the email field, so no task
+         * notification had ever been deliverable.
+         */
+        services.AddScoped<Diten.Platform.Application.Contracts.ITaskNotificationRecipientResolver,
+            Services.AuthTaskNotificationRecipientClient>();
+
         // Document Management Repositories
         services.AddScoped<IBaselineReleaseRepository, BaselineReleaseRepository>();
         services.AddScoped<ICollectionDefinitionRepository, CollectionDefinitionRepository>();

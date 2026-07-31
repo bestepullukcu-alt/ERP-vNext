@@ -420,6 +420,9 @@
   <data name="Notification" xml:space="preserve">
     <value>通知</value>
   </data>
+  <data name="NoNotifications" xml:space="preserve">
+    <value>暂无通知</value>
+  </data>
   <data name="NewNotifications" xml:space="preserve">
     <value>{0} 个新通知</value>
   </data>

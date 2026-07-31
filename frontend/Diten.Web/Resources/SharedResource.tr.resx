@@ -441,6 +441,9 @@
   <data name="Notification" xml:space="preserve">
     <value>Bildirim</value>
   </data>
+  <data name="NoNotifications" xml:space="preserve">
+    <value>Bildirim yok</value>
+  </data>
   <data name="NewNotifications" xml:space="preserve">
     <value>{0} Yeni</value>
   </data>

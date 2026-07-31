@@ -508,8 +508,14 @@ Permissions (PKS-001 lowercase-dotted):
 - Watchers/consultants get **read-only** visibility; no action permissions (§12 K3).
 
 ### Notification events (manifest-declared)
-`platform.tasks.assigned` · `platform.tasks.claimed` · `platform.tasks.due-soon` · `platform.tasks.completed` ·
-`platform.tasks.approval-requested`.
+`platform.tasks.assigned` · `platform.tasks.claimed` · `platform.tasks.duesoon` · `platform.tasks.completed` ·
+`platform.tasks.approvalrequested`.
+
+> **Correction (CT, 2026-07-30).** This line previously wrote the last two codes **hyphenated**
+> (`due-soon`, `approval-requested`). The code does not, and the code is right: an event code is validated
+> against `^[a-z0-9]+(\.[a-z0-9]+)*$` (`TaskModels.cs:196-198`), which rejects hyphens. A hyphenated code fails
+> validation, leaves the event in `Draft`, and a Draft event never dispatches — so the document was describing
+> events that could not fire. Fixed to match `TaskNotificationEvents` (`TaskModels.cs:204-209`).
 ⚠ Two verified constraints: an event becomes **`Active` only when it has zero validation issues AND the manifest
 declares `Status: "Active"`**; and `TargetPageCode` / `RequiredPermissionKey` are validated **against this same
 manifest's own pages/permissions** — so the manifest must declare its pages and permission keys for the events to

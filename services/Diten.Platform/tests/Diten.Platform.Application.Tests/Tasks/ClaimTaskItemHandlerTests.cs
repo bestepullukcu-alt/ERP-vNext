@@ -4,6 +4,7 @@ using Diten.Platform.Application.Features.Tasks.Handlers.CommandHandlers;
 using Diten.Platform.Domain.Entities.Organization;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.Tasks;
@@ -128,7 +129,8 @@ public sealed class ClaimTaskItemHandlerTests
         FakePositionAssignmentRepository positionAssignments,
         Guid actor)
         => new(tasks, assignments, positionAssignments,
-            new FakeCurrentUserContext(actor), new FakeTenantContext(TaskTestData.Tenant));
+            new FakeCurrentUserContext(actor), new FakeTenantContext(TaskTestData.Tenant),
+            new FakeTaskNotificationService(), NullLogger<ClaimTaskItemHandler>.Instance);
 
     private static TaskItem PoolTask() => new()
     {

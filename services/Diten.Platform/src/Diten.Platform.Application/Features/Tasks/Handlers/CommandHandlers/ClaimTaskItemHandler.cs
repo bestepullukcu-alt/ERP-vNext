@@ -1,11 +1,13 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tasks.Commands;
+using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.Tasks.Handlers.CommandHandlers;
 
@@ -24,19 +26,25 @@ public sealed class ClaimTaskItemHandler : IRequestHandler<ClaimTaskItemCommand,
     private readonly IPositionAssignmentRepository _positionAssignments;
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
+    private readonly ITaskNotificationService _notifications;
+    private readonly ILogger<ClaimTaskItemHandler> _logger;
 
     public ClaimTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
         IPositionAssignmentRepository positionAssignments,
         ICurrentUserContext currentUser,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ITaskNotificationService notifications,
+        ILogger<ClaimTaskItemHandler> logger)
     {
+        _logger = logger;
         _tasks = tasks;
         _assignments = assignments;
         _positionAssignments = positionAssignments;
         _currentUser = currentUser;
         _tenantContext = tenantContext;
+        _notifications = notifications;
     }
 
     public async Task<Response<NoContent>> Handle(ClaimTaskItemCommand command, CancellationToken ct)
@@ -100,7 +108,20 @@ public sealed class ClaimTaskItemHandler : IRequestHandler<ClaimTaskItemCommand,
             CreatedBy = _currentUser.ActorName
         }, ct);
 
-        // OD-2: the other position holders are deliberately NOT notified that the work is gone.
+        /*
+         * The REQUESTER is told their pooled work has an owner (WC-4). They asked for it and cannot otherwise
+         * know who picked it up.
+         *
+         * OD-2 still holds for the other position holders: they are deliberately NOT told the work is gone —
+         * that is a notification about something NOT happening to them, which is noise.
+         *
+         * The claimer excludes themselves through the service's actor rule, so a self-created pooled task that
+         * its own creator claims sends nothing.
+         */
+        var requester = task.CreatedByUserId is { } creator ? new[] { creator } : [];
+        await TaskNotificationSafely.NotifyAsync(
+            _notifications, _logger, task, TaskNotificationEvents.Claimed, requester, actorId, ct);
+
         return Response<NoContent>.Success(204, command.CorrelationId);
     }
 

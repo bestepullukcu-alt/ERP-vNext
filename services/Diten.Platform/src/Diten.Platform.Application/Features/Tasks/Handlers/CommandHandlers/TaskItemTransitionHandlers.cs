@@ -167,6 +167,10 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
     private readonly IWorkflowTransitionGate _workflowGate;
     private readonly ITaskDependencyRepository _dependencies;
 
+    /// <summary>WC-4 — the shared notification path; see ITaskNotificationService for the four rules it holds.</summary>
+    private readonly ITaskNotificationService _notifications;
+    private readonly ILogger<TransitionTaskItemHandler> _logger;
+
     public TransitionTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
@@ -174,8 +178,12 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         IChecklistRunRepository checklists,
         ITaskChecklistService checklistService,
         IWorkflowTransitionGate workflowGate,
-        ITaskDependencyRepository dependencies)
+        ITaskDependencyRepository dependencies,
+        ITaskNotificationService notifications,
+        ILogger<TransitionTaskItemHandler> logger)
     {
+        _logger = logger;
+        _notifications = notifications;
         _dependencies = dependencies;
         _tasks = tasks;
         _lifecycle = lifecycle;
@@ -404,6 +412,21 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         if (command.Target == TaskLifecycle.Cancelled)
         {
             await CancelOpenSubtasksAsync(task, command, ct);
+        }
+
+        /*
+         * The REQUESTER is told their work is finished (WC-4). They asked for it; the holder already knows.
+         *
+         * The service's actor rule is what makes "I completed my own task" send nothing — a self-assigned task
+         * has the same person on both ends, and telling them about their own act is the noise that teaches
+         * people to ignore notifications.
+         */
+        if (command.Target == TaskLifecycle.Done)
+        {
+            var requester = task.CreatedByUserId is { } creator ? new[] { creator } : [];
+            await TaskNotificationSafely.NotifyAsync(
+                _notifications, _logger, task, TaskNotificationEvents.Completed,
+                requester, _currentUser.UserId, ct);
         }
 
         return Response<NoContent>.Success(204, command.CorrelationId);

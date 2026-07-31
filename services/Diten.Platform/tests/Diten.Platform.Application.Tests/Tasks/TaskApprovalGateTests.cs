@@ -5,6 +5,7 @@ using Diten.Platform.Application.Features.Tasks.Handlers.CommandHandlers;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.Tasks;
@@ -247,7 +248,8 @@ public sealed class TaskApprovalGateTests
         int expectedVersion)
         => new TransitionTaskItemHandler(
                 tasks, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
-                new FakeChecklistRunRepository(), new TaskChecklistService(), gate, new FakeTaskDependencyRepository())
+                new FakeChecklistRunRepository(), new TaskChecklistService(), gate,
+                new FakeTaskDependencyRepository(), new FakeTaskNotificationService(), NullLogger<TransitionTaskItemHandler>.Instance)
             .Handle(
                 new TransitionTaskItemCommand(id, target, new TaskTransitionRequest(expectedVersion, null, null), "corr"),
                 CancellationToken.None);
@@ -270,7 +272,7 @@ public sealed class TaskApprovalGateTests
             new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository()),
             new TaskLifecycleService(), approvals,
             new FakeChecklistTemplateRepository(), new FakeChecklistRunRepository(), new TaskChecklistService(),
-            new NoOpNotificationDispatchAdapter(),
+            new FakeTaskNotificationService(),
             new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant),
             Microsoft.Extensions.Logging.Abstractions.NullLogger<CreateTaskItemHandler>.Instance);
 

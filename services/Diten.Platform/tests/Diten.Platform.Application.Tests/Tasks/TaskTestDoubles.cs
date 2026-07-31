@@ -804,6 +804,133 @@ internal sealed class FakeTaskRecurrenceRuleRepository : ITaskRecurrenceRuleRepo
     };
 }
 
+/// <summary>
+/// WC-4 — records every notification the handlers ask for, so a test can assert WHICH event went to WHOM.
+///
+/// <para>Deliberately a double for the SERVICE, not for the adapter beneath it: the rules under test (opt-out,
+/// actor skip, requester audience) live in the handlers' choice of arguments, and asserting on those arguments
+/// is asserting on the rules rather than on plumbing.</para>
+/// </summary>
+internal sealed class FakeTaskNotificationService
+    : Diten.Platform.Application.Features.Tasks.Services.ITaskNotificationService
+{
+    public sealed record Sent(Guid TaskId, string EventCode, IReadOnlyList<Guid> Candidates, Guid ActingUserId);
+
+    public List<Sent> Notifications { get; } = [];
+
+    /// <summary>Pool holders this double answers with, so a pooled audience can be arranged.</summary>
+    public List<Guid> PoolHolders { get; } = [];
+
+    /// <summary>Makes NotifyAsync throw, to prove a notification failure never fails the write.</summary>
+    public bool Throws { get; set; }
+
+    /// <summary>Codes actually dispatched (opt-out and actor-skip resolved), for the common assertion.</summary>
+    public IReadOnlyList<string> EventCodes => Notifications.Select(n => n.EventCode).ToList();
+
+    public Task<Diten.Platform.Application.Features.Tasks.Services.TaskNotificationOutcome> NotifyAsync(
+        TaskItem task,
+        string eventCode,
+        IReadOnlyCollection<Guid> candidateUserIds,
+        Guid actingUserId,
+        CancellationToken ct)
+    {
+        if (Throws)
+        {
+            throw new InvalidOperationException("Notification layer is down.");
+        }
+
+        /*
+         * The double applies the SAME two skip rules the real service does, so a handler test can assert "no
+         * notification" and mean it. A double that recorded every call regardless would make every skip test
+         * pass for the wrong reason — the handler would look correct while the rule lived only here.
+         */
+        if (!task.EmailNotificationsEnabled)
+        {
+            return Task.FromResult(
+                Diten.Platform.Application.Features.Tasks.Services.TaskNotificationOutcome.Skipped);
+        }
+
+        var audience = (candidateUserIds ?? [])
+            .Where(id => id != Guid.Empty && id != actingUserId)
+            .Distinct()
+            .ToList();
+
+        if (audience.Count == 0)
+        {
+            return Task.FromResult(
+                Diten.Platform.Application.Features.Tasks.Services.TaskNotificationOutcome.Skipped);
+        }
+
+        Notifications.Add(new Sent(task.Id, eventCode, audience, actingUserId));
+        return Task.FromResult(
+            Diten.Platform.Application.Features.Tasks.Services.TaskNotificationOutcome.Dispatched);
+    }
+
+    public Task<IReadOnlyList<Guid>> ResolvePoolHoldersAsync(TaskItem task, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<Guid>>(PoolHolders);
+}
+
+/// <summary>
+/// WC-4 — a recipient resolver a test controls. The seam proof rests on this: swapping what it answers must
+/// change what is dispatched, or the interface is decoration.
+/// </summary>
+internal sealed class FakeTaskNotificationRecipientResolver
+    : Diten.Platform.Application.Contracts.ITaskNotificationRecipientResolver
+{
+    private readonly Dictionary<Guid, string> _addresses = [];
+
+    public FakeTaskNotificationRecipientResolver(params (Guid Id, string Email)[] known)
+    {
+        foreach (var entry in known)
+        {
+            _addresses[entry.Id] = entry.Email;
+        }
+    }
+
+    /// <summary>Ids this resolver was ASKED about — the "unresolvable is skipped" assertion reads it.</summary>
+    public List<Guid> Asked { get; } = [];
+
+    public Task<IReadOnlyList<Diten.Platform.Application.Contracts.TaskNotificationRecipient>> ResolveAsync(
+        IReadOnlyCollection<Guid> userIds,
+        CancellationToken ct = default)
+    {
+        Asked.AddRange(userIds);
+
+        // Unknown ids are OMITTED, exactly as the AuthService client omits a user with no address.
+        return Task.FromResult<IReadOnlyList<Diten.Platform.Application.Contracts.TaskNotificationRecipient>>(
+            userIds
+                .Where(_addresses.ContainsKey)
+                .Select(id => new Diten.Platform.Application.Contracts.TaskNotificationRecipient(
+                    id, _addresses[id], null))
+                .ToList());
+    }
+}
+
+/// <summary>Records what reached the notification layer — the end of the WC-4 chain.</summary>
+internal sealed class RecordingNotificationDispatchAdapter
+    : Diten.Platform.Application.Features.Notifications.Services.INotificationEventDispatchAdapter
+{
+    public List<Diten.Platform.Application.Features.Notifications.Services.NotificationEventDispatchRequest> Requests { get; } = [];
+
+    /// <summary>Makes the notification layer refuse, so "a refusal does not fail the write" can be proved.</summary>
+    public string? FailWithReasonCode { get; set; }
+
+    public Task<Diten.Platform.Application.Common.Response<Diten.Platform.Application.Features.Notifications.NotificationDispatchDto>>
+        DispatchByEventCodeAsync(
+            Diten.Platform.Application.Features.Notifications.Services.NotificationEventDispatchRequest request,
+            CancellationToken ct = default)
+    {
+        Requests.Add(request);
+
+        return Task.FromResult(FailWithReasonCode is null
+            ? Diten.Platform.Application.Common.Response<
+                Diten.Platform.Application.Features.Notifications.NotificationDispatchDto>.Success(202)
+            : Diten.Platform.Application.Common.Response<
+                Diten.Platform.Application.Features.Notifications.NotificationDispatchDto>.Fail(
+                    "refused", 409, FailWithReasonCode));
+    }
+}
+
 internal sealed class FakeTaskReviewService : Diten.Platform.Application.Features.Tasks.Services.ITaskReviewService
 {
     public bool CannotStart { get; set; }

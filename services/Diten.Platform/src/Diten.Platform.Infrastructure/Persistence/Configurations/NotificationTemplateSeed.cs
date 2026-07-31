@@ -40,7 +40,51 @@ public static class NotificationTemplateSeed
             TenantSuspended("en"),
             TenantSuspended("tr"),
             TenantReactivated("en"),
-            TenantReactivated("tr")
+            TenantReactivated("tr"),
+
+            /*
+             * MOD-0024 task notifications (WC-4), SEVEN languages each.
+             *
+             * Without these the dispatch path is dead on arrival: QueueEmailNotificationHandler answers 404 when
+             * no template resolves, and NO dispatch record is even created — so "the notification did not
+             * arrive" looks identical to "the notification was never attempted". A tenant surface ships all
+             * seven languages; two would put an English email in front of five sets of readers.
+             */
+            TaskAssigned("en"),
+            TaskAssigned("tr"),
+            TaskAssigned("fr"),
+            TaskAssigned("es"),
+            TaskAssigned("zh"),
+            TaskAssigned("ar"),
+            TaskAssigned("ru"),
+            TaskClaimed("en"),
+            TaskClaimed("tr"),
+            TaskClaimed("fr"),
+            TaskClaimed("es"),
+            TaskClaimed("zh"),
+            TaskClaimed("ar"),
+            TaskClaimed("ru"),
+            TaskDueSoon("en"),
+            TaskDueSoon("tr"),
+            TaskDueSoon("fr"),
+            TaskDueSoon("es"),
+            TaskDueSoon("zh"),
+            TaskDueSoon("ar"),
+            TaskDueSoon("ru"),
+            TaskCompleted("en"),
+            TaskCompleted("tr"),
+            TaskCompleted("fr"),
+            TaskCompleted("es"),
+            TaskCompleted("zh"),
+            TaskCompleted("ar"),
+            TaskCompleted("ru"),
+            TaskApprovalRequested("en"),
+            TaskApprovalRequested("tr"),
+            TaskApprovalRequested("fr"),
+            TaskApprovalRequested("es"),
+            TaskApprovalRequested("zh"),
+            TaskApprovalRequested("ar"),
+            TaskApprovalRequested("ru")
         ];
     }
 
@@ -90,6 +134,116 @@ public static class NotificationTemplateSeed
                 ? "Tenant erisiminiz yeniden acildi. Tarih: {{ReactivatedAtUtc}}"
                 : "Your tenant access has been reactivated. Date: {{ReactivatedAtUtc}}",
             ["ReactivatedAtUtc"]);
+    }
+
+    /// <summary>
+    /// <c>platform.tasks.assigned</c> in seven languages. The required variables match the manifest's declaration
+    /// exactly — a template that renders a variable the event does not supply produces a silent blank, which is
+    /// the kind of defect nobody reports because the email still "arrived".
+    /// </summary>
+    private static NotificationTemplate TaskAssigned(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("A task was assigned to you: {{TaskTitle}}", "<p>A task has been assigned to you.</p><p><strong>Task:</strong> {{TaskTitle}}</p><p>Reference: {{TaskId}}</p><p>Due date: {{DueAt}}</p>", "A task has been assigned to you. Task: {{TaskTitle}} — Reference: {{TaskId}} — Due date: {{DueAt}}"),
+            "tr" => ("Size bir görev atandı: {{TaskTitle}}", "<p>Size bir görev atandı.</p><p><strong>Görev:</strong> {{TaskTitle}}</p><p>Referans: {{TaskId}}</p><p>Son tarih: {{DueAt}}</p>", "Size bir görev atandı. Görev: {{TaskTitle}} — Referans: {{TaskId}} — Son tarih: {{DueAt}}"),
+            "fr" => ("Une tâche vous a été attribuée : {{TaskTitle}}", "<p>Une tâche vous a été attribuée.</p><p><strong>Tâche:</strong> {{TaskTitle}}</p><p>Référence: {{TaskId}}</p><p>Échéance: {{DueAt}}</p>", "Une tâche vous a été attribuée. Tâche: {{TaskTitle}} — Référence: {{TaskId}} — Échéance: {{DueAt}}"),
+            "es" => ("Se le ha asignado una tarea: {{TaskTitle}}", "<p>Se le ha asignado una tarea.</p><p><strong>Tarea:</strong> {{TaskTitle}}</p><p>Referencia: {{TaskId}}</p><p>Fecha de vencimiento: {{DueAt}}</p>", "Se le ha asignado una tarea. Tarea: {{TaskTitle}} — Referencia: {{TaskId}} — Fecha de vencimiento: {{DueAt}}"),
+            "zh" => ("有任务分配给您：{{TaskTitle}}", "<p>有一项任务已分配给您。</p><p><strong>任务:</strong> {{TaskTitle}}</p><p>编号: {{TaskId}}</p><p>截止日期: {{DueAt}}</p>", "有一项任务已分配给您。 任务: {{TaskTitle}} — 编号: {{TaskId}} — 截止日期: {{DueAt}}"),
+            "ar" => ("تم إسناد مهمة إليك: {{TaskTitle}}", "<p>تم إسناد مهمة إليك.</p><p><strong>المهمة:</strong> {{TaskTitle}}</p><p>المرجع: {{TaskId}}</p><p>تاريخ الاستحقاق: {{DueAt}}</p>", "تم إسناد مهمة إليك. المهمة: {{TaskTitle}} — المرجع: {{TaskId}} — تاريخ الاستحقاق: {{DueAt}}"),
+            "ru" => ("Вам назначена задача: {{TaskTitle}}", "<p>Вам назначена задача.</p><p><strong>Задача:</strong> {{TaskTitle}}</p><p>Ссылка: {{TaskId}}</p><p>Срок: {{DueAt}}</p>", "Вам назначена задача. Задача: {{TaskTitle}} — Ссылка: {{TaskId}} — Срок: {{DueAt}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported task template locale.")
+        };
+
+        return Create("platform.tasks.assigned", locale, subject, html, text, ["TaskTitle", "TaskId"]);
+    }
+
+    /// <summary>
+    /// <c>platform.tasks.claimed</c> in seven languages. The required variables match the manifest's declaration
+    /// exactly — a template that renders a variable the event does not supply produces a silent blank, which is
+    /// the kind of defect nobody reports because the email still "arrived".
+    /// </summary>
+    private static NotificationTemplate TaskClaimed(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("A task you requested was claimed: {{TaskTitle}}", "<p>Someone has taken on a task you requested.</p><p><strong>Task:</strong> {{TaskTitle}}</p><p>Reference: {{TaskId}}</p>", "Someone has taken on a task you requested. Task: {{TaskTitle}} — Reference: {{TaskId}}"),
+            "tr" => ("İstediğiniz görev üstlenildi: {{TaskTitle}}", "<p>Talep ettiğiniz bir görevi biri üstlendi.</p><p><strong>Görev:</strong> {{TaskTitle}}</p><p>Referans: {{TaskId}}</p>", "Talep ettiğiniz bir görevi biri üstlendi. Görev: {{TaskTitle}} — Referans: {{TaskId}}"),
+            "fr" => ("Une tâche que vous avez demandée a été prise en charge : {{TaskTitle}}", "<p>Quelqu’un a pris en charge une tâche que vous avez demandée.</p><p><strong>Tâche:</strong> {{TaskTitle}}</p><p>Référence: {{TaskId}}</p>", "Quelqu’un a pris en charge une tâche que vous avez demandée. Tâche: {{TaskTitle}} — Référence: {{TaskId}}"),
+            "es" => ("Una tarea que solicitó fue tomada: {{TaskTitle}}", "<p>Alguien ha asumido una tarea que usted solicitó.</p><p><strong>Tarea:</strong> {{TaskTitle}}</p><p>Referencia: {{TaskId}}</p>", "Alguien ha asumido una tarea que usted solicitó. Tarea: {{TaskTitle}} — Referencia: {{TaskId}}"),
+            "zh" => ("您请求的任务已被认领：{{TaskTitle}}", "<p>有人已认领您请求的任务。</p><p><strong>任务:</strong> {{TaskTitle}}</p><p>编号: {{TaskId}}</p>", "有人已认领您请求的任务。 任务: {{TaskTitle}} — 编号: {{TaskId}}"),
+            "ar" => ("تم استلام مهمة طلبتها: {{TaskTitle}}", "<p>قام أحدهم باستلام مهمة طلبتها.</p><p><strong>المهمة:</strong> {{TaskTitle}}</p><p>المرجع: {{TaskId}}</p>", "قام أحدهم باستلام مهمة طلبتها. المهمة: {{TaskTitle}} — المرجع: {{TaskId}}"),
+            "ru" => ("Запрошенную вами задачу взяли в работу: {{TaskTitle}}", "<p>Кто-то взял в работу задачу, которую вы запросили.</p><p><strong>Задача:</strong> {{TaskTitle}}</p><p>Ссылка: {{TaskId}}</p>", "Кто-то взял в работу задачу, которую вы запросили. Задача: {{TaskTitle}} — Ссылка: {{TaskId}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported task template locale.")
+        };
+
+        return Create("platform.tasks.claimed", locale, subject, html, text, ["TaskTitle", "TaskId"]);
+    }
+
+    /// <summary>
+    /// <c>platform.tasks.duesoon</c> in seven languages. The required variables match the manifest's declaration
+    /// exactly — a template that renders a variable the event does not supply produces a silent blank, which is
+    /// the kind of defect nobody reports because the email still "arrived".
+    /// </summary>
+    private static NotificationTemplate TaskDueSoon(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("A task is due soon: {{TaskTitle}}", "<p>A task you hold is approaching its due date.</p><p><strong>Task:</strong> {{TaskTitle}}</p><p>Reference: {{TaskId}}</p><p>Due date: {{DueAt}}</p>", "A task you hold is approaching its due date. Task: {{TaskTitle}} — Reference: {{TaskId}} — Due date: {{DueAt}}"),
+            "tr" => ("Bir görevin süresi yaklaşıyor: {{TaskTitle}}", "<p>Üzerinizdeki bir görevin son tarihi yaklaşıyor.</p><p><strong>Görev:</strong> {{TaskTitle}}</p><p>Referans: {{TaskId}}</p><p>Son tarih: {{DueAt}}</p>", "Üzerinizdeki bir görevin son tarihi yaklaşıyor. Görev: {{TaskTitle}} — Referans: {{TaskId}} — Son tarih: {{DueAt}}"),
+            "fr" => ("Une tâche arrive à échéance : {{TaskTitle}}", "<p>Une tâche dont vous avez la charge approche de son échéance.</p><p><strong>Tâche:</strong> {{TaskTitle}}</p><p>Référence: {{TaskId}}</p><p>Échéance: {{DueAt}}</p>", "Une tâche dont vous avez la charge approche de son échéance. Tâche: {{TaskTitle}} — Référence: {{TaskId}} — Échéance: {{DueAt}}"),
+            "es" => ("Una tarea vence pronto: {{TaskTitle}}", "<p>Una tarea a su cargo se acerca a su fecha de vencimiento.</p><p><strong>Tarea:</strong> {{TaskTitle}}</p><p>Referencia: {{TaskId}}</p><p>Fecha de vencimiento: {{DueAt}}</p>", "Una tarea a su cargo se acerca a su fecha de vencimiento. Tarea: {{TaskTitle}} — Referencia: {{TaskId}} — Fecha de vencimiento: {{DueAt}}"),
+            "zh" => ("任务即将到期：{{TaskTitle}}", "<p>您负责的一项任务即将到期。</p><p><strong>任务:</strong> {{TaskTitle}}</p><p>编号: {{TaskId}}</p><p>截止日期: {{DueAt}}</p>", "您负责的一项任务即将到期。 任务: {{TaskTitle}} — 编号: {{TaskId}} — 截止日期: {{DueAt}}"),
+            "ar" => ("مهمة تقترب من موعدها: {{TaskTitle}}", "<p>مهمة لديك تقترب من تاريخ استحقاقها.</p><p><strong>المهمة:</strong> {{TaskTitle}}</p><p>المرجع: {{TaskId}}</p><p>تاريخ الاستحقاق: {{DueAt}}</p>", "مهمة لديك تقترب من تاريخ استحقاقها. المهمة: {{TaskTitle}} — المرجع: {{TaskId}} — تاريخ الاستحقاق: {{DueAt}}"),
+            "ru" => ("Срок задачи подходит: {{TaskTitle}}", "<p>У задачи, которая за вами закреплена, приближается срок.</p><p><strong>Задача:</strong> {{TaskTitle}}</p><p>Ссылка: {{TaskId}}</p><p>Срок: {{DueAt}}</p>", "У задачи, которая за вами закреплена, приближается срок. Задача: {{TaskTitle}} — Ссылка: {{TaskId}} — Срок: {{DueAt}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported task template locale.")
+        };
+
+        return Create("platform.tasks.duesoon", locale, subject, html, text, ["TaskTitle", "TaskId"]);
+    }
+
+    /// <summary>
+    /// <c>platform.tasks.completed</c> in seven languages. The required variables match the manifest's declaration
+    /// exactly — a template that renders a variable the event does not supply produces a silent blank, which is
+    /// the kind of defect nobody reports because the email still "arrived".
+    /// </summary>
+    private static NotificationTemplate TaskCompleted(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("A task you requested is complete: {{TaskTitle}}", "<p>A task you requested has been completed.</p><p><strong>Task:</strong> {{TaskTitle}}</p><p>Reference: {{TaskId}}</p>", "A task you requested has been completed. Task: {{TaskTitle}} — Reference: {{TaskId}}"),
+            "tr" => ("İstediğiniz görev tamamlandı: {{TaskTitle}}", "<p>Talep ettiğiniz bir görev tamamlandı.</p><p><strong>Görev:</strong> {{TaskTitle}}</p><p>Referans: {{TaskId}}</p>", "Talep ettiğiniz bir görev tamamlandı. Görev: {{TaskTitle}} — Referans: {{TaskId}}"),
+            "fr" => ("Une tâche que vous avez demandée est terminée : {{TaskTitle}}", "<p>Une tâche que vous avez demandée a été terminée.</p><p><strong>Tâche:</strong> {{TaskTitle}}</p><p>Référence: {{TaskId}}</p>", "Une tâche que vous avez demandée a été terminée. Tâche: {{TaskTitle}} — Référence: {{TaskId}}"),
+            "es" => ("Una tarea que solicitó está completa: {{TaskTitle}}", "<p>Se ha completado una tarea que usted solicitó.</p><p><strong>Tarea:</strong> {{TaskTitle}}</p><p>Referencia: {{TaskId}}</p>", "Se ha completado una tarea que usted solicitó. Tarea: {{TaskTitle}} — Referencia: {{TaskId}}"),
+            "zh" => ("您请求的任务已完成：{{TaskTitle}}", "<p>您请求的任务已完成。</p><p><strong>任务:</strong> {{TaskTitle}}</p><p>编号: {{TaskId}}</p>", "您请求的任务已完成。 任务: {{TaskTitle}} — 编号: {{TaskId}}"),
+            "ar" => ("اكتملت مهمة طلبتها: {{TaskTitle}}", "<p>اكتملت مهمة كنت قد طلبتها.</p><p><strong>المهمة:</strong> {{TaskTitle}}</p><p>المرجع: {{TaskId}}</p>", "اكتملت مهمة كنت قد طلبتها. المهمة: {{TaskTitle}} — المرجع: {{TaskId}}"),
+            "ru" => ("Запрошенная вами задача выполнена: {{TaskTitle}}", "<p>Запрошенная вами задача выполнена.</p><p><strong>Задача:</strong> {{TaskTitle}}</p><p>Ссылка: {{TaskId}}</p>", "Запрошенная вами задача выполнена. Задача: {{TaskTitle}} — Ссылка: {{TaskId}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported task template locale.")
+        };
+
+        return Create("platform.tasks.completed", locale, subject, html, text, ["TaskTitle", "TaskId"]);
+    }
+
+    /// <summary>
+    /// <c>platform.tasks.approvalrequested</c> in seven languages. The required variables match the manifest's declaration
+    /// exactly — a template that renders a variable the event does not supply produces a silent blank, which is
+    /// the kind of defect nobody reports because the email still "arrived".
+    /// </summary>
+    private static NotificationTemplate TaskApprovalRequested(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("A task needs your approval: {{TaskTitle}}", "<p>A task is waiting for your approval before work may begin.</p><p><strong>Task:</strong> {{TaskTitle}}</p><p>Reference: {{TaskId}}</p>", "A task is waiting for your approval before work may begin. Task: {{TaskTitle}} — Reference: {{TaskId}}"),
+            "tr" => ("Bir görev onayınızı bekliyor: {{TaskTitle}}", "<p>Bir görev, çalışma başlamadan önce onayınızı bekliyor.</p><p><strong>Görev:</strong> {{TaskTitle}}</p><p>Referans: {{TaskId}}</p>", "Bir görev, çalışma başlamadan önce onayınızı bekliyor. Görev: {{TaskTitle}} — Referans: {{TaskId}}"),
+            "fr" => ("Une tâche attend votre approbation : {{TaskTitle}}", "<p>Une tâche attend votre approbation avant que le travail puisse commencer.</p><p><strong>Tâche:</strong> {{TaskTitle}}</p><p>Référence: {{TaskId}}</p>", "Une tâche attend votre approbation avant que le travail puisse commencer. Tâche: {{TaskTitle}} — Référence: {{TaskId}}"),
+            "es" => ("Una tarea requiere su aprobación: {{TaskTitle}}", "<p>Una tarea espera su aprobación antes de que pueda comenzar el trabajo.</p><p><strong>Tarea:</strong> {{TaskTitle}}</p><p>Referencia: {{TaskId}}</p>", "Una tarea espera su aprobación antes de que pueda comenzar el trabajo. Tarea: {{TaskTitle}} — Referencia: {{TaskId}}"),
+            "zh" => ("有任务待您审批：{{TaskTitle}}", "<p>一项任务在开始工作前需要您的审批。</p><p><strong>任务:</strong> {{TaskTitle}}</p><p>编号: {{TaskId}}</p>", "一项任务在开始工作前需要您的审批。 任务: {{TaskTitle}} — 编号: {{TaskId}}"),
+            "ar" => ("مهمة بانتظار موافقتك: {{TaskTitle}}", "<p>مهمة تنتظر موافقتك قبل أن يبدأ العمل.</p><p><strong>المهمة:</strong> {{TaskTitle}}</p><p>المرجع: {{TaskId}}</p>", "مهمة تنتظر موافقتك قبل أن يبدأ العمل. المهمة: {{TaskTitle}} — المرجع: {{TaskId}}"),
+            "ru" => ("Задача ожидает вашего согласования: {{TaskTitle}}", "<p>Задача ожидает вашего согласования, прежде чем работа начнётся.</p><p><strong>Задача:</strong> {{TaskTitle}}</p><p>Ссылка: {{TaskId}}</p>", "Задача ожидает вашего согласования, прежде чем работа начнётся. Задача: {{TaskTitle}} — Ссылка: {{TaskId}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported task template locale.")
+        };
+
+        return Create("platform.tasks.approvalrequested", locale, subject, html, text, ["TaskTitle", "TaskId"]);
     }
 
     private static NotificationTemplate Create(

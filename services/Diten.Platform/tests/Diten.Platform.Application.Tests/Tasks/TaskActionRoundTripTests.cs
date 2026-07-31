@@ -6,6 +6,7 @@ using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Application.Features.WorkAggregation;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.Tasks;
@@ -190,7 +191,7 @@ public sealed class TaskActionRoundTripTests
         var expectedVersion = int.Parse(projection.Concurrency.Token);
         var handler = new TransitionTaskItemHandler(
             repository, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
-            new FakeChecklistRunRepository(), new TaskChecklistService(), new FakeWorkflowTransitionGate(), new FakeTaskDependencyRepository());
+            new FakeChecklistRunRepository(), new TaskChecklistService(), new FakeWorkflowTransitionGate(), new FakeTaskDependencyRepository(), new FakeTaskNotificationService(), NullLogger<TransitionTaskItemHandler>.Instance);
 
         return handler.Handle(
             new TransitionTaskItemCommand(id, target, new TaskTransitionRequest(expectedVersion, null, null), "corr"),
