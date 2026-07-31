@@ -613,4 +613,7 @@
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>Task Center</value>
   </data>
+  <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
+    <value>Field Definitions</value>
+  </data>
 </root>

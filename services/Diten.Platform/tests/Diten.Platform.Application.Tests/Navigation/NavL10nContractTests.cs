@@ -32,7 +32,10 @@ public sealed class NavL10nContractTests
         "USERS", "ROLES", "ROLE_PERMISSIONS", "USER_ROLES", "SECURITY_SETTINGS", "MENU_SETTINGS", "RECORDS",
         "QMS_BASELINES", "INSTANCES", "CONTROLLED_DOCUMENTS", "TEMPLATE_MASTERS", "TEMPLATE_VARIANTS",
         "ACCESS_MATRIX", "LEGAL_ENTITIES", "RD_SETS", "ORGANIZATION_UNITS", "POSITIONS", "POSITION_ASSIGNMENTS",
-        "DEFINITIONS"
+        "DEFINITIONS",
+        // MOD-0024's one nav-visible page — the field-definition catalogue. Its sibling task pages are personal
+        // work surfaces and stay out of the nav, so they need no key here.
+        "TASK_FIELD_DEFINITIONS"
     ];
 
     private static IEnumerable<string> AllExpectedKeys() =>

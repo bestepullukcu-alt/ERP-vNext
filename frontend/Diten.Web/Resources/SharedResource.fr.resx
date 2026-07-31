@@ -554,4 +554,7 @@
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>Centre des tâches</value>
   </data>
+  <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
+    <value>Définitions de champs</value>
+  </data>
 </root>

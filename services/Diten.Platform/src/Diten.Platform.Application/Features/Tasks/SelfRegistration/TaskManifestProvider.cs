@@ -12,10 +12,16 @@ namespace Diten.Platform.Application.Features.Tasks.SelfRegistration;
 /// the manifest sync the attribution author (<c>Module="tasks"</c>, and <c>Scope=Tenant</c> because these routes
 /// are not under <c>/Platform/*</c>). The startup ordering gate guarantees the manifest runs first.</para>
 ///
-/// <para><b>Nav visibility.</b> Every page is <c>IsNavigationVisible: false</c> on purpose: Görev Merkezi is the
-/// single personal entry point, and a competing "Görevler" sidebar item would fragment it. The pages exist for
-/// permission attribution and are reached from the Task Center's "+ Yeni" (precedent: the nav-invisible
-/// PERMISSIONS page in the Access Governance manifest).</para>
+/// <para><b>Nav visibility.</b> Every <b>personal work surface</b> is <c>IsNavigationVisible: false</c> on
+/// purpose: Görev Merkezi is the single answer to "where is my work", and a competing "Görevler" sidebar item
+/// would fragment it. Those pages exist for permission attribution and are reached from the Task Center's
+/// "+ Yeni" (precedent: the nav-invisible PERMISSIONS page in the Access Governance manifest).</para>
+///
+/// <para>That rule is about work surfaces, not about pages in general. <c>TASK_FIELD_DEFINITIONS</c> is visible
+/// because it answers a different question — it configures the tenant's field schema rather than showing anyone
+/// their work — so it cannot fragment an entry point it does not compete with. A settings screen reachable only
+/// by typing its URL is a defect, not a policy. The distinction is enforced by
+/// <c>TaskPermissions.PersonalWorkSurfaceScoped</c>, so a future personal page inherits the rule automatically.</para>
 ///
 /// <para><b>Notification events.</b> Declared here so the Notification Event Catalog can materialize them. Two
 /// verified constraints shape the values below: an event only reaches <c>Active</c> when it has zero validation
@@ -118,16 +124,10 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                  * catalog (see the WC-1b note beside the Task Center entry); a hard-coded link would be a second,
                  * unmanaged entry that Menu Settings could neither reorder nor hide.
                  *
-                 * IsNavigationVisible stays FALSE, and that leaves the screen still unreachable from the menu.
-                 * That is deliberate: TaskManifestProviderTests.Pages_are_nav_invisible_so_they_do_not_compete_
-                 * with_the_Task_Center asserts it of EVERY page in this manifest, on the recorded ground that
-                 * "Görev Merkezi is the single personal entry point". Flipping this one to true would have meant
-                 * editing that assertion — changing a recorded product decision to make a fix pass, which is not
-                 * a code change. Registering the page is still worth doing on its own: it puts the route and its
-                 * permission in the catalogue, which is what Menu Settings needs before it can ever surface it.
-                 *
-                 * The remaining question — should a tenant-settings surface count as "competing with the Task
-                 * Center" at all? — is CT's, and one flag is the whole change once answered.
+                 * The ONE nav-visible page in this manifest. It requires FieldDefinitionsManage, which is not
+                 * in TaskPermissions.PersonalWorkSurfaceScoped, so it is not a "where is my work" surface and
+                 * cannot fragment the Task Center. Every page that IS one stays invisible, and the test derives
+                 * that from the permission rather than from a list of page codes.
                  */
                 new ModuleManifestPage(
                     PageCode: PageTaskFieldDefinitions,
@@ -135,7 +135,7 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                     RoutePath: "/Tasks/FieldDefinitions",
                     RequiredPermission: TaskPermissions.FieldDefinitionsManage,
                     ParentPageCode: PageTasks,
-                    IsNavigationVisible: false,
+                    IsNavigationVisible: true,
                     PageType: "List",
                     SortOrder: 20,
                     Actions:

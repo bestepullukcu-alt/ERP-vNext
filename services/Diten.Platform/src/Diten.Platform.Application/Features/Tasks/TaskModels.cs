@@ -20,6 +20,27 @@ public static class TaskPermissions
     public const string Complete = "platform.tasks.complete";
     public const string Cancel = "platform.tasks.cancel";
     public const string FieldDefinitionsManage = "platform.tasks.field-definitions.manage";
+
+    /// <summary>
+    /// The permissions that gate a <b>personal work surface</b> — a page that shows or acts on the viewer's own
+    /// task INSTANCES.
+    ///
+    /// <para><b>Why this set exists, and why it is a set rather than a list of page codes.</b> Görev Merkezi is
+    /// the single answer to "where is my work", so no second sidebar entry may answer it too — that is the rule
+    /// <c>TaskManifestProviderTests</c> enforces. Expressing it as "these four page codes" would mean the fifth
+    /// personal page, added a year from now, silently lands on the permissive side of a rule written to catch
+    /// exactly it.</para>
+    ///
+    /// <para>The permission is the honest discriminator because it already states what authority the page needs:
+    /// "may I read/claim/complete a task" is a work question, and a page asking it is a work surface. Managing the
+    /// field SCHEMA is a different authority entirely, which is why
+    /// <see cref="FieldDefinitionsManage"/> is deliberately absent — that screen configures the catalogue rather
+    /// than showing anybody their work, so it does not fragment the Task Center and may appear in the menu.</para>
+    /// </summary>
+    public static readonly IReadOnlySet<string> PersonalWorkSurfaceScoped = new HashSet<string>(StringComparer.Ordinal)
+    {
+        Read, Create, Update, Delete, BulkDelete, Assign, Claim, Complete, Cancel
+    };
 }
 
 public static class TaskReasonCodes

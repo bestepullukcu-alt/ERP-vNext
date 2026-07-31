@@ -70,10 +70,62 @@ public sealed class TaskManifestProviderTests
     }
 
     [Fact]
-    public void Pages_are_nav_invisible_so_they_do_not_compete_with_the_Task_Center()
+    public void PERSONAL_WORK_pages_are_nav_invisible_so_they_do_not_compete_with_the_Task_Center()
     {
-        // Görev Merkezi is the single personal entry point; a second "Görevler" sidebar item would fragment it.
-        Assert.All(Manifest.Pages, p => Assert.False(p.IsNavigationVisible));
+        /*
+         * THE RULE, AND ITS SCOPE. Görev Merkezi is the single answer to "where is my work"; a second "Görevler"
+         * sidebar item would split that answer in two. So every page that shows or acts on the viewer's own task
+         * instances stays out of the menu.
+         *
+         * It is NOT "no page in this manifest may ever appear". That reading is what kept the Field Definitions
+         * screen — a tenant settings surface that shows nobody their work — reachable only by typing its URL.
+         * A screen with no way in is a defect, not a policy, and it fragments nothing because it answers a
+         * different question.
+         *
+         * If this distinction is ever lost, someone will either delete this test outright or hide an admin screen
+         * again. It is written down here so that neither looks like the obvious move.
+         */
+        var workSurfaces = Manifest.Pages
+            .Where(p => TaskPermissions.PersonalWorkSurfaceScoped.Contains(p.RequiredPermission))
+            .ToList();
+
+        // Non-vacuity: if the permission set or the manifest drifts so that nothing matches, the assertion below
+        // passes over an empty list and the rule silently stops existing.
+        Assert.Equal(4, workSurfaces.Count);
+
+        Assert.All(workSurfaces, p => Assert.False(
+            p.IsNavigationVisible,
+            $"{p.PageCode} shows the viewer's own work and must not compete with the Task Center."));
+    }
+
+    [Fact]
+    public void The_field_definitions_SETTINGS_page_IS_reachable_from_the_menu()
+    {
+        /*
+         * The other half of the same decision, asserted so that "hide it again" fails rather than passes. The
+         * screen configures the tenant's field schema; it is not a work surface, and it had no route in at all.
+         */
+        var page = Manifest.Pages.Single(p => p.RoutePath == "/Tasks/FieldDefinitions");
+
+        Assert.True(page.IsNavigationVisible);
+        Assert.DoesNotContain(page.RequiredPermission, TaskPermissions.PersonalWorkSurfaceScoped);
+    }
+
+    [Fact]
+    public void The_rule_follows_the_PERMISSION_so_a_future_personal_page_inherits_it()
+    {
+        /*
+         * Why the criterion is the permission and not a list of page codes: a list is correct only until the next
+         * page is added, and the page most likely to be added is another task surface — exactly what the rule
+         * exists to catch. This pins the mechanism, so replacing it with a hand-kept list fails here.
+         *
+         * FieldDefinitionsManage is deliberately absent from the set: managing the field SCHEMA is a different
+         * authority from reading or claiming a task.
+         */
+        Assert.Contains(TaskPermissions.Read, TaskPermissions.PersonalWorkSurfaceScoped);
+        Assert.Contains(TaskPermissions.Claim, TaskPermissions.PersonalWorkSurfaceScoped);
+        Assert.Contains(TaskPermissions.Complete, TaskPermissions.PersonalWorkSurfaceScoped);
+        Assert.DoesNotContain(TaskPermissions.FieldDefinitionsManage, TaskPermissions.PersonalWorkSurfaceScoped);
     }
 
     [Fact]
