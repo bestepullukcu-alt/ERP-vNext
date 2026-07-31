@@ -12,6 +12,7 @@ using Diten.Platform.Infrastructure.Eventing;
 using MediatR;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
+using EventTransportMessage = Diten.BuildingBlocks.Eventing.EventTransportMessage;
 
 namespace Diten.Platform.Application.Tests.Tenants;
 

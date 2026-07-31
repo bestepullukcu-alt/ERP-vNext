@@ -1,4 +1,4 @@
-using Diten.Platform.Application.Contracts.Eventing;
+using Diten.BuildingBlocks.Eventing;
 using MassTransit;
 
 namespace Diten.Platform.Infrastructure.Eventing;
@@ -19,12 +19,7 @@ public sealed class MassTransitRabbitMqEventPublisher : IEventTransportPublisher
             message,
             context =>
             {
-                if (message.TransportHeaders is null)
-                {
-                    return;
-                }
-
-                foreach (var header in message.TransportHeaders)
+                foreach (var header in message.TransportMetadata.Headers)
                 {
                     context.Headers.Set(header.Key, header.Value);
                 }

@@ -3,10 +3,14 @@ using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Contracts.Eventing;
 using MassTransit;
 using Microsoft.Extensions.Logging;
+using EventTransportMessage = Diten.BuildingBlocks.Eventing.EventTransportMessage;
+using LegacyEventTransportMessage = Diten.Platform.Application.Contracts.Eventing.EventTransportMessage;
 
 namespace Diten.Platform.Infrastructure.Eventing;
 
-internal sealed class PpmAuditIntentSubmittedV1Consumer : IConsumer<EventTransportMessage>
+internal sealed class PpmAuditIntentSubmittedV1Consumer :
+    IConsumer<EventTransportMessage>,
+    IConsumer<LegacyEventTransportMessage>
 {
     private readonly PpmAuditConsumerProcessor _processor;
 
@@ -23,6 +27,30 @@ internal sealed class PpmAuditIntentSubmittedV1Consumer : IConsumer<EventTranspo
             context.Headers.Get<string>(PpmAuditSignatureVerifier.SignatureHeader),
             context.GetRetryAttempt(),
             context.CancellationToken);
+
+    public Task Consume(ConsumeContext<LegacyEventTransportMessage> context)
+    {
+        var headers = new[]
+        {
+            KeyValuePair.Create(
+                PpmAuditSignatureVerifier.SchemeHeader,
+                context.Headers.Get<string>(PpmAuditSignatureVerifier.SchemeHeader) ?? string.Empty),
+            KeyValuePair.Create(
+                PpmAuditSignatureVerifier.KeyIdHeader,
+                context.Headers.Get<string>(PpmAuditSignatureVerifier.KeyIdHeader) ?? string.Empty),
+            KeyValuePair.Create(
+                PpmAuditSignatureVerifier.SignatureHeader,
+                context.Headers.Get<string>(PpmAuditSignatureVerifier.SignatureHeader) ?? string.Empty)
+        };
+        var mapped = LegacyEventTransportMessageMapper.Map(context.Message, headers);
+        return _processor.ProcessAsync(
+            mapped,
+            mapped.TransportMetadata.Headers[PpmAuditSignatureVerifier.SchemeHeader],
+            mapped.TransportMetadata.Headers[PpmAuditSignatureVerifier.KeyIdHeader],
+            mapped.TransportMetadata.Headers[PpmAuditSignatureVerifier.SignatureHeader],
+            context.GetRetryAttempt(),
+            context.CancellationToken);
+    }
 }
 
 internal interface IPpmAuditDeadLetterObserver
@@ -47,7 +75,6 @@ internal sealed class PpmAuditDeadLetterObserver : IPpmAuditDeadLetterObserver
             new KeyValuePair<string, object?>("event_name", message.EventName),
             new KeyValuePair<string, object?>("consumer", PpmAuditAcceptanceRepository.ConsumerName));
         _logger.LogError(
-            exception,
             "event.deadlettered EventId={EventId} EventName={EventName} TenantId={TenantId} ConsumerName={ConsumerName} ErrorType={ErrorType}",
             message.EventId,
             message.EventName,
@@ -114,6 +141,10 @@ internal sealed class PpmAuditConsumerProcessor
         catch (PpmAuditContractException ex)
         {
             _deadLetterObserver.Record(message, ex);
+            throw;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
             throw;
         }
         catch (Exception ex)

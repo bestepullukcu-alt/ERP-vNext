@@ -6,10 +6,14 @@ using Diten.Platform.Application.Services.Eventing;
 using Diten.Platform.Contracts.Events;
 using Diten.Platform.Domain.Enums;
 using MassTransit;
+using EventTransportMessage = Diten.BuildingBlocks.Eventing.EventTransportMessage;
+using LegacyEventTransportMessage = Diten.Platform.Application.Contracts.Eventing.EventTransportMessage;
 
 namespace Diten.Platform.Infrastructure.Eventing;
 
-public sealed class TenantLifecycleAuditConsumer : IConsumer<EventTransportMessage>
+public sealed class TenantLifecycleAuditConsumer :
+    IConsumer<EventTransportMessage>,
+    IConsumer<LegacyEventTransportMessage>
 {
     public const string ConsumerName = nameof(TenantLifecycleAuditConsumer);
 
@@ -29,6 +33,9 @@ public sealed class TenantLifecycleAuditConsumer : IConsumer<EventTransportMessa
     {
         return ConsumeAsync(context.Message, context.CancellationToken);
     }
+
+    public Task Consume(ConsumeContext<LegacyEventTransportMessage> context) =>
+        ConsumeAsync(LegacyEventTransportMessageMapper.Map(context.Message), context.CancellationToken);
 
     public Task<ConsumedEventExecutionResult?> ConsumeAsync(
         EventTransportMessage message,

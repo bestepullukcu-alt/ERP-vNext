@@ -1,4 +1,4 @@
-namespace Diten.Platform.Application.Contracts.Eventing;
+namespace Diten.BuildingBlocks.Eventing;
 
 public interface IEventTransportPublisher
 {

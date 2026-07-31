@@ -6,10 +6,14 @@ using Diten.Platform.Application.Services.Eventing;
 using Diten.Platform.Contracts.Events;
 using MassTransit;
 using Microsoft.Extensions.Logging;
+using EventTransportMessage = Diten.BuildingBlocks.Eventing.EventTransportMessage;
+using LegacyEventTransportMessage = Diten.Platform.Application.Contracts.Eventing.EventTransportMessage;
 
 namespace Diten.Platform.Infrastructure.Eventing;
 
-public sealed class EntitlementCacheInvalidationConsumer : IConsumer<EventTransportMessage>
+public sealed class EntitlementCacheInvalidationConsumer :
+    IConsumer<EventTransportMessage>,
+    IConsumer<LegacyEventTransportMessage>
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly EntitlementCacheService _cacheService;
@@ -27,6 +31,9 @@ public sealed class EntitlementCacheInvalidationConsumer : IConsumer<EventTransp
     {
         return ConsumeAsync(context.Message, context.CancellationToken);
     }
+
+    public Task Consume(ConsumeContext<LegacyEventTransportMessage> context) =>
+        ConsumeAsync(LegacyEventTransportMessageMapper.Map(context.Message), context.CancellationToken);
 
     public Task<ConsumedEventExecutionResult?> ConsumeAsync(
         EventTransportMessage message,

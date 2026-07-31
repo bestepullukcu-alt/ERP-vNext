@@ -25,6 +25,7 @@ using MediatR;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
+using EventTransportMessage = Diten.BuildingBlocks.Eventing.EventTransportMessage;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Xunit;

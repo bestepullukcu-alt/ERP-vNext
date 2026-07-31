@@ -10,6 +10,7 @@ using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
+using EventTransportMessage = Diten.BuildingBlocks.Eventing.EventTransportMessage;
 
 namespace Diten.Platform.Application.Tests.Eventing;
 
@@ -67,8 +68,16 @@ public sealed class PpmAuditIntentContractTests
 
     [Theory]
     [MemberData(nameof(InvalidPayloads))]
-    public void InvalidPayloadsFailClosed(string payload) =>
+    public void InvalidPayloadsFailClosed(string payload)
+    {
+        if (payload == "\ud800")
+        {
+            Assert.Throws<System.Text.EncoderFallbackException>(() => ValidMessage(payload));
+            return;
+        }
+
         Assert.Throws<PpmAuditContractException>(() => PpmAuditIntentParser.Parse(ValidMessage(payload)));
+    }
 
     public static IEnumerable<object[]> InvalidPayloads()
     {
@@ -95,14 +104,17 @@ public sealed class PpmAuditIntentContractTests
     [Fact]
     public void NullPayloadFailsAsContractError()
     {
-        var message = ValidMessage(Payload()) with { PayloadJson = null! };
-        Assert.Throws<PpmAuditContractException>(() => PpmAuditIntentParser.Parse(message));
+        Assert.Throws<ArgumentNullException>(() => new EventTransportMessage(
+            EventId, PpmAuditIntentParser.EventName, 1, CorrelationId, null, TenantId,
+            PpmAuditIntentParser.Producer, OccurredAtUtc, (string)null!));
     }
 
     [Fact]
     public void EnvelopePayloadMismatchFailsClosed()
     {
-        var message = ValidMessage(Payload()) with { EventId = Guid.NewGuid() };
+        var message = new EventTransportMessage(
+            Guid.NewGuid(), PpmAuditIntentParser.EventName, 1, CorrelationId, null, TenantId,
+            PpmAuditIntentParser.Producer, OccurredAtUtc, Payload());
         Assert.Throws<PpmAuditContractException>(() => PpmAuditIntentParser.Parse(message));
     }
 

@@ -5,6 +5,7 @@ using Diten.Platform.Infrastructure.Eventing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit;
+using EventTransportMessage = Diten.BuildingBlocks.Eventing.EventTransportMessage;
 
 namespace Diten.Platform.Application.Tests.Eventing;
 
@@ -134,7 +135,12 @@ public sealed class PpmAuditConsumerProcessorTests
     {
         var repository = new StubRepository();
         var observer = new StubObserver();
-        var message = Message(Payload()) with { EventName = "ppm.unknown.v1" };
+        var message = new EventTransportMessage(
+            EventId, "ppm.unknown.v1", 1,
+            Guid.Parse("55555555-5555-5555-5555-555555555555"), null, TenantId,
+            PpmAuditIntentParser.Producer,
+            DateTimeOffset.Parse("2026-07-30T10:20:30.0000000Z"),
+            Payload());
 
         await Processor(repository, observer).ProcessAsync(
             message, null, null, null, 0, CancellationToken.None);

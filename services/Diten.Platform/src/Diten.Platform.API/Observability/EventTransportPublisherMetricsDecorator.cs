@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using Diten.Platform.Application.Contracts.Eventing;
+using Diten.BuildingBlocks.Eventing;
 using Microsoft.Extensions.Options;
 using Prometheus;
 

@@ -2,6 +2,7 @@ using Diten.Platform.Domain.Enums;
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Infrastructure.Persistence.Models;
 using MongoDB.Driver;
+using EventTransportMessage = Diten.BuildingBlocks.Eventing.EventTransportMessage;
 
 namespace Diten.Platform.Infrastructure.Eventing;
 

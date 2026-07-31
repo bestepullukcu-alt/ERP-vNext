@@ -7,6 +7,8 @@ using MassTransit.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
+using EventTransportMessage = Diten.BuildingBlocks.Eventing.EventTransportMessage;
+using LegacyEventTransportMessage = Diten.Platform.Application.Contracts.Eventing.EventTransportMessage;
 
 namespace Diten.Platform.Application.Tests.Eventing;
 
@@ -83,7 +85,13 @@ public sealed class PpmAuditMassTransitPipelineTests
             var exhausted = Assert.IsType<PpmAuditRetriesExhaustedException>(observer.LastException);
             Assert.IsType<InvalidOperationException>(exhausted.InnerException);
 
-            var malformed = Message(Payload()[..^1]) with { EventId = Guid.NewGuid() };
+            var malformed = new EventTransportMessage(
+                Guid.NewGuid(), PpmAuditIntentParser.EventName, 1,
+                Guid.Parse("55555555-5555-5555-5555-555555555555"), null,
+                Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                PpmAuditIntentParser.Producer,
+                DateTimeOffset.Parse("2026-07-30T10:20:30.0000000Z"),
+                Payload()[..^1]);
             await ppmEndpoint.Send(malformed, context =>
             {
                 context.Headers.Set(PpmAuditSignatureVerifier.SchemeHeader, PpmAuditIntentParser.SignatureScheme);
@@ -104,6 +112,27 @@ public sealed class PpmAuditMassTransitPipelineTests
 
             // The unrelated consumer still receives initial + two generic retries.
             Assert.Equal(3, genericProbe.Attempts);
+
+            repository.FailTransiently = false;
+            var sharedLegacyView = Message(Payload());
+            var legacy = new LegacyEventTransportMessage(
+                sharedLegacyView.EventId,
+                sharedLegacyView.EventName,
+                sharedLegacyView.EventVersion,
+                sharedLegacyView.CorrelationId,
+                sharedLegacyView.CausationId,
+                sharedLegacyView.TenantId,
+                sharedLegacyView.Producer,
+                sharedLegacyView.OccurredAtUtc,
+                sharedLegacyView.PayloadJson);
+            await ppmEndpoint.Send(legacy, context =>
+            {
+                context.Headers.Set(PpmAuditSignatureVerifier.SchemeHeader, PpmAuditIntentParser.SignatureScheme);
+                context.Headers.Set(PpmAuditSignatureVerifier.KeyIdHeader, "current");
+                context.Headers.Set(PpmAuditSignatureVerifier.SignatureHeader, Sign(sharedLegacyView));
+            });
+            await WaitUntilAsync(() => repository.Attempts == 6);
+            Assert.Equal(6, repository.Attempts);
         }
         finally
         {

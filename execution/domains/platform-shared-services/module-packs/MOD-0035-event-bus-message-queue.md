@@ -436,6 +436,24 @@ custom Mongo state sequence remains Pending/Publishing/Published/Failed/DeadLett
 outbox remains forbidden. Platform's MassTransit and in-memory adapters propagate the persisted trusted
 metadata while legacy unsigned events remain source-compatible. The PPM-specific event DTO and signing
 provider remain MOD-0117-owned follow-up work and are not moved into Platform.
+
+**PSS-C2 expand–contract baseline (2026-07-31):** the permanent transport identity is
+`Diten.BuildingBlocks.Eventing.EventTransportMessage`; the former
+`Diten.Platform.Application.Contracts.Eventing.EventTransportMessage` remains an inbound-only,
+obsolete legacy identity. Platform consumers bind both URNs and map both into the same business,
+inbox/idempotency and acceptance path without republishing the legacy message. New producers publish only
+the shared identity. The legacy bridge cannot be removed until old ready/unacked/retry/error queues and
+pending legacy outbox rows are zero, the longest retention/stale-recovery window plus observation window
+has elapsed with zero legacy consumption, shared live-broker evidence passes, rollback closes, and
+user/EA removal approval is recorded.
+
+`IEventOutboxStore` exposes a distinct terminal disposition for the closed
+Contract/Security/Validation/Unsupported set. Terminal failures go directly and atomically to
+`DeadLettered`, have no next attempt, persist only a stable reason and redacted bounded description, are
+idempotent on repetition, and cannot convert `Published`. Transient transport failures alone use the
+existing producer retry schedule. Caller/stopping-token cancellation propagates unchanged and performs no
+failure/dead-letter write or attempt increment. Producer retry count and deterministic delay remain
+unchanged in this slice; PPM consumer jitter is a separate mechanism.
 - [ ] Prepare/update MOD-0009 Tenant Registry Lifecycle Events pack to emit events through `IEventBus`.
 - [ ] Optional technical spike: evaluate MassTransit native outbox/inbox against the custom MongoDB outbox after MVP.
 - [ ] Prepare MOD-0038 Event Taxonomy/Naming pack for machine-readable event catalog.

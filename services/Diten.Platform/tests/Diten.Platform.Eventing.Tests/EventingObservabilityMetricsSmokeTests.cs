@@ -1,6 +1,8 @@
 using System.Text;
 using Diten.Platform.API.Observability;
+using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Contracts.Eventing;
+using EventTransportMessage = Diten.BuildingBlocks.Eventing.EventTransportMessage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Prometheus;
@@ -40,7 +42,7 @@ public sealed class EventingObservabilityMetricsSmokeTests
             null,
             "Diten.Platform.Tests",
             DateTimeOffset.UtcNow,
-            $$"""{"marker":"{{payloadMarker}}"}"""));
+            Encoding.UTF8.GetBytes($$"""{"marker":"{{payloadMarker}}"}""")));
         transportPublisher.FailNextPublish = true;
         await Assert.ThrowsAsync<InvalidOperationException>(() => publisher.PublishAsync(new EventTransportMessage(
             Guid.NewGuid(),
@@ -51,7 +53,7 @@ public sealed class EventingObservabilityMetricsSmokeTests
             null,
             "Diten.Platform.Tests",
             DateTimeOffset.UtcNow,
-            "{}")));
+            Encoding.UTF8.GetBytes("{}"))));
 
         var sink = provider.GetRequiredService<IEnumerable<IEventingObservabilitySink>>().Single();
         await sink.OnEventConsumedAsync(

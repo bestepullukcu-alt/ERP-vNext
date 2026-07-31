@@ -4,10 +4,14 @@ using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Application.Services.Eventing;
 using Diten.Platform.Contracts.Events;
 using MassTransit;
+using EventTransportMessage = Diten.BuildingBlocks.Eventing.EventTransportMessage;
+using LegacyEventTransportMessage = Diten.Platform.Application.Contracts.Eventing.EventTransportMessage;
 
 namespace Diten.Platform.Infrastructure.Eventing;
 
-public sealed class TenantActivatedV1Consumer : IConsumer<EventTransportMessage>
+public sealed class TenantActivatedV1Consumer :
+    IConsumer<EventTransportMessage>,
+    IConsumer<LegacyEventTransportMessage>
 {
     private readonly ConsumedEventStore _consumedEventStore;
 
@@ -16,9 +20,14 @@ public sealed class TenantActivatedV1Consumer : IConsumer<EventTransportMessage>
         _consumedEventStore = consumedEventStore;
     }
 
-    public async Task Consume(ConsumeContext<EventTransportMessage> context)
+    public Task Consume(ConsumeContext<EventTransportMessage> context) =>
+        ConsumeMappedAsync(context.Message, context.CancellationToken);
+
+    public Task Consume(ConsumeContext<LegacyEventTransportMessage> context) =>
+        ConsumeMappedAsync(LegacyEventTransportMessageMapper.Map(context.Message), context.CancellationToken);
+
+    private async Task ConsumeMappedAsync(EventTransportMessage message, CancellationToken cancellationToken)
     {
-        var message = context.Message;
         if (!string.Equals(message.EventName, TenantActivatedV1.Name, StringComparison.Ordinal))
         {
             return;
@@ -42,6 +51,6 @@ public sealed class TenantActivatedV1Consumer : IConsumer<EventTransportMessage>
             envelope,
             nameof(TenantActivatedV1Consumer),
             _ => Task.CompletedTask,
-            context.CancellationToken);
+            cancellationToken);
     }
 }

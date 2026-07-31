@@ -7,6 +7,7 @@ using Diten.Platform.Infrastructure.Eventing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit;
+using EventTransportMessage = Diten.BuildingBlocks.Eventing.EventTransportMessage;
 
 namespace Diten.Platform.Eventing.Tests;
 
@@ -683,6 +684,15 @@ public sealed class EventingMvpTests
         {
             var item = Items.Single(candidate => candidate.EventId == eventId);
             item.MarkPublishFailed(error, nextAttemptAtUtc, maxAttempts);
+            return Task.CompletedTask;
+        }
+
+        public Task DeadLetterPublishAsync(
+            Guid eventId,
+            EventOutboxTerminalFailure failure,
+            CancellationToken cancellationToken = default)
+        {
+            Items.Single(candidate => candidate.EventId == eventId).MarkDeadLettered(failure);
             return Task.CompletedTask;
         }
     }

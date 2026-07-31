@@ -409,6 +409,13 @@ mapping is fixed to that contract. Compatibility fixtures and authenticated publ
 runtime evidence gates. PPM handlers/controllers cannot call RabbitMQ
 or MassTransit directly. A producer worker may publish only through MOD-0035's public `IEventBus` plus
 outbox abstraction.
+
+PSS-C2 uses an expand–contract rollout: Platform temporarily consumes both the permanent BuildingBlocks
+transport URN and the legacy Platform URN through one idempotent business path, while every new producer
+publishes only the shared URN. MOD-0117's PPM producer cannot be activated until dual-consumer deployment
+and shared-URN live broker publish/consume evidence pass. Removing the legacy bridge requires a separate
+user/EA-approved follow-up after queue, outbox, retention, stale-recovery and observation-window gates are
+all clear.
 The versioned HMAC signs, in exact newline-delimited UTF-8 order, scheme, EventId, EventName, EventVersion,
 TenantId, CorrelationId, Producer, CausationId (or literal `-`), OccurredAtUtc and payload byte length,
 followed by exact canonical payload bytes; only a lowercase 64-hex signature is valid.

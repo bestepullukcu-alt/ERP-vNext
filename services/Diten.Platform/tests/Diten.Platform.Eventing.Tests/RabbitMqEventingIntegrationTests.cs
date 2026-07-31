@@ -10,6 +10,7 @@ using Diten.Platform.Infrastructure.Persistence.Configurations;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
 using MassTransit;
 using Microsoft.Extensions.Logging.Abstractions;
+using EventTransportMessage = Diten.BuildingBlocks.Eventing.EventTransportMessage;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Xunit;

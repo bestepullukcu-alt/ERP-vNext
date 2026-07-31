@@ -1,10 +1,12 @@
 using System.Collections.ObjectModel;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Diten.BuildingBlocks.Eventing;
 
 public sealed class TrustedTransportMetadata
 {
+    private static readonly UTF8Encoding StrictUtf8 = new(false, true);
     public const string SignatureSchemeHeader = "X-Diten-Event-Signature-Scheme";
     public const string KeyIdHeader = "X-Diten-Event-Key-Id";
     public const string SignatureHeader = "X-Diten-Event-Signature";
@@ -23,6 +25,19 @@ public sealed class TrustedTransportMetadata
     public static TrustedTransportMetadata Empty { get; } = new([]);
 
     public TrustedTransportMetadata(IEnumerable<KeyValuePair<string, string>> headers)
+        : this(headers, validate: true)
+    {
+    }
+
+    [JsonConstructor]
+    public TrustedTransportMetadata(IReadOnlyDictionary<string, string> headers)
+        : this(headers.AsEnumerable(), validate: true)
+    {
+    }
+
+    private TrustedTransportMetadata(
+        IEnumerable<KeyValuePair<string, string>> headers,
+        bool validate)
     {
         ArgumentNullException.ThrowIfNull(headers);
 
@@ -37,7 +52,7 @@ public sealed class TrustedTransportMetadata
                 throw new EventValidationException($"Duplicate trusted transport header '{header.Key}'.");
             }
 
-            totalBytes += Encoding.UTF8.GetByteCount(header.Key) + Encoding.UTF8.GetByteCount(header.Value);
+            totalBytes += StrictUtf8.GetByteCount(header.Key) + StrictUtf8.GetByteCount(header.Value);
             if (totalBytes > MaxTotalBytes)
             {
                 throw new EventValidationException("Trusted transport metadata exceeds the allowed size.");
@@ -73,7 +88,7 @@ public sealed class TrustedTransportMetadata
             || value.Any(char.IsWhiteSpace)
             || value.Contains('\r')
             || value.Contains('\n')
-            || Encoding.UTF8.GetByteCount(value) > MaxHeaderValueBytes)
+            || StrictUtf8.GetByteCount(value) > MaxHeaderValueBytes)
         {
             throw new EventValidationException("Trusted transport header value is invalid.");
         }

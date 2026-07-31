@@ -7,6 +7,7 @@ using Diten.Platform.Domain.Enums;
 using Diten.Platform.Infrastructure.Eventing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
+using EventTransportMessage = Diten.BuildingBlocks.Eventing.EventTransportMessage;
 
 namespace Diten.Platform.Application.Tests.Tenants;
 
