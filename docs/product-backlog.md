@@ -579,6 +579,100 @@ cd frontend/Diten.Web && npx vitest run tests/task-transition-contract.test.js
 Canlı: devretme diyaloğunu aç → kişi seç → onayla. Doğrulama uyarısı **çıkmamalı**, ağ çağrısı
 **gitmeli**, görev yeni kişide `pendingAcceptance` belirmeli.
 
+#### 🔬 CT CANLI DOĞRULAMASI — `4e111132` sonrası, 2026-07-31
+
+| Ölçüm | Sonuç |
+|---|---|
+| Seçenek değerleri | ✅ `Agent Sub → 93bcb22e-…` · `Diten Admin → 11111111-…` — artık dolu |
+| Kişi seç → Onayla | ✅ doğrulama uyarısı yok, diyalog kapandı |
+| Gönderilen gövde | ✅ `{expectedVersion, assigneeUserId, reason}` → **204** |
+| Görev benim listemden çıktı | ✅ İşlerim 13→12, projeksiyondan düştü |
+| Sunucu durumu | ✅ `assigneeUserId` = Agent Sub |
+| **Ama:** devredilen görev yeni sahibinde **Gelen Kutusu'na düşmüyor** | 🔴 **BL-051** |
+
+`return` canlı koşulamadı — mevcut hiçbir kalem `return` aksiyonu sunmuyor
+(`(x.actions||[]).some(a => a.code === 'return')` → boş). Sözleşme testi gerçek C# record'unu
+okuyarak kapsıyor, ama uçtan uca doğrulanmadı; kayda böyle geçiyor.
+
+### BL-051 — 🔴 Kabul kapısı devretme/iadede yeniden AÇILMIYOR: BL-042'nin ürettiği regresyon
+- **Belirti (CT canlı, 2026-07-31):** kabul edilmiş bir görev (`sasasa`, `owned/admitted`) Agent Sub'a
+  devredildi, sonra bana geri devredildi. Sonuç: **`owned/admitted`** — yani görev doğrudan İşlerim'e
+  düştü, Gelen Kutusu'na hiç uğramadı. Beklenen: `assigned/pendingAcceptance`.
+- **Kök neden — BL-042 anlamı taşıdı, taşıyanları güncellemedi.** `AcceptedByUserId` depoda **tek bir
+  yerde** yazılıyor (`TaskItemTransitionHandlers.cs:73`, accept) ve **hiçbir yerde temizlenmiyor**
+  (`rg -n "AcceptedByUserId\s*=" services/Diten.Platform/src` → 1 sonuç). Kapıyı yeniden açmayı
+  amaçlayan üç handler ise hâlâ **eski sinyali** sıfırlıyor:
+  - `:1020` `ReassignTaskItemHandler` — *"Unaccepted on arrival: the acceptance gate reopens…"* 🔴 **canlı doğrulandı**
+  - `:887` `ReturnTaskItemHandler` — *"…the acceptance gate reopens…"* 🔴 aynı desen (canlı koşulamadı, `return` sunulmuyor)
+  - `:151` `ReleaseTaskItemHandler` — havuz dalı `AssigneeUserId is null`'dan projekte ettiği için bugün
+    görünür bir kırılma üretmiyor; yine de bayat alan geride kalıyor.
+  Eski kuralda `Lifecycle = Open` yazmak kapıyı **gerçekten** açıyordu (`IsAccepted = Lifecycle not
+  (Open|Planned)`). Yeni kuralda (`IsAccepted = AcceptedByUserId is not null`) aynı satır hiçbir şey
+  yapmıyor. **Üç yorum artık kodun yapmadığı bir şeyi iddia ediyor.**
+- **Neden testler yakalamadı:** `TaskAssignmentResolverTests` **resolver'ı** ölçüyor, handler'ları değil;
+  `task-transition-contract.test.js` **istek gövdelerini** ölçüyor, durum geçişini değil. Aradaki boşluk
+  tam olarak "handler yeni sinyali doğru yazıyor mu" sorusu — hiçbir test bunu sormuyor.
+- **Güvenlik/yetki boyutu:** devredilen iş, alan kişinin kabulü olmadan onun iş listesine giriyor.
+  Kabul kapısı yalnız UX değil, **sorumluluğun devredildiği an**; SAP/Oracle'da da iş kabul edilene
+  kadar devredene aittir.
+- **Düzeltme yönü (CT):** tek satır `AcceptedByUserId = null` eklemek **yetmez** — bu, aynı sınıfın
+  dördüncü tekrarını davet eder. Kabul kapısını açma/kapama **tek bir yerden** yapılsın (ör. domain
+  üzerinde `ReopenAcceptanceGate()` / `CloseAcceptanceGate()`), üç handler da onu çağırsın, ve
+  **handler seviyesinde** test edilsin: "devret → yeni kişide pendingAcceptance", "iade et → talep
+  edende pendingAcceptance". Bayat üç yorum da düzeltilsin.
+- **Yeniden ölçüm:** `rg -n "AcceptedByUserId\s*=" services/Diten.Platform/src` (accept + kapı açıcılar
+  görünmeli) · `rg -n "Lifecycle = TaskLifecycle.Open" services/…/TaskItemTransitionHandlers.cs` ·
+  canlı: kabul edilmiş bir görevi devret, karşı tarafta `admissionState` `pendingAcceptance` olmalı.
+
+
+#### ✅ KAPANIŞ — `8579df87` · 2026-07-31 · *(kod; canlı tur CT'de)*
+
+**Ne yapıldı.** Kabul kapısı artık **tek bir yerden** hareket ediyor: `TaskItem.CloseAcceptanceGate()` /
+`ReopenAcceptanceGate()`. `accept` kapatıyor; `reassign` · `return` · `release` açıyor.
+`AcceptedByUserId` setter'ı **private** — kapıyı doğrudan alan ataması ile oynatan kod artık
+**derlenmiyor**. Üç bayat yorum, kodun gerçekte yaptığını söyleyecek şekilde düzeltildi.
+
+**Kararlar ve gerekçeleri:**
+- **Tek satır `= null` eklenmedi.** BL-042 ve BL-051 aynı kusurun iki tekrarı: *bir olgu, birden çok
+  yazar, biri unutulmuş.* Dördüncü tekrarı davet etmemek için kapı bir **alan** değil, adıyla niyeti
+  söyleyen bir **işlem** oldu. Private setter bunu derleyiciye zorlatıyor — ve buna rağmen testle de
+  iddia ediliyor, çünkü "bir anlığına public yapayım" üçüncü tekrarın geleceği yol tam olarak budur.
+- **`release` de kapsandı.** Havuz dalı `AssigneeUserId is null`'dan projekte ettiği için bugün
+  görünür bir kırılma üretmiyor. Bırakılma gerekçesi değil, tam tersi: **görünmeyen bayat alan**, bir
+  sonraki projeksiyon değişikliğinde kimsenin izini süremeyeceği bir kusura dönüşür.
+- **Yorumlar kusur sayıldı.** Üçü de "the acceptance gate reopens" diyordu; kod bunu yapmıyordu.
+  Kodun yapmadığını iddia eden yorum, bir sonraki okuyucuyu yanlış yöne gönderir.
+
+**Test boşluğu — asıl iş.** Mevcut iki test **zaten** `…lands in the … inbox unaccepted` adını
+taşıyordu ve baştan sona geçti: ikisi de **hiç kabul edilmemiş** bir görevden başlıyor, dolayısıyla
+"sonrasında hâlâ kabul edilmemiş" **kendiliğinden doğru**. Yeni testlerin hepsi **KABUL EDİLMİŞ** bir
+görevden başlıyor ve alanı değil **projeksiyonu** ölçüyor (kullanıcının gördüğü şey o).
+Eklenen dördüncü test ters yönü koruyor: kabul edilmiş görev kabul edilmiş kalmalı — fazla hevesli
+bir reopen, aynı büyüklükte bir kusurdur.
+
+**KIRMIZI→YEŞİL kanıtı (üç `ReopenAcceptanceGate()` çağrısı kaldırılarak, 0 derleme hatasıyla):**
+```
+[FAIL] An_ACCEPTED_task_released_to_the_pool_leaves_no_acceptance_behind
+[FAIL] An_ACCEPTED_task_that_is_reassigned_waits_in_the_new_holders_inbox
+[FAIL] An_ACCEPTED_task_that_is_returned_waits_in_the_requesters_inbox
+Başarısız: 3, Başarılı: 15, Toplam: 18
+```
+Geri alındıktan sonra: `18/18` · tüm Platform paketi `2059/2059`.
+
+**KASTEN yapılmayanlar:**
+- **Canlı tur koşulmadı** — servis başlatma CT'de.
+- **BL-042 `⚠️ KISMİ` kalıyor.** BL-051 onun ürettiği regresyondu; kabul akışının bütünü canlıda
+  doğrulanmadan `✅`'e dönmez.
+
+**Yeniden ölçüm (sayı değil, komut):**
+```
+rg -n "AcceptedByUserId\s*=" services/Diten.Platform/src        # yalnız entity içi olmalı
+rg -n "ReopenAcceptanceGate\(\)" services/Diten.Platform/src    # 3 handler
+dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~TaskHandoverTests"
+```
+Canlı: kabul edilmiş bir görevi devret → **yeni kişide Gelen Kutusu'nda, `pendingAcceptance`**.
+Sonra iade et → talep edende `pendingAcceptance`.
+
 ### BL-044 — 🟡 Türkçe büyük harfle arama sıfır sonuç veriyor
 - **Ölçüm:** `kapanış` → 1 eşleşme ✅ · `KAPANIŞ` → **0** ❌ · `kapanis` (aksansız) → 0.
 - **Kök neden:** `app.js:372,374,391,397` **invariant** `toLowerCase()` kullanıyor. `'I'.toLowerCase()` noktalı
