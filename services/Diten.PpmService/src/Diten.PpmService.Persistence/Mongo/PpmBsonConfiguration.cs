@@ -7,26 +7,32 @@ namespace Diten.PpmService.Persistence.Mongo;
 
 internal static class PpmBsonConfiguration
 {
-    private static int _configured;
+    private static readonly object ConfigurationLock = new();
+    private static bool _configured;
 
     public static void Configure()
     {
-        if (Interlocked.Exchange(ref _configured, 1) != 0)
-            return;
+        lock (ConfigurationLock)
+        {
+            if (_configured)
+                return;
 
 #pragma warning disable CS0618
-        BsonDefaults.GuidRepresentationMode = GuidRepresentationMode.V3;
+            BsonDefaults.GuidRepresentationMode = GuidRepresentationMode.V3;
 #pragma warning restore CS0618
-        TryRegisterGuidSerializer();
-        TryRegisterUtcDateTimeSerializer();
+            TryRegisterGuidSerializer();
+            TryRegisterUtcDateTimeSerializer();
 
-        var conventions = new ConventionPack
-        {
-            new EnumRepresentationConvention(BsonType.String),
-            new IgnoreExtraElementsConvention(false)
-        };
-        ConventionRegistry.Register("Diten.PpmService", conventions, type =>
-            type.Namespace?.StartsWith("Diten.PpmService", StringComparison.Ordinal) == true);
+            var conventions = new ConventionPack
+            {
+                new EnumRepresentationConvention(BsonType.String),
+                new IgnoreExtraElementsConvention(false)
+            };
+            ConventionRegistry.Register("Diten.PpmService", conventions, type =>
+                type.Namespace?.StartsWith("Diten.PpmService", StringComparison.Ordinal) == true);
+
+            _configured = true;
+        }
     }
 
     private static void TryRegisterUtcDateTimeSerializer()
