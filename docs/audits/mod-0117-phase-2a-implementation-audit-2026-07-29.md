@@ -9,10 +9,10 @@ not production authorization or production-readiness acceptance.
 
 - Phase 2A evidence promotes the module pack to `review`, not `done`.
 - The implemented scope is Phase 2A Context & Referenceability Core only.
-- The temporary browser-to-database chain and isolated live PSS-B1 → PPM-I1
-  entitlement chain are evidenced; production deployment/configuration,
-  branch integration, and production-environment replica-set rollback
-  readiness are not claimed.
+- The temporary browser-to-database chain, isolated live PSS-B1 → PPM-I1
+  entitlement chain, and isolated PPM-to-MOD-0021 audit-delivery chain are
+  evidenced; production deployment/configuration, branch integration, and
+  production-environment replica-set rollback readiness are not claimed.
 - Phase 2B, the typed ExternalContextReference provider, MOD-0354/DWS runtime integration, WorkCenter integration, and all four protected WorkCenter hazards remain excluded.
 
 ## 2. Implemented repository surfaces
@@ -117,10 +117,12 @@ write concern, and primary read preference. Failure to create or commit the
 transaction aborts the operation and is mapped to `503` where the failure means
 replica-set transaction support is unavailable.
 
-This local record is not the MOD-0021 business audit system of record.
-Versioned delivery, durable at-least-once publication, idempotent consumption,
-retry/dead-letter/alarm handling, and authorized replay remain blocked on the
-MOD-0021 cross-service contract. No exactly-once claim is made.
+This local record is not the MOD-0021 business audit system of record. The PPM
+producer, shared durable outbox seam, and Platform consumer now provide an
+isolated, real at-least-once delivery path to MOD-0021; §9 records its live
+evidence. Production activation/configuration, operational replay, external
+pager/alarm integration, and the independent legacy-zero broker observation
+remain open. No exactly-once claim is made.
 
 ## 6. Authorization posture
 
@@ -164,14 +166,24 @@ Repository test sources cover:
 - frontend route allowlisting, Gateway-only targeting, tenant shell, and
   DataTable v2 markup.
 
-Final automated results after remediation were:
+The current checkpoint-level automated results are:
 
-- shared signed-JWT evaluator (`Diten.Platform.Common`): **21/21 PASS**;
-- PPM service and adapter tests: **17/17 PASS**;
-- targeted Gateway PPM route test: **1/1 PASS**;
-- isolated Mongo replica-set integration tests: **9/9 PASS**;
-- `Diten.Web.Tests`: **22/22 PASS**;
-- delegated jsdom interaction check: **PASS**.
+- PPM unit/contract: **76/76 PASS**;
+- PPM integration: **29/29 PASS** in each of **5** fresh processes;
+- PPM outbox composition: **2/2 PASS**;
+- BuildingBlocks Eventing: **33/33 PASS**;
+- Platform PPM routing/security targeted tests: **PASS**;
+- Platform Eventing: **69 PASS / 3 opt-in live RabbitMQ SKIP**;
+- PPM API build: **0 warnings / 0 errors**;
+- Platform API build: **0 warnings / 0 errors**;
+- MOD-0117 canonical preflight: **PASS**;
+- `git diff --check`: **clean**.
+
+The three opt-in Platform Eventing skips are not counted as passes. Earlier
+focused evidence remains valid: the shared signed-JWT evaluator passed 21/21,
+the initial PPM service/adapter suite passed 17/17, the targeted Gateway PPM
+route passed 1/1, `Diten.Web.Tests` passed 22/22, and the delegated jsdom check
+passed.
 
 The full Gateway suite still contains a pre-existing HCM failure unrelated to
 MOD-0117. The focused PPM route result is therefore reported separately and is
@@ -255,31 +267,150 @@ The existing `5000`, `5001`, `5056`, `5057`, and `27017` processes were
 observed before and after the run and were not restarted, killed, or modified.
 
 This evidence does not claim production deployment/configuration or merged
-branch state. The PPM audit producer worker, live RabbitMQ delivery, governed
-Gateway normal route, normal-port final integration, Phase 2B, and
-ExternalContextReference remain open. MOD-0117 is not `done`.
+branch state. The governed Gateway normal route, normal-port final integration,
+Phase 2B, and ExternalContextReference remain open. The subsequently evidenced
+PPM audit delivery chain is recorded separately in §9. MOD-0117 is not `done`.
 
-## 9. Remaining blockers
+## 9. Live PPM audit delivery evidence — 2026-07-31
+
+### 9.1 Verified checkpoint ancestry
+
+The evidence was produced from a PPM branch containing these verified
+checkpoints:
+
+- `b27cebf7e51d2ee55c4277b932e9fc6c302affa3` —
+  `feat(ppm): publish transactional audit intents`;
+- `b8a5829e7f676dad1a2187fd29c49a1846b37460` —
+  `fix(ppm): register shared event outbox store`;
+- `c06205543f5c01f1aeebd8674104e1bd46f00340` —
+  `fix(ppm): serialize BSON configuration initialization`.
+
+The PSS-owned routing regression is preserved independently at
+`095b1a1016fb6b70d7ede70948721718445130d7` —
+`test(eventing): lock PPM audit routing semantics`. The shared ancestry also
+contains PSS-B2A secure consumer `121fa2bf`, PSS-C1 signed canonical outbox
+`c8768efa`, PSS-C2 shared delivery seam `70eee58e`, and PSS-C3 kebab-case
+event-name grammar `64a92561`. These PPM-branch ancestry identifiers are kept
+distinct from their PSS-branch counterparts. All are repository evidence, not
+production deployment authority.
+
+Ownership remains partitioned: PPM owns the business mutation, transactional
+`ppm_audit_intents`, dispatcher, and `ppm_event_outbox`; BuildingBlocks/PSS owns
+the signed canonical transport envelope and shared outbox seam; Platform and
+MOD-0021 own the PPM consumer, `ppm_audit_inbox`, and MOD-0021 `audit_outbox`.
+The evidence does not transfer ownership between these boundaries.
+
+### 9.2 Live entitlement and mutation precondition
+
+The isolated run used real Platform and PPM processes; no mock or stub was
+used. The Platform decision returned HTTP `200`, `moduleCode=PPM`, and
+`isAllowed=true`. The authenticated JWT carried a canonical non-empty `Guid`
+`tenant_id`, a canonical non-empty `Guid` `sub`, and the exact lowercase
+`ppm.portfolios.create` permission. The real PPM mutation returned HTTP `201`.
+The entitlement-deny, permission-deny, and expired-entitlement plus stale-JWT
+paths remained consistent with §8: each failed closed as `403` before a
+repository side effect.
+
+### 9.3 Live end-to-end audit chain
+
+The observed real chain was:
+
+`PPM API mutation → business entity → transactional ppm_audit_intents → PPM dispatcher → ppm_event_outbox → shared canonical RabbitMQ transport in the isolated disposable topology → Platform PPM consumer → ppm_audit_inbox → MOD-0021 audit_outbox`
+
+The persisted result counts were exactly:
+
+| Evidence | Result |
+|---|---:|
+| Business entity | `1` |
+| PPM audit intent | `1` |
+| PPM event outbox | `1` |
+| PPM outbox status | `Published` |
+| Platform PPM inbox | `1` |
+| MOD-0021 audit outbox | `1` |
+
+The shared transport type was
+`Diten.BuildingBlocks.Eventing.EventTransportMessage`. The accepted envelope
+used `EventName=ppm.audit-intent.submitted.v1`, `EventVersion=1`, and
+`Producer=Diten.PpmService`. `EventId`, `TenantId`, `ActorId`, `EntityId`, and
+`CorrelationId` were preserved across the chain. Re-delivery of the same event
+did not create another record. The same `EventId` with a different re-signed
+payload produced a conflict, and the accepted record remained unchanged.
+
+### 9.4 Security and routing evidence
+
+- an unrelated event and a future-v2 event identity were safe v1-consumer
+  no-ops;
+- exact v1 name with a wrong version field was rejected by the shared transport
+  contract;
+- exact v1 identity with the wrong producer caused terminal contract failure;
+- malformed or noncanonical payload caused contract failure;
+- a wrong HMAC signature or uppercase hexadecimal signature, unknown `KeyId`,
+  and a partial signature tuple each caused terminal security failure;
+- after every negative case, `ppm_audit_inbox=1` and `audit_outbox=1` remained
+  unchanged;
+- exact-value secret scanning of the captured service-log and evidence-artifact
+  set returned `0` matches.
+
+The producer validates signature metadata structure and preserves a valid
+persisted signature for idempotent retry/key rotation. Cryptographic HMAC
+verification and unknown-key rejection remain the Platform consumer's
+fail-closed responsibility. No credential, JWT, signing key, or temporary
+secret value is recorded here.
+
+### 9.5 BSON initialization closure
+
+The former completion flag was published before process-wide BSON serializer
+and convention initialization finished. The observed pre-fix gap was **28/29**.
+The fix serializes initialization with a process-wide lock and publishes
+completion only after successful Guid, UTC DateTime, and convention setup.
+
+The fixed full integration project passed **5/5 fresh processes × 29/29**. A
+temporary early-publication mutation was detected in **1 of 5** runs, where
+**9 tests failed**; the nondeterminism is part of the race evidence. The
+mutation was removed byte-for-byte, after which the restored implementation
+again passed **5/5 × 29/29**. `GuidRepresentation.Standard` and scalar UTC
+`DateTime` remain unchanged, and an incompatible serializer still fails
+closed.
+
+### 9.6 Evidence boundaries still open
+
+The isolated live delivery is proven, but none of the following is promoted to
+PASS or CLOSED:
+
+- the independent broker metric proving legacy-URN publishes equal `0`;
+- repository-default production-facing activation, which remains
+  `Enabled=false` and `WorkerEnabled=false`; the disposable live run used only
+  environment-scoped activation;
+- governed normal-port `5000/5001` deployment evidence;
+- production secret/configuration provisioning;
+- operational replay and external pager/alarm integration;
+- the generic entitled-modules surface's omission of `EnabledByOverride`,
+  which is a separate PSS semantic observation and grants no PPM runtime
+  authority.
+
+## 10. Remaining blockers
 
 | Blocker | Current result |
 |---|---|
 | AuthService PPM grant provisioning | **IMPLEMENTED CHECKPOINTS; PRODUCTION DEPLOYMENT/CONFIG OPEN.** PSS-A exact explicit-grant behavior (`23d56efb`), PSS-B1 provider (`90eec003`), shared evaluator (`5d183069`), and PPM consumer (`11aa3766`) exist. The original tenant-admin token still evidenced zero PPM permissions; production merge, configuration, and authorized tenant grant administration are not claimed. |
 | Gateway `/api/v1/ppm/**` route | **ISOLATED EVIDENCE ONLY; NORMAL ROUTE OPEN.** The earlier targeted temporary route test passed, but governed Gateway `5000` normal-route and final normal-port integration evidence remain open. |
 | Mongo replica-set runtime proof | **EVIDENCED FOR PHASE 2A.** Isolated integration tests pass 9/9 and the real CRUD chain reached Mongo replica set `27018`. |
-| MOD-0021 semantic audit contract and delivery | **PARTIAL / BLOCKED FOR PPM PRODUCER.** PSS-B2A consumer foundation exists at `121fa2bf`; the PPM audit producer worker and live RabbitMQ delivery remain open. |
+| MOD-0021 semantic audit contract and delivery | **ISOLATED LIVE DELIVERY EVIDENCED; PRODUCTION ACTIVATION/OPERATIONS OPEN.** The producer, shared canonical transport in the disposable live topology, idempotent consumer, inbox, and MOD-0021 outbox chain are proven in §9. Production activation/configuration, legacy-URN-zero observation, operational replay, and external pager/alarm remain open. |
 | DataTable verifier | **PARTIAL.** Each resource surface reports 60 PASS and 4 known policy/profile false positives. |
 | End-to-end UI/API acceptance | **EVIDENCED WITH AUTH CAVEAT.** Real browser CRUD passed through the full temporary chain with zero console errors/warnings, using an ephemeral signed JWT bootstrap rather than a real AuthService PPM grant. |
 | ExternalContextReference provider and DWS integration | **EXCLUDED.** Requires a later explicit implementation authorization. |
 | Phase 2B and MOD-0136/MOD-0138/MOD-0072 runtime links | **EXCLUDED.** No implementation authority in this slice. |
 | WorkCenter projection or protected task/approval behavior | **EXCLUDED.** Any protected hazard requires Gate 2 before production changes. |
 
-## 10. Closure statement
+## 11. Closure statement
 
-Phase 2A now has automated, isolated replica-set, and real browser-to-database
-evidence sufficient to recommend `review`. The pack may move from `approved`
-to `review`, but not `done`: production PSS/Auth/PPM deployment and
-configuration, the PPM audit producer worker, live RabbitMQ delivery, governed
-Gateway normal-route evidence, and final normal-port integration remain open.
+Phase 2A now has automated, isolated replica-set, real browser-to-database, and
+isolated audit-delivery evidence consistent with its existing `review` status,
+but not `done`: production PSS/Auth/PPM deployment and
+configuration, production audit activation, governed Gateway normal-route
+evidence, final normal-port integration, and the operational/legacy observation
+gates in §9.6 remain open. Isolated real PPM-to-MOD-0021 delivery is evidenced;
+that evidence does not authorize production activation.
 The DataTable verifier retains four known policy/profile false positives per
 surface. Phase 2B, the ExternalContextReference provider, DWS runtime
 integration, and WorkCenter scope remain outside this review.
