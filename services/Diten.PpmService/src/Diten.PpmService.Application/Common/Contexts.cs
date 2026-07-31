@@ -4,6 +4,7 @@ namespace Diten.PpmService.Application.Common;
 
 public interface ITenantContext { Guid TenantId { get; } }
 public interface ICurrentActorContext { Guid ActorId { get; } }
+public interface ICorrelationContext { Guid CorrelationId { get; } }
 
 /// <summary>Consumes the authoritative, PSS-approved effective-permission result. It never computes roles or grants.</summary>
 public interface IEffectivePermissionEvaluator

@@ -7,7 +7,7 @@ namespace Diten.PpmService.Application.Features.Initiatives;
 
 public sealed class InitiativeService(
     IInitiativeRepository repository, IPortfolioRepository portfolios, IAuditIntentRepository audit, IPpmUnitOfWork unitOfWork,
-    ITenantContext tenant, ICurrentActorContext actor, IPpmAccessAuthorizer access)
+    ITenantContext tenant, ICurrentActorContext actor, ICorrelationContext correlation, IPpmAccessAuthorizer access)
 {
     public async Task<Response<InitiativeDto>> Create(CreateInitiativeCommand r, CancellationToken ct)
     {
@@ -73,7 +73,7 @@ public sealed class InitiativeService(
         return Response<IReadOnlyList<InitiativeDto>>.Success(items.Select(x => x.ToDto()).ToArray());
     }
     private async Task<bool> PortfolioExists(Guid? id, CancellationToken ct) => id is null || await portfolios.GetByIdAsync(tenant.TenantId, id.Value, ct) is not null;
-    private AuditIntent Intent(Initiative e, string m) => new(Guid.NewGuid(), tenant.TenantId, actor.ActorId, nameof(Initiative), e.Id, m, DateTime.UtcNow);
+    private AuditIntent Intent(Initiative e, string m) => new(Guid.NewGuid(), tenant.TenantId, actor.ActorId, correlation.CorrelationId, nameof(Initiative), e.Id, m, DateTime.UtcNow);
     private Task<Response<InitiativeDto>> Persist(Initiative e, int version, string mutation, CancellationToken ct)
         => unitOfWork.ExecuteInTransactionAsync(async token => { await repository.ReplaceAsync(e, version, token); await audit.AddAsync(Intent(e, mutation), token); return Response<InitiativeDto>.Success(e.ToDto()); }, ct);
 }

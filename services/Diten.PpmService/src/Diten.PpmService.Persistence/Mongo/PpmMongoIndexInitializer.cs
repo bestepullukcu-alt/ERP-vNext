@@ -14,6 +14,7 @@ public sealed class PpmMongoIndexInitializer(IMongoDatabase database) : IHostedS
         var programs = database.GetCollection<Program>(PpmCollectionNames.Programs);
         var projects = database.GetCollection<Project>(PpmCollectionNames.Projects);
         var auditIntents = database.GetCollection<AuditIntentDocument>(PpmCollectionNames.AuditIntents);
+        var eventOutbox = database.GetCollection<PpmEventOutboxDocument>(PpmCollectionNames.EventOutbox);
 
         await CreateEntityIndexes(portfolios, cancellationToken);
         await CreateEntityIndexes(initiatives, cancellationToken);
@@ -56,7 +57,35 @@ public sealed class PpmMongoIndexInitializer(IMongoDatabase database) : IHostedS
             new CreateIndexModel<AuditIntentDocument>(
                 Builders<AuditIntentDocument>.IndexKeys
                     .Ascending(x => x.TenantId)
-                    .Ascending(x => x.OccurredAtUtc))
+                    .Ascending(x => x.OccurredAtUtc)),
+            new CreateIndexModel<AuditIntentDocument>(
+                Builders<AuditIntentDocument>.IndexKeys
+                    .Ascending(x => x.OutboxEnqueuedAtUtc)
+                    .Ascending(x => x.DispatchFailureCode)
+                    .Ascending(x => x.OccurredAtUtc),
+                new CreateIndexOptions { Name = "ix_audit_dispatch_pending" })
+        ], cancellationToken);
+
+        await eventOutbox.Indexes.CreateManyAsync(
+        [
+            new CreateIndexModel<PpmEventOutboxDocument>(
+                Builders<PpmEventOutboxDocument>.IndexKeys.Ascending(x => x.EventId),
+                new CreateIndexOptions
+                {
+                    Unique = true,
+                    Name = "ux_ppm_event_outbox_event_id"
+                }),
+            new CreateIndexModel<PpmEventOutboxDocument>(
+                Builders<PpmEventOutboxDocument>.IndexKeys
+                    .Ascending(x => x.Status)
+                    .Ascending(x => x.NextAttemptAtUtc)
+                    .Ascending(x => x.CreatedAtUtc),
+                new CreateIndexOptions { Name = "ix_ppm_event_outbox_claim" }),
+            new CreateIndexModel<PpmEventOutboxDocument>(
+                Builders<PpmEventOutboxDocument>.IndexKeys
+                    .Ascending(x => x.Status)
+                    .Ascending(x => x.UpdatedAtUtc),
+                new CreateIndexOptions { Name = "ix_ppm_event_outbox_stale" })
         ], cancellationToken);
     }
 

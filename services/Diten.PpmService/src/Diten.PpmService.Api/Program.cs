@@ -16,7 +16,7 @@ _ = RequireConfiguration(builder.Configuration, "Mongo:ConnectionString");
 _ = RequireConfiguration(builder.Configuration, "Mongo:DatabaseName");
 
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure();
+builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddPpmPersistence(builder.Configuration);
 
 builder.Services

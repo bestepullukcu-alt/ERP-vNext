@@ -27,6 +27,7 @@ public sealed class ApplicationContractTests
             repository, new AuditRepository(), new UnitOfWork(),
             new RequestContext(Guid.NewGuid(), Guid.NewGuid()),
             new RequestContext(Guid.NewGuid(), Guid.NewGuid()),
+            new FixedCorrelation(),
             new PermissionEvaluator(false));
 
         var response = await service.Create(new("P-1", "Portfolio", null, null), default);
@@ -43,6 +44,7 @@ public sealed class ApplicationContractTests
             repository, new AuditRepository(), new UnitOfWork(),
             new RequestContext(Guid.NewGuid(), Guid.NewGuid()),
             new RequestContext(Guid.NewGuid(), Guid.NewGuid()),
+            new FixedCorrelation(),
             new FixedAccessAuthorizer(PpmAccessDecision.DependencyUnavailable));
 
         var response = await service.Create(new("P-1", "Portfolio", null, null), default);
@@ -62,6 +64,7 @@ public sealed class ApplicationContractTests
         var service = new PortfolioService(
             repository, new AuditRepository(), new UnitOfWork(),
             new RequestContext(tenant, actor), new RequestContext(tenant, actor),
+            new FixedCorrelation(),
             new PermissionEvaluator(false));
 
         var existing = await service.GetById(new(entity.Id), default);
@@ -182,6 +185,7 @@ public sealed class ApplicationContractTests
         var service = new PortfolioService(
             repository, new AuditRepository(), new UnitOfWork(),
             new RequestContext(tenantB, actor), new RequestContext(tenantB, actor),
+            new FixedCorrelation(),
             new PermissionEvaluator(true));
 
         var response = await service.GetById(new(repository.Items[0].Id), default);
@@ -202,6 +206,7 @@ public sealed class ApplicationContractTests
             new ProjectRepository(), parents, new ProgramRepository(),
             new AuditRepository(), new UnitOfWork(),
             new RequestContext(tenantB, actor), new RequestContext(tenantB, actor),
+            new FixedCorrelation(),
             new PermissionEvaluator(true));
 
         var response = await service.Create(
@@ -219,6 +224,7 @@ public sealed class ApplicationContractTests
             repository, new AuditRepository { ThrowOnAdd = true }, unit,
             new RequestContext(Guid.NewGuid(), Guid.NewGuid()),
             new RequestContext(Guid.NewGuid(), Guid.NewGuid()),
+            new FixedCorrelation(),
             new PermissionEvaluator(true));
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -239,6 +245,7 @@ public sealed class ApplicationContractTests
         var service = new PortfolioService(
             repository, new AuditRepository(), new UnitOfWork(),
             new RequestContext(tenant, actor), new RequestContext(tenant, actor),
+            new FixedCorrelation(),
             new PermissionEvaluator(true));
 
         await Assert.ThrowsAsync<OptimisticConcurrencyException>(() =>
@@ -273,6 +280,10 @@ public sealed class ApplicationContractTests
     }
 
     private sealed record RequestContext(Guid TenantId, Guid ActorId) : ITenantContext, ICurrentActorContext;
+    private sealed record FixedCorrelation : ICorrelationContext
+    {
+        public Guid CorrelationId { get; } = Guid.NewGuid();
+    }
     private sealed class PermissionEvaluator(bool allowed)
         : IEffectivePermissionEvaluator, IPpmAccessAuthorizer
     {

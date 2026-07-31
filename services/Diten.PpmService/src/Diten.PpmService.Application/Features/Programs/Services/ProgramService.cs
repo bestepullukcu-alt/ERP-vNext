@@ -7,7 +7,7 @@ namespace Diten.PpmService.Application.Features.Programs;
 
 public sealed class ProgramService(
     IProgramRepository repository, IPortfolioRepository portfolios, IAuditIntentRepository audit, IPpmUnitOfWork unitOfWork,
-    ITenantContext tenant, ICurrentActorContext actor, IPpmAccessAuthorizer access)
+    ITenantContext tenant, ICurrentActorContext actor, ICorrelationContext correlation, IPpmAccessAuthorizer access)
 {
     public async Task<Response<ProgramDto>> Create(CreateProgramCommand r, CancellationToken ct)
     {
@@ -73,7 +73,7 @@ public sealed class ProgramService(
         return Response<IReadOnlyList<ProgramDto>>.Success(items.Select(x => x.ToDto()).ToArray());
     }
     private async Task<bool> PortfolioExists(Guid? id, CancellationToken ct) => id is null || await portfolios.GetByIdAsync(tenant.TenantId, id.Value, ct) is not null;
-    private AuditIntent Intent(Program e, string m) => new(Guid.NewGuid(), tenant.TenantId, actor.ActorId, nameof(Program), e.Id, m, DateTime.UtcNow);
+    private AuditIntent Intent(Program e, string m) => new(Guid.NewGuid(), tenant.TenantId, actor.ActorId, correlation.CorrelationId, nameof(Program), e.Id, m, DateTime.UtcNow);
     private Task<Response<ProgramDto>> Persist(Program e, int version, string mutation, CancellationToken ct)
         => unitOfWork.ExecuteInTransactionAsync(async token => { await repository.ReplaceAsync(e, version, token); await audit.AddAsync(Intent(e, mutation), token); return Response<ProgramDto>.Success(e.ToDto()); }, ct);
 }

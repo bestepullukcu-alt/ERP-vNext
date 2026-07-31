@@ -1,7 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Diten.PpmService.Application.Common;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
 namespace Diten.PpmService.Infrastructure.Entitlements;
@@ -9,7 +8,7 @@ namespace Diten.PpmService.Infrastructure.Entitlements;
 public sealed class PpmEntitlementDecisionClient(
     HttpClient httpClient,
     IConfiguration configuration,
-    IHttpContextAccessor httpContextAccessor) : IPpmEntitlementDecisionClient
+    ICorrelationContext correlationContext) : IPpmEntitlementDecisionClient
 {
     public const string ContractName = "platform.ppm-entitlement-decision.v1";
     public const string ModuleCode = "PPM";
@@ -43,7 +42,9 @@ public sealed class PpmEntitlementDecisionClient(
             HttpMethod.Get,
             new Uri(baseUri, $"/api/internal/ppm/tenants/{tenantId:D}/entitlement-decision"));
         request.Headers.TryAddWithoutValidation(ServiceCredentialHeader, credential);
-        request.Headers.TryAddWithoutValidation(CorrelationIdHeader, ResolveCorrelationId());
+        request.Headers.TryAddWithoutValidation(
+            CorrelationIdHeader,
+            correlationContext.CorrelationId.ToString("D"));
 
         var timeoutSeconds = configuration.GetValue<int?>("PpmEntitlementDecision:TimeoutSeconds") ?? 5;
         if (timeoutSeconds is < 1 or > 30)
@@ -156,15 +157,6 @@ public sealed class PpmEntitlementDecisionClient(
         }
 
         return buffer.AsSpan(0, totalRead).ToArray();
-    }
-
-    private string ResolveCorrelationId()
-    {
-        var context = httpContextAccessor.HttpContext;
-        var incoming = context?.Request.Headers[CorrelationIdHeader].FirstOrDefault();
-        return string.IsNullOrWhiteSpace(incoming)
-            ? context?.TraceIdentifier ?? Guid.NewGuid().ToString("D")
-            : incoming;
     }
 
     private sealed record PpmEntitlementDecisionResponse(

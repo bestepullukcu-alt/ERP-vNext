@@ -7,7 +7,7 @@ namespace Diten.PpmService.Application.Features.Portfolios;
 
 public sealed class PortfolioService(
     IPortfolioRepository repository, IAuditIntentRepository audit, IPpmUnitOfWork unitOfWork,
-    ITenantContext tenant, ICurrentActorContext actor, IPpmAccessAuthorizer access)
+    ITenantContext tenant, ICurrentActorContext actor, ICorrelationContext correlation, IPpmAccessAuthorizer access)
 {
     public async Task<Response<PortfolioDto>> Create(CreatePortfolioCommand request, CancellationToken ct)
     {
@@ -60,7 +60,7 @@ public sealed class PortfolioService(
         var items = await repository.ListAsync(tenant.TenantId, ct);
         return Response<IReadOnlyList<PortfolioDto>>.Success(items.Select(x => x.ToDto()).ToArray());
     }
-    private AuditIntent Intent(Portfolio x, string mutation) => new(Guid.NewGuid(), tenant.TenantId, actor.ActorId, nameof(Portfolio), x.Id, mutation, DateTime.UtcNow);
+    private AuditIntent Intent(Portfolio x, string mutation) => new(Guid.NewGuid(), tenant.TenantId, actor.ActorId, correlation.CorrelationId, nameof(Portfolio), x.Id, mutation, DateTime.UtcNow);
     private Task<Response<PortfolioDto>> Persist(Portfolio entity, int expectedVersion, string mutation, CancellationToken ct)
         => unitOfWork.ExecuteInTransactionAsync(async token => { await repository.ReplaceAsync(entity, expectedVersion, token); await audit.AddAsync(Intent(entity, mutation), token); return Response<PortfolioDto>.Success(entity.ToDto()); }, ct);
 }

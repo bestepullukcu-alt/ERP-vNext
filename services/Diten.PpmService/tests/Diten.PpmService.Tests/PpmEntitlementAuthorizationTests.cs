@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using Diten.BuildingBlocks.Eventing;
 using Diten.PpmService.Application.Common;
 using Diten.PpmService.Application.Features.Initiatives;
 using Diten.PpmService.Application.Features.Portfolios;
@@ -7,10 +8,14 @@ using Diten.PpmService.Application.Features.Programs;
 using Diten.PpmService.Application.Features.Projects;
 using Diten.PpmService.Domain.Entities;
 using Diten.PpmService.Domain.Repositories;
+using Diten.PpmService.Infrastructure.Audit;
+using Diten.PpmService.Infrastructure.Correlation;
 using Diten.PpmService.Infrastructure.Entitlements;
 using Diten.Shared.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Diten.PpmService.Tests;
@@ -109,12 +114,76 @@ public sealed class PpmEntitlementAuthorizationTests
         Assert.True(await client.IsAllowedAsync(TenantId, default));
         Assert.Equal("dedicated-ppm-service-key-123", handler.Request!.Headers
             .GetValues(PpmEntitlementDecisionClient.ServiceCredentialHeader).Single());
-        Assert.Equal("corr-1", handler.Request.Headers
+        Assert.Equal("55555555-5555-5555-5555-555555555555", handler.Request.Headers
             .GetValues(PpmEntitlementDecisionClient.CorrelationIdHeader).Single());
         Assert.EndsWith(
             $"/api/internal/ppm/tenants/{TenantId:D}/entitlement-decision",
             handler.Request.RequestUri!.AbsoluteUri,
             StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("55555555-5555-5555-5555-555555555555")]
+    [InlineData("malformed-client-value")]
+    public async Task One_scoped_correlation_flows_through_entitlement_mutation_and_dispatch(
+        string incoming)
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers[CanonicalCorrelationContext.HeaderName] = incoming;
+        var correlation = new CanonicalCorrelationContext(
+            new HttpContextAccessor { HttpContext = httpContext });
+        var expected = correlation.CorrelationId;
+        var handler = new RecordingHandler(_ => Json(HttpStatusCode.OK, ValidJson()));
+        var entitlement = Client(handler, enabled: true, correlation);
+        var authorizer = new PpmAccessAuthorizer(
+            new TenantContext(TenantId),
+            new ActorContext(Guid.NewGuid()),
+            entitlement,
+            new Permission(true, []));
+        var audit = new CorrelationAuditRepository();
+        var service = new PortfolioService(
+            new CountingPortfolioRepository(),
+            audit,
+            new NoOpUnitOfWork(),
+            new TenantContext(TenantId),
+            new ActorContext(Guid.NewGuid()),
+            correlation,
+            authorizer);
+
+        var response = await service.Create(
+            new("P-CORR", "Correlation", null, null),
+            default);
+        Assert.Equal(201, response.StatusCode);
+        Assert.Equal(
+            expected.ToString("D"),
+            handler.Request!.Headers
+                .GetValues(PpmEntitlementDecisionClient.CorrelationIdHeader)
+                .Single());
+        Assert.Equal(expected, Assert.IsType<AuditIntent>(audit.Intent).CorrelationId);
+
+        var bus = new CorrelationRecordingEventBus();
+        var dispatcher = new PpmAuditIntentDispatcher(
+            audit,
+            bus,
+            Options.Create(new PpmAuditProducerOptions
+            {
+                Enabled = true,
+                WorkerEnabled = true,
+                BatchSize = 1
+            }),
+            NullLogger<PpmAuditIntentDispatcher>.Instance);
+
+        Assert.Equal(1, await dispatcher.DispatchPendingAsync(default));
+        Assert.Equal(expected, bus.Options!.CorrelationId);
+        Assert.Equal(audit.Intent.Id, bus.Options.EventId);
+        if (incoming == "malformed-client-value")
+        {
+            Assert.NotEqual(
+                incoming,
+                handler.Request.Headers
+                    .GetValues(PpmEntitlementDecisionClient.CorrelationIdHeader)
+                    .Single());
+        }
     }
 
     [Fact]
@@ -148,6 +217,7 @@ public sealed class PpmEntitlementAuthorizationTests
             new NoOpUnitOfWork(),
             new TenantContext(TenantId),
             new ActorContext(Guid.NewGuid()),
+            new CorrelationContext(),
             authorizer);
 
         var response = await service.Create(
@@ -316,7 +386,10 @@ public sealed class PpmEntitlementAuthorizationTests
             () => timeout.IsAllowedAsync(TenantId, cancelled.Token));
     }
 
-    private static PpmEntitlementDecisionClient Client(HttpMessageHandler handler, bool enabled)
+    private static PpmEntitlementDecisionClient Client(
+        HttpMessageHandler handler,
+        bool enabled,
+        ICorrelationContext? correlation = null)
     {
         var values = new Dictionary<string, string?>
         {
@@ -333,7 +406,7 @@ public sealed class PpmEntitlementAuthorizationTests
         return new PpmEntitlementDecisionClient(
             new HttpClient(handler),
             configuration,
-            new HttpContextAccessor { HttpContext = context });
+            correlation ?? new CorrelationContext());
     }
 
     private static string ValidJson(
@@ -370,6 +443,11 @@ public sealed class PpmEntitlementAuthorizationTests
     {
         public Task<bool> IsAllowedAsync(Guid tenantId, CancellationToken cancellationToken) =>
             throw new PpmEntitlementDependencyException("unavailable");
+    }
+
+    private sealed class CorrelationContext : ICorrelationContext
+    {
+        public Guid CorrelationId { get; } = Guid.Parse("55555555-5555-5555-5555-555555555555");
     }
 
     private sealed class Permission(bool allowed, List<string> calls) : IEffectivePermissionEvaluator
@@ -437,6 +515,76 @@ public sealed class PpmEntitlementAuthorizationTests
     {
         public Task AddAsync(AuditIntent intent, CancellationToken cancellationToken) =>
             Task.CompletedTask;
+    }
+
+    private sealed class CorrelationAuditRepository : IAuditIntentRepository
+    {
+        public AuditIntent Intent { get; private set; } = null!;
+
+        public Task AddAsync(AuditIntent intent, CancellationToken cancellationToken)
+        {
+            Intent = intent;
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<AuditIntentDispatchCandidate>> GetDispatchCandidatesAsync(
+            int batchSize,
+            CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyList<AuditIntentDispatchCandidate>>(
+            [
+                new(
+                    Intent.Id,
+                    Intent.TenantId,
+                    Intent.ActorId,
+                    Intent.CorrelationId,
+                    Intent.EntityType,
+                    Intent.EntityId,
+                    Intent.Mutation,
+                    Intent.OccurredAtUtc,
+                    null)
+            ]);
+
+        public Task<bool> MarkOutboxEnqueuedAsync(
+            Guid intentId,
+            DateTime enqueuedAtUtc,
+            CancellationToken cancellationToken) => Task.FromResult(true);
+
+        public Task<bool> MarkDispatchQuarantinedAsync(
+            Guid intentId,
+            string failureCode,
+            DateTime updatedAtUtc,
+            CancellationToken cancellationToken) => Task.FromResult(true);
+    }
+
+    private sealed class CorrelationRecordingEventBus : IEventBus
+    {
+        public EventPublishOptions? Options { get; private set; }
+
+        public Task<EventEnvelope<TEvent>> PublishAsync<TEvent>(
+            TEvent @event,
+            CancellationToken cancellationToken = default)
+            where TEvent : IIntegrationEvent =>
+            throw new NotSupportedException();
+
+        public Task<EventEnvelope<TEvent>> PublishAsync<TEvent>(
+            TEvent @event,
+            EventPublishOptions options,
+            CancellationToken cancellationToken = default)
+            where TEvent : IIntegrationEvent
+        {
+            Options = options;
+            return Task.FromResult(new EventEnvelope<TEvent>(
+                new EventMetadata(
+                    options.EventId!.Value,
+                    @event.EventName,
+                    @event.EventVersion,
+                    options.CorrelationId!.Value,
+                    options.CausationId,
+                    options.TenantId,
+                    options.Producer!,
+                    options.OccurredAtUtc!.Value),
+                @event));
+        }
     }
 
     private sealed class NoOpUnitOfWork : IPpmUnitOfWork

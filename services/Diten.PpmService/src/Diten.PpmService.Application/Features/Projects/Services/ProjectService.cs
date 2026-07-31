@@ -8,7 +8,7 @@ namespace Diten.PpmService.Application.Features.Projects;
 public sealed class ProjectService(
     IProjectRepository repository, IInitiativeRepository initiatives, IProgramRepository programs,
     IAuditIntentRepository audit, IPpmUnitOfWork unitOfWork, ITenantContext tenant,
-    ICurrentActorContext actor, IPpmAccessAuthorizer access)
+    ICurrentActorContext actor, ICorrelationContext correlation, IPpmAccessAuthorizer access)
 {
     public async Task<Response<ProjectDto>> Create(CreateProjectCommand r, CancellationToken ct)
     {
@@ -80,7 +80,7 @@ public sealed class ProjectService(
             ProjectParentType.Program => await programs.GetByIdAsync(tenant.TenantId, id, ct) is not null,
             _ => false
         };
-    private AuditIntent Intent(Project e, string m) => new(Guid.NewGuid(), tenant.TenantId, actor.ActorId, nameof(Project), e.Id, m, DateTime.UtcNow);
+    private AuditIntent Intent(Project e, string m) => new(Guid.NewGuid(), tenant.TenantId, actor.ActorId, correlation.CorrelationId, nameof(Project), e.Id, m, DateTime.UtcNow);
     private Task<Response<ProjectDto>> Persist(Project e, int version, string mutation, CancellationToken ct)
         => unitOfWork.ExecuteInTransactionAsync(async token => { await repository.ReplaceAsync(e, version, token); await audit.AddAsync(Intent(e, mutation), token); return Response<ProjectDto>.Success(e.ToDto()); }, ct);
 }

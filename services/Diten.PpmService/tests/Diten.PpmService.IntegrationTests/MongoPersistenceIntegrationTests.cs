@@ -142,10 +142,10 @@ public sealed class MongoPersistenceIntegrationTests
             await fixture.Initiatives.AddAsync(initiative, ct);
             await fixture.Programs.AddAsync(program, ct);
             await fixture.Audit.AddAsync(
-                new AuditIntent(Guid.NewGuid(), fixture.TenantId, fixture.ActorId,
+                new AuditIntent(Guid.NewGuid(), fixture.TenantId, fixture.ActorId, Guid.NewGuid(),
                     nameof(Initiative), initiative.Id, "created", DateTime.UtcNow), ct);
             await fixture.Audit.AddAsync(
-                new AuditIntent(Guid.NewGuid(), fixture.TenantId, fixture.ActorId,
+                new AuditIntent(Guid.NewGuid(), fixture.TenantId, fixture.ActorId, Guid.NewGuid(),
                     nameof(Diten.PpmService.Domain.Entities.Program), program.Id, "created",
                     DateTime.UtcNow), ct);
             return true;
@@ -250,24 +250,30 @@ public sealed class MongoPersistenceIntegrationTests
             new(TenantId, ActorId, code, code, null, null);
 
         public AuditIntent Intent(EntityBase entity, string mutation) =>
-            new(Guid.NewGuid(), TenantId, ActorId, entity.GetType().Name, entity.Id,
+            new(Guid.NewGuid(), TenantId, ActorId, Guid.NewGuid(), entity.GetType().Name, entity.Id,
                 mutation, DateTime.UtcNow);
 
         public PortfolioService PortfolioService(Guid? tenantId = null) =>
             new(Portfolios, Audit, UnitOfWork,
                 new RequestContext(tenantId ?? TenantId, ActorId),
                 new RequestContext(tenantId ?? TenantId, ActorId),
+                new CorrelationContext(),
                 new PermissionEvaluator());
 
         public ProjectService ProjectService() =>
             new(Projects, Initiatives, Programs, Audit, UnitOfWork,
                 new RequestContext(TenantId, ActorId),
                 new RequestContext(TenantId, ActorId),
+                new CorrelationContext(),
                 new PermissionEvaluator());
     }
 
     private sealed record RequestContext(Guid TenantId, Guid ActorId)
         : ITenantContext, ICurrentActorContext;
+    private sealed class CorrelationContext : ICorrelationContext
+    {
+        public Guid CorrelationId { get; } = Guid.NewGuid();
+    }
 
     private sealed class PermissionEvaluator : IEffectivePermissionEvaluator, IPpmAccessAuthorizer
     {
