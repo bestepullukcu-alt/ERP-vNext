@@ -30,6 +30,58 @@ public sealed class EventingMvpTests
     }
 
     [Fact]
+    public void PpmAuditIntentEventName_IsValidAndMatchesOnlyVersionOne()
+    {
+        Assert.True(EventName.IsValid("ppm.audit-intent.submitted.v1"));
+        EventName.EnsureMatchesVersion("ppm.audit-intent.submitted.v1", 1);
+
+        Assert.Throws<EventValidationException>(
+            () => EventName.EnsureMatchesVersion("ppm.audit-intent.submitted.v1", 2));
+    }
+
+    [Fact]
+    public void ContractValidation_AcceptsPpmAuditIntentEquivalentEvent()
+    {
+        var validator = new EventPayloadContractValidator();
+
+        validator.Validate(new PpmAuditIntentSubmittedV1(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow));
+    }
+
+    [Fact]
+    public async Task PublishAsync_PpmAuditIntentEventName_ReachesOutboxWriter()
+    {
+        var outbox = new InMemoryOutboxEventRepository();
+        var bus = CreateEventBus(outbox);
+
+        await bus.PublishAsync(new PpmAuditIntentSubmittedV1(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow));
+
+        var stored = Assert.Single(outbox.Items);
+        Assert.Equal("ppm.audit-intent.submitted.v1", stored.EventName);
+        Assert.Equal(1, stored.EventVersion);
+    }
+
+    [Fact]
+    public async Task PublishAsync_InvalidEventName_IsRejectedBeforeOutboxWriter()
+    {
+        var outbox = new InMemoryOutboxEventRepository();
+        var bus = CreateEventBus(outbox);
+
+        await Assert.ThrowsAsync<EventValidationException>(() =>
+            bus.PublishAsync(new InvalidPpmAuditIntentSubmittedV1(
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                DateTimeOffset.UtcNow)));
+
+        Assert.Empty(outbox.Items);
+    }
+
+    [Fact]
     public void ContractValidation_RejectsForbiddenPayloadShapes()
     {
         var validator = new EventPayloadContractValidator();
@@ -511,6 +563,24 @@ public sealed class EventingMvpTests
     private sealed record PayloadWithSecret(Guid Id, string AccessToken) : IIntegrationEvent
     {
         public string EventName => "test.secret.created.v1";
+        public int EventVersion => 1;
+    }
+
+    private sealed record PpmAuditIntentSubmittedV1(
+        Guid AuditIntentId,
+        Guid TenantId,
+        DateTimeOffset SubmittedAtUtc) : IIntegrationEvent
+    {
+        public string EventName => "ppm.audit-intent.submitted.v1";
+        public int EventVersion => 1;
+    }
+
+    private sealed record InvalidPpmAuditIntentSubmittedV1(
+        Guid AuditIntentId,
+        Guid TenantId,
+        DateTimeOffset SubmittedAtUtc) : IIntegrationEvent
+    {
+        public string EventName => "ppm.audit--intent.submitted.v1";
         public int EventVersion => 1;
     }
 
