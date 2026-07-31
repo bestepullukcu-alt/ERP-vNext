@@ -277,7 +277,20 @@
                 if (d === 0) { return t('SlaDueToday'); }
                 if (d === 1) { return t('SlaDueTomorrow'); }
                 return tf('SlaDueInDays', d);
-            case 'on-track': return tf('SlaDueInDays', d);
+            case 'on-track':
+                /*
+                 * BL-046 — the boundary the label never had. `d` is derived from dueAt against TODAY, so a task
+                 * whose deadline has passed can still carry an on-track state (a closed one, now that the server
+                 * freezes the state at closing time) and printed "-2 days left". Nonsense is worse than the wrong
+                 * number it replaced: the old text was inaccurate but readable.
+                 *
+                 * d <= 0 means the deadline is not in the future, so "left" is the wrong word whatever the state
+                 * says. This also closes the pre-existing on-track + d === 0 case, which read "0 days left".
+                 */
+                if (d == null) { return t('SlaNoSla'); }
+                if (d < 0) { return tf('SlaOverdueByDays', Math.abs(d)); }
+                if (d === 0) { return t('SlaDueToday'); }
+                return tf('SlaDueInDays', d);
             default: return t('SlaNoSla');
         }
     };
@@ -1162,6 +1175,44 @@
      * it was empty", which is a claim about data we do not have — the rule this page has been corrected under all
      * week. That is the ONE deliberate divergence from the reference.
      */
+    /*
+     * BL-049 — the source record's identifier, moved off the primary surface.
+     *
+     * This used to render the raw GUID as an ordinary field: "Kaynak kaydı 31a44983-40cc-…". It gives the reader
+     * no capability at all — the "open the source record" button directly below already does the one thing the id
+     * is for — and a 36-character opaque string sitting among human-readable facts is noise that makes the real
+     * ones harder to find.
+     *
+     * It is not deleted, because it IS what a support conversation needs. So it becomes a support affordance: a
+     * shortened form the eye can skip, with the full value on the clipboard button and in the title. Anyone who
+     * needs it gets it in one click; nobody else has to read past it.
+     */
+    const referenceField = (item) => {
+        const id = item.sourceId;
+        if (id === null || id === undefined || id === '') { return ''; }
+
+        const full = String(id);
+        // Long opaque ids get an ellipsis; a short business key is left whole, because that one IS readable.
+        const shown = full.length > 13 ? `${full.slice(0, 8)}…${full.slice(-4)}` : full;
+
+        return `<div class="col-12 col-md-6">
+            <div class="backbone-preview-field">
+                <i class="bx bx-hash"></i>
+                <div>
+                    <div class="backbone-preview-label">${esc(t('DetailSourceId'))}</div>
+                    <div class="backbone-preview-value mt-1 d-flex align-items-center gap-2">
+                        <code class="wcn-reference-id" title="${esc(full)}">${esc(shown)}</code>
+                        <button type="button" class="btn btn-xs btn-icon btn-label-secondary wcn-copyref"
+                                data-wcn-copy="${esc(full)}"
+                                title="${esc(t('CopyReference'))}" aria-label="${esc(t('CopyReference'))}">
+                            <i class="bx bx-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    };
+
     const previewField = (icon, labelKey, value, col) => {
         if (value === null || value === undefined || value === '') { return ''; }
         return `<div class="col-12 ${col || 'col-md-6'}">
@@ -1927,7 +1978,7 @@
                 ${previewField('bx-user', 'DetailRequester', item.requester)}
                 ${previewField('bx-user-check', 'DetailAssignee', item.assignee)}
                 ${previewField('bx-flag', 'DetailNativeStatus', item.nativeStatusText)}
-                ${previewField('bx-hash', 'DetailSourceId', item.sourceId)}
+                ${referenceField(item)}
                 ${previewField('bx-cube', 'DetailModuleName', item.sourceModuleName || item.sourceModule)}
                 ${previewField('bx-purchase-tag-alt', 'DetailModuleId', item.sourceModuleId)}
                 ${previewField('bx-category', 'DetailSourceType', item.sourceObjectType || item.sourceType)}
@@ -2503,9 +2554,22 @@
         // DtDefaults reads window.L10n for the grid's own search placeholder + the
         // export "Action" menu label; WorkCenter localises via window.WCN.t, so seed
         // them. The export menu is "Dışa Aktar" (not "İşlemler" — that's our column).
+        /*
+         * BL-047 — the DELIVERY half. The payload carries all six Dt* keys in seven languages, and dt-defaults
+         * consumes them (dt-defaults.js:462-466) — but it reads `window.L10n`, and this seeding block only ever
+         * put Search and Action there. So the strings existed at both ends and never met: the table went on
+         * saying "Showing 1 to 9 of 9 entries" on a Turkish page.
+         *
+         * Chose (a) — seed from this module — over (b), teaching dt-defaults to read module payloads. (b) is the
+         * more general answer and 61 files need it, but it changes the shared table bootstrap for every screen in
+         * the product on the strength of one screen's bug. That is a platform slice with its own regression round,
+         * and it is recorded as such. This is the local, reversible half.
+         */
         global.L10n = global.L10n || {};
         global.L10n.Search = t('SearchPlaceholder');
         global.L10n.Action = t('ExportLabel');
+        ['DtInfo', 'DtInfoEmpty', 'DtInfoFiltered', 'DtEmptyTable', 'DtNoRecords', 'DtZeroRecords']
+            .forEach((key) => { const value = t(key); if (value && value !== key) { global.L10n[key] = value; } });
         const tableFilterButton = {
             text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
             className: `btn btn-icon ${activeAdvancedFilterCount() ? 'btn-label-primary' : 'btn-label-secondary'} dt-filter-btn position-relative`,
@@ -4489,6 +4553,19 @@
             const it = itemById(state.selectedId);
             if (it) { markSeen(it); }
             openDetailPage(state.selectedId);
+            return;
+        }
+
+        // BL-049 — the reference id lives on a copy button now, so it has to actually copy.
+        const copyEl = event.target.closest('[data-wcn-copy]');
+        if (copyEl) {
+            const value = copyEl.getAttribute('data-wcn-copy') || '';
+            // navigator.clipboard is absent over plain http and in older browsers; say so rather than failing
+            // silently, because a copy button that does nothing is worse than no button.
+            global.navigator?.clipboard?.writeText?.(value)
+                .then(() => toast(t('ReferenceCopied')))
+                .catch(() => toast(t('ReferenceCopyFailed'), 'error'))
+                ?? toast(t('ReferenceCopyFailed'), 'error');
             return;
         }
 

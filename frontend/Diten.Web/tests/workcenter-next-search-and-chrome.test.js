@@ -142,3 +142,131 @@ describe("the DataTable's own chrome speaks the reader's language", () => {
     });
   });
 });
+
+/*
+ * ══ BL-047, THE DELIVERY HALF ═════════════════════════════════════════════════════════════════════════════
+ *
+ * The previous round added the six Dt* keys to the payload and called it done. It was not: dt-defaults reads
+ * `window.L10n` (dt-defaults.js:8), and app.js seeded only Search and Action into it. The strings existed at
+ * both ends and never met — the table went on saying "Showing 1 to 9 of 9 entries" on a Turkish page while
+ * every source-level assertion passed.
+ *
+ * So these assert the CONSUMER's dictionary, not the producer's file. Producing a value is not delivering it.
+ */
+describe("the table's dictionary actually receives the keys", () => {
+  const app = () => fs.readFileSync(APP_JS, "utf8");
+
+  it("seeds every Dt* key into the dictionary dt-defaults reads", () => {
+    /*
+     * dt-defaults reads window.L10n and nothing else. A key in #workcenternext-l10n that never reaches
+     * window.L10n is invisible to it — which is exactly the state this test was written to end.
+     */
+    const source = app();
+    const seedBlock = source.slice(source.indexOf("global.L10n = global.L10n || {}"));
+    const scoped = seedBlock.slice(0, 900);
+
+    ["DtInfo", "DtInfoEmpty", "DtInfoFiltered", "DtEmptyTable", "DtNoRecords", "DtZeroRecords"]
+      .forEach((key) => expect(scoped, `${key} is never seeded into window.L10n`).toContain(key));
+  });
+
+  it("seeds them THROUGH the translator, so an untranslated key is not shipped as its own name", () => {
+    // t(key) returning the key itself means the resx lacks it; writing that into L10n would put "DtInfo" on
+    // screen. The guard is the reason the seeding is a filtered loop rather than a plain assignment.
+    const source = app();
+    const seedBlock = source.slice(source.indexOf("global.L10n = global.L10n || {}"), source.indexOf("const tableFilterButton"));
+
+    expect(seedBlock).toMatch(/value !== key/);
+  });
+
+  it("dt-defaults still reads window.L10n — if that changes, the seeding above is pointing at nothing", () => {
+    // Non-vacuity across the seam: the seeding is only correct while this is the dictionary being read.
+    expect(fs.readFileSync(DT_DEFAULTS, "utf8")).toMatch(/window\.L10n/);
+  });
+});
+
+/*
+ * ══ BL-046, THE LABEL BOUNDARY ════════════════════════════════════════════════════════════════════════════
+ *
+ * Freezing slaState server-side without freezing the day count produced "-2 days left" in History — a
+ * regression introduced by the previous round's own half-fix. The old text was wrong but readable; this was
+ * not. The day count still needs a closing timestamp on the contract (recorded, not done); this closes the
+ * hole that makes the wrong number unreadable, and the pre-existing "0 days left" case with it.
+ */
+describe("the SLA label never says a negative or zero number of days are left", () => {
+  const slaLabelSource = () => {
+    const source = fs.readFileSync(APP_JS, "utf8");
+    const start = source.indexOf("const slaLabel = (item) =>");
+    expect(start).toBeGreaterThan(-1);
+    return source.slice(start, source.indexOf("};", start));
+  };
+
+  it("routes a past deadline to the overdue wording, never to 'days left'", () => {
+    const body = slaLabelSource();
+
+    expect(body, "on-track with d < 0 still prints 'days left'").toMatch(/d < 0/);
+    expect(body).toContain("SlaOverdueByDays");
+  });
+
+  it("says 'due today' rather than '0 days left'", () => {
+    expect(slaLabelSource()).toMatch(/d === 0[\s\S]{0,80}SlaDueToday/);
+  });
+
+  it("falls back to no-SLA when the day count is missing entirely", () => {
+    // null is a real state (no due date). Arithmetic on it produced NaN in the label.
+    expect(slaLabelSource()).toMatch(/d == null/);
+  });
+});
+
+/*
+ * ══ BL-049 — the raw GUID off the primary surface ═════════════════════════════════════════════════════════
+ *
+ * Detail showed "Kaynak kaydı 31a44983-40cc-…" as an ordinary field, beside human-readable facts and directly
+ * above an "open the source record" button that already does the only thing the id is for. The id gives the
+ * reader no capability; it just makes the useful fields harder to find.
+ *
+ * Not deleted — it IS what a support conversation needs. Moved to a support affordance instead.
+ */
+describe("the source reference is a support affordance, not a field to read", () => {
+  const app = () => fs.readFileSync(APP_JS, "utf8");
+
+  it("no longer renders the id as a plain preview field", () => {
+    // THE defect, stated as its absence.
+    expect(app(), "the raw id is still a preview field").not.toContain("previewField('bx-hash', 'DetailSourceId'");
+  });
+
+  it("shortens what is displayed but keeps the whole value reachable", () => {
+    const source = app();
+
+    expect(source).toContain("referenceField");
+    // The full value on the title and on the button — a truncated id nobody can recover would be worse than
+    // the noisy one it replaced.
+    expect(source).toMatch(/title="\$\{esc\(full\)\}"/);
+    expect(source).toMatch(/data-wcn-copy="\$\{esc\(full\)\}"/);
+  });
+
+  it("leaves a short business key alone rather than ellipsing something already readable", () => {
+    // The truncation is for opaque ids. A provider that sends "INV-2026-0042" should not have it mangled.
+    expect(app()).toMatch(/full\.length > 13/);
+  });
+
+  it("actually copies, and says so when it cannot", () => {
+    /*
+     * A copy button that does nothing is worse than no button. navigator.clipboard is absent over plain http, so
+     * the failure path has to be visible rather than swallowed.
+     */
+    const source = app();
+
+    expect(source).toContain("data-wcn-copy]");
+    expect(source).toContain("clipboard");
+    expect(source).toContain("ReferenceCopyFailed");
+  });
+
+  it.each(["en", "tr", "fr", "es", "zh", "ar", "ru"])("%s translates all three new strings", (locale) => {
+    const resx = fs.readFileSync(path.join(
+      repoRoot, "frontend", "Diten.Web", "Resources", "Views", "WorkCenterNext",
+      `WorkCenterNextIndex.${locale}.resx`), "utf8");
+
+    ["CopyReference", "ReferenceCopied", "ReferenceCopyFailed"]
+      .forEach((key) => expect(resx, `${key} missing in ${locale}`).toContain(`name="${key}"`));
+  });
+});

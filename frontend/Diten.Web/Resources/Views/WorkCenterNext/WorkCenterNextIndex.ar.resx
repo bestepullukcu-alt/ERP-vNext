@@ -1646,4 +1646,13 @@
   <data name="ReassignNoAssignableUsers" xml:space="preserve">
     <value>لا يوجد شخص يمكن تسليم هذه المهمة إليه.</value>
   </data>
+  <data name="CopyReference" xml:space="preserve">
+    <value>نسخ المرجع</value>
+  </data>
+  <data name="ReferenceCopied" xml:space="preserve">
+    <value>تم نسخ المرجع</value>
+  </data>
+  <data name="ReferenceCopyFailed" xml:space="preserve">
+    <value>تعذّر نسخ المرجع</value>
+  </data>
 </root>

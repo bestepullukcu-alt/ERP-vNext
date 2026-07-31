@@ -1646,4 +1646,13 @@
   <data name="ReassignNoAssignableUsers" xml:space="preserve">
     <value>Некому передать эту задачу.</value>
   </data>
+  <data name="CopyReference" xml:space="preserve">
+    <value>Копировать ссылку</value>
+  </data>
+  <data name="ReferenceCopied" xml:space="preserve">
+    <value>Ссылка скопирована</value>
+  </data>
+  <data name="ReferenceCopyFailed" xml:space="preserve">
+    <value>Не удалось скопировать ссылку</value>
+  </data>
 </root>
