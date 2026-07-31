@@ -22,8 +22,8 @@ implementation_authority: explicit-user-control-tower
 > **SCOPED IMPLEMENTATION AUTHORITY — 2026-07-29:** The user explicitly approved `Diten.PpmService`
 > scaffolding and MOD-0117 backend plus tenant frontend implementation for **Phase 2A — Context &
 > Referenceability Core**. The pack is now in `review` on the strength of scoped Phase 2A
-> implementation evidence; this does not authorize Phase 2B, the authoritative
-> ExternalContextReference provider endpoint/transport, DWS runtime integration, any Gateway change beyond
+> implementation evidence. The separately approved ExternalContextReference provider slice is limited to
+> the internal endpoint and contract recorded below; this does not authorize Phase 2B, DWS runtime integration, any Gateway change beyond
 > the scoped PPM mappings, legacy migration or any WorkCenter hazard. Those boundaries remain fail-closed.
 
 > **Composite-pack UI decision:** `form_field_count: 7` is the maximum create/edit field count across the
@@ -51,8 +51,8 @@ Delivery is divided into two internal phases:
 - **Phase 2B — Investment & Value Linkage:** InvestmentDecision, BenefitValueLink and typed references to
   MOD-0136 Budget, MOD-0138 Scenario and MOD-0072 Outcome/Value.
 
-The physical ExternalContextReference provider/transport and DWS runtime consumption remain blocked even
-though the four Phase 2A objects must be referenceability-ready. MOD-0117 cannot be marked `done` until
+The internal ExternalContextReference provider slice is authorized and in progress; MOD-0354 consumer
+implementation and DWS runtime consumption remain separate and blocked. MOD-0117 cannot be marked `done` until
 Phase 2B is separately authorized and complete.
 
 ## 2. Ownership and Boundaries
@@ -110,7 +110,7 @@ production change.
 | `Project` | 2A | Finite project identity within PPM | CLOSED for Phase 2A |
 | `InvestmentDecision` | 2B | PPM investment-decision context, not approval engine | Decision state model and required PPM relationships |
 | `BenefitValueLink` | 2B | Typed linkage to MOD-0072 and optional budget/scenario context | Cardinality, link lifecycle and external contract versions |
-| `ExternalContextReferenceValidationProjection` | Later integration | Minimal authoritative typed-reference result | BLOCKED: exact provider/consumer runtime contract and transport |
+| `ExternalContextReferenceValidationProjection` | Provider slice | Minimal authoritative typed-reference result | AUTHORIZED / IN PROGRESS; runtime evidence required |
 
 No generic `PpmContext` entity may hide all business semantics behind one discriminator. Shared typed value
 objects may reduce duplication, but Portfolio, Initiative, Program and Project remain separate domain types,
@@ -118,8 +118,8 @@ repositories and business rules.
 
 Command/query families are object-specific and cannot collapse into arbitrary
 `CreatePpmContext`/`UpdatePpmContext` handlers. Phase 2A authorizes object-specific create/read/update,
-controlled lifecycle transitions, soft delete and local derived-referenceability queries. The authoritative
-external-context provider and all Phase 2B commands remain unauthorized.
+controlled lifecycle transitions, soft delete and local derived-referenceability queries. The narrowly
+authorized read-only external-context provider does not authorize any Phase 2B command.
 
 ### Phase 2A lifecycle and relationship decisions
 
@@ -251,7 +251,8 @@ Index direction: active uniqueness/cardinality over
 
 ### 4.8 ExternalContextReference validation projection
 
-This is an **APPROVED GOVERNANCE BASELINE — NOT A RUNTIME CONTRACT**:
+This is the authorized provider contract for the internal endpoint
+`POST /internal/v1/ppm/external-context-references/validate`:
 
 | Field | Type | Rule |
 |---|---|---|
@@ -264,6 +265,20 @@ This is an **APPROVED GOVERNANCE BASELINE — NOT A RUNTIME CONTRACT**:
 reference, never a full PPM object. Missing, soft-deleted, cross-tenant, invisible or not-referenceable all
 produce 404 without existence disclosure. Referenceability is derived, not a stored `IsReferenceable`
 business truth.
+
+The provider is default-disabled and browser/Gateway-inaccessible. The first allowed consumer identity is
+`Diten.ManagementGovernanceService`; it must present a dedicated consumer credential and a forwarded signed
+user JWT. Activation/configuration is checked before the credential; framework JWT authentication and a
+strict endpoint-specific `tenant_id`/`sub` context gate follow before PPM entitlement, exact permission and
+tenant-first lookup. Missing or malformed non-empty tenant/actor claims return `401`; `NameIdentifier`
+fallback is allowed only when `sub` is absent, matching the shared evaluator contract.
+
+Permission mapping is closed and exact: `Portfolio -> ppm.portfolios.read`,
+`Initiative -> ppm.initiatives.read`, `Program -> ppm.programs.read`, and
+`Project -> ppm.projects.read`. No `.view` alias, wildcard, prefix, case normalization, trimming or new
+permission is authorized. Provider v1 does not evaluate object-level `VisibilityPolicyKey`: null proceeds
+through the remaining checks, while non-null fails closed with indistinguishable `404`. Future support needs
+a MOD-0018-owned versioned visibility contract and a separate provider contract revision/FU.
 
 All writes use tenant-first filters and optimistic concurrency:
 `TenantId + Id + IsDeleted=false + Version`. A version mismatch produces 409; silent overwrite is forbidden.
@@ -361,10 +376,13 @@ malformed response and all non-success responses into 404 must not be copied.
 - `init-001`, `prj-001` and any candidate/legacy identity are forbidden runtime literals.
 - Service port is `5061`. Frontend remains `5001`; browser traffic uses Gateway `5000`, never direct `5061`.
 - Existing port `5004` delivery-execution routes are legacy ES evidence, not MOD-0117 route allocation.
-- Phase 2A may expose gateway-ready object CRUD/lifecycle contracts. No ExternalContextReference provider
-  endpoint, gateway route, S2S credential/delegation or DWS integration is authorized.
+- Phase 2A may expose gateway-ready object CRUD/lifecycle contracts. The internal provider endpoint and
+  dedicated service-credential plus delegated-actor model are authorized only as specified in §4.8; no
+  provider Gateway route or DWS integration is authorized.
 - Provider outage, timeout or malformed transport maps to 503, never 404.
 - Fail-open and local-cache ownership/existence inference are forbidden.
+- The read-only provider writes no business mutation, audit intent, cache or idempotency receipt. This is
+  `N/A` only for this validation operation and does not close Phase 2B mutation idempotency decisions.
 
 ## 9. Layout & Shell Contract
 
@@ -559,6 +577,9 @@ or any other Gateway route.
   `IsApproved`/`IsReferenceable` truth does not exist.
 - [ ] Phase 2A objects are provider-ready; a later authorized integration provides the exact
   `ppm.external-context-reference` `1.0` runtime contract.
+- [ ] The default-disabled internal provider enforces dedicated consumer credential plus framework-validated
+  delegated JWT in the required order and uses the exact four `.read` permissions.
+- [ ] Provider v1 returns 404 for non-null `VisibilityPolicyKey` and exposes no policy metadata.
 - [ ] Invalid contract name/version/kind/Guid returns 400.
 - [ ] Missing, soft-deleted, cross-tenant, invisible or not-referenceable context returns indistinguishable 404.
 - [ ] MOD-0018 DWS permission denial returns 403 before provider invocation.
@@ -660,8 +681,8 @@ verification reports 60 PASS plus four formally dispositioned policy/profile fin
 - [ ] MOD-0136/MOD-0138/MOD-0072 exact versioned typed-reference contracts are approved.
 - [x] Every Phase 2A frontend surface has an exact field count and Golden Slim decision.
 - [x] Phase 2A hub/routes and visibility/referenceability presentation are approved.
-- [ ] Exact S2S service identity and actor delegation are approved.
-- [ ] Exact physical transport, route and versioning are approved.
+- [x] Exact S2S service identity and actor delegation are approved for the internal provider slice.
+- [x] Exact physical endpoint and contract version are approved for the internal provider slice; no Gateway route is authorized.
 - [ ] Timeout, retry and circuit-breaker policy is approved.
 - [x] MOD-0018 reusable signed-JWT enforcement integration and PPM adapter are exact and evidenced; real
   AuthService PPM grant provisioning remains open.
@@ -717,7 +738,7 @@ block only their named runtime boundaries. This pack is not unconditional `ready
    The PPM-service consumer and final normal-port evidence remain separate work.
 2. Executable PSS authority for the selected PPM-specific strategy and MOD-0035 slice; existing generic
    MDM/other-module behavior remains unchanged.
-3. ExternalContextReference provider transport, route and compatibility/security evidence.
+3. ExternalContextReference provider compatibility/security and live runtime evidence; MOD-0354 consumer remains separate.
 4. Exact allowlisted `PpmAuditIntentSubmittedV1` payload/consumer mapping, authenticated publisher credential
    and MOD-0035/MOD-0021 delivery integration.
 5. Phase 2B contracts with MOD-0136/MOD-0138/MOD-0072.
@@ -733,6 +754,7 @@ block only their named runtime boundaries. This pack is not unconditional `ready
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-08-01 | Authorized the default-disabled internal `ppm.external-context-reference` `1.0` provider slice. Control Tower corrected the canonical permissions to exact `.read` keys (not `.view`), approved endpoint-specific strict tenant/sub `401` semantics and the v1 null-only `VisibilityPolicyKey` boundary. No new permission was created; MOD-0018 object-level visibility and MOD-0354 consumer integration remain future/blocked. | User / Enterprise Strategy Control Tower |
 | 2026-07-29 | Formally dispositioned the four repeated DataTable verifier findings per Phase 2A surface as approved policy/profile mismatches: bulk delete is prohibited, and authentication uses a same-origin MVC proxy plus HttpOnly cookie rather than browser-side `getAuthHeaders()`. No bulk-delete surface, browser JWT exposure or verifier change is authorized. | User / Enterprise Strategy Control Tower |
 | 2026-07-30 | Locked independent PPM tenant-entitlement and user-permission gates, dormant grants after entitlement removal, and the `PpmAuditIntentSubmittedV1` / `ppm.audit-intent.submitted.v1` producer identity. Minimal Mutation Audit v1 is final; publisher credential, runtime evidence and PSS production authorization remain open. | User / Enterprise Strategy Control Tower |
 | 2026-07-30 | Code-reality correction fixed `ModuleCode = PPM` and blocked the existing generic Admin/Viewer auto-grant plus destructive revoke/reconcile flow from unchanged PPM use. PPM-specific versus generic bridge revision and dormant-grant reactivation remain PSS/security human-review decisions. | User / Enterprise Strategy Control Tower |

@@ -28,7 +28,7 @@ Portfolio Delivery (PPM) domain'i; Work Records (proje/iş kayıtları), PPM Tas
 ## Domain-Level Repo Scope
 
 - `execution/domains/portfolio-delivery/**`
-- `services/Diten.PpmService/**` — ⚠️ henüz mevcut değil; yalnızca C1 module pack `approved`/`ready-for-dev` + açık kullanıcı onayı sonrası oluşturulur
+- `services/Diten.PpmService/**` — MOD-0117 Phase 2A servisi mevcuttur; yalnızca pack ve Control Tower tarafından açıkça yetkilendirilmiş dilimler değiştirilebilir
 - `frontend/Diten.Web/Views/Ppm/**` (tenant shell modülleri)
 - `frontend/Diten.Web/wwwroot/assets/js/Ppm/**`
 - `frontend/Diten.Web/Resources/Views/Ppm/**` (7 dil .resx)
@@ -68,6 +68,13 @@ Portfolio Delivery (PPM) domain'i; Work Records (proje/iş kayıtları), PPM Tas
 - **Concurrency:** MeetingReport/MeetingInvite `Version` tabanlı optimistic concurrency davranışı korunur (taşıma sırasında sessiz veri kaybı yasağı).
 - **Gateway:** Tüm frontend istekleri Gateway (5000) üzerinden; servis portu doğrudan çağrılamaz. Port rezervasyonu C1 module pack aşamasında `ports.md`'ye işlenir (bu scaffold'da yapılmadı). Ref: [ports.md](../../../.antigravity/rules/ports.md)
 - **Dış entegrasyonlar:** Google/SignalR/AI/SMTP bu domain'in ilk fazlarında **yoktur**; ileride External Systems Register / MOD-0027 kalıplarıyla ele alınır.
+- **External context provider:** MOD-0117, default-disabled
+  `POST /internal/v1/ppm/external-context-references/validate` endpoint'inde
+  `ppm.external-context-reference` `1.0` typed doğrulamasını sağlar. Endpoint browser/Gateway dışıdır;
+  dedicated `Diten.ManagementGovernanceService` credential'ı ile framework-doğrulanmış delegated JWT'yi birlikte
+  ister. ContextKind izinleri yalnızca mevcut exact `ppm.*.read` anahtarlarıdır. V1'de non-null
+  `VisibilityPolicyKey` fail-closed `404` döner; object-level policy desteği MOD-0018 versioned contract ve ayrı
+  provider revision/FU olmadan açılamaz.
 
 ## Domain Bootstrap Notes
 

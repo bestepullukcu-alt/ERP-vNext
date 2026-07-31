@@ -327,7 +327,7 @@ MongoDB tenant-owned records require server-resolved `TenantId`. Records without
 ownership are quarantined, never assigned to a default tenant. `Diten.Platform.Common.BaseEntity` is not
 copied into ES while BL-030 remains unresolved.
 
-### AD-06 — APPROVED GOVERNANCE BASELINE — NOT A RUNTIME CONTRACT: MOD-0117 ExternalContextReference v1
+### AD-06 — MOD-0117 ExternalContextReference v1 provider boundary
 
 The governance-approved transport-independent contract boundary consumed by MOD-0354 Wave 1 is:
 
@@ -353,12 +353,16 @@ Failure semantics are `400` for invalid shape/kind; `403` when an authenticated 
 required DWS command permission, decided by MOD-0018 enforcement; `404` when the MOD-0117 context is absent,
 soft-deleted, cross-tenant or not visible/referenceable to the actor; `409` for attempted reference replacement;
 and `503` when the authoritative validator is unavailable. The MOD-0117 validator does not evaluate DWS
-permissions, and context invisibility never returns `403` or discloses object existence. This baseline does not
-select an endpoint, route, controller, service port, transport technology or physical API shape; those remain
-implementation-pack decisions.
+permissions, and context invisibility never returns `403` or discloses object existence.
 
-This is an approved governance baseline, not a runtime contract or runtime-availability claim. It grants no
-endpoint, route, port, timeout, retry, transport, service-scaffold or production implementation authority.
+The MOD-0117 pack authorizes the default-disabled internal endpoint
+`POST /internal/v1/ppm/external-context-references/validate` with a dedicated
+`Diten.ManagementGovernanceService` credential plus framework-validated delegated user JWT. The provider
+maps the four kinds only to their existing exact `ppm.*.read` permissions; no `.view` alias or new permission
+exists. Strict tenant/actor claim failure is `401`. Provider v1 evaluates only records whose
+`VisibilityPolicyKey` is null; non-null policies fail closed with indistinguishable `404` until a MOD-0018-owned
+versioned visibility contract and separate provider revision/FU exist. This narrow authority creates no
+Gateway/browser route and does not authorize the MOD-0354 consumer or DWS runtime integration.
 
 ### AD-07 — MOD-0018 permission-enforcement integration
 
@@ -687,7 +691,7 @@ and no deferred regression debt.
 | OD-01 | ✅ **CLOSED — 2026-07-28:** Master 8.1 is canonical and historical CAND-CAP-0008/0009 aliases resolve to MOD-0354/0355 | None | Enterprise Architect |
 | OD-02 | ✅ **CLOSED — 2026-07-28:** Initial modular-monolith placement with mandatory architecture tests and fail-closed split fallback | Module packs must prove isolation before service scaffold | Enterprise Architect |
 | OD-03 | ✅ **CLOSED — 2026-07-29:** Permanent owner role is Portfolio Governance Process Owner (PPM Business Owner); minimum Slice 2 Phase 2A/2B scope and future `Diten.PpmService` SoR placement are approved. This grants no scaffold or production authority | None; runtime gates remain under OD-04 | Portfolio Governance Process Owner |
-| OD-04 | 🔴 **OPEN / PARTIAL:** MOD-0117 pack is approved and Phase 2A object implementation is authorized. PPM's two-gate entitlement/permission policy, audit event identity and Minimal Mutation Audit v1 consumer contract are governance-locked. PSS-B1 fixes the provider-side `platform.ppm-entitlement-decision.v1` contract and every-instance invalidation behavior, but the PPM-service consumer, authenticated audit publisher credential, `ppm.external-context-reference` provider transport/DWS runtime and final runtime evidence remain unauthorized or unevidenced | PSS-owned runtime integration, provider consumer/DWS runtime and Phase 2B consumers; does not block the already authorized Phase 2A object implementation | Shared-module owners |
+| OD-04 | 🔴 **OPEN / PARTIAL:** MOD-0117 pack is approved and Phase 2A object implementation is authorized. PPM's two-gate entitlement/permission policy, audit event identity and Minimal Mutation Audit v1 consumer contract are governance-locked. PSS-B1 fixes the provider-side `platform.ppm-entitlement-decision.v1` contract and every-instance invalidation behavior. The narrow MOD-0117 `ppm.external-context-reference` provider slice is authorized, but its final runtime evidence, the MOD-0354 consumer/DWS runtime, remaining PSS integration and Phase 2B consumers stay open | PSS-owned runtime integration, provider evidence, consumer/DWS runtime and Phase 2B consumers; does not block the already authorized Phase 2A object implementation | Shared-module owners |
 | OD-05 | ES containment/migration necessity | CAND-CAP-0007-FU01 participation | ESBP + EA |
 | OD-06 | DCP-005/DCP-006 formal successor relationship after approval | Portfolio governance | Enterprise Architect |
 | OD-07 | ✅ **CLOSED — scope partition, 2026-07-28.** DCP-006 is sole active 1.3/MOD-0117 orchestration; DCP-003 is deferred/non-executable and portfolio-delivery domain config is reconciled | None; draft MOD-0117 pack authoring is eligible after OD-03 closure and canonical preflight, while OD-04 still blocks ready-for-dev/runtime | Enterprise Architect technical/governance owner |
@@ -697,9 +701,9 @@ and no deferred regression debt.
 
 - Preserve Master 8.1 provenance and rerun canonical ID/name/parent/collision preflights when packs change.
 - Implement only the user-authorized MOD-0117 Phase 2A scaffold/backend/frontend on service port `5061`.
-- Keep ExternalContextReference provider/transport, DWS runtime integration, Phase 2B, Gateway-file work
+- Keep the MOD-0354 ExternalContextReference consumer/DWS runtime integration, Phase 2B, Gateway-file work
   beyond the authorized Phase 2A PPM mapping and all four WorkCenter hazards fail-closed until their named
-  gates close.
+  gates close. The internal provider slice is limited to AD-06.
 - Author DWS/BPM as separate module packs; OD-08 is closed, but human approval and architecture-test gates
   remain mandatory.
 - If a delivery touches any preserved WorkCenter hazard in §15, obtain Gate 2 before the first production
@@ -746,6 +750,7 @@ and no deferred regression debt.
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-08-01 | Authorized the narrow default-disabled MOD-0117 ExternalContextReference provider slice and recorded the Control Tower corrections: exact existing `.read` permissions, strict endpoint tenant/sub `401` semantics, and null-only `VisibilityPolicyKey` v1 behavior. OD-04 remains OPEN/PARTIAL; no Gateway route, MOD-0354 consumer, DWS runtime, Phase 2B or new permission was authorized. | User / Enterprise Strategy Control Tower |
 | 2026-07-28 | Enterprise Architect explicitly and singularly allocated `DCP-006`, slug `portfolio-delivery-process-core`, name `Portfolio, Delivery & Process Core`, exclusively to active subdomains 1.3, 1.4 and 1.6. Allocation was not inferred from sequence. | Enterprise Architect |
 | 2026-07-28 | Created initial CAP-001 `draft`; recorded DCP-005 non-modification, candidate guards, Gate 1/2/3 boundaries and no-code guard. | DCP author/reviewer |
 | 2026-07-28 | Correction audit added DCP-003/MOD-0117 scope reconciliation, conditional DWS/BPM domain placement, shared MOD-0018/0021/0048 ownership, precise Gate 1/2/3 provenance and Demand implementation exclusion. | DCP correction reviewer |
