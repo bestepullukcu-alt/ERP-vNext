@@ -423,7 +423,12 @@
 - **Yeniden ölçüm:** `rg -n "record (Inquire|Return|Reassign)TaskItemRequest" services/Diten.Platform/src` ·
   `rg -n "reasonCode: null" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js`
 
-#### ✅ KAPANIŞ — `d71a3529` · 2026-07-31
+#### ⚠️ KAPANIŞ (KISMİ) — `d71a3529` · 2026-07-31 · **BL-043 canlı doğrulama BEKLİYOR**
+
+> **Ders, kaydedildi.** Bu başlık ilk yazıldığında `✅` idi. Kod yazılmıştı, testler yeşildi — ve
+> devretme akışı yine de çalışmıyordu: kişi seçici doğru listeyi gösterip **boş değer** üretiyordu
+> (BL-050). Yani BL-043 "kod yazıldı" anında değil, **canlıda doğrulandığı** anda kapanır.
+> `✅`'e ancak CT turu geçtikten sonra dönecek. BL-042 için de aynı şart geçerli.
 
 **BL-042 — ne yapıldı.** Kabul artık yaşam döngüsünden çıkarsanmıyor; `TaskItem.AcceptedByUserId`
 taşıyor ve **varlığı** kabul demek. `AcceptTaskItemHandler` bunu yazıyor, `ITaskAssignmentResolver`
@@ -444,6 +449,11 @@ bunu okuyor, bayat yorum güncellendi.
   ∉ {Open, Planned}); uydurma bir kural değil, kopyalanmış bir tanım — davranışın korunduğu bu yüzden
   bir umut değil, bir olgu. `AcceptedByUserId = AssigneeUserId`: eski kuralın kastedebileceği tek kişi
   odur (accept zaten yalnız atanana açık). İdempotent — yalnız damgasız satırlara dokunuyor.
+
+> ⛔ **BL-043'ÜN KAPANIŞI GERİ ALINDI (CT canlı doğrulaması, 2026-07-31).** Aşağıdaki kayıt
+> yapılan işi doğru anlatıyor, ama madde **kapanmadı**: devretme hâlâ çalışmıyor. Ayrıntı
+> BL-050'de. Kapanış kaydı, iş bittiğinde değil **doğrulandığında** yazılmalıydı; bu satır o
+> dersin kaydıdır.
 
 **BL-043 — ne yapıldı.** Gövde şekli tek bir yerde bildirildi (`TRANSITION_BODIES`, `app.js`).
 `inquire`/`return` → `{expectedVersion, reason}`, `reassign` → `+ assigneeUserId`; diğer yedi geçiş
@@ -479,6 +489,95 @@ cd frontend/Diten.Web && npx vitest run tests/task-transition-contract.test.js
 Canlı: bir görevi **Planla → Kabul et**, `admissionState` `admitted` olmalı; ikinci accept **409
 TASK_ALREADY_ACCEPTED**. `inquire` gerekçeyle → `Waiting` + Bekleyen segmenti. `reassign` → kişi
 seçici geliyor, seçmeden onaylanamıyor, sonra görev yeni kişide `pendingAcceptance`.
+
+#### 🔬 CT CANLI DOĞRULAMASI — `d858bb36` sonrası, 2026-07-31
+
+Servisler yeniden başlatılıp ölçüldü (aşağıya bak: **süreç canlıydı ama ikili 4 saat eskiydi**).
+
+| Ölçüm | Sonuç |
+|---|---|
+| Backfill regresyonu — dağılım turdan önceki hâlinde mi | ✅ `owned/admitted 18 · assigned/pendingAcceptance 3 · unowned/pendingClaim 2` — birebir aynı, kimsenin İşlerim'i boşalmadı |
+| Planlanmış görev (`asda`: Planned + pendingAcceptance) → Kabul et | ✅ `owned/admitted`, **`lifecycle` `Planned` KALDI** — kabul planı silmedi, tasarım kararı canlıda tuttu |
+| İkinci accept | ✅ `409 · TASK_ALREADY_ACCEPTED`, durum değişmedi |
+| `inquire` gerekçeyle | ✅ gövde `{expectedVersion, reason}` → **204**; `Waiting`; `waitingContext.reason.text` = kullanıcının cümlesi; Bekleyen 1→2; **sekme değişmedi** (aks yasası) |
+| `reassign` | 🔴 **BL-050** — kişi seçici geliyor ama seçilemiyor |
+| Üç kapı regresyonu | ✅ `CHECKLIST_INCOMPLETE` · `WORKFLOW_PENDING_APPROVAL` · `DEPENDENCY_BLOCKED`, üçünde de 409 ve durum değişmedi |
+
+**⚠ Doğrulamanın kendisi hakkında bir ders:** ilk ölçümde accept **hâlâ 204 dönüp hiçbir şey
+yapmıyordu** ve bu, düzeltmenin çalışmadığı sonucuna götürüyordu. Ölçüm yanlıştı: `5057` süreci
+`18:12`'de başlamıştı, yeni ikili `22:55`'te derlenmişti ve Platform `--no-build` ile **watch'sız**
+koşuyordu. Yani dosyada doğru kod, bellekte eski kod. `strings … | grep AcceptedByUserId` ikilide
+alanı gösterdi, süreç başlangıç saati farkı açıkladı. **`/health` 200 ≠ güncel ikili; süreç canlı ≠
+kod canlı.** Doğrulama, süreç başlangıç saatini ikili tarihiyle karşılaştırmadan başlamamalı.
+
+### BL-050 — 🔴 Devretme kişi seçicisi yanlış alanı okuyor: seçilemez liste
+- **Belirti (canlı, 2026-07-31):** Devretme diyaloğu iki kişiyi doğru gösteriyor (*Agent Sub*,
+  *Diten Admin*) ama **her `<option>`'ın `value`'su boş**. Kullanıcı bir kişi seçse bile
+  `assigneeUserId` boş kalıyor, doğrulama devreye giriyor ve diyalog *"Görevin kime devredileceğini
+  seçin."* diyor — **seçmiş olan kullanıcıya seçmediğini söylüyor.** Hiçbir ağ çağrısı yapılmıyor.
+- **Kök neden:** `app.js:3885` `person.id` okuyor; sunucu DTO'su
+  `AssignablePersonDto(Guid UserId, string? DisplayName, …)` (`TaskModels.cs:462-463`), yani
+  JSON'da alan **`userId`**. `person.id` diye bir alan yok → `undefined` → boş `value`.
+  Ad doğru geliyor çünkü `displayName` doğru okunuyor; **kusuru gizleyen şey tam olarak bu** —
+  liste dolu ve sağlıklı görünüyor.
+- **Aynı depoda doğrusu zaten iki yerde yazılı:** `app.js:2256` → `person.userId || person.id` ·
+  `assets/js/Tasks/form.js:226` → `option.value = row.userId;`
+- **Neden sözleşme testi yakalamadı:** `task-transition-contract.test.js` `TRANSITION_BODIES`
+  haritasını ve `assignablePeople()` çağrısının **varlığını** karşılaştırıyor; seçicinin **lookup
+  DTO'sunun alan adını** hiç okumuyor. Yani BL-043'te kurulan iki-taraflı sözleşme testi geçiş
+  gövdelerini kapsıyor, **lookup gövdelerini kapsamıyor.**
+- **Bu, BL-043'ün kendisiyle aynı kusur sınıfı:** bir değer iki yerde yaşıyor, sözleşme hiçbirini
+  bildirmiyor, sessizce kayıyor. Düzeltme yalnız `person.id → person.userId` değil; **lookup
+  DTO'ları da aynı iki-taraflı teste alınmalı**, yoksa bu üçüncü kez olur.
+- **Yeniden ölçüm:** `rg -n "person\.id|row\.userId|person\.userId" frontend/Diten.Web/wwwroot/assets/js` ·
+  canlı: devretme diyaloğunu aç, `document.getElementById('wcnReassignAssignee').value` boş mu?
+
+
+#### ✅ KAPANIŞ — `bb82b4f8` · 2026-07-31 · *(kod; canlı tur CT'de)*
+
+**Ne yapıldı.** `AssignablePersonDto` `userId` gönderiyor; seçici `person.id` okuyordu — olmayan bir
+alan. `undefined` şablon dizesinde **boş dize** olarak render olur, hata fırlatmaz: her `<option>`
+`value=""` aldı, doğrulama kullanıcının her seçimini reddetti, hiçbir istek gitmedi. Ad doğru
+görünüyordu çünkü `displayName` doğru okunuyordu — kusuru gizleyen tam olarak buydu.
+
+**Kararlar ve gerekçeleri:**
+- **Tek okuma noktası:** `personUserId(person)` (`app.js`). Depoda doğru cevap **zaten iki yerde**
+  yazılıydı (`app.js`'in kendi oluşturma formu, `Tasks/form.js`) ve üçüncüsü yine yanlış gönderildi.
+  Bir olgunun üç yazılışı bu kusuru üreten koşuldur; artık bir tane var.
+- **`|| person.id` yedeği kaldırıldı.** Olmayan bir alanın savunmacı okuması, `person.id`'yi makul
+  gösteren şeydi. Yedek kalsaydı kusur "çalışıyor gibi" görünmeye devam ederdi.
+- **Asıl iş tek satır değil, sözleşme testinin genişletilmesi.** `task-transition-contract.test.js`
+  **istek gövdelerini** iki taraftan okuyor — BL-043 bu yüzden bir daha kayamaz. BL-050 ise bir
+  **yanıt** alanı, o yüzden testten geçti. Aynı iki-taraflı yöntem lookup'lara uygulandı: sunucu
+  record'unun alanları ve istemcinin `<option>` **değer** okumaları ikisi de dosyadan ayrıştırılıyor,
+  hiçbiri elle yazılmıyor. Kapsam: `AssignablePersonDto` (app.js + Tasks/form.js) ve
+  `AssignablePositionDto` (Tasks/form.js).
+- **Tarama `<option>` değerine daraltıldı**, her `person.X` okumasına değil. Geniş tarama ilk denemede
+  ilgisiz `person.name/role/status`'u ve `form.js`'in iki farklı lookup için kullandığı aynı `row`
+  adını yakalayıp gürültü üretti. Kusur sınıfı **değerin kendisi**; orada `undefined` sessizce `""`
+  olur. Ayrıca taramanın gerçekten bir şeye baktığını kanıtlayan bir vacuity testi var.
+
+**KIRMIZI→YEŞİL kanıtı (düzeltmeden ÖNCE ölçüldü):**
+```
+× no <option> takes its value from a field no lookup DTO declares
+  → app.js builds an <option> value from id, which no lookup DTO declares: expected ['id'] to deeply equal []
+```
+düzeltmeden sonra: `Tests  22 passed (22)`.
+
+**KASTEN yapılmayanlar:**
+- **`Tasks/form.js` değiştirilmedi** — `row.userId` / `row.positionId` zaten doğru. Doğru olanı
+  "tek noktaya taşımak" için değiştirmek, çalışan kodu kanıtsız riske atmak olurdu; test onu
+  **kapsıyor**, yani kayarsa yakalanır.
+- **Canlı tur koşulmadı** — servis başlatma CT'de.
+
+**Yeniden ölçüm (sayı değil, komut):**
+```
+rg -n "person\.id" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js
+rg -n "personUserId" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js
+cd frontend/Diten.Web && npx vitest run tests/task-transition-contract.test.js
+```
+Canlı: devretme diyaloğunu aç → kişi seç → onayla. Doğrulama uyarısı **çıkmamalı**, ağ çağrısı
+**gitmeli**, görev yeni kişide `pendingAcceptance` belirmeli.
 
 ### BL-044 — 🟡 Türkçe büyük harfle arama sıfır sonuç veriyor
 - **Ölçüm:** `kapanış` → 1 eşleşme ✅ · `KAPANIŞ` → **0** ❌ · `kapanis` (aksansız) → 0.
