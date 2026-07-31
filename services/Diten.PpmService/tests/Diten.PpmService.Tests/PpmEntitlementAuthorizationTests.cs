@@ -124,6 +124,7 @@ public sealed class PpmEntitlementAuthorizationTests
 
     [Theory]
     [InlineData("55555555-5555-5555-5555-555555555555")]
+    [InlineData("55555555555555555555555555555555")]
     [InlineData("malformed-client-value")]
     public async Task One_scoped_correlation_flows_through_entitlement_mutation_and_dispatch(
         string incoming)

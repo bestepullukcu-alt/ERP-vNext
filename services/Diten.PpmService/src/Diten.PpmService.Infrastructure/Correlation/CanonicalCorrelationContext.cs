@@ -7,33 +7,34 @@ public sealed class CanonicalCorrelationContext(IHttpContextAccessor httpContext
     : ICorrelationContext
 {
     public const string HeaderName = "X-Correlation-Id";
-    private static readonly object ItemKey = new();
-    private Guid? _backgroundCorrelationId;
+    private readonly object _sync = new();
+    private Guid? _correlationId;
 
     public Guid CorrelationId
     {
         get
         {
-            var httpContext = httpContextAccessor.HttpContext;
-            if (httpContext is null)
+            lock (_sync)
             {
-                return _backgroundCorrelationId ??= Guid.NewGuid();
-            }
+                if (_correlationId is { } existing)
+                {
+                    return existing;
+                }
 
-            if (httpContext.Items.TryGetValue(ItemKey, out var existing)
-                && existing is Guid existingId
-                && existingId != Guid.Empty)
-            {
-                return existingId;
+                var incoming = httpContextAccessor.HttpContext?
+                    .Request.Headers[HeaderName].FirstOrDefault();
+                _correlationId = TryParseCanonicalGuid(incoming, out var parsed)
+                    ? parsed
+                    : Guid.NewGuid();
+                return _correlationId.Value;
             }
-
-            var incoming = httpContext.Request.Headers[HeaderName].FirstOrDefault();
-            var correlationId = Guid.TryParseExact(incoming, "D", out var parsed)
-                                && parsed != Guid.Empty
-                ? parsed
-                : Guid.NewGuid();
-            httpContext.Items[ItemKey] = correlationId;
-            return correlationId;
         }
+    }
+
+    private static bool TryParseCanonicalGuid(string? value, out Guid correlationId)
+    {
+        var parsed = Guid.TryParseExact(value, "D", out correlationId)
+                     || Guid.TryParseExact(value, "N", out correlationId);
+        return parsed && correlationId != Guid.Empty;
     }
 }
