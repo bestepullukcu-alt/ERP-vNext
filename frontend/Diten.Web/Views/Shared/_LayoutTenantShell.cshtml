@@ -200,6 +200,33 @@
                        are now rendered DATA-DRIVEN by the DynamicModuleMenu below (the `tenant-settings` BASELINE module,
                        "Settings" domain — same routes + same platform.tenant-security.manage per-item gate). The Work
                        Center block above stays hardcoded (Phase B / MOD-0024 will self-register it, entitlement-gated). *@
+                    @*
+                       ══ LEGACY-NAV — HAND-WRITTEN LINKS, NOT CATALOGUE-DRIVEN ═══════════════════════════════
+                       Everything from here to the LEGACY-NAV-END marker is typed by hand. It does NOT come from
+                       the module catalogue and the DynamicModuleMenu below knows nothing about it.
+
+                       WHY THIS MARKER EXISTS. When the dynamic menu produced ZERO groups for an entire session,
+                       the sidebar still looked populated — these six links were the only thing in it — so the
+                       outage read as "some modules are missing" when the truth was "none of them rendered". A
+                       hand-written link that is indistinguishable from a catalogue link masks the next outage the
+                       same way.
+
+                       FOUR OF THESE ARE ALREADY DUPLICATES. Measured against platform_module_page_descriptors:
+                         /DocumentManagementControlledDocuments → CONTROLLED_DOCUMENTS  (nav-visible, Active)
+                         /DocumentManagementTemplateMasters     → TEMPLATE_MASTERS      (nav-visible, Active)
+                         /DocumentManagementTemplateVariants    → TEMPLATE_VARIANTS     (nav-visible, Active)
+                         /DocumentManagementAccessMatrix        → ACCESS_MATRIX         (nav-visible, Active)
+                       so the moment the dynamic menu returns groups again, each of those four appears TWICE.
+
+                       TWO CANNOT BE MOVED TODAY:
+                         /DocumentManagementReconciliation — no nav-visible catalogue page for this route
+                         /HCM/Employees/Create             — HCM has NO module row in the catalogue at all
+                       which is why this block is MARKED rather than deleted. Deleting it while the dynamic menu
+                       is still returning 401 would leave the tenant with no sidebar whatsoever; the removal
+                       belongs AFTER the menu is confirmed healthy, and it is a deletion of the four duplicates
+                       plus a catalogue registration for the other two — not a move.
+                       ═══════════════════════════════════════════════════════════════════════════════════════
+                    *@
                     @* MOD-0029-FU01 — Controlled Documents (TenantShell). FE-B UX guard: shown only with the
                        view permission; backend (FU01 Layer 1 + Layer 2) is authoritative. The folder-share
                        wizard and add-document/template flows are reached from this page. *@
@@ -283,6 +310,7 @@
                                 <div>@SharedLocalizer["EmployeeDraftsMenu"]</div>
                             </a>
                         </li>
+                    @* ══ LEGACY-NAV-END ═══════════════════════════════════════════════════════════════════ *@
                     }
 
                     @* MOD-0285 — dynamic "Modules" section (AUGMENT). Self-registered/entitled modules whose page

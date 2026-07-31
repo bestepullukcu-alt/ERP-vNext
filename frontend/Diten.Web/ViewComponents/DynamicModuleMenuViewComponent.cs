@@ -37,12 +37,37 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
         return View(model);
     }
 
+    /*
+     * EVERY empty return goes through here, and every one of them logs.
+     *
+     * This component used to fall back to an empty menu on three separate paths — no token, non-2xx, empty
+     * payload — and NONE of them left a trace above Debug. A tenant's entire dynamic sidebar could disappear with
+     * not one line in the log at Information, which is exactly what happened: the menu rendered zero groups for a
+     * whole session and the only way to find out was to read the HttpClient trace underneath LogDebug.
+     *
+     * The reason string is the diagnosis, so the three cases must stay distinguishable: `no_token` is a session
+     * problem, `http_401` is authentication, `empty_payload` is entitlement or catalogue data. They point at three
+     * different teams.
+     */
+    private DynamicModuleMenuViewModel EmptyBecause(string reason, string? detail = null)
+    {
+        _logger.LogWarning(
+            "dynamic_module_menu.empty Reason={Reason} TenantId={TenantId} CorrelationId={CorrelationId} Detail={Detail}. "
+            + "The tenant's dynamic sidebar rendered NO groups.",
+            reason,
+            GetTenantId() ?? "<none>",
+            HttpContext?.TraceIdentifier ?? "<none>",
+            detail ?? "-");
+
+        return DynamicModuleMenuViewModel.Empty;
+    }
+
     private async Task<DynamicModuleMenuViewModel> ResolveAsync(CancellationToken ct)
     {
         var token = AuthTokenCookies.GetAccessToken(Request);
         if (string.IsNullOrWhiteSpace(token))
         {
-            return DynamicModuleMenuViewModel.Empty;
+            return EmptyBecause("no_token");
         }
 
         try
@@ -58,8 +83,9 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
             using var response = await _httpClient.SendAsync(request, ct);
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogDebug("Dynamic module menu resolve returned {StatusCode}.", (int)response.StatusCode);
-                return DynamicModuleMenuViewModel.Empty;
+                // 401 here is the live defect: the gateway rejects the token intermittently and the menu vanishes.
+                // Warning, not Debug — a disappearing menu is not a debug-level event.
+                return EmptyBecause($"http_{(int)response.StatusCode}", response.ReasonPhrase);
             }
 
             await using var stream = await response.Content.ReadAsStreamAsync(ct);
@@ -67,7 +93,9 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
             var groups = payload?.Data;
             if (groups is null || groups.Count == 0)
             {
-                return DynamicModuleMenuViewModel.Empty;
+                // 200 with nothing in it: the request was fine and the SERVER decided this tenant sees no module.
+                // Entitlement or catalogue data, never authentication — which is why it needs its own reason.
+                return EmptyBecause("empty_payload");
             }
 
             // FIX-3 — DATA-DRIVEN: group modules by DOMAIN (display name resolved server-side). Each module is one
@@ -112,8 +140,12 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
         }
         catch (Exception ex)
         {
-            // Best-effort: a broken nav endpoint must not break the shell.
-            _logger.LogDebug(ex, "Dynamic module menu resolve failed; rendering empty section.");
+            // Best-effort STILL means loud: a broken nav endpoint must not break the shell, but it must not be
+            // invisible either. This was the fourth silent exit — a deserialization or transport failure took the
+            // whole sidebar out at Debug level.
+            _logger.LogWarning(ex, "dynamic_module_menu.empty Reason=exception TenantId={TenantId} CorrelationId={CorrelationId}. "
+                + "The tenant's dynamic sidebar rendered NO groups.",
+                GetTenantId() ?? "<none>", HttpContext?.TraceIdentifier ?? "<none>");
             return DynamicModuleMenuViewModel.Empty;
         }
     }
