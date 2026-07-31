@@ -322,6 +322,31 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // never hidden. A hidden button teaches the reader nothing about why the work will not move.
         var dependencies = ToDependencies(task, edges ?? [], edgeTasks);
         var activity = ToActivity(comments ?? []);
+
+        /*
+         * THE FOUR CONDITIONAL CONTAINERS, DECIDED ONCE.
+         *
+         * The contract's CAPABILITY_REQUIRED_FOR_DATA / CAPABILITY_CONTAINER_REQUIRED pair rejects a HALF: a
+         * container without its capability, or a capability without its container. validateItems does not repair
+         * a half — it DROPS the whole item, so the task vanishes from the surface with its title, its actions and
+         * everything else.
+         *
+         * `dependencies` shipped as exactly that half. The field has been emitted since BL-028 and the capability
+         * was never added, so from the day dependencies existed, every task that had one was invisible in the Task
+         * Center. Two were being dropped in production when this was measured.
+         *
+         * The cure is structural rather than careful: each container is built here, ONCE, and the capability list
+         * below is derived from these very objects. A capability is declared exactly when its container is
+         * non-null, because it is the same reference — there is no second condition left to drift. Previously
+         * checklist, subtasks and businessContext each had their condition written twice; they agreed today, and
+         * the day they stopped agreeing an item would disappear.
+         */
+        var dependencyList = dependencies.Count == 0 ? null : dependencies;
+        var checklistBlock = checklist is null ? null : ToChecklist(checklist);
+        // A subtask cannot have subtasks. A parent always gets the container, even empty, because the shell
+        // offers "add a subtask" there — declared-and-empty is a state the contract models; a half is not.
+        var subtasks = task.ParentTaskItemId is null ? ToSubtasks(children, actor, displayNames) : null;
+        var businessContext = ToBusinessContext(task, fieldDefinitions);
         var blockers = ResolveBlockers(task, edges ?? [], edgeTasks, children);
 
         var (built, primaryActionCode, overflowActionCodes) = terminal
@@ -392,7 +417,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 DeepLink: $"/Tasks/{task.Id}"),
             // MOD-0024 IS the lifecycle owner here (unlike a workflow-gated business object).
             LifecycleOwner: TaskProviderCode,
-            WorkItemCapabilities: ResolveCapabilities(task, checklist, children),
+            WorkItemCapabilities: ResolveCapabilities(
+                dependencyList, checklistBlock, subtasks, businessContext),
             Actions: actions,
             Concurrency: new WorkItemConcurrencyDto("version", task.Version.ToString()),
             WaitingContext: waiting is null
@@ -412,16 +438,16 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // An unclaimed pool task genuinely has no assignee — omit rather than invent one.
             Assignee: Person(task.AssigneeUserId, actor, displayNames),
             Requester: Person(task.CreatedByUserId, actor, displayNames),
-            // Container ⇔ capability, both directions: emitted only when declared, and then even if empty.
-            Checklist: checklist is null ? null : ToChecklist(checklist),
-            Subtasks: task.ParentTaskItemId is null ? ToSubtasks(children, actor, displayNames) : null,
+            // All four conditional containers are the SAME objects the capability list was derived from —
+            // see the block that builds them. No condition is restated here, so none can drift.
+            Checklist: checklistBlock,
+            Subtasks: subtasks,
             ParentTaskItemId: task.ParentTaskItemId?.ToString(),
             Gates: BuildGates(
                 task, actor, displayNames, approvalOutstanding, approvalRejected, reviewOutstanding, reviewRejected),
             // The engine's own spelling, straight through — the contract's PRIORITIES are that enum (BL-032).
             Priority: task.Priority.ToString(),
-            // Container ⇔ capability again: emitted only when `dependencies` is declared, and then even if empty.
-            Dependencies: dependencies.Count == 0 ? null : dependencies,
+            Dependencies: dependencyList,
             // Absent when nothing blocks. A terminal task offers no actions at all, so a blocker pointing at one
             // would break the contract's "every affected code is a disabled action" rule.
             BlockedState: effectiveBlockers.Count == 0
@@ -438,13 +464,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // be real on the server and invisible on the screen.
             PlannedDate: task.PlannedDate,
             Pool: ToPool(task, poolLabels),
-            /*
-             * Container ⇔ capability, from ONE decision. ResolveCapabilities declares `businessContext` when a
-             * task has configurable values, and this produces the container under the same condition — the two
-             * used to be independent, and the contract's CAPABILITY_CONTAINER_REQUIRED then made validateItems
-             * drop the entire item.
-             */
-            BusinessContext: ToBusinessContext(task, fieldDefinitions),
+            BusinessContext: businessContext,
             /*
              * Measured against the wall clock at PROJECTION time, and stated as a state rather than a countdown.
              * The reader's tab may outlive this answer; the absolute DueAt travels with it so the words on screen
@@ -483,39 +503,48 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     }
 
     /// <summary>
-    /// Declared capabilities gate which detail blocks render. Phase 1 declares only what actually exists:
-    /// planning/execution plus businessContext when configurable values are present. Checklist/subtasks arrive
-    /// with Phase 2 — declaring them now would render empty blocks.
+    /// The declared capability list, derived from the containers that will actually be emitted.
+    ///
+    /// <para><b>Every parameter is the emitted object itself, not a condition that reproduces it.</b> That is the
+    /// whole design: the contract drops an item that declares a capability without its container or carries a
+    /// container without its capability, and the only durable way to keep the two in step is to stop writing the
+    /// condition twice. <c>dependencies</c> is why — its container shipped in BL-028, its capability was never
+    /// added, and every task with a dependency has been invisible on the surface ever since.</para>
     /// </summary>
     private static IReadOnlyList<string> ResolveCapabilities(
-        TaskItem task,
-        ChecklistRun? checklist,
-        IReadOnlyList<TaskItem> children)
+        IReadOnlyList<WorkItemDependencyDto>? dependencies,
+        WorkItemChecklistDto? checklist,
+        WorkItemSubtasksDto? subtasks,
+        WorkItemBusinessContextDto? businessContext)
     {
+        // Unconditional: MOD-0024 owns planning and execution for every task it projects.
         var capabilities = new List<string> { "planning", "execution" };
-        if (task.FieldValues.Count > 0)
+
+        if (businessContext is not null)
         {
             capabilities.Add("businessContext");
         }
 
-        // Declared only when the container will be emitted — the contract rejects either half alone.
         if (checklist is not null)
         {
             capabilities.Add("checklist");
         }
 
-        // A subtask cannot have subtasks, so it never declares the capability; a parent always may, even with
-        // no children yet, because the shell offers "add a subtask" there.
-        if (task.ParentTaskItemId is null)
+        if (subtasks is not null)
         {
             capabilities.Add("subtasks");
         }
 
+        if (dependencies is not null)
+        {
+            capabilities.Add("dependencies");
+        }
+
         /*
-         * Activity is declared UNCONDITIONALLY, unlike the checklist. MOD-0024 is the source of its own comments,
-         * so the feed exists for every task whether or not anyone has written in it yet — the same reasoning that
-         * declares `subtasks` on a parent with no children. Declaring it only when comments exist would hide the
-         * composer on exactly the tasks nobody has commented on, which is where it is needed most.
+         * Activity is declared UNCONDITIONALLY, and its container is emitted unconditionally to match. MOD-0024 is
+         * the source of its own comments, so the feed exists for every task whether or not anyone has written in
+         * it yet. Declaring it only when comments exist would hide the composer on exactly the tasks nobody has
+         * commented on, which is where it is needed most.
          *
          * What the feed does NOT contain is a lifecycle event log: none exists, and deriving one from the
          * timestamps a task happens to carry would omit accept/plan/claim/release/inquire silently.
