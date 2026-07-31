@@ -212,6 +212,30 @@
      */
     const personUserId = (person) => person?.userId ?? null;
 
+    /*
+     * BL-044 — search folding that does not depend on the reader's locale.
+     *
+     * `'KAPANIŞ'.toLowerCase()` gives `kapanış` with a DOTTED i, because invariant lowercasing maps I→i. The text
+     * on screen has the DOTLESS ı. So every Turkish word containing I/ı vanished from search the moment the user
+     * typed it in capitals — and caps lock and mobile auto-capitalisation make that ordinary, not exotic. The
+     * user reads it as "search is broken" and has no way to find out why.
+     *
+     * Two steps, both locale-INDEPENDENT:
+     *   1. NFD + strip combining marks — folds ş→s, ü→u, é→e, й→и. This is also why `kapanis` (typed without
+     *      any Turkish characters at all) now finds `kapanış`, which was the second half of the report.
+     *   2. Map the whole I family (I İ ı i and dotted-İ's decomposed form) to plain `i`, because step 1 alone
+     *      still leaves I and ı on opposite sides.
+     *
+     * NOT toLocaleLowerCase('tr'): that fixes Turkish by breaking everyone else — in a seven-language product it
+     * would make `I` unfindable for the English, French and German readers. Folding is symmetric; a Turkish
+     * lowercase is a preference imposed on six other languages.
+     */
+    const foldForSearch = (value) => String(value == null ? '' : value)
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')   // combining marks: ş→s, ü→u, é→e
+        .replace(/[\u0130\u0131I]/g, 'i')   // İ, ı, I → i (the dotless/dotted split step 1 cannot close)
+        .toLowerCase();
+
 
     const chip = (kind, icon, text, title) =>
         `<span class="wcn-chip wcn-chip-${kind}"${title ? ` title="${esc(title)}"` : ''}>` +
@@ -385,9 +409,11 @@
             const matches = state.group === GROUP_UNNAMED ? !item.group : item.group === state.group;
             if (!matches) { return false; }
         }
-        const q = state.search.trim().toLowerCase();   // ignore leading/trailing space
+        // BOTH sides folded the same way — folding only the needle would leave the haystack unmatchable.
+        const q = foldForSearch(state.search.trim());   // ignore leading/trailing space
         if (q) {
-            const hay = (item.title + ' ' + item.summary + ' ' + item.sourceModule + ' ' + item.sourceId + ' ' + item.requester).toLowerCase();
+            const hay = foldForSearch(
+                item.title + ' ' + item.summary + ' ' + item.sourceModule + ' ' + item.sourceId + ' ' + item.requester);
             if (!hay.includes(q)) { return false; }
         }
         return true;
@@ -404,13 +430,15 @@
         if (state.typeFilter.size && !state.typeFilter.has('meetingInvite')) { return []; }
         // Trigger-only invitations do not carry task priority or assignment mode.
         if (state.priorityFilter !== 'all' || state.modeFilter !== 'all') { return []; }
-        const query = state.search.trim().toLowerCase();
+        // Same fold as the item search (BL-044) — a meeting invitation must not be findable by different rules
+        // from the task beside it.
+        const query = foldForSearch(state.search.trim());
         return state.triggers.filter((trigger) => {
             const provider = trigger.source?.providerCode || '';
             if (state.moduleFilter.length && !state.moduleFilter.includes(provider)) { return false; }
             const title = data.resolveLabel(trigger.title);
             const summary = data.resolveLabel(trigger.summary);
-            return !query || `${title} ${summary} ${provider}`.toLowerCase().includes(query);
+            return !query || foldForSearch(`${title} ${summary} ${provider}`).includes(query);
         });
     };
 
