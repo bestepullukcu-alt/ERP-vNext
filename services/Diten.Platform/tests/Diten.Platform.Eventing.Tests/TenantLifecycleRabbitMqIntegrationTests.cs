@@ -492,7 +492,9 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
             _handler = handler;
             _targetCount = targetCount;
             _adapter = new Diten.Platform.Application.Features.Notifications.Services.NotificationEventDispatchAdapter(
-                new SeededEventRepository(), this, new PassThroughLocaleResolver());
+                new SeededEventRepository(), this, new PassThroughLocaleResolver(),
+                Microsoft.Extensions.Logging.Abstractions.NullLogger<
+                    Diten.Platform.Application.Features.Notifications.Services.NotificationEventDispatchAdapter>.Instance);
         }
 
         public List<QueueEmailNotificationCommand> Commands { get; } = [];

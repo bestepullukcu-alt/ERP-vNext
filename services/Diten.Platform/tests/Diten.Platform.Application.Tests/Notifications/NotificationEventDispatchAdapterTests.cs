@@ -187,7 +187,9 @@ public sealed class NotificationEventDispatchAdapterTests
                 .ReturnsAsync(sendResult);
         }
         var repo = new FakeEventRepo();
-        return (new NotificationEventDispatchAdapter(repo, mediator.Object, new PassThroughLocaleResolver()), mediator, repo);
+        return (new NotificationEventDispatchAdapter(
+            repo, mediator.Object, new PassThroughLocaleResolver(),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<NotificationEventDispatchAdapter>.Instance), mediator, repo);
     }
 
     private static void VerifyNeverDispatched(Mock<IMediator> mediator) =>

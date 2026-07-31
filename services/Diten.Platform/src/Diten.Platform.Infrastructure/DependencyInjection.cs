@@ -328,6 +328,14 @@ public static class DependencyInjection
         PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        // WC-4 — the platform-default messaging settings row. Without it QueueEmailNotificationHandler refuses at its
+        // FIRST line and no producer's notification ever reaches a template, a locale or a provider. Derived from the
+        // Smtp section so that block finally configures what it appears to configure. Idempotent; never overrides a
+        // row an operator created.
+        NotificationMessagingSettingsSeed.EnsureSeededAsync(
+                database,
+                configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions())
+            .GetAwaiter().GetResult();
         // MOD-0027-FU03A (Bridge) — PlatformSeed/SystemSeed notification events; runs after templates exist. No-op
         // until FU04A adds seed content.
         NotificationEventSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
@@ -386,7 +394,10 @@ public static class DependencyInjection
 
         services.AddHostedService<OutboxPublisherWorker>();
 
-        RunMongoStartupInitialization(database, mongoSettings);
+        RunMongoStartupInitialization(
+            database,
+            mongoSettings,
+            configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions());
 
         return services;
     }
@@ -418,7 +429,10 @@ public static class DependencyInjection
             });
     }
 
-    private static void RunMongoStartupInitialization(IMongoDatabase database, MongoDbSettings mongoSettings)
+    private static void RunMongoStartupInitialization(
+        IMongoDatabase database,
+        MongoDbSettings mongoSettings,
+        SmtpOptions smtpOptions)
     {
         try
         {
@@ -433,6 +447,11 @@ public static class DependencyInjection
             PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            // WC-4 — the platform-default messaging settings row. Without it QueueEmailNotificationHandler refuses at its
+            // FIRST line and no producer's notification ever reaches a template, a locale or a provider. Derived from the
+            // Smtp section so that block finally configures what it appears to configure. Idempotent; never overrides a
+            // row an operator created.
+            NotificationMessagingSettingsSeed.EnsureSeededAsync(database, smtpOptions).GetAwaiter().GetResult();
             // MOD-0027-FU03A (Bridge) — PlatformSeed/SystemSeed notification events; runs after templates exist. No-op
             // until FU04A adds seed content.
             NotificationEventSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();

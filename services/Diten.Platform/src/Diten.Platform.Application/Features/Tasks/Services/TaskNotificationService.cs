@@ -123,6 +123,7 @@ public static class TaskNotificationSafely
 public sealed class TaskNotificationService : ITaskNotificationService
 {
     private readonly INotificationEventDispatchAdapter _notifications;
+    private readonly INotificationLocaleResolver _localeResolver;
     private readonly ITaskNotificationRecipientResolver _recipients;
     private readonly IPositionAssignmentRepository _positionAssignments;
     private readonly ITenantContext _tenantContext;
@@ -130,12 +131,14 @@ public sealed class TaskNotificationService : ITaskNotificationService
 
     public TaskNotificationService(
         INotificationEventDispatchAdapter notifications,
+        INotificationLocaleResolver localeResolver,
         ITaskNotificationRecipientResolver recipients,
         IPositionAssignmentRepository positionAssignments,
         ITenantContext tenantContext,
         ILogger<TaskNotificationService> logger)
     {
         _notifications = notifications;
+        _localeResolver = localeResolver;
         _recipients = recipients;
         _positionAssignments = positionAssignments;
         _tenantContext = tenantContext;
@@ -212,11 +215,29 @@ public sealed class TaskNotificationService : ITaskNotificationService
 
             if (!response.IsSuccessful)
             {
-                // Most common in a fresh environment: the manifest-declared event is not in the catalogue yet,
-                // or no template is seeded. Both are ops conditions, not task failures.
+                /*
+                 * An ops condition, not a task failure — but one somebody has to be able to DIAGNOSE.
+                 *
+                 * This line used to say only "ReasonCode={ReasonCode}", and the codes it reported were null,
+                 * because none of QueueEmailNotificationHandler's six refusals carried one. "Not dispatched,
+                 * reason null" is not a diagnosis; it sent a whole round of investigation at the templates while
+                 * the real refusal was a missing platform-default messaging settings row.
+                 *
+                 * Now: the code, the message behind it, and the locale that was actually looked up. The resolved
+                 * TEMPLATE KEY is on the adapter's notification.dispatch_failed line, emitted immediately before
+                 * this one for the same tenant and event — it lives there because the adapter is the only place
+                 * that knows it, and Response has nowhere to carry it back.
+                 */
+                var resolvedLocale = await _localeResolver.ResolveAsync(_tenantContext.TenantId, null, ct);
+
                 _logger.LogWarning(
-                    "task.notification.not_dispatched EventCode={EventCode} TaskId={TaskId} ReasonCode={ReasonCode}",
-                    eventCode, task.Id, response.ReasonCode);
+                    "task.notification.not_dispatched EventCode={EventCode} TaskId={TaskId} ReasonCode={ReasonCode} "
+                    + "Locale={Locale} Reason={Reason}",
+                    eventCode,
+                    task.Id,
+                    response.ReasonCode ?? "<none>",
+                    resolvedLocale,
+                    string.Join(" | ", response.Errors));
                 return TaskNotificationOutcome.Failed;
             }
 

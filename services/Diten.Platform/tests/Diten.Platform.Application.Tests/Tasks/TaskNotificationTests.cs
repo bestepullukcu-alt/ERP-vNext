@@ -260,6 +260,7 @@ public sealed class TaskNotificationTests
             Adapter = new RecordingNotificationDispatchAdapter();
             Service = new TaskNotificationService(
                 Adapter,
+                new FakeNotificationLocaleResolver(),
                 resolver,
                 positionAssignments ?? new FakePositionAssignmentRepository(),
                 new FakeTenantContext(TaskTestData.Tenant),

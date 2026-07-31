@@ -312,12 +312,14 @@ public sealed class TaskNotificationLocaleTests
             Adapter = new NotificationEventDispatchAdapter(
                 new ManifestEventDefinitionRepository(),
                 Mediator,
-                localeResolver);
+                localeResolver,
+                NullLogger<NotificationEventDispatchAdapter>.Instance);
 
             var resolver = new FixedRecipients(people);
 
             _service = new TaskNotificationService(
                 Adapter,
+                localeResolver,
                 resolver,
                 new FakePositionAssignmentRepository(),
                 new FakeTenantContext(tenant),

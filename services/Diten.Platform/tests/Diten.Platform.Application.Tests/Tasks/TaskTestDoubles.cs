@@ -1103,3 +1103,15 @@ internal static class SlaForTests
                     DueSoonWithinWorkingDays = dueSoonWithinWorkingDays
                 }));
 }
+
+/// <summary>
+/// Answers with the tenant's language without touching a tenant registry. The real chain (caller → tenant runtime
+/// language → profile default → "en") is proved by TenantNotificationLocaleResolver's own tests and end to end by
+/// TaskNotificationLocaleTests; here it would only be scenery.
+/// </summary>
+internal sealed class FakeNotificationLocaleResolver(string locale = "en")
+    : Diten.Platform.Application.Features.Notifications.Services.INotificationLocaleResolver
+{
+    public Task<string> ResolveAsync(Guid tenantId, string? requested, CancellationToken ct = default)
+        => Task.FromResult(string.IsNullOrWhiteSpace(requested) ? locale : requested.Trim().ToLowerInvariant());
+}

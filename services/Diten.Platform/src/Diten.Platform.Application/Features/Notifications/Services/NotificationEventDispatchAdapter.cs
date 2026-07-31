@@ -4,6 +4,7 @@ using Diten.Platform.Domain.Entities.Notifications;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.Notifications.Services;
 
@@ -56,15 +57,18 @@ public sealed class NotificationEventDispatchAdapter : INotificationEventDispatc
     private readonly INotificationEventDefinitionRepository _eventRepository;
     private readonly IMediator _mediator;
     private readonly INotificationLocaleResolver _localeResolver;
+    private readonly ILogger<NotificationEventDispatchAdapter> _logger;
 
     public NotificationEventDispatchAdapter(
         INotificationEventDefinitionRepository eventRepository,
         IMediator mediator,
-        INotificationLocaleResolver localeResolver)
+        INotificationLocaleResolver localeResolver,
+        ILogger<NotificationEventDispatchAdapter> logger)
     {
         _eventRepository = eventRepository;
         _mediator = mediator;
         _localeResolver = localeResolver;
+        _logger = logger;
     }
 
     public async Task<Response<NotificationDispatchDto>> DispatchByEventCodeAsync(
@@ -134,7 +138,32 @@ public sealed class NotificationEventDispatchAdapter : INotificationEventDispatc
             CausationId: request.CausationId);
 
         var command = new QueueEmailNotificationCommand(request.TenantId, queueRequest, request.CorrelationId);
-        return await _mediator.Send(command, ct);
+        var response = await _mediator.Send(command, ct);
+
+        if (!response.IsSuccessful)
+        {
+            /*
+             * The authoritative diagnosis line, emitted where the facts actually live.
+             *
+             * This adapter is the only place that knows the RESOLVED template key and the RESOLVED locale together
+             * with the downstream reason code — the caller sees a Response with no room for either. Without this
+             * line the operator's question ("which language was looked for, under which key?") had no answer
+             * anywhere in the logs, and WC-4 spent a round guessing at a locale/template problem that did not
+             * exist while the real refusal was missing messaging settings.
+             */
+            _logger.LogWarning(
+                "notification.dispatch_failed TenantId={TenantId} EventCode={EventCode} TemplateKey={TemplateKey} "
+                + "Locale={Locale} ReasonCode={ReasonCode} Status={Status} Reason={Reason}",
+                request.TenantId,
+                eventCode,
+                templateKey,
+                locale,
+                response.ReasonCode ?? "<none>",
+                response.StatusCode,
+                string.Join(" | ", response.Errors));
+        }
+
+        return response;
     }
 
     // Missing = key absent, null value, or empty/whitespace string value. Non-string non-null values are accepted.
