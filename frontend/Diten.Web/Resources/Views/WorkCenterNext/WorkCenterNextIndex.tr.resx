@@ -1589,4 +1589,49 @@
   <data name="SubtaskToggleAria" xml:space="preserve">
     <value>'{0}' alt görevini tamamla</value>
   </data>
+  <data name="HavuzTitleInvoiceMatch" xml:space="preserve">
+    <value>Gelen fatura eşleştirme</value>
+  </data>
+  <data name="HavuzTitleInvoiceMatchSummary" xml:space="preserve">
+    <value>Muhasebe kuyruğundaki eşleşmemiş tedarikçi faturasını satın alma siparişiyle eşleştir.</value>
+  </data>
+  <data name="HavuzTitlePrReview" xml:space="preserve">
+    <value>Satınalma talebi ön incelemesi</value>
+  </data>
+  <data name="HavuzTitlePrReviewSummary" xml:space="preserve">
+    <value>İnceleme kuyruğundaki satınalma talebini bütçe ve tedarikçi uygunluğu açısından ön incele.</value>
+  </data>
+  <data name="HavuzTitleAuditFinding" xml:space="preserve">
+    <value>Denetim bulgusu incelemesi</value>
+  </data>
+  <data name="HavuzTitleAuditFindingSummary" xml:space="preserve">
+    <value>Kalite denetiminde açılan bulguyu incelemek üzere sana teklif edildi.</value>
+  </data>
+  <data name="GecmisTitleQ1Close" xml:space="preserve">
+    <value>2026 Q1 dönem kapanışı</value>
+  </data>
+  <data name="GecmisTitleQ1CloseSummary" xml:space="preserve">
+    <value>2026 birinci çeyrek konsolidasyon kapanışı — tüm birim mutabakatları tamamlandı.</value>
+  </data>
+  <data name="GecmisTitleSupplierContract" xml:space="preserve">
+    <value>Tedarikçi çerçeve sözleşmesi onayı</value>
+  </data>
+  <data name="GecmisTitleSupplierContractSummary" xml:space="preserve">
+    <value>Tedarikçi çerçeve sözleşmesi şartları uygun bulunarak onaylandı ve satınalmaya devredildi.</value>
+  </data>
+  <data name="GecmisTitleReportTemplate" xml:space="preserve">
+    <value>Eski raporlama şablonu revizyonu</value>
+  </data>
+  <data name="GecmisTitleReportTemplateSummary" xml:space="preserve">
+    <value>Yeni raporlama modülü devreye girdiği için eski şablon revizyonu iptal edildi.</value>
+  </data>
+  <data name="GecmisChkReconcile" xml:space="preserve">
+    <value>Birim mutabakatlarını tamamla</value>
+  </data>
+  <data name="GecmisChkReview" xml:space="preserve">
+    <value>Kapanış paketini incele</value>
+  </data>
+  <data name="GecmisChkPublish" xml:space="preserve">
+    <value>Sonuçları yayınla</value>
+  </data>
 </root>

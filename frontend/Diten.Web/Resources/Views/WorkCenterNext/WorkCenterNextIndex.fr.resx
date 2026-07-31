@@ -1589,4 +1589,49 @@
   <data name="SubtaskToggleAria" xml:space="preserve">
     <value>Terminer la sous-tâche « {0} »</value>
   </data>
+  <data name="HavuzTitleInvoiceMatch" xml:space="preserve">
+    <value>Rapprocher la facture entrante</value>
+  </data>
+  <data name="HavuzTitleInvoiceMatchSummary" xml:space="preserve">
+    <value>Rapprocher une facture fournisseur non lettrée de la file comptable avec son bon de commande.</value>
+  </data>
+  <data name="HavuzTitlePrReview" xml:space="preserve">
+    <value>Pré-examen de la demande d'achat</value>
+  </data>
+  <data name="HavuzTitlePrReviewSummary" xml:space="preserve">
+    <value>Pré-examinez une demande d'achat de la file d'examen pour le budget et l'éligibilité du fournisseur.</value>
+  </data>
+  <data name="HavuzTitleAuditFinding" xml:space="preserve">
+    <value>Examen du constat d'audit</value>
+  </data>
+  <data name="HavuzTitleAuditFindingSummary" xml:space="preserve">
+    <value>Un constat d'audit qualité vous a été proposé pour examen.</value>
+  </data>
+  <data name="GecmisTitleQ1Close" xml:space="preserve">
+    <value>Clôture de la période T1 2026</value>
+  </data>
+  <data name="GecmisTitleQ1CloseSummary" xml:space="preserve">
+    <value>Clôture de consolidation du premier trimestre 2026 — tous les rapprochements d'unité terminés.</value>
+  </data>
+  <data name="GecmisTitleSupplierContract" xml:space="preserve">
+    <value>Approbation du contrat-cadre fournisseur</value>
+  </data>
+  <data name="GecmisTitleSupplierContractSummary" xml:space="preserve">
+    <value>Les conditions du contrat-cadre fournisseur ont été approuvées et transmises aux achats.</value>
+  </data>
+  <data name="GecmisTitleReportTemplate" xml:space="preserve">
+    <value>Révision de l'ancien modèle de reporting</value>
+  </data>
+  <data name="GecmisTitleReportTemplateSummary" xml:space="preserve">
+    <value>La révision de l'ancien modèle a été annulée après la mise en service du nouveau module de reporting.</value>
+  </data>
+  <data name="GecmisChkReconcile" xml:space="preserve">
+    <value>Terminer les rapprochements d'unité</value>
+  </data>
+  <data name="GecmisChkReview" xml:space="preserve">
+    <value>Examiner le dossier de clôture</value>
+  </data>
+  <data name="GecmisChkPublish" xml:space="preserve">
+    <value>Publier les résultats</value>
+  </data>
 </root>

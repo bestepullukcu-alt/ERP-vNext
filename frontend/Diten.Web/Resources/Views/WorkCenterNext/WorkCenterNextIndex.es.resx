@@ -1589,4 +1589,49 @@
   <data name="SubtaskToggleAria" xml:space="preserve">
     <value>Completar la subtarea '{0}'</value>
   </data>
+  <data name="HavuzTitleInvoiceMatch" xml:space="preserve">
+    <value>Conciliar factura entrante</value>
+  </data>
+  <data name="HavuzTitleInvoiceMatchSummary" xml:space="preserve">
+    <value>Concilia una factura de proveedor pendiente en la cola de contabilidad con su orden de compra.</value>
+  </data>
+  <data name="HavuzTitlePrReview" xml:space="preserve">
+    <value>Prerrevisión de solicitud de compra</value>
+  </data>
+  <data name="HavuzTitlePrReviewSummary" xml:space="preserve">
+    <value>Prerrevisa una solicitud de compra en la cola de revisión por presupuesto y elegibilidad del proveedor.</value>
+  </data>
+  <data name="HavuzTitleAuditFinding" xml:space="preserve">
+    <value>Revisión de hallazgo de auditoría</value>
+  </data>
+  <data name="HavuzTitleAuditFindingSummary" xml:space="preserve">
+    <value>Se te ha ofrecido un hallazgo de auditoría de calidad para su revisión.</value>
+  </data>
+  <data name="GecmisTitleQ1Close" xml:space="preserve">
+    <value>Cierre del período Q1 2026</value>
+  </data>
+  <data name="GecmisTitleQ1CloseSummary" xml:space="preserve">
+    <value>Cierre de consolidación del primer trimestre de 2026: todas las conciliaciones de unidad completadas.</value>
+  </data>
+  <data name="GecmisTitleSupplierContract" xml:space="preserve">
+    <value>Aprobación de contrato marco de proveedor</value>
+  </data>
+  <data name="GecmisTitleSupplierContractSummary" xml:space="preserve">
+    <value>Los términos del contrato marco de proveedor se aprobaron y se remitieron a compras.</value>
+  </data>
+  <data name="GecmisTitleReportTemplate" xml:space="preserve">
+    <value>Revisión de plantilla de informes heredada</value>
+  </data>
+  <data name="GecmisTitleReportTemplateSummary" xml:space="preserve">
+    <value>La revisión de la plantilla heredada se canceló tras la puesta en marcha del nuevo módulo de informes.</value>
+  </data>
+  <data name="GecmisChkReconcile" xml:space="preserve">
+    <value>Completar conciliaciones de unidad</value>
+  </data>
+  <data name="GecmisChkReview" xml:space="preserve">
+    <value>Revisar el paquete de cierre</value>
+  </data>
+  <data name="GecmisChkPublish" xml:space="preserve">
+    <value>Publicar los resultados</value>
+  </data>
 </root>

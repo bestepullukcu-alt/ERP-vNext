@@ -1589,4 +1589,49 @@
   <data name="SubtaskToggleAria" xml:space="preserve">
     <value>Завершить подзадачу «{0}»</value>
   </data>
+  <data name="HavuzTitleInvoiceMatch" xml:space="preserve">
+    <value>Сопоставить входящий счёт</value>
+  </data>
+  <data name="HavuzTitleInvoiceMatchSummary" xml:space="preserve">
+    <value>Сопоставьте несверённый счёт поставщика из бухгалтерской очереди с заказом на закупку.</value>
+  </data>
+  <data name="HavuzTitlePrReview" xml:space="preserve">
+    <value>Предварительная проверка заявки на закупку</value>
+  </data>
+  <data name="HavuzTitlePrReviewSummary" xml:space="preserve">
+    <value>Предварительно проверьте заявку на закупку из очереди на соответствие бюджету и поставщику.</value>
+  </data>
+  <data name="HavuzTitleAuditFinding" xml:space="preserve">
+    <value>Проверка результата аудита</value>
+  </data>
+  <data name="HavuzTitleAuditFindingSummary" xml:space="preserve">
+    <value>Вам предложен результат аудита качества для проверки.</value>
+  </data>
+  <data name="GecmisTitleQ1Close" xml:space="preserve">
+    <value>Закрытие периода Q1 2026</value>
+  </data>
+  <data name="GecmisTitleQ1CloseSummary" xml:space="preserve">
+    <value>Консолидационное закрытие первого квартала 2026 — все сверки по подразделениям завершены.</value>
+  </data>
+  <data name="GecmisTitleSupplierContract" xml:space="preserve">
+    <value>Утверждение рамочного договора с поставщиком</value>
+  </data>
+  <data name="GecmisTitleSupplierContractSummary" xml:space="preserve">
+    <value>Условия рамочного договора с поставщиком утверждены и переданы в закупки.</value>
+  </data>
+  <data name="GecmisTitleReportTemplate" xml:space="preserve">
+    <value>Пересмотр устаревшего шаблона отчётности</value>
+  </data>
+  <data name="GecmisTitleReportTemplateSummary" xml:space="preserve">
+    <value>Пересмотр устаревшего шаблона отменён после запуска нового модуля отчётности.</value>
+  </data>
+  <data name="GecmisChkReconcile" xml:space="preserve">
+    <value>Завершить сверки по подразделениям</value>
+  </data>
+  <data name="GecmisChkReview" xml:space="preserve">
+    <value>Проверить пакет закрытия</value>
+  </data>
+  <data name="GecmisChkPublish" xml:space="preserve">
+    <value>Опубликовать результаты</value>
+  </data>
 </root>

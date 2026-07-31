@@ -1589,4 +1589,49 @@
   <data name="SubtaskToggleAria" xml:space="preserve">
     <value>إكمال المهمة الفرعية «{0}»</value>
   </data>
+  <data name="HavuzTitleInvoiceMatch" xml:space="preserve">
+    <value>مطابقة الفاتورة الواردة</value>
+  </data>
+  <data name="HavuzTitleInvoiceMatchSummary" xml:space="preserve">
+    <value>طابق فاتورة مورد غير مسواة في قائمة المحاسبة مع أمر الشراء الخاص بها.</value>
+  </data>
+  <data name="HavuzTitlePrReview" xml:space="preserve">
+    <value>مراجعة أولية لطلب الشراء</value>
+  </data>
+  <data name="HavuzTitlePrReviewSummary" xml:space="preserve">
+    <value>راجع مبدئيًا طلب شراء في قائمة المراجعة من حيث الميزانية وأهلية المورد.</value>
+  </data>
+  <data name="HavuzTitleAuditFinding" xml:space="preserve">
+    <value>مراجعة نتيجة التدقيق</value>
+  </data>
+  <data name="HavuzTitleAuditFindingSummary" xml:space="preserve">
+    <value>عُرضت عليك نتيجة تدقيق جودة لمراجعتها.</value>
+  </data>
+  <data name="GecmisTitleQ1Close" xml:space="preserve">
+    <value>إقفال فترة الربع الأول 2026</value>
+  </data>
+  <data name="GecmisTitleQ1CloseSummary" xml:space="preserve">
+    <value>إقفال التوحيد للربع الأول 2026 — اكتملت جميع تسويات الوحدات.</value>
+  </data>
+  <data name="GecmisTitleSupplierContract" xml:space="preserve">
+    <value>الموافقة على العقد الإطاري للمورد</value>
+  </data>
+  <data name="GecmisTitleSupplierContractSummary" xml:space="preserve">
+    <value>تمت الموافقة على شروط العقد الإطاري للمورد وأُحيلت إلى المشتريات.</value>
+  </data>
+  <data name="GecmisTitleReportTemplate" xml:space="preserve">
+    <value>مراجعة قالب التقارير القديم</value>
+  </data>
+  <data name="GecmisTitleReportTemplateSummary" xml:space="preserve">
+    <value>أُلغيت مراجعة القالب القديم بعد إطلاق وحدة التقارير الجديدة.</value>
+  </data>
+  <data name="GecmisChkReconcile" xml:space="preserve">
+    <value>إكمال تسويات الوحدات</value>
+  </data>
+  <data name="GecmisChkReview" xml:space="preserve">
+    <value>مراجعة حزمة الإقفال</value>
+  </data>
+  <data name="GecmisChkPublish" xml:space="preserve">
+    <value>نشر النتائج</value>
+  </data>
 </root>

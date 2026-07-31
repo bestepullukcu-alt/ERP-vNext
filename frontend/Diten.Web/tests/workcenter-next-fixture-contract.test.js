@@ -17,6 +17,9 @@ describe("WorkCenterNext canonical fixture contract", () => {
       "fixture-contract.js",
       "fixtures/canonical-fixtures.js",
       "fixtures/inbox-showcase-fixtures.js",
+      "fixtures/islerim-showcase-fixtures.js",
+      "fixtures/havuz-showcase-fixtures.js",
+      "fixtures/gecmis-showcase-fixtures.js",
       "fixtures/edge-case-fixtures.js",
       "fixtures/provider-examples/enterprise-strategy-fixtures.js",
       "fixtures/provider-examples/documentation-fixtures.js",
@@ -27,14 +30,64 @@ describe("WorkCenterNext canonical fixture contract", () => {
     ].forEach((file) => loadScript(scriptRoot + file));
   });
 
-  it("validates every work item, provider example and trigger", () => {
-    const groups = global.WorkCenterNextFixtures;
-    ["canonical", "inboxShowcase", "edgeCases", "enterpriseStrategy", "documentation"].forEach((group) => {
-      groups[group].forEach((fixture) => {
-        expect(global.WorkCenterNextContract.validateWorkItem(fixture)).toMatchObject({ valid: true });
+  /*
+   * DISCOVERED, never listed. This test used to name five groups by hand — and that hard-coded list is exactly
+   * how three broken fixtures reached live verification: `havuzShowcase`, `gecmisShowcase` and `islerimShowcase`
+   * were added, were never named here, and so were never validated. Two HAVUZ items were missing `pool.label.locale`
+   * and one GECMIS item carried an inherited `businessContext` with no capability; mapPayload DROPPED all three,
+   * so the Pool showcase rendered 1 of 3 items and History 2 of 3.
+   *
+   * Discovery makes the next group covered on the day it is written rather than on the day someone remembers.
+   */
+  const workItemGroups = () => Object.keys(global.WorkCenterNextFixtures)
+    .filter((name) => name !== "triggerOnly" && name !== "migration")
+    .filter((name) => Array.isArray(global.WorkCenterNextFixtures[name]));
+
+  it("validates every work item in EVERY fixture group, discovered not listed", () => {
+    workItemGroups().forEach((group) => {
+      global.WorkCenterNextFixtures[group].forEach((fixture) => {
+        const verdict = global.WorkCenterNextContract.validateWorkItem(fixture);
+        // The id and the errors go in the message: "expected true, got false" names neither the item that broke
+        // nor the rule it broke, and a dropped item is invisible on screen by definition.
+        expect(verdict.valid, `${group}/${fixture.id}: ${JSON.stringify(verdict.errors)}`).toBe(true);
       });
     });
-    groups.triggerOnly.forEach((fixture) => {
+  });
+
+  it("actually discovers the showcase groups, and none of them is empty", () => {
+    /*
+     * Non-vacuity for the discovery itself. `forEach` over an empty list passes, and a typo in a filename would
+     * silently reduce this whole suite to zero assertions — the failure mode the hard-coded list already had,
+     * reintroduced by a subtler route.
+     */
+    const groups = workItemGroups();
+
+    ["canonical", "inboxShowcase", "islerimShowcase", "havuzShowcase", "gecmisShowcase",
+     "edgeCases", "enterpriseStrategy", "documentation"].forEach((name) => {
+      expect(groups).toContain(name);
+      expect(global.WorkCenterNextFixtures[name].length).toBeGreaterThan(0);
+    });
+  });
+
+  it("REJECTS a fixture that breaks the contract, which is what makes the sweep a test", () => {
+    /*
+     * The vacuity guard, run rather than asserted in a report: take a real, passing fixture and reintroduce the
+     * exact defect this ticket fixed — a display label with no locale. If the contract accepts it, every
+     * expectation above is decoration.
+     */
+    const good = global.WorkCenterNextFixtures.havuzShowcase.find((item) => item.id === "HAVUZ-CLAIM-01");
+    expect(global.WorkCenterNextContract.validateWorkItem(good)).toMatchObject({ valid: true });
+
+    const broken = JSON.parse(JSON.stringify(good));
+    delete broken.pool.label.locale;
+
+    const verdict = global.WorkCenterNextContract.validateWorkItem(broken);
+    expect(verdict.valid).toBe(false);
+    expect(verdict.errors.map((error) => error.code)).toContain("POOL_LABEL_INVALID");
+  });
+
+  it("validates every trigger", () => {
+    global.WorkCenterNextFixtures.triggerOnly.forEach((fixture) => {
       expect(global.WorkCenterNextContract.validateTrigger(fixture)).toMatchObject({ valid: true });
     });
   });

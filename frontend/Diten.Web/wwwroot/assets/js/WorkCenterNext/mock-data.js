@@ -102,7 +102,11 @@
         'ISLERIM-WORK-ACTIVE', 'ISLERIM-WORK-ISSUE', 'ISLERIM-WORK-BLOCKED',
         'ISLERIM-WORK-DELEGATED', 'ISLERIM-WORK-SNOOZED', 'ISLERIM-WORK-WAITING',
         'ISLERIM-WORK-REVIEW-MEETING', 'ISLERIM-WORK-PLANNED',
-        'WC-TASK-DONE'   // Geçmiş placeholder (Geçmiş showcase = ayrı faz)
+        // Havuz showcase — group-queue (claim) + offered (accept/decline).
+        'HAVUZ-CLAIM-01', 'HAVUZ-CLAIM-02', 'HAVUZ-OFFER-01',
+        // Geçmiş showcase — real Done/Cancelled archive (replaces WC-TASK-DONE placeholder).
+        'GECMIS-TASK-DONE-01', 'GECMIS-APPROVAL-DONE-01', 'GECMIS-TASK-CANCELLED-01',
+        'WC-TASK-DONE'   // legacy Geçmiş placeholder (kept until showcase locked)
     ]);
     const clone = (value) => (typeof global.structuredClone === 'function')
         ? global.structuredClone(value)
@@ -252,6 +256,8 @@
         return [
             ...(fixtures.inboxShowcase || []),
             ...(fixtures.islerimShowcase || []),
+            ...(fixtures.havuzShowcase || []),
+            ...(fixtures.gecmisShowcase || []),
             ...(fixtures.canonical || []),
             ...(fixtures.edgeCases || []),
             ...(fixtures.enterpriseStrategy || []),

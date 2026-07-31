@@ -1589,4 +1589,49 @@
   <data name="SubtaskToggleAria" xml:space="preserve">
     <value>完成子任务“{0}”</value>
   </data>
+  <data name="HavuzTitleInvoiceMatch" xml:space="preserve">
+    <value>匹配收到的发票</value>
+  </data>
+  <data name="HavuzTitleInvoiceMatchSummary" xml:space="preserve">
+    <value>将会计队列中未核对的供应商发票与其采购订单匹配。</value>
+  </data>
+  <data name="HavuzTitlePrReview" xml:space="preserve">
+    <value>采购申请初审</value>
+  </data>
+  <data name="HavuzTitlePrReviewSummary" xml:space="preserve">
+    <value>对审核队列中的采购申请进行预算和供应商资格初审。</value>
+  </data>
+  <data name="HavuzTitleAuditFinding" xml:space="preserve">
+    <value>审计发现审查</value>
+  </data>
+  <data name="HavuzTitleAuditFindingSummary" xml:space="preserve">
+    <value>一项质量审计发现已提供给你审查。</value>
+  </data>
+  <data name="GecmisTitleQ1Close" xml:space="preserve">
+    <value>2026 年第一季度期末结账</value>
+  </data>
+  <data name="GecmisTitleQ1CloseSummary" xml:space="preserve">
+    <value>2026 年第一季度合并结账——所有单位对账已完成。</value>
+  </data>
+  <data name="GecmisTitleSupplierContract" xml:space="preserve">
+    <value>供应商框架合同审批</value>
+  </data>
+  <data name="GecmisTitleSupplierContractSummary" xml:space="preserve">
+    <value>供应商框架合同条款已获批准并移交采购部门。</value>
+  </data>
+  <data name="GecmisTitleReportTemplate" xml:space="preserve">
+    <value>旧报表模板修订</value>
+  </data>
+  <data name="GecmisTitleReportTemplateSummary" xml:space="preserve">
+    <value>新报表模块上线后，旧模板修订已取消。</value>
+  </data>
+  <data name="GecmisChkReconcile" xml:space="preserve">
+    <value>完成单位对账</value>
+  </data>
+  <data name="GecmisChkReview" xml:space="preserve">
+    <value>审阅结账资料包</value>
+  </data>
+  <data name="GecmisChkPublish" xml:space="preserve">
+    <value>发布结果</value>
+  </data>
 </root>
