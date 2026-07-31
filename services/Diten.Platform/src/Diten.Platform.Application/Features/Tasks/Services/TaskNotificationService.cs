@@ -32,6 +32,17 @@ public enum TaskNotificationOutcome
 /// opt-out, skip the actor's own action, resolve real addresses, and never let a notification failure fail the
 /// write that triggered it. Written out four times, the fourth copy is the one that forgets a rule — the shape
 /// this session has already met with approval's validation and the reviewer requirement.</para>
+///
+/// <para><b>Language: one dispatch, in the tenant's language — and why not one per reader.</b> Templates are seeded
+/// in seven languages, so the obvious shape is to group recipients by language and dispatch per group. It is not
+/// implemented, because the input for grouping does not exist: <c>TaskNotificationRecipient</c> carries id, e-mail
+/// and display name, and the AuthService <c>User</c> behind it has no language field at all. Grouping on data
+/// nobody supplies yields exactly one group every time — the same single dispatch, plus a fan-out path that is
+/// never exercised and rots. So this service states what it knows (nothing about the reader's language, passed as
+/// <c>Locale: null</c>) and <c>INotificationLocaleResolver</c> answers with the tenant's own configured language.
+/// The seven languages are not wasted by that — the tenant picks which one is used; what is still missing is a
+/// per-reader choice. Adding one means a language column on <c>User</c>, the <c>internal/users/contacts</c>
+/// endpoint returning it, a field on <c>TaskNotificationRecipient</c>, and only then the grouping loop here.</para>
 /// </summary>
 public interface ITaskNotificationService
 {
@@ -184,7 +195,19 @@ public sealed class TaskNotificationService : ITaskNotificationService
                     To: recipients
                         .Select(r => new EmailRecipientDto(r.Email, r.DisplayName))
                         .ToList(),
-                    Variables: BuildVariables(task)),
+                    Variables: BuildVariables(task),
+                    /*
+                     * Stated, not omitted. MOD-0024 does NOT know what language these recipients read: the
+                     * resolver seam it added returns id, e-mail and display name, and the AuthService User entity
+                     * behind it carries no language field at all. Passing null says exactly that, and
+                     * INotificationLocaleResolver answers with the tenant's own configured language.
+                     *
+                     * Guessing here would have been the worse option in both directions: the actor's UI culture is
+                     * the SENDER's language, not the reader's, and a hard-coded "en" would throw away six of the
+                     * seven seeded template languages. A per-recipient language — and with it a dispatch per
+                     * language group — becomes possible the moment User carries one; see the class doc.
+                     */
+                    Locale: null),
                 ct);
 
             if (!response.IsSuccessful)

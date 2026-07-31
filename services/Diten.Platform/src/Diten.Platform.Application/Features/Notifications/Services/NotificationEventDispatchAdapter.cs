@@ -21,6 +21,16 @@ public sealed record NotificationEventDispatchRequest(
     string EventCode,
     IReadOnlyList<EmailRecipientDto> To,
     IReadOnlyDictionary<string, object?> Variables,
+    /// <summary>
+    /// The recipient's language, if the producer knows it. <c>null</c> means "I do not know" and is a legitimate
+    /// answer — <see cref="INotificationLocaleResolver"/> then supplies the tenant's own configured language.
+    ///
+    /// <para><b>This used to be a lie.</b> The field read as optional and the adapter forwarded
+    /// <c>request.Locale ?? string.Empty</c> into a command whose validator says
+    /// <c>RuleFor(x => x.Request.Locale).NotEmpty()</c>. Every producer that trusted the default got a
+    /// ValidationException instead of a notification — which is exactly how MOD-0024 shipped five task events that
+    /// sent nothing. Optional now means optional: nobody downstream ever receives a blank locale.</para>
+    /// </summary>
     string? Locale = null,
     IReadOnlyList<EmailRecipientDto>? Cc = null,
     IReadOnlyList<EmailRecipientDto>? Bcc = null,
@@ -45,13 +55,16 @@ public sealed class NotificationEventDispatchAdapter : INotificationEventDispatc
 
     private readonly INotificationEventDefinitionRepository _eventRepository;
     private readonly IMediator _mediator;
+    private readonly INotificationLocaleResolver _localeResolver;
 
     public NotificationEventDispatchAdapter(
         INotificationEventDefinitionRepository eventRepository,
-        IMediator mediator)
+        IMediator mediator,
+        INotificationLocaleResolver localeResolver)
     {
         _eventRepository = eventRepository;
         _mediator = mediator;
+        _localeResolver = localeResolver;
     }
 
     public async Task<Response<NotificationDispatchDto>> DispatchByEventCodeAsync(
@@ -102,10 +115,18 @@ public sealed class NotificationEventDispatchAdapter : INotificationEventDispatc
                 "At least one recipient is required.", 400, ReasonRecipientMissing);
         }
 
+        /*
+         * 7) Locale. QueueEmailNotificationRequest.Locale is a non-nullable string and its validator says NotEmpty,
+         *    so this adapter is the last place that can honour its own optional-looking Locale. It resolves rather
+         *    than defaults: caller's value → tenant's configured language → "en". The previous line here was
+         *    `request.Locale ?? string.Empty`, which satisfied the compiler and failed the validator.
+         */
+        var locale = await _localeResolver.ResolveAsync(request.TenantId, request.Locale, ct);
+
         // Delegate to the EXISTING pipeline unchanged. OptionalVariables pass through as-is (no adapter mutation).
         var queueRequest = new QueueEmailNotificationRequest(
             TemplateKey: templateKey,
-            Locale: request.Locale ?? string.Empty,
+            Locale: locale,
             Variables: request.Variables,
             To: request.To,
             Cc: request.Cc,

@@ -187,7 +187,7 @@ public sealed class NotificationEventDispatchAdapterTests
                 .ReturnsAsync(sendResult);
         }
         var repo = new FakeEventRepo();
-        return (new NotificationEventDispatchAdapter(repo, mediator.Object), mediator, repo);
+        return (new NotificationEventDispatchAdapter(repo, mediator.Object, new PassThroughLocaleResolver()), mediator, repo);
     }
 
     private static void VerifyNeverDispatched(Mock<IMediator> mediator) =>
@@ -246,4 +246,16 @@ public sealed class NotificationEventDispatchAdapterTests
             Task.FromResult<IReadOnlyList<NotificationEventDefinition>>(
                 _items.Where(x => x.Status == NotificationEventStatus.Active).ToList());
     }
+}
+
+/// <summary>
+/// Keeps these tests about the adapter's own rules: it answers what the caller asked for, and "en" when the caller
+/// asked for nothing. The real chain (tenant settings → profile default → "en") is covered by
+/// TenantNotificationLocaleResolverTests, and the two together are covered end-to-end by TaskNotificationLocaleTests.
+/// </summary>
+internal sealed class PassThroughLocaleResolver
+    : Diten.Platform.Application.Features.Notifications.Services.INotificationLocaleResolver
+{
+    public Task<string> ResolveAsync(Guid tenantId, string? requested, CancellationToken ct = default)
+        => Task.FromResult(string.IsNullOrWhiteSpace(requested) ? "en" : requested.Trim().ToLowerInvariant());
 }

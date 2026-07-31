@@ -140,6 +140,7 @@ public static class DependencyInjection
         services.AddScoped<IBusinessReferenceDataCatalogLoaderService, BusinessReferenceDataCatalogLoaderService>();
         services.AddScoped<IBusinessReferenceDataActiveMembershipService, BusinessReferenceDataActiveMembershipService>();
         services.AddScoped<ITenantMessagingSettingsResolver, TenantMessagingSettingsResolver>();
+        services.AddScoped<Features.Notifications.Services.INotificationLocaleResolver, Features.Notifications.Services.TenantNotificationLocaleResolver>();
         services.AddScoped<IEmailTemplateRenderer, EmailTemplateRenderer>();
         services.AddScoped<Features.Notifications.Services.INotificationEventManifestSyncService, Features.Notifications.Services.NotificationEventManifestSyncService>();
         // MOD-0027-FU04B — eventCode → dispatch adapter (resolves Active event + validates, delegates to the existing

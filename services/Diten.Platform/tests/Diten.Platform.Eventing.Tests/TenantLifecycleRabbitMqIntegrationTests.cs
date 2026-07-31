@@ -492,7 +492,7 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
             _handler = handler;
             _targetCount = targetCount;
             _adapter = new Diten.Platform.Application.Features.Notifications.Services.NotificationEventDispatchAdapter(
-                new SeededEventRepository(), this);
+                new SeededEventRepository(), this, new PassThroughLocaleResolver());
         }
 
         public List<QueueEmailNotificationCommand> Commands { get; } = [];
@@ -586,4 +586,15 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
         public string ContentRootPath { get; set; } = AppContext.BaseDirectory;
         public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
     }
+}
+
+/// <summary>
+/// The tenant-lifecycle mappers supply a locale of their own, so this double only has to prove the adapter still
+/// forwards it untouched — the behaviour WC-4's locale change had to leave alone.
+/// </summary>
+internal sealed class PassThroughLocaleResolver
+    : Diten.Platform.Application.Features.Notifications.Services.INotificationLocaleResolver
+{
+    public Task<string> ResolveAsync(Guid tenantId, string? requested, CancellationToken ct = default)
+        => Task.FromResult(string.IsNullOrWhiteSpace(requested) ? "en" : requested.Trim().ToLowerInvariant());
 }
