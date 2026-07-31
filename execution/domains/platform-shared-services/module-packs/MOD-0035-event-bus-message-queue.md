@@ -23,7 +23,7 @@ form_field_count: 0
 - **Integration-test default:** External/local RabbitMQ using configuration/environment variables.
 - **Testcontainers/Docker decision:** Testcontainers is not used in this project; Docker is not required and not expected for MOD-0035 validation.
 - **Production default:** RabbitMQ via MassTransit.
-- **Routing key / EventName format:** `{domain-or-aggregate}.{action}.{tense}.v{version}`.
+- **Routing key / EventName format:** dot-separated lowercase segments followed by `.v{positive-version}`; each normal segment may use internal lowercase kebab-case.
 - **MVP outbox decision:** Custom MongoDB `outbox_events` + `OutboxPublisherWorker` is the single source for outbound publish state.
 - **First implementation golden flow:** A test producer or seed command writes `tenant.activated.v1` to outbox, `OutboxPublisherWorker` publishes it, a test consumer processes it once, duplicate delivery is skipped, and correlation id is preserved.
 - **UI:** None in this pack. Event topology, DLQ viewer, replay screens, or Event Catalog UI require separate module packs.
@@ -107,7 +107,7 @@ form_field_count: 0
 | Field | Type | Required | Rule |
 |---|---|---|---|
 | EventId | Guid | Yes | Generated once per envelope; idempotency key. |
-| EventName | string | Yes | Routing key format: `{domain-or-aggregate}.{action}.{tense}.v{version}`; example `tenant.activated.v1`. |
+| EventName | string | Yes | Dot-separated lowercase segments followed by `.v{positive-version}`; examples `tenant.activated.v1` and `ppm.audit-intent.submitted.v1`. |
 | EventVersion | int | Yes | Numeric contract version; must match the `.v{version}` suffix in `EventName`. Starts at `1`; do not name this field `Version`. |
 | CorrelationId | Guid | Yes | Propagates request/job/event chain. |
 | CausationId | Guid? | No | Previous event/message id when this event is caused by another event. |
@@ -258,7 +258,7 @@ This is a backend/infrastructure module, not a CRUD DataTable module. `golden_re
 | Field | Required | Format/Rule | DB-level | Pre-check |
 |---|---|---|---|---|
 | EventId | Yes | Guid not empty | Unique index in `outbox_events`; unique composite with `ConsumerName` in consumed records | Reject duplicate outbox insert unless retrying same message intentionally. |
-| EventName | Yes | Lowercase dot notation with version suffix: `{domain-or-aggregate}.{action}.{tense}.v{version}` | Indexed | Validate against regex and ensure suffix matches `EventVersion`. |
+| EventName | Yes | Dot-separated lowercase segments, optional segment-internal lowercase kebab-case, and `.v{positive-version}` suffix | Indexed | Validate against regex and ensure suffix matches `EventVersion`. |
 | EventVersion | Yes | Integer >= 1 | Indexed with `EventName` | Reject zero/negative values; must match `.v{version}` suffix. |
 | CorrelationId | Yes | Guid not empty | Indexed | Generate from request/job context when missing. |
 | CausationId | No | Guid when present | Indexed optional | Propagate from inbound envelope when present. |
@@ -320,7 +320,7 @@ This is a backend/infrastructure module, not a CRUD DataTable module. `golden_re
 - [ ] `IEventHandler<T>` consumer contract is defined and documented.
 - [ ] Cross-service payload contracts use `IIntegrationEvent` or `IInternalEvent`, or `IDomainEvent` is explicitly documented as envelope-only and not aggregate-local.
 - [ ] `IDomainEvent` and `EventEnvelope<TPayload>` include `EventId`, `EventName`, `EventVersion`, `CorrelationId`, `CausationId`, `OccurredAtUtc`, nullable `TenantId`, `Producer`, and `Payload`.
-- [ ] Event naming follows `{domain-or-aggregate}.{action}.{tense}.v{version}`.
+- [ ] Event naming uses dot-separated lowercase segments, permits only segment-internal lowercase kebab-case, and ends with `.v{positive-version}`.
 - [ ] Breaking changes create new event names such as `tenant.activated.v2`; existing v1 consumers remain compatible.
 - [ ] Event payload guidance explicitly forbids full entity payloads.
 - [ ] Business aggregate save and `OutboxEvent` insert happen inside the same logical transaction/unit-of-work.
@@ -382,7 +382,7 @@ This is a backend/infrastructure module, not a CRUD DataTable module. `golden_re
 - [x] Retry defaults set: 5 total attempts, 10s after the first failure, exponential backoff with jitter,
   5m maximum delay, then DLQ plus alarm after the fifth failed attempt.
 - [x] DLQ retention default set to 30 days.
-- [x] Event naming/versioning standard set to `{domain-or-aggregate}.{action}.{tense}.v{version}`.
+- [x] Event naming/versioning standard set to dot-separated lowercase segments with optional segment-internal lowercase kebab-case and a `.v{positive-version}` suffix.
 - [x] Outbox transaction boundary is specified.
 - [x] Inbox/idempotency standard is specified.
 - [x] Consumer registration/naming standard is specified.
@@ -461,10 +461,14 @@ unchanged in this slice; PPM consumer jitter is a separate mechanism.
 - [ ] Consider separate ops UI pack for DLQ/replay/event topology if operational visibility becomes MVP scope.
 
 ## Event Naming and Versioning Standard
-- EventName and RabbitMQ routing key use the same format: `{domain-or-aggregate}.{action}.{tense}.v{version}`.
+- EventName and RabbitMQ routing key use dot-separated lowercase segments followed by `.v{positive-version}`.
+- A normal segment matches `[a-z][a-z0-9]*(?:-[a-z][a-z0-9]*)*`; an internal hyphen is segment-local lowercase kebab-case and does not merge dot segments.
+- `ppm.audit-intent.submitted.v1` is a canonical valid example. This reconciliation does not rename, version, or alias that existing event identity.
+- Uppercase, underscore, consecutive hyphens, and leading/trailing segment hyphens are forbidden.
 - Examples:
   - `tenant.created.v1`
   - `tenant.activated.v1`
+  - `ppm.audit-intent.submitted.v1`
   - `tenant.suspended.v1`
   - `tenant.provisioning.started.v1`
   - `tenant.provisioning.failed.v1`

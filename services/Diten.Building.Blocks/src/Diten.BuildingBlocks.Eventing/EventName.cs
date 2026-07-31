@@ -4,7 +4,7 @@ namespace Diten.BuildingBlocks.Eventing;
 
 public static partial class EventName
 {
-    [GeneratedRegex("^[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9]*)+\\.v(?<version>[1-9][0-9]*)$", RegexOptions.CultureInvariant)]
+    [GeneratedRegex("^[a-z][a-z0-9]*(?:-[a-z][a-z0-9]*)*(?:\\.[a-z][a-z0-9]*(?:-[a-z][a-z0-9]*)*)+\\.v(?<version>[1-9][0-9]*)$", RegexOptions.CultureInvariant)]
     private static partial Regex EventNameRegex();
 
     public static bool IsValid(string? eventName)
