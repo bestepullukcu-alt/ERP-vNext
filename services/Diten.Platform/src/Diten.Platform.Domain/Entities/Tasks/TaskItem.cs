@@ -46,7 +46,34 @@ public sealed class TaskItem : TenantScopedEntity
     /// array and breaks sorting and querying. The moment of acceptance is already recorded on the
     /// <c>TaskAssignment</c> row (EventType = Accepted); storing it twice would buy nothing and cost that.</para>
     /// </summary>
-    public Guid? AcceptedByUserId { get; set; }
+    public Guid? AcceptedByUserId { get; private set; }
+
+    /// <summary>
+    /// The assignee has taken this task on. Closes the acceptance gate: it leaves the Inbox and enters My Work.
+    ///
+    /// <para><b>BL-051 — why this is a named operation and not a field write.</b> BL-042 moved the meaning of
+    /// "accepted" from the lifecycle to this field and updated only the side that SETS it. The three handlers whose
+    /// whole purpose is to REOPEN the gate — reassign, return, release — went on clearing the old signal
+    /// (<c>Lifecycle = Open</c>), which under the new rule does nothing at all. Reassigned work landed straight in
+    /// the new holder's My Work without ever being accepted, and all three comments still claimed the gate
+    /// reopened.</para>
+    ///
+    /// <para>One fact living in two places is what produced BL-042, and updating one of its writers is what
+    /// produced BL-051. The setter is private so the gate can only move through these two methods: a fourth site
+    /// cannot forget, because it cannot reach the field.</para>
+    /// </summary>
+    public void CloseAcceptanceGate(Guid acceptedByUserId) => AcceptedByUserId = acceptedByUserId;
+
+    /// <summary>
+    /// The task is changing hands — reassigned, returned, or released to the pool. Reopens the acceptance gate so
+    /// it lands in the new holder's Inbox and waits for a deliberate accept.
+    ///
+    /// <para>Accepting is the moment responsibility transfers, so work must never appear in somebody's active list
+    /// without it. Release calls this too: the pool branch happens to project from a null assignee today, so
+    /// leaving the stale mark behind is invisible — until the next projection change, which is exactly when a
+    /// stale field becomes a defect nobody can trace.</para>
+    /// </summary>
+    public void ReopenAcceptanceGate() => AcceptedByUserId = null;
 
     /// <summary>The offered POSITION for a pool task (MOD-0288 Position; always unit-bound — §12 K4).</summary>
     public Guid? PoolPositionId { get; set; }

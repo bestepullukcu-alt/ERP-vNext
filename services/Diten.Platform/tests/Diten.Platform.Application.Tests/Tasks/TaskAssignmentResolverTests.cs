@@ -45,7 +45,7 @@ public sealed class TaskAssignmentResolverTests
          * The test is not weakened, it is re-pointed at the real signal. Acceptance is now a fact the task carries.
          */
         var task = MakeTask(TaskAssignmentTarget.Person, assignee: Me);
-        task.AcceptedByUserId = Me;
+        task.CloseAcceptanceGate(Me);
 
         var projection = _sut.Resolve(task);
 

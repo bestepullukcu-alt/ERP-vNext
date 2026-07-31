@@ -70,7 +70,7 @@ public sealed class AcceptTaskItemHandler : IRequestHandler<AcceptTaskItemComman
          * was planned first stays Planned. Accepting a task must not erase its plan — collapsing the two is
          * exactly the conflation that produced the defect.
          */
-        task.AcceptedByUserId = _currentUser.UserId;
+        task.CloseAcceptanceGate(_currentUser.UserId);
 
         if (task.Lifecycle == TaskLifecycle.Open)
         {
@@ -147,7 +147,10 @@ public sealed class ReleaseTaskItemHandler : IRequestHandler<ReleaseTaskItemComm
         var previousHolder = task.AssigneeUserId;
 
         // Back to the pool: no holder, and the lifecycle rewinds to Open so it reads as fresh pool work.
+        // The gate reopens here too. The pool branch projects from a null assignee, so a stale acceptance mark is
+        // invisible TODAY — which is precisely why it must not be left behind (BL-051).
         task.AssigneeUserId = null;
+        task.ReopenAcceptanceGate();
         task.Lifecycle = TaskLifecycle.Open;
         task.UpdatedBy = _currentUser.ActorName;
 
@@ -881,9 +884,11 @@ public sealed class ReturnTaskItemHandler : IRequestHandler<ReturnTaskItemComman
         var returnedBy = task.AssigneeUserId;
 
         // Back to the requester as an ordinary assignment: they hold it, and the acceptance gate reopens so it
-        // lands in their Inbox rather than silently in their active work.
+        // lands in their Inbox rather than silently in their active work. (BL-051: the reopen is the call below —
+        // the lifecycle rewind alone stopped meaning "unaccepted" when BL-042 gave acceptance its own field.)
         task.AssigneeUserId = task.CreatedByUserId;
         task.AssignmentTarget = TaskAssignmentTarget.Person;
+        task.ReopenAcceptanceGate();
         task.Lifecycle = TaskLifecycle.Open;
         task.UpdatedBy = _currentUser.ActorName;
 
@@ -1014,9 +1019,16 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
                 400, TaskReasonCodes.AssigneeNotAssignable, command.CorrelationId);
         }
 
-        // Unaccepted on arrival: the acceptance gate reopens so it lands in the new holder's Inbox.
+        /*
+         * Unaccepted on arrival: the acceptance gate reopens so it lands in the new holder's Inbox.
+         *
+         * BL-051 — this comment used to be a lie. `Lifecycle = Open` reopened the gate under the OLD rule
+         * (accepted = lifecycle past Open/Planned); once BL-042 moved the fact to its own field, the same line
+         * did nothing and reassigned work went straight into the new holder's My Work, unaccepted.
+         */
         task.AssigneeUserId = command.Request.AssigneeUserId;
         task.AssignmentTarget = TaskAssignmentTarget.Person;
+        task.ReopenAcceptanceGate();
         task.Lifecycle = TaskLifecycle.Open;
         task.UpdatedBy = _currentUser.ActorName;
 

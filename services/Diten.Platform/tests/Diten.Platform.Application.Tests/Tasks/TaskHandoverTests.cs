@@ -247,6 +247,118 @@ public sealed class TaskHandoverTests
                 new ReturnTaskItemCommand(task.Id, new ReturnTaskItemRequest(task.Version, reason), "corr-return"),
                 CancellationToken.None);
 
+    // ── BL-051: the acceptance gate must REOPEN when work changes hands ──────────────────────────────────
+    //
+    // The two tests above named "…lands in the … inbox unaccepted" pass without proving anything about this:
+    // they start from a task nobody ever accepted, so "still unaccepted afterwards" is true by default. Every
+    // test below starts from an ACCEPTED task, which is the only state in which the gate has something to reopen.
+    //
+    // Why no test caught BL-051: TaskAssignmentResolverTests measures the RESOLVER, and the JS contract test
+    // measures REQUEST BODIES. Nothing asked whether the HANDLER writes the gate correctly, and that is the whole
+    // question. BL-042 moved acceptance off the lifecycle and updated only the writer; these three handlers went
+    // on clearing the old signal while their comments claimed to reopen the gate.
+
+    [Fact]
+    public async Task An_ACCEPTED_task_that_is_reassigned_waits_in_the_new_holders_inbox()
+    {
+        /*
+         * The live defect. A task accepted by Me, handed to Other, appeared as owned/admitted in Other's My Work —
+         * straight past the Inbox. Accepting is the moment responsibility transfers, so work must never enter
+         * somebody's active list without it.
+         */
+        var task = AssignedTask();
+        task.CloseAcceptanceGate(TaskTestData.Me);
+        var repository = new FakeTaskItemRepository(task);
+
+        await Reassign(repository, new FakeTaskAssignmentRepository(), task, TaskTestData.Other, "Handing over");
+
+        var stored = repository.Items.Single();
+        Assert.Null(stored.AcceptedByUserId);
+
+        // Asserted through the PROJECTION, because that is what the user sees — the field alone could be right
+        // while the surface still said admitted.
+        var item = Assert.Single(await Provider(repository).GetWorkItemsAsync(Actor(TaskTestData.Other)));
+        Assert.Equal("pendingAcceptance", item.AdmissionState);
+        Assert.Equal("assigned", item.OwnershipState);
+    }
+
+    [Fact]
+    public async Task An_ACCEPTED_task_that_is_returned_waits_in_the_requesters_inbox()
+    {
+        // Same rule from the other direction: handing work back does not put it into the requester's active list
+        // either. They asked for it; they did not agree to do it.
+        var task = AssignedTask();
+        task.CloseAcceptanceGate(TaskTestData.Me);
+        var repository = new FakeTaskItemRepository(task);
+
+        await Return(repository, new FakeTaskAssignmentRepository(), task, "Not mine to finish");
+
+        var stored = repository.Items.Single();
+        Assert.Null(stored.AcceptedByUserId);
+
+        var item = Assert.Single(await Provider(repository).GetWorkItemsAsync(Actor(task.CreatedByUserId!.Value)));
+        Assert.Equal("pendingAcceptance", item.AdmissionState);
+    }
+
+    [Fact]
+    public async Task An_ACCEPTED_task_released_to_the_pool_leaves_no_acceptance_behind()
+    {
+        /*
+         * This one produces no visible breakage today — the pool branch projects from a null assignee, so a stale
+         * mark cannot be seen. That is exactly why it is asserted: an invisible stale field is a defect waiting
+         * for the next projection change, and "we could not see it" is not a reason to leave it.
+         */
+        var task = AssignedTask();
+        task.AssignmentTarget = TaskAssignmentTarget.PositionPool;
+        task.AssigneeUserId = TaskTestData.Me;
+        task.PoolPositionId = Guid.NewGuid();
+        task.CloseAcceptanceGate(TaskTestData.Me);
+        var repository = new FakeTaskItemRepository(task);
+
+        var response = await new ReleaseTaskItemHandler(
+                repository,
+                new FakeTaskAssignmentRepository(),
+                new FakeCurrentUserContext(TaskTestData.Me),
+                new FakeTenantContext(TaskTestData.Tenant))
+            .Handle(
+                new ReleaseTaskItemCommand(task.Id, new TaskTransitionRequest(task.Version, null, null), "corr-release"),
+                CancellationToken.None);
+
+        Assert.Equal(204, response.StatusCode);
+        Assert.Null(repository.Items.Single().AcceptedByUserId);
+    }
+
+    [Fact]
+    public async Task Accepting_is_not_undone_by_anything_else_the_task_does()
+    {
+        /*
+         * Non-vacuity, and the opposite failure mode: a reopen that fires too eagerly would drop accepted work
+         * back into the Inbox for no reason — the same size of defect, pointing the other way. Only the three
+         * hand-over transitions may reopen the gate.
+         */
+        var task = AssignedTask();
+        task.CloseAcceptanceGate(TaskTestData.Me);
+        var repository = new FakeTaskItemRepository(task);
+
+        var item = Assert.Single(await Provider(repository).GetWorkItemsAsync(Actor(TaskTestData.Me)));
+        Assert.Equal("admitted", item.AdmissionState);
+        Assert.Equal(TaskTestData.Me, repository.Items.Single().AcceptedByUserId);
+    }
+
+    [Fact]
+    public void NOTHING_outside_the_entity_can_move_the_acceptance_gate()
+    {
+        /*
+         * The structural half. BL-042 and BL-051 are the same defect twice: one fact, several writers, one of them
+         * forgotten. The setter is private, so this is compiler-enforced — but assert it anyway, because a future
+         * "just make it public for a moment" is exactly how the third repeat would arrive.
+         */
+        var setter = typeof(TaskItem).GetProperty(nameof(TaskItem.AcceptedByUserId))!.SetMethod;
+
+        Assert.NotNull(setter);
+        Assert.False(setter!.IsPublic, "AcceptedByUserId is publicly settable again — the gate has more than one owner.");
+    }
+
     private static Task<Response<NoContent>> Reassign(
         FakeTaskItemRepository tasks,
         FakeTaskAssignmentRepository events,
