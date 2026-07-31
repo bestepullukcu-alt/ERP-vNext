@@ -28,6 +28,15 @@ Sayaçları mutlak sayı olarak sabitlemiyoruz: doğrulama turları veriyi ilerl
 
 Yeni gelen kişisel iş buraya düşer; **kabul edilmeden İşlerim'e geçmez.**
 
+> **BL-042 / BL-043 kapandı (`d71a3529`, 2026-07-31).** Bu turda koşulamayan adımlar artık koşulabilir:
+> **1.6** (Gelen Kutusu boşaltma — kabul, planlanmış görevde de etkili) ve **2.5b–2.5e** (Bekleyen
+> segmenti — `inquire`/`return`/`reassign` uç noktalarına doğru gövde gidiyor, devretme kişi seçici
+> kazandı). İkisi de **canlıda yeniden koşulmalı**: kod ve gerçek-Mongo testleri yeşil, ama uçtan uca
+> HTTP turu bu turda koşulamadı (servis başlatma CT'de).
+>
+> Ek olarak **yeni davranış**: aynı görevi ikinci kez kabul etmek artık `409 TASK_ALREADY_ACCEPTED`
+> döner (eskiden 204 dönüp hiçbir şey yapmıyordu). 1.6 sırasında bunu da doğrulayın.
+
 | # | Adım | Beklenen | Kusur sayılır |
 |---|---|---|---|
 | 1.1 | Gelen Kutusu'nu aç | Sana **atanmış ama henüz kabul etmediğin** kalemler (ör. *Yeni tedarikçi ödeme koşullarını değerlendir*) | Boş liste · kabul etmiş olduğun kalem hâlâ burada |
