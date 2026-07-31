@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.Eventing;
 using Diten.PpmService.Domain.Repositories;
 using Diten.PpmService.Persistence.Mongo;
 using Diten.PpmService.Persistence.Repositories;
@@ -43,6 +44,11 @@ public static class DependencyInjection
         services.AddScoped<IProgramRepository, ProgramRepository>();
         services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddScoped<IAuditIntentRepository, AuditIntentRepository>();
+        services.AddScoped<PpmEventOutboxStore>();
+        services.AddScoped<IEventOutboxWriter>(provider =>
+            provider.GetRequiredService<PpmEventOutboxStore>());
+        services.AddScoped<IEventOutboxStore>(provider =>
+            provider.GetRequiredService<PpmEventOutboxStore>());
         services.AddScoped<IPpmUnitOfWork, PpmUnitOfWork>();
         services.AddHostedService<PpmMongoIndexInitializer>();
         services.AddHealthChecks()
