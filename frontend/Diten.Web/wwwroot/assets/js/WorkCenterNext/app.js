@@ -197,6 +197,22 @@
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
+    /*
+     * BL-050 — the ONE place a person's id is read out of an assignable-people row.
+     *
+     * AssignablePersonDto(Guid UserId, string? DisplayName, …) serialises `userId`. There is no `id`, and the
+     * reassign picker read exactly that: every <option> got value="", the validation refused every choice the
+     * user made, and no request was ever sent. The NAME rendered correctly — displayName was read right — which
+     * is what kept it invisible through a whole test round.
+     *
+     * The repo already had the right answer written twice (this file's own create form, and Tasks/form.js) and
+     * still shipped the wrong one a third time. Three spellings of one fact is the condition that produced this,
+     * so there is now one. The old `person.userId || person.id` fallback is gone with it: a defensive read of a
+     * field that does not exist is what made `person.id` look plausible.
+     */
+    const personUserId = (person) => person?.userId ?? null;
+
+
     const chip = (kind, icon, text, title) =>
         `<span class="wcn-chip wcn-chip-${kind}"${title ? ` title="${esc(title)}"` : ''}>` +
         `<i class="bx ${icon}"></i><span>${esc(text)}</span></span>`;
@@ -2253,7 +2269,7 @@
         const draft = state.subtaskCreateDraft || {};
         const people = state.assignablePeople || [];
         const options = people.map((person) =>
-            `<option value="${esc(person.userId || person.id)}"${draft.assigneeUserId === (person.userId || person.id) ? ' selected' : ''}>`
+            `<option value="${esc(personUserId(person))}"${draft.assigneeUserId === personUserId(person) ? ' selected' : ''}>`
             + `${esc(person.displayName || person.name || '')}</option>`).join('');
         return `<div class="offcanvas offcanvas-end wcn-subtask-panel" tabindex="-1" id="wcnSubtaskCreatePanel"
                      aria-labelledby="wcnSubtaskCreateLabel">
@@ -3882,7 +3898,7 @@
             }
 
             const options = people
-                .map((person) => `<option value="${esc(person.id)}">${esc(person.displayName || person.id)}</option>`)
+                .map((person) => `<option value="${esc(personUserId(person))}">${esc(person.displayName || personUserId(person))}</option>`)
                 .join('');
             const assigneeField = needsAssignee
                 ? `<label class="form-label d-block text-start" for="wcnReassignAssignee">${esc(t('ReassignAssigneeLabel'))}</label>`

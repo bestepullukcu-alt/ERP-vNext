@@ -148,3 +148,90 @@ describe("the four new strings exist in all seven tenant languages", () => {
     });
   });
 });
+
+/*
+ * ══ BL-050 — the same two-sided method, applied to LOOKUP responses ═══════════════════════════════════════════
+ *
+ * The transition-body checks above exist because BL-043 drifted between two files that never mentioned each
+ * other. BL-050 is the SAME defect one layer over: the reassign picker read `person.id`, and
+ * AssignablePersonDto(Guid UserId, …) serialises `userId` — there is no `id`. Every <option> got value="",
+ * validation refused every choice, and no request was ever made. The name looked right because `displayName`
+ * was read correctly, which is exactly what hid it.
+ *
+ * The transition tests could not have caught this: they read REQUEST bodies, and this is a RESPONSE field. So the
+ * method is extended rather than the list of cases — the server record's fields and the client's read sites are
+ * both parsed from source and compared, with nothing restated here.
+ */
+/**
+ * Every place a lookup row's field becomes an <option> VALUE — which is precisely where BL-050 broke and
+ * precisely what a broad `person.X` sweep cannot see: the same files read unrelated `person.name` from fixtures
+ * and use one `row` name for two different lookups. The option value is the field that must exist, because an
+ * `undefined` there renders as "" and the control silently accepts nothing.
+ */
+const OPTION_VALUE_READS = (file) => {
+  const source = fs.readFileSync(path.join(repoRoot, file), "utf8");
+  return source
+    .split("\n")
+    .filter((line) => /option\.value\s*=|<option value=/.test(line))
+    .flatMap((line) => [...line.matchAll(/\b(?:person|row|item|p)\.([A-Za-z][A-Za-z0-9]*)\b/g)].map((m) => m[1]));
+};
+
+const LOOKUP_READERS = [
+  ["AssignablePersonDto", "frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js", "userId"],
+  ["AssignablePersonDto", "frontend/Diten.Web/wwwroot/assets/js/Tasks/form.js", "userId"],
+  ["AssignablePositionDto", "frontend/Diten.Web/wwwroot/assets/js/Tasks/form.js", "positionId"]
+];
+
+describe("lookup responses are read by the field the server actually sends", () => {
+  it.each([["AssignablePersonDto", "userId"], ["AssignablePositionDto", "positionId"]])(
+    "%s declares the id field its clients use", (recordName, idField) => {
+      // The anchor: rename the DTO field and this fails before any client assertion can mislead.
+      expect(serverFields(recordName)).toContain(idField);
+    });
+
+  it("no <option> takes its value from a field no lookup DTO declares", () => {
+    /*
+     * THE BL-050 regression, stated generally rather than as "person.id is wrong". `person.id` named nothing;
+     * `undefined` inside a template literal renders as the empty string instead of throwing, so every option had
+     * value="", validation refused every choice, and no request was ever made. The displayed NAME was correct,
+     * which is what kept it invisible.
+     */
+    const declared = new Set([
+      ...serverFields("AssignablePersonDto"),
+      ...serverFields("AssignablePositionDto")
+    ]);
+
+    [...new Set(LOOKUP_READERS.map(([, file]) => file))].forEach((file) => {
+      const invented = [...new Set(OPTION_VALUE_READS(file))].filter((name) => !declared.has(name));
+      expect(invented, `${file} builds an <option> value from ${invented.join("/")}, which no lookup DTO declares`)
+        .toEqual([]);
+    });
+  });
+
+  it("actually inspects some option values, so an empty sweep cannot pass", () => {
+    // Non-vacuity: a regex that matched nothing would satisfy the assertion above forever.
+    [...new Set(LOOKUP_READERS.map(([, file]) => file))].forEach((file) => {
+      expect(OPTION_VALUE_READS(file).length, `${file}: the option-value scan found nothing to check`)
+        .toBeGreaterThan(0);
+    });
+  });
+
+  it("reads a person's id from ONE place in app.js, not three across the repo", () => {
+    /*
+     * Why a single reader rather than three correct reads: the repo already HAD the right answer written twice
+     * (app.js's `person.userId || person.id` and form.js's `row.userId`) and still shipped the wrong one a third
+     * time. Three spellings of one fact is the condition that produced BL-050; one is the fix.
+     *
+     * The `|| person.id` fallback goes with them — a defensive read of a field that does not exist is what made
+     * `person.id` look plausible in the first place.
+     */
+    const raw = fs.readFileSync(APP_JS, "utf8");
+    // Comments stripped first: this file DOCUMENTS the old spellings so the next reader knows what was wrong,
+    // and an assertion that cannot tell prose from code would forbid explaining the defect it guards.
+    const app = raw.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+
+    expect(app, "app.js has no single person-id reader").toMatch(/const personUserId\s*=/);
+    expect(app, "app.js still falls back to the non-existent person.id").not.toContain("person.userId || person.id");
+    expect(app, "app.js still reads person.id directly").not.toMatch(/\bperson\.id\b/);
+  });
+});
