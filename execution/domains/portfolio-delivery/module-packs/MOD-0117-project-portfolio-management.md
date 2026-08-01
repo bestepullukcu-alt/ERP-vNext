@@ -273,6 +273,14 @@ strict endpoint-specific `tenant_id`/`sub` context gate follow before PPM entitl
 tenant-first lookup. Missing or malformed non-empty tenant/actor claims return `401`; `NameIdentifier`
 fallback is allowed only when `sub` is absent, matching the shared evaluator contract.
 
+The provider applies a lookup-only bounded timeout from
+`ExternalContextProvider:LookupTimeoutMilliseconds`: default `2000 ms`, inclusive minimum `100 ms` and
+maximum `5000 ms`. Enabled deployments fail startup validation outside that range. This deadline wraps
+exactly one authoritative context lookup and does not alter global Mongo or normal PPM CRUD timeouts.
+Provider-owned timeout returns the same generic `503` dependency response without existence disclosure;
+caller/request cancellation propagates unchanged and is never converted to `503`. No retry, fallback or
+cache is authorized by this setting.
+
 Permission mapping is closed and exact: `Portfolio -> ppm.portfolios.read`,
 `Initiative -> ppm.initiatives.read`, `Program -> ppm.programs.read`, and
 `Project -> ppm.projects.read`. No `.view` alias, wildcard, prefix, case normalization, trimming or new
@@ -754,6 +762,7 @@ block only their named runtime boundaries. This pack is not unconditional `ready
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-08-01 | Bound the internal ExternalContextReference provider lookup to configurable `100..5000 ms`, default `2000 ms`; internal timeout is generic `503`, while caller cancellation propagates unchanged. The limit is lookup-only and does not alter global Mongo/CRUD behavior or authorize retry/cache/fallback. | User / Enterprise Strategy Control Tower |
 | 2026-08-01 | Authorized the default-disabled internal `ppm.external-context-reference` `1.0` provider slice. Control Tower corrected the canonical permissions to exact `.read` keys (not `.view`), approved endpoint-specific strict tenant/sub `401` semantics and the v1 null-only `VisibilityPolicyKey` boundary. No new permission was created; MOD-0018 object-level visibility and MOD-0354 consumer integration remain future/blocked. | User / Enterprise Strategy Control Tower |
 | 2026-07-29 | Formally dispositioned the four repeated DataTable verifier findings per Phase 2A surface as approved policy/profile mismatches: bulk delete is prohibited, and authentication uses a same-origin MVC proxy plus HttpOnly cookie rather than browser-side `getAuthHeaders()`. No bulk-delete surface, browser JWT exposure or verifier change is authorized. | User / Enterprise Strategy Control Tower |
 | 2026-07-30 | Locked independent PPM tenant-entitlement and user-permission gates, dormant grants after entitlement removal, and the `PpmAuditIntentSubmittedV1` / `ppm.audit-intent.submitted.v1` producer identity. Minimal Mutation Audit v1 is final; publisher credential, runtime evidence and PSS production authorization remain open. | User / Enterprise Strategy Control Tower |
