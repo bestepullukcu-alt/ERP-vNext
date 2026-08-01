@@ -10,10 +10,22 @@ public interface IRepository<T> where T : EntityBase
     Task AddAsync(T entity, CancellationToken cancellationToken);
     Task ReplaceAsync(T entity, int expectedVersion, CancellationToken cancellationToken);
 }
-public interface IPortfolioRepository : IRepository<Portfolio> { }
+public interface IPortfolioRepository : IRepository<Portfolio>
+{
+    Task AdvanceInvestmentCaseCollectionFenceAsync(Portfolio portfolio, CancellationToken cancellationToken);
+}
 public interface IInitiativeRepository : IRepository<Initiative> { }
 public interface IProgramRepository : IRepository<Program> { }
 public interface IProjectRepository : IRepository<Project> { }
+public interface IInvestmentCaseRepository : IRepository<InvestmentCase>
+{
+    Task AdvanceBenefitCommitmentCollectionFenceAsync(InvestmentCase investmentCase, CancellationToken cancellationToken);
+    Task<bool> ExistsForPortfolioAsync(Guid tenantId, Guid portfolioId, CancellationToken cancellationToken);
+}
+public interface IBenefitCommitmentRepository : IRepository<BenefitCommitment>
+{
+    Task<bool> ExistsForInvestmentCaseAsync(Guid tenantId, Guid investmentCaseId, CancellationToken cancellationToken);
+}
 
 public sealed record AuditIntent(
     Guid Id,

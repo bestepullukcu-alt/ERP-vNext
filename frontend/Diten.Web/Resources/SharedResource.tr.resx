@@ -616,4 +616,6 @@
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>Görev Merkezi</value>
   </data>
+  <data name="Nav.Page.INVESTMENTCASES" xml:space="preserve"><value>Yatırım Vakaları</value></data>
+  <data name="Nav.Page.BENEFITCOMMITMENTS" xml:space="preserve"><value>Fayda Taahhütleri</value></data>
 </root>

@@ -11,7 +11,7 @@ namespace Diten.Web.Controllers.PPM;
 public sealed class PpmController(HttpClient httpClient, IConfiguration configuration, ILogger<PpmController> logger) : Controller
 {
     private static readonly HashSet<string> Resources =
-        new(["portfolios", "initiatives", "programs", "projects"], StringComparer.OrdinalIgnoreCase);
+        new(["portfolios", "initiatives", "programs", "projects", "investment-cases", "benefit-commitments"], StringComparer.OrdinalIgnoreCase);
 
     private readonly string _gatewayUrl = (configuration["GatewayUrl"]
         ?? throw new InvalidOperationException("GatewayUrl configuration is required.")).TrimEnd('/');
@@ -131,6 +131,10 @@ public sealed class PpmController(HttpClient httpClient, IConfiguration configur
         return Guid.TryParse(raw, out var tenantId) && tenantId != Guid.Empty ? tenantId : null;
     }
 
-    private static string ToFolder(string resource) =>
-        char.ToUpperInvariant(resource[0]) + resource[1..];
+    private static string ToFolder(string resource) => resource.ToLowerInvariant() switch
+    {
+        "investment-cases" => "InvestmentCases",
+        "benefit-commitments" => "BenefitCommitments",
+        _ => char.ToUpperInvariant(resource[0]) + resource[1..]
+    };
 }

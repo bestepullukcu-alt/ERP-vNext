@@ -3,6 +3,8 @@ using Diten.PpmService.Application.Common;
 using Diten.PpmService.Application.Features.Portfolios;
 using Diten.PpmService.Application.Features.Projects;
 using Diten.PpmService.Application.Features.ExternalContextReferences;
+using Diten.PpmService.Application.Features.InvestmentCases;
+using Diten.PpmService.Application.Features.BenefitCommitments;
 using Diten.PpmService.Domain.Entities;
 using Diten.PpmService.Domain.Exceptions;
 using Diten.PpmService.Domain.Repositories;
@@ -262,6 +264,161 @@ public sealed class MongoPersistenceIntegrationTests
         Assert.Null(await repository.GetByIdAsync(entity.TenantId, entity.Id, default));
     }
 
+    [Fact]
+    public async Task Gate_l_parent_chain_and_audit_intents_commit_atomically()
+    {
+        var fixture = await Fixture.Create();
+        var portfolio = fixture.NewPortfolio("P-GATE-L");
+        portfolio.Transition(fixture.ActorId, PortfolioLifecycleState.Active);
+        await fixture.UnitOfWork.ExecuteInTransactionAsync(async ct =>
+        {
+            await fixture.Portfolios.AddAsync(portfolio, ct);
+            await fixture.Audit.AddAsync(fixture.Intent(portfolio, "created"), ct);
+            return true;
+        }, default);
+
+        var investment = await fixture.InvestmentCaseService().Create(
+            new("IC-GATE-L", "Investment", null, portfolio.Id, null, null), default);
+        var benefit = await fixture.BenefitCommitmentService().Create(
+            new("BC-GATE-L", "Benefit", null, investment.Data!.Id, "Target", null), default);
+
+        Assert.Equal(201, investment.StatusCode);
+        Assert.Equal(201, benefit.StatusCode);
+        Assert.Equal(investment.Data.Id, benefit.Data!.InvestmentCaseId);
+        Assert.Equal(3, await fixture.Context.AuditIntents.CountDocumentsAsync(x => x.TenantId == fixture.TenantId));
+    }
+
+    [Fact]
+    public async Task Gate_l_normalized_active_code_is_unique_and_cross_tenant_parent_is_404()
+    {
+        var fixture = await Fixture.Create();
+        var portfolio = fixture.NewPortfolio("P-UNIQUE");
+        portfolio.Transition(fixture.ActorId, PortfolioLifecycleState.Active);
+        await fixture.UnitOfWork.ExecuteInTransactionAsync(async ct => { await fixture.Portfolios.AddAsync(portfolio, ct); return true; }, default);
+
+        var first = await fixture.InvestmentCaseService().Create(new("Cafe\u0301", "First", null, portfolio.Id, null, null), default);
+        var duplicate = await fixture.InvestmentCaseService().Create(new("Café", "Second", null, portfolio.Id, null, null), default);
+        var crossTenant = await fixture.InvestmentCaseService(Guid.NewGuid()).Create(new("IC-X", "Cross", null, portfolio.Id, null, null), default);
+
+        Assert.Equal(201, first.StatusCode);
+        Assert.Equal(409, duplicate.StatusCode);
+        Assert.Equal(404, crossTenant.StatusCode);
+    }
+
+    [Fact]
+    public async Task Investment_soft_delete_is_blocked_by_same_tenant_active_benefit_without_cascade()
+    {
+        var fixture = await Fixture.Create();
+        var portfolio = fixture.NewPortfolio("P-DELETE-GUARD");
+        portfolio.Transition(fixture.ActorId, PortfolioLifecycleState.Active);
+        await fixture.UnitOfWork.ExecuteInTransactionAsync(async ct => { await fixture.Portfolios.AddAsync(portfolio, ct); return true; }, default);
+        var investment = await fixture.InvestmentCaseService().Create(new("IC-DELETE-GUARD", "Case", null, portfolio.Id, null, null), default);
+        var benefit = await fixture.BenefitCommitmentService().Create(new("BC-DELETE-GUARD", "Benefit", null, investment.Data!.Id, "Target", null), default);
+
+        var response = await fixture.InvestmentCaseService().SoftDelete(
+            new(investment.Data.Id, investment.Data.Version), default);
+
+        Assert.Equal(409, response.StatusCode);
+        Assert.NotNull(await fixture.InvestmentCases.GetByIdAsync(fixture.TenantId, investment.Data.Id, default));
+        Assert.NotNull(await fixture.BenefitCommitments.GetByIdAsync(fixture.TenantId, benefit.Data!.Id, default));
+    }
+
+    [Fact]
+    public async Task Concurrent_gate_l_duplicate_code_has_one_winner_and_one_domain_conflict()
+    {
+        var fixture = await Fixture.Create();
+        var first = new InvestmentCase(fixture.TenantId, fixture.ActorId, "RACE", "First", null, Guid.NewGuid(), null, null);
+        var second = new InvestmentCase(fixture.TenantId, fixture.ActorId, "RACE", "Second", null, Guid.NewGuid(), null, null);
+        async Task Write(InvestmentCase entity) => await fixture.UnitOfWork.ExecuteInTransactionAsync(async ct =>
+        { await fixture.InvestmentCases.AddAsync(entity, ct); await fixture.Audit.AddAsync(fixture.Intent(entity, "created"), ct); return true; }, default);
+
+        var results = await Task.WhenAll(new[] { first, second }.Select(async entity =>
+        { try { await Write(entity); return "ok"; } catch (OptimisticConcurrencyException) { return "conflict"; } }));
+
+        Assert.Equal(1, results.Count(x => x == "ok"));
+        Assert.Equal(1, results.Count(x => x == "conflict"));
+    }
+
+    [Fact]
+    public async Task Gate_l_collection_fences_preserve_business_metadata()
+    {
+        var fixture = await Fixture.Create();
+        var portfolio = fixture.NewPortfolio("P-FENCE");
+        portfolio.Transition(fixture.ActorId, PortfolioLifecycleState.Active);
+        await fixture.UnitOfWork.ExecuteInTransactionAsync(async ct => { await fixture.Portfolios.AddAsync(portfolio, ct); return true; }, default);
+        var initialPortfolio = await fixture.Portfolios.GetByIdAsync(fixture.TenantId, portfolio.Id, default);
+        var portfolioSnapshot = (initialPortfolio!.Version, initialPortfolio.UpdatedAtUtc, initialPortfolio.UpdatedBy);
+        var investment = await fixture.InvestmentCaseService().Create(new("IC-FENCE", "Case", null, portfolio.Id, null, null), default);
+        var persistedPortfolio = await fixture.Portfolios.GetByIdAsync(fixture.TenantId, portfolio.Id, default);
+        Assert.Equal(portfolioSnapshot, (persistedPortfolio!.Version, persistedPortfolio.UpdatedAtUtc, persistedPortfolio.UpdatedBy));
+        Assert.Equal(1, persistedPortfolio.InvestmentCaseCollectionFence);
+        var investmentEntity = await fixture.InvestmentCases.GetByIdAsync(fixture.TenantId, investment.Data!.Id, default);
+        var investmentSnapshot = (investmentEntity!.Version, investmentEntity.UpdatedAtUtc, investmentEntity.UpdatedBy);
+        var benefit = await fixture.BenefitCommitmentService().Create(new("BC-FENCE", "Benefit", null, investmentEntity.Id, "Target", null), default);
+        var persistedInvestment = await fixture.InvestmentCases.GetByIdAsync(fixture.TenantId, investmentEntity.Id, default);
+        Assert.Equal(investmentSnapshot, (persistedInvestment!.Version, persistedInvestment.UpdatedAtUtc, persistedInvestment.UpdatedBy));
+        Assert.Equal(1, persistedInvestment.BenefitCommitmentCollectionFence);
+        Assert.Equal(201, benefit.StatusCode);
+    }
+
+    [Fact]
+    public async Task Portfolio_delete_and_investment_create_never_commit_an_orphan()
+    {
+        var fixture = await Fixture.Create();
+        var portfolio = fixture.NewPortfolio("P-RACE-FENCE");
+        portfolio.Transition(fixture.ActorId, PortfolioLifecycleState.Active);
+        await fixture.UnitOfWork.ExecuteInTransactionAsync(async ct => { await fixture.Portfolios.AddAsync(portfolio, ct); return true; }, default);
+        async Task<int> Delete() { try { return (await fixture.PortfolioService().SoftDelete(new(portfolio.Id, portfolio.Version), default)).StatusCode; } catch (OptimisticConcurrencyException) { return 409; } }
+        async Task<int> Create() { try { return (await fixture.InvestmentCaseService().Create(new("IC-RACE-FENCE", "Case", null, portfolio.Id, null, null), default)).StatusCode; } catch (OptimisticConcurrencyException) { return 409; } }
+        var results = await Task.WhenAll(Delete(), Create());
+        var parent = await fixture.Portfolios.GetByIdAsync(fixture.TenantId, portfolio.Id, default);
+        var children = await fixture.InvestmentCases.ListAsync(fixture.TenantId, default);
+        Assert.False(results[0] is 204 && results[1] is 201);
+        Assert.False(parent is null && children.Any(x => x.PortfolioId == portfolio.Id));
+    }
+
+    [Fact]
+    public async Task Investment_delete_and_benefit_create_never_commit_an_orphan()
+    {
+        var fixture = await Fixture.Create();
+        var portfolio = fixture.NewPortfolio("P-BC-RACE");
+        portfolio.Transition(fixture.ActorId, PortfolioLifecycleState.Active);
+        await fixture.UnitOfWork.ExecuteInTransactionAsync(async ct => { await fixture.Portfolios.AddAsync(portfolio, ct); return true; }, default);
+        var investment = await fixture.InvestmentCaseService().Create(new("IC-BC-RACE", "Case", null, portfolio.Id, null, null), default);
+        async Task<int> Delete() { try { return (await fixture.InvestmentCaseService().SoftDelete(new(investment.Data!.Id, investment.Data.Version), default)).StatusCode; } catch (OptimisticConcurrencyException) { return 409; } }
+        async Task<int> Create() { try { return (await fixture.BenefitCommitmentService().Create(new("BC-RACE", "Benefit", null, investment.Data!.Id, "Target", null), default)).StatusCode; } catch (OptimisticConcurrencyException) { return 409; } }
+        var results = await Task.WhenAll(Delete(), Create());
+        var parent = await fixture.InvestmentCases.GetByIdAsync(fixture.TenantId, investment.Data!.Id, default);
+        var children = await fixture.BenefitCommitments.ListAsync(fixture.TenantId, default);
+        Assert.False(results[0] is 204 && results[1] is 201);
+        Assert.False(parent is null && children.Any(x => x.InvestmentCaseId == investment.Data.Id));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Gate_l_invalid_audit_intent_rolls_back_new_collection_mutation(bool investmentCase)
+    {
+        var fixture = await Fixture.Create();
+        EntityBase entity = investmentCase
+            ? new InvestmentCase(fixture.TenantId, fixture.ActorId, "IC-AUDIT-FAIL", "Case", null, Guid.NewGuid(), null, null)
+            : new BenefitCommitment(fixture.TenantId, fixture.ActorId, "BC-AUDIT-FAIL", "Benefit", null, Guid.NewGuid(), "Target", null);
+        var invalid = fixture.Intent(entity, "created") with { ActorId = Guid.Empty };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.UnitOfWork.ExecuteInTransactionAsync(async ct =>
+        {
+            if (entity is InvestmentCase ic) await fixture.InvestmentCases.AddAsync(ic, ct);
+            else await fixture.BenefitCommitments.AddAsync((BenefitCommitment)entity, ct);
+            await fixture.Audit.AddAsync(invalid, ct);
+            return true;
+        }, default));
+
+        if (entity is InvestmentCase)
+            Assert.Null(await fixture.InvestmentCases.GetByIdAsync(fixture.TenantId, entity.Id, default));
+        else
+            Assert.Null(await fixture.BenefitCommitments.GetByIdAsync(fixture.TenantId, entity.Id, default));
+    }
+
     private static IMongoDatabase CreateDatabase(string connectionString) =>
         new MongoClient(connectionString).GetDatabase($"ppm_integration_{Guid.NewGuid():N}");
 
@@ -275,6 +432,8 @@ public sealed class MongoPersistenceIntegrationTests
             Initiatives = new InitiativeRepository(context);
             Programs = new ProgramRepository(context);
             Projects = new ProjectRepository(context);
+            InvestmentCases = new InvestmentCaseRepository(context);
+            BenefitCommitments = new BenefitCommitmentRepository(context);
             Audit = new AuditIntentRepository(context);
         }
 
@@ -286,6 +445,8 @@ public sealed class MongoPersistenceIntegrationTests
         public InitiativeRepository Initiatives { get; }
         public ProgramRepository Programs { get; }
         public ProjectRepository Projects { get; }
+        public InvestmentCaseRepository InvestmentCases { get; }
+        public BenefitCommitmentRepository BenefitCommitments { get; }
         public AuditIntentRepository Audit { get; }
 
         public static async Task<Fixture> Create()
@@ -308,7 +469,7 @@ public sealed class MongoPersistenceIntegrationTests
                 new RequestContext(tenantId ?? TenantId, ActorId),
                 new RequestContext(tenantId ?? TenantId, ActorId),
                 new CorrelationContext(),
-                new PermissionEvaluator());
+                new PermissionEvaluator(), InvestmentCases);
 
         public ProjectService ProjectService() =>
             new(Projects, Initiatives, Programs, Audit, UnitOfWork,
@@ -316,6 +477,17 @@ public sealed class MongoPersistenceIntegrationTests
                 new RequestContext(TenantId, ActorId),
                 new CorrelationContext(),
                 new PermissionEvaluator());
+
+        public InvestmentCaseService InvestmentCaseService(Guid? tenantId = null) =>
+            new(InvestmentCases, Portfolios, BenefitCommitments, Audit, UnitOfWork,
+                new RequestContext(tenantId ?? TenantId, ActorId),
+                new RequestContext(tenantId ?? TenantId, ActorId),
+                new CorrelationContext(), new PermissionEvaluator());
+
+        public BenefitCommitmentService BenefitCommitmentService() =>
+            new(BenefitCommitments, InvestmentCases, Audit, UnitOfWork,
+                new RequestContext(TenantId, ActorId), new RequestContext(TenantId, ActorId),
+                new CorrelationContext(), new PermissionEvaluator());
     }
 
     private sealed record RequestContext(Guid TenantId, Guid ActorId)

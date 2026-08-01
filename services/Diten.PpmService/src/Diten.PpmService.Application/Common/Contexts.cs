@@ -91,4 +91,12 @@ public static class PpmPermissions
     public const string ProjectsCreate = "ppm.projects.create";
     public const string ProjectsUpdate = "ppm.projects.update";
     public const string ProjectsLifecycle = "ppm.projects.change-lifecycle";
+    public const string InvestmentCasesRead = "ppm.investment-cases.read";
+    public const string InvestmentCasesCreate = "ppm.investment-cases.create";
+    public const string InvestmentCasesUpdate = "ppm.investment-cases.update";
+    public const string InvestmentCasesLifecycle = "ppm.investment-cases.change-lifecycle";
+    public const string BenefitCommitmentsRead = "ppm.benefit-commitments.read";
+    public const string BenefitCommitmentsCreate = "ppm.benefit-commitments.create";
+    public const string BenefitCommitmentsUpdate = "ppm.benefit-commitments.update";
+    public const string BenefitCommitmentsLifecycle = "ppm.benefit-commitments.change-lifecycle";
 }

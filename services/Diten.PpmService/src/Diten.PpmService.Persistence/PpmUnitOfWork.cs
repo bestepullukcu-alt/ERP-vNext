@@ -36,6 +36,35 @@ public sealed class PpmUnitOfWork(PpmMongoContext context) : IPpmUnitOfWork
             throw new OptimisticConcurrencyException(
                 "An active entity with the same tenant-scoped code already exists.");
         }
+        catch (MongoWriteException exception) when (exception.WriteError?.Code == 112)
+        {
+            await AbortIfRequired(session);
+            throw new OptimisticConcurrencyException(
+                "A concurrent write changed the same tenant-scoped resource.");
+        }
+        catch (MongoCommandException exception) when (exception.Code == 112)
+        {
+            await AbortIfRequired(session);
+            throw new OptimisticConcurrencyException(
+                "A concurrent write changed the same tenant-scoped resource.");
+        }
+        catch (MongoCommandException exception) when (
+            exception.Code == 251
+            && exception.Message.Contains(
+                "Please retry your operation or multi-document transaction",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            await AbortIfRequired(session);
+            throw new OptimisticConcurrencyException(
+                "A concurrent write changed the same tenant-scoped resource.");
+        }
+        catch (MongoException exception) when (
+            exception.Message.Contains("WriteConflict", StringComparison.OrdinalIgnoreCase))
+        {
+            await AbortIfRequired(session);
+            throw new OptimisticConcurrencyException(
+                "A concurrent write changed the same tenant-scoped resource.");
+        }
         catch (MongoException exception) when (
             exception.HasErrorLabel("TransientTransactionError")
             || exception.HasErrorLabel("UnknownTransactionCommitResult")
@@ -55,6 +84,12 @@ public sealed class PpmUnitOfWork(PpmMongoContext context) : IPpmUnitOfWork
             throw new TransactionUnavailableException(
                 "Mongo replica-set transaction support is unavailable.",
                 exception);
+        }
+        catch (MongoException exception)
+        {
+            await AbortIfRequired(session);
+            throw new TransactionUnavailableException(
+                "Mongo transactional persistence is unavailable.", exception);
         }
         catch
         {

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="BenefitCommitmentsTitle" xml:space="preserve"><value>Compromisos de beneficios</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Compromisos de beneficios</value></data>
+  <data name="AddNewBenefitCommitment" xml:space="preserve"><value>Añadir compromiso de beneficio</value></data>
+  <data name="EditBenefitCommitment" xml:space="preserve"><value>Editar compromiso de beneficio</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Title" xml:space="preserve"><value>Título</value></data>
+  <data name="Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Ciclo de vida</value></data>
+  <data name="BenefitCommitmentsLoadingState" xml:space="preserve"><value>Compromisos de beneficios…</value></data>
+  <data name="BenefitCommitmentsEmptyState" xml:space="preserve"><value>—</value></data>
+  <data name="BenefitCommitmentsErrorState" xml:space="preserve"><value>Error</value></data>
+  <data name="InvestmentCase" xml:space="preserve"><value>Caso de inversión</value></data>
+  <data name="TargetDescription" xml:space="preserve"><value>Descripción del objetivo</value></data>
+  <data name="TargetDate" xml:space="preserve"><value>Fecha objetivo</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="LifecyclePlanned" xml:space="preserve"><value>Planificado</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Activo</value></data>
+  <data name="LifecycleClosed" xml:space="preserve"><value>Cerrado</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>Cancelado</value></data>
+  <data name="CloseBenefitCommitmentConfirmation" xml:space="preserve"><value>Cerrado</value></data>
+  <data name="CancelBenefitCommitmentConfirmation" xml:space="preserve"><value>Cancelado</value></data>
+</root>

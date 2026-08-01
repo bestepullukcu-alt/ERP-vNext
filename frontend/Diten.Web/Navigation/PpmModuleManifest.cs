@@ -11,7 +11,7 @@ public static class PpmModuleManifest
     public const string RootRoute = "/ppm";
 
     /// <summary>
-    /// Closed MOD-0117 Phase 2A permission catalog. These are discovery metadata;
+    /// Closed MOD-0117 Phase 2A + Phase 2B Gate L permission catalog. These are discovery metadata;
     /// the signed-JWT evaluator in Diten.PpmService remains authoritative.
     /// </summary>
     public static IReadOnlyList<string> Permissions { get; } =
@@ -20,6 +20,14 @@ public static class PpmModuleManifest
         "ppm.initiatives.create",
         "ppm.initiatives.read",
         "ppm.initiatives.update",
+        "ppm.investment-cases.change-lifecycle",
+        "ppm.investment-cases.create",
+        "ppm.investment-cases.read",
+        "ppm.investment-cases.update",
+        "ppm.benefit-commitments.change-lifecycle",
+        "ppm.benefit-commitments.create",
+        "ppm.benefit-commitments.read",
+        "ppm.benefit-commitments.update",
         "ppm.portfolios.change-lifecycle",
         "ppm.portfolios.create",
         "ppm.portfolios.read",
@@ -40,7 +48,9 @@ public static class PpmModuleManifest
         new("PPM", "PortfoliosLabel", "/ppm/portfolios", "bx bx-layer", 10),
         new("PPM", "InitiativesLabel", "/ppm/initiatives", "bx bx-bulb", 20),
         new("PPM", "ProgramsLabel", "/ppm/programs", "bx bx-grid-alt", 30),
-        new("PPM", "ProjectsLabel", "/ppm/projects", "bx bx-folder", 40)
+        new("PPM", "ProjectsLabel", "/ppm/projects", "bx bx-folder", 40),
+        new("PPM", "InvestmentCasesLabel", "/ppm/investment-cases", "bx bx-line-chart", 50),
+        new("PPM", "BenefitCommitmentsLabel", "/ppm/benefit-commitments", "bx bx-target-lock", 60)
     ];
 
     public static IPpmModuleManifestProvider Provider { get; } = new PpmModuleManifestProvider();

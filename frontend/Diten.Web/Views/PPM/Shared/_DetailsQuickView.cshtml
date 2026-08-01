@@ -22,13 +22,32 @@
                     <div class="col-12"><div class="backbone-preview-label">@ViewData["CodeText"]</div><div id="oc-code" class="backbone-preview-value mt-1">-</div></div>
                     <div class="col-12"><div class="backbone-preview-label">@ViewData["NameText"]</div><div id="oc-name" class="backbone-preview-value mt-1">-</div></div>
                     <div class="col-12"><div class="backbone-preview-label">@ViewData["LifecycleText"]</div><span id="oc-lifecycle" class="badge bg-label-secondary mt-1">-</span></div>
-                    <div class="col-12"><div class="backbone-preview-label">@ViewData["ReferenceabilityText"]</div><span id="oc-referenceability" class="badge bg-label-secondary mt-1">-</span></div>
-                    @if (Model.HasPortfolio || Model.HasProjectParent)
+                    @if (Model.ShowsReferenceability)
+                    {
+                        <div class="col-12"><div class="backbone-preview-label">@ViewData["ReferenceabilityText"]</div><span id="oc-referenceability" class="badge bg-label-secondary mt-1">-</span></div>
+                    }
+                    @if (Model.HasPortfolio || Model.HasProjectParent || Model.HasInvestmentCaseParent)
                     {
                         <div class="col-12"><div class="backbone-preview-label">@ViewData["ParentText"]</div><div id="oc-parent" class="backbone-preview-value mt-1">-</div></div>
                     }
+                    @if (Model.HasPlanningDates)
+                    {
+                        <div class="col-6"><div class="backbone-preview-label">@ViewData["PlannedStartDateText"]</div><div id="oc-planned-start" class="backbone-preview-value mt-1">-</div></div>
+                        <div class="col-6"><div class="backbone-preview-label">@ViewData["PlannedEndDateText"]</div><div id="oc-planned-end" class="backbone-preview-value mt-1">-</div></div>
+                    }
+                    @if (Model.HasBenefitTarget)
+                    {
+                        <div class="col-12"><div class="backbone-preview-label">@ViewData["TargetDateText"]</div><div id="oc-target-date" class="backbone-preview-value mt-1">-</div></div>
+                    }
                 </div>
             </section>
+            @if (Model.HasBenefitTarget)
+            {
+                <section class="card backbone-preview-section p-4">
+                    <div class="backbone-preview-label">@ViewData["TargetDescriptionText"]</div>
+                    <div id="oc-target-description" class="backbone-preview-description mt-2">-</div>
+                </section>
+            }
             <section class="card backbone-preview-section p-4">
                 <div class="backbone-preview-label">@ViewData["DescriptionText"]</div>
                 <div id="oc-description" class="backbone-preview-description mt-2">-</div>

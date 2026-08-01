@@ -44,6 +44,8 @@ public static class DependencyInjection
         services.AddScoped<IInitiativeRepository, InitiativeRepository>();
         services.AddScoped<IProgramRepository, ProgramRepository>();
         services.AddScoped<IProjectRepository, ProjectRepository>();
+        services.AddScoped<IInvestmentCaseRepository, InvestmentCaseRepository>();
+        services.AddScoped<IBenefitCommitmentRepository, BenefitCommitmentRepository>();
         services.AddScoped<IExternalContextReferenceLookup, ExternalContextReferenceLookup>();
         services.AddScoped<IAuditIntentRepository, AuditIntentRepository>();
         services.AddScoped<PpmEventOutboxStore>();

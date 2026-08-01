@@ -18,4 +18,8 @@
   <data name="PpmEmptyState" xml:space="preserve"><value>尚无可用的 PPM 上下文。</value></data>
   <data name="PpmLoadingState" xml:space="preserve"><value>正在加载 PPM 工作区…</value></data>
   <data name="PpmErrorState" xml:space="preserve"><value>无法加载 PPM 工作区。</value></data>
+  <data name="InvestmentCasesLabel" xml:space="preserve"><value>投资案例</value></data>
+  <data name="BenefitCommitmentsLabel" xml:space="preserve"><value>收益承诺</value></data>
+  <data name="OpenInvestmentCases" xml:space="preserve"><value>投资案例</value></data>
+  <data name="OpenBenefitCommitments" xml:space="preserve"><value>收益承诺</value></data>
 </root>

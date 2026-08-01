@@ -49,7 +49,11 @@ window.PpmCrud = (function () {
         const raw = await response.text();
         let payload = {};
         if (raw) {
-            try { payload = lowerFirstKeys(JSON.parse(raw)); } catch (_) { payload = { errors: [raw] }; }
+            try { payload = lowerFirstKeys(JSON.parse(raw)); } catch (_) {
+                const error = new Error('Invalid server response.');
+                error.status = 502;
+                throw error;
+            }
         }
         if (!response.ok) {
             const error = new Error((payload.errors || [])[0] || `HTTP ${response.status}`);
@@ -63,7 +67,9 @@ window.PpmCrud = (function () {
     const lifecycleClass = (state) => ({
         Draft: 'bg-label-secondary', Proposed: 'bg-label-info', Planned: 'bg-label-info',
         Active: 'bg-label-success', OnHold: 'bg-label-warning',
-        Completed: 'bg-label-primary', Archived: 'bg-label-dark', Cancelled: 'bg-label-danger'
+        UnderAnalysis: 'bg-label-warning', Completed: 'bg-label-primary',
+        Closed: 'bg-label-dark', Withdrawn: 'bg-label-danger',
+        Archived: 'bg-label-dark', Cancelled: 'bg-label-danger'
     })[state] || 'bg-label-secondary';
 
     const mount = async (config) => {
@@ -74,7 +80,7 @@ window.PpmCrud = (function () {
 
         const baseUrl = config.endpoint || `/ppm/${config.resource}/api`;
         const antiForgery = () => document.querySelector('#formPpm input[name="__RequestVerificationToken"]')?.value || '';
-        const state = { dt: null, editId: null, rows: new Map(), lifecycle: [], referenceability: '' };
+        const state = { dt: null, editId: null, rows: new Map(), lifecycle: [], referenceability: '', lookupBlocked: false };
         const form = document.getElementById('formPpm');
         const alert = document.getElementById('ppm-table-alert');
         const formAlert = document.getElementById('ppm-form-alert');
@@ -83,6 +89,7 @@ window.PpmCrud = (function () {
         const personalization = window.personalizationClient;
         const personalizationContext = { moduleKey: 'PPM', pageKey: config.resource };
         const stateLabel = (value) => L.States?.[value] || value;
+        const titleOf = (row) => row?.[config.titleProperty || 'name'] || row?.name || row?.title || '';
 
         const setTableError = (message) => {
             alert.textContent = message || L.Error || L.ErrorOccurred || L.NotAvailable || '';
@@ -115,6 +122,23 @@ window.PpmCrud = (function () {
                     ? `${L.Error || L.ErrorOccurred || L.NotAvailable || ''} (503)`
                     : error?.message || L.ErrorOccurred || L.NotAvailable || '';
             window.showToast?.(message, 'error');
+        };
+        const setLookupBlocked = (error = null, showError = true) => {
+            state.lookupBlocked = !!error;
+            const selectors = config.hasPortfolio ? '#ppmPortfolioId' : config.hasInvestmentCaseParent ? '#ppmInvestmentCaseId' : '';
+            if (selectors) $(selectors).val('').trigger('change').prop('disabled', state.lookupBlocked);
+            const save = document.getElementById('btnSavePpm');
+            if (save) save.disabled = state.lookupBlocked;
+            if (!error) {
+                formAlert.replaceChildren();
+                formAlert.classList.add('d-none');
+            } else if (showError) {
+                const safeMessage = error.status === 401 ? (L.Unauthorized || L.ErrorOccurred)
+                    : error.status === 403 ? `${L.ErrorOccurred || L.Error} (403)`
+                        : error.status === 503 ? `${L.ErrorOccurred || L.Error} (503)`
+                            : (L.ErrorOccurred || L.Error || L.NotAvailable);
+                showFormError({ message: safeMessage, status: error.status });
+            }
         };
 
         const initializeSelect2 = () => {
@@ -163,10 +187,24 @@ window.PpmCrud = (function () {
 
         const unwrap = (payload) => lowerFirstKeys(payload?.data ?? payload?.Data ?? payload ?? []);
 
+        if (config.hasInvestmentCaseParent) {
+            try {
+                const rows = unwrap(await request('/ppm/investment-cases/api'));
+                config.investmentCases = new Map(rows.map((row) => [row.id, row]));
+            } catch (error) {
+                config.investmentCases = new Map();
+                setLookupBlocked(error);
+            }
+        }
+
         const parentText = (row) => {
             if (config.hasPortfolio) {
                 const parent = config.portfolios?.get(row.portfolioId);
-                return parent ? `${parent.code} — ${parent.name}` : (row.portfolioId || L.NotAvailable || '-');
+                return parent ? `${parent.code} — ${titleOf(parent)}` : (config.hideRawParentId ? (L.NotAvailable || '-') : (row.portfolioId || L.NotAvailable || '-'));
+            }
+            if (config.hasInvestmentCaseParent) {
+                const parent = config.investmentCases?.get(row.investmentCaseId);
+                return parent ? `${parent.code} — ${titleOf(parent)}` : (L.NotAvailable || '-');
             }
             if (config.hasProjectParent) {
                 const source = row.parentType === 'Initiative' ? config.initiatives : config.programs;
@@ -202,20 +240,20 @@ window.PpmCrud = (function () {
             }));
             actions.push({
                 className: 'js-ppm-delete text-danger', icon: 'bx bx-trash', text: L.Delete,
-                attrs: { 'data-id': row.id, 'data-version': row.version, 'data-name': html(row.name) }
+                attrs: { 'data-id': row.id, 'data-version': row.version, 'data-name': html(titleOf(row)) }
             });
             return window.DitenDataTable.renderActions(actions);
         };
 
-        const parentColumn = config.hasPortfolio || config.hasProjectParent;
+        const parentColumn = config.hasPortfolio || config.hasProjectParent || config.hasInvestmentCaseParent;
         const columns = [
-            { data: 'id' }, { data: 'id' }, { data: 'code' }, { data: 'name' },
+            { data: 'id' }, { data: 'id' }, { data: 'code' }, { data: config.titleProperty || 'name' },
             ...(parentColumn ? [{ data: null }] : []),
-            { data: 'lifecycleState' }, { data: 'isReferenceable' }, { data: 'id' }
+            { data: 'lifecycleState' }, ...(config.showReferenceability === false ? [] : [{ data: 'isReferenceable' }]), { data: 'id' }
         ];
         const lifecycleIndex = parentColumn ? 5 : 4;
-        const referenceabilityIndex = lifecycleIndex + 1;
-        const actionIndex = referenceabilityIndex + 1;
+        const referenceabilityIndex = config.showReferenceability === false ? -1 : lifecycleIndex + 1;
+        const actionIndex = lifecycleIndex + (config.showReferenceability === false ? 1 : 2);
 
         const extraButtons = {
             filterBtn: {
@@ -253,8 +291,9 @@ window.PpmCrud = (function () {
             try {
                 const rows = unwrap(await request('/ppm/portfolios/api'));
                 config.portfolios = new Map(rows.map((row) => [row.id, row]));
-            } catch (_) {
+            } catch (error) {
                 config.portfolios = new Map();
+                setLookupBlocked(error);
             }
         }
         if (config.hasProjectParent) {
@@ -299,7 +338,7 @@ window.PpmCrud = (function () {
                     { targets: 2, render: (value) => `<span class="fw-medium text-heading">${html(value)}</span>` },
                     ...(parentColumn ? [{ targets: 4, render: (_value, _type, row) => html(parentText(row)) }] : []),
                     { targets: lifecycleIndex, render: (value) => `<span class="badge ${lifecycleClass(value)}">${html(stateLabel(value))}</span>` },
-                    { targets: referenceabilityIndex, render: (value) => `<span class="badge ${value ? 'bg-label-success' : 'bg-label-secondary'}">${html(value ? L.Referenceable : L.NotReferenceable)}</span>` },
+                    ...(config.showReferenceability === false ? [] : [{ targets: referenceabilityIndex, render: (value) => `<span class="badge ${value ? 'bg-label-success' : 'bg-label-secondary'}">${html(value ? L.Referenceable : L.NotReferenceable)}</span>` }]),
                     { targets: actionIndex, className: 'cell-fit all', searchable: false, orderable: false,
                         render: (_value, _type, row) => rowActions(row) }
                 ],
@@ -331,7 +370,7 @@ window.PpmCrud = (function () {
             const row = state.dt.row(dataIndex).data();
             if (!row) return true;
             const lifecycleMatch = !state.lifecycle.length || state.lifecycle.includes(row.lifecycleState);
-            const referenceMatch = state.referenceability === '' || String(!!row.isReferenceable) === state.referenceability;
+            const referenceMatch = config.showReferenceability === false || state.referenceability === '' || String(!!row.isReferenceable) === state.referenceability;
             return lifecycleMatch && referenceMatch;
         });
 
@@ -368,6 +407,8 @@ window.PpmCrud = (function () {
             $('#ppmPortfolioId').val('').trigger('change');
             $('#ppmParentType').val('').trigger('change');
             $('#ppmParentId').val('').trigger('change').prop('disabled', true);
+            $('#ppmInvestmentCaseId').val('').trigger('change');
+            $('#ppmPortfolioId, #ppmInvestmentCaseId').prop('disabled', state.lookupBlocked);
         };
 
         const populateSelect = (selector, rows, selected) => {
@@ -378,7 +419,7 @@ window.PpmCrud = (function () {
             rows.forEach((row) => {
                 const option = document.createElement('option');
                 option.value = row.id;
-                option.textContent = `${row.code} — ${row.name}`;
+                option.textContent = `${row.code} — ${titleOf(row)}`;
                 option.selected = row.id === selected;
                 select.appendChild(option);
             });
@@ -386,6 +427,7 @@ window.PpmCrud = (function () {
         };
 
         async function refreshLookups(current) {
+            setLookupBlocked(new Error(L.Loading || L.NotAvailable || 'Loading'), false);
             if (config.hasPortfolio) {
                 const rows = unwrap(await request('/ppm/portfolios/api'));
                 config.portfolios = new Map(rows.map((row) => [row.id, row]));
@@ -400,6 +442,12 @@ window.PpmCrud = (function () {
                 populateSelect('#ppmParentId', rows.filter((row) => row.isReferenceable), current?.parentId);
                 $('#ppmParentId').prop('disabled', false);
             }
+            if (config.hasInvestmentCaseParent) {
+                const rows = unwrap(await request('/ppm/investment-cases/api'));
+                config.investmentCases = new Map(rows.map((row) => [row.id, row]));
+                populateSelect('#ppmInvestmentCaseId', rows.filter((row) => row.isReferenceable !== false), current?.investmentCaseId);
+            }
+            setLookupBlocked(null);
         }
 
         async function openCreate() {
@@ -418,11 +466,22 @@ window.PpmCrud = (function () {
                 document.getElementById('ppmId').value = row.id;
                 document.getElementById('ppmVersion').value = row.version;
                 document.getElementById('ppmCode').value = row.code || '';
-                document.getElementById('ppmName').value = row.name || '';
+                document.getElementById('ppmName').value = titleOf(row);
                 document.getElementById('ppmDescription').value = row.description || '';
+                if (config.hasPlanningDates) {
+                    document.getElementById('ppmPlannedStartDate').value = row.plannedStartDate || '';
+                    document.getElementById('ppmPlannedEndDate').value = row.plannedEndDate || '';
+                }
+                if (config.hasBenefitTarget) {
+                    document.getElementById('ppmTargetDescription').value = row.targetDescription || '';
+                    document.getElementById('ppmTargetDate').value = row.targetDate || '';
+                }
                 $('#ppmLifecycleState').val(row.lifecycleState).trigger('change');
                 $('#ppmParentType').val(row.parentType || '').trigger('change');
                 await refreshLookups(row);
+                if (config.immutableParent) {
+                    $('#ppmPortfolioId, #ppmInvestmentCaseId').prop('disabled', true);
+                }
                 createCanvas.show();
             } catch (error) { showFailure(error); }
         }
@@ -445,22 +504,31 @@ window.PpmCrud = (function () {
         const formPayload = () => ({
             id: state.editId,
             code: document.getElementById('ppmCode').value.trim(),
-            name: document.getElementById('ppmName').value.trim(),
+            [config.titleProperty || 'name']: document.getElementById('ppmName').value.trim(),
             description: document.getElementById('ppmDescription').value.trim() || null,
             ...(config.hasPortfolio ? { portfolioId: document.getElementById('ppmPortfolioId').value || null } : {}),
             ...(config.hasProjectParent ? {
                 parentType: document.getElementById('ppmParentType').value,
                 parentId: document.getElementById('ppmParentId').value
             } : {}),
+            ...(config.hasInvestmentCaseParent ? { investmentCaseId: document.getElementById('ppmInvestmentCaseId').value } : {}),
+            ...(config.hasPlanningDates ? {
+                plannedStartDate: document.getElementById('ppmPlannedStartDate').value || null,
+                plannedEndDate: document.getElementById('ppmPlannedEndDate').value || null
+            } : {}),
+            ...(config.hasBenefitTarget ? {
+                targetDescription: document.getElementById('ppmTargetDescription').value.trim(),
+                targetDate: document.getElementById('ppmTargetDate').value || null
+            } : {}),
             lifecycleState: document.getElementById('ppmLifecycleState').value,
-            visibilityPolicyKey: null,
+            ...(config.showVisibilityPolicy === false ? {} : { visibilityPolicyKey: null }),
             expectedVersion: Number(document.getElementById('ppmVersion').value || 1)
         });
 
         document.getElementById('btnSavePpm')?.addEventListener('click', async () => {
             form.classList.add('was-validated');
             formAlert.classList.add('d-none');
-            if (!form.checkValidity()) return;
+            if (state.lookupBlocked || !form.checkValidity()) return;
             const button = document.getElementById('btnSavePpm');
             button.disabled = true;
             try {
@@ -471,7 +539,7 @@ window.PpmCrud = (function () {
                 });
                 createCanvas.hide();
                 state.dt.ajax.reload(() => window.showToast?.(L.RecordSaved, 'success'), false);
-            } catch (error) { showFormError(error); } finally { button.disabled = false; }
+            } catch (error) { showFormError(error); } finally { button.disabled = state.lookupBlocked; }
         });
 
         document.getElementById('ppmParentType')?.addEventListener('change', async () => {
@@ -491,15 +559,20 @@ window.PpmCrud = (function () {
                 window.location.assign(config.workspaceUrl(workspace.dataset.id));
             } else if (view) {
                 const row = JSON.parse(view.dataset.json || '{}');
-                document.getElementById('oc-title').textContent = row.name || '-';
+                document.getElementById('oc-title').textContent = titleOf(row) || '-';
                 document.getElementById('oc-subtitle').textContent = row.code || '-';
                 document.getElementById('oc-code').textContent = row.code || '-';
-                document.getElementById('oc-name').textContent = row.name || '-';
+                document.getElementById('oc-name').textContent = titleOf(row) || '-';
                 document.getElementById('oc-description').textContent = row.description || '-';
                 document.getElementById('oc-lifecycle').textContent = stateLabel(row.lifecycleState) || '-';
                 document.getElementById('oc-lifecycle').className = `badge mt-1 ${lifecycleClass(row.lifecycleState)}`;
-                document.getElementById('oc-referenceability').textContent = row.isReferenceable ? L.Referenceable : L.NotReferenceable;
+                const referenceability = document.getElementById('oc-referenceability');
+                if (referenceability) referenceability.textContent = row.isReferenceable ? L.Referenceable : L.NotReferenceable;
                 document.getElementById('oc-parent') && (document.getElementById('oc-parent').textContent = parentText(row));
+                document.getElementById('oc-planned-start') && (document.getElementById('oc-planned-start').textContent = row.plannedStartDate || '-');
+                document.getElementById('oc-planned-end') && (document.getElementById('oc-planned-end').textContent = row.plannedEndDate || '-');
+                document.getElementById('oc-target-description') && (document.getElementById('oc-target-description').textContent = row.targetDescription || '-');
+                document.getElementById('oc-target-date') && (document.getElementById('oc-target-date').textContent = row.targetDate || '-');
                 document.getElementById('oc-btn-edit').dataset.id = row.id;
                 const workspaceLink = document.getElementById('oc-open-workspace');
                 if (workspaceLink && config.workspaceUrl) workspaceLink.href = config.workspaceUrl(row.id);
@@ -511,7 +584,9 @@ window.PpmCrud = (function () {
                 const target = transition?.dataset.target;
                 const confirmation = target === 'Archived' ? L.ArchiveConfirm
                     : target === 'Completed' ? L.CompleteConfirm
-                        : target === 'Cancelled' ? L.CancelConfirm : L.AreYouSure;
+                        : target === 'Closed' ? L.CloseConfirm
+                            : target === 'Withdrawn' ? L.WithdrawConfirm
+                                : target === 'Cancelled' ? L.CancelConfirm : L.AreYouSure;
                 window.showConfirm?.(confirmation || L.AreYouSure, async () => {
                     try {
                         if (transition) {

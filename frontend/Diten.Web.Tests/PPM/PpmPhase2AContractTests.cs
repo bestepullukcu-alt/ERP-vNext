@@ -17,8 +17,8 @@ public sealed class PpmPhase2AContractTests
     {
         Assert.Equal("MOD-0117", PpmModuleManifest.ModuleId);
         Assert.Equal("/ppm", PpmModuleManifest.RootRoute);
-        Assert.Equal(5, PpmModuleManifest.Items.Count);
-        Assert.Equal(5, PpmModuleManifest.Items.Select(x => x.Route).Distinct(StringComparer.OrdinalIgnoreCase).Count());
+        Assert.Equal(7, PpmModuleManifest.Items.Count);
+        Assert.Equal(7, PpmModuleManifest.Items.Select(x => x.Route).Distinct(StringComparer.OrdinalIgnoreCase).Count());
         Assert.All(PpmModuleManifest.Items, item =>
         {
             Assert.Equal("PPM", item.ModuleKey);
@@ -102,7 +102,8 @@ public sealed class PpmPhase2AContractTests
         var required = new[]
         {
             "Nav.Module.PPM", "Nav.Page.PPM", "Nav.Page.PORTFOLIOS",
-            "Nav.Page.INITIATIVES", "Nav.Page.PROGRAMS", "Nav.Page.PROJECTS"
+            "Nav.Page.INITIATIVES", "Nav.Page.PROGRAMS", "Nav.Page.PROJECTS",
+            "Nav.Page.INVESTMENTCASES", "Nav.Page.BENEFITCOMMITMENTS"
         };
 
         foreach (var culture in Cultures)

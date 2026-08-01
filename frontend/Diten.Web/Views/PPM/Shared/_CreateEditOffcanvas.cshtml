@@ -29,8 +29,8 @@
                 @if (Model.HasPortfolio)
                 {
                     <div class="col-12">
-                        <label for="ppmPortfolioId" class="form-label fw-medium">@ViewData["ParentText"]</label>
-                        <select id="ppmPortfolioId" name="PortfolioId" class="form-select select2-offcanvas">
+                        <label for="ppmPortfolioId" class="form-label fw-medium">@ViewData["ParentText"] <span class="text-danger">*</span></label>
+                        <select id="ppmPortfolioId" name="PortfolioId" class="form-select select2-offcanvas" required>
                             <option value="">@ViewData["SelectText"]</option>
                         </select>
                     </div>
@@ -52,6 +52,39 @@
                         </select>
                     </div>
                 }
+                @if (Model.HasInvestmentCaseParent)
+                {
+                    <div class="col-12">
+                        <label for="ppmInvestmentCaseId" class="form-label fw-medium">@ViewData["ParentText"] <span class="text-danger">*</span></label>
+                        <select id="ppmInvestmentCaseId" name="InvestmentCaseId" class="form-select select2-offcanvas" required>
+                            <option value="">@ViewData["SelectText"]</option>
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                }
+                @if (Model.HasPlanningDates)
+                {
+                    <div class="col-12 col-md-6">
+                        <label for="ppmPlannedStartDate" class="form-label fw-medium">@ViewData["PlannedStartDateText"]</label>
+                        <input type="date" id="ppmPlannedStartDate" name="PlannedStartDate" class="form-control" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="ppmPlannedEndDate" class="form-label fw-medium">@ViewData["PlannedEndDateText"]</label>
+                        <input type="date" id="ppmPlannedEndDate" name="PlannedEndDate" class="form-control" />
+                    </div>
+                }
+                @if (Model.HasBenefitTarget)
+                {
+                    <div class="col-12">
+                        <label for="ppmTargetDescription" class="form-label fw-medium">@ViewData["TargetDescriptionText"] <span class="text-danger">*</span></label>
+                        <textarea id="ppmTargetDescription" name="TargetDescription" class="form-control" rows="3" maxlength="2000" required></textarea>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="col-12">
+                        <label for="ppmTargetDate" class="form-label fw-medium">@ViewData["TargetDateText"]</label>
+                        <input type="date" id="ppmTargetDate" name="TargetDate" class="form-control" />
+                    </div>
+                }
                 <div class="col-12">
                     <label for="ppmLifecycleState" class="form-label fw-medium">@ViewData["LifecycleText"] <span class="text-danger">*</span></label>
                     <select id="ppmLifecycleState" name="LifecycleState" class="form-select select2-offcanvas" required disabled
@@ -62,12 +95,15 @@
                         }
                     </select>
                 </div>
-                <div class="col-12">
-                    <label for="ppmVisibilityPolicyKey" class="form-label fw-medium">@ViewData["VisibilityText"]</label>
-                    <input type="text" id="ppmVisibilityPolicyKey" name="VisibilityPolicyKey" class="form-control"
-                           maxlength="128" disabled aria-disabled="true" />
-                    <div class="form-text">@ViewData["VisibilityBlockedText"]</div>
-                </div>
+                @if (Model.ShowsVisibilityPolicy)
+                {
+                    <div class="col-12">
+                        <label for="ppmVisibilityPolicyKey" class="form-label fw-medium">@ViewData["VisibilityText"]</label>
+                        <input type="text" id="ppmVisibilityPolicyKey" name="VisibilityPolicyKey" class="form-control"
+                               maxlength="128" disabled aria-disabled="true" />
+                        <div class="form-text">@ViewData["VisibilityBlockedText"]</div>
+                    </div>
+                }
             </div>
         </form>
     </div>

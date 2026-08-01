@@ -31,6 +31,12 @@ public sealed class PpmMongoContext
     public IMongoCollection<Project> Projects =>
         Database.GetCollection<Project>(PpmCollectionNames.Projects);
 
+    public IMongoCollection<InvestmentCase> InvestmentCases =>
+        Database.GetCollection<InvestmentCase>(PpmCollectionNames.InvestmentCases);
+
+    public IMongoCollection<BenefitCommitment> BenefitCommitments =>
+        Database.GetCollection<BenefitCommitment>(PpmCollectionNames.BenefitCommitments);
+
     public IMongoCollection<AuditIntentDocument> AuditIntents =>
         Database.GetCollection<AuditIntentDocument>(PpmCollectionNames.AuditIntents);
 
@@ -68,6 +74,8 @@ public static class PpmCollectionNames
     public const string Initiatives = "ppm_initiatives";
     public const string Programs = "ppm_programs";
     public const string Projects = "ppm_projects";
+    public const string InvestmentCases = "ppm_investment_cases";
+    public const string BenefitCommitments = "ppm_benefit_commitments";
     public const string AuditIntents = "ppm_audit_intents";
     public const string EventOutbox = "ppm_event_outbox";
 }

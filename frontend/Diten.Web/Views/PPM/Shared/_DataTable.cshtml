@@ -20,19 +20,22 @@
                     <th class="cell-fit"><input type="checkbox" class="dt-checkboxes-select-all form-check-input"></th>
                     <th>@ViewData["CodeText"]</th>
                     <th class="all">@ViewData["NameText"]</th>
-                    @if (Model.HasPortfolio || Model.HasProjectParent)
+                    @if (Model.HasPortfolio || Model.HasProjectParent || Model.HasInvestmentCaseParent)
                     {
                         <th>@ViewData["ParentText"]</th>
                     }
                     <th>@ViewData["LifecycleText"]</th>
-                    <th>@ViewData["ReferenceabilityText"]</th>
+                    @if (Model.ShowsReferenceability)
+                    {
+                        <th>@ViewData["ReferenceabilityText"]</th>
+                    }
                     <th class="cell-fit text-end pe-3 all">@ViewData["ActionsText"]</th>
                 </tr>
             </thead>
             <tbody>
                 <tr class="ppm-initial-loading-row" data-ppm-loading-row>
                     <td class="text-center text-muted py-4">@ViewData["LoadingText"]</td>
-                    @for (var column = 1; column < (Model.HasPortfolio || Model.HasProjectParent ? 8 : 7); column++)
+                    @for (var column = 1; column < ((Model.HasPortfolio || Model.HasProjectParent || Model.HasInvestmentCaseParent ? 7 : 6) + (Model.ShowsReferenceability ? 1 : 0)); column++)
                     {
                         <td aria-hidden="true"></td>
                     }

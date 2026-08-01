@@ -154,6 +154,14 @@ public sealed class ApplicationContractTests
             "ppm.initiatives.create",
             "ppm.initiatives.read",
             "ppm.initiatives.update",
+            "ppm.investment-cases.change-lifecycle",
+            "ppm.investment-cases.create",
+            "ppm.investment-cases.read",
+            "ppm.investment-cases.update",
+            "ppm.benefit-commitments.change-lifecycle",
+            "ppm.benefit-commitments.create",
+            "ppm.benefit-commitments.read",
+            "ppm.benefit-commitments.update",
             "ppm.portfolios.change-lifecycle",
             "ppm.portfolios.create",
             "ppm.portfolios.read",
@@ -168,7 +176,7 @@ public sealed class ApplicationContractTests
             "ppm.projects.update"
         };
 
-        Assert.Equal(expected, actual);
+        Assert.Equal(expected.OrderBy(value => value, StringComparer.Ordinal), actual);
         Assert.Equal(actual.Length, actual.Distinct(StringComparer.Ordinal).Count());
         Assert.All(actual, permission =>
             Assert.Matches("^ppm\\.[a-z-]+\\.[a-z-]+$", permission));
@@ -365,7 +373,8 @@ public sealed class ApplicationContractTests
         public void Restore(object snapshot) { Items.Clear(); Items.AddRange((List<T>)snapshot); }
     }
 
-    private sealed class PortfolioRepository : MemoryRepository<Portfolio>, IPortfolioRepository;
+    private sealed class PortfolioRepository : MemoryRepository<Portfolio>, IPortfolioRepository
+    { public Task AdvanceInvestmentCaseCollectionFenceAsync(Portfolio entity, CancellationToken cancellationToken) { entity.AdvanceInvestmentCaseCollectionFence(); return Task.CompletedTask; } }
     private sealed class InitiativeRepository : MemoryRepository<Initiative>, IInitiativeRepository;
     private sealed class ProgramRepository : MemoryRepository<Diten.PpmService.Domain.Entities.Program>, IProgramRepository;
     private sealed class ProjectRepository : MemoryRepository<Project>, IProjectRepository;

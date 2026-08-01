@@ -510,6 +510,8 @@ public sealed class PpmEntitlementAuthorizationTests
             TotalCalls++;
             return Task.CompletedTask;
         }
+        public Task AdvanceInvestmentCaseCollectionFenceAsync(Portfolio entity, CancellationToken cancellationToken)
+        { TotalCalls++; entity.AdvanceInvestmentCaseCollectionFence(); return Task.CompletedTask; }
     }
 
     private sealed class NoOpAuditRepository : IAuditIntentRepository

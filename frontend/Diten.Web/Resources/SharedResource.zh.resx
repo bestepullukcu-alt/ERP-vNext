@@ -557,4 +557,6 @@
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>任务中心</value>
   </data>
+  <data name="Nav.Page.INVESTMENTCASES" xml:space="preserve"><value>投资案例</value></data>
+  <data name="Nav.Page.BENEFITCOMMITMENTS" xml:space="preserve"><value>收益承诺</value></data>
 </root>

@@ -18,4 +18,8 @@
   <data name="PpmEmptyState" xml:space="preserve"><value>Henüz kullanılabilir bir PPM bağlamı yok.</value></data>
   <data name="PpmLoadingState" xml:space="preserve"><value>PPM çalışma alanı yükleniyor…</value></data>
   <data name="PpmErrorState" xml:space="preserve"><value>PPM çalışma alanı yüklenemedi.</value></data>
+  <data name="InvestmentCasesLabel" xml:space="preserve"><value>Yatırım Vakaları</value></data>
+  <data name="BenefitCommitmentsLabel" xml:space="preserve"><value>Fayda Taahhütleri</value></data>
+  <data name="OpenInvestmentCases" xml:space="preserve"><value>Yatırım Vakaları</value></data>
+  <data name="OpenBenefitCommitments" xml:space="preserve"><value>Fayda Taahhütleri</value></data>
 </root>

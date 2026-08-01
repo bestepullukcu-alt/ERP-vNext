@@ -22,6 +22,7 @@ internal static class PpmBsonConfiguration
 #pragma warning restore CS0618
             TryRegisterGuidSerializer();
             TryRegisterUtcDateTimeSerializer();
+            TryRegisterDateOnlySerializer();
 
             var conventions = new ConventionPack
             {
@@ -32,6 +33,16 @@ internal static class PpmBsonConfiguration
                 type.Namespace?.StartsWith("Diten.PpmService", StringComparison.Ordinal) == true);
 
             _configured = true;
+        }
+    }
+
+    private static void TryRegisterDateOnlySerializer()
+    {
+        try { BsonSerializer.RegisterSerializer(new DateOnlyIsoSerializer()); }
+        catch (BsonSerializationException)
+        {
+            if (BsonSerializer.LookupSerializer<DateOnly>() is not DateOnlyIsoSerializer)
+                throw new InvalidOperationException("PPM requires ISO yyyy-MM-dd BSON string DateOnly values.");
         }
     }
 
@@ -70,4 +81,21 @@ internal static class PpmBsonConfiguration
             }
         }
     }
+}
+
+internal sealed class DateOnlyIsoSerializer : SerializerBase<DateOnly>
+{
+    public override DateOnly Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+    {
+        if (context.Reader.GetCurrentBsonType() != BsonType.String)
+            throw new BsonSerializationException("DateOnly must be a BSON string.");
+        var value = context.Reader.ReadString();
+        return DateOnly.TryParseExact(value, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None, out var parsed)
+            ? parsed
+            : throw new BsonSerializationException("DateOnly must use yyyy-MM-dd.");
+    }
+
+    public override void Serialize(BsonSerializationContext context, BsonSerializationArgs args, DateOnly value) =>
+        context.Writer.WriteString(value.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
 }

@@ -7,7 +7,8 @@ namespace Diten.PpmService.Application.Features.Portfolios;
 
 public sealed class PortfolioService(
     IPortfolioRepository repository, IAuditIntentRepository audit, IPpmUnitOfWork unitOfWork,
-    ITenantContext tenant, ICurrentActorContext actor, ICorrelationContext correlation, IPpmAccessAuthorizer access)
+    ITenantContext tenant, ICurrentActorContext actor, ICorrelationContext correlation, IPpmAccessAuthorizer access,
+    IInvestmentCaseRepository? investmentCases = null)
 {
     public async Task<Response<PortfolioDto>> Create(CreatePortfolioCommand request, CancellationToken ct)
     {
@@ -41,10 +42,19 @@ public sealed class PortfolioService(
     {
         var decision = await access.AuthorizeAsync(PpmPermissions.PortfoliosLifecycle, ct);
         if (decision != PpmAccessDecision.Allowed) return decision.Failure<NoContent>();
-        var entity = await repository.GetByIdAsync(tenant.TenantId, request.Id, ct);
-        if (entity is null) return Response<NoContent>.Fail("Portfolio was not found.", 404);
-        entity.SoftDelete(actor.ActorId);
-        return await unitOfWork.ExecuteInTransactionAsync(async token => { await repository.ReplaceAsync(entity, request.ExpectedVersion, token); await audit.AddAsync(Intent(entity, "soft-deleted"), token); return Response<NoContent>.SuccessWithoutData(); }, ct);
+        if (investmentCases is null) return Response<NoContent>.Fail("Portfolio dependency validation is unavailable.", 503);
+        return await unitOfWork.ExecuteInTransactionAsync(async token =>
+        {
+            var entity = await repository.GetByIdAsync(tenant.TenantId, request.Id, token);
+            if (entity is null) return Response<NoContent>.Fail("Portfolio was not found.", 404);
+            await repository.AdvanceInvestmentCaseCollectionFenceAsync(entity, token);
+            if (await investmentCases.ExistsForPortfolioAsync(tenant.TenantId, entity.Id, token))
+                return Response<NoContent>.Fail("Portfolio has active investment cases.", 409);
+            entity.SoftDelete(actor.ActorId);
+            await repository.ReplaceAsync(entity, request.ExpectedVersion, token);
+            await audit.AddAsync(Intent(entity, "soft-deleted"), token);
+            return Response<NoContent>.SuccessWithoutData();
+        }, ct);
     }
     public async Task<Response<PortfolioDto>> GetById(GetPortfolioByIdQuery request, CancellationToken ct)
     {

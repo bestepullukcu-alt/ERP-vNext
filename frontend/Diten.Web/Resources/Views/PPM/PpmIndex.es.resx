@@ -18,4 +18,8 @@
   <data name="PpmEmptyState" xml:space="preserve"><value>Aún no hay ningún contexto PPM disponible.</value></data>
   <data name="PpmLoadingState" xml:space="preserve"><value>Cargando el espacio PPM…</value></data>
   <data name="PpmErrorState" xml:space="preserve"><value>No se pudo cargar el espacio PPM.</value></data>
+  <data name="InvestmentCasesLabel" xml:space="preserve"><value>Casos de inversión</value></data>
+  <data name="BenefitCommitmentsLabel" xml:space="preserve"><value>Compromisos de beneficios</value></data>
+  <data name="OpenInvestmentCases" xml:space="preserve"><value>Casos de inversión</value></data>
+  <data name="OpenBenefitCommitments" xml:space="preserve"><value>Compromisos de beneficios</value></data>
 </root>

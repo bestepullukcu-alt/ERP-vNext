@@ -557,4 +557,6 @@
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>Centro de tareas</value>
   </data>
+  <data name="Nav.Page.INVESTMENTCASES" xml:space="preserve"><value>Casos de inversión</value></data>
+  <data name="Nav.Page.BENEFITCOMMITMENTS" xml:space="preserve"><value>Compromisos de beneficios</value></data>
 </root>

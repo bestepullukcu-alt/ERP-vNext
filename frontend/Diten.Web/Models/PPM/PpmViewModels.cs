@@ -42,4 +42,10 @@ public sealed class PpmListPageViewModel
     public bool HasPortfolio { get; init; }
     public bool HasProjectParent { get; init; }
     public bool HasProjectWorkspace { get; init; }
+    public bool UsesTitle { get; init; }
+    public bool HasInvestmentCaseParent { get; init; }
+    public bool HasPlanningDates { get; init; }
+    public bool HasBenefitTarget { get; init; }
+    public bool ShowsReferenceability { get; init; } = true;
+    public bool ShowsVisibilityPolicy { get; init; } = true;
 }

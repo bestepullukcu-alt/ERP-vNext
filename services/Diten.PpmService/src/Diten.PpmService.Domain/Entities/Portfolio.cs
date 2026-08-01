@@ -9,6 +9,7 @@ public sealed class Portfolio : EntityBase
     public string? Description { get; private set; }
     public PortfolioLifecycleState LifecycleState { get; private set; } = PortfolioLifecycleState.Draft;
     public string? VisibilityPolicyKey { get; private set; }
+    public long InvestmentCaseCollectionFence { get; private set; }
     private Portfolio() { }
     public Portfolio(Guid tenantId, Guid actorId, string code, string name, string? description, string? visibilityPolicyKey) : base(tenantId, actorId)
         => SetMetadata(code, name, description, visibilityPolicyKey);
@@ -21,4 +22,5 @@ public sealed class Portfolio : EntityBase
     public void Transition(Guid actorId, PortfolioLifecycleState target)
     { if (!CanTransitionTo(target)) throw new InvalidOperationException($"Invalid Portfolio lifecycle transition: {LifecycleState} -> {target}."); LifecycleState = target; MarkUpdated(actorId); }
     public bool IsReferenceable => !IsDeleted && LifecycleState is PortfolioLifecycleState.Draft or PortfolioLifecycleState.Active;
+    public void AdvanceInvestmentCaseCollectionFence() => InvestmentCaseCollectionFence = checked(InvestmentCaseCollectionFence + 1);
 }

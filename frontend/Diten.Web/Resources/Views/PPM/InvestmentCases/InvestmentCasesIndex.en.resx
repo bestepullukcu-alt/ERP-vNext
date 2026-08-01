@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="InvestmentCasesTitle" xml:space="preserve"><value>Investment Cases</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Investment Cases</value></data>
+  <data name="AddNewInvestmentCase" xml:space="preserve"><value>Add Investment Case</value></data>
+  <data name="EditInvestmentCase" xml:space="preserve"><value>Edit Investment Case</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Title" xml:space="preserve"><value>Title</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Lifecycle</value></data>
+  <data name="Referenceability" xml:space="preserve"><value>Referenceability</value></data>
+  <data name="Referenceable" xml:space="preserve"><value>Referenceable</value></data>
+  <data name="NotReferenceable" xml:space="preserve"><value>Not referenceable</value></data>
+  <data name="InvestmentCasesLoadingState" xml:space="preserve"><value>Investment Cases…</value></data>
+  <data name="InvestmentCasesEmptyState" xml:space="preserve"><value>—</value></data>
+  <data name="InvestmentCasesErrorState" xml:space="preserve"><value>Error</value></data>
+  <data name="Portfolio" xml:space="preserve"><value>Portfolio</value></data>
+  <data name="PlannedStartDate" xml:space="preserve"><value>Planned Start Date</value></data>
+  <data name="PlannedEndDate" xml:space="preserve"><value>Planned End Date</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="LifecycleUnderAnalysis" xml:space="preserve"><value>Under Analysis</value></data>
+  <data name="LifecycleClosed" xml:space="preserve"><value>Closed</value></data>
+  <data name="LifecycleWithdrawn" xml:space="preserve"><value>Withdrawn</value></data>
+  <data name="CloseInvestmentCaseConfirmation" xml:space="preserve"><value>Closed</value></data>
+  <data name="WithdrawInvestmentCaseConfirmation" xml:space="preserve"><value>Withdrawn</value></data>
+</root>

@@ -13,6 +13,8 @@ public sealed class PpmMongoIndexInitializer(IMongoDatabase database) : IHostedS
         var initiatives = database.GetCollection<Initiative>(PpmCollectionNames.Initiatives);
         var programs = database.GetCollection<Program>(PpmCollectionNames.Programs);
         var projects = database.GetCollection<Project>(PpmCollectionNames.Projects);
+        var investmentCases = database.GetCollection<InvestmentCase>(PpmCollectionNames.InvestmentCases);
+        var benefitCommitments = database.GetCollection<BenefitCommitment>(PpmCollectionNames.BenefitCommitments);
         var auditIntents = database.GetCollection<AuditIntentDocument>(PpmCollectionNames.AuditIntents);
         var eventOutbox = database.GetCollection<PpmEventOutboxDocument>(PpmCollectionNames.EventOutbox);
 
@@ -20,6 +22,8 @@ public sealed class PpmMongoIndexInitializer(IMongoDatabase database) : IHostedS
         await CreateEntityIndexes(initiatives, cancellationToken);
         await CreateEntityIndexes(programs, cancellationToken);
         await CreateEntityIndexes(projects, cancellationToken);
+        await CreateEntityIndexes(investmentCases, cancellationToken);
+        await CreateEntityIndexes(benefitCommitments, cancellationToken);
 
         await initiatives.Indexes.CreateOneAsync(
             new CreateIndexModel<Initiative>(
@@ -43,6 +47,22 @@ public sealed class PpmMongoIndexInitializer(IMongoDatabase database) : IHostedS
                     .Ascending(x => x.TenantId)
                     .Ascending(x => x.ParentType)
                     .Ascending(x => x.ParentId)
+                    .Ascending(x => x.IsDeleted)),
+            cancellationToken: cancellationToken);
+
+        await investmentCases.Indexes.CreateOneAsync(
+            new CreateIndexModel<InvestmentCase>(
+                Builders<InvestmentCase>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.PortfolioId)
+                    .Ascending(x => x.IsDeleted)),
+            cancellationToken: cancellationToken);
+
+        await benefitCommitments.Indexes.CreateOneAsync(
+            new CreateIndexModel<BenefitCommitment>(
+                Builders<BenefitCommitment>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.InvestmentCaseId)
                     .Ascending(x => x.IsDeleted)),
             cancellationToken: cancellationToken);
 

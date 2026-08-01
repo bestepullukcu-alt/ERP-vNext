@@ -5,3 +5,5 @@ public enum InitiativeLifecycleState { Proposed, Active, OnHold, Completed, Canc
 public enum ProgramLifecycleState { Draft, Active, OnHold, Completed, Cancelled }
 public enum ProjectLifecycleState { Draft, Planned, Active, OnHold, Completed, Cancelled }
 public enum ProjectParentType { Initiative, Program }
+public enum InvestmentCaseLifecycleState { Draft, UnderAnalysis, Closed, Withdrawn }
+public enum BenefitCommitmentLifecycleState { Draft, Planned, Active, Closed, Cancelled }
