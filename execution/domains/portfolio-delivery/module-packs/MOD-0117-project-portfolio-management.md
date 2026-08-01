@@ -48,12 +48,16 @@ Delivery is divided into two internal phases:
   Program and Project backend plus tenant UI; Mongo persistence; tenant isolation; soft delete; concurrency;
   lifecycle-derived referenceability; producer-local audit-intent/outbox foundation; and gateway-ready API
   contracts.
-- **Phase 2B — Investment & Value Linkage:** InvestmentDecision, BenefitValueLink and typed references to
-  MOD-0136 Budget, MOD-0138 Scenario and MOD-0072 Outcome/Value.
+- **Phase 2B Gate L — Local Investment & Planned Benefit Core:** `InvestmentCase` and
+  `BenefitCommitment`, owned entirely by MOD-0117. Gate L contains no external-module field, DTO, client,
+  projection or placeholder reference.
+- **Phase 2B Gate I — Integrated 1.3 Business Flow:** separately gated typed/versioned integrations with
+  MOD-0007 Decision & Rationale, MOD-0023 Workflow/Approval, MOD-0136 Budget, MOD-0138 Scenario and MOD-0072
+  actual Outcome/Realization.
 
 The internal ExternalContextReference provider slice is authorized and in progress; MOD-0354 consumer
-implementation and DWS runtime consumption remain separate and blocked. MOD-0117 cannot be marked `done` until
-Phase 2B is separately authorized and complete.
+implementation and DWS runtime consumption remain separate and blocked. Gate L or Gate I completion cannot
+by itself mark the Blueprint-wide MOD-0117 product `done`.
 
 ## 2. Ownership and Boundaries
 
@@ -64,8 +68,8 @@ Phase 2B is separately authorized and complete.
 - Program identity and owner-approved lifecycle.
 - Project identity and owner-approved lifecycle.
 - PPM actor visibility and referenceability decisions.
-- InvestmentDecision as PPM investment-decision context.
-- BenefitValueLink as the typed association between a PPM context and canonical external value/outcome.
+- InvestmentCase as the PPM-owned investment-planning/case record.
+- BenefitCommitment as the PPM-owned planned-benefit commitment; it is not actual or realized value.
 - Authoritative `ppm.external-context-reference` version `1.0` referenceability result.
 
 ### Cannot become a second PPM SoR
@@ -108,8 +112,8 @@ production change.
 | `Initiative` | 2A | Finite initiative identity within PPM | CLOSED for Phase 2A |
 | `Program` | 2A | Program identity and grouping context | CLOSED for Phase 2A |
 | `Project` | 2A | Finite project identity within PPM | CLOSED for Phase 2A |
-| `InvestmentDecision` | 2B | PPM investment-decision context, not approval engine | Decision state model and required PPM relationships |
-| `BenefitValueLink` | 2B | Typed linkage to MOD-0072 and optional budget/scenario context | Cardinality, link lifecycle and external contract versions |
+| `InvestmentCase` | 2B Gate L | PPM-owned investment planning/case record | CLOSED by the Gate L ownership, lifecycle and cardinality decision |
+| `BenefitCommitment` | 2B Gate L | PPM-owned planned-benefit commitment | CLOSED by the Gate L ownership, lifecycle and cardinality decision |
 | `ExternalContextReferenceValidationProjection` | Provider slice | Minimal authoritative typed-reference result | AUTHORIZED / IN PROGRESS; runtime evidence required |
 
 No generic `PpmContext` entity may hide all business semantics behind one discriminator. Shared typed value
@@ -219,35 +223,43 @@ implicit hierarchy may be copied from the current frontend prototype.
 `ParentType + ParentId` represents exactly one parent. No project task, progress, assignment, due-date,
 schedule or DWS node fields are allowed here.
 
-### 4.6 InvestmentDecision — proposed fields
+### 4.6 InvestmentCase — Gate L fields and invariants
 
 | Field | Type | Required | Proposed invariant / open business decision |
 |---|---|---:|---|
-| `DecisionCode` | string | Yes | Trim + NFC; unique per active tenant |
+| `Code` | string | Yes | Trim + NFC; unique per active tenant |
 | `Title` | string | Yes | Trim + NFC; non-empty |
 | `Description` | string? | No | Trim + NFC |
 | `PortfolioId` | Guid | Yes | Same-tenant, active, visible Portfolio |
-| `DecisionState` | closed string enum | Yes | Owner review required; cannot encode MOD-0023 approval truth |
-| `DecisionEffectiveAtUtc` | scalar UTC `DateTime`? | No | Business effective time only; not `ApprovedAt` |
+| `PlannedStartDate` | scalar UTC `DateTime`? | No | Planning date only |
+| `PlannedEndDate` | scalar UTC `DateTime`? | No | Cannot precede `PlannedStartDate` |
+| `LifecycleState` | closed string enum | Yes | `Draft`, `UnderAnalysis`, `Closed`, `Withdrawn`; default `Draft` |
 
-`IsApproved`, `ApprovedAt`, `ApprovedBy`, local Approve commands and local approval UI are forbidden.
-MOD-0023 owns authoritative approval decisions if approval is later required.
+Each InvestmentCase belongs to exactly one Portfolio; one Portfolio may contain many InvestmentCases.
+`PortfolioId` is immutable after creation. Lifecycle transitions are exactly `Draft → UnderAnalysis`,
+`UnderAnalysis → Closed`, `Draft → Withdrawn` and `UnderAnalysis → Withdrawn`; `Closed` and `Withdrawn` are
+terminal. `UnderAnalysis` is not workflow/approval state and `Closed` does not mean approved, selected or
+funded. `IsApproved`, `ApprovedAt`, `ApprovedBy`, decision/rationale payloads and approve/reject/select/fund
+commands, routes or UI are forbidden.
 
-### 4.7 BenefitValueLink — proposed fields
+### 4.7 BenefitCommitment — Gate L fields and invariants
 
 | Field | Type | Required | Proposed invariant / open business decision |
 |---|---|---:|---|
-| `SourceContextKind` | closed string enum | Yes | Portfolio/Initiative/Program/Project only |
-| `SourceContextId` | Guid | Yes | Same-tenant, active and visible PPM object |
-| `OutcomeValueContractName` | string | Yes | Exact MOD-0072 contract name is a promotion blocker |
-| `OutcomeValueContractVersion` | string | Yes | Exact supported version is a promotion blocker |
-| `OutcomeValueReferenceId` | Guid | Yes | Opaque typed reference; MOD-0117 does not copy outcome/value |
-| `BudgetReference` | typed reference? | No | MOD-0136 only; exact versioned shape required |
-| `ScenarioReference` | typed reference? | No | MOD-0138 only; exact versioned shape required |
-| `LinkState` | closed string enum | Yes | Owner review required; cannot become external lifecycle truth |
+| `Code` | string | Yes | Trim + NFC; unique per active tenant |
+| `Title` | string | Yes | Trim + NFC; non-empty |
+| `Description` | string? | No | Trim + NFC |
+| `InvestmentCaseId` | Guid | Yes | Same-tenant, active, visible InvestmentCase; immutable after creation |
+| `TargetDescription` | string | Yes | Planned-benefit commitment only; non-empty |
+| `TargetDate` | scalar UTC `DateTime`? | No | Planning date only |
+| `LifecycleState` | closed string enum | Yes | `Draft`, `Planned`, `Active`, `Closed`, `Cancelled`; default `Draft` |
 
-Index direction: active uniqueness/cardinality over
-`(TenantId, SourceContextKind, SourceContextId, OutcomeValueReferenceId)` is owner review required.
+Each BenefitCommitment belongs to exactly one InvestmentCase; one InvestmentCase may contain many
+BenefitCommitments. A second `PortfolioId` is forbidden: Portfolio is resolved only through the authoritative
+InvestmentCase relationship. Lifecycle transitions are exactly `Draft → Planned`, `Planned → Active`,
+`Active → Closed` and `Draft|Planned|Active → Cancelled`; `Closed` and `Cancelled` are terminal. `Active` does
+not mean realized and `Closed` is not MOD-0072 outcome validation. Actual/realized value, evidence, outcome,
+budget/scenario payload or snapshot is forbidden.
 
 ### 4.8 ExternalContextReference validation projection
 
@@ -444,8 +456,8 @@ Scaffold authorization is recorded; provider and Phase 2B paths remain blocked.
 | Initiative | `/ppm/initiatives`; Code, Name, Description, PortfolioId, LifecycleState, VisibilityPolicyKey | 6 | slim | AUTHORIZED 2A |
 | Program | `/ppm/programs`; Code, Name, Description, PortfolioId, LifecycleState, VisibilityPolicyKey | 6 | slim | AUTHORIZED 2A |
 | Project | `/ppm/projects`; Code, Name, Description, ParentType, ParentId, LifecycleState, VisibilityPolicyKey | 7 | slim | AUTHORIZED 2A |
-| InvestmentDecision | Decision register/details | TBD | TBD | BLOCKED 2B |
-| BenefitValueLink | Typed link register/details | TBD | TBD | BLOCKED 2B |
+| InvestmentCase | `/ppm/investment-cases`; list/create/view/edit/soft-delete/lifecycle | 7 | slim | Gate L governance reconciled; runtime not implemented |
+| BenefitCommitment | `/ppm/benefit-commitments`; list/create/view/edit/soft-delete/lifecycle | 7 | slim | Gate L governance reconciled; runtime not implemented |
 
 For each surface:
 
@@ -455,11 +467,13 @@ For each surface:
 - List surfaces use DataTable v2, skeleton loader, filter, L10n bridge and seven-language RESX parity.
 - Navigation must support Portfolio/Initiative/Program/Project context without manufacturing an unapproved
   hierarchy.
-- InvestmentDecision and BenefitValueLink are separate surfaces, not generic context tabs.
+- InvestmentCase and BenefitCommitment are separate tenant surfaces, not generic context tabs. Both use
+  DataTable v2 and Golden Slim create/edit offcanvas. BenefitCommitment selectors display `Code — Title`,
+  never a raw InvestmentCase Guid.
 - Browser code cannot embed mock rows or fallback to ES prototype endpoints.
 
-The four Phase 2A frontend surfaces are authorized. `TBD` applies only to blocked Phase 2B surfaces and
-does not expand this pack's implementation authority.
+The four Phase 2A frontend surfaces remain in `review`. Gate L surface governance is fixed, but this
+reconciliation alone does not create runtime authority or implementation evidence.
 
 ## 12. Validation Rules
 
@@ -552,9 +566,18 @@ MOD-0354 revision/baseline history.
   - `ppm.projects.change-lifecycle`
 - The list above is exact and exhaustive for Phase 2A. Wildcards and alias permissions are forbidden.
   `ppm.portfolios.archive` is not canonical and must be reconciled to
-  `ppm.portfolios.change-lifecycle` in the PPM branch before final Phase 2A closure. Phase 2B
-  investment/benefit permissions and the external-context validation permission are not part of this
-  contract and cannot be added through the PSS-A runtime slice.
+  `ppm.portfolios.change-lifecycle` in the PPM branch before final Phase 2A closure.
+- **Phase 2B Gate L canonical permission contract (closed set):**
+  - `ppm.investment-cases.read`
+  - `ppm.investment-cases.create`
+  - `ppm.investment-cases.update`
+  - `ppm.investment-cases.change-lifecycle`
+  - `ppm.benefit-commitments.read`
+  - `ppm.benefit-commitments.create`
+  - `ppm.benefit-commitments.update`
+  - `ppm.benefit-commitments.change-lifecycle`
+- Gate L adds no `.view`, `.delete`, wildcard, alias or uppercase permission. Soft delete remains governed by
+  the existing update/surface contract. The external-context validation permission is not part of Gate L.
 - Catalog registration may contain exactly these 16 keys under `ModuleCode = PPM`; catalog presence does
   not grant access and cannot add PPM to default Admin/Viewer role templates.
 - Service-specific HasPermission/filter/evaluator code cannot be copied from another service.
@@ -593,8 +616,10 @@ or any other Gateway route.
 - [ ] MOD-0018 DWS permission denial returns 403 before provider invocation.
 - [ ] Provider outage, timeout and malformed transport return 503 and never 404.
 - [ ] Fail-open and local-cache existence/ownership inference are absent.
-- [ ] Phase 2B implements distinct InvestmentDecision and BenefitValueLink objects.
-- [ ] MOD-0136/MOD-0138/MOD-0072 are versioned typed references only; no copied lifecycle or payload SoR.
+- [ ] Gate L implements distinct InvestmentCase and BenefitCommitment objects with the exact local ownership,
+  lifecycle and cardinality above and no external-contract field.
+- [ ] Gate I consumes MOD-0007/MOD-0023/MOD-0136/MOD-0138/MOD-0072 only through approved versioned typed
+  contracts; no copied lifecycle, payload, placeholder or projection SoR.
 - [x] All tenant-owned queries/writes use server TenantId, soft-delete filters and tenant-first indexes.
 - [x] Optimistic concurrency produces 409 on stale Version.
 - [x] Authorized mutations and producer-local audit intent commit atomically in a replica-set transaction.
@@ -611,7 +636,7 @@ or any other Gateway route.
 - [x] Loading/empty/400/401/403/404/409/503 states are testable without existence disclosure.
 - [x] Real Mongo evidence proves tenant isolation, unique indexes, concurrency and required transactions.
 - [x] Phase 2A alone does not unblock MOD-0354 runtime; provider compatibility/security evidence is separate.
-- [ ] MOD-0117 is not marked done until Phase 2B is complete.
+- [ ] MOD-0117 remains not-done after Gate L or Gate I until its Blueprint-wide product scope is separately reconciled.
 
 ## 17. Test Expectations
 
@@ -623,7 +648,7 @@ or any other Gateway route.
 - Duplicate active Code and soft-deleted Code policy.
 - Optimistic concurrency and idempotency outcomes.
 - External contract name/version/kind/Guid validation.
-- Phase 2B typed-reference version guards.
+- Gate L lifecycle, immutable-parent, date and no-second-PortfolioId guards.
 
 ### Integration
 
@@ -684,9 +709,8 @@ verification reports 60 PASS plus four formally dispositioned policy/profile fin
 - [x] ExternalContextReference shape is an approved governance baseline, not a runtime contract.
 - [x] Control Tower recorded Phase 2A lifecycle, referenceability and cardinality decisions.
 - [x] Phase 2A object/UI scope and Golden Slim selections are approved.
-- [ ] Phase 2B exact InvestmentDecision/BenefitValueLink fields, states, invariants and cardinalities are
-  approved.
-- [ ] MOD-0136/MOD-0138/MOD-0072 exact versioned typed-reference contracts are approved.
+- [x] Gate L exact InvestmentCase/BenefitCommitment fields, states, invariants and cardinalities are approved.
+- [ ] Gate I MOD-0007/MOD-0023/MOD-0136/MOD-0138/MOD-0072 exact versioned typed contracts are approved.
 - [x] Every Phase 2A frontend surface has an exact field count and Golden Slim decision.
 - [x] Phase 2A hub/routes and visibility/referenceability presentation are approved.
 - [x] Exact S2S service identity and actor delegation are approved for the internal provider slice.
@@ -708,6 +732,12 @@ verification reports 60 PASS plus four formally dispositioned policy/profile fin
 
 Unchecked provider, shared-contract and Phase 2B items do not revoke the scoped Phase 2A authority; they
 block only their named runtime boundaries. This pack is not unconditional `ready-for-dev`.
+
+Gate L completion may be reported only as **“1.3 PPM-owned local slice complete; external integration Gate I
+remains open.”** Gate I requires the approved MOD-0007, MOD-0023, MOD-0136, MOD-0138 and MOD-0072
+typed/versioned contracts plus an auditable demand → decision → portfolio → planned-benefit flow. Only then
+may **“1.3 integrated business flow complete”** be reported. Neither gate automatically makes the whole
+Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separately reconciled.
 
 ## 19. Implementation Notes
 
@@ -732,8 +762,8 @@ block only their named runtime boundaries. This pack is not unconditional `ready
 
 ### Open business decisions
 
-1. Phase 2B InvestmentDecision semantics without duplicating MOD-0023 approval.
-2. Phase 2B BenefitValueLink cardinality, lifecycle and MOD-0072 meaning.
+1. Gate L InvestmentCase/BenefitCommitment business and UX acceptance after implementation.
+2. Gate I external contract-owner sequencing and integrated business-flow acceptance.
 
 ### Open technical decisions
 
@@ -749,11 +779,11 @@ block only their named runtime boundaries. This pack is not unconditional `ready
 3. ExternalContextReference provider compatibility/security and live runtime evidence; MOD-0354 consumer remains separate.
 4. Exact allowlisted `PpmAuditIntentSubmittedV1` payload/consumer mapping, authenticated publisher credential
    and MOD-0035/MOD-0021 delivery integration.
-5. Phase 2B contracts with MOD-0136/MOD-0138/MOD-0072.
+5. Gate I contracts with MOD-0007/MOD-0023/MOD-0136/MOD-0138/MOD-0072.
 
 ### Open UI decisions
 
-1. Phase 2B InvestmentDecision and BenefitValueLink interaction models.
+1. Gate L InvestmentCase and BenefitCommitment interaction models and browser evidence.
 2. Later composite Project Workspace integrations are tracked in the
    [R1 PPM MVP backlog](../../../release/release-backlog/R1-ppm-mvp-backlog.md); Phase 2A keeps PPM,
    DWS, WorkCenter, finance, resource/capacity, document, compliance and audit ownership separate.
@@ -762,6 +792,7 @@ block only their named runtime boundaries. This pack is not unconditional `ready
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-08-01 | Reconciled Phase 2B into Gate L `InvestmentCase` + `BenefitCommitment` local ownership and Gate I external integration. Locked exact fields, immutable-parent cardinalities, neutral lifecycles, eight lowercase permissions, Golden Slim surfaces and scoped completion language. MOD-0117 remains `review`; no runtime authority or external contract was created. | User / Enterprise Strategy Control Tower |
 | 2026-08-01 | Bound the internal ExternalContextReference provider lookup to configurable `100..5000 ms`, default `2000 ms`; internal timeout is generic `503`, while caller cancellation propagates unchanged. The limit is lookup-only and does not alter global Mongo/CRUD behavior or authorize retry/cache/fallback. | User / Enterprise Strategy Control Tower |
 | 2026-08-01 | Authorized the default-disabled internal `ppm.external-context-reference` `1.0` provider slice. Control Tower corrected the canonical permissions to exact `.read` keys (not `.view`), approved endpoint-specific strict tenant/sub `401` semantics and the v1 null-only `VisibilityPolicyKey` boundary. No new permission was created; MOD-0018 object-level visibility and MOD-0354 consumer integration remain future/blocked. | User / Enterprise Strategy Control Tower |
 | 2026-07-29 | Formally dispositioned the four repeated DataTable verifier findings per Phase 2A surface as approved policy/profile mismatches: bulk delete is prohibited, and authentication uses a same-origin MVC proxy plus HttpOnly cookie rather than browser-side `getAuthHeaders()`. No bulk-delete surface, browser JWT exposure or verifier change is authorized. | User / Enterprise Strategy Control Tower |

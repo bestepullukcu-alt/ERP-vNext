@@ -103,7 +103,7 @@ Below is the macro status catalog.
 | **MOD-0002** | Interface Registry | W3-E | Medium | in-progress | 80% | API routes mapping. |
 | **MOD-0003** | Data Contract Registry | W3-E | Medium | planned | 0% | Payload contracts schemas. |
 | **PSS-XCUT-SV** | SavedViews / Personalization | Cross-cutting | Medium | partial | 55% | User grid saving options. |
-| **MOD-0117** | Project & Portfolio Management (PPM) | — | Medium | planned / reserved | 0% | portfolio-delivery domain; reserved via DCP-003; ilk dilim "PPM Work Records Core"; wave ataması yapılmadı. FU çocukları henüz numaralanmadı. |
+| **MOD-0117** | Project & Portfolio Management (PPM) | DCP-006 Slice 2 | Medium | scoped: Phase 2A `review`; Phase 2B Gate L governance reconciled/runtime pending; Gate I blocked; whole module not done | — | DCP-006 is the active 1.3 orchestration source. Gate L owns Portfolio → InvestmentCase → BenefitCommitment local behavior; Gate I depends on MOD-0007/0023/0136/0138/0072 typed/versioned contracts. No module-wide completion percentage is asserted. DCP-003 remains deferred/non-executable legacy planning. |
 
 ---
 

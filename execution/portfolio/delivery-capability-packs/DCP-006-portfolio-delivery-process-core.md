@@ -226,12 +226,26 @@ hazard, wherever that hazard first occurs.
   tenant isolation, concurrency, lifecycle-derived referenceability, transactional producer-local audit
   intent/outbox foundation and gateway-ready API contracts. Service port is `5061`; browser traffic remains
   frontend `5001` → Gateway `5000`, never direct `5061`.
-- **Phase 2B — Investment & Value Linkage:** `InvestmentDecision` and `BenefitValueLink`; MOD-0136 budget,
-  MOD-0138 scenario and MOD-0072 outcome/value are consumed only as typed references. Their systems of
-  record are not copied into MOD-0117 and no fake budget/scenario/outcome lifecycle is permitted.
+- **Phase 2B Gate L — Local Investment & Planned Benefit Core:** MOD-0117 owns `InvestmentCase` and
+  `BenefitCommitment`. InvestmentCase belongs to exactly one Portfolio; BenefitCommitment belongs to exactly
+  one InvestmentCase and must not duplicate `PortfolioId`. Gate L contains no MOD-0007/0023/0136/0138/0072
+  client, DTO, projection, placeholder ID or payload snapshot.
+- **Phase 2B Gate I — Integrated 1.3 Business Flow:** MOD-0007 decision/rationale, MOD-0023 approval/workflow,
+  MOD-0136 budget/version, MOD-0138 scenario/comparator and MOD-0072 actual outcome/realization remain external
+  typed/versioned contract dependencies. Their systems of record are not copied into MOD-0117.
+- Gate L lifecycles are neutral PPM planning lifecycles: InvestmentCase
+  `Draft → UnderAnalysis → Closed` with `Draft|UnderAnalysis → Withdrawn`; BenefitCommitment
+  `Draft → Planned → Active → Closed` with `Draft|Planned|Active → Cancelled`. Terminal states cannot imply
+  approval, funding or realized outcome.
+- Gate L permissions are the exact lowercase `.read/.create/.update/.change-lifecycle` families under
+  `ppm.investment-cases.*` and `ppm.benefit-commitments.*`; `.view`, `.delete`, wildcard, alias and uppercase
+  keys are forbidden.
+- Gate L may be reported only as **“1.3 PPM-owned local slice complete; external integration Gate I remains
+  open.”** Only Gate I may yield **“1.3 integrated business flow complete.”**
 - MOD-0117 pack is in `review` for Phase 2A only. ExternalContextReference provider endpoint/transport, DWS
-  runtime integration, Phase 2B, Gateway-file work beyond the exact mapping authorized below and WorkCenter
-  hazards remain unauthorized. MOD-0117 is not complete until separately authorized Phase 2B is complete.
+  runtime integration, Gate L runtime, Gate I integration, Gateway-file work beyond the exact mapping authorized below and WorkCenter
+  hazards remain unauthorized. Gate L or Gate I completion does not automatically make the Blueprint-wide
+  MOD-0117 product `done`.
 - **Phase 2A PPM object API Gateway mapping authorized; integration-agent only.** Scope is exactly
   `/api/v1/ppm` plus `/api/v1/ppm/{everything}` to downstream port `5061`; no other route authority is
   created.
@@ -691,7 +705,7 @@ and no deferred regression debt.
 | OD-01 | ✅ **CLOSED — 2026-07-28:** Master 8.1 is canonical and historical CAND-CAP-0008/0009 aliases resolve to MOD-0354/0355 | None | Enterprise Architect |
 | OD-02 | ✅ **CLOSED — 2026-07-28:** Initial modular-monolith placement with mandatory architecture tests and fail-closed split fallback | Module packs must prove isolation before service scaffold | Enterprise Architect |
 | OD-03 | ✅ **CLOSED — 2026-07-29:** Permanent owner role is Portfolio Governance Process Owner (PPM Business Owner); minimum Slice 2 Phase 2A/2B scope and future `Diten.PpmService` SoR placement are approved. This grants no scaffold or production authority | None; runtime gates remain under OD-04 | Portfolio Governance Process Owner |
-| OD-04 | 🔴 **OPEN / PARTIAL:** MOD-0117 pack is approved and Phase 2A object implementation is authorized. PPM's two-gate entitlement/permission policy, audit event identity and Minimal Mutation Audit v1 consumer contract are governance-locked. PSS-B1 fixes the provider-side `platform.ppm-entitlement-decision.v1` contract and every-instance invalidation behavior. The narrow MOD-0117 `ppm.external-context-reference` provider slice is authorized, but its final runtime evidence, the MOD-0354 consumer/DWS runtime, remaining PSS integration and Phase 2B consumers stay open | PSS-owned runtime integration, provider evidence, consumer/DWS runtime and Phase 2B consumers; does not block the already authorized Phase 2A object implementation | Shared-module owners |
+| OD-04 | 🔴 **OPEN / PARTIAL:** MOD-0117 pack is approved and Phase 2A object implementation is authorized. PPM's two-gate entitlement/permission policy, audit event identity and Minimal Mutation Audit v1 consumer contract are governance-locked. PSS-B1 fixes the provider-side `platform.ppm-entitlement-decision.v1` contract and every-instance invalidation behavior. The narrow MOD-0117 `ppm.external-context-reference` provider slice is authorized. Phase 2B Gate L governance is fixed but runtime evidence is open; Gate I, MOD-0354 consumer/DWS runtime and remaining PSS integration stay open | Gate L runtime evidence, PSS-owned runtime integration, provider evidence, consumer/DWS runtime and Gate I external consumers; does not block the already authorized Phase 2A object implementation | Shared-module owners |
 | OD-05 | ES containment/migration necessity | CAND-CAP-0007-FU01 participation | ESBP + EA |
 | OD-06 | DCP-005/DCP-006 formal successor relationship after approval | Portfolio governance | Enterprise Architect |
 | OD-07 | ✅ **CLOSED — scope partition, 2026-07-28.** DCP-006 is sole active 1.3/MOD-0117 orchestration; DCP-003 is deferred/non-executable and portfolio-delivery domain config is reconciled | None; draft MOD-0117 pack authoring is eligible after OD-03 closure and canonical preflight, while OD-04 still blocks ready-for-dev/runtime | Enterprise Architect technical/governance owner |
@@ -701,7 +715,8 @@ and no deferred regression debt.
 
 - Preserve Master 8.1 provenance and rerun canonical ID/name/parent/collision preflights when packs change.
 - Implement only the user-authorized MOD-0117 Phase 2A scaffold/backend/frontend on service port `5061`.
-- Keep the MOD-0354 ExternalContextReference consumer/DWS runtime integration, Phase 2B, Gateway-file work
+- Keep the MOD-0354 ExternalContextReference consumer/DWS runtime integration, Phase 2B Gate L runtime and
+  Gate I external integrations, Gateway-file work
   beyond the authorized Phase 2A PPM mapping and all four WorkCenter hazards fail-closed until their named
   gates close. The internal provider slice is limited to AD-06.
 - Author DWS/BPM as separate module packs; OD-08 is closed, but human approval and architecture-test gates
@@ -750,6 +765,7 @@ and no deferred regression debt.
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-08-01 | Reconciled Phase 2B into Gate L (`InvestmentCase`, `BenefitCommitment`) and Gate I (external decision/approval/budget/scenario/outcome contracts), including exact cardinality, neutral lifecycle, closed permissions and scoped completion language. OD-04 remains OPEN/PARTIAL and MOD-0117 remains `review`; no runtime or external-contract authority was created. | User / Enterprise Strategy Control Tower |
 | 2026-08-01 | Authorized the narrow default-disabled MOD-0117 ExternalContextReference provider slice and recorded the Control Tower corrections: exact existing `.read` permissions, strict endpoint tenant/sub `401` semantics, and null-only `VisibilityPolicyKey` v1 behavior. OD-04 remains OPEN/PARTIAL; no Gateway route, MOD-0354 consumer, DWS runtime, Phase 2B or new permission was authorized. | User / Enterprise Strategy Control Tower |
 | 2026-07-28 | Enterprise Architect explicitly and singularly allocated `DCP-006`, slug `portfolio-delivery-process-core`, name `Portfolio, Delivery & Process Core`, exclusively to active subdomains 1.3, 1.4 and 1.6. Allocation was not inferred from sequence. | Enterprise Architect |
 | 2026-07-28 | Created initial CAP-001 `draft`; recorded DCP-005 non-modification, candidate guards, Gate 1/2/3 boundaries and no-code guard. | DCP author/reviewer |

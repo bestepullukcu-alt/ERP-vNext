@@ -1,10 +1,10 @@
 # Portfolio Delivery (PPM) — Domain Config
 
-> Bu dosya domain'in **sınırlarını ve kararlarını** tanımlar. Engineering NASIL kuralları [.antigravity/rules/](../../../.antigravity/rules/)'da; modül envanteri [execution/portfolio/master-development-plan.md](../../portfolio/master-development-plan.md)'de; capability-level sözleşme [DCP-003](../../portfolio/delivery-capability-packs/DCP-003-ppm-work-management.md)'tedir.
+> Bu dosya domain'in **sınırlarını ve kararlarını** tanımlar. Engineering NASIL kuralları [.antigravity/rules/](../../../.antigravity/rules/)'da; modül envanteri [execution/portfolio/master-development-plan.md](../../portfolio/master-development-plan.md)'de; aktif 1.3/MOD-0117 orchestration sözleşmesi [DCP-006](../../portfolio/delivery-capability-packs/DCP-006-portfolio-delivery-process-core.md)'dadır. [DCP-003](../../portfolio/delivery-capability-packs/DCP-003-ppm-work-management.md) yalnız deferred/non-executable legacy-parity planning kaynağıdır.
 
 ## Purpose
 
-Portfolio Delivery (PPM) domain'i; Work Records (proje/iş kayıtları), PPM Task instance'ları, workstream hiyerarşisi, proje takvim planlaması, Project Effort Log ve Meeting / Status Reports yeteneklerini sahiplenir. Blueprint-kanonik kimliği `MOD-0117 — Project & Portfolio Management (PPM)`'dir. Eski `DitenPPM` sisteminin paritesinin güvenli alt kümesi hedeflenir; Blueprint'in tam MOD-0117 kapsamı (demand intake, benefits, capacity planning vb.) bu domain'in aktif kapsamı değildir.
+Portfolio Delivery (PPM) domain'inin Blueprint-kanonik kimliği `MOD-0117 — Project & Portfolio Management (PPM)`'dir. Aktif DCP-006 dilimi Portfolio, Initiative, Program, Project, PPM-owned InvestmentCase ve planned-benefit BenefitCommitment kayıtlarını kapsar. DCP-003 Work Records/Task/Workstream/Calendar/Effort/Meeting özellikleri yalnız deferred, non-executable legacy backlog'dur. Blueprint-wide Demand, capacity ve diğer MOD-0117 bağlamları bu Gate L kapsamına otomatik olarak dahil olmaz.
 
 ## In-Scope Modules
 
@@ -52,7 +52,9 @@ Portfolio Delivery (PPM) domain'i; Work Records (proje/iş kayıtları), PPM Tas
 - **MOD-0048 (Reference Data):** PPM-yerel lookup/enum'lar geçicidir; hedef SSOT MOD-0048'dir. Hardcoded fallback lookup listeleri yasaktır.
 - **MOD-0280 (Time, Attendance & Leave) — ASSUMPTION-1:** PPM, "Project Effort Log" nesnesini MOD-0117 altında **geçici olarak** sahiplenir; MOD-0280 hayata geçtiğinde Time Entry SoR'u ile resmi kontrat kurulur ve gerekiyorsa sahiplik devri yapılır. **Kesin karar değildir; EA-TBD.** PPM tarafında "Time Entry" terimi ve `ppm.time-entries.*` permission adı kullanılamaz — doğru ad: `ppm.effort-logs.*`.
 - **MOD-0288 (Organization Directory):** FunctionalDomain/SubDomain benzeri organizasyon referansları geçici PPM-yerel snapshot olabilir; kalıcı kaynak MOD-0288'dir, besleme kontratı follow-up'tır.
-- **MOD-0007 (Decision & Rationale Log):** Meeting/Status Report içindeki Decision kayıtlarının kalıcı SoR'u MOD-0007'dir; ilk fazlarda PPM-yerel tutulur, link kontratı follow-up'tır.
+- **MOD-0007 (Decision & Rationale Log):** Generic decision/rationale kalıcı SoR'u MOD-0007'dir. PPM-local decision register veya rationale payload yasaktır; entegrasyon yalnız Gate I approved typed/versioned contract ile mümkündür.
+- **Phase 2B Gate L ownership:** MOD-0117 `InvestmentCase` ve `BenefitCommitment` sahibidir. InvestmentCase tam olarak bir Portfolio'ya; BenefitCommitment tam olarak bir InvestmentCase'e bağlıdır. BenefitCommitment üzerinde ikinci `PortfolioId` yasaktır.
+- **Gate I external ownership:** MOD-0023 approval/workflow, MOD-0136 budget/version, MOD-0138 scenario/comparator ve MOD-0072 actual outcome/realization SoR'udur. Gate L hiçbir placeholder reference, DTO, projection, client veya payload snapshot üretmez.
 - Eski `DitenPPM` kodu yalnızca **iş kuralı referansıdır**; dosya/kod kopyalanmaz.
 
 ## Runtime Decisions
@@ -75,6 +77,12 @@ Portfolio Delivery (PPM) domain'i; Work Records (proje/iş kayıtları), PPM Tas
   ister. ContextKind izinleri yalnızca mevcut exact `ppm.*.read` anahtarlarıdır. V1'de non-null
   `VisibilityPolicyKey` fail-closed `404` döner; object-level policy desteği MOD-0018 versioned contract ve ayrı
   provider revision/FU olmadan açılamaz.
+- **Gate L permissions:** exact closed set `ppm.investment-cases.{read,create,update,change-lifecycle}` and
+  `ppm.benefit-commitments.{read,create,update,change-lifecycle}`. `.view`, `.delete`, wildcard, alias and
+  uppercase keys are forbidden; soft delete uses the existing update/surface contract.
+- **Completion wording:** Gate L completion is only “1.3 PPM-owned local slice complete; external integration
+  Gate I remains open.” Gate I completion is “1.3 integrated business flow complete.” Neither changes whole
+  MOD-0117 automatically to `done`.
 
 ## Domain Bootstrap Notes
 
