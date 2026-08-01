@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Diten.PpmService.Application.Features.ExternalContextReferences;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,7 @@ public sealed class ExternalContextProviderOptions
 
     public bool Enabled { get; init; }
     public string? ServiceCredential { get; init; }
+    public int LookupTimeoutMilliseconds { get; init; } = 2000;
 }
 
 public sealed class ExternalContextProviderOptionsValidator
@@ -41,8 +43,22 @@ public sealed class ExternalContextProviderOptionsValidator
                 "ExternalContextProvider requires a dedicated non-placeholder credential of at least 24 characters when enabled.");
         }
 
+        if (options.LookupTimeoutMilliseconds is < 100 or > 5000)
+        {
+            return ValidateOptionsResult.Fail(
+                "ExternalContextProvider lookup timeout must be between 100 and 5000 milliseconds when enabled.");
+        }
+
         return ValidateOptionsResult.Success;
     }
+}
+
+public sealed class ExternalContextReferenceLookupTimeout(
+    IOptions<ExternalContextProviderOptions> options)
+    : IExternalContextReferenceLookupTimeout
+{
+    public TimeSpan LookupTimeout =>
+        TimeSpan.FromMilliseconds(options.Value.LookupTimeoutMilliseconds);
 }
 
 public sealed class ExternalContextProviderSecurityFilter(IOptions<ExternalContextProviderOptions> options)

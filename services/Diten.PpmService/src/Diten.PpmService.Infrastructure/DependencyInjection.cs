@@ -1,6 +1,7 @@
 using Diten.BuildingBlocks.Eventing;
 using Diten.PpmService.Application.Common;
 using Diten.PpmService.Application.Events;
+using Diten.PpmService.Application.Features.ExternalContextReferences;
 using Diten.PpmService.Infrastructure.Audit;
 using Diten.PpmService.Infrastructure.Authorization;
 using Diten.PpmService.Infrastructure.Correlation;
@@ -37,6 +38,7 @@ public static class DependencyInjection
         }
         externalContextOptions.ValidateOnStart();
         services.AddScoped<ExternalContextProviderSecurityFilter>();
+        services.AddScoped<IExternalContextReferenceLookupTimeout, ExternalContextReferenceLookupTimeout>();
 
         var auditSection = configuration?.GetSection(PpmAuditProducerOptions.SectionName);
         var auditOptions = auditSection?.Get<PpmAuditProducerOptions>() ?? new PpmAuditProducerOptions();

@@ -91,13 +91,19 @@ public interface IExternalContextReferenceLookup
         CancellationToken cancellationToken);
 }
 
+public interface IExternalContextReferenceLookupTimeout
+{
+    TimeSpan LookupTimeout { get; }
+}
+
 public sealed class ExternalContextReferenceDependencyException(string message, Exception innerException)
     : Exception(message, innerException);
 
 public sealed class ValidateExternalContextReferenceHandler(
     ITenantContext tenant,
     IPpmAccessAuthorizer authorizer,
-    IExternalContextReferenceLookup lookup)
+    IExternalContextReferenceLookup lookup,
+    IExternalContextReferenceLookupTimeout lookupTimeout)
     : IRequestHandler<ValidateExternalContextReferenceQuery, Response<ExternalContextReferenceResponse>>
 {
     public async Task<Response<ExternalContextReferenceResponse>> Handle(
@@ -118,13 +124,17 @@ public sealed class ValidateExternalContextReferenceHandler(
             return access.Failure<ExternalContextReferenceResponse>();
         }
 
+        using var lookupCancellation =
+            CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        lookupCancellation.CancelAfter(lookupTimeout.LookupTimeout);
+
         try
         {
             var candidate = await lookup.FindAsync(
                 tenant.TenantId,
                 request.ContextKind!,
                 contextId,
-                cancellationToken);
+                lookupCancellation.Token);
 
             if (candidate is null || !candidate.IsReferenceable || candidate.VisibilityPolicyKey is not null)
             {
@@ -136,6 +146,14 @@ public sealed class ValidateExternalContextReferenceHandler(
                 ExternalContextReferenceContract.Version,
                 request.ContextKind!,
                 contextId.ToString("D")));
+        }
+        catch (OperationCanceledException)
+            when (!cancellationToken.IsCancellationRequested &&
+                  lookupCancellation.IsCancellationRequested)
+        {
+            return Response<ExternalContextReferenceResponse>.Fail(
+                "Authoritative external context lookup is unavailable.",
+                503);
         }
         catch (ExternalContextReferenceDependencyException)
         {

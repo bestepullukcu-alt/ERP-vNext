@@ -133,7 +133,7 @@ public sealed class ExternalContextReferenceContractTests
         var lookup = new CountingLookup(new(true, null));
         var authorizer = new RecordingAuthorizer(PpmAccessDecision.Allowed);
         var handler = new ValidateExternalContextReferenceHandler(
-            new TenantContext(), authorizer, lookup);
+            new TenantContext(), authorizer, lookup, new FixedLookupTimeout());
 
         var result = await handler.Handle(Query("Project", ContextId.ToString("D")), default);
 
@@ -150,7 +150,7 @@ public sealed class ExternalContextReferenceContractTests
     {
         var lookup = new CountingLookup(new(true, null));
         var handler = new ValidateExternalContextReferenceHandler(
-            new TenantContext(), new RecordingAuthorizer(decision), lookup);
+            new TenantContext(), new RecordingAuthorizer(decision), lookup, new FixedLookupTimeout());
 
         var result = await handler.Handle(Query("Portfolio", ContextId.ToString("D")), default);
 
@@ -168,7 +168,8 @@ public sealed class ExternalContextReferenceContractTests
         var handler = new ValidateExternalContextReferenceHandler(
             new TenantContext(),
             new RecordingAuthorizer(PpmAccessDecision.Allowed),
-            new CountingLookup(new(isReferenceable, visibilityPolicyKey)));
+            new CountingLookup(new(isReferenceable, visibilityPolicyKey)),
+            new FixedLookupTimeout());
 
         var result = await handler.Handle(Query("Initiative", ContextId.ToString("D")), default);
 
@@ -182,7 +183,8 @@ public sealed class ExternalContextReferenceContractTests
         var handler = new ValidateExternalContextReferenceHandler(
             new TenantContext(),
             new RecordingAuthorizer(PpmAccessDecision.Allowed),
-            new ThrowingLookup());
+            new ThrowingLookup(),
+            new FixedLookupTimeout());
 
         var result = await handler.Handle(Query("Program", ContextId.ToString("D")), default);
         Assert.Equal(503, result.StatusCode);
@@ -204,6 +206,81 @@ public sealed class ExternalContextReferenceContractTests
             ServiceCredential = credential
         });
         Assert.Equal(valid, result.Succeeded);
+    }
+
+    [Fact]
+    public void External_context_provider_options_default_lookup_timeout_is_2000_ms()
+    {
+        Assert.Equal(2000, new ExternalContextProviderOptions().LookupTimeoutMilliseconds);
+    }
+
+    [Theory]
+    [InlineData(100, true)]
+    [InlineData(5000, true)]
+    [InlineData(99, false)]
+    [InlineData(5001, false)]
+    public void External_context_provider_lookup_timeout_bounds_are_fail_closed(
+        int timeoutMilliseconds,
+        bool valid)
+    {
+        var result = new ExternalContextProviderOptionsValidator().Validate(null, new()
+        {
+            Enabled = true,
+            ServiceCredential = "T8kQ3nLm7vPx2sWr9cYf6hZa",
+            LookupTimeoutMilliseconds = timeoutMilliseconds
+        });
+
+        Assert.Equal(valid, result.Succeeded);
+    }
+
+    [Fact]
+    public void Disabled_provider_does_not_validate_timeout_bounds()
+    {
+        var result = new ExternalContextProviderOptionsValidator().Validate(null, new()
+        {
+            Enabled = false,
+            LookupTimeoutMilliseconds = 99
+        });
+
+        Assert.True(result.Succeeded);
+    }
+
+    [Fact]
+    public async Task Internal_lookup_timeout_returns_503_and_invokes_lookup_once()
+    {
+        var lookup = new BlockingLookup();
+        var handler = new ValidateExternalContextReferenceHandler(
+            new TenantContext(),
+            new RecordingAuthorizer(PpmAccessDecision.Allowed),
+            lookup,
+            new FixedLookupTimeout(100));
+
+        var result = await handler.Handle(Query("Project", ContextId.ToString("D")), default);
+
+        Assert.Equal(503, result.StatusCode);
+        Assert.Equal(1, lookup.Calls);
+        Assert.Equal("Authoritative external context lookup is unavailable.", Assert.Single(result.Errors));
+    }
+
+    [Fact]
+    public async Task Caller_cancellation_propagates_and_is_not_mapped_to_503()
+    {
+        var lookup = new BlockingLookup();
+        var handler = new ValidateExternalContextReferenceHandler(
+            new TenantContext(),
+            new RecordingAuthorizer(PpmAccessDecision.Allowed),
+            lookup,
+            new FixedLookupTimeout(5000));
+        using var callerCancellation = new CancellationTokenSource();
+
+        var handling = handler.Handle(
+            Query("Project", ContextId.ToString("D")),
+            callerCancellation.Token);
+        await lookup.Started;
+        callerCancellation.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => handling);
+        Assert.Equal(1, lookup.Calls);
     }
 
     private static ValidateExternalContextReferenceQuery Query(string kind, string id) => new(
@@ -248,5 +325,33 @@ public sealed class ExternalContextReferenceContractTests
         public Task<ExternalContextReferenceLookupResult?> FindAsync(
             Guid tenantId, string contextKind, Guid contextId, CancellationToken cancellationToken) =>
             throw new ExternalContextReferenceDependencyException("unavailable", new TimeoutException());
+    }
+
+    private sealed class FixedLookupTimeout(int milliseconds = 2000)
+        : IExternalContextReferenceLookupTimeout
+    {
+        public TimeSpan LookupTimeout { get; } = TimeSpan.FromMilliseconds(milliseconds);
+    }
+
+    private sealed class BlockingLookup : IExternalContextReferenceLookup
+    {
+        private int _calls;
+        private readonly TaskCompletionSource<bool> _started =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public int Calls => Volatile.Read(ref _calls);
+        public Task Started => _started.Task;
+
+        public async Task<ExternalContextReferenceLookupResult?> FindAsync(
+            Guid tenantId,
+            string contextKind,
+            Guid contextId,
+            CancellationToken cancellationToken)
+        {
+            Interlocked.Increment(ref _calls);
+            _started.TrySetResult(true);
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            return null;
+        }
     }
 }
