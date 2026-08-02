@@ -462,3 +462,257 @@ All controlled failures return `Response<T>` with a stable reason code + correla
 4. **BPMN / visual builder:** explicitly out of MVP; future wave only.
 5. **Registry slug reconciliation:** registry slug is `workflow-designer`; this pack's filename slug is
    `workflow-config-approval-templates`. A registry reconciliation (slug/alias) is a separate governance edit.
+
+## 17. PPM ApprovalOutcome Amendment — DRAFT / NON-EXECUTABLE
+
+> **Amendment status boundary:** This section is a governance proposal with status **DRAFT / NON-EXECUTABLE**.
+> The parent pack remains `ready-for-dev` only for its previously approved slices. That parent status does not
+> approve, activate or provide runtime authority for any item in this amendment. Promoting this amendment
+> requires an explicit PSS-owner/user decision recorded against this section; it does not happen implicitly
+> through parent-pack status, implementation of another batch, or approval of a PPM consumer amendment.
+
+### 17.1 Identity and authority
+
+- This amendment remains inside canonical parent `MOD-0023 — Workflow Designer
+  (Approvals/SLAs/Escalations)`; it creates no MOD, FU, child or runtime identity.
+- MOD-0023 remains the sole authoritative source of approval workflow execution and terminal approval truth.
+- The governing references are [MOD-0018](MOD-0018-rbac-abac-authorization.md),
+  [MOD-0021](MOD-0021-general-audit-trail.md),
+  [MOD-0117](../../portfolio-delivery/module-packs/MOD-0117-project-portfolio-management.md) and
+  [DCP-006](../../../portfolio/delivery-capability-packs/DCP-006-portfolio-delivery-process-core.md).
+
+### 17.2 Purpose and non-authority
+
+The proposed slice lets an authenticated PPM submitting service request approval for one InvestmentCase and,
+after a terminal MOD-0023 decision, retain only a minimal opaque outcome reference. It does not authorize code,
+schema, endpoint, event, UI, Gateway, WorkCenter or deployment changes. It does not expand any existing
+ready-for-dev batch.
+
+### 17.3 Exact source-reference contract
+
+The request source profile is exact and case-sensitive:
+
+| Item | Exact value |
+|---|---|
+| Contract name | `ppm.investment-case-context` |
+| Contract version | `1.0` |
+| Field allowlist | `ContractName`, `ContractVersion`, `InvestmentCaseId` |
+
+`InvestmentCaseId` is a canonical non-empty opaque UUID. Unknown fields are rejected. In particular,
+`TenantId`, `ActorId`, `ApproverId`, module/object type, free-text discriminator, task, route, comment,
+assignee or workflow payload fields are forbidden. MOD-0023 validates the typed source reference but owns no
+PPM aggregate, lifecycle, visibility rule or relationship cardinality.
+
+### 17.4 Trusted provenance
+
+Tenant, submitting-service identity, effective actor and delegated-actor provenance come only from validated,
+authenticated trusted server context. Decision actor and decision time come only from the authoritative
+MOD-0023 transition context and server clock. Client-supplied tenant/actor/approver overrides are rejected;
+unvalidated or client-controlled override headers and payload fields are never treated as authority. A
+validated delegated JWT or allowlisted, authenticated transport metadata may carry trusted context only under
+the separately approved S2S/effective-actor mechanism. Missing or invalid trusted context fails closed.
+
+Before submission, the authenticated PPM service must produce a trusted, request-bound attestation that its
+authoritative tenant-scoped lookup found the InvestmentCase active and visible to the effective actor. The
+attestation is server context, not a fourth source-reference field, and is stored with provenance. MOD-0023
+does not query PPM persistence, call a PPM provider endpoint or infer source truth locally. Missing,
+cross-tenant or invisible InvestmentCase returns `404` only inside PPM's authoritative validation boundary;
+PPM does not call MOD-0023 after that failure. MOD-0023 never converts a missing, invalid, expired, replayed or
+mismatched attestation into source-not-found `404`.
+
+The trusted-context attestation contract is exact `ppm.investment-case-source-attestation` / `1.0`, issued and
+integrity-protected by the authenticated PPM service for the MOD-0023 audience. Its closed claims are
+`ContractName`, `ContractVersion`, `TenantId`, `SubmittingServiceId`, `EffectiveActorId`,
+`DelegatedActorChain`, `InvestmentCaseId`, `WorkflowTemplateVersionId`, `SubmissionRequestDigest`,
+`IssuedAtUtc`, `ExpiresAtUtc`, `Nonce`. These claims exist only in verified server context and never widen the
+three-field source payload. MOD-0023 verifies issuer, audience, integrity, exact claim equality, nonce replay
+protection and a short owner-approved validity window. Malformed attestation shape or claims return `400`;
+authentication, issuer, audience or integrity failure returns `401`; authenticated S2S/submission authorization
+denial returns `403`; expired, replayed or mismatched attestation returns `400`; verifier/key/freshness
+dependency unavailable, malformed authoritative verification or indeterminate verification returns `503`.
+The exact signing mechanism, maximum validity window and nonce-retention period remain promotion blockers and
+must be fixed in bilateral fixtures before execution.
+
+### 17.5 Immutable template-version pin
+
+Submission names one exact immutable `WorkflowTemplateVersionId`; mutable template identity, `latest`, current
+published-version lookup or any later re-resolution is forbidden. Before accepting the submission, MOD-0023
+must prove that the pinned version is in the authenticated tenant, tenant-visible, published, immutable and
+eligible for exact source profile `ppm.investment-case-context` / `1.0`. A later template publication cannot
+change an accepted instance's meaning.
+
+### 17.6 MOD-0018 eligibility and delegation boundary
+
+[MOD-0018](MOD-0018-rbac-abac-authorization.md) is authoritative for effective approver eligibility and every
+delegation decision. MOD-0023 consumes an allow/deny decision bound to tenant, effective actor, action,
+resource/instance and decision freshness; it does not infer authority from role names, locally count grants,
+reconstruct effective permissions or use a fail-open/stale cache. Deny is `403`; unavailable, timed-out,
+malformed or indeterminate dependency results are `503`. PPM never computes eligibility or delegation.
+Before creating an instance, MOD-0023 also requires a distinct fresh MOD-0018 allow decision bound to tenant,
+submitting service, effective/delegated actor, exact `SubmitForApproval` action, InvestmentCaseId and pinned
+WorkflowTemplateVersionId. Authentication, S2S entitlement or source visibility alone cannot substitute for
+this submission authorization.
+
+### 17.7 Submission idempotency
+
+Each submission carries an idempotency key of 1–128 visible ASCII characters and a canonical request digest.
+UUIDs use canonical lowercase `8-4-4-4-12` text; strings are Unicode NFC; object member names use the exact
+case in this section. The digest input is the RFC 8785 JSON Canonicalization Scheme representation of the
+closed allowlist `WorkflowTemplateVersionId`, `ContractName`, `ContractVersion`, `InvestmentCaseId`, encoded
+as UTF-8; the digest is SHA-256 encoded as 64 lowercase hexadecimal characters. Unknown members and
+noncanonical UUIDs fail `400`. Trusted provenance is not client digest input, but its tenant,
+submitting-service, effective-actor and complete delegated-actor chain are equality-bound to the receipt and
+must match on replay. Receipt lookup and the unique constraint are scoped exactly to tenant,
+submitting-service and idempotency key; actor/delegation are stored comparison fields, not index-scope fields:
+
+- same key + same digest returns the original stable result without another instance or mutation;
+- same key + different digest returns `409` with no mutation;
+- key comparison and receipt creation are race-safe and protected by a unique persistence constraint.
+
+Receipts are retained at least as long as the workflow instance and its terminal outcome reference can
+be resolved; expiry or reuse cannot make a previously accepted key produce a second instance.
+
+### 17.8 Submission atomicity and unknown-commit recovery
+
+The idempotency receipt, pinned template-version identity, exact source reference, authenticated provenance and
+new workflow instance are committed in one local transaction. No success is returned before commit. If the
+caller loses the response or commit acknowledgement is unknown, it retries the same key and canonical bytes;
+MOD-0023 resolves the durable receipt and returns the original result. A missing receipt after an authoritative
+rollback permits a fresh attempt; a key is never reused with changed bytes or different trusted provenance.
+
+### 17.9 Terminal outcome ownership
+
+Approve or Reject becomes authoritative only through a valid terminal MOD-0023 transition. That transition
+creates one immutable `ApprovalOutcome`; PPM does not create, update or reinterpret the result. In v1, each
+`WorkflowInstance` produces exactly one terminal outcome. A terminal instance cannot produce another outcome.
+
+### 17.10 Exact `ApprovalOutcomeReferenceV1` contract
+
+The typed contract is named **`ApprovalOutcomeReferenceV1`**. Its exact case-sensitive wire allowlist is:
+
+| Field | Exact value / meaning |
+|---|---|
+| `ContractName` | constant `platform.approval-outcome-reference` |
+| `ContractVersion` | constant `1.0` |
+| `ApprovalOutcomeId` | opaque canonical non-empty UUID allocated by MOD-0023 |
+
+These three fields are sufficient because every terminal outcome has a distinct, immutable opaque identity;
+v1 uses neither an outcome version field nor an outcome sequence. Exact serialization contains all three fields once, in the
+case shown, and no others. Missing, duplicate or unknown fields are rejected. Unknown contract versions are
+rejected. PPM may persist only this reference. MOD-0023 binds every outcome to the authenticated tenant
+server-side; dereference/validation requires the same authenticated tenant and returns indistinguishable `404`
+for missing, cross-tenant or non-disclosable MOD-0023 outcomes.
+
+### 17.11 Immutability and renewed decision
+
+An `ApprovalOutcome` cannot be updated, soft-deleted, hard-deleted, corrected, restated or superseded. If the
+business decision must be taken again, the caller starts a new `WorkflowInstance`; only that new instance may
+produce its own single immutable terminal outcome. MOD-0023 may link the new instance to the old
+instance/outcome using producer-private provenance that is absent from `ApprovalOutcomeReferenceV1`. The old
+outcome remains unchanged and historically resolvable. PPM does not automatically replace its old reference;
+changing the PPM relationship is a separate MOD-0117 lifecycle mutation under MOD-0117 authority.
+
+### 17.12 Terminal transaction boundary
+
+The terminal workflow transition, immutable `ApprovalOutcome`, terminal idempotency receipt and
+producer-local audit intent are written in the same MOD-0023 local transaction. The terminal key uses the same
+1–128 visible-ASCII rule as submission. Receipt lookup and uniqueness are scoped by tenant, submitting service,
+workflow instance and terminal key; effective actor and complete delegated-actor chain are stored comparison
+fields whose mismatch returns `409`. Its closed digest allowlist is
+`WorkflowInstanceId`, `Action`, `ExpectedVersion`, `ReasonCode`; `Action` is exactly `Approve` or `Reject`,
+`ExpectedVersion` is a positive integer, and `ReasonCode` is required, non-null, never omitted, and must be an
+NFC 1–64 character ASCII token from the exact immutable reason-code allowlist carried by the pinned
+`WorkflowTemplateVersion`; it is never a comment. It uses the same UUID/NFC, RFC 8785 UTF-8, SHA-256 and
+lowercase-hex rules as §17.7. Failure to
+persist the audit intent rolls back the transition, outcome and receipt. A duplicate same-key/same-digest
+terminal command with equal trusted provenance returns the original outcome; different digest/provenance or
+an already-terminal incompatible action returns `409`. Its receipt follows the retention rule in §17.7.
+
+### 17.13 Audit delivery boundary
+
+The local audit intent is the atomic producer record. [MOD-0021](MOD-0021-general-audit-trail.md) delivery is a
+fully asynchronous, post-commit, separately approved adapter that consumes it with at-least-once delivery and
+idempotent consumption. Submission and terminal mutation do not invoke that adapter. A controller,
+handler or local mutation transaction never calls RabbitMQ/MassTransit or a remote MOD-0021 endpoint directly.
+If the producer-local audit intent cannot be written in the same local transaction, the entire mutation rolls
+back and returns `503` as a local persistence/dependency failure. After commit, MOD-0021 delivery unavailable,
+timeout or failure does not roll back or rewrite business truth; it enters the separately approved
+retry/DLQ/alarm/replay process.
+
+### 17.14 Exact error matrix
+
+| HTTP | Exact failure classes |
+|---:|---|
+| `400` | malformed request/profile/mode; malformed attestation shape or claims; expired, replayed or mismatched attestation |
+| `401` | missing/invalid authentication or trusted context; attestation authentication, issuer, audience or integrity failure |
+| `403` | permission denial; authenticated S2S/submission authorization denial; MOD-0018 approver-eligibility or delegation denial |
+| `404` | missing, soft-deleted, cross-tenant or non-disclosable MOD-0023 template, workflow instance or outcome only |
+| `409` | stale template; visible but ineligible template state; same idempotency key with different digest; incompatible already-terminal transition |
+| `503` | unsupported version; attestation verifier/key/freshness dependency unavailable, malformed authoritative verification or indeterminate result; MOD-0018 timeout/unavailable/malformed/indeterminate result; local transaction/audit-intent persistence failure |
+
+Missing/cross-tenant/invisible InvestmentCase `404` belongs exclusively to PPM's pre-submission authoritative
+validation; no MOD-0023 request is made. MOD-0023 attestation failures never become `404`. MOD-0023 responses
+never leak whether one of its own `404` targets exists in another tenant. Dependency uncertainty never becomes
+allow, deny, missing-object or local truth. Post-commit audit delivery state is excluded from the request
+response mapping and cannot cause `503`.
+
+### 17.15 PPM ownership exclusion
+
+PPM must not create or persist `ApprovalTask`, an approval route/state machine, approve/reject commands,
+assignee lists, eligibility/delegation calculations, local `Approved`/`Rejected` state, workflow payload,
+task/comment/route copies, or decision actor/time. It owns its InvestmentCase and its relationship cardinality
+and may retain only the exact `ApprovalOutcomeReferenceV1` tuple.
+
+### 17.16 MOD-0023 ownership exclusion
+
+MOD-0023 must not own or copy the InvestmentCase aggregate, its lifecycle, PPM visibility rules, PPM
+cardinality, or any PPM business payload. Its source link remains exactly the typed source-reference tuple in
+§17.3. It owns workflow execution, immutable terminal outcome truth and reference validation only.
+
+### 17.17 Gate 2 and protected surfaces
+
+This governance-only amendment does **not** invoke Gate 2. Gate 2 is mandatory immediately before the first
+production change to an `ApprovalTask`, approval route/command/UI, eligibility/delegation runtime,
+`MOD-0024` TaskAggregate, WorkCenter projection or DWS execution lifecycle/assignment. This amendment neither
+authorizes nor modifies WorkCenter, MOD-0024, MOD-0354/DWS, PPM runtime/frontend, Platform/AuthService runtime,
+Gateway or `.antigravity/**`.
+
+### 17.18 Required contract and security tests before promotion
+
+Promotion to executable status requires approved fixtures proving: exact source and outcome field equality;
+exact three-field `ApprovalOutcomeReferenceV1` serialization plus missing/duplicate/unknown-field rejection;
+unknown-version rejection; immutable template pinning; trusted-context binding; tenant-first MOD-0023
+template/instance/outcome `404`; PPM pre-submission source `404` with no MOD-0023 call; source-attestation
+shape and signature/issuer/audience/integrity/claim/freshness/nonce error mapping; MOD-0018 submission and approver
+deny/timeout/indeterminate handling; role-name/local-grant/fail-open-cache absence; same-key same-digest
+replay; cross-actor/cross-delegation replay rejection; same-key different-digest conflict; concurrent duplicate
+submission; exact canonical digest vectors; unknown-commit recovery; tenant-bound outcome dereference;
+exactly one immutable terminal outcome per instance; renewed decision through a new instance; unchanged
+historical outcome resolution; audit-intent rollback with local `503`; post-commit MOD-0021 failure without
+business rollback; legacy generic `ObjectRef` endpoint rejection for the PPM profile; and absence of direct
+broker calls.
+
+### 17.19 Ownership matrix
+
+| Concern | PPM / MOD-0117 | MOD-0023 | MOD-0018 | MOD-0021 |
+|---|---|---|---|---|
+| InvestmentCase aggregate, lifecycle, cardinality | Owns | Must not own | No | No |
+| Exact source reference | Produces | Validates and stores atomically | No | Audits only via adapter |
+| Template/version and workflow execution | No | Owns; exact immutable pin | Eligibility input only | Audits only via adapter |
+| Approver eligibility/delegation | Must not compute | Consumes fail-closed decision | Authoritative | No |
+| Approve/Reject and terminal outcome truth | Stores reference only | Authoritative | Authorizes actor | Audits only via adapter |
+| `ApprovalOutcomeReferenceV1` | May store exact three-field tuple | Owns and validates | No | No |
+| Producer-local audit intent | No | Writes atomically with mutation | No | Later idempotent consumer |
+
+### 17.20 Promotion blockers and evidence
+
+This amendment remains blocked from runtime until all of the following are explicit and recorded: PSS
+technical/business-owner approval; user runtime authorization; Gate 2 immediately before any protected
+production change; exact bilateral serialization/error fixtures with the later MOD-0117 consumer amendment;
+an approved trusted S2S/effective-actor mechanism; approved MOD-0018 eligibility/delegation integration;
+approved attestation signing/validity/nonce fixtures; approved MOD-0021 adapter contract; local transaction
+feasibility for receipts, outcome and audit intent; and
+green tests from §17.18. Before promotion, the PPM slice must explicitly override/reconcile the parent pack's
+generic `ObjectRef`, local `RuntimeAssignmentSnapshot` authority and B05/B06 wording for this profile only;
+those earlier clauses remain unchanged for previously approved non-PPM scope but cannot authorize a PPM path.
+Parent `ready-for-dev` status closes none of these blockers.
