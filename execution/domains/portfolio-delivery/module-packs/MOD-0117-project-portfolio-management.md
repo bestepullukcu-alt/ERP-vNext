@@ -275,6 +275,7 @@ contract, alter a producer pack/status, choose transport/topology or grant runti
 | `InvestmentCaseContextV1` | `ppm.investment-case-context` | `ContractName`, `ContractVersion`, `InvestmentCaseId` | Typed consumer context only; no free-text kind/discriminator |
 | `GoverningDecisionReferenceV1` | `ppm.investment-case-governing-decision-reference` | `ContractName`, `ContractVersion`, `InvestmentCaseContext`, `DecisionRevisionReference` | `0..1`; exact one valid reference before `UnderAnalysis → Closed` |
 | `SupportingDecisionReferenceV1` | `ppm.investment-case-supporting-decision-reference` | `ContractName`, `ContractVersion`, `InvestmentCaseContext`, `DecisionRevisionReference` | `0..n`; duplicate exact revision rejected |
+| `InvestmentCaseApprovalOutcomeReferenceV1` | `ppm.investment-case-approval-outcome-reference` | `ContractName`, `ContractVersion`, `InvestmentCaseContext`, `ApprovalOutcomeReference` | Conditional `0..1`; only when authoritative approval policy requires approval; non-selection contract |
 | `SelectedBudgetVersionReferenceV1` | `ppm.investment-case-selected-budget-version-reference` | `ContractName`, `ContractVersion`, `InvestmentCaseContext`, `BudgetVersionReference` | `0..1`; relationship is not selected-baseline truth |
 | `InvestmentCaseScenarioVersionReferenceV1` | `ppm.investment-case-scenario-version-reference` | `ContractName`, `ContractVersion`, `InvestmentCaseContext`, `ScenarioVersionReference` | `0..n` |
 | `InvestmentCaseComparatorOutputReferenceV1` | `ppm.investment-case-comparator-output-reference` | `ContractName`, `ContractVersion`, `InvestmentCaseContext`, `ComparatorOutputReference` | `0..n` |
@@ -287,6 +288,30 @@ Nested producer values are exact and unmodified: MOD-0007 `DecisionRevisionRefer
 be added to the generic MOD-0007 tuple. `InvestmentCaseContextV1` may be supplied as validation-request context
 to MOD-0136 FundingBaselineSelection and MOD-0138 ScenarioSelection; it gives neither producer ownership of an
 InvestmentCase field, cardinality, transition or lifecycle.
+
+The conditional `InvestmentCaseApprovalOutcomeReferenceV1` exact nested values are:
+
+- `InvestmentCaseContext`: exact `ppm.investment-case-context` / `1.0`, with only `ContractName`,
+  `ContractVersion`, `InvestmentCaseId`.
+- `ApprovalOutcomeReference`: exact `platform.approval-outcome-reference` / `1.0`, with only `ContractName`,
+  `ContractVersion`, `ApprovalOutcomeId`.
+
+No outcome version, decision payload, actor, time, comment, task, route, assignee or workflow payload may be
+added. MOD-0023 owns workflow/template/transition, `ApprovalTask`, effective approver eligibility/delegation
+consumption and immutable terminal truth. MOD-0018 remains authoritative for eligibility/delegation; PPM may
+neither recalculate it nor create approval commands/routes or local `Approved`/`Rejected` truth. PPM owns only
+the conditional relationship/cardinality and persists the opaque wrapper. A renewed decision requires a new
+MOD-0023 `WorkflowInstance`; its new outcome never replaces the old PPM reference automatically. Reference
+replacement is a separate explicit, transactional and audited MOD-0117 lifecycle mutation.
+
+The bilateral trusted-server-context profile is exact `ppm.investment-case-source-attestation` / `1.0` with
+closed claims `ContractName`, `ContractVersion`, `TenantId`, `SubmittingServiceId`, `EffectiveActorId`,
+`DelegatedActorChain`, `InvestmentCaseId`, `WorkflowTemplateVersionId`, `SubmissionRequestDigest`,
+`IssuedAtUtc`, `ExpiresAtUtc`, `Nonce`. It is not a browser/client payload and carries no PPM aggregate payload.
+PPM emits it only after an authoritative tenant-first InvestmentCase lookup. Missing, cross-tenant or invisible
+InvestmentCase returns PPM-owned `404` and no MOD-0023 submission occurs. Signing mechanism, credential
+rotation, validity window, nonce retention and replay fixtures remain runtime-promotion blockers; this
+governance baseline grants no attestation implementation authority.
 
 `TenantId`, `ActorId`, delegated actor, permission, S2S identity, correlation and transport metadata are never
 payload fields in these persisted profiles; trusted server context supplies them. Free-text consumer kind,
@@ -315,6 +340,22 @@ is never sufficient authority.
 Historical resolution never authorizes a new relationship. New-reference eligibility never proves current
 selection. Current-selection eligibility is used only for the MOD-0136 selected funding baseline and MOD-0138
 selected scenario contracts after their producer-owned selection profiles are approved.
+
+`InvestmentCaseApprovalOutcomeReferenceV1` is a non-selection contract. It supports `HistoricalResolve` and
+`NewReferenceEligibility`; `CurrentSelectionEligibility` is rejected with `400`. For
+`NewReferenceEligibility`, the MOD-0023 outcome must be immutable and terminal, visible in the authenticated
+tenant, produced by a workflow instance bound to the exact `InvestmentCaseContext`, and eligible for a new
+attach under the policy-required approval relationship. The exact conditional failure mapping is: malformed
+profile/request/mode `400`; authentication/trusted-context failure `401`; permission/S2S entitlement denial
+`403`; missing/cross-tenant/invisible/non-disclosable MOD-0023 outcome `404`; visible but source-binding,
+policy or lifecycle ineligible outcome, or conflicting replacement, `409`; unsupported version, timeout,
+provider unavailable, malformed or indeterminate authoritative response `503`.
+
+Historical resolution never validates a new attach and never changes which reference PPM stores. The
+conditional consumer slice remains non-executable until the MOD-0023 PPM amendment is promoted, Gate 2 is
+passed immediately before protected runtime work, bilateral fixtures are approved and explicit runtime
+authority is recorded. MOD-0023 parent `ready-for-dev` status does not promote its PPM amendment, which remains
+`DRAFT / NON-EXECUTABLE` at checkpoint `0ef0a517840d1d8c7d0bbd2fdb2d5d443f0d8470`.
 
 ### 4.10 ExternalContextReference validation projection
 
@@ -704,6 +745,12 @@ or any other Gateway route.
   lifecycle and cardinality above and no external-contract field.
 - [ ] Gate I-A consumes approved MOD-0007 governing/supporting Decision references and, only when policy
   requires, a distinct approved MOD-0023 ApprovalOutcome reference; PPM owns no approval behavior/state.
+- [x] Conditional approval consumer governance fixes exact four-field
+  `InvestmentCaseApprovalOutcomeReferenceV1`, exact three-field nested `ApprovalOutcomeReference`, conditional
+  `0..1` ownership and non-selection modes; this acceptance records shape only and grants no runtime authority.
+- [x] PPM source-attestation governance fixes the exact 1.0 claims and the PPM pre-submission source `404`
+  boundary: missing/cross-tenant/invisible InvestmentCase causes no MOD-0023 call; attestation failures use the
+  separate `400/401/403/503` mapping and never become source `404`.
 - [ ] Gate I-B consumes approved MOD-0136 selected BudgetVersion and MOD-0138 scenario/comparator references;
   budget/scenario payload and selected truth stay with their producers.
 - [ ] Gate I-C consumes approved MOD-0072 outcome/realization references; planned BenefitCommitment stays PPM
@@ -756,6 +803,15 @@ or any other Gateway route.
 - MOD-0021 approved audit producer behavior.
 - S2S service identity + actor delegation, replay and revocation cases.
 - Runtime compatibility tests for supported/unknown contract versions.
+- Conditional approval exact-serialization fixtures: wrapper exact four fields, context exact three fields,
+  nested outcome exact three fields, and unknown/extra/outcome-version field rejection.
+- Conditional approval mode fixtures: `HistoricalResolve` and `NewReferenceEligibility` supported;
+  `CurrentSelectionEligibility` returns `400`; source-binding/policy/lifecycle conflicts return `409`.
+- PPM source-attestation fixtures prove exact claims, trusted-server-only transport, signing/rotation,
+  validity/nonce/replay behavior, PPM source `404` with zero MOD-0023 calls, and attestation
+  `400/401/403/503` separation.
+- Renewed approval uses a new MOD-0023 instance; a new outcome never silently replaces the old PPM reference,
+  and explicit replacement is transactional and audited.
 
 ### Architecture and negative tests
 

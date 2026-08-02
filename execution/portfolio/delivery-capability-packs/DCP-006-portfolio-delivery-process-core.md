@@ -544,6 +544,7 @@ This DCP invents none of them.
 
 MOD-0117 owns the following exact, case-sensitive `1.0` profiles: `ppm.investment-case-context`,
 `ppm.investment-case-governing-decision-reference`, `ppm.investment-case-supporting-decision-reference`,
+`ppm.investment-case-approval-outcome-reference`,
 `ppm.investment-case-selected-budget-version-reference`, `ppm.investment-case-scenario-version-reference`,
 `ppm.investment-case-comparator-output-reference`, `ppm.investment-case-selected-scenario-reference`, and
 `ppm.benefit-commitment-outcome-reference`. Their exact field allowlists and cardinalities are authoritative in
@@ -555,6 +556,29 @@ The shared `ppm.investment-case-context` `1.0` value is exactly `ContractName`, 
 request context, but neither thereby owns InvestmentCase fields, cardinality, lifecycle or storage. Tenant and
 actor remain trusted server context; free-text kind/discriminator is forbidden.
 
+The conditional PPM-owned type is exact `InvestmentCaseApprovalOutcomeReferenceV1`, contract
+`ppm.investment-case-approval-outcome-reference` / `1.0`, with only `ContractName`, `ContractVersion`,
+`InvestmentCaseContext`, `ApprovalOutcomeReference`. Its context is exact `ppm.investment-case-context` /
+`1.0` with only `ContractName`, `ContractVersion`, `InvestmentCaseId`. Its nested producer tuple is exact
+`platform.approval-outcome-reference` / `1.0` with only `ContractName`, `ContractVersion`,
+`ApprovalOutcomeId`. Outcome version, decision payload, actor, time, comment, task, route, assignee and workflow
+payload are forbidden. The relationship is conditional `0..1` only when authoritative policy requires
+approval.
+
+MOD-0023 owns workflow/template/transition, `ApprovalTask`, MOD-0018-backed approver
+eligibility/delegation consumption and immutable terminal truth. PPM owns only the relationship and opaque
+wrapper; it cannot create local approval behavior or truth. A renewed decision requires a new MOD-0023
+`WorkflowInstance`; its outcome does not automatically replace the old PPM reference. Replacement is a
+separate explicit, transactional and audited MOD-0117 lifecycle mutation.
+
+The bilateral PPM-owned trusted-context baseline is exact `ppm.investment-case-source-attestation` / `1.0`
+with closed claims `ContractName`, `ContractVersion`, `TenantId`, `SubmittingServiceId`, `EffectiveActorId`,
+`DelegatedActorChain`, `InvestmentCaseId`, `WorkflowTemplateVersionId`, `SubmissionRequestDigest`,
+`IssuedAtUtc`, `ExpiresAtUtc`, `Nonce`. It is not browser/client payload and carries no aggregate payload. PPM
+produces it after authoritative tenant-first validation. Missing/cross-tenant/invisible InvestmentCase returns
+PPM-owned `404` and no MOD-0023 call occurs. Signing, credential rotation, validity window, nonce retention and
+replay fixtures remain runtime-promotion blockers; this reconciliation grants no implementation authority.
+
 Closed consumer validation modes are `HistoricalResolve`, `NewReferenceEligibility`, and only for selection
 contracts `CurrentSelectionEligibility`. Exact mapping is malformed caller request `400`; authentication/context
 failure `401`; permission/S2S entitlement failure `403`; missing/cross-tenant/invisible/non-disclosable `404`;
@@ -563,10 +587,22 @@ malformed authoritative response `503`. Producer-specific response DTOs remain d
 exact producer fixtures and cannot treat a common or producer-specific `IsReferenceable` boolean as sufficient
 authority.
 
+The conditional approval wrapper is non-selection: `HistoricalResolve` and `NewReferenceEligibility` are
+supported; `CurrentSelectionEligibility` returns `400`. New attach requires an immutable terminal MOD-0023
+outcome visible in the authenticated tenant, produced by the workflow instance bound to the exact
+InvestmentCase context and eligible under the policy-required relationship. Missing/cross-tenant/invisible/
+non-disclosable outcome is `404`; visible source-binding/policy/lifecycle ineligibility or conflicting
+replacement is `409`; unsupported version, timeout, unavailable provider, malformed or indeterminate
+authoritative response is `503`.
+
 Executable delivery is four separate slices: I-A Decision, I-B Budget, I-B Scenario and I-C Outcome. This
 governance decision grants no runtime authority. Each slice still requires approved producer contract, bilateral
 fixtures, executable MOD-0117 consumer approval and explicit runtime authority. MOD-0023 ApprovalOutcome remains
-a separate PSS-owned amendment. MOD-0117 stays `review` and OD-04 stays `OPEN / PARTIAL`.
+a separate PSS-owned amendment at
+[checkpoint `0ef0a517`](../../domains/platform-shared-services/module-packs/MOD-0023-workflow-config-approval-templates.md),
+whose parent remains `ready-for-dev` while the PPM amendment remains `DRAFT / NON-EXECUTABLE`. The conditional
+slice requires that amendment's promotion, Gate 2 immediately before protected runtime work, bilateral
+fixtures and explicit runtime approval. MOD-0117 stays `review` and OD-04 stays `OPEN / PARTIAL`.
 
 All producer reference contracts must use server-derived TenantId and ActorId, a dedicated authenticated S2S
 identity, separately validated delegated actor where applicable, exact permission, opaque canonical non-empty
@@ -883,10 +919,24 @@ and no deferred regression debt.
 - DCP-005 remains approved as the historical/foundation governance and Gate provenance source; DCP-006
   does not fully supersede it while OD-06 remains open.
 
+### Audited governance checkpoint provenance
+
+These SHAs identify reviewed governance checkpoints only. They are not merge evidence, producer-pack approval,
+runtime authority, status promotion or permission to implement any adapter:
+
+| Producer governance checkpoint | Audited SHA |
+|---|---|
+| MOD-0007 | `e900bd09ebc78a5b2cb9d1c55a05b4fb0b4cd634` |
+| MOD-0136 | `37e6c82ee6e2e5f2b8e51829c1245f3a522b8365` |
+| MOD-0138 | `813e30b2a2e4a7e7873ca829bf4fc7695a7f435d` |
+| MOD-0072 | `86434bee75b24fe0976ca2156141517ef36d2dd6` |
+| MOD-0023 PPM amendment | `0ef0a517840d1d8c7d0bbd2fdb2d5d443f0d8470` |
+
 ### Change log
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-08-03 | Reconciled the conditional MOD-0023 approval-outcome consumer wrapper, non-selection validation modes, PPM-owned source-attestation baseline and audited producer checkpoint provenance. MOD-0117 remains `review`; MOD-0023 PPM amendment remains `DRAFT / NON-EXECUTABLE`; OD-04 remains `OPEN / PARTIAL`; no runtime authority or other producer status changed. | User / Portfolio Governance Process Owner |
 | 2026-08-02 | Closed the PPM-owned Gate I consumer profile decision only: exact `1.0` wrappers, shared InvestmentCase context, validation modes/error mapping and four independent future executable slices. No producer contract/status, MOD-0023 scope, runtime authority, MOD-0117 `review` status or OD-04 `OPEN / PARTIAL` status changed. | User / Portfolio Governance Process Owner |
 | 2026-08-02 | Amended the single Gate I into OPEN Gate I-A Decision Trace, Gate I-B Funding & Scenario and Gate I-C Benefit Realization without reducing full 1.3 scope. Recorded canonical logical routing, institutional owner roles, cardinalities, common fail-closed baseline, MOD-0023 hazards/remediation and conjunctive completion wording. This stages draft authoring only; no contract name/version, physical placement, runtime authority, status promotion or gate closure was created. | User / Enterprise Strategy Control Tower |
 | 2026-08-01 | Reconciled Phase 2B into Gate L (`InvestmentCase`, `BenefitCommitment`) and Gate I (external decision/approval/budget/scenario/outcome contracts), including exact cardinality, neutral lifecycle, closed permissions and scoped completion language. OD-04 remains OPEN/PARTIAL and MOD-0117 remains `review`; no runtime or external-contract authority was created. | User / Enterprise Strategy Control Tower |
