@@ -5,7 +5,7 @@ domain: enterprise-strategy-business-performance
 status: draft
 owner: Decision Intelligence & Benefit Realization Process Owner
 branch: feature/esbp/mod-0072-decision-logs-outcome-tracking
-service: TBD
+service: Diten.DecisionIntelligenceService
 production_authority: none
 shell: tenant
 golden_reference: slim
@@ -30,6 +30,11 @@ ownership to strategy planning or place the module in `Diten.EnterpriseStrategyS
 
 This is a draft parent pack. It authorizes no service scaffold, port, runtime, frontend, Gateway route,
 migration or production deployment.
+
+Binding physical topology: MOD-0072 may exist only as isolated `Modules/OutcomeTracking` inside the future
+`Diten.DecisionIntelligenceService`. Placement in `Diten.FpaService`, `Diten.BudgetingService`,
+`Diten.ScenarioPlanningService` or `Diten.EnterpriseStrategyService` is forbidden. This module does not
+participate in the FP&A primary/fallback profile and has no fallback, dual-host or dual-write topology.
 
 Governing context: [ESBP domain config](../domain-config.md),
 [DCP-006 Portfolio Delivery Process Core](../../../portfolio/delivery-capability-packs/DCP-006-portfolio-delivery-process-core.md),
@@ -194,13 +199,39 @@ This authoring job owns only:
 
 - `execution/domains/enterprise-strategy-business-performance/module-packs/MOD-0072-decision-logs-outcome-tracking.md`
 
-Any future implementation scope is **TBD** and requires this pack to become `approved` or `ready-for-dev`,
-explicit runtime authority, service topology/port approval, and a matching MOD-0117 consumer amendment.
+Any future implementation remains non-executable and requires this pack to become `approved` or
+`ready-for-dev`, explicit runtime authority, exact repo/collection/transaction/S2S/port decisions, producer
+runtime evidence and a matching MOD-0117 consumer amendment.
+
+### Exact future primary logical scope
+
+These reserved logical paths define the only future production location; they authorize no file creation:
+
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Api/Modules/OutcomeTracking/**`
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Application/Modules/OutcomeTracking/**`
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Domain/Modules/OutcomeTracking/**`
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Persistence/Modules/OutcomeTracking/**`
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Infrastructure/Modules/OutcomeTracking/**`
+- `services/Diten.DecisionIntelligenceService/tests/Unit/Modules/OutcomeTracking/**`
+- `services/Diten.DecisionIntelligenceService/tests/Integration/Modules/OutcomeTracking/**`
+- `services/Diten.DecisionIntelligenceService/tests/Architecture/Modules/OutcomeTracking/**`
+- `services/Diten.DecisionIntelligenceService/tests/Projection/Modules/OutcomeTracking/**`
+- `services/Diten.DecisionIntelligenceService/tests/Contracts/Modules/OutcomeTracking/**`
+- `services/Diten.DecisionIntelligenceService/tests/Security/Modules/OutcomeTracking/**`
+
+These are reserved logical test roots. Concrete test project names/composition files remain a B-class blocker.
+
+The future OutcomeTracking-owned repository/collection/index owner manifest belongs only under the
+`Diten.DecisionIntelligenceService.Persistence/Modules/OutcomeTracking/**` boundary, with its executable
+owner-manifest tests in the future service-local integration/architecture test scope. Exact collection/index
+names remain blocked and are not minted here.
 
 ## 6. Protected Paths
 
 - `.antigravity/**`
 - `services/**`, `frontend/**`, `gateway/**` for this draft
+- Future co-hosting/persistence access in `Diten.FpaService`, `Diten.BudgetingService`,
+  `Diten.ScenarioPlanningService` and `Diten.EnterpriseStrategyService` is permanently forbidden for MOD-0072.
 - `gateway/Diten.ApiGateway/**/ocelot.json` except a separately authorized integration-agent task
 - `execution/registries/**`, `execution/portfolio/**` and all other shared governance files
 - Other domains' module packs and runtime ownership
@@ -210,6 +241,7 @@ explicit runtime authority, service topology/port approval, and a matching MOD-0
 
 | Dependency | Contract role | Draft state |
 |---|---|---|
+| [ESBP domain topology authority](../domain-config.md#decision-intelligence-topology) | Binding physical placement and isolation | Closed: only `Diten.DecisionIntelligenceService/Modules/OutcomeTracking`; implementation remains unauthorized |
 | MOD-0117 | Owns planned BenefitCommitment plus `BenefitCommitment → OutcomeReference` `0..n` relationship, stored values and consumer lifecycle | Consumer amendment and runtime authority required; no dual persistence in MOD-0072 |
 | MOD-0007 | Optional Decision/DecisionVersion reference producer | Exact producer contract must be approved before runtime link |
 | MOD-0023 | Approval only when separately required | No approval behavior in MOD-0072 |
@@ -243,6 +275,27 @@ explicit runtime authority, service topology/port approval, and a matching MOD-0
 - S2S validation requires a trusted service identity, delegated end-user tenant/actor provenance when the
   consumer acts for a user, exact audience/scope, correlation/causation IDs and allowlisted contract version.
 - Client payloads cannot assert `TenantId`, effective actor, delegated actor, authorization or referenceability.
+
+### Service, persistence and transaction isolation
+
+- OutcomeTracking owns its Domain types, Application handlers/contracts, repository interfaces, Persistence
+  implementations, Mongo owner manifest, collections, indexes, idempotency/fence records, projection rebuild
+  state and producer-local audit intent/outbox exclusively inside `Diten.DecisionIntelligenceService`.
+- `Diten.FpaService`, `Diten.BudgetingService`, `Diten.ScenarioPlanningService` and
+  `Diten.EnterpriseStrategyService` cannot host OutcomeTracking, reference its owned Domain/Persistence types,
+  inject its repositories/context, or read/write its collections/indexes.
+- OutcomeTracking cannot read/write FP&A or EnterpriseStrategy collections/indexes or resolve their
+  repositories/context. No shared discriminator collection, database model, Mongo session, transaction,
+  idempotency store, audit intent or outbox exists across these boundaries.
+- Each OutcomeTracking Mongo session/replica-set transaction contains only OutcomeTracking-owned aggregate,
+  idempotency/fence and local audit-intent/outbox records. Cross-service/distributed Mongo transactions and
+  shared unit-of-work abstractions are forbidden.
+- Communication with Budgeting, ScenarioPlanning, Enterprise Strategy evidence and MOD-0117 occurs only via
+  approved typed/versioned reference contracts. Foreign entities, repositories, collection/session handles,
+  persistence DTOs and mutable payload copies are forbidden.
+- OutcomeTracking has one authoritative SoR deployment only. It does not participate in the FP&A primary/
+  fallback model; no second host, fallback replica authority, dual-write, mirror-write or active/passive SoR
+  may operate the same OutcomeTracking truth.
 
 ### Measurement and version model decision
 
@@ -320,7 +373,10 @@ Future implementation, if separately authorized, follows the Slim Golden Referen
 `{Verb}{Object}Handler`; validators are `{Verb}{Object}Validator`. `Command`, `Query` or `Request` suffixes
 on handler/validator names and generic `OutcomeTrackingContext` handlers are forbidden.
 
-Because `service: TBD`, no concrete service path is authorized by this section.
+The only reserved host/module boundary is
+`services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.{Api|Application|Domain|Persistence|Infrastructure}/Modules/OutcomeTracking/**`.
+This logical reservation is not scaffold or runtime authority. Host composition, concrete project/test paths
+and every file remain blocked until an approved implementation slice enumerates them.
 
 ## 11. Frontend File Contract
 
@@ -381,16 +437,21 @@ resolved server-side. A delegated call preserves service identity, effective end
 provenance as separate trusted values. Read visibility is re-evaluated by the producer; possession of a GUID
 is not authorization.
 
-The validation endpoint is S2S-only with `decision-intelligence.outcome-references.validate`, explicit
+The OutcomeReference provider is logically owned by
+`Diten.DecisionIntelligenceService.Application/Modules/OutcomeTracking` with its future service-network Api
+adapter. Validation is S2S-only with `decision-intelligence.outcome-references.validate`, explicit
 audience/scope, trusted tenant propagation and delegated actor context. A service credential alone may not
 expand the user's visibility. Security failures never fall back to PPM-local cached actual data.
 
 ## 15. Gateway / API Routing Decision
 
-Decision: **deferred / not authorized by this draft**. A service and port do not yet exist. If runtime is later
-approved, browser traffic must use frontend `5001` → Gateway `5000`, never a direct service port. Exact
-upstream/downstream routes, OPTIONS handling and health routing require a separate integration-agent task;
-the protected `ocelot.json` is not modified by this pack.
+Decision: **no Gateway/browser route for internal OutcomeReference validation**. The future provider is
+service-network-only; browser traffic and same-origin MVC proxies cannot call or expose it. Its logical owner
+is the isolated OutcomeTracking module, not PPM, FP&A, EnterpriseStrategy or Gateway. Exact internal endpoint,
+S2S credential, service discovery and port remain B-class blockers. The authoritative port allocation is
+`TBD`; no port is guessed. Any future tenant UI/public API route is a separate explicitly approved runtime
+slice and must use frontend `5001` → Gateway `5000`, never a direct service port. This pack changes no route or
+protected `ocelot.json`.
 
 ### Gate I-C OutcomeReferenceV1 typed/versioned contract
 
@@ -520,6 +581,13 @@ five-field OutcomeReferenceV1 and never measurement identity, period, value, evi
 21. No PPM actual-value form, evidence surface, editable observation/realization status or approval action exists.
 22. Existing ES prototype fields remain quarantined pending separately authorized migration.
 23. Bilateral supported-version/error fixtures enforce exact names/versions/allowlists and `400/401/403/404/409/503` without fallback.
+24. Frontmatter service is exactly `Diten.DecisionIntelligenceService`; OutcomeTracking has no placement in FP&A fallback/primary or EnterpriseStrategy.
+25. OutcomeTracking uses only the five reserved `Modules/OutcomeTracking/**` layer scopes and future service-local test scopes; no scaffold authority exists.
+26. Repository/collection/index ownership and Mongo sessions/transactions are OutcomeTracking-local with no FP&A or EnterpriseStrategy access/sharing.
+27. Inter-service communication is typed/versioned-contract-only; no foreign entity/repository/persistence DTO/session leakage, dual-write or second SoR exists.
+28. OutcomeReference provider is OutcomeTracking-owned internal S2S with no browser/Gateway route.
+29. MOD-0117 adapter remains non-executable until producer runtime evidence, bilateral fixtures, consumer amendment approval and explicit runtime authority all exist.
+30. Port remains `TBD`; no scaffold, controller, route, Gateway, deployment or runtime literal is created.
 
 ## 17. Test Expectations
 
@@ -540,6 +608,14 @@ five-field OutcomeReferenceV1 and never measurement identity, period, value, evi
 - Bilateral modes: retired/superseded tuple succeeds under `HistoricalResolve`; the same visible tuple returns `409` under `NewReferenceEligibility`; `CurrentSelectionEligibility` returns `400`; historical resolution never grants new-link eligibility.
 - Bilateral errors/versions: malformed/mode `400`, auth context `401`, permission/S2S entitlement `403`, missing/cross-tenant/invisible/non-disclosable `404`, visible new-link ineligibility `409`, and unknown wrapper/nested version, timeout, unavailable/malformed provider or indeterminate dependency `503`; exact `1.0` only with no alias/downgrade/cache/fallback.
 - Architecture/ownership: no MOD-0072 BenefitRealizationLink entity/collection/repository/command/permission; optional backlink projection is non-authoritative and outside baseline; PPM remains the sole consumer-relationship owner.
+- `ESBP-TOP-007`: dependency/DI/owner-manifest/transaction scans prove OutcomeTracking exists only in DecisionIntelligence and rejects FP&A placement or persistence sharing.
+- `ESBP-TOP-008`: project/namespace/DI/collection/deployment scans prove zero MOD-0072 authority or ownership in `Diten.EnterpriseStrategyService`.
+- `ESBP-TOP-009`: server tenant/actor, delegated actor, exact permission/S2S and cross-tenant/invisible failure tests pass.
+- `ESBP-TOP-010`: Gateway/browser scans prove the internal OutcomeReference provider has no public route and browser-origin calls fail.
+- `ESBP-TOP-011`: replica-set fault injection proves module-local mutation+audit/outbox rollback, post-commit delivery and idempotent duplicate consumption without foreign collection/session participation.
+- `ESBP-TOP-012`: MOD-0117 serialization/adapter tests prove no-copy ownership and non-executability before producer evidence/bilateral/consumer/runtime gates.
+- `ESBP-TOP-013`: configuration/deployment scans reject guessed port, unresolved service discovery, credential or unapproved route/runtime authority.
+- Isolation matrix: Domain/Application/Persistence/Infrastructure source references, DI graph, repository/context injection, collection/index owner manifest and Mongo session instrumentation reject any FPA/Budgeting/ScenarioPlanning/EnterpriseStrategy sharing; communication fixtures admit typed/versioned contracts only.
 - Retention: retirement with existing PPM references succeeds, existing references remain historically resolvable and unchanged, new eligibility `409`, provider outage does not block local history, no exceptional purge.
 - Security: exact permission, entitlement, delegated actor provenance, S2S audience/scope and no fail-open.
 - Migration: prototype quarantine inventory/checksum; no legacy ES record is silently promoted or assigned a
@@ -558,7 +634,7 @@ five-field OutcomeReferenceV1 and never measurement identity, period, value, evi
 - [x] PPM authority checkpoint `a2c7ff5bbfd3ef2b4e3c8c15eab804db58d62520` was reviewed read-only; bilateral wrapper/mode/error profiles are reconciled in this draft without runtime authority.
 - [x] Bilateral exact serialization, mode, error and supported-version fixtures are documented; no runtime executability is inferred.
 - [x] OutcomeMeasurementReference is explicitly deferred from v1 and no contract identity is minted.
-- [ ] Separate `Diten.DecisionIntelligenceService` topology is approved.
+- [x] Binding topology is reconciled: only `Diten.DecisionIntelligenceService/Modules/OutcomeTracking`; no FP&A/EnterpriseStrategy co-host or fallback/dual-write model.
 - [ ] Exact repo paths, concrete service-local base, collections/indexes, routes and port are approved.
 - [ ] Exact S2S/delegated-actor design and MOD-0018 provisioning are approved.
 - [ ] MOD-0021/MOD-0035 audit/outbox integration is approved.
@@ -588,14 +664,14 @@ unknown-tenant records, rollback and negative proof that no legacy field remains
 
 Only the following B-class blockers remain:
 
-1. Approve separate `Diten.DecisionIntelligenceService` topology.
-2. Fix exact repo paths, concrete base, collections/indexes, routes and port.
-3. Approve S2S/delegated-actor design and MOD-0018 provisioning.
-4. Approve MOD-0021/MOD-0035 audit/outbox integration.
-5. Approve transaction, idempotency and unknown-commit behavior.
-6. Approve metric/scale seed and administration runtime scope.
-7. Author the separately approved prototype migration/quarantine slice.
-8. Record explicit runtime authority; draft status alone authorizes no implementation.
+1. Fix exact composition/test paths, concrete service-local EntityBase, collection/index names and owner manifest, routes and port.
+2. Approve S2S/delegated-actor design and MOD-0018 provisioning.
+3. Approve MOD-0021/MOD-0035 audit/outbox integration.
+4. Approve transaction, idempotency, projection rebuild and unknown-commit behavior.
+5. Approve metric/scale seed and administration runtime scope.
+6. Author the separately approved prototype migration/quarantine slice.
+7. Approve service discovery, health/operations and deployment ownership without creating a second SoR/fallback.
+8. Record explicit runtime authority; draft status and this fixed topology authorize no implementation.
 
 ### Change Log
 
@@ -606,3 +682,4 @@ Only the following B-class blockers remain:
 | 2026-08-02 | Final draft ownership cleanup: renamed the business ordinal to OutcomeVersionNumber, reduced OutcomeReferenceV1 to exactly five fields, assigned BenefitCommitment consumer relationships solely to MOD-0117, separated decision provenance and made external-reference delete eligibility fail closed. | User / Enterprise Strategy Control Tower |
 | 2026-08-02 | Reconciled MOD-0072 with PPM checkpoint `a2c7ff5b`: exact four-field Gate I-C wrapper, nested five-field OutcomeReferenceV1, HistoricalResolve/NewReferenceEligibility profiles, non-selection rejection, supported-version behavior and bilateral error fixtures. No runtime authority granted. | User / Enterprise Strategy Control Tower |
 | 2026-08-03 | Closed A-class Outcome semantics: Active/Retired lifecycle, producer-owned metric/scale versions, quantitative bounds, qualitative levels, LocalDate periods, append-only correction, v1 evidence deferral, deterministic observation status, no delete/purge, deferred measurement reference and Golden Slim maximum 7. Only named B-class runtime blockers remain. | User / Enterprise Strategy Control Tower |
+| 2026-08-03 | Reconciled binding ESBP topology: MOD-0072 only in future `Diten.DecisionIntelligenceService/Modules/OutcomeTracking`, isolated persistence/transactions, internal S2S provider without Gateway/browser route, no FP&A/EnterpriseStrategy placement or dual SoR. Port/runtime remain unauthorized and TBD. | User / Enterprise Strategy Control Tower |
