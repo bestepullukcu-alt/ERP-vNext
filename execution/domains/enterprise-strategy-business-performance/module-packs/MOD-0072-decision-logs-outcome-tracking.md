@@ -229,8 +229,8 @@ When a future authoritative check exists, known external use returns `409`; unav
 unknown-version or indeterminate validation returns `503`, with no delete/audit/idempotency residue. Once
 ineligible, the Outcome is retired
 or superseded while every version, measurement and provenance link remains historically queryable. Corrections
-never delete or overwrite their original. Missing/cross-tenant/invisible remains `404`; an indeterminate or
-invalid delete, retirement or supersession attempt returns `409` with no mutation.
+never delete or overwrite their original. Missing/cross-tenant/invisible remains `404`; a known-state invalid
+delete, retirement or supersession attempt returns `409` with no mutation.
 
 MOD-0072 may later consume integration events to build a non-authoritative BenefitCommitment backlink
 projection. Such a projection is not a SoR, authorization truth, delete-eligibility truth or part of this
@@ -306,8 +306,12 @@ mutation UI. Realization status is never editable. There is no PPM-owned actual 
 - Metric provider unavailable/malformed, unknown contract version, or evidence provider unavailable while
   evidence is required/supplied: `503`; fail closed. Optional evidence omitted under an evidence-optional
   policy does not fail because the evidence provider is unavailable.
-- Ordinary delete after any measurement/DecisionOutcomeLink, indeterminate external-reference eligibility, or
-  invalid retirement/supersession: `409`; history unchanged.
+- Known external reference/use, existing measurement/DecisionOutcomeLink, or known visible invalid
+  retirement/supersession state: `409`; history unchanged.
+- Authoritative external-reference validator unavailable, timed out, malformed, unsupported-version or
+  indeterminate: `503`; fail closed.
+- Missing, cross-tenant or invisible Outcome on delete/retirement evaluation: indistinguishable `404`.
+- Every delete/retirement failure persists no mutation, delete, audit intent or idempotency receipt.
 - Audit intent/outbox persistence failure: complete transaction rollback.
 - Repeated identical idempotency request: original result/no duplicate; differing payload: `409`.
 - PPM attempts to submit actual value/period/evidence/realized state: contract rejection; no copied truth.
