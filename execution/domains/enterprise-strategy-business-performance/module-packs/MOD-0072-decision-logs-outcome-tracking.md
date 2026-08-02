@@ -75,15 +75,15 @@ until an explicitly approved migration slice exists.
 | `Outcome` | Aggregate root | Stable tenant-scoped outcome identity and current-version pointer |
 | `OutcomeVersion` | Immutable entity | Versioned definition, interpretation and status policy |
 | `OutcomeMeasurement` | Append-only entity | Actual quantitative or qualitative observation for a period |
-| `OutcomeMeasurementCorrection` | Immutable provenance record | Supersedes a measurement without overwriting history |
 | `BenefitRealizationLink` | Typed link | `BenefitCommitmentReference` → Outcome, cardinality many links per commitment |
 | `DecisionOutcomeLink` | Typed link | Optional MOD-0007 Decision/DecisionVersion → Outcome trace |
 | `EvidenceProvenanceReference` | Value object | Opaque evidence identifier/version, provider and integrity metadata |
-| `OutcomeReferenceabilityProjection` | Read model | Minimal authoritative validation response for consumers |
+| `OutcomeReferenceabilityProjection` | Non-persisted contract/read response | Minimal authoritative validation response; never cached authorization truth or a second SoR |
 | `diten.decision-intelligence.outcome-reference` | Contract | Exact Gate I-C typed contract, version `1.0` |
 
-Proposed command/query families are object-specific: create/version Outcome; append/correct Measurement;
-link/unlink BenefitCommitment or Decision; get register/details/history; and validate OutcomeReference.
+Proposed command/query families are object-specific: create/version/retire Outcome; append/correct Measurement;
+create/retire BenefitCommitment or Decision links with immutable provenance; get register/details/history;
+and validate OutcomeReference.
 Arbitrary generic entity handlers are forbidden.
 
 ### Exact permissions
@@ -93,7 +93,8 @@ Arbitrary generic entity handlers are forbidden.
 - `decision-intelligence.outcomes.version`
 - `decision-intelligence.measurements.append`
 - `decision-intelligence.measurements.correct`
-- `decision-intelligence.realization-links.manage`
+- `decision-intelligence.benefit-links.manage`
+- `decision-intelligence.decision-links.manage`
 - `decision-intelligence.outcome-references.validate` (trusted S2S only)
 
 Wildcard, alias, `.view`, uppercase and client-asserted permission substitutions are forbidden.
@@ -110,8 +111,8 @@ Wildcard, alias, `.view`, uppercase and client-asserted permission substitutions
 | `Title` | string | Yes | Trim + NFC; max 200 |
 | `OutcomeKind` | enum | Yes | `Quantitative` or `Qualitative`; immutable after first measurement |
 | `CurrentVersionId` | Guid | Yes | Points to an immutable same-tenant OutcomeVersion |
-| `RealizationStatus` | enum | Yes | `NotMeasured`, `InProgress`, `Realized`, `PartiallyRealized`, `NotRealized`, `Superseded`; MOD-0072-owned |
-| base/audit fields | governed | Yes | `EntityBase`, soft-delete and optimistic concurrency conventions |
+| `RealizationStatusProjection` | read-only derived value | No persisted authority | Deterministically calculated from append-only measurements under an explicitly versioned realization policy; no mutation command |
+| base/audit fields | governed | Yes | Logical tenant-owned `EntityBase` contract, soft-delete compatibility and optimistic concurrency conventions |
 
 ### OutcomeVersion
 
@@ -179,11 +180,17 @@ explicit runtime authority, service topology/port approval, and a matching MOD-0
 ## 8. Runtime Constraints
 
 - MongoDB, tenant isolation, server-derived tenant/actor, soft delete and four CQRS pipeline behaviors apply.
+- `module-pack-standard.md` permits only `EntityBase`, `BaseEntity` or `GlobalEntity`, not `TBD`.
+  Frontmatter therefore retains `entity_base: EntityBase` as the mandatory logical tenant-owned base contract.
+  It does not invent or select a concrete service-local CLR base type; that implementation remains blocked
+  until topology/service approval.
 - Cross-tenant, missing or actor-invisible resources return indistinguishable `404`.
 - Existing immutable versions and measurements are never updated in place. Stale version/correction attempts
   return `409`; correction creates a new append-only record with complete provenance.
-- Unknown dependency, unavailable metric/evidence validation provider, or unknown contract version fails
-  closed with `503`; PPM has no fail-open or cached-truth fallback.
+- Unknown dependency, unavailable required validation provider, or unknown contract version fails
+  closed with `503`; evidence-provider unavailability applies only when evidence is policy-required or a
+  supplied evidence reference must be validated. An evidence-optional append without evidence does not call
+  or depend on that provider. PPM has no fail-open or cached-truth fallback.
 - Numeric values use bounded decimal precision/range fixed with the metric contract; NaN/infinity and silent
   rounding are forbidden. Period duration/future-date bounds are OPEN owner decisions.
 - Business mutation plus producer-local audit intent/outbox write is atomic. Audit enqueue failure rolls back
@@ -198,10 +205,25 @@ explicit runtime authority, service topology/port approval, and a matching MOD-0
 
 The parent pack fixes a hybrid model: `OutcomeVersion` is an immutable semantic baseline; measurements are
 append-only observations against exactly one baseline; corrections/restatements supersede rather than mutate;
-historical versions and measurements remain queryable. Quantitative and qualitative outcomes are both
+historical versions and measurements remain queryable. A correction/restatement is itself a new
+`OutcomeMeasurement` with `SupersedesMeasurementId`, `CorrectionReason` and complete correction provenance;
+there is no separate correction aggregate/entity. Quantitative and qualitative outcomes are both
 supported but cannot mix result modes inside one Outcome version. Evidence is reference-only and carries
-provider/version/integrity provenance. Realization status is MOD-0072-owned, explicitly evaluated from
-approved measurement policy, and never inferred from PPM lifecycle.
+provider/version/integrity provenance. Realization status is a read-only MOD-0072 projection, calculated
+deterministically from append-only measurements using an explicitly versioned realization policy, and never
+inferred from PPM lifecycle or edited by PPM/MOD-0072 UI. If materialized later for query performance, it must
+store policy version plus source OutcomeVersion/measurement provenance, support deterministic rebuild and
+reconciliation, and expose no independent mutation command.
+
+### Deletion, retirement and historical integrity
+
+Repo-wide soft-delete fields remain available for compatibility, but ordinary deletion is narrowly governed.
+A draft Outcome with no measurement and no BenefitRealizationLink or DecisionOutcomeLink may be soft-deleted
+only under a process-owner-approved policy. Once any measurement or external link exists, ordinary delete is
+forbidden: the Outcome is retired or superseded while every version, measurement and link remains historically
+queryable. Corrections never delete or overwrite their original. Missing/cross-tenant/invisible remains `404`;
+an invalid delete, retirement or supersession attempt returns `409`. The exact final deletion/retirement state
+machine and draft-delete policy block `ready-for-dev` until process-owner approval.
 
 The canonical metric/unit/currency provider, qualitative scale semantics, half-open period approval, overlap
 policy, allowed correction window, numeric bounds and exact realization rule remain blockers for
@@ -241,8 +263,10 @@ Future Compact surfaces use `Index.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Det
 RESX resources. `data-dt-standard="v2"`, skeleton, bulk-action and explicit layout contracts apply.
 `_CreateEditOffcanvas.cshtml` and `_DetailsQuickView.cshtml` are forbidden for Compact surfaces.
 
-Realization details and decision trace default to read-only displays. Link mutation controls appear only with
-the exact manage permission. There is no PPM-owned actual edit surface and no approval UI.
+Realization details and decision trace default to read-only displays. Benefit and decision link controls are
+independently gated by `decision-intelligence.benefit-links.manage` and
+`decision-intelligence.decision-links.manage`. Realization status is never editable. There is no PPM-owned
+actual edit surface and no approval UI.
 
 ## 12. Validation Rules
 
@@ -269,7 +293,10 @@ the exact manage permission. There is no PPM-owned actual edit surface and no ap
 - Unauthorized known same-tenant action: `403`; no mutation.
 - Stale version or immutable overwrite/correction conflict: `409`; history unchanged.
 - Invalid/overlapping period, incompatible unit or out-of-bounds measurement: `400`; no append.
-- Evidence/metric provider unavailable or malformed, or unknown contract version: `503`; fail closed.
+- Metric provider unavailable/malformed, unknown contract version, or evidence provider unavailable while
+  evidence is required/supplied: `503`; fail closed. Optional evidence omitted under an evidence-optional
+  policy does not fail because the evidence provider is unavailable.
+- Ordinary delete after any measurement/link, or invalid retirement/supersession: `409`; history unchanged.
 - Audit intent/outbox persistence failure: complete transaction rollback.
 - Repeated identical idempotency request: original result/no duplicate; differing payload: `409`.
 - PPM attempts to submit actual value/period/evidence/realized state: contract rejection; no copied truth.
@@ -292,7 +319,7 @@ approved, browser traffic must use frontend `5001` → Gateway `5000`, never a d
 upstream/downstream routes, OPTIONS handling and health routing require a separate integration-agent task;
 the protected `ocelot.json` is not modified by this pack.
 
-### Gate I-C typed/versioned contract v1
+### Gate I-C OutcomeReference typed/versioned contract v1
 
 Proposed exact contract name: **`diten.decision-intelligence.outcome-reference`**, semantic version **`1.0`**.
 Version 1 is a synchronous authoritative referenceability query/response, not a replicated outcome payload.
@@ -304,18 +331,30 @@ Minimum request/reference:
 | `contractName`, `contractVersion` | Exact name and allowlisted `1.0`; unknown version → `503` |
 | `outcomeId` | Stable MOD-0072 Outcome identity |
 | `outcomeVersionId`, `outcomeVersion` | Exact immutable semantic baseline identity and ordinal |
-| `measurementId`, `periodStart`, `periodEnd` | Exact authoritative observation/half-open period reference |
 | `benefitCommitmentReference` | Typed MOD-0117 identity/version linked by `BenefitRealizationLink` |
 | `decisionReference` | Optional typed MOD-0007 Decision/DecisionVersion when trace is required |
 
-Minimum response adds `isReferenceable` and the canonical IDs/versions needed to prove the requested tuple.
+Minimum response is a non-persisted, non-cacheable validation response and adds `isReferenceable` plus the
+canonical IDs/versions needed to prove the requested tuple.
 It does **not** return actual value, unit, evidence or realized state to be persisted by PPM. `isReferenceable`
 means the exact tuple exists, is same-tenant, actor-visible, not deleted/superseded under policy, mutually
 linked and valid at validation time; it is not a promise that the result will remain referenceable forever.
+It cannot become a collection, a cached authorization decision, a replicated actual-value model or a
+PPM-owned projection.
 
 Cardinality is `BenefitCommitment → Outcome/Realization = 0..n`. One Outcome contains `1..n` immutable
 versions and `0..n` measurements; a measurement belongs to exactly one OutcomeVersion. PPM stores only the
-opaque typed/versioned reference tuple required by its approved consumer amendment.
+OutcomeReference typed/versioned tuple required by its approved consumer amendment. An Outcome is therefore
+linkable before its first measurement. PPM never stores `measurementId`, measurement period, actual value,
+evidence or realization state.
+
+### Optional OutcomeMeasurementReference proposal — identity OPEN
+
+A measurement-specific consumer may later require a separate `OutcomeMeasurementReference` containing
+`outcomeId`, immutable `outcomeVersionId`/`outcomeVersion`, `measurementId` and authoritative period identity
+where applicable. This is an optional proposed contract only: its exact canonical contract name, version,
+consumers and approval authority remain **OPEN**. This pack does not invent or approve a second canonical
+contract identity, and MOD-0117 Gate I-C does not consume or store it.
 
 ## 16. Acceptance Criteria
 
@@ -324,27 +363,32 @@ opaque typed/versioned reference tuple required by its approved consumer amendme
 3. Owned objects and all stated non-ownership boundaries are enforceable by negative architecture tests.
 4. Planned BenefitCommitment and actual Outcome truth remain separate; PPM copies no actual fields.
 5. Outcome versions and measurements are immutable; corrections/restatements append provenance.
-6. Quantitative/qualitative, period, metric/unit/currency, evidence and realization decisions are explicit or
+6. Correction/restatement is a new OutcomeMeasurement with supersession fields; no second correction entity exists.
+7. Realization status is a deterministic, versioned-policy read projection with no independent mutation.
+8. Quantitative/qualitative, period, metric/unit/currency, evidence, deletion/retirement and realization decisions are explicit or
    block `ready-for-dev`.
-7. Gate I-C uses exact `diten.decision-intelligence.outcome-reference` `1.0` semantics and cardinalities.
-8. Tenant/actor/delegation/S2S rules and exact permission keys fail closed.
-9. Cross-tenant/missing/invisible returns `404`; conflicts `409`; dependency/unknown-version failures `503`.
-10. Audit intent is atomic and measurement append/correction is idempotent.
-11. Future tenant pages explicitly use `Layout = "_LayoutTenantShell"` and Compact conventions.
-12. No PPM actual-value edit form or approval button/action exists.
-13. Existing ES actual/realization prototype fields stay quarantined pending approved migration.
+9. Gate I-C OutcomeReference `diten.decision-intelligence.outcome-reference` `1.0` contains no measurement/period fields; the optional measurement-reference identity remains OPEN.
+10. Tenant/actor/delegation/S2S rules and exact least-privilege permission keys fail closed.
+11. Cross-tenant/missing/invisible returns `404`; immutable/delete conflicts `409`; required-dependency/unknown-version failures `503`.
+12. Optional omitted evidence does not create an evidence-provider dependency.
+13. Audit intent is atomic and measurement append/correction is idempotent.
+14. OutcomeReferenceabilityProjection is non-persisted and never cached/replicated by PPM.
+15. Future tenant pages explicitly use `Layout = "_LayoutTenantShell"` and Compact conventions.
+16. No PPM actual-value edit form, editable realization status or approval button/action exists.
+17. Existing ES actual/realization prototype fields stay quarantined pending approved migration.
 
 ## 17. Test Expectations
 
 - Architecture: planned-versus-actual ownership and forbidden PPM copy DTO/entity/UI fields.
-- Domain/unit: immutable versioning; correction/restatement provenance; realization-state ownership.
+- Domain/unit: immutable versioning; correction-as-measurement provenance; deterministic versioned-policy realization projection; no independent realization mutation.
 - Validation: period boundaries/overlap, measurement bounds, quantitative-versus-qualitative exclusivity,
   metric/unit/currency compatibility and correction chain integrity.
 - Persistence/integration: real Mongo tenant isolation, cross-tenant `404`, soft delete, indexes and concurrency.
 - Transaction: audit failure rolls back business mutation and outbox intent.
 - Idempotency: identical measurement append returns original; changed payload under same key returns `409`.
-- Dependency: missing/invisible evidence reference; unavailable/malformed provider; unknown contract version.
-- Contract: PPM `0..n` links, authoritative referenceability and no-copy serialization/storage tests.
+- Dependency: missing/invisible evidence reference; conditional provider invocation; optional evidence omitted while provider unavailable succeeds; required/supplied evidence with unavailable/malformed provider fails `503`; unknown contract version.
+- Contract: PPM `0..n` OutcomeReference links before/after first measurement, base contract rejects measurement/period fields, optional measurement-reference identity remains unapproved, authoritative referenceability and no-copy serialization/storage tests.
+- Persistence: referenceability response is not stored; draft-delete eligibility and linked/measured Outcome retirement conflicts preserve history.
 - Security: exact permission, entitlement, delegated actor provenance, S2S audience/scope and no fail-open.
 - Migration: prototype quarantine inventory/checksum; no legacy ES record is silently promoted or assigned a
   default tenant; explicit mapping/rejection/quarantine evidence for any future migration.
@@ -360,9 +404,12 @@ opaque typed/versioned reference tuple required by its approved consumer amendme
 - [x] Layout, backend/frontend conventions, validation, failure paths, authorization and routing documented.
 - [ ] Process owner approves canonical metric/unit/currency and qualitative-scale sources.
 - [ ] Process owner approves period/overlap semantics, measurement bounds and realization rule.
-- [ ] Evidence provider contract and correction/restatement policy are approved.
+- [ ] Versioned realization policy, deterministic rebuild/reconciliation and non-editability are approved.
+- [ ] Evidence provider contract, conditional validation rule and correction/restatement policy are approved.
+- [ ] Draft-delete and retirement/supersession policy is approved.
 - [ ] `diten.decision-intelligence.outcome-reference` `1.0` is approved by MOD-0072 and MOD-0117 owners.
-- [ ] Service topology, concrete `entity_base`, service port and deployment ownership are approved.
+- [ ] Optional OutcomeMeasurementReference need and exact identity are approved or explicitly deferred.
+- [ ] Service topology, concrete service-local base implementation, service port and deployment ownership are approved. Frontmatter `entity_base: EntityBase` remains the mandatory logical tenant-owned base contract required by the standard; it does not select a service-local class before topology approval.
 - [ ] Exact collections/indexes, API routes, S2S credentials/audience and audit event are approved.
 - [ ] Matching MOD-0117 Gate I-C consumer amendment is approved.
 - [ ] Explicit user runtime authority is recorded.
@@ -392,12 +439,21 @@ unknown-tenant records, rollback and negative proof that no legacy field remains
 
 1. Name the canonical metric/unit/currency and qualitative-scale provider(s) and their versioned contracts.
 2. Approve half-open period semantics, overlap rules, future/backfill bounds and numeric precision/range.
-3. Define realization status calculation, authorized manual override (if any) and restatement effects.
+3. Approve the versioned realization policy, deterministic rebuild/reconciliation, source provenance and restatement effects; manual mutation is forbidden.
 4. Define evidence provider referenceability, integrity metadata and unavailable-provider behavior.
 5. Approve correction window/reason taxonomy and whether a corrected measurement remains referenceable.
-6. Approve contract `diten.decision-intelligence.outcome-reference` `1.0` jointly with MOD-0117 and define
+6. Approve base contract `diten.decision-intelligence.outcome-reference` `1.0` jointly with MOD-0117 and define
    consumer revalidation/revocation behavior.
-7. Approve topology A/B/C, concrete entity base, service port, routes, collections and operations ownership.
-8. Author and approve the matching MOD-0117 Gate I-C consumer amendment.
-9. Author the separately approved prototype quarantine/migration slice if migration is desired.
-10. Record explicit runtime authority; draft pack approval alone does not authorize implementation.
+7. Decide whether any consumer needs OutcomeMeasurementReference; if so, approve its exact identity separately.
+8. Approve draft-delete eligibility and retirement/supersession state machine.
+9. Approve topology A/B/C, concrete service-local base implementation, service port, routes, collections and operations ownership.
+10. Author and approve the matching MOD-0117 Gate I-C consumer amendment.
+11. Author the separately approved prototype quarantine/migration slice if migration is desired.
+12. Record explicit runtime authority; draft pack approval alone does not authorize implementation.
+
+### Change Log
+
+| Date | Change | Authority |
+|---|---|---|
+| 2026-08-02 | Draft parent pack authored; planned/actual ownership, Gate I-C proposal and topology recommendation recorded. | User / Enterprise Strategy Control Tower |
+| 2026-08-02 | Control Tower correction: split base OutcomeReference from optional measurement reference; removed duplicate correction entity; made realization status a versioned-policy read projection; made referenceability non-persisted; tightened retirement, link permissions and conditional evidence failure semantics. | User / Enterprise Strategy Control Tower |
