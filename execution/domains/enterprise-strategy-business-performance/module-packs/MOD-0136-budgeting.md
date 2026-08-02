@@ -39,7 +39,8 @@ non-executable until producer and consumer packs are separately approved and exp
 - `Budget` stable identity, mutable `BudgetVersionDraft` construction and immutable certified `BudgetVersion` history.
 - Explicit `BudgetPeriod` and separate `BudgetLine` financial breakdowns.
 - Canonical currency reference, unit/scale semantics, precision and rounding policy captured by a version.
-- Effective-dated `FundingBaselineSelection` truth for an authoritative typed funding context; its exact type
+- Effective-dated selected-baseline truth through immutable `FundingBaselineSelectionOccurrence` and immutable
+  `SelectionClosure`/`SelectionDisposition` events for an authoritative typed funding context; its exact type
   remains an FP&A promotion blocker.
 - Authoritative minimal `BudgetVersionReference` referenceability validation and, separately, selected-baseline
   validation against a typed `FundingContextReference`.
@@ -66,7 +67,8 @@ non-executable until producer and consumer packs are separately approved and exp
 - Certification is MOD-0136 financial sealing, not approval. Where policy requires approval, a typed immutable
   MOD-0023 `ApprovalOutcome` is a prerequisite/reference; MOD-0136 has no approval state or engine.
 - `BudgetVersionReferenceV1` identifies one immutable certified version and does not assert selection.
-  Selection is a separate append-only/effective-dated `FundingBaselineSelection`.
+  Selection is separate append-only/effective-dated history: an immutable `FundingBaselineSelectionOccurrence`
+  plus immutable `SelectionClosure`/`SelectionDisposition` events.
 - Selected-baseline validation accepts the immutable reference plus an authoritative typed
   `FundingContextReference`. The context must be a closed type, never free text, and v1 cannot be finalized
   until the owner selects Budget, fiscal plan, organization/cost center, InvestmentCase or another typed context.
@@ -75,7 +77,7 @@ non-executable until producer and consumer packs are separately approved and exp
 
 | Category | Proposed owned objects |
 |---|---|
-| Aggregates/entities | `Budget`, `BudgetVersionDraft`, immutable certified `BudgetVersion`, `BudgetPeriod`, `BudgetLine`, `FundingBaselineSelection`, append-only disposition history |
+| Aggregates/entities | `Budget`, `BudgetVersionDraft`, immutable certified `BudgetVersion`, `BudgetPeriod`, `BudgetLine`, immutable `FundingBaselineSelectionOccurrence`, immutable `SelectionClosure`, immutable `SelectionDisposition` |
 | Value objects | `MoneyAmount`, `CurrencyReference`, `TimePeriodReference`, `UnitSemantics`, `RoundingPolicy` |
 | Repositories | Separate Budget and BudgetVersion repositories; period/line persistence must remain aggregate-isolated |
 | Commands | Create/update/archive Budget; create/update/abandon draft; certify draft; replace/close selection; retire/supersede version; no approve command |
@@ -83,7 +85,7 @@ non-executable until producer and consumer packs are separately approved and exp
 | Contract DTOs | Minimal `BudgetVersionReferenceV1`, referenceability request/result, typed `FundingContextReference`, selected-baseline validation request/result; display contract separate |
 | Proposed API | `/api/budgets`, `/api/budgets/{budgetId}/versions`, `/api/budget-versions/{id}`, `/api/budget-version-references/validate` |
 | Proposed UI | `/FPandA/Budgets`, `/FPandA/Budgets/{budgetId}/Versions`; no PPM-hosted budget form |
-| Permissions | `budgeting.budgets.read|create|update|archive`; `budgeting.budget-version-drafts.read|create|update|abandon`; `budgeting.budget-versions.read|certify|retire`; `budgeting.funding-baseline-selections.read|replace|close`; `budgeting.budget-version-references.validate` |
+| Permissions | `budgeting.budgets.read`<br>`budgeting.budgets.create`<br>`budgeting.budgets.update`<br>`budgeting.budgets.archive`<br>`budgeting.budget-version-drafts.read`<br>`budgeting.budget-version-drafts.create`<br>`budgeting.budget-version-drafts.update`<br>`budgeting.budget-version-drafts.abandon`<br>`budgeting.budget-versions.read`<br>`budgeting.budget-versions.certify`<br>`budgeting.budget-versions.retire`<br>`budgeting.funding-baseline-selections.read`<br>`budgeting.funding-baseline-selections.replace`<br>`budgeting.funding-baseline-selections.close`<br>`budgeting.budget-version-references.validate` |
 
 Names above are governance proposals, not runtime literals, until this pack is approved and topology is fixed.
 
@@ -168,8 +170,8 @@ Certification consumes an exact draft fence and atomically creates the immutable
 |---|---|---:|---|
 | `BudgetPeriodId` | Guid | Yes | Snapshot-local identity; excluded from hash serialization |
 | `BudgetVersionId` | Guid | Yes | Same immutable aggregate and tenant |
-| `PeriodReference` | canonical reference | Yes | Unique within version and contained by fiscal scope |
-| `Order` | int | Yes | Deterministic non-negative ordering; unique within version |
+| `PeriodReference` | canonical reference | Yes | Deterministically generated from the authoritative version-level fiscal calendar; unique within version and not user-editable |
+| `Order` | int | Yes | System-generated deterministic non-negative ordering; unique within version and not user-editable |
 | `ContainmentReference` | typed reference? | Conditional | Parent period when canonical model requires it |
 | `VersionTotal` | decimal? | Conditional | Derived-versus-asserted policy is a promotion blocker |
 
@@ -189,22 +191,32 @@ Amounts are normalized with the version rounding policy before persistence and h
 rejected by default; signed adjustment lines require an explicit line type and owner-approved rule. Floating
 point types are forbidden. Indexes begin with `TenantId` and include `IsDeleted` where applicable.
 
-### FundingBaselineSelection
+### FundingBaselineSelectionOccurrence
 
 | Field | Type | Required | Rule / index direction |
 |---|---|---:|---|
 | `FundingContextReference` | typed closed reference | Yes | Stable authoritative context; no free text |
 | `SelectedBudgetVersionReference` | `BudgetVersionReferenceV1` | Yes | Certified and referenceable |
 | `EffectiveFromUtc` | timestamp | Yes | Server time; inclusive |
-| `EffectiveToUtc` | timestamp? | No | Only append-only replacement/closure may set it |
 | `SelectedByActorId` | actor reference | Yes | Trusted server context |
 | `ReasonCode` / `ProvenanceReference` | closed/typed values | Yes | Auditable; no approval semantics |
 | `CorrelationId` / `IdempotencyKey` | bounded identifiers | Yes | Correlation and replay control |
 | `SelectionFence` | monotonic token | Yes | Compare-and-swap per tenant + context |
 
-Exactly one effective selection exists per tenant plus funding context. Replacement atomically closes the prior
-record and appends its successor; concurrent attempts cannot leave two effective records. Selection never changes
-BudgetVersion bytes/hash, and PPM cannot create selection by storing a reference.
+The occurrence is immutable after insertion and has no terminal timestamp that is populated later. Immutable
+`SelectionClosure` and `SelectionDisposition` events reference the occurrence, record the server-resolved effective timestamp,
+actor, reason/provenance, correlation/idempotency values and selection fence, and express closure, replacement
+or retirement without editing the old occurrence. Current effective selection is derived from occurrence plus
+closure/replacement history. Exactly one effective occurrence exists per tenant plus typed funding context.
+Replacement transactionally appends the prior occurrence's closure/disposition event, its successor occurrence
+and audit intent; concurrent attempts cannot leave two effective occurrences. Rollback leaves the previous
+effective truth unchanged. Selection never changes BudgetVersion bytes/hash, and PPM cannot create selection by
+storing a reference.
+
+`SelectionClosure`/`SelectionDisposition` event fields are the referenced occurrence ID, closed/disposed-at UTC
+timestamp, server-derived actor, closed reason/provenance, correlation ID, idempotency key and selection fence;
+replacement disposition also references the successor occurrence. Event identity and all event fields are
+immutable after insertion.
 
 ### ContentHash contract
 
@@ -301,8 +313,10 @@ type, permission and collection leakage. Failure to maintain those boundaries tr
 - BudgetVersionDraft create/edit surface field count: **13**. Draft inputs are `RevisionLabel`,
   `PeriodReference`, `CurrencyReference`, `UnitSemantics`, `RoundingPolicy`, `FundingBaselineType`,
   `EffectiveFrom`, `Notes` (8). The repeatable line editor adds `LineKey`, `BreakdownDimensions`, `Amount`,
-  `CurrencyReference`, `UnitSemantics` (5) → Golden Compact. `BudgetPeriod.Order` is system-derived from period
-  editor ordering; optional user-entered `ContainmentReference`/`VersionTotal` would increase the count. Route-derived
+  `CurrencyReference`, `UnitSemantics` (5) → Golden Compact. Child `BudgetPeriod.PeriodReference` values and
+  `BudgetPeriod.Order` are deterministically generated from the authoritative fiscal calendar selected by the
+  version-level `PeriodReference`; users do not select or edit child period references. Optional user-entered
+  `ContainmentReference`/`VersionTotal` would increase the count. Route-derived
   `BudgetId` and server fields `BudgetVersionNumber`, certification, hash, tenant, actor and audit are excluded.
 - Parent pack frontmatter selects `compact` and `form_field_count: 13` because the minimum primary
   create/edit surface governs the module template. Budget may use the Slim list/create pattern only if a later
@@ -352,8 +366,8 @@ handlers must not directly implement arbitrary child upsert loops or external HT
 | Negative Amount | Conditional | Rejected unless explicit adjustment type permits it | Domain invariant |
 | LineKey | Yes | Normalized and unique within version/period | Compound unique index |
 | FundingContextReference | Selection | Closed authoritative typed shape; exact kind unresolved | No free-text discriminator |
-| Selection | Conditional | One effective record per tenant + funding context | Fence + partial unique index + transaction |
-| EffectiveFrom/To | Selection | UTC; close only during append-only replacement | No overlap per tenant + context |
+| Selection | Conditional | One effective occurrence per tenant + typed funding context, derived from immutable occurrence and closure/disposition history | Fence + uniqueness enforcement + transaction |
+| Selection effective time | Selection | Occurrence start and event timestamps are server-derived UTC; no occurrence is edited in place | No overlap per tenant + context |
 | ContractName/Version | Yes | Exact v1 constants | Unknown unsupported version returns 503 |
 | TenantId / ActorId | No client field | Server context only | Client-supplied value rejected |
 | IdempotencyKey | Mutations | Non-empty, bounded, normalized | Unique scoped key + payload hash |
@@ -368,8 +382,9 @@ handlers must not directly implement arbitrary child upsert loops or external HT
 - Attempt to modify a certified version or use a stale draft/selection fence: `409`; immutable bytes/hash remain.
 - Concurrent version creation: exactly one next `BudgetVersionNumber` wins; loser receives `409` or safely
   replays by idempotency key; no duplicate number.
-- Concurrent selected-baseline change: exactly one effective record per tenant + typed context remains; transaction/audit rollback leaves
-  the previous truth intact on failure; replacement preserves effective-dated history and the version hash.
+- Concurrent selected-baseline change: exactly one effective occurrence per tenant + typed context remains;
+  replacement atomically appends closure/disposition, successor and audit intent without editing the old
+  occurrence; transaction/audit rollback leaves the previous truth intact and preserves the version hash.
 - Duplicate idempotency key: same payload returns original result; changed payload returns `409`.
 - Audit/outbox write failure: entire domain transaction rolls back.
 - MOD-0117 consumer attempts currency/period/unit/rounding/amount/line snapshot: architecture/contract test fails.
@@ -401,7 +416,8 @@ topology approval, an integration-agent-only task must determine explicit upstre
 
 - [ ] MOD-0136 owns Budget, draft construction, immutable certified BudgetVersion, certification and context-scoped selection; MOD-0117 owns PPM cardinality/lifecycle/storage.
 - [ ] Certification atomically seals snapshot, provenance and versioned SHA-256 hash; correction creates a new ID/number and disposition history is append-only.
-- [ ] Selection is unique per tenant + typed funding context under concurrency, effective-dated and hash-independent.
+- [ ] Selection is unique per tenant + typed funding context under concurrency and is derived from immutable
+  occurrence plus immutable closure/disposition history; replacement edits no old occurrence and is hash-independent.
 - [ ] `BudgetVersionReferenceV1` uses exact ContractName/version and validates referenceability authoritatively.
 - [ ] MOD-0117's `0..1` compatibility fixture stores only the five-field opaque tuple; it contains no currency,
   period, unit, rounding, amount or line field, and architecture tests enforce this no-copy boundary.
@@ -410,7 +426,8 @@ topology approval, an integration-agent-only task must determine explicit upstre
   409 and unavailable/unknown contract dependency 503.
 - [ ] Decimal precision, scale, currency, unit, rounding and negative-value rules are owner-approved and tested.
 - [ ] Mutation, audit intent, selected uniqueness and idempotency are atomic in a Mongo replica-set transaction.
-- [ ] Budget field count 7 selects Slim; minimum BudgetVersionDraft field count 13 selects Compact; all tenant pages explicitly
+- [ ] Budget field count 7 selects Slim; BudgetVersionDraft field count 13 selects Compact because child period
+  references/order are deterministically generated from the version fiscal calendar and are not user inputs; all tenant pages explicitly
   use `_LayoutTenantShell` and DataTables pass `verify_datatable_page.py` plus `quality-gate-datatable`.
 - [ ] Seven-language RESX parity and browser smoke pass without approval UI, PPM budget forms or hardcoded lookup fallback.
 - [ ] Prototype/migration candidates remain quarantined unless an explicit mapping, reconciliation, rollback and
@@ -419,19 +436,21 @@ topology approval, an integration-agent-only task must determine explicit upstre
 
 ## 17. Test Expectations
 
-- Domain/unit: draft-to-atomic-seal, immutable certified versions, revision numbering, effective selection history,
+- Domain/unit: draft-to-atomic-seal, immutable certified versions, revision numbering, immutable occurrence plus
+  closure/disposition-derived effective selection history,
   certification-vs-selection-vs-approval, defaults-vs-snapshot, rounding/negative rules and hash vectors.
 - Integration: concurrent version creation and selection, Decimal128 precision/scale, canonical currency/period
   validation, tenant isolation, cross-tenant 404, permission 403, immutable 409, dependency/contract 503.
 - Transaction: replica-set commit/rollback across aggregate, idempotency and audit intent; injected audit failure
-  rolls back both closure of the prior effective selection and insertion of its successor, leaving the prior
-  effective truth intact with no partial version/selection.
+  rolls back the appended closure/disposition event, successor occurrence and audit intent, leaving the prior
+  effective truth intact with no old-occurrence mutation or partial version/selection.
 - Contract: exact five-field v1 serialization, unknown version, S2S/delegated actor enforcement, referenceability
   independent of selection, typed-context selected validation, and no financial semantics in the PPM value.
 - Provider resilience: outage does not block historical immutable reads or reinterpret stored bytes/hash; cached
   provider data cannot authorize a new certification or selection.
-- Concurrency/mutation: simultaneous version numbers and selections, fence loss, closure/append atomicity,
-  selected uniqueness and unchanged certified hash; mutations verify idempotent replay.
+- Concurrency/mutation: simultaneous version numbers and selections, fence loss, immutable closure/disposition
+  plus successor append atomicity, selected uniqueness, rollback invariance and unchanged certified hash;
+  mutations verify idempotent replay.
 - Architecture: PPM no-copy test; MOD-0136/MOD-0138 repository/type/permission/collection isolation; Domain has
   no Mongo driver dependency; no EnterpriseStrategy prototype treated as production baseline.
 - Migration: classify/map/quarantine legacy EnterpriseStrategy budget evidence; collisions, precision loss,
@@ -458,9 +477,11 @@ topology approval, an integration-agent-only task must determine explicit upstre
 - [ ] Funding context is selected as a closed authoritative typed reference and selected-baseline v1 fixtures are approved; no free-text kind exists.
 - [ ] SHA-256 canonicalization identity, exact UTF-8 rules, deterministic ordering/decimal/reference serialization and normative vectors are approved.
 - [ ] Draft deletion, certified retirement/supersession, retention/legal hold and exceptional-purge authority are approved.
-- [ ] Golden Reference Compact live pack/code and Budget Slim pattern are confirmed; minimum field counts remain 13 and 7.
+- [ ] Golden Reference Compact live pack/code and Budget Slim pattern are confirmed; field counts remain 13 and 7,
+  with child periods deterministically generated from the authoritative version-level fiscal calendar.
 - [ ] Layout, backend convention, frontend file contract and field validation are complete for authorized slices.
-- [ ] Permission catalog/grants, S2S identity and delegated actor propagation are approved.
+- [ ] The 15 exact lowercase permission keys are approved without wildcard, alias or normalization; permission
+  catalog/grants, S2S identity and delegated actor propagation are approved.
 - [ ] Mongo replica set, transaction, audit intent, idempotency and indexes have executable test plans.
 - [ ] Migration inventory/mapping/quarantine/rollback plan is approved; prototypes are not production baseline.
 - [ ] Gateway decision is concrete but remains an integration-agent task; port is not guessed.
@@ -494,6 +515,8 @@ topology approval, an integration-agent-only task must determine explicit upstre
   whether selecting an uncertified version is always forbidden; confirm the authoritative selection scope
   (Budget, fiscal plan, organization/cost center, InvestmentCase or another typed funding context), its owner,
   exact typed shape and effective-time boundary. No selected-baseline v1 is final before this decision.
+- Decide whether selected-baseline validation requires a distinct least-privilege permission. Do not add a key
+  until entitlement evidence and the selected-baseline v1 boundary justify it.
 - Approve SHA-256 canonicalization version, exact UTF-8 bytes, deterministic ordering/decimal/reference rules and
   normative vectors; implementation cannot create an interim scheme.
 - Define retention/legal hold and exceptional purge authority. Certified, selected, referenced and historically
