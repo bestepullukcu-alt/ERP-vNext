@@ -264,7 +264,59 @@ InvestmentCase relationship. Lifecycle transitions are exactly `Draft → Planne
 not mean realized and `Closed` is not MOD-0072 outcome validation. Actual/realized value, evidence, outcome,
 budget/scenario payload or snapshot is forbidden.
 
-### 4.8 ExternalContextReference validation projection
+### 4.8 Gate I PPM-owned consumer profile ledger — governance closed, non-executable
+
+All names below are exact, case-sensitive PPM-owned contract/profile names with exact `ContractVersion = 1.0`.
+They close only MOD-0117 consumer shape, cardinality and relationship ownership. They do not approve a producer
+contract, alter a producer pack/status, choose transport/topology or grant runtime authority.
+
+| PPM-owned type | Exact `ContractName` | Persisted fields, exactly | Cardinality / rule |
+|---|---|---|---|
+| `InvestmentCaseContextV1` | `ppm.investment-case-context` | `ContractName`, `ContractVersion`, `InvestmentCaseId` | Typed consumer context only; no free-text kind/discriminator |
+| `GoverningDecisionReferenceV1` | `ppm.investment-case-governing-decision-reference` | `ContractName`, `ContractVersion`, `InvestmentCaseContext`, `DecisionRevisionReference` | `0..1`; exact one valid reference before `UnderAnalysis → Closed` |
+| `SupportingDecisionReferenceV1` | `ppm.investment-case-supporting-decision-reference` | `ContractName`, `ContractVersion`, `InvestmentCaseContext`, `DecisionRevisionReference` | `0..n`; duplicate exact revision rejected |
+| `SelectedBudgetVersionReferenceV1` | `ppm.investment-case-selected-budget-version-reference` | `ContractName`, `ContractVersion`, `InvestmentCaseContext`, `BudgetVersionReference` | `0..1`; relationship is not selected-baseline truth |
+| `InvestmentCaseScenarioVersionReferenceV1` | `ppm.investment-case-scenario-version-reference` | `ContractName`, `ContractVersion`, `InvestmentCaseContext`, `ScenarioVersionReference` | `0..n` |
+| `InvestmentCaseComparatorOutputReferenceV1` | `ppm.investment-case-comparator-output-reference` | `ContractName`, `ContractVersion`, `InvestmentCaseContext`, `ComparatorOutputReference` | `0..n` |
+| `SelectedScenarioReferenceV1` | `ppm.investment-case-selected-scenario-reference` | `ContractName`, `ContractVersion`, `InvestmentCaseContext`, `ScenarioVersionReference` | `0..1`; pinned minimal reference only, never selection occurrence/current-state truth |
+| `BenefitCommitmentOutcomeReferenceV1` | `ppm.benefit-commitment-outcome-reference` | `ContractName`, `ContractVersion`, `BenefitCommitmentId`, `OutcomeReference` | `0..n`; attach/detach/retire relationship lifecycle is MOD-0117-owned |
+
+Nested producer values are exact and unmodified: MOD-0007 `DecisionRevisionReferenceV1`, MOD-0136
+`BudgetVersionReferenceV1`, MOD-0138 `ScenarioVersionReferenceV1` / `ComparatorOutputReferenceV1`, and MOD-0072
+`OutcomeReferenceV1`. `Governing`/`Supporting` is encoded by the two distinct PPM wrapper identities and cannot
+be added to the generic MOD-0007 tuple. `InvestmentCaseContextV1` may be supplied as validation-request context
+to MOD-0136 FundingBaselineSelection and MOD-0138 ScenarioSelection; it gives neither producer ownership of an
+InvestmentCase field, cardinality, transition or lifecycle.
+
+`TenantId`, `ActorId`, delegated actor, permission, S2S identity, correlation and transport metadata are never
+payload fields in these persisted profiles; trusted server context supplies them. Free-text consumer kind,
+discriminator and producer payload copying are forbidden. In particular PPM stores no decision/rationale/
+evidence; budget amount/currency/period/line/certification or selected-baseline truth; scenario assumptions,
+comparator inputs/algorithm/ranking/metric/output payload or selection occurrence/current-selection truth; or
+actual value/measurement/period/evidence/realization state.
+
+### 4.9 Gate I consumer validation modes and failure semantics — governance closed
+
+The closed modes are `HistoricalResolve`, `NewReferenceEligibility`, and—only for selection contracts—
+`CurrentSelectionEligibility`. A non-selection adapter must reject `CurrentSelectionEligibility` as malformed
+caller input. Producer-specific request/response DTOs remain producer-owned and cannot be coerced into one common
+DTO. Each bilateral adapter maps the exact producer compatibility contract; an `IsReferenceable` boolean alone
+is never sufficient authority.
+
+| Condition | Exact consumer result |
+|---|---:|
+| Malformed caller request, field set or mode | `400` |
+| Authentication or trusted-context failure | `401` |
+| Permission or dedicated S2S entitlement failure | `403` |
+| Missing, cross-tenant, invisible or otherwise non-disclosable reference | `404` |
+| Visible but retired, ineligible, stale or not current for the requested mode | `409` |
+| Unknown/unsupported version, timeout, provider unavailable or malformed authoritative response | `503` |
+
+Historical resolution never authorizes a new relationship. New-reference eligibility never proves current
+selection. Current-selection eligibility is used only for the MOD-0136 selected funding baseline and MOD-0138
+selected scenario contracts after their producer-owned selection profiles are approved.
+
+### 4.10 ExternalContextReference validation projection
 
 This is the authorized provider contract for the internal endpoint
 `POST /internal/v1/ppm/external-context-references/validate`:
@@ -516,6 +568,12 @@ reconciliation alone does not create runtime authority or implementation evidenc
 | Gate I-B funding/scenario references | Gate I-B | Selected BudgetVersion `0..1`; scenario/comparator `0..n`; selected Scenario `0..1` | MOD-0136/MOD-0138 authoritative validation |
 | Gate I-C outcome/realization references | Gate I-C | BenefitCommitment `0..n`; planned target only in PPM | MOD-0072 authoritative validation |
 
+Gate I delivery is split into four independently approved executable slices: **I-A Decision**, **I-B Budget**,
+**I-B Scenario**, and **I-C Outcome**. This governance closure authorizes none of them. Adapter code for a slice
+cannot start until the named producer pack/contract is approved, bilateral exact serialization and mode/error
+fixtures are approved, this MOD-0117 consumer amendment is approved for execution, and explicit runtime authority
+is recorded. Conditional MOD-0023 `ApprovalOutcome` remains a separate PSS-owned amendment and adapter.
+
 Invalid Unicode, unpaired surrogate and ambiguous normalized values fail closed. Validation, persistence and
 unique indexes must use the same normalized values.
 
@@ -652,6 +710,9 @@ or any other Gateway route.
   while actual measure/period/evidence/realized state stays MOD-0072.
 - [ ] Gate I-A/B/C common security, compatibility, idempotency and no-copy tests pass, followed by the
   integrated browser flow.
+- [x] PPM-owned Gate I v1 wrapper/profile names, exact minimal fields, shared InvestmentCase context,
+  closed validation modes and 400/401/403/404/409/503 consumer mapping are governance-closed without runtime
+  authority or producer ownership transfer.
 - [x] All tenant-owned queries/writes use server TenantId, soft-delete filters and tenant-first indexes.
 - [x] Optimistic concurrency produces 409 on stale Version.
 - [x] Authorized mutations and producer-local audit intent commit atomically in a replica-set transaction.
@@ -829,6 +890,7 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-08-02 | Closed only the PPM-owned Gate I consumer profile ledger: exact `1.0` wrapper names/field allowlists, shared typed InvestmentCase context, four executable-slice boundaries and Historical/New/Current validation plus 400/401/403/404/409/503 mapping. Producer contracts/statuses, MOD-0023, runtime authority, MOD-0117 `review` status and OD-04 remain unchanged/open as applicable. | User / Portfolio Governance Process Owner |
 | 2026-08-02 | Staged the OPEN Gate I authority into I-A Decision Trace, I-B Funding & Scenario and I-C Benefit Realization. Recorded exact cardinalities, institutional owner roles, common fail-closed/no-copy baseline, MOD-0023 hazards and conjunctive full-1.3 wording. This amendment is non-executable: no producer contract name/version, physical placement, adapter/runtime authority, status promotion or completion claim was created. | User / Enterprise Strategy Control Tower |
 | 2026-08-01 | Reconciled Phase 2B into Gate L `InvestmentCase` + `BenefitCommitment` local ownership and Gate I external integration. Locked exact fields, immutable-parent cardinalities, neutral lifecycles, eight lowercase permissions, Golden Slim surfaces and scoped completion language. MOD-0117 remains `review`; no runtime authority or external contract was created. | User / Enterprise Strategy Control Tower |
 | 2026-08-01 | Bound the internal ExternalContextReference provider lookup to configurable `100..5000 ms`, default `2000 ms`; internal timeout is generic `503`, while caller cancellation propagates unchanged. The limit is lookup-only and does not alter global Mongo/CRUD behavior or authorize retry/cache/fallback. | User / Enterprise Strategy Control Tower |

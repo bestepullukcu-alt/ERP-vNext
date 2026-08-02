@@ -540,6 +540,34 @@ Logical routing does not decide physical service placement. Each producer module
 decision and assigns its own exact contract name, version, endpoint/event/transport and compatibility model.
 This DCP invents none of them.
 
+#### PPM-owned Gate I consumer profiles — CLOSED governance decision
+
+MOD-0117 owns the following exact, case-sensitive `1.0` profiles: `ppm.investment-case-context`,
+`ppm.investment-case-governing-decision-reference`, `ppm.investment-case-supporting-decision-reference`,
+`ppm.investment-case-selected-budget-version-reference`, `ppm.investment-case-scenario-version-reference`,
+`ppm.investment-case-comparator-output-reference`, `ppm.investment-case-selected-scenario-reference`, and
+`ppm.benefit-commitment-outcome-reference`. Their exact field allowlists and cardinalities are authoritative in
+the MOD-0117 pack §4.8. Each wrapper contains only its PPM relationship/context identity and an exact nested
+producer minimal tuple. It adds no role to MOD-0007's generic tuple and copies no producer payload or truth.
+
+The shared `ppm.investment-case-context` `1.0` value is exactly `ContractName`, `ContractVersion`,
+`InvestmentCaseId`. MOD-0136 FundingBaselineSelection and MOD-0138 ScenarioSelection may consume it as typed
+request context, but neither thereby owns InvestmentCase fields, cardinality, lifecycle or storage. Tenant and
+actor remain trusted server context; free-text kind/discriminator is forbidden.
+
+Closed consumer validation modes are `HistoricalResolve`, `NewReferenceEligibility`, and only for selection
+contracts `CurrentSelectionEligibility`. Exact mapping is malformed caller request `400`; authentication/context
+failure `401`; permission/S2S entitlement failure `403`; missing/cross-tenant/invisible/non-disclosable `404`;
+visible retired/ineligible/stale/not-current `409`; unknown/unsupported version, timeout, unavailable provider or
+malformed authoritative response `503`. Producer-specific response DTOs remain distinct. Bilateral adapters use
+exact producer fixtures and cannot treat a common or producer-specific `IsReferenceable` boolean as sufficient
+authority.
+
+Executable delivery is four separate slices: I-A Decision, I-B Budget, I-B Scenario and I-C Outcome. This
+governance decision grants no runtime authority. Each slice still requires approved producer contract, bilateral
+fixtures, executable MOD-0117 consumer approval and explicit runtime authority. MOD-0023 ApprovalOutcome remains
+a separate PSS-owned amendment. MOD-0117 stays `review` and OD-04 stays `OPEN / PARTIAL`.
+
 All producer reference contracts must use server-derived TenantId and ActorId, a dedicated authenticated S2S
 identity, separately validated delegated actor where applicable, exact permission, opaque canonical non-empty
 Guid identity, immutable contract/revision version, correlation, idempotency and an explicit compatibility
@@ -859,6 +887,7 @@ and no deferred regression debt.
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-08-02 | Closed the PPM-owned Gate I consumer profile decision only: exact `1.0` wrappers, shared InvestmentCase context, validation modes/error mapping and four independent future executable slices. No producer contract/status, MOD-0023 scope, runtime authority, MOD-0117 `review` status or OD-04 `OPEN / PARTIAL` status changed. | User / Portfolio Governance Process Owner |
 | 2026-08-02 | Amended the single Gate I into OPEN Gate I-A Decision Trace, Gate I-B Funding & Scenario and Gate I-C Benefit Realization without reducing full 1.3 scope. Recorded canonical logical routing, institutional owner roles, cardinalities, common fail-closed baseline, MOD-0023 hazards/remediation and conjunctive completion wording. This stages draft authoring only; no contract name/version, physical placement, runtime authority, status promotion or gate closure was created. | User / Enterprise Strategy Control Tower |
 | 2026-08-01 | Reconciled Phase 2B into Gate L (`InvestmentCase`, `BenefitCommitment`) and Gate I (external decision/approval/budget/scenario/outcome contracts), including exact cardinality, neutral lifecycle, closed permissions and scoped completion language. OD-04 remains OPEN/PARTIAL and MOD-0117 remains `review`; no runtime or external-contract authority was created. | User / Enterprise Strategy Control Tower |
 | 2026-08-01 | Authorized the narrow default-disabled MOD-0117 ExternalContextReference provider slice and recorded the Control Tower corrections: exact existing `.read` permissions, strict endpoint tenant/sub `401` semantics, and null-only `VisibilityPolicyKey` v1 behavior. OD-04 remains OPEN/PARTIAL; no Gateway route, MOD-0354 consumer, DWS runtime, Phase 2B or new permission was authorized. | User / Enterprise Strategy Control Tower |
