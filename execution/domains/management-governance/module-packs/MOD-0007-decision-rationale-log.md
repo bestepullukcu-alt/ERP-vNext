@@ -44,10 +44,10 @@ authoritative policy requires approval, MOD-0023 separately owns and produces an
 - Generic authoritative `DecisionRecord` identity and current publication pointer.
 - Stable canonical `DecisionId` and immutable `DecisionRevisionId` / revision number.
 - Decision text, selected result, rationale and provenance.
-- Governing and supporting roles on typed decision references.
+- Generic five-field immutable revision references and authoritative subject-bound referenceability validation.
 - Typed metadata-only evidence references.
 - Append-only supersession and withdrawal history.
-- Authoritative, tenant-aware and visibility-aware DecisionReference validation.
+- Authoritative, tenant-aware and visibility-aware `DecisionRevisionReferenceV1` validation.
 
 ### Explicitly not owned
 
@@ -58,6 +58,8 @@ authoritative policy requires approval, MOD-0023 separately owns and produces an
 - TaskAggregate (MOD-0024), WorkCenter, workflow runs or operational task lifecycle.
 - Document binary, evidence payload or generic document metadata.
 - Foreign consumer lifecycle transitions, including PPM `UnderAnalysis → Closed`.
+- PPM's stored Gate I-A relationship wrapper, `Governing|Supporting` relationship role, `0..1`/`0..n`
+  cardinality, duplicate prevention, closure prerequisite and InvestmentCase transition; MOD-0117 owns them.
 
 ### Decision versus Approval invariant
 
@@ -83,13 +85,14 @@ authoritative policy requires approval, MOD-0023 separately owns and produces an
 | `DecisionAuthorityReference` | Typed/versioned semantic identity of the accountable decision-maker, role or governance body | Server-authoritatively validated and captured in the immutable published revision; never inferred from recorder, publisher or approver |
 | `DecisionPublicationHistory` | Append-only publication and disposition provenance | `Published`, `Withdrawn` and `Superseded` events append; published revision bytes never change |
 | `DecisionSupersessionLink` | Exact append-only edge from the older affected published revision to its replacement published revision | Same-tenant, cycle-safe and concurrency-safe creation; withdrawal without replacement creates no edge |
-| `DecisionReference` | Opaque consumer value object for an exact immutable revision and role | Validated authoritatively by MOD-0007 |
+| `DecisionRevisionReferenceV1` | Generic opaque five-field consumer value for an exact immutable revision | Validated authoritatively by MOD-0007; contains no consumer relationship role |
+| Proposed Gate I-A PPM wrapper/profile | Consumer-owned relationship wrapper around `DecisionRevisionReferenceV1` plus `DecisionRole` | Stored and cardinality-enforced by MOD-0117; exact profile identity remains OPEN |
 
 Planned repository, command, query, DTO, endpoint and transport artifacts remain design directions, not
 authorized files. Any executable revision must preserve separate aggregate/repository/collection types from
 MOD-0354 DWS and MOD-0355 BPM and must not share their domain models.
 
-### Generic DecisionReference contract proposal
+### Generic DecisionRevisionReferenceV1 contract proposal
 
 Exact contract name: **`management-governance.decision-reference`**. Exact initial version: **`1.0`**.
 
@@ -100,28 +103,33 @@ Exact contract name: **`management-governance.decision-reference`**. Exact initi
 | `DecisionId` | Guid | Canonical, non-empty stable Decision identity |
 | `DecisionRevisionId` | Guid | Canonical, non-empty immutable published revision identity |
 | `DecisionRevisionNumber` | positive integer | Immutable semantic revision; not technical concurrency `Version` |
-| `DecisionRole` | closed enum | `Governing` or `Supporting` only |
 
-The persistable value contains exactly those six fields. It contains no subject, tenant, actor,
-`CorrelationId`, `IdempotencyKey`, S2S identity, audience or scope.
+The generic persistable `DecisionRevisionReferenceV1` contains exactly those five fields. It contains no
+`DecisionRole`, subject, tenant, actor, `CorrelationId`, `IdempotencyKey`, S2S identity, audience or scope.
+`Governing`/`Supporting` is not an intrinsic generic Decision or revision property. A later producer policy
+could establish generic role eligibility only through separate explicit owner approval; none exists here.
 
 ### Authoritative validation request and trusted context
 
-The read-only `DecisionReferenceValidationRequest` contains the six-field `DecisionReference`, a typed
-`SubjectReference { Namespace, SubjectType, SubjectId }`, and an exact consumer profile name/version. The
+The proposed Gate I-A read-only validation request contains the five-field
+`DecisionRevisionReferenceV1`, a typed `SubjectReference { Namespace, SubjectType, SubjectId }`, requested
+consumer relationship `DecisionRole: Governing|Supporting`, and an exact consumer profile name/version. The
 request carries no tenant or actor. Trusted request/transport context independently supplies server-derived
 `TenantId`, effective actor and separately validated delegated actor, `CorrelationId`, and authenticated S2S
 identity/audience/scope. A read-only validation query requires no mutation `IdempotencyKey` and persists no
 receipt, audit intent, cache or business mutation.
 
-Successful validation returns the exact six-field reference plus `IsReferenceable: true`; it returns no
+Successful validation returns the exact five-field generic reference plus `IsReferenceable: true`; it returns no
 decision text, rationale, provenance, evidence payload or trusted-context echo. MOD-0007 validates the exact
-published revision, governing/supporting role validity, subject binding, profile compatibility, tenant,
-visibility and referenceability without revealing which 404 predicate failed.
+published revision, publication/referenceability, subject binding, supported profile, tenant and visibility
+without revealing which 404 predicate failed. Requested relationship-role eligibility is not producer-owned;
+if later required, its exact policy/authority must be separately approved.
 
 The core `management-governance.decision-reference` contract is generic. Gate I-A uses a separately named
-and versioned PPM/InvestmentCase consumer profile whose exact identity remains owner approval-blocked. Its
-allowlist is exactly `Namespace=ppm`, `SubjectType=InvestmentCase`, and roles `Governing|Supporting`. A new
+and versioned PPM/InvestmentCase consumer wrapper/profile whose exact identity remains jointly approval-blocked
+by MOD-0007 and MOD-0117 owners. Its request shape is exactly the five-field generic reference, typed
+`Namespace=ppm` / `SubjectType=InvestmentCase`, requested relationship role `Governing|Supporting`, and
+profile name/version. A new
 consumer or subject type requires an explicitly approved profile/version and compatibility fixtures; it
 cannot silently widen Gate I-A.
 
@@ -129,15 +137,19 @@ cannot silently widen Gate I-A.
 
 MOD-0117, not MOD-0007, owns and enforces:
 
+- the stored InvestmentCase relationship wrapper and its `Governing|Supporting` relationship role;
 - `InvestmentCase → GoverningDecisionReference`: `0..1` structurally.
 - Before PPM permits `InvestmentCase UnderAnalysis → Closed`: exactly `1` valid governing reference.
 - `SupportingDecisionReferences`: `0..n`; duplicates of the same Decision revision and role are rejected.
-- PPM stores only the opaque contract value. It cannot copy decision text, result, rationale, provenance or
-  evidence payload and cannot infer validation from a cache.
+- PPM stores its MOD-0117-owned relationship wrapper containing the opaque five-field generic reference and
+  relationship role. It cannot copy decision text, result, rationale, provenance or evidence payload and
+  cannot infer validation from a cache.
 
 MOD-0007 supplies authoritative validation and compatibility fixtures only. It does not own the
 InvestmentCase aggregate, stored-reference duplicate/cardinality enforcement, the closure prerequisite or
-the PPM lifecycle transition/transaction.
+the PPM lifecycle transition/transaction. It owns Decision identity, immutable revision, Decision subject
+binding, generic `DecisionRevisionReferenceV1` validation, and authoritative tenant/visibility/referenceability
+validation for a supported consumer profile.
 
 ## 4. Entity Fields
 
@@ -196,7 +208,7 @@ Indexes: unique `(TenantId, DecisionId, DecisionRevisionNumber)`, unique `(Tenan
 DecisionRevisionId)`. Mutation idempotency receipt/index is command infrastructure, not a semantic revision
 field. A published revision has no update path; correction creates a new draft and atomically publishes a
 new revision. Trusted `CorrelationId` may be recorded in bounded publication/audit provenance, but is not a
-semantic DecisionRevision field or consumer DecisionReference field.
+semantic DecisionRevision field or consumer `DecisionRevisionReferenceV1` field.
 
 ### DecisionAuthorityReference
 
@@ -361,12 +373,12 @@ document binaries or approval actions.
 | `Rationale` | Yes | Trim + NFC; 1..12000 | — |
 | `ProvenanceKind/Reference` | Yes | Typed, versioned, supported and referenceable | Authoritative validator |
 | `EvidenceReferences` | No | Typed/versioned; no duplicate tuple; metadata only | Authoritative validator |
-| `DecisionRole` | Yes for consumer reference | `Governing` or `Supporting` | Contract exact-version validation |
+| Requested `DecisionRole` | Gate I-A validation request only | Closed `Governing` or `Supporting` relationship input; absent from generic reference | Supported-profile shape validation; semantic eligibility policy remains OPEN |
 | `DecisionRevisionNumber` | Yes | Positive, next monotonic number; client cannot overwrite current revision | Unique index + transaction |
 | `DecisionAuthorityReference` | Yes on publication | Exact supported provider/type/version + opaque ID; no free text or actor substitution | Authoritative server-side validation |
 | `ConsumerProfile` | Yes on reference validation | Exact approved name/version; Gate I-A allowlist cannot be widened | Authenticated S2S registration must match |
 | `ActorId`, `DecisionActorId`, `RecordedBy`, `PublishedBy`, `ApprovedBy`, `TenantId` in payload | Forbidden | Reject request; never trust, merge or normalize into server context | Authenticated/delegated server context |
-| Trusted `CorrelationId` | Mutations and validation | Bounded authenticated trace context; absent from persisted DecisionReference | Server transport context |
+| Trusted `CorrelationId` | Mutations and validation | Bounded authenticated trace context; absent from persisted `DecisionRevisionReferenceV1` | Server transport context |
 | `IdempotencyKey` | Mutation commands only | Required, scoped to tenant + operation + effective actor + S2S client and payload-bound | Idempotency store/index; forbidden requirement on read validation |
 
 When evidence is optional and none is submitted, publication does not contact the evidence provider. When
@@ -444,14 +456,15 @@ service port directly. Only `integration-agent` may modify `ocelot.json` after e
 2. Mutable pre-publication state is an explicit `DecisionDraft`, not a DecisionRevision. Publication atomically
    creates/finalizes an already-published immutable uniquely numbered revision, history, pointer, idempotency
    result and audit intent; no later publication-field mutation exists.
-3. Persisted `management-governance.decision-reference` version `1.0` has exactly six fields and excludes
-   subject, correlation, idempotency, tenant, actor and S2S context. The read-only validation request and
-   trusted transport context are separate.
-4. An exact approved PPM/InvestmentCase Gate I-A profile validates role, subject binding and referenceability.
+3. Persisted `DecisionRevisionReferenceV1` under `management-governance.decision-reference` version `1.0`
+   has exactly the five-field key set `ContractName`, `ContractVersion`, `DecisionId`, `DecisionRevisionId`,
+   `DecisionRevisionNumber`; `DecisionRole` and all subject/context fields are absent.
+4. The proposed PPM/InvestmentCase Gate I-A wrapper/profile identity remains OPEN. Its validation request
+   carries the five-field reference, typed subject, requested relationship role and exact profile identity.
    MOD-0117-owned compatibility fixtures prove governing `0..1`, exactly one before
    `UnderAnalysis → Closed`, and supporting `0..n`; MOD-0007 does not enforce that transition/cardinality.
-5. PPM stores only opaque DecisionReference values; architecture tests ban decision text, result, rationale,
-   provenance and evidence payload fields in the consumer boundary.
+5. PPM stores only its relationship wrapper containing the opaque five-field reference and MOD-0117-owned
+   role; architecture tests ban decision text, result, rationale, provenance and evidence payload fields.
 6. Approval-required scenarios use a separate MOD-0023 `ApprovalOutcome` reference; no MOD-0007 or PPM
    approve/reject command, field, state or permission exists.
 7. Cross-tenant, missing, soft-deleted, invisible and non-referenceable lookups return indistinguishable `404`.
@@ -481,6 +494,8 @@ service port directly. Only `integration-agent` may modify `ocelot.json` after e
     fails publication with `503` when authoritative validation is unavailable/malformed/unsupported.
 19. New consumers/subject types require an explicitly approved profile/version and fixtures; Gate I-A's exact
     `ppm`/`InvestmentCase` allowlist cannot widen silently.
+20. `Governing|Supporting` is absent from generic Decision/DecisionRevision state and the persisted generic
+    reference. Any future producer-side role-eligibility policy is a separately approved blocker.
 
 ## 17. Test Expectations
 
@@ -489,7 +504,7 @@ service port directly. Only `integration-agent` may modify `ocelot.json` after e
 | Domain unit | Draft versus published-revision boundary, atomic immutable birth, monotonic numbering, authority distinction, supersession graph and withdrawal-disposition invariants |
 | Application unit | Exact permission, forbidden context-field rejection, independent S2S/delegated-actor gates, mutation idempotency, query purity, optimistic concurrency and Decision/Approval separation |
 | Persistence integration | Fault injection after revision/history/pointer/edge/idempotency/audit writes, tenant-first queries, draft soft-delete/publication race and cross-tenant 404 equivalence |
-| Contract compatibility | Exact six-field DecisionReference serialization; separate request/context; generic 1.0 plus approved Gate I-A profile; MOD-0117-owned cardinality fixtures; malformed 400 versus well-formed unsupported 503 |
+| Contract compatibility | Exact five-field key-set serialization/roundtrip; missing/extra/duplicate/case-variant rejection; separate wrapper/request/context; generic 1.0 plus proposed Gate I-A profile; MOD-0117-owned role/cardinality fixtures |
 | S2S security | Dedicated identity, delegated actor validation, 401/403/404/409/503 matrix, no tenant/existence disclosure |
 | Architecture | Project/namespace/type/repository/collection/permission/migration isolation for DWS/BPM/DecisionRegistry; no approval artifacts; no foreign decision/rationale/evidence payload copy |
 | Mutation testing | Remove publication immutability, tenant/visibility/profile check, graph guard, transaction, mutation idempotency or version rejection and prove tests fail |
@@ -518,10 +533,13 @@ Minimum mutation matrix:
 | Mutation | Test must fail because |
 |---|---|
 | Create immutable revision before publication or later set `PublishedAtUtc` | Revision is not born final and immutable |
-| Persist SubjectReference, CorrelationId or IdempotencyKey in DecisionReference | Exact six-field serialization contract is violated |
+| Persist DecisionRole, SubjectReference, CorrelationId or IdempotencyKey in `DecisionRevisionReferenceV1` | Exact five-field generic serialization contract is violated |
+| Drop `DecisionRole` from the Gate I-A wrapper/request | MOD-0117-owned relationship semantics are lost |
+| Accept a missing/unknown Gate I-A profile name/version | Supported-profile fail-closed boundary is violated |
 | Require idempotency or persist a receipt on read-only validation | Query-purity contract is violated |
 | Drop governing `0..1` or closure requirement in MOD-0117 fixture | Consumer-owned PPM Gate I-A cardinality is violated |
 | Add PPM transition/cardinality enforcement to MOD-0007 | Producer/consumer ownership boundary is violated |
+| Add `Governing|Supporting` to generic Decision/DecisionRevision state or producer eligibility rules | Consumer relationship role is misowned |
 | Remove tenant filter or map foreign lookup to 403 | Cross-tenant indistinguishable 404 contract is violated |
 | Trust client tenant/actor/recorder/publisher/delegation/context | Trusted server-context boundary is violated |
 | Treat Decision publication as approval | MOD-0007/MOD-0023 separation is violated |
@@ -540,15 +558,16 @@ Minimum mutation matrix:
 - [x] Blueprint and registry exact-ID/name preflight passes for `MOD-0007 — Decision & Rationale Log`.
 - [x] Parent pack starts as `draft` with `service: TBD` and no production authority.
 - [x] Decision/rationale ownership and Decision-versus-Approval separation are explicit.
-- [x] Proposed generic DecisionReference contract has an exact name/version/six-field value; Gate I-A roles
-  and MOD-0117-owned compatibility cardinality are explicit while the profile identity remains blocked.
-- [x] DecisionReference, validation request and trusted request/transport context are separate.
+- [x] Generic `DecisionRevisionReferenceV1` has the exact canonical name/version and five-field key set with
+  no `DecisionRole`; the MOD-0117-owned Gate I-A wrapper/role/cardinality is separate.
+- [x] `DecisionRevisionReferenceV1`, Gate I-A wrapper/validation request and trusted request/transport context are separate.
 - [x] Mutable draft and atomically born immutable published revision are separate.
 - [x] PPM cardinality/lifecycle enforcement remains MOD-0117-owned.
 - [x] Current UI is `none`; future field count/Golden Compact direction is documented without UI authority.
 - [ ] Enterprise Governance Process Owner approves lifecycle, revision publication authority and contract `1.0` semantics.
-- [ ] Enterprise Governance Process Owner approves the exact Gate I-A consumer profile name/version and
-  withdrawn/superseded referenceability policy.
+- [ ] Enterprise Governance Process Owner approves the versioned withdrawn/superseded referenceability policy.
+- [ ] MOD-0007 and MOD-0117 owners jointly approve the exact Gate I-A wrapper/profile identity; any later
+  producer-side role-eligibility policy receives separate explicit approval.
 - [ ] Exact DecisionAuthority provider/type/version, validation authority and prepare/publish separation of
   duties are approved.
 - [ ] Enterprise Architect closes physical topology A/B and records isolation evidence requirements.
@@ -576,8 +595,9 @@ Minimum mutation matrix:
 - `DecisionDraft` is the only mutable pre-publication object. `PublishDecisionDraft` creates the immutable
   revision with publication provenance in the same transaction as history, pointer, idempotency and audit;
   there is no recorded-but-unpublished revision state.
-- The six-field generic DecisionReference is persistable. Subject/profile belongs to the validation request;
-  tenant/actors/correlation/S2S belongs to trusted context; mutation idempotency is command infrastructure.
+- The five-field generic `DecisionRevisionReferenceV1` is persistable. The MOD-0117-owned relationship role
+  belongs to the proposed Gate I-A wrapper/request; subject/profile belongs to validation; tenant/actors/
+  correlation/S2S belongs to trusted context; mutation idempotency is command infrastructure.
 - MOD-0117 owns its InvestmentCase reference cardinality and closure transition. MOD-0007 validates the
   submitted typed binding under an approved profile and supplies compatibility fixtures only.
 - Authority is semantic business accountability, not technical recording/publishing or approval. Exact
@@ -587,6 +607,12 @@ Minimum mutation matrix:
 - Existing Enterprise Strategy `DecisionReference` strings, mock values, `DecisionReferencesJson`, rationale
   inputs and `ApprovedBy` fields require a separate containment/migration plan and WorkCenter Gate 2 where
   applicable. This pack neither activates nor changes them.
+
+### Change Log
+
+| Date | Change | Authority effect |
+|---|---|---|
+| 2026-08-02 | Final draft role-ownership cleanup: generic `DecisionRevisionReferenceV1` fixed to the canonical five-field value; `DecisionRole` moved exclusively to the proposed MOD-0117-owned Gate I-A relationship wrapper/request; producer and consumer validation/cardinality/lifecycle boundaries reconciled. | None; status remains `draft`, profile identity and any role-eligibility policy remain OPEN, and no implementation/production authority is created. |
 
 ## 20. Follow-up Items
 
@@ -601,6 +627,8 @@ Only unresolved owner/architecture decisions remain:
    MOD-0023 approval behavior.
 7. Approve the exact Gate I-A consumer profile name/version and versioned referenceability behavior for
    withdrawn/superseded exact revisions.
+8. If producer-side relationship-role eligibility is ever required, approve its owner, policy and version
+   explicitly; this draft establishes no intrinsic `Governing|Supporting` Decision property.
 
 After those decisions, revise this parent pack (or create explicitly parented executable follow-ups), rerun
 canonical and relative-link validation, obtain owner approval, and record explicit production authority before
