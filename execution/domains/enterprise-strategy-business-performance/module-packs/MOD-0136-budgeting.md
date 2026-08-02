@@ -11,7 +11,7 @@ owner: FP&A Budgeting Process Owner
 branch: feature/esbp/mod-0136-budgeting
 started: 2026-08-02
 target: 2026-08-02
-form_field_count: 13
+form_field_count: 11
 production_authority: none
 ---
 
@@ -37,8 +37,10 @@ non-executable until producer and consumer packs are separately approved and exp
 ### Owns
 
 - `Budget` stable identity, mutable `BudgetVersionDraft` construction and immutable certified `BudgetVersion` history.
-- Explicit `BudgetPeriod` and separate `BudgetLine` financial breakdowns.
-- Canonical currency reference, unit/scale semantics, precision and rounding policy captured by a version.
+- MOD-0136-specific `BudgetFiscalCalendar`, its immutable monthly period definitions, explicit `BudgetPeriod`
+  snapshots and separate `BudgetLine` financial breakdowns. This is a budgeting calendar, not an enterprise calendar SoR.
+- Exact currency and budgeting-calendar references, closed unit semantics, decimal precision and system-owned
+  `RoundingPolicyV1` captured by a version.
 - Effective-dated selected-baseline truth through immutable `FundingBaselineSelectionOccurrence` and immutable
   `SelectionClosure`/`SelectionDisposition` events. For Gate I-B, the authoritative typed funding context is
   exact `ppm.investment-case-context` `1.0` with only `ContractName`, `ContractVersion`, `InvestmentCaseId`.
@@ -77,8 +79,8 @@ non-executable until producer and consumer packs are separately approved and exp
 
 | Category | Proposed owned objects |
 |---|---|
-| Aggregates/entities | `Budget`, `BudgetVersionDraft`, immutable certified `BudgetVersion`, `BudgetPeriod`, `BudgetLine`, immutable `FundingBaselineSelectionOccurrence`, immutable `SelectionClosure`, immutable `SelectionDisposition` |
-| Value objects | `MoneyAmount`, `CurrencyReference`, `TimePeriodReference`, `UnitSemantics`, `RoundingPolicy` |
+| Aggregates/entities | `Budget`, `BudgetFiscalCalendar`, immutable `BudgetFiscalCalendarPeriodDefinition`, `BudgetVersionDraft`, immutable certified `BudgetVersion`, `BudgetPeriod`, `BudgetLine`, immutable `FundingBaselineSelectionOccurrence`, immutable `SelectionClosure`, immutable `SelectionDisposition` |
+| Value objects | `MoneyAmount`, `CurrencyReferenceV1`, `BudgetFiscalCalendarReferenceV1`, `PeriodReference`, `UnitSemantics`, `RoundingPolicyV1`, `FundingBaselineType`, `LineType` |
 | Repositories | Separate Budget and BudgetVersion repositories; period/line persistence must remain aggregate-isolated |
 | Commands | Create/update/archive Budget; create/update/abandon draft; certify draft; replace/close selection; retire/supersede version; no approve command |
 | Queries | Budget/draft/version detail and lists; effective selection/history; referenceability and selected-baseline validation |
@@ -183,12 +185,11 @@ named `BudgetVersionNumber`, never `Version`.
 | `Code` | string | Yes | Trim + NFC, max 64; unique partial `(TenantId, Code)` where not deleted |
 | `Name` | string | Yes | Trim + NFC, max 200 |
 | `Description` | string? | No | Trim + NFC, max 2000 |
-| `DefaultCurrencyReference` | canonical reference | Yes | Authoritative financial reference; no free-text currency |
-| `DefaultPeriodReference` | canonical reference | Yes | Authoritative fiscal/time-period reference |
-| `UnitSemantics` | closed value | Yes | Proposed `Units`, `Thousands`, `Millions`; owner confirmation required |
-| `RoundingPolicy` | value object | Yes | Construction default for scale and midpoint mode |
+| `DefaultCurrencyReference` | `CurrencyReferenceV1` | Yes | Construction-only exact `fpa.currency-reference` / `1.0` default |
+| `DefaultFiscalCalendarReference` | `BudgetFiscalCalendarReferenceV1` | Yes | Construction-only exact budgeting-calendar default |
+| `UnitSemantics` | closed enum | Yes | Construction-only `Units`, `Thousands` or `Millions` default |
 
-These Budget-level currency, period, unit and rounding values are construction defaults only. Certification
+These Budget-level currency, calendar and unit values are construction defaults only. Certification
 captures every applicable value explicitly in the immutable snapshot. Later default changes cannot alter,
 reinterpret or re-hash a certified version.
 
@@ -198,6 +199,22 @@ Mutable construction contains candidate version fields, periods and lines. It ha
 certification provenance or authoritative `ContentHash`. An abandoned draft may be soft-deleted under policy.
 Certification consumes an exact draft fence and atomically creates the immutable snapshot, provenance and hash.
 
+Its exact user-editable header fields are `RevisionLabel`, `BudgetFiscalCalendarReference`, `CurrencyReference`,
+`UnitSemantics`, `FundingBaselineType`, `EffectiveFrom` and `Notes`. `RoundingPolicyV1` is not user-selectable.
+
+### CurrencyReferenceV1 and BudgetFiscalCalendarReferenceV1
+
+- `CurrencyReferenceV1` has exactly `ContractName`, `ContractVersion`, `AlphabeticCode`, with exact identity
+  `fpa.currency-reference` / `1.0`. `AlphabeticCode` is exactly three uppercase ASCII ISO-4217 letters. There is
+  no trimming, case normalization, symbol or free-text alternative. MOD-0136 validates against a versioned
+  allowlist: an unknown code is `400`; validator/catalog unavailability is `503`.
+- `BudgetFiscalCalendarReferenceV1` has exactly `ContractName`, `ContractVersion`,
+  `BudgetFiscalCalendarId`, with exact identity `fpa.budget-fiscal-calendar-reference` / `1.0`.
+- A v1 `BudgetFiscalCalendar` uses an IANA tenant timezone, `FiscalYearStartMonth` in `1..12`, and exactly 12
+  non-overlapping monthly immutable period definitions. Boundaries are `LocalDate`; end is exclusive. Arbitrary,
+  weekly and quarter-only calendars are deferred. Closed periods do not block historical reads; certification
+  requires an authoritative calendar/version that still deterministically produces all 12 periods.
+
 ### Immutable BudgetVersion
 
 | Field | Type | Required | Rule / index direction |
@@ -205,17 +222,17 @@ Certification consumes an exact draft fence and atomically creates the immutable
 | `BudgetId` | Guid | Yes | Same-tenant Budget; immutable |
 | `BudgetVersionNumber` | long | Yes | Server-assigned monotonic token; unique `(TenantId, BudgetId, BudgetVersionNumber)` |
 | `RevisionLabel` | string | Yes | Trim + NFC, max 120; descriptive only, not identity |
-| `PeriodReference` | canonical reference | Yes | Version-wide period/fiscal calendar identity |
-| `CurrencyReference` | canonical reference | Yes | ISO/canonical financial identity; no symbol/free text |
-| `UnitSemantics` | closed value | Yes | Captured on the immutable version |
-| `RoundingPolicy` | value object | Yes | Decimal scale plus midpoint rule captured on the version |
-| `FundingBaselineType` | closed value | Yes | Owner-defined baseline classification; not approval state |
-| `EffectiveFrom` | date | Yes | Canonical period/date semantics; exact timezone rule open |
+| `BudgetFiscalCalendarReference` | `BudgetFiscalCalendarReferenceV1` | Yes | Exact authoritative budgeting calendar identity |
+| `CurrencyReference` | `CurrencyReferenceV1` | Yes | One exact currency for the whole version |
+| `UnitSemantics` | closed enum | Yes | Exactly `Units`, `Thousands` or `Millions`; whole-version semantic scale |
+| `RoundingPolicy` | system constant | Yes | `Scale = 4`, `Midpoint = ToEven`; captured in certified snapshot, not user input |
+| `FundingBaselineType` | closed enum | Yes | `Original`, `Reforecast` or `Contingency`; neither approval nor selection truth |
+| `EffectiveFrom` | LocalDate | Yes | Interpreted against the selected calendar's IANA tenant timezone |
 | `Notes` | string? | No | Trim + NFC, max 2000; must not contain approval decisions |
 | `CertifiedAtUtc` / `CertifiedByActorId` | server values | Yes | Created atomically with snapshot; never populated later |
 | `ApprovalOutcomeReference` | typed immutable reference? | Conditional | Separate MOD-0023 prerequisite when policy requires; not certification state |
-| `ContentHashAlgorithm` | constant | Yes | Proposed exact `SHA-256` |
-| `ContentCanonicalizationVersion` | closed identity | Yes | Exact identity and vectors are ready-for-dev blockers |
+| `ContentHashAlgorithm` | constant | Yes | Exact `SHA-256` |
+| `ContentCanonicalizationVersion` | closed identity | Yes | Exact `fpa.budget-content-canonical-json.v1` |
 | `ContentHash` | lowercase hex string | Yes | Created atomically over canonical snapshot; immutable |
 
 ### BudgetPeriod
@@ -226,24 +243,24 @@ Certification consumes an exact draft fence and atomically creates the immutable
 | `BudgetVersionId` | Guid | Yes | Same immutable aggregate and tenant |
 | `PeriodReference` | canonical reference | Yes | Deterministically generated from the authoritative version-level fiscal calendar; unique within version and not user-editable |
 | `Order` | int | Yes | System-generated deterministic non-negative ordering; unique within version and not user-editable |
-| `ContainmentReference` | typed reference? | Conditional | Parent period when canonical model requires it |
-| `VersionTotal` | decimal? | Conditional | Derived-versus-asserted policy is a promotion blocker |
+| `LocalStartDate` / `LocalEndDateExclusive` | LocalDate | Yes | Copied from authoritative definition; monthly, non-overlapping |
 
 ### BudgetLine
 
 | Field | Type | Required | Rule / index direction |
 |---|---|---:|---|
 | `BudgetVersionId` | Guid | Yes | Same aggregate and tenant |
-| `BudgetPeriodId` | Guid | Yes | Exactly one explicit same-snapshot BudgetPeriod |
-| `LineKey` | string | Yes | Stable normalized breakdown key; unique within version and period |
-| `BreakdownDimensions` | typed map/value objects | Conditional | Allowed dimensions and cardinalities require FP&A owner decision; arbitrary JSON forbidden |
-| `Amount` | decimal | Yes | Proposed BSON Decimal128 / CLR decimal; precision 28, scale 4 baseline, final decision open |
-| `CurrencyReference` | canonical reference | Yes | Must match version currency unless explicit FX policy is later approved |
-| `UnitSemantics` | closed value | Yes | Must match version unit semantics |
+| `PeriodReference` | string | Yes | Exact server-generated reference to one of the snapshot's 12 periods |
+| `LineKey` | string | Yes | Trim + NFC, 1..128; case-sensitive ordinal identity |
+| `LineType` | closed enum | Yes | Exactly `Base`, `Adjustment` or `Credit` |
+| `Amount` | decimal | Yes | BSON Decimal128 / CLR decimal, precision max 28, persisted scale exactly 4 |
 
-Amounts are normalized with the version rounding policy before persistence and hashing. Negative values are
-rejected by default; signed adjustment lines require an explicit line type and owner-approved rule. Floating
-point types are forbidden. Indexes begin with `TenantId` and include `IsDeleted` where applicable.
+Currency and units are inherited from the version and are not line input; mixed currency, mixed units and FX
+conversion are forbidden in v1. `Base` requires `Amount >= 0`, `Adjustment` may be signed, `Credit` requires
+`Amount <= 0`, and zero is valid. Unique identity is `(TenantId, BudgetVersionDraftId/VersionId,
+PeriodReference, normalized LineKey, LineType)`. Breakdown dimensions and arbitrary JSON maps are deferred and
+forbidden in v1. Binary floating point is forbidden. Input scale above four is rejected with `400`, never
+silently rounded. Each line's absolute bound is `1,000,000,000,000,000.0000`.
 
 ### FundingBaselineSelectionOccurrence
 
@@ -274,13 +291,43 @@ immutable after insertion.
 
 ### ContentHash contract
 
-The proposal is SHA-256 over exact UTF-8 bytes without BOM from a versioned canonicalization. Canonicalization
-must define deterministic period, line and dimension ordering; invariant decimal representation; canonical
-currency, period and typed-reference serialization; Unicode normalization, delimiters, null/empty and newline
-rules. Because technical child IDs are excluded, each line's period linkage is serialized by the referenced
-BudgetPeriod's canonical PeriodReference plus deterministic order, never by `BudgetPeriodId`. Database row/child
-IDs and technical concurrency `Version` are excluded. Exact canonicalization identity
-and normative positive/negative test vectors are ready-for-dev blockers; implementation must not invent them.
+`fpa.budget-content-canonical-json.v1` is exact compact JSON encoded as UTF-8 without BOM or trailing newline.
+All strings are NFC; UUIDs use lowercase canonical D; LocalDate is `yyyy-MM-dd`; contract identities are exact.
+Properties use this closed order: `ContractName`, `ContractVersion`, `BudgetId`, `BudgetVersionNumber`,
+`RevisionLabel`, `CurrencyReference` (`ContractName`, `ContractVersion`, `AlphabeticCode`),
+`BudgetFiscalCalendarReference` (`ContractName`, `ContractVersion`, `BudgetFiscalCalendarId`), `UnitSemantics`,
+`RoundingPolicy` (`Scale`, `Midpoint`), `FundingBaselineType`, `EffectiveFrom`, `Notes`,
+`ApprovalOutcomeReference`, `Periods`, `Lines`. `ApprovalOutcomeReference` is either JSON `null`, or the exact
+separately ratified immutable MOD-0023 tuple; certification fails closed until that tuple is known when policy
+requires it. A period property order is `PeriodReference`, `Order`, `LocalStartDate`,
+`LocalEndDateExclusive`; a line property order is `PeriodReference`, `LineKey`, `LineType`, `Amount`.
+
+Periods sort by calendar `Order`. Lines sort by period order, then NFC `LineKey` ordinal, then `LineType`
+ordinal token. Amount is a JSON string with exactly four decimal digits, no exponent, grouping or locale form.
+Database/child IDs, `TenantId`, audit timestamps, technical `Version` and derived totals are excluded. Derived
+totals are recomputed with checked decimal and normalized to scale four using `MidpointRounding.ToEven` before
+certification; `VersionTotal` is not authoritative input. Included content is the semantic references, calendar,
+currency, units, system rounding policy, baseline type, effective date, notes, optional approval input, periods
+and lines. SHA-256 output is lowercase 64 hex.
+
+Normative minimal positive canonical bytes (one zero-valued valid line and 12 generated periods):
+
+```json
+{"ContractName":"fpa.budget-content-canonical-json.v1","ContractVersion":"1.0","BudgetId":"11111111-1111-1111-1111-111111111111","BudgetVersionNumber":1,"RevisionLabel":"FY2027","CurrencyReference":{"ContractName":"fpa.currency-reference","ContractVersion":"1.0","AlphabeticCode":"USD"},"BudgetFiscalCalendarReference":{"ContractName":"fpa.budget-fiscal-calendar-reference","ContractVersion":"1.0","BudgetFiscalCalendarId":"22222222-2222-2222-2222-222222222222"},"UnitSemantics":"Units","RoundingPolicy":{"Scale":4,"Midpoint":"ToEven"},"FundingBaselineType":"Original","EffectiveFrom":"2026-07-01","Notes":"","ApprovalOutcomeReference":null,"Periods":[{"PeriodReference":"FY2027-P01","Order":1,"LocalStartDate":"2026-07-01","LocalEndDateExclusive":"2026-08-01"},{"PeriodReference":"FY2027-P02","Order":2,"LocalStartDate":"2026-08-01","LocalEndDateExclusive":"2026-09-01"},{"PeriodReference":"FY2027-P03","Order":3,"LocalStartDate":"2026-09-01","LocalEndDateExclusive":"2026-10-01"},{"PeriodReference":"FY2027-P04","Order":4,"LocalStartDate":"2026-10-01","LocalEndDateExclusive":"2026-11-01"},{"PeriodReference":"FY2027-P05","Order":5,"LocalStartDate":"2026-11-01","LocalEndDateExclusive":"2026-12-01"},{"PeriodReference":"FY2027-P06","Order":6,"LocalStartDate":"2026-12-01","LocalEndDateExclusive":"2027-01-01"},{"PeriodReference":"FY2027-P07","Order":7,"LocalStartDate":"2027-01-01","LocalEndDateExclusive":"2027-02-01"},{"PeriodReference":"FY2027-P08","Order":8,"LocalStartDate":"2027-02-01","LocalEndDateExclusive":"2027-03-01"},{"PeriodReference":"FY2027-P09","Order":9,"LocalStartDate":"2027-03-01","LocalEndDateExclusive":"2027-04-01"},{"PeriodReference":"FY2027-P10","Order":10,"LocalStartDate":"2027-04-01","LocalEndDateExclusive":"2027-05-01"},{"PeriodReference":"FY2027-P11","Order":11,"LocalStartDate":"2027-05-01","LocalEndDateExclusive":"2027-06-01"},{"PeriodReference":"FY2027-P12","Order":12,"LocalStartDate":"2027-06-01","LocalEndDateExclusive":"2027-07-01"}],"Lines":[{"PeriodReference":"FY2027-P01","LineKey":"Revenue","LineType":"Base","Amount":"0.0000"}]}
+```
+
+SHA-256: `2262b02bc94923998e72e797f4e3996246e38b69aaa34349b119a111b919be13`.
+
+Normative multi-line canonical bytes (including the displayed NFC `é`) are:
+
+```json
+{"ContractName":"fpa.budget-content-canonical-json.v1","ContractVersion":"1.0","BudgetId":"11111111-1111-1111-1111-111111111111","BudgetVersionNumber":2,"RevisionLabel":"Réforecast","CurrencyReference":{"ContractName":"fpa.currency-reference","ContractVersion":"1.0","AlphabeticCode":"USD"},"BudgetFiscalCalendarReference":{"ContractName":"fpa.budget-fiscal-calendar-reference","ContractVersion":"1.0","BudgetFiscalCalendarId":"22222222-2222-2222-2222-222222222222"},"UnitSemantics":"Units","RoundingPolicy":{"Scale":4,"Midpoint":"ToEven"},"FundingBaselineType":"Reforecast","EffectiveFrom":"2026-07-01","Notes":"Board case","ApprovalOutcomeReference":null,"Periods":[{"PeriodReference":"FY2027-P01","Order":1,"LocalStartDate":"2026-07-01","LocalEndDateExclusive":"2026-08-01"},{"PeriodReference":"FY2027-P02","Order":2,"LocalStartDate":"2026-08-01","LocalEndDateExclusive":"2026-09-01"},{"PeriodReference":"FY2027-P03","Order":3,"LocalStartDate":"2026-09-01","LocalEndDateExclusive":"2026-10-01"},{"PeriodReference":"FY2027-P04","Order":4,"LocalStartDate":"2026-10-01","LocalEndDateExclusive":"2026-11-01"},{"PeriodReference":"FY2027-P05","Order":5,"LocalStartDate":"2026-11-01","LocalEndDateExclusive":"2026-12-01"},{"PeriodReference":"FY2027-P06","Order":6,"LocalStartDate":"2026-12-01","LocalEndDateExclusive":"2027-01-01"},{"PeriodReference":"FY2027-P07","Order":7,"LocalStartDate":"2027-01-01","LocalEndDateExclusive":"2027-02-01"},{"PeriodReference":"FY2027-P08","Order":8,"LocalStartDate":"2027-02-01","LocalEndDateExclusive":"2027-03-01"},{"PeriodReference":"FY2027-P09","Order":9,"LocalStartDate":"2027-03-01","LocalEndDateExclusive":"2027-04-01"},{"PeriodReference":"FY2027-P10","Order":10,"LocalStartDate":"2027-04-01","LocalEndDateExclusive":"2027-05-01"},{"PeriodReference":"FY2027-P11","Order":11,"LocalStartDate":"2027-05-01","LocalEndDateExclusive":"2027-06-01"},{"PeriodReference":"FY2027-P12","Order":12,"LocalStartDate":"2027-06-01","LocalEndDateExclusive":"2027-07-01"}],"Lines":[{"PeriodReference":"FY2027-P01","LineKey":"Revenue","LineType":"Base","Amount":"1000.0000"},{"PeriodReference":"FY2027-P01","LineKey":"Revenue","LineType":"Adjustment","Amount":"-25.1250"},{"PeriodReference":"FY2027-P02","LineKey":"Credit","LineType":"Credit","Amount":"-10.0000"}]}
+```
+
+SHA-256: `2e0c437ca89d23d2602f8b2320d158e59d924284761ed6d8d4529a05a319fceb`.
+Normative tests compare both complete closed-schema byte sequences before hashes. Property-reordered input is canonicalized to this
+order; NFD strings are NFC-normalized; numeric/short/exponent decimal input is invalid (`400`) rather than
+silently reformatted; unsorted lines canonicalize to the mandated sort. Extra/missing properties fail closed.
 
 ## 5. Repo Scope
 
@@ -315,8 +362,8 @@ and normative positive/negative test vectors are ready-for-dev blockers; impleme
 | MOD-0018 | Tenant entitlement, JWT permissions and service identity | Runtime provisioning/evidence required |
 | MOD-0021 / MOD-0035 | Immutable audit intent/consumer mechanics | Runtime evidence required; domain mutation and audit intent atomicity mandatory |
 | MOD-0023 | Optional authoritative approval outcome | Separate typed contract; no local approval state |
-| Canonical currency authority | Currency identity and metadata | Exact module/endpoint and availability SLA open |
-| Canonical time-period authority | Fiscal calendar and period identity | Exact module/endpoint and availability SLA open |
+| Currency allowlist provider | Validate exact `CurrencyReferenceV1` at new certification/selection | Provider implementation/SLA is runtime-blocked; financial shape is closed |
+| MOD-0136 BudgetFiscalCalendar | Budgeting-only monthly calendar and period identity | Financial semantics closed; persistence/API remains runtime-blocked |
 | MongoDB replica set | Multi-document transaction and idempotency | Required before runtime promotion |
 
 ## 8. Runtime Constraints
@@ -328,7 +375,7 @@ and normative positive/negative test vectors are ready-for-dev blockers; impleme
   non-optional argument and every query, mutation and index predicate is tenant-scoped.
 - Certified BudgetVersion content is immutable. Mutation attempts and stale selection/version
   conflicts return `409` and never partially update the aggregate.
-- Malformed currency/period/reference shapes, decimal overflow and disallowed scale return `400`. An unavailable
+- Malformed currency/calendar/reference shapes, decimal overflow and disallowed scale return `400`. An unavailable
   authoritative provider when validation is required, or unknown/unsupported contract version, returns `503`.
   Existing certified versions remain historically readable during provider outage and are never reinterpreted;
   cached results cannot authorize new certification or selection.
@@ -339,15 +386,32 @@ and normative positive/negative test vectors are ready-for-dev blockers; impleme
 - Idempotency persistence records the canonical request hash, operation, in-progress/completed state and stable
   response in the same transaction. Canonical decimal representation and deterministic line ordering are part
   of hashing; key length/charset, retention/TTL and unknown-commit recovery remain promotion decisions.
-- Uncertified abandoned staging may be soft-deleted under policy. Certified, selected, referenced or historically
+- Uncertified abandoned staging may be soft-deleted under policy, but has no automatic hard purge. Certified,
+  periods, lines, selection history and hashes have no TTL, CRUD delete or bulk delete. Selected, referenced or historically
   effective versions cannot be ordinary CRUD-deleted: append-only retirement/supersession preserves queryable
-  financial and selection history. Legal hold, retention and exceptional purge need separately approved compliance
-  authority. PPM history is never rewritten when selection changes.
+  financial and selection history. V1 has no exceptional purge; legal hold blocks deletion/soft deletion, and
+  immutable history cannot be purged without a future MOD-0030-approved amendment. PPM history is never rewritten.
+- Certification requires an active Budget, current non-abandoned draft fence, exact authoritative currency and
+  fiscal-calendar references, 12 generated periods, at least one valid unique line, no orphan period/line,
+  successful canonical bytes/hash, and idempotency receipt plus audit intent in the same transaction. When policy
+  requires approval, the exact immutable MOD-0023 `ApprovalOutcomeReference` is required; otherwise no local
+  Approved state is created. Certifier needs `budgeting.budget-versions.certify` and must differ from both draft
+  creator and latest updater; there is no bypass.
+- Checked decimal is used throughout. Calculated intermediates normalize to scale four with ToEven only before
+  certification. Line absolute bound is `1,000,000,000,000,000.0000`; version aggregate absolute bound is
+  `1,000,000,000,000,000,000.0000`; overflow stops certification with `400`.
 - No service, collection, route, event, transport or port is allocated by this draft.
 - Gate I-B validation is mode-specific: `HistoricalResolve` can resolve visible retired certified history;
   `NewReferenceEligibility` cannot infer current selection; `CurrentSelectionEligibility` consults only the
   immutable MOD-0136 selection occurrence/event truth for exact `InvestmentCaseContextV1`. PPM wrapper storage
   is never used as selection authority.
+- Selection accepts only a certified, visible, non-retired version that passes `NewReferenceEligibility`;
+  uncertified versions are never selectable. `EffectiveFromUtc` is the server commit time: future scheduling
+  and backdating are forbidden in v1. There is exactly one current occurrence per tenant plus exact
+  `InvestmentCaseContextV1`. Replace appends prior disposition, successor occurrence and audit intent in one
+  transaction; close appends prior closure and audit intent. Both use the existing exact replace/close
+  permissions, while selection validation uses `budgeting.budget-version-references.validate`; no new
+  validation permission is introduced.
 
 ### Service topology decision
 
@@ -366,17 +430,16 @@ type, permission and collection leakage. Failure to maintain those boundaries tr
 
 - Proposed shell: `tenant`; every future Razor page explicitly sets `Layout = "_LayoutTenantShell";`.
 - Proposed view paths: `Views/FPandA/Budgets/**` and `Views/FPandA/BudgetVersions/**`; no ASP.NET `Areas/`.
-- Budget surface field count: **7** (`Code`, `Name`, `Description`, `DefaultCurrencyReference`,
-  `DefaultPeriodReference`, `UnitSemantics`, `RoundingPolicy`) → Golden Slim.
-- BudgetVersionDraft create/edit surface field count: **13**. Draft inputs are `RevisionLabel`,
-  `PeriodReference`, `CurrencyReference`, `UnitSemantics`, `RoundingPolicy`, `FundingBaselineType`,
-  `EffectiveFrom`, `Notes` (8). The repeatable line editor adds `LineKey`, `BreakdownDimensions`, `Amount`,
-  `CurrencyReference`, `UnitSemantics` (5) → Golden Compact. Child `BudgetPeriod.PeriodReference` values and
+- Budget surface field count: **6** (`Code`, `Name`, `Description`, `DefaultCurrencyReference`,
+  `DefaultFiscalCalendarReference`, `UnitSemantics`) → Golden Slim.
+- BudgetVersionDraft combined field count: **11**. Header inputs are `RevisionLabel`,
+  `BudgetFiscalCalendarReference`, `CurrencyReference`, `UnitSemantics`, `FundingBaselineType`, `EffectiveFrom`,
+  `Notes` (7). The line editor adds `PeriodReference`, `LineKey`, `LineType`, `Amount` (4) → Golden Compact.
+  Child calendar identities and
   `BudgetPeriod.Order` are deterministically generated from the authoritative fiscal calendar selected by the
-  version-level `PeriodReference`; users do not select or edit child period references. Optional user-entered
-  `ContainmentReference`/`VersionTotal` would increase the count. Route-derived
+  version-level reference; users select a generated period for a line but do not create/edit child definitions. Route-derived
   `BudgetId` and server fields `BudgetVersionNumber`, certification, hash, tenant, actor and audit are excluded.
-- Parent pack frontmatter selects `compact` and `form_field_count: 13` because the minimum primary
+- Parent pack frontmatter selects `compact` and `form_field_count: 11` because the minimum primary
   create/edit surface governs the module template. Budget may use the Slim list/create pattern only if a later
   implementation slice preserves both explicit counts and verifier contracts.
 - Approval UI and PPM-hosted budget forms are forbidden.
@@ -394,9 +457,9 @@ handlers must not directly implement arbitrary child upsert loops or external HT
 
 ## 11. Frontend File Contract
 
-- Budget (7 fields, Slim candidate): `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml`, `_IndexL10n.cshtml`,
+- Budget (6 fields, Slim candidate): `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml`, `_IndexL10n.cshtml`,
   `_CreateEditOffcanvas.cshtml`, `_DetailsQuickView.cshtml`, marker class, scripts and seven-language RESX.
-- BudgetVersionDraft construction (13 fields, Compact) and certified-version read-only detail: `Index.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`,
+- BudgetVersionDraft construction (11 fields, Compact) and certified-version read-only detail: `Index.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`,
   `_Form.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml`, `_IndexL10n.cshtml`, marker class, scripts and
   seven-language RESX. Compact must not use create/edit or details offcanvas partials.
 - Both tables use `data-dt-standard="v2"`, skeleton loader and shared bulk-action conventions where deletion is
@@ -412,17 +475,18 @@ handlers must not directly implement arbitrary child upsert loops or external HT
 | Budget Code | Yes | Trim + NFC; 1..64 | Unique active tenant index; duplicate pre-check |
 | Budget Name | Yes | Trim + NFC; 1..200 | Validator |
 | Description / Notes | No | Trim + NFC; max 2000 | Validator |
-| CurrencyReference | Yes | Exact canonical typed identity | Authoritative fail-closed validation |
-| PeriodReference | Yes | Exact canonical typed identity and containment | Authoritative fail-closed validation |
-| UnitSemantics | Yes | Closed owner-approved enum | Same value across version/lines |
-| RoundingPolicy | Yes | Scale within approved limit and closed midpoint mode | Normalize before hash/persist |
+| CurrencyReference | Yes | Exact `fpa.currency-reference` / `1.0`; three uppercase ASCII ISO-4217 letters | Versioned allowlist; unknown `400`, unavailable `503` |
+| BudgetFiscalCalendarReference | Yes | Exact `fpa.budget-fiscal-calendar-reference` / `1.0`; exact three-field shape | Authoritative budgeting calendar validation |
+| BudgetFiscalCalendar | Yes | Monthly, 12 periods, IANA timezone, start month 1..12, LocalDate end-exclusive, no overlap | Deterministic generated definitions |
+| UnitSemantics | Yes | `Units`, `Thousands`, `Millions` | One version value; no line input/mixing |
+| RoundingPolicy | Server | Exact scale 4 / ToEven system constant | Captured in snapshot; not user-selectable |
 | BudgetVersionNumber | Server | Positive, monotonic, immutable | Unique tenant/budget index + transaction |
 | Draft fence | Mutation | Exact current technical token | Stale construction/certification returns 409 |
-| ContentHash | Certification | SHA-256 + approved canonicalization identity | Seal-time recomputation + normative vectors |
-| EffectiveFrom | Yes | Canonical date/period rule | Period compatibility validation |
-| Amount | Yes | Decimal only; proposed precision 28/scale 4 | Decimal128; overflow/extra scale rejected or deterministically rounded per approved rule |
-| Negative Amount | Conditional | Rejected unless explicit adjustment type permits it | Domain invariant |
-| LineKey | Yes | Normalized and unique within version/period | Compound unique index |
+| ContentHash | Certification | SHA-256 + `fpa.budget-content-canonical-json.v1` | Seal-time recomputation + normative vectors |
+| EffectiveFrom | Yes | LocalDate compatible with generated fiscal year | Calendar compatibility validation |
+| Amount | Yes | Decimal128/CLR decimal; precision max 28, persisted/display scale 4; input extra scale `400` | Checked arithmetic and exact line/aggregate bounds |
+| LineType/sign | Yes | `Base >= 0`; `Adjustment` signed; `Credit <= 0`; zero accepted | Domain invariant |
+| LineKey | Yes | Trim + NFC, 1..128, case-sensitive ordinal | Unique tenant/version/period/key/type index |
 | FundingContextReference | Gate I-B selection | Exact `InvestmentCaseContextV1`: `ppm.investment-case-context` / `1.0`, fields ContractName, ContractVersion, InvestmentCaseId only | No free-text discriminator; PPM owns context/lifecycle |
 | Selection | Conditional | One effective occurrence per tenant + typed funding context, derived from immutable occurrence and closure/disposition history | Fence + uniqueness enforcement + transaction |
 | Selection effective time | Selection | Occurrence start and event timestamps are server-derived UTC; no occurrence is edited in place | No overlap per tenant + context |
@@ -464,6 +528,8 @@ handlers must not directly implement arbitrary child upsert loops or external HT
 - Budget CRUD, draft construction, version certification/retirement, selection read/replace/close and reference
   validation permissions are separate. Selection replacement does not imply certification; neither implies
   MOD-0023 approval.
+- `CurrentSelectionEligibility` uses the existing exact
+  `budgeting.budget-version-references.validate` permission; v1 defines no additional selection-validation key.
 - Cross-tenant lookup is `404`; authenticated insufficient permission is `403`; unauthenticated is `401`.
 - Returned errors use stable safe codes and expose no Mongo index, stack, provider or cross-tenant existence
   detail. Rejected operations create neither a domain mutation nor an audit intent.
@@ -492,10 +558,14 @@ topology approval, an integration-agent-only task must determine explicit upstre
 - [ ] `Selected`, `Certified` and MOD-0023 `Approved` remain distinct in domain, API, UI and localization.
 - [ ] Tenant/actor values are server-side; cross-tenant returns 404, missing permission 403, immutable conflict
   409 and unavailable/unknown contract dependency 503.
-- [ ] Decimal precision, scale, currency, unit, rounding and negative-value rules are owner-approved and tested.
+- [ ] Decimal128/CLR decimal precision 28, persisted/display scale four, ToEven certification normalization,
+  exact bounds, currency/calendar shapes, closed unit/line enums and sign rules are enforced and tested.
+- [ ] Selection permits only certified, visible, non-retired, newly eligible versions; server commit time is the
+  effective time, future/backdated selection is rejected, and replace/close preserve exactly one current
+  occurrence using the existing exact permissions.
 - [ ] Mutation, audit intent, selected uniqueness and idempotency are atomic in a Mongo replica-set transaction.
-- [ ] Budget field count 7 selects Slim; BudgetVersionDraft field count 13 selects Compact because child period
-  references/order are deterministically generated from the version fiscal calendar and are not user inputs; all tenant pages explicitly
+- [ ] Budget field count 6 selects Slim; BudgetVersionDraft combined field count 11 selects Compact because
+  calendar definitions/order are server-generated and only a line's generated `PeriodReference` is selected; all tenant pages explicitly
   use `_LayoutTenantShell` and DataTables pass `verify_datatable_page.py` plus `quality-gate-datatable`.
 - [ ] Seven-language RESX parity and browser smoke pass without approval UI, PPM budget forms or hardcoded lookup fallback.
 - [ ] Prototype/migration candidates remain quarantined unless an explicit mapping, reconciliation, rollback and
@@ -507,7 +577,14 @@ topology approval, an integration-agent-only task must determine explicit upstre
 - Domain/unit: draft-to-atomic-seal, immutable certified versions, revision numbering, immutable occurrence plus
   closure/disposition-derived effective selection history,
   certification-vs-selection-vs-approval, defaults-vs-snapshot, rounding/negative rules and hash vectors.
-- Integration: concurrent version creation and selection, Decimal128 precision/scale, canonical currency/period
+- Financial matrix: exact scale-four input rejection, checked-intermediate ToEven normalization, line/aggregate
+  bounds, all `LineType` sign/zero cases, ordinal line uniqueness, single currency/unit inheritance, mixed/FX
+  rejection, 12 monthly LocalDate periods, exclusive/non-overlap boundaries and closed-period historical reads.
+- Certification: reject inactive Budget, stale/abandoned draft, unavailable/invalid currency or calendar,
+  incomplete 12-period generation, zero/orphan/duplicate/invalid lines, hash failure and missing required approval;
+  reject creator/latest-updater as certifier and prove no bypass. Successful certification atomically persists
+  snapshot, receipt and audit intent; correction produces a new draft, ID and monotonic version number.
+- Integration: concurrent version creation and selection, Decimal128 precision/scale/bounds, exact currency/calendar
   validation, tenant isolation, cross-tenant 404, permission 403, immutable 409, dependency/contract 503.
 - Transaction: replica-set commit/rollback across aggregate, idempotency and audit intent; injected audit failure
   rolls back the appended closure/disposition event, successor occurrence and audit intent, leaving the prior
@@ -530,7 +607,9 @@ topology approval, an integration-agent-only task must determine explicit upstre
   currency, period, unit, dimension, total or negative-value semantics are never defaulted or silently rounded.
   Migrated candidates remain non-referenceable and unselected until explicit owner-reviewed reconciliation.
 - Archive/retention: abandoned staging soft delete; certified/selected/referenced/history records reject CRUD
-  delete and remain queryable after append-only retirement/supersession; no PPM history rewrite.
+  delete, TTL, bulk-delete and exceptional purge and remain queryable after append-only retirement/supersession;
+  legal hold blocks draft deletion, MOD-0030-approved future amendment gates immutable-history purge, and PPM
+  history is never rewritten.
 - Frontend (after authority): explicit tenant layout, Slim/Compact file sets and counts, DataTable verifier,
   `quality-gate-datatable`, seven-language RESX parity, same-origin/Gateway browser smoke, no approval/PPM forms.
 - Build (after topology): selected service, frontend and gateway builds PASS; no port/Gateway allocation is
@@ -538,19 +617,19 @@ topology approval, an integration-agent-only task must determine explicit upstre
 
 ## 18. Ready-for-dev Checklist
 
-- [ ] FP&A Budgeting Process Owner approves ownership, lifecycle, version/certification and selection semantics.
-- [ ] Financial open decisions in Follow-up Items are closed with exact values.
+- [x] FP&A Control Tower closed the v1 ownership, lifecycle, version/certification, selection and financial semantics on 2026-08-03.
+- [ ] Closed v1 financial semantics and normative canonical-hash vectors are implemented without local widening.
 - [ ] Service topology is approved; `service`, concrete service-local mapping for logical `EntityBase`, collection ownership and repo scope are concrete without inventing a base type.
 - [ ] Option A isolation architecture tests are specified and proven feasible, or Option B fallback is selected.
-- [ ] Exact currency and time-period authorities/contracts/SLAs are approved.
+- [ ] Currency allowlist provider implementation/SLA and BudgetFiscalCalendar persistence/API wiring are authorized.
 - [ ] `BudgetVersionReferenceV1` producer contract is approved; PPM's closed `InvestmentCaseContextV1` and
   `SelectedBudgetVersionReferenceV1` profiles have exact bilateral serialization/mode/error fixtures approved,
   while a separately authorized executable consumer slice remains gated.
 - [ ] Gate I-B funding context is exact `ppm.investment-case-context` `1.0`; CurrentSelectionEligibility fixtures
   use it without free-text kind or any transfer of InvestmentCase ownership to MOD-0136.
-- [ ] SHA-256 canonicalization identity, exact UTF-8 rules, deterministic ordering/decimal/reference serialization and normative vectors are approved.
-- [ ] Draft deletion, certified retirement/supersession, retention/legal hold and exceptional-purge authority are approved.
-- [ ] Golden Reference Compact live pack/code and Budget Slim pattern are confirmed; field counts remain 13 and 7,
+- [ ] SHA-256 implementation reproduces the approved exact UTF-8 bytes and both normative hashes.
+- [ ] Draft soft deletion and immutable-history no-purge/legal-hold rules are implemented as specified.
+- [ ] Golden Reference Compact live pack/code and Budget Slim pattern are confirmed; field counts remain 11 and 6,
   with child periods deterministically generated from the authoritative version-level fiscal calendar.
 - [ ] Layout, backend convention, frontend file contract and field validation are complete for authorized slices.
 - [ ] The 15 exact lowercase permission keys are approved without wildcard, alias or normalization; permission
@@ -574,35 +653,31 @@ topology approval, an integration-agent-only task must determine explicit upstre
   their delivery gates and explicit runtime authority are separately approved. DCP-006 OD-04 remains OPEN/PARTIAL.
 - No runtime literal, collection, permission registration, route, port, event or deployment was created here.
 
+### Change log
+
+| Date | Change | Authority |
+|---|---|---|
+| 2026-08-03 | Closed the A-class v1 financial semantics: Decimal128/scale/bounds/ToEven, exact currency and budgeting-calendar references, units, line schema/sign rules, certification separation-of-duties, selection timing, canonical JSON with verified normative SHA-256 vectors, immutable retention and field counts 6/11. Status, topology and runtime authority remain unchanged. | User / FP&A Control Tower |
+
 ## 20. Follow-up Items
 
-### Financial open decisions (promotion blockers)
+### Closed A-class financial decisions
 
-- Confirm amount precision/scale (proposal `decimal(28,4)`/Decimal128), maximum aggregate totals and overflow behavior.
-- Confirm midpoint rounding mode, when rounding occurs, and whether displayed vs persisted precision may differ.
-- Confirm negative-value policy and exact permitted adjustment/credit line types.
-- Name the canonical currency authority, typed reference shape, supported currency changes and any FX/rate owner.
-- Name the canonical fiscal calendar/time-period authority, period granularity, timezone/date boundary and closed-period behavior.
-- Approve unit semantics (`Units`, `Thousands`, `Millions`) and whether mixed units/currencies are ever allowed.
-- Define BudgetPeriod and BudgetLine breakdown dimensions, mandatory line keys and uniqueness/cardinality limits.
-- Define funding baseline classifications, certification prerequisites, replacement/closure permissions and
-  whether selecting an uncertified version is always forbidden. Gate I-B scope is exact PPM-owned
-  `InvestmentCaseContextV1`; FP&A must still approve its selection effective-time boundary and whether additional
-  non-PPM funding contexts require separate future contracts rather than widening this v1.
-- Decide whether selected-baseline validation requires a distinct least-privilege permission. Do not add a key
-  until entitlement evidence and the selected-baseline v1 boundary justify it.
-- Approve SHA-256 canonicalization version, exact UTF-8 bytes, deterministic ordering/decimal/reference rules and
-  normative vectors; implementation cannot create an interim scheme.
-- Define retention/legal hold and exceptional purge authority. Certified, selected, referenced and historically
-  effective versions use append-only retirement/supersession, never ordinary CRUD delete.
-- Decide persistence/retention details for the explicit mutable `BudgetVersionDraft` staging model.
+Money precision/scale/bounds, ToEven normalization, single-currency/no-FX behavior, budgeting-owned monthly
+calendar semantics, unit semantics, exact line fields/types/sign rules, certification prerequisites and
+separation-of-duties, baseline classifications/selection timing, canonical hash schema/vectors, retention and
+UI field counts are closed by this Control Tower decision. They are normative v1 requirements, not open/TBD
+items, and implementation may not widen or reinterpret them.
 
-### Governance and delivery follow-ups
+### Remaining B-class promotion blockers
 
-- Obtain topology architecture review for Option A and document Option B fallback trigger evidence.
-- Author/approve the MOD-0138 parent pack with equal internal-module isolation.
-- Ratify the exact bilateral request/response envelopes and normative positive/negative fixtures against the
-  already closed MOD-0117 Gate I-B consumer profile before any separately authorized executable slice.
-- Resolve MOD-0018 permissions/S2S identity and MOD-0021/MOD-0035 audit runtime evidence.
-- Inventory EnterpriseStrategy prototype documents; write explicit mapping, precision-loss detection, quarantine,
-  reconciliation, rollback and post-migration verification before requesting migration authority.
+- Approve the conditional `Diten.FpaService` isolated Budgeting-module topology and architecture-test fallback
+  to `Diten.BudgetingService`.
+- Fix exact repository paths, concrete service-local entity base, Mongo collection/index names, routes and port.
+- Provision dedicated S2S credentials and delegated actor propagation.
+- Complete MOD-0018 permission/entitlement provisioning for the exact 15 keys.
+- Complete MOD-0021/MOD-0035 transactional audit-intent/outbox integration evidence.
+- Close the replica-set transaction, idempotency receipt, retry and unknown-commit runtime design.
+- Approve migration inventory, quarantine, cutover, rollback and reconciliation evidence for prototype data.
+- Record explicit runtime authority; until then no service, frontend, Gateway, PPM or WorkCenter implementation
+  is executable and `status: draft`, `service: TBD`, `production_authority: none` remain unchanged.
