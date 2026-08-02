@@ -351,10 +351,12 @@ The persisted `OutcomeReferenceV1` contains **exactly five fields**:
 
 Successful validation returns `200` with the same exact five canonical fields in a non-persisted,
 non-cacheable response projection; there is no stored or returned `isReferenceable` boolean. Missing,
-cross-tenant, invisible or ineligible tuples return indistinguishable `404`. The response does **not** add
-actual value, unit, evidence, realization state or relationship context. Success means the exact tuple is
-same-tenant, actor-visible and valid under current Outcome lifecycle/version policy; it is not a promise that
-the result will remain referenceable forever.
+cross-tenant, invisible or otherwise non-disclosable tuples return indistinguishable `404`. A visible tuple's
+lifecycle eligibility is evaluated by the requested supported mode: retired/superseded history may return
+`200` for `HistoricalResolve`, while visible new-link ineligibility returns `409` for
+`NewReferenceEligibility`. The response does **not** add actual value, unit, evidence, realization state or
+relationship context. Success means the exact tuple is same-tenant, actor-visible and valid for that explicit
+mode; it is not a promise of eligibility for another mode or future time.
 It cannot become a collection, a cached authorization decision, a replicated actual-value model or a
 PPM-owned projection.
 
@@ -373,6 +375,61 @@ validation makes no MOD-0117 or MOD-0007 call.
 Likewise, `decisionReference` is excluded from OutcomeReferenceV1 and belongs only to a separate
 DecisionOutcomeLink provenance command/contract. MOD-0007 availability is irrelevant to OutcomeReference
 validation unless a decision-provenance operation is explicitly requested.
+
+### PPM bilateral Gate I-C consumer profile
+
+MOD-0117 owns exact wrapper **`ppm.benefit-commitment-outcome-reference` / `1.0`**. Its persisted value contains
+exactly four fields and no others:
+
+| Field | Exact bilateral serialization rule |
+|---|---|
+| `ContractName` | Exact `ppm.benefit-commitment-outcome-reference` |
+| `ContractVersion` | Exact `1.0` |
+| `BenefitCommitmentId` | Non-empty MOD-0117-owned identifier |
+| `OutcomeReference` | Exact, unmodified nested five-field MOD-0072 `OutcomeReferenceV1` tuple |
+
+The wrapper is the PPM-owned relationship value. MOD-0117 owns its `0..n` cardinality and attach/detach/retire
+lifecycle. It never adds or copies actual value, measurement, period, evidence or realization state. MOD-0072
+does not persist the wrapper, reverse relationship or consumer lifecycle.
+
+#### Exact mode fixture
+
+| Mode | MOD-0072 producer behavior |
+|---|---|
+| `HistoricalResolve` | Resolves the exact OutcomeReferenceV1 tuple even when the Outcome/version is retired or superseded; historical resolution never authorizes a new PPM relationship |
+| `NewReferenceEligibility` | Returns success only when the exact visible Outcome/version is eligible for a new relationship; visible retired, superseded or otherwise ineligible state returns `409` |
+| `CurrentSelectionEligibility` | Rejected with `400`; OutcomeReference is a non-selection contract |
+
+#### Exact error fixture
+
+| Condition | HTTP result |
+|---|---:|
+| Malformed caller request, unexpected field set or unsupported mode for this non-selection contract | `400` |
+| Authentication or trusted-context failure | `401` |
+| Permission or dedicated S2S entitlement failure | `403` |
+| Missing, cross-tenant, invisible or otherwise non-disclosable Outcome/version | `404` |
+| Visible but retired/superseded/ineligible for `NewReferenceEligibility` | `409` |
+| Unknown/unsupported wrapper or nested producer version, timeout, provider unavailable, malformed authoritative response or indeterminate dependency | `503` |
+
+Supported-version behavior is fail-closed and exact: the bilateral adapter supports only wrapper
+`ppm.benefit-commitment-outcome-reference` `1.0` with nested producer
+`diten.decision-intelligence.outcome-reference` `1.0`. Names and versions are case-sensitive; no alias,
+normalization, downgrade, nearest-version selection, fallback, cached allow or partial-field tolerance exists.
+An unknown version or a response whose name/version/field allowlist does not match its exact fixture returns
+`503`. Delete/retirement eligibility remains separately fail-closed: unavailable, malformed, unsupported-version
+or indeterminate authoritative external-reference validation returns `503`, never `409` or a local inference.
+
+#### Bilateral fixture assertions
+
+- Wrapper serialization property set equals exactly `ContractName`, `ContractVersion`,
+  `BenefitCommitmentId`, `OutcomeReference`.
+- Nested serialization property set equals exactly `contractName`, `contractVersion`, `outcomeId`,
+  `outcomeVersionId`, `outcomeVersionNumber`; casing is preserved by the approved producer fixture and the
+  nested value is byte/semantic-field equivalent after round-trip.
+- Extra actual/measurement/period/evidence/realization fields fail fixture validation and are never persisted.
+- Mode fixtures exercise all three exact tokens and prove `HistoricalResolve` and `NewReferenceEligibility`
+  have distinct lifecycle meaning while `CurrentSelectionEligibility` is `400`.
+- Error fixtures prove exact `400/401/403/404/409/503` mapping without existence disclosure or fail-open.
 
 ### Optional OutcomeMeasurementReference proposal — identity OPEN
 
@@ -405,6 +462,9 @@ contract identity, and MOD-0117 Gate I-C does not consume or store it.
 18. Future tenant pages explicitly use `Layout = "_LayoutTenantShell"` and Compact conventions.
 19. No PPM actual-value edit form, editable realization status or approval button/action exists.
 20. Existing ES actual/realization prototype fields stay quarantined pending approved migration.
+21. PPM wrapper `ppm.benefit-commitment-outcome-reference` `1.0` serializes exactly four fields with the exact five-field OutcomeReferenceV1 nested unchanged.
+22. `HistoricalResolve` resolves retired/superseded history; `NewReferenceEligibility` returns `409` for visible ineligible state; `CurrentSelectionEligibility` returns `400`.
+23. Bilateral supported-version and error fixtures enforce exact names/versions/allowlists and `400/401/403/404/409/503` semantics without fallback.
 
 ## 17. Test Expectations
 
@@ -417,6 +477,9 @@ contract identity, and MOD-0117 Gate I-C does not consume or store it.
 - Idempotency: identical measurement append returns original; changed payload under same key returns `409`.
 - Dependency: missing/invisible evidence reference; conditional provider invocation; optional evidence omitted while provider unavailable succeeds; required/supplied evidence with unavailable/malformed provider fails `503`; unknown contract version.
 - Contract: exact five-field serialization for OutcomeReferenceV1; PPM `0..n` references before/after first measurement; BenefitCommitment/decision/measurement/period fields rejected from the persisted value; optional measurement-reference identity remains unapproved; request-only BenefitCommitment context creates no producer relationship; MOD-0007 outage does not affect validation without a decision provenance operation.
+- Bilateral PPM fixtures: exact four-field `BenefitCommitmentOutcomeReferenceV1` wrapper round-trip with exact nested five-field producer tuple; extra/missing/case-changed fields rejected; no-copy scan excludes actual value, measurement, period, evidence and realization state.
+- Bilateral modes: retired/superseded tuple succeeds under `HistoricalResolve`; the same visible tuple returns `409` under `NewReferenceEligibility`; `CurrentSelectionEligibility` returns `400`; historical resolution never grants new-link eligibility.
+- Bilateral errors/versions: malformed/mode `400`, auth context `401`, permission/S2S entitlement `403`, missing/cross-tenant/invisible/non-disclosable `404`, visible new-link ineligibility `409`, and unknown wrapper/nested version, timeout, unavailable/malformed provider or indeterminate dependency `503`; exact `1.0` only with no alias/downgrade/cache/fallback.
 - Architecture/ownership: no MOD-0072 BenefitRealizationLink entity/collection/repository/command/permission; optional backlink projection is non-authoritative and outside baseline; PPM remains the sole consumer-relationship owner.
 - Persistence: referenceability response is not stored; measured Outcome deletion conflicts; unknown external-reference eligibility fails closed; retirement preserves history.
 - Security: exact permission, entitlement, delegated actor provenance, S2S audience/scope and no fail-open.
@@ -439,6 +502,8 @@ contract identity, and MOD-0117 Gate I-C does not consume or store it.
 - [ ] Draft-delete and retirement/supersession policy is approved.
 - [ ] External-reference delete-eligibility contract/policy is approved; no local backlink/cache is treated as truth.
 - [ ] `diten.decision-intelligence.outcome-reference` `1.0` is approved by MOD-0072 and MOD-0117 owners.
+- [x] PPM authority checkpoint `a2c7ff5bbfd3ef2b4e3c8c15eab804db58d62520` was reviewed read-only; bilateral wrapper/mode/error profiles are reconciled in this draft without runtime authority.
+- [ ] Bilateral exact serialization, mode, error and supported-version fixtures are jointly approved and executable in the separately authorized producer/consumer slices.
 - [ ] Optional OutcomeMeasurementReference need and exact identity are approved or explicitly deferred.
 - [ ] Service topology, concrete service-local base implementation, service port and deployment ownership are approved. Frontmatter `entity_base: EntityBase` remains the mandatory logical tenant-owned base contract required by the standard; it does not select a service-local class before topology approval.
 - [ ] Exact collections/indexes, API routes, S2S credentials/audience and audit event are approved.
@@ -482,6 +547,7 @@ unknown-tenant records, rollback and negative proof that no legacy field remains
 11. Author and approve the matching MOD-0117 Gate I-C consumer amendment that owns stored references and relationship lifecycle.
 12. Author the separately approved prototype quarantine/migration slice if migration is desired.
 13. Record explicit runtime authority; draft pack approval alone does not authorize implementation.
+14. Approve and implement the bilateral PPM wrapper/producer fixtures only after both packs and runtime slices receive their separate authorities.
 
 ### Change Log
 
@@ -490,3 +556,4 @@ unknown-tenant records, rollback and negative proof that no legacy field remains
 | 2026-08-02 | Draft parent pack authored; planned/actual ownership, Gate I-C proposal and topology recommendation recorded. | User / Enterprise Strategy Control Tower |
 | 2026-08-02 | Control Tower correction: split base OutcomeReference from optional measurement reference; removed duplicate correction entity; made realization status a versioned-policy read projection; made referenceability non-persisted; tightened retirement, link permissions and conditional evidence failure semantics. | User / Enterprise Strategy Control Tower |
 | 2026-08-02 | Final draft ownership cleanup: renamed the business ordinal to OutcomeVersionNumber, reduced OutcomeReferenceV1 to exactly five fields, assigned BenefitCommitment consumer relationships solely to MOD-0117, separated decision provenance and made external-reference delete eligibility fail closed. | User / Enterprise Strategy Control Tower |
+| 2026-08-02 | Reconciled MOD-0072 with PPM checkpoint `a2c7ff5b`: exact four-field Gate I-C wrapper, nested five-field OutcomeReferenceV1, HistoricalResolve/NewReferenceEligibility profiles, non-selection rejection, supported-version behavior and bilateral error fixtures. No runtime authority granted. | User / Enterprise Strategy Control Tower |
