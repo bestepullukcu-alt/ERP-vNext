@@ -11,7 +11,7 @@ owner: FP&A Scenario Planning Process Owner
 branch: feature/esbp/mod-0138-scenario-planning
 started: 2026-08-02
 target: 2026-08-02
-form_field_count: 9
+form_field_count: 11
 production_authority: none
 ---
 
@@ -39,10 +39,11 @@ and [MOD-0117](../../portfolio-delivery/module-packs/MOD-0117-project-portfolio-
 
 MOD-0138 owns:
 
-- `Scenario`, `ScenarioVersion`, `ComparatorRun`, and `ComparatorOutput`.
+- `Scenario`, mutable `ScenarioVersionDraft`, immutable published `ScenarioVersion`, comparator execution/output,
+  and their append-only disposition histories.
 - Scenario assumptions/reference set and its deterministic normalization.
-- Selected-scenario truth and its immutable audit history.
-- Authoritative Scenario/Comparator reference validation.
+- Selected-scenario truth for an approved typed scope and its immutable occurrence/disposition history.
+- Authoritative current and historical Scenario/Comparator/selection reference validation.
 
 MOD-0138 does not own:
 
@@ -51,8 +52,11 @@ MOD-0138 does not own:
 - Generic `Decision` / `Rationale` (MOD-0007).
 - Approval workflow or `ApprovalOutcome` (MOD-0023).
 - Actual realization (MOD-0072).
+- Task, ApprovalTask, WorkCenter, assignment, SLA, escalation or execution behavior.
 - A PPM-local scenario engine, selection truth, or comparator UI.
 - Foreign payload snapshots. Foreign inputs remain opaque typed/versioned references.
+- `InvestmentCase` reference cardinalities, whether selection is required, PPM lifecycle transitions or PPM
+  minimal-reference persistence; MOD-0117 owns these consumer rules. MOD-0138 supplies compatibility fixtures only.
 
 Selection means “chosen analytical scenario”; it is not approval and creates no Approved/Rejected state.
 
@@ -60,27 +64,42 @@ Selection means “chosen analytical scenario”; it is not approval and creates
 
 | Kind | Proposed object | Draft invariant |
 |---|---|---|
-| Aggregate | `Scenario` | Tenant-owned register/container; active Code unique per tenant |
-| Entity | `ScenarioVersion` | Exactly one Scenario; published version immutable and permanently referenceable |
-| Value set | `ScenarioAssumption` / `ScenarioReferenceSet` | Version-owned, normalized and sealed at publish; no foreign payload copy |
-| Aggregate | `ComparatorRun` | Immutable request/receipt pinned to inputs, algorithm and normalization versions |
-| Entity | `ComparatorOutput` | Completed output immutable; rerun creates new Run/Output |
-| Aggregate/ledger | `ScenarioSelectionRevision` | Audited append-only selection change; one current selection per chosen scope |
-| Contract | `fpa.scenario-planning-reference.v1` | Exact `ContractVersion = "1.0"`; bounded validation/reference contract |
-| DTOs | `ScenarioReferenceV1`, `ComparatorOutputReferenceV1`, `SelectedScenarioReferenceV1` | Opaque typed/versioned references only |
+| Aggregate | `Scenario` | Tenant-owned stable register/container; active Code unique per tenant |
+| Staging aggregate | `ScenarioVersionDraft` | Mutable working content under an exact concurrency fence; abandon may soft-delete |
+| Immutable entity | `ScenarioVersion` | Publishing atomically creates/seals it; published content is never edited |
+| Value set | `ScenarioAssumption` / `ScenarioReferenceSet` | Draft-owned during construction, normalized and sealed into published content; no foreign payload copy |
+| Aggregate | `ComparatorRunDefinition` | Immutable accepted request pinned to exact inputs, schemas, algorithm and digests |
+| Event/receipt | `ComparatorExecutionEvent` | Append-only execution attempt/terminal receipt; terminal history is never rewritten |
+| Immutable entity | `ComparatorOutput` | Created only after successful execution; explicit rerun creates new Run/Output IDs |
+| Selection ledger | `ScenarioSelectionOccurrence` plus closure/replacement/disposition event | Immutable events; effective current selection is derived, never stored as a mutable flag on history |
+| Contract | `fpa.scenario-planning-reference` | Exact `ContractVersion = "1.0"`; name does not also encode v1 |
+| DTOs | `ScenarioVersionReferenceV1`, `ComparatorOutputReferenceV1`, `ScenarioSelectionReferenceV1` | Minimal opaque typed/versioned references only |
 
-Proposed permissions are exact, case-sensitive and non-wildcard:
+Proposed permissions are exact, individual, case-sensitive and non-wildcard:
 
-- `fpa.scenario-planning.scenarios.read|create|update`
+- `fpa.scenario-planning.scenarios.read`
+- `fpa.scenario-planning.scenarios.create`
+- `fpa.scenario-planning.scenarios.update`
+- `fpa.scenario-planning.version-drafts.read`
+- `fpa.scenario-planning.version-drafts.create`
+- `fpa.scenario-planning.version-drafts.update`
+- `fpa.scenario-planning.version-drafts.abandon`
+- `fpa.scenario-planning.versions.read`
 - `fpa.scenario-planning.versions.publish`
-- `fpa.scenario-planning.comparators.read|run`
-- `fpa.scenario-planning.selection.read|set`
-- `fpa.scenario-planning.references.read` (delegated actor permission for dedicated PPM S2S validation only)
+- `fpa.scenario-planning.versions.retire`
+- `fpa.scenario-planning.comparators.read`
+- `fpa.scenario-planning.comparators.run`
+- `fpa.scenario-planning.selections.read`
+- `fpa.scenario-planning.selections.replace`
+- `fpa.scenario-planning.selections.close`
+- `fpa.scenario-planning.references.validate`
 
 No endpoint, route, controller or collection is authorized by this draft.
 
 ## 4. Entity Fields
 
+`entity_base: EntityBase` is the tenant-owned **logical** contract required by the module-pack standard. It does
+not invent or select a concrete service-local base class while `service: TBD`; that mapping is a promotion blocker.
 Business `ScenarioVersionNumber`, `OutputVersion`, `AlgorithmVersion`, `ContractVersion`, and technical concurrency
 `Version` are distinct concepts; business fields must never use the reserved bare name `Version`.
 
@@ -93,25 +112,45 @@ Business `ScenarioVersionNumber`, `OutputVersion`, `AlgorithmVersion`, `Contract
 | Scenario | `Name` | string(128) | Trim/NFC, non-empty |
 | Scenario | `Description` | string(2000)? | Trim/NFC; empty becomes null |
 | Scenario | `Lifecycle` | enum | Draft/Active/Archived proposal; exact lifecycle is open |
-| ScenarioVersion | `ScenarioId` | Guid | Same-tenant active Scenario |
-| ScenarioVersion | `ScenarioVersionNumber` | positive integer | Unique `(TenantId, ScenarioId, ScenarioVersionNumber)` |
-| ScenarioVersion | `VersionLabel`, `EffectiveFrom`, `EffectiveTo` | bounded scalar/date | Ordered dates when both supplied |
-| ScenarioVersion | `Status` | enum | Draft/Published/Superseded proposal |
-| ScenarioVersion | `Assumptions`, `ForeignReferences` | bounded typed set | Canonical order; no duplicate key/dimension; foreign refs opaque |
-| ScenarioVersion | `CanonicalDigest` | SHA-256 | Sealed on publish |
-| ComparatorRun | `ScenarioVersionReferences` | 2..50 refs | Distinct published immutable refs; canonical ordering |
-| ComparatorRun | `ComparatorKey`, `AlgorithmVersion`, `NormalizationVersion` | string | Exact supported immutable literals |
-| ComparatorRun | `RequestDigest`, `IdempotencyKeyHash` | digest | Pins canonical input and replay identity |
-| ComparatorRun | `Status`, `RequestedAtUtc`, `RequestedBy` | enum/audit | Append-only execution receipt |
+| ScenarioVersionDraft | `ScenarioId`, `DraftId` | Guid | Same-tenant active Scenario; mutable staging identity |
+| ScenarioVersionDraft | `VersionLabel`, `EffectiveFrom`, `EffectiveTo`, `Notes` | bounded scalar/date | Ordered dates; expected technical fence on every mutation |
+| ScenarioVersionDraft | `Assumptions`, `ForeignReferences` | bounded typed set | Mutable until publish; exact immutable foreign refs and contract versions; no payload snapshots |
+| ScenarioVersion | `ScenarioId`, `ScenarioVersionNumber` | Guid/positive integer | Unique `(TenantId, ScenarioId, ScenarioVersionNumber)`; server assigned at publish |
+| ScenarioVersion | sealed content/provenance | immutable snapshot | Publication actor/time, source DraftId, canonicalization version and canonical digest atomically sealed |
+| ScenarioVersion | disposition history | append-only events | Supersede/retire never modifies published bytes; historical resolvability remains distinct from new-link eligibility |
+| ComparatorRunDefinition | `ScenarioVersionReferences` | 2..50 refs | Exact distinct published pins; immutable foreign refs include their contract versions |
+| ComparatorRunDefinition | `ComparatorKey`, `AlgorithmVersion`, `NormalizationVersion`, `ParameterSchemaVersion`, `OutputSchemaVersion` | string | Exact supported immutable literals |
+| ComparatorRunDefinition | `RequestDigest`, `InputEvidenceDigest`, `IdempotencyKeyHash`, `ExecutionEngineVersion` | digest/string | Engine version required where material; nondeterminism additionally pins approved seed/model/runtime provenance |
+| ComparatorExecutionEvent | attempt/status/provenance | append-only event | Requested/started/completed/failed/cancelled receipts append; no terminal rewrite |
 | ComparatorOutput | `ComparatorRunId`, `OutputVersion` | Guid/integer | One successful output per run proposed; exact policy open |
-| ComparatorOutput | `ResultDigest`, `SummaryMetrics` | digest/bounded map | Immutable; maximum 100 metrics; no foreign payload/blob |
-| Selection | `SelectionId`, `SelectionRevision` | Guid/positive integer | Append-only audit identity |
-| Selection | `ScopeContract`, `ScopeKind`, `ScopeId` | opaque typed ref | Exact selection scope is open; never owns InvestmentCase |
-| Selection | `ScenarioReference` | `ScenarioReferenceV1` | Published/referenceable only |
-| Selection | `IsCurrent`, `ChangedAtUtc`, `ChangedBy`, `ReasonCode` | state/audit | Atomic 0..1-current invariant per selected scope |
+| ComparatorOutput | `ResultDigest`, output schema/provenance | digest/versioned metadata | Immutable after success; PPM reference excludes algorithm, ranking, metrics and payload |
+| Selection occurrence | `SelectionOccurrenceId`, `SelectionRevision` | Guid/positive integer | Immutable occurrence/revision identity |
+| Selection occurrence | exact typed selection context | closed typed reference | Profile remains OPEN until scope is approved; never owns InvestmentCase |
+| Selection occurrence | `SelectedScenarioVersionReference` | `ScenarioVersionReferenceV1` | Published and eligible when selected |
+| Selection disposition | closes/replaces occurrence | append-only event | Actor/time/reason/correlation; no mutable current-state field on occurrence/history |
+| Selection fence | tenant + typed scope token | concurrency control | Transactionally prevents more than one effective selection; effective state derives from history |
 
-Required indexes are tenant-first, include `IsDeleted=false` where appropriate, and include active Scenario Code,
-Scenario business version, idempotency receipt, Run/Output identity, and a partial unique current-selection key.
+Required indexes are tenant-first, include `IsDeleted=false` only for mutable/soft-deletable records, and include
+active Scenario Code, Scenario business version, idempotency receipt and Run/Output identity. The transactional
+scope fence plus immutable occurrence/disposition history proves at most one effective selection without adding
+a mutable current-state flag to an append-only revision.
+
+### Gate I-B minimal reference contract — proposed exact v1
+
+- `ContractName = fpa.scenario-planning-reference` (exact, case-sensitive).
+- `ContractVersion = 1.0` (exact major/minor). V1 is not duplicated in `ContractName`.
+- `ScenarioVersionReferenceV1` persists exactly `ContractName`, `ContractVersion`, `ScenarioId`,
+  `ScenarioVersionId`, and `ScenarioVersionNumber`.
+- `ComparatorOutputReferenceV1` persists exactly `ContractName`, `ContractVersion`, `ComparatorRunId`,
+  `ComparatorOutputId`, and `OutputVersion`.
+- A PPM ComparatorOutput reference never persists compared-scenario lists, assumptions, algorithms, rankings,
+  metrics, parameters, financial inputs or output payload. MOD-0138 validates provenance authoritatively.
+- `ScenarioSelectionReferenceV1` persists `ContractName`, `ContractVersion`, immutable `SelectionOccurrenceId`,
+  `SelectionRevision`, the selected `ScenarioVersionReferenceV1`, and exact typed `SelectionContextReference`.
+  Its final profile remains **OPEN** until the selection scope is approved; no free-text kind or interim contract
+  is authorized.
+- Historical resolvability, eligibility for a new reference and current-selection validity are separate results.
+  Archived/superseded published versions may remain historically resolvable while closed to new links/selection.
 
 ## 5. Repo Scope
 
@@ -136,7 +175,7 @@ authority are approved. This pack does not authorize creating `Diten.FpaService`
 
 | Dependency | Boundary | Gate |
 |---|---|---|
-| MOD-0136 Budgeting | FP&A sibling; typed/versioned contracts only | Parent pack/topology coordination open |
+| MOD-0136 Budgeting | Draft sibling proposes the same future FPA host; no shared SoR, domain type or repository | Contract-only coordination; neither pack grants runtime authority |
 | MOD-0117 PPM | Gate I-B opaque consumer | Consumer amendment and runtime authority required |
 | MOD-0007 | Generic decision/rationale owner | Not duplicated here |
 | MOD-0023 | Approval only when policy requires | Separate contract; never implied by selection |
@@ -144,22 +183,43 @@ authority are approved. This pack does not authorize creating `Diten.FpaService`
 | MOD-0018 | Exact permission/tenant entitlement enforcement | Runtime evidence required |
 | MOD-0021 / MOD-0035 | Immutable audit/eventing mechanics | Exact integration remains open |
 | DCP-006 | Gate I orchestration | Approved; OD-04 OPEN/PARTIAL |
+| MongoDB replica set | Atomic publish/output/selection/idempotency/audit persistence | Runtime prerequisite |
+| Comparator algorithm/artifact catalog | Deterministic version retention and compute provenance | Owner, SLA and retention open |
 
 ## 8. Runtime Constraints
 
-- MongoDB single-database multi-tenancy; every lookup is tenant-first and filters `IsDeleted=false`.
+- MongoDB single-database multi-tenancy; every lookup is tenant-first. Active mutable records also filter
+  `IsDeleted=false`; immutable history is resolved through disposition/quarantine policy, not ordinary delete.
 - Tenant and actor derive only from authenticated server context; client `TenantId`/`ActorId` is forbidden.
-- Published ScenarioVersion and completed ComparatorRun/ComparatorOutput are append-only and immutable.
-- Rerun creates a new ComparatorRun and ComparatorOutput. An exact idempotent replay returns the original result;
-  the same key with another canonical digest returns 409.
-- Comparator identity pins scenario references, algorithm name/version, normalization version and canonical digest.
-- Selection set/replace/clear is atomic, audited, idempotent and optimistic-concurrency protected. Rollback is a new
-  compensating selection revision, never history editing.
-- Mutation/audit intent persistence is atomic; audit failure rolls back the mutation.
+- Publishing consumes an exact draft fence and atomically creates the immutable ScenarioVersion, monotonic number,
+  publication provenance, canonicalization version, canonical digest, idempotency receipt and audit intent.
+- Published content is never edited. Supersession/retirement is append-only disposition history. Abandoned drafts
+  may be soft-deleted; published versions, completed outputs and selection history cannot be CRUD-deleted.
+  Exceptional purge requires separate compliance authority, and PPM history is never rewritten.
+- ComparatorRunDefinition is immutable after acceptance. Execution progress is append-only events/receipts and a
+  successful ComparatorOutput is immutable. Exact idempotent duplicate returns the original Run/result; explicit
+  rerun creates new Run/Output IDs and never rewrites terminal history.
+- Reproducibility pins exact immutable input references and contract versions, algorithm/version, normalization,
+  parameter/output schema, request/input/result digests and material engine provenance. Nondeterministic algorithms
+  are prohibited unless an approved seed/model/runtime provenance makes the outcome reproducible.
+- Financial data is never a second Budget SoR: compute rereads an immutable authoritative producer contract or
+  retains only an approved canonical evidence/input digest, never budget amounts/lines as MOD-0138 truth.
+- Selection replace/close atomically appends immutable occurrence/disposition history and advances a transactional
+  scope fence. Effective current selection is derived. Rollback is a compensating append-only occurrence.
+- Mutation, idempotency receipt and audit intent persistence is atomic; audit failure rolls back the mutation.
+- Idempotency scope is TenantId + actor/service identity + exact operation + key, with canonical request digest
+  and stable original result. Same digest replays without duplicate compute/output/audit; another digest is 409.
+  Retention must exceed retry and unknown-commit recovery windows so expiry cannot enable duplicate side effects.
 - No local/cache/prototype fallback and no transport/dependency failure may be collapsed to 404.
-- Draft limits: request body 256 KiB; JSON depth 8; validation batch 100 refs; 2..50 scenarios; 200 assumptions
-  per version; scalar assumptions only; decimal range `-1e15..1e15`, precision 28, scale 8; NaN/Infinity and
-  exponent overflow forbidden. Names/codes 128, descriptions/reasons 2000, keys 128 characters.
+- Draft limits: decoded/decompressed UTF-8 request body 256 KiB (oversize `413`) enforced before materialization;
+  JSON depth 8, duplicate properties/invalid Unicode/unknown polymorphic kinds/compression bombs rejected;
+  validation batch 100 refs; 2..50 scenarios; 200 assumptions; scalar assumptions only; key 128 and scalar string
+  value 2000 characters; bounded comparator parameter count/keys/values; arbitrary nested JSON forbidden.
+  Numbers are Decimal128-compatible only in `[-1e15, 1e15]`, precision 28, scale 8; binary float, silent rounding,
+  NaN/Infinity and exponent overflow/underflow are rejected before allocation/compute. Internal summary metadata,
+  if approved, is capped at 100 metrics with 128-character keys; reference responses remain payload-free.
+- Immutable versions, run definitions, execution receipts, outputs, selection/audit/disposition history and
+  quarantine records have no default TTL or CRUD delete. Exact retention/legal-hold rules are promotion blockers.
 - No port, Gateway route, service project, collection or production credential is allocated here.
 
 ## 9. Layout & Shell Contract
@@ -168,10 +228,20 @@ Draft UI choice: `shell: tenant`. Any later authorized Razor page must explicitl
 `Layout = "_LayoutTenantShell"`; `_ViewStart.cshtml` defaults are insufficient. Proposed view location is
 `Views/Fpa/ScenarioPlanning/`.
 
-The nine counted create/edit inputs are Code, Name, Description, VersionLabel, EffectiveFrom, EffectiveTo,
-AssumptionReferenceSet, ComparatorAlgorithmVersion and ComparatorParameters. This yields
-`golden_reference: compact` under the [Compact reference](../../developer-enablement/module-packs/DEV-0001-golden-reference-compact.md).
-Recount before approval if the field inventory changes. Selection is an action, not an approval or form field.
+Each surface is counted independently; unrelated screens are never combined:
+
+| Surface | Counted user inputs | Count | Decision |
+|---|---|---:|---|
+| Scenario create/edit | Code, Name, Description | 3 | Slim/offcanvas candidate |
+| ScenarioVersionDraft create/edit | VersionLabel, EffectiveFrom, EffectiveTo, Notes; repeatable assumption/reference row: AssumptionKey, ValueType, Value, UnitReference, PeriodReference, DimensionReferences, ProvenanceReference | **11** | Compact Create/Edit/Details + `_Form` |
+| ComparatorRun request | ScenarioVersionReferences, ComparatorKey, AlgorithmVersion, ParameterSchemaVersion; repeatable ParameterKey, ParameterValue | 6 | Dedicated Slim-count action/full comparison page |
+| Selection replace/close | SelectionContextContract, SelectionContextKind, SelectionContextId, ScenarioVersionReference, ReasonCode | 5 | Slim-count action/modal; not approval |
+
+The maximum actual primary create/edit surface is ScenarioVersionDraft at **11**, so frontmatter uses
+`golden_reference: compact` and `form_field_count: 11` under the
+[Compact reference](../../developer-enablement/module-packs/DEV-0001-golden-reference-compact.md). Repeatable-row
+inputs count once per editable column. Route IDs, technical versions, digests, provenance and audit fields do not
+count. Exact assumption row and selection picker representation remain promotion blockers; any change requires recount.
 
 ## 10. Backend File Convention
 
@@ -179,17 +249,21 @@ If runtime is later authorized, use the Compact CQRS convention: `Commands/`, `Q
 `Handlers/CommandHandlers/`, `Handlers/QueryHandlers/`, `Validators/`, and `ScenarioPlanningModels.cs`.
 Commands/queries are records; handler names omit Command/Query suffix; validator names omit Command suffix.
 
-MOD-0136 and MOD-0138 must have separate module boundaries, collections, repositories, handlers and DI
-registrations. Only approved typed/versioned contract assemblies/ports may cross the boundary.
+MOD-0136 and MOD-0138 must have separate namespaces/projects as selected later, collections, repositories,
+domain types, permissions, handlers and DI registrations. Project-reference, namespace, DI, repository-interface
+and collection-name architecture tests must prove the boundary. Only approved typed/versioned application
+contracts/ports may cross it; co-location never authorizes a shared domain model or cross-module transaction.
 
 ## 11. Frontend File Contract
 
 Proposed surfaces:
 
-- Scenario register: Compact DataTable v2 index/filter/table.
-- Scenario/version authoring: separate Create/Edit/Details and `_Form.cshtml`; published edit is unavailable.
-- Comparator: dedicated run/details/result-reference surface showing pinned input and algorithm versions.
-- Selection: permission-gated set/replace/clear with concurrency and audit context; no Approve/Reject button.
+- Scenario register: Slim-count DataTable v2 with create/edit offcanvas and quick view.
+- ScenarioVersionDraft: Compact separate Create/Edit/Details and `_Form.cshtml`; published detail is read-only and
+  has no edit/delete action.
+- Comparator: dedicated run/details/result-reference surface showing pinned input/schema/algorithm/engine versions;
+  completed output is read-only and rerun is a distinct action.
+- Selection: permission-gated replace/close with concurrency and audit context; no Approve/Reject button.
 
 The Compact set is `Index.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`, `_Form.cshtml`,
 `_Filter.cshtml`, `_DataTable.cshtml`, `_IndexL10n.cshtml`, `ScenarioPlanningIndex.cs`, `index.js`, and
@@ -202,13 +276,15 @@ assumptions, calculations, rankings or output payload.
 |---|---:|---|
 | Tenant/Actor | Server only | Valid authenticated claims; payload/header override rejected |
 | Scenario Code/Name | Yes | Strict decode, Trim/NFC, lengths above; Code active tenant unique |
-| Scenario version | Publish | Positive unique ordinal; complete normalized assumptions; expected technical Version |
+| ScenarioVersionDraft | Mutate/publish | Complete normalized assumptions; exact technical fence; abandoned draft only may soft-delete |
+| Published ScenarioVersion | Server seal | Positive monotonic number; atomic provenance/canonicalization/digest/audit; no update/delete |
 | Assumption | Per schema | Unique key/dimension; scalar typed; finite bounded number; no nested object |
 | Foreign reference | When supplied | Exact contract/kind/id/version; authoritative same-tenant validation; no payload |
 | Comparator inputs | Yes | 2..50 distinct Published visible refs; supported compatible unit/currency/period policy |
 | Algorithm/normalization | Yes | Exact available deterministic versions; pinned in result |
-| Contract | Yes | Exact `fpa.scenario-planning-reference.v1` and `1.0` |
-| Selection | Set/replace | Published reference; exact scope; expected revision; 0..1 current |
+| Contract | Yes | Exact `fpa.scenario-planning-reference` and `1.0`; exact minimal shapes in §4 |
+| Reference validation mode | Yes | Closed `HistoricalResolve`, `NewReferenceEligibility`, or `CurrentSelectionEligibility`; never one overloaded boolean |
+| Selection | Replace/close | Published eligible reference; closed typed scope; expected fence/revision; one effective derived selection |
 | Idempotency-Key | Mutation/run | 16..128 ASCII; tenant+operation scoped; canonical request SHA-256 |
 | JSON/numeric/string | All | Enforce §8 before allocation/compute; invalid Unicode fails closed |
 
@@ -216,25 +292,42 @@ assumptions, calculations, rankings or output payload.
 
 | Scenario | Expected |
 |---|---|
-| Malformed/invalid/out-of-bounds input | 400; no allocation, compute or mutation |
+| Malformed/invalid/out-of-bounds input | 400; decoded body over 256 KiB is 413; no allocation, compute or mutation |
 | Missing/invalid token or server tenant/actor context | 401 |
 | Authenticated caller/actor lacks exact permission or S2S entitlement | 403 |
-| Missing, deleted, cross-tenant, invisible or non-referenceable object | Indistinguishable 404 |
-| Published mutation, stale Version, selection race, or idempotency digest mismatch | 409; no overwrite |
+| Missing, deleted, cross-tenant or invisible object | Indistinguishable 404 |
+| Published mutation, retired/ineligible new reference, stale/closed selection used as current, stale Version, selection race, or idempotency digest mismatch | 409; no overwrite |
 | Unknown contract/algorithm version, compute/dependency timeout/unavailable/malformed response | 503; no fallback |
 | Same idempotency key and digest | Original outcome; no duplicate Run/Output/selection/audit |
 | Caller cancellation | Propagated cancellation; not rewritten as 503 |
+| Audit/idempotency persistence failure | Entire publish/run/selection transaction rolls back |
+| CRUD delete of published/output/selection history | 409; bytes/history unchanged |
+| Provider/algorithm outage | Historical immutable read remains available; new publish/run/selection validation is 503 |
+| Prototype cannot prove canonical identity/version/provenance | Quarantined; never promoted or used as fallback |
+
+Mode semantics are exact: `HistoricalResolve` succeeds for an authentic historically resolvable retired/archived
+published reference; `NewReferenceEligibility` returns 409 for a retired/archived but visible reference; and
+`CurrentSelectionEligibility` returns 409 for a valid historical occurrence that is closed/stale against the
+derived head. Missing/cross-tenant/invisible remains 404 in every mode. Unknown mode/contract version or malformed
+dependency compatibility response is 503; malformed caller syntax remains 400.
 
 ## 14. Authorization Convention
 
 - Tenant UI/API uses authenticated tenant actor plus each exact permission listed in §3.
 - Internal PPM validation requires a dedicated allowlisted S2S identity bound to the exact audience/contract **and**
-  a separately validated delegated actor with `fpa.scenario-planning.references.read`.
+  a separately validated delegated actor with `fpa.scenario-planning.references.validate`.
 - Authentication/audience and server context are established before authoritative tenant-first lookup.
+- Enforcement order is endpoint configuration → dedicated S2S credential and exact audience → server tenant/actor
+  claims → caller allowlist/entitlement → delegated actor exact permission → tenant-first authoritative lookup.
+- Invalid/missing/expired credential, audience or actor context is 401; authenticated but non-allowlisted/
+  non-entitled caller or missing delegated permission is 403; payload/query/header tenant or actor override is 400.
 - Service identity alone never bypasses delegated actor visibility/referenceability.
 - Wildcard, alias, wrong-case and prefix permissions are denied. No approve/reject permission exists.
 - Audit records tenant, actor, old/new opaque refs, timestamp, reason code, correlation/causation and hashed
   idempotency key; assumptions/output payload and raw secrets are excluded.
+- Immutable audit covers Scenario create/update/archive; draft create/update/abandon; publish/retire; comparator
+  request/start/complete/fail/cancel; and selection replace/close. It records target IDs/versions, actor/service,
+  exact contract/algorithm versions and operation provenance, never secrets, raw tokens or analytical payload.
 
 ## 15. Gateway / API Routing Decision
 
@@ -244,13 +337,16 @@ integration-agent task after topology and port approval. The S2S validation surf
 
 ## 16. Acceptance Criteria
 
-- [ ] `fpa.scenario-planning-reference.v1` / `1.0` is approved with typed Scenario, ComparatorOutput and SelectedScenario references.
-- [ ] `ScenarioReferenceV1` contains ScenarioId, ScenarioVersionId, positive ScenarioVersionNumber and authoritative immutable referenceability.
-- [ ] `ComparatorOutputReferenceV1` contains RunId, OutputId, OutputVersion and exact compared ScenarioReference pins.
-- [ ] InvestmentCase holds Scenario/Comparator references `0..n` and SelectedScenarioReference `0..1`; MOD-0138 owns selected truth.
+- [ ] Exact `ContractName = fpa.scenario-planning-reference` and `ContractVersion = 1.0` are approved without duplicate v1 encoding.
+- [ ] `ScenarioVersionReferenceV1` persists exactly ContractName, ContractVersion, ScenarioId, ScenarioVersionId and ScenarioVersionNumber.
+- [ ] `ComparatorOutputReferenceV1` persists exactly ContractName, ContractVersion, ComparatorRunId, ComparatorOutputId and OutputVersion.
+- [ ] `ScenarioSelectionReferenceV1` finalizes only after its immutable occurrence/revision and exact typed context profile are approved.
+- [ ] MOD-0117—not MOD-0138—owns InvestmentCase `0..n` and `0..1` cardinalities, requiredness, transitions and minimal storage; MOD-0138 supplies fixtures and authoritative validation.
 - [ ] PPM persists only opaque contract/kind/IDs/versions; no assumptions, calculations, result payload or selected flag.
-- [ ] Published versions and completed comparator results are immutable; rerun creates new IDs and pins deterministic versions.
-- [ ] Selection is unique per approved scope, audited, idempotent and concurrency-safe; it never implies approval.
+- [ ] Publishing atomically seals an immutable ScenarioVersion from a mutable draft with provenance, canonicalization, digest, audit and idempotency.
+- [ ] Published versions and completed comparator outputs are immutable; explicit rerun creates new IDs and pins all reproducibility versions/digests.
+- [ ] Effective selection is derived from immutable occurrence/disposition history under a transactional scope fence; history rows carry no mutable current-state flag.
+- [ ] Abandoned drafts alone may soft-delete; immutable versions/outputs/selection history reject CRUD delete and preserve retirement/supersession history.
 - [ ] Exact 400/401/403/404/409/503 semantics and §8 bounds are proven fail-closed.
 - [ ] Same-service topology is permitted only when architecture tests prove MOD-0136/MOD-0138 isolation.
 - [ ] Existing ScenarioType/ES scenario fields remain quarantined prototype/migration evidence with no fallback/dual write.
@@ -259,18 +355,25 @@ integration-agent task after topology and port approval. The S2S validation surf
 
 ## 17. Test Expectations
 
-- Unit/domain: publish immutability, next-version isolation, deterministic canonical digest, algorithm/version pin,
-  rerun-new-ID behavior, unique selection, compensating rollback and idempotency.
+- Unit/domain: draft mutation/fence, atomic publish seal, next-version isolation, disposition history, historical/
+  new/current eligibility, deterministic canonical digest, all comparator version pins, rerun-new-ID behavior,
+  effective selection derivation, compensating rollback and idempotency.
 - Real Mongo integration: tenant-first/soft-delete behavior; unique/partial indexes; concurrent publish/selection and
   idempotency races; transaction fault injection proving mutation/output/receipt/audit atomicity.
-- Contract: golden serialization for all v1 discriminators; exact compared-reference verification; 0..n/0..1
-  consumer cardinalities; independently built producer/PPM fixtures and unknown-version 503.
+- Contract: reflection plus golden JSON/BSON fixtures enforce exact serialized allowlists:
+  `ScenarioVersionReferenceV1` = `{ContractName, ContractVersion, ScenarioId, ScenarioVersionId, ScenarioVersionNumber}`
+  and `ComparatorOutputReferenceV1` = `{ContractName, ContractVersion, ComparatorRunId, ComparatorOutputId, OutputVersion}`.
+  `ScenarioSelectionReferenceV1` remains blocked until its occurrence/revision, nested selected reference and exact
+  typed-context profile are approved. Missing or extra serialized properties fail. PPM negative-schema tests forbid
+  compared lists, assumptions, algorithms, parameters, rankings, metrics and payload; independently built producer/
+  PPM fixtures verify exact string `1.0`, reject a version suffix in ContractName and prove unknown-version 503.
 - Security: exact permission matrix, dedicated S2S plus delegated actor, cross-tenant/invisible 404 equivalence,
-  forged context rejection, payload boundary/fuzz tests and audit redaction.
+  forged context rejection, exact `.references.validate` allow/deny, wrong identity/audience, payload and compressed/
+  JSON/numeric bomb boundary tests, immutable-history no-delete/no-TTL tests and audit redaction/rollback.
 - Architecture: no Budgeting domain/repository/collection coupling; contract-only boundary; no direct service port;
   no MOD-0138 production types in EnterpriseStrategyService by proximity.
 - PPM no-copy source/schema test: no assumption/calculation/ranking/output payload, selected boolean or local engine.
-- Frontend/browser: Compact DataTable verifier, permission actions, immutable edit denial, stale-selection 409 flow,
+- Frontend/browser: Scenario Slim and VersionDraft Compact verifier/count evidence, permission actions, immutable edit denial, stale-selection 409 flow,
   pinned comparator versions, seven-language/RTL/accessibility, no Approve/Reject, no browser mock/localStorage truth.
 - Prototype quarantine/migration: inventory and negative import/collection/route tests; deterministic idempotent dry-run,
   unknown-tenant quarantine, explicit mapping/provenance, rollback proof and untouched source.
@@ -279,14 +382,17 @@ integration-agent task after topology and port approval. The S2S validation surf
 ## 18. Ready-for-dev Checklist
 
 - [ ] Business owner approves Scenario lifecycle, assumption schema and referenceability policy.
-- [ ] Selection scope/uniqueness and historical-vs-current validation semantics are exact.
+- [ ] Mutable draft, atomic publish, append-only disposition and immutable delete/retention/legal-hold/purge policy are exact.
+- [ ] Selection typed scope/profile, occurrence/disposition history, scope fence and historical/new/current validation semantics are exact.
 - [ ] Comparator count, unit/currency/period rules, algorithm catalog/retention and sync/async model are approved.
 - [ ] Service topology, collection ownership, entity base, port and future routes are approved explicitly.
 - [ ] Same-service architecture isolation tests pass, or separate service fallback is selected.
 - [ ] MOD-0136 shared-contract boundary and MOD-0117 consumer amendment are approved.
-- [ ] Exact contract/security/S2S identity and audit/idempotency persistence design are approved.
+- [ ] Exact minimal reference field allowlists, supported-version/deprecation matrix, security/S2S identity and audit/idempotency design are approved.
+- [ ] Dedicated PPM identity/audience, credential owner/rotation, delegated-actor mechanism, unknown-commit recovery and retention windows are approved.
+- [ ] Immutable output/event/selection/audit/idempotency/quarantine retention, legal hold and exceptional purge are approved.
 - [ ] Prototype quarantine/migration/cutover/rollback plan is separately approved.
-- [ ] Compact field inventory is recounted; Golden Reference and explicit tenant layout are confirmed.
+- [ ] Separate field counts remain Scenario 3, VersionDraft 11, Comparator 6, Selection 5; Compact governs the parent and tenant layout is confirmed.
 - [ ] Backend/frontend/Gateway file contracts and seven-language keys are enumerated.
 - [ ] Acceptance, test and compatibility evidence is executable; explicit production authority is recorded.
 - [ ] Status is promoted by user from `draft` to `approved` or `ready-for-dev`.
@@ -297,7 +403,7 @@ Topology comparison:
 
 | Option | Assessment |
 |---|---|
-| A. Isolated `ScenarioPlanning` module in future `Diten.FpaService` with MOD-0136 | **Recommended planning target.** FP&A/EPM cohesion, but no shared domain types/repositories/collections; typed/versioned contracts only. |
+| A. Isolated `ScenarioPlanning` module in a new/future `Diten.FpaService` modular monolith with MOD-0136 | **Recommended planning target.** FP&A/EPM cohesion, but mechanically separate types/repositories/permissions/DI/collections and approved contracts only. |
 | B. `Diten.ScenarioPlanningService` | Mandatory fallback if module isolation cannot be mechanically proven; also suitable for independent scaling/release/compute blast radius, with greater S2S/operations cost. |
 | C. `Diten.EnterpriseStrategyService` | Not baseline. Existing proximity is prototype/migration evidence, not Scenario Planning SoR authority. Reconsider only in a later approved architecture/migration slice. |
 
@@ -305,13 +411,23 @@ Existing `ScenarioType` and Enterprise Strategy scenario fields are quarantined 
 must inventory/classify records, reject default-tenant assignment, prohibit dual-read/dual-write and automatic
 promotion, prove deterministic dry-run and mapping, verify collections/cutover, and prove rollback before authority.
 
+MOD-0138 owns producer schemas, authoritative validation, supported-version/deprecation policy and golden producer
+fixtures. MOD-0117 owns consumer cardinality/storage/transitions, adapter behavior and pinned supported versions.
+Compatibility approval is bilateral; producer change never grants consumer runtime authority. Permission and
+contract names in this draft are governance proposals, not registered runtime literals.
+
+DCP-002 exact preflight command: `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0138 --name "Scenario Planning"`.
+
 ## 20. Follow-up Items
 
-- Decide exact selection scope (tenant/global vs opaque portfolio/InvestmentCase context) without owning foreign objects.
-- Decide whether historical selection revisions remain valid references while current-use validation marks staleness.
-- Approve Scenario lifecycle/archive referenceability, version scalar and assumptions copy-on-new-version semantics.
-- Approve comparator min/max, cross-Scenario comparisons, algorithm catalog owner/retention, normalization,
-  conversion policy, async model, output count/retention and large-result storage.
+- Approve one-open-draft policy, monotonic numbering, copy-on-new-draft provenance, canonicalization identity/vectors,
+  archive/retirement and the exact historical/new-reference eligibility matrix.
+- Finalize the assumption/reference row schema and picker representation; recount all surfaces if it changes.
+- Approve comparator min/max, cross-Scenario comparisons, parameter/output schemas, algorithm/artifact owner and
+  retention, normalization, engine/seed/model provenance, conversion policy, async attempts and output retention.
+- Decide exact closed typed selection scope, occurrence/disposition shape, fence/rebuild semantics and whether a
+  historical selection used where current is required returns 409. Finalize `ScenarioSelectionReferenceV1` only then.
+- Define immutable-history retention/legal hold and exceptional purge authority.
 - Resolve final service/entity base/collections/port/Gateway paths and S2S identity/credential ownership.
 - Coordinate MOD-0136 contracts and author the later MOD-0117 Gate I-B consumer amendment.
 - Create a separate prototype quarantine/migration/cutover/rollback pack before touching existing ES fields.
