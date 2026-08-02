@@ -60,6 +60,13 @@ MOD-0138 does not own:
 
 Selection means “chosen analytical scenario”; it is not approval and creates no Approved/Rejected state.
 
+Bilateral ownership is asymmetric and explicit. MOD-0138 owns producer tuple schemas/validation, scenario and
+comparator truth, selection occurrence/disposition/effective-current truth, producer audit, supported producer
+versions/deprecation and producer fixtures. MOD-0117 owns the four PPM profile identities/fields in §4, wrapper
+version policy, `0..n`/`0..n`/`0..1` cardinalities, relationship attach/detach/retire behavior, consumer persistence,
+InvestmentCase transitions, adapter behavior and consumer audit. Consuming `InvestmentCaseContextV1` transfers no
+InvestmentCase ownership or visibility/lifecycle inference to MOD-0138.
+
 ## 3. Owned Objects
 
 | Kind | Proposed object | Draft invariant |
@@ -73,7 +80,8 @@ Selection means “chosen analytical scenario”; it is not approval and creates
 | Immutable entity | `ComparatorOutput` | Created only after successful execution; explicit rerun creates new Run/Output IDs |
 | Selection ledger | `ScenarioSelectionOccurrence` plus closure/replacement/disposition event | Immutable events; effective current selection is derived, never stored as a mutable flag on history |
 | Contract | `fpa.scenario-planning-reference` | Exact `ContractVersion = "1.0"`; name does not also encode v1 |
-| DTOs | `ScenarioVersionReferenceV1`, `ComparatorOutputReferenceV1`, `ScenarioSelectionReferenceV1` | Minimal opaque typed/versioned references only |
+| Producer Gate I tuples | `ScenarioVersionReferenceV1`, `ComparatorOutputReferenceV1` | Minimal opaque typed/versioned references only |
+| Consumed/fixture-only PPM values | `InvestmentCaseContextV1` plus three PPM-owned wrappers in §4 | Not MOD-0138-owned and never extended by this pack |
 
 Proposed permissions are exact, individual, case-sensitive and non-wildcard:
 
@@ -145,12 +153,32 @@ a mutable current-state flag to an append-only revision.
   `ComparatorOutputId`, and `OutputVersion`.
 - A PPM ComparatorOutput reference never persists compared-scenario lists, assumptions, algorithms, rankings,
   metrics, parameters, financial inputs or output payload. MOD-0138 validates provenance authoritatively.
-- `ScenarioSelectionReferenceV1` persists `ContractName`, `ContractVersion`, immutable `SelectionOccurrenceId`,
-  `SelectionRevision`, the selected `ScenarioVersionReferenceV1`, and exact typed `SelectionContextReference`.
-  Its final profile remains **OPEN** until the selection scope is approved; no free-text kind or interim contract
-  is authorized.
 - Historical resolvability, eligibility for a new reference and current-selection validity are separate results.
   Archived/superseded published versions may remain historically resolvable while closed to new links/selection.
+
+### PPM Gate I-B bilateral wrapper profiles — authoritative consumer checkpoint
+
+At PPM authority checkpoint `a2c7ff5bbfd3ef2b4e3c8c15eab804db58d62520`, MOD-0117 owns these exact,
+case-sensitive `1.0` wrappers. They do not extend or rename the nested MOD-0138 tuples:
+
+| PPM-owned type | Exact PPM `ContractName` | Persisted fields, exactly | Nested MOD-0138 value |
+|---|---|---|---|
+| `InvestmentCaseContextV1` | `ppm.investment-case-context` | `ContractName`, `ContractVersion`, `InvestmentCaseId` | None; shared typed context |
+| `InvestmentCaseScenarioVersionReferenceV1` | `ppm.investment-case-scenario-version-reference` | `ContractName`, `ContractVersion`, `InvestmentCaseContext`, `ScenarioVersionReference` | Exact `ScenarioVersionReferenceV1` |
+| `InvestmentCaseComparatorOutputReferenceV1` | `ppm.investment-case-comparator-output-reference` | `ContractName`, `ContractVersion`, `InvestmentCaseContext`, `ComparatorOutputReference` | Exact `ComparatorOutputReferenceV1` |
+| PPM `SelectedScenarioReferenceV1` | `ppm.investment-case-selected-scenario-reference` | `ContractName`, `ContractVersion`, `InvestmentCaseContext`, `ScenarioVersionReference` | Exact pinned `ScenarioVersionReferenceV1` only |
+
+The PPM selected-scenario wrapper is a consumer relationship value, not a producer selection-occurrence reference and not
+MOD-0138 selection truth. It persists no selection occurrence/revision, disposition, current-state flag or
+producer history. For `CurrentSelectionEligibility`, PPM supplies the exact `InvestmentCaseContextV1` plus its
+pinned `ScenarioVersionReferenceV1`; MOD-0138 resolves the authoritative current selection for that typed context.
+If a future producer-owned occurrence/reference contract is required for non-PPM consumers, it must be separately
+named, versioned and approved after its scope closes. It is not part of the Gate I-B PPM persistence family and
+must never be named or serialized as PPM `SelectedScenarioReferenceV1`.
+
+PPM stores no compared-scenario list, assumption, algorithm/version, normalization, parameter, input/evidence
+digest, ranking, metric or output payload. MOD-0117 alone owns wrapper cardinality, attachment/detachment/storage,
+requiredness and InvestmentCase lifecycle effects; none of those consumer rules move into MOD-0138.
 
 ## 5. Repo Scope
 
@@ -176,7 +204,7 @@ authority are approved. This pack does not authorize creating `Diten.FpaService`
 | Dependency | Boundary | Gate |
 |---|---|---|
 | MOD-0136 Budgeting | Draft sibling proposes the same future FPA host; no shared SoR, domain type or repository | Contract-only coordination; neither pack grants runtime authority |
-| MOD-0117 PPM | Gate I-B opaque consumer | Consumer amendment and runtime authority required |
+| MOD-0117 PPM | Gate I-B wrappers at authority checkpoint `a2c7ff5b...`; exact profiles in §4 | Governance shape closed; executable consumer amendment and runtime authority still required |
 | MOD-0007 | Generic decision/rationale owner | Not duplicated here |
 | MOD-0023 | Approval only when policy requires | Separate contract; never implied by selection |
 | MOD-0072 | Actual realization owner | Not duplicated here |
@@ -220,6 +248,20 @@ authority are approved. This pack does not authorize creating `Diten.FpaService`
   if approved, is capped at 100 metrics with 128-character keys; reference responses remain payload-free.
 - Immutable versions, run definitions, execution receipts, outputs, selection/audit/disposition history and
   quarantine records have no default TTL or CRUD delete. Exact retention/legal-hold rules are promotion blockers.
+- Bilateral supported-version matrix initially contains only MOD-0138 `fpa.scenario-planning-reference` `1.0`,
+  the three PPM scenario wrappers `1.0`, and shared `ppm.investment-case-context` `1.0`. No version coercion,
+  downgrade, alias, default-latest behavior or unknown-version fallback is allowed.
+- The compatibility matrix is two-dimensional: each row pins one producer tuple ContractVersion and one PPM
+  wrapper/context ContractVersion. Producer and wrapper versions may evolve independently. V1 field allowlists and
+  semantics are immutable; any breaking/additional persisted shape requires a new approved version and fixtures.
+- Deprecation is bilateral and staged: announce a replacement and overlap window; stop `NewReferenceEligibility`
+  for the retiring version only after both producer and consumer approve the matrix; preserve `HistoricalResolve`
+  for persisted history through the retention period; remove support only with bilateral fixtures, migration/
+  rollback evidence and explicit producer/consumer authority. Unsupported or prematurely retired versions are 503.
+- A known deprecated version is not unknown: `HistoricalResolve` may still succeed during retention, while new or
+  current use returns 409 according to the mode. Removal requires persisted-reference inventory, zero unsupported
+  live/current references or an approved migration, rollback evidence and consumer deployment evidence; neither
+  producer nor consumer may remove/down-convert support unilaterally.
 - No port, Gateway route, service project, collection or production credential is allocated here.
 
 ## 9. Layout & Shell Contract
@@ -283,7 +325,9 @@ assumptions, calculations, rankings or output payload.
 | Comparator inputs | Yes | 2..50 distinct Published visible refs; supported compatible unit/currency/period policy |
 | Algorithm/normalization | Yes | Exact available deterministic versions; pinned in result |
 | Contract | Yes | Exact `fpa.scenario-planning-reference` and `1.0`; exact minimal shapes in §4 |
-| Reference validation mode | Yes | Closed `HistoricalResolve`, `NewReferenceEligibility`, or `CurrentSelectionEligibility`; never one overloaded boolean |
+| Reference validation mode | Yes | `HistoricalResolve` / `NewReferenceEligibility` for scenario and comparator wrappers; selected-scenario wrapper alone also permits `CurrentSelectionEligibility` |
+| PPM bilateral wrapper | Consumer persistence | Exact wrapper name/version/field allowlist in §4; nested producer tuple unmodified; unknown/extra fields fail |
+| Current selection request | Selection validation only | Exact `ppm.investment-case-context` `1.0` plus pinned `ScenarioVersionReferenceV1`; no occurrence/history supplied by PPM |
 | Selection | Replace/close | Published eligible reference; closed typed scope; expected fence/revision; one effective derived selection |
 | Idempotency-Key | Mutation/run | 16..128 ASCII; tenant+operation scoped; canonical request SHA-256 |
 | JSON/numeric/string | All | Enforce §8 before allocation/compute; invalid Unicode fails closed |
@@ -308,8 +352,17 @@ assumptions, calculations, rankings or output payload.
 Mode semantics are exact: `HistoricalResolve` succeeds for an authentic historically resolvable retired/archived
 published reference; `NewReferenceEligibility` returns 409 for a retired/archived but visible reference; and
 `CurrentSelectionEligibility` returns 409 for a valid historical occurrence that is closed/stale against the
-derived head. Missing/cross-tenant/invisible remains 404 in every mode. Unknown mode/contract version or malformed
-dependency compatibility response is 503; malformed caller syntax remains 400.
+derived head. Missing/cross-tenant/invisible remains 404 in every mode. Unknown/malformed mode is caller error 400;
+unsupported contract version or malformed authoritative dependency response is 503.
+
+`InvestmentCaseScenarioVersionReferenceV1` and `InvestmentCaseComparatorOutputReferenceV1` reject
+`CurrentSelectionEligibility` with 400. Only PPM `SelectedScenarioReferenceV1` may request that mode.
+
+For the PPM selected-scenario wrapper, `HistoricalResolve` resolves the pinned scenario reference and wrapper
+history without asserting current selection. `CurrentSelectionEligibility` compares the exact typed InvestmentCase
+context and pinned ScenarioVersion reference with MOD-0138's effective producer-owned selection. It never accepts a
+PPM-provided occurrence/revision as current truth. A visible historical occurrence may remain resolvable while its
+pinned version is stale/not-current for that context and therefore returns 409 in current-selection mode.
 
 ## 14. Authorization Convention
 
@@ -340,7 +393,13 @@ integration-agent task after topology and port approval. The S2S validation surf
 - [ ] Exact `ContractName = fpa.scenario-planning-reference` and `ContractVersion = 1.0` are approved without duplicate v1 encoding.
 - [ ] `ScenarioVersionReferenceV1` persists exactly ContractName, ContractVersion, ScenarioId, ScenarioVersionId and ScenarioVersionNumber.
 - [ ] `ComparatorOutputReferenceV1` persists exactly ContractName, ContractVersion, ComparatorRunId, ComparatorOutputId and OutputVersion.
-- [ ] `ScenarioSelectionReferenceV1` finalizes only after its immutable occurrence/revision and exact typed context profile are approved.
+- [ ] No producer selection-occurrence DTO is part of the PPM persistence family; any future non-PPM occurrence
+  reference requires a separately named/versioned approved contract.
+- [ ] PPM wrappers are exact: scenario-version and comparator-output wrappers nest their matching producer tuple;
+  selected-scenario wrapper nests only pinned `ScenarioVersionReferenceV1`; all use shared exact
+  `ppm.investment-case-context` `1.0`.
+- [ ] PPM selected-scenario wrapper is never represented as a producer occurrence reference; occurrence,
+  disposition history and effective-current truth remain solely MOD-0138-owned.
 - [ ] MOD-0117—not MOD-0138—owns InvestmentCase `0..n` and `0..1` cardinalities, requiredness, transitions and minimal storage; MOD-0138 supplies fixtures and authoritative validation.
 - [ ] PPM persists only opaque contract/kind/IDs/versions; no assumptions, calculations, result payload or selected flag.
 - [ ] Publishing atomically seals an immutable ScenarioVersion from a mutable draft with provenance, canonicalization, digest, audit and idempotency.
@@ -352,6 +411,8 @@ integration-agent task after topology and port approval. The S2S validation surf
 - [ ] Existing ScenarioType/ES scenario fields remain quarantined prototype/migration evidence with no fallback/dual write.
 - [ ] Authorized UI explicitly uses `_LayoutTenantShell`, Compact/DataTable v2 where applicable, seven-language localization, and no PPM comparator copy or approval action.
 - [ ] Gate I-B remains OPEN until producer approval, matching consumer amendment, compatibility/security evidence and explicit runtime authority.
+- [ ] Bilateral supported-version/deprecation matrix proves exact 1.0 fixtures, no coercion/fallback, overlap before
+  retirement, historical support through retention and explicit two-sided removal authority.
 
 ## 17. Test Expectations
 
@@ -363,10 +424,25 @@ integration-agent task after topology and port approval. The S2S validation surf
 - Contract: reflection plus golden JSON/BSON fixtures enforce exact serialized allowlists:
   `ScenarioVersionReferenceV1` = `{ContractName, ContractVersion, ScenarioId, ScenarioVersionId, ScenarioVersionNumber}`
   and `ComparatorOutputReferenceV1` = `{ContractName, ContractVersion, ComparatorRunId, ComparatorOutputId, OutputVersion}`.
-  `ScenarioSelectionReferenceV1` remains blocked until its occurrence/revision, nested selected reference and exact
-  typed-context profile are approved. Missing or extra serialized properties fail. PPM negative-schema tests forbid
+  No producer selection-occurrence DTO participates in these PPM fixtures. Missing or extra serialized properties
+  fail. PPM negative-schema tests forbid
   compared lists, assumptions, algorithms, parameters, rankings, metrics and payload; independently built producer/
   PPM fixtures verify exact string `1.0`, reject a version suffix in ContractName and prove unknown-version 503.
+- Bilateral fixture ledger at PPM checkpoint `a2c7ff5b...` independently builds and round-trips:
+  `InvestmentCaseContextV1`; `InvestmentCaseScenarioVersionReferenceV1` nesting the exact scenario tuple;
+  `InvestmentCaseComparatorOutputReferenceV1` nesting the exact comparator tuple; and PPM
+  `SelectedScenarioReferenceV1` nesting only the pinned scenario tuple. Fixtures reject missing/extra fields,
+  producer DTO mutation, occurrence/current-state fields in PPM, unknown wrapper/producer versions and payload copy.
+- Consumer-owned boundary fixtures cover empty/one/max `0..n`, duplicate exact scenario/comparator rejection and
+  selected `0..1` uniqueness without transferring those cardinality rules to MOD-0138. Fixture artifacts pin an
+  immutable checksum/schema identity so producer and consumer approvals refer to the same bytes.
+- Validation-mode matrix covers each wrapper/reference across historical, eligible, retired, stale/not-current,
+  missing, cross-tenant, invisible, permission-denied, unsupported-version and provider-failure states with exact
+  200/400/403/404/409/503 outcomes. Selected current-mode fixtures send typed InvestmentCase context plus pinned
+  scenario reference and prove producer occurrence/history remains internal.
+- Compatibility lifecycle tests keep old persisted fixtures historically resolvable during an approved overlap,
+  block new links at the announced boundary, reject silent downgrade/default-latest and prevent support removal
+  without bilateral approval, migration/rollback evidence and retention completion.
 - Security: exact permission matrix, dedicated S2S plus delegated actor, cross-tenant/invisible 404 equivalence,
   forged context rejection, exact `.references.validate` allow/deny, wrong identity/audience, payload and compressed/
   JSON/numeric bomb boundary tests, immutable-history no-delete/no-TTL tests and audit redaction/rollback.
@@ -383,11 +459,13 @@ integration-agent task after topology and port approval. The S2S validation surf
 
 - [ ] Business owner approves Scenario lifecycle, assumption schema and referenceability policy.
 - [ ] Mutable draft, atomic publish, append-only disposition and immutable delete/retention/legal-hold/purge policy are exact.
-- [ ] Selection typed scope/profile, occurrence/disposition history, scope fence and historical/new/current validation semantics are exact.
+- [ ] PPM `InvestmentCaseContextV1` selection context and current-validation profile are bilaterally approved;
+  occurrence/disposition history and scope fence stay producer-owned. Any additional selection context remains open.
 - [ ] Comparator count, unit/currency/period rules, algorithm catalog/retention and sync/async model are approved.
 - [ ] Service topology, collection ownership, entity base, port and future routes are approved explicitly.
 - [ ] Same-service architecture isolation tests pass, or separate service fallback is selected.
 - [ ] MOD-0136 shared-contract boundary and MOD-0117 consumer amendment are approved.
+- [ ] Exact PPM wrapper/context fixtures at checkpoint `a2c7ff5b...` and bilateral supported-version/deprecation matrix are approved.
 - [ ] Exact minimal reference field allowlists, supported-version/deprecation matrix, security/S2S identity and audit/idempotency design are approved.
 - [ ] Dedicated PPM identity/audience, credential owner/rotation, delegated-actor mechanism, unknown-commit recovery and retention windows are approved.
 - [ ] Immutable output/event/selection/audit/idempotency/quarantine retention, legal hold and exceptional purge are approved.
@@ -416,6 +494,10 @@ fixtures. MOD-0117 owns consumer cardinality/storage/transitions, adapter behavi
 Compatibility approval is bilateral; producer change never grants consumer runtime authority. Permission and
 contract names in this draft are governance proposals, not registered runtime literals.
 
+PPM checkpoint `a2c7ff5bbfd3ef2b4e3c8c15eab804db58d62520` was inspected read-only. It closes consumer
+wrapper/context/mode governance only. MOD-0117 remains `review`, DCP-006 OD-04 remains OPEN/PARTIAL, and no producer
+contract approval, topology/transport choice, adapter implementation or runtime authority is inferred here.
+
 DCP-002 exact preflight command: `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0138 --name "Scenario Planning"`.
 
 ## 20. Follow-up Items
@@ -426,9 +508,12 @@ DCP-002 exact preflight command: `python3 .antigravity/scripts/verify_module_id.
 - Approve comparator min/max, cross-Scenario comparisons, parameter/output schemas, algorithm/artifact owner and
   retention, normalization, engine/seed/model provenance, conversion policy, async attempts and output retention.
 - Decide exact closed typed selection scope, occurrence/disposition shape, fence/rebuild semantics and whether a
-  historical selection used where current is required returns 409. Finalize `ScenarioSelectionReferenceV1` only then.
+  historical selection used where current is required returns 409. Any non-PPM occurrence-reference contract is a
+  separately named/versioned follow-up and must not reuse the PPM selected-wrapper identity.
 - Define immutable-history retention/legal hold and exceptional purge authority.
 - Resolve final service/entity base/collections/port/Gateway paths and S2S identity/credential ownership.
 - Coordinate MOD-0136 contracts and author the later MOD-0117 Gate I-B consumer amendment.
+- Publish checksum/schema-identified bilateral fixtures and the two-dimensional producer/wrapper compatibility
+  matrix; later request a separately approved executable MOD-0117 I-B Scenario amendment and explicit authority.
 - Create a separate prototype quarantine/migration/cutover/rollback pack before touching existing ES fields.
 - Recount UI fields and enumerate exact routes/L10n keys before status promotion.
