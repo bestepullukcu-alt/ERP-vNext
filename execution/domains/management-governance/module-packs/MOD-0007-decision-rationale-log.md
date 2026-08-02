@@ -81,10 +81,11 @@ authoritative policy requires approval, MOD-0023 separately owns and produces an
 | `DecisionRecord` | Stable aggregate identity, tenant boundary, lifecycle and current published revision pointer | Created once; lifecycle changes only through named commands |
 | `DecisionDraft` | Explicit mutable pre-publication working state | Optimistic-concurrency updates; it is not a DecisionRevision and may be soft-deleted only under the approved unpublished-draft policy |
 | `DecisionRevision` | Immutable published semantic snapshot of decision text/result/rationale/provenance and authority | Created/finalized atomically at publication with all publication fields populated; never updated or deleted through CRUD |
-| `DecisionEvidenceReference` | Typed/versioned metadata reference to evidence owned elsewhere | Captured inside an immutable revision; no binary/payload copy |
-| `DecisionAuthorityReference` | Typed/versioned semantic identity of the accountable decision-maker, role or governance body | Server-authoritatively validated and captured in the immutable published revision; never inferred from recorder, publisher or approver |
+| `DecisionEvidenceReference` | Deferred future typed/versioned evidence metadata reference | V1 core requires an empty evidence set and exposes no attach field/API/UI; activation requires an executable MOD-0031 amendment |
+| `DecisionAuthorityReferenceV1` | Exact typed/versioned semantic identity of the accountable Person or Position | Validated authoritatively by MOD-0288 and captured in the immutable revision; never inferred from recorder, publisher, RBAC Role or approver |
 | `DecisionPublicationHistory` | Append-only publication and disposition provenance | `Published`, `Withdrawn` and `Superseded` events append; published revision bytes never change |
-| `DecisionSupersessionLink` | Exact append-only edge from the older affected published revision to its replacement published revision | Same-tenant, cycle-safe and concurrency-safe creation; withdrawal without replacement creates no edge |
+| `DecisionRevisionReplacementProvenance` | Same-Decision append-only link from prior current revision to the next monotonic revision | Advances current pointer while record remains `Published`; prior revision remains historical |
+| `DecisionSupersessionLink` | Different-Decision append-only edge from old published Decision/revision to replacement Decision/revision | Old record becomes terminal `Superseded`; same-tenant, cycle-safe and concurrency-safe |
 | `DecisionRevisionReferenceV1` | Generic opaque five-field consumer value for an exact immutable revision | Validated authoritatively by MOD-0007; contains no consumer relationship role |
 | Gate I-A PPM wrappers | Two PPM-owned relationship wrappers nesting `DecisionRevisionReferenceV1` unchanged | Exact identities/version are closed by MOD-0117; storage, role, cardinality and lifecycle remain PPM-owned |
 
@@ -200,13 +201,21 @@ Indexes: tenant-first unique active `(TenantId, DecisionId)` and lookup
 `(TenantId, SubjectKind, SubjectId, IsDeleted, LifecycleState)`. Soft-deleted, invisible and cross-tenant
 records are never referenceable.
 
+The lifecycle is closed. Publishing the first draft moves `Unpublished → Published`. A correction to the
+same Decision creates a new draft and next monotonic revision; atomic publication keeps the DecisionRecord
+`Published`, advances `CurrentRevisionId/CurrentRevisionNumber`, and appends replacement provenance to the
+prior historical revision. Only replacement by a different Decision identity moves the old record to
+`Superseded`. `Withdrawn` is terminal without replacement. `Withdrawn` and `Superseded` records cannot reopen;
+a later business decision requires a new Decision identity.
+
 ### DecisionDraft
 
-`DecisionDraft` carries the pre-publication semantic fields, proposed `DecisionAuthorityReference`,
-provenance and optional evidence-reference candidates. It has `DraftId`, technical `Version`, server-derived
+`DecisionDraft` carries the pre-publication semantic fields, exact `DecisionAuthorityReferenceV1`,
+provenance and an evidence list that must remain empty in v1 core. It has `DraftId`, technical `Version`, server-derived
 creator/updater and timestamps, but no `DecisionRevisionId`, revision number or publication timestamp. It may
 be edited with optimistic concurrency. An unpublished draft with no immutable publication/history may be
 soft-deleted only under an approved draft policy; published records and revisions have no CRUD delete path.
+The draft creator or latest updater cannot publish that draft's revision.
 
 ### DecisionRevision
 
@@ -218,10 +227,10 @@ soft-deleted only under an approved draft policy; published records and revision
 | `DecisionText` | string | Yes | Trim + NFC; non-empty; max 8000 |
 | `DecisionResult` | string | Yes | Trim + NFC; non-empty; max 4000 |
 | `Rationale` | string | Yes | Trim + NFC; non-empty; max 12000 |
-| `DecisionAuthorityReference` | typed/versioned value | Yes | Accountable `Person`, `Position`, `Role` or `GovernanceBody`; exact provider/model remains open |
+| `DecisionAuthorityReferenceV1` | typed/versioned value | Yes | Exact MOD-0288-backed Person/Position authority contract below |
 | `ProvenanceKind` | closed enum | Yes | Owner-approved source category |
 | `ProvenanceReference` | typed/versioned value | Yes | Opaque source reference; no foreign payload |
-| `EvidenceReferences` | typed/versioned value list | No | Metadata references only; unique by contract/type/id/version |
+| `EvidenceReferences` | typed/versioned value list | Yes | Must be empty in v1 core; no provider call or local/mock substitute |
 | `RecordedBy` | Guid | Yes | Authenticated/delegated server actor |
 | `RecordedAtUtc` | UTC instant | Yes | Server generated |
 | `PublishedBy` | Guid | Yes | Technical authenticated/delegated actor executing publication; not business Decision authority |
@@ -233,37 +242,39 @@ field. A published revision has no update path; correction creates a new draft a
 new revision. Trusted `CorrelationId` may be recorded in bounded publication/audit provenance, but is not a
 semantic DecisionRevision field or consumer `DecisionRevisionReferenceV1` field.
 
-### DecisionAuthorityReference
+### DecisionAuthorityReferenceV1
 
 | Field | Type | Required | Rule |
 |---|---|---:|---|
-| `AuthorityContractName` | string | Yes | Exact approved authority contract |
-| `AuthorityContractVersion` | string | Yes | Exact supported version |
-| `AuthorityProvider` | string | Yes | Authoritative provider/namespace; no free text fallback |
-| `AuthorityType` | closed enum | Yes | `Person`, `Position`, `Role` or `GovernanceBody` only, subject to owner approval |
-| `AuthorityId` | opaque canonical identity | Yes | Server-authoritatively validated; no client-asserted ActorId |
+| `ContractName` | string | Yes | Exact `management-governance.decision-authority-reference` |
+| `ContractVersion` | string | Yes | Exact `1.0` |
+| `AuthorityKind` | closed enum | Yes | `Person` or `Position` only |
+| `AuthorityId` | opaque canonical identity | Yes | Non-empty MOD-0288 identity; server-authoritatively validated |
 
-The exact provider, type/version model and validation authority remain OPEN. `DecisionAuthorityReference` is
-distinct from `RecordedBy`, `PublishedBy`, and MOD-0023 approver/`ApprovalOutcome`.
+MOD-0288 — Organization, Person & Position Directory is the authoritative provider. `Person` resolves an
+active tenant-visible PersonReference; `Position` resolves an active tenant-visible Position. Missing,
+cross-tenant, invisible or inactive authority is indistinguishable `404`; unavailable, malformed,
+indeterminate or unsupported provider/version response is `503`. `Role` and `GovernanceBody` are deferred
+beyond v1. AuthService RBAC Role cannot be business DecisionAuthority. This semantic reference is distinct
+from draft author, `RecordedBy`, `PublishedBy`, and MOD-0023 approver/`ApprovalOutcome`.
 
-### DecisionEvidenceReference, disposition and supersession
+### Deferred DecisionEvidenceReference, disposition and supersession
 
 | Field | Type | Required | Rule |
 |---|---|---:|---|
-| `EvidenceContractName` | string | Yes | Registered exact contract name |
-| `EvidenceContractVersion` | string | Yes | Exact supported version; open decision for initial version |
-| `EvidenceKind` | closed enum | Yes | Metadata classification only |
-| `EvidenceId` | Guid | Yes | Opaque canonical identity; payload/binary forbidden |
-| `SourceDecisionId` / `SourceDecisionRevisionId` | Guid pair | For supersession | Exact older affected immutable published revision |
-| `TargetDecisionId` / `TargetDecisionRevisionId` | Guid pair | For supersession | Exact replacement immutable published revision |
+| `EvidenceReferences` | empty list | V1 core | Any non-empty value is `400`; evidence attachment is formally deferred |
+| `SourceDecisionId` / `SourceDecisionRevisionId` | Guid pair | For supersession | Exact old immutable published revision; source Decision differs from target Decision |
+| `TargetDecisionId` / `TargetDecisionRevisionId` | Guid pair | For supersession | Exact replacement immutable published revision under a different Decision identity |
 | `SupersessionKind` | closed enum | For supersession | Owner-approved replacement kind; withdrawal is not a fake edge |
 | `Reason/ProvenanceReference` | typed/versioned value | Yes | Required disposition reason and authoritative provenance |
 | `EffectiveAtUtc` | UTC instant | For supersession | Server normalized; append-only history |
 
-Both edge endpoints are same-tenant published revisions. Self-links, duplicate edges and directed cycles are
+Different-Decision supersession endpoints are same-tenant published revisions. Self-links, same-Decision
+edges, duplicate edges and directed cycles are
 forbidden. Edge creation is concurrency-safe and atomic with disposition/publication effects and audit
 intent. Withdrawal without a replacement appends a `DecisionPublicationHistory(Withdrawn)` event referencing
-the affected exact revision; it never fabricates a source/target link.
+the affected exact revision; it never fabricates a source/target link. Same-Decision correction uses
+`DecisionRevisionReplacementProvenance`, not `DecisionSupersessionLink`.
 
 ## 5. Repo Scope
 
@@ -294,7 +305,8 @@ paths after physical topology and transport are approved. This pack grants no sc
 | DCP-006 | Gate I-A orchestration and ownership boundaries | Approved orchestration; does not authorize MOD-0007 runtime |
 | MOD-0018 | Exact permission and tenant/actor authorization evaluation | Runtime contract/evidence required before implementation |
 | MOD-0021 / MOD-0035 | Immutable audit intent delivery over approved event/outbox mechanics | Exact producer contract and credentials required |
-| MOD-0031 or approved evidence producer contracts | Typed evidence metadata validation | Contract name/version remains open |
+| MOD-0031 | Future typed evidence metadata integration only | Formally deferred from v1 core; requires a separate executable amendment |
+| MOD-0288 | Authoritative Person/Position resolution for `DecisionAuthorityReferenceV1` | Exact v1 provider; runtime client/transport evidence remains a B-class implementation blocker |
 | MOD-0023 | Optional distinct ApprovalOutcome only when policy requires approval | Separate PSS amendment and contract approval required |
 | MOD-0117 | Consumer of `management-governance.decision-reference` for Gate I-A | Matching consumer amendment and explicit runtime authority required |
 
@@ -317,7 +329,7 @@ are non-authoritative evidence only. They are not dependencies, schemas, migrati
   conflict is `409`; a well-formed unsupported contract/profile version, required dependency timeout,
   malformed authoritative response or unavailable required validator is `503`.
 - No default tenant, fail-open, stale-cache ownership inference or local consumer validation substitute.
-- Publishing atomically validates the draft, authority, provenance and any required/submitted evidence;
+- Publishing atomically validates the draft, MOD-0288 authority and provenance, and confirms evidence is empty;
   allocates the next revision identity/number; inserts the already-final immutable `DecisionRevision` with
   non-null publication provenance; appends publication/disposition history; compare-and-swaps the
   `DecisionRecord` pointer/state; optionally inserts a valid supersession edge; persists the idempotency
@@ -325,17 +337,25 @@ are non-authoritative evidence only. They are not dependencies, schemas, migrati
   step rolls back all state.
 - Correlation and operation-scoped idempotency are mandatory. A replay with the same canonical request
   returns the same result; the same key with different payload returns `409`.
+- Prepare/publish separation of duties is mandatory: the authenticated publisher must differ from both the
+  draft creator and latest draft updater and must hold exact `.publish` permission. Publisher need not equal
+  DecisionAuthority; even when the same Person is semantically accountable, publication remains a distinct
+  technical act. V1 has no local/admin/emergency self-publish bypass. Import/migration requires a future
+  separately approved process and cannot reuse ordinary publish permission to bypass SOD.
 - PPM-facing validation uses a dedicated authenticated S2S identity with exact issuer/audience/scope and an
   independently validated delegated actor. End-user JWT forwarding alone is insufficient; the service and
   effective-actor authorization gates are independent.
 - Read-only validation requires no idempotency key and writes no audit intent, receipt, cache or mutation.
-- Optional empty evidence causes no provider call. Evidence-provider availability matters only when policy
-  requires evidence or the submitted draft contains a reference requiring validation; required timeout,
-  unavailable, malformed or unsupported-version validation returns `503` and blocks publication.
-- Only an unpublished draft with no immutable publication/history may use policy-approved soft delete.
-  Published records/revisions/history/edges have no ordinary delete or bulk-delete path; withdrawal and
-  supersession are named append-only dispositions. Any exceptional purge is a separately authorized
-  compliance process subject to retention/legal hold and cannot reuse module CRUD permissions.
+- V1 evidence integration is disabled: `EvidenceReferences` must be empty, no evidence field/attach API/UI is
+  exposed, and no provider call occurs. Non-empty evidence is `400`. If tenant policy requires evidence,
+  publication returns `409`; local/mock evidence cannot satisfy it. Evidence-enabled publication requires a
+  later executable MOD-0031 exact typed/versioned amendment.
+- Only a policy-eligible unpublished draft with no immutable publication/history may use soft delete, and no
+  automatic hard purge follows. Legal hold blocks deletion of every Decision, draft and history record.
+  Published revisions, publication/disposition history and supersession graph have no automatic TTL and no
+  ordinary update/delete/bulk-delete. V1 supports no exceptional purge. Withdrawal/supersession are append-only
+  dispositions, never purge. Any future purge requires MOD-0030 retention/legal-hold authority plus a separate
+  executable amendment.
 - Exact withdrawn/superseded references remain immutable historical facts and resolve under
   `HistoricalResolve`; `NewReferenceEligibility` rejects their new binding with `409`. Disposition never
   physically rewrites consumer history.
@@ -395,19 +415,18 @@ document binaries or approval actions.
 | `DecisionResult` | Yes | Trim + NFC; 1..4000 | — |
 | `Rationale` | Yes | Trim + NFC; 1..12000 | — |
 | `ProvenanceKind/Reference` | Yes | Typed, versioned, supported and referenceable | Authoritative validator |
-| `EvidenceReferences` | No | Typed/versioned; no duplicate tuple; metadata only | Authoritative validator |
-| PPM wrapper profile | Gate I-A validation | Exact governing or supporting wrapper name above, version `1.0`; role encoded by identity and absent from generic reference | Supported-profile validation; semantic producer role-eligibility remains OPEN |
+| `EvidenceReferences` | V1 empty-only | Non-empty list is `400`; no attach UI/API/provider call | Tenant evidence-required policy blocks publication with `409` |
+| PPM wrapper profile | Gate I-A validation | Exact governing or supporting wrapper name above, version `1.0`; role encoded by identity and absent from generic reference | Supported-profile validation; producer role-eligibility is formally excluded/deferred from v1 |
 | Validation mode | Gate I-A validation | `HistoricalResolve` or `NewReferenceEligibility`; `CurrentSelectionEligibility` forbidden | Unsupported non-selection mode is `400` |
 | `DecisionRevisionNumber` | Yes | Positive, next monotonic number; client cannot overwrite current revision | Unique index + transaction |
-| `DecisionAuthorityReference` | Yes on publication | Exact supported provider/type/version + opaque ID; no free text or actor substitution | Authoritative server-side validation |
+| `DecisionAuthorityReferenceV1` | Yes on publication | Exact four fields; contract `management-governance.decision-authority-reference/1.0`; kind `Person|Position` only | Active tenant-visible MOD-0288 validation |
 | `ConsumerProfile` | Yes on reference validation | Exact approved name/version; Gate I-A allowlist cannot be widened | Authenticated S2S registration must match |
 | `ActorId`, `DecisionActorId`, `RecordedBy`, `PublishedBy`, `ApprovedBy`, `TenantId` in payload | Forbidden | Reject request; never trust, merge or normalize into server context | Authenticated/delegated server context |
 | Trusted `CorrelationId` | Mutations and validation | Bounded authenticated trace context; absent from persisted `DecisionRevisionReferenceV1` | Server transport context |
 | `IdempotencyKey` | Mutation commands only | Required, scoped to tenant + operation + effective actor + S2S client and payload-bound | Idempotency store/index; forbidden requirement on read validation |
 
-When evidence is optional and none is submitted, publication does not contact the evidence provider. When
-policy requires evidence, absence is a policy-validation failure; when evidence is required or submitted,
-authoritative validation is mandatory and provider failure is `503`.
+V1 never contacts an evidence provider. Empty evidence proceeds only under evidence-disabled tenant policy;
+evidence-required policy returns `409`, and non-empty/local/mock evidence returns `400`.
 
 ## 13. Failure Path to Verify
 
@@ -416,6 +435,8 @@ authoritative validation is mandatory and provider failure is `503`.
   back all writes; no premature revision or half-published state exists.
 - **Draft soft-delete race:** only an unpublished draft with no immutable history may be soft-deleted under
   policy; concurrent publication versus deletion permits at most one successful transaction.
+- **Prepare/publish SOD violation:** publisher equals draft creator or latest updater: `403`; no publication,
+  revision, pointer, idempotency success or audit intent persists. Admin/emergency/import flags do not bypass.
 - **Syntactically invalid identifier, required value or closed enum:** `400`; no authoritative lookup or mutation.
 - **Cross-tenant, missing, soft-deleted or invisible Decision:** indistinguishable `404`; no existence leak.
 - **Client tenant/actor/recorder/publisher/ApprovedBy/delegation/context override:** `400`; no lookup,
@@ -431,10 +452,12 @@ authoritative validation is mandatory and provider failure is `503`.
   cycle, incompatible visible disposition or concurrency race is `409`; no partial edge/history survives.
 - **Withdrawal without replacement:** appends one withdrawal disposition and no supersession edge or fake
   target; history remains readable and immutable.
-- **Authority spoof/unavailable:** free-text/client actor substitution is rejected; a required authority
-  provider timeout, malformed response or unsupported version is `503`; publication does not commit.
-- **Optional evidence unused/provider unavailable:** publication proceeds and provider is not called. If
-  evidence is policy-required or submitted, provider failure is `503` and publication fully rolls back.
+- **Authority resolution:** invalid kind/shape is `400`; missing/cross-tenant/invisible/inactive MOD-0288
+  Person/Position is `404`; unavailable/malformed/indeterminate/unsupported provider response is `503`.
+- **Evidence-disabled v1:** empty evidence makes no provider call; non-empty/local/mock evidence is `400`;
+  evidence-required tenant policy is `409`; publication does not commit on either failure.
+- **Retention/legal hold:** legal-held draft cannot soft-delete; published revision/history/graph has no
+  TTL/delete/bulk-delete/purge path; withdrawal or supersession preserves all historical bytes.
 - **Read-only reference validation:** succeeds without `IdempotencyKey` and writes no receipt, audit, cache or
   business mutation.
 - **Approval substitution attempt:** any approve/reject command, approval field or approval-state persistence is
@@ -460,10 +483,10 @@ replacement/disposition graph operation; `.withdraw` appends withdrawal disposit
 published-byte mutation or ordinary deletion.
 
 All commands/queries require authenticated tenant context, exact MOD-0018-backed permission evaluation and
-visibility scope. Platform-admin bypass, if any, must be explicitly approved later; it is not inferred here.
+visibility scope. V1 has no local, platform-admin or emergency self-publish bypass.
 No permission containing `approve`, `reject`, `approval`, `delegate`, `sla` or `escalate` belongs to MOD-0007.
-The validation permission grants no Decision-details read. Any exceptional compliance purge requires a
-separately approved identity/process and cannot reuse `.delete`, `.withdraw`, platform-admin bypass or these
+The validation permission grants no Decision-details read. V1 exposes no exceptional purge permission or
+process; a future MOD-0030-backed amendment cannot reuse `.delete`, `.withdraw`, platform-admin bypass or
 ordinary module permissions.
 
 ## 15. Gateway / API Routing Decision
@@ -511,12 +534,13 @@ service port directly. Only `integration-agent` may modify `ocelot.json` after e
     permission and migration isolation;
     failure forces the separate-service topology fallback before implementation.
 15. No runtime, UI, Gateway, migration, seed, port or service-scaffold change is made under this draft.
-16. `DecisionAuthorityReference` identifies the accountable business person/position/role/body and is
-    server-authoritatively validated; it is distinct from recorder, publisher and MOD-0023 approver/outcome.
-17. Only policy-eligible unpublished drafts may be soft-deleted. Published records/revisions/history have no
-    CRUD delete/bulk-delete; exceptional purge remains a separately authorized compliance process.
-18. Empty optional evidence does not call or depend on the evidence provider; required or submitted evidence
-    fails publication with `503` when authoritative validation is unavailable/malformed/unsupported.
+16. `DecisionAuthorityReferenceV1` has exactly `ContractName`, `ContractVersion`, `AuthorityKind`,
+    `AuthorityId`; exact identity is `management-governance.decision-authority-reference/1.0`, kind is only
+    `Person|Position`, and MOD-0288 active tenant-visible resolution is authoritative.
+17. Draft creator/latest updater cannot publish the same draft. Publisher is a distinct authenticated actor
+    with exact publish permission; no local/admin/emergency/import bypass exists.
+18. V1 evidence is disabled: evidence list is empty, no attach UI/API/provider call exists, non-empty evidence
+    is `400`, and evidence-required tenant policy blocks publication with `409`.
 19. New consumers/subject types require an explicitly approved profile/version and fixtures; Gate I-A's exact
     `ppm`/`InvestmentCase` allowlist cannot widen silently.
 20. `Governing|Supporting` is absent from generic Decision/DecisionRevision state and the persisted generic
@@ -525,14 +549,19 @@ service port directly. Only `integration-agent` may modify `ocelot.json` after e
     `NewReferenceEligibility` returns `409` for their new binding; `CurrentSelectionEligibility` returns `400`.
 22. Bilateral fixtures prove mode-aware facts and error mapping; no `IsReferenceable` boolean alone can
     authorize historical resolution or a new PPM relationship.
+23. Same-Decision correction creates a new monotonic revision, keeps the record `Published`, advances the
+    current pointer and appends replacement provenance. Different-Decision replacement supersedes the old
+    record; Withdrawn/Superseded records never reopen.
+24. Published revision/history/supersession graph has no TTL/update/delete/bulk-delete/purge. Legal hold blocks
+    all deletion; eligible unpublished draft soft-delete never triggers automatic hard purge.
 
 ## 17. Test Expectations
 
 | Test layer | Mandatory evidence before runtime promotion |
 |---|---|
-| Domain unit | Draft versus published-revision boundary, atomic immutable birth, monotonic numbering, authority distinction, supersession graph and withdrawal-disposition invariants |
-| Application unit | Exact permission, forbidden context-field rejection, independent S2S/delegated-actor gates, mutation idempotency, query purity, optimistic concurrency and Decision/Approval separation |
-| Persistence integration | Fault injection after revision/history/pointer/edge/idempotency/audit writes, tenant-first queries, draft soft-delete/publication race and cross-tenant 404 equivalence |
+| Domain unit | Closed lifecycle, same-Decision revision replacement versus different-Decision supersession, terminal withdrawal, immutable birth, monotonic numbering and graph invariants |
+| Application unit | Exact four-field MOD-0288 authority, prepare/publish SOD, evidence-disabled policy, exact permission, S2S/delegation, mutation idempotency and Decision/Approval separation |
+| Persistence integration | Fault injection after revision/history/pointer/edge/idempotency/audit writes, SOD race, legal-hold draft delete, no-TTL/no-purge architecture and cross-tenant 404 equivalence |
 | Contract compatibility | Exact five-field key-set serialization/roundtrip; exact two wrapper names + context at 1.0; HistoricalResolve/NewReferenceEligibility matrices; CurrentSelectionEligibility 400; mode-aware result with no boolean-only authority |
 | S2S security | Dedicated identity, delegated actor validation, 401/403/404/409/503 matrix, no tenant/existence disclosure |
 | Architecture | Project/namespace/type/repository/collection/permission/migration isolation for DWS/BPM/DecisionRegistry; no approval artifacts; no foreign decision/rationale/evidence payload copy |
@@ -553,8 +582,12 @@ Mandatory security/compatibility fixtures additionally prove:
 - idempotency cannot replay across tenant, operation, effective actor or authenticated S2S client;
 - supersession rejects self, duplicate, concurrent inverse edge, multi-hop cycle, cross-tenant/invisible
   endpoint and forged withdrawal target without residue;
-- generic delete/bulk-delete is absent for published records/history, legal hold blocks exceptional purge,
-  and no platform-admin bypass implies purge authority;
+- generic delete/bulk-delete/TTL/purge is absent for published history and soft-deleted drafts; legal hold
+  blocks draft deletion, and no platform-admin bypass implies purge authority;
+- MOD-0288 Person/Position matrices cover active, inactive, missing, cross-tenant, invisible, unavailable,
+  malformed, indeterminate and unsupported-version outcomes;
+- publisher differs from draft creator and latest updater under ordinary/admin/emergency/import-shaped calls;
+- v1 evidence list is empty-only, no attach surface/provider call exists, evidence-required policy is `409`;
 - logs contain no credentials/tokens or full rationale/evidence payload.
 
 Minimum mutation matrix:
@@ -569,6 +602,12 @@ Minimum mutation matrix:
 | Permit withdrawn/superseded revision during `NewReferenceEligibility` | New-binding retirement guard is violated |
 | Accept `CurrentSelectionEligibility` | Non-selection Gate I-A mode boundary is violated |
 | Treat `IsReferenceable=true` as the complete authoritative result | Bilateral mode/disposition semantics are bypassed |
+| Allow `Role`/`GovernanceBody` or an AuthService RBAC Role as authority | Closed Person/Position MOD-0288 authority contract is violated |
+| Remove creator/latest-updater versus publisher inequality | Prepare/publish separation of duties is violated |
+| Add admin/emergency/import self-publish bypass | V1 SOD cannot be bypassed |
+| Accept non-empty/local/mock evidence or call an evidence provider | Evidence-disabled v1 boundary is violated |
+| Permit reopen of Withdrawn/Superseded record | Closed terminal lifecycle is violated |
+| Add TTL or purge path to published history/graph or soft-deleted drafts | Retention/legal-hold owner decision is violated |
 | Require idempotency or persist a receipt on read-only validation | Query-purity contract is violated |
 | Drop governing `0..1` or closure requirement in MOD-0117 fixture | Consumer-owned PPM Gate I-A cardinality is violated |
 | Add PPM transition/cardinality enforcement to MOD-0007 | Producer/consumer ownership boundary is violated |
@@ -582,8 +621,8 @@ Minimum mutation matrix:
 | Disable idempotency unique scope | Duplicate semantic revision/audit is possible |
 | Accept unknown contract version or cache fallback | Required 503 fail-closed behavior is violated |
 | Add foreign rationale/evidence payload to PPM | Consumer payload-copy ban is violated |
-| Call evidence provider for empty optional evidence or fail on its outage | Optional-evidence independence is violated |
-| Skip validation for submitted/policy-required evidence | Required authoritative evidence validation is violated |
+| Accept non-empty/local/mock evidence or invoke evidence provider | Evidence-disabled v1 boundary is violated |
+| Allow evidence-required tenant policy to publish | Required `409` core-slice policy block is violated |
 | Allow generic delete/bulk-delete of published record/history | Retention and immutable-history boundary is violated |
 
 ## 18. Ready-for-dev Checklist
@@ -599,15 +638,14 @@ Minimum mutation matrix:
 - [x] Exact PPM governing/supporting wrapper identities, InvestmentCase context `1.0`, validation modes and
   mode-aware error semantics are reconciled from authority checkpoint `a2c7ff5b`.
 - [x] Current UI is `none`; future field count/Golden Compact direction is documented without UI authority.
-- [ ] Enterprise Governance Process Owner approves lifecycle, revision publication authority and contract `1.0` semantics.
-- [ ] Any later producer-side relationship-role eligibility policy receives separate explicit owner approval.
-- [ ] Exact DecisionAuthority provider/type/version, validation authority and prepare/publish separation of
-  duties are approved.
+- [x] Enterprise Governance Process Owner closes lifecycle, revision replacement/publication and terminal disposition semantics.
+- [x] Producer-side relationship-role eligibility is excluded/deferred from v1 and is not a core blocker.
+- [x] `DecisionAuthorityReferenceV1` exact four-field contract, Person/Position kinds and MOD-0288 authority are approved.
+- [x] Prepare/publish SOD is closed with creator/latest-updater inequality and no bypass.
+- [x] V1 evidence integration is formally disabled; tenant evidence-required policy blocks with `409`.
+- [x] V1 retention/legal-hold decision closes no-TTL/no-purge and draft soft-delete boundaries.
 - [ ] Enterprise Architect closes physical topology A/B and records isolation evidence requirements.
 - [ ] Exact transport, route, timeout/retry and compatibility policy are approved.
-- [ ] Retention, legal hold, archival and separately authorized exceptional-purge policy are approved without
-  exposing ordinary delete/bulk-delete for published history.
-- [ ] Initial typed evidence contract name/version and producer validation are approved.
 - [ ] MOD-0018 exact permission provisioning and dedicated S2S identity are executable and evidenced.
 - [ ] MOD-0021/MOD-0035 audit-intent contract, credential and atomic-outbox integration are approved.
 - [ ] Matching MOD-0117 consumer amendment is approved.
@@ -637,8 +675,10 @@ Minimum mutation matrix:
 - PPM authority checkpoint `a2c7ff5b` closes the two exact Gate I-A wrapper identities, shared InvestmentCase
   context and consumer mode/error baseline. It does not authorize a MOD-0007 runtime, service, endpoint or
   status promotion.
-- Authority is semantic business accountability, not technical recording/publishing or approval. Exact
-  authority-provider policy remains a ready-for-dev blocker.
+- Authority is semantic business accountability, not technical recording/publishing or approval. V1 uses
+  exact `management-governance.decision-authority-reference/1.0`, Person/Position only, with MOD-0288 as SoR.
+- Prepare/publish SOD rejects the draft creator and latest updater as publisher; no admin/emergency/import
+  bypass exists. Evidence is empty-only and provider-free in v1. Published history has no TTL or purge.
 - Consumer reference validation returns minimal referenceability data. Full Decision details require a
   separately authorized read contract and permission; PPM does not need it for Gate I-A.
 - Existing Enterprise Strategy `DecisionReference` strings, mock values, `DecisionReferencesJson`, rationale
@@ -651,20 +691,23 @@ Minimum mutation matrix:
 |---|---|---|
 | 2026-08-02 | Final draft role-ownership cleanup: generic `DecisionRevisionReferenceV1` fixed to the canonical five-field value; `DecisionRole` moved out of the generic tuple into the then-proposed MOD-0117-owned Gate I-A relationship wrapper/request boundary; producer and consumer validation/cardinality/lifecycle ownership reconciled. | None; at this checkpoint profile identity and any role-eligibility policy remained OPEN; the later bilateral row closes only PPM profile identity. |
 | 2026-08-02 | Bilaterally aligned with PPM checkpoint `a2c7ff5b`: accepted exact governing/supporting wrapper and InvestmentCase-context identities at `1.0`; fixed HistoricalResolve/NewReferenceEligibility semantics, rejected CurrentSelectionEligibility, and required mode-aware fixtures instead of boolean-only authority. | None; MOD-0117 still owns relationship/cardinality/lifecycle, MOD-0007 stays `draft`, and no runtime authority is created. |
+| 2026-08-03 | Closed A-class owner decisions: closed lifecycle/revision replacement, exact MOD-0288 Person/Position DecisionAuthority v1, prepare/publish SOD without bypass, evidence-disabled core, and no-TTL/no-purge retention/legal-hold baseline. | None; only B-class implementation blockers remain, status stays `draft`, service stays `TBD`, and no runtime authority is created. |
 
 ## 20. Follow-up Items
 
-Only unresolved owner/architecture decisions remain:
+Only B-class runtime/promotion blockers remain:
 
 1. Close physical service topology: conditional Option A or separate-service Option B fallback.
-2. Choose exact validation transport and route plus timeout/retry/compatibility policy.
-3. Approve retention, archival, legal-hold and purge behavior for immutable revisions/history.
-4. Approve the initial typed evidence contract name/version and evidence referenceability semantics.
-5. Approve the DecisionAuthority provider/type/version and authoritative validation model.
-6. Define who may prepare a draft and publish a revision, including separation of duties, without importing
-   MOD-0023 approval behavior.
-7. If producer-side relationship-role eligibility is ever required, approve its owner, policy and version
-   explicitly; this draft establishes no intrinsic `Governing|Supporting` Decision property.
+2. Prove DecisionRegistry isolation tests or fail closed to separate `Diten.EnterpriseGovernanceService`.
+3. Fix exact repo paths, service-local base implementation, collections, routes and port.
+4. Approve and evidence dedicated S2S identity, timeout and retry policy.
+5. Provision and evidence exact MOD-0018 permissions.
+6. Approve and evidence MOD-0021/MOD-0035 audit/outbox integration.
+7. Record explicit runtime authority; until then this pack remains non-executable.
+
+Deferred future amendments, not v1 core blockers: MOD-0031 evidence-enabled publication, MOD-0030-backed
+retention/legal-hold purge process, `Role`/`GovernanceBody` authority kinds, producer role-eligibility policy,
+and approved import/migration flow.
 
 After those decisions, revise this parent pack (or create explicitly parented executable follow-ups), rerun
 canonical and relative-link validation, obtain owner approval, and record explicit production authority before
