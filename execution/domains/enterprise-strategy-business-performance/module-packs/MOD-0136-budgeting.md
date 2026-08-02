@@ -2,7 +2,7 @@
 id: MOD-0136
 name: Budgeting
 domain: enterprise-strategy-business-performance
-service: TBD
+service: Diten.FpaService
 shell: tenant
 golden_reference: compact
 entity_base: EntityBase
@@ -19,8 +19,9 @@ production_authority: none
 
 > **Draft-only authoring boundary:** This parent pack defines proposed ownership, contracts and promotion
 > gates. It grants no runtime, frontend, service, collection, migration, port, Gateway or production authority.
-> `service: TBD` is intentional until topology promotion. Repository packaging under ESBP does not imply
-> placement in `Diten.EnterpriseStrategyService`.
+> `service: Diten.FpaService` records the authoritative primary topology only; it does not authorize a scaffold
+> or runtime. The fail-closed `Diten.BudgetingService` fallback remains conditional in this body. Placement in
+> `Diten.EnterpriseStrategyService` is prohibited.
 
 ## 1. Module Summary
 
@@ -31,6 +32,8 @@ referenceability. Its Blueprint route is `Enterprise Application Ecosystem → E
 The primary users are FP&A budgeting practitioners and authorized tenant consumers. This parent pack proposes
 the exact Gate I-B producer contract required by MOD-0117 while keeping all consumer implementation
 non-executable until producer and consumer packs are separately approved and explicit runtime authority exists.
+Physical placement follows the authoritative
+[ESBP domain topology](../domain-config.md#authoritative-physical-topology).
 
 ## 2. Ownership and Boundaries
 
@@ -337,10 +340,38 @@ silently reformatted; unsorted lines canonicalize to the mandated sort. Extra/mi
 
 ### Future implementation scope (non-authoritative until promotion)
 
-- A topology-selected service's isolated `Budgeting` Domain/Application/Persistence/Infrastructure/Api paths.
+- Primary five-layer module scope is exactly:
+  - `services/Diten.FpaService/src/Diten.FpaService.Api/Modules/Budgeting/**`
+  - `services/Diten.FpaService/src/Diten.FpaService.Application/Modules/Budgeting/**`
+  - `services/Diten.FpaService/src/Diten.FpaService.Domain/Modules/Budgeting/**`
+  - `services/Diten.FpaService/src/Diten.FpaService.Persistence/Modules/Budgeting/**`
+  - `services/Diten.FpaService/src/Diten.FpaService.Infrastructure/Modules/Budgeting/**`
+- Primary test scope is exactly:
+  - `services/Diten.FpaService/tests/Diten.FpaService.UnitTests/Modules/Budgeting/**`
+  - `services/Diten.FpaService/tests/Diten.FpaService.IntegrationTests/Modules/Budgeting/**`
+  - `services/Diten.FpaService/tests/Diten.FpaService.ArchitectureTests/Modules/Budgeting/**`
+  - `services/Diten.FpaService/tests/Diten.FpaService.ContractTests/Modules/Budgeting/**`
+- If and only if the primary isolation matrix fails, the exclusive fallback five-layer scope is exactly:
+  - `services/Diten.BudgetingService/src/Diten.BudgetingService.Api/**`
+  - `services/Diten.BudgetingService/src/Diten.BudgetingService.Application/**`
+  - `services/Diten.BudgetingService/src/Diten.BudgetingService.Domain/**`
+  - `services/Diten.BudgetingService/src/Diten.BudgetingService.Persistence/**`
+  - `services/Diten.BudgetingService/src/Diten.BudgetingService.Infrastructure/**`
+- Fallback test scope is exactly:
+  - `services/Diten.BudgetingService/tests/Diten.BudgetingService.UnitTests/**`
+  - `services/Diten.BudgetingService/tests/Diten.BudgetingService.IntegrationTests/**`
+  - `services/Diten.BudgetingService/tests/Diten.BudgetingService.ArchitectureTests/**`
+  - `services/Diten.BudgetingService/tests/Diten.BudgetingService.ContractTests/**`
+- The Budgeting-owned collection/index/repository owner manifest must live under the selected profile's
+  Persistence ownership scope: primary
+  `services/Diten.FpaService/src/Diten.FpaService.Persistence/Modules/Budgeting/Ownership/**`, or fallback
+  `services/Diten.BudgetingService/src/Diten.BudgetingService.Persistence/Ownership/**`. Exact collection and
+  index names remain a B-class blocker; the manifest cannot share an owner entry with ScenarioPlanning.
 - `frontend/Diten.Web` tenant-shell Budget and BudgetVersion paths only after explicit frontend authority.
 - A separately authorized Gateway route task owned by `integration-agent` only after service/port selection.
-- A separately approved MOD-0117 consumer amendment after this producer contract is approved.
+- A separately approved MOD-0117 consumer amendment only after this producer contract is approved and matching
+  producer runtime evidence exists; before then no consumer adapter may be DI-registered, configured, deployed
+  or otherwise executable.
 
 ## 6. Protected Paths
 
@@ -351,7 +382,9 @@ silently reformatted; unsorted lines canonicalize to the mandated sort. Extra/mi
 - `frontend/Diten.Web/Controllers/Archive/**`, `frontend/Diten.Web/Views/Archive/**` and
   `frontend/Diten.Web/Views/Shared/_Layout.cshtml`.
 - Existing `Diten.EnterpriseStrategyService` budget-like fields; they are evidence/quarantine only.
-- MOD-0138 Scenario, MOD-0023 workflow/approval, MOD-0072 actual outcome and accounting/payment internals.
+- MOD-0138 ScenarioPlanning domain, repositories, collections, indexes, DI registrations, Mongo sessions and
+  transactions; no direct persistence access is permitted in either direction.
+- MOD-0023 workflow/approval, MOD-0072 OutcomeTracking/actual outcome and accounting/payment internals.
 
 ## 7. Dependencies
 
@@ -400,7 +433,8 @@ silently reformatted; unsorted lines canonicalize to the mandated sort. Extra/mi
 - Checked decimal is used throughout. Calculated intermediates normalize to scale four with ToEven only before
   certification. Line absolute bound is `1,000,000,000,000,000.0000`; version aggregate absolute bound is
   `1,000,000,000,000,000,000.0000`; overflow stops certification with `400`.
-- No service, collection, route, event, transport or port is allocated by this draft.
+- No service scaffold/runtime instance, collection, route, event, transport or port is allocated by this draft;
+  the frontmatter service value is a governance-only primary placement decision.
 - Gate I-B validation is mode-specific: `HistoricalResolve` can resolve visible retired certified history;
   `NewReferenceEligibility` cannot infer current selection; `CurrentSelectionEligibility` consults only the
   immutable MOD-0136 selection occurrence/event truth for exact `InvestmentCaseContextV1`. PPM wrapper storage
@@ -415,16 +449,22 @@ silently reformatted; unsorted lines canonicalize to the mandated sort. Extra/mi
 
 ### Service topology decision
 
-| Option | Benefits | Risks / required controls | Draft disposition |
-|---|---|---|---|
-| A. New `Diten.FpaService`, isolated Budgeting internal module | Co-locates MOD-0136 and MOD-0138 FP&A consistency/transactions while retaining a bounded modular-monolith | Separate repositories, types, permissions, namespaces and Mongo collections per module; architecture tests must prevent cross-module persistence/type access | **Recommended** |
-| B. Separate `Diten.BudgetingService` | Strongest deployment and data boundary | More operational, contract and deployment overhead; cross-service coordination with MOD-0138 | Fallback if isolation tests cannot enforce A |
-| C. `Diten.EnterpriseStrategyService` | Reuses existing host | Code proximity may turn prototype fields into false production authority and blend strategy/FP&A ownership | Not recommended; evidence only unless separately justified |
+The authoritative primary is the isolated `Modules/Budgeting` module in `Diten.FpaService`. Co-location with
+ScenarioPlanning is physical hosting only: Budgeting shares no Domain type, repository, Mongo collection,
+index, DI registration, session or transaction with ScenarioPlanning and cannot access ScenarioPlanning
+persistence directly. Communication is only through an approved typed/versioned Application contract that
+leaks no entity, repository, Mongo/session handle or persistence DTO.
 
-The conditional recommendation is a new `Diten.FpaService` modular monolith containing isolated MOD-0136
-Budgeting and MOD-0138 Scenario Planning internal modules. Architecture tests must forbid repository, domain
-type, permission and collection leakage. Failure to maintain those boundaries triggers fallback to a separate
-`Diten.BudgetingService`. Existing EnterpriseStrategy budget fields are prototype/migration evidence only.
+The only Budgeting fallback is the separate five-layer `Diten.BudgetingService`, and it is eligible only when
+one or more mandatory `Diten.FpaService` isolation-matrix tests fail. Primary and fallback are exclusive: they
+cannot be scaffolded, registered, deployed or run as a hybrid or at the same time, and the fallback cannot be
+selected for convenience. `Diten.EnterpriseStrategyService` placement is prohibited; its budget-like fields
+remain migration/quarantine evidence only. MOD-0072 `OutcomeTracking` belongs to the separate
+`Diten.DecisionIntelligenceService` and cannot be hosted in `Diten.FpaService` or share Budgeting persistence.
+
+This placement is fixed by the [ESBP domain topology](../domain-config.md#authoritative-physical-topology), but
+creates no scaffold, runtime, route, controller, port, Gateway, collection or deployment authority. Port remains
+`TBD` because no authoritative collision-free allocation exists.
 
 ## 9. Layout & Shell Contract
 
@@ -536,10 +576,12 @@ handlers must not directly implement arbitrary child upsert loops or external HT
 
 ## 15. Gateway / API Routing Decision
 
-Decision: **deferred and currently prohibited**. Service and port are `TBD`; this draft allocates neither.
-Frontend must eventually call Gateway port 5000 through the approved profile, never a service port. After
-topology approval, an integration-agent-only task must determine explicit upstream/downstream routes (including
-`OPTIONS`) and test auth, tenant and correlation headers. This pack does not modify `ocelot.json`.
+Decision: **deferred and currently prohibited**. Primary service identity is `Diten.FpaService`, but runtime
+activation and port are unauthorized and the port remains `TBD`; this draft allocates neither. Frontend must
+eventually call Gateway port 5000 through the approved public profile, never a service port. After explicit
+runtime authority and authoritative port allocation, an integration-agent-only task must determine explicit
+public upstream/downstream routes (including `OPTIONS`) and test auth, tenant and correlation headers. Internal
+S2S providers receive no browser/Gateway route. This pack does not modify `ocelot.json`.
 
 ## 16. Acceptance Criteria
 
@@ -570,7 +612,10 @@ topology approval, an integration-agent-only task must determine explicit upstre
 - [ ] Seven-language RESX parity and browser smoke pass without approval UI, PPM budget forms or hardcoded lookup fallback.
 - [ ] Prototype/migration candidates remain quarantined unless an explicit mapping, reconciliation, rollback and
   post-migration verification plan proves canonical identity and immutable content.
-- [ ] Topology architecture tests prove repository/type/permission/collection isolation; otherwise Option B is selected.
+- [ ] Primary topology passes the applicable domain matrix `ESBP-TOP-001` through `ESBP-TOP-013`, including
+  profile exclusivity, five-layer namespace, repository/DI, collection/index, transaction, typed-contract,
+  EnterpriseStrategy prohibition, S2S, audit/outbox and PPM non-executability proofs. Any primary isolation
+  failure rejects `Diten.FpaService` for Budgeting and selects only the exclusive `Diten.BudgetingService` fallback.
 
 ## 17. Test Expectations
 
@@ -598,8 +643,14 @@ topology approval, an integration-agent-only task must determine explicit upstre
 - Concurrency/mutation: simultaneous version numbers and selections, fence loss, immutable closure/disposition
   plus successor append atomicity, selected uniqueness, rollback invariance and unchanged certified hash;
   mutations verify idempotent replay.
-- Architecture: PPM no-copy test; MOD-0136/MOD-0138 repository/type/permission/collection isolation; Domain has
-  no Mongo driver dependency; no EnterpriseStrategy prototype treated as production baseline.
+- Architecture/isolation: execute the Budgeting-applicable
+  [ESBP topology matrix](../domain-config.md#architecture-and-isolation-test-matrix), including primary XOR
+  fallback activation; separate five-layer namespaces; Budgeting-only repository/DI resolution and owned
+  collection/index manifest; no ScenarioPlanning repository, collection, index, context, session or transaction
+  access; Mongo driver only in Budgeting Persistence; typed/versioned Application-contract-only communication;
+  no MOD-0072/OutcomeTracking co-hosting or persistence sharing; no EnterpriseStrategy project/runtime/SoR
+  dependency; internal S2S has no browser/Gateway route; audit/outbox rollback and post-commit delivery; PPM
+  no-copy and pre-evidence adapter non-executability; guessed port/credential/deployment rejection.
 - Migration: classify/map/quarantine legacy EnterpriseStrategy budget evidence; collisions, precision loss,
   missing currency/period or unverifiable immutable token stay quarantined; rollback and counts reconcile.
 - Migration quarantine: preserve source collection/document ID, tenant provenance, schema/mapping version,
@@ -619,8 +670,13 @@ topology approval, an integration-agent-only task must determine explicit upstre
 
 - [x] FP&A Control Tower closed the v1 ownership, lifecycle, version/certification, selection and financial semantics on 2026-08-03.
 - [ ] Closed v1 financial semantics and normative canonical-hash vectors are implemented without local widening.
-- [ ] Service topology is approved; `service`, concrete service-local mapping for logical `EntityBase`, collection ownership and repo scope are concrete without inventing a base type.
-- [ ] Option A isolation architecture tests are specified and proven feasible, or Option B fallback is selected.
+- [x] Primary `Diten.FpaService/Modules/Budgeting`, conditional `Diten.BudgetingService` fallback, exclusivity,
+  exact logical repo/test scopes and EnterpriseStrategy/OutcomeTracking prohibitions are reconciled to the
+  authoritative ESBP domain topology; this records no runtime authority.
+- [ ] Concrete service-local mapping for logical `EntityBase`, exact collection/index names and the selected
+  profile's Budgeting-owned persistence manifest are approved without inventing or sharing a base/owner.
+- [ ] The applicable `ESBP-TOP-001` through `ESBP-TOP-013` tests are executable and pass for the primary, or a
+  recorded primary isolation failure selects the exclusive `Diten.BudgetingService` fallback; no hybrid exists.
 - [ ] Currency allowlist provider implementation/SLA and BudgetFiscalCalendar persistence/API wiring are authorized.
 - [ ] `BudgetVersionReferenceV1` producer contract is approved; PPM's closed `InvestmentCaseContextV1` and
   `SelectedBudgetVersionReferenceV1` profiles have exact bilateral serialization/mode/error fixtures approved,
@@ -636,7 +692,8 @@ topology approval, an integration-agent-only task must determine explicit upstre
   catalog/grants, S2S identity and delegated actor propagation are approved.
 - [ ] Mongo replica set, transaction, audit intent, idempotency and indexes have executable test plans.
 - [ ] Migration inventory/mapping/quarantine/rollback plan is approved; prototypes are not production baseline.
-- [ ] Gateway decision is concrete but remains an integration-agent task; port is not guessed.
+- [ ] Port remains `TBD` until an authoritative collision-free allocation exists; any later public Gateway
+  decision remains a separate integration-agent task and internal S2S providers receive no browser/Gateway route.
 - [ ] Acceptance/test expectations include build, verifier, RESX, contract, architecture and browser smoke.
 - [ ] User explicitly changes status to `approved` or `ready-for-dev` and separately grants runtime authority.
 
@@ -647,10 +704,14 @@ topology approval, an integration-agent-only task must determine explicit upstre
 - This is a parent pack, not an implementation slice. `production_authority: none` is deliberate.
 - Existing `BudgetEnvelope`, `BudgetAmount`, `FundingSource` and yearly budget fields in
   `Diten.EnterpriseStrategyService` are prototype/migration evidence only. They establish neither ownership nor
-  production baseline and must be inventoried and quarantined before any later migration.
+  production baseline, cannot host MOD-0136 and must be inventoried and quarantined before any later migration.
+- `service: Diten.FpaService` names only the primary governance topology. The conditional fallback and exact
+  logical scopes are defined above; neither profile is executable while this pack is `draft` and
+  `production_authority: none`.
 - Gate I-B consumer profiles are reconciled to PPM checkpoint
   `a2c7ff5bbfd3ef2b4e3c8c15eab804db58d62520`; executable producer/consumer work remains unauthorized until
-  their delivery gates and explicit runtime authority are separately approved. DCP-006 OD-04 remains OPEN/PARTIAL.
+  their delivery gates, matching producer runtime evidence and explicit runtime authority are separately
+  approved. A MOD-0117 adapter cannot be registered or activated beforehand. DCP-006 OD-04 remains OPEN/PARTIAL.
 - No runtime literal, collection, permission registration, route, port, event or deployment was created here.
 
 ### Change log
@@ -658,6 +719,7 @@ topology approval, an integration-agent-only task must determine explicit upstre
 | Date | Change | Authority |
 |---|---|---|
 | 2026-08-03 | Closed the A-class v1 financial semantics: Decimal128/scale/bounds/ToEven, exact currency and budgeting-calendar references, units, line schema/sign rules, certification separation-of-duties, selection timing, canonical JSON with verified normative SHA-256 vectors, immutable retention and field counts 6/11. Status, topology and runtime authority remain unchanged. | User / FP&A Control Tower |
+| 2026-08-03 | Reconciled service topology to the authoritative ESBP domain checkpoint: primary isolated `Diten.FpaService/Modules/Budgeting`, isolation-failure-only `Diten.BudgetingService` fallback, exclusive profiles, exact future scopes and architecture matrix. Financial semantics, permissions, hash vectors, draft status and production authority remain unchanged. | User / ESBP Control Tower |
 
 ## 20. Follow-up Items
 
@@ -671,13 +733,16 @@ items, and implementation may not widen or reinterpret them.
 
 ### Remaining B-class promotion blockers
 
-- Approve the conditional `Diten.FpaService` isolated Budgeting-module topology and architecture-test fallback
-  to `Diten.BudgetingService`.
-- Fix exact repository paths, concrete service-local entity base, Mongo collection/index names, routes and port.
+- Implement and pass the Budgeting-applicable `ESBP-TOP-001` through `ESBP-TOP-013` matrix for the primary; if
+  an isolation test fails, record the fail-closed selection of only `Diten.BudgetingService` and prove no hybrid.
+- Fix concrete service-local entity base, exact Mongo collection/index names and owner manifest entries; the
+  logical primary/fallback repository and test paths are closed above.
 - Provision dedicated S2S credentials and delegated actor propagation.
 - Complete MOD-0018 permission/entitlement provisioning for the exact 15 keys.
 - Complete MOD-0021/MOD-0035 transactional audit-intent/outbox integration evidence.
 - Close the replica-set transaction, idempotency receipt, retry and unknown-commit runtime design.
 - Approve migration inventory, quarantine, cutover, rollback and reconciliation evidence for prototype data.
+- Reserve an authoritative collision-free port and approve service discovery, deployment/operations and any
+  public route separately; port remains `TBD` and internal S2S receives no Gateway/browser route.
 - Record explicit runtime authority; until then no service, frontend, Gateway, PPM or WorkCenter implementation
-  is executable and `status: draft`, `service: TBD`, `production_authority: none` remain unchanged.
+  is executable and `status: draft`, `service: Diten.FpaService`, `production_authority: none` remain unchanged.
