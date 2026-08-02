@@ -24,12 +24,12 @@ execution/
 ├── scripts/
 │   └── generate-dashboard.py
 └── domains/
-    ├── developer-enablement/        # mevcut: Golden Reference pack'leri
-    └── platform-shared-services/    # mevcut: PSS pack'leri
-
-Planned, not scaffolded yet:
-- master-data-management
-- enterprise-strategy-business-performance
+    ├── developer-enablement/                    # Golden Reference pack'leri
+    ├── enterprise-strategy-business-performance/ # ESBP governance scaffold
+    ├── management-governance/                   # MG governance scaffold
+    ├── master-data-management/                  # MDM governance scaffold
+    ├── platform-shared-services/                # PSS pack'leri
+    └── portfolio-delivery/                      # PPM / MOD-0117
 ```
 
 Her domain altinda:
@@ -41,6 +41,15 @@ Her domain altinda:
 └── module-packs/
     └── {ID}-{slug}.md
 ```
+
+Canonical domain indexes:
+
+- [Developer Enablement](domains/developer-enablement/)
+- [Enterprise Strategy & Business Performance](domains/enterprise-strategy-business-performance/)
+- [Management & Governance](domains/management-governance/)
+- [Master Data Management](domains/master-data-management/)
+- [Platform & Shared Services](domains/platform-shared-services/)
+- [Portfolio Delivery](domains/portfolio-delivery/)
 
 > Tarihsel `controls/`, `decisions/` ve `batches/` katmanlari `archive/domains/` altina tasinmistir. Engineering kurallari `.antigravity/rules/`, MVP scope ve modul envanteri `execution/portfolio/master-development-plan.md` uzerinden yurutulur. `docs/platform/master-plan.md` legacy bridge olarak gecici aktif kalir.
 
@@ -60,7 +69,7 @@ En spesifik katman kazanir.
 {ID}-{slug}.md
 ```
 
-- `DOMAIN-KISA`: `MDM` | `PSS` | `ESBP`
+- `DOMAIN-KISA`: `DEVEN` | `ESBP` | `MDM` | `MG` | `PPM` | `PSS`
 - Yeni ERP product module ID: `MOD-NNNN`
 - Follow-up ID: `MOD-NNNN-FUxx`
 - Delivery Capability Pack ID: `DCP-NNN`
@@ -90,7 +99,7 @@ Bu tarihten sonraki yeni moduller veya major feature'lar module pack ile acilir.
 
 Yeni bir modul acilirken standard akisi:
 
-1. Domain sec (`MDM` / `PSS` / `DEVEN` / `ESBP`)
+1. Domain sec (`MDM` / `PSS` / `DEVEN` / `ESBP` / `MG` / `PPM`)
 2. Registry-controlled `{ID}-{slug}.md` module pack dosyasi olustur
 3. YAML frontmatter + acceptance criteria doldur
 4. Branch ac (`feature/{domain-short}/{id-lower}-{slug}`)

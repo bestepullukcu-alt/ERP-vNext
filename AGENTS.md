@@ -29,11 +29,11 @@ ERP-vNext/
 ├── execution/                           Domain ve module execution katmanı
 │   └── domains/
 │       ├── developer-enablement/        (DEVEN — mevcut; Diten.DevEnablementService golden references)
+│       ├── enterprise-strategy-business-performance/ (ESBP — governance scaffold; service placement pack-specific)
+│       ├── management-governance/       (MG — governance scaffold; service placement pack-specific)
 │       ├── master-data-management/       (MDM — governance scaffold mevcut; production service yok)
 │       ├── platform-shared-services/    (PSS — mevcut; Diten.Platform + Diten.AuthService)
 │       └── portfolio-delivery/          (PPM — governance scaffold mevcut; MOD-0117; production service yok)
-│       # planned, not scaffolded yet:
-│       # enterprise-strategy-business-performance (ESBP)
 ├── services/                            .NET 8 mikroservisler
 │   ├── Diten.AuthService/
 │   ├── Diten.DevEnablementService/
@@ -218,7 +218,7 @@ Fix/refactor işleri için: [.antigravity/rules/GEMINI.md](.antigravity/rules/GE
 feature/{domain-kısa}/{module-id}-{slug}
 ```
 
-- `domain-kısa`: `mdm` | `pss` | `deven` | `esbp` | `ppm`
+- `domain-kısa`: `mdm` | `pss` | `deven` | `esbp` | `mg` | `ppm`
 - `module-id`: `mdm-001`, `pss-002`, vb. (küçük harf)
 - `slug`: 2-4 kelimelik kısa isim
 

@@ -530,7 +530,7 @@ business-owner roles are:
 
 | Producer | Logical routing | Institutional business owner | Gate |
 |---|---|---|---|
-| MOD-0007 — Decision & Rationale Log | Enterprise Control Points / Enterprise Governance Registry Layer | Enterprise Governance Process Owner | I-A mandatory |
+| MOD-0007 — Decision & Rationale Log | Enterprise Control Points / Enterprise Governance Registry Layer / Authoritative Registries | Enterprise Governance Process Owner | I-A mandatory |
 | MOD-0023 — Workflow Designer (Approvals/SLAs/Escalations) | Platform & Shared Services | Workflow & Approval Governance Process Owner; technical owner platform-shared-services | I-A conditional |
 | MOD-0136 — Budgeting | Enterprise Application Ecosystem / ERP Suite / FP&A-EPM | FP&A Budgeting Process Owner | I-B mandatory |
 | MOD-0138 — Scenario Planning | Enterprise Application Ecosystem / ERP Suite / FP&A-EPM | FP&A Scenario Planning Process Owner | I-B mandatory for full 1.3 completion |
