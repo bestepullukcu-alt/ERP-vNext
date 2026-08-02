@@ -42,7 +42,7 @@ Enterprise Strategy mock/resilient adapters, browser-held state, Delivery Execut
 gateway routes targeting legacy ES port `5004` are code-reality evidence only. They are not a production
 baseline, capability completion proof, data migration source of truth or implementation authority.
 
-Delivery is divided into two internal phases:
+Delivery is staged through Phase 2A, Gate L and three OPEN Gate I contract slices:
 
 - **Phase 2A — Context & Referenceability Core (authorized):** service scaffold; Portfolio, Initiative,
   Program and Project backend plus tenant UI; Mongo persistence; tenant isolation; soft delete; concurrency;
@@ -51,13 +51,16 @@ Delivery is divided into two internal phases:
 - **Phase 2B Gate L — Local Investment & Planned Benefit Core:** `InvestmentCase` and
   `BenefitCommitment`, owned entirely by MOD-0117. Gate L contains no external-module field, DTO, client,
   projection or placeholder reference.
-- **Phase 2B Gate I — Integrated 1.3 Business Flow:** separately gated typed/versioned integrations with
-  MOD-0007 Decision & Rationale, MOD-0023 Workflow/Approval, MOD-0136 Budget, MOD-0138 Scenario and MOD-0072
-  actual Outcome/Realization.
+- **Gate I-A — Decision Trace (`OPEN`, non-executable):** MOD-0007 governing/supporting decision references
+  and conditional MOD-0023 authoritative ApprovalOutcome reference.
+- **Gate I-B — Funding & Scenario (`OPEN`, non-executable):** MOD-0136 selected BudgetVersion plus MOD-0138
+  scenario/comparator references.
+- **Gate I-C — Benefit Realization (`OPEN`, non-executable):** MOD-0072 outcome/realization references.
 
 The internal ExternalContextReference provider slice is authorized and in progress; MOD-0354 consumer
-implementation and DWS runtime consumption remain separate and blocked. Gate L or Gate I completion cannot
-by itself mark the Blueprint-wide MOD-0117 product `done`.
+implementation and DWS runtime consumption remain separate and blocked. Only Gate L + Gate I-A + Gate I-B +
+Gate I-C + cross-service security/compatibility tests + integrated browser flow may support full 1.3
+completion wording; even that cannot by itself mark the Blueprint-wide MOD-0117 product `done`.
 
 ## 2. Ownership and Boundaries
 
@@ -340,22 +343,39 @@ Gateway configuration remains unauthorized and integration-agent-only.
 | DCP-006 | Active Slice 2 orchestration | Approved; OD-03 closed, OD-04 OPEN/PARTIAL |
 | MOD-0018 | Independent tenant entitlement plus JWT permission enforcement and actor context | PARTIAL; two-gate policy fixed, real PSS-owned AuthService catalog/grant provisioning and entitlement runtime evidence open |
 | MOD-0021 / MOD-0035 | Immutable audit integration over shared eventing mechanics | PARTIAL; event and final Minimal Mutation Audit v1 consumer contract fixed; publisher credential and runtime evidence open |
-| MOD-0136 | Budget typed reference | Exact versioned contract open |
-| MOD-0138 | Scenario typed reference | Exact versioned contract open |
-| MOD-0072 | Outcome/value typed reference | Exact versioned contract open |
+| MOD-0007 — Decision & Rationale Log | Mandatory Gate I-A governing/supporting decision producer | Canonical parent pack missing; Enterprise Governance Process Owner; exact versioned contract open |
+| MOD-0023 — Workflow Designer (Approvals/SLAs/Escalations) | Conditional Gate I-A ApprovalOutcome producer | Existing pack/runtime gives no PPM integration authority; separate PSS-owned amendment required |
+| MOD-0136 — Budgeting | Mandatory Gate I-B selected BudgetVersion producer | Canonical parent pack missing; FP&A Budgeting Process Owner; exact versioned contract open |
+| MOD-0138 — Scenario Planning | Gate I-B scenario/comparator producer, mandatory for full 1.3 completion | Canonical parent pack missing; FP&A Scenario Planning Process Owner; exact versioned contract open |
+| MOD-0072 — Decision Logs & Outcome Tracking | Mandatory Gate I-C outcome/realization producer | Canonical parent pack missing; Decision Intelligence & Benefit Realization Process Owner; exact versioned contract open |
 | MOD-0354 | Consumer of typed ExternalContextReference only | Draft; provider runtime evidence blocks it |
-| MOD-0023 | Approval/workflow boundary only | No local implementation |
 | MOD-0024 | Task/checklist boundary only | No local implementation |
 
 The existing MDM/Auth lookup-validation clients are pattern evidence only. Their bearer/tenant propagation
 does not settle PPM S2S identity/delegation. The MDM validator behavior that collapses transport, timeout,
 malformed response and all non-success responses into 404 must not be copied.
 
+The four missing canonical producer parent packs start separately as `draft`; their logical Blueprint routing
+does not choose physical service placement. MOD-0023 requires a separate PSS-owned amendment. A PPM Gate I
+consumer adapter becomes executable only after its producer contract and matching MOD-0117 consumer amendment
+are approved and explicit runtime authority is recorded.
+
 ## 8. Runtime Constraints
 
 - MongoDB, single database, tenant-owned collections.
 - TenantId and ActorId are resolved from authenticated server context; client payload values are forbidden.
 - Unknown/unresolved tenant fails closed; no default-tenant fallback.
+- Gate I reference contracts require server-derived TenantId/ActorId, dedicated authenticated S2S identity,
+  separately validated delegated actor, exact permission, opaque canonical non-empty Guid, immutable
+  contract/revision version, correlation, idempotency and compatibility policy. Failure semantics are exact:
+  authentication/context `401`, permission/eligibility `403`, missing/soft-delete/cross-tenant/invisible `404`,
+  immutable/version/idempotency conflict `409`, timeout/malformed/unknown-version/unavailable `503`.
+- PPM cannot fail open, infer foreign ownership from local cache or copy foreign decision/rationale/evidence,
+  approval, budget/scenario output, actual measure/period/evidence or realized-state payloads.
+- Current MOD-0023 code reality is not a consumable approval contract: client-supplied ActorId, free-text
+  ObjectType/ObjectId/ObjectRef, non-authoritative candidate principals, missing PPM-facing typed/versioned
+  outcome, unproven atomic transition persistence and missing immutable authoritative outcome reference remain
+  PSS-owned remediation blockers. No runtime authority is created here.
 - Every read/write filters `TenantId` and `IsDeleted=false`.
 - Cross-tenant reads and references return 404.
 - Soft delete uses `IsDeleted` and `DeletedAtUtc`; physical delete is forbidden.
@@ -491,7 +511,10 @@ reconciliation alone does not create runtime authority or implementation evidenc
 | External ContextId | Yes | Canonical non-empty Guid | Authoritative referenceability check |
 | TenantId/ActorId | No client field | Authenticated server context only | Client value rejected |
 | Concurrency Version | Mutations | Positive expected technical version | Atomic compare-and-update |
-| External MOD-0136/0138/0072 references | Phase 2B | Exact approved name/version/Guid | Authoritative contract validation |
+| Gate I-A decision references | Gate I-A | Governing `0..1` (required before `UnderAnalysis → Closed`); supporting `0..n`; exact approved contract/version/Guid | MOD-0007 authoritative validation |
+| Gate I-A ApprovalOutcome reference | Conditional Gate I-A | `0..1`; only when authoritative policy requires; distinct from generic Decision | MOD-0023 authoritative validation |
+| Gate I-B funding/scenario references | Gate I-B | Selected BudgetVersion `0..1`; scenario/comparator `0..n`; selected Scenario `0..1` | MOD-0136/MOD-0138 authoritative validation |
+| Gate I-C outcome/realization references | Gate I-C | BenefitCommitment `0..n`; planned target only in PPM | MOD-0072 authoritative validation |
 
 Invalid Unicode, unpaired surrogate and ambiguous normalized values fail closed. Validation, persistence and
 unique indexes must use the same normalized values.
@@ -515,6 +538,9 @@ unique indexes must use the same normalized values.
 | Local cache contains context while provider is unavailable | 503; cache cannot prove existence/ownership |
 | Provider success contains full PPM entity | Contract rejection; success must be minimal typed reference |
 | Unknown tenant | Authentication/tenant resolution failure; never default tenant |
+| Governing decision missing at `UnderAnalysis → Closed` | Contract/business conflict; transition does not commit |
+| Approval policy requires outcome but authoritative outcome is absent/non-terminal | No local approval inference; transition does not commit |
+| Gate I dependency returns malformed/unknown-version response | 503; never interpreted as deny, missing or local truth |
 
 Soft deletion of a referenced PPM object prevents new references but cannot delete or rewrite already sealed
 MOD-0354 revision/baseline history.
@@ -618,8 +644,14 @@ or any other Gateway route.
 - [ ] Fail-open and local-cache existence/ownership inference are absent.
 - [ ] Gate L implements distinct InvestmentCase and BenefitCommitment objects with the exact local ownership,
   lifecycle and cardinality above and no external-contract field.
-- [ ] Gate I consumes MOD-0007/MOD-0023/MOD-0136/MOD-0138/MOD-0072 only through approved versioned typed
-  contracts; no copied lifecycle, payload, placeholder or projection SoR.
+- [ ] Gate I-A consumes approved MOD-0007 governing/supporting Decision references and, only when policy
+  requires, a distinct approved MOD-0023 ApprovalOutcome reference; PPM owns no approval behavior/state.
+- [ ] Gate I-B consumes approved MOD-0136 selected BudgetVersion and MOD-0138 scenario/comparator references;
+  budget/scenario payload and selected truth stay with their producers.
+- [ ] Gate I-C consumes approved MOD-0072 outcome/realization references; planned BenefitCommitment stays PPM
+  while actual measure/period/evidence/realized state stays MOD-0072.
+- [ ] Gate I-A/B/C common security, compatibility, idempotency and no-copy tests pass, followed by the
+  integrated browser flow.
 - [x] All tenant-owned queries/writes use server TenantId, soft-delete filters and tenant-first indexes.
 - [x] Optimistic concurrency produces 409 on stale Version.
 - [x] Authorized mutations and producer-local audit intent commit atomically in a replica-set transaction.
@@ -636,7 +668,8 @@ or any other Gateway route.
 - [x] Loading/empty/400/401/403/404/409/503 states are testable without existence disclosure.
 - [x] Real Mongo evidence proves tenant isolation, unique indexes, concurrency and required transactions.
 - [x] Phase 2A alone does not unblock MOD-0354 runtime; provider compatibility/security evidence is separate.
-- [ ] MOD-0117 remains not-done after Gate L or Gate I until its Blueprint-wide product scope is separately reconciled.
+- [ ] MOD-0117 remains not-done after Gate L or any/all Gate I-A/B/C slices until its Blueprint-wide product
+  scope is separately reconciled.
 
 ## 17. Test Expectations
 
@@ -710,7 +743,10 @@ verification reports 60 PASS plus four formally dispositioned policy/profile fin
 - [x] Control Tower recorded Phase 2A lifecycle, referenceability and cardinality decisions.
 - [x] Phase 2A object/UI scope and Golden Slim selections are approved.
 - [x] Gate L exact InvestmentCase/BenefitCommitment fields, states, invariants and cardinalities are approved.
-- [ ] Gate I MOD-0007/MOD-0023/MOD-0136/MOD-0138/MOD-0072 exact versioned typed contracts are approved.
+- [ ] Gate I-A MOD-0007 contract and conditional MOD-0023 amendment/contract are approved.
+- [ ] Gate I-B MOD-0136 and MOD-0138 exact versioned typed contracts are approved.
+- [ ] Gate I-C MOD-0072 exact versioned typed contract is approved.
+- [ ] Each Gate I consumer amendment has separate approval and explicit runtime authority after its producer contract.
 - [x] Every Phase 2A frontend surface has an exact field count and Golden Slim decision.
 - [x] Phase 2A hub/routes and visibility/referenceability presentation are approved.
 - [x] Exact S2S service identity and actor delegation are approved for the internal provider slice.
@@ -734,9 +770,10 @@ Unchecked provider, shared-contract and Phase 2B items do not revoke the scoped 
 block only their named runtime boundaries. This pack is not unconditional `ready-for-dev`.
 
 Gate L completion may be reported only as **“1.3 PPM-owned local slice complete; external integration Gate I
-remains open.”** Gate I requires the approved MOD-0007, MOD-0023, MOD-0136, MOD-0138 and MOD-0072
-typed/versioned contracts plus an auditable demand → decision → portfolio → planned-benefit flow. Only then
-may **“1.3 integrated business flow complete”** be reported. Neither gate automatically makes the whole
+remains open.”** Gate I-A completion may be reported only as **“Decision-to-investment trace integrated;
+funding, scenario and realization slices remain open.”** Only Gate L + Gate I-A + Gate I-B + Gate I-C +
+cross-service security/compatibility tests + integrated browser flow may yield **“1.3 Portfolio, Investment &
+Value Management integrated business flow complete.”** No partial gate automatically makes the whole
 Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separately reconciled.
 
 ## 19. Implementation Notes
@@ -763,7 +800,7 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
 ### Open business decisions
 
 1. Gate L InvestmentCase/BenefitCommitment business and UX acceptance after implementation.
-2. Gate I external contract-owner sequencing and integrated business-flow acceptance.
+2. Gate I-A/B/C producer contract-owner sequencing, cardinality acceptance and integrated business-flow acceptance.
 
 ### Open technical decisions
 
@@ -779,7 +816,7 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
 3. ExternalContextReference provider compatibility/security and live runtime evidence; MOD-0354 consumer remains separate.
 4. Exact allowlisted `PpmAuditIntentSubmittedV1` payload/consumer mapping, authenticated publisher credential
    and MOD-0035/MOD-0021 delivery integration.
-5. Gate I contracts with MOD-0007/MOD-0023/MOD-0136/MOD-0138/MOD-0072.
+5. Gate I-A/B/C exact producer contracts, physical placement decisions and later MOD-0117 consumer amendments.
 
 ### Open UI decisions
 
@@ -792,6 +829,7 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-08-02 | Staged the OPEN Gate I authority into I-A Decision Trace, I-B Funding & Scenario and I-C Benefit Realization. Recorded exact cardinalities, institutional owner roles, common fail-closed/no-copy baseline, MOD-0023 hazards and conjunctive full-1.3 wording. This amendment is non-executable: no producer contract name/version, physical placement, adapter/runtime authority, status promotion or completion claim was created. | User / Enterprise Strategy Control Tower |
 | 2026-08-01 | Reconciled Phase 2B into Gate L `InvestmentCase` + `BenefitCommitment` local ownership and Gate I external integration. Locked exact fields, immutable-parent cardinalities, neutral lifecycles, eight lowercase permissions, Golden Slim surfaces and scoped completion language. MOD-0117 remains `review`; no runtime authority or external contract was created. | User / Enterprise Strategy Control Tower |
 | 2026-08-01 | Bound the internal ExternalContextReference provider lookup to configurable `100..5000 ms`, default `2000 ms`; internal timeout is generic `503`, while caller cancellation propagates unchanged. The limit is lookup-only and does not alter global Mongo/CRUD behavior or authorize retry/cache/fallback. | User / Enterprise Strategy Control Tower |
 | 2026-08-01 | Authorized the default-disabled internal `ppm.external-context-reference` `1.0` provider slice. Control Tower corrected the canonical permissions to exact `.read` keys (not `.view`), approved endpoint-specific strict tenant/sub `401` semantics and the v1 null-only `VisibilityPolicyKey` boundary. No new permission was created; MOD-0018 object-level visibility and MOD-0354 consumer integration remain future/blocked. | User / Enterprise Strategy Control Tower |
@@ -813,6 +851,12 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
 - Portfolio Governance Process Owner review of all open business decisions.
 - AuthService/PSS provisioning of real PPM grants; MOD-0021 runtime integration remains open.
 - Contract-owner review for MOD-0136, MOD-0138 and MOD-0072 typed references.
+- Author four separate canonical parent packs as `draft`: MOD-0007, MOD-0136, MOD-0138 and MOD-0072. Create
+  no new MOD/FU identity; each pack decides its own physical service placement.
+- Prepare a separate PSS-owned MOD-0023 amendment for the PPM-facing ApprovalOutcome contract and remediation;
+  do not promote its status or begin runtime through this pack.
+- After each producer contract is approved, prepare the corresponding non-executable MOD-0117 consumer
+  amendment, obtain approval and seek explicit runtime authority separately.
 - Exact ExternalContextReference provider/consumer runtime design and compatibility/security evidence.
 - Keep the formal DataTable verifier disposition above visible until the protected verifier supports the
   no-bulk-delete and same-origin HttpOnly-cookie profile; no product remediation is required.

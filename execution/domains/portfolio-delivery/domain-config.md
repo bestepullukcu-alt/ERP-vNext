@@ -52,9 +52,11 @@ Portfolio Delivery (PPM) domain'inin Blueprint-kanonik kimliği `MOD-0117 — Pr
 - **MOD-0048 (Reference Data):** PPM-yerel lookup/enum'lar geçicidir; hedef SSOT MOD-0048'dir. Hardcoded fallback lookup listeleri yasaktır.
 - **MOD-0280 (Time, Attendance & Leave) — ASSUMPTION-1:** PPM, "Project Effort Log" nesnesini MOD-0117 altında **geçici olarak** sahiplenir; MOD-0280 hayata geçtiğinde Time Entry SoR'u ile resmi kontrat kurulur ve gerekiyorsa sahiplik devri yapılır. **Kesin karar değildir; EA-TBD.** PPM tarafında "Time Entry" terimi ve `ppm.time-entries.*` permission adı kullanılamaz — doğru ad: `ppm.effort-logs.*`.
 - **MOD-0288 (Organization Directory):** FunctionalDomain/SubDomain benzeri organizasyon referansları geçici PPM-yerel snapshot olabilir; kalıcı kaynak MOD-0288'dir, besleme kontratı follow-up'tır.
-- **MOD-0007 (Decision & Rationale Log):** Generic decision/rationale kalıcı SoR'u MOD-0007'dir. PPM-local decision register veya rationale payload yasaktır; entegrasyon yalnız Gate I approved typed/versioned contract ile mümkündür.
+- **Gate I-A — Decision Trace:** Generic decision/rationale kalıcı SoR'u `MOD-0007 — Decision & Rationale Log`'dur. `InvestmentCase.GoverningDecisionReference` `0..1`'dir ve `UnderAnalysis → Closed` öncesinde zorunludur; supporting decision references `0..n`'dir. Approval yalnız MOD-0007 veya authoritative governance policy gerektirirse koşullu `MOD-0023` producer'ı üzerinden `ApprovalOutcomeReference 0..1` olarak tüketilir. Generic Decision ile ApprovalOutcome aynı kavram değildir; PPM decision/rationale/evidence payload'ı, approve/reject davranışı veya yerel Approved/Rejected truth üretmez.
 - **Phase 2B Gate L ownership:** MOD-0117 `InvestmentCase` ve `BenefitCommitment` sahibidir. InvestmentCase tam olarak bir Portfolio'ya; BenefitCommitment tam olarak bir InvestmentCase'e bağlıdır. BenefitCommitment üzerinde ikinci `PortfolioId` yasaktır.
-- **Gate I external ownership:** MOD-0023 approval/workflow, MOD-0136 budget/version, MOD-0138 scenario/comparator ve MOD-0072 actual outcome/realization SoR'udur. Gate L hiçbir placeholder reference, DTO, projection, client veya payload snapshot üretmez.
+- **Gate I-B — Funding & Scenario:** `MOD-0136` budget/version SoR'udur; PPM yalnız `SelectedBudgetVersionReference 0..1` tutabilir. `MOD-0138` scenario/comparator ve selected-state SoR'udur; PPM scenario/comparator references `0..n` ve `SelectedScenarioReference 0..1` tutabilir. Analytical budget versions, scenario payload/output ve selected-state truth PPM'ye kopyalanamaz.
+- **Gate I-C — Benefit Realization:** `MOD-0072` actual outcome/realization SoR'udur. `BenefitCommitment` planned targetı PPM'de tutar ve outcome/realization references `0..n` tüketebilir; actual measure, period, evidence ve realized state PPM'de saklanamaz. `BenefitCommitment.Closed` realized outcome anlamına gelmez.
+- **Gate I staged authority:** Producer module-pack authoring Gate I-A, I-B ve I-C için paralel ilerleyebilir; herhangi bir MOD-0117 consumer adapter'ı ancak ilgili producer contract approved olduktan, MOD-0117 consumer amendment onaylandıktan ve açık runtime authority verildikten sonra executable olur. Logical routing fiziksel service placement değildir.
 - Eski `DitenPPM` kodu yalnızca **iş kuralı referansıdır**; dosya/kod kopyalanmaz.
 
 ## Runtime Decisions
@@ -81,8 +83,10 @@ Portfolio Delivery (PPM) domain'inin Blueprint-kanonik kimliği `MOD-0117 — Pr
   `ppm.benefit-commitments.{read,create,update,change-lifecycle}`. `.view`, `.delete`, wildcard, alias and
   uppercase keys are forbidden; soft delete uses the existing update/surface contract.
 - **Completion wording:** Gate L completion is only “1.3 PPM-owned local slice complete; external integration
-  Gate I remains open.” Gate I completion is “1.3 integrated business flow complete.” Neither changes whole
-  MOD-0117 automatically to `done`.
+  Gate I remains open.” Gate I-A completion is only “Decision-to-investment trace integrated; funding,
+  scenario and realization slices remain open.” Only Gate L + Gate I-A + Gate I-B + Gate I-C + cross-service
+  security/compatibility tests + integrated browser flow may yield “1.3 Portfolio, Investment & Value
+  Management integrated business flow complete.” None automatically changes MOD-0117 to `done`.
 
 ## Domain Bootstrap Notes
 

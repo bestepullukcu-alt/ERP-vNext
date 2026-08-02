@@ -103,7 +103,11 @@ Below is the macro status catalog.
 | **MOD-0002** | Interface Registry | W3-E | Medium | in-progress | 80% | API routes mapping. |
 | **MOD-0003** | Data Contract Registry | W3-E | Medium | planned | 0% | Payload contracts schemas. |
 | **PSS-XCUT-SV** | SavedViews / Personalization | Cross-cutting | Medium | partial | 55% | User grid saving options. |
-| **MOD-0117** | Project & Portfolio Management (PPM) | DCP-006 Slice 2 | Medium | scoped: Phase 2A `review`; Phase 2B Gate L governance reconciled/runtime pending; Gate I blocked; whole module not done | — | DCP-006 is the active 1.3 orchestration source. Gate L owns Portfolio → InvestmentCase → BenefitCommitment local behavior; Gate I depends on MOD-0007/0023/0136/0138/0072 typed/versioned contracts. No module-wide completion percentage is asserted. DCP-003 remains deferred/non-executable legacy planning. |
+| **MOD-0007** | Decision & Rationale Log | — | — | planned / parent pack missing | — | Gate I-A producer; logical route Enterprise Control Points / Enterprise Governance Registry Layer. Owner role: Enterprise Governance Process Owner. Physical placement TBD. |
+| **MOD-0136** | Budgeting | — | — | planned / parent pack missing | — | Gate I-B producer; logical route Enterprise Application Ecosystem / ERP Suite / FP&A-EPM. Owner role: FP&A Budgeting Process Owner. Physical placement TBD. |
+| **MOD-0138** | Scenario Planning | — | — | planned / parent pack missing | — | Gate I-B producer required for full 1.3 completion; owner role FP&A Scenario Planning Process Owner. Physical placement TBD. |
+| **MOD-0072** | Decision Logs & Outcome Tracking | — | — | planned / parent pack missing | — | Gate I-C producer; logical route Data, Knowledge & Intelligence / Decision Intelligence. Owner role: Decision Intelligence & Benefit Realization Process Owner. Physical placement TBD. |
+| **MOD-0117** | Project & Portfolio Management (PPM) | DCP-006 Slice 2 | Medium | scoped: Phase 2A `review`; Gate L complete; Gate I-A/I-B/I-C open; whole module not done | — | DCP-006 is the active 1.3 orchestration source. Gate L owns Portfolio → InvestmentCase → BenefitCommitment local behavior. Gate I-A stages MOD-0007 plus conditional MOD-0023; Gate I-B stages MOD-0136/MOD-0138; Gate I-C stages MOD-0072. Full 1.3 completion is conjunctive and no module-wide percentage is asserted. DCP-003 remains deferred/non-executable legacy planning. |
 
 ---
 
