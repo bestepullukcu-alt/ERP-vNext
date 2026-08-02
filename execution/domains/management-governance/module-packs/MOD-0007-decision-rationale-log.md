@@ -2,7 +2,7 @@
 id: MOD-0007
 name: Decision & Rationale Log
 domain: management-governance
-service: TBD
+service: Diten.ManagementGovernanceService
 shell: none
 golden_reference: none
 entity_base: EntityBase
@@ -20,8 +20,8 @@ implementation_authority: none
 
 > **DRAFT / NON-EXECUTABLE PARENT PACK:** This document defines ownership and proposed contracts only. It
 > authorizes no service scaffold, runtime code, persistence, migration, frontend, Gateway route, port, seed,
-> permission registration or production integration. Physical service placement remains `TBD`; implementation
-> requires owner approval, an approved topology decision, a matching executable pack revision and explicit
+> permission registration or production integration. Physical topology is governed below, but implementation
+> requires owner approval, successful pre-scaffold isolation evidence, a matching executable pack revision and explicit
 > production authority.
 
 ## 1. Module Summary
@@ -178,11 +178,13 @@ resolution and new-binding eligibility to one boolean.
 ## 4. Entity Fields
 
 The following is the proposed semantic schema for a future tenant-owned implementation. Frontmatter
-`entity_base: EntityBase` is the valid logical tenant-owned persistence contract required by the module-pack
-standard; it is not `TBD`. The exact service-local implementation remains blocked by physical topology and
-must be fixed in an executable revision without inventing a new base type. Base fields (`Id`, `TenantId`,
-`IsDeleted`, `DeletedAt`, `CreatedAt`, `UpdatedAt`, technical `Version`) are inherited and must not be
-redeclared. `TenantId` is always server-derived.
+`entity_base: EntityBase` remains the module-pack logical marker. The concrete repo-standard decision is direct
+inheritance from `Diten.Platform.Common.Persistence.TenantScopedEntity` (which extends `BaseEntity`), not a new
+service-local generic base. Its inherited fields are `Id`, `TenantId`, `CreatedAt`, `CreatedBy`, `UpdatedAt`,
+`UpdatedBy`, `IsDeleted` and technical `Version`; it does not supply `DeletedAt`. A module-owned `DeletedAt`
+is therefore explicit only on the deletable draft/record persistence shape. Published revision, history and
+graph types never use shared mutable update/delete behavior. Semantic Guid actor fields remain separate from
+the shared string audit fields. `TenantId` is always server-derived.
 
 ### DecisionRecord
 
@@ -282,20 +284,39 @@ This draft authoring milestone changes only:
 
 - `execution/domains/management-governance/module-packs/MOD-0007-decision-rationale-log.md`
 
-A future executable revision must replace this section with exact service, contract, test and optional UI
-paths after physical topology and transport are approved. This pack grants no scope under `services/**`,
-`frontend/**` or `gateway/**`.
+A future executable amendment may authorize exactly one of these mutually exclusive scopes; this draft grants
+no write authority to either.
+
+Primary scope:
+
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/DecisionRegistry/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/DecisionRegistry/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/DecisionRegistry/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/DecisionRegistry/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/DecisionRegistry/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/DecisionRegistry/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/DecisionRegistry/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/DecisionRegistry/**`
+
+Only an executable amendment may enumerate and add the five project files, API `Program.cs`, layer-local
+composition files and test project files needed to compose those paths; unrelated module composition is out
+of scope. If the mandatory isolation suite fails, the entire same five-layer/test shape moves instead under
+`services/Diten.EnterpriseGovernanceService/`, with `Diten.EnterpriseGovernanceService` substituted in every
+path above. Primary and fallback implementations cannot coexist. No frontend, Gateway, WorkCenter or PPM
+consumer path is included.
 
 ## 6. Protected Paths
 
 - `.antigravity/**`
-- `services/**`
-- `frontend/**`
-- `gateway/**`, including every `ocelot.json`
+- `services/**`, including both candidate service roots, until an executable amendment grants one exact scope
+- `services/Diten.EnterpriseStrategyService/**`, `services/Diten.PpmService/**`, `services/Diten.Platform/**`,
+  `services/Diten.Platform.Common/**`, `services/Diten.AuthService/**` and `services/Diten.Building.Blocks/**`
+- `frontend/Diten.Web/**`, including every WorkCenter artifact
+- `gateway/Diten.ApiGateway/**`, including every `ocelot.json`
 - `execution/domains/**` outside this exact pack file
 - `execution/portfolio/**`, `execution/registries/**` and Blueprint workbooks
 - archive/frozen paths
-- MOD-0023, MOD-0117, MOD-0136, MOD-0138, MOD-0072, MOD-0024 and WorkCenter runtime/governance
+- DCP-006, MOD-0023, MOD-0117, MOD-0136, MOD-0138, MOD-0072, MOD-0024, MOD-0354, MOD-0355 and WorkCenter runtime/governance
 - existing Enterprise Strategy prototype fields, mocks, pages and data
 
 ## 7. Dependencies
@@ -315,7 +336,8 @@ are non-authoritative evidence only. They are not dependencies, schemas, migrati
 
 ## 8. Runtime Constraints
 
-- This draft assigns no service, port, route, collection, database or production authority.
+- This draft assigns no port, route, database, deployment or production authority. It closes only the
+  mutually exclusive topology and future module-local ownership boundaries below.
 - Future persistence is MongoDB, single database and tenant-owned; every read/write filters server-derived
   `TenantId` plus `IsDeleted=false`.
 - Tenant, effective/delegated actor, trusted `CorrelationId`, S2S client identity, audience and scope come
@@ -333,8 +355,12 @@ are non-authoritative evidence only. They are not dependencies, schemas, migrati
   allocates the next revision identity/number; inserts the already-final immutable `DecisionRevision` with
   non-null publication provenance; appends publication/disposition history; compare-and-swaps the
   `DecisionRecord` pointer/state; optionally inserts a valid supersession edge; persists the idempotency
-  result; and writes producer-local audit intent/outbox in one Mongo replica-set transaction. Failure at any
+  result; and writes the producer-local audit intent in one Mongo replica-set transaction. Failure at any
   step rolls back all state.
+- An approved post-commit worker transforms/delivers the durable local audit intent through an approved
+  outbox/eventing adapter. Dispatch failure leaves the intent retryable, cannot roll back or mutate committed
+  Decision state, and cannot create a duplicate semantic mutation. No broker call occurs inside the business
+  transaction; any local transport-outbox collection requires its own approved contract and evidence.
 - Correlation and operation-scoped idempotency are mandatory. A replay with the same canonical request
   returns the same result; the same key with different payload returns `409`.
 - Prepare/publish separation of duties is mandatory: the authenticated publisher must differ from both the
@@ -366,12 +392,36 @@ are non-authoritative evidence only. They are not dependencies, schemas, migrati
 
 | Option | Assessment |
 |---|---|
-| A. Isolated `DecisionRegistry` internal module in a future `Diten.ManagementGovernanceService` | **Preferred direction**, conditional on hard architecture tests proving separate project/namespace, DWS/BPM/DecisionRegistry domain types, repositories, collections, permissions, migrations and dependency direction |
-| B. Separate `Diten.EnterpriseGovernanceService` | Mandatory fallback if Option A isolation cannot be proven or operational/security ownership requires independent deployment |
+| A. Isolated `DecisionRegistry` internal module in a future `Diten.ManagementGovernanceService` | **Selected primary topology**, conditional on pre-scaffold architecture tests proving separate namespaces, types, repositories, collections, permissions, index initialization and dependency direction |
+| B. Separate `Diten.EnterpriseGovernanceService` | **Fail-closed fallback** if any mandatory Option A isolation test cannot prove separation; it replaces Option A and cannot coexist with it |
 | C. Placement in an existing unrelated service | Rejected; proximity, reuse or current prototype location is not ownership evidence |
 
-The final A/B decision remains open. This pack does not reserve a port, add a Gateway route or authorize
-either service scaffold.
+MOD-0007 cannot be placed in `Diten.EnterpriseStrategyService`. `DecisionRegistry` shares no domain type,
+repository interface/implementation, generic repository, Mongo collection, index initializer, transaction
+unit, permission constant or migration with MOD-0354 DWS or MOD-0355 BPM. Its service-local owned collection
+set is exactly `decision_registry_records`, `decision_registry_drafts`, `decision_registry_revisions`,
+`decision_registry_publication_history`, `decision_registry_revision_replacements`,
+`decision_registry_supersession_links`, `decision_registry_idempotency`,
+and `decision_registry_audit_intents`. A later approved transport contract may add only a DecisionRegistry-local
+outbox collection through an executable amendment. No other module may read/write these
+collections directly.
+
+One Mongo replica-set transaction owns revision, history, pointer, link, idempotency and audit-intent writes.
+The outbox worker publishes only after commit through an approved `Diten.BuildingBlocks.Eventing`
+adapter; MOD-0007 owns the logical audit intent and never writes Platform audit/outbox collections directly.
+
+The authoritative DecisionReference validation provider is logically owned by the `DecisionRegistry`
+Application layer and may later be exposed only through a service-local internal adapter. The MOD-0117
+consumer calls it directly S2S; Browser, frontend, Gateway and WorkCenter are excluded, and PPM may not use a
+cache or copied Decision state as authority. No provider endpoint is executable until dedicated identity,
+delegation, security and bilateral compatibility evidence exists.
+
+No authoritative, collision-free Management Governance port allocation exists: the documented table stops
+at existing allocations while runtime services already occupy later values. Port remains `TBD` and is an
+explicit blocker. Internal route, service discovery, DNS/TLS/network policy, credential mechanism,
+issuer/audience/scope, client registration/rotation/revocation, timeout/retry/circuit budget, deployment,
+Mongo provisioning, audit/event publisher credentials and MOD-0288 S2S evidence also remain open. This pack
+does not add a Gateway route or authorize either service scaffold.
 
 ## 9. Layout & Shell Contract
 
@@ -387,8 +437,8 @@ and must become “Create revision” after recording. No approval button is per
 
 ## 10. Backend File Convention
 
-No backend files are authorized. After topology approval, the executable pack revision must define exact
-five-layer paths and CQRS artifacts while preserving distinct commands such as `CreateDecisionDraft`,
+No backend files are authorized. The future exact five-layer and test roots are fixed in Section 5; an
+executable amendment must enumerate composition files and CQRS artifacts while preserving distinct commands such as `CreateDecisionDraft`,
 `UpdateDecisionDraft`, `SoftDeleteDecisionDraft`, `PublishDecisionDraft`, `SupersedeDecision` and
 `WithdrawDecision`. `PublishDecisionDraft` creates/finalizes the immutable revision atomically; there is no
 pre-publication revision-recording operation and no later publication-field setter.
@@ -554,6 +604,17 @@ service port directly. Only `integration-agent` may modify `ocelot.json` after e
     record; Withdrawn/Superseded records never reopen.
 24. Published revision/history/supersession graph has no TTL/update/delete/bulk-delete/purge. Legal hold blocks
     all deletion; eligible unpublished draft soft-delete never triggers automatic hard purge.
+25. The selected primary topology is the single future `Diten.ManagementGovernanceService/DecisionRegistry`;
+    failure of any mandatory isolation test selects the mutually exclusive `Diten.EnterpriseGovernanceService`
+    fallback before scaffold. Both services and EnterpriseStrategy placement are forbidden.
+26. Future scope is limited to the exact five-layer and test roots in Section 5. DecisionRegistry owns only
+    the exact `decision_registry_*` collection allowlist and shares no type, repository, collection, index,
+    transaction, permission or migration/bootstrap component with MOD-0354/MOD-0355.
+27. Concrete tenant entities inherit `Diten.Platform.Common.Persistence.TenantScopedEntity`; inherited fields
+    are not redeclared and module-local `DeletedAt` exists only where deletion is allowed.
+28. The producer-owned reference validator is direct, read-only S2S with no Browser/Gateway/WorkCenter or
+    persistence side effect. A MOD-0117 adapter cannot compile, register or execute before producer runtime,
+    endpoint/security evidence, bilateral fixtures, consumer amendment and explicit runtime authority pass.
 
 ## 17. Test Expectations
 
@@ -567,6 +628,25 @@ service port directly. Only `integration-agent` may modify `ocelot.json` after e
 | Architecture | Project/namespace/type/repository/collection/permission/migration isolation for DWS/BPM/DecisionRegistry; no approval artifacts; no foreign decision/rationale/evidence payload copy |
 | Mutation testing | Remove publication immutability, tenant/visibility/profile check, graph guard, transaction, mutation idempotency or version rejection and prove tests fail |
 | Future UI only | Golden Compact verifier, explicit layout, seven-language RESX, no approval action; blocked until separately authorized |
+
+Mandatory pre-scaffold topology/isolation matrix (all rows must pass for the primary; any failure selects the
+fallback with no warning-only waiver):
+
+| Gate | Required proof |
+|---|---|
+| Project graph | Exact layer dependency direction; zero DecisionRegistry↔DWS/BPM Domain/Application/Persistence references or cycles |
+| Namespace/type | Decision aggregate, draft, revision, history and reference types exist only in DecisionRegistry; no reuse, inheritance or aliases across modules |
+| Repository/DI | Module-private repository interfaces/implementations and registrations; no shared generic business repository or foreign service resolution |
+| Mongo/index | Exact collection allowlist is disjoint; serializers, mappings, tenant-first indexes and index bootstrap fail on any DWS/BPM collision |
+| Transaction | Only DecisionRegistry collections join the replica-set transaction; fault injection and concurrency prove rollback and one revision/pointer/audit intent |
+| Audit/outbox | No direct Platform collection or in-transaction broker write; retryable post-commit dispatch cannot mutate Decision state or duplicate mutation |
+| Migration/bootstrap | DecisionRegistry initializer touches only its owned collections; no TTL on immutable published state; no DWS/BPM seed/index reuse |
+| Permission | MOD-0007 permission family is disjoint from DWS/BPM and approval permissions; no wildcard/bypass |
+| Internal provider | Producer-owned direct S2S query only, zero writes, no Gateway/browser/client dependency |
+| Contract | Exact five-field reference and Gate I-A fixtures; no generic role or foreign Decision payload copy |
+| Topology exclusivity | Exactly one selected service tree/registration; no dual scaffold and no EnterpriseStrategy reference/namespace |
+| Entity base | Direct `TenantScopedEntity` inheritance; no competing base or inherited-field redeclaration; scoped `DeletedAt` only |
+| Consumer gate | Build/architecture assertion rejects executable MOD-0117 adapter before all producer and bilateral evidence gates pass |
 
 Mandatory security/compatibility fixtures additionally prove:
 
@@ -624,11 +704,17 @@ Minimum mutation matrix:
 | Accept non-empty/local/mock evidence or invoke evidence provider | Evidence-disabled v1 boundary is violated |
 | Allow evidence-required tenant policy to publish | Required `409` core-slice policy block is violated |
 | Allow generic delete/bulk-delete of published record/history | Retention and immutable-history boundary is violated |
+| Share a DecisionRegistry type/repository/collection/index/permission with DWS or BPM | Hard module isolation is violated |
+| Scaffold both candidate services or place DecisionRegistry in EnterpriseStrategy | Mutually exclusive topology is violated |
+| Add Gateway/browser dependency to the internal validation provider | Direct S2S provider boundary is violated |
+| Enable the MOD-0117 adapter before producer runtime and bilateral evidence | Consumer executable gate is violated |
+| Guess a port, internal route or credential scheme | Open B-class allocation/security blocker is bypassed |
+| Treat an isolation failure as a warning | Fail-closed fallback selection is bypassed |
 
 ## 18. Ready-for-dev Checklist
 
 - [x] Blueprint and registry exact-ID/name preflight passes for `MOD-0007 — Decision & Rationale Log`.
-- [x] Parent pack starts as `draft` with `service: TBD` and no production authority.
+- [x] Parent pack remains `draft` with selected conditional primary service and no production authority.
 - [x] Decision/rationale ownership and Decision-versus-Approval separation are explicit.
 - [x] Generic `DecisionRevisionReferenceV1` has the exact canonical name/version and five-field key set with
   no `DecisionRole`; the MOD-0117-owned Gate I-A wrapper/role/cardinality is separate.
@@ -644,13 +730,15 @@ Minimum mutation matrix:
 - [x] Prepare/publish SOD is closed with creator/latest-updater inequality and no bypass.
 - [x] V1 evidence integration is formally disabled; tenant evidence-required policy blocks with `409`.
 - [x] V1 retention/legal-hold decision closes no-TTL/no-purge and draft soft-delete boundaries.
-- [ ] Enterprise Architect closes physical topology A/B and records isolation evidence requirements.
+- [x] Primary/fallback physical topology and mandatory fail-closed isolation evidence are closed.
 - [ ] Exact transport, route, timeout/retry and compatibility policy are approved.
 - [ ] MOD-0018 exact permission provisioning and dedicated S2S identity are executable and evidenced.
 - [ ] MOD-0021/MOD-0035 audit-intent contract, credential and atomic-outbox integration are approved.
 - [ ] Matching MOD-0117 consumer amendment is approved.
-- [ ] Repo scope is replaced with exact service/contracts/tests/UI paths.
-- [ ] `service`, concrete base entity, shell, field count and Golden Reference are finalized.
+- [x] Future primary/fallback five-layer and test roots are exact and mutually exclusive.
+- [x] Conditional primary `service` and concrete `TenantScopedEntity` usage are fixed; shell remains intentionally `none`.
+- [ ] Mandatory pre-scaffold architecture/isolation matrix passes for the selected primary.
+- [ ] An authoritative collision-free service port is allocated; until then port is `TBD`.
 - [ ] Explicit user production authority is recorded; only then may status become `approved` or
   `ready-for-dev`.
 
@@ -658,9 +746,10 @@ Minimum mutation matrix:
 
 - Blueprint `Blueprint_Data` and registry both prove the exact canonical identity and name. Prototype fields
   are inventory evidence only and must not be copied into the authoritative schema.
-- Option A (isolated DecisionRegistry within a future ManagementGovernance service) is the preferred direction
-  only if architecture tests enforce type/repository/permission/collection boundaries. Option B (separate
-  EnterpriseGovernance service) is the fail-closed fallback. Proximity never decides ownership.
+- The primary topology is isolated DecisionRegistry within a future ManagementGovernance service. The separate
+  EnterpriseGovernance service replaces it if any mandatory isolation gate fails; they never coexist.
+  Lower-authority domain text that still calls MOD-0007 topology `TBD` is protected governance drift for a
+  later reconciliation and does not reopen this pack-specific decision or grant runtime authority.
 - Decision revision publication is a semantic operation, not a CRUD update. Technical `Version` remains
   optimistic concurrency and cannot represent semantic revision.
 - `DecisionDraft` is the only mutable pre-publication object. `PublishDecisionDraft` creates the immutable
@@ -691,19 +780,23 @@ Minimum mutation matrix:
 |---|---|---|
 | 2026-08-02 | Final draft role-ownership cleanup: generic `DecisionRevisionReferenceV1` fixed to the canonical five-field value; `DecisionRole` moved out of the generic tuple into the then-proposed MOD-0117-owned Gate I-A relationship wrapper/request boundary; producer and consumer validation/cardinality/lifecycle ownership reconciled. | None; at this checkpoint profile identity and any role-eligibility policy remained OPEN; the later bilateral row closes only PPM profile identity. |
 | 2026-08-02 | Bilaterally aligned with PPM checkpoint `a2c7ff5b`: accepted exact governing/supporting wrapper and InvestmentCase-context identities at `1.0`; fixed HistoricalResolve/NewReferenceEligibility semantics, rejected CurrentSelectionEligibility, and required mode-aware fixtures instead of boolean-only authority. | None; MOD-0117 still owns relationship/cardinality/lifecycle, MOD-0007 stays `draft`, and no runtime authority is created. |
-| 2026-08-03 | Closed A-class owner decisions: closed lifecycle/revision replacement, exact MOD-0288 Person/Position DecisionAuthority v1, prepare/publish SOD without bypass, evidence-disabled core, and no-TTL/no-purge retention/legal-hold baseline. | None; only B-class implementation blockers remain, status stays `draft`, service stays `TBD`, and no runtime authority is created. |
+| 2026-08-03 | Closed A-class owner decisions: closed lifecycle/revision replacement, exact MOD-0288 Person/Position DecisionAuthority v1, prepare/publish SOD without bypass, evidence-disabled core, and no-TTL/no-purge retention/legal-hold baseline. | None; at that checkpoint physical topology remained open, status stayed `draft`, and no runtime authority was created. |
+| 2026-08-03 | Closed B-class physical topology: selected isolated `Diten.ManagementGovernanceService/DecisionRegistry`, fixed the mutually exclusive EnterpriseGovernance fallback, exact future five-layer/test roots, shared-base usage, collection/transaction/provider boundaries and mandatory pre-scaffold isolation matrix. | None; status and authorities remain unchanged, port/route/security/deployment blockers stay open, and no scaffold/runtime/consumer authority is created. |
 
 ## 20. Follow-up Items
 
 Only B-class runtime/promotion blockers remain:
 
-1. Close physical service topology: conditional Option A or separate-service Option B fallback.
-2. Prove DecisionRegistry isolation tests or fail closed to separate `Diten.EnterpriseGovernanceService`.
-3. Fix exact repo paths, service-local base implementation, collections, routes and port.
-4. Approve and evidence dedicated S2S identity, timeout and retry policy.
-5. Provision and evidence exact MOD-0018 permissions.
-6. Approve and evidence MOD-0021/MOD-0035 audit/outbox integration.
-7. Record explicit runtime authority; until then this pack remains non-executable.
+1. Run the mandatory pre-scaffold isolation matrix; any failure selects the sole EnterpriseGovernance fallback.
+2. Obtain an authoritative collision-free port allocation and approve internal route/service discovery,
+   DNS/TLS/network and deployment decisions.
+3. Approve and evidence dedicated S2S credential, issuer/audience/scope, registration/rotation/revocation,
+   timeout/retry/circuit and delegated-actor policy.
+4. Provision and evidence exact MOD-0018 permissions and MOD-0288 provider connectivity.
+5. Approve and evidence MOD-0021/MOD-0035 audit-intent/post-commit outbox integration.
+6. Approve the matching MOD-0117 consumer amendment only after producer runtime and bilateral evidence exists.
+7. Reconcile the protected lower-authority domain topology wording in a separately authorized governance change.
+8. Enumerate exact composition/project files and record explicit runtime authority; until then this pack remains non-executable.
 
 Deferred future amendments, not v1 core blockers: MOD-0031 evidence-enabled publication, MOD-0030-backed
 retention/legal-hold purge process, `Role`/`GovernanceBody` authority kinds, producer role-eligibility policy,
