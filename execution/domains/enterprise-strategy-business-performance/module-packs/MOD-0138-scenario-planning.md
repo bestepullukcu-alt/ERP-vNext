@@ -11,7 +11,7 @@ owner: FP&A Scenario Planning Process Owner
 branch: feature/esbp/mod-0138-scenario-planning
 started: 2026-08-02
 target: 2026-08-02
-form_field_count: 11
+form_field_count: 10
 production_authority: none
 ---
 
@@ -71,10 +71,10 @@ InvestmentCase ownership or visibility/lifecycle inference to MOD-0138.
 
 | Kind | Proposed object | Draft invariant |
 |---|---|---|
-| Aggregate | `Scenario` | Tenant-owned stable register/container; active Code unique per tenant |
-| Staging aggregate | `ScenarioVersionDraft` | Mutable working content under an exact concurrency fence; abandon may soft-delete |
+| Aggregate | `Scenario` | Created `Active`; only transition is `Active → Archived`; reopen forbidden |
+| Staging aggregate | `ScenarioVersionDraft` | At most one open per tenant + Scenario; copy-on-new-draft provenance; abandon may soft-delete |
 | Immutable entity | `ScenarioVersion` | Publishing atomically creates/seals it; published content is never edited |
-| Value set | `ScenarioAssumption` / `ScenarioReferenceSet` | Draft-owned during construction, normalized and sealed into published content; no foreign payload copy |
+| Value set | `ScenarioAssumptionV1` / `BudgetVersionReferenceSetV1` | Exact closed schemas below; normalized and sealed; no foreign payload copy |
 | Aggregate | `ComparatorRunDefinition` | Immutable accepted request pinned to exact inputs, schemas, algorithm and digests |
 | Event/receipt | `ComparatorExecutionEvent` | Append-only execution attempt/terminal receipt; terminal history is never rewritten |
 | Immutable entity | `ComparatorOutput` | Created only after successful execution; explicit rerun creates new Run/Output IDs |
@@ -119,31 +119,149 @@ Business `ScenarioVersionNumber`, `OutputVersion`, `AlgorithmVersion`, `Contract
 | Scenario | `Code` | string(128) | Trim/NFC; active tenant unique |
 | Scenario | `Name` | string(128) | Trim/NFC, non-empty |
 | Scenario | `Description` | string(2000)? | Trim/NFC; empty becomes null |
-| Scenario | `Lifecycle` | enum | Draft/Active/Archived proposal; exact lifecycle is open |
-| ScenarioVersionDraft | `ScenarioId`, `DraftId` | Guid | Same-tenant active Scenario; mutable staging identity |
+| Scenario | `Lifecycle` | enum | Exact `Active` / `Archived`; create = Active; Archive terminal and irreversible |
+| ScenarioVersionDraft | `ScenarioId`, `DraftId` | Guid | Same-tenant Active Scenario; partial unique one-open-draft fence |
 | ScenarioVersionDraft | `VersionLabel`, `EffectiveFrom`, `EffectiveTo`, `Notes` | bounded scalar/date | Ordered dates; expected technical fence on every mutation |
-| ScenarioVersionDraft | `Assumptions`, `ForeignReferences` | bounded typed set | Mutable until publish; exact immutable foreign refs and contract versions; no payload snapshots |
+| ScenarioVersionDraft | `BasedOnScenarioVersionId` | Guid? | Null for from-scratch; otherwise current published version copied with immutable provenance |
+| ScenarioVersionDraft | `Assumptions`, `ForeignReferences` | closed v1 sets | Exact schemas below; mutable only until publish |
 | ScenarioVersion | `ScenarioId`, `ScenarioVersionNumber` | Guid/positive integer | Unique `(TenantId, ScenarioId, ScenarioVersionNumber)`; server assigned at publish |
 | ScenarioVersion | sealed content/provenance | immutable snapshot | Publication actor/time, source DraftId, canonicalization version and canonical digest atomically sealed |
-| ScenarioVersion | disposition history | append-only events | Supersede/retire never modifies published bytes; historical resolvability remains distinct from new-link eligibility |
-| ComparatorRunDefinition | `ScenarioVersionReferences` | 2..50 refs | Exact distinct published pins; immutable foreign refs include their contract versions |
-| ComparatorRunDefinition | `ComparatorKey`, `AlgorithmVersion`, `NormalizationVersion`, `ParameterSchemaVersion`, `OutputSchemaVersion` | string | Exact supported immutable literals |
-| ComparatorRunDefinition | `RequestDigest`, `InputEvidenceDigest`, `IdempotencyKeyHash`, `ExecutionEngineVersion` | digest/string | Engine version required where material; nondeterminism additionally pins approved seed/model/runtime provenance |
-| ComparatorExecutionEvent | attempt/status/provenance | append-only event | Requested/started/completed/failed/cancelled receipts append; no terminal rewrite |
-| ComparatorOutput | `ComparatorRunId`, `OutputVersion` | Guid/integer | One successful output per run proposed; exact policy open |
-| ComparatorOutput | `ResultDigest`, output schema/provenance | digest/versioned metadata | Immutable after success; PPM reference excludes algorithm, ranking, metrics and payload |
+| ScenarioVersion | disposition history | append-only events | Prior current becomes historical/superseded when next publishes; bytes unchanged |
+| ComparatorRunDefinition | exact v1 definition | immutable | `BaselineDelta` catalog, 2..10 exact inputs, empty parameter allowlist |
+| ComparatorExecutionEvent | Requested/Started/Completed/Failed | append-only event | Async worker attempts; no terminal rewrite |
+| ComparatorOutput | exact v1 output | immutable | At most one successful output per run; schema below |
 | Selection occurrence | `SelectionOccurrenceId`, `SelectionRevision` | Guid/positive integer | Immutable occurrence/revision identity |
-| Selection occurrence | exact typed selection context | closed typed reference | Profile remains OPEN until scope is approved; never owns InvestmentCase |
+| Selection occurrence | `InvestmentCaseContextV1` | `ppm.investment-case-context` / `1.0` | Exact sole v1 scope; PPM ownership unchanged |
 | Selection occurrence | `SelectedScenarioVersionReference` | `ScenarioVersionReferenceV1` | Published and eligible when selected |
 | Selection disposition | closes/replaces occurrence | append-only event | Actor/time/reason/correlation; no mutable current-state field on occurrence/history |
 | Selection fence | tenant + typed scope token | concurrency control | Transactionally prevents more than one effective selection; effective state derives from history |
+
+### Scenario lifecycle and publication — closed v1
+
+- Scenario is created `Active`; the only lifecycle transition is `Active → Archived`. Archive is irreversible.
+- Mutable analytical content exists only in `ScenarioVersionDraft`. Each `(TenantId, ScenarioId)` has at most one
+  open draft through a tenant-first partial unique constraint and transactional fence.
+- A draft starts empty or copies the current published version. Copy-on-new-draft stores immutable
+  `BasedOnScenarioVersionId`; subsequent edits never mutate the source.
+- Publish on an Active Scenario atomically assigns the next monotonic server-side `ScenarioVersionNumber`, seals
+  immutable content/provenance/hash, appends audit intent and consumes/closes the draft. A concurrent loser is 409.
+- Publishing a successor makes the prior current version historical/superseded by derivation; its bytes and hash
+  never change. Current published version is the highest committed ScenarioVersionNumber for the Scenario; it is
+  derived, not a mutable flag. Archived Scenario blocks new draft, publish, comparator run and selection and cannot reopen.
+- `HistoricalResolve` may resolve archived/superseded published versions. `NewReferenceEligibility` returns 409.
+  Only an unpublished abandoned draft may soft-delete.
+
+### `ScenarioAssumptionV1` — exact closed schema
+
+Exact fields are `AssumptionKey`, `ValueType`, `Value`, `UnitKind`, and `CurrencyReference`; extra fields fail.
+
+| Field | Closed rule |
+|---|---|
+| `AssumptionKey` | Trim + NFC, 1..128, case-sensitive ordinal unique within draft/version |
+| `ValueType` | Exact `Decimal`, `Integer`, `Boolean`, `String`, or `Date` |
+| `Value` | Type-governed canonical scalar; arbitrary/nested JSON forbidden |
+| `UnitKind` | Exact `None`, `Units`, `Thousands`, `Millions`, or `Currency` |
+| `CurrencyReference` | Required only for `Currency`; exact MOD-0136 `fpa.currency-reference` / `1.0`; otherwise null |
+
+- String is NFC and at most 2000 characters. Integer is signed 64-bit canonical decimal text. Decimal is
+  Decimal128-compatible, precision ≤28 and scale ≤4, plain fixed-point canonical text with no locale/exponent;
+  binary float, NaN and Infinity are forbidden. Boolean is only JSON `true`/`false`; Date is only `yyyy-MM-dd`.
+- DimensionReferences, per-assumption PeriodReference and evidence/provenance payload are forbidden/deferred in v1.
+  Every assumption applies to the ScenarioVersion effective interval. Maximum count is 200.
+
+### Foreign reference set v1 — exact closed schema
+
+- Only exact MOD-0136 `BudgetVersionReferenceV1` using `fpa.budget-version-reference` / `1.0` is accepted.
+- Maximum 20 distinct references, sorted by ContractName → ContractVersion → BudgetId → BudgetVersionId →
+  BudgetVersionNumber. Amount, line, currency detail or budget payload/snapshot is never copied.
+- Malformed caller shape is 400; unknown/unsupported contract or version is 503.
+
+### Scenario publication hash — exact canonical JSON v1
+
+- Contract identity is `fpa.scenario-content-canonical-json.v1`. Bytes are UTF-8 without BOM or trailing newline.
+  Strings are NFC; UUIDs are lowercase canonical D; dates are `yyyy-MM-dd`; Decimal values use invariant plain
+  fixed-point text with no exponent/locale, insignificant fractional zeroes removed and zero rendered `"0"`.
+- Top-level property order is exactly `CanonicalizationVersion`, `VersionLabel`, `EffectiveFrom`,
+  `EffectiveTo`, `Notes`, `Assumptions`, `ForeignReferences`. Assumption property order is the exact
+  five-field schema order. Foreign BudgetVersion properties are `ContractName`, `ContractVersion`,
+  `BudgetId`, `BudgetVersionId`, `BudgetVersionNumber`.
+- Assumptions sort by AssumptionKey ordinal. Foreign references sort by ContractName → ContractVersion → IDs →
+  version number. Semantic content, effective interval, assumptions and foreign references are included.
+  Database/generated child IDs, Scenario/Tenant IDs, audit timestamps and technical Version are excluded.
+- Missing/extra properties or invalid scalar formats fail publication. NFD input is normalized to NFC; source JSON
+  property order and assumption insertion order cannot change canonical bytes. Digest is SHA-256 lowercase 64 hex.
+
+Normative vector 1 — minimal, 309 UTF-8 bytes:
+
+```json
+{"CanonicalizationVersion":"fpa.scenario-content-canonical-json.v1","VersionLabel":"Base","EffectiveFrom":"2026-01-01","EffectiveTo":"2026-12-31","Notes":null,"Assumptions":[{"AssumptionKey":"GrowthRate","ValueType":"Decimal","Value":"0.05","UnitKind":"None","CurrencyReference":null}],"ForeignReferences":[]}
+```
+
+SHA-256: `38ff8c101b72104847a1a34765c5fd23e1ea423f8a05b6488c2e2ece288a7788`.
+
+Normative vector 2 — multiple assumptions plus BudgetVersion reference, 623 UTF-8 bytes:
+
+```json
+{"CanonicalizationVersion":"fpa.scenario-content-canonical-json.v1","VersionLabel":"Plan","EffectiveFrom":"2026-01-01","EffectiveTo":"2026-12-31","Notes":"Plan","Assumptions":[{"AssumptionKey":"Cost","ValueType":"Decimal","Value":"1250000","UnitKind":"Millions","CurrencyReference":null},{"AssumptionKey":"Headcount","ValueType":"Integer","Value":"42","UnitKind":"Units","CurrencyReference":null}],"ForeignReferences":[{"ContractName":"fpa.budget-version-reference","ContractVersion":"1.0","BudgetId":"11111111-1111-1111-1111-111111111111","BudgetVersionId":"22222222-2222-2222-2222-222222222222","BudgetVersionNumber":3}]}
+```
+
+SHA-256: `b7dbd424e46da5f3d1d12739dff22be2c55f606a7a959dce3e0ad0f530bcd80b`.
+
+### Comparator v1 — exact closed catalog and output
+
+- Exact catalog: `ComparatorKey = BaselineDelta`, `AlgorithmVersion = 1.0`,
+  `NormalizationVersion = fpa.scenario-normalization.v1`, `ParameterSchemaVersion = 1.0`, and
+  `OutputSchemaVersion = 1.0`. Parameter allowlist is empty; arbitrary parameters are forbidden.
+- Run `RequestDigest` is SHA-256 over no-whitespace UTF-8/no-BOM canonical JSON ordered exactly as ComparatorKey,
+  AlgorithmVersion, NormalizationVersion, ParameterSchemaVersion, OutputSchemaVersion, then ordered
+  ScenarioVersionReferences (each exact producer tuple order). `InputDigest` is SHA-256 over canonical JSON array
+  of the referenced Scenario content-hash strings in baseline/candidate order. Both are lowercase 64 hex.
+- Input is exactly 2..10 distinct published/current/new-reference-eligible `ScenarioVersionReferenceV1` values:
+  first baseline, remaining candidates. All share effective interval, assumption key set and matching ValueType,
+  UnitKind and CurrencyReference. Only Decimal/Integer keys score; other scalar keys are compatibility evidence only.
+- Per numeric key delta is candidate minus baseline; Score is the exact decimal sum. Rank is Score descending with
+  canonical ScenarioVersionId ordinal tie-breaker. Overflow or incompatible interval/key/unit/currency is 400.
+  Binary float, ML/model, random seed and nondeterministic execution are forbidden.
+- Worker is asynchronous. Immutable accepted definition emits Requested, Started and Completed or Failed events.
+  One initial attempt plus two transient retries use 10-second then 30-second backoff; each attempt times out at
+  60 seconds. Contract/validation/security failures fail fast. Terminal transient failure appends Failed and crosses
+  the alarm/DLQ boundary. Exact idempotent duplicate returns the original run/output; explicit rerun creates new IDs.
+- Immutable successful `ComparatorOutput` contains `ComparatorRunId`, `OutputVersion = 1`,
+  `BaselineScenarioVersionReference`, `CandidateResults`, `ResultDigest`, and exact algorithm/normalization/
+  parameter-schema/output-schema/execution-engine provenance. Each CandidateResult contains
+  `ScenarioVersionReference`, `Score`, `Rank`, and Delta rows ordered by AssumptionKey. Each Delta row contains
+  exactly `AssumptionKey`, `BaselineValue`, `CandidateValue`, and `Delta` as canonical fixed-decimal strings.
+  Canonical output property order follows the field order stated here; `ResultDigest` is SHA-256 over those exact
+  canonical output bytes. PPM stores only `ComparatorOutputReferenceV1`.
+
+### Selection v1 — exact closed semantics
+
+- Sole scope is exact `ppm.investment-case-context` / `1.0`. Tenant + InvestmentCaseContext has exactly one
+  effective selection after replace and zero after close; PPM context/cardinality/lifecycle ownership does not move.
+- Only published, visible, non-archived ScenarioVersion passing `NewReferenceEligibility` can be selected.
+  `EffectiveFromUtc` is server commit time; scheduled-future and backdated selection are forbidden.
+- Occurrence is immutable. Replace writes prior disposition, successor occurrence and audit intent atomically;
+  close writes prior closure and audit intent atomically. Nothing updates an occurrence in place.
+- Current truth derives from event history plus monotonic scope fence. Business rollback is a new occurrence that
+  selects the prior version. Deterministic rebuild must produce the same head. Multiple effective occurrences or a
+  broken fence fail readiness closed; local inference/fallback is forbidden.
+- `HistoricalResolve` may show an old occurrence/version. `CurrentSelectionEligibility` is allowed only for PPM
+  SelectedScenario wrapper; a visible stale/not-current pinned reference returns 409. Selection is not approval.
+
+### Retention and purge — exact closed v1
+
+- Scenario, published ScenarioVersion, ComparatorRunDefinition/events/output, selection occurrence/disposition history,
+  canonical hashes and receipts have no ordinary delete, bulk-delete or TTL. Retired/archived history is preserved.
+- V1 supports no exceptional purge. Legal hold blocks deletion. Abandoned unpublished drafts may soft-delete but
+  have no automatic hard purge. Bilateral version support cannot be removed until persisted-reference inventory is zero.
+- Any future purge requires MOD-0030 authority plus a separate approved amendment; this pack grants neither.
 
 Required indexes are tenant-first, include `IsDeleted=false` only for mutable/soft-deletable records, and include
 active Scenario Code, Scenario business version, idempotency receipt and Run/Output identity. The transactional
 scope fence plus immutable occurrence/disposition history proves at most one effective selection without adding
 a mutable current-state flag to an append-only revision.
 
-### Gate I-B minimal reference contract — proposed exact v1
+### Gate I-B minimal reference contract — exact v1
 
 - `ContractName = fpa.scenario-planning-reference` (exact, case-sensitive).
 - `ContractVersion = 1.0` (exact major/minor). V1 is not duplicated in `ContractName`.
@@ -186,7 +304,7 @@ Current authoring scope is exactly:
 
 - `execution/domains/enterprise-strategy-business-performance/module-packs/MOD-0138-scenario-planning.md`
 
-Future runtime paths remain `TBD` until topology, field inventory, contracts, migration and explicit production
+Future runtime paths remain `TBD` until topology, exact repo/base/collection/route/port mapping, migration and explicit production
 authority are approved. This pack does not authorize creating `Diten.FpaService` or any other project.
 
 ## 6. Protected Paths
@@ -203,7 +321,7 @@ authority are approved. This pack does not authorize creating `Diten.FpaService`
 
 | Dependency | Boundary | Gate |
 |---|---|---|
-| MOD-0136 Budgeting | Draft sibling proposes the same future FPA host; no shared SoR, domain type or repository | Contract-only coordination; neither pack grants runtime authority |
+| MOD-0136 Budgeting | Exact BudgetVersionReferenceV1 and `fpa.currency-reference`/`1.0`; no shared SoR/type/repository | Contract-only consumption; neither pack grants runtime authority |
 | MOD-0117 PPM | Gate I-B wrappers at authority checkpoint `a2c7ff5b...`; exact profiles in §4 | Governance shape closed; executable consumer amendment and runtime authority still required |
 | MOD-0007 | Generic decision/rationale owner | Not duplicated here |
 | MOD-0023 | Approval only when policy requires | Separate contract; never implied by selection |
@@ -212,7 +330,7 @@ authority are approved. This pack does not authorize creating `Diten.FpaService`
 | MOD-0021 / MOD-0035 | Immutable audit/eventing mechanics | Exact integration remains open |
 | DCP-006 | Gate I orchestration | Approved; OD-04 OPEN/PARTIAL |
 | MongoDB replica set | Atomic publish/output/selection/idempotency/audit persistence | Runtime prerequisite |
-| Comparator algorithm/artifact catalog | Deterministic version retention and compute provenance | Owner, SLA and retention open |
+| Comparator worker/runtime | Closed BaselineDeltaV1 semantics; async delivery mechanics | Runtime infrastructure remains a B blocker |
 
 ## 8. Runtime Constraints
 
@@ -223,13 +341,13 @@ authority are approved. This pack does not authorize creating `Diten.FpaService`
   publication provenance, canonicalization version, canonical digest, idempotency receipt and audit intent.
 - Published content is never edited. Supersession/retirement is append-only disposition history. Abandoned drafts
   may be soft-deleted; published versions, completed outputs and selection history cannot be CRUD-deleted.
-  Exceptional purge requires separate compliance authority, and PPM history is never rewritten.
+  V1 has no exceptional purge, and PPM history is never rewritten.
 - ComparatorRunDefinition is immutable after acceptance. Execution progress is append-only events/receipts and a
   successful ComparatorOutput is immutable. Exact idempotent duplicate returns the original Run/result; explicit
   rerun creates new Run/Output IDs and never rewrites terminal history.
-- Reproducibility pins exact immutable input references and contract versions, algorithm/version, normalization,
-  parameter/output schema, request/input/result digests and material engine provenance. Nondeterministic algorithms
-  are prohibited unless an approved seed/model/runtime provenance makes the outcome reproducible.
+- Reproducibility pins exact immutable input references and contract versions, BaselineDeltaV1 catalog,
+  normalization, parameter/output schema, request/input/result digests and engine provenance. Nondeterministic
+  algorithms, seeds/models and binary floating point are prohibited in v1.
 - Financial data is never a second Budget SoR: compute rereads an immutable authoritative producer contract or
   retains only an approved canonical evidence/input digest, never budget amounts/lines as MOD-0138 truth.
 - Selection replace/close atomically appends immutable occurrence/disposition history and advances a transactional
@@ -239,15 +357,15 @@ authority are approved. This pack does not authorize creating `Diten.FpaService`
   and stable original result. Same digest replays without duplicate compute/output/audit; another digest is 409.
   Retention must exceed retry and unknown-commit recovery windows so expiry cannot enable duplicate side effects.
 - No local/cache/prototype fallback and no transport/dependency failure may be collapsed to 404.
-- Draft limits: decoded/decompressed UTF-8 request body 256 KiB (oversize `413`) enforced before materialization;
+- V1 limits: decoded/decompressed UTF-8 request body 256 KiB (oversize `413`) enforced before materialization;
   JSON depth 8, duplicate properties/invalid Unicode/unknown polymorphic kinds/compression bombs rejected;
-  validation batch 100 refs; 2..50 scenarios; 200 assumptions; scalar assumptions only; key 128 and scalar string
-  value 2000 characters; bounded comparator parameter count/keys/values; arbitrary nested JSON forbidden.
-  Numbers are Decimal128-compatible only in `[-1e15, 1e15]`, precision 28, scale 8; binary float, silent rounding,
+  validation batch 100 refs; comparator input 2..10; foreign references 20; assumptions 200; scalar assumptions
+  only; key 128 and scalar string value 2000 characters; comparator parameters forbidden; arbitrary nested JSON forbidden.
+  Numbers are Decimal128-compatible only in `[-1e15, 1e15]`, precision 28, scale 4; binary float, silent rounding,
   NaN/Infinity and exponent overflow/underflow are rejected before allocation/compute. Internal summary metadata,
   if approved, is capped at 100 metrics with 128-character keys; reference responses remain payload-free.
 - Immutable versions, run definitions, execution receipts, outputs, selection/audit/disposition history and
-  quarantine records have no default TTL or CRUD delete. Exact retention/legal-hold rules are promotion blockers.
+  quarantine records have no TTL or CRUD delete; v1 has no exceptional purge and legal hold always blocks deletion.
 - Bilateral supported-version matrix initially contains only MOD-0138 `fpa.scenario-planning-reference` `1.0`,
   the three PPM scenario wrappers `1.0`, and shared `ppm.investment-case-context` `1.0`. No version coercion,
   downgrade, alias, default-latest behavior or unknown-version fallback is allowed.
@@ -275,15 +393,15 @@ Each surface is counted independently; unrelated screens are never combined:
 | Surface | Counted user inputs | Count | Decision |
 |---|---|---:|---|
 | Scenario create/edit | Code, Name, Description | 3 | Slim/offcanvas candidate |
-| ScenarioVersionDraft create/edit | VersionLabel, EffectiveFrom, EffectiveTo, Notes; repeatable assumption/reference row: AssumptionKey, ValueType, Value, UnitReference, PeriodReference, DimensionReferences, ProvenanceReference | **11** | Compact Create/Edit/Details + `_Form` |
-| ComparatorRun request | ScenarioVersionReferences, ComparatorKey, AlgorithmVersion, ParameterSchemaVersion; repeatable ParameterKey, ParameterValue | 6 | Dedicated Slim-count action/full comparison page |
-| Selection replace/close | SelectionContextContract, SelectionContextKind, SelectionContextId, ScenarioVersionReference, ReasonCode | 5 | Slim-count action/modal; not approval |
+| ScenarioVersionDraft create/edit | Header: VersionLabel, EffectiveFrom, EffectiveTo, Notes (4); assumption row: AssumptionKey, ValueType, Value, UnitKind, CurrencyReference (5); foreign BudgetVersion picker (1) | **10** | Compact Create/Edit/Details + `_Form` |
+| ComparatorRun request | BaselineScenarioVersionReference, CandidateScenarioVersionReferences; algorithm/schema values are fixed read-only | 2 | Slim-count action/full result page |
+| Selection replace/close | ScenarioVersionReference, ReasonCode; InvestmentCaseContext route/server-derived | 2 | Slim-count modal; not approval |
 
-The maximum actual primary create/edit surface is ScenarioVersionDraft at **11**, so frontmatter uses
-`golden_reference: compact` and `form_field_count: 11` under the
+The maximum actual primary create/edit surface is ScenarioVersionDraft at **10**, so frontmatter uses
+`golden_reference: compact` and `form_field_count: 10` under the
 [Compact reference](../../developer-enablement/module-packs/DEV-0001-golden-reference-compact.md). Repeatable-row
-inputs count once per editable column. Route IDs, technical versions, digests, provenance and audit fields do not
-count. Exact assumption row and selection picker representation remain promotion blockers; any change requires recount.
+inputs count once per editable column. Route IDs, fixed catalog/schema values, technical versions, digests,
+provenance and audit fields do not count. These counts are closed for v1.
 
 ## 10. Backend File Convention
 
@@ -311,6 +429,9 @@ The Compact set is `Index.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Details.csht
 `_Filter.cshtml`, `_DataTable.cshtml`, `_IndexL10n.cshtml`, `ScenarioPlanningIndex.cs`, `index.js`, and
 `index.l10n.js`. PPM may later show opaque reference picker/status links only; it must not copy comparator UI,
 assumptions, calculations, rankings or output payload.
+No MOD-0138 surface exposes delete/bulk-delete for Scenario, published versions, comparator history/output or
+selection history. Draft abandon is the only soft-delete action. Scenario Archive uses the existing exact
+`fpa.scenario-planning.scenarios.update` permission; this closure adds no seventeenth permission key.
 
 ## 12. Validation Rules
 
@@ -318,17 +439,21 @@ assumptions, calculations, rankings or output payload.
 |---|---:|---|
 | Tenant/Actor | Server only | Valid authenticated claims; payload/header override rejected |
 | Scenario Code/Name | Yes | Strict decode, Trim/NFC, lengths above; Code active tenant unique |
-| ScenarioVersionDraft | Mutate/publish | Complete normalized assumptions; exact technical fence; abandoned draft only may soft-delete |
-| Published ScenarioVersion | Server seal | Positive monotonic number; atomic provenance/canonicalization/digest/audit; no update/delete |
-| Assumption | Per schema | Unique key/dimension; scalar typed; finite bounded number; no nested object |
-| Foreign reference | When supplied | Exact contract/kind/id/version; authoritative same-tenant validation; no payload |
-| Comparator inputs | Yes | 2..50 distinct Published visible refs; supported compatible unit/currency/period policy |
-| Algorithm/normalization | Yes | Exact available deterministic versions; pinned in result |
+| Scenario lifecycle | Yes | Create Active; only Active→Archived; archived operations/reopen return 409 |
+| ScenarioVersionDraft | Mutate/publish | One open per tenant+Scenario; exact fence; source provenance; abandoned unpublished only may soft-delete |
+| Published ScenarioVersion | Server seal | Positive monotonic number; atomic canonical bytes/hash/provenance/audit; no update/delete |
+| Assumption | 0..200 | Exact five fields/enums/scalar rules in §4; ordinal key unique; extra/nested/dimension/period/evidence fields fail |
+| CurrencyReference | Conditional | Exact `fpa.currency-reference`/`1.0` required iff UnitKind Currency; otherwise null |
+| Foreign reference | 0..20 | Only distinct exact MOD-0136 BudgetVersionReferenceV1; no financial payload/snapshot |
+| Comparator inputs | Exactly 2..10 | Baseline first; current eligible; same interval/key/type/unit/currency; distinct published refs |
+| Comparator catalog | Fixed | Exact BaselineDelta/1.0 + fixed normalization/parameter/output schemas; empty parameter allowlist |
+| Comparator execution | Async | Initial+2 transient retries, 10s/30s backoff, 60s attempt timeout; deterministic decimal only |
+| Canonical content | Publish | Exact closed property order/normalization and both normative SHA-256 vectors in §4 |
 | Contract | Yes | Exact `fpa.scenario-planning-reference` and `1.0`; exact minimal shapes in §4 |
 | Reference validation mode | Yes | `HistoricalResolve` / `NewReferenceEligibility` for scenario and comparator wrappers; selected-scenario wrapper alone also permits `CurrentSelectionEligibility` |
 | PPM bilateral wrapper | Consumer persistence | Exact wrapper name/version/field allowlist in §4; nested producer tuple unmodified; unknown/extra fields fail |
 | Current selection request | Selection validation only | Exact `ppm.investment-case-context` `1.0` plus pinned `ScenarioVersionReferenceV1`; no occurrence/history supplied by PPM |
-| Selection | Replace/close | Published eligible reference; closed typed scope; expected fence/revision; one effective derived selection |
+| Selection | Replace/close | Only InvestmentCaseContext/1.0; server commit time; published visible active eligible ref; exact fence/revision |
 | Idempotency-Key | Mutation/run | 16..128 ASCII; tenant+operation scoped; canonical request SHA-256 |
 | JSON/numeric/string | All | Enforce §8 before allocation/compute; invalid Unicode fails closed |
 
@@ -348,6 +473,15 @@ assumptions, calculations, rankings or output payload.
 | CRUD delete of published/output/selection history | 409; bytes/history unchanged |
 | Provider/algorithm outage | Historical immutable read remains available; new publish/run/selection validation is 503 |
 | Prototype cannot prove canonical identity/version/provenance | Quarantined; never promoted or used as fallback |
+| Concurrent second open draft or publish-number race | Exactly one transaction wins; loser 409; no partial seal/audit |
+| Draft/publish/run/select against Archived Scenario or reopen attempt | 409; historical bytes remain resolvable |
+| Assumption extra field, invalid scalar, duplicate key, bad currency conditional or >200 | 400; no publish |
+| Foreign reference not exact BudgetVersion tuple, duplicate, >20 or payload-bearing | 400; unsupported version 503 |
+| Canonical bytes/hash differ from normative vectors | Publish fails closed; no immutable version created |
+| BaselineDelta input count/key/type/unit/currency/interval mismatch, overflow or parameter supplied | 400; no run accepted |
+| Transient compute timeout/failure | Retry after 10s then 30s, max three attempts; exhausted run appends Failed and returns/records 503 boundary |
+| Broken selection fence or multiple effective occurrences | Readiness/current validation fails closed; no local repair/inference |
+| Ordinary delete/bulk-delete/TTL or exceptional-purge attempt | Rejected; no v1 operation exists and history remains unchanged |
 
 Mode semantics are exact: `HistoricalResolve` succeeds for an authentic historically resolvable retired/archived
 published reference; `NewReferenceEligibility` returns 409 for a retired/archived but visible reference; and
@@ -379,7 +513,7 @@ pinned version is stale/not-current for that context and therefore returns 409 i
 - Audit records tenant, actor, old/new opaque refs, timestamp, reason code, correlation/causation and hashed
   idempotency key; assumptions/output payload and raw secrets are excluded.
 - Immutable audit covers Scenario create/update/archive; draft create/update/abandon; publish/retire; comparator
-  request/start/complete/fail/cancel; and selection replace/close. It records target IDs/versions, actor/service,
+  request/start/complete/fail; and selection replace/close. It records target IDs/versions, actor/service,
   exact contract/algorithm versions and operation provenance, never secrets, raw tokens or analytical payload.
 
 ## 15. Gateway / API Routing Decision
@@ -390,6 +524,16 @@ integration-agent task after topology and port approval. The S2S validation surf
 
 ## 16. Acceptance Criteria
 
+- [ ] Scenario creates Active, transitions only to terminal Archived, never reopens, and archived mutation/run/selection is 409 while historical reads remain.
+- [ ] Tenant + Scenario permits one open draft; copy provenance is pinned; publish atomically seals the next monotonic immutable version and audit/hash evidence.
+- [ ] Assumption serialization contains exactly five fields, closed enums/scalars, ordinal unique key and maximum 200; v1 forbidden fields are rejected.
+- [ ] Foreign set contains only at most 20 distinct exact MOD-0136 BudgetVersionReferenceV1 tuples and no financial payload/snapshot.
+- [ ] `fpa.scenario-content-canonical-json.v1` produces the exact 309/623-byte normative vectors and their recorded SHA-256 values independent of NFD/source order/insertion order.
+- [ ] BaselineDeltaV1 accepts exactly 2..10 eligible inputs, empty parameters and fixed catalog versions; decimal deltas, score/rank/tie-breaker and exact internal output are deterministic.
+- [ ] Async execution emits only Requested/Started/Completed-or-Failed, uses initial+2 retries at 10s/30s and 60s per attempt, one successful output and new IDs for explicit rerun.
+- [ ] Selection scope is only InvestmentCaseContext/1.0; occurrence/disposition/fence are immutable/atomic/rebuildable and current mismatch is 409 without approval semantics.
+- [ ] No ordinary delete/bulk-delete/TTL or v1 purge exists for authoritative history; draft abandon alone soft-deletes and future purge requires MOD-0030 amendment.
+- [ ] UI evidence proves Scenario 3/Slim, VersionDraft 10/Compact, Comparator 2 and Selection 2 with no bulk-delete, approval or PPM comparator UI.
 - [ ] Exact `ContractName = fpa.scenario-planning-reference` and `ContractVersion = 1.0` are approved without duplicate v1 encoding.
 - [ ] `ScenarioVersionReferenceV1` persists exactly ContractName, ContractVersion, ScenarioId, ScenarioVersionId and ScenarioVersionNumber.
 - [ ] `ComparatorOutputReferenceV1` persists exactly ContractName, ContractVersion, ComparatorRunId, ComparatorOutputId and OutputVersion.
@@ -419,6 +563,22 @@ integration-agent task after topology and port approval. The S2S validation surf
 - Unit/domain: draft mutation/fence, atomic publish seal, next-version isolation, disposition history, historical/
   new/current eligibility, deterministic canonical digest, all comparator version pins, rerun-new-ID behavior,
   effective selection derivation, compensating rollback and idempotency.
+- Lifecycle/concurrency: create Active; irreversible archive; archived operation 409; two-client one-open-draft and
+  monotonic publish races yield one winner; copied draft mutation leaves source bytes/hash unchanged.
+- Assumption/foreign schema: every ValueType/UnitKind/currency conditional and boundary; normalized ordinal duplicate;
+  max 200/20; exact-field reflection; BudgetVersion-only tuple; nested/dimension/period/evidence and payload rejection.
+- Canonical hash: recompute both normative byte strings and exact SHA-256 values. Negative vectors permute source
+  properties/insertion order and NFD (same canonical result), while UUID case, invalid date/decimal exponent/scale,
+  duplicate/missing/extra fields fail before immutable persistence.
+- BaselineDelta golden vectors cover positive/negative/zero deltas, score sums, descending ranking and canonical
+  ScenarioVersionId tie-break. Negative cases cover 1/11 inputs, duplicates, draft/archived/ineligible versions,
+  interval/key/type/unit/currency mismatch, overflow, parameter injection, binary float and alternate algorithm.
+- Worker tests assert Requested→Started→Completed/Failed only; initial+2 attempts at 10s/30s, 60s timeout,
+  fail-fast non-transient errors, retry exhaustion alarm/DLQ, one successful output, replay-original and rerun-new-ID.
+- Selection tests assert atomic replace/close/audit, one effective occurrence, monotonic fence, deterministic rebuild,
+  compensating rollback, broken-history fail-closed and historical-vs-current 200/409 behavior.
+- Retention architecture tests reject delete/bulk-delete/TTL/purge routes, commands, indexes and background jobs;
+  legal hold remains non-bypassable and abandoned draft has soft-delete but no hard-purge path.
 - Real Mongo integration: tenant-first/soft-delete behavior; unique/partial indexes; concurrent publish/selection and
   idempotency races; transaction fault injection proving mutation/output/receipt/audit atomicity.
 - Contract: reflection plus golden JSON/BSON fixtures enforce exact serialized allowlists:
@@ -457,23 +617,19 @@ integration-agent task after topology and port approval. The S2S validation surf
 
 ## 18. Ready-for-dev Checklist
 
-- [ ] Business owner approves Scenario lifecycle, assumption schema and referenceability policy.
-- [ ] Mutable draft, atomic publish, append-only disposition and immutable delete/retention/legal-hold/purge policy are exact.
-- [ ] PPM `InvestmentCaseContextV1` selection context and current-validation profile are bilaterally approved;
-  occurrence/disposition history and scope fence stay producer-owned. Any additional selection context remains open.
-- [ ] Comparator count, unit/currency/period rules, algorithm catalog/retention and sync/async model are approved.
-- [ ] Service topology, collection ownership, entity base, port and future routes are approved explicitly.
-- [ ] Same-service architecture isolation tests pass, or separate service fallback is selected.
-- [ ] MOD-0136 shared-contract boundary and MOD-0117 consumer amendment are approved.
-- [ ] Exact PPM wrapper/context fixtures at checkpoint `a2c7ff5b...` and bilateral supported-version/deprecation matrix are approved.
-- [ ] Exact minimal reference field allowlists, supported-version/deprecation matrix, security/S2S identity and audit/idempotency design are approved.
-- [ ] Dedicated PPM identity/audience, credential owner/rotation, delegated-actor mechanism, unknown-commit recovery and retention windows are approved.
-- [ ] Immutable output/event/selection/audit/idempotency/quarantine retention, legal hold and exceptional purge are approved.
-- [ ] Prototype quarantine/migration/cutover/rollback plan is separately approved.
-- [ ] Separate field counts remain Scenario 3, VersionDraft 11, Comparator 6, Selection 5; Compact governs the parent and tenant layout is confirmed.
-- [ ] Backend/frontend/Gateway file contracts and seven-language keys are enumerated.
-- [ ] Acceptance, test and compatibility evidence is executable; explicit production authority is recorded.
-- [ ] Status is promoted by user from `draft` to `approved` or `ready-for-dev`.
+- [x] Control Tower fixed Scenario lifecycle, one-open-draft/publication, AssumptionV1, Budget-only references,
+  canonical JSON/hash vectors, BaselineDeltaV1, InvestmentCase selection, no-purge retention and UI 3/10/2/2.
+- [ ] Prove isolated ScenarioPlanning module in future `Diten.FpaService`; select
+  `Diten.ScenarioPlanningService` fallback if isolation fails.
+- [ ] Fix exact repo paths, concrete service-local EntityBase mapping, Mongo collections/index names, routes, port
+  and later integration-agent Gateway task.
+- [ ] Approve/provision dedicated S2S identity, exact audience/credential/rotation and delegated actor propagation.
+- [ ] Complete MOD-0018 entitlement/permission provisioning and runtime evidence.
+- [ ] Complete MOD-0021/MOD-0035 audit-intent/outbox publisher, transaction and atomicity evidence.
+- [ ] Select and prove comparator worker/queue/scheduler/runtime infrastructure for the closed BaselineDeltaV1 profile.
+- [ ] Fix idempotency receipt/unknown-commit persistence, recovery and safe retry-window retention implementation.
+- [ ] Author/approve prototype inventory, quarantine, migration/cutover/rollback slice.
+- [ ] Record explicit runtime authority, including approved bilateral fixtures and executable MOD-0117 I-B Scenario amendment evidence.
 
 ## 19. Implementation Notes
 
@@ -492,7 +648,7 @@ promotion, prove deterministic dry-run and mapping, verify collections/cutover, 
 MOD-0138 owns producer schemas, authoritative validation, supported-version/deprecation policy and golden producer
 fixtures. MOD-0117 owns consumer cardinality/storage/transitions, adapter behavior and pinned supported versions.
 Compatibility approval is bilateral; producer change never grants consumer runtime authority. Permission and
-contract names in this draft are governance proposals, not registered runtime literals.
+contract names are closed governance identities but are not registered runtime literals by this draft.
 
 PPM checkpoint `a2c7ff5bbfd3ef2b4e3c8c15eab804db58d62520` was inspected read-only. It closes consumer
 wrapper/context/mode governance only. MOD-0117 remains `review`, DCP-006 OD-04 remains OPEN/PARTIAL, and no producer
@@ -500,20 +656,20 @@ contract approval, topology/transport choice, adapter implementation or runtime 
 
 DCP-002 exact preflight command: `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0138 --name "Scenario Planning"`.
 
+### Change log
+
+| Date | Change | Authority effect |
+|---|---|---|
+| 2026-08-03 | Closed A-class Scenario semantics: Active/Archived lifecycle, one-open-draft publication, exact AssumptionV1 and Budget-only refs, canonical JSON plus two normative SHA-256 vectors, deterministic BaselineDeltaV1, InvestmentCase selection history/fence, no-purge retention and UI counts 3/10/2/2. | Governance semantics only; status remains draft and no runtime authority/topology/route/port is granted. |
+
 ## 20. Follow-up Items
 
-- Approve one-open-draft policy, monotonic numbering, copy-on-new-draft provenance, canonicalization identity/vectors,
-  archive/retirement and the exact historical/new-reference eligibility matrix.
-- Finalize the assumption/reference row schema and picker representation; recount all surfaces if it changes.
-- Approve comparator min/max, cross-Scenario comparisons, parameter/output schemas, algorithm/artifact owner and
-  retention, normalization, engine/seed/model provenance, conversion policy, async attempts and output retention.
-- Decide exact closed typed selection scope, occurrence/disposition shape, fence/rebuild semantics and whether a
-  historical selection used where current is required returns 409. Any non-PPM occurrence-reference contract is a
-  separately named/versioned follow-up and must not reuse the PPM selected-wrapper identity.
-- Define immutable-history retention/legal hold and exceptional purge authority.
-- Resolve final service/entity base/collections/port/Gateway paths and S2S identity/credential ownership.
-- Coordinate MOD-0136 contracts and author the later MOD-0117 Gate I-B consumer amendment.
-- Publish checksum/schema-identified bilateral fixtures and the two-dimensional producer/wrapper compatibility
-  matrix; later request a separately approved executable MOD-0117 I-B Scenario amendment and explicit authority.
-- Create a separate prototype quarantine/migration/cutover/rollback pack before touching existing ES fields.
-- Recount UI fields and enumerate exact routes/L10n keys before status promotion.
+- Prove isolated ScenarioPlanning in future `Diten.FpaService`; use `Diten.ScenarioPlanningService` fallback if isolation fails.
+- Fix exact repo paths, concrete service-local base mapping, collections/index names, routes, port and Gateway task.
+- Provision dedicated S2S identity/audience/credential rotation and delegated actor propagation.
+- Complete MOD-0018 permission/entitlement provisioning evidence.
+- Complete MOD-0021/MOD-0035 audit-intent/outbox publisher and atomicity evidence.
+- Select/prove worker, queue/scheduler and runtime infrastructure for the closed BaselineDeltaV1 profile.
+- Fix idempotency/unknown-commit persistence, recovery and safe retention implementation.
+- Author/approve prototype inventory, quarantine, migration/cutover/rollback slice before touching ES prototypes.
+- Record explicit runtime authority after bilateral fixtures and executable MOD-0117 I-B Scenario amendment approval.
