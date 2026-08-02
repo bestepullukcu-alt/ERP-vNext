@@ -40,10 +40,10 @@ non-executable until producer and consumer packs are separately approved and exp
 - Explicit `BudgetPeriod` and separate `BudgetLine` financial breakdowns.
 - Canonical currency reference, unit/scale semantics, precision and rounding policy captured by a version.
 - Effective-dated selected-baseline truth through immutable `FundingBaselineSelectionOccurrence` and immutable
-  `SelectionClosure`/`SelectionDisposition` events for an authoritative typed funding context; its exact type
-  remains an FP&A promotion blocker.
-- Authoritative minimal `BudgetVersionReference` referenceability validation and, separately, selected-baseline
-  validation against a typed `FundingContextReference`.
+  `SelectionClosure`/`SelectionDisposition` events. For Gate I-B, the authoritative typed funding context is
+  exact `ppm.investment-case-context` `1.0` with only `ContractName`, `ContractVersion`, `InvestmentCaseId`.
+- Authoritative minimal `BudgetVersionReference` validation and, separately, current-selection validation
+  against exact PPM-owned `InvestmentCaseContextV1` for Gate I-B.
 
 ### Does not own
 
@@ -69,9 +69,9 @@ non-executable until producer and consumer packs are separately approved and exp
 - `BudgetVersionReferenceV1` identifies one immutable certified version and does not assert selection.
   Selection is separate append-only/effective-dated history: an immutable `FundingBaselineSelectionOccurrence`
   plus immutable `SelectionClosure`/`SelectionDisposition` events.
-- Selected-baseline validation accepts the immutable reference plus an authoritative typed
-  `FundingContextReference`. The context must be a closed type, never free text, and v1 cannot be finalized
-  until the owner selects Budget, fiscal plan, organization/cost center, InvestmentCase or another typed context.
+- Gate I-B current-selection validation accepts the immutable reference plus exact PPM-owned
+  `InvestmentCaseContextV1`. Consuming this context gives MOD-0136 no ownership of InvestmentCase fields,
+  cardinality, storage, transitions or lifecycle; MOD-0117 retains all of those responsibilities.
 
 ## 3. Owned Objects
 
@@ -82,7 +82,7 @@ non-executable until producer and consumer packs are separately approved and exp
 | Repositories | Separate Budget and BudgetVersion repositories; period/line persistence must remain aggregate-isolated |
 | Commands | Create/update/archive Budget; create/update/abandon draft; certify draft; replace/close selection; retire/supersede version; no approve command |
 | Queries | Budget/draft/version detail and lists; effective selection/history; referenceability and selected-baseline validation |
-| Contract DTOs | Minimal `BudgetVersionReferenceV1`, referenceability request/result, typed `FundingContextReference`, selected-baseline validation request/result; display contract separate |
+| Contract DTOs | Minimal producer `BudgetVersionReferenceV1`; exact PPM-owned `InvestmentCaseContextV1` request context and `SelectedBudgetVersionReferenceV1` wrapper compatibility fixtures; mode-specific validation request/result; display contract separate |
 | Proposed API | `/api/budgets`, `/api/budgets/{budgetId}/versions`, `/api/budget-versions/{id}`, `/api/budget-version-references/validate` |
 | Proposed UI | `/FPandA/Budgets`, `/FPandA/Budgets/{budgetId}/Versions`; no PPM-hosted budget form |
 | Permissions | `budgeting.budgets.read`<br>`budgeting.budgets.create`<br>`budgeting.budgets.update`<br>`budgeting.budgets.archive`<br>`budgeting.budget-version-drafts.read`<br>`budgeting.budget-version-drafts.create`<br>`budgeting.budget-version-drafts.update`<br>`budgeting.budget-version-drafts.abandon`<br>`budgeting.budget-versions.read`<br>`budgeting.budget-versions.certify`<br>`budgeting.budget-versions.retire`<br>`budgeting.funding-baseline-selections.read`<br>`budgeting.funding-baseline-selections.replace`<br>`budgeting.funding-baseline-selections.close`<br>`budgeting.budget-version-references.validate` |
@@ -103,14 +103,68 @@ Names above are governance proposals, not runtime literals, until this pack is a
 - An affirmative referenceability result means the IDs belong together in the current tenant, the immutable
   number matches, and the certified version is historically referenceable and not quarantined. It says nothing
   about current selection.
-- A separate selected-baseline validator takes `BudgetVersionReferenceV1` plus a typed
-  `FundingContextReference` and verifies the current effective selection. Its v1 contract remains blocked until
-  the context decision closes; no free-text discriminator is permitted.
+- `CurrentSelectionEligibility` takes `BudgetVersionReferenceV1` plus exact `InvestmentCaseContextV1` and
+  verifies current effective selection. It is separate from historical resolution and new-reference eligibility;
+  no free-text discriminator or locally inferred InvestmentCase state is permitted.
 - MOD-0117 owns `InvestmentCase -> SelectedBudgetVersionReference: 0..1`, whether it is mandatory for a PPM
   transition, that transition and minimal tuple storage. MOD-0136 may supply `0..1` compatibility fixtures but
   does not own PPM cardinality. Alternative/analytical versions remain in MOD-0136.
 - MOD-0136 is the sole owner of selected funding-baseline state. A consumer cannot select by writing its own
   reference; it requests/validates selection through the producer contract.
+
+### Gate I-B bilateral PPM consumer profile — exact v1
+
+- Typed funding context is PPM-owned `InvestmentCaseContextV1`, exact
+  `ContractName = ppm.investment-case-context`, `ContractVersion = 1.0`, with fields exactly `ContractName`, `ContractVersion`,
+  `InvestmentCaseId`. `TenantId`, `ActorId`, consumer kind and discriminator are not payload fields.
+- PPM wrapper is PPM-owned `SelectedBudgetVersionReferenceV1`, exact
+  `ContractName = ppm.investment-case-selected-budget-version-reference`, `ContractVersion = 1.0`, with fields exactly
+  `ContractName`, `ContractVersion`, `InvestmentCaseContext`, `BudgetVersionReference`.
+  `BudgetVersionReference` is the exact unmodified five-field producer tuple. The wrapper carries no amount,
+  currency, period, unit, rounding, `BudgetLine`, certification payload or selected-baseline truth.
+- MOD-0117 owns wrapper cardinality `InvestmentCase -> SelectedBudgetVersionReference: 0..1`, persistence,
+  attach/replace/remove behavior and every lifecycle gate. MOD-0136 only owns producer validation and current
+  `FundingBaselineSelection` truth; accepting PPM context does not transfer InvestmentCase ownership.
+
+Validation mode is an exact closed value:
+
+| Mode | MOD-0136 meaning |
+|---|---|
+| `HistoricalResolve` | Resolve an immutable certified BudgetVersion already referenced in history. A retired version remains historically resolvable when visible and not quarantined; success never authorizes a new PPM relationship. |
+| `NewReferenceEligibility` | Decide whether the exact five-field tuple is currently eligible for a new PPM wrapper relationship. Success does not prove it is the current funding baseline. |
+| `CurrentSelectionEligibility` | Validate only that the tuple is the current effective MOD-0136 `FundingBaselineSelection` for the exact `InvestmentCaseContextV1`. It is not general referenceability and does not transfer selection truth to PPM. |
+
+Exact compact serialization fixtures (property names and nesting are case-sensitive; an extra or missing field
+is malformed caller input) are:
+
+```json
+{"ContractName":"ppm.investment-case-context","ContractVersion":"1.0","InvestmentCaseId":"11111111-1111-1111-1111-111111111111"}
+```
+
+```json
+{"ContractName":"ppm.investment-case-selected-budget-version-reference","ContractVersion":"1.0","InvestmentCaseContext":{"ContractName":"ppm.investment-case-context","ContractVersion":"1.0","InvestmentCaseId":"11111111-1111-1111-1111-111111111111"},"BudgetVersionReference":{"ContractName":"fpa.budget-version-reference","ContractVersion":"1.0","BudgetId":"22222222-2222-2222-2222-222222222222","BudgetVersionId":"33333333-3333-3333-3333-333333333333","BudgetVersionNumber":7}}
+```
+
+The bilateral adapter sends the exact producer tuple, exact context when the requested mode requires it, and
+one of the three exact mode tokens above; normative request/response envelopes and transport remain a
+ready-for-dev decision. Supported versions are exact allowlists: the PPM context and wrapper accept only `1.0`,
+and this producer contract accepts only `fpa.budget-version-reference` `1.0`. No trimming, case normalization,
+alias, minor-version coercion or best-effort downgrade is permitted. An unknown or unsupported context, wrapper,
+producer contract or authoritative response version fails closed with `503`; malformed caller fields or mode
+fail with `400`.
+
+| Bilateral validation condition | Exact result |
+|---|---:|
+| Malformed caller field set, shape or mode | `400` |
+| Authentication or trusted server-context failure | `401` |
+| Permission or dedicated S2S entitlement failure | `403` |
+| Missing, cross-tenant, invisible or otherwise non-disclosable reference | `404` |
+| Visible but retired/ineligible for `NewReferenceEligibility`, or stale/not-current for `CurrentSelectionEligibility` | `409` |
+| Unknown/unsupported version, timeout, provider unavailable or malformed authoritative response | `503` |
+
+A visible retired version can therefore succeed only for `HistoricalResolve`; it returns `409` for a new
+relationship or current-selection claim when that requested eligibility is false. A single `IsReferenceable`
+boolean is never sufficient bilateral authority, and failure classes must not be collapsed or inferred locally.
 
 ## 4. Entity Fields
 
@@ -195,7 +249,7 @@ point types are forbidden. Indexes begin with `TenantId` and include `IsDeleted`
 
 | Field | Type | Required | Rule / index direction |
 |---|---|---:|---|
-| `FundingContextReference` | typed closed reference | Yes | Stable authoritative context; no free text |
+| `FundingContextReference` | `InvestmentCaseContextV1` for Gate I-B | Yes | Exact PPM-owned `ppm.investment-case-context` `1.0`; only ContractName, ContractVersion, InvestmentCaseId |
 | `SelectedBudgetVersionReference` | `BudgetVersionReferenceV1` | Yes | Certified and referenceable |
 | `EffectiveFromUtc` | timestamp | Yes | Server time; inclusive |
 | `SelectedByActorId` | actor reference | Yes | Trusted server context |
@@ -257,7 +311,7 @@ and normative positive/negative test vectors are ready-for-dev blockers; impleme
 | Dependency | Purpose | Current gate |
 |---|---|---|
 | DCP-002 / Blueprint | Canonical MOD-0136 identity and name | Exact preflight PASS on 2026-08-02 |
-| DCP-006 / MOD-0117 | Gate I-B orchestration and future consumer | OPEN/PARTIAL; no consumer runtime authority |
+| DCP-006 / MOD-0117 | Gate I-B orchestration and PPM consumer profiles | PPM v1 profile ledger closed at checkpoint `a2c7ff5bbfd3ef2b4e3c8c15eab804db58d62520`; bilateral runtime remains unauthorized |
 | MOD-0018 | Tenant entitlement, JWT permissions and service identity | Runtime provisioning/evidence required |
 | MOD-0021 / MOD-0035 | Immutable audit intent/consumer mechanics | Runtime evidence required; domain mutation and audit intent atomicity mandatory |
 | MOD-0023 | Optional authoritative approval outcome | Separate typed contract; no local approval state |
@@ -290,6 +344,10 @@ and normative positive/negative test vectors are ready-for-dev blockers; impleme
   financial and selection history. Legal hold, retention and exceptional purge need separately approved compliance
   authority. PPM history is never rewritten when selection changes.
 - No service, collection, route, event, transport or port is allocated by this draft.
+- Gate I-B validation is mode-specific: `HistoricalResolve` can resolve visible retired certified history;
+  `NewReferenceEligibility` cannot infer current selection; `CurrentSelectionEligibility` consults only the
+  immutable MOD-0136 selection occurrence/event truth for exact `InvestmentCaseContextV1`. PPM wrapper storage
+  is never used as selection authority.
 
 ### Service topology decision
 
@@ -365,10 +423,10 @@ handlers must not directly implement arbitrary child upsert loops or external HT
 | Amount | Yes | Decimal only; proposed precision 28/scale 4 | Decimal128; overflow/extra scale rejected or deterministically rounded per approved rule |
 | Negative Amount | Conditional | Rejected unless explicit adjustment type permits it | Domain invariant |
 | LineKey | Yes | Normalized and unique within version/period | Compound unique index |
-| FundingContextReference | Selection | Closed authoritative typed shape; exact kind unresolved | No free-text discriminator |
+| FundingContextReference | Gate I-B selection | Exact `InvestmentCaseContextV1`: `ppm.investment-case-context` / `1.0`, fields ContractName, ContractVersion, InvestmentCaseId only | No free-text discriminator; PPM owns context/lifecycle |
 | Selection | Conditional | One effective occurrence per tenant + typed funding context, derived from immutable occurrence and closure/disposition history | Fence + uniqueness enforcement + transaction |
 | Selection effective time | Selection | Occurrence start and event timestamps are server-derived UTC; no occurrence is edited in place | No overlap per tenant + context |
-| ContractName/Version | Yes | Exact v1 constants | Unknown unsupported version returns 503 |
+| ContractName/Version | Yes | Exact, case-sensitive v1 allowlists for producer, PPM context and wrapper; no coercion | Malformed caller shape `400`; unknown/unsupported authoritative version `503` |
 | TenantId / ActorId | No client field | Server context only | Client-supplied value rejected |
 | IdempotencyKey | Mutations | Non-empty, bounded, normalized | Unique scoped key + payload hash |
 
@@ -389,6 +447,11 @@ handlers must not directly implement arbitrary child upsert loops or external HT
 - Audit/outbox write failure: entire domain transaction rolls back.
 - MOD-0117 consumer attempts currency/period/unit/rounding/amount/line snapshot: architecture/contract test fails.
 - Provider outage: existing certified history remains readable, but no cached result authorizes certification/selection.
+- Bilateral mode/error fixtures: malformed shape/mode `400`; auth/context `401`; permission/S2S `403`;
+  missing/cross-tenant/invisible `404`; visible retired/ineligible/stale/not-current for the requested eligibility
+  `409`; unknown/unsupported version, timeout, unavailable provider or malformed authoritative response `503`.
+- Historical retired resolution succeeds when visible and not quarantined, but the same tuple fails a new/current
+  eligibility request with `409` when ineligible/not current; no mode result is reused as another mode's proof.
 - Prototype record cannot prove canonical identity/version/content hash: quarantined, not silently promoted.
 
 ## 14. Authorization Convention
@@ -419,8 +482,13 @@ topology approval, an integration-agent-only task must determine explicit upstre
 - [ ] Selection is unique per tenant + typed funding context under concurrency and is derived from immutable
   occurrence plus immutable closure/disposition history; replacement edits no old occurrence and is hash-independent.
 - [ ] `BudgetVersionReferenceV1` uses exact ContractName/version and validates referenceability authoritatively.
-- [ ] MOD-0117's `0..1` compatibility fixture stores only the five-field opaque tuple; it contains no currency,
-  period, unit, rounding, amount or line field, and architecture tests enforce this no-copy boundary.
+- [ ] Exact `InvestmentCaseContextV1` and `SelectedBudgetVersionReferenceV1` serialization round-trip without
+  renaming/coercion; the wrapper nests only exact context plus the exact five-field opaque producer tuple and
+  contains no currency, period, unit, rounding, amount, line, certification or selected-baseline truth.
+- [ ] `HistoricalResolve`, `NewReferenceEligibility` and `CurrentSelectionEligibility` remain semantically
+  separate; Current consults only MOD-0136 selection truth, while MOD-0117 retains `0..1` storage/lifecycle.
+- [ ] Bilateral fixtures prove exact `400/401/403/404/409/503` mapping and exact supported-version behavior;
+  unknown/unsupported authoritative versions and malformed authoritative responses fail closed with `503`.
 - [ ] `Selected`, `Certified` and MOD-0023 `Approved` remain distinct in domain, API, UI and localization.
 - [ ] Tenant/actor values are server-side; cross-tenant returns 404, missing permission 403, immutable conflict
   409 and unavailable/unknown contract dependency 503.
@@ -444,8 +512,10 @@ topology approval, an integration-agent-only task must determine explicit upstre
 - Transaction: replica-set commit/rollback across aggregate, idempotency and audit intent; injected audit failure
   rolls back the appended closure/disposition event, successor occurrence and audit intent, leaving the prior
   effective truth intact with no old-occurrence mutation or partial version/selection.
-- Contract: exact five-field v1 serialization, unknown version, S2S/delegated actor enforcement, referenceability
-  independent of selection, typed-context selected validation, and no financial semantics in the PPM value.
+- Contract: exact five-field producer tuple plus exact PPM context/wrapper serialization and round-trip; reject
+  missing/extra/renamed/case-changed fields and financial/certification/selection payload copying; exercise every
+  validation mode, exact status mapping, supported `1.0`, unknown/unsupported versions, S2S/delegated actor,
+  historical retired resolution and new-reference-versus-current-selection independence.
 - Provider resilience: outage does not block historical immutable reads or reinterpret stored bytes/hash; cached
   provider data cannot authorize a new certification or selection.
 - Concurrency/mutation: simultaneous version numbers and selections, fence loss, immutable closure/disposition
@@ -473,8 +543,11 @@ topology approval, an integration-agent-only task must determine explicit upstre
 - [ ] Service topology is approved; `service`, concrete service-local mapping for logical `EntityBase`, collection ownership and repo scope are concrete without inventing a base type.
 - [ ] Option A isolation architecture tests are specified and proven feasible, or Option B fallback is selected.
 - [ ] Exact currency and time-period authorities/contracts/SLAs are approved.
-- [ ] `BudgetVersionReferenceV1` producer contract is approved; separate MOD-0117 consumer amendment remains gated.
-- [ ] Funding context is selected as a closed authoritative typed reference and selected-baseline v1 fixtures are approved; no free-text kind exists.
+- [ ] `BudgetVersionReferenceV1` producer contract is approved; PPM's closed `InvestmentCaseContextV1` and
+  `SelectedBudgetVersionReferenceV1` profiles have exact bilateral serialization/mode/error fixtures approved,
+  while a separately authorized executable consumer slice remains gated.
+- [ ] Gate I-B funding context is exact `ppm.investment-case-context` `1.0`; CurrentSelectionEligibility fixtures
+  use it without free-text kind or any transfer of InvestmentCase ownership to MOD-0136.
 - [ ] SHA-256 canonicalization identity, exact UTF-8 rules, deterministic ordering/decimal/reference serialization and normative vectors are approved.
 - [ ] Draft deletion, certified retirement/supersession, retention/legal hold and exceptional-purge authority are approved.
 - [ ] Golden Reference Compact live pack/code and Budget Slim pattern are confirmed; field counts remain 13 and 7,
@@ -496,8 +569,9 @@ topology approval, an integration-agent-only task must determine explicit upstre
 - Existing `BudgetEnvelope`, `BudgetAmount`, `FundingSource` and yearly budget fields in
   `Diten.EnterpriseStrategyService` are prototype/migration evidence only. They establish neither ownership nor
   production baseline and must be inventoried and quarantined before any later migration.
-- Gate I-B consumer work remains non-executable until the producer contract and matching MOD-0117 consumer
-  amendment are each approved and explicit runtime authority is recorded. DCP-006 OD-04 remains OPEN/PARTIAL.
+- Gate I-B consumer profiles are reconciled to PPM checkpoint
+  `a2c7ff5bbfd3ef2b4e3c8c15eab804db58d62520`; executable producer/consumer work remains unauthorized until
+  their delivery gates and explicit runtime authority are separately approved. DCP-006 OD-04 remains OPEN/PARTIAL.
 - No runtime literal, collection, permission registration, route, port, event or deployment was created here.
 
 ## 20. Follow-up Items
@@ -512,9 +586,9 @@ topology approval, an integration-agent-only task must determine explicit upstre
 - Approve unit semantics (`Units`, `Thousands`, `Millions`) and whether mixed units/currencies are ever allowed.
 - Define BudgetPeriod and BudgetLine breakdown dimensions, mandatory line keys and uniqueness/cardinality limits.
 - Define funding baseline classifications, certification prerequisites, replacement/closure permissions and
-  whether selecting an uncertified version is always forbidden; confirm the authoritative selection scope
-  (Budget, fiscal plan, organization/cost center, InvestmentCase or another typed funding context), its owner,
-  exact typed shape and effective-time boundary. No selected-baseline v1 is final before this decision.
+  whether selecting an uncertified version is always forbidden. Gate I-B scope is exact PPM-owned
+  `InvestmentCaseContextV1`; FP&A must still approve its selection effective-time boundary and whether additional
+  non-PPM funding contexts require separate future contracts rather than widening this v1.
 - Decide whether selected-baseline validation requires a distinct least-privilege permission. Do not add a key
   until entitlement evidence and the selected-baseline v1 boundary justify it.
 - Approve SHA-256 canonicalization version, exact UTF-8 bytes, deterministic ordering/decimal/reference rules and
@@ -527,7 +601,8 @@ topology approval, an integration-agent-only task must determine explicit upstre
 
 - Obtain topology architecture review for Option A and document Option B fallback trigger evidence.
 - Author/approve the MOD-0138 parent pack with equal internal-module isolation.
-- After this producer contract is approved, author a separate non-executable MOD-0117 Gate I-B consumer amendment.
+- Ratify the exact bilateral request/response envelopes and normative positive/negative fixtures against the
+  already closed MOD-0117 Gate I-B consumer profile before any separately authorized executable slice.
 - Resolve MOD-0018 permissions/S2S identity and MOD-0021/MOD-0035 audit runtime evidence.
 - Inventory EnterpriseStrategy prototype documents; write explicit mapping, precision-loss detection, quarantine,
   reconciliation, rollback and post-migration verification before requesting migration authority.
