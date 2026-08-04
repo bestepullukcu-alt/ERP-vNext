@@ -960,15 +960,20 @@ name or create a generic business event.
 
 ## 4. Producer Intake Register
 
-| Producer/module | Event identity | Allowlist | Mapping | Compatibility fixture | Gate I disposition |
-|---|---|---|---|---|---|
-| `Diten.ManagementGovernanceService` / `MOD-0007` | Producer amendment required; **TBD** | Required | Required | Required | Blocked / non-executable |
-| `Diten.FpaService` / `MOD-0136` | Producer amendment required; **TBD** | Required | Required | Required | Blocked / non-executable |
-| `Diten.FpaService` / `MOD-0138` | Producer amendment required; **TBD** | Required | Required | Required | Blocked / non-executable |
-| `Diten.DecisionIntelligenceService` / `MOD-0072` | Producer amendment required; **TBD** | Required | Required | Required | Blocked / non-executable |
+The producer-owned reconciliation checkpoints were reviewed read-only at these exact commits:
 
-An event identity shown as `TBD` is deliberately unallocated. Similar producer names, modules or payloads
-must not be collapsed into one generic event.
+| Producer/module | Checkpoint | Exact event type | Exact EventName | EventVersion | Gate I disposition |
+|---|---|---|---|---|---|
+| `Diten.ManagementGovernanceService` / `MOD-0007` | `7bdbd37e16c72cd80f081612a104cc3af7e2b4cd` | `DecisionRegistryAuditIntentSubmittedV1` | `management-governance.decision-registry-audit-intent.submitted.v1` | Numeric `1` | Partial / non-executable |
+| `Diten.FpaService` / `MOD-0136` | `937aabf43683eac9a240f9101ee84c66db55423a` | `BudgetingAuditIntentSubmittedV1` | `fpa.budgeting-audit-intent.submitted.v1` | Numeric `1` | Partial / non-executable |
+| `Diten.FpaService` / `MOD-0138` | `066d16c80b966a63aaa7430ee8dd14c120e7a4c2` | `ScenarioPlanningAuditIntentSubmittedV1` | `fpa.scenario-planning-audit-intent.submitted.v1` | Numeric `1` | Partial / non-executable |
+| `Diten.DecisionIntelligenceService` / `MOD-0072` | `5e5088ef6a5298b09b1dfcece9cf10ad2375aa29` | `OutcomeTrackingAuditIntentSubmittedV1` | `decision-intelligence.outcome-tracking-audit-intent.submitted.v1` | Numeric `1` | Partial / non-executable |
+
+Event type and EventName are producer-owned and are accepted here exactly as supplied. Similar names,
+producers, modules or payloads must not be collapsed into one generic event. The `.v1` routing suffix and
+transport `EventVersion` both mean the numeric integer `1`; string/decimal `"1.0"`, aliases and normalization
+are unsupported. The MOD-0007 and MOD-0072 checkpoints currently state `1.0` in places and therefore require
+producer-pack reconciliation to numeric `1` before their fixtures can become executable.
 
 ## 5. Versioned Minimal Mutation Audit Profile
 
@@ -1007,12 +1012,97 @@ version, accepted entity/mutation allowlists, canonical audit category/operation
 delegated-actor projection, redaction rules and fixture location. Mapping is explicit code/configuration;
 event-name heuristics and a generic catch-all mapper are forbidden.
 
+### Decision Registry — `MOD-0007`
+
+All rows set `SourceService = Diten.ManagementGovernanceService`, `SourceModule = MOD-0007` and
+`Category = AuditCategory.Integration`.
+
+| Exact `entityType` | Exact `mutation` | AuditEvent `EntityType` | AuditEvent `Operation` |
+|---|---|---|---|
+| `DecisionDraft` | `Created` | `DecisionRegistry.DecisionDraft` | `AuditOperation.Create` |
+| `DecisionDraft` | `Revised` | `DecisionRegistry.DecisionDraft` | `AuditOperation.Update` |
+| `DecisionDraft` | `SoftDeleted` | `DecisionRegistry.DecisionDraft` | `AuditOperation.Delete` |
+| `DecisionRecord` | `Published` | `DecisionRegistry.DecisionRecord` | `AuditOperation.Activate` |
+| `DecisionRecord` | `Superseded` | `DecisionRegistry.DecisionRecord` | `AuditOperation.LifecycleTransition` |
+| `DecisionRecord` | `Withdrawn` | `DecisionRegistry.DecisionRecord` | `AuditOperation.Deactivate` |
+
+### Budgeting — `MOD-0136`
+
+All rows set `SourceService = Diten.FpaService`, `SourceModule = MOD-0136` and
+`Category = AuditCategory.System`, preserving the producer checkpoint without adding an enum value.
+
+| Exact `entityType` | Exact allowed `mutation` values | AuditEvent `EntityType` | AuditEvent `Operation` |
+|---|---|---|---|
+| `Budget` | `created`, `updated`, `archived` | `Budgeting.Budget` | `Create`, `Update`, `Deactivate` respectively |
+| `BudgetFiscalCalendar` | `created`, `updated`, `archived` | `Budgeting.BudgetFiscalCalendar` | `Create`, `Update`, `Deactivate` respectively |
+| `BudgetVersionDraft` | `created`, `updated`, `abandoned` | `Budgeting.BudgetVersionDraft` | `Create`, `Update`, `Deactivate` respectively |
+| `BudgetVersion` | `certified`, `retired`, `superseded` | `Budgeting.BudgetVersion` | `Activate`, `Deactivate`, `Deactivate` respectively |
+| `FundingBaselineSelection` | `replaced`, `closed` | `Budgeting.FundingBaselineSelection` | `Update`, `Deactivate` respectively |
+
+### Scenario Planning — `MOD-0138`
+
+All rows set `SourceService = Diten.FpaService`, `SourceModule = MOD-0138` and
+`Category = AuditCategory.Integration`.
+
+| Exact `entityType` | Exact allowed `mutation` values | AuditEvent `EntityType` | AuditEvent `Operation` / outcome |
+|---|---|---|---|
+| `Scenario` | `Created`, `Updated`, `Archived` | `ScenarioPlanning.Scenario` | `Create`, `Update`, `LifecycleTransition` / `Succeeded` |
+| `ScenarioVersionDraft` | `Created`, `Updated`, `Abandoned` | `ScenarioPlanning.ScenarioVersionDraft` | `Create`, `Update`, `Delete` / `Succeeded` |
+| `ScenarioVersion` | `Published`, `Retired` | `ScenarioPlanning.ScenarioVersion` | `Create`, `LifecycleTransition` / `Succeeded` |
+| `ComparatorRun` | `Requested`, `Started`, `Completed`, `Failed` | `ScenarioPlanning.ComparatorRun` | `Create`, `Execute`, `Execute`, `Execute`; only `Failed` maps outcome `Failed` |
+| `ScenarioSelection` | `Replaced`, `Closed` | `ScenarioPlanning.ScenarioSelection` | `Update`, `LifecycleTransition` / `Succeeded` |
+
+`Delete` for `ScenarioVersionDraft/Abandoned` describes abandonment of a draft and never deletion of an
+AuditEvent.
+
+### Outcome Tracking — `MOD-0072`
+
+All rows set `SourceService = Diten.DecisionIntelligenceService`, `SourceModule = MOD-0072` and
+`Category = AuditCategory.Integration`.
+
+| Exact `entityType` | Exact `mutation` | AuditEvent `EntityType` | AuditEvent `Operation` |
+|---|---|---|---|
+| `Outcome` | `Created` | `OutcomeTracking.Outcome` | `AuditOperation.Create` |
+| `Outcome` | `Retired` | `OutcomeTracking.Outcome` | `AuditOperation.Deactivate` |
+| `OutcomeVersion` | `Published` | `OutcomeTracking.OutcomeVersion` | `AuditOperation.Activate` |
+| `OutcomeMeasurement` | `Appended` | `OutcomeTracking.OutcomeMeasurement` | `AuditOperation.Create` |
+| `OutcomeMeasurement` | `Corrected` | `OutcomeTracking.OutcomeMeasurement` | `AuditOperation.Update` |
+
+`DecisionOutcomeLink`, Metric and Scale events are not admitted by v1. Any pair not shown in these four
+tables is terminal contract failure and creates no AuditEvent projection.
+
 ## 9. Compatibility Fixture Contract
 
 Each producer/event version supplies a producer-owned canonical-byte fixture plus expected envelope metadata
 and expected MOD-0021 projection. Contract verification must prove accepted mapping, rejected unknown fields,
 unsupported version handling, metadata mismatch handling, delegated provenance mapping and canonical-byte
 stability. A mapping without its producer fixture is not executable.
+
+The bilateral fixture artifact names are exact and case-sensitive:
+
+| Module | Canonical payload fixture | Expected projection fixture | Schema fixture | Checksum fixture |
+|---|---|---|---|---|
+| `MOD-0007` | `decision-registry-audit-intent-submitted-v1.canonical.json` | `decision-registry-audit-intent-submitted-v1.expected-audit-event.json` | `decision-registry-audit-intent-submitted-v1.schema.json` | `decision-registry-audit-intent-submitted-v1.canonical.sha256` |
+| `MOD-0136` | `budgeting-audit-intent-submitted-v1.canonical.json` | `budgeting-audit-intent-submitted-v1.expected-audit-event.json` | `budgeting-audit-intent-submitted-v1.schema.json` | `budgeting-audit-intent-submitted-v1.canonical.sha256` |
+| `MOD-0138` | `scenario-planning-audit-intent-submitted-v1.canonical.json` | `scenario-planning-audit-intent-submitted-v1.expected-audit-event.json` | `scenario-planning-audit-intent-submitted-v1.schema.json` | `scenario-planning-audit-intent-submitted-v1.canonical.sha256` |
+| `MOD-0072` | `outcome-tracking-audit-intent-submitted-v1.canonical.json` | `outcome-tracking-audit-intent-submitted-v1.expected-audit-event.json` | `outcome-tracking-audit-intent-submitted-v1.schema.json` | `outcome-tracking-audit-intent-submitted-v1.canonical.sha256` |
+
+Each producer amendment must assign an exact producer-owned repository path to these four basenames; MOD-0021
+consumer tests consume the same bytes without copying or regenerating them under a different name. The schema
+identity is the ordinal tuple `Producer + EventName + numeric EventVersion(1) + MinimalMutationAuditV1`; the
+schema file must declare those four constants and exactly the six required lower-camel-case properties with
+`additionalProperties: false`. Property order in canonical bytes is exactly `auditIntentId`, `actorId`,
+`entityType`, `entityId`, `mutation`, `occurredAtUtc`.
+
+The `.canonical.sha256` file contains exactly the lowercase 64-hex SHA-256 digest of the exact UTF-8 bytes of
+its sibling `.canonical.json`, followed by one LF and no filename decoration. The consumer must verify the
+digest before deserialization and must bind the verified digest, schema identity, envelope identity and
+expected projection fixture in one test case. A prose JSON example, computed-at-test fixture, missing digest,
+different property order, BOM, CRLF, whitespace normalization or reserialization is not executable evidence.
+
+At the reviewed checkpoints no producer supplies the complete named file set with committed canonical bytes
+and checksum evidence. Therefore all four mappings remain non-executable even where a prose compact JSON
+example exists.
 
 ## 10. Consumer Transaction Boundary
 
@@ -1070,6 +1160,16 @@ distinguish **acted by** from **acted on behalf of** without copying credentials
 claims. A delegated event missing mapping-required provenance is a terminal security failure. This
 representation does not add fields to the six-field Minimal Mutation Audit Profile.
 
+The exact AuditEvent mapping is: `ActorId = payload.actorId`; `Metadata.DelegatedActorId` equals the verified
+delegated/effective actor and must equal `ActorId`; `Metadata.DelegatingPrincipalId` records the authenticated
+principal on whose authority the delegated actor operated; `Metadata.DelegationId`,
+`Metadata.DelegatedOperationId`, `Metadata.DelegatedPermission`, `Metadata.DelegationVerifiedAtUtc` and
+`Metadata.ExecutingService` come only from the verified transport security profile. Non-delegated calls omit
+the five `Delegated*`/delegating fields rather than writing invented null identities, while
+`ExecutingService` remains the authenticated producer. For asynchronous ScenarioPlanning comparator work,
+`ActorId` remains the originating effective actor and `ExecutingService` identifies the worker/service.
+Mismatch, missing mandatory provenance, unverified delegation, tenant drift or actor substitution is terminal.
+
 ## 16. Producer Runtime Decoupling
 
 The producer persists its own mutation and producer-local audit intent/outbox transactionally, then publishes
@@ -1091,13 +1191,23 @@ ownership of the PPM event, and does not relax its canonical-byte, signing, retr
 idempotency rules. Regression authority remains the
 [MOD-0117 PPM pack](../../portfolio-delivery/module-packs/MOD-0117-project-portfolio-management.md) together
 with this pack's existing PPM baseline and the [MOD-0035 PPM transport slice](MOD-0035-event-bus-message-queue.md).
+The Gate I fixture basenames, schema tuple, categories, entity names and operation mappings above cannot be
+used to rename, regenerate or reinterpret the existing PPM canonical payload/signature/expected-projection
+fixtures. The complete pre-existing PPM consumer/signing test set must pass byte-for-byte before and after
+each new mapping registration.
 
 ## 19. Acceptance and Verification Gates
 
-- [ ] All four producer packs contain approved producer-owned amendments with exact event identity/version;
-      PSS has generated none of those identities.
-- [ ] All four event-specific allowlists and explicit mappings are reviewed.
-- [ ] All four producer compatibility fixtures pass consumer contract verification.
+- [x] All four producer checkpoints were reviewed read-only and their producer-owned exact event identities
+      were reconciled without PSS generating or generalizing an event.
+- [x] All four event-specific entity/mutation allowlists, SourceService/SourceModule, AuditCategory,
+      AuditEvent entity/operation projection and delegated-actor mapping are closed in this amendment.
+- [x] Exact case-sensitive fixture basenames, schema identity tuple, canonical property order and SHA-256 file
+      format are closed.
+- [ ] MOD-0007 and MOD-0072 producer packs use numeric EventVersion `1` consistently; no `1.0` drift remains.
+- [ ] All four producers commit the exact named canonical/projection/schema/checksum fixture set at an approved
+      producer-owned path and the recorded SHA-256 values match the exact canonical UTF-8 bytes.
+- [ ] All four producer compatibility fixtures pass MOD-0021 consumer contract verification.
 - [ ] Transaction test proves inbox + MOD-0021 audit outbox atomicity.
 - [ ] Duplicate/conflict tests prove the complete `ConsumerName + EventId` matrix.
 - [ ] Unsupported version, malformed canonical payload and security failures prove terminal disposition.
@@ -1118,6 +1228,8 @@ Failure of any checkbox keeps this amendment and the affected mapping non-execut
   alone authorizes no service, frontend, Gateway, schema or deployment change.
 - Track approval independently for `MOD-0007`, `MOD-0136`, `MOD-0138` and `MOD-0072`; one completed mapping
   does not promote the remaining mappings or the amendment as a whole.
+- Reconciliation result at the four reviewed checkpoints is **PARTIAL**: semantic mapping is closed, but
+  executable fixture bytes/checksums are absent and the MOD-0007/MOD-0072 numeric-version drift remains.
 - Revisit profile versioning only through an explicit compatibility decision; do not evolve the six-field
   minimum implicitly.
 - Parent status changes, if ever warranted, require a separate explicit governance decision.
