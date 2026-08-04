@@ -2,10 +2,11 @@
 id: MOD-0072
 name: Decision Logs & Outcome Tracking
 domain: enterprise-strategy-business-performance
-status: draft
+status: ready-for-dev
 owner: Decision Intelligence & Benefit Realization Process Owner
 branch: feature/esbp/mod-0072-decision-logs-outcome-tracking
 service: Diten.DecisionIntelligenceService
+port: 5013
 production_authority: none
 shell: tenant
 golden_reference: slim
@@ -28,8 +29,8 @@ Its Blueprint logical route remains **Data, Knowledge & Intelligence → Decisio
 under Enterprise Strategy & Business Performance is repository governance only and does not transfer logical
 ownership to strategy planning or place the module in `Diten.EnterpriseStrategyService`.
 
-This is a draft parent pack. It authorizes no service scaffold, port, runtime, frontend, Gateway route,
-migration or production deployment.
+This parent pack is `ready-for-dev` only for the bounded Core Scaffold & Contract-Test handoff defined below.
+It grants no runtime, frontend, Gateway route, migration, deployment or production authority.
 
 Binding physical topology: MOD-0072 may exist only as isolated `Modules/OutcomeTracking` inside the future
 `Diten.DecisionIntelligenceService`. Placement in `Diten.FpaService`, `Diten.BudgetingService`,
@@ -110,7 +111,7 @@ Arbitrary generic entity handlers are forbidden.
 Wildcard, alias, `.view`, uppercase and client-asserted permission substitutions are forbidden.
 `decision-intelligence.outcomes.version` governs both publishing the next immutable semantic version and the
 append-only retirement disposition; it authorizes no delete or reopen. Metric/scale seed and administration
-runtime permissions are not invented in this draft and remain within the named B-class runtime-scope blocker.
+runtime permissions are not invented in this core slice and remain outside the bounded handoff.
 
 ## 4. Entity Fields
 
@@ -200,11 +201,15 @@ This governance authoring job owns only:
 - `execution/domains/enterprise-strategy-business-performance/module-packs/MOD-0072-decision-logs-outcome-tracking.md`
 - `execution/domains/enterprise-strategy-business-performance/module-packs/fixtures/MOD-0072/audit/**`
 
-Any future implementation remains non-executable and requires this pack to become `approved` or
-`ready-for-dev`, explicit runtime/deployment authority, authoritative port, approved S2S/MOD-0018 and
-MOD-0021/MOD-0035 contracts, approved bootstrap fixture content, producer runtime evidence and matching
-MOD-0117 consumer activation gates. Core composition/collection/transaction decisions below are closed
-governance contracts, not implementation authority.
+The bounded Core Scaffold & Contract-Test implementation handoff is authorized only within the exact
+five-layer OutcomeTracking module/composition and named test scopes below. It may create the service-local
+core project/module skeleton, ownership manifest and unit/integration/architecture/projection/contract/security
+test harnesses needed to implement and verify this pack. It may not activate a runtime endpoint, worker,
+publisher, consumer adapter, frontend, Gateway route, WorkCenter surface, deployment or production integration.
+
+The immutable Metric/Scale bootstrap fixture content, production credentials/KeyIds, runtime provisioning,
+deployment/live evidence and MOD-0117 adapter activation remain review/runtime gates. They are not
+pre-development blockers for this bounded handoff and are not authorized by `ready-for-dev`.
 
 ### Exact future primary logical scope
 
@@ -292,7 +297,7 @@ foreign-owned or key-order-divergent index.
 ## 6. Protected Paths
 
 - `.antigravity/**`
-- `services/**`, `frontend/**`, `gateway/**` for this draft
+- `services/**`, `frontend/**`, `gateway/**` for this governance promotion task
 - Future co-hosting/persistence access in `Diten.FpaService`, `Diten.BudgetingService`,
   `Diten.ScenarioPlanningService` and `Diten.EnterpriseStrategyService` is permanently forbidden for MOD-0072.
 - `gateway/Diten.ApiGateway/**/ocelot.json` except a separately authorized integration-agent task
@@ -302,16 +307,16 @@ foreign-owned or key-order-divergent index.
 
 ## 7. Dependencies
 
-| Dependency | Contract role | Draft state |
+| Dependency | Contract role | State |
 |---|---|---|
-| [ESBP domain topology authority](../domain-config.md#decision-intelligence-topology) | Binding physical placement and isolation | Closed: only `Diten.DecisionIntelligenceService/Modules/OutcomeTracking`; implementation remains unauthorized |
+| [ESBP domain topology authority](../domain-config.md#decision-intelligence-topology) | Binding physical placement and isolation | Closed: only `Diten.DecisionIntelligenceService/Modules/OutcomeTracking`; bounded core handoff only |
 | MOD-0117 | Owns planned BenefitCommitment plus `BenefitCommitment → OutcomeReference` `0..n` relationship, stored values and consumer lifecycle | Consumer amendment and runtime authority required; no dual persistence in MOD-0072 |
 | MOD-0007 | Optional Decision/DecisionVersion reference producer | Exact producer contract must be approved before runtime link |
 | MOD-0023 | Approval only when separately required | No approval behavior in MOD-0072 |
 | `fpa.currency-reference` `1.0` provider | Exact currency identity for `UnitKind.Currency` only | Bilateral contract/runtime evidence remains a B-class integration concern |
 | MOD-0031 | Future typed/versioned evidence amendment | Formally deferred from v1 core; no runtime call or evidence surface |
-| MOD-0018-FU16 | Exact service identity, delegated actor/request binding and permission-manifest intake | Governance contract closed below; runtime provisioning/evidence required |
-| MOD-0021 / MOD-0035 | Producer-specific audit mapping/fixture and signed post-commit event onboarding | Governance contract closed below; runtime integration approval/evidence required |
+| MOD-0018-FU16 | Exact service identity, delegated actor/request binding and permission-manifest intake | Pre-development contract closed at `cfbfee00`; runtime provisioning/evidence remains gated |
+| MOD-0021 / MOD-0035 | Producer-specific audit mapping/fixture and signed post-commit event onboarding | Pre-development contracts closed at `525f6275` / `f1568ace`; runtime credentials/integration/live evidence remain gated |
 | DCP-006 | Gate I-C orchestration and no-copy boundary | OD-04 remains OPEN/PARTIAL |
 
 ## 8. Runtime Constraints
@@ -487,7 +492,7 @@ form and no approval button/action may be produced.
 
 ## 10. Backend File Convention
 
-Future implementation, if separately authorized, follows the Slim Golden Reference shape per object:
+The bounded core implementation handoff follows the Slim Golden Reference shape per object:
 `Commands/`, `Queries/`, `Handlers/CommandHandlers/`, `Handlers/QueryHandlers/`, `Validators/` and one
 `{Object}Models.cs`. Commands/queries are sealed records; handlers are sealed classes named
 `{Verb}{Object}Handler`; validators are `{Verb}{Object}Validator`. `Command`, `Query` or `Request` suffixes
@@ -496,7 +501,8 @@ on handler/validator names and generic `OutcomeTrackingContext` handlers are for
 The only reserved host/module boundary is
 `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.{Api|Application|Domain|Persistence|Infrastructure}/Modules/OutcomeTracking/**`.
 This logical reservation is not scaffold or runtime authority. Host composition, concrete project/test paths
-and every file remain blocked until an approved implementation slice enumerates them.
+are limited to the exact scopes and composition/test files enumerated in §5; no unlisted host file, runtime
+activation or deployment is authorized.
 
 ## 11. Frontend File Contract
 
@@ -575,8 +581,11 @@ expand the user's visibility. Security failures never fall back to PPM-local cac
 Decision: **no Gateway/browser route for internal OutcomeReference validation**. The future provider is
 service-network-only; browser traffic and same-origin MVC proxies cannot call or expose it. Its logical owner
 is the isolated OutcomeTracking module, not PPM, FP&A, EnterpriseStrategy or Gateway. Exact internal endpoint,
-S2S credential, service discovery and port remain B-class blockers. The authoritative port allocation is
-`TBD`; no port is guessed. Any future tenant UI/public API route is a separate explicitly approved runtime
+S2S credential, service discovery and runtime activation remain review/runtime gates. The canonical registry
+reserves port `5013` for `Diten.DecisionIntelligenceService`; this planning allocation grants no listener,
+route, deployment or production authority. For MOD-0072 only, this pack plus the newer canonical registry
+supersedes the ESBP domain config's earlier `TBD` port wording; it does not allocate or alter any FP&A port.
+Any future tenant UI/public API route is a separate explicitly approved runtime
 slice and must use frontend `5001` → Gateway `5000`, never a direct service port. This pack changes no route or
 protected `ocelot.json`.
 
@@ -685,9 +694,9 @@ five-field OutcomeReferenceV1 and never measurement identity, period, value, evi
 
 ### Gate I onboarding reconciliation — producer-owned exact contract
 
-> **Status boundary:** This subsection is `draft` governance authority only. It closes MOD-0072's producer
-> declarations against MOD-0018-FU16 checkpoint `40e38905`, MOD-0021 checkpoint `de81a135` and MOD-0035
-> checkpoint `23f290ec`. It creates no runtime/configuration/secret/route/deployment authority, does not make
+> **Status boundary:** This subsection is `ready-for-dev` pre-development authority only. It closes MOD-0072's
+> producer declarations against MOD-0018-FU16 checkpoint `cfbfee00`, MOD-0021 checkpoint `525f6275` and
+> MOD-0035 checkpoint `f1568ace`. It creates no runtime/configuration/secret/route/deployment authority, does not make
 > either the audit event or the PPM adapter executable and does not change `production_authority: none`.
 
 #### Service identity and exact permission manifest
@@ -860,7 +869,7 @@ runtime authority. This reconciliation satisfies none of those execution gates b
 
 ## 16. Acceptance Criteria
 
-1. MOD-0072 remains a draft parent pack with `production_authority: none` and no runtime authority.
+1. MOD-0072 is `ready-for-dev` only for the bounded Core Scaffold & Contract-Test handoff, with `production_authority: none` and no runtime authority.
 2. Blueprint route and ESBP packaging distinction are explicit.
 3. Owned objects and all stated non-ownership boundaries are enforceable by negative architecture tests.
 4. Planned BenefitCommitment and actual Outcome truth remain separate; PPM copies no actual fields.
@@ -889,7 +898,7 @@ runtime authority. This reconciliation satisfies none of those execution gates b
 27. Inter-service communication is typed/versioned-contract-only; no foreign entity/repository/persistence DTO/session leakage, dual-write or second SoR exists.
 28. OutcomeReference provider is OutcomeTracking-owned internal S2S with no browser/Gateway route.
 29. MOD-0117 adapter remains non-executable until producer runtime evidence, bilateral fixtures, consumer amendment approval and explicit runtime authority all exist.
-30. Port remains `TBD`; no scaffold, controller, route, Gateway, deployment or runtime literal is created.
+30. Port `5013` is canonically reserved for `Diten.DecisionIntelligenceService`; it grants no listener, controller, route, Gateway, deployment or runtime activation authority.
 31. Exact five-layer composition/test project paths, service-local EntityBase, eleven collection names, single owner-manifest path and tenant-first named index matrix are closed without creating files.
 32. Each mutation atomically commits business state, permanent idempotency receipt, audit intent and required outbox; partial commit is forbidden.
 33. Same-key/same-payload replays stored result, changed payload returns `409`; unknown commit uses commit-only retry then receipt reconciliation, unresolved ambiguity returns `503`.
@@ -977,36 +986,37 @@ runtime authority. This reconciliation satisfies none of those execution gates b
 - [x] Draft ownership, planned/actual boundary and Gate I-C v1 proposal documented.
 - [x] Golden Reference Slim selected from parent maximum 7-field form surface.
 - [x] Layout, backend/frontend conventions, validation, failure paths, authorization and routing documented.
-- [x] A-class Outcome lifecycle/version, metric/scale authority, quantitative bounds, qualitative levels, period/overlap, correction, evidence deferral, observation status and retention semantics are closed in this draft.
+- [x] A-class Outcome lifecycle/version, metric/scale authority, quantitative bounds, qualitative levels, period/overlap, correction, evidence deferral, observation status and retention semantics are closed in this pack.
 - [x] `diten.decision-intelligence.outcome-reference` `1.0` and bilateral governance fixtures are semantically closed by Control Tower; execution remains separately unauthorized.
-- [x] PPM authority checkpoint `a2c7ff5bbfd3ef2b4e3c8c15eab804db58d62520` was reviewed read-only; bilateral wrapper/mode/error profiles are reconciled in this draft without runtime authority.
+- [x] PPM authority checkpoint `a2c7ff5bbfd3ef2b4e3c8c15eab804db58d62520` was reviewed read-only; bilateral wrapper/mode/error profiles are reconciled in this pack without runtime authority.
 - [x] Bilateral exact serialization, mode, error and supported-version fixtures are documented; no runtime executability is inferred.
 - [x] OutcomeMeasurementReference is explicitly deferred from v1 and no contract identity is minted.
 - [x] Binding topology is reconciled: only `Diten.DecisionIntelligenceService/Modules/OutcomeTracking`; no FP&A/EnterpriseStrategy co-host or fallback/dual-write model.
+- [x] Canonical port `5013` is reserved for `Diten.DecisionIntelligenceService` without granting route, deployment or runtime authority.
 - [x] Exact five-layer composition paths, concrete test-project roots, service-local EntityBase path, collection/index names and single owner manifest are closed.
 - [x] Transaction/idempotency/permanent receipt/unknown-commit behavior, projection non-persistence, post-commit IEventBus boundary and NO-OP migration are closed.
-- [x] Exact FU16 audience/client/owner, operation-to-permission manifest and delegated actor/request binding are documented; runtime provisioning/evidence remains separately blocked.
-- [x] Exact MOD-0021 mapping/fixture and MOD-0035 signed-producer onboarding contracts are documented; runtime integration/evidence remains separately blocked.
+- [x] FU16 checkpoint `cfbfee00` closes the exact audience/client/owner, operation-to-permission manifest and delegated actor/request pre-development contract; runtime provisioning/evidence remains gated.
+- [x] MOD-0021 checkpoint `525f6275` and MOD-0035 checkpoint `f1568ace` close bilateral audit intake and signed-producer pre-development contracts; production credentials, runtime integration and live evidence remain gated.
 - [x] Exact eleven-file audit fixture set, canonical checksum, schema/pair binding, full allowlist/negative matrix,
       delegated provenance, DI-only test signing vector and universal production-validator rejection matrix are
       recorded; runtime credentials remain blocked.
-- [ ] Exact immutable Metric/Scale bootstrap fixture content is approved; without it quantitative/qualitative activation remains blocked.
+- [ ] Exact immutable Metric/Scale bootstrap fixture content is approved; this is a review/runtime activation gate, not a Core Scaffold & Contract-Test handoff blocker.
 - [x] Metric/Scale administration is deferred to a separate amendment and the initial slice adds no commands/UI/permissions.
 - [x] First migration slice is NO-OP/quarantine-only; any later transformation requires separate authority.
 - [ ] Deployment/runtime authority is approved.
 - [ ] MOD-0117 adapter activation gates are satisfied.
 - [ ] Explicit runtime authority is recorded.
-- [ ] Pack status is changed by human review to `approved` or `ready-for-dev`.
+- [x] Pack status is changed by human review to `ready-for-dev` for the bounded Core Scaffold & Contract-Test handoff.
 
 ## 19. Implementation Notes
 
 ### Service topology boundary
 
-The required topology direction is a separate future `Diten.DecisionIntelligenceService`, preserving the
+The binding topology is the separate future `Diten.DecisionIntelligenceService` on reserved port `5013`, preserving the
 actual-outcome SoR outside the Enterprise Strategy prototype. Core repo/test paths, module-local base path,
-collection/index manifest and transaction semantics are closed above. Port, S2S/PSS producer contracts,
-bootstrap fixture content, deployment/runtime authority and MOD-0117 activation remain open. This draft does
-not scaffold the service or assign a port.
+collection/index manifest, transaction semantics and S2S/audit/signed-event pre-development contracts are
+closed above. Bootstrap fixture content, production credentials/KeyIds, deployment/live evidence and MOD-0117
+activation remain review/runtime gates. This promotion creates no runtime listener or deployment.
 
 ### Prototype quarantine/migration
 
@@ -1018,14 +1028,13 @@ that no legacy field remains a second SoR.
 
 ## 20. Follow-up Items / Open Decisions
 
-Only the following B-class blockers remain:
+The pre-development Core Scaffold & Contract-Test decision set is closed. Only these review/runtime gates remain:
 
-1. Allocate the authoritative port.
-2. Implement and prove FU16 service-principal, delegated-proof and explicit permission provisioning for the closed manifest; add no permission.
-3. Implement and prove the closed MOD-0021 mapping/compatibility fixture and MOD-0035 producer-specific signing onboarding.
-4. Approve exact immutable/versioned Metric/Scale bootstrap fixture content and reconciliation evidence; authoring remains outside the initial slice.
-5. Approve deployment/runtime activation and operations ownership.
-6. Satisfy producer runtime evidence, bilateral fixtures, MOD-0117 consumer amendment and explicit adapter activation authority.
+1. Provision and prove FU16 service-principal, delegated-proof and explicit permission runtime configuration for the closed manifest; add no permission.
+2. Provision production signing identity/KeyId through approved secret management and prove MOD-0021/MOD-0035 runtime integration and live delivery without changing the committed test fixtures.
+3. Approve exact immutable/versioned Metric/Scale bootstrap fixture content and reconciliation evidence; administration UI remains outside the core slice.
+4. Approve deployment/runtime activation, service discovery, health/operations ownership and live evidence.
+5. Satisfy producer runtime evidence, bilateral fixtures, MOD-0117 consumer amendment and explicit adapter activation authority.
 
 ### Change Log
 
@@ -1042,3 +1051,4 @@ Only the following B-class blockers remain:
 | 2026-08-04 | Closed the MOD-0072 audit governance fixture: six exact fixture files, numeric integer EventVersion `1`, ModuleCode `MOD-0072`, 246-byte ordered/minified UTF-8 payload, SHA-256 `6e1e750f...cc2a3`, exact MOD-0021 projection and DI-only test signing vector/signature. No permission, Outcome semantic, status or production authority changed. | User / Enterprise Strategy Control Tower |
 | 2026-08-04 | Completed MOD-0072 audit fixtures against MOD-0021 checkpoint `9b75c213`: exact 65-byte checksum record, schema identity/pair enforcement, `SourceModule`, five-positive/ten-cross-pair and contract-negative matrix, delegated/non-delegated provenance fixtures. Canonical 246 bytes/SHA/signature, seven permissions, Outcome semantics and PPM no-copy remain unchanged; no runtime authority. | User / Enterprise Strategy Control Tower |
 | 2026-08-04 | Closed the MOD-0021 checkpoint `5349ed0` production-validator evidence gap with nine universal terminal rejection cases using the otherwise-correct DI test-only signature, including test identity/KeyId `active`/`previous` slot assignment attempts. No production credential, permission, Outcome semantic, PPM boundary, status or production authority changed. | User / Enterprise Strategy Control Tower |
+| 2026-08-04 | Promoted the bounded Core Scaffold & Contract-Test handoff to `ready-for-dev` after canonical port `5013` and FU16 `cfbfee00`, MOD-0021 `525f6275`, MOD-0035 `f1568ace` pre-development authorities closed. Bootstrap content, production credentials, deployment/live evidence and MOD-0117 activation remain review/runtime gates; `production_authority: none`. | User / Enterprise Strategy Control Tower |
