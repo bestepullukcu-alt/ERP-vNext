@@ -401,12 +401,170 @@ silently reformatted; unsorted lines canonicalize to the mandated sort. Extra/mi
 |---|---|---|
 | DCP-002 / Blueprint | Canonical MOD-0136 identity and name | Exact preflight PASS on 2026-08-02 |
 | DCP-006 / MOD-0117 | Gate I-B orchestration and PPM consumer profiles | PPM v1 profile ledger closed at checkpoint `a2c7ff5bbfd3ef2b4e3c8c15eab804db58d62520`; bilateral runtime remains unauthorized |
-| MOD-0018 | Tenant entitlement, JWT permissions and service identity | Runtime provisioning/evidence required |
-| MOD-0021 / MOD-0035 | Immutable audit intent/consumer mechanics | Runtime evidence required; domain mutation and audit intent atomicity mandatory |
+| MOD-0018-FU16 | S2S identity, delegated actor/request binding and permission provisioning | Exact MOD-0136 owner manifest closed; runtime provisioning/evidence required |
+| MOD-0021 / MOD-0035 | Immutable audit intake and signed event transport | Exact MOD-0136 mapping/onboarding inputs closed; runtime consumer/key/broker evidence required |
 | MOD-0023 | Optional authoritative approval outcome | Separate typed contract; no local approval state |
 | Currency allowlist provider | Validate exact `CurrencyReferenceV1` at new certification/selection | Provider implementation/SLA is runtime-blocked; financial shape is closed |
 | MOD-0136 BudgetFiscalCalendar | Budgeting-only monthly calendar and period identity | Financial semantics closed; persistence/API remains runtime-blocked |
 | MongoDB replica set | Multi-document transaction and idempotency | Required before runtime promotion |
+
+### Gate I onboarding reconciliation — exact governance manifest
+
+This owner-authored manifest closes MOD-0136's inputs to the governance contracts proven at FU16 checkpoint
+`40e38905`, MOD-0021 checkpoint `de81a135` and MOD-0035 checkpoint `23f290ec`. It remains non-executable:
+catalog registration, role grants, credentials, signing keys, routes, adapters, consumers and deployment require
+separately approved implementation authority and evidence.
+
+#### Service principal and manifest separation
+
+| Field | Exact MOD-0136 value |
+|---|---|
+| Service | `Diten.FpaService` |
+| Audience | `diten-fpa-service` |
+| Client ID | `diten.fpa` |
+| Owner module | `MOD-0136` |
+| Protocol scope | `diten.s2s.delegated.invoke` |
+| Operation namespace | `budgeting.*` only |
+
+`diten.fpa` identifies the shared FPA workload and grants no permission or module entitlement. Budgeting and
+ScenarioPlanning manifests are unconditionally separate: MOD-0136 owns only the 15 `budgeting.*` entries below;
+MOD-0138 must provide its own owner manifest, `scenario-planning.*` operation IDs, permissions, event identity,
+signing identity and fixture. Neither manifest may contain, alias, wildcard, infer, merge or provision the other's
+entries. Registration of one module's manifest never satisfies or activates the other module's Gate I profile.
+
+#### Exact operation-to-permission manifest — 15 entries
+
+Operation IDs and permission keys are exact, ordinal and case-sensitive. Wildcard, prefix match, trim, case fold,
+alias, fallback and one permission satisfying another operation are forbidden.
+
+| Exact `operation_id` | Exact required permission |
+|---|---|
+| `budgeting.budgets.read` | `budgeting.budgets.read` |
+| `budgeting.budgets.create` | `budgeting.budgets.create` |
+| `budgeting.budgets.update` | `budgeting.budgets.update` |
+| `budgeting.budgets.archive` | `budgeting.budgets.archive` |
+| `budgeting.budget-version-drafts.read` | `budgeting.budget-version-drafts.read` |
+| `budgeting.budget-version-drafts.create` | `budgeting.budget-version-drafts.create` |
+| `budgeting.budget-version-drafts.update` | `budgeting.budget-version-drafts.update` |
+| `budgeting.budget-version-drafts.abandon` | `budgeting.budget-version-drafts.abandon` |
+| `budgeting.budget-versions.read` | `budgeting.budget-versions.read` |
+| `budgeting.budget-versions.certify` | `budgeting.budget-versions.certify` |
+| `budgeting.budget-versions.retire` | `budgeting.budget-versions.retire` |
+| `budgeting.funding-baseline-selections.read` | `budgeting.funding-baseline-selections.read` |
+| `budgeting.funding-baseline-selections.replace` | `budgeting.funding-baseline-selections.replace` |
+| `budgeting.funding-baseline-selections.close` | `budgeting.funding-baseline-selections.close` |
+| `budgeting.budget-version-references.validate` | `budgeting.budget-version-references.validate` |
+
+The manifest registers catalog definitions only. It creates no role grant. Effective access independently requires
+the MOD-0136 module entitlement when applicable, an explicit current tenant role grant for the delegated actor,
+an active exact service principal/credential, exact audience/scope and the operation's exact permission.
+
+#### FU16 delegated actor and request binding
+
+Every protected S2S call uses FU16 `DelegatedActorProofV1`. The receiver requires exact `iss = diten-auth-service`,
+`aud = diten-fpa-service`, `client_id = azp = diten.fpa`, `actor_type = service`, one server-matched `tenant_id`,
+one non-empty `delegated_actor_id` with `delegated_actor_type = tenant_user`, one exact operation ID above and
+its exact permission. `request_hash` is the FU16 base64url SHA-256 binding of canonical method, canonical path,
+tenant, operation and body digest. `jti` plus `nonce` is atomically single-use; delegation, tenant-grant,
+service-principal and credential-generation versions must be current. Tenant, actor, operation, method, path or
+body mismatch, replay, wrong audience/client/scope or stale proof fails before business lookup. Service identity
+alone, a human bearer token alone, catalog presence, entitlement alone or a permission claim without a current
+explicit grant is never sufficient.
+
+#### MOD-0021 audit mapping and compatibility fixture
+
+- Event type: `BudgetingAuditIntentSubmittedV1`.
+- EventName/routing key: `fpa.budgeting-audit-intent.submitted.v1`.
+- EventVersion: numeric `1`, which must match the `.v1` suffix.
+- Producer: exact ordinal `Diten.FpaService`.
+- Producer module: exact `MOD-0136`.
+- Payload profile: **Minimal Mutation Audit v1**, with exactly the six lower-camel-case fields
+  `auditIntentId`, `actorId`, `entityType`, `entityId`, `mutation`, `occurredAtUtc` in that canonical order.
+- `auditIntentId` is a non-empty immutable GUID and equals envelope `EventId`; `actorId` is the effective
+  authenticated/delegated actor; `occurredAtUtc` is UTC and equals envelope `OccurredAtUtc`.
+- `TenantId`, `CorrelationId`, `CausationId`, `Producer`, module, authorization and delegation evidence are trusted
+  envelope/transport metadata and are forbidden as payload fields. Extra/missing/renamed/case-changed fields,
+  full entities, before/after snapshots, financial values, permission inventories and unrestricted maps reject.
+
+The MOD-0021 allowlist and projection are exact:
+
+| Payload `entityType` | Allowed payload `mutation` | MOD-0021 entity projection | MOD-0021 operation projection |
+|---|---|---|---|
+| `Budget` | `created` | `Budgeting.Budget` | `AuditOperation.Create` |
+| `Budget` | `updated` | `Budgeting.Budget` | `AuditOperation.Update` |
+| `Budget` | `archived` | `Budgeting.Budget` | `AuditOperation.Deactivate` |
+| `BudgetFiscalCalendar` | `created` | `Budgeting.BudgetFiscalCalendar` | `AuditOperation.Create` |
+| `BudgetFiscalCalendar` | `updated` | `Budgeting.BudgetFiscalCalendar` | `AuditOperation.Update` |
+| `BudgetFiscalCalendar` | `archived` | `Budgeting.BudgetFiscalCalendar` | `AuditOperation.Deactivate` |
+| `BudgetVersionDraft` | `created` | `Budgeting.BudgetVersionDraft` | `AuditOperation.Create` |
+| `BudgetVersionDraft` | `updated` | `Budgeting.BudgetVersionDraft` | `AuditOperation.Update` |
+| `BudgetVersionDraft` | `abandoned` | `Budgeting.BudgetVersionDraft` | `AuditOperation.Deactivate` |
+| `BudgetVersion` | `certified` | `Budgeting.BudgetVersion` | `AuditOperation.Activate` |
+| `BudgetVersion` | `retired` | `Budgeting.BudgetVersion` | `AuditOperation.Deactivate` |
+| `BudgetVersion` | `superseded` | `Budgeting.BudgetVersion` | `AuditOperation.Deactivate` |
+| `FundingBaselineSelection` | `replaced` | `Budgeting.FundingBaselineSelection` | `AuditOperation.Update` |
+| `FundingBaselineSelection` | `closed` | `Budgeting.FundingBaselineSelection` | `AuditOperation.Deactivate` |
+
+Every row projects to existing `AuditCategory.System`, `SourceModule = MOD-0136`, tenant from trusted envelope,
+effective `ActorId` from the six-field payload and delegated provenance from verified FU16 transport metadata.
+This pack does not authorize an `AuditCategory` enum change. Any unknown producer, module, event identity/version,
+entity/mutation pair, property or metadata disagreement is terminal and creates no audit projection.
+
+The producer-owned compact compatibility fixture is exact:
+
+```json
+{"auditIntentId":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","actorId":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb","entityType":"BudgetVersion","entityId":"cccccccc-cccc-4ccc-8ccc-cccccccccccc","mutation":"certified","occurredAtUtc":"2026-08-04T09:30:00.0000000Z"}
+```
+
+Its expected projection is `AuditCategory.System`, `AuditOperation.Activate`, entity type
+`Budgeting.BudgetVersion`, entity ID `cccccccc-cccc-4ccc-8ccc-cccccccccccc`, source module `MOD-0136`, effective
+actor `bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb` and occurrence time `2026-08-04T09:30:00.0000000Z`. Envelope
+`EventId` is `aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa`; a different payload `auditIntentId`, occurrence time,
+producer/module or tenant is a terminal mismatch. MOD-0021 idempotency remains exact
+`ConsumerName + EventId`: identical canonical bytes are a duplicate no-op; changed bytes are a terminal conflict.
+
+#### MOD-0035 signed-producer onboarding
+
+The exact non-wildcard signed allowlist tuple is:
+
+| Field | Exact value |
+|---|---|
+| Producer | `Diten.FpaService` |
+| EventName | `fpa.budgeting-audit-intent.submitted.v1` |
+| EventVersion | `1` |
+| Signing scheme | `fpa-budgeting-event-hmac-sha256.v1` |
+| Signing identity | `diten.fpa.budgeting.audit` |
+
+The signing identity, active/previous key IDs, key namespace and derived material are Budgeting-specific and must
+never equal or reuse PPM or ScenarioPlanning material. The onboarding fixture binds the exact immutable shared
+event envelope, the six-field canonical UTF-8 payload bytes and byte length, EventId, EventName, EventVersion,
+TenantId, CorrelationId, CausationId, Producer, OccurredAtUtc, signing scheme, signing identity, key ID and expected
+signature. A separately approved executable onboarding slice must add concrete active/previous key IDs, bounded
+overlap deadline, freshness/future-skew values, revocation authority, fixture digest and signature generated from
+provisioned secret material; this draft neither invents nor exposes secrets and remains deny-by-default until those
+runtime values and the MOD-0035 verification matrix pass. New producers emit only
+`Diten.BuildingBlocks.Eventing.EventTransportMessage`; the legacy Platform URN is inbound compatibility only.
+
+#### Atomic producer boundary and publication
+
+Each successful MOD-0136 mutation writes the business state, idempotency receipt, one producer-local audit intent
+and one producer-local event-outbox row in the same Budgeting-owned Mongo transaction. Any participant failure
+rolls back all four results. No Platform/MOD-0021 collection or network/broker participant may join that transaction.
+Only after commit may a Budgeting-owned dispatcher read `budgeting_event_outbox` and invoke MOD-0035's public
+`IEventBus`; handlers never call `IEventBus`, RabbitMQ or MassTransit directly. Post-commit failure leaves the
+durable row retryable and cannot roll back or re-run the business mutation.
+
+#### PPM BudgetVersion bilateral fixture and adapter boundary
+
+The exact bilateral fixtures remain the `InvestmentCaseContextV1` and
+`SelectedBudgetVersionReferenceV1` compact JSON values in Section 3, nesting the exact unmodified five-field
+`BudgetVersionReferenceV1`. Contract tests must preserve the three exact validation modes and
+`400/401/403/404/409/503` mapping, prove no copied amount/currency/period/unit/rounding/line/certification/selection
+truth and prove MOD-0117's `0..1` wrapper/cardinality/lifecycle ownership. Until this draft is promoted, the
+producer endpoint and security/audit evidence pass, a matching MOD-0117 amendment is approved and explicit
+runtime activation authority is recorded, every MOD-0117 BudgetVersion adapter type, DI registration,
+configuration, background worker, route and feature flag remains absent or hard-disabled. A fixture is contract
+evidence only and cannot make an adapter executable.
 
 ## 8. Runtime Constraints
 
@@ -774,6 +932,18 @@ S2S providers receive no browser/Gateway route. This pack does not modify `ocelo
   EnterpriseStrategy prohibition, S2S, audit/outbox and PPM non-executability proofs. Any primary isolation
   failure rejects the complete `Diten.FpaService` profile and selects the coordinated
   `Diten.BudgetingService` plus `Diten.ScenarioPlanningService` fallback; partial/hybrid/mixed/dual activation fails.
+- [ ] FU16 onboarding uses exact audience `diten-fpa-service`, client ID `diten.fpa`, owner `MOD-0136`, protocol
+  scope and the exact 15-entry operation-to-permission manifest; the MOD-0138 manifest remains separate.
+- [ ] Every protected S2S operation validates FU16 delegated actor, tenant, operation, permission, request hash,
+  replay and freshness bindings independently; service identity or entitlement alone never authorizes access.
+- [ ] `BudgetingAuditIntentSubmittedV1` / `fpa.budgeting-audit-intent.submitted.v1` carries exactly the six-field
+  Minimal Mutation Audit v1 payload and passes the closed producer/entity/mutation mapping fixture.
+- [ ] The MOD-0035 exact signed allowlist tuple, Budgeting-specific signing identity, immutable-byte binding,
+  rotation/revocation/freshness and PPM/ScenarioPlanning credential-isolation tests pass.
+- [ ] Producer mutation, receipt, audit intent and outbox are atomic locally; publish is post-commit through
+  `IEventBus` only, and MOD-0021 inbox plus audit outbox is consumer-local and idempotent.
+- [ ] The PPM BudgetVersion bilateral fixture passes unchanged while every MOD-0117 adapter remains
+  non-executable until all producer, consumer and explicit activation gates pass.
 
 ## 17. Test Expectations
 
@@ -804,6 +974,15 @@ S2S providers receive no browser/Gateway route. This pack does not modify `ocelo
 - Audit/outbox: audit/outbox persistence failure rolls back the mutation; dispatcher cannot publish pre-commit,
   publishes only through `IEventBus`, and direct RabbitMQ/MassTransit/Platform collection references fail the
   architecture scan.
+- Gate I authorization: exact FU16 audience/client/owner/scope and all 15 operation-permission pairs; reject
+  cross-module ScenarioPlanning entries, wildcard/alias/case changes, service-only or entitlement-only calls,
+  stale grants/credentials, wrong tenant/actor/operation/request hash and replayed `jti`/nonce.
+- Gate I audit mapping: exact event type/name/version/producer/module, six-field canonical fixture, all closed
+  entity/mutation pairs and expected MOD-0021 projections; reject extra/missing/reordered canonical fields,
+  unknown pairs, metadata mismatch, duplicate-same bytes versus duplicate-changed bytes and missing delegated provenance.
+- Gate I signed eventing: exact MOD-0035 allowlist tuple, Budgeting-only signing identity/key namespace,
+  immutable shared-URN envelope/payload binding, active/previous overlap, expiry, revocation, freshness/skew,
+  fixed-time verification, retry/terminal/DLQ/cancellation and unchanged PPM signed-event regression.
 - Provider/migration: currency/calendar definitive-invalid `400` versus unavailable/malformed/version `503`,
   historical local reads during outage, no transaction after indeterminate validation, startup migration NO-OP,
   quarantine-only authorized writes and negative proof of dual-read, dual-write, shadow or fallback query.
@@ -870,8 +1049,17 @@ S2S providers receive no browser/Gateway route. This pack does not modify `ocelo
   conformance belongs to review and requires separate frontend authority.
 - [x] Layout, backend convention, frontend file contract and field validation design are complete for authorized
   future slices; implemented file/browser evidence belongs to review.
-- [ ] The 15 exact lowercase permission keys and provisioning plan are approved without wildcard, alias or
-  normalization; live catalog/grants, S2S identity and delegated actor evidence belong to review/runtime promotion.
+- [x] The owner-authored 15-entry operation-to-permission manifest, exact `diten-fpa-service` audience,
+  `diten.fpa` client ID, `MOD-0136` ownership and strict separation from MOD-0138 are closed without wildcard,
+  alias or normalization; live catalog/grants and credentials remain review/runtime-promotion evidence.
+- [x] FU16 delegated actor/request binding is reconciled for exact tenant, actor, operation, permission,
+  request hash, replay and freshness checks; executable AuthService/producer evidence remains a later gate.
+- [x] `BudgetingAuditIntentSubmittedV1` / `fpa.budgeting-audit-intent.submitted.v1`, the exact six-field Minimal
+  Mutation Audit v1 payload, closed producer/entity/mutation allowlist and MOD-0021 mapping/fixture are fixed.
+- [x] MOD-0035 onboarding inputs fix the exact signed allowlist tuple, Budgeting-specific signing identity,
+  immutable-byte/shared-URN boundary and no credential reuse; provisioned key/signature/live-broker evidence remains open.
+- [x] The PPM BudgetVersion bilateral fixture and adapter non-executability boundary are explicit; fixture
+  presence cannot activate a MOD-0117 adapter before matching producer/consumer approval and runtime authority.
 - [x] Exact transaction sets, idempotency canonicalization/hash/receipt/replay, unknown-commit reconciliation,
   no-TTL policy, audit/outbox atomicity and post-commit `IEventBus` boundary have executable test plans.
 - [x] Initial migration behavior is NO-OP/quarantine-only with no dual-read/write; any later migration inventory,
@@ -891,6 +1079,8 @@ S2S providers receive no browser/Gateway route. This pack does not modify `ocelo
 - [ ] Mongo replica-set transaction/rollback, idempotency/unknown-commit, audit/outbox post-commit delivery,
   tenant isolation and concurrency evidence PASS against the implemented Budgeting persistence owner manifest.
 - [ ] Dedicated S2S credential, audience/scope, delegated actor, exact permission and supported-version evidence PASS.
+- [ ] Budgeting-specific MOD-0035 active/previous key IDs, overlap/freshness/skew, revocation authority, fixture
+  digest/signature, consumer mapping and live transport evidence PASS without PPM or ScenarioPlanning key reuse.
 - [ ] Approved MOD-0117 producer/consumer runtime fixtures prove no-copy behavior and adapter executability gates.
 - [ ] Any authorized public Gateway/browser, deployment, service-discovery, health and live-provider evidence
   PASS; internal S2S remains absent from browser/Gateway routes.
@@ -922,6 +1112,7 @@ S2S providers receive no browser/Gateway route. This pack does not modify `ocelo
 | 2026-08-03 | Reconciled service topology to the authoritative ESBP domain checkpoint: primary isolated `Diten.FpaService/Modules/Budgeting`, conditional fallback, exact future scopes and architecture matrix. Financial semantics, permissions, hash vectors, draft status and production authority remain unchanged. | User / ESBP Control Tower |
 | 2026-08-04 | Corrected fallback to the coordinated `Diten.BudgetingService + Diten.ScenarioPlanningService` profile and separated ready-for-dev design/test-plan gates from executable review/runtime evidence. Status and production authority remain unchanged. | User / ESBP Control Tower |
 | 2026-08-04 | Closed Budgeting Core composition: exact collections/indexes/owner manifest, transaction sets, idempotency and unknown-commit behavior, atomic audit/outbox with post-commit `IEventBus`, fail-closed providers and NO-OP/quarantine-only initial migration. Runtime evidence, audit event identity, status and production authority remain open/unchanged. | User / FP&A Control Tower |
+| 2026-08-04 | Reconciled Gate I onboarding to FU16/MOD-0021/MOD-0035: exact FPA audience/client and separate MOD-0136 manifest, 15 operation-permission pairs, delegated request binding, Budgeting audit identity/six-field mapping/fixture, signed-producer tuple, atomic local outbox, post-commit `IEventBus` and non-executable PPM adapter boundary. Financial decisions, permission keys, normative hashes, draft status and production authority remain unchanged. | User / FP&A Control Tower |
 
 ## 20. Follow-up Items
 
@@ -941,9 +1132,10 @@ items, and implementation may not widen or reinterpret them.
   hybrid, mixed or dual activation. This executable evidence is not a ready-for-dev prerequisite.
 - Fix the concrete service-local `EntityBase`; collection/index names, owner manifest entries and logical
   primary/fallback repository/test paths are closed above.
-- Provision dedicated S2S credentials and delegated actor propagation.
-- Complete MOD-0018 permission/entitlement provisioning for the exact 15 keys.
-- Approve the exact audit event identity/schema/retention and complete MOD-0021/MOD-0035 executable integration evidence.
+- Provision the closed `diten.fpa` / `diten-fpa-service` S2S profile and FU16 delegated actor/request binding.
+- Register and explicitly grant the closed MOD-0136 15-entry permission manifest; do not merge MOD-0138 entries.
+- Provision Budgeting-specific signing keys/runtime fixture values and complete MOD-0021/MOD-0035 executable
+  consumer, signing, retry/DLQ/replay and live integration evidence for the closed audit event identity/schema.
 - Produce executable replica-set transaction, idempotency/unknown-commit and post-commit outbox evidence against
   the closed design; composition itself is no longer open.
 - Approve any post-NO-OP migration inventory, mapping, quarantine writes, cutover, rollback and reconciliation slice.
