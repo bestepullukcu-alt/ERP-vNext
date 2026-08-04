@@ -257,10 +257,100 @@ SHA-256: `b7dbd424e46da5f3d1d12739dff22be2c55f606a7a959dce3e0ad0f530bcd80b`.
   have no automatic hard purge. Bilateral version support cannot be removed until persisted-reference inventory is zero.
 - Any future purge requires MOD-0030 authority plus a separate approved amendment; this pack grants neither.
 
-Required indexes are tenant-first, include `IsDeleted=false` only for mutable/soft-deletable records, and include
-active Scenario Code, Scenario business version, idempotency receipt and Run/Output identity. The transactional
-scope fence plus immutable occurrence/disposition history proves at most one effective selection without adding
-a mutable current-state flag to an append-only revision.
+### Persistence composition — exact logical v1
+
+The primary owner manifest is exactly
+`services/Diten.FpaService/src/Diten.FpaService.Persistence/Modules/ScenarioPlanning/ScenarioPlanningPersistenceOwnerManifest.cs`.
+The coordinated-fallback equivalent is exactly
+`services/Diten.ScenarioPlanningService/src/Diten.ScenarioPlanningService.Persistence/ScenarioPlanningPersistenceOwnerManifest.cs`.
+Exactly one selected topology may register the manifest. Every entry is ScenarioPlanning-owned, read/write unless
+stated append-only, and forbidden to Budgeting repositories, contexts, sessions and transactions.
+
+| Exact collection | Manifest entry / ownership |
+|---|---|
+| `fpa_scenario_planning_scenarios` | `Scenario`; aggregate root/read-write |
+| `fpa_scenario_planning_version_drafts` | `ScenarioVersionDraft`; mutable staging/soft-delete |
+| `fpa_scenario_planning_versions` | `ScenarioVersion`; immutable append-only |
+| `fpa_scenario_planning_version_dispositions` | `ScenarioVersionDisposition`; append-only |
+| `fpa_scenario_planning_comparator_runs` | `ComparatorRunDefinition`; immutable append-only |
+| `fpa_scenario_planning_comparator_events` | `ComparatorExecutionEvent`; append-only |
+| `fpa_scenario_planning_comparator_outputs` | `ComparatorOutput`; immutable append-only |
+| `fpa_scenario_planning_selection_occurrences` | `ScenarioSelectionOccurrence`; append-only |
+| `fpa_scenario_planning_selection_dispositions` | `ScenarioSelectionDisposition`; append-only |
+| `fpa_scenario_planning_selection_fences` | `ScenarioSelectionFence`; CAS-only scope head |
+| `fpa_scenario_planning_idempotency_receipts` | `ScenarioPlanningIdempotencyReceipt`; immutable key/payload identity plus atomic outcome state |
+| `fpa_scenario_planning_outbox` | local audit/event intent envelope; append-only, post-commit dispatch state only |
+
+The exact tenant-first named index matrix is closed below. Key order is normative; `ux` means unique and `ix`
+non-unique. No collection has a TTL index.
+
+| Exact index name | Collection | Ordered keys | Exact filter/purpose |
+|---|---|---|---|
+| `ux_sp_scenario_tenant_code` | `fpa_scenario_planning_scenarios` | `TenantId, Code` | unique where `IsDeleted=false` |
+| `ix_sp_scenario_tenant_lifecycle_name` | `fpa_scenario_planning_scenarios` | `TenantId, Lifecycle, Name, _id` | register/list |
+| `ux_sp_draft_tenant_scenario_open` | `fpa_scenario_planning_version_drafts` | `TenantId, ScenarioId` | unique where `IsDeleted=false AND DraftState=Open` |
+| `ix_sp_draft_tenant_scenario_updated` | `fpa_scenario_planning_version_drafts` | `TenantId, ScenarioId, UpdatedAt, _id` | draft history/list |
+| `ux_sp_version_tenant_scenario_number` | `fpa_scenario_planning_versions` | `TenantId, ScenarioId, ScenarioVersionNumber` | immutable business version |
+| `ix_sp_version_tenant_scenario_published` | `fpa_scenario_planning_versions` | `TenantId, ScenarioId, PublishedAt, _id` | current/history resolution |
+| `ux_sp_version_disposition_tenant_version_sequence` | `fpa_scenario_planning_version_dispositions` | `TenantId, ScenarioVersionId, SequenceNumber` | append order |
+| `ix_sp_version_disposition_tenant_scenario_occurred` | `fpa_scenario_planning_version_dispositions` | `TenantId, ScenarioId, OccurredAt, _id` | history rebuild |
+| `ux_sp_comparator_run_tenant_id` | `fpa_scenario_planning_comparator_runs` | `TenantId, ComparatorRunId` | immutable run identity |
+| `ix_sp_comparator_run_tenant_requested` | `fpa_scenario_planning_comparator_runs` | `TenantId, RequestedAt, ComparatorRunId` | worker/list; digest is intentionally non-unique so explicit rerun can create new IDs |
+| `ux_sp_comparator_event_tenant_run_sequence` | `fpa_scenario_planning_comparator_events` | `TenantId, ComparatorRunId, SequenceNumber` | append order |
+| `ix_sp_comparator_event_tenant_run_state` | `fpa_scenario_planning_comparator_events` | `TenantId, ComparatorRunId, State, OccurredAt` | terminal/current derivation |
+| `ux_sp_comparator_output_tenant_run_version` | `fpa_scenario_planning_comparator_outputs` | `TenantId, ComparatorRunId, OutputVersion` | one v1 success per run |
+| `ux_sp_comparator_output_tenant_id` | `fpa_scenario_planning_comparator_outputs` | `TenantId, ComparatorOutputId` | reference resolution |
+| `ux_sp_selection_occurrence_tenant_scope_revision` | `fpa_scenario_planning_selection_occurrences` | `TenantId, ScopeToken, SelectionRevision` | immutable revision order |
+| `ix_sp_selection_occurrence_tenant_scenario_version` | `fpa_scenario_planning_selection_occurrences` | `TenantId, ScenarioVersionId, OccurredAt` | reverse validation/history |
+| `ux_sp_selection_disposition_tenant_occurrence_sequence` | `fpa_scenario_planning_selection_dispositions` | `TenantId, SelectionOccurrenceId, SequenceNumber` | append order |
+| `ix_sp_selection_disposition_tenant_scope_occurred` | `fpa_scenario_planning_selection_dispositions` | `TenantId, ScopeToken, OccurredAt, _id` | effective-state rebuild |
+| `ux_sp_selection_fence_tenant_scope` | `fpa_scenario_planning_selection_fences` | `TenantId, ScopeToken` | one CAS head per typed InvestmentCase scope |
+| `ux_sp_receipt_tenant_principal_operation_key` | `fpa_scenario_planning_idempotency_receipts` | `TenantId, PrincipalIdentity, Operation, IdempotencyKey` | exact idempotency identity; no TTL |
+| `ix_sp_receipt_tenant_state_updated` | `fpa_scenario_planning_idempotency_receipts` | `TenantId, ReceiptState, UpdatedAt, _id` | unknown-commit reconciliation; no TTL |
+| `ux_sp_outbox_tenant_message` | `fpa_scenario_planning_outbox` | `TenantId, MessageId` | local intent identity |
+| `ix_sp_outbox_tenant_dispatch_created` | `fpa_scenario_planning_outbox` | `TenantId, DispatchedAt, CreatedAt, _id` | post-commit dispatcher scan; no TTL |
+
+Collection aliases, discriminator-based sharing, unlisted collection access and index-name reuse are forbidden.
+The manifest fails startup on a missing/extra entry, duplicate owner, key/filter mismatch, any TTL, or collision
+with Budgeting's manifest. Exact physical creation remains implementation authority, not granted by this draft.
+
+### Transaction, receipt and replay composition — exact logical v1
+
+- **Draft/publication:** one Mongo replica-set transaction CASes the Scenario publication fence, verifies/consumes
+  the one open draft, allocates the next monotonic `ScenarioVersionNumber`, inserts immutable ScenarioVersion and
+  required disposition, commits the idempotency receipt and local audit/outbox intents. Concurrent open-draft or
+  publication losers are 409; no partial version, number gap caused by a committed loser, or orphan intent remains.
+- **Comparator request/completion:** request acceptance transaction inserts immutable RunDefinition, Requested
+  event, committed receipt and local intents. It does not compute. A separate worker completion transaction appends
+  Completed and inserts the single immutable Output plus local intents; failure appends Failed plus local intents.
+  Output uniqueness is fenced by `(TenantId, ComparatorRunId, OutputVersion)`. Explicit rerun uses a new key and
+  new Run/Output IDs; an exact replay returns the original receipt locator.
+- **Selection:** replace/close is one transaction that CASes the tenant+ScopeToken fence and appends the new
+  occurrence and prior disposition/closure, committed receipt and local intents. No occurrence is updated and no
+  current flag is stored; a stale fence loses with 409 and deterministic history rebuild must equal the fence head.
+- These transactions can enlist only collections listed in this manifest. Budgeting repository, collection,
+  index, Mongo context, client session or transaction participation is zero; BudgetVersion validation occurs
+  before the local transaction through the exact typed/versioned provider contract and is never revalidated by
+  direct persistence access inside the transaction.
+
+For every mutating operation, canonical request bytes use an operation-specific closed property allowlist, stated
+property order, UTF-8/no-BOM/no-newline, NFC strings, lowercase canonical-D UUIDs and the §4 number/date rules.
+`PayloadHash` is lowercase SHA-256 of those bytes. The receipt identity is exactly TenantId + PrincipalIdentity +
+Operation + IdempotencyKey and records PayloadHash, `Pending|Committed|Aborted`, correlation, created/updated time,
+and a stable opaque response locator/status; it never stores assumptions, comparator output or foreign payload.
+
+- Same receipt identity plus same PayloadHash returns the original committed outcome without duplicate business,
+  audit, outbox or worker work. Same identity plus a different PayloadHash is 409.
+- On an unknown Mongo commit result, only commit is retried on the original transaction/session. Business handlers,
+  validation, computation and inserts are not rerun. After commit retry, a majority read reconciles the receipt:
+  `Committed` replays; definitively `Aborted` permits a fresh transaction under the same hash; absent/Pending or
+  conflicting evidence that remains ambiguous returns 503 and schedules no duplicate work.
+- V1 idempotency receipts have no TTL, purge or expiry path. Their retention matches the immutable authoritative
+  history; a future retention change requires a versioned governance amendment and reconciliation proof.
+- Business mutation, committed receipt and local audit/event intents are atomic. Audit-intent/outbox insertion
+  failure aborts the transaction. After commit, delivery uses only MOD-0035 `IEventBus` through the outbox
+  dispatcher; handlers/controllers cannot publish directly, write Platform audit/event collections or join a
+  distributed transaction. Exact event names/schemas remain an open blocker.
 
 ### Gate I-B minimal reference contract — exact v1
 
@@ -337,10 +427,10 @@ The same fallback release must also activate the separate five-layer `Diten.Budg
 ScenarioPlanning alone is forbidden.
 
 The future ScenarioPlanning-owned persistence allowlist/owner manifest location is
-`services/Diten.FpaService/src/Diten.FpaService.Persistence/Modules/ScenarioPlanning/ScenarioPlanningPersistenceOwnerManifest.*`
+`services/Diten.FpaService/src/Diten.FpaService.Persistence/Modules/ScenarioPlanning/ScenarioPlanningPersistenceOwnerManifest.cs`
 in primary, or
-`services/Diten.ScenarioPlanningService/src/Diten.ScenarioPlanningService.Persistence/ScenarioPlanningPersistenceOwnerManifest.*`
-in coordinated fallback. The filename extension, exact collection/index entries and executable format remain B blockers.
+`services/Diten.ScenarioPlanningService/src/Diten.ScenarioPlanningService.Persistence/ScenarioPlanningPersistenceOwnerManifest.cs`
+in coordinated fallback. §4 closes its exact logical entries; creating either file still requires an approved slice.
 
 ## 6. Protected Paths
 
@@ -362,9 +452,9 @@ in coordinated fallback. The filename extension, exact collection/index entries 
 | MOD-0023 | Approval only when policy requires | Separate contract; never implied by selection |
 | MOD-0072 | Actual realization owner | Not duplicated here |
 | MOD-0018 | Exact permission/tenant entitlement enforcement | Runtime evidence required |
-| MOD-0021 / MOD-0035 | Immutable audit/eventing mechanics | Exact integration remains open |
+| MOD-0021 / MOD-0035 | Local audit/event intents commit atomically; post-commit dispatch only through MOD-0035 `IEventBus` | Exact event names/schemas and runtime wiring remain open |
 | DCP-006 | Gate I orchestration | Approved; OD-04 OPEN/PARTIAL |
-| MongoDB replica set | Atomic publish/output/selection/idempotency/audit persistence | Runtime prerequisite |
+| MongoDB replica set | Exact §4 transaction/receipt/unknown-commit design | Runtime prerequisite and executable evidence remain open |
 | Comparator worker/runtime | Closed BaselineDeltaV1 semantics; async delivery mechanics | Runtime infrastructure remains a B blocker |
 
 ## 8. Runtime Constraints
@@ -428,6 +518,21 @@ in coordinated fallback. The filename extension, exact collection/index entries 
   producer nor consumer may remove/down-convert support unilaterally.
 - No port, Gateway route, service project, collection or production credential is allocated here. The service port
   is `TBD` until an authoritative collision-free allocation is approved.
+
+### Worker and migration boundaries
+
+- Comparator compute is owned by a ScenarioPlanning worker process/host surface, never an API controller, CQRS
+  command handler or request thread. API/application acceptance ends after the request transaction; it may signal
+  only the ScenarioPlanning-owned logical work queue after commit. Inline fallback compute is forbidden.
+- ScenarioPlanning logically owns the comparator queue subscription, scheduler trigger, retry state and DLQ/alarm
+  disposition. The closed retry profile remains initial attempt plus 10s/30s retries and 60s per attempt. The exact
+  broker, queue/scheduler product, queue/topic/DLQ names, worker hosting, credentials and operations ownership remain
+  blockers; absent authorized runtime infrastructure, readiness fails closed and run acceptance returns 503.
+- Initial prototype migration is exact `NO-OP / quarantine-only`: it imports, transforms, backfills, dual-writes or
+  promotes no EnterpriseStrategy `ScenarioType`/scenario record into authoritative collections. A read-only
+  inventory may classify provenance and emit quarantine evidence in a separately approved migration artifact;
+  unknown tenant/identity/version stays quarantined. Any later data movement requires a new expand/contract,
+  reconciliation and rollback amendment.
 
 ## 9. Layout & Shell Contract
 
@@ -610,6 +715,16 @@ integration-agent task after topology and port approval. The S2S validation surf
   transactions or module DI; BudgetVersion access is solely an exact typed/versioned provider contract.
 - [ ] Architecture/deployment evidence rejects MOD-0138 placement in `Diten.EnterpriseStrategyService` and rejects
   MOD-0072/`OutcomeTracking` co-hosting in `Diten.FpaService` or either FP&A fallback service.
+- [ ] The exact 12-collection owner manifest and 23 tenant-first named indexes in §4 have no duplicate name,
+  Budgeting collision, unlisted access or TTL; startup fails closed on manifest drift.
+- [ ] Publication, comparator request/completion and selection transactions match the exact §4 collection boundary,
+  atomically include receipt plus local intents, and never enlist Budgeting persistence/session/transaction state.
+- [ ] Request canonicalization and PayloadHash are deterministic; same key/hash replays, same key/different hash is
+  409, and unknown commit performs commit-only retry plus majority receipt reconciliation with ambiguity returning 503.
+- [ ] Comparator compute runs only in the worker boundary; controller/handler inline compute and direct publish are
+  rejected, while absent authorized queue/scheduler/retry/DLQ infrastructure remains a fail-closed blocker.
+- [ ] Initial prototype migration is NO-OP/quarantine-only and produces no authoritative import, backfill,
+  transformation, dual-write or promotion.
 - [ ] Existing ScenarioType/ES scenario fields remain quarantined prototype/migration evidence with no fallback/dual write.
 - [ ] Authorized UI explicitly uses `_LayoutTenantShell`, Compact/DataTable v2 where applicable, seven-language localization, and no PPM comparator copy or approval action.
 - [ ] Gate I-B remains OPEN until producer approval, matching consumer amendment, compatibility/security evidence and explicit runtime authority.
@@ -675,6 +790,16 @@ integration-agent task after topology and port approval. The S2S validation surf
 - Persistence-isolation tests scan source and DI, inspect the ScenarioPlanning owner manifest, and instrument Mongo
   to prove no Budgeting repository, collection, index, context, session or transaction is reachable. BudgetVersion
   fixtures cross only the exact typed/versioned Application provider contract.
+- Manifest/index golden tests assert all 12 exact collection names and 23 exact index names/key orders/filters,
+  reject duplicates, aliases, TTLs, extra/missing entries and collisions against the Budgeting owner manifest.
+- Replica-set fault tests cover one-open-draft and monotonic publish races, comparator acceptance/output uniqueness,
+  selection fence CAS, atomic receipt/audit/outbox rollback, post-commit-only dispatch and zero foreign participants.
+- Idempotency golden vectors canonicalize each mutation twice to identical bytes/hash; replay returns the stable
+  locator, changed payload under the same key is 409, unknown-result injection retries commit only, and absent/
+  Pending ambiguity after majority reconciliation is 503. Architecture tests prove no receipt TTL/index/purge.
+- Worker boundary tests reject compute/retry loops and direct `IEventBus` calls in controllers/handlers; worker tests
+  prove logical queue ownership, fixed retry/timeout, terminal DLQ/alarm and 503 when runtime infrastructure is not
+  authorized. Migration tests prove initial NO-OP/quarantine-only leaves every authoritative collection untouched.
 - PPM no-copy source/schema test: no assumption/calculation/ranking/output payload, selected boolean or local engine.
 - Frontend/browser: Scenario Slim and VersionDraft Compact verifier/count evidence, permission actions, immutable edit denial, stale-selection 409 flow,
   pinned comparator versions, seven-language/RTL/accessibility, no Approve/Reject, no browser mock/localStorage truth.
@@ -690,14 +815,15 @@ integration-agent task after topology and port approval. The S2S validation surf
   `Diten.BudgetingService` + `Diten.ScenarioPlanningService` fail-closed fallback with domain config.
 - [ ] Make every applicable isolation-matrix test executable and passing; a failure requires the coordinated
   two-service fallback, never ScenarioPlanning-only, hybrid or dual activation.
-- [ ] Fix exact collection/index names and persistence-manifest entries, concrete service-local EntityBase,
-  host composition/test paths, topology-profile configuration, route, deployment ownership and collision-free port.
+- [x] Close the exact ScenarioPlanning collection/index matrix, owner-manifest path/entries, transaction boundaries,
+  canonical request/hash/receipt/replay, unknown-commit reconciliation, no-TTL receipts and local outbox composition.
+- [ ] Fix concrete service-local EntityBase, host composition/test paths, topology-profile configuration, route,
+  deployment ownership and collision-free port.
 - [ ] Approve/provision dedicated S2S identity, exact audience/credential/rotation and delegated actor propagation.
 - [ ] Complete MOD-0018 entitlement/permission provisioning and runtime evidence.
-- [ ] Complete MOD-0021/MOD-0035 audit-intent/outbox publisher, transaction and atomicity evidence.
-- [ ] Select and prove comparator worker/queue/scheduler/runtime infrastructure for the closed BaselineDeltaV1 profile.
-- [ ] Fix idempotency receipt/unknown-commit persistence, recovery and safe retry-window retention implementation.
-- [ ] Author/approve prototype inventory, quarantine, migration/cutover/rollback slice.
+- [ ] Approve exact MOD-0021 audit and MOD-0035 event names/schemas plus runtime `IEventBus` wiring evidence.
+- [ ] Select and prove authorized comparator worker host, broker, queue/scheduler, retry/DLQ names, credentials and operations ownership.
+- [x] Close initial migration disposition as NO-OP/quarantine-only; any later movement needs a separate approved slice.
 - [ ] Record explicit runtime authority, including approved bilateral fixtures and executable MOD-0117 I-B Scenario amendment evidence.
 
 ## 19. Implementation Notes
@@ -734,17 +860,17 @@ DCP-002 exact preflight command: `python3 .antigravity/scripts/verify_module_id.
 |---|---|---|
 | 2026-08-03 | Closed A-class Scenario semantics: Active/Archived lifecycle, one-open-draft publication, exact AssumptionV1 and Budget-only refs, canonical JSON plus two normative SHA-256 vectors, deterministic BaselineDeltaV1, InvestmentCase selection history/fence, no-purge retention and UI counts 3/10/2/2. | Governance semantics only; status remains draft and no runtime authority/route/port is granted. |
 | 2026-08-03 | Reconciled the domain-config topology: isolated ScenarioPlanning in primary `Diten.FpaService`, coordinated two-service fallback, exact future logical scopes and isolation matrix. | Physical planning boundary only; no scaffold, route, port, deployment or production authority. |
+| 2026-08-04 | Closed core composition: exact owner manifest, 12 collections, 23 tenant-first indexes, three transaction families, canonical idempotency/unknown-commit handling, local outbox, worker boundary and NO-OP migration. | Logical design only; exact events, worker infrastructure, S2S, port, deployment and MOD-0117 activation remain blocked. |
 
 ## 20. Follow-up Items
 
 - Implement and prove the domain-config isolation matrix; any primary failure requires the coordinated
   `Diten.BudgetingService` + `Diten.ScenarioPlanningService` fallback.
-- Fix exact collection/index names and owner-manifest entries, concrete service-local base mapping, host
-  composition/test paths, topology-profile configuration, routes, deployment ownership, port and Gateway task.
+- Fix concrete service-local base mapping, host composition/test paths, topology-profile configuration, routes,
+  deployment ownership, port and Gateway task.
 - Provision dedicated S2S identity/audience/credential rotation and delegated actor propagation.
 - Complete MOD-0018 permission/entitlement provisioning evidence.
-- Complete MOD-0021/MOD-0035 audit-intent/outbox publisher and atomicity evidence.
-- Select/prove worker, queue/scheduler and runtime infrastructure for the closed BaselineDeltaV1 profile.
-- Fix idempotency/unknown-commit persistence, recovery and safe retention implementation.
-- Author/approve prototype inventory, quarantine, migration/cutover/rollback slice before touching ES prototypes.
+- Approve exact MOD-0021 audit and MOD-0035 event names/schemas and prove post-commit `IEventBus` runtime wiring.
+- Select/prove worker host, broker, queue/scheduler/retry/DLQ names, credentials and operations ownership.
+- Keep initial migration NO-OP/quarantine-only; authorize a separate expand/contract amendment before any data movement.
 - Record explicit runtime authority after bilateral fixtures and executable MOD-0117 I-B Scenario amendment approval.
