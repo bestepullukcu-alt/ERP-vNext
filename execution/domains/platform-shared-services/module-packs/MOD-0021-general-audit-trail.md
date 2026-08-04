@@ -913,3 +913,211 @@ Magic string yasaktır — view/JS tarafında string literal text yerine bu key'
 - **Pipeline transaction behavior verification:** If the existing Platform MediatR pipeline does not yet expose an explicit `TransactionBehavior`, evaluate whether business write + audit outbox enqueue atomicity is guaranteed by Mongo session/multi-document transactions or must be added before MOD-0021 production rollout. Open follow-up if missing.
 - Async / background bulk export job for exports above the 50K row / 365 day threshold (post MOD-0026).
 - Tenant-self-service retention preference API (`PUT /api/tenant/audit/retention`) and tenant-facing UI for retention selection.
+
+---
+
+# Amendment 20 — Gate I Multi-Producer Audit Intake
+
+> **Amendment status: DRAFT / NON-EXECUTABLE.** This amendment does not change the parent frontmatter
+> `status: ready-for-dev`, does not authorize runtime work, and does not promote any cross-service producer
+> slice. The four new mappings remain non-executable until their producer-owned pack amendments and
+> compatibility fixtures are present and approved.
+
+## 1. Amendment Summary
+
+Gate I defines the governance boundary by which MOD-0021 may eventually consume minimal mutation audit
+intents from these producer/module pairs:
+
+| Producer service | Producer module |
+|---|---|
+| `Diten.ManagementGovernanceService` | `MOD-0007` |
+| `Diten.FpaService` | `MOD-0136` |
+| `Diten.FpaService` | `MOD-0138` |
+| `Diten.DecisionIntelligenceService` | `MOD-0072` |
+
+This amendment standardizes only a versioned **Minimal Mutation Audit Profile**. It does not standardize,
+name or create a generic business event.
+
+## 2. Authority and Status Boundary
+
+- The parent pack status remains unchanged and describes the already recorded parent scope only.
+- This amendment is governance intake, not an implementation pack, runtime approval or production rollout.
+- Producer pack amendments own executable event identity, schema version adoption and publication authority.
+- MOD-0021 becomes consumer-ready for a producer only after every Gate I readiness item for that producer
+  is approved; readiness is evaluated independently per mapping.
+- The canonical MOD-0021 identity remains governed by the
+  [module ID registry](../../../registries/module-id-registry.md); no new MOD/FU identity is minted here.
+
+## 3. Ownership and Boundaries
+
+- Business event identity remains producer-owned. Event type, event name/routing key and semantic meaning
+  are declared by the corresponding producer pack amendment.
+- PSS must not invent exact event names on behalf of any producer and must not place producer event DTOs in
+  `Diten.Platform.Contracts` merely to complete this intake.
+- MOD-0021 owns consumer validation, producer-specific mapping into immutable audit storage, the consumer
+  transactional inbox, and the MOD-0021 audit outbox write.
+- Shared transport mechanics remain under [MOD-0035](MOD-0035-event-bus-message-queue.md).
+
+## 4. Producer Intake Register
+
+| Producer/module | Event identity | Allowlist | Mapping | Compatibility fixture | Gate I disposition |
+|---|---|---|---|---|---|
+| `Diten.ManagementGovernanceService` / `MOD-0007` | Producer amendment required; **TBD** | Required | Required | Required | Blocked / non-executable |
+| `Diten.FpaService` / `MOD-0136` | Producer amendment required; **TBD** | Required | Required | Required | Blocked / non-executable |
+| `Diten.FpaService` / `MOD-0138` | Producer amendment required; **TBD** | Required | Required | Required | Blocked / non-executable |
+| `Diten.DecisionIntelligenceService` / `MOD-0072` | Producer amendment required; **TBD** | Required | Required | Required | Blocked / non-executable |
+
+An event identity shown as `TBD` is deliberately unallocated. Similar producer names, modules or payloads
+must not be collapsed into one generic event.
+
+## 5. Versioned Minimal Mutation Audit Profile
+
+Each admitted event version maps exactly these canonical payload fields:
+
+| Field | Minimum contract |
+|---|---|
+| `auditIntentId` | Non-empty immutable identifier; must equal envelope `EventId` |
+| `actorId` | Non-empty effective actor identifier from authenticated mutation context |
+| `entityType` | Producer allowlist value mapped to a MOD-0021 audit entity type |
+| `entityId` | Non-empty producer aggregate/entity identifier |
+| `mutation` | Producer allowlist value mapped to a canonical audit operation |
+| `occurredAtUtc` | UTC timestamp; must equal envelope occurrence time |
+
+The profile is versioned. A producer-specific breaking payload or semantic change requires a new
+producer-owned event version, mapping and compatibility fixture.
+
+## 6. Envelope and Transport Metadata
+
+`TenantId`, `CorrelationId`, `EventId`, `Producer` and security metadata come from the authenticated
+envelope/transport path, not the canonical payload. Consumer validation fails closed when payload identity,
+time or authenticated metadata disagree. Client-supplied tenant, producer, correlation or security values
+cannot override trusted metadata.
+
+## 7. Producer-Specific Allowlist Contract
+
+Every producer/event version must provide a closed allowlist for `entityType` and `mutation`, including the
+exact mapping target. Unknown values, unknown properties and unbounded dictionaries/graphs are rejected.
+One producer's allowlist never implicitly admits another producer or version. Full entities, before/after
+snapshots, secrets, tokens, permission inventories and unrestricted business payloads are forbidden.
+
+## 8. Producer-Specific Mapping Contract
+
+Each mapping records at minimum: producer service, producer module, producer-owned event identity and
+version, accepted entity/mutation allowlists, canonical audit category/operation/entity projection,
+delegated-actor projection, redaction rules and fixture location. Mapping is explicit code/configuration;
+event-name heuristics and a generic catch-all mapper are forbidden.
+
+## 9. Compatibility Fixture Contract
+
+Each producer/event version supplies a producer-owned canonical-byte fixture plus expected envelope metadata
+and expected MOD-0021 projection. Contract verification must prove accepted mapping, rejected unknown fields,
+unsupported version handling, metadata mismatch handling, delegated provenance mapping and canonical-byte
+stability. A mapping without its producer fixture is not executable.
+
+## 10. Consumer Transaction Boundary
+
+For an accepted message, the Platform consumer writes the transactional inbox record and MOD-0021 audit
+outbox in one local transaction. A commit may contain zero or one new audit outbox item for the idempotency
+key; it must never expose an accepted inbox record without the corresponding durable audit outbox result.
+Producer mutation transactions never span into Platform.
+
+## 11. Idempotency and Payload Conflict Contract
+
+- Idempotency key: `ConsumerName + EventId`.
+- Same `EventId` and same canonical payload is a duplicate no-op; no second audit outbox/event is created.
+- Same `EventId` and different canonical payload is a terminal conflict; the original accepted projection is
+  never overwritten.
+- Canonical payload comparison uses the exact validated canonical bytes (or their collision-resistant stored
+  digest plus required verification), not a lossy reserialization.
+
+## 12. Mapping, Idempotency and Error Matrix
+
+| Condition | Mapping/outbox effect | Disposition | Retry/replay |
+|---|---|---|---|
+| Supported version, valid allowlist/security, unseen key | Write inbox + one MOD-0021 audit outbox transactionally | Accepted | Normal delivery |
+| Same key, same canonical payload | No new mapping side effect or outbox item | Duplicate no-op | Safe no-op |
+| Same key, different canonical payload | Preserve original; write no new audit outbox item | Terminal conflict | No automatic retry |
+| Unsupported version | No audit projection | Terminal | Only after compatible consumer/disposition |
+| Malformed canonical payload or allowlist/mapping failure | No audit projection | Terminal | No automatic retry |
+| Authentication, authorization, signature or trusted-metadata failure | No audit projection | Terminal security failure | Unauthorized replay forbidden |
+| Transient broker, MongoDB or other dependency failure | No partial accepted state | Transient | Retry, then DLQ + alarm; authorized replay |
+
+Terminal records and diagnostics contain bounded redacted reason metadata only; payload logging is forbidden.
+
+## 13. Retry, DLQ, Alarm and Replay
+
+Only transient dependency failures follow the MOD-0035 retry schedule and, when exhausted, DLQ plus alarm.
+Authorized replay preserves `EventId`, producer-owned event identity/version, trusted envelope metadata and
+identical canonical payload. Replay re-enters the same consumer and idempotency path. This amendment creates
+no public replay endpoint or UI and grants no replay permission.
+
+## 14. Security and Isolation
+
+- Producer service identity is authenticated and must exactly match the mapping registration.
+- `TenantId` is required and trusted only from authenticated transport context; cross-tenant mismatch fails
+  closed without revealing record existence.
+- Security failure is terminal and cannot be converted into a transient retry to bypass controls.
+- Payload and security material are not logged; diagnostics use allowlisted metadata only.
+- Producer credentials and delegation evidence are validated before an audit projection is accepted.
+
+## 15. Delegated Actor Provenance Representation
+
+`actorId` represents the effective actor who performed the mutation. When the authenticated security context
+shows delegation/impersonation, MOD-0021 also projects trusted envelope security metadata into an immutable,
+redacted provenance block: effective actor id, delegating actor id, delegation/grant or session reference,
+authentication method and verification outcome as available under the producer mapping. The block must
+distinguish **acted by** from **acted on behalf of** without copying credentials, tokens or unrestricted
+claims. A delegated event missing mapping-required provenance is a terminal security failure. This
+representation does not add fields to the six-field Minimal Mutation Audit Profile.
+
+## 16. Producer Runtime Decoupling
+
+The producer persists its own mutation and producer-local audit intent/outbox transactionally, then publishes
+asynchronously through the approved eventing seam. The business mutation has no synchronous MOD-0021,
+Platform API, Platform database or Platform availability dependency. Platform/broker unavailability after
+producer commit cannot roll back the producer mutation.
+
+## 17. Storage Access Prohibitions
+
+No producer may read or write Platform `audit_events`, `audit_outbox`, consumer inbox or any other MOD-0021
+collection directly. Shared database credentials, collection-level shortcuts and synchronous internal append
+calls are not substitutes for the producer-owned event plus asynchronous consumer boundary.
+
+## 18. PPM Regression Boundary
+
+The existing `PpmAuditIntentSubmittedV1` / `ppm.audit-intent.submitted.v1` mapping and its final six-field
+Minimal Mutation Audit v1 contract remain unchanged. Gate I does not rename, generalize, re-version or move
+ownership of the PPM event, and does not relax its canonical-byte, signing, retry, replay, allowlist or
+idempotency rules. Regression authority remains the
+[MOD-0117 PPM pack](../../portfolio-delivery/module-packs/MOD-0117-project-portfolio-management.md) together
+with this pack's existing PPM baseline and the [MOD-0035 PPM transport slice](MOD-0035-event-bus-message-queue.md).
+
+## 19. Acceptance and Verification Gates
+
+- [ ] All four producer packs contain approved producer-owned amendments with exact event identity/version;
+      PSS has generated none of those identities.
+- [ ] All four event-specific allowlists and explicit mappings are reviewed.
+- [ ] All four producer compatibility fixtures pass consumer contract verification.
+- [ ] Transaction test proves inbox + MOD-0021 audit outbox atomicity.
+- [ ] Duplicate/conflict tests prove the complete `ConsumerName + EventId` matrix.
+- [ ] Unsupported version, malformed canonical payload and security failures prove terminal disposition.
+- [ ] Transient dependency tests prove retry, DLQ, alarm and authorized replay behavior.
+- [ ] Delegated-actor fixtures prove effective/delegating actor provenance without credential/claim leakage.
+- [ ] Producer tests prove no synchronous MOD-0021 dependency and no direct Platform collection access.
+- [ ] PPM regression fixtures pass unchanged.
+- [ ] `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0021 --name "Audit Trail Service"`
+      passes, all relative links resolve, and `git diff --check` passes.
+
+Failure of any checkbox keeps this amendment and the affected mapping non-executable.
+
+## 20. Implementation Notes and Follow-up Items
+
+- Producer amendments must be authored in their owning domain/module packs before any event name, DTO,
+  mapping implementation or fixture is added to PSS runtime scope.
+- An eventual implementation authorization must name exact repo paths and tests; this governance amendment
+  alone authorizes no service, frontend, Gateway, schema or deployment change.
+- Track approval independently for `MOD-0007`, `MOD-0136`, `MOD-0138` and `MOD-0072`; one completed mapping
+  does not promote the remaining mappings or the amendment as a whole.
+- Revisit profile versioning only through an explicit compatibility decision; do not evolve the six-field
+  minimum implicitly.
+- Parent status changes, if ever warranted, require a separate explicit governance decision.
