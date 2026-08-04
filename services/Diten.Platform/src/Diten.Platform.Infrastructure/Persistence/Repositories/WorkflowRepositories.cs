@@ -152,7 +152,7 @@ public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstan
         return Collection.Find(filter).FirstOrDefaultAsync(ct)!;
     }
 
-    public Task<WorkflowInstance?> GetLatestByObjectRefAsync(
+    public async Task<WorkflowInstance?> GetLatestByObjectRefAsync(
         string objectRef,
         string objectType,
         string objectId,
@@ -163,11 +163,14 @@ public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstan
             Builders<WorkflowInstance>.Filter.Eq(x => x.ObjectRef, objectRef),
             Builders<WorkflowInstance>.Filter.Eq(x => x.ObjectType, objectType),
             Builders<WorkflowInstance>.Filter.Eq(x => x.ObjectId, objectId));
-        return Collection
+        var candidates = await Collection
             .Find(filter)
-            .SortByDescending(x => x.StartedAt)
+            .ToListAsync(ct);
+
+        return candidates
+            .OrderByDescending(x => x.StartedAt)
             .ThenByDescending(x => x.CreatedAt)
-            .FirstOrDefaultAsync(ct)!;
+            .FirstOrDefault();
     }
 
     public async Task<IReadOnlyList<WorkflowInstance>> GetAllForTenantAsync(CancellationToken ct = default)
