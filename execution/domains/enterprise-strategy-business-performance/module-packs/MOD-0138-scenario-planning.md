@@ -6,7 +6,7 @@ service: Diten.FpaService
 shell: tenant
 golden_reference: compact
 entity_base: EntityBase
-status: draft
+status: ready-for-dev
 owner: FP&A Scenario Planning Process Owner
 branch: feature/esbp/mod-0138-scenario-planning
 started: 2026-08-02
@@ -17,9 +17,10 @@ production_authority: none
 
 # MOD-0138 — Scenario Planning
 
-> **Draft/non-executable.** This parent pack proposes boundaries and contracts only. It allocates no service,
-> collection, port, Gateway route or production authority. `service: Diten.FpaService` identifies only the
-> domain-config primary logical host; `production_authority: none` remains the executable-authority gate.
+> **READY-FOR-DEV / NON-RUNTIME.** All pre-development ScenarioPlanning design, scope and contract decisions are
+> closed. Promotion authorizes only the bounded Core Scaffold & Contract-Test handoff in §5; it allocates no
+> collection, Gateway route, deployment, credential, broker, live worker or production authority.
+> `production_authority: none` remains binding.
 
 ## 1. Module Summary
 
@@ -103,12 +104,15 @@ Proposed permissions are exact, individual, case-sensitive and non-wildcard:
 - `fpa.scenario-planning.selections.close`
 - `fpa.scenario-planning.references.validate`
 
-No endpoint, route, controller or collection is authorized by this draft.
+No executable endpoint, route, controller, collection or runtime binding is authorized by this promotion. The only
+implementation authority is the bounded non-runtime Core Scaffold & Contract-Test slice in §5.
 
 ### Gate I onboarding manifest — exact governance contract
 
-This owner declaration closes MOD-0138's producer inputs to the FU16, MOD-0021 and MOD-0035 Gate I intake
-without granting executable authority:
+This owner declaration closes MOD-0138's producer inputs to FU16 checkpoint
+`cfbfee00b24314819101faa88d7ed8f1c83c7bd2`, MOD-0021 checkpoint
+`525f6275a91eab7892741d8239dc1d0390915c3c` and MOD-0035 checkpoint
+`f1568ace514a33e951c652802347dd22ddd1ac11` without granting runtime authority:
 
 - Service audience: `diten-fpa-service`.
 - Client ID: `diten.fpa`.
@@ -118,7 +122,7 @@ without granting executable authority:
   `fpa.scenario-planning-audit-intent.submitted.v1`; `EventVersion = 1`.
 - Signing scheme: `fpa-scenario-planning-event-hmac-sha256.v1`; signing identity:
   `diten.fpa.mod-0138.scenario-planning`; key namespace: `diten/fpa/mod-0138/scenario-planning/audit-intent`.
-  Active/previous key IDs and fixture signatures remain provisioning evidence, not values invented by this draft.
+  Active/previous production key IDs remain provisioning evidence, not values invented by this pack.
 
 Audience and Client ID are shared workload identities for the future FPA host; they confer no MOD-0136 or MOD-0138
 permission. `OwnerModuleId`, operation owner, permission owner, signing identity and key namespace remain module-local.
@@ -258,8 +262,12 @@ production authority. `InvestmentCaseContextV1` remains shared typed context, no
 
 ## 4. Entity Fields
 
-`entity_base: EntityBase` is the tenant-owned **logical** contract required by the module-pack standard. It does
-not invent or select a concrete service-local base class while `service: TBD`; that mapping is a promotion blocker.
+`entity_base: EntityBase` is the tenant-owned logical contract required by the module-pack standard. The bounded
+primary slice maps it to the module-local
+`Diten.FpaService.Domain.Modules.ScenarioPlanning.Common.ScenarioPlanningEntityBase`, defined only at
+`services/Diten.FpaService/src/Diten.FpaService.Domain/Modules/ScenarioPlanning/Common/ScenarioPlanningEntityBase.cs`.
+It supplies exactly the common fields below and may not inherit from or reference an EnterpriseStrategy, Budgeting
+or other service entity base. This is a scaffold design decision, not a collection/runtime allocation.
 Business `ScenarioVersionNumber`, `OutputVersion`, `AlgorithmVersion`, `ContractVersion`, and technical concurrency
 `Version` are distinct concepts; business fields must never use the reserved bare name `Version`.
 
@@ -463,7 +471,8 @@ non-unique. No collection has a TTL index.
 
 Collection aliases, discriminator-based sharing, unlisted collection access and index-name reuse are forbidden.
 The manifest fails startup on a missing/extra entry, duplicate owner, key/filter mismatch, any TTL, or collision
-with Budgeting's manifest. Exact physical creation remains implementation authority, not granted by this draft.
+with Budgeting's manifest. The named slice may compile the declarative manifest/mappings only; physical collection
+or index creation remains a later runtime implementation authority.
 
 ### Transaction, receipt and replay composition — exact logical v1
 
@@ -543,27 +552,49 @@ requiredness and InvestmentCase lifecycle effects; none of those consumer rules 
 
 ## 5. Repo Scope
 
-Current authoring scope is exactly:
+Current governance/fixture authoring scope is exactly:
 
 - `execution/domains/enterprise-strategy-business-performance/module-packs/MOD-0138-scenario-planning.md`
 - `execution/domains/enterprise-strategy-business-performance/module-packs/fixtures/MOD-0138/audit/**`
 
-The exact future **primary logical** ScenarioPlanning scope is reserved as follows; these paths are not current
-write scope and do not authorize a scaffold:
+### Named implementation slice — MOD-0138 Core Scaffold & Contract-Test
 
-- `services/Diten.FpaService/src/Diten.FpaService.Api/Modules/ScenarioPlanning/**`
-- `services/Diten.FpaService/src/Diten.FpaService.Application/Modules/ScenarioPlanning/**`
-- `services/Diten.FpaService/src/Diten.FpaService.Domain/Modules/ScenarioPlanning/**`
-- `services/Diten.FpaService/src/Diten.FpaService.Persistence/Modules/ScenarioPlanning/**`
-- `services/Diten.FpaService/src/Diten.FpaService.Infrastructure/Modules/ScenarioPlanning/**`
-- `services/Diten.FpaService/tests/Diten.FpaService.UnitTests/Modules/ScenarioPlanning/**`
-- `services/Diten.FpaService/tests/Diten.FpaService.IntegrationTests/Modules/ScenarioPlanning/**`
-- `services/Diten.FpaService/tests/Diten.FpaService.ArchitectureTests/Modules/ScenarioPlanning/**`
-- `services/Diten.FpaService/tests/Diten.FpaService.WorkerTests/Modules/ScenarioPlanning/**`
-- `services/Diten.FpaService/tests/Diten.FpaService.ContractTests/Modules/ScenarioPlanning/**`
+Status: **READY-FOR-DEV / NON-RUNTIME**. The slice authorizes only compile-time project shells, ScenarioPlanning
+domain/application contracts, declarative persistence ownership and pure unit/architecture/contract tests for the
+binding primary profile. Its exact file scope is:
 
-If and only if the mandatory isolation matrix fails, the coordinated fallback reserves this five-layer
-ScenarioPlanning scope:
+- Project shells only:
+  `services/Diten.FpaService/src/Diten.FpaService.Api/Diten.FpaService.Api.csproj`,
+  `services/Diten.FpaService/src/Diten.FpaService.Application/Diten.FpaService.Application.csproj`,
+  `services/Diten.FpaService/src/Diten.FpaService.Domain/Diten.FpaService.Domain.csproj`,
+  `services/Diten.FpaService/src/Diten.FpaService.Persistence/Diten.FpaService.Persistence.csproj`, and
+  `services/Diten.FpaService/src/Diten.FpaService.Infrastructure/Diten.FpaService.Infrastructure.csproj`.
+- `services/Diten.FpaService/src/Diten.FpaService.Domain/Modules/ScenarioPlanning/**`, limited to the exact §3–4
+  entities/value objects, domain errors/interfaces, immutable comparator definitions/results/transitions and
+  selection history/fence contracts.
+- `services/Diten.FpaService/src/Diten.FpaService.Application/Modules/ScenarioPlanning/**`, limited to CQRS
+  contracts/validators, canonicalization/digests, idempotency/transaction abstractions, typed reference contracts
+  and a comparator work-submission interface/fake boundary; no scheduler or transport implementation.
+- `services/Diten.FpaService/src/Diten.FpaService.Persistence/Modules/ScenarioPlanning/ScenarioPlanningPersistenceOwnerManifest.cs`
+  plus `Mappings/**` and `Indexes/**` below that same module directory, declarative only; no connection, database,
+  collection creation, migration or live Mongo execution.
+- Test project shells and their ScenarioPlanning module scopes only:
+  `services/Diten.FpaService/tests/Diten.FpaService.UnitTests/Diten.FpaService.UnitTests.csproj` plus
+  `Modules/ScenarioPlanning/**`,
+  `services/Diten.FpaService/tests/Diten.FpaService.ArchitectureTests/Diten.FpaService.ArchitectureTests.csproj`
+  plus `Modules/ScenarioPlanning/**`, and
+  `services/Diten.FpaService/tests/Diten.FpaService.ContractTests/Diten.FpaService.ContractTests.csproj` plus
+  `Modules/ScenarioPlanning/**`.
+
+The slice excludes the solution/root build registration, API `Program`/controllers/endpoints, Infrastructure source,
+host composition/DI activation, Budgeting source, runtime configuration/topology selection, port binding, service
+discovery/health/deployment, Mongo connection/collection creation/migrations/live transactions, IntegrationTests,
+WorkerTests, production S2S/signing/credentials/vault, runtime `IEventBus` wiring, scheduler/worker host/broker/queue/
+topic/DLQ/alarm, Gateway, frontend, WorkCenter, MOD-0117 adapters and every fallback-service file. Adding any excluded
+surface requires a separate explicit implementation/runtime slice.
+
+If and only if executable evidence later shows that a mandatory primary isolation invariant cannot be implemented
+or fails, a separate coordinated-fallback decision may authorize this reserved five-layer ScenarioPlanning scope:
 
 - `services/Diten.ScenarioPlanningService/src/Diten.ScenarioPlanningService.Api/**`
 - `services/Diten.ScenarioPlanningService/src/Diten.ScenarioPlanningService.Application/**`
@@ -576,19 +607,20 @@ ScenarioPlanning scope:
 - `services/Diten.ScenarioPlanningService/tests/Diten.ScenarioPlanningService.WorkerTests/**`
 - `services/Diten.ScenarioPlanningService/tests/Diten.ScenarioPlanningService.ContractTests/**`
 
-The same fallback release must also activate the separate five-layer `Diten.BudgetingService`; splitting
-ScenarioPlanning alone is forbidden.
+The same fallback release must also authorize and activate the separate five-layer `Diten.BudgetingService`.
+ScenarioPlanning-only fallback, partial/hybrid activation and primary+fallback dual authority are forbidden.
 
 The future ScenarioPlanning-owned persistence allowlist/owner manifest location is
 `services/Diten.FpaService/src/Diten.FpaService.Persistence/Modules/ScenarioPlanning/ScenarioPlanningPersistenceOwnerManifest.cs`
 in primary, or
 `services/Diten.ScenarioPlanningService/src/Diten.ScenarioPlanningService.Persistence/ScenarioPlanningPersistenceOwnerManifest.cs`
-in coordinated fallback. §4 closes its exact logical entries; creating either file still requires an approved slice.
+in coordinated fallback. §4 closes its exact logical entries. This named slice authorizes only the primary declarative
+manifest; the fallback manifest remains reserved and non-authorized.
 
 ## 6. Protected Paths
 
 - `.antigravity/**`
-- `services/**`, `frontend/**`, and `gateway/**`
+- `services/**` except the exact named §5 Core Scaffold & Contract-Test files; all `frontend/**` and `gateway/**`
 - `gateway/Diten.ApiGateway/**/ocelot.json` (integration-agent only)
 - `frontend/Diten.Web/Views/Shared/_Layout.cshtml` and Archive paths
 - Other domains' governance and runtime paths
@@ -604,17 +636,22 @@ in coordinated fallback. §4 closes its exact logical entries; creating either f
 | MOD-0007 | Generic decision/rationale owner | Not duplicated here |
 | MOD-0023 | Approval only when policy requires | Separate contract; never implied by selection |
 | MOD-0072 | Actual realization owner | Not duplicated here |
-| MOD-0018 | Exact permission/tenant entitlement enforcement | Runtime evidence required |
-| MOD-0021 / MOD-0035 | Exact §3 audit mapping/event/signing onboarding; local intents commit atomically; post-commit dispatch only through MOD-0035 `IEventBus` | Governance contract closed; consumer/signing fixtures, provisioning and runtime wiring evidence remain open |
+| MOD-0018-FU16 `cfbfee00b24314819101faa88d7ed8f1c83c7bd2` | Exact permission/tenant entitlement enforcement | Pre-development design accepted; production principal/key/JWKS/replay/grant provisioning and executable evidence remain runtime gates |
+| MOD-0021 `525f6275a91eab7892741d8239dc1d0390915c3c` | Exact §3 audit mapping and bilateral fixture acceptance | Pre-development PASS; consumer inbox/audit-outbox and live delivery evidence remain runtime gates |
+| MOD-0035 `f1568ace514a33e951c652802347dd22ddd1ac11` | Exact signed-producer tuple and universal production rejection policy | Pre-development security policy PASS; production identity/keys/vault, broker and runtime `IEventBus` wiring remain runtime gates |
 | DCP-006 | Gate I orchestration | Approved; OD-04 OPEN/PARTIAL |
 | MongoDB replica set | Exact §4 transaction/receipt/unknown-commit design | Runtime prerequisite and executable evidence remain open |
-| Comparator worker/runtime | Closed BaselineDeltaV1 semantics; async delivery mechanics | Runtime infrastructure remains a B blocker |
+| Comparator worker/runtime | Domain/application comparator semantics and work-submission boundary are closed in the named slice | Physical scheduler/worker host/broker/queue/DLQ/alarm/credentials are runtime activation gates, not Core Scaffold promotion blockers |
 
 ## 8. Runtime Constraints
 
 - The primary profile is exactly one `Diten.FpaService` host with isolated `Modules/ScenarioPlanning` and
   `Modules/Budgeting` surfaces. It shares no domain type, repository, collection, index, Mongo context/session/
   transaction, idempotency/audit/outbox store or module DI registration with Budgeting.
+- The logical topology selector is closed as exact `FpaTopologyProfile = Primary | CoordinatedFallback`. `Primary`
+  means only `Diten.FpaService`; `CoordinatedFallback` means both `Diten.BudgetingService` and
+  `Diten.ScenarioPlanningService`. Zero, partial fallback, mixed/hybrid, dual/simultaneous or parallel-authority
+  activation fails startup. This design names no runtime configuration file and the named §5 slice cannot activate it.
 - Cross-module access is only through producer-owned typed/versioned Application contracts. In particular,
   BudgetVersion foreign-reference resolution/eligibility cannot use a Budgeting entity, repository, persistence
   DTO, collection handle or Mongo session.
@@ -675,8 +712,11 @@ in coordinated fallback. §4 closes its exact logical entries; creating either f
   current use returns 409 according to the mode. Removal requires persisted-reference inventory, zero unsupported
   live/current references or an approved migration, rollback evidence and consumer deployment evidence; neither
   producer nor consumer may remove/down-convert support unilaterally.
-- No port, Gateway route, service project, collection or production credential is allocated here. The service port
-  is `TBD` until an authoritative collision-free allocation is approved.
+- Canonical port-registry checkpoint `496ab31b490b98b11a514bb1a03993d3f6da7140` reserves planned primary
+  `Diten.FpaService = 5012` and coordinated fallback `Diten.BudgetingService = 5014` plus
+  `Diten.ScenarioPlanningService = 5015`. These collision-free reservations supersede this pack's earlier `TBD`
+  statement but allocate no binding, listener, route, deployment or runtime authority. Ports `5014` and `5015`
+  activate only together under a separately authorized fallback and never beside primary `5012`.
 
 ### Worker and migration boundaries
 
@@ -689,7 +729,8 @@ in coordinated fallback. §4 closes its exact logical entries; creating either f
 - ScenarioPlanning logically owns the comparator queue subscription, scheduler trigger, retry state and DLQ/alarm
   disposition. The closed retry profile remains initial attempt plus 10s/30s retries and 60s per attempt. The exact
   broker, queue/scheduler product, queue/topic/DLQ names, worker hosting, credentials and operations ownership remain
-  blockers; absent authorized runtime infrastructure, readiness fails closed and run acceptance returns 503.
+  review/runtime-activation evidence gates, not named Core Scaffold & Contract-Test promotion blockers. Until that
+  infrastructure is separately authorized and proven, runtime readiness fails closed and run acceptance returns 503.
 - Initial prototype migration is exact `NO-OP / quarantine-only`: it imports, transforms, backfills, dual-writes or
   promotes no EnterpriseStrategy `ScenarioType`/scenario record into authoritative collections. A read-only
   inventory may classify provenance and emit quarantine evidence in a separately approved migration artifact;
@@ -836,9 +877,11 @@ pinned version is stale/not-current for that context and therefore returns 409 i
 
 ## 15. Gateway / API Routing Decision
 
-Decision: **not allocated in this draft**. If frontend/runtime is later authorized, browser traffic must remain
-frontend `5001` → Gateway `5000`; direct service-port calls are forbidden. Any Ocelot change is a separate
-integration-agent task after topology and port approval. The S2S validation surface must not be browser-exposed.
+Decision: **planned port reserved; no route allocated**. Primary port `5012` and coordinated-fallback ports
+`5014`/`5015` come only from registry checkpoint `496ab31b...`; this pack does not bind them. If frontend/runtime is
+later authorized, browser traffic must remain frontend `5001` → Gateway `5000`; direct service-port calls are
+forbidden. Any Ocelot change is a separate integration-agent task after explicit runtime authority. The S2S
+validation surface must not be browser-exposed.
 
 ## 16. Acceptance Criteria
 
@@ -1025,19 +1068,29 @@ integration-agent task after topology and port approval. The S2S validation surf
   canonical JSON/hash vectors, BaselineDeltaV1, InvestmentCase selection, no-purge retention and UI 3/10/2/2.
 - [x] Reconcile the binding primary `Diten.FpaService/Modules/ScenarioPlanning` topology and coordinated
   `Diten.BudgetingService` + `Diten.ScenarioPlanningService` fail-closed fallback with domain config.
-- [ ] Make every applicable isolation-matrix test executable and passing; a failure requires the coordinated
-  two-service fallback, never ScenarioPlanning-only, hybrid or dual activation.
+- [x] Close the exact design projection for `ESBP-TOP-001`..`013`: named Unit/Architecture/Contract suites,
+  negative invariants, primary-only bounded scope and protected exclusions. Executable DI/Mongo/startup/deployment
+  PASS remains a review/runtime gate; a primary failure requires the complete coordinated fallback.
 - [x] Close the exact ScenarioPlanning collection/index matrix, owner-manifest path/entries, transaction boundaries,
   canonical request/hash/receipt/replay, unknown-commit reconciliation, no-TTL receipts and local outbox composition.
-- [ ] Fix concrete service-local EntityBase, host composition/test paths, topology-profile configuration, route,
-  deployment ownership and collision-free port.
+- [x] Fix the module-local `ScenarioPlanningEntityBase`, exact bounded project/test paths, logical exact-one topology
+  profile and planned collision-free ports `5012` / coordinated `5014+5015`; runtime configuration, binding, route,
+  host composition and deployment remain outside the named slice.
+- [x] Authorize only the §5 `MOD-0138 Core Scaffold & Contract-Test` slice and exclude API/Infrastructure source,
+  live Mongo, Integration/Worker tests, Budgeting/fallback, frontend/Gateway/WorkCenter and deployment surfaces.
 - [ ] Approve/provision dedicated S2S identity, exact audience/credential/rotation and delegated actor propagation.
 - [ ] Complete MOD-0018 entitlement/permission provisioning and runtime evidence.
-- [x] Close exact FU16 owner manifest, MOD-0021 audit mapping and MOD-0035 event/signing onboarding governance.
+- [x] Reconcile FU16 `cfbfee00...`, MOD-0021 `525f6275...` and MOD-0035 `f1568ace...`: exact 16-key owner
+  manifest, bilateral audit fixtures and universal signed-producer production-rejection policy pass pre-development.
 - [ ] Provision/approve the declared S2S/signing credentials, consumer fixtures and runtime `IEventBus` wiring evidence.
-- [ ] Select and prove authorized comparator worker host, broker, queue/scheduler, retry/DLQ names, credentials and operations ownership.
+- [x] Close comparator domain/application semantics, immutable accepted-run origin binding and fake work-submission
+  boundary for the core slice; real scheduler/worker host/broker/queue/DLQ/alarm/credentials remain a runtime gate.
 - [x] Close initial migration disposition as NO-OP/quarantine-only; any later movement needs a separate approved slice.
 - [ ] Record explicit runtime authority, including approved bilateral fixtures and executable MOD-0117 I-B Scenario amendment evidence.
+
+All pre-development design/scope/test decisions are closed. Unchecked items above require executable infrastructure,
+credentials, consumer/runtime wiring or bilateral runtime authority; they do not revoke the named ready-for-dev
+handoff, but they block review/runtime activation and production use. `production_authority: none` remains exact.
 
 ## 19. Implementation Notes
 
@@ -1059,7 +1112,7 @@ promotion, prove deterministic dry-run and mapping, verify collections/cutover, 
 MOD-0138 owns producer schemas, authoritative validation, supported-version/deprecation policy and golden producer
 fixtures. MOD-0117 owns consumer cardinality/storage/transitions, adapter behavior and pinned supported versions.
 Compatibility approval is bilateral; producer change never grants consumer runtime authority. Permission and
-contract names are closed governance identities but are not registered runtime literals by this draft.
+contract names are closed governance identities but are not activated as runtime literals by this promotion.
 
 PPM checkpoint `a2c7ff5bbfd3ef2b4e3c8c15eab804db58d62520` was inspected read-only. It closes consumer
 wrapper/context/mode governance only. MOD-0117 remains `review`, DCP-006 OD-04 remains OPEN/PARTIAL, and no producer
@@ -1078,17 +1131,18 @@ DCP-002 exact preflight command: `python3 .antigravity/scripts/verify_module_id.
 | 2026-08-04 | Added the six exact MOD-0138 audit/signing fixtures: canonical payload/schema/MOD-0021 projection, SHA-256 and module-unique test-only signing vector/signature; fixed `ModuleCode = MOD-0138` and numeric `EventVersion = 1`. | Fixture governance only; status remains `draft`, `production_authority: none`, the 16 permissions and existing Scenario canonical hashes are unchanged, and no runtime key/configuration/adapter authority is granted. |
 | 2026-08-04 | Completed MOD-0021 checkpoint reconciliation: checksum final-LF, exact schema `$id`/identity tuple, manifest-bound schema/checksum pair, 60-row allowlist ledger and delegated provenance/negative matrices. | Governance fixtures only; canonical audit payload remains 247 bytes with SHA `db9385...462b`, existing signature and Scenario 309/623-byte hashes remain unchanged, and no runtime/consumer authority is granted. |
 | 2026-08-04 | Closed final audit-security fixture gaps: explicit non-delegated provenance/absence acceptance plus delegated-profile fail-closed evidence, and five universal production-validator rejections for the test identity, fixture KeyId and correct test-only HMAC. | Governance fixture evidence only; production credentials/authority remain absent, while the 16 permissions, canonical 247-byte payload/SHA/HMAC and Scenario business hashes remain unchanged. |
+| 2026-08-04 | Reconciled canonical ports `5012` / coordinated `5014+5015`, FU16 `cfbfee00`, MOD-0021 `525f6275` and MOD-0035 `f1568ace`; fixed the module-local EntityBase, exact topology profile and bounded Core Scaffold & Contract-Test scope, then promoted to `ready-for-dev`. | Named non-runtime implementation handoff only; `production_authority: none`, exact 16 permissions, A-class Scenario semantics, 309/623-byte hashes and all audit fixtures remain unchanged. Runtime host/config/route/Mongo/S2S/signing/eventing/worker/deployment and MOD-0117 adapter authority remain blocked. |
 
 ## 20. Follow-up Items
 
 - Implement and prove the domain-config isolation matrix; any primary failure requires the coordinated
   `Diten.BudgetingService` + `Diten.ScenarioPlanningService` fallback.
-- Fix concrete service-local base mapping, host composition/test paths, topology-profile configuration, routes,
-  deployment ownership, port and Gateway task.
+- Implement the bounded module-local base/project/test scaffold. Authorize host composition, runtime topology-profile
+  configuration, port binding, routes, deployment and Gateway only in separate explicit slices.
 - Provision the declared S2S identity/audience/credential rotation and FU16 delegated actor/request binding.
 - Complete MOD-0018 permission/entitlement provisioning evidence.
-- Materialize and bilaterally approve the declared MOD-0021 mapping/fixtures and MOD-0035 signed fixture; prove
-  post-commit `IEventBus` runtime wiring without changing the governance identities.
+- Implement the accepted MOD-0021 consumer and MOD-0035 producer runtime wiring; prove transactional inbox/outbox,
+  post-commit `IEventBus` and live delivery without changing the approved governance identities or test-key deny set.
 - Select/prove worker host, broker, queue/scheduler/retry/DLQ names, credentials and operations ownership.
 - Keep initial migration NO-OP/quarantine-only; authorize a separate expand/contract amendment before any data movement.
 - Record explicit runtime authority after bilateral fixtures and executable MOD-0117 I-B Scenario amendment approval.
