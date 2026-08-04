@@ -112,6 +112,7 @@ without granting executable authority:
 
 - Service audience: `diten-fpa-service`.
 - Client ID: `diten.fpa`.
+- ModuleCode: `MOD-0138`.
 - Permission/event owner module: `MOD-0138`.
 - Producer: `Diten.FpaService`; event type: `ScenarioPlanningAuditIntentSubmittedV1`; exact EventName/routing key:
   `fpa.scenario-planning-audit-intent.submitted.v1`; `EventVersion = 1`.
@@ -195,6 +196,25 @@ Its producer-owned fixture binds the permanent shared transport URN, exact envel
 bytes/length, scheme, signing identity, provisioned fixture key ID and expected signature. PPM signing identity,
 key IDs, secrets, namespace, fixtures and derived material are forbidden. Active/previous rotation, bounded overlap,
 expiry/revocation, freshness/skew, fixed-time verification, replay/conflict and redaction follow MOD-0035 unchanged.
+
+The governance fixture root is exactly
+`execution/domains/enterprise-strategy-business-performance/module-packs/fixtures/MOD-0138/audit/`:
+
+| Fixture | Exact contract |
+|---|---|
+| `scenario-planning-audit-intent-submitted-v1.canonical.json` | Strict UTF-8, no BOM/newline/whitespace; exact property order `auditIntentId`, `actorId`, `entityType`, `entityId`, `mutation`, `occurredAtUtc`; 247 bytes |
+| `scenario-planning-audit-intent-submitted-v1.expected-audit-event.json` | Exact MOD-0021 projection with `sourceModule = MOD-0138`, `sourceService = Diten.FpaService`, `Integration/Update/Succeeded` and numeric metadata `eventVersion = 1` |
+| `scenario-planning-audit-intent-submitted-v1.schema.json` | Closed six-field schema plus exact entity/mutation pair allowlist; unknown/extra/mismatched pairs fail |
+| `scenario-planning-audit-intent-submitted-v1.canonical.sha256` | Exact lowercase digest `db9385def75d885a581554e10ce38877408ed445ed3c4f62e17283b30830462b` |
+| `scenario-planning-audit-intent-submitted-v1.signing-vector.json` | MOD-0138-only test vector; numeric `eventVersion = 1`, exact envelope/signing-input fields, 32-byte test-only secret, payload and signing-input digests |
+| `scenario-planning-audit-intent-submitted-v1.expected-signature.json` | Exact lowercase HMAC-SHA256 `05c7cdee1fa8933f00502460178a2b76fa4d68819a5d2e1801c118e0e68b47df` |
+
+The test-only key ID is `mod-0138-scenario-planning-fixture-current`; the fixture secret bytes are `0x80..0x9f`.
+They are public deterministic test evidence only and are forbidden in configuration, deployment or production.
+The vector must not equal or derive from any MOD-0136 or PPM key/vector. Verification reconstructs the MOD-0035
+newline-delimited signing prefix with numeric integer EventVersion `1`, appends the exact 247 canonical bytes without
+reserialization, and compares the expected signature in fixed time. Any BOM, trailing newline, property reorder,
+case normalization, reserialization, byte-count change, checksum mismatch or cross-module key/vector reuse fails.
 
 The three PPM wrapper fixtures are bilateral governance fixtures only:
 
@@ -830,6 +850,9 @@ integration-agent task after topology and port approval. The S2S validation surf
   only the post-commit dispatcher invokes `IEventBus`, and direct controller/handler/compute publication is rejected.
 - [ ] MOD-0035 onboarding fixture binds the exact producer/name/version/signing-identity tuple with a module-unique
   scheme/key namespace and passes rotation, revocation, freshness, replay/conflict and unchanged PPM regression gates.
+- [ ] All six §3 audit fixtures parse under strict UTF-8; canonical JSON is exact minified 247-byte/no-newline order,
+  SHA-256 and signing input/signature recompute exactly, `ModuleCode = MOD-0138`, EventVersion is integer `1`, and
+  MOD-0136/PPM key or vector reuse is rejected.
 - [ ] Primary topology is exactly isolated `Modules/ScenarioPlanning` in `Diten.FpaService`; all applicable
   `ESBP-TOP-001`..`013` domain-config tests pass, including five-layer, DI/repository, persistence-owner,
   transaction, contract-only, security, S2S, audit, PPM no-copy and runtime-allocation negative proofs.
@@ -913,6 +936,10 @@ integration-agent task after topology and port approval. The S2S validation surf
   metadata mismatch are terminal. Transaction faults prove local mutation+intent atomicity and post-commit-only
   `IEventBus`; signed onboarding proves the exact allowlist tuple, unique scheme/identity/key namespace, rotation,
   revocation, freshness, replay/conflict, redaction and unchanged PPM signed regression.
+- Fixture closure command/test independently reads raw bytes, rejects BOM/newline/whitespace/order drift, validates
+  the JSON Schema entity/mutation pair, recomputes the canonical SHA-256, reconstructs the signing input and verifies
+  the exact HMAC with the test-only key. It also asserts numeric JSON `eventVersion = 1`, expected audit
+  `sourceModule = MOD-0138`, and byte/key/vector inequality against every MOD-0136 and PPM fixture.
 - Architecture/isolation matrix mirrors [domain config](../domain-config.md#architecture-and-isolation-test-matrix):
   `ESBP-TOP-001` rejects zero/mixed/dual/partial profiles; `002` five-layer cross-types; `003` foreign repository/
   context DI; `004` shared/foreign collection or index ownership; `005` foreign session/transaction participation;
@@ -997,6 +1024,7 @@ DCP-002 exact preflight command: `python3 .antigravity/scripts/verify_module_id.
 | 2026-08-03 | Reconciled the domain-config topology: isolated ScenarioPlanning in primary `Diten.FpaService`, coordinated two-service fallback, exact future logical scopes and isolation matrix. | Physical planning boundary only; no scaffold, route, port, deployment or production authority. |
 | 2026-08-04 | Closed core composition: exact owner manifest, 12 collections, 23 tenant-first indexes, three transaction families, canonical idempotency/unknown-commit handling, local outbox, worker boundary and NO-OP migration. | Logical design only; exact events, worker infrastructure, S2S, port, deployment and MOD-0117 activation remain blocked. |
 | 2026-08-04 | Reconciled Gate I onboarding against FU16 `40e38905`, MOD-0021 `de81a135` and MOD-0035 `23f290ec`: exact FPA audience/client/owner, unchanged 16-key operation manifest, FU16 actor/request binding, audit event and six-field mapping, signed onboarding, worker separation and three bilateral PPM wrapper fixtures. | Governance contract only; status remains `draft`, `production_authority: none`, A-class semantics and canonical hash vectors are unchanged, and credentials/runtime/adapter authority remain blocked. |
+| 2026-08-04 | Added the six exact MOD-0138 audit/signing fixtures: canonical payload/schema/MOD-0021 projection, SHA-256 and module-unique test-only signing vector/signature; fixed `ModuleCode = MOD-0138` and numeric `EventVersion = 1`. | Fixture governance only; status remains `draft`, `production_authority: none`, the 16 permissions and existing Scenario canonical hashes are unchanged, and no runtime key/configuration/adapter authority is granted. |
 
 ## 20. Follow-up Items
 
