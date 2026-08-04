@@ -283,7 +283,7 @@ insufficient for delegated actor proof.
 - [ ] Tokens, secrets, credentials, nonce and request bodies are redacted from logs/traces/errors.
 - [ ] MDM and every other legacy generic module retain current auto-grant/revoke behavior.
 - [ ] PPM retains `ExplicitOnlyPreserveOnEntitlementRemoval`, its exact 16-key contract and no default Admin/Viewer grant.
-- [ ] Three onboarding profiles pass, while missing owner permission lists block executable onboarding.
+- [ ] All four producer profiles pass; their exact operation/permission manifests are accepted, but unresolved exact module-entitlement identities/applicability keep every profile blocked.
 - [ ] No runtime code/config/seed/gateway change is present in this draft authoring commit.
 
 ## 17. Test Expectations
@@ -313,11 +313,12 @@ authorization, structured-log capture proving redaction, and no secret/token in 
 - [x] Governance-only boundaries and 20 sections present.
 - [ ] Security Architect approves asymmetric signing/validation and replay-store design.
 - [ ] AuthService owner approves ServicePrincipal, manifest and explicit-grant persistence contracts.
-- [ ] MOD-0007 owner pack supplies exact permission and operation manifest.
-- [ ] MOD-0136 owner pack supplies exact permission and operation manifest.
-- [ ] MOD-0138 owner pack supplies exact permission and operation manifest.
-- [ ] MOD-0072 owner pack supplies exact permission and operation manifest.
-- [ ] Producer owners approve audiences and onboarding client identities.
+- [x] MOD-0007 owner pack supplies the exact eight-operation / seven-permission manifest at checkpoint `7bdbd37e16c72cd80f081612a104cc3af7e2b4cd`.
+- [x] MOD-0136 owner pack supplies the exact fifteen-operation / fifteen-permission manifest at checkpoint `937aabf43683eac9a240f9101ee84c66db55423a`.
+- [x] MOD-0138 owner pack supplies the exact sixteen delegated mappings / sixteen permissions plus separate accepted-run worker authority at checkpoint `066d16c80b966a63aaa7430ee8dd14c120e7a4c2`.
+- [x] MOD-0072 owner pack supplies the exact nine-operation / seven-permission manifest at checkpoint `5e5088ef6a5298b09b1dfcece9cf10ad2375aa29`.
+- [x] Producer owners approve the exact audiences and onboarding client identities recorded below.
+- [ ] Each producer owner supplies an exact module-entitlement identity/code and an unambiguous mandatory/not-applicable decision; all four profiles remain entitlement-blocked until then.
 - [ ] MDM/legacy and PPM regression suites are named in executable implementation packs.
 - [ ] Physical routes, mTLS/network controls, vault keys, retention and operational runbooks are approved.
 - [ ] Human review promotes status to `approved` or `ready-for-dev`.
@@ -344,19 +345,134 @@ in the [ledger](../../../portfolio/blueprint-master-plan-reconciliation.md).
 
 ### Onboarding profiles
 
-| Service | Blueprint owner modules | Exact audience | Client ID reservation | Producer permission source | Gate |
-|---|---|---|---|---|---|
-| `Diten.ManagementGovernanceService` | `MOD-0007` | `diten-management-governance-service` | `diten.management-governance` | MOD-0007 owner pack manifest | BLOCKED until owner list exists |
-| `Diten.FpaService` | `MOD-0136`, `MOD-0138` | `diten-fpa-service` | `diten.fpa` | Separate MOD-0136 and MOD-0138 owner manifests | BLOCKED until both applicable lists exist |
-| `Diten.DecisionIntelligenceService` | `MOD-0072` | `diten-decision-intelligence-service` | `diten.decision-intelligence` | MOD-0072 owner pack manifest | BLOCKED until owner list exists |
+| Service | Blueprint owner modules | Exact audience | Client ID reservation | Producer permission source | Bilateral manifest | Remaining gate |
+|---|---|---|---|---|---|---|
+| `Diten.ManagementGovernanceService` | `MOD-0007` | `diten-management-governance-service` | `diten.management-governance` | MOD-0007 checkpoint `7bdbd37e16c72cd80f081612a104cc3af7e2b4cd` | ACCEPTED — 8 operations / 7 permissions | **BLOCKED:** exact module-entitlement identity and mandatory/applicability decision absent |
+| `Diten.FpaService` / Budgeting | `MOD-0136` | `diten-fpa-service` | `diten.fpa` | MOD-0136 checkpoint `937aabf43683eac9a240f9101ee84c66db55423a` | ACCEPTED — 15 operations / 15 permissions | **BLOCKED:** exact module-entitlement identity and mandatory/applicability decision absent |
+| `Diten.FpaService` / ScenarioPlanning | `MOD-0138` | `diten-fpa-service` | `diten.fpa` | MOD-0138 checkpoint `066d16c80b966a63aaa7430ee8dd14c120e7a4c2` | ACCEPTED — 16 delegated mappings / 16 permissions plus accepted-run worker authority | **BLOCKED:** exact module-entitlement identity and mandatory/applicability decision absent |
+| `Diten.DecisionIntelligenceService` | `MOD-0072` | `diten-decision-intelligence-service` | `diten.decision-intelligence` | MOD-0072 checkpoint `5e5088ef6a5298b09b1dfcece9cf10ad2375aa29` | ACCEPTED — 9 operations / 7 permissions | **BLOCKED:** exact module-entitlement identity and mandatory/applicability decision absent |
 
 These client IDs and audiences identify workloads/receivers only. They do not confer module entitlement or any
-producer permission. No producer permission key is listed because no authoritative owner pack exists in current code
-reality; inventing one in PSS would violate the ownership boundary.
+producer permission. Shared FPA audience/client values do not merge ownership: MOD-0136 owns only `budgeting.*` and
+MOD-0138 owns only `fpa.scenario-planning.*`. The producer manifests use disjoint operation and permission namespaces;
+no exact operation ID, permission key or owner-module collision was found across the four checkpoints. PSS accepts
+the owner-authored values below verbatim and invents none.
+
+### Bilaterally accepted owner manifests
+
+All operation and permission comparisons are ordinal, case-sensitive and exact. Wildcard, prefix, trim, case-fold,
+alias and fallback matching remain forbidden. Catalog registration grants no tenant access; an explicit current
+tenant role grant and the complete FU16 `DelegatedActorProofV1` remain mandatory. No manifest below authorizes an
+automatic Admin/Viewer grant. The protocol scope for every delegated entry is exactly
+`diten.s2s.delegated.invoke`.
+
+#### MOD-0007 — Decision & Rationale Log
+
+| Exact `operation_id` | Exact permission |
+|---|---|
+| `decision-registry.decisions.read.v1` | `management-governance.decisions.read` |
+| `decision-registry.drafts.create.v1` | `management-governance.decisions.create` |
+| `decision-registry.drafts.revise.v1` | `management-governance.decisions.revise` |
+| `decision-registry.drafts.soft-delete.v1` | `management-governance.decisions.revise` |
+| `decision-registry.drafts.publish.v1` | `management-governance.decisions.publish` |
+| `decision-registry.decisions.supersede.v1` | `management-governance.decisions.supersede` |
+| `decision-registry.decisions.withdraw.v1` | `management-governance.decisions.withdraw` |
+| `decision-registry.decision-references.validate.v1` | `management-governance.decision-references.validate` |
+
+Distinct permission set: exactly seven values represented above. Entitlement posture in the owner pack says only
+"applicable entitlement policy" and supplies no exact module-entitlement identity/code or mandatory/not-applicable
+decision. **Profile result: PARTIAL / entitlement BLOCKED. Required owner decision:** declare the exact entitlement
+identity/code and whether every listed operation is entitlement-gated; if exceptions exist, enumerate them by exact
+operation ID.
+
+#### MOD-0136 — Budgeting
+
+| Exact `operation_id` | Exact permission |
+|---|---|
+| `budgeting.budgets.read` | `budgeting.budgets.read` |
+| `budgeting.budgets.create` | `budgeting.budgets.create` |
+| `budgeting.budgets.update` | `budgeting.budgets.update` |
+| `budgeting.budgets.archive` | `budgeting.budgets.archive` |
+| `budgeting.budget-version-drafts.read` | `budgeting.budget-version-drafts.read` |
+| `budgeting.budget-version-drafts.create` | `budgeting.budget-version-drafts.create` |
+| `budgeting.budget-version-drafts.update` | `budgeting.budget-version-drafts.update` |
+| `budgeting.budget-version-drafts.abandon` | `budgeting.budget-version-drafts.abandon` |
+| `budgeting.budget-versions.read` | `budgeting.budget-versions.read` |
+| `budgeting.budget-versions.certify` | `budgeting.budget-versions.certify` |
+| `budgeting.budget-versions.retire` | `budgeting.budget-versions.retire` |
+| `budgeting.funding-baseline-selections.read` | `budgeting.funding-baseline-selections.read` |
+| `budgeting.funding-baseline-selections.replace` | `budgeting.funding-baseline-selections.replace` |
+| `budgeting.funding-baseline-selections.close` | `budgeting.funding-baseline-selections.close` |
+| `budgeting.budget-version-references.validate` | `budgeting.budget-version-references.validate` |
+
+The owner pack states "MOD-0136 module entitlement when applicable" but does not define the exact entitlement
+identity/code or close applicability per operation. **Profile result: PARTIAL / entitlement BLOCKED. Required owner
+decision:** declare the exact entitlement identity/code and either make it mandatory for all fifteen operations or
+list exact exceptions.
+
+#### MOD-0138 — Scenario Planning
+
+| Exact delegated `operation_id` | Exact permission | Execution rule |
+|---|---|---|
+| `fpa.scenario-planning.scenarios.read` | `fpa.scenario-planning.scenarios.read` | delegated |
+| `fpa.scenario-planning.scenarios.create` | `fpa.scenario-planning.scenarios.create` | delegated |
+| `fpa.scenario-planning.scenarios.update` | `fpa.scenario-planning.scenarios.update` | delegated |
+| `fpa.scenario-planning.version-drafts.read` | `fpa.scenario-planning.version-drafts.read` | delegated |
+| `fpa.scenario-planning.version-drafts.create` | `fpa.scenario-planning.version-drafts.create` | delegated |
+| `fpa.scenario-planning.version-drafts.update` | `fpa.scenario-planning.version-drafts.update` | delegated |
+| `fpa.scenario-planning.version-drafts.abandon` | `fpa.scenario-planning.version-drafts.abandon` | delegated |
+| `fpa.scenario-planning.versions.read` | `fpa.scenario-planning.versions.read` | delegated |
+| `fpa.scenario-planning.versions.publish` | `fpa.scenario-planning.versions.publish` | delegated |
+| `fpa.scenario-planning.versions.retire` | `fpa.scenario-planning.versions.retire` | delegated |
+| `fpa.scenario-planning.comparators.read` | `fpa.scenario-planning.comparators.read` | delegated |
+| `fpa.scenario-planning.comparators.run` | `fpa.scenario-planning.comparators.run` | delegated request; accepted immutable run may later use worker authority below |
+| `fpa.scenario-planning.selections.read` | `fpa.scenario-planning.selections.read` | delegated |
+| `fpa.scenario-planning.selections.replace` | `fpa.scenario-planning.selections.replace` | delegated |
+| `fpa.scenario-planning.selections.close` | `fpa.scenario-planning.selections.close` | delegated |
+| `fpa.scenario-planning.references.validate` | `fpa.scenario-planning.references.validate` | delegated S2S |
+
+Separate worker authority is exact operation `fpa.scenario-planning.comparators.execute`. It is not a seventeenth
+tenant permission and cannot submit a run or acquire the delegated actor's permission; it may process only an already
+accepted immutable comparator run carrying the original actor/request binding. The owner pack keeps entitlement as an
+independent gate but supplies no exact identity/code or applicability decision. **Profile result: PARTIAL /
+entitlement BLOCKED. Required owner decision:** declare the exact entitlement identity/code and mandatory/applicable
+operation set, explicitly including the treatment of worker-after-acceptance authority.
+
+#### MOD-0072 — Decision Logs & Outcome Tracking
+
+| Exact `operation_id` | Exact permission |
+|---|---|
+| `outcome-tracking.outcomes.read` | `decision-intelligence.outcomes.read` |
+| `outcome-tracking.outcomes.create` | `decision-intelligence.outcomes.create` |
+| `outcome-tracking.outcomes.publish-version` | `decision-intelligence.outcomes.version` |
+| `outcome-tracking.outcomes.retire` | `decision-intelligence.outcomes.version` |
+| `outcome-tracking.measurements.append` | `decision-intelligence.measurements.append` |
+| `outcome-tracking.measurements.correct` | `decision-intelligence.measurements.correct` |
+| `outcome-tracking.decision-links.create` | `decision-intelligence.decision-links.manage` |
+| `outcome-tracking.decision-links.retire` | `decision-intelligence.decision-links.manage` |
+| `outcome-tracking.outcome-references.validate` | `decision-intelligence.outcome-references.validate` |
+
+Distinct permission set: exactly seven values represented above. The owner pack requires workload identity, module
+entitlement and permission ownership to remain separate, but does not name an exact entitlement identity/code or
+close mandatory/applicability per operation. **Profile result: PARTIAL / entitlement BLOCKED. Required owner
+decision:** declare the exact entitlement identity/code and whether all nine operations require it; enumerate exact
+exceptions if any.
+
+### Collision and regression disposition
+
+- Owner IDs are exact and distinct: MOD-0007, MOD-0136, MOD-0138 and MOD-0072.
+- Operation namespaces are disjoint: `decision-registry.*`, `budgeting.*`, `fpa.scenario-planning.*` and
+  `outcome-tracking.*`.
+- Permission namespaces/sets are disjoint. Shared FPA service identity does not merge MOD-0136 and MOD-0138
+  manifests, ownership, permissions or entitlement decisions.
+- No exact operation ID or permission key is registered by two owner modules in these checkpoints.
+- PPM remains `ExplicitOnlyPreserveOnEntitlementRemoval`; its exact Phase 2A grant behavior is unchanged.
+- MDM and every other legacy module remain on the existing generic auto-grant/revoke branch; FU16 reconciliation
+  changes no runtime dispatch, seed or default-role behavior.
 
 ## 20. Follow-up Items
 
-1. Each producer owner authors/approves its own module pack or FU containing the exact operation-to-permission manifest.
+1. Each producer owner closes the remaining exact module-entitlement identity/code and mandatory/applicability decision recorded above; operation-to-permission manifests are bilaterally accepted at the named checkpoints.
 2. Security Architecture locks asymmetric key type, JWKS/discovery, mTLS binding, replay retention and emergency revoke SLO.
 3. AuthService owner prepares separate executable slices for registry/token, manifest registration and explicit grants.
 4. Platform.Common owner decides the minimal additive protocol contract without weakening tenant-user handlers.
