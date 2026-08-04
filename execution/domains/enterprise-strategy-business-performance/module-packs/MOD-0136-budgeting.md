@@ -83,7 +83,8 @@ Physical placement follows the authoritative
 
 | Category | Proposed owned objects |
 |---|---|
-| Aggregates/entities | `Budget`, `BudgetFiscalCalendar`, immutable `BudgetFiscalCalendarPeriodDefinition`, `BudgetVersionDraft`, immutable certified `BudgetVersion`, `BudgetPeriod`, `BudgetLine`, immutable `FundingBaselineSelectionOccurrence`, immutable `SelectionClosure`, immutable `SelectionDisposition` |
+| Aggregates/entities | `Budget`, `BudgetFiscalCalendar`, immutable `BudgetFiscalCalendarPeriodDefinition`, `BudgetVersionDraft`, immutable certified `BudgetVersion`, immutable `BudgetVersionDisposition`, `BudgetPeriod`, `BudgetLine`, immutable `FundingBaselineSelectionOccurrence`, immutable `SelectionClosure`, immutable `SelectionDisposition` |
+| Producer-local persistence records | `FundingBaselineSelectionFence`, immutable `BudgetingIdempotencyReceipt`, immutable audit intent, local event-outbox record and migration-quarantine record; none is a foreign business SoR |
 | Value objects | `MoneyAmount`, `CurrencyReferenceV1`, `BudgetFiscalCalendarReferenceV1`, `PeriodReference`, `UnitSemantics`, `RoundingPolicyV1`, `FundingBaselineType`, `LineType` |
 | Repositories | Separate Budget and BudgetVersion repositories; period/line persistence must remain aggregate-isolated |
 | Commands | Create/update/archive Budget; create/update/abandon draft; certify draft; replace/close selection; retire/supersede version; no approve command |
@@ -368,11 +369,13 @@ silently reformatted; unsorted lines canonicalize to the mandated sort. Extra/mi
 - The partner `Diten.ScenarioPlanningService` paths are owned by MOD-0138 and are not writable through this
   pack. Nevertheless, coordinated fallback selection is invalid unless that service is selected with
   `Diten.BudgetingService`; partial fallback, hybrid, mixed or dual activation is prohibited.
-- The Budgeting-owned collection/index/repository owner manifest must live under the selected profile's
-  Persistence ownership scope: primary
-  `services/Diten.FpaService/src/Diten.FpaService.Persistence/Modules/Budgeting/Ownership/**`, or fallback
-  `services/Diten.BudgetingService/src/Diten.BudgetingService.Persistence/Ownership/**`. Exact collection and
-  index names remain a B-class blocker; the manifest cannot share an owner entry with ScenarioPlanning.
+- The single authoritative persistence-owner manifest path is
+  `services/Diten.FpaService/src/Diten.FpaService.Persistence/Modules/Budgeting/Ownership/BudgetingPersistenceOwnershipManifest.cs`.
+  It contains only the exact closed entries in Section 8 and cannot share an entry with ScenarioPlanning. If
+  mandatory isolation failure selects coordinated fallback, a separately authorized topology cutover relocates
+  this same closed manifest to
+  `services/Diten.BudgetingService/src/Diten.BudgetingService.Persistence/Ownership/BudgetingPersistenceOwnershipManifest.cs`
+  while the primary manifest is absent. Both paths can never be authoritative or deployed together.
 - `frontend/Diten.Web` tenant-shell Budget and BudgetVersion paths only after explicit frontend authority.
 - A separately authorized Gateway route task owned by `integration-agent` only after service/port selection.
 - A separately approved MOD-0117 consumer amendment only after this producer contract is approved and matching
@@ -420,11 +423,9 @@ silently reformatted; unsorted lines canonicalize to the mandated sort. Extra/mi
   cached results cannot authorize new certification or selection.
 - Version creation, period/line persistence, selected-baseline uniqueness, outbox/audit intent and idempotency
   record use a Mongo replica-set transaction. Domain mutation without its audit intent must roll back.
-- Every mutating request carries a bounded idempotency key scoped by tenant, actor, operation and normalized
-  payload hash. Same key/same payload replays the original result; same key/different payload returns `409`.
-- Idempotency persistence records the canonical request hash, operation, in-progress/completed state and stable
-  response in the same transaction. Canonical decimal representation and deterministic line ordering are part
-  of hashing; key length/charset, retention/TTL and unknown-commit recovery remain promotion decisions.
+- Every mutating request follows the exact idempotency key, payload-hash, receipt, replay and unknown-commit
+  decision below. Same canonical key/same payload returns the committed result; same key/different payload is
+  `409`; indeterminate receipt reconciliation is `503`. V1 receipts have no TTL or reuse window.
 - Uncertified abandoned staging may be soft-deleted under policy, but has no automatic hard purge. Certified,
   periods, lines, selection history and hashes have no TTL, CRUD delete or bulk delete. Selected, referenced or historically
   effective versions cannot be ordinary CRUD-deleted: append-only retirement/supersession preserves queryable
@@ -439,8 +440,8 @@ silently reformatted; unsorted lines canonicalize to the mandated sort. Extra/mi
 - Checked decimal is used throughout. Calculated intermediates normalize to scale four with ToEven only before
   certification. Line absolute bound is `1,000,000,000,000,000.0000`; version aggregate absolute bound is
   `1,000,000,000,000,000,000.0000`; overflow stops certification with `400`.
-- No service scaffold/runtime instance, collection, route, event, transport or port is allocated by this draft;
-  the frontmatter service value is a governance-only primary placement decision.
+- No service scaffold/runtime instance, physical collection/index, route, event, transport or port is created by
+  this draft; service and persistence literals are governance-only future composition decisions.
 - Gate I-B validation is mode-specific: `HistoricalResolve` can resolve visible retired certified history;
   `NewReferenceEligibility` cannot infer current selection; `CurrentSelectionEligibility` consults only the
   immutable MOD-0136 selection occurrence/event truth for exact `InvestmentCaseContextV1`. PPM wrapper storage
@@ -452,6 +453,140 @@ silently reformatted; unsorted lines canonicalize to the mandated sort. Extra/mi
   transaction; close appends prior closure and audit intent. Both use the existing exact replace/close
   permissions, while selection validation uses `budgeting.budget-version-references.validate`; no new
   validation permission is introduced.
+
+### Budgeting Core persistence-owner manifest — exact v1
+
+The manifest is the only place allowed to register a Budgeting repository, collection, index initializer or
+Mongo transaction participant. Dynamic collection names, generic foreign collection access and collection
+registration outside this manifest fail architecture tests. Its exact entries are:
+
+| Owner entry | Exact collection | Repository / writer ownership |
+|---|---|---|
+| `Budgets` | `budgeting_budgets` | `IBudgetRepository` / `BudgetRepository` |
+| `FiscalCalendars` | `budgeting_fiscal_calendars` | `IBudgetFiscalCalendarRepository` / `BudgetFiscalCalendarRepository` |
+| `BudgetVersionDrafts` | `budgeting_budget_version_drafts` | `IBudgetVersionDraftRepository` / `BudgetVersionDraftRepository`; draft candidate periods/lines are embedded |
+| `BudgetVersions` | `budgeting_budget_versions` | `IBudgetVersionRepository` / `BudgetVersionRepository`; immutable certified header/snapshot root |
+| `BudgetVersionDispositions` | `budgeting_budget_version_dispositions` | same repository; immutable retirement/supersession disposition append |
+| `BudgetPeriods` | `budgeting_budget_periods` | `IBudgetPeriodRepository` / `BudgetPeriodRepository`; certification writer only |
+| `BudgetLines` | `budgeting_budget_lines` | `IBudgetLineRepository` / `BudgetLineRepository`; certification writer only |
+| `FundingBaselineSelectionOccurrences` | `budgeting_funding_baseline_selection_occurrences` | `IFundingBaselineSelectionRepository`; immutable occurrence append |
+| `FundingBaselineSelectionDispositions` | `budgeting_funding_baseline_selection_dispositions` | same repository; immutable closure/replacement disposition append |
+| `FundingBaselineSelectionFences` | `budgeting_funding_baseline_selection_fences` | same repository; context-scoped CAS/uniqueness fence, not an alternate selection SoR |
+| `IdempotencyReceipts` | `budgeting_idempotency_receipts` | `IBudgetingIdempotencyReceiptStore` |
+| `AuditIntents` | `budgeting_audit_intents` | `IBudgetingAuditIntentWriter`; producer-local only |
+| `EventOutbox` | `budgeting_event_outbox` | `IBudgetingOutboxWriter`; producer-local post-commit dispatch source |
+| `MigrationQuarantine` | `budgeting_migration_quarantine` | `IBudgetingMigrationQuarantineWriter`; inactive until a separately approved migration slice |
+
+No entry is shared with or accessible to ScenarioPlanning. Budgeting code cannot resolve a ScenarioPlanning
+repository, database context, collection handle, session or transaction participant; ScenarioPlanning has the
+same zero-access boundary toward every collection above.
+
+### Tenant-first named index matrix — exact v1
+
+All keys use the listed order. Every index begins with `TenantId`; `1` is ascending and `-1` descending.
+`IsDeleted: false` partial filters apply only where stated. No TTL index exists.
+
+| Exact index name | Collection | Ordered keys | Uniqueness / filter / purpose |
+|---|---|---|---|
+| `ux_budgeting_budgets_tenant_code_active_v1` | `budgeting_budgets` | `TenantId:1, Code:1` | unique; partial `IsDeleted=false` |
+| `ix_budgeting_budgets_tenant_list_v1` | `budgeting_budgets` | `TenantId:1, IsDeleted:1, UpdatedAt:-1, Id:1` | list/detail support |
+| `ux_budgeting_fiscal_calendars_tenant_id_v1` | `budgeting_fiscal_calendars` | `TenantId:1, Id:1` | unique tenant-qualified identity |
+| `ix_budgeting_fiscal_calendars_tenant_list_v1` | `budgeting_fiscal_calendars` | `TenantId:1, IsDeleted:1, UpdatedAt:-1, Id:1` | active-list support |
+| `ux_budgeting_budget_version_drafts_tenant_id_v1` | `budgeting_budget_version_drafts` | `TenantId:1, Id:1` | unique tenant-qualified draft identity |
+| `ix_budgeting_budget_version_drafts_tenant_budget_v1` | `budgeting_budget_version_drafts` | `TenantId:1, BudgetId:1, IsDeleted:1, UpdatedAt:-1, Id:1` | budget draft list/fence lookup |
+| `ux_budgeting_budget_versions_tenant_budget_number_v1` | `budgeting_budget_versions` | `TenantId:1, BudgetId:1, BudgetVersionNumber:1` | unique immutable business ordinal |
+| `ux_budgeting_budget_versions_tenant_id_v1` | `budgeting_budget_versions` | `TenantId:1, Id:1` | unique referenceability lookup |
+| `ux_budgeting_budget_version_dispositions_tenant_id_v1` | `budgeting_budget_version_dispositions` | `TenantId:1, Id:1` | unique immutable disposition identity |
+| `ix_budgeting_budget_version_dispositions_tenant_version_time_v1` | `budgeting_budget_version_dispositions` | `TenantId:1, BudgetVersionId:1, DisposedAtUtc:-1, Id:1` | lifecycle history/eligibility lookup |
+| `ux_budgeting_budget_periods_tenant_version_reference_v1` | `budgeting_budget_periods` | `TenantId:1, BudgetVersionId:1, PeriodReference:1` | unique period identity in snapshot |
+| `ux_budgeting_budget_periods_tenant_version_order_v1` | `budgeting_budget_periods` | `TenantId:1, BudgetVersionId:1, Order:1` | unique deterministic order |
+| `ux_budgeting_budget_lines_tenant_version_period_key_type_v1` | `budgeting_budget_lines` | `TenantId:1, BudgetVersionId:1, PeriodReference:1, LineKey:1, LineType:1` | unique closed line identity |
+| `ix_budgeting_budget_lines_tenant_version_order_v1` | `budgeting_budget_lines` | `TenantId:1, BudgetVersionId:1, PeriodReference:1, LineKey:1, LineType:1, Id:1` | deterministic snapshot read |
+| `ux_budgeting_selection_occurrences_tenant_id_v1` | `budgeting_funding_baseline_selection_occurrences` | `TenantId:1, Id:1` | unique immutable occurrence identity |
+| `ix_budgeting_selection_occurrences_tenant_context_time_v1` | `budgeting_funding_baseline_selection_occurrences` | `TenantId:1, FundingContext.ContractName:1, FundingContext.ContractVersion:1, FundingContext.InvestmentCaseId:1, EffectiveFromUtc:-1, Id:1` | context history derivation |
+| `ux_budgeting_selection_dispositions_tenant_occurrence_v1` | `budgeting_funding_baseline_selection_dispositions` | `TenantId:1, OccurrenceId:1` | unique terminal closure/replacement per occurrence |
+| `ix_budgeting_selection_dispositions_tenant_context_time_v1` | `budgeting_funding_baseline_selection_dispositions` | `TenantId:1, FundingContext.ContractName:1, FundingContext.ContractVersion:1, FundingContext.InvestmentCaseId:1, DisposedAtUtc:-1, Id:1` | context history derivation |
+| `ux_budgeting_selection_fences_tenant_context_v1` | `budgeting_funding_baseline_selection_fences` | `TenantId:1, FundingContext.ContractName:1, FundingContext.ContractVersion:1, FundingContext.InvestmentCaseId:1` | unique current-selection CAS fence |
+| `ux_budgeting_idempotency_tenant_actor_operation_key_v1` | `budgeting_idempotency_receipts` | `TenantId:1, ActorId:1, Operation:1, CanonicalKey:1` | unique replay scope; no TTL |
+| `ix_budgeting_idempotency_tenant_created_v1` | `budgeting_idempotency_receipts` | `TenantId:1, CreatedAt:-1, Id:1` | operational reconciliation; no TTL |
+| `ux_budgeting_audit_intents_tenant_id_v1` | `budgeting_audit_intents` | `TenantId:1, Id:1` | unique local audit intent |
+| `ix_budgeting_audit_intents_tenant_delivery_v1` | `budgeting_audit_intents` | `TenantId:1, DeliveryState:1, CreatedAt:1, Id:1` | delivery/reconciliation scan; no TTL |
+| `ux_budgeting_event_outbox_tenant_id_v1` | `budgeting_event_outbox` | `TenantId:1, Id:1` | unique local outbox record |
+| `ix_budgeting_event_outbox_tenant_delivery_v1` | `budgeting_event_outbox` | `TenantId:1, DeliveryState:1, NextAttemptAtUtc:1, CreatedAt:1, Id:1` | post-commit dispatcher scan; no TTL |
+| `ux_budgeting_migration_quarantine_tenant_source_v1` | `budgeting_migration_quarantine` | `TenantId:1, SourceSystem:1, SourceCollection:1, SourceDocumentId:1, MappingVersion:1` | unique quarantine provenance; no TTL |
+
+Index creation is idempotent but fail-closed: an existing name with a different key, uniqueness or partial
+filter blocks startup/review promotion. Collection/index names are exact lowercase literals and cannot be
+prefixed, normalized, aliased or reused by ScenarioPlanning.
+
+### Transaction composition — exact v1
+
+Every command set below uses one Budgeting-owned Mongo replica-set session/transaction. It includes the exact
+business writes plus one `budgeting_idempotency_receipts` record, one local `budgeting_audit_intents` record and
+one local `budgeting_event_outbox` record. Failure of any participant aborts the entire transaction.
+
+| Transaction set | Exact business participants | Boundary |
+|---|---|---|
+| `BudgetIdentityMutationV1` | `budgeting_budgets` | create/update/archive one Budget under optimistic fence; no version/draft/selection write |
+| `BudgetFiscalCalendarMutationV1` | `budgeting_fiscal_calendars` | create/update/archive calendar according to referenceability rules; no certified snapshot rewrite |
+| `BudgetVersionDraftMutationV1` | `budgeting_budget_version_drafts` | create/update/abandon one draft including embedded candidate periods/lines; no certified collection write |
+| `BudgetVersionCertificationV1` | `budgeting_budget_version_drafts`, `budgeting_budget_versions`, `budgeting_budget_periods`, `budgeting_budget_lines` | CAS-consume exact draft fence; atomically allocate monotonic version number and publish immutable certified snapshot/children; publication means certification, not approval |
+| `FundingBaselineSelectionReplaceV1` | `budgeting_funding_baseline_selection_fences`, `budgeting_funding_baseline_selection_dispositions`, `budgeting_funding_baseline_selection_occurrences` | CAS current fence; append prior replacement disposition and successor occurrence; update fence pointer; old occurrence remains immutable |
+| `FundingBaselineSelectionCloseV1` | `budgeting_funding_baseline_selection_fences`, `budgeting_funding_baseline_selection_dispositions` | CAS current fence; append closure and clear fence pointer; old occurrence remains immutable |
+| `BudgetVersionRetireV1` | `budgeting_budget_version_dispositions` | CAS append immutable retirement/supersession disposition; `budgeting_budget_versions` and certified content/hash/period/line bytes never change |
+
+No transaction may enlist ScenarioPlanning, Platform, PPM or EnterpriseStrategy collections, repositories,
+sessions or contexts. Provider calls occur before opening the transaction; their responses are pinned into the
+validated command. A transaction never remains open across network or broker I/O.
+
+### Idempotency and unknown-commit decision — exact v1
+
+- Every mutating command requires `Idempotency-Key` with 1..128 ASCII characters from
+  `[A-Za-z0-9._:-]`. Empty, non-ASCII, whitespace, leading/trailing whitespace or any other character is `400`.
+  The canonical key is the exact case-sensitive accepted byte sequence; no trim, case fold, Unicode
+  normalization, aliasing or server-generated fallback occurs.
+- Receipt identity is exact `(TenantId, ActorId, Operation, CanonicalKey)`. `TenantId` and effective `ActorId`
+  are server-derived; `Operation` is the closed command token named by the transaction set.
+- `PayloadHash` is lowercase SHA-256 of the command's exact versioned canonical request bytes after server-side
+  defaults are resolved but excluding tenant, actor, correlation, retry count and the idempotency key. Each
+  command contract must publish a golden canonical-byte/hash fixture before implementation.
+- The receipt stores `PayloadHash`, transaction/operation identity, stable resource/result identity, safe
+  response code/body hash, `CommittedAtUtc` and correlation/causation provenance in the same transaction as the
+  mutation, audit intent and outbox.
+- Same receipt identity plus the same `PayloadHash` returns the stored stable result without re-running domain,
+  provider or broker work. Same receipt identity plus a different `PayloadHash` returns `409` with no mutation.
+- On Mongo `UnknownTransactionCommitResult`, retry **commit only** on the same session/transaction according to
+  the bounded driver policy; never re-run the transaction body. After commit-only retries are exhausted,
+  reconcile by the exact receipt identity and payload hash. A committed matching receipt returns the stored
+  result; a conflicting receipt returns `409`; absent, unreadable or indeterminate receipt state returns `503`
+  and never guesses success or replays the body.
+- V1 receipts have no TTL, expiry, purge, reuse window or delete endpoint. Operational archival/purge requires
+  a future approved compatibility and retention amendment.
+
+### Audit/outbox and post-commit delivery — exact composition
+
+- Every successful mutation writes its producer-local audit intent and local outbox record atomically with the
+  business mutation and idempotency receipt. Missing audit/outbox composition is a transaction failure.
+- Broker publication begins only after commit, from `budgeting_event_outbox`, through MOD-0035's public
+  `IEventBus`. At-least-once retry, duplicate-safe consumer behavior and delivery-state reconciliation apply.
+- Direct RabbitMQ client, direct MassTransit publish/send/consume integration, direct Platform audit/event/outbox
+  collection access and cross-service distributed transactions are prohibited.
+- Exact audit event identity/schema, retention and downstream deployment remain open B-class decisions. Their
+  absence blocks runtime promotion but does not change the local atomic composition fixed here.
+
+### Provider outage and initial migration boundary
+
+- Currency and BudgetFiscalCalendar providers are called before certification or a new selection when that
+  operation requires current eligibility. Definitive same-version invalid input is `400`; timeout, unavailable,
+  malformed response or unknown/unsupported provider contract version is `503`. There is no stale-cache,
+  local-default or fail-open authorization. The transaction is never opened after an indeterminate response.
+- Historical reads/resolution of already certified local immutable snapshots continue without a provider call;
+  provider outage never rewrites or reinterprets stored currency/calendar/period/hash truth.
+- Initial migration is **NO-OP / quarantine-only**. No startup import, backfill, dual-read, dual-write, shadow
+  write, fallback query or authoritative mapping from EnterpriseStrategy occurs. The quarantine collection is
+  reserved but receives writes only under a separately approved migration slice with explicit provenance.
+- Ambiguous/invalid legacy evidence remains outside Budgeting SoR and cannot become certified, selected or
+  referenceable. Cutover, reconciliation and rollback remain open B-class migration work.
 
 ### Service topology decision
 
@@ -541,7 +676,7 @@ handlers must not directly implement arbitrary child upsert loops or external HT
 | Selection effective time | Selection | Occurrence start and event timestamps are server-derived UTC; no occurrence is edited in place | No overlap per tenant + context |
 | ContractName/Version | Yes | Exact, case-sensitive v1 allowlists for producer, PPM context and wrapper; no coercion | Malformed caller shape `400`; unknown/unsupported authoritative version `503` |
 | TenantId / ActorId | No client field | Server context only | Client-supplied value rejected |
-| IdempotencyKey | Mutations | Non-empty, bounded, normalized | Unique scoped key + payload hash |
+| IdempotencyKey | Mutations | Exact case-sensitive 1..128 ASCII `[A-Za-z0-9._:-]`; no trim/normalization | Unique tenant/actor/operation/key receipt + canonical payload hash; no TTL |
 
 ## 13. Failure Path to Verify
 
@@ -557,6 +692,9 @@ handlers must not directly implement arbitrary child upsert loops or external HT
   replacement atomically appends closure/disposition, successor and audit intent without editing the old
   occurrence; transaction/audit rollback leaves the previous truth intact and preserves the version hash.
 - Duplicate idempotency key: same payload returns original result; changed payload returns `409`.
+- Unknown commit: bounded same-session commit-only retry, then exact receipt reconciliation; matching committed
+  receipt returns the stored result, conflict is `409`, and absent/unreadable/indeterminate state is `503` with
+  no transaction-body replay.
 - Audit/outbox write failure: entire domain transaction rolls back.
 - MOD-0117 consumer attempts currency/period/unit/rounding/amount/line snapshot: architecture/contract test fails.
 - Provider outage: existing certified history remains readable, but no cached result authorizes certification/selection.
@@ -615,6 +753,16 @@ S2S providers receive no browser/Gateway route. This pack does not modify `ocelo
   effective time, future/backdated selection is rejected, and replace/close preserve exactly one current
   occurrence using the existing exact permissions.
 - [ ] Mutation, audit intent, selected uniqueness and idempotency are atomic in a Mongo replica-set transaction.
+- [ ] The single Budgeting persistence-owner manifest contains exactly the 14 closed collection/repository
+  entries and exact tenant-first named-index matrix; duplicate names, drift, TTL or ScenarioPlanning access fail.
+- [ ] Budget identity/calendar, draft, certification/publication, selection replace/close and retirement use only
+  their exact transaction sets plus receipt, audit intent and local outbox; no provider/broker/foreign participant
+  is enlisted.
+- [ ] Idempotency enforces exact case-sensitive ASCII canonical keys and canonical payload hashes; same
+  key/payload replays, different payload returns `409`, unknown commit uses commit-only retry plus receipt
+  reconciliation, indeterminate state returns `503`, and v1 receipts have no TTL.
+- [ ] Broker delivery is post-commit through MOD-0035 `IEventBus`; direct RabbitMQ, MassTransit and Platform
+  collection access are absent. Initial migration is NO-OP/quarantine-only with no dual-read/write.
 - [ ] Budget field count 6 selects Slim; BudgetVersionDraft combined field count 11 selects Compact because
   calendar definitions/order are server-generated and only a line's generated `PeriodReference` is selected; all tenant pages explicitly
   use `_LayoutTenantShell` and DataTables pass `verify_datatable_page.py` plus `quality-gate-datatable`.
@@ -644,6 +792,21 @@ S2S providers receive no browser/Gateway route. This pack does not modify `ocelo
 - Transaction: replica-set commit/rollback across aggregate, idempotency and audit intent; injected audit failure
   rolls back the appended closure/disposition event, successor occurrence and audit intent, leaving the prior
   effective truth intact with no old-occurrence mutation or partial version/selection.
+- Persistence manifest/index: exact 14 collection entries, exact repository/writer ownership, every named
+  tenant-first index key/order/uniqueness/filter, no name/spec collision, no TTL, no dynamic/foreign collection
+  registration and zero ScenarioPlanning access.
+- Transaction composition: independently fault every participant in each exact transaction set; assert atomic
+  rollback of business state, receipt, audit intent and outbox, no network/broker call inside the transaction,
+  immutable draft/certified/occurrence history and selection-fence CAS uniqueness.
+- Idempotency/unknown commit: accepted/rejected key charset and case sensitivity, canonical payload golden
+  fixtures, same-key replay without handler/provider execution, different-payload `409`, bounded same-session
+  commit-only retry, matching receipt reconciliation and absent/indeterminate receipt `503`; prove no TTL index.
+- Audit/outbox: audit/outbox persistence failure rolls back the mutation; dispatcher cannot publish pre-commit,
+  publishes only through `IEventBus`, and direct RabbitMQ/MassTransit/Platform collection references fail the
+  architecture scan.
+- Provider/migration: currency/calendar definitive-invalid `400` versus unavailable/malformed/version `503`,
+  historical local reads during outage, no transaction after indeterminate validation, startup migration NO-OP,
+  quarantine-only authorized writes and negative proof of dual-read, dual-write, shadow or fallback query.
 - Contract: exact five-field producer tuple plus exact PPM context/wrapper serialization and round-trip; reject
   missing/extra/renamed/case-changed fields and financial/certification/selection payload copying; exercise every
   validation mode, exact status mapping, supported `1.0`, unknown/unsupported versions, S2S/delegated actor,
@@ -685,13 +848,14 @@ S2S providers receive no browser/Gateway route. This pack does not modify `ocelo
   `Diten.BudgetingService + Diten.ScenarioPlanningService` fallback, complete-primary rejection, exclusivity,
   exact logical repo/test scopes and EnterpriseStrategy/OutcomeTracking prohibitions are reconciled to the
   authoritative ESBP domain topology; this records no runtime authority.
-- [ ] Concrete service-local mapping for logical `EntityBase`, exact collection/index names and the selected
-  profile's Budgeting-owned persistence manifest are approved without inventing or sharing a base/owner.
+- [ ] Concrete service-local mapping for logical `EntityBase` is approved without importing or sharing a foreign base.
+- [x] The single Budgeting persistence-owner manifest path, its exact 14 collection/repository entries and the
+  exact tenant-first named-index matrix are closed without collision, TTL or ScenarioPlanning ownership.
 - [x] The applicable `ESBP-TOP-001` through `ESBP-TOP-013` design projection names unit, integration,
   architecture and contract test scopes, test plans, negative invariants and protected paths. Scaffold/code/live
   dependencies are not required to PASS before `ready-for-dev`.
-- [ ] Currency allowlist provider contract/SLA and BudgetFiscalCalendar persistence/API wiring design are exact
-  and authorized; executable provider/wiring evidence belongs to review/runtime promotion.
+- [x] Currency/BudgetFiscalCalendar fail-closed outage boundary and pre-transaction validation ordering are exact;
+  provider implementation, credentials and SLA remain runtime-promotion evidence.
 - [ ] `BudgetVersionReferenceV1` producer contract is approved; PPM's closed `InvestmentCaseContextV1` and
   `SelectedBudgetVersionReferenceV1` profiles have exact bilateral serialization/mode/error fixtures approved,
   while a separately authorized executable consumer slice remains gated.
@@ -708,8 +872,10 @@ S2S providers receive no browser/Gateway route. This pack does not modify `ocelo
   future slices; implemented file/browser evidence belongs to review.
 - [ ] The 15 exact lowercase permission keys and provisioning plan are approved without wildcard, alias or
   normalization; live catalog/grants, S2S identity and delegated actor evidence belong to review/runtime promotion.
-- [ ] Mongo replica set, transaction, audit intent, idempotency and indexes have executable test plans.
-- [ ] Migration inventory/mapping/quarantine/rollback plan is approved; prototypes are not production baseline.
+- [x] Exact transaction sets, idempotency canonicalization/hash/receipt/replay, unknown-commit reconciliation,
+  no-TTL policy, audit/outbox atomicity and post-commit `IEventBus` boundary have executable test plans.
+- [x] Initial migration behavior is NO-OP/quarantine-only with no dual-read/write; any later migration inventory,
+  mapping, cutover, reconciliation and rollback requires a separate approval.
 - [ ] Port remains `TBD` until an authoritative collision-free allocation exists; any later public Gateway
   decision remains a separate integration-agent task and internal S2S providers receive no browser/Gateway route.
 - [x] Acceptance/test projections include build, verifier, RESX, contract, architecture, integration, security
@@ -755,6 +921,7 @@ S2S providers receive no browser/Gateway route. This pack does not modify `ocelo
 | 2026-08-03 | Closed the A-class v1 financial semantics: Decimal128/scale/bounds/ToEven, exact currency and budgeting-calendar references, units, line schema/sign rules, certification separation-of-duties, selection timing, canonical JSON with verified normative SHA-256 vectors, immutable retention and field counts 6/11. Status, topology and runtime authority remain unchanged. | User / FP&A Control Tower |
 | 2026-08-03 | Reconciled service topology to the authoritative ESBP domain checkpoint: primary isolated `Diten.FpaService/Modules/Budgeting`, conditional fallback, exact future scopes and architecture matrix. Financial semantics, permissions, hash vectors, draft status and production authority remain unchanged. | User / ESBP Control Tower |
 | 2026-08-04 | Corrected fallback to the coordinated `Diten.BudgetingService + Diten.ScenarioPlanningService` profile and separated ready-for-dev design/test-plan gates from executable review/runtime evidence. Status and production authority remain unchanged. | User / ESBP Control Tower |
+| 2026-08-04 | Closed Budgeting Core composition: exact collections/indexes/owner manifest, transaction sets, idempotency and unknown-commit behavior, atomic audit/outbox with post-commit `IEventBus`, fail-closed providers and NO-OP/quarantine-only initial migration. Runtime evidence, audit event identity, status and production authority remain open/unchanged. | User / FP&A Control Tower |
 
 ## 20. Follow-up Items
 
@@ -772,13 +939,14 @@ items, and implementation may not widen or reinterpret them.
   `ESBP-TOP-013` matrix for the primary; if any isolation test fails, record complete primary rejection and the
   coordinated selection of both `Diten.BudgetingService` and `Diten.ScenarioPlanningService`, with no partial,
   hybrid, mixed or dual activation. This executable evidence is not a ready-for-dev prerequisite.
-- Fix concrete service-local entity base, exact Mongo collection/index names and owner manifest entries; the
-  logical primary/fallback repository and test paths are closed above.
+- Fix the concrete service-local `EntityBase`; collection/index names, owner manifest entries and logical
+  primary/fallback repository/test paths are closed above.
 - Provision dedicated S2S credentials and delegated actor propagation.
 - Complete MOD-0018 permission/entitlement provisioning for the exact 15 keys.
-- Complete MOD-0021/MOD-0035 transactional audit-intent/outbox integration evidence.
-- Close the replica-set transaction, idempotency receipt, retry and unknown-commit runtime design.
-- Approve migration inventory, quarantine, cutover, rollback and reconciliation evidence for prototype data.
+- Approve the exact audit event identity/schema/retention and complete MOD-0021/MOD-0035 executable integration evidence.
+- Produce executable replica-set transaction, idempotency/unknown-commit and post-commit outbox evidence against
+  the closed design; composition itself is no longer open.
+- Approve any post-NO-OP migration inventory, mapping, quarantine writes, cutover, rollback and reconciliation slice.
 - Reserve an authoritative collision-free port and approve service discovery, deployment/operations and any
   public route separately; port remains `TBD` and internal S2S receives no Gateway/browser route.
 - Record explicit runtime authority; until then no service, frontend, Gateway, PPM or WorkCenter implementation
