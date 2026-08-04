@@ -10,13 +10,19 @@
 - Slug: `management-governance`
 - Branch short code: `mg`
 - Governance-packaged modules: `MOD-0007`, `MOD-0354`, `MOD-0355`
-- MOD-0007 physical service topology: `TBD` at its approved parent-pack architecture decision
+- MOD-0007 primary topology: isolated `DecisionRegistry` inside `Diten.ManagementGovernanceService`, as
+  fixed by the authoritative [MOD-0007 parent pack](module-packs/MOD-0007-decision-rationale-log.md)
+- MOD-0007 fail-closed fallback: if any mandatory isolation test fails, the primary is replaced by the sole
+  `Diten.EnterpriseGovernanceService` topology; primary, fallback and hybrid operation cannot coexist
 - MOD-0354/MOD-0355 placement: DCP-006 OD-02 initial conditional `Diten.ManagementGovernanceService`
   modular monolith, mandatory isolation architecture tests and fail-closed split fallback
 
 Repository packaging is not Blueprint logical routing or physical service placement. In particular,
-MOD-0007 is not automatically assigned to `Diten.ManagementGovernanceService`. This scaffold does not create
-the OD-02 service, port or route and does not grant MOD-0354/MOD-0355 runtime authority.
+MOD-0007's selected primary placement does not authorize a scaffold or runtime. `DecisionRegistry` cannot
+share domain types, repositories, collections, indexes, dependency-injection registrations or transactions
+with MOD-0354 DWS or MOD-0355 BPM, and it cannot be placed in `Diten.EnterpriseStrategyService`. This
+reconciliation creates no service, port, route, credential, migration or runtime authority and does not alter
+the existing MOD-0354/MOD-0355 OD-02 decision.
 
 ## Canonical ownership
 

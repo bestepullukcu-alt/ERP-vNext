@@ -17,8 +17,13 @@ port, Gateway route, runtime module or module pack is created or authorized by t
 
 `MOD-0007` retains its Blueprint logical route **Enterprise Control Points → Enterprise Governance Registry
 Layer → Authoritative Registries** and institutional owner **Enterprise Governance Process Owner**. Repository
-packaging under this domain does not assign it to `Diten.ManagementGovernanceService`; physical service
-placement remains `TBD` for its parent-pack architecture decision.
+topology is fixed by the authoritative [MOD-0007 parent pack](module-packs/MOD-0007-decision-rationale-log.md):
+the primary is an isolated `DecisionRegistry` inside `Diten.ManagementGovernanceService`. If any mandatory
+isolation test fails, the primary is replaced fail-closed by the sole `Diten.EnterpriseGovernanceService`
+fallback; the two topologies cannot coexist or operate as a hybrid. DecisionRegistry cannot share domain
+types, repositories, collections, indexes, dependency-injection registrations or transactions with DWS/BPM,
+and placement in `Diten.EnterpriseStrategyService` is forbidden. This topology decision creates no service
+scaffold, port, route, credential or runtime authority.
 
 MOD-0354 and MOD-0355 retain DCP-006 OD-02's initial conditional `Diten.ManagementGovernanceService`
 modular-monolith placement, mandatory isolation architecture tests and fail-closed split fallback. This
