@@ -1,0 +1,25 @@
+{
+  "classification": "TEST-ONLY-NON-PRODUCTION",
+  "productionValidatorDisposition": "REJECT",
+  "scheme": "management-governance-event-hmac-sha256.v1",
+  "signingIdentity": "diten.management-governance.audit-intent.v1.test-only",
+  "keyId": "mod-0007-audit-fixture-test-only-20260804",
+  "testKeyEncoding": "hex",
+  "testKey": "5396222dee2e71ea279fbb4d8db3f71b70d936060ba0ee4498467837e5564ce9",
+  "envelope": {
+    "eventId": "70000007-0000-4000-8000-000000000001",
+    "eventName": "management-governance.decision-registry-audit-intent.submitted.v1",
+    "eventVersion": 1,
+    "tenantId": "70000007-0000-4000-8000-000000000004",
+    "correlationId": "70000007-0000-4000-8000-000000000005",
+    "producer": "Diten.ManagementGovernanceService",
+    "causationId": null,
+    "occurredAtUtc": "2026-08-04T12:34:56.0000000Z"
+  },
+  "causationIdSigningLiteral": "-",
+  "canonicalPayloadFile": "decision-registry-audit-intent-submitted-v1.canonical.json",
+  "canonicalPayloadByteLength": 252,
+  "canonicalPayloadSha256": "0af26a132953b8ac0e364574482fffb04f4f50223a6095685837bac386ab55c4",
+  "signingInputSha256": "00214687f712fbbb6a859359acd18db2b7d1c6848c6ca66d19086ec4ae1c0ada",
+  "expectedSignatureFile": "decision-registry-audit-intent-submitted-v1.expected-signature.test-only.txt"
+}

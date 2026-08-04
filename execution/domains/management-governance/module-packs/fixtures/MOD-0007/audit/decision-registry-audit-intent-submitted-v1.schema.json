@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:diten:management-governance:decision-registry-audit-intent-submitted:v1",
+  "title": "DecisionRegistryAuditIntentSubmittedV1 canonical payload",
+  "x-producer": "Diten.ManagementGovernanceService",
+  "x-moduleCode": "MOD-0007",
+  "x-eventName": "management-governance.decision-registry-audit-intent.submitted.v1",
+  "x-eventVersion": 1,
+  "x-profile": "MinimalMutationAuditV1",
+  "type": "object",
+  "required": ["auditIntentId", "actorId", "entityType", "entityId", "mutation", "occurredAtUtc"],
+  "properties": {
+    "auditIntentId": {"type": "string", "format": "uuid"},
+    "actorId": {"type": "string", "format": "uuid"},
+    "entityType": {"type": "string", "enum": ["DecisionDraft", "DecisionRecord"]},
+    "entityId": {"type": "string", "format": "uuid"},
+    "mutation": {"type": "string", "enum": ["Created", "Revised", "SoftDeleted", "Published", "Superseded", "Withdrawn"]},
+    "occurredAtUtc": {"type": "string", "format": "date-time", "pattern": "Z$"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"entityType": {"const": "DecisionDraft"}}},
+      "then": {"properties": {"mutation": {"enum": ["Created", "Revised", "SoftDeleted"]}}}
+    },
+    {
+      "if": {"properties": {"entityType": {"const": "DecisionRecord"}}},
+      "then": {"properties": {"mutation": {"enum": ["Published", "Superseded", "Withdrawn"]}}}
+    }
+  ],
+  "additionalProperties": false
+}

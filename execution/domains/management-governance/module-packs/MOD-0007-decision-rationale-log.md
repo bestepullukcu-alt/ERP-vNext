@@ -643,7 +643,9 @@ contract-version change with refreshed FU16 compatibility evidence.
 ### Gate I Minimal Mutation Audit v1 producer profile
 
 MOD-0007 owns the business event type **`DecisionRegistryAuditIntentSubmittedV1`**, exact EventName
-**`management-governance.decision-registry-audit-intent.submitted.v1`**, and event version **`1.0`**. Its
+**`management-governance.decision-registry-audit-intent.submitted.v1`**, numeric integer `EventVersion = 1`
+and exact `ModuleCode = MOD-0007`. String/decimal `"1.0"`, numeric decimal `1.0`, aliases and normalization are
+rejected. Its
 canonical payload contains exactly the six MOD-0021 Minimal Mutation Audit v1 fields below and rejects every
 unknown property or extension bag:
 
@@ -682,6 +684,28 @@ projection. Fixture verification covers accepted mapping, rejected unknown field
 unsupported versions, metadata mismatch, delegated provenance and canonical-byte stability. The mapping is
 non-executable until that bilateral fixture passes; event-name heuristics and a generic catch-all mapper are
 forbidden. Existing `PpmAuditIntentSubmittedV1` fixtures remain unchanged regression evidence.
+
+The producer-owned fixture root is exactly
+`execution/domains/management-governance/module-packs/fixtures/MOD-0007/audit/`. MOD-0021 consumes these
+committed artifacts in place without copying, regenerating, reordering or reserializing them:
+
+| Fixture | Exact role |
+|---|---|
+| `decision-registry-audit-intent-submitted-v1.canonical.json` | 252 exact UTF-8 bytes; no BOM, whitespace or trailing LF; property order is `auditIntentId`, `actorId`, `entityType`, `entityId`, `mutation`, `occurredAtUtc` |
+| `decision-registry-audit-intent-submitted-v1.expected-audit-event.json` | Exact input-envelope metadata with numeric `EventVersion = 1`, plus expected MOD-0021 projection with `SourceService = Diten.ManagementGovernanceService`, `SourceModule = MOD-0007`, `Category = AuditCategory.Integration`, `DecisionRegistry.DecisionDraft` and `AuditOperation.Create` |
+| `decision-registry-audit-intent-submitted-v1.schema.json` | Ordinal identity tuple `Diten.ManagementGovernanceService` + exact EventName + numeric `1` + `MinimalMutationAuditV1`; exact six required properties and `additionalProperties: false` |
+| `decision-registry-audit-intent-submitted-v1.canonical.sha256` | Exact lowercase digest `0af26a132953b8ac0e364574482fffb04f4f50223a6095685837bac386ab55c4`, followed by one LF and no filename decoration |
+
+The same root also owns test-only signing evidence:
+
+- `decision-registry-audit-intent-submitted-v1.signing-vector.test-only.json` fixes a MOD-0007-specific
+  envelope, payload length/digest, signing-input digest, `TEST-ONLY-NON-PRODUCTION` key and expected-signature
+  filename. Its GUIDs, key ID, key bytes, signing identity and signature are not PPM values.
+- `decision-registry-audit-intent-submitted-v1.expected-signature.test-only.txt` contains the expected
+  lowercase HMAC-SHA256 signature `28204085cf426d46298b59c5439e41795f9deb914f8898ea7ad87a54ad8d36e9`.
+- The vector's test key is fixture material only: it is forbidden in configuration, secret stores, deployment
+  or runtime onboarding. A production validator must reject the `.test-only` signing identity/key ID even
+  when the fixture signature is byte-correct; accepting it is a security test failure.
 
 ### MOD-0035 signed producer onboarding profile
 
@@ -793,7 +817,8 @@ service port directly. Only `integration-agent` may modify `ocelot.json` after e
     `diten.management-governance`, the unmodified FU16 `DelegatedActorProofV1` profile and the producer-owned
     eight-operation/seven-permission manifest; no identity, operation, permission or grant is implicit.
 35. `DecisionRegistryAuditIntentSubmittedV1` has exact EventName
-    `management-governance.decision-registry-audit-intent.submitted.v1`, version `1.0`, exactly the six Minimal
+    `management-governance.decision-registry-audit-intent.submitted.v1`, numeric integer `EventVersion = 1`,
+    `ModuleCode = MOD-0007`, exactly the six Minimal
     Mutation Audit v1 payload fields and only the declared entity/mutation pairs.
 36. MOD-0021 compatibility evidence uses an explicit producer-specific mapping and producer-owned
     canonical-byte bilateral fixture; unknown fields/values/version, metadata mismatch and delegated
@@ -805,6 +830,11 @@ service port directly. Only `integration-agent` may modify `ocelot.json` after e
     eligibility is Active, referenceable, tenant-visible and not technically deleted without an invented
     effective date; Position also must be non-archived and effective-date-valid; historical mode resolves
     visible inactive Person and inactive/archived/out-of-date Position records.
+39. The four exact MOD-0021 fixtures exist under the producer-owned fixture root; canonical bytes are
+    minified, BOM-free and trailing-LF-free, property order is exact, and the committed SHA-256 file matches
+    those bytes without test-time regeneration.
+40. The MOD-0007 test-only signing vector reproduces the committed expected signature without any PPM
+    identity/key reuse, while production validation rejects its test signing identity and key ID.
 
 ## 17. Test Expectations
 
@@ -966,7 +996,10 @@ Minimum mutation matrix:
 - [ ] MOD-0018 permission/principal provisioning and dedicated S2S runtime evidence pass.
 - [x] MOD-0021/MOD-0035 producer event identity, Minimal Mutation Audit v1 payload, allowlist, mapping/fixture
   expectation and signed-onboarding profile are fixed.
-- [ ] MOD-0021/MOD-0035 consumer mapping, credentials/keys, bilateral fixtures and atomic-outbox runtime evidence pass.
+- [x] Producer-owned MOD-0021 four-file canonical/projection/schema/checksum fixture set and separate
+  MOD-0007 test-only signing vector/expected signature are committed at the exact fixture root.
+- [ ] MOD-0021/MOD-0035 consumer implementation, production credentials/keys, bilateral runtime verification
+  and atomic-outbox evidence pass.
 - [ ] Matching MOD-0117 consumer amendment is approved.
 - [x] Future primary/fallback five-layer and test roots are exact and mutually exclusive.
 - [x] Conditional primary `service` and concrete `TenantScopedEntity` usage are fixed; shell remains intentionally `none`.
@@ -1025,6 +1058,7 @@ Minimum mutation matrix:
 | 2026-08-04 | Replaced the circular pre-scaffold evidence gate with four ordered development slices and distinct `ready-for-dev`, review/runtime-promotion and production-activation gates. | None; status remains `draft`, both authorities remain `none`, and this change authorizes no scaffold or runtime. |
 | 2026-08-04 | Closed Core Scaffold composition: exact collections/indexes and sole manifest, draft/publication/graph transaction boundaries, canonical durable receipt and unknown-commit reconciliation, no-op migration and MOD-0035-only post-commit delivery. | None; status/authorities remain unchanged; port, S2S provisioning, Position provider contract, exact audit event and PPM activation stay open. |
 | 2026-08-04 | Reconciled Gate I onboarding from MOD-0018-FU16, MOD-0021, MOD-0035 and MOD-0288 authority commits: fixed service audience/Client ID, delegation and permission manifest, producer audit identity/six-field allowlist, consumer mapping/fixture, signed transport profile and the Person/Position eligibility matrix. | None; parent remains `draft`, both authorities remain `none`, and no runtime, credential, route, key, configuration or consumer activation is authorized. |
+| 2026-08-04 | Added the producer-owned MOD-0007 audit fixture set at the exact MOD-0021 path, reconciled numeric integer `EventVersion = 1` and `ModuleCode = MOD-0007`, and added an isolated test-only signing vector plus expected signature. | None; test key/signing identity are explicitly production-denied, status remains `draft`, authorities remain `none`, and no runtime consumer/onboarding authority is created. |
 
 ## 20. Follow-up Items
 
@@ -1040,8 +1074,9 @@ Only staged development/runtime/promotion blockers remain:
    rotation/revocation, timeout/retry/circuit and exact FU16 delegated-actor policy.
 5. Provision and evidence the exact seven MOD-0018 permissions/eight operation mappings and the fixed
    MOD-0288 Person/Position provider contract/connectivity; do not add Person effective-date fields.
-6. Approve and evidence the fixed Slice 3 MOD-0021 mapping/bilateral fixture and MOD-0035 signed onboarding,
-   credentials/keys, audit delivery, retry/DLQ/replay compatibility.
+6. Consume the committed producer fixtures in MOD-0021/MOD-0035 contract tests without copying or
+   regeneration; approve and evidence production signing onboarding, credentials/keys, audit delivery and
+   retry/DLQ/replay compatibility while proving the fixture test key is rejected by production validation.
 7. Approve Slice 4 matching MOD-0117 amendment and bilateral live evidence only after producer runtime gates pass.
 8. Enumerate exact composition/project files and record separate runtime/production authority as applicable.
 

@@ -1,0 +1,22 @@
+{
+  "inputEnvelope": {
+    "eventId": "70000007-0000-4000-8000-000000000001",
+    "eventName": "management-governance.decision-registry-audit-intent.submitted.v1",
+    "eventVersion": 1,
+    "tenantId": "70000007-0000-4000-8000-000000000004",
+    "correlationId": "70000007-0000-4000-8000-000000000005",
+    "producer": "Diten.ManagementGovernanceService",
+    "causationId": null,
+    "occurredAtUtc": "2026-08-04T12:34:56.0000000Z"
+  },
+  "expectedAuditEvent": {
+    "sourceService": "Diten.ManagementGovernanceService",
+    "sourceModule": "MOD-0007",
+    "category": "AuditCategory.Integration",
+    "entityType": "DecisionRegistry.DecisionDraft",
+    "entityId": "70000007-0000-4000-8000-000000000003",
+    "operation": "AuditOperation.Create",
+    "actorId": "70000007-0000-4000-8000-000000000002",
+    "occurredAtUtc": "2026-08-04T12:34:56.0000000Z"
+  }
+}
