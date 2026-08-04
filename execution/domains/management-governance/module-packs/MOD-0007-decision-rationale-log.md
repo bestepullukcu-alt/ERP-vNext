@@ -355,12 +355,12 @@ are non-authoritative evidence only. They are not dependencies, schemas, migrati
   allocates the next revision identity/number; inserts the already-final immutable `DecisionRevision` with
   non-null publication provenance; appends publication/disposition history; compare-and-swaps the
   `DecisionRecord` pointer/state; optionally inserts a valid supersession edge; persists the idempotency
-  result; and writes the producer-local audit intent in one Mongo replica-set transaction. Failure at any
+  receipt; and writes the producer-local audit intent and event-outbox row in one Mongo replica-set transaction. Failure at any
   step rolls back all state.
-- An approved post-commit worker transforms/delivers the durable local audit intent through an approved
-  outbox/eventing adapter. Dispatch failure leaves the intent retryable, cannot roll back or mutate committed
-  Decision state, and cannot create a duplicate semantic mutation. No broker call occurs inside the business
-  transaction; any local transport-outbox collection requires its own approved contract and evidence.
+- An approved post-commit worker publishes the durable event-outbox row only through MOD-0035 `IEventBus`.
+  Dispatch failure leaves the row retryable, cannot roll back or mutate committed Decision state, and cannot
+  create a duplicate semantic mutation. No broker call occurs inside the business transaction. Exact audit
+  event identity/version remains blocked and must not be invented.
 - Correlation and operation-scoped idempotency are mandatory. A replay with the same canonical request
   returns the same result; the same key with different payload returns `409`.
 - Prepare/publish separation of duties is mandatory: the authenticated publisher must differ from both the
@@ -401,14 +401,74 @@ repository interface/implementation, generic repository, Mongo collection, index
 unit, permission constant or migration with MOD-0354 DWS or MOD-0355 BPM. Its service-local owned collection
 set is exactly `decision_registry_records`, `decision_registry_drafts`, `decision_registry_revisions`,
 `decision_registry_publication_history`, `decision_registry_revision_replacements`,
-`decision_registry_supersession_links`, `decision_registry_idempotency`,
-and `decision_registry_audit_intents`. A later approved transport contract may add only a DecisionRegistry-local
-outbox collection through an executable amendment. No other module may read/write these
-collections directly.
+`decision_registry_supersession_links`, `decision_registry_idempotency_receipts`,
+`decision_registry_audit_intents` and `decision_registry_event_outbox`. No other module may read/write these
+collections directly. `DecisionRegistryPersistenceManifest` is the single persistence owner and sole source
+of collection names, document mappings, index names/keys/options and manifest version. Mongo context,
+repositories, index bootstrap and architecture tests consume that manifest; duplicate string constants or a
+second manifest are forbidden.
 
-One Mongo replica-set transaction owns revision, history, pointer, link, idempotency and audit-intent writes.
-The outbox worker publishes only after commit through an approved `Diten.BuildingBlocks.Eventing`
-adapter; MOD-0007 owns the logical audit intent and never writes Platform audit/outbox collections directly.
+Exact v1 named index matrix (key order is normative; `1` ascending, `-1` descending):
+
+| Collection | Index name | Exact keys | Constraint |
+|---|---|---|---|
+| `decision_registry_records` | `ux_dr_records_tenant_decision` | `(TenantId:1, DecisionId:1)` | Unique |
+| `decision_registry_records` | `ix_dr_records_tenant_subject_active` | `(TenantId:1, SubjectKind:1, SubjectId:1, IsDeleted:1, LifecycleState:1)` | Non-unique |
+| `decision_registry_drafts` | `ux_dr_drafts_tenant_draft` | `(TenantId:1, DraftId:1)` | Unique |
+| `decision_registry_drafts` | `ix_dr_drafts_tenant_decision_active` | `(TenantId:1, DecisionId:1, IsDeleted:1, UpdatedAt:-1)` | Non-unique |
+| `decision_registry_revisions` | `ux_dr_revisions_tenant_revision` | `(TenantId:1, DecisionRevisionId:1)` | Unique |
+| `decision_registry_revisions` | `ux_dr_revisions_tenant_number` | `(TenantId:1, DecisionId:1, DecisionRevisionNumber:1)` | Unique |
+| `decision_registry_publication_history` | `ux_dr_history_tenant_entry` | `(TenantId:1, PublicationHistoryId:1)` | Unique |
+| `decision_registry_publication_history` | `ix_dr_history_tenant_decision_time` | `(TenantId:1, DecisionId:1, OccurredAtUtc:-1)` | Non-unique; no TTL |
+| `decision_registry_revision_replacements` | `ux_dr_replacements_tenant_prior` | `(TenantId:1, DecisionId:1, PriorDecisionRevisionId:1)` | Unique; one next revision per prior revision |
+| `decision_registry_revision_replacements` | `ix_dr_replacements_tenant_next` | `(TenantId:1, DecisionId:1, NextDecisionRevisionId:1)` | Non-unique |
+| `decision_registry_supersession_links` | `ux_dr_supersession_tenant_source` | `(TenantId:1, SourceDecisionId:1)` | Unique; one terminal replacement per source Decision |
+| `decision_registry_supersession_links` | `ix_dr_supersession_tenant_target` | `(TenantId:1, TargetDecisionId:1, EffectiveAtUtc:-1)` | Non-unique |
+| `decision_registry_idempotency_receipts` | `ux_dr_receipts_tenant_scope_key` | `(TenantId:1, Operation:1, EffectiveActorId:1, S2SClientId:1, IdempotencyKeyHash:1)` | Unique; no TTL |
+| `decision_registry_audit_intents` | `ux_dr_audit_tenant_intent` | `(TenantId:1, AuditIntentId:1)` | Unique; no TTL |
+| `decision_registry_audit_intents` | `ix_dr_audit_tenant_dispatch` | `(TenantId:1, DispatchState:1, NextAttemptAtUtc:1, OccurredAtUtc:1)` | Non-unique; no TTL |
+| `decision_registry_event_outbox` | `ux_dr_outbox_tenant_event` | `(TenantId:1, EventId:1)` | Unique; no TTL |
+| `decision_registry_event_outbox` | `ix_dr_outbox_tenant_claim` | `(TenantId:1, Status:1, NextAttemptAtUtc:1, CreatedAtUtc:1)` | Non-unique; no TTL |
+
+Every index is tenant-first. Names, keys, order, uniqueness and absence of TTL are collision-tested against
+DWS/BPM manifests. Published revision/history/replacement/supersession collections expose no delete, purge or
+TTL index. Initial migration is **NO-OP/quarantine-only**: it imports, rewrites and deletes no legacy,
+EnterpriseStrategy, DWS or BPM data. Fresh collection/index bootstrap is manifest-driven infrastructure, not
+a legacy migration; any inventory output is read-only quarantine evidence.
+
+### Core transaction, idempotency and delivery composition
+
+- Draft prepare/update uses one Mongo replica-set transaction containing the draft insert/CAS update, canonical
+  idempotency receipt, local audit intent and outbox row. It creates no revision, publication history,
+  replacement or supersession state. Optimistic-concurrency failure rolls back every write.
+- Publication uses one transaction for the immutable revision, `DecisionRecord` state/current-pointer CAS,
+  publication history, optional same-Decision replacement provenance, canonical receipt, local audit intent
+  and outbox row. Required MOD-0288/provenance/evidence checks complete before the first write.
+- Different-Decision supersession uses one transaction for target publication when applicable, source-record
+  terminal-state CAS, exact source/target link, history, receipt, audit intent and outbox. Withdrawal uses one
+  transaction for source-record terminal-state CAS, withdrawal history, receipt, audit intent and outbox and
+  creates no supersession link. Snapshot reads plus unique indexes and CAS reject self/duplicate/inverse race,
+  multi-hop cycle, double replacement and concurrent withdraw/supersede with `409` and zero residue.
+- The canonical `IdempotencyKey` is trim + Unicode NFC normalized, UTF-8 encoded and SHA-256 hashed; raw keys
+  are never persisted or logged. `PayloadHash` is SHA-256 over RFC 8785/JCS canonical UTF-8 of the exact
+  operation name/version plus normalized business request, excluding the idempotency key, credentials,
+  correlation and other transport metadata. Receipt fields are exactly `ReceiptId`, `TenantId`, `Operation`,
+  `OperationVersion`, `EffectiveActorId`, nullable `S2SClientId`, `IdempotencyKeyHash`, `PayloadHash`,
+  `OutcomeKind`, `OutcomeReference`, `HttpStatus`, `CreatedAtUtc` and `CompletedAtUtc`.
+- Same canonical scope/key and same payload hash returns the stored outcome; the same scope/key with a
+  different payload hash is `409`. Receipt records have no TTL, delete or purge path in v1.
+- `UnknownTransactionCommitResult` triggers bounded **commit-only retry on the same session/transaction**;
+  the business delegate/body is never rerun. If commit remains unknown, receipt reconciliation by the exact
+  unique scope/key returns the stored outcome only when payload hash and completed outcome match; mismatch is
+  `409`; absent, incomplete or indeterminate receipt is `503`. A new transaction/body retry is forbidden.
+- Audit intent and outbox insert are transaction participants. Because the exact audit event identity/version
+  remains owner-blocked, runtime publication cannot activate until that contract is supplied; the harness
+  must fail closed rather than invent it. Broker publication is post-commit only and only through the public
+  MOD-0035 `Diten.BuildingBlocks.Eventing.IEventBus` abstraction. Direct RabbitMQ, MassTransit, broker-client,
+  Platform audit/outbox collection or foreign service collection access is forbidden.
+- The DecisionRegistry Mongo session/transaction owner can enlist only the nine collections above. DWS/BPM
+  repository, collection, index manifest/bootstrap, session and transaction access is exactly zero in both
+  directions.
 
 The authoritative DecisionReference validation provider is logically owned by the `DecisionRegistry`
 Application layer and may later be exposed only through a service-local internal adapter. The MOD-0117
@@ -582,7 +642,7 @@ service port directly. Only `integration-agent` may modify `ocelot.json` after e
     delegated actor validation is separate.
 14. Architecture tests prove DecisionRegistry/DWS/BPM project/namespace, type, repository, collection,
     permission and migration isolation;
-    failure forces the separate-service topology fallback before implementation.
+    Slice 1 failure forces the separate-service topology fallback before later-slice/runtime activation.
 15. No runtime, UI, Gateway, migration, seed, port or service-scaffold change is made under this draft.
 16. `DecisionAuthorityReferenceV1` has exactly `ContractName`, `ContractVersion`, `AuthorityKind`,
     `AuthorityId`; exact identity is `management-governance.decision-authority-reference/1.0`, kind is only
@@ -615,6 +675,19 @@ service port directly. Only `integration-agent` may modify `ocelot.json` after e
 28. The producer-owned reference validator is direct, read-only S2S with no Browser/Gateway/WorkCenter or
     persistence side effect. A MOD-0117 adapter cannot be activated before producer runtime,
     endpoint/security evidence, bilateral executable fixtures, consumer amendment and explicit runtime authority pass.
+29. `DecisionRegistryPersistenceManifest` is the sole persistence-owner manifest for the exact nine
+    collections and named tenant-first index matrix; collision, duplicate constant/manifest and any DWS/BPM
+    repository/collection/index/session/transaction access fail architecture tests.
+30. Draft prepare/update, publication, supersession and withdrawal obey the exact transaction boundaries in
+    Section 8. Publication atomically includes revision, pointer/history, receipt, audit intent and outbox;
+    graph races fail with `409` and zero partial state.
+31. Canonical key/payload hashing and the exact durable receipt make same-key/same-payload replay return the
+    stored result and same-key/different-payload return `409`; v1 receipt and published history have no TTL,
+    delete or purge path.
+32. Unknown commit handling retries only commit on the same session, then reconciles the receipt; it never
+    reruns the business body, and an absent/incomplete/indeterminate receipt returns `503`.
+33. Initial migration is no-op/quarantine-only. Broker delivery is post-commit and only through MOD-0035
+    `IEventBus`; direct RabbitMQ, MassTransit, broker client and Platform/foreign collection access are absent.
 
 ## 17. Test Expectations
 
@@ -622,7 +695,7 @@ service port directly. Only `integration-agent` may modify `ocelot.json` after e
 |---|---|
 | Domain unit | Closed lifecycle, same-Decision revision replacement versus different-Decision supersession, terminal withdrawal, immutable birth, monotonic numbering and graph invariants |
 | Application unit | Exact four-field MOD-0288 authority, prepare/publish SOD, evidence-disabled policy, exact permission, S2S/delegation, mutation idempotency and Decision/Approval separation |
-| Persistence integration | Fault injection after revision/history/pointer/edge/idempotency/audit writes, SOD race, legal-hold draft delete, no-TTL/no-purge architecture and cross-tenant 404 equivalence |
+| Persistence integration | Exact manifest/index assertions; fault injection after draft/revision/history/pointer/edge/receipt/audit/outbox writes; unknown-commit reconciliation; graph races; SOD race; no-TTL/no-purge and cross-tenant 404 equivalence |
 | Contract compatibility | Exact five-field key-set serialization/roundtrip; exact two wrapper names + context at 1.0; HistoricalResolve/NewReferenceEligibility matrices; CurrentSelectionEligibility 400; mode-aware result with no boolean-only authority |
 | S2S security | Dedicated identity, delegated actor validation, 401/403/404/409/503 matrix, no tenant/existence disclosure |
 | Architecture | Project/namespace/type/repository/collection/permission/migration isolation for DWS/BPM/DecisionRegistry; no approval artifacts; no foreign decision/rationale/evidence payload copy |
@@ -657,9 +730,9 @@ review/runtime promotion for the primary, and any failure selects the fallback w
 | Namespace/type | Decision aggregate, draft, revision, history and reference types exist only in DecisionRegistry; no reuse, inheritance or aliases across modules |
 | Repository/DI | Module-private repository interfaces/implementations and registrations; no shared generic business repository or foreign service resolution |
 | Mongo/index | Exact collection allowlist is disjoint; serializers, mappings, tenant-first indexes and index bootstrap fail on any DWS/BPM collision |
-| Transaction | Only DecisionRegistry collections join the replica-set transaction; fault injection and concurrency prove rollback and one revision/pointer/audit intent |
-| Audit/outbox | No direct Platform collection or in-transaction broker write; retryable post-commit dispatch cannot mutate Decision state or duplicate mutation |
-| Migration/bootstrap | DecisionRegistry initializer touches only its owned collections; no TTL on immutable published state; no DWS/BPM seed/index reuse |
+| Transaction | Only the exact DecisionRegistry collections join; draft/publication/graph fault injection and concurrency prove rollback and one revision/pointer/receipt/audit/outbox result |
+| Audit/outbox | Outbox insert is atomic; broker publish is post-commit through MOD-0035 `IEventBus` only; no Platform collection, RabbitMQ, MassTransit or direct broker client |
+| Migration/bootstrap | Sole manifest initializes only exact collections/indexes; initial migration is no-op/quarantine-only; no TTL on receipts/published state and no DWS/BPM seed/index reuse |
 | Permission | MOD-0007 permission family is disjoint from DWS/BPM and approval permissions; no wildcard/bypass |
 | Internal provider | Producer-owned direct S2S query only, zero writes, no Gateway/browser/client dependency |
 | Contract | Exact five-field reference and Gate I-A fixtures; no generic role or foreign Decision payload copy |
@@ -678,6 +751,12 @@ Mandatory security/compatibility fixtures additionally prove:
   bounded timing behavior;
 - fault injection after each revision/history/pointer/edge/idempotency/audit write leaves zero partial state,
   and concurrent publication allocates one revision number/pointer/audit result;
+- manifest tests assert the exact nine collection names and every named index key/order/option, reject any
+  collision with DWS/BPM, duplicate persistence manifest or non-tenant-first index;
+- draft prepare/update fault injection proves draft/CAS, receipt, audit intent and outbox are all-or-nothing;
+- `UnknownTransactionCommitResult` fixtures prove same-session commit-only retry, matching completed-receipt
+  reconciliation, mismatched payload `409`, and absent/incomplete/indeterminate receipt `503`, with zero
+  business-body rerun;
 - idempotency cannot replay across tenant, operation, effective actor or authenticated S2S client;
 - supersession rejects self, duplicate, concurrent inverse edge, multi-hop cycle, cross-tenant/invisible
   endpoint and forged withdrawal target without residue;
@@ -688,6 +767,8 @@ Mandatory security/compatibility fixtures additionally prove:
 - publisher differs from draft creator and latest updater under ordinary/admin/emergency/import-shaped calls;
 - v1 evidence list is empty-only, no attach surface/provider call exists, evidence-required policy is `409`;
 - logs contain no credentials/tokens or full rationale/evidence payload.
+- initial migration performs no import/rewrite/delete and emits quarantine-only evidence; direct
+  RabbitMQ/MassTransit/broker client and Platform/DWS/BPM collection/session access fail architecture tests.
 
 Minimum mutation matrix:
 
@@ -718,6 +799,9 @@ Minimum mutation matrix:
 | Allow supersession self/duplicate/cycle or fabricate withdrawal target | Append-only graph/disposition integrity is violated |
 | Commit aggregate while audit intent fails | Atomic audit rollback is violated |
 | Disable idempotency unique scope | Duplicate semantic revision/audit is possible |
+| Store raw idempotency key, change canonical payload hash inputs or add receipt TTL | Replay identity or durable reconciliation is violated |
+| Rerun the business body after unknown commit or start a new transaction | Duplicate semantic mutation is possible |
+| Return success without a completed matching receipt after unresolved commit | Indeterminate state fails to the required `503` boundary |
 | Accept unknown contract version or cache fallback | Required 503 fail-closed behavior is violated |
 | Add foreign rationale/evidence payload to PPM | Consumer payload-copy ban is violated |
 | Accept non-empty/local/mock evidence or invoke evidence provider | Evidence-disabled v1 boundary is violated |
@@ -729,6 +813,9 @@ Minimum mutation matrix:
 | Activate/register the MOD-0117 adapter before producer runtime and bilateral evidence | Consumer activation gate is violated |
 | Guess a port, internal route or credential scheme | Open B-class allocation/security blocker is bypassed |
 | Treat an isolation failure as a warning | Fail-closed fallback selection is bypassed |
+| Add an unnamed/non-tenant-first/colliding index or a second persistence manifest | Exact persistence ownership is violated |
+| Use direct RabbitMQ/MassTransit/broker client or Platform collection access | MOD-0035 post-commit delivery boundary is violated |
+| Import legacy data in the initial migration | No-op/quarantine-only migration boundary is violated |
 
 ## 18. Ready-for-dev Checklist
 
@@ -757,6 +844,10 @@ Minimum mutation matrix:
 - [x] Future primary/fallback five-layer and test roots are exact and mutually exclusive.
 - [x] Conditional primary `service` and concrete `TenantScopedEntity` usage are fixed; shell remains intentionally `none`.
 - [x] Four ordered development slices and their ready-for-dev, review/runtime and production gates are defined.
+- [x] Slice 1 exact collections, tenant-first named indexes, sole persistence manifest, transaction/graph,
+  canonical idempotency receipt, unknown-commit and no-op migration designs are closed.
+- [x] Post-commit broker delivery is restricted to MOD-0035 `IEventBus`; direct broker and Platform/foreign
+  collection access are forbidden while exact audit event identity remains open.
 - [ ] Slice 1 exact scope/test design receives owner `ready-for-dev` approval before scaffold/test implementation.
 - [ ] Implemented Slice 1 architecture/isolation matrix passes before review/runtime promotion; any failure
   selects the sole fallback before runtime activation.
@@ -804,6 +895,7 @@ Minimum mutation matrix:
 | 2026-08-03 | Closed A-class owner decisions: closed lifecycle/revision replacement, exact MOD-0288 Person/Position DecisionAuthority v1, prepare/publish SOD without bypass, evidence-disabled core, and no-TTL/no-purge retention/legal-hold baseline. | None; at that checkpoint physical topology remained open, status stayed `draft`, and no runtime authority was created. |
 | 2026-08-03 | Closed B-class physical topology: selected isolated `Diten.ManagementGovernanceService/DecisionRegistry`, fixed the mutually exclusive EnterpriseGovernance fallback, exact future five-layer/test roots, shared-base usage, collection/transaction/provider boundaries and mandatory pre-scaffold isolation matrix. | None; status and authorities remain unchanged, port/route/security/deployment blockers stay open, and no scaffold/runtime/consumer authority is created. |
 | 2026-08-04 | Replaced the circular pre-scaffold evidence gate with four ordered development slices and distinct `ready-for-dev`, review/runtime-promotion and production-activation gates. | None; status remains `draft`, both authorities remain `none`, and this change authorizes no scaffold or runtime. |
+| 2026-08-04 | Closed Core Scaffold composition: exact collections/indexes and sole manifest, draft/publication/graph transaction boundaries, canonical durable receipt and unknown-commit reconciliation, no-op migration and MOD-0035-only post-commit delivery. | None; status/authorities remain unchanged; port, S2S provisioning, Position provider contract, exact audit event and PPM activation stay open. |
 
 ## 20. Follow-up Items
 
@@ -811,7 +903,8 @@ Only staged development/runtime/promotion blockers remain:
 
 1. Obtain owner approval of the exact Slice 1 scope/test design before any future `ready-for-dev` promotion.
 2. Implement the Slice 1 scaffold/test harness only after that promotion; pass its architecture/isolation,
-   persistence and contract evidence before review/runtime promotion, or select the sole fallback.
+   collection/index collision, transaction/idempotency/unknown-commit, graph and contract evidence before
+   review/runtime promotion, or select the sole fallback.
 3. Obtain an authoritative collision-free port allocation and approve internal route/service discovery,
    DNS/TLS/network and deployment decisions.
 4. Approve and evidence Slice 2 dedicated S2S credential, issuer/audience/scope, registration/rotation/revocation,
