@@ -309,8 +309,8 @@ foreign-owned or key-order-divergent index.
 | MOD-0023 | Approval only when separately required | No approval behavior in MOD-0072 |
 | `fpa.currency-reference` `1.0` provider | Exact currency identity for `UnitKind.Currency` only | Bilateral contract/runtime evidence remains a B-class integration concern |
 | MOD-0031 | Future typed/versioned evidence amendment | Formally deferred from v1 core; no runtime call or evidence surface |
-| MOD-0018 | Tenant entitlement, actor and exact permission enforcement | Runtime evidence required |
-| MOD-0021 / MOD-0035 | Atomic audit intent/outbox delivery mechanics | Runtime integration approval/evidence required |
+| MOD-0018-FU16 | Exact service identity, delegated actor/request binding and permission-manifest intake | Governance contract closed below; runtime provisioning/evidence required |
+| MOD-0021 / MOD-0035 | Producer-specific audit mapping/fixture and signed post-commit event onboarding | Governance contract closed below; runtime integration approval/evidence required |
 | DCP-006 | Gate I-C orchestration and no-copy boundary | OD-04 remains OPEN/PARTIAL |
 
 ## 8. Runtime Constraints
@@ -398,7 +398,9 @@ repository, migration or DI registration for observation status/referenceability
 Broker publication occurs only after a successful commit through the future MOD-0035-approved public
 `IEventBus` abstraction. Direct RabbitMQ client, direct MassTransit bus usage, direct broker channel/session,
 or direct Platform/MOD-0021 audit collection write/read is forbidden. The exact MOD-0021/MOD-0035 producer
-contract remains open; until approved, outbox rows cannot be published and runtime activation remains blocked.
+contract is closed by the Gate I onboarding reconciliation below. Until its producer fixture, consumer mapping,
+signing onboarding and runtime evidence are separately approved, outbox rows cannot be published and runtime
+activation remains blocked.
 At-least-once delivery requires idempotent consumers and never changes the local commit result.
 
 ### Metric/scale bootstrap and initial migration
@@ -680,6 +682,127 @@ V1 has no OutcomeMeasurementReference requirement, contract name, identity, vers
 The capability is explicitly **DEFERRED** to a future separately approved amendment. MOD-0117 stores only the
 five-field OutcomeReferenceV1 and never measurement identity, period, value, evidence or observation projection.
 
+### Gate I onboarding reconciliation — producer-owned exact contract
+
+> **Status boundary:** This subsection is `draft` governance authority only. It closes MOD-0072's producer
+> declarations against MOD-0018-FU16 checkpoint `40e38905`, MOD-0021 checkpoint `de81a135` and MOD-0035
+> checkpoint `23f290ec`. It creates no runtime/configuration/secret/route/deployment authority, does not make
+> either the audit event or the PPM adapter executable and does not change `production_authority: none`.
+
+#### Service identity and exact permission manifest
+
+- Service audience: exact `diten-decision-intelligence-service`.
+- Client ID: exact `diten.decision-intelligence`.
+- Permission-manifest owner module: exact `MOD-0072`; workload identity, module entitlement and permission
+  ownership remain separate gates and are never inferred from one another.
+- Delegated calls use MOD-0018-FU16 `DelegatedActorProofV1`: exact single audience, protocol scope
+  `diten.s2s.delegated.invoke`, server-resolved `tenant_id`, effective `delegated_actor_id`, exact
+  `operation_id`, required permission, and `request_hash` over canonical method + path + tenant + operation +
+  body digest. `sub`/`client_id`/`azp`, `jti`, nonce, delegation id and freshness versions remain required by
+  FU16. A service credential without valid delegated proof cannot exercise user-visible or mutation authority.
+
+The owner manifest contains exactly the existing seven permission keys; no eighth key, wildcard, alias or
+Metric/Scale authoring permission is admitted. Exact operation IDs map as follows:
+
+| Exact `operation_id` | Exact required permission |
+|---|---|
+| `outcome-tracking.outcomes.read` | `decision-intelligence.outcomes.read` |
+| `outcome-tracking.outcomes.create` | `decision-intelligence.outcomes.create` |
+| `outcome-tracking.outcomes.publish-version` | `decision-intelligence.outcomes.version` |
+| `outcome-tracking.outcomes.retire` | `decision-intelligence.outcomes.version` |
+| `outcome-tracking.measurements.append` | `decision-intelligence.measurements.append` |
+| `outcome-tracking.measurements.correct` | `decision-intelligence.measurements.correct` |
+| `outcome-tracking.decision-links.create` | `decision-intelligence.decision-links.manage` |
+| `outcome-tracking.decision-links.retire` | `decision-intelligence.decision-links.manage` |
+| `outcome-tracking.outcome-references.validate` | `decision-intelligence.outcome-references.validate` |
+
+Operation matching is ordinal and exact. `outcomes.version` deliberately governs both immutable version
+publication and retirement without adding a permission. `decision-links.manage` deliberately governs create
+and retire provenance-link operations. Catalog registration grants no tenant access; tenant role grants remain
+explicit under FU16, and entitlement removal makes them dormant rather than silently remapping them.
+
+Metric/Scale authoring remains outside the initial slice. No authoring operation ID, permission, command,
+handler, API, UI, seed editor or generic manifest entry exists. The separately approved immutable bootstrap
+fixture remains the only possible initial activation source and its absence continues to block quantitative or
+qualitative production activation.
+
+#### Exact Minimal Mutation Audit v1 producer contract
+
+- Event CLR/type identity: exact `OutcomeTrackingAuditIntentSubmittedV1`.
+- EventName/routing identity: exact `decision-intelligence.outcome-tracking-audit-intent.submitted.v1`.
+- EventVersion: exact `1.0`.
+- Producer: exact `Diten.DecisionIntelligenceService`; producer module: exact `MOD-0072`.
+- MOD-0035 signing identity: exact `diten.decision-intelligence.outcome-tracking-audit-intent` using exact
+  scheme `decision-intelligence-event-hmac-sha256.v1`; it cannot reuse PPM or another producer's identity,
+  key id, secret, namespace or derived material.
+
+The canonical payload contains exactly the six MOD-0021 Minimal Mutation Audit v1 fields and no others:
+
+| Exact field | MOD-0072 rule |
+|---|---|
+| `auditIntentId` | Non-empty immutable id; equals transport envelope `EventId` |
+| `actorId` | Effective actor from trusted mutation context; equals the delegated actor for a delegated call |
+| `entityType` | Exact allowlisted value below |
+| `entityId` | Non-empty mutated MOD-0072 aggregate/entity id |
+| `mutation` | Exact allowlisted value below and exact mapping target |
+| `occurredAtUtc` | Server UTC mutation time; equals envelope `OccurredAtUtc` |
+
+`TenantId`, `CorrelationId`, `CausationId`, `EventId`, `Producer` and delegated/security provenance are trusted
+envelope metadata, never payload fields. Unknown, missing, extra, case-changed or normalized payload fields;
+full entities; before/after snapshots; actual values; periods; evidence; permission inventories; secrets; and
+unbounded dictionaries/graphs are rejected. The event-specific initial allowlist is closed:
+
+| Exact `entityType` | Exact `mutation` | MOD-0021 canonical projection |
+|---|---|---|
+| `Outcome` | `Created` | entity `Outcome`; operation `Create` |
+| `Outcome` | `Retired` | entity `Outcome`; operation `Retire` |
+| `OutcomeVersion` | `Published` | entity `OutcomeVersion`; operation `PublishVersion` |
+| `OutcomeMeasurement` | `Appended` | entity `OutcomeMeasurement`; operation `Append` |
+| `OutcomeMeasurement` | `Corrected` | entity `OutcomeMeasurement`; operation `Correct` |
+
+No other pair is accepted. Read/reference validation emits no mutation audit event. DecisionOutcomeLink audit
+publication is outside this initial event allowlist and remains blocked until a separately approved event-version
+amendment; its local mutation/audit-intent atomicity requirement is unchanged. Metric/Scale types and mutations
+are absent from this allowlist and cannot enter through a generic mapper.
+
+#### Atomicity, fixture and signed onboarding
+
+For each allowlisted mutation, the OutcomeTracking-local Mongo transaction atomically commits business state,
+the permanent idempotency receipt, a producer-local `diten_di_audit_intents` record and the corresponding
+producer-local `diten_di_outbox_messages` record. Failure of any participant rolls back all participants. No
+MOD-0021/Platform write, broker call or external call occurs in that transaction. Only after successful commit
+may a service-local publisher invoke the public MOD-0035 `IEventBus`; direct RabbitMQ, MassTransit, broker or
+Platform audit storage access remains forbidden.
+
+The producer-owned compatibility fixture records exact canonical UTF-8 payload bytes, the immutable envelope,
+the six-field property allowlist, expected MOD-0021 projection, EventName/EventVersion/Producer, signing scheme
+and identity, key id, signing input and expected signature. MOD-0035 authorization is the exact ordinal tuple
+`Producer + EventName + EventVersion + SigningIdentity`; wildcard/prefix/normalization is forbidden. Signing
+binds scheme, EventId, EventName, EventVersion, TenantId, CorrelationId, Producer, CausationId, OccurredAtUtc,
+payload byte length and the exact canonical bytes. The fixture must also prove active/previous rotation,
+bounded overlap, expiry/revocation, fixed-time verification, freshness/skew, header rejection, replay/conflict,
+retry/DLQ/cancellation and redaction behavior without changing the PPM regression fixture.
+
+MOD-0021 registers an explicit mapping for this exact producer/event version and fixture; event-name heuristics
+and generic catch-all mapping are forbidden. Its consumer transaction atomically commits inbox plus zero-or-one
+MOD-0021 audit outbox item. Idempotency is `ConsumerName + EventId`: byte-identical replay is a duplicate no-op;
+the same EventId with changed canonical bytes is terminal conflict. Contract/security/unsupported failures are
+terminal; only transient dependency failures retry and may reach DLQ/alarm under MOD-0035. Producer mutation
+commit never depends synchronously on MOD-0021, Platform or broker availability.
+
+#### Bilateral PPM fixture and executability boundary
+
+The existing bilateral fixture remains unchanged: exact PPM wrapper
+`ppm.benefit-commitment-outcome-reference` `1.0`, exactly four wrapper fields and the exact nested five-field
+`diten.decision-intelligence.outcome-reference` `1.0`. It remains a separate synchronous reference contract,
+not part of `OutcomeTrackingAuditIntentSubmittedV1`, and it copies no actual value, measurement, period,
+evidence or realization state. MOD-0117 alone owns wrapper persistence and relationship lifecycle.
+
+The PPM consumer adapter remains non-executable until all are separately satisfied: MOD-0072 producer runtime
+evidence, approved bilateral producer/consumer fixtures, approved MOD-0117 consumer amendment, exact FU16
+onboarding/provisioning evidence, MOD-0021 mapping fixture, MOD-0035 signing/onboarding fixture and explicit
+runtime authority. This reconciliation satisfies none of those execution gates by documentation alone.
+
 ## 16. Acceptance Criteria
 
 1. MOD-0072 remains a draft parent pack with `production_authority: none` and no runtime authority.
@@ -718,6 +841,10 @@ five-field OutcomeReferenceV1 and never measurement identity, period, value, evi
 34. ObservationStatus/referenceability and rebuild checkpoints are non-persisted; owner manifest forbids projection/checkpoint collections.
 35. Broker delivery is post-commit through future MOD-0035 public `IEventBus` only; direct RabbitMQ/MassTransit/Platform audit persistence access is forbidden.
 36. Initial migration is NO-OP/quarantine-only with no legacy dual-read/write or mirror; Metric/Scale activation requires a separately approved immutable bootstrap fixture and adds no permission/authoring surface.
+37. FU16 onboarding is exact: audience `diten-decision-intelligence-service`, client ID `diten.decision-intelligence`, owner `MOD-0072`, nine exact operation IDs and only the unchanged seven permission keys.
+38. Audit publication uses only `OutcomeTrackingAuditIntentSubmittedV1` / `decision-intelligence.outcome-tracking-audit-intent.submitted.v1` / `1.0` with the exact six-field Minimal Mutation Audit v1 payload and closed Outcome/version/measurement allowlist.
+39. Producer-local mutation/receipt/audit-intent/outbox atomicity, post-commit public `IEventBus`, exact MOD-0021 mapping fixture and exact MOD-0035 signed tuple are mandatory; no synchronous Platform dependency or direct broker/audit storage access exists.
+40. The PPM wrapper fixture remains unchanged and non-executable until every named bilateral, FU16, MOD-0021, MOD-0035, consumer-amendment, runtime-evidence and explicit-authority gate passes.
 
 ## 17. Test Expectations
 
@@ -757,6 +884,16 @@ five-field OutcomeReferenceV1 and never measurement identity, period, value, evi
 - Bootstrap/migration matrix: initial permission set remains exact seven, zero Metric/Scale authoring command/UI, missing fixture blocks quantitative/qualitative activation, approved fixture is immutable/versioned, and first migration creates no target/dual-read/dual-write record.
 - Retention: retirement with existing PPM references succeeds, existing references remain historically resolvable and unchanged, new eligibility `409`, provider outage does not block local history, no exceptional purge.
 - Security: exact permission, entitlement, delegated actor provenance, S2S audience/scope and no fail-open.
+- FU16 manifest: exact audience/client/owner, all nine ordinal operation mappings, only seven distinct permissions,
+  request-hash/tenant/actor binding, replay/freshness failures and service-token-without-delegation rejection.
+- Audit fixture: exact event type/name/version/producer/signing identity, exact six property names and canonical
+  bytes, exact five allowlisted entity/mutation pairs, and rejection of extra/case-changed/Metric/Scale/link pairs.
+- MOD-0021 mapping: expected projection for every allowlisted pair; unknown pair/version/property, metadata
+  mismatch and missing delegated provenance are terminal; inbox + audit outbox and duplicate/conflict matrices pass.
+- MOD-0035 onboarding: exact allowlist tuple, unique non-PPM signing material, active/previous rotation,
+  expiry/revocation, fixed-time signature, freshness/skew, headers, replay, retry/DLQ/cancellation and redaction pass.
+- PPM bilateral regression: the existing exact four-field wrapper/nested five-field fixture is unchanged and the
+  adapter remains impossible to activate without all explicitly named gates.
 - Migration: prototype quarantine inventory/checksum; no legacy ES record is silently promoted or assigned a
   default tenant; explicit mapping/rejection/quarantine evidence for any future migration.
 - UI: Slim file contract, parent maximum 7, DataTable v2 verifier, seven-language resources, explicit tenant layout, read-only history, no evidence/PPM actual editor/approval action.
@@ -776,8 +913,8 @@ five-field OutcomeReferenceV1 and never measurement identity, period, value, evi
 - [x] Binding topology is reconciled: only `Diten.DecisionIntelligenceService/Modules/OutcomeTracking`; no FP&A/EnterpriseStrategy co-host or fallback/dual-write model.
 - [x] Exact five-layer composition paths, concrete test-project roots, service-local EntityBase path, collection/index names and single owner manifest are closed.
 - [x] Transaction/idempotency/permanent receipt/unknown-commit behavior, projection non-persistence, post-commit IEventBus boundary and NO-OP migration are closed.
-- [ ] Exact S2S/delegated-actor design and MOD-0018 provisioning are approved.
-- [ ] MOD-0021/MOD-0035 audit/outbox integration is approved.
+- [x] Exact FU16 audience/client/owner, operation-to-permission manifest and delegated actor/request binding are documented; runtime provisioning/evidence remains separately blocked.
+- [x] Exact MOD-0021 mapping/fixture and MOD-0035 signed-producer onboarding contracts are documented; runtime integration/evidence remains separately blocked.
 - [ ] Exact immutable Metric/Scale bootstrap fixture content is approved; without it quantitative/qualitative activation remains blocked.
 - [x] Metric/Scale administration is deferred to a separate amendment and the initial slice adds no commands/UI/permissions.
 - [x] First migration slice is NO-OP/quarantine-only; any later transformation requires separate authority.
@@ -809,12 +946,11 @@ that no legacy field remains a second SoR.
 Only the following B-class blockers remain:
 
 1. Allocate the authoritative port.
-2. Approve exact S2S identity, audience/scope and delegated-actor behavior.
-3. Complete MOD-0018 permission provisioning for the existing exact seven permissions; add none.
-4. Approve the exact MOD-0021/MOD-0035 producer contract used by local audit intent/outbox publication.
-5. Approve exact immutable/versioned Metric/Scale bootstrap fixture content and reconciliation evidence.
-6. Approve deployment/runtime activation and operations ownership.
-7. Satisfy producer runtime evidence, bilateral fixtures, MOD-0117 consumer amendment and explicit adapter activation authority.
+2. Implement and prove FU16 service-principal, delegated-proof and explicit permission provisioning for the closed manifest; add no permission.
+3. Implement and prove the closed MOD-0021 mapping/compatibility fixture and MOD-0035 producer-specific signing onboarding.
+4. Approve exact immutable/versioned Metric/Scale bootstrap fixture content and reconciliation evidence; authoring remains outside the initial slice.
+5. Approve deployment/runtime activation and operations ownership.
+6. Satisfy producer runtime evidence, bilateral fixtures, MOD-0117 consumer amendment and explicit adapter activation authority.
 
 ### Change Log
 
@@ -827,3 +963,4 @@ Only the following B-class blockers remain:
 | 2026-08-03 | Closed A-class Outcome semantics: Active/Retired lifecycle, producer-owned metric/scale versions, quantitative bounds, qualitative levels, LocalDate periods, append-only correction, v1 evidence deferral, deterministic observation status, no delete/purge, deferred measurement reference and Golden Slim maximum 7. Only named B-class runtime blockers remain. | User / Enterprise Strategy Control Tower |
 | 2026-08-03 | Reconciled binding ESBP topology: MOD-0072 only in future `Diten.DecisionIntelligenceService/Modules/OutcomeTracking`, isolated persistence/transactions, internal S2S provider without Gateway/browser route, no FP&A/EnterpriseStrategy placement or dual SoR. Port/runtime remain unauthorized and TBD. | User / Enterprise Strategy Control Tower |
 | 2026-08-04 | Closed OutcomeTracking Core composition: exact layer/test paths, service-local base, eleven collections and tenant-first indexes, atomic mutation/receipt/audit/outbox transaction, permanent idempotency receipts, unknown-commit reconciliation, non-persisted projections, post-commit public IEventBus boundary and NO-OP migration. Kept only named port/PSS/bootstrap/deployment/MOD-0117 activation blockers. | User / Enterprise Strategy Control Tower |
+| 2026-08-04 | Reconciled Gate I onboarding from FU16 `40e38905`, MOD-0021 `de81a135` and MOD-0035 `23f290ec`: exact service audience/client/owner and operation-permission manifest; exact OutcomeTracking audit event, six-field payload and mutation allowlist; atomic local intent/outbox, post-commit IEventBus, consumer/signing fixtures and unchanged non-executable PPM wrapper boundary. Status remains draft; production authority remains none. | User / Enterprise Strategy Control Tower |
