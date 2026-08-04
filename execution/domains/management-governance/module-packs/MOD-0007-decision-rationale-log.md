@@ -253,12 +253,18 @@ semantic DecisionRevision field or consumer `DecisionRevisionReferenceV1` field.
 | `AuthorityKind` | closed enum | Yes | `Person` or `Position` only |
 | `AuthorityId` | opaque canonical identity | Yes | Non-empty MOD-0288 identity; server-authoritatively validated |
 
-MOD-0288 — Organization, Person & Position Directory is the authoritative provider. `Person` resolves an
-active tenant-visible PersonReference; `Position` resolves an active tenant-visible Position. Missing,
-cross-tenant, invisible or inactive authority is indistinguishable `404`; unavailable, malformed,
-indeterminate or unsupported provider/version response is `503`. `Role` and `GovernanceBody` are deferred
-beyond v1. AuthService RBAC Role cannot be business DecisionAuthority. This semantic reference is distinct
-from draft author, `RecordedBy`, `PublishedBy`, and MOD-0023 approver/`ApprovalOutcome`.
+MOD-0288 — Organization, Person & Position Directory is the authoritative provider. For
+`NewReferenceEligibility`, `Person` requires same-tenant visibility, `IsDeleted == false`, `Status == Active`
+and `IsReferenceable == true`; because the authoritative Person model has no effective-date fields, v1 adds
+no guessed effective-date predicate or synthetic field. `Position` additionally requires `IsArchived == false`,
+`Status == Active`, `EffectiveFrom <= now` and (`EffectiveTo == null` or `EffectiveTo > now`). For
+`HistoricalResolve`, an inactive Person and an inactive, archived or out-of-effective-date Position remain
+resolvable when tenant-visible and not technically deleted. Missing, cross-tenant, invisible or technically
+deleted authority is always indistinguishable `404`; visible-but-ineligible new-reference requests are `409`;
+unavailable, malformed, indeterminate or unsupported provider/version response is `503`. `Role` and
+`GovernanceBody` are deferred beyond v1. AuthService RBAC Role cannot be business DecisionAuthority. This
+semantic reference is distinct from draft author, `RecordedBy`, `PublishedBy`, and MOD-0023
+approver/`ApprovalOutcome`.
 
 ### Deferred DecisionEvidenceReference, disposition and supersession
 
@@ -324,8 +330,8 @@ consumer path is included.
 | Dependency | Purpose | Gate |
 |---|---|---|
 | DCP-006 | Gate I-A orchestration and ownership boundaries | Approved orchestration; does not authorize MOD-0007 runtime |
-| MOD-0018 | Exact permission and tenant/actor authorization evaluation | Security & Provider Integration Slice; not required to implement the isolated core scaffold/test harness |
-| MOD-0021 / MOD-0035 | Immutable audit intent delivery over approved event/outbox mechanics | Audit Delivery Slice; exact event contract and credentials remain open |
+| MOD-0018-FU16 | Exact Gate I service principal, `DelegatedActorProofV1`, permission-manifest and tenant/actor authorization profile | Producer profile is fixed below; runtime provisioning/evidence remains gated |
+| MOD-0021 / MOD-0035 | Immutable audit intent delivery over approved event/outbox and signed-onboarding mechanics | Producer event, mapping input and signing profile are fixed below; consumer/runtime evidence remains gated |
 | MOD-0031 | Future typed evidence metadata integration only | Formally deferred from v1 core; requires a separate executable amendment |
 | MOD-0288 | Authoritative Person/Position resolution for `DecisionAuthorityReferenceV1` | Exact v1 provider; runtime client/transport evidence remains a B-class implementation blocker |
 | MOD-0023 | Optional distinct ApprovalOutcome only when policy requires approval | Separate PSS amendment and contract approval required |
@@ -359,8 +365,9 @@ are non-authoritative evidence only. They are not dependencies, schemas, migrati
   step rolls back all state.
 - An approved post-commit worker publishes the durable event-outbox row only through MOD-0035 `IEventBus`.
   Dispatch failure leaves the row retryable, cannot roll back or mutate committed Decision state, and cannot
-  create a duplicate semantic mutation. No broker call occurs inside the business transaction. Exact audit
-  event identity/version remains blocked and must not be invented.
+  create a duplicate semantic mutation. No broker call occurs inside the business transaction. The exact
+  producer-owned audit identity and profile are fixed in the Gate I onboarding reconciliation below; fixing
+  them creates no publication or runtime authority.
 - Correlation and operation-scoped idempotency are mandatory. A replay with the same canonical request
   returns the same result; the same key with different payload returns `409`.
 - Prepare/publish separation of duties is mandatory: the authenticated publisher must differ from both the
@@ -461,9 +468,10 @@ a legacy migration; any inventory output is read-only quarantine evidence.
   the business delegate/body is never rerun. If commit remains unknown, receipt reconciliation by the exact
   unique scope/key returns the stored outcome only when payload hash and completed outcome match; mismatch is
   `409`; absent, incomplete or indeterminate receipt is `503`. A new transaction/body retry is forbidden.
-- Audit intent and outbox insert are transaction participants. Because the exact audit event identity/version
-  remains owner-blocked, runtime publication cannot activate until that contract is supplied; the harness
-  must fail closed rather than invent it. Broker publication is post-commit only and only through the public
+- Audit intent and outbox insert are transaction participants. The exact producer-owned event identity,
+  six-field payload, allowlist and signing/onboarding profile are fixed below, but runtime publication cannot
+  activate until bilateral MOD-0021/MOD-0035 mapping, fixture, provisioning and approval evidence pass. Broker
+  publication is post-commit only and only through the public
   MOD-0035 `Diten.BuildingBlocks.Eventing.IEventBus` abstraction. Direct RabbitMQ, MassTransit, broker-client,
   Platform audit/outbox collection or foreign service collection access is forbidden.
 - The DecisionRegistry Mongo session/transaction owner can enlist only the nine collections above. DWS/BPM
@@ -529,7 +537,7 @@ document binaries or approval actions.
 | PPM wrapper profile | Gate I-A validation | Exact governing or supporting wrapper name above, version `1.0`; role encoded by identity and absent from generic reference | Supported-profile validation; producer role-eligibility is formally excluded/deferred from v1 |
 | Validation mode | Gate I-A validation | `HistoricalResolve` or `NewReferenceEligibility`; `CurrentSelectionEligibility` forbidden | Unsupported non-selection mode is `400` |
 | `DecisionRevisionNumber` | Yes | Positive, next monotonic number; client cannot overwrite current revision | Unique index + transaction |
-| `DecisionAuthorityReferenceV1` | Yes on publication | Exact four fields; contract `management-governance.decision-authority-reference/1.0`; kind `Person|Position` only | Active tenant-visible MOD-0288 validation |
+| `DecisionAuthorityReferenceV1` | Yes on publication | Exact four fields; contract `management-governance.decision-authority-reference/1.0`; kind `Person|Position` only | MOD-0288 mode matrix: Person Active/referenceable without invented effective dates; Position active/non-archived/effective-date-valid |
 | `ConsumerProfile` | Yes on reference validation | Exact approved name/version; Gate I-A allowlist cannot be widened | Authenticated S2S registration must match |
 | `ActorId`, `DecisionActorId`, `RecordedBy`, `PublishedBy`, `ApprovedBy`, `TenantId` in payload | Forbidden | Reject request; never trust, merge or normalize into server context | Authenticated/delegated server context |
 | Trusted `CorrelationId` | Mutations and validation | Bounded authenticated trace context; absent from persisted `DecisionRevisionReferenceV1` | Server transport context |
@@ -598,6 +606,99 @@ No permission containing `approve`, `reject`, `approval`, `delegate`, `sla` or `
 The validation permission grants no Decision-details read. V1 exposes no exceptional purge permission or
 process; a future MOD-0030-backed amendment cannot reuse `.delete`, `.withdraw`, platform-admin bypass or
 ordinary module permissions.
+
+### Gate I service and permission-manifest onboarding profile
+
+The exact MOD-0018-FU16 producer profile is closed as follows. The receiving service audience is
+`diten-management-governance-service`; the registered workload Client ID is
+`diten.management-governance`; the owner module is `MOD-0007`; and the only protocol scope is
+`diten.s2s.delegated.invoke`. These identities authenticate the workload and receiver only and never confer
+module entitlement, a business permission or a tenant role grant.
+
+Every protected operation requiring a human tenant actor requires a valid MOD-0018-FU16
+`DelegatedActorProofV1`. Its exact single audience, `client_id`/`azp`, tenant, delegated actor,
+`operation_id`, permission, scope, request hash, nonce/replay, time, grant-version, principal-version and
+credential-generation rules apply without weakening or aliasing. A service token without the proof cannot
+perform an actor-bound operation; a proof for another tenant, audience, operation or request cannot be reused.
+
+The producer-owned `PermissionCatalogManifestV1` profile contains exactly this operation-to-permission map:
+
+| Exact `operation_id` | Exact required permission | Operation class |
+|---|---|---|
+| `decision-registry.decisions.read.v1` | `management-governance.decisions.read` | Read Decision details/history under visibility rules |
+| `decision-registry.drafts.create.v1` | `management-governance.decisions.create` | Create a mutable draft |
+| `decision-registry.drafts.revise.v1` | `management-governance.decisions.revise` | Update an unpublished draft or begin the next revision draft |
+| `decision-registry.drafts.soft-delete.v1` | `management-governance.decisions.revise` | Soft-delete an eligible unpublished draft under the same draft-mutation authority |
+| `decision-registry.drafts.publish.v1` | `management-governance.decisions.publish` | Atomically publish an immutable revision |
+| `decision-registry.decisions.supersede.v1` | `management-governance.decisions.supersede` | Record a different-Decision replacement edge/disposition |
+| `decision-registry.decisions.withdraw.v1` | `management-governance.decisions.withdraw` | Append terminal withdrawal without a fake target |
+| `decision-registry.decision-references.validate.v1` | `management-governance.decision-references.validate` | Read-only authoritative Gate I-A reference validation |
+
+The manifest has exactly these seven distinct permission entries and eight operation mappings: no wildcard, prefix match,
+permission alias, implicit Admin/Viewer grant or operation fallback exists. Catalog registration grants no
+access. Tenant access still requires the applicable entitlement policy and an explicit current role grant;
+the delegated proof's permission claim is necessary but not sufficient. Any map change is a producer-owned
+contract-version change with refreshed FU16 compatibility evidence.
+
+### Gate I Minimal Mutation Audit v1 producer profile
+
+MOD-0007 owns the business event type **`DecisionRegistryAuditIntentSubmittedV1`**, exact EventName
+**`management-governance.decision-registry-audit-intent.submitted.v1`**, and event version **`1.0`**. Its
+canonical payload contains exactly the six MOD-0021 Minimal Mutation Audit v1 fields below and rejects every
+unknown property or extension bag:
+
+| Exact payload field | Producer rule |
+|---|---|
+| `auditIntentId` | Non-empty immutable identifier; equals envelope `EventId` |
+| `actorId` | Effective actor from authenticated/delegated mutation context |
+| `entityType` | Exact producer allowlist value below |
+| `entityId` | Non-empty canonical MOD-0007 aggregate/entity identity |
+| `mutation` | Exact producer allowlist value below |
+| `occurredAtUtc` | Server UTC instant; equals envelope occurrence time |
+
+`TenantId`, `CorrelationId`, `EventId`, `Producer`, delegation/security metadata and signing metadata remain
+trusted envelope/transport data and are not seventh payload fields. Decision text/result/rationale,
+provenance, authority details, evidence, before/after snapshots, permission inventories, credentials and
+unrestricted dictionaries/graphs are forbidden.
+
+The event-version allowlist is closed to these exact pairs; unlisted or mismatched combinations fail closed:
+
+| `entityType` | Allowed `mutation` values | MOD-0021 canonical projection expectation |
+|---|---|---|
+| `DecisionDraft` | `Created`, `Revised`, `SoftDeleted` | Decision Registry / draft / corresponding create, update or delete operation |
+| `DecisionRecord` | `Published`, `Superseded`, `Withdrawn` | Decision Registry / decision / corresponding publish, supersede or withdraw operation |
+
+Each successful mutation writes its business state, producer-local immutable audit intent and producer-local
+event-outbox row in the same Mongo transaction. Audit-intent/outbox failure rolls back the mutation. After
+commit, a producer-local worker publishes only through `Diten.BuildingBlocks.Eventing.IEventBus`; it never
+calls MOD-0021 synchronously and never reads or writes Platform audit, outbox or inbox collections. Retry,
+DLQ, alarm and authorized replay preserve the same EventId and byte-identical canonical payload.
+
+MOD-0021 must register an explicit producer-specific mapping for
+`Diten.ManagementGovernanceService` / `MOD-0007` / the exact event identity and version above. The mapping
+must enforce this allowlist, trusted effective/delegating-actor projection and redaction rules, and must ship
+with the MOD-0007-owned canonical-byte fixture plus expected envelope metadata and expected MOD-0021
+projection. Fixture verification covers accepted mapping, rejected unknown fields/allowlist values,
+unsupported versions, metadata mismatch, delegated provenance and canonical-byte stability. The mapping is
+non-executable until that bilateral fixture passes; event-name heuristics and a generic catch-all mapper are
+forbidden. Existing `PpmAuditIntentSubmittedV1` fixtures remain unchanged regression evidence.
+
+### MOD-0035 signed producer onboarding profile
+
+The producer-owned signing/onboarding request is exact: `Producer = Diten.ManagementGovernanceService`,
+EventName and EventVersion as above, `SigningIdentity = diten.management-governance.audit-intent.v1`, and
+`Scheme = management-governance-event-hmac-sha256.v1`. This tuple is ordinal and non-wildcard. Its credential,
+key IDs and secret material are unique to this producer and cannot reuse PPM or another producer's identity,
+namespace, key or derived material.
+
+The MOD-0035 profile binds scheme, EventId, EventName, EventVersion, TenantId, CorrelationId, Producer,
+CausationId, OccurredAtUtc, payload byte length and the exact captured canonical UTF-8 payload bytes. The
+producer-owned bilateral fixture records those values, headers, signing input, canonical bytes, key id,
+expected signature, maximum age, future skew and boundary behavior. MOD-0035's active-plus-previous bounded
+rotation, immediate revocation, fixed-time verification, strict header/UTF-8 validation, freshness,
+replay/idempotency, retry/terminal/DLQ/cancellation and shared-URN rules apply unchanged. This profile reserves
+no key, secret, route, broker resource or runtime configuration and remains non-executable until PSS approval,
+provisioning and fixture evidence pass.
 
 ## 15. Gateway / API Routing Decision
 
@@ -688,6 +789,22 @@ service port directly. Only `integration-agent` may modify `ocelot.json` after e
     reruns the business body, and an absent/incomplete/indeterminate receipt returns `503`.
 33. Initial migration is no-op/quarantine-only. Broker delivery is post-commit and only through MOD-0035
     `IEventBus`; direct RabbitMQ, MassTransit, broker client and Platform/foreign collection access are absent.
+34. Gate I uses exact audience `diten-management-governance-service`, Client ID
+    `diten.management-governance`, the unmodified FU16 `DelegatedActorProofV1` profile and the producer-owned
+    eight-operation/seven-permission manifest; no identity, operation, permission or grant is implicit.
+35. `DecisionRegistryAuditIntentSubmittedV1` has exact EventName
+    `management-governance.decision-registry-audit-intent.submitted.v1`, version `1.0`, exactly the six Minimal
+    Mutation Audit v1 payload fields and only the declared entity/mutation pairs.
+36. MOD-0021 compatibility evidence uses an explicit producer-specific mapping and producer-owned
+    canonical-byte bilateral fixture; unknown fields/values/version, metadata mismatch and delegated
+    provenance failures reject, while the PPM fixture remains unchanged.
+37. MOD-0035 onboarding authorizes only the exact producer/name/version/signing-identity/scheme tuple and
+    unique producer credentials. Canonical-byte signing, rotation/revocation, freshness and replay fixtures
+    pass before runtime activation.
+38. MOD-0288 bilateral fixtures preserve the exact four-field `DecisionAuthorityReferenceV1`: Person new
+    eligibility is Active, referenceable, tenant-visible and not technically deleted without an invented
+    effective date; Position also must be non-archived and effective-date-valid; historical mode resolves
+    visible inactive Person and inactive/archived/out-of-date Position records.
 
 ## 17. Test Expectations
 
@@ -714,11 +831,12 @@ explicit user authority and cannot be inferred from status, a green build or a c
 |---|---|---|
 | 1. Core Scaffold & Contract-Test | Exact five-layer DecisionRegistry scaffold; Domain/Application contracts; Mongo persistence and transaction test harness; architecture isolation tests; internal provider contract fixtures | Scope/test design approval may make this slice `ready-for-dev`. Implemented architecture, persistence and contract tests select primary or fail closed to the sole fallback. No listener, provider activation, credential, external event delivery or runtime traffic. |
 | 2. Security & Provider Integration | MOD-0018 provisioning for the exact seven reserved permissions; authenticated S2S and delegated actor enforcement; MOD-0288 Person and Position validation adapters; issuer/audience/scope and timeout/failure fixtures | Requires Slice 1 isolation/contract evidence plus approved, non-invented credential and MOD-0288 contracts. Security/integration evidence must pass before runtime promotion. |
-| 3. Audit Delivery | Transactional local audit intent; approved MOD-0035 public eventing abstraction; MOD-0021 consumer compatibility; retry, DLQ and replay evidence | Requires Slice 2 security evidence and an approved exact event identity/version. Delivery failure/replay evidence must pass; no event identity is coined by this pack. |
+| 3. Audit Delivery | Transactional local audit intent; approved MOD-0035 public eventing abstraction; MOD-0021 consumer compatibility; retry, DLQ and replay evidence | Requires Slice 2 security evidence plus approval/evidence for the exact producer-owned event, allowlist, mapping fixture and signed-onboarding profile fixed here. Delivery failure/replay evidence must pass. |
 | 4. PPM Gate I-A Activation | Bilateral executable fixtures, MOD-0117 adapter and live integration evidence | Requires Slices 1–3 review evidence, approved producer endpoint/security/runtime, matching MOD-0117 amendment and explicit activation authority. |
 
-Port allocation, event identity/version, credential scheme/material and the exact MOD-0288 Position provider
-contract remain open unless supplied by their owning authority. No slice may guess them. This pack remains
+Port allocation, concrete credential/key material, internal transport and runtime provisioning remain open.
+The producer-owned event identity/version, signing scheme/profile and MOD-0288 Person/Position bilateral
+contract expectations are fixed here; no slice may widen them or infer runtime authority. This pack remains
 `draft`, `production_authority: none` and `implementation_authority: none` in this governance turn.
 
 Mandatory Core Scaffold topology/isolation matrix (implemented during Slice 1; all rows must pass before
@@ -829,6 +947,11 @@ Minimum mutation matrix:
 - [x] PPM cardinality/lifecycle enforcement remains MOD-0117-owned.
 - [x] Exact PPM governing/supporting wrapper identities, InvestmentCase context `1.0`, validation modes and
   mode-aware error semantics are reconciled from authority checkpoint `a2c7ff5b`.
+- [x] Gate I audience, Client ID, FU16 delegation profile and exact operation-to-seven-permission manifest are closed.
+- [x] Producer-owned audit EventType/EventName/version, exact six-field payload and entity/mutation allowlist are closed.
+- [x] MOD-0021 producer-specific mapping/canonical fixture and MOD-0035 signing/onboarding fixture profiles are closed.
+- [x] MOD-0288 four-field bilateral fixture and Person/Position mode matrix are reconciled without inventing
+  Person effective-date fields.
 - [x] Current UI is `none`; future field count/Golden Compact direction is documented without UI authority.
 - [x] Enterprise Governance Process Owner closes lifecycle, revision replacement/publication and terminal disposition semantics.
 - [x] Producer-side relationship-role eligibility is excluded/deferred from v1 and is not a core blocker.
@@ -838,8 +961,12 @@ Minimum mutation matrix:
 - [x] V1 retention/legal-hold decision closes no-TTL/no-purge and draft soft-delete boundaries.
 - [x] Primary/fallback physical topology and mandatory fail-closed isolation evidence are closed.
 - [ ] Exact transport, route, timeout/retry and compatibility policy are approved.
-- [ ] MOD-0018 exact permission provisioning and dedicated S2S identity are executable and evidenced.
-- [ ] MOD-0021/MOD-0035 audit-intent contract, credential and atomic-outbox integration are approved.
+- [x] MOD-0018-FU16 audience, Client ID, `DelegatedActorProofV1` profile and exact seven-entry
+  operation-to-permission owner manifest are fixed.
+- [ ] MOD-0018 permission/principal provisioning and dedicated S2S runtime evidence pass.
+- [x] MOD-0021/MOD-0035 producer event identity, Minimal Mutation Audit v1 payload, allowlist, mapping/fixture
+  expectation and signed-onboarding profile are fixed.
+- [ ] MOD-0021/MOD-0035 consumer mapping, credentials/keys, bilateral fixtures and atomic-outbox runtime evidence pass.
 - [ ] Matching MOD-0117 consumer amendment is approved.
 - [x] Future primary/fallback five-layer and test roots are exact and mutually exclusive.
 - [x] Conditional primary `service` and concrete `TenantScopedEntity` usage are fixed; shell remains intentionally `none`.
@@ -847,7 +974,8 @@ Minimum mutation matrix:
 - [x] Slice 1 exact collections, tenant-first named indexes, sole persistence manifest, transaction/graph,
   canonical idempotency receipt, unknown-commit and no-op migration designs are closed.
 - [x] Post-commit broker delivery is restricted to MOD-0035 `IEventBus`; direct broker and Platform/foreign
-  collection access are forbidden while exact audit event identity remains open.
+  collection access are forbidden, and the exact producer-owned audit identity/profile is fixed without
+  granting runtime authority.
 - [ ] Slice 1 exact scope/test design receives owner `ready-for-dev` approval before scaffold/test implementation.
 - [ ] Implemented Slice 1 architecture/isolation matrix passes before review/runtime promotion; any failure
   selects the sole fallback before runtime activation.
@@ -896,6 +1024,7 @@ Minimum mutation matrix:
 | 2026-08-03 | Closed B-class physical topology: selected isolated `Diten.ManagementGovernanceService/DecisionRegistry`, fixed the mutually exclusive EnterpriseGovernance fallback, exact future five-layer/test roots, shared-base usage, collection/transaction/provider boundaries and mandatory pre-scaffold isolation matrix. | None; status and authorities remain unchanged, port/route/security/deployment blockers stay open, and no scaffold/runtime/consumer authority is created. |
 | 2026-08-04 | Replaced the circular pre-scaffold evidence gate with four ordered development slices and distinct `ready-for-dev`, review/runtime-promotion and production-activation gates. | None; status remains `draft`, both authorities remain `none`, and this change authorizes no scaffold or runtime. |
 | 2026-08-04 | Closed Core Scaffold composition: exact collections/indexes and sole manifest, draft/publication/graph transaction boundaries, canonical durable receipt and unknown-commit reconciliation, no-op migration and MOD-0035-only post-commit delivery. | None; status/authorities remain unchanged; port, S2S provisioning, Position provider contract, exact audit event and PPM activation stay open. |
+| 2026-08-04 | Reconciled Gate I onboarding from MOD-0018-FU16, MOD-0021, MOD-0035 and MOD-0288 authority commits: fixed service audience/Client ID, delegation and permission manifest, producer audit identity/six-field allowlist, consumer mapping/fixture, signed transport profile and the Person/Position eligibility matrix. | None; parent remains `draft`, both authorities remain `none`, and no runtime, credential, route, key, configuration or consumer activation is authorized. |
 
 ## 20. Follow-up Items
 
@@ -907,12 +1036,12 @@ Only staged development/runtime/promotion blockers remain:
    review/runtime promotion, or select the sole fallback.
 3. Obtain an authoritative collision-free port allocation and approve internal route/service discovery,
    DNS/TLS/network and deployment decisions.
-4. Approve and evidence Slice 2 dedicated S2S credential, issuer/audience/scope, registration/rotation/revocation,
-   timeout/retry/circuit and delegated-actor policy.
-5. Provision and evidence the exact seven MOD-0018 permissions and owner-supplied MOD-0288 Person/Position
-   provider contracts/connectivity; do not invent the Position contract.
-6. Approve the exact Slice 3 event identity/version and evidence MOD-0035/MOD-0021 audit delivery,
-   retry/DLQ/replay compatibility.
+4. Provision and evidence the fixed Slice 2 S2S principal/credential, audience/scope, registration,
+   rotation/revocation, timeout/retry/circuit and exact FU16 delegated-actor policy.
+5. Provision and evidence the exact seven MOD-0018 permissions/eight operation mappings and the fixed
+   MOD-0288 Person/Position provider contract/connectivity; do not add Person effective-date fields.
+6. Approve and evidence the fixed Slice 3 MOD-0021 mapping/bilateral fixture and MOD-0035 signed onboarding,
+   credentials/keys, audit delivery, retry/DLQ/replay compatibility.
 7. Approve Slice 4 matching MOD-0117 amendment and bilateral live evidence only after producer runtime gates pass.
 8. Enumerate exact composition/project files and record separate runtime/production authority as applicable.
 
@@ -926,6 +1055,10 @@ any implementation.
 
 ## Authority References
 
+- MOD-0018-FU16 Gate I provenance: commit `40e38905e253c0d669b6282c65814527e90d533c`.
+- MOD-0021 Gate I intake provenance: commit `de81a13575e2a128fac383da47d533ab8e14eac9`.
+- MOD-0035 signed onboarding provenance: commit `23f290ec0f2f546a2335d18846f2f92ff88b0ca4`.
+- MOD-0288 Decision Authority provider provenance: commit `8f7d0ee7cbbbe0e80c7aadca35111afca4472d67`.
 - [Management & Governance domain config](../domain-config.md)
 - [DCP-006 — Portfolio Delivery Process Core](../../../portfolio/delivery-capability-packs/DCP-006-portfolio-delivery-process-core.md)
 - [MOD-0117 — Project & Portfolio Management](../../portfolio-delivery/module-packs/MOD-0117-project-portfolio-management.md)
