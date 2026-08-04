@@ -105,6 +105,109 @@ Proposed permissions are exact, individual, case-sensitive and non-wildcard:
 
 No endpoint, route, controller or collection is authorized by this draft.
 
+### Gate I onboarding manifest — exact governance contract
+
+This owner declaration closes MOD-0138's producer inputs to the FU16, MOD-0021 and MOD-0035 Gate I intake
+without granting executable authority:
+
+- Service audience: `diten-fpa-service`.
+- Client ID: `diten.fpa`.
+- Permission/event owner module: `MOD-0138`.
+- Producer: `Diten.FpaService`; event type: `ScenarioPlanningAuditIntentSubmittedV1`; exact EventName/routing key:
+  `fpa.scenario-planning-audit-intent.submitted.v1`; `EventVersion = 1`.
+- Signing scheme: `fpa-scenario-planning-event-hmac-sha256.v1`; signing identity:
+  `diten.fpa.mod-0138.scenario-planning`; key namespace: `diten/fpa/mod-0138/scenario-planning/audit-intent`.
+  Active/previous key IDs and fixture signatures remain provisioning evidence, not values invented by this draft.
+
+Audience and Client ID are shared workload identities for the future FPA host; they confer no MOD-0136 or MOD-0138
+permission. `OwnerModuleId`, operation owner, permission owner, signing identity and key namespace remain module-local.
+The MOD-0138 manifest must fail registration/startup if any key or operation ID is also declared by MOD-0136, if an
+entry has another owner module, or if a wildcard/alias/case-normalized match is required. MOD-0136 may share the
+audience and Client ID but may not reuse the `fpa.scenario-planning.*` operation namespace, any permission below,
+the event identity, signing identity or key namespace.
+
+The FU16 operation/worker-to-permission manifest is exactly the following 16 entries. `delegated` means a signed
+FU16 delegated-actor proof is mandatory. `worker-after-acceptance` is not a seventeenth permission or a delegated
+user call: the worker may execute only an already accepted immutable run carrying the original actor/request
+binding, and its service authority cannot submit a run or acquire the delegated actor's permission.
+
+| Exact operation ID | Execution class | Exact permission |
+|---|---|---|
+| `fpa.scenario-planning.scenarios.read` | delegated | `fpa.scenario-planning.scenarios.read` |
+| `fpa.scenario-planning.scenarios.create` | delegated | `fpa.scenario-planning.scenarios.create` |
+| `fpa.scenario-planning.scenarios.update` | delegated | `fpa.scenario-planning.scenarios.update` |
+| `fpa.scenario-planning.version-drafts.read` | delegated | `fpa.scenario-planning.version-drafts.read` |
+| `fpa.scenario-planning.version-drafts.create` | delegated | `fpa.scenario-planning.version-drafts.create` |
+| `fpa.scenario-planning.version-drafts.update` | delegated | `fpa.scenario-planning.version-drafts.update` |
+| `fpa.scenario-planning.version-drafts.abandon` | delegated | `fpa.scenario-planning.version-drafts.abandon` |
+| `fpa.scenario-planning.versions.read` | delegated | `fpa.scenario-planning.versions.read` |
+| `fpa.scenario-planning.versions.publish` | delegated | `fpa.scenario-planning.versions.publish` |
+| `fpa.scenario-planning.versions.retire` | delegated | `fpa.scenario-planning.versions.retire` |
+| `fpa.scenario-planning.comparators.read` | delegated | `fpa.scenario-planning.comparators.read` |
+| `fpa.scenario-planning.comparators.run` | delegated request + `fpa.scenario-planning.comparators.execute` worker-after-acceptance | `fpa.scenario-planning.comparators.run` |
+| `fpa.scenario-planning.selections.read` | delegated | `fpa.scenario-planning.selections.read` |
+| `fpa.scenario-planning.selections.replace` | delegated | `fpa.scenario-planning.selections.replace` |
+| `fpa.scenario-planning.selections.close` | delegated | `fpa.scenario-planning.selections.close` |
+| `fpa.scenario-planning.references.validate` | delegated S2S | `fpa.scenario-planning.references.validate` |
+
+Every delegated request binds the exact audience, Client ID, tenant, effective actor, operation ID, permission and
+FU16 canonical `request_hash`; body, method, path or tenant variation invalidates the proof. The immutable accepted
+ComparatorRunDefinition additionally pins the originating `delegation_id`, effective actor, operation ID,
+permission, request hash, correlation and causation. A worker service credential is separately authenticated and
+authorized for `fpa.scenario-planning.comparators.execute`; it cannot manufacture or replace that originating
+binding. Audit `actorId` remains the originating effective actor, while trusted provenance records the executing
+service separately without adding a payload field.
+
+### Gate I audit/event mapping — exact v1
+
+`ScenarioPlanningAuditIntentSubmittedV1` uses MOD-0021 **Minimal Mutation Audit v1** and serializes exactly, in this
+order, `auditIntentId`, `actorId`, `entityType`, `entityId`, `mutation`, `occurredAtUtc`. No tenant, producer,
+correlation, permission, delegation, before/after, Scenario content, assumptions, comparator inputs/output or PPM
+wrapper is present in the payload. `auditIntentId` equals envelope `EventId`; `occurredAtUtc` equals envelope
+`OccurredAtUtc`. Tenant, producer, correlation/causation and signed delegation provenance come only from trusted
+envelope/transport metadata.
+
+The closed MOD-0021 mapping/allowlist is:
+
+| Exact `entityType` | Exact allowed `mutation` values | MOD-0021 category / operation projection |
+|---|---|---|
+| `Scenario` | `Created`, `Updated`, `Archived` | `Integration` / `Create`, `Update`, `LifecycleTransition` respectively |
+| `ScenarioVersionDraft` | `Created`, `Updated`, `Abandoned` | `Integration` / `Create`, `Update`, `Delete` respectively; `Delete` denotes draft abandon, never audit-record deletion |
+| `ScenarioVersion` | `Published`, `Retired` | `Integration` / `Create`, `LifecycleTransition` respectively |
+| `ComparatorRun` | `Requested`, `Started`, `Completed`, `Failed` | `Integration` / `Create`, `Execute`, `Execute`, `Execute` respectively; outcome is `Succeeded` except `Failed` → `Failed` |
+| `ScenarioSelection` | `Replaced`, `Closed` | `Integration` / `Update`, `LifecycleTransition` respectively |
+
+Unknown entity/mutation pairs, unknown/extra payload properties, aliases and case normalization are terminal
+mapping failures. The producer-owned compatibility fixture contains the exact six-field canonical bytes, trusted
+envelope metadata, FU16 delegated provenance and expected MOD-0021 projection for every allowlisted pair plus
+negative unknown-field/value/version cases. MOD-0021 consumes through its transactional inbox + audit-outbox
+boundary; MOD-0138 never reads/writes Platform audit storage or calls a synchronous audit append endpoint.
+
+Business mutation, idempotency receipt and the producer-local audit intent/outbox row commit atomically. Insertion
+failure rolls back the local mutation. Only after commit may the ScenarioPlanning outbox dispatcher call MOD-0035's
+public `IEventBus`; controllers, handlers and comparator compute code never publish directly. The comparator worker
+commits Started/Completed/Failed state plus its local intent atomically, then the same post-commit dispatcher path
+publishes. Broker/Platform failure cannot roll back committed business state and follows MOD-0035 retry/DLQ/alarm.
+
+MOD-0035 signed onboarding is exact and deny-by-default on
+`Diten.FpaService + fpa.scenario-planning-audit-intent.submitted.v1 + 1 + diten.fpa.mod-0138.scenario-planning`.
+Its producer-owned fixture binds the permanent shared transport URN, exact envelope, canonical six-field payload
+bytes/length, scheme, signing identity, provisioned fixture key ID and expected signature. PPM signing identity,
+key IDs, secrets, namespace, fixtures and derived material are forbidden. Active/previous rotation, bounded overlap,
+expiry/revocation, freshness/skew, fixed-time verification, replay/conflict and redaction follow MOD-0035 unchanged.
+
+The three PPM wrapper fixtures are bilateral governance fixtures only:
+
+1. `InvestmentCaseScenarioVersionReferenceV1` with exact nested `ScenarioVersionReferenceV1`;
+2. `InvestmentCaseComparatorOutputReferenceV1` with exact nested `ComparatorOutputReferenceV1`;
+3. PPM `SelectedScenarioReferenceV1` with only the exact pinned `ScenarioVersionReferenceV1`.
+
+Each independently round-trips against the exact PPM `1.0` wrapper and producer `1.0` tuple, rejects missing/extra
+fields, payload copy, producer occurrence/current-state fields and unknown versions, and pins a bilateral checksum.
+They authorize no executable adapter: MOD-0117 still owns adapter code, wrapper persistence/cardinality/lifecycle and
+consumer audit; execution remains blocked pending its approved amendment, matching runtime evidence and explicit
+production authority. `InvestmentCaseContextV1` remains shared typed context, not a fourth reference wrapper.
+
 ## 4. Entity Fields
 
 `entity_base: EntityBase` is the tenant-owned **logical** contract required by the module-pack standard. It does
@@ -350,7 +453,8 @@ and a stable opaque response locator/status; it never stores assumptions, compar
 - Business mutation, committed receipt and local audit/event intents are atomic. Audit-intent/outbox insertion
   failure aborts the transaction. After commit, delivery uses only MOD-0035 `IEventBus` through the outbox
   dispatcher; handlers/controllers cannot publish directly, write Platform audit/event collections or join a
-  distributed transaction. Exact event names/schemas remain an open blocker.
+  distributed transaction. The exact §3 event/schema/signing contract is closed governance; fixture approval,
+  credentials, consumer materialization and runtime wiring remain open blockers.
 
 ### Gate I-B minimal reference contract — exact v1
 
@@ -452,7 +556,7 @@ in coordinated fallback. §4 closes its exact logical entries; creating either f
 | MOD-0023 | Approval only when policy requires | Separate contract; never implied by selection |
 | MOD-0072 | Actual realization owner | Not duplicated here |
 | MOD-0018 | Exact permission/tenant entitlement enforcement | Runtime evidence required |
-| MOD-0021 / MOD-0035 | Local audit/event intents commit atomically; post-commit dispatch only through MOD-0035 `IEventBus` | Exact event names/schemas and runtime wiring remain open |
+| MOD-0021 / MOD-0035 | Exact §3 audit mapping/event/signing onboarding; local intents commit atomically; post-commit dispatch only through MOD-0035 `IEventBus` | Governance contract closed; consumer/signing fixtures, provisioning and runtime wiring evidence remain open |
 | DCP-006 | Gate I orchestration | Approved; OD-04 OPEN/PARTIAL |
 | MongoDB replica set | Exact §4 transaction/receipt/unknown-commit design | Runtime prerequisite and executable evidence remain open |
 | Comparator worker/runtime | Closed BaselineDeltaV1 semantics; async delivery mechanics | Runtime infrastructure remains a B blocker |
@@ -473,6 +577,9 @@ in coordinated fallback. §4 closes its exact logical entries; creating either f
 - MongoDB single-database multi-tenancy; every lookup is tenant-first. Active mutable records also filter
   `IsDeleted=false`; immutable history is resolved through disposition/quarantine policy, not ordinary delete.
 - Tenant and actor derive only from authenticated server context; client `TenantId`/`ActorId` is forbidden.
+- Gate I request identity is exactly audience `diten-fpa-service`, Client ID `diten.fpa` and owner `MOD-0138`.
+  FU16 actor/request binding and the exact §3 operation manifest are fail-closed; service, entitlement, delegated
+  permission and resource visibility remain independent gates.
 - Publishing consumes an exact draft fence and atomically creates the immutable ScenarioVersion, monotonic number,
   publication provenance, canonicalization version, canonical digest, idempotency receipt and audit intent.
 - Published content is never edited. Supersession/retirement is append-only disposition history. Abandoned drafts
@@ -489,6 +596,9 @@ in coordinated fallback. §4 closes its exact logical entries; creating either f
 - Selection replace/close atomically appends immutable occurrence/disposition history and advances a transactional
   scope fence. Effective current selection is derived. Rollback is a compensating append-only occurrence.
 - Mutation, idempotency receipt and audit intent persistence is atomic; audit failure rolls back the mutation.
+- The sole audit event identity is `ScenarioPlanningAuditIntentSubmittedV1` /
+  `fpa.scenario-planning-audit-intent.submitted.v1`; its payload and mapping are the exact §3 six-field/allowlist
+  contract. Post-commit transport is only MOD-0035 `IEventBus` with module-unique signing onboarding.
 - Idempotency scope is TenantId + actor/service identity + exact operation + key, with canonical request digest
   and stable original result. Same digest replays without duplicate compute/output/audit; another digest is 409.
   Retention must exceed retry and unknown-commit recovery windows so expiry cannot enable duplicate side effects.
@@ -524,6 +634,9 @@ in coordinated fallback. §4 closes its exact logical entries; creating either f
 - Comparator compute is owned by a ScenarioPlanning worker process/host surface, never an API controller, CQRS
   command handler or request thread. API/application acceptance ends after the request transaction; it may signal
   only the ScenarioPlanning-owned logical work queue after commit. Inline fallback compute is forbidden.
+- The worker authenticates under separate service authority for exact operation
+  `fpa.scenario-planning.comparators.execute`; it neither presents nor inherits the delegated actor permission.
+  It may process only an accepted immutable run carrying the original FU16 actor/request binding.
 - ScenarioPlanning logically owns the comparator queue subscription, scheduler trigger, retry state and DLQ/alarm
   disposition. The closed retry profile remains initial attempt plus 10s/30s retries and 60s per attempt. The exact
   broker, queue/scheduler product, queue/topic/DLQ names, worker hosting, credentials and operations ownership remain
@@ -665,8 +778,9 @@ pinned version is stale/not-current for that context and therefore returns 409 i
   non-entitled caller or missing delegated permission is 403; payload/query/header tenant or actor override is 400.
 - Service identity alone never bypasses delegated actor visibility/referenceability.
 - Wildcard, alias, wrong-case and prefix permissions are denied. No approve/reject permission exists.
-- Audit records tenant, actor, old/new opaque refs, timestamp, reason code, correlation/causation and hashed
-  idempotency key; assumptions/output payload and raw secrets are excluded.
+- Producer-local intent records the exact six-field Minimal Mutation Audit v1 payload only; tenant, producer,
+  correlation/causation, delegation and signing evidence remain trusted envelope/transport metadata. Assumptions,
+  comparator output, PPM wrappers, raw permissions, tokens and secrets are excluded.
 - Immutable audit covers Scenario create/update/archive; draft create/update/abandon; publish/retire; comparator
   request/start/complete/fail; and selection replace/close. It records target IDs/versions, actor/service,
   exact contract/algorithm versions and operation provenance, never secrets, raw tokens or analytical payload.
@@ -706,6 +820,16 @@ integration-agent task after topology and port approval. The S2S validation surf
 - [ ] Effective selection is derived from immutable occurrence/disposition history under a transactional scope fence; history rows carry no mutable current-state flag.
 - [ ] Abandoned drafts alone may soft-delete; immutable versions/outputs/selection history reject CRUD delete and preserve retirement/supersession history.
 - [ ] Exact 400/401/403/404/409/503 semantics and §8 bounds are proven fail-closed.
+- [ ] FU16 onboarding uses exact audience `diten-fpa-service`, Client ID `diten.fpa`, owner `MOD-0138`, all and
+  only the unchanged 16 permissions and the exact §3 operation/worker mapping; MOD-0136 key/operation ownership
+  collision fails registration/startup.
+- [ ] `ScenarioPlanningAuditIntentSubmittedV1` / `fpa.scenario-planning-audit-intent.submitted.v1` serializes
+  exactly the six Minimal Mutation Audit v1 fields and accepts only the exact Scenario/draft/version/comparator/
+  selection entity/mutation pairs and MOD-0021 projections in §3.
+- [ ] Every local mutation or comparator worker state change commits its receipt plus local intent/outbox atomically;
+  only the post-commit dispatcher invokes `IEventBus`, and direct controller/handler/compute publication is rejected.
+- [ ] MOD-0035 onboarding fixture binds the exact producer/name/version/signing-identity tuple with a module-unique
+  scheme/key namespace and passes rotation, revocation, freshness, replay/conflict and unchanged PPM regression gates.
 - [ ] Primary topology is exactly isolated `Modules/ScenarioPlanning` in `Diten.FpaService`; all applicable
   `ESBP-TOP-001`..`013` domain-config tests pass, including five-layer, DI/repository, persistence-owner,
   transaction, contract-only, security, S2S, audit, PPM no-copy and runtime-allocation negative proofs.
@@ -728,6 +852,8 @@ integration-agent task after topology and port approval. The S2S validation surf
 - [ ] Existing ScenarioType/ES scenario fields remain quarantined prototype/migration evidence with no fallback/dual write.
 - [ ] Authorized UI explicitly uses `_LayoutTenantShell`, Compact/DataTable v2 where applicable, seven-language localization, and no PPM comparator copy or approval action.
 - [ ] Gate I-B remains OPEN until producer approval, matching consumer amendment, compatibility/security evidence and explicit runtime authority.
+- [ ] The three bilateral PPM wrapper fixtures round-trip exact `1.0` shapes/checksums and remain non-executable;
+  no fixture grants MOD-0117 adapter, persistence, lifecycle or runtime authority.
 - [ ] Bilateral supported-version/deprecation matrix proves exact 1.0 fixtures, no coercion/fallback, overlap before
   retirement, historical support through retention and explicit two-sided removal authority.
 
@@ -779,6 +905,14 @@ integration-agent task after topology and port approval. The S2S validation surf
 - Security: exact permission matrix, dedicated S2S plus delegated actor, cross-tenant/invisible 404 equivalence,
   forged context rejection, exact `.references.validate` allow/deny, wrong identity/audience, payload and compressed/
   JSON/numeric bomb boundary tests, immutable-history no-delete/no-TTL tests and audit redaction/rollback.
+- Gate I onboarding contracts: exact FU16 audience/client/owner and 16-entry operation manifest; forged/wrong
+  actor, tenant, request hash, operation, permission and MOD-0136 owner/key collision rejection; comparator request
+  requires delegation while worker execution proves separate service authority plus immutable origin binding.
+- Audit/event fixtures: reflection and canonical-byte tests enforce the exact six properties/order, event type/name/
+  version, closed entity/mutation mapping and expected MOD-0021 projections; unknown fields/values/version and trusted
+  metadata mismatch are terminal. Transaction faults prove local mutation+intent atomicity and post-commit-only
+  `IEventBus`; signed onboarding proves the exact allowlist tuple, unique scheme/identity/key namespace, rotation,
+  revocation, freshness, replay/conflict, redaction and unchanged PPM signed regression.
 - Architecture/isolation matrix mirrors [domain config](../domain-config.md#architecture-and-isolation-test-matrix):
   `ESBP-TOP-001` rejects zero/mixed/dual/partial profiles; `002` five-layer cross-types; `003` foreign repository/
   context DI; `004` shared/foreign collection or index ownership; `005` foreign session/transaction participation;
@@ -821,7 +955,8 @@ integration-agent task after topology and port approval. The S2S validation surf
   deployment ownership and collision-free port.
 - [ ] Approve/provision dedicated S2S identity, exact audience/credential/rotation and delegated actor propagation.
 - [ ] Complete MOD-0018 entitlement/permission provisioning and runtime evidence.
-- [ ] Approve exact MOD-0021 audit and MOD-0035 event names/schemas plus runtime `IEventBus` wiring evidence.
+- [x] Close exact FU16 owner manifest, MOD-0021 audit mapping and MOD-0035 event/signing onboarding governance.
+- [ ] Provision/approve the declared S2S/signing credentials, consumer fixtures and runtime `IEventBus` wiring evidence.
 - [ ] Select and prove authorized comparator worker host, broker, queue/scheduler, retry/DLQ names, credentials and operations ownership.
 - [x] Close initial migration disposition as NO-OP/quarantine-only; any later movement needs a separate approved slice.
 - [ ] Record explicit runtime authority, including approved bilateral fixtures and executable MOD-0117 I-B Scenario amendment evidence.
@@ -861,6 +996,7 @@ DCP-002 exact preflight command: `python3 .antigravity/scripts/verify_module_id.
 | 2026-08-03 | Closed A-class Scenario semantics: Active/Archived lifecycle, one-open-draft publication, exact AssumptionV1 and Budget-only refs, canonical JSON plus two normative SHA-256 vectors, deterministic BaselineDeltaV1, InvestmentCase selection history/fence, no-purge retention and UI counts 3/10/2/2. | Governance semantics only; status remains draft and no runtime authority/route/port is granted. |
 | 2026-08-03 | Reconciled the domain-config topology: isolated ScenarioPlanning in primary `Diten.FpaService`, coordinated two-service fallback, exact future logical scopes and isolation matrix. | Physical planning boundary only; no scaffold, route, port, deployment or production authority. |
 | 2026-08-04 | Closed core composition: exact owner manifest, 12 collections, 23 tenant-first indexes, three transaction families, canonical idempotency/unknown-commit handling, local outbox, worker boundary and NO-OP migration. | Logical design only; exact events, worker infrastructure, S2S, port, deployment and MOD-0117 activation remain blocked. |
+| 2026-08-04 | Reconciled Gate I onboarding against FU16 `40e38905`, MOD-0021 `de81a135` and MOD-0035 `23f290ec`: exact FPA audience/client/owner, unchanged 16-key operation manifest, FU16 actor/request binding, audit event and six-field mapping, signed onboarding, worker separation and three bilateral PPM wrapper fixtures. | Governance contract only; status remains `draft`, `production_authority: none`, A-class semantics and canonical hash vectors are unchanged, and credentials/runtime/adapter authority remain blocked. |
 
 ## 20. Follow-up Items
 
@@ -868,9 +1004,10 @@ DCP-002 exact preflight command: `python3 .antigravity/scripts/verify_module_id.
   `Diten.BudgetingService` + `Diten.ScenarioPlanningService` fallback.
 - Fix concrete service-local base mapping, host composition/test paths, topology-profile configuration, routes,
   deployment ownership, port and Gateway task.
-- Provision dedicated S2S identity/audience/credential rotation and delegated actor propagation.
+- Provision the declared S2S identity/audience/credential rotation and FU16 delegated actor/request binding.
 - Complete MOD-0018 permission/entitlement provisioning evidence.
-- Approve exact MOD-0021 audit and MOD-0035 event names/schemas and prove post-commit `IEventBus` runtime wiring.
+- Materialize and bilaterally approve the declared MOD-0021 mapping/fixtures and MOD-0035 signed fixture; prove
+  post-commit `IEventBus` runtime wiring without changing the governance identities.
 - Select/prove worker host, broker, queue/scheduler/retry/DLQ names, credentials and operations ownership.
 - Keep initial migration NO-OP/quarantine-only; authorize a separate expand/contract amendment before any data movement.
 - Record explicit runtime authority after bilateral fixtures and executable MOD-0117 I-B Scenario amendment approval.
