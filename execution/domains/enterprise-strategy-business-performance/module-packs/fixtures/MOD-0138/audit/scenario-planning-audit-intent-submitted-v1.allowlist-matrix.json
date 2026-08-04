@@ -1,0 +1,689 @@
+{
+  "schemaId": "urn:diten:fpa:scenario-planning-audit-intent-submitted:v1",
+  "moduleCode": "MOD-0138",
+  "eventName": "fpa.scenario-planning-audit-intent.submitted.v1",
+  "eventVersion": 1,
+  "profile": "MinimalMutationAuditV1",
+  "entityCount": 5,
+  "mutationCount": 12,
+  "cartesianCaseCount": 60,
+  "acceptedPairCount": 14,
+  "rejectedCrossPairCount": 46,
+  "additionalNegativeCount": 4,
+  "cases": [
+    {
+      "caseId": "allow-Scenario-Created",
+      "entityType": "Scenario",
+      "mutation": "Created",
+      "expectedDisposition": "Accepted",
+      "auditProjectionCreated": true,
+      "auditOutboxCreated": true,
+      "expectedProjection": {
+        "sourceService": "Diten.FpaService",
+        "sourceModule": "MOD-0138",
+        "category": "AuditCategory.Integration",
+        "entityType": "ScenarioPlanning.Scenario",
+        "operation": "AuditOperation.Create",
+        "outcome": "AuditOutcome.Succeeded"
+      }
+    },
+    {
+      "caseId": "allow-Scenario-Updated",
+      "entityType": "Scenario",
+      "mutation": "Updated",
+      "expectedDisposition": "Accepted",
+      "auditProjectionCreated": true,
+      "auditOutboxCreated": true,
+      "expectedProjection": {
+        "sourceService": "Diten.FpaService",
+        "sourceModule": "MOD-0138",
+        "category": "AuditCategory.Integration",
+        "entityType": "ScenarioPlanning.Scenario",
+        "operation": "AuditOperation.Update",
+        "outcome": "AuditOutcome.Succeeded"
+      }
+    },
+    {
+      "caseId": "allow-Scenario-Archived",
+      "entityType": "Scenario",
+      "mutation": "Archived",
+      "expectedDisposition": "Accepted",
+      "auditProjectionCreated": true,
+      "auditOutboxCreated": true,
+      "expectedProjection": {
+        "sourceService": "Diten.FpaService",
+        "sourceModule": "MOD-0138",
+        "category": "AuditCategory.Integration",
+        "entityType": "ScenarioPlanning.Scenario",
+        "operation": "AuditOperation.LifecycleTransition",
+        "outcome": "AuditOutcome.Succeeded"
+      }
+    },
+    {
+      "caseId": "reject-cross-pair-Scenario-Abandoned",
+      "entityType": "Scenario",
+      "mutation": "Abandoned",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-Scenario-Published",
+      "entityType": "Scenario",
+      "mutation": "Published",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-Scenario-Retired",
+      "entityType": "Scenario",
+      "mutation": "Retired",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-Scenario-Requested",
+      "entityType": "Scenario",
+      "mutation": "Requested",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-Scenario-Started",
+      "entityType": "Scenario",
+      "mutation": "Started",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-Scenario-Completed",
+      "entityType": "Scenario",
+      "mutation": "Completed",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-Scenario-Failed",
+      "entityType": "Scenario",
+      "mutation": "Failed",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-Scenario-Replaced",
+      "entityType": "Scenario",
+      "mutation": "Replaced",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-Scenario-Closed",
+      "entityType": "Scenario",
+      "mutation": "Closed",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "allow-ScenarioVersionDraft-Created",
+      "entityType": "ScenarioVersionDraft",
+      "mutation": "Created",
+      "expectedDisposition": "Accepted",
+      "auditProjectionCreated": true,
+      "auditOutboxCreated": true,
+      "expectedProjection": {
+        "sourceService": "Diten.FpaService",
+        "sourceModule": "MOD-0138",
+        "category": "AuditCategory.Integration",
+        "entityType": "ScenarioPlanning.ScenarioVersionDraft",
+        "operation": "AuditOperation.Create",
+        "outcome": "AuditOutcome.Succeeded"
+      }
+    },
+    {
+      "caseId": "allow-ScenarioVersionDraft-Updated",
+      "entityType": "ScenarioVersionDraft",
+      "mutation": "Updated",
+      "expectedDisposition": "Accepted",
+      "auditProjectionCreated": true,
+      "auditOutboxCreated": true,
+      "expectedProjection": {
+        "sourceService": "Diten.FpaService",
+        "sourceModule": "MOD-0138",
+        "category": "AuditCategory.Integration",
+        "entityType": "ScenarioPlanning.ScenarioVersionDraft",
+        "operation": "AuditOperation.Update",
+        "outcome": "AuditOutcome.Succeeded"
+      }
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioVersionDraft-Archived",
+      "entityType": "ScenarioVersionDraft",
+      "mutation": "Archived",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "allow-ScenarioVersionDraft-Abandoned",
+      "entityType": "ScenarioVersionDraft",
+      "mutation": "Abandoned",
+      "expectedDisposition": "Accepted",
+      "auditProjectionCreated": true,
+      "auditOutboxCreated": true,
+      "expectedProjection": {
+        "sourceService": "Diten.FpaService",
+        "sourceModule": "MOD-0138",
+        "category": "AuditCategory.Integration",
+        "entityType": "ScenarioPlanning.ScenarioVersionDraft",
+        "operation": "AuditOperation.Delete",
+        "outcome": "AuditOutcome.Succeeded"
+      }
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioVersionDraft-Published",
+      "entityType": "ScenarioVersionDraft",
+      "mutation": "Published",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioVersionDraft-Retired",
+      "entityType": "ScenarioVersionDraft",
+      "mutation": "Retired",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioVersionDraft-Requested",
+      "entityType": "ScenarioVersionDraft",
+      "mutation": "Requested",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioVersionDraft-Started",
+      "entityType": "ScenarioVersionDraft",
+      "mutation": "Started",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioVersionDraft-Completed",
+      "entityType": "ScenarioVersionDraft",
+      "mutation": "Completed",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioVersionDraft-Failed",
+      "entityType": "ScenarioVersionDraft",
+      "mutation": "Failed",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioVersionDraft-Replaced",
+      "entityType": "ScenarioVersionDraft",
+      "mutation": "Replaced",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioVersionDraft-Closed",
+      "entityType": "ScenarioVersionDraft",
+      "mutation": "Closed",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioVersion-Created",
+      "entityType": "ScenarioVersion",
+      "mutation": "Created",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioVersion-Updated",
+      "entityType": "ScenarioVersion",
+      "mutation": "Updated",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioVersion-Archived",
+      "entityType": "ScenarioVersion",
+      "mutation": "Archived",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioVersion-Abandoned",
+      "entityType": "ScenarioVersion",
+      "mutation": "Abandoned",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "allow-ScenarioVersion-Published",
+      "entityType": "ScenarioVersion",
+      "mutation": "Published",
+      "expectedDisposition": "Accepted",
+      "auditProjectionCreated": true,
+      "auditOutboxCreated": true,
+      "expectedProjection": {
+        "sourceService": "Diten.FpaService",
+        "sourceModule": "MOD-0138",
+        "category": "AuditCategory.Integration",
+        "entityType": "ScenarioPlanning.ScenarioVersion",
+        "operation": "AuditOperation.Create",
+        "outcome": "AuditOutcome.Succeeded"
+      }
+    },
+    {
+      "caseId": "allow-ScenarioVersion-Retired",
+      "entityType": "ScenarioVersion",
+      "mutation": "Retired",
+      "expectedDisposition": "Accepted",
+      "auditProjectionCreated": true,
+      "auditOutboxCreated": true,
+      "expectedProjection": {
+        "sourceService": "Diten.FpaService",
+        "sourceModule": "MOD-0138",
+        "category": "AuditCategory.Integration",
+        "entityType": "ScenarioPlanning.ScenarioVersion",
+        "operation": "AuditOperation.LifecycleTransition",
+        "outcome": "AuditOutcome.Succeeded"
+      }
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioVersion-Requested",
+      "entityType": "ScenarioVersion",
+      "mutation": "Requested",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioVersion-Started",
+      "entityType": "ScenarioVersion",
+      "mutation": "Started",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioVersion-Completed",
+      "entityType": "ScenarioVersion",
+      "mutation": "Completed",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioVersion-Failed",
+      "entityType": "ScenarioVersion",
+      "mutation": "Failed",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioVersion-Replaced",
+      "entityType": "ScenarioVersion",
+      "mutation": "Replaced",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioVersion-Closed",
+      "entityType": "ScenarioVersion",
+      "mutation": "Closed",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ComparatorRun-Created",
+      "entityType": "ComparatorRun",
+      "mutation": "Created",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ComparatorRun-Updated",
+      "entityType": "ComparatorRun",
+      "mutation": "Updated",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ComparatorRun-Archived",
+      "entityType": "ComparatorRun",
+      "mutation": "Archived",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ComparatorRun-Abandoned",
+      "entityType": "ComparatorRun",
+      "mutation": "Abandoned",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ComparatorRun-Published",
+      "entityType": "ComparatorRun",
+      "mutation": "Published",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ComparatorRun-Retired",
+      "entityType": "ComparatorRun",
+      "mutation": "Retired",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "allow-ComparatorRun-Requested",
+      "entityType": "ComparatorRun",
+      "mutation": "Requested",
+      "expectedDisposition": "Accepted",
+      "auditProjectionCreated": true,
+      "auditOutboxCreated": true,
+      "expectedProjection": {
+        "sourceService": "Diten.FpaService",
+        "sourceModule": "MOD-0138",
+        "category": "AuditCategory.Integration",
+        "entityType": "ScenarioPlanning.ComparatorRun",
+        "operation": "AuditOperation.Create",
+        "outcome": "AuditOutcome.Succeeded"
+      }
+    },
+    {
+      "caseId": "allow-ComparatorRun-Started",
+      "entityType": "ComparatorRun",
+      "mutation": "Started",
+      "expectedDisposition": "Accepted",
+      "auditProjectionCreated": true,
+      "auditOutboxCreated": true,
+      "expectedProjection": {
+        "sourceService": "Diten.FpaService",
+        "sourceModule": "MOD-0138",
+        "category": "AuditCategory.Integration",
+        "entityType": "ScenarioPlanning.ComparatorRun",
+        "operation": "AuditOperation.Execute",
+        "outcome": "AuditOutcome.Succeeded"
+      }
+    },
+    {
+      "caseId": "allow-ComparatorRun-Completed",
+      "entityType": "ComparatorRun",
+      "mutation": "Completed",
+      "expectedDisposition": "Accepted",
+      "auditProjectionCreated": true,
+      "auditOutboxCreated": true,
+      "expectedProjection": {
+        "sourceService": "Diten.FpaService",
+        "sourceModule": "MOD-0138",
+        "category": "AuditCategory.Integration",
+        "entityType": "ScenarioPlanning.ComparatorRun",
+        "operation": "AuditOperation.Execute",
+        "outcome": "AuditOutcome.Succeeded"
+      }
+    },
+    {
+      "caseId": "allow-ComparatorRun-Failed",
+      "entityType": "ComparatorRun",
+      "mutation": "Failed",
+      "expectedDisposition": "Accepted",
+      "auditProjectionCreated": true,
+      "auditOutboxCreated": true,
+      "expectedProjection": {
+        "sourceService": "Diten.FpaService",
+        "sourceModule": "MOD-0138",
+        "category": "AuditCategory.Integration",
+        "entityType": "ScenarioPlanning.ComparatorRun",
+        "operation": "AuditOperation.Execute",
+        "outcome": "AuditOutcome.Failed"
+      }
+    },
+    {
+      "caseId": "reject-cross-pair-ComparatorRun-Replaced",
+      "entityType": "ComparatorRun",
+      "mutation": "Replaced",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ComparatorRun-Closed",
+      "entityType": "ComparatorRun",
+      "mutation": "Closed",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioSelection-Created",
+      "entityType": "ScenarioSelection",
+      "mutation": "Created",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioSelection-Updated",
+      "entityType": "ScenarioSelection",
+      "mutation": "Updated",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioSelection-Archived",
+      "entityType": "ScenarioSelection",
+      "mutation": "Archived",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioSelection-Abandoned",
+      "entityType": "ScenarioSelection",
+      "mutation": "Abandoned",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioSelection-Published",
+      "entityType": "ScenarioSelection",
+      "mutation": "Published",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioSelection-Retired",
+      "entityType": "ScenarioSelection",
+      "mutation": "Retired",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioSelection-Requested",
+      "entityType": "ScenarioSelection",
+      "mutation": "Requested",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioSelection-Started",
+      "entityType": "ScenarioSelection",
+      "mutation": "Started",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioSelection-Completed",
+      "entityType": "ScenarioSelection",
+      "mutation": "Completed",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-cross-pair-ScenarioSelection-Failed",
+      "entityType": "ScenarioSelection",
+      "mutation": "Failed",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "allow-ScenarioSelection-Replaced",
+      "entityType": "ScenarioSelection",
+      "mutation": "Replaced",
+      "expectedDisposition": "Accepted",
+      "auditProjectionCreated": true,
+      "auditOutboxCreated": true,
+      "expectedProjection": {
+        "sourceService": "Diten.FpaService",
+        "sourceModule": "MOD-0138",
+        "category": "AuditCategory.Integration",
+        "entityType": "ScenarioPlanning.ScenarioSelection",
+        "operation": "AuditOperation.Update",
+        "outcome": "AuditOutcome.Succeeded"
+      }
+    },
+    {
+      "caseId": "allow-ScenarioSelection-Closed",
+      "entityType": "ScenarioSelection",
+      "mutation": "Closed",
+      "expectedDisposition": "Accepted",
+      "auditProjectionCreated": true,
+      "auditOutboxCreated": true,
+      "expectedProjection": {
+        "sourceService": "Diten.FpaService",
+        "sourceModule": "MOD-0138",
+        "category": "AuditCategory.Integration",
+        "entityType": "ScenarioPlanning.ScenarioSelection",
+        "operation": "AuditOperation.LifecycleTransition",
+        "outcome": "AuditOutcome.Succeeded"
+      }
+    },
+    {
+      "caseId": "reject-unknown-entity",
+      "entityType": "UnknownScenarioEntity",
+      "mutation": "Updated",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-unknown-mutation",
+      "entityType": "Scenario",
+      "mutation": "UnknownMutation",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-wrong-case",
+      "entityType": "scenario",
+      "mutation": "updated",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    },
+    {
+      "caseId": "reject-trim-alias",
+      "entityType": "Scenario ",
+      "mutation": "Update",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "expectedProjection": null
+    }
+  ]
+}

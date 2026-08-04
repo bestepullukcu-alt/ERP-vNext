@@ -1,0 +1,213 @@
+{
+  "baseFixture": "scenario-planning-audit-intent-submitted-v1.delegated-provenance.positive.json",
+  "caseCount": 19,
+  "forbiddenFixtureFields": [
+    "credential",
+    "token",
+    "rawClaims",
+    "secret"
+  ],
+  "cases": [
+    {
+      "caseId": "missing-effective-actor",
+      "mutation": {
+        "op": "remove",
+        "path": "trustedDelegation.effectiveActorId"
+      },
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "missing-delegating-principal",
+      "mutation": {
+        "op": "remove",
+        "path": "trustedDelegation.delegatingPrincipalId"
+      },
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "missing-delegation-id",
+      "mutation": {
+        "op": "remove",
+        "path": "trustedDelegation.delegationId"
+      },
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "missing-operation",
+      "mutation": {
+        "op": "remove",
+        "path": "trustedDelegation.delegatedOperationId"
+      },
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "missing-permission",
+      "mutation": {
+        "op": "remove",
+        "path": "trustedDelegation.delegatedPermission"
+      },
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "missing-request-hash",
+      "mutation": {
+        "op": "remove",
+        "path": "trustedDelegation.requestHash"
+      },
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "missing-verified-at",
+      "mutation": {
+        "op": "remove",
+        "path": "trustedDelegation.delegationVerifiedAtUtc"
+      },
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "missing-executing-service",
+      "mutation": {
+        "op": "remove",
+        "path": "trustedDelegation.executingService"
+      },
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "delegation-unverified",
+      "mutation": {
+        "op": "replace",
+        "path": "trustedDelegation.verified",
+        "value": false
+      },
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "actor-mismatch",
+      "mutation": {
+        "op": "replace",
+        "path": "trustedDelegation.effectiveActorId",
+        "value": "13800000-0000-0000-0000-000000000099"
+      },
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "tenant-mismatch",
+      "mutation": {
+        "op": "replace",
+        "path": "trustedEnvelope.tenantId",
+        "value": "13800000-0000-0000-0000-000000000099"
+      },
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "operation-mismatch",
+      "mutation": {
+        "op": "replace",
+        "path": "trustedDelegation.delegatedOperationId",
+        "value": "fpa.scenario-planning.scenarios.read"
+      },
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "permission-mismatch",
+      "mutation": {
+        "op": "replace",
+        "path": "trustedDelegation.delegatedPermission",
+        "value": "fpa.scenario-planning.scenarios.read"
+      },
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "request-hash-mismatch",
+      "mutation": {
+        "op": "replace",
+        "path": "trustedDelegation.requestHash",
+        "value": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "wrong-delegating-principal",
+      "mutation": {
+        "op": "replace",
+        "path": "trustedDelegation.delegatingPrincipalId",
+        "value": "13800000-0000-0000-0000-000000000099"
+      },
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "executing-service-mismatch",
+      "mutation": {
+        "op": "replace",
+        "path": "trustedDelegation.executingService",
+        "value": "Diten.BudgetingService"
+      },
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "worker-submits-request",
+      "mutation": {
+        "op": "replace",
+        "path": "workerAuthority.operationId",
+        "value": "fpa.scenario-planning.comparators.run"
+      },
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "worker-mutates-origin-binding",
+      "mutation": {
+        "op": "replace",
+        "path": "immutableOriginBinding.delegationId",
+        "value": "13800000-0000-0000-0000-000000000099"
+      },
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "client-provenance-override",
+      "mutation": {
+        "op": "add",
+        "path": "payload.delegationId",
+        "value": "13800000-0000-0000-0000-000000000008"
+      },
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    }
+  ]
+}

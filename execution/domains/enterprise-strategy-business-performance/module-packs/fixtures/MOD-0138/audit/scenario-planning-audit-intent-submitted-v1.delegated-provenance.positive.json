@@ -1,0 +1,80 @@
+{
+  "schemaId": "urn:diten:fpa:scenario-planning-audit-intent-submitted:v1",
+  "moduleCode": "MOD-0138",
+  "cases": [
+    {
+      "caseId": "delegated-scenario-update-valid",
+      "payloadActorId": "13800000-0000-0000-0000-000000000002",
+      "trustedEnvelope": {
+        "tenantId": "13800000-0000-0000-0000-000000000004",
+        "correlationId": "13800000-0000-0000-0000-000000000005",
+        "causationId": "13800000-0000-0000-0000-000000000006",
+        "producer": "Diten.FpaService"
+      },
+      "trustedDelegation": {
+        "verified": true,
+        "effectiveActorId": "13800000-0000-0000-0000-000000000002",
+        "delegatingPrincipalId": "13800000-0000-0000-0000-000000000007",
+        "delegationId": "13800000-0000-0000-0000-000000000008",
+        "delegatedOperationId": "fpa.scenario-planning.scenarios.update",
+        "delegatedPermission": "fpa.scenario-planning.scenarios.update",
+        "requestHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "delegationVerifiedAtUtc": "2026-08-04T09:13:07.0000000Z",
+        "executingService": "Diten.FpaService"
+      },
+      "expectedAuditEvent": {
+        "actorId": "13800000-0000-0000-0000-000000000002",
+        "metadata": {
+          "delegatedActorId": "13800000-0000-0000-0000-000000000002",
+          "delegatingPrincipalId": "13800000-0000-0000-0000-000000000007",
+          "delegationId": "13800000-0000-0000-0000-000000000008",
+          "delegatedOperationId": "fpa.scenario-planning.scenarios.update",
+          "delegatedPermission": "fpa.scenario-planning.scenarios.update",
+          "delegationVerifiedAtUtc": "2026-08-04T09:13:07.0000000Z",
+          "executingService": "Diten.FpaService"
+        }
+      },
+      "expectedDisposition": "Accepted",
+      "auditProjectionCreated": true
+    },
+    {
+      "caseId": "delegated-comparator-worker-valid",
+      "payloadActorId": "13800000-0000-0000-0000-000000000012",
+      "trustedEnvelope": {
+        "tenantId": "13800000-0000-0000-0000-000000000004",
+        "correlationId": "13800000-0000-0000-0000-000000000015",
+        "causationId": "13800000-0000-0000-0000-000000000016",
+        "producer": "Diten.FpaService"
+      },
+      "immutableOriginBinding": {
+        "effectiveActorId": "13800000-0000-0000-0000-000000000012",
+        "delegatingPrincipalId": "13800000-0000-0000-0000-000000000017",
+        "delegationId": "13800000-0000-0000-0000-000000000018",
+        "delegatedOperationId": "fpa.scenario-planning.comparators.run",
+        "delegatedPermission": "fpa.scenario-planning.comparators.run",
+        "requestHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "correlationId": "13800000-0000-0000-0000-000000000015",
+        "causationId": "13800000-0000-0000-0000-000000000016"
+      },
+      "workerAuthority": {
+        "operationId": "fpa.scenario-planning.comparators.execute",
+        "executingService": "Diten.FpaService",
+        "doesNotInheritDelegatedPermission": true
+      },
+      "expectedAuditEvent": {
+        "actorId": "13800000-0000-0000-0000-000000000012",
+        "metadata": {
+          "delegatedActorId": "13800000-0000-0000-0000-000000000012",
+          "delegatingPrincipalId": "13800000-0000-0000-0000-000000000017",
+          "delegationId": "13800000-0000-0000-0000-000000000018",
+          "delegatedOperationId": "fpa.scenario-planning.comparators.run",
+          "delegatedPermission": "fpa.scenario-planning.comparators.run",
+          "delegationVerifiedAtUtc": "2026-08-04T09:13:07.0000000Z",
+          "executingService": "Diten.FpaService"
+        }
+      },
+      "expectedDisposition": "Accepted",
+      "auditProjectionCreated": true
+    }
+  ]
+}

@@ -1,0 +1,336 @@
+{
+  "baseManifest": "scenario-planning-audit-intent-submitted-v1.fixture-manifest.json",
+  "validationOrder": [
+    "RawCanonicalBytes",
+    "ChecksumRecord",
+    "ChecksumPair",
+    "SchemaIdentity",
+    "SchemaValidationAndAllowlistPair",
+    "EnvelopeIdentity",
+    "DelegatedProvenance",
+    "ExpectedProjection"
+  ],
+  "caseCount": 25,
+  "cases": [
+    {
+      "caseId": "canonical-final-lf",
+      "target": "canonicalPayload",
+      "mutation": {
+        "type": "appendBytes",
+        "hex": "0a"
+      },
+      "expectedStage": "RawCanonicalBytes",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "canonical-utf8-bom",
+      "target": "canonicalPayload",
+      "mutation": {
+        "type": "prependBytes",
+        "hex": "efbbbf"
+      },
+      "expectedStage": "RawCanonicalBytes",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "canonical-trailing-whitespace",
+      "target": "canonicalPayload",
+      "mutation": {
+        "type": "appendBytes",
+        "hex": "20"
+      },
+      "expectedStage": "RawCanonicalBytes",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "canonical-property-reorder",
+      "target": "canonicalPayload",
+      "mutation": {
+        "type": "propertyOrder",
+        "value": [
+          "actorId",
+          "auditIntentId",
+          "entityType",
+          "entityId",
+          "mutation",
+          "occurredAtUtc"
+        ]
+      },
+      "expectedStage": "RawCanonicalBytes",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "canonical-unknown-property",
+      "target": "canonicalPayload",
+      "mutation": {
+        "type": "insertPropertyBeforeEnd",
+        "name": "unknown",
+        "value": true
+      },
+      "expectedStage": "RawCanonicalBytes",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "checksum-missing-final-lf",
+      "target": "checksumRecord",
+      "mutation": {
+        "type": "removeFinalLf"
+      },
+      "expectedStage": "ChecksumRecord",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "checksum-crlf",
+      "target": "checksumRecord",
+      "mutation": {
+        "type": "replaceFinalLf",
+        "hex": "0d0a"
+      },
+      "expectedStage": "ChecksumRecord",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "checksum-wrong-digest",
+      "target": "checksumRecord",
+      "mutation": {
+        "type": "replaceDigest",
+        "value": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "expectedStage": "ChecksumPair",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "checksum-valid-other-canonical-pair",
+      "target": "fixtureManifest",
+      "mutation": {
+        "type": "replaceCanonicalPath",
+        "value": "foreign-module.canonical.json"
+      },
+      "expectedStage": "ChecksumPair",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "schema-wrong-id",
+      "target": "schemaIdentity",
+      "mutation": {
+        "type": "replace",
+        "field": "$id",
+        "value": "urn:diten:fpa:budgeting-audit-intent-submitted:v1"
+      },
+      "expectedStage": "SchemaIdentity",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "schema-wrong-module-code",
+      "target": "schemaIdentity",
+      "mutation": {
+        "type": "replace",
+        "field": "x-moduleCode",
+        "value": "MOD-0136"
+      },
+      "expectedStage": "SchemaIdentity",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "schema-wrong-event-name",
+      "target": "schemaIdentity",
+      "mutation": {
+        "type": "replace",
+        "field": "x-eventName",
+        "value": "fpa.budgeting-audit-intent.submitted.v1"
+      },
+      "expectedStage": "SchemaIdentity",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "schema-wrong-event-version",
+      "target": "schemaIdentity",
+      "mutation": {
+        "type": "replace",
+        "field": "x-eventVersion",
+        "value": 2
+      },
+      "expectedStage": "SchemaIdentity",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "schema-wrong-profile",
+      "target": "schemaIdentity",
+      "mutation": {
+        "type": "replace",
+        "field": "x-profile",
+        "value": "MinimalMutationAuditV2"
+      },
+      "expectedStage": "SchemaIdentity",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "envelope-wrong-module-code",
+      "target": "envelopeIdentity",
+      "mutation": {
+        "type": "replace",
+        "field": "moduleCode",
+        "value": "MOD-0136"
+      },
+      "expectedStage": "EnvelopeIdentity",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "envelope-wrong-event-name",
+      "target": "envelopeIdentity",
+      "mutation": {
+        "type": "replace",
+        "field": "eventName",
+        "value": "fpa.budgeting-audit-intent.submitted.v1"
+      },
+      "expectedStage": "EnvelopeIdentity",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "envelope-wrong-event-version-string",
+      "target": "envelopeIdentity",
+      "mutation": {
+        "type": "replace",
+        "field": "eventVersion",
+        "value": "1"
+      },
+      "expectedStage": "EnvelopeIdentity",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "envelope-wrong-event-version-number",
+      "target": "envelopeIdentity",
+      "mutation": {
+        "type": "replace",
+        "field": "eventVersion",
+        "value": 2
+      },
+      "expectedStage": "EnvelopeIdentity",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "projection-wrong-source-module",
+      "target": "expectedAuditProjection",
+      "mutation": {
+        "type": "replace",
+        "field": "sourceModule",
+        "value": "MOD-0136"
+      },
+      "expectedStage": "ExpectedProjection",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "projection-wrong-source-service",
+      "target": "expectedAuditProjection",
+      "mutation": {
+        "type": "replace",
+        "field": "sourceService",
+        "value": "Diten.BudgetingService"
+      },
+      "expectedStage": "ExpectedProjection",
+      "expectedDisposition": "TerminalContractFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "envelope-tenant-mismatch",
+      "target": "trustedEnvelope",
+      "mutation": {
+        "type": "replace",
+        "field": "tenantId",
+        "value": "13800000-0000-0000-0000-000000000099"
+      },
+      "expectedStage": "DelegatedProvenance",
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "payload-actor-mismatch",
+      "target": "trustedDelegation",
+      "mutation": {
+        "type": "replace",
+        "field": "effectiveActorId",
+        "value": "13800000-0000-0000-0000-000000000099"
+      },
+      "expectedStage": "DelegatedProvenance",
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "delegated-operation-mismatch",
+      "target": "trustedDelegation",
+      "mutation": {
+        "type": "replace",
+        "field": "delegatedOperationId",
+        "value": "fpa.scenario-planning.scenarios.read"
+      },
+      "expectedStage": "DelegatedProvenance",
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "delegated-provenance-missing",
+      "target": "trustedDelegation",
+      "mutation": {
+        "type": "removeObject"
+      },
+      "expectedStage": "DelegatedProvenance",
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    },
+    {
+      "caseId": "delegated-provenance-malformed",
+      "target": "trustedDelegation",
+      "mutation": {
+        "type": "replaceWithScalar",
+        "value": "invalid"
+      },
+      "expectedStage": "DelegatedProvenance",
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "fixtureContract": "MOD-0021.GateI.ProducerFixturePair.v1",
+  "validationDisposition": "GOVERNANCE-ONLY-NON-EXECUTABLE",
+  "schemaIdentity": {
+    "$id": "urn:diten:fpa:scenario-planning-audit-intent-submitted:v1",
+    "producer": "Diten.FpaService",
+    "moduleCode": "MOD-0138",
+    "eventName": "fpa.scenario-planning-audit-intent.submitted.v1",
+    "eventVersion": 1,
+    "profile": "MinimalMutationAuditV1"
+  },
+  "envelopeIdentity": {
+    "eventId": "13800000-0000-0000-0000-000000000001",
+    "producer": "Diten.FpaService",
+    "moduleCode": "MOD-0138",
+    "eventName": "fpa.scenario-planning-audit-intent.submitted.v1",
+    "eventVersion": 1,
+    "tenantId": "13800000-0000-0000-0000-000000000004",
+    "correlationId": "13800000-0000-0000-0000-000000000005",
+    "causationId": "13800000-0000-0000-0000-000000000006",
+    "occurredAtUtc": "2026-08-04T09:13:08.0000000Z"
+  },
+  "canonicalPair": {
+    "canonicalPath": "scenario-planning-audit-intent-submitted-v1.canonical.json",
+    "canonicalByteLength": 247,
+    "canonicalSha256": "db9385def75d885a581554e10ce38877408ed445ed3c4f62e17283b30830462b",
+    "checksumPath": "scenario-planning-audit-intent-submitted-v1.canonical.sha256",
+    "checksumRecordByteLength": 65,
+    "checksumRecordFormat": "^[0-9a-f]{64}\\n$",
+    "checksumRecordSha256": "cd905483538000dbafa0a3ca9b8052a1e39935f2786ba03a6f07a5d12181ae9e",
+    "verifyDigestBeforeDeserialization": true
+  },
+  "schemaPair": {
+    "schemaPath": "scenario-planning-audit-intent-submitted-v1.schema.json",
+    "schemaSha256": "e8e793f267b63b98b793d19ca59fb04c484d1308888baa86f21f07382f393c8f",
+    "requiredPropertyOrder": [
+      "auditIntentId",
+      "actorId",
+      "entityType",
+      "entityId",
+      "mutation",
+      "occurredAtUtc"
+    ],
+    "additionalProperties": false
+  },
+  "projectionPair": {
+    "expectedProjectionPath": "scenario-planning-audit-intent-submitted-v1.expected-audit-event.json",
+    "expectedProjectionSha256": "87e190f3bd215a7df13b575f5606c873f1cd33b86cae09963f5ecd5736b962a8",
+    "sourceService": "Diten.FpaService",
+    "sourceModule": "MOD-0138"
+  },
+  "evidencePairs": [
+    {
+      "path": "scenario-planning-audit-intent-submitted-v1.allowlist-matrix.json",
+      "sha256": "a3bbc6fee41aa378596c1cdcd161f5d04547bd4e554658fb71d36d6de0910736"
+    },
+    {
+      "path": "scenario-planning-audit-intent-submitted-v1.contract-negative-matrix.json",
+      "sha256": "10dbd4fa3b57aa97f09fb922168e294c30a1f2793ecff4c8a3a58c06efb34e01"
+    },
+    {
+      "path": "scenario-planning-audit-intent-submitted-v1.delegated-provenance.positive.json",
+      "sha256": "0bfe20f99423ada86c1c76d5d84a61417e66d17bac39012e4926f2a86f72d35b"
+    },
+    {
+      "path": "scenario-planning-audit-intent-submitted-v1.delegated-provenance.negative.json",
+      "sha256": "23f1e218cd197f07c92ce2177d950f425a3066585a17ea09013ffadaad119be8"
+    }
+  ],
+  "delegatedProvenance": {
+    "positivePath": "scenario-planning-audit-intent-submitted-v1.delegated-provenance.positive.json",
+    "positiveSha256": "0bfe20f99423ada86c1c76d5d84a61417e66d17bac39012e4926f2a86f72d35b",
+    "negativePath": "scenario-planning-audit-intent-submitted-v1.delegated-provenance.negative.json",
+    "negativeSha256": "23f1e218cd197f07c92ce2177d950f425a3066585a17ea09013ffadaad119be8"
+  },
+  "signingPair": {
+    "vectorPath": "scenario-planning-audit-intent-submitted-v1.signing-vector.json",
+    "expectedSignaturePath": "scenario-planning-audit-intent-submitted-v1.expected-signature.json",
+    "signingInputSha256": "4a90617485ca748dae69cc7c7c65a08df58e485019bb886c8bdb5f1a79dc7540",
+    "signatureLowerHex": "05c7cdee1fa8933f00502460178a2b76fa4d68819a5d2e1801c118e0e68b47df"
+  },
+  "singleCaseBindingRequired": [
+    "canonicalPair",
+    "schemaIdentity",
+    "schemaPair",
+    "envelopeIdentity",
+    "projectionPair",
+    "delegatedProvenance",
+    "signingPair"
+  ],
+  "pairMismatchDisposition": {
+    "expectedDisposition": "TerminalContractFailure",
+    "auditProjectionCreated": false,
+    "auditOutboxCreated": false
+  }
+}
