@@ -1,0 +1,219 @@
+{
+  "fixtureContract": "MOD-0021.GateI.BilateralConsumerAcceptance.v1",
+  "classification": "GOVERNANCE-ONLY-NON-RUNTIME",
+  "consumerModule": "MOD-0021",
+  "profile": "MinimalMutationAuditV1",
+  "canonicalPropertyOrder": [
+    "auditIntentId",
+    "actorId",
+    "entityType",
+    "entityId",
+    "mutation",
+    "occurredAtUtc"
+  ],
+  "producerCases": [
+    {
+      "moduleCode": "MOD-0007",
+      "checkpoint": "9968ecede48822f95a74461a4959c94b23abbc9b",
+      "fixtureRoot": "execution/domains/management-governance/module-packs/fixtures/MOD-0007/audit",
+      "consumerName": "DecisionRegistryAuditIntentSubmittedV1Consumer",
+      "producer": "Diten.ManagementGovernanceService",
+      "eventType": "DecisionRegistryAuditIntentSubmittedV1",
+      "eventName": "management-governance.decision-registry-audit-intent.submitted.v1",
+      "eventVersion": 1,
+      "schemaId": "urn:diten:management-governance:decision-registry-audit-intent-submitted:v1",
+      "canonical": {
+        "file": "decision-registry-audit-intent-submitted-v1.canonical.json",
+        "byteLength": 252,
+        "sha256": "0af26a132953b8ac0e364574482fffb04f4f50223a6095685837bac386ab55c4",
+        "hmacSha256": "28204085cf426d46298b59c5439e41795f9deb914f8898ea7ad87a54ad8d36e9"
+      },
+      "artifacts": {
+        "checksum": "decision-registry-audit-intent-submitted-v1.canonical.sha256",
+        "schema": "decision-registry-audit-intent-submitted-v1.schema.json",
+        "projection": "decision-registry-audit-intent-submitted-v1.expected-audit-event.json",
+        "allowlistAndCrossPair": "decision-registry-audit-intent-submitted-v1.allowlist-matrix.json",
+        "delegatedProvenance": "decision-registry-audit-intent-submitted-v1.delegated-provenance-matrix.json",
+        "nonDelegatedProvenance": "decision-registry-audit-intent-submitted-v1.non-delegated-provenance.valid.json",
+        "signingVector": "decision-registry-audit-intent-submitted-v1.signing-vector.test-only.json",
+        "expectedSignature": "decision-registry-audit-intent-submitted-v1.expected-signature.test-only.txt"
+      },
+      "expectedSourceService": "Diten.ManagementGovernanceService",
+      "expectedSourceModule": "MOD-0007",
+      "positivePairCount": 6,
+      "delegatedProfileMissingProofCase": "missing-proof"
+    },
+    {
+      "moduleCode": "MOD-0136",
+      "checkpoint": "711962a3fdc1226d947672dc9b48d29296c960a0",
+      "fixtureRoot": "execution/domains/enterprise-strategy-business-performance/module-packs/fixtures/MOD-0136/audit",
+      "consumerName": "BudgetingAuditIntentSubmittedV1Consumer",
+      "producer": "Diten.FpaService",
+      "eventType": "BudgetingAuditIntentSubmittedV1",
+      "eventName": "fpa.budgeting-audit-intent.submitted.v1",
+      "eventVersion": 1,
+      "schemaId": "urn:diten:fpa:budgeting-audit-intent-submitted:v1",
+      "canonical": {
+        "file": "budgeting-audit-intent-submitted-v1.canonical.json",
+        "byteLength": 254,
+        "sha256": "de9534d5b6ce6f7ef7237e6bcf593dfaa460a79b63e6293495d0de25b5225fe8",
+        "hmacSha256": "e4896c480405bebf25ba31732a1549136056f8addfc540bf4ac0b28fb9119579"
+      },
+      "artifacts": {
+        "checksum": "budgeting-audit-intent-submitted-v1.canonical.sha256",
+        "schema": "budgeting-audit-intent-submitted-v1.schema.json",
+        "projection": "budgeting-audit-intent-submitted-v1.expected-audit-event.json",
+        "allowlistAndCrossPair": "budgeting-audit-intent-submitted-v1.allowlist-matrix.json",
+        "contractNegative": "budgeting-audit-intent-submitted-v1.contract-negative-matrix.json",
+        "delegatedPositive": "budgeting-audit-intent-submitted-v1.delegated-provenance.valid.json",
+        "delegatedNegative": "budgeting-audit-intent-submitted-v1.delegated-provenance.negative-matrix.json",
+        "nonDelegatedProvenance": "budgeting-audit-intent-submitted-v1.non-delegated-provenance.valid.json",
+        "signingVector": "budgeting-audit-intent-submitted-v1.signing-vector.json",
+        "expectedSignature": "budgeting-audit-intent-submitted-v1.expected-signature.txt"
+      },
+      "expectedSourceService": "Diten.FpaService",
+      "expectedSourceModule": "MOD-0136",
+      "positivePairCount": 14,
+      "invalidCrossPairCount": 31
+    },
+    {
+      "moduleCode": "MOD-0138",
+      "checkpoint": "3df680d6e006bfce19e382253ddd1f2f873c2295",
+      "fixtureRoot": "execution/domains/enterprise-strategy-business-performance/module-packs/fixtures/MOD-0138/audit",
+      "consumerName": "ScenarioPlanningAuditIntentSubmittedV1Consumer",
+      "producer": "Diten.FpaService",
+      "eventType": "ScenarioPlanningAuditIntentSubmittedV1",
+      "eventName": "fpa.scenario-planning-audit-intent.submitted.v1",
+      "eventVersion": 1,
+      "schemaId": "urn:diten:fpa:scenario-planning-audit-intent-submitted:v1",
+      "canonical": {
+        "file": "scenario-planning-audit-intent-submitted-v1.canonical.json",
+        "byteLength": 247,
+        "sha256": "db9385def75d885a581554e10ce38877408ed445ed3c4f62e17283b30830462b",
+        "hmacSha256": "05c7cdee1fa8933f00502460178a2b76fa4d68819a5d2e1801c118e0e68b47df"
+      },
+      "artifacts": {
+        "checksum": "scenario-planning-audit-intent-submitted-v1.canonical.sha256",
+        "schema": "scenario-planning-audit-intent-submitted-v1.schema.json",
+        "projection": "scenario-planning-audit-intent-submitted-v1.expected-audit-event.json",
+        "fixtureManifest": "scenario-planning-audit-intent-submitted-v1.fixture-manifest.json",
+        "allowlistAndCrossPair": "scenario-planning-audit-intent-submitted-v1.allowlist-matrix.json",
+        "contractNegative": "scenario-planning-audit-intent-submitted-v1.contract-negative-matrix.json",
+        "delegatedPositive": "scenario-planning-audit-intent-submitted-v1.delegated-provenance.positive.json",
+        "delegatedNegative": "scenario-planning-audit-intent-submitted-v1.delegated-provenance.negative.json",
+        "nonDelegatedProvenance": "scenario-planning-audit-intent-submitted-v1.non-delegated-provenance.matrix.json",
+        "productionValidatorNegative": "scenario-planning-audit-intent-submitted-v1.production-validator.negative.json",
+        "signingVector": "scenario-planning-audit-intent-submitted-v1.signing-vector.json",
+        "expectedSignature": "scenario-planning-audit-intent-submitted-v1.expected-signature.json"
+      },
+      "expectedSourceService": "Diten.FpaService",
+      "expectedSourceModule": "MOD-0138",
+      "positivePairCount": 14,
+      "invalidCrossPairCount": 46,
+      "delegatedProfileMissingProofCase": "delegated-profile-with-provenance-absent"
+    },
+    {
+      "moduleCode": "MOD-0072",
+      "checkpoint": "b4589139e8c9db544de5b66300640b214db3acf4",
+      "fixtureRoot": "execution/domains/enterprise-strategy-business-performance/module-packs/fixtures/MOD-0072/audit",
+      "consumerName": "OutcomeTrackingAuditIntentSubmittedV1Consumer",
+      "producer": "Diten.DecisionIntelligenceService",
+      "eventType": "OutcomeTrackingAuditIntentSubmittedV1",
+      "eventName": "decision-intelligence.outcome-tracking-audit-intent.submitted.v1",
+      "eventVersion": 1,
+      "schemaId": "urn:diten:decision-intelligence:outcome-tracking-audit-intent-submitted:v1",
+      "canonical": {
+        "file": "outcome-tracking-audit-intent-submitted-v1.canonical.json",
+        "byteLength": 246,
+        "sha256": "6e1e750ffddc6f65d45556e703b0aa282b8469dec00bcc516a7a0a5f823cc2a3",
+        "hmacSha256": "0336b3630d4fa5e10c01cb7674681014d1a6e0d6df40ff3923b4555a9be3c07f"
+      },
+      "artifacts": {
+        "checksum": "outcome-tracking-audit-intent-submitted-v1.canonical.sha256",
+        "schema": "outcome-tracking-audit-intent-submitted-v1.schema.json",
+        "projection": "outcome-tracking-audit-intent-submitted-v1.expected-audit-event.json",
+        "allowlistCrossPairAndContractNegative": "outcome-tracking-audit-intent-submitted-v1.compatibility-matrix.json",
+        "delegatedPositive": "outcome-tracking-audit-intent-submitted-v1.delegated-provenance.positive.json",
+        "delegatedNegative": "outcome-tracking-audit-intent-submitted-v1.delegated-provenance.negative.json",
+        "nonDelegatedProvenance": "outcome-tracking-audit-intent-submitted-v1.nondelegated-provenance.positive.json",
+        "productionValidatorNegative": "outcome-tracking-audit-intent-submitted-v1.production-validator-rejection.json",
+        "signingVector": "outcome-tracking-audit-intent-submitted-v1.signing-vector.json",
+        "expectedSignature": "outcome-tracking-audit-intent-submitted-v1.expected-signature.json"
+      },
+      "expectedSourceService": "Diten.DecisionIntelligenceService",
+      "expectedSourceModule": "MOD-0072",
+      "positivePairCount": 5,
+      "invalidCrossPairCount": 10
+    }
+  ],
+  "singleCaseBindingRequired": [
+    "resolve immutable checkpoint and exact case-sensitive artifact path",
+    "read producer canonical bytes in place without copy or reserialization",
+    "verify checksum sidecar is 64 lowercase hex plus one LF and matches raw bytes",
+    "verify schema identity and six-field payload contract",
+    "verify authenticated envelope identity and numeric EventVersion 1",
+    "verify producer test HMAC while keeping the test tuple non-production",
+    "verify exact entity/mutation allowlist pair and provenance profile",
+    "verify exact SourceService, SourceModule, category, entity and operation projection"
+  ],
+  "consumerSecurityAcceptance": {
+    "delegatedProfileMissingProof": {
+      "appliesToEveryProducerCase": true,
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditEventCreated": false,
+      "auditOutboxCreated": false,
+      "retryAllowed": false
+    },
+    "productionTestTupleRejection": {
+      "correctTestHmacPrecondition": true,
+      "testSigningIdentityRejected": true,
+      "testKeyIdRejected": true,
+      "slotCases": [
+        "active-signing-identity",
+        "previous-signing-identity",
+        "active-key-id",
+        "previous-key-id"
+      ],
+      "appliesToEveryProducerCase": true,
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditEventCreated": false,
+      "auditOutboxCreated": false,
+      "retryAllowed": false,
+      "productionSlotMutationApplied": false
+    }
+  },
+  "consumerIdempotencyAndErrorMatrix": [
+    {"case": "unseen-consumer-name-plus-event-id", "disposition": "Accepted", "auditOutboxCreated": true},
+    {"case": "same-event-id-same-canonical-bytes", "disposition": "DuplicateNoOp", "auditOutboxCreated": false},
+    {"case": "same-event-id-different-canonical-bytes", "disposition": "TerminalConflict", "auditOutboxCreated": false},
+    {"case": "unsupported-version", "disposition": "TerminalContractFailure", "auditOutboxCreated": false},
+    {"case": "malformed-canonical-payload", "disposition": "TerminalContractFailure", "auditOutboxCreated": false},
+    {"case": "security-failure", "disposition": "TerminalSecurityFailure", "auditOutboxCreated": false},
+    {"case": "transient-dependency-failure", "disposition": "RetryThenDlqAlarmAuthorizedReplay", "partialAcceptedState": false}
+  ],
+  "ppmRegressionBoundary": {
+    "baselineCheckpoint": "5349ed06420ec5417e510b63c773a098dde715cb",
+    "fixturePath": "services/Diten.Platform/tests/Diten.Platform.Application.Tests/Fixtures/Eventing/ppm-audit-intent-submitted-v1.json",
+    "eventType": "PpmAuditIntentSubmittedV1",
+    "eventName": "ppm.audit-intent.submitted.v1",
+    "signatureScheme": "ppm-event-hmac-sha256.v1",
+    "keyId": "ppm-fixture-current",
+    "payloadSha256": "fd82d7c05ae88372bab689fd38975fb7f0a839b5b56693bb0d7ba8e304633445",
+    "signatureLowerHex": "ea31a1822130953463f4705493aa1e4de6a09752801dd52d810dfbc461e9d40e",
+    "producerFixtureAuthority": "execution/domains/portfolio-delivery/module-packs/MOD-0117-project-portfolio-management.md",
+    "transportAuthority": "execution/domains/platform-shared-services/module-packs/MOD-0035-event-bus-message-queue.md",
+    "keyVectorSignatureReuseForbidden": true,
+    "renameRegenerateOrReinterpretForbidden": true,
+    "regressionMustRemainByteForByteUnchanged": true
+  },
+  "aggregateDisposition": "PASS",
+  "runtimeEvidenceRequiredLater": [
+    "production credential provisioning and active/previous key rotation",
+    "real broker delivery",
+    "transactional inbox and MOD-0021 audit outbox crash evidence",
+    "runtime duplicate and conflict execution",
+    "retry, DLQ, alarm and authorized replay operation",
+    "live PPM regression execution"
+  ],
+  "runtimeAuthorityGranted": false
+}
