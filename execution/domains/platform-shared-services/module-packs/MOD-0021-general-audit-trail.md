@@ -962,18 +962,18 @@ name or create a generic business event.
 
 The producer-owned reconciliation checkpoints were reviewed read-only at these exact commits:
 
-| Producer/module | Checkpoint | Exact event type | Exact EventName | EventVersion | Gate I disposition |
+| Producer/module | Fixture checkpoint | Exact event type / EventName | Schema identity | EventVersion / ModuleCode | Gate I disposition |
 |---|---|---|---|---|---|
-| `Diten.ManagementGovernanceService` / `MOD-0007` | `7bdbd37e16c72cd80f081612a104cc3af7e2b4cd` | `DecisionRegistryAuditIntentSubmittedV1` | `management-governance.decision-registry-audit-intent.submitted.v1` | Numeric `1` | Partial / non-executable |
-| `Diten.FpaService` / `MOD-0136` | `937aabf43683eac9a240f9101ee84c66db55423a` | `BudgetingAuditIntentSubmittedV1` | `fpa.budgeting-audit-intent.submitted.v1` | Numeric `1` | Partial / non-executable |
-| `Diten.FpaService` / `MOD-0138` | `066d16c80b966a63aaa7430ee8dd14c120e7a4c2` | `ScenarioPlanningAuditIntentSubmittedV1` | `fpa.scenario-planning-audit-intent.submitted.v1` | Numeric `1` | Partial / non-executable |
-| `Diten.DecisionIntelligenceService` / `MOD-0072` | `5e5088ef6a5298b09b1dfcece9cf10ad2375aa29` | `OutcomeTrackingAuditIntentSubmittedV1` | `decision-intelligence.outcome-tracking-audit-intent.submitted.v1` | Numeric `1` | Partial / non-executable |
+| `Diten.ManagementGovernanceService` / `MOD-0007` | `c053ada4b0ed33671a0b9f80f12564a744e876d3` | `DecisionRegistryAuditIntentSubmittedV1` / `management-governance.decision-registry-audit-intent.submitted.v1` | `urn:diten:management-governance:decision-registry-audit-intent-submitted:v1`; complete identity annotations | JSON integer `1` / `MOD-0007` | Partial / non-executable |
+| `Diten.FpaService` / `MOD-0136` | `3a4c4f80c892a175928d69f309f68f2f18aa8f9f` | `BudgetingAuditIntentSubmittedV1` / `fpa.budgeting-audit-intent.submitted.v1` | `urn:diten:fpa:budgeting-audit-intent-submitted:v1`; identity annotations incomplete | JSON integer `1` / `MOD-0136` | Partial / non-executable |
+| `Diten.FpaService` / `MOD-0138` | `14b15405f5e760512da704f696e20a9819afd31b` | `ScenarioPlanningAuditIntentSubmittedV1` / `fpa.scenario-planning-audit-intent.submitted.v1` | Missing `$id` and identity annotations | JSON integer `1` / `MOD-0138` | Partial / non-executable |
+| `Diten.DecisionIntelligenceService` / `MOD-0072` | `748a10ed221920b67f8eb5290a454875c08fdc4d` | `OutcomeTrackingAuditIntentSubmittedV1` / `decision-intelligence.outcome-tracking-audit-intent.submitted.v1` | `urn:diten:decision-intelligence:outcome-tracking-audit-intent-submitted:v1`; identity annotations incomplete | JSON integer `1` / `MOD-0072` | Partial / non-executable |
 
 Event type and EventName are producer-owned and are accepted here exactly as supplied. Similar names,
 producers, modules or payloads must not be collapsed into one generic event. The `.v1` routing suffix and
 transport `EventVersion` both mean the numeric integer `1`; string/decimal `"1.0"`, aliases and normalization
-are unsupported. The MOD-0007 and MOD-0072 checkpoints currently state `1.0` in places and therefore require
-producer-pack reconciliation to numeric `1` before their fixtures can become executable.
+are unsupported. The four fixture checkpoints now use JSON numeric integer `1`; the earlier MOD-0007 and
+MOD-0072 `1.0` drift is closed.
 
 ## 5. Versioned Minimal Mutation Audit Profile
 
@@ -1087,10 +1087,10 @@ The bilateral fixture artifact names are exact and case-sensitive:
 | `MOD-0138` | `scenario-planning-audit-intent-submitted-v1.canonical.json` | `scenario-planning-audit-intent-submitted-v1.expected-audit-event.json` | `scenario-planning-audit-intent-submitted-v1.schema.json` | `scenario-planning-audit-intent-submitted-v1.canonical.sha256` |
 | `MOD-0072` | `outcome-tracking-audit-intent-submitted-v1.canonical.json` | `outcome-tracking-audit-intent-submitted-v1.expected-audit-event.json` | `outcome-tracking-audit-intent-submitted-v1.schema.json` | `outcome-tracking-audit-intent-submitted-v1.canonical.sha256` |
 
-Each producer amendment must assign an exact producer-owned repository path to these four basenames; MOD-0021
+Each producer amendment must assign an exact producer-owned repository path to these basenames; MOD-0021
 consumer tests consume the same bytes without copying or regenerating them under a different name. The schema
-identity is the ordinal tuple `Producer + EventName + numeric EventVersion(1) + MinimalMutationAuditV1`; the
-schema file must declare those four constants and exactly the six required lower-camel-case properties with
+identity is the ordinal tuple `Producer + ModuleCode + EventName + numeric EventVersion(1) + MinimalMutationAuditV1`;
+the schema file must declare those five constants and exactly the six required lower-camel-case properties with
 `additionalProperties: false`. Property order in canonical bytes is exactly `auditIntentId`, `actorId`,
 `entityType`, `entityId`, `mutation`, `occurredAtUtc`.
 
@@ -1100,9 +1100,30 @@ digest before deserialization and must bind the verified digest, schema identity
 expected projection fixture in one test case. A prose JSON example, computed-at-test fixture, missing digest,
 different property order, BOM, CRLF, whitespace normalization or reserialization is not executable evidence.
 
-At the reviewed checkpoints no producer supplies the complete named file set with committed canonical bytes
-and checksum evidence. Therefore all four mappings remain non-executable even where a prose compact JSON
-example exists.
+### Fixture checkpoint evidence and remaining contract gaps
+
+| Module | Canonical bytes | Computed SHA-256 | Checksum record | Schema / projection | Signing vector | Result |
+|---|---:|---|---|---|---|---|
+| `MOD-0007` | `252` | `0af26a132953b8ac0e364574482fffb04f4f50223a6095685837bac386ab55c4` | PASS: 64 lowercase hex + LF | PASS for identity tuple, closed six fields and expected projection | PASS; test-only, production-rejected, no PPM reuse | PARTIAL: delegated vectors and full pair matrix absent |
+| `MOD-0136` | `254` | `583f1b27b0b9a34ec0ec2623e2948907a08b769abee3b47f84d637cd7248f68a` | FAIL: filename-decorated 117-byte record | FAIL: identity annotations absent; schema permits invalid cross-pairs; expected projection omits `SourceService`/`SourceModule` | PASS; producer-specific, no PPM/MOD-0138 reuse | PARTIAL |
+| `MOD-0138` | `247` | `db9385def75d885a581554e10ce38877408ed445ed3c4f62e17283b30830462b` | FAIL: 64 bytes with no terminal LF | FAIL: `$id` and identity annotations absent; projection otherwise matches | PASS; producer-specific, no PPM/MOD-0136 reuse | PARTIAL |
+| `MOD-0072` | `246` | `6e1e750ffddc6f65d45556e703b0aa282b8469dec00bcc516a7a0a5f823cc2a3` | FAIL: filename-decorated 124-byte record | FAIL: identity annotations absent; projection uses `ModuleCode` rather than exact `SourceModule` | PASS; test-only and producer-specific, no PPM/FP&A reuse | PARTIAL |
+
+All four canonical blobs are minified UTF-8 without BOM/trailing LF, contain exactly the six profile fields,
+match their recorded payload byte length and computed digest, and bind JSON integer `EventVersion = 1` plus
+the correct ModuleCode in their envelope/schema/projection/signing evidence. All four producer-specific HMAC
+test vectors recompute to their committed expected signature. These cryptographic passes do not waive schema,
+checksum-record, projection or delegated-provenance fixture requirements.
+
+The MOD-0136 canonical blob deliberately uses producer order `actorId`, `auditIntentId`, `entityId`,
+`entityType`, `mutation`, `occurredAtUtc`, which conflicts with this amendment's common canonical order. The
+producer owner must reconcile the blob/schema/signing vector to the common order or obtain an explicit
+versioned profile exception in both producer and consumer governance; MOD-0021 must not silently reserialize.
+
+No reviewed fixture root contains a producer-specific delegated positive/negative compatibility vector or a
+complete expected provenance projection. Each producer also supplies only one positive entity/mutation
+projection example rather than fixture coverage for every allowlisted pair plus negative cross-pair cases.
+These are pre-development bilateral contract-fixture gaps, not live runtime/credential evidence.
 
 ## 10. Consumer Transaction Boundary
 
@@ -1204,9 +1225,16 @@ each new mapping registration.
       AuditEvent entity/operation projection and delegated-actor mapping are closed in this amendment.
 - [x] Exact case-sensitive fixture basenames, schema identity tuple, canonical property order and SHA-256 file
       format are closed.
-- [ ] MOD-0007 and MOD-0072 producer packs use numeric EventVersion `1` consistently; no `1.0` drift remains.
-- [ ] All four producers commit the exact named canonical/projection/schema/checksum fixture set at an approved
-      producer-owned path and the recorded SHA-256 values match the exact canonical UTF-8 bytes.
+- [x] All four fixture checkpoints use JSON numeric integer EventVersion `1`; the earlier MOD-0007/MOD-0072
+      `1.0` drift is closed.
+- [x] All four producers commit canonical/projection/schema/checksum and producer-specific signing evidence at
+      a producer-owned path; canonical byte lengths and computed SHA-256 values match.
+- [ ] All checksum records comply with the exact lowercase 64-hex + one-LF/no-filename contract.
+- [ ] All schemas encode the complete producer/module/event/version/profile identity tuple and exact valid
+      entity/mutation pair matrix; MOD-0136 canonical property order is reconciled with this amendment.
+- [ ] Every expected projection uses exact MOD-0021 `SourceService` and `SourceModule` field names and values.
+- [ ] Every producer supplies delegated positive/negative provenance fixtures and positive/negative fixtures
+      covering its complete entity/mutation allowlist matrix.
 - [ ] All four producer compatibility fixtures pass MOD-0021 consumer contract verification.
 - [ ] Transaction test proves inbox + MOD-0021 audit outbox atomicity.
 - [ ] Duplicate/conflict tests prove the complete `ConsumerName + EventId` matrix.
@@ -1228,8 +1256,16 @@ Failure of any checkbox keeps this amendment and the affected mapping non-execut
   alone authorizes no service, frontend, Gateway, schema or deployment change.
 - Track approval independently for `MOD-0007`, `MOD-0136`, `MOD-0138` and `MOD-0072`; one completed mapping
   does not promote the remaining mappings or the amendment as a whole.
-- Reconciliation result at the four reviewed checkpoints is **PARTIAL**: semantic mapping is closed, but
-  executable fixture bytes/checksums are absent and the MOD-0007/MOD-0072 numeric-version drift remains.
+- Reconciliation result at the four fixture checkpoints is **PARTIAL**. Canonical bytes/hashes, integer
+  version, ModuleCode, signing vectors and PPM reuse prohibition are evidenced; the exact schema/checksum/
+  projection/delegated/full-matrix gaps in Section 9 remain producer-owned blockers.
+- Whole-amendment `ready-for-dev` promotion is **not yet a candidate**. Owners: MOD-0007 Management Governance
+  for delegated/full-matrix fixtures; MOD-0136 FP&A for order/checksum/schema/pair/projection/delegation/full
+  matrix; MOD-0138 FP&A for checksum/schema/delegation/full matrix; MOD-0072 Decision Intelligence for
+  checksum/schema/projection/delegation/full matrix; MOD-0021/PSS for bilateral consumer acceptance tests.
+- Production credentials, key provisioning/rotation, live broker delivery, transactional runtime evidence,
+  alarms and authorized replay evidence remain post-development gates and do not block a future
+  ready-for-dev promotion after the governance fixture blockers close.
 - Revisit profile versioning only through an explicit compatibility decision; do not evolve the six-field
   minimum implicitly.
 - Parent status changes, if ever warranted, require a separate explicit governance decision.
