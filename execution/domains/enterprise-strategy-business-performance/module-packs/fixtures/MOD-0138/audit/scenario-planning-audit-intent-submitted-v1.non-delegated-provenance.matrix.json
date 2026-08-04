@@ -1,0 +1,68 @@
+{
+  "schemaId": "urn:diten:fpa:scenario-planning-audit-intent-submitted:v1",
+  "moduleCode": "MOD-0138",
+  "caseCount": 2,
+  "delegatedClaimsThatMustBeAbsent": [
+    "delegatedActorId",
+    "delegatingPrincipalId",
+    "delegationId",
+    "delegatedOperationId",
+    "delegatedPermission",
+    "delegationVerifiedAtUtc"
+  ],
+  "absenceRule": "Each delegated proof and claim is structurally absent; null, empty or default values do not satisfy absence.",
+  "cases": [
+    {
+      "caseId": "non-delegated-scenario-update-valid",
+      "validatorProfile": "NonDelegated",
+      "delegationMode": "none",
+      "payloadActorId": "13800000-0000-0000-0000-000000000002",
+      "trustedInvocation": {
+        "producer": "Diten.FpaService",
+        "executingService": "Diten.FpaService",
+        "audience": "diten-fpa-service",
+        "clientId": "diten.fpa",
+        "ownerModule": "MOD-0138",
+        "tenantId": "13800000-0000-0000-0000-000000000004",
+        "actorId": "13800000-0000-0000-0000-000000000002",
+        "operationId": "fpa.scenario-planning.scenarios.update",
+        "permission": "fpa.scenario-planning.scenarios.update"
+      },
+      "delegatedProofPresent": false,
+      "delegatedClaimsPresent": false,
+      "expectedAuditEvent": {
+        "actorId": "13800000-0000-0000-0000-000000000002",
+        "metadata": {
+          "executingService": "Diten.FpaService"
+        }
+      },
+      "expectedDisposition": "Accepted",
+      "auditProjectionCreated": true,
+      "auditOutboxCreated": true
+    },
+    {
+      "caseId": "delegated-profile-with-provenance-absent",
+      "validatorProfile": "Delegated",
+      "delegationMode": "required",
+      "payloadActorId": "13800000-0000-0000-0000-000000000002",
+      "trustedInvocation": {
+        "producer": "Diten.FpaService",
+        "executingService": "Diten.FpaService",
+        "audience": "diten-fpa-service",
+        "clientId": "diten.fpa",
+        "ownerModule": "MOD-0138",
+        "tenantId": "13800000-0000-0000-0000-000000000004",
+        "actorId": "13800000-0000-0000-0000-000000000002",
+        "operationId": "fpa.scenario-planning.scenarios.update",
+        "permission": "fpa.scenario-planning.scenarios.update"
+      },
+      "delegatedProofPresent": false,
+      "delegatedClaimsPresent": false,
+      "expectedReasonCode": "DelegatedProvenanceRequired",
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "retryAllowed": false
+    }
+  ]
+}

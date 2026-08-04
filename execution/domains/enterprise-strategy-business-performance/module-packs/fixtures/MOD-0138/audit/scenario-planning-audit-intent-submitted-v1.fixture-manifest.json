@@ -65,13 +65,30 @@
     {
       "path": "scenario-planning-audit-intent-submitted-v1.delegated-provenance.negative.json",
       "sha256": "23f1e218cd197f07c92ce2177d950f425a3066585a17ea09013ffadaad119be8"
+    },
+    {
+      "path": "scenario-planning-audit-intent-submitted-v1.non-delegated-provenance.matrix.json",
+      "sha256": "d5ee40f6a44b2b0c3533e29c413fa4c247028fdc2b5d386c973228769c19dc55"
+    },
+    {
+      "path": "scenario-planning-audit-intent-submitted-v1.production-validator.negative.json",
+      "sha256": "f39a07ef1d195d56ccec5a7d71ffa7a5fb3cbff5134c0a1e04e8d9199be65210"
     }
   ],
   "delegatedProvenance": {
     "positivePath": "scenario-planning-audit-intent-submitted-v1.delegated-provenance.positive.json",
     "positiveSha256": "0bfe20f99423ada86c1c76d5d84a61417e66d17bac39012e4926f2a86f72d35b",
     "negativePath": "scenario-planning-audit-intent-submitted-v1.delegated-provenance.negative.json",
-    "negativeSha256": "23f1e218cd197f07c92ce2177d950f425a3066585a17ea09013ffadaad119be8"
+    "negativeSha256": "23f1e218cd197f07c92ce2177d950f425a3066585a17ea09013ffadaad119be8",
+    "nonDelegatedMatrixPath": "scenario-planning-audit-intent-submitted-v1.non-delegated-provenance.matrix.json",
+    "nonDelegatedMatrixSha256": "d5ee40f6a44b2b0c3533e29c413fa4c247028fdc2b5d386c973228769c19dc55"
+  },
+  "productionValidatorEvidence": {
+    "negativePath": "scenario-planning-audit-intent-submitted-v1.production-validator.negative.json",
+    "negativeSha256": "f39a07ef1d195d56ccec5a7d71ffa7a5fb3cbff5134c0a1e04e8d9199be65210",
+    "correctTestHmacStillRejected": true,
+    "rejectionStage": "ProductionSigningTupleAllowlist",
+    "invalidHmacReasonForbidden": true
   },
   "signingPair": {
     "vectorPath": "scenario-planning-audit-intent-submitted-v1.signing-vector.json",
@@ -86,7 +103,8 @@
     "envelopeIdentity",
     "projectionPair",
     "delegatedProvenance",
-    "signingPair"
+    "signingPair",
+    "productionValidatorEvidence"
   ],
   "pairMismatchDisposition": {
     "expectedDisposition": "TerminalContractFailure",

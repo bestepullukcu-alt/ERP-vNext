@@ -1,0 +1,116 @@
+{
+  "fixtureContract": "MOD-0035.ProductionValidatorTestTupleRejection.v1",
+  "moduleCode": "MOD-0138",
+  "validatorProfile": "Production",
+  "signingVectorPath": "scenario-planning-audit-intent-submitted-v1.signing-vector.json",
+  "expectedSignaturePath": "scenario-planning-audit-intent-submitted-v1.expected-signature.json",
+  "canonicalPath": "scenario-planning-audit-intent-submitted-v1.canonical.json",
+  "checksumPath": "scenario-planning-audit-intent-submitted-v1.canonical.sha256",
+  "testSigningIdentity": "diten.fpa.mod-0138.scenario-planning",
+  "testKeyId": "mod-0138-scenario-planning-fixture-current",
+  "correctTestSignatureLowerHex": "05c7cdee1fa8933f00502460178a2b76fa4d68819a5d2e1801c118e0e68b47df",
+  "canonicalByteLength": 247,
+  "canonicalSha256": "db9385def75d885a581554e10ce38877408ed445ed3c4f62e17283b30830462b",
+  "validationOrder": "Production profile and identity/KeyId allowlist classification precedes any production authentication acceptance; a mathematically correct test-only HMAC never authenticates production.",
+  "forbiddenFixtureFields": [
+    "productionSigningIdentity",
+    "productionKeyId",
+    "productionSecret",
+    "productionCredential"
+  ],
+  "caseCount": 5,
+  "cases": [
+    {
+      "caseId": "production-reject-test-signing-identity",
+      "validatorProfile": "Production",
+      "testTupleComponents": [
+        "signingIdentity"
+      ],
+      "testVectorHmacValid": true,
+      "productionAllowlistMatch": false,
+      "expectedStage": "ProductionSigningTupleAllowlist",
+      "expectedReasonCode": "SigningIdentityNotProductionAllowlisted",
+      "reasonIsInvalidHmac": false,
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "retryAllowed": false
+    },
+    {
+      "caseId": "production-reject-test-key-id",
+      "validatorProfile": "Production",
+      "testTupleComponents": [
+        "keyId"
+      ],
+      "testVectorHmacValid": true,
+      "productionAllowlistMatch": false,
+      "expectedStage": "ProductionSigningTupleAllowlist",
+      "expectedReasonCode": "KeyIdNotProductionAllowlisted",
+      "reasonIsInvalidHmac": false,
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "retryAllowed": false
+    },
+    {
+      "caseId": "production-reject-correct-test-hmac",
+      "validatorProfile": "Production",
+      "testTupleComponents": [
+        "signingIdentity",
+        "keyId",
+        "correctTestSignatureLowerHex"
+      ],
+      "testVectorHmacValid": true,
+      "productionAllowlistMatch": false,
+      "expectedStage": "ProductionSigningTupleAllowlist",
+      "expectedReasonCode": "TestSigningTupleNotProductionAllowlisted",
+      "reasonIsInvalidHmac": false,
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "retryAllowed": false
+    },
+    {
+      "caseId": "production-reject-test-identity-with-production-compatible-envelope",
+      "validatorProfile": "Production",
+      "testTupleComponents": [
+        "signingIdentity"
+      ],
+      "productionCompatibleEnvelope": {
+        "eventNameSuffixMatchesNumericVersion": true,
+        "requiredEnvelopeFieldsPresent": true,
+        "canonicalPayloadPairValid": true,
+        "freshnessAndShapeValid": true
+      },
+      "testVectorHmacValid": true,
+      "productionAllowlistMatch": false,
+      "expectedStage": "ProductionSigningTupleAllowlist",
+      "expectedReasonCode": "SigningIdentityNotProductionAllowlisted",
+      "reasonIsInvalidHmac": false,
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "retryAllowed": false
+    },
+    {
+      "caseId": "production-reject-test-key-with-correct-canonical-pair",
+      "validatorProfile": "Production",
+      "testTupleComponents": [
+        "keyId",
+        "correctTestSignatureLowerHex",
+        "canonicalPath",
+        "checksumPath"
+      ],
+      "canonicalPairValid": true,
+      "testVectorHmacValid": true,
+      "productionAllowlistMatch": false,
+      "expectedStage": "ProductionSigningTupleAllowlist",
+      "expectedReasonCode": "KeyIdNotProductionAllowlisted",
+      "reasonIsInvalidHmac": false,
+      "expectedDisposition": "TerminalSecurityFailure",
+      "auditProjectionCreated": false,
+      "auditOutboxCreated": false,
+      "retryAllowed": false
+    }
+  ]
+}

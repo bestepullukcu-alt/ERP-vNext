@@ -213,6 +213,8 @@ The governance fixture root is exactly
 | `scenario-planning-audit-intent-submitted-v1.contract-negative-matrix.json` | Raw-byte, checksum/pair, schema identity, envelope/module/event/version, projection and provenance fail-closed cases |
 | `scenario-planning-audit-intent-submitted-v1.delegated-provenance.positive.json` | Exact tenant/effective/delegating actor, delegation, operation, permission, request binding and executing-service projections, including comparator worker separation |
 | `scenario-planning-audit-intent-submitted-v1.delegated-provenance.negative.json` | Missing/broken/unverified provenance and tenant/actor/operation/permission/request/worker mismatch cases; no credential/token/raw claims |
+| `scenario-planning-audit-intent-submitted-v1.non-delegated-provenance.matrix.json` | Explicit non-delegated acceptance with exact service/audience/client/module/tenant/actor/operation/permission and structural absence of every delegated proof/claim; the identical absence under the delegated profile is terminal |
+| `scenario-planning-audit-intent-submitted-v1.production-validator.negative.json` | Five production-profile terminal-security cases proving the test signing identity, fixture KeyId and mathematically correct fixture HMAC remain outside the production allowlist, including production-compatible envelope and valid canonical/checksum-pair variants |
 
 The exact schema identity is `$id = urn:diten:fpa:scenario-planning-audit-intent-submitted:v1` plus top-level
 `x-producer = Diten.FpaService`, `x-moduleCode = MOD-0138`,
@@ -228,6 +230,19 @@ The vector must not equal or derive from any MOD-0136 or PPM key/vector. Verific
 newline-delimited signing prefix with numeric integer EventVersion `1`, appends the exact 247 canonical bytes without
 reserialization, and compares the expected signature in fixed time. Any BOM, trailing newline, property reorder,
 case normalization, reserialization, byte-count change, checksum mismatch or cross-module key/vector reuse fails.
+
+The non-delegated provenance profile binds exact producer/executing service `Diten.FpaService`, audience
+`diten-fpa-service`, Client ID `diten.fpa`, owner `MOD-0138`, tenant, actor, operation and permission while every
+delegated proof and delegated audit claim is structurally absent; null/default placeholders do not count as absence.
+The same identity tuple and absence under the delegated profile is a terminal security failure and creates no
+projection or audit outbox item. This audit-ingress classification fixture grants no service-only authority to a
+business endpoint and does not weaken the FU16 rule that delegated Scenario mutations require a valid proof.
+
+Production validation must classify the profile and enforce the production signing-identity/KeyId allowlist before
+accepting any signature as a production credential. The public test identity, fixture KeyId and correct lowercase
+fixture HMAC are terminally rejected even with an otherwise production-compatible envelope or the valid 247-byte
+payload/checksum pair. The rejection is an identity/KeyId allowlist failure, never `InvalidHmac`; it is non-retryable
+and creates no projection/outbox. No production signing identity, KeyId, secret or credential is defined here.
 
 The three PPM wrapper fixtures are bilateral governance fixtures only:
 
@@ -864,7 +879,7 @@ integration-agent task after topology and port approval. The S2S validation surf
   only the post-commit dispatcher invokes `IEventBus`, and direct controller/handler/compute publication is rejected.
 - [ ] MOD-0035 onboarding fixture binds the exact producer/name/version/signing-identity tuple with a module-unique
   scheme/key namespace and passes rotation, revocation, freshness, replay/conflict and unchanged PPM regression gates.
-- [ ] All eleven §3 audit fixtures satisfy their exact formats; canonical JSON remains minified 247-byte/no-newline,
+- [ ] All thirteen §3 audit fixtures satisfy their exact formats; canonical JSON remains minified 247-byte/no-newline,
   checksum record is exactly 64 lowercase hex + one LF, schema/checksum/envelope/projection/provenance bind as one
   pair, SHA-256 and signing input/signature recompute exactly, `ModuleCode = MOD-0138`, EventVersion is integer `1`,
   and MOD-0136/PPM key or vector reuse is rejected.
@@ -874,6 +889,12 @@ integration-agent task after topology and port approval. The S2S validation surf
 - [ ] Delegated positive fixtures preserve effective/delegating actor, delegation, exact operation/permission,
   request hash and executing service; negative fixtures fail closed on missing/broken/unverified provenance and
   tenant/actor/operation/permission/request/worker mismatch without storing credentials, tokens or raw claims.
+- [ ] The non-delegated fixture accepts the exact authenticated service/audience/client/module/tenant/actor/
+  operation/permission tuple only when every delegated proof/claim is structurally absent; the same absence under
+  the delegated profile is terminal and creates no audit projection/outbox.
+- [ ] Every production-validator fixture terminally rejects the test signing identity, fixture KeyId and otherwise
+  correct fixture HMAC at the production allowlist gate—including production-compatible-envelope and valid
+  canonical/checksum-pair cases—without reporting `InvalidHmac` or introducing production credentials.
 - [ ] Primary topology is exactly isolated `Modules/ScenarioPlanning` in `Diten.FpaService`; all applicable
   `ESBP-TOP-001`..`013` domain-config tests pass, including five-layer, DI/repository, persistence-owner,
   transaction, contract-only, security, S2S, audit, PPM no-copy and runtime-allocation negative proofs.
@@ -964,6 +985,12 @@ integration-agent task after topology and port approval. The S2S validation surf
 - Contract fixture tests enforce the exact schema `$id` and five identity annotations, the 65-byte checksum sidecar,
   manifest-bound schema/checksum/envelope/projection/provenance pairing, all 14 positive and 46 negative cross-pairs,
   unknown property/entity/mutation/case/alias inputs and the complete delegated provenance positive/negative matrix.
+- Provenance-profile fixture tests prove the explicit non-delegated accepted tuple has no delegated proof or claims
+  anywhere (null/default does not qualify), preserves only executing-service provenance, and fails terminally when
+  the identical absence is classified as delegated.
+- Production-validator fixture tests first recompute the unchanged test-only HMAC, then prove all five test tuple
+  variants fail the production identity/KeyId allowlist with terminal security disposition, zero projection/outbox,
+  no retry and no `InvalidHmac` oracle; fixture content contains no production secret, KeyId or credential.
 - Architecture/isolation matrix mirrors [domain config](../domain-config.md#architecture-and-isolation-test-matrix):
   `ESBP-TOP-001` rejects zero/mixed/dual/partial profiles; `002` five-layer cross-types; `003` foreign repository/
   context DI; `004` shared/foreign collection or index ownership; `005` foreign session/transaction participation;
@@ -1050,6 +1077,7 @@ DCP-002 exact preflight command: `python3 .antigravity/scripts/verify_module_id.
 | 2026-08-04 | Reconciled Gate I onboarding against FU16 `40e38905`, MOD-0021 `de81a135` and MOD-0035 `23f290ec`: exact FPA audience/client/owner, unchanged 16-key operation manifest, FU16 actor/request binding, audit event and six-field mapping, signed onboarding, worker separation and three bilateral PPM wrapper fixtures. | Governance contract only; status remains `draft`, `production_authority: none`, A-class semantics and canonical hash vectors are unchanged, and credentials/runtime/adapter authority remain blocked. |
 | 2026-08-04 | Added the six exact MOD-0138 audit/signing fixtures: canonical payload/schema/MOD-0021 projection, SHA-256 and module-unique test-only signing vector/signature; fixed `ModuleCode = MOD-0138` and numeric `EventVersion = 1`. | Fixture governance only; status remains `draft`, `production_authority: none`, the 16 permissions and existing Scenario canonical hashes are unchanged, and no runtime key/configuration/adapter authority is granted. |
 | 2026-08-04 | Completed MOD-0021 checkpoint reconciliation: checksum final-LF, exact schema `$id`/identity tuple, manifest-bound schema/checksum pair, 60-row allowlist ledger and delegated provenance/negative matrices. | Governance fixtures only; canonical audit payload remains 247 bytes with SHA `db9385...462b`, existing signature and Scenario 309/623-byte hashes remain unchanged, and no runtime/consumer authority is granted. |
+| 2026-08-04 | Closed final audit-security fixture gaps: explicit non-delegated provenance/absence acceptance plus delegated-profile fail-closed evidence, and five universal production-validator rejections for the test identity, fixture KeyId and correct test-only HMAC. | Governance fixture evidence only; production credentials/authority remain absent, while the 16 permissions, canonical 247-byte payload/SHA/HMAC and Scenario business hashes remain unchanged. |
 
 ## 20. Follow-up Items
 
