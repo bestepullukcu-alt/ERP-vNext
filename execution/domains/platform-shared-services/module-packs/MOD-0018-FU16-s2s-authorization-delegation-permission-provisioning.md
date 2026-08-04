@@ -168,8 +168,12 @@ The proof contains no email, display name, role name, raw credential, refresh to
 
 - Authentication, service authorization, delegated user authorization and module entitlement are independent
   gates. All required gates must allow; one success never implies another.
-- `ModuleCode`/module entitlement identity is commercial capability identity. `ServicePrincipalId`/`ClientId` is
-  workload identity. They are never aliases and are never compared as strings to infer access.
+- `ModuleCode`/module entitlement identity is commercial capability identity. `ServicePrincipalId`/`ClientId` and
+  token `aud` are workload/receiver identities. A `ModuleCode` is never a service client ID or audience alias; these
+  values are never compared as strings to infer access.
+- Gate I fixes the producer `ModuleCode` values as `MOD-0007`, `MOD-0136`, `MOD-0138` and `MOD-0072`. Each is
+  tenant-assignable, non-baseline, entitlement-gated and explicit-grant-only. `MOD-0136` and `MOD-0138` remain two
+  independent entitlement gates inside `Diten.FpaService`, despite sharing its client ID and audience.
 - A service-only call has no delegated human authority. An endpoint requiring user visibility or mutation must
   reject a service token without a valid delegated proof.
 - Each delegated proof is single tenant, single receiver and single operation. No cross-tenant, multi-audience,
@@ -250,10 +254,13 @@ authority dependency outage at any security decision point is `503` and no prote
 - `PermissionCatalogManifestV1` registers catalog definitions only. Catalog presence grants no tenant access.
 - PSS validates schema, owner identity, collision and scope but never authors a producer permission.
 - Every tenant role grant is explicit, tenant-scoped, auditable and attributable to an authorized actor/idempotency
-  key. No entitlement event may auto-grant Admin or Viewer for Gate I producers.
+  key. Enable and reconcile create zero automatic grants; no entitlement event may auto-grant Admin, Viewer or any
+  other role for Gate I producers.
 - Entitlement removal makes existing explicit grants dormant: rows remain, are excluded from effective claims and
-  authorization, and are visible to authorized administrators. Re-entitlement reactivates only still-existing grants
-  for current role memberships; it creates no grant and reconstructs none that was removed.
+  authorization, and are visible to authorized administrators. Disable/removal never deletes an explicit grant.
+  Re-entitlement alone never makes a dormant grant effective and never creates or reconstructs a grant: effective
+  authorization requires the current role membership, the still-existing explicit grant and current authorization
+  version to be re-evaluated successfully.
 - Permission removal/deprecation makes matching grants dormant or invalid under owner-approved migration; silent
   remap and wildcard fallback are forbidden.
 - AuthService permission/role changes increment the tenant authorization version immediately. Previously issued
@@ -277,13 +284,15 @@ insufficient for delegated actor proof.
 - [ ] Module entitlement identity and service identity are separate fields and gates.
 - [ ] Manifest registration cannot grant access and cannot accept a PSS-invented producer permission.
 - [ ] Tenant grants require explicit role-permission provisioning; automatic Admin/Viewer grants are absent.
-- [ ] Entitlement removal leaves explicit grants dormant; re-entitlement creates no new grant.
+- [ ] Entitlement removal leaves explicit grants dormant without deleting them; re-entitlement creates no grant and
+  cannot make one effective without current role membership, the still-existing explicit grant and current version.
 - [ ] Grant/principal/credential change invalidates stale proofs immediately across instances.
 - [ ] 400/401/403/404/409/503 classes and ordering pass without existence disclosure or fail-open.
 - [ ] Tokens, secrets, credentials, nonce and request bodies are redacted from logs/traces/errors.
 - [ ] MDM and every other legacy generic module retain current auto-grant/revoke behavior.
 - [ ] PPM retains `ExplicitOnlyPreserveOnEntitlementRemoval`, its exact 16-key contract and no default Admin/Viewer grant.
-- [ ] All four producer profiles pass; their exact operation/permission manifests are accepted, but unresolved exact module-entitlement identities/applicability keep every profile blocked.
+- [ ] All four producer profiles pass governance closure with exact ModuleCodes and entitlement policies; executable
+  onboarding remains blocked only until fixture/runtime evidence proves those decisions.
 - [ ] No runtime code/config/seed/gateway change is present in this draft authoring commit.
 
 ## 17. Test Expectations
@@ -318,7 +327,11 @@ authorization, structured-log capture proving redaction, and no secret/token in 
 - [x] MOD-0138 owner pack supplies the exact sixteen delegated mappings / sixteen permissions plus separate accepted-run worker authority at checkpoint `066d16c80b966a63aaa7430ee8dd14c120e7a4c2`.
 - [x] MOD-0072 owner pack supplies the exact nine-operation / seven-permission manifest at checkpoint `5e5088ef6a5298b09b1dfcece9cf10ad2375aa29`.
 - [x] Producer owners approve the exact audiences and onboarding client identities recorded below.
-- [ ] Each producer owner supplies an exact module-entitlement identity/code and an unambiguous mandatory/not-applicable decision; all four profiles remain entitlement-blocked until then.
+- [x] Exact ModuleCodes and mandatory entitlement posture are closed for all four producer profiles: `MOD-0007`,
+  `MOD-0136`, `MOD-0138` and `MOD-0072`; all are tenant-assignable, non-baseline, entitlement-gated and
+  explicit-grant-only.
+- [ ] Fixture/runtime evidence proves each profile's ModuleCode registration, separate entitlement evaluation,
+  zero-grant enable/reconcile, grant-preserving disable/removal and guarded dormant-grant effectiveness.
 - [ ] MDM/legacy and PPM regression suites are named in executable implementation packs.
 - [ ] Physical routes, mTLS/network controls, vault keys, retention and operational runbooks are approved.
 - [ ] Human review promotes status to `approved` or `ready-for-dev`.
@@ -347,14 +360,15 @@ in the [ledger](../../../portfolio/blueprint-master-plan-reconciliation.md).
 
 | Service | Blueprint owner modules | Exact audience | Client ID reservation | Producer permission source | Bilateral manifest | Remaining gate |
 |---|---|---|---|---|---|---|
-| `Diten.ManagementGovernanceService` | `MOD-0007` | `diten-management-governance-service` | `diten.management-governance` | MOD-0007 checkpoint `7bdbd37e16c72cd80f081612a104cc3af7e2b4cd` | ACCEPTED — 8 operations / 7 permissions | **BLOCKED:** exact module-entitlement identity and mandatory/applicability decision absent |
-| `Diten.FpaService` / Budgeting | `MOD-0136` | `diten-fpa-service` | `diten.fpa` | MOD-0136 checkpoint `937aabf43683eac9a240f9101ee84c66db55423a` | ACCEPTED — 15 operations / 15 permissions | **BLOCKED:** exact module-entitlement identity and mandatory/applicability decision absent |
-| `Diten.FpaService` / ScenarioPlanning | `MOD-0138` | `diten-fpa-service` | `diten.fpa` | MOD-0138 checkpoint `066d16c80b966a63aaa7430ee8dd14c120e7a4c2` | ACCEPTED — 16 delegated mappings / 16 permissions plus accepted-run worker authority | **BLOCKED:** exact module-entitlement identity and mandatory/applicability decision absent |
-| `Diten.DecisionIntelligenceService` | `MOD-0072` | `diten-decision-intelligence-service` | `diten.decision-intelligence` | MOD-0072 checkpoint `5e5088ef6a5298b09b1dfcece9cf10ad2375aa29` | ACCEPTED — 9 operations / 7 permissions | **BLOCKED:** exact module-entitlement identity and mandatory/applicability decision absent |
+| `Diten.ManagementGovernanceService` | `MOD-0007` | `diten-management-governance-service` | `diten.management-governance` | MOD-0007 checkpoint `7bdbd37e16c72cd80f081612a104cc3af7e2b4cd` | ACCEPTED — 8 operations / 7 permissions | **BLOCKED:** fixture/runtime evidence absent |
+| `Diten.FpaService` / Budgeting | `MOD-0136` | `diten-fpa-service` | `diten.fpa` | MOD-0136 checkpoint `937aabf43683eac9a240f9101ee84c66db55423a` | ACCEPTED — 15 operations / 15 permissions | **BLOCKED:** fixture/runtime evidence absent |
+| `Diten.FpaService` / ScenarioPlanning | `MOD-0138` | `diten-fpa-service` | `diten.fpa` | MOD-0138 checkpoint `066d16c80b966a63aaa7430ee8dd14c120e7a4c2` | ACCEPTED — 16 delegated mappings / 16 permissions plus accepted-run worker authority | **BLOCKED:** fixture/runtime evidence absent |
+| `Diten.DecisionIntelligenceService` | `MOD-0072` | `diten-decision-intelligence-service` | `diten.decision-intelligence` | MOD-0072 checkpoint `5e5088ef6a5298b09b1dfcece9cf10ad2375aa29` | ACCEPTED — 9 operations / 7 permissions | **BLOCKED:** fixture/runtime evidence absent |
 
-These client IDs and audiences identify workloads/receivers only. They do not confer module entitlement or any
-producer permission. Shared FPA audience/client values do not merge ownership: MOD-0136 owns only `budgeting.*` and
-MOD-0138 owns only `fpa.scenario-planning.*`. The producer manifests use disjoint operation and permission namespaces;
+These client IDs and audiences identify workloads/receivers only. A ModuleCode is neither a service client ID nor an
+audience alias, and none of these values confers a producer permission. Shared FPA audience/client values do not merge
+entitlement gates or ownership: MOD-0136 owns only `budgeting.*` and MOD-0138 owns only
+`fpa.scenario-planning.*`. The producer manifests use disjoint operation and permission namespaces;
 no exact operation ID, permission key or owner-module collision was found across the four checkpoints. PSS accepts
 the owner-authored values below verbatim and invents none.
 
@@ -379,11 +393,9 @@ automatic Admin/Viewer grant. The protocol scope for every delegated entry is ex
 | `decision-registry.decisions.withdraw.v1` | `management-governance.decisions.withdraw` |
 | `decision-registry.decision-references.validate.v1` | `management-governance.decision-references.validate` |
 
-Distinct permission set: exactly seven values represented above. Entitlement posture in the owner pack says only
-"applicable entitlement policy" and supplies no exact module-entitlement identity/code or mandatory/not-applicable
-decision. **Profile result: PARTIAL / entitlement BLOCKED. Required owner decision:** declare the exact entitlement
-identity/code and whether every listed operation is entitlement-gated; if exceptions exist, enumerate them by exact
-operation ID.
+Distinct permission set: exactly seven values represented above. The binding ModuleCode is `MOD-0007`; it is
+tenant-assignable, non-baseline, entitlement-gated and explicit-grant-only for every listed operation. **Profile
+result: GOVERNANCE PASS / execution BLOCKED:** fixture/runtime evidence must prove the closed entitlement policy.
 
 #### MOD-0136 — Budgeting
 
@@ -405,10 +417,10 @@ operation ID.
 | `budgeting.funding-baseline-selections.close` | `budgeting.funding-baseline-selections.close` |
 | `budgeting.budget-version-references.validate` | `budgeting.budget-version-references.validate` |
 
-The owner pack states "MOD-0136 module entitlement when applicable" but does not define the exact entitlement
-identity/code or close applicability per operation. **Profile result: PARTIAL / entitlement BLOCKED. Required owner
-decision:** declare the exact entitlement identity/code and either make it mandatory for all fifteen operations or
-list exact exceptions.
+The binding ModuleCode is `MOD-0136`; it is tenant-assignable, non-baseline, entitlement-gated and
+explicit-grant-only for all fifteen operations. Its entitlement gate is independent from `MOD-0138`, including when
+both run in `Diten.FpaService`. **Profile result: GOVERNANCE PASS / execution BLOCKED:** fixture/runtime evidence must
+prove the closed entitlement policy and the independent FPA gate.
 
 #### MOD-0138 — Scenario Planning
 
@@ -433,10 +445,12 @@ list exact exceptions.
 
 Separate worker authority is exact operation `fpa.scenario-planning.comparators.execute`. It is not a seventeenth
 tenant permission and cannot submit a run or acquire the delegated actor's permission; it may process only an already
-accepted immutable comparator run carrying the original actor/request binding. The owner pack keeps entitlement as an
-independent gate but supplies no exact identity/code or applicability decision. **Profile result: PARTIAL /
-entitlement BLOCKED. Required owner decision:** declare the exact entitlement identity/code and mandatory/applicable
-operation set, explicitly including the treatment of worker-after-acceptance authority.
+accepted immutable comparator run carrying the original actor/request binding. The binding ModuleCode is `MOD-0138`;
+it is tenant-assignable, non-baseline, entitlement-gated and explicit-grant-only for the delegated acceptance path.
+Its entitlement gate is independent from `MOD-0136`, including when both run in `Diten.FpaService`; worker execution
+cannot bypass the entitlement decision captured at accepted-run creation. **Profile result: GOVERNANCE PASS /
+execution BLOCKED:** fixture/runtime evidence must prove the closed entitlement policy, independent FPA gate and
+worker-after-acceptance enforcement.
 
 #### MOD-0072 — Decision Logs & Outcome Tracking
 
@@ -452,11 +466,9 @@ operation set, explicitly including the treatment of worker-after-acceptance aut
 | `outcome-tracking.decision-links.retire` | `decision-intelligence.decision-links.manage` |
 | `outcome-tracking.outcome-references.validate` | `decision-intelligence.outcome-references.validate` |
 
-Distinct permission set: exactly seven values represented above. The owner pack requires workload identity, module
-entitlement and permission ownership to remain separate, but does not name an exact entitlement identity/code or
-close mandatory/applicability per operation. **Profile result: PARTIAL / entitlement BLOCKED. Required owner
-decision:** declare the exact entitlement identity/code and whether all nine operations require it; enumerate exact
-exceptions if any.
+Distinct permission set: exactly seven values represented above. The binding ModuleCode is `MOD-0072`; it is
+tenant-assignable, non-baseline, entitlement-gated and explicit-grant-only for all nine operations. **Profile result:
+GOVERNANCE PASS / execution BLOCKED:** fixture/runtime evidence must prove the closed entitlement policy.
 
 ### Collision and regression disposition
 
@@ -472,7 +484,9 @@ exceptions if any.
 
 ## 20. Follow-up Items
 
-1. Each producer owner closes the remaining exact module-entitlement identity/code and mandatory/applicability decision recorded above; operation-to-permission manifests are bilaterally accepted at the named checkpoints.
+1. Executable owner/AuthService packs supply fixture/runtime evidence for the four closed ModuleCode profiles,
+   including independent `MOD-0136`/`MOD-0138` FPA gates, zero automatic grant on enable/reconcile, grant preservation
+   on disable/removal, and current membership/grant/version checks before any dormant grant can become effective.
 2. Security Architecture locks asymmetric key type, JWKS/discovery, mTLS binding, replay retention and emergency revoke SLO.
 3. AuthService owner prepares separate executable slices for registry/token, manifest registration and explicit grants.
 4. Platform.Common owner decides the minimal additive protocol contract without weakening tenant-user handlers.
