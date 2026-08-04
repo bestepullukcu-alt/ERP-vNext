@@ -964,10 +964,10 @@ The producer-owned reconciliation checkpoints were reviewed read-only at these e
 
 | Producer/module | Fixture checkpoint | Exact event type / EventName | Schema identity | EventVersion / ModuleCode | Gate I disposition |
 |---|---|---|---|---|---|
-| `Diten.ManagementGovernanceService` / `MOD-0007` | `c053ada4b0ed33671a0b9f80f12564a744e876d3` | `DecisionRegistryAuditIntentSubmittedV1` / `management-governance.decision-registry-audit-intent.submitted.v1` | `urn:diten:management-governance:decision-registry-audit-intent-submitted:v1`; complete identity annotations | JSON integer `1` / `MOD-0007` | Partial / non-executable |
-| `Diten.FpaService` / `MOD-0136` | `3a4c4f80c892a175928d69f309f68f2f18aa8f9f` | `BudgetingAuditIntentSubmittedV1` / `fpa.budgeting-audit-intent.submitted.v1` | `urn:diten:fpa:budgeting-audit-intent-submitted:v1`; identity annotations incomplete | JSON integer `1` / `MOD-0136` | Partial / non-executable |
-| `Diten.FpaService` / `MOD-0138` | `14b15405f5e760512da704f696e20a9819afd31b` | `ScenarioPlanningAuditIntentSubmittedV1` / `fpa.scenario-planning-audit-intent.submitted.v1` | Missing `$id` and identity annotations | JSON integer `1` / `MOD-0138` | Partial / non-executable |
-| `Diten.DecisionIntelligenceService` / `MOD-0072` | `748a10ed221920b67f8eb5290a454875c08fdc4d` | `OutcomeTrackingAuditIntentSubmittedV1` / `decision-intelligence.outcome-tracking-audit-intent.submitted.v1` | `urn:diten:decision-intelligence:outcome-tracking-audit-intent-submitted:v1`; identity annotations incomplete | JSON integer `1` / `MOD-0072` | Partial / non-executable |
+| `Diten.ManagementGovernanceService` / `MOD-0007` | `491ed7b90b391959c17098b4e75111ff96aed711` | `DecisionRegistryAuditIntentSubmittedV1` / `management-governance.decision-registry-audit-intent.submitted.v1` | `urn:diten:management-governance:decision-registry-audit-intent-submitted:v1`; complete identity annotations | JSON integer `1` / `MOD-0007` | Partial / non-executable: non-delegated positive provenance fixture absent |
+| `Diten.FpaService` / `MOD-0136` | `711962a3fdc1226d947672dc9b48d29296c960a0` | `BudgetingAuditIntentSubmittedV1` / `fpa.budgeting-audit-intent.submitted.v1` | `urn:diten:fpa:budgeting-audit-intent-submitted:v1`; complete identity annotations | JSON integer `1` / `MOD-0136` | Fixture contract pass |
+| `Diten.FpaService` / `MOD-0138` | `a9d102737850dce7a174f05971e7afb6444b9587` | `ScenarioPlanningAuditIntentSubmittedV1` / `fpa.scenario-planning-audit-intent.submitted.v1` | `urn:diten:fpa:scenario-planning-audit-intent-submitted:v1`; complete identity annotations | JSON integer `1` / `MOD-0138` | Partial / non-executable: non-delegated positive and production-rejection fixtures absent |
+| `Diten.DecisionIntelligenceService` / `MOD-0072` | `13b65232e00903ad087b48574134b0e5bd5e6b88` | `OutcomeTrackingAuditIntentSubmittedV1` / `decision-intelligence.outcome-tracking-audit-intent.submitted.v1` | `urn:diten:decision-intelligence:outcome-tracking-audit-intent-submitted:v1`; complete identity annotations | JSON integer `1` / `MOD-0072` | Partial / non-executable: production-rejection fixture absent |
 
 Event type and EventName are producer-owned and are accepted here exactly as supplied. Similar names,
 producers, modules or payloads must not be collapsed into one generic event. The `.v1` routing suffix and
@@ -1104,10 +1104,10 @@ different property order, BOM, CRLF, whitespace normalization or reserialization
 
 | Module | Canonical bytes | Computed SHA-256 | Checksum record | Schema / projection | Signing vector | Result |
 |---|---:|---|---|---|---|---|
-| `MOD-0007` | `252` | `0af26a132953b8ac0e364574482fffb04f4f50223a6095685837bac386ab55c4` | PASS: 64 lowercase hex + LF | PASS for identity tuple, closed six fields and expected projection | PASS; test-only, production-rejected, no PPM reuse | PARTIAL: delegated vectors and full pair matrix absent |
-| `MOD-0136` | `254` | `583f1b27b0b9a34ec0ec2623e2948907a08b769abee3b47f84d637cd7248f68a` | FAIL: filename-decorated 117-byte record | FAIL: identity annotations absent; schema permits invalid cross-pairs; expected projection omits `SourceService`/`SourceModule` | PASS; producer-specific, no PPM/MOD-0138 reuse | PARTIAL |
-| `MOD-0138` | `247` | `db9385def75d885a581554e10ce38877408ed445ed3c4f62e17283b30830462b` | FAIL: 64 bytes with no terminal LF | FAIL: `$id` and identity annotations absent; projection otherwise matches | PASS; producer-specific, no PPM/MOD-0136 reuse | PARTIAL |
-| `MOD-0072` | `246` | `6e1e750ffddc6f65d45556e703b0aa282b8469dec00bcc516a7a0a5f823cc2a3` | FAIL: filename-decorated 124-byte record | FAIL: identity annotations absent; projection uses `ModuleCode` rather than exact `SourceModule` | PASS; test-only and producer-specific, no PPM/FP&A reuse | PARTIAL |
+| `MOD-0007` | `252` | `0af26a132953b8ac0e364574482fffb04f4f50223a6095685837bac386ab55c4` | PASS: 64 lowercase hex + LF | PASS: complete identity, six-field schema, pair matrix and exact projection | PASS: `28204085cf426d46298b59c5439e41795f9deb914f8898ea7ad87a54ad8d36e9`; explicit production rejection; no PPM reuse | PARTIAL: explicit non-delegated positive/absence fixture absent |
+| `MOD-0136` | `254` | `de9534d5b6ce6f7ef7237e6bcf593dfaa460a79b63e6293495d0de25b5225fe8` | PASS: 64 lowercase hex + LF | PASS: common canonical order, complete identity, 14 positive/31 cross-pair negative mappings, 34 contract negatives and exact projection | PASS: `e4896c480405bebf25ba31732a1549136056f8addfc540bf4ac0b28fb9119579`; explicit production rejection; no PPM/MOD-0138 reuse | PASS |
+| `MOD-0138` | `247` | `db9385def75d885a581554e10ce38877408ed445ed3c4f62e17283b30830462b` | PASS: 64 lowercase hex + LF | PASS: complete identity, 14 positive/46 cross-pair negative mappings, 25 contract negatives, bound manifest and exact projection | PASS: `05c7cdee1fa8933f00502460178a2b76fa4d68819a5d2e1801c118e0e68b47df`; no PPM/MOD-0136 reuse | PARTIAL: explicit non-delegated positive/absence fixture and production-validator rejection cases for the test identity/KeyId/signature absent |
+| `MOD-0072` | `246` | `6e1e750ffddc6f65d45556e703b0aa282b8469dec00bcc516a7a0a5f823cc2a3` | PASS: 64 lowercase hex + LF | PASS: complete identity, 5 positive/10 cross-pair negative mappings, 31 contract negatives and exact projection | PASS: `0336b3630d4fa5e10c01cb7674681014d1a6e0d6df40ff3923b4555a9be3c07f`; no PPM/FP&A reuse | PARTIAL: production-validator rejection cases for the test identity/KeyId/signature absent |
 
 All four canonical blobs are minified UTF-8 without BOM/trailing LF, contain exactly the six profile fields,
 match their recorded payload byte length and computed digest, and bind JSON integer `EventVersion = 1` plus
@@ -1115,15 +1115,18 @@ the correct ModuleCode in their envelope/schema/projection/signing evidence. All
 test vectors recompute to their committed expected signature. These cryptographic passes do not waive schema,
 checksum-record, projection or delegated-provenance fixture requirements.
 
-The MOD-0136 canonical blob deliberately uses producer order `actorId`, `auditIntentId`, `entityId`,
-`entityType`, `mutation`, `occurredAtUtc`, which conflicts with this amendment's common canonical order. The
-producer owner must reconcile the blob/schema/signing vector to the common order or obtain an explicit
-versioned profile exception in both producer and consumer governance; MOD-0021 must not silently reserialize.
+MOD-0136 now uses the common canonical order without exception. Its 254 exact bytes, SHA-256 and HMAC above
+replace the prior checkpoint evidence; MOD-0021 must neither accept nor document an earlier ordering or
+signature as compatible.
 
-No reviewed fixture root contains a producer-specific delegated positive/negative compatibility vector or a
-complete expected provenance projection. Each producer also supplies only one positive entity/mutation
-projection example rather than fixture coverage for every allowlisted pair plus negative cross-pair cases.
-These are pre-development bilateral contract-fixture gaps, not live runtime/credential evidence.
+All four checkpoints now contain delegated positive/negative evidence and complete allowlist/cross-pair
+coverage. MOD-0136 and MOD-0072 also contain explicit non-delegated positive provenance fixtures. The
+remaining pre-development gaps are narrower but still fail closed: MOD-0007 lacks an explicit non-delegated
+positive fixture proving delegation metadata absence; MOD-0138 lacks that fixture and explicit production
+validator rejection cases for its test identity, KeyId and otherwise-correct test signature; MOD-0072 lacks
+the same explicit production-rejection cases. `testOnly` labels and prose prohibitions do not substitute for
+the requested bilateral negative fixture evidence. These are producer-owned contract/test evidence gaps,
+not production credential provisioning or live-delivery evidence.
 
 ## 10. Consumer Transaction Boundary
 
@@ -1229,12 +1232,16 @@ each new mapping registration.
       `1.0` drift is closed.
 - [x] All four producers commit canonical/projection/schema/checksum and producer-specific signing evidence at
       a producer-owned path; canonical byte lengths and computed SHA-256 values match.
-- [ ] All checksum records comply with the exact lowercase 64-hex + one-LF/no-filename contract.
-- [ ] All schemas encode the complete producer/module/event/version/profile identity tuple and exact valid
-      entity/mutation pair matrix; MOD-0136 canonical property order is reconciled with this amendment.
-- [ ] Every expected projection uses exact MOD-0021 `SourceService` and `SourceModule` field names and values.
-- [ ] Every producer supplies delegated positive/negative provenance fixtures and positive/negative fixtures
+- [x] All checksum records comply with the exact lowercase 64-hex + one-LF/no-filename contract.
+- [x] All schemas encode the complete producer/module/event/version/profile identity tuple and exact valid
+      entity/mutation pair matrix; MOD-0136 uses the common canonical property order without exception.
+- [x] Every expected projection uses exact MOD-0021 `SourceService` and `SourceModule` field names and values.
+- [x] Every producer supplies delegated positive/negative provenance fixtures and positive/negative fixtures
       covering its complete entity/mutation allowlist matrix.
+- [ ] Every producer supplies explicit delegated and non-delegated positive provenance coverage, including
+      absence of delegation metadata for non-delegated delivery; MOD-0007 and MOD-0138 remain open.
+- [ ] Every test-only signing vector proves the production validator rejects its test signing identity,
+      test KeyId and otherwise-correct test signature; MOD-0138 and MOD-0072 remain open.
 - [ ] All four producer compatibility fixtures pass MOD-0021 consumer contract verification.
 - [ ] Transaction test proves inbox + MOD-0021 audit outbox atomicity.
 - [ ] Duplicate/conflict tests prove the complete `ConsumerName + EventId` matrix.
@@ -1256,13 +1263,15 @@ Failure of any checkbox keeps this amendment and the affected mapping non-execut
   alone authorizes no service, frontend, Gateway, schema or deployment change.
 - Track approval independently for `MOD-0007`, `MOD-0136`, `MOD-0138` and `MOD-0072`; one completed mapping
   does not promote the remaining mappings or the amendment as a whole.
-- Reconciliation result at the four fixture checkpoints is **PARTIAL**. Canonical bytes/hashes, integer
-  version, ModuleCode, signing vectors and PPM reuse prohibition are evidenced; the exact schema/checksum/
-  projection/delegated/full-matrix gaps in Section 9 remain producer-owned blockers.
-- Whole-amendment `ready-for-dev` promotion is **not yet a candidate**. Owners: MOD-0007 Management Governance
-  for delegated/full-matrix fixtures; MOD-0136 FP&A for order/checksum/schema/pair/projection/delegation/full
-  matrix; MOD-0138 FP&A for checksum/schema/delegation/full matrix; MOD-0072 Decision Intelligence for
-  checksum/schema/projection/delegation/full matrix; MOD-0021/PSS for bilateral consumer acceptance tests.
+- Reconciliation result at the four fixture checkpoints remains **PARTIAL**; therefore the requested
+  classification is not `FIXTURE PASS`. Byte order/length/hash/HMAC, checksum format, integer version,
+  ModuleCode, schema identity, pair binding, projections, delegated matrices and PPM reuse prohibition pass.
+  The exact remaining producer-owned blockers are the MOD-0007 and MOD-0138 non-delegated positive/absence
+  fixtures plus MOD-0138 and MOD-0072 production-validator rejection cases identified in Section 9.
+- Whole-amendment `ready-for-dev` promotion is **not yet a candidate** and its DRAFT / NON-EXECUTABLE status
+  remains unchanged. Owners: MOD-0007 Management Governance for its non-delegated fixture; MOD-0138 FP&A for
+  its non-delegated fixture and production-rejection cases; MOD-0072 Decision Intelligence for its
+  production-rejection cases; MOD-0021/PSS for bilateral consumer acceptance tests after those inputs land.
 - Production credentials, key provisioning/rotation, live broker delivery, transactional runtime evidence,
   alarms and authorized replay evidence remain post-development gates and do not block a future
   ready-for-dev promotion after the governance fixture blockers close.
