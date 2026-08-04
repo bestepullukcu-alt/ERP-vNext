@@ -717,6 +717,7 @@ or expected signature:
 |---|---|
 | `decision-registry-audit-intent-submitted-v1.allowlist-matrix.json` | Six positive entity/mutation pairs with exact MOD-0021 projections; six inverse cross-pair negatives; exact producer/module/event/integer-version acceptance; and negative producer, ModuleCode, event identity, numeric version, extra-field, noncanonical-order and schema/checksum-pair cases |
 | `decision-registry-audit-intent-submitted-v1.delegated-provenance-matrix.json` | One verified positive `DelegatedActorProofV1` trusted-context projection and explicit negative missing, malformed, tenant, actor, operation, permission and verification cases |
+| `decision-registry-audit-intent-submitted-v1.non-delegated-provenance.valid.json` | Explicit non-delegated positive: direct authenticated tenant-user subject context, exact producer/service/tenant/operation/permission, complete absence of delegated proof object/header/claim set and structural omission of all delegated AuditEvent metadata |
 
 The delegated fixture uses only MOD-0018-FU16 claim names. Its proof evidence is test-only verified transport
 context, never producer payload. `payload.actorId` is the effective actor and equals the verified
@@ -726,6 +727,14 @@ match the exact create mapping. MOD-0021 projection is limited to `ActorId` plus
 `Metadata.DelegatedOperationId`, `Metadata.DelegatedPermission`, `Metadata.DelegationVerifiedAtUtc` and
 `Metadata.ExecutingService`. No email, display/role name, authority/person field, token, credential, request
 body or unrestricted claim is projected. Every negative case is terminal and creates no AuditEvent.
+
+For the non-delegated profile, absence is expected and is not a malformed delegated proof. The authenticated
+subject and effective `ActorId` are the same canonical tenant user, the trusted envelope tenant matches that
+mutation context, and the exact create operation/permission are authorized. The accepted AuditEvent contains
+only `ActorId` and `Metadata.ExecutingService`; delegated properties are omitted, never `null`, empty,
+defaulted or placeholder-valued. The fixture pairs the identical proof-object/header/claim-set absence with
+the existing delegated-profile `missing-proof` negative case, where it remains a terminal security failure
+and creates no AuditEvent.
 
 ### MOD-0035 signed producer onboarding profile
 
@@ -861,6 +870,10 @@ service port directly. Only `integration-agent` may modify `ocelot.json` after e
 42. Delegated provenance fixtures keep the six-field producer payload unchanged, use only FU16 exact claim
     names, bind tenant/effective actor/operation/permission to trusted context and project only the exact
     MOD-0021 delegated metadata fields. Missing, malformed, mismatched or unverified provenance is terminal.
+43. Explicit non-delegated positive provenance proves the proof object, header and claim set are wholly absent,
+    all delegated AuditEvent metadata properties are structurally omitted, and exact subject/tenant/service/
+    operation/permission context is accepted without classifying expected absence as malformed. Selecting the
+    delegated profile with the same absence remains terminal and produces zero AuditEvent.
 
 ## 17. Test Expectations
 
@@ -1026,6 +1039,8 @@ Minimum mutation matrix:
   MOD-0007 test-only signing vector/expected signature are committed at the exact fixture root.
 - [x] MOD-0021 checkpoint `9b75c213` delegated-provenance and complete positive/negative allowlist fixture
   gaps are closed without changing canonical payload/hash/signature bytes.
+- [x] MOD-0021 final checkpoint `5349ed06` explicit non-delegated positive/absence fixture gap is closed and
+  paired with the delegated-profile `missing-proof` fail-closed control.
 - [ ] MOD-0021/MOD-0035 consumer implementation, production credentials/keys, bilateral runtime verification
   and atomic-outbox evidence pass.
 - [ ] Matching MOD-0117 consumer amendment is approved.
@@ -1088,6 +1103,7 @@ Minimum mutation matrix:
 | 2026-08-04 | Reconciled Gate I onboarding from MOD-0018-FU16, MOD-0021, MOD-0035 and MOD-0288 authority commits: fixed service audience/Client ID, delegation and permission manifest, producer audit identity/six-field allowlist, consumer mapping/fixture, signed transport profile and the Person/Position eligibility matrix. | None; parent remains `draft`, both authorities remain `none`, and no runtime, credential, route, key, configuration or consumer activation is authorized. |
 | 2026-08-04 | Added the producer-owned MOD-0007 audit fixture set at the exact MOD-0021 path, reconciled numeric integer `EventVersion = 1` and `ModuleCode = MOD-0007`, and added an isolated test-only signing vector plus expected signature. | None; test key/signing identity are explicitly production-denied, status remains `draft`, authorities remain `none`, and no runtime consumer/onboarding authority is created. |
 | 2026-08-04 | Closed the MOD-0021 `9b75c213` consumer findings with full positive/negative allowlist and delegated trusted-provenance matrices. | None; canonical payload/hash/signature remain byte-identical, status remains `draft`, authorities remain `none`, and no runtime/PSS/security implementation authority is created. |
+| 2026-08-04 | Closed the MOD-0021 `5349ed06` final MOD-0007 finding with an explicit non-delegated positive/structural-absence fixture and delegated-profile fail-closed control. | None; canonical payload/hash/HMAC and existing matrices remain unchanged, status remains `draft`, authorities remain `none`, and no runtime credential or implementation authority is created. |
 
 ## 20. Follow-up Items
 

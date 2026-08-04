@@ -1,0 +1,63 @@
+{
+  "fixtureKind": "NonDelegatedPositiveTrustedProvenance",
+  "classification": "NON-DELEGATED-POSITIVE",
+  "profileSelection": "non-delegated",
+  "payloadBoundary": {
+    "canonicalPayloadFile": "decision-registry-audit-intent-submitted-v1.canonical.json",
+    "canonicalPayloadByteLength": 252,
+    "canonicalPayloadSha256": "0af26a132953b8ac0e364574482fffb04f4f50223a6095685837bac386ab55c4"
+  },
+  "trustedEnvelope": {
+    "eventId": "70000007-0000-4000-8000-000000000001",
+    "eventName": "management-governance.decision-registry-audit-intent.submitted.v1",
+    "eventVersion": 1,
+    "moduleCode": "MOD-0007",
+    "tenantId": "70000007-0000-4000-8000-000000000004",
+    "correlationId": "70000007-0000-4000-8000-000000000005",
+    "producer": "Diten.ManagementGovernanceService",
+    "occurredAtUtc": "2026-08-04T12:34:56.0000000Z"
+  },
+  "authenticatedMutationContext": {
+    "subjectId": "70000007-0000-4000-8000-000000000002",
+    "actorId": "70000007-0000-4000-8000-000000000002",
+    "actorType": "tenant_user",
+    "tenantId": "70000007-0000-4000-8000-000000000004",
+    "executingService": "Diten.ManagementGovernanceService",
+    "clientId": "diten.management-governance",
+    "audience": "diten-management-governance-service",
+    "operationId": "decision-registry.drafts.create.v1",
+    "permission": "management-governance.decisions.create"
+  },
+  "delegatedProofArtifactPresence": {
+    "proofObject": false,
+    "proofHeader": false,
+    "proofClaimSet": false
+  },
+  "delegationFieldsThatMustBeAbsent": [
+    "DelegatedActorId",
+    "DelegatingPrincipalId",
+    "DelegationId",
+    "DelegatedOperationId",
+    "DelegatedPermission",
+    "DelegationVerifiedAtUtc"
+  ],
+  "absenceRule": "Every listed proof artifact and delegated metadata property is structurally absent; null, empty, default and placeholder values fail this fixture.",
+  "expectedAuditEvent": {
+    "ActorId": "70000007-0000-4000-8000-000000000002",
+    "Metadata": {
+      "ExecutingService": "Diten.ManagementGovernanceService"
+    }
+  },
+  "expectedDisposition": "Accepted",
+  "auditEventCreated": true,
+  "absenceClassification": "ExpectedNonDelegatedAbsence",
+  "malformedDelegatedProof": false,
+  "delegatedProfileControl": {
+    "profileSelection": "delegated",
+    "sameProofArtifactAbsence": true,
+    "existingNegativeFixtureFile": "decision-registry-audit-intent-submitted-v1.delegated-provenance-matrix.json",
+    "existingNegativeCaseId": "missing-proof",
+    "expectedDisposition": "TerminalSecurityFailure",
+    "auditEventCreated": false
+  }
+}
