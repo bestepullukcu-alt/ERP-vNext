@@ -477,9 +477,11 @@ explicit grant is never sufficient.
 - EventName/routing key: `fpa.budgeting-audit-intent.submitted.v1`.
 - EventVersion: numeric `1`, which must match the `.v1` suffix.
 - Producer: exact ordinal `Diten.FpaService`.
-- Producer module: exact `MOD-0136`.
+- Producer module and MOD-0021 projection value: exact `ModuleCode = MOD-0136`.
 - Payload profile: **Minimal Mutation Audit v1**, with exactly the six lower-camel-case fields
-  `auditIntentId`, `actorId`, `entityType`, `entityId`, `mutation`, `occurredAtUtc` in that canonical order.
+  `auditIntentId`, `actorId`, `entityType`, `entityId`, `mutation`, `occurredAtUtc`. Canonical UTF-8 serialization
+  order is exactly `actorId`, `auditIntentId`, `entityId`, `entityType`, `mutation`, `occurredAtUtc`, matching the
+  permanent Minimal Mutation Audit v1 transport contract; property order is part of the byte fixture.
 - `auditIntentId` is a non-empty immutable GUID and equals envelope `EventId`; `actorId` is the effective
   authenticated/delegated actor; `occurredAtUtc` is UTC and equals envelope `OccurredAtUtc`.
 - `TenantId`, `CorrelationId`, `CausationId`, `Producer`, module, authorization and delegation evidence are trusted
@@ -510,11 +512,24 @@ effective `ActorId` from the six-field payload and delegated provenance from ver
 This pack does not authorize an `AuditCategory` enum change. Any unknown producer, module, event identity/version,
 entity/mutation pair, property or metadata disagreement is terminal and creates no audit projection.
 
-The producer-owned compact compatibility fixture is exact:
+The producer-owned canonical payload is exact UTF-8, minified, has no BOM or terminal newline, is exactly 254
+bytes and is fixed by the fixture rather than by an implementation-time reserialization:
 
 ```json
-{"auditIntentId":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","actorId":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb","entityType":"BudgetVersion","entityId":"cccccccc-cccc-4ccc-8ccc-cccccccccccc","mutation":"certified","occurredAtUtc":"2026-08-04T09:30:00.0000000Z"}
+{"actorId":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb","auditIntentId":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","entityId":"cccccccc-cccc-4ccc-8ccc-cccccccccccc","entityType":"BudgetVersion","mutation":"certified","occurredAtUtc":"2026-08-04T09:30:00.0000000Z"}
 ```
+
+Fixture root is exact:
+`execution/domains/enterprise-strategy-business-performance/module-packs/fixtures/MOD-0136/audit/`.
+
+| Fixture | Exact purpose / checksum |
+|---|---|
+| `budgeting-audit-intent-submitted-v1.canonical.json` | Canonical six-field payload; SHA-256 `583f1b27b0b9a34ec0ec2623e2948907a08b769abee3b47f84d637cd7248f68a` |
+| `budgeting-audit-intent-submitted-v1.expected-audit-event.json` | Expected MOD-0021 projection with exact `ModuleCode = MOD-0136` |
+| `budgeting-audit-intent-submitted-v1.schema.json` | Closed JSON Schema; six required properties and no additional properties |
+| `budgeting-audit-intent-submitted-v1.canonical.sha256` | `sha256sum`-compatible checksum record for the canonical file |
+| `budgeting-audit-intent-submitted-v1.signing-vector.json` | Budgeting-only, explicitly test-only envelope/key/signing-input vector |
+| `budgeting-audit-intent-submitted-v1.expected-signature.txt` | Exact lowercase HMAC-SHA-256 signature `c31ad6267a6a4bc0a06a22bcfc17501dc74ed44482c0b0e0c1cca7cb7183f734` |
 
 Its expected projection is `AuditCategory.System`, `AuditOperation.Activate`, entity type
 `Budgeting.BudgetVersion`, entity ID `cccccccc-cccc-4ccc-8ccc-cccccccccccc`, source module `MOD-0136`, effective
@@ -536,13 +551,18 @@ The exact non-wildcard signed allowlist tuple is:
 | Signing identity | `diten.fpa.budgeting.audit` |
 
 The signing identity, active/previous key IDs, key namespace and derived material are Budgeting-specific and must
-never equal or reuse PPM or ScenarioPlanning material. The onboarding fixture binds the exact immutable shared
+never equal or reuse PPM or ScenarioPlanning material. The checked-in test vector uses exact key ID
+`budgeting-mod-0136-fixture-current` and test-only secret
+`QEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaW1xdXl8=`; both are forbidden in runtime configuration, vaults and
+production fixtures. Its 529-byte signing input has SHA-256
+`8bebb1ee3101ffc98d9c24212d3b69e0b891d65dfed02c66997c61ffab5ac964` and produces the exact expected signature
+recorded above. The onboarding fixture binds the exact immutable shared
 event envelope, the six-field canonical UTF-8 payload bytes and byte length, EventId, EventName, EventVersion,
 TenantId, CorrelationId, CausationId, Producer, OccurredAtUtc, signing scheme, signing identity, key ID and expected
-signature. A separately approved executable onboarding slice must add concrete active/previous key IDs, bounded
-overlap deadline, freshness/future-skew values, revocation authority, fixture digest and signature generated from
-provisioned secret material; this draft neither invents nor exposes secrets and remains deny-by-default until those
-runtime values and the MOD-0035 verification matrix pass. New producers emit only
+signature. A separately approved executable onboarding slice must add production active/previous key IDs, bounded
+overlap deadline, freshness/future-skew values, revocation authority and production fixture/signature generated
+from provisioned secret material; this draft exposes only the clearly marked test secret and remains deny-by-default
+until those runtime values and the MOD-0035 verification matrix pass. New producers emit only
 `Diten.BuildingBlocks.Eventing.EventTransportMessage`; the legacy Platform URN is inbound compatibility only.
 
 #### Atomic producer boundary and publication
@@ -1057,7 +1077,8 @@ S2S providers receive no browser/Gateway route. This pack does not modify `ocelo
 - [x] `BudgetingAuditIntentSubmittedV1` / `fpa.budgeting-audit-intent.submitted.v1`, the exact six-field Minimal
   Mutation Audit v1 payload, closed producer/entity/mutation allowlist and MOD-0021 mapping/fixture are fixed.
 - [x] MOD-0035 onboarding inputs fix the exact signed allowlist tuple, Budgeting-specific signing identity,
-  immutable-byte/shared-URN boundary and no credential reuse; provisioned key/signature/live-broker evidence remains open.
+  immutable-byte/shared-URN boundary, test-only signing vector/signature and no credential reuse; production
+  key/signature/live-broker evidence remains open.
 - [x] The PPM BudgetVersion bilateral fixture and adapter non-executability boundary are explicit; fixture
   presence cannot activate a MOD-0117 adapter before matching producer/consumer approval and runtime authority.
 - [x] Exact transaction sets, idempotency canonicalization/hash/receipt/replay, unknown-commit reconciliation,
@@ -1113,6 +1134,7 @@ S2S providers receive no browser/Gateway route. This pack does not modify `ocelo
 | 2026-08-04 | Corrected fallback to the coordinated `Diten.BudgetingService + Diten.ScenarioPlanningService` profile and separated ready-for-dev design/test-plan gates from executable review/runtime evidence. Status and production authority remain unchanged. | User / ESBP Control Tower |
 | 2026-08-04 | Closed Budgeting Core composition: exact collections/indexes/owner manifest, transaction sets, idempotency and unknown-commit behavior, atomic audit/outbox with post-commit `IEventBus`, fail-closed providers and NO-OP/quarantine-only initial migration. Runtime evidence, audit event identity, status and production authority remain open/unchanged. | User / FP&A Control Tower |
 | 2026-08-04 | Reconciled Gate I onboarding to FU16/MOD-0021/MOD-0035: exact FPA audience/client and separate MOD-0136 manifest, 15 operation-permission pairs, delegated request binding, Budgeting audit identity/six-field mapping/fixture, signed-producer tuple, atomic local outbox, post-commit `IEventBus` and non-executable PPM adapter boundary. Financial decisions, permission keys, normative hashes, draft status and production authority remain unchanged. | User / FP&A Control Tower |
+| 2026-08-04 | Closed the MOD-0136 governance audit fixtures: exact six-file Budgeting fixture set, `ModuleCode = MOD-0136`, numeric EventVersion `1`, minified ordered 254-byte canonical payload/checksum, expected MOD-0021 projection and Budgeting-only test signing vector/signature. MOD-0138/PPM key-vector reuse is prohibited; financial decisions/hashes, 15 permissions, draft status and production authority remain unchanged. | User / FP&A Control Tower |
 
 ## 20. Follow-up Items
 
