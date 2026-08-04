@@ -6,23 +6,25 @@ service: Diten.ManagementGovernanceService
 shell: none
 golden_reference: none
 entity_base: EntityBase
-status: draft
+status: ready-for-dev
 owner: Enterprise Governance Process Owner
 branch: feature/mg/mod-0007-decision-rationale-log
 started: 2026-08-02
 target: 2026-08-02
 form_field_count: 0
 production_authority: none
-implementation_authority: none
+implementation_authority: explicit-user-control-tower
 ---
 
 # MOD-0007 — Decision & Rationale Log
 
-> **DRAFT / NON-EXECUTABLE PARENT PACK:** This document defines ownership and proposed contracts only. It
-> authorizes no service scaffold, runtime code, persistence, migration, frontend, Gateway route, port, seed,
-> permission registration or production integration. Physical topology and staged development gates are
-> governed below. A later `ready-for-dev` decision may authorize only the exact Core Scaffold & Contract-Test
-> Slice; runtime promotion and production activation remain separate evidence and authority gates.
+> **READY-FOR-DEV / SLICE 1 HANDOFF ONLY:** Control Tower records Enterprise Governance Process Owner
+> approval of the exact **Core Scaffold & Contract-Test** scope/test design below. This promotion records a
+> bounded implementation handoff; it is not authority to write or activate runtime code in this governance
+> turn. Any scaffold/test implementation still requires a separate explicit user runtime instruction.
+> Listener activation, runtime traffic, credentials, permission provisioning, provider calls, external event
+> delivery, frontend, Gateway, WorkCenter, deployment and production remain unauthorized.
+> `production_authority: none` is binding.
 
 ## 1. Module Summary
 
@@ -286,13 +288,14 @@ the affected exact revision; it never fabricates a source/target link. Same-Deci
 
 ## 5. Repo Scope
 
-This draft authoring milestone changes only:
+This promotion milestone changes only:
 
 - `execution/domains/management-governance/module-packs/MOD-0007-decision-rationale-log.md`
 - `execution/domains/management-governance/module-packs/fixtures/MOD-0007/audit/**`
 
-A future executable amendment may authorize exactly one of these mutually exclusive scopes; this draft grants
-no write authority to either.
+The bounded Slice 1 handoff selects only the primary scope below. It records exact future implementation
+scope but grants no runtime-code write in this governance turn; a separate explicit user runtime instruction
+is still required before any file in that scope is created or changed.
 
 Primary scope:
 
@@ -305,17 +308,34 @@ Primary scope:
 - `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/DecisionRegistry/**`
 - `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/DecisionRegistry/**`
 
-Only an executable amendment may enumerate and add the five project files, API `Program.cs`, layer-local
-composition files and test project files needed to compose those paths; unrelated module composition is out
-of scope. If the mandatory isolation suite fails, the entire same five-layer/test shape moves instead under
-`services/Diten.EnterpriseGovernanceService/`, with `Diten.EnterpriseGovernanceService` substituted in every
-path above. Primary and fallback implementations cannot coexist. No frontend, Gateway, WorkCenter or PPM
-consumer path is included.
+The only composition/project touchpoints eligible for that later explicit Slice 1 runtime instruction are:
+
+- `services/Diten.ManagementGovernanceService/Diten.ManagementGovernanceService.sln`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Diten.ManagementGovernanceService.Api.csproj`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Diten.ManagementGovernanceService.Application.csproj`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/DependencyInjection.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Diten.ManagementGovernanceService.Domain.csproj`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Diten.ManagementGovernanceService.Persistence.csproj`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/DependencyInjection.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/Diten.ManagementGovernanceService.Infrastructure.csproj`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/DependencyInjection.cs`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/Diten.ManagementGovernanceService.Tests.csproj`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Diten.ManagementGovernanceService.IntegrationTests.csproj`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Diten.ManagementGovernanceService.ArchitectureTests.csproj`
+
+Those touchpoints may compose only the declared `DecisionRegistry/**` paths and the Slice 1 test harness;
+unrelated module composition is out of scope. Port `5016` is reserved only for the mutually exclusive
+isolation fallback. No fallback file, project, registration, listener, route, migration or deployment is
+authorized by this promotion. If any mandatory primary isolation test fails, primary review/runtime promotion
+stops and fallback activation requires a separate explicit scoped amendment. Primary, fallback and hybrid
+operation cannot coexist. No frontend, Gateway, WorkCenter or PPM consumer path is included.
 
 ## 6. Protected Paths
 
 - `.antigravity/**`
-- `services/**`, including both candidate service roots, until an executable amendment grants one exact scope
+- `services/**`, including both candidate service roots, except the exact primary Slice 1 scope and composition
+  touchpoints above after a separate explicit user runtime instruction; the fallback remains fully protected
 - `services/Diten.EnterpriseStrategyService/**`, `services/Diten.PpmService/**`, `services/Diten.Platform/**`,
   `services/Diten.Platform.Common/**`, `services/Diten.AuthService/**` and `services/Diten.Building.Blocks/**`
 - `frontend/Diten.Web/**`, including every WorkCenter artifact
@@ -335,7 +355,7 @@ consumer path is included.
 | MOD-0018-FU16 | Exact Gate I service principal, `DelegatedActorProofV1`, permission-manifest and tenant/actor authorization profile | Producer profile is fixed below; runtime provisioning/evidence remains gated |
 | MOD-0021 / MOD-0035 | Immutable audit intent delivery over approved event/outbox and signed-onboarding mechanics | Producer event, mapping input and signing profile are fixed below; consumer/runtime evidence remains gated |
 | MOD-0031 | Future typed evidence metadata integration only | Formally deferred from v1 core; requires a separate executable amendment |
-| MOD-0288 | Authoritative Person/Position resolution for `DecisionAuthorityReferenceV1` | Exact v1 provider; runtime client/transport evidence remains a B-class implementation blocker |
+| MOD-0288 | Authoritative Person/Position resolution for `DecisionAuthorityReferenceV1` | Exact v1 contract/fixture input is sufficient for Slice 1; provider adapter, client/transport and live evidence are mandatory Slice 2/runtime gates |
 | MOD-0023 | Optional distinct ApprovalOutcome only when policy requires approval | Separate PSS amendment and contract approval required |
 | MOD-0117 | Consumer of `management-governance.decision-reference` for Gate I-A | PPM Gate I-A Activation Slice only; matching consumer amendment and explicit runtime authority required |
 
@@ -344,8 +364,9 @@ are non-authoritative evidence only. They are not dependencies, schemas, migrati
 
 ## 8. Runtime Constraints
 
-- This draft assigns no port, route, database, deployment or production authority. It closes only the
-  mutually exclusive topology and future module-local ownership boundaries below.
+- Canonical planned primary port is `5011` for `Diten.ManagementGovernanceService`; reserved fallback port is
+  `5016` for `Diten.EnterpriseGovernanceService`, from authority checkpoint `496ab31b`. These reservations
+  assign no listener, route, database, deployment, runtime or production authority.
 - Future persistence is MongoDB, single database and tenant-owned; every read/write filters server-derived
   `TenantId` plus `IsDeleted=false`.
 - Tenant, effective/delegated actor, trusted `CorrelationId`, S2S client identity, audience and scope come
@@ -486,16 +507,16 @@ consumer calls it directly S2S; Browser, frontend, Gateway and WorkCenter are ex
 cache or copied Decision state as authority. No provider endpoint is executable until dedicated identity,
 delegation, security and bilateral compatibility evidence exists.
 
-No authoritative, collision-free Management Governance port allocation exists: the documented table stops
-at existing allocations while runtime services already occupy later values. Port remains `TBD` and is an
-explicit blocker. Internal route, service discovery, DNS/TLS/network policy, credential mechanism,
+The canonical registry reserves collision-free planned port `5011` for the selected primary and `5016` only
+for its dormant isolation fallback. The services cannot listen concurrently and this promotion starts
+neither. Internal route, service discovery, DNS/TLS/network policy, credential mechanism,
 issuer/audience/scope, client registration/rotation/revocation, timeout/retry/circuit budget, deployment,
 Mongo provisioning, audit/event publisher credentials and MOD-0288 S2S evidence also remain open. This pack
 does not add a Gateway route or authorize either service scaffold.
 
 ## 9. Layout & Shell Contract
 
-Current shell is `none`; this draft authorizes no UI and no Razor layout. A future Decision Register/Details
+Current shell is `none`; this promotion authorizes no UI and no Razor layout. A future Decision Register/Details
 surface must be separately approved as tenant-facing or platform-admin and must then use the corresponding
 `_LayoutTenantShell` or `_LayoutPlatformAdmin` explicitly.
 
@@ -507,8 +528,9 @@ and must become “Create revision” after recording. No approval button is per
 
 ## 10. Backend File Convention
 
-No backend files are authorized. The future exact five-layer and test roots are fixed in Section 5; an
-executable amendment must enumerate composition files and CQRS artifacts while preserving distinct commands such as `CreateDecisionDraft`,
+No backend files are changed or authorized for writing in this governance turn. The future exact five-layer,
+test and composition touchpoints are fixed in Section 5; a separate explicit user runtime instruction must
+preserve distinct commands such as `CreateDecisionDraft`,
 `UpdateDecisionDraft`, `SoftDeleteDecisionDraft`, `PublishDecisionDraft`, `SupersedeDecision` and
 `WithdrawDecision`. `PublishDecisionDraft` creates/finalizes the immutable revision atomically; there is no
 pre-publication revision-recording operation and no later publication-field setter.
@@ -797,7 +819,8 @@ service port directly. Only `integration-agent` may modify `ocelot.json` after e
 14. Architecture tests prove DecisionRegistry/DWS/BPM project/namespace, type, repository, collection,
     permission and migration isolation;
     Slice 1 failure forces the separate-service topology fallback before later-slice/runtime activation.
-15. No runtime, UI, Gateway, migration, seed, port or service-scaffold change is made under this draft.
+15. This ready-for-dev promotion changes no runtime, UI, Gateway, migration, seed or service scaffold. Planned
+    primary port `5011` and dormant fallback reservation `5016` create no listener or route authority.
 16. `DecisionAuthorityReferenceV1` has exactly `ContractName`, `ContractVersion`, `AuthorityKind`,
     `AuthorityId`; exact identity is `management-governance.decision-authority-reference/1.0`, kind is only
     `Person|Position`, and MOD-0288 active tenant-visible resolution is authoritative.
@@ -819,8 +842,9 @@ service port directly. Only `integration-agent` may modify `ocelot.json` after e
 24. Published revision/history/supersession graph has no TTL/update/delete/bulk-delete/purge. Legal hold blocks
     all deletion; eligible unpublished draft soft-delete never triggers automatic hard purge.
 25. The selected primary topology is the single future `Diten.ManagementGovernanceService/DecisionRegistry`;
-    failure of any mandatory isolation test selects the mutually exclusive `Diten.EnterpriseGovernanceService`
-    fallback before scaffold. Both services and EnterpriseStrategy placement are forbidden.
+    failure of any mandatory isolation test stops primary promotion. The mutually exclusive
+    `Diten.EnterpriseGovernanceService` fallback requires a separate explicit amendment before any fallback
+    scaffold. Both services together and EnterpriseStrategy placement are forbidden.
 26. Future scope is limited to the exact five-layer and test roots in Section 5. DecisionRegistry owns only
     the exact `decision_registry_*` collection allowlist and shares no type, repository, collection, index,
     transaction, permission or migration/bootstrap component with MOD-0354/MOD-0355.
@@ -898,18 +922,20 @@ explicit user authority and cannot be inferred from status, a green build or a c
 
 | Slice | Authorized content after its gate | Exit evidence / next gate |
 |---|---|---|
-| 1. Core Scaffold & Contract-Test | Exact five-layer DecisionRegistry scaffold; Domain/Application contracts; Mongo persistence and transaction test harness; architecture isolation tests; internal provider contract fixtures | Scope/test design approval may make this slice `ready-for-dev`. Implemented architecture, persistence and contract tests select primary or fail closed to the sole fallback. No listener, provider activation, credential, external event delivery or runtime traffic. |
+| 1. Core Scaffold & Contract-Test | Exact primary five-layer DecisionRegistry scaffold; Domain/Application contracts; Mongo persistence and transaction test harness; architecture isolation tests; internal provider contract fixtures | **Ready-for-dev handoff approved.** A separate explicit user runtime instruction precedes implementation. Implemented architecture, persistence and contract tests must pass for primary review; any isolation failure stops and requires a separate fallback amendment. No listener, provider activation, credential, external event delivery or runtime traffic. |
 | 2. Security & Provider Integration | MOD-0018 provisioning for the exact seven reserved permissions; authenticated S2S and delegated actor enforcement; MOD-0288 Person and Position validation adapters; issuer/audience/scope and timeout/failure fixtures | Requires Slice 1 isolation/contract evidence plus approved, non-invented credential and MOD-0288 contracts. Security/integration evidence must pass before runtime promotion. |
 | 3. Audit Delivery | Transactional local audit intent; approved MOD-0035 public eventing abstraction; MOD-0021 consumer compatibility; retry, DLQ and replay evidence | Requires Slice 2 security evidence plus approval/evidence for the exact producer-owned event, allowlist, mapping fixture and signed-onboarding profile fixed here. Delivery failure/replay evidence must pass. |
 | 4. PPM Gate I-A Activation | Bilateral executable fixtures, MOD-0117 adapter and live integration evidence | Requires Slices 1–3 review evidence, approved producer endpoint/security/runtime, matching MOD-0117 amendment and explicit activation authority. |
 
-Port allocation, concrete credential/key material, internal transport and runtime provisioning remain open.
+Concrete credential/key material, internal transport, route and runtime provisioning remain open.
 The producer-owned event identity/version, signing scheme/profile and MOD-0288 Person/Position bilateral
-contract expectations are fixed here; no slice may widen them or infer runtime authority. This pack remains
-`draft`, `production_authority: none` and `implementation_authority: none` in this governance turn.
+contract expectations are fixed here; no slice may widen them or infer runtime authority. This pack is
+`ready-for-dev` with `implementation_authority: explicit-user-control-tower` only for the bounded Slice 1
+handoff; `production_authority: none` remains unchanged, and a separate explicit user runtime instruction is
+required before scaffold/test files are written.
 
 Mandatory Core Scaffold topology/isolation matrix (implemented during Slice 1; all rows must pass before
-review/runtime promotion for the primary, and any failure selects the fallback with no warning-only waiver):
+review/runtime promotion for the primary, and any failure stops primary promotion with no warning-only waiver):
 
 | Gate | Required proof |
 |---|---|
@@ -923,7 +949,7 @@ review/runtime promotion for the primary, and any failure selects the fallback w
 | Permission | MOD-0007 permission family is disjoint from DWS/BPM and approval permissions; no wildcard/bypass |
 | Internal provider | Producer-owned direct S2S query only, zero writes, no Gateway/browser/client dependency |
 | Contract | Exact five-field reference and Gate I-A fixtures; no generic role or foreign Decision payload copy |
-| Topology exclusivity | Exactly one selected service tree/registration; no dual scaffold and no EnterpriseStrategy reference/namespace |
+| Topology exclusivity | Primary tree only for Slice 1; no fallback scaffold without a separate amendment, no dual registration and no EnterpriseStrategy reference/namespace |
 | Entity base | Direct `TenantScopedEntity` inheritance; no competing base or inherited-field redeclaration; scoped `DeletedAt` only |
 | Consumer gate | Build/architecture assertion rejects activation/registration of a MOD-0117 adapter before all producer and bilateral evidence gates pass |
 
@@ -998,7 +1024,7 @@ Minimum mutation matrix:
 | Scaffold both candidate services or place DecisionRegistry in EnterpriseStrategy | Mutually exclusive topology is violated |
 | Add Gateway/browser dependency to the internal validation provider | Direct S2S provider boundary is violated |
 | Activate/register the MOD-0117 adapter before producer runtime and bilateral evidence | Consumer activation gate is violated |
-| Guess a port, internal route or credential scheme | Open B-class allocation/security blocker is bypassed |
+| Use any port other than primary `5011`, activate fallback `5016` without a separate amendment, or guess an internal route/credential scheme | Canonical allocation, exclusivity or runtime security gate is bypassed |
 | Treat an isolation failure as a warning | Fail-closed fallback selection is bypassed |
 | Add an unnamed/non-tenant-first/colliding index or a second persistence manifest | Exact persistence ownership is violated |
 | Use direct RabbitMQ/MassTransit/broker client or Platform collection access | MOD-0035 post-commit delivery boundary is violated |
@@ -1007,7 +1033,7 @@ Minimum mutation matrix:
 ## 18. Ready-for-dev Checklist
 
 - [x] Blueprint and registry exact-ID/name preflight passes for `MOD-0007 — Decision & Rationale Log`.
-- [x] Parent pack remains `draft` with selected conditional primary service and no production authority.
+- [x] Parent pack is `ready-for-dev` only for the selected primary Slice 1 handoff; production authority remains none.
 - [x] Decision/rationale ownership and Decision-versus-Approval separation are explicit.
 - [x] Generic `DecisionRevisionReferenceV1` has the exact canonical name/version and five-field key set with
   no `DecisionRole`; the MOD-0117-owned Gate I-A wrapper/role/cardinality is separate.
@@ -1029,7 +1055,7 @@ Minimum mutation matrix:
 - [x] V1 evidence integration is formally disabled; tenant evidence-required policy blocks with `409`.
 - [x] V1 retention/legal-hold decision closes no-TTL/no-purge and draft soft-delete boundaries.
 - [x] Primary/fallback physical topology and mandatory fail-closed isolation evidence are closed.
-- [ ] Exact transport, route, timeout/retry and compatibility policy are approved.
+- [ ] Exact transport, route, timeout/retry and compatibility policy pass their later Slice 2/runtime gate.
 - [x] MOD-0018-FU16 audience, Client ID, `DelegatedActorProofV1` profile and exact seven-entry
   operation-to-permission owner manifest are fixed.
 - [ ] MOD-0018 permission/principal provisioning and dedicated S2S runtime evidence pass.
@@ -1052,13 +1078,15 @@ Minimum mutation matrix:
 - [x] Post-commit broker delivery is restricted to MOD-0035 `IEventBus`; direct broker and Platform/foreign
   collection access are forbidden, and the exact producer-owned audit identity/profile is fixed without
   granting runtime authority.
-- [ ] Slice 1 exact scope/test design receives owner `ready-for-dev` approval before scaffold/test implementation.
+- [x] Control Tower records Enterprise Governance Process Owner approval of the exact Slice 1 scope/test design
+  for bounded handoff; a separate explicit user runtime instruction is still required before implementation.
 - [ ] Implemented Slice 1 architecture/isolation matrix passes before review/runtime promotion; any failure
-  selects the sole fallback before runtime activation.
+  stops primary promotion and requires a separate sole-fallback amendment before any fallback scaffold or activation.
 - [ ] Slices 2–4 satisfy their predecessor and owner-evidence gates before implementation/activation.
-- [ ] An authoritative collision-free service port is allocated; until then port is `TBD`.
+- [x] Canonical registry checkpoint `496ab31b` reserves primary `5011` and dormant isolation fallback `5016`
+  without granting listener, route, scaffold, deployment or runtime authority.
 - [ ] Explicit user production authority is recorded separately before production activation; it is not a
-  prerequisite for a future Core Scaffold `ready-for-dev` decision.
+  prerequisite for this bounded Core Scaffold `ready-for-dev` handoff.
 
 ## 19. Implementation Notes
 
@@ -1104,16 +1132,19 @@ Minimum mutation matrix:
 | 2026-08-04 | Added the producer-owned MOD-0007 audit fixture set at the exact MOD-0021 path, reconciled numeric integer `EventVersion = 1` and `ModuleCode = MOD-0007`, and added an isolated test-only signing vector plus expected signature. | None; test key/signing identity are explicitly production-denied, status remains `draft`, authorities remain `none`, and no runtime consumer/onboarding authority is created. |
 | 2026-08-04 | Closed the MOD-0021 `9b75c213` consumer findings with full positive/negative allowlist and delegated trusted-provenance matrices. | None; canonical payload/hash/signature remain byte-identical, status remains `draft`, authorities remain `none`, and no runtime/PSS/security implementation authority is created. |
 | 2026-08-04 | Closed the MOD-0021 `5349ed06` final MOD-0007 finding with an explicit non-delegated positive/structural-absence fixture and delegated-profile fail-closed control. | None; canonical payload/hash/HMAC and existing matrices remain unchanged, status remains `draft`, authorities remain `none`, and no runtime credential or implementation authority is created. |
+| 2026-08-04 | Reconciled canonical port authority and promoted the exact primary Core Scaffold & Contract-Test design to bounded `ready-for-dev` handoff using the latest FU16, MOD-0021, MOD-0035 and MOD-0288 checkpoints. | `implementation_authority: explicit-user-control-tower` applies only to Slice 1 handoff; this governance turn authorizes no runtime-code write, fallback scaffold, route, credential, provider activation, event delivery, deployment or production. |
 
 ## 20. Follow-up Items
 
-Only staged development/runtime/promotion blockers remain:
+Only implementation/runtime/promotion gates remain:
 
-1. Obtain owner approval of the exact Slice 1 scope/test design before any future `ready-for-dev` promotion.
-2. Implement the Slice 1 scaffold/test harness only after that promotion; pass its architecture/isolation,
+1. Obtain a separate explicit user runtime instruction before writing the bounded Slice 1 scaffold/test harness;
+   then pass its architecture/isolation,
    collection/index collision, transaction/idempotency/unknown-commit, graph and contract evidence before
-   review/runtime promotion, or select the sole fallback.
-3. Obtain an authoritative collision-free port allocation and approve internal route/service discovery,
+   review/runtime promotion; an isolation failure stops primary work and triggers item 2.
+2. Keep primary `5011` dormant until runtime authority; if primary isolation fails, stop and obtain a separate
+   fallback amendment before any `Diten.EnterpriseGovernanceService`/`5016` scaffold or activation.
+3. Approve internal route/service discovery,
    DNS/TLS/network and deployment decisions.
 4. Provision and evidence the fixed Slice 2 S2S principal/credential, audience/scope, registration,
    rotation/revocation, timeout/retry/circuit and exact FU16 delegated-actor policy.
@@ -1123,22 +1154,24 @@ Only staged development/runtime/promotion blockers remain:
    regeneration; approve and evidence production signing onboarding, credentials/keys, audit delivery and
    retry/DLQ/replay compatibility while proving the fixture test key is rejected by production validation.
 7. Approve Slice 4 matching MOD-0117 amendment and bilateral live evidence only after producer runtime gates pass.
-8. Enumerate exact composition/project files and record separate runtime/production authority as applicable.
+8. Preserve the exact Section 5 composition/project allowlist and record separate runtime/production authority
+   as applicable.
 
 Deferred future amendments, not v1 core blockers: MOD-0031 evidence-enabled publication, MOD-0030-backed
 retention/legal-hold purge process, `Role`/`GovernanceBody` authority kinds, producer role-eligibility policy,
 and approved import/migration flow.
 
-After those decisions, revise this parent pack (or create explicitly parented executable follow-ups), rerun
-canonical and relative-link validation, obtain owner approval, and record explicit production authority before
-any implementation.
+After the applicable gates, revise this parent pack (or create explicitly parented executable follow-ups),
+rerun canonical and relative-link validation, and record separate explicit runtime/production authority as
+applicable.
 
 ## Authority References
 
-- MOD-0018-FU16 Gate I provenance: commit `40e38905e253c0d669b6282c65814527e90d533c`.
-- MOD-0021 Gate I intake provenance: commit `de81a13575e2a128fac383da47d533ab8e14eac9`.
-- MOD-0035 signed onboarding provenance: commit `23f290ec0f2f546a2335d18846f2f92ff88b0ca4`.
-- MOD-0288 Decision Authority provider provenance: commit `8f7d0ee7cbbbe0e80c7aadca35111afca4472d67`.
+- Canonical port registry provenance: commit `496ab31b490b98b11a514bb1a03993d3f6da7140`.
+- MOD-0018-FU16 Gate I promoted provenance: commit `cfbfee00b24314819101faa88d7ed8f1c83c7bd2`.
+- MOD-0021 Gate I bilateral acceptance provenance: commit `525f6275a91eab7892741d8239dc1d0390915c3c`.
+- MOD-0035 signed onboarding/security-policy provenance: commit `f1568ace514a33e951c652802347dd22ddd1ac11`.
+- MOD-0288 Decision Authority lifecycle provenance: commit `0e59b35f4d83249f1a2a92b50f919e06e5ef06eb`.
 - [Management & Governance domain config](../domain-config.md)
 - [DCP-006 — Portfolio Delivery Process Core](../../../portfolio/delivery-capability-packs/DCP-006-portfolio-delivery-process-core.md)
 - [MOD-0117 — Project & Portfolio Management](../../portfolio-delivery/module-packs/MOD-0117-project-portfolio-management.md)
