@@ -11,6 +11,9 @@
 - Branch short code: `esbp`
 - Governance-packaged modules: `MOD-0352`, `MOD-0136`, `MOD-0138`, `MOD-0072`
 - Physical topology authority in this decision: `MOD-0136`, `MOD-0138`, `MOD-0072`
+- Authoritative primary services: `MOD-0136 = Diten.FpaService`; `MOD-0138 = Diten.FpaService`;
+  `MOD-0072 = Diten.DecisionIntelligenceService`
+- Service ports: `TBD` until authoritative collision-free allocation
 
 Repository-domain packaging does not replace any module's Blueprint logical route. In particular, no module
 covered by this topology decision may be placed in `Diten.EnterpriseStrategyService`.
@@ -166,8 +169,13 @@ remains `OPEN / PARTIAL`.
 
 ## Architecture and isolation test matrix
 
-Every row is mandatory before runtime promotion. Any FP&A primary-profile failure selects the complete
-fail-closed fallback; waivers and partial activation are not permitted.
+Every row is mandatory before review/runtime promotion. Before `ready-for-dev`, each row requires an exact
+design projection: selected logical repo/test scope, named test project/suite, executable test plan, negative
+invariant and protected-path expectation. Tests that require a scaffold, compiled code, DI graph, Mongo replica
+set, credentials, service discovery, deployment, Gateway/browser surface or live provider cannot be required to
+PASS before that scaffold/code is authorized. Their executable PASS evidence is instead a mandatory
+review/runtime-promotion gate. Any mandatory FP&A primary-profile failure at that evidence gate rejects the
+complete primary and selects the coordinated fallback; waivers and partial activation are not permitted.
 
 | Test ID | Exact invariant | Required negative proof |
 |---|---|---|
@@ -228,11 +236,18 @@ Protected for this task and until separately authorized:
 ## Promotion, runtime authority and open blockers
 
 - DCP-006 remains `approved`; MOD-0117 remains `review`; OD-04 remains `OPEN / PARTIAL`.
-- MOD-0136, MOD-0138 and MOD-0072 retain their current pack statuses, `service: TBD` and
-  `production_authority: none`. This domain decision does not promote them or make an adapter executable.
-- Each pack must be reconciled to this domain-level topology authority before promotion. No implementation
-  begins before its pack is `approved`/`ready-for-dev`, every applicable test above is executable and passing,
-  and explicit user runtime authority names the selected topology and implementation slice.
+- MOD-0136 and MOD-0138 retain `service: Diten.FpaService`; MOD-0072 retains
+  `service: Diten.DecisionIntelligenceService`. Their current statuses and `production_authority: none` remain
+  unchanged. Service identity records placement only; it does not make a scaffold, adapter or runtime executable.
+- Before `ready-for-dev`, each pack must be reconciled to this domain topology and contain exact design,
+  five-layer repo/test scope, collection/repository ownership projection, test plan, negative invariants,
+  protected paths and named blockers. Executable PASS evidence that cannot exist without scaffold/code is not a
+  ready-for-dev prerequisite.
+- `ready-for-dev` may authorize only the separately approved implementation slice. It is not production,
+  deployment, route, port or runtime authority and cannot change `production_authority: none`.
+- Before review/runtime promotion, every applicable matrix test must be executable and passing, the selected
+  topology must have explicit runtime authority, and all security, persistence, contract, deployment and live
+  integration evidence required by the approved slice must be recorded.
 - Ports remain `TBD`: the current authoritative repo registry assigns no collision-free port to
   `Diten.FpaService`, either fallback service or `Diten.DecisionIntelligenceService`. A future authorized
   integration task must reserve ports in the authoritative registry and prove collision freedom before route work.
