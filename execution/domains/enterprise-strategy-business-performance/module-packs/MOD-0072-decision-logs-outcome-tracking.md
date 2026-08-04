@@ -200,8 +200,10 @@ This authoring job owns only:
 - `execution/domains/enterprise-strategy-business-performance/module-packs/MOD-0072-decision-logs-outcome-tracking.md`
 
 Any future implementation remains non-executable and requires this pack to become `approved` or
-`ready-for-dev`, explicit runtime authority, exact repo/collection/transaction/S2S/port decisions, producer
-runtime evidence and a matching MOD-0117 consumer amendment.
+`ready-for-dev`, explicit runtime/deployment authority, authoritative port, approved S2S/MOD-0018 and
+MOD-0021/MOD-0035 contracts, approved bootstrap fixture content, producer runtime evidence and matching
+MOD-0117 consumer activation gates. Core composition/collection/transaction decisions below are closed
+governance contracts, not implementation authority.
 
 ### Exact future primary logical scope
 
@@ -212,19 +214,79 @@ These reserved logical paths define the only future production location; they au
 - `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Domain/Modules/OutcomeTracking/**`
 - `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Persistence/Modules/OutcomeTracking/**`
 - `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Infrastructure/Modules/OutcomeTracking/**`
-- `services/Diten.DecisionIntelligenceService/tests/Unit/Modules/OutcomeTracking/**`
-- `services/Diten.DecisionIntelligenceService/tests/Integration/Modules/OutcomeTracking/**`
-- `services/Diten.DecisionIntelligenceService/tests/Architecture/Modules/OutcomeTracking/**`
-- `services/Diten.DecisionIntelligenceService/tests/Projection/Modules/OutcomeTracking/**`
-- `services/Diten.DecisionIntelligenceService/tests/Contracts/Modules/OutcomeTracking/**`
-- `services/Diten.DecisionIntelligenceService/tests/Security/Modules/OutcomeTracking/**`
+- `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.UnitTests/Modules/OutcomeTracking/**`
+- `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.IntegrationTests/Modules/OutcomeTracking/**`
+- `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.ArchitectureTests/Modules/OutcomeTracking/**`
+- `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.ProjectionTests/Modules/OutcomeTracking/**`
+- `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.ContractTests/Modules/OutcomeTracking/**`
+- `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.SecurityTests/Modules/OutcomeTracking/**`
 
-These are reserved logical test roots. Concrete test project names/composition files remain a B-class blocker.
+Exact future composition files are:
 
-The future OutcomeTracking-owned repository/collection/index owner manifest belongs only under the
-`Diten.DecisionIntelligenceService.Persistence/Modules/OutcomeTracking/**` boundary, with its executable
-owner-manifest tests in the future service-local integration/architecture test scope. Exact collection/index
-names remain blocked and are not minted here.
+- `...Api/Modules/OutcomeTracking/OutcomeTrackingModule.cs` — sole module composition entry point.
+- `...Application/Modules/OutcomeTracking/DependencyInjection.cs` — Application registrations only.
+- `...Domain/Modules/OutcomeTracking/Common/OutcomeTrackingEntityBase.cs` — concrete service-local logical
+  `EntityBase`; importing an EnterpriseStrategy/FP&A/shared business base is forbidden.
+- `...Persistence/Modules/OutcomeTracking/DependencyInjection.cs` — repositories, Mongo mappings and local
+  transaction participants only.
+- `...Infrastructure/Modules/OutcomeTracking/DependencyInjection.cs` — post-commit public abstractions only;
+  no Domain/Persistence ownership.
+
+Concrete future test-project files are exactly:
+
+- `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.UnitTests/Diten.DecisionIntelligenceService.UnitTests.csproj`
+- `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.IntegrationTests/Diten.DecisionIntelligenceService.IntegrationTests.csproj`
+- `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.ArchitectureTests/Diten.DecisionIntelligenceService.ArchitectureTests.csproj`
+- `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.ProjectionTests/Diten.DecisionIntelligenceService.ProjectionTests.csproj`
+- `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.ContractTests/Diten.DecisionIntelligenceService.ContractTests.csproj`
+- `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.SecurityTests/Diten.DecisionIntelligenceService.SecurityTests.csproj`
+
+The single future owner manifest is exactly
+`services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Persistence/Modules/OutcomeTracking/Manifests/OutcomeTrackingMongoOwnershipManifest.cs`.
+No second manifest, convention scan or configuration override may claim an OutcomeTracking collection/index.
+
+### Exact collection owner manifest
+
+| Collection name | Sole owner | Purpose |
+|---|---|---|
+| `diten_di_outcomes` | OutcomeTracking | Outcome identity/lifecycle/current-version pointer |
+| `diten_di_outcome_versions` | OutcomeTracking | Immutable OutcomeVersion history |
+| `diten_di_outcome_metrics` | OutcomeTracking | OutcomeMetric identity |
+| `diten_di_outcome_metric_versions` | OutcomeTracking | Immutable metric semantics/bounds/freshness |
+| `diten_di_qualitative_scales` | OutcomeTracking | QualitativeScale identity |
+| `diten_di_qualitative_scale_versions` | OutcomeTracking | Immutable level definitions |
+| `diten_di_outcome_measurements` | OutcomeTracking | Append-only observations/correction chains |
+| `diten_di_decision_outcome_links` | OutcomeTracking | Append-only DecisionOutcome provenance |
+| `diten_di_idempotency_receipts` | OutcomeTracking | Permanent v1 mutation receipts/request hashes/results |
+| `diten_di_audit_intents` | OutcomeTracking | Producer-local pre-publication audit intents |
+| `diten_di_outbox_messages` | OutcomeTracking | Producer-local post-commit delivery state |
+
+No collection exists for ObservationStatus, OutcomeReferenceability, projection checkpoints, rebuild
+checkpoints, Metric/Scale authoring drafts, evidence, PPM wrappers/backlinks or legacy migration mirrors.
+
+### Tenant-first named index matrix
+
+Every tenant-owned index begins with `TenantId`; startup/owner-manifest validation fails on a missing, renamed,
+foreign-owned or key-order-divergent index.
+
+| Exact index name | Collection | Ordered key / constraint |
+|---|---|---|
+| `ux_di_ot_outcomes_tenant_code_active` | `diten_di_outcomes` | `(TenantId, Code)` unique for `LifecycleState=Active` |
+| `ix_di_ot_outcomes_tenant_lifecycle` | `diten_di_outcomes` | `(TenantId, LifecycleState, Id)` |
+| `ux_di_ot_outcome_versions_tenant_outcome_number` | `diten_di_outcome_versions` | `(TenantId, OutcomeId, OutcomeVersionNumber)` unique |
+| `ix_di_ot_outcome_versions_tenant_outcome_effective` | `diten_di_outcome_versions` | `(TenantId, OutcomeId, EffectiveFrom, Id)` |
+| `ux_di_ot_metrics_tenant_code_active` | `diten_di_outcome_metrics` | `(TenantId, Code)` unique for active identity |
+| `ux_di_ot_metric_versions_tenant_metric_number` | `diten_di_outcome_metric_versions` | `(TenantId, MetricId, MetricVersionNumber)` unique |
+| `ux_di_ot_scales_tenant_code_active` | `diten_di_qualitative_scales` | `(TenantId, Code)` unique for active identity |
+| `ux_di_ot_scale_versions_tenant_scale_number` | `diten_di_qualitative_scale_versions` | `(TenantId, QualitativeScaleId, QualitativeScaleVersionNumber)` unique |
+| `ix_di_ot_measurements_tenant_outcome_version_period` | `diten_di_outcome_measurements` | `(TenantId, OutcomeId, OutcomeVersionId, PeriodStart, PeriodEnd, Id)` overlap/effective-head lookup |
+| `ux_di_ot_measurements_tenant_supersedes` | `diten_di_outcome_measurements` | `(TenantId, SupersedesMeasurementId)` unique when non-null; prevents correction branching |
+| `ix_di_ot_measurements_tenant_recorded` | `diten_di_outcome_measurements` | `(TenantId, OutcomeId, RecordedAt, Id)` history/status scan |
+| `ux_di_ot_decision_links_tenant_tuple` | `diten_di_decision_outcome_links` | `(TenantId, OutcomeId, OutcomeVersionId, DecisionId, DecisionVersionId)` unique |
+| `ux_di_ot_receipts_tenant_actor_operation_key` | `diten_di_idempotency_receipts` | `(TenantId, ActorId, Operation, IdempotencyKey)` unique; no TTL |
+| `ix_di_ot_audit_intents_tenant_state_created` | `diten_di_audit_intents` | `(TenantId, State, CreatedAt, Id)` |
+| `ux_di_ot_outbox_tenant_message` | `diten_di_outbox_messages` | `(TenantId, MessageId)` unique |
+| `ix_di_ot_outbox_tenant_state_available` | `diten_di_outbox_messages` | `(TenantId, State, AvailableAt, Id)` |
 
 ## 6. Protected Paths
 
@@ -296,6 +358,61 @@ names remain blocked and are not minted here.
 - OutcomeTracking has one authoritative SoR deployment only. It does not participate in the FP&A primary/
   fallback model; no second host, fallback replica authority, dual-write, mirror-write or active/passive SoR
   may operate the same OutcomeTracking truth.
+
+### Core transaction, idempotency and unknown-commit contract
+
+Every create, publish-version, retire, measurement append/correct and DecisionOutcomeLink mutation executes in
+one OutcomeTracking-owned Mongo replica-set transaction containing exactly:
+
+1. the aggregate/entity append or compare-and-set mutation;
+2. one immutable `diten_di_idempotency_receipts` record with tenant, effective actor, operation, exact
+   IdempotencyKey, canonical request hash, final response/status and mutation identity;
+3. one or more producer-local `diten_di_audit_intents` records required by the mutation; and
+4. corresponding producer-local `diten_di_outbox_messages` records when post-commit publication is required.
+
+Failure to persist any participant aborts all participants. Repository code cannot commit the business record
+before receipt/audit/outbox, and no external call or broker publish occurs inside the transaction.
+
+- Same tenant+actor+operation+key with the same canonical payload hash returns the stored final response and
+  performs no second mutation, audit intent or outbox append.
+- The same scoped key with a different canonical payload hash returns `409` and persists nothing.
+- V1 receipts are permanent: no TTL index, cleanup job, expiry field or implicit retention truncation exists.
+- On a Mongo unknown-commit result, the application retries **commit only** using the same session/transaction
+  identity as allowed by the driver; it never reruns handlers, business mutation logic or external calls.
+- After bounded commit-only retry, the application reconciles the exact scoped receipt. A matching committed
+  receipt returns its stored result; a confirmed absent/aborted receipt permits the normal safe failure path;
+  conflicting receipt returns `409`. If commit state remains indeterminate, return `503` and do not claim
+  success, start a fresh mutation or publish externally.
+- Caller retry after `503` uses the same idempotency key and is resolved solely through the receipt contract.
+
+### Projection and rebuild non-persistence
+
+`ObservationStatusProjection` and `OutcomeReferenceabilityProjection` are read results, never persisted
+documents or authorization cache. Rebuild means deterministic recomputation in tests from immutable Outcome,
+version, metric/scale and effective measurement heads. It writes no projection, checkpoint, watermark, cursor,
+lease or rebuild-status collection. The owner manifest and architecture tests fail any collection/index,
+repository, migration or DI registration for observation status/referenceability/checkpoints.
+
+### Post-commit publication boundary
+
+Broker publication occurs only after a successful commit through the future MOD-0035-approved public
+`IEventBus` abstraction. Direct RabbitMQ client, direct MassTransit bus usage, direct broker channel/session,
+or direct Platform/MOD-0021 audit collection write/read is forbidden. The exact MOD-0021/MOD-0035 producer
+contract remains open; until approved, outbox rows cannot be published and runtime activation remains blocked.
+At-least-once delivery requires idempotent consumers and never changes the local commit result.
+
+### Metric/scale bootstrap and initial migration
+
+The initial slice exposes no Metric/Scale authoring command, handler, endpoint or UI and creates no permission;
+the exact seven permissions remain unchanged. Initial Metric/Scale data may enter only through a future,
+separately approved, versioned and immutable bootstrap fixture. Without approved fixture content and
+reconciliation evidence, quantitative and qualitative production activation is forbidden. Metric/Scale
+administration is a separate future amendment.
+
+The first legacy migration slice is **NO-OP / quarantine-only**: it inventories and quarantines candidates but
+creates no OutcomeTracking aggregate, collection mirror, projection or compatibility record. Legacy dual-read,
+fallback-read, dual-write, shadow-write and read-through migration are forbidden. Any later transformation
+requires a separately approved expand/contract, tenant/provenance mapping, reconciliation and rollback plan.
 
 ### Measurement and version model decision
 
@@ -428,6 +545,13 @@ mutation UI. Realization status is never editable. There is no PPM-owned actual 
   semantics are inferred from retirement.
 - Audit intent/outbox persistence failure: complete transaction rollback.
 - Repeated identical idempotency request: original result/no duplicate; differing payload: `409`.
+- Unknown commit: bounded commit-only retry followed by exact scoped receipt reconciliation; matching receipt
+  returns stored result, conflicting receipt returns `409`, and unresolved commit state returns `503`. Handler,
+  mutation, audit creation and outbox creation are never rerun during commit-only retry.
+- Projection/rebuild attempt to persist ObservationStatus/referenceability/checkpoint state: architecture/
+  owner-manifest failure; no collection or mutation is allowed.
+- Direct RabbitMQ/MassTransit/broker or Platform audit collection access: architecture failure; publishing is
+  disabled until the exact MOD-0021/MOD-0035 contract is approved and then occurs post-commit via `IEventBus`.
 - PPM attempts to submit actual value/period/evidence/realized state: contract rejection; no copied truth.
 
 ## 14. Authorization Convention
@@ -588,6 +712,12 @@ five-field OutcomeReferenceV1 and never measurement identity, period, value, evi
 28. OutcomeReference provider is OutcomeTracking-owned internal S2S with no browser/Gateway route.
 29. MOD-0117 adapter remains non-executable until producer runtime evidence, bilateral fixtures, consumer amendment approval and explicit runtime authority all exist.
 30. Port remains `TBD`; no scaffold, controller, route, Gateway, deployment or runtime literal is created.
+31. Exact five-layer composition/test project paths, service-local EntityBase, eleven collection names, single owner-manifest path and tenant-first named index matrix are closed without creating files.
+32. Each mutation atomically commits business state, permanent idempotency receipt, audit intent and required outbox; partial commit is forbidden.
+33. Same-key/same-payload replays stored result, changed payload returns `409`; unknown commit uses commit-only retry then receipt reconciliation, unresolved ambiguity returns `503`.
+34. ObservationStatus/referenceability and rebuild checkpoints are non-persisted; owner manifest forbids projection/checkpoint collections.
+35. Broker delivery is post-commit through future MOD-0035 public `IEventBus` only; direct RabbitMQ/MassTransit/Platform audit persistence access is forbidden.
+36. Initial migration is NO-OP/quarantine-only with no legacy dual-read/write or mirror; Metric/Scale activation requires a separately approved immutable bootstrap fixture and adds no permission/authoring surface.
 
 ## 17. Test Expectations
 
@@ -616,6 +746,15 @@ five-field OutcomeReferenceV1 and never measurement identity, period, value, evi
 - `ESBP-TOP-012`: MOD-0117 serialization/adapter tests prove no-copy ownership and non-executability before producer evidence/bilateral/consumer/runtime gates.
 - `ESBP-TOP-013`: configuration/deployment scans reject guessed port, unresolved service discovery, credential or unapproved route/runtime authority.
 - Isolation matrix: Domain/Application/Persistence/Infrastructure source references, DI graph, repository/context injection, collection/index owner manifest and Mongo session instrumentation reject any FPA/Budgeting/ScenarioPlanning/EnterpriseStrategy sharing; communication fixtures admit typed/versioned contracts only.
+- Composition paths: exact five layer module entry/DI/base paths and six concrete test-project roots match the pack allowlist; any second composition root or foreign base reference fails.
+- Owner manifest/collision: exactly one manifest owns the eleven exact collection names; repo/config scan rejects duplicate collection/index literals, owner collisions, foreign access and any missing/extra/renamed index.
+- Tenant-first indexes: ordered-key assertions cover every named index; unique/partial constraints, correction branch prevention and zero TTL on receipts are exercised against real Mongo.
+- Transaction matrix: success commits mutation+receipt+audit intent+required outbox; injected failure at each participant rolls back all; no broker/external call occurs before commit.
+- Idempotency matrix: same scoped key/hash returns stored result with one mutation/audit/outbox; changed hash returns `409` with no write; receipt survives retention horizon because v1 has no TTL.
+- Unknown-commit matrix: commit-only retry never re-enters handler; matching receipt returns stored success, conflicting receipt `409`, confirmed abort follows safe failure, indeterminate reconciliation `503`, and caller replay with same key converges.
+- Projection matrix: read/rebuild produces identical ObservationStatus/referenceability without collection/repository/checkpoint/DI writes; prohibited projection names are absent from owner manifest and Mongo.
+- Publication matrix: publisher starts only after commit and resolves only public `IEventBus`; architecture/source tests reject RabbitMQ/MassTransit/direct broker and Platform audit collection clients.
+- Bootstrap/migration matrix: initial permission set remains exact seven, zero Metric/Scale authoring command/UI, missing fixture blocks quantitative/qualitative activation, approved fixture is immutable/versioned, and first migration creates no target/dual-read/dual-write record.
 - Retention: retirement with existing PPM references succeeds, existing references remain historically resolvable and unchanged, new eligibility `409`, provider outage does not block local history, no exceptional purge.
 - Security: exact permission, entitlement, delegated actor provenance, S2S audience/scope and no fail-open.
 - Migration: prototype quarantine inventory/checksum; no legacy ES record is silently promoted or assigned a
@@ -635,12 +774,15 @@ five-field OutcomeReferenceV1 and never measurement identity, period, value, evi
 - [x] Bilateral exact serialization, mode, error and supported-version fixtures are documented; no runtime executability is inferred.
 - [x] OutcomeMeasurementReference is explicitly deferred from v1 and no contract identity is minted.
 - [x] Binding topology is reconciled: only `Diten.DecisionIntelligenceService/Modules/OutcomeTracking`; no FP&A/EnterpriseStrategy co-host or fallback/dual-write model.
-- [ ] Exact repo paths, concrete service-local base, collections/indexes, routes and port are approved.
+- [x] Exact five-layer composition paths, concrete test-project roots, service-local EntityBase path, collection/index names and single owner manifest are closed.
+- [x] Transaction/idempotency/permanent receipt/unknown-commit behavior, projection non-persistence, post-commit IEventBus boundary and NO-OP migration are closed.
 - [ ] Exact S2S/delegated-actor design and MOD-0018 provisioning are approved.
 - [ ] MOD-0021/MOD-0035 audit/outbox integration is approved.
-- [ ] Transaction, idempotency and unknown-commit behavior is approved.
-- [ ] Metric/scale seed and administration runtime scope is approved.
-- [ ] Prototype migration/quarantine scope is approved.
+- [ ] Exact immutable Metric/Scale bootstrap fixture content is approved; without it quantitative/qualitative activation remains blocked.
+- [x] Metric/Scale administration is deferred to a separate amendment and the initial slice adds no commands/UI/permissions.
+- [x] First migration slice is NO-OP/quarantine-only; any later transformation requires separate authority.
+- [ ] Deployment/runtime authority is approved.
+- [ ] MOD-0117 adapter activation gates are satisfied.
 - [ ] Explicit runtime authority is recorded.
 - [ ] Pack status is changed by human review to `approved` or `ready-for-dev`.
 
@@ -649,29 +791,30 @@ five-field OutcomeReferenceV1 and never measurement identity, period, value, evi
 ### Service topology boundary
 
 The required topology direction is a separate future `Diten.DecisionIntelligenceService`, preserving the
-actual-outcome SoR outside the Enterprise Strategy prototype. Exact repo paths, base implementation,
-collections/indexes, routes, port, deployment and operations remain B-class blockers. This draft does not
-scaffold the service or assign a port.
+actual-outcome SoR outside the Enterprise Strategy prototype. Core repo/test paths, module-local base path,
+collection/index manifest and transaction semantics are closed above. Port, S2S/PSS producer contracts,
+bootstrap fixture content, deployment/runtime authority and MOD-0117 activation remain open. This draft does
+not scaffold the service or assign a port.
 
 ### Prototype quarantine/migration
 
 Existing Enterprise Strategy actual-value/realization fields are non-authoritative inputs to a future
-reconciliation only. Migration must be a separately approved expand/contract slice with tenant mapping,
-semantic/version mapping, evidence provenance, checksum/count reconciliation, quarantine for ambiguous or
-unknown-tenant records, rollback and negative proof that no legacy field remains a second SoR.
+reconciliation only. The first migration slice is NO-OP/quarantine-only and creates no target/compatibility
+record. Any later transformation requires a separately approved expand/contract slice with tenant mapping,
+semantic/version mapping, evidence provenance, checksum/count reconciliation, rollback and negative proof
+that no legacy field remains a second SoR.
 
 ## 20. Follow-up Items / Open Decisions
 
 Only the following B-class blockers remain:
 
-1. Fix exact composition/test paths, concrete service-local EntityBase, collection/index names and owner manifest, routes and port.
-2. Approve S2S/delegated-actor design and MOD-0018 provisioning.
-3. Approve MOD-0021/MOD-0035 audit/outbox integration.
-4. Approve transaction, idempotency, projection rebuild and unknown-commit behavior.
-5. Approve metric/scale seed and administration runtime scope.
-6. Author the separately approved prototype migration/quarantine slice.
-7. Approve service discovery, health/operations and deployment ownership without creating a second SoR/fallback.
-8. Record explicit runtime authority; draft status and this fixed topology authorize no implementation.
+1. Allocate the authoritative port.
+2. Approve exact S2S identity, audience/scope and delegated-actor behavior.
+3. Complete MOD-0018 permission provisioning for the existing exact seven permissions; add none.
+4. Approve the exact MOD-0021/MOD-0035 producer contract used by local audit intent/outbox publication.
+5. Approve exact immutable/versioned Metric/Scale bootstrap fixture content and reconciliation evidence.
+6. Approve deployment/runtime activation and operations ownership.
+7. Satisfy producer runtime evidence, bilateral fixtures, MOD-0117 consumer amendment and explicit adapter activation authority.
 
 ### Change Log
 
@@ -683,3 +826,4 @@ Only the following B-class blockers remain:
 | 2026-08-02 | Reconciled MOD-0072 with PPM checkpoint `a2c7ff5b`: exact four-field Gate I-C wrapper, nested five-field OutcomeReferenceV1, HistoricalResolve/NewReferenceEligibility profiles, non-selection rejection, supported-version behavior and bilateral error fixtures. No runtime authority granted. | User / Enterprise Strategy Control Tower |
 | 2026-08-03 | Closed A-class Outcome semantics: Active/Retired lifecycle, producer-owned metric/scale versions, quantitative bounds, qualitative levels, LocalDate periods, append-only correction, v1 evidence deferral, deterministic observation status, no delete/purge, deferred measurement reference and Golden Slim maximum 7. Only named B-class runtime blockers remain. | User / Enterprise Strategy Control Tower |
 | 2026-08-03 | Reconciled binding ESBP topology: MOD-0072 only in future `Diten.DecisionIntelligenceService/Modules/OutcomeTracking`, isolated persistence/transactions, internal S2S provider without Gateway/browser route, no FP&A/EnterpriseStrategy placement or dual SoR. Port/runtime remain unauthorized and TBD. | User / Enterprise Strategy Control Tower |
+| 2026-08-04 | Closed OutcomeTracking Core composition: exact layer/test paths, service-local base, eleven collections and tenant-first indexes, atomic mutation/receipt/audit/outbox transaction, permanent idempotency receipts, unknown-commit reconciliation, non-persisted projections, post-commit public IEventBus boundary and NO-OP migration. Kept only named port/PSS/bootstrap/deployment/MOD-0117 activation blockers. | User / Enterprise Strategy Control Tower |
