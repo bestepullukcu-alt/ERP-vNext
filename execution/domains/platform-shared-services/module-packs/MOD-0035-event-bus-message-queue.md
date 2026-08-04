@@ -606,12 +606,12 @@ UI/API is in scope.
 
 ---
 
-# Gate I Signed Producer Onboarding Amendment — DRAFT / NON-EXECUTABLE
+# Gate I Signed Producer Onboarding Amendment — READY-FOR-DEV / NON-RUNTIME
 
-> **Authority:** Governance-only amendment. Parent frontmatter remains `status: partial`; no runtime slice is
-> promoted. This text authorizes no code, configuration, secret, broker, allowlist, deployment or producer
-> change. The four named producer fixture checkpoints are reconciled below, but remain non-executable. This
-> amendment creates no business event name and grants no runtime authority.
+> **Authority:** Governance-only, non-runtime implementation handoff. Parent frontmatter remains
+> `status: partial`. This amendment closes the pre-development design gates for the named Gate I slice but
+> authorizes no runtime code, configuration, secret, production key/vault assignment, broker, executable
+> allowlist, deployment or producer change. It creates no business event name and grants no runtime authority.
 
 ## Amendment 1. Module Summary
 - Gate I governs signed producer onboarding onto the shared MOD-0035 transport.
@@ -656,16 +656,18 @@ UI/API is in scope.
 - Permanent shared identity: `Diten.BuildingBlocks.Eventing.EventTransportMessage`.
 - PPM regression identity only: `PpmAuditIntentSubmittedV1` / `ppm.audit-intent.submitted.v1`, scheme
   `ppm-event-hmac-sha256.v1`.
-- Each prospective producer must supply an approved immutable exact fixture. Broker reachability and secret
-  distribution remain future runtime-evidence dependencies.
+- Each producer supplied an approved immutable exact fixture at the checkpoint recorded below. Broker
+  reachability, production identity/key/vault provisioning and secret distribution remain future runtime
+  evidence, not pre-development blockers.
 
 ### Read-only producer checkpoint provenance (2026-08-04)
 | Owner checkpoint | Commit | Pack status | Gate I evidence disposition |
 |---|---|---|---|
-| MOD-0007 Decision Rationale Log | `c053ada4b0ed33671a0b9f80f12564a744e876d3` | `draft` | Canonical fixture, checksum and isolated test-only HMAC vector/signature verified. |
-| MOD-0136 Budgeting | `3a4c4f80c892a175928d69f309f68f2f18aa8f9f` | `draft` | Canonical fixture, checksum and Budgeting-only test HMAC vector/signature verified. |
-| MOD-0138 Scenario Planning | `14b15405f5e760512da704f696e20a9819afd31b` | `draft` | Canonical fixture, checksum and Scenario Planning-only test HMAC vector/signature verified. |
-| MOD-0072 Outcome Tracking | `748a10ed221920b67f8eb5290a454875c08fdc4d` | `draft` | Canonical fixture, checksum and Decision Intelligence-only test HMAC vector/signature verified. |
+| MOD-0007 Decision Rationale Log | `9968ecede48822f95a74461a4959c94b23abbc9b` | `draft` | Canonical fixture, checksum and isolated test-only HMAC vector/signature verified. |
+| MOD-0136 Budgeting | `711962a3fdc1226d947672dc9b48d29296c960a0` | `draft` | Canonical fixture, checksum and Budgeting-only test HMAC vector/signature verified. |
+| MOD-0138 Scenario Planning | `3df680d6e006bfce19e382253ddd1f2f873c2295` | `draft` | Canonical fixture, checksum and Scenario Planning-only test HMAC vector/signature verified. |
+| MOD-0072 Outcome Tracking | `b4589139e8c9db544de5b66300640b214db3acf4` | `draft` | Canonical fixture, checksum and Decision Intelligence-only test HMAC vector/signature verified. |
+| MOD-0021 bilateral acceptance | `525f6275a91eab7892741d8239dc1d0390915c3c` | `ready-for-dev` / non-runtime | Consumer-side bilateral fixture acceptance and production-rejection cross-product verified. |
 
 The checkpoint inspection is read-only. It imports only owner-declared identities and boundaries into this
 PSS governance matrix; it does not copy producer DTO ownership or promote any producer checkpoint.
@@ -673,16 +675,29 @@ PSS governance matrix; it does not copy producer DTO ownership or promote any pr
 ## Amendment 8. Runtime Constraints
 - Every producer has a distinct credential/key. PPM key ids, secrets, signing identity, namespace or derived
   material are never reused.
-- Rotation is exactly `active + previous`; previous is accepted only before its bounded overlap deadline.
-  Expiry and explicit revocation each independently reject it.
+- Rotation is exactly `active + previous`. The overlap is exactly 24 hours and `OverlapDeadlineUtc` is stored
+  as UTC. Previous is accepted only while authoritative `nowUtc < OverlapDeadlineUtc`; equality and every
+  later instant terminally reject. Explicit revocation invalidates overlap immediately.
 - Signature verification performs strict decoding then fixed-time byte comparison; string equality and
   early-exit comparisons are forbidden.
 - Signing binds scheme, EventId, EventName, EventVersion, TenantId, CorrelationId, Producer, CausationId,
   OccurredAtUtc, payload byte length and exact canonical payload bytes.
-- Each fixture defines maximum age, allowed future clock skew, UTC clock source and boundary behavior. Missing,
-  non-UTC, stale and too-far-future timestamps fail closed; replay does not silently bypass freshness.
+- Maximum event age is exactly 24 hours and allowed future clock skew is exactly 2 minutes against the
+  authoritative UTC clock. Age exactly 24 hours and future offset exactly 2 minutes are accepted; the next
+  later instant rejects. Missing/non-UTC/stale/too-far-future values terminally fail closed. Retry and replay
+  re-evaluate freshness and never bypass it. A DLQ record older than 24 hours cannot use normal transport
+  replay; any future forensic/manual process requires separate governance.
 - Canonical UTF-8 bytes are captured once, strictly validated, persisted, signed, transported, verified and
   consumed unchanged. They are never parsed and reserialized for signing or verification.
+- Planned rotation/revocation requires joint approval by the PSS Security Owner and MOD-0035 Eventing Owner.
+  The PSS Security Owner may revoke immediately in an emergency; the Eventing Owner must retrospectively
+  review it within 24 hours. Review cannot undo revocation, and a revoked generation can never be reactivated;
+  resumption requires a new generation.
+- The revocation decision, actor, reason, affected producer/signing identity/KeyId, `occurredAtUtc` and
+  correlation identity are recorded as an immutable local audit intent in the same local transaction as the
+  revocation mutation. Failure to write that intent rolls back the mutation. MOD-0021 is only its post-commit
+  asynchronous adapter; adapter/broker failure cannot roll back a committed revocation. Secrets and signatures
+  are forbidden in audit records and logs.
 
 ## Amendment 9. Layout & Shell Contract
 - `shell: none`; no UI, route, diagnostics, replay or public onboarding endpoint is authorized.
@@ -704,46 +719,50 @@ PSS governance matrix; it does not copy producer DTO ownership or promote any pr
 | Header names | Exact canonical case; case-duplicate names reject before mapping. |
 | Header values | Non-empty exact values; leading/trailing whitespace, tab, CR or LF reject, never normalize. |
 | Allowlist tuple | Exact producer, name, version, scheme and signing identity. |
-| Key | Active, or non-revoked previous key before deadline. |
+| Key | Active, or non-revoked previous while `nowUtc < OverlapDeadlineUtc`; equality/later reject. |
 | Signature | Exact lowercase fixture format plus fixed-time verification. |
 | Test fixture identity/key | Every committed test-only signing identity and KeyId is rejected by production validation even when its fixture signature is correct. |
 | Canonical bytes | Strict UTF-8, bounded, non-empty, fixture-identical; no reserialization. |
 | EventId | Non-empty and bound to immutable envelope/payload/metadata. |
-| OccurredAtUtc | UTC within approved age/future-skew window. |
+| OccurredAtUtc | Authoritative UTC; age `<= 24h` and future offset `<= 2m`; exact boundaries accept. |
 
 ## Amendment 13. Failure Path to Verify
 - Unknown tuple/key, malformed signature, missing/partial/duplicate/case-duplicate/whitespace/CRLF header,
   stale/future timestamp, revoked key or expired previous key is a terminal redacted rejection.
+- All terminal contract/header/security/freshness failures bypass retry. Retry/replay re-evaluates key state
+  and freshness; a stale DLQ item cannot return through normal transport replay.
 - Same `ConsumerName + EventId` with identical immutable envelope, canonical bytes and trusted metadata is a
   duplicate no-op. Any changed bound value is a fail-closed conflict, never a new event.
 - Transient transport failures retry. Closed Contract/Security/Validation/Unsupported failures dead-letter
   directly. Caller/stopping cancellation propagates unchanged with no failure/DLQ write or attempt increment.
 
 ## Amendment 14. Authorization Convention
-- Approval authorizes only the exact allowlist tuple and recorded active/previous ids. It grants no HTTP/JWT,
-  user, broker-admin, replay or wildcard authority. Explicit revocation overrides all other key state.
+- A future runtime approval can authorize only the exact allowlist tuple and recorded active/previous ids. It
+  grants no HTTP/JWT, user, broker-admin, replay or wildcard authority. Planned key-state mutation uses the
+  dual-owner approval above; emergency revocation uses the bounded retrospective path. Explicit revocation
+  overrides all other key state and is irreversible for that generation.
 
 ## Amendment 15. Gateway / API Routing Decision
 - No Gateway/Ocelot/HTTP route. Signed broker events are not JWT-authenticated requests, and request S2S is not
   a fallback event transport.
 
 ## Amendment 16. Acceptance Criteria
-- [x] Parent remains `partial`; amendment remains DRAFT / NON-EXECUTABLE.
+- [x] Parent remains `partial`; amendment is READY-FOR-DEV / NON-RUNTIME and grants no runtime authority.
 - [x] Four separately producer-owned exact fixtures are verified; no placeholder event identity was minted and
   fixture closure alone does not make any producer executable.
 - [x] Each fixture binds tuple, scheme, immutable envelope, canonical bytes/length, test KeyId and signature.
 - [x] Test keys/vectors are pairwise unique per producer; every profile forbids PPM material reuse.
-- [ ] Rotation, overlap, expiry, revocation, fixed-time verification, envelope/payload binding, freshness/skew,
+- [x] Rotation, overlap, expiry, revocation, fixed-time verification, envelope/payload binding, freshness/skew,
   EventId replay, header rejection, retry/terminal/DLQ/cancellation, URN and redaction gates pass.
 - [x] Existing PPM signed-event fixtures and behavior pass unchanged.
 
-### Gate I signed producer allowlist reconciliation — FIXTURE PASS / PROMOTION PARTIAL
+### Gate I signed producer reconciliation — FIXTURE + SECURITY POLICY PASS / READY-FOR-DEV NON-RUNTIME
 | Producer / owner | Exact EventName | Version | ModuleCode | Exact signing profile | Fixture evidence | Disposition |
 |---|---|---:|---|---|---|---|
-| `Diten.ManagementGovernanceService` / `MOD-0007` | `management-governance.decision-registry-audit-intent.submitted.v1` | `1` | `MOD-0007` | scheme `management-governance-event-hmac-sha256.v1`; production identity `diten.management-governance.audit-intent.v1` | 252 bytes; SHA-256 `0af26a132953b8ac0e364574482fffb04f4f50223a6095685837bac386ab55c4`; isolated test-only HMAC PASS | **Fixture PASS; runtime NO.** |
-| `Diten.FpaService` / `MOD-0136` | `fpa.budgeting-audit-intent.submitted.v1` | `1` | `MOD-0136` | scheme `fpa-budgeting-event-hmac-sha256.v1`; identity `diten.fpa.budgeting.audit` | 254 bytes; SHA-256 `583f1b27b0b9a34ec0ec2623e2948907a08b769abee3b47f84d637cd7248f68a`; isolated test-only HMAC PASS | **Fixture PASS; runtime NO.** |
-| `Diten.FpaService` / `MOD-0138` | `fpa.scenario-planning-audit-intent.submitted.v1` | `1` | `MOD-0138` | scheme `fpa-scenario-planning-event-hmac-sha256.v1`; identity `diten.fpa.mod-0138.scenario-planning` | 247 bytes; SHA-256 `db9385def75d885a581554e10ce38877408ed445ed3c4f62e17283b30830462b`; isolated test-only HMAC PASS | **Fixture PASS; runtime NO.** |
-| `Diten.DecisionIntelligenceService` / `MOD-0072` | `decision-intelligence.outcome-tracking-audit-intent.submitted.v1` | `1` | `MOD-0072` | scheme `decision-intelligence-event-hmac-sha256.v1`; identity `diten.decision-intelligence.outcome-tracking-audit-intent` | 246 bytes; SHA-256 `6e1e750ffddc6f65d45556e703b0aa282b8469dec00bcc516a7a0a5f823cc2a3`; isolated test-only HMAC PASS | **Fixture PASS; runtime NO.** |
+| `Diten.ManagementGovernanceService` / `MOD-0007` | `management-governance.decision-registry-audit-intent.submitted.v1` | `1` | `MOD-0007` | scheme `management-governance-event-hmac-sha256.v1`; owner profile is distinct from its committed test-only identity | 252 bytes; SHA-256 `0af26a132953b8ac0e364574482fffb04f4f50223a6095685837bac386ab55c4`; test HMAC `28204085cf426d46298b59c5439e41795f9deb914f8898ea7ad87a54ad8d36e9` | **Pre-dev PASS; runtime evidence pending.** |
+| `Diten.FpaService` / `MOD-0136` | `fpa.budgeting-audit-intent.submitted.v1` | `1` | `MOD-0136` | scheme `fpa-budgeting-event-hmac-sha256.v1`; signing profile `diten.fpa.budgeting.audit`; separate fixture identity | 254 bytes; SHA-256 `de9534d5b6ce6f7ef7237e6bcf593dfaa460a79b63e6293495d0de25b5225fe8`; test HMAC `e4896c480405bebf25ba31732a1549136056f8addfc540bf4ac0b28fb9119579` | **Pre-dev PASS; runtime evidence pending.** |
+| `Diten.FpaService` / `MOD-0138` | `fpa.scenario-planning-audit-intent.submitted.v1` | `1` | `MOD-0138` | scheme `fpa-scenario-planning-event-hmac-sha256.v1`; committed signing identity is test-only | 247 bytes; SHA-256 `db9385def75d885a581554e10ce38877408ed445ed3c4f62e17283b30830462b`; test HMAC `05c7cdee1fa8933f00502460178a2b76fa4d68819a5d2e1801c118e0e68b47df` | **Pre-dev PASS; runtime evidence pending.** |
+| `Diten.DecisionIntelligenceService` / `MOD-0072` | `decision-intelligence.outcome-tracking-audit-intent.submitted.v1` | `1` | `MOD-0072` | scheme `decision-intelligence-event-hmac-sha256.v1`; committed signing identity is fixture-purpose test-only | 246 bytes; SHA-256 `6e1e750ffddc6f65d45556e703b0aa282b8469dec00bcc516a7a0a5f823cc2a3`; test HMAC `0336b3630d4fa5e10c01cb7674681014d1a6e0d6df40ff3923b4555a9be3c07f` | **Pre-dev PASS; runtime evidence pending.** |
 
 The two `Diten.FpaService` rows are separate module-owner allowlist entries and separate signing profiles. A
 shared workload/service identity cannot merge their EventName, module owner, signing identity, KeyId namespace,
@@ -752,9 +771,21 @@ one row never registers, activates or satisfies the other.
 
 For every row, authorization remains exact ordinal
 `Producer + EventName + EventVersion + SigningIdentity`. EventName heuristics, shared-producer wildcarding,
-case folding, trimming, prefix matching and version fallback are forbidden. The status of this reconciliation
-remains **PARTIAL** because fixture/signature decisions are closed but the concrete PSS security-policy values
-listed in Amendment 18 remain open. No production secret or test key value is copied into this matrix.
+case folding, trimming, prefix matching and version fallback are forbidden. All pre-development fixture,
+contract and security-policy decisions are closed. No production secret or test key value is copied here.
+
+### Universal production-rejection matrix
+| Owner | Committed test-only signing identity / profile identifier | Committed test-only KeyId | Production result |
+|---|---|---|---|
+| MOD-0007 | `diten.management-governance.audit-intent.v1.test-only` | `mod-0007-audit-fixture-test-only-20260804` | Terminal security reject. |
+| MOD-0136 | `diten.fpa.budgeting.audit.fixture-test` (and fixture use of `diten.fpa.budgeting.audit`) | `budgeting-mod-0136-fixture-current.test-only` | Terminal security reject. |
+| MOD-0138 | `diten.fpa.mod-0138.scenario-planning` | `mod-0138-scenario-planning-fixture-current` | Terminal security reject. |
+| MOD-0072 | `diten.decision-intelligence.outcome-tracking-audit-intent` | `diten-di-outcome-tracking-test-only-k1` | Terminal security reject. |
+
+Each row rejects even with the exact canonical payload and mathematically correct committed test HMAC. Neither
+the identity nor KeyId may occupy an active or previous production slot. Wildcard, alias, normalization and
+fallback cannot bypass this deny set. Production signing identity/KeyId/secret assignment is separate future
+provisioning evidence.
 
 Production active/previous KeyId and secret provisioning, broker availability and live delivery are runtime
 evidence gates after development; they are explicitly not ready-for-dev design blockers. The four producer
@@ -766,13 +797,24 @@ packs remain `draft`, and this reconciliation does not promote or activate them.
 |---|---|
 | Active key + exact fixture | Accept once. |
 | Previous key before deadline | Accept once. |
-| Previous key at/after deadline | Terminal reject. |
+| Previous key at exactly `OverlapDeadlineUtc` or later | Terminal reject. |
 | Active/previous key revoked | Immediate terminal reject. |
 | Unknown, cross-producer or PPM-reused key | Terminal reject. |
 | Same EventId + identical bound values | Duplicate no-op. |
 | Same EventId + any changed bound value | Fail-closed conflict. |
 | Authorized replay | Same EventId and byte-identical payload only. |
 | Changed bytes or implicit freshness bypass | Terminal reject. |
+| Event age exactly 24 hours | Accept if every other gate passes. |
+| Event age greater than 24 hours | Terminal reject. |
+| Event time exactly 2 minutes in the future | Accept if every other gate passes. |
+| Event time more than 2 minutes in the future, missing or non-UTC | Terminal reject. |
+| Retry/replay after freshness expiry | Terminal reject; no freshness bypass. |
+| DLQ item older than 24 hours through normal replay | Terminal reject; separately governed forensic/manual path required. |
+| Any committed test identity/KeyId in active or previous production slot | Configuration/validation reject. |
+| Correct test HMAC under any committed test identity/KeyId | Terminal security reject. |
+| Planned revocation without both owner approvals | Reject mutation. |
+| Emergency Security Owner revocation | Apply immediately; Eventing Owner review due within 24 hours. |
+| Revocation audit-intent write failure | Roll back revocation mutation. |
 
 - Fixture tests cover valid bytes plus partial, unknown, duplicate, case-duplicate, whitespace, tab, CR/LF,
   malformed hex, wrong length, stale, skew, envelope/payload mutation and reserialization attempts.
@@ -792,31 +834,33 @@ packs remain `draft`, and this reconciliation does not promote or activate them.
 - [x] Exact non-wildcard tuples, numeric integer EventVersion `1` and ModuleCode values are owner-authored.
 - [x] MOD-0136 and MOD-0138 have separate allowlist rows, schemes, signing identities, test KeyIds/keys and
   vectors despite sharing `Diten.FpaService`; all producer profiles forbid PPM identity/key/vector reuse.
-- [ ] **PSS/MOD-0035 Security & Eventing Owner:** approve a concrete bounded active/previous overlap duration.
-- [ ] **PSS/MOD-0035 Security & Eventing Owner:** approve concrete maximum event age and future clock-skew values.
-- [ ] **PSS/MOD-0035 Security & Eventing Owner:** name the revocation authority and approval/audit path.
-- [ ] **PSS/MOD-0035 Security & Eventing Owner:** approve the universal production-reject matrix for all four
+- [x] **PSS/MOD-0035 Security & Eventing Owner:** active/previous overlap is exactly 24 hours, UTC, with strict
+  `nowUtc < OverlapDeadlineUtc` acceptance and immediate revocation override.
+- [x] **PSS/MOD-0035 Security & Eventing Owner:** maximum event age is 24 hours and allowed future skew is 2
+  minutes against authoritative UTC, with inclusive exact boundaries and fail-closed retry/replay behavior.
+- [x] **PSS/MOD-0035 Security & Eventing Owner:** planned dual approval, emergency Security Owner authority,
+  24-hour retrospective review, irreversible generation and atomic immutable local audit intent are binding.
+- [x] **PSS/MOD-0035 Security & Eventing Owner:** universal production-reject matrix approved for all four
   test-only signing identities/KeyIds, including valid-signature negative cases.
 - [x] PPM/shared-eventing regression is green without changing its credentials, identity, fixture, signing input
   or behavior: 75 passed, 1 standalone-Mongo environment skip, 0 failed; shared canonical/outbox tests 33/33 passed.
 
-**Promotion decision:** not yet a `ready-for-dev` candidate. When the four PSS-owned policy items above and the
-PPM regression gate close, all pre-development decisions are complete and the amendment becomes an explicit
-`ready-for-dev` promotion candidate. Production keys, broker provisioning and live delivery remain later runtime
-evidence; explicit runtime authority and a separately scoped implementation worktree are still mandatory before
-any code or deployment change.
+**Promotion decision:** **READY-FOR-DEV / NON-RUNTIME implementation handoff.** All pre-development decisions
+for this named Gate I slice are closed. Production identities/keys/vaults, broker provisioning, live delivery
+and executable runtime tests remain later runtime evidence rather than design blockers. Explicit runtime
+authority and a separately scoped implementation worktree are still mandatory before code or deployment change.
 
 ## Amendment 19. Implementation Notes
 - Reuse shared canonical UTF-8 payload/outbox mechanics; DTO construction and identity remain producer-owned.
 - Onboarding is deny-by-default. Ambiguous/duplicate/unknown/incomplete configuration fails startup.
 - Stable reason codes may be logged; raw headers, payload, signature, key, secret, credential and canonical bytes
-  may not. This amendment changes no runtime and leaves all onboarding gates open.
+  may not. This amendment changes no runtime; it closes design gates only.
 
 ## Amendment 20. Follow-up Items
 - [x] Reconcile four exact producer-owned canonical fixtures, checksums and expected test signatures without
   changing owner-supplied event identities or copying test keys into PSS governance.
-- [ ] PSS/MOD-0035 Security & Eventing Owner records the overlap, freshness/skew, revocation and universal
+- [x] PSS/MOD-0035 Security & Eventing Owner recorded the overlap, freshness/skew, revocation and universal
   test-identity rejection decisions named in Amendment 18.
-- [ ] Prepare a separately approved executable amendment/worktree only after the four PSS security-policy gates
-  in Amendment 18 close and explicit runtime authority is granted.
+- [ ] Obtain explicit runtime authority in a separately scoped implementation worktree before any code,
+  production allowlist/key/vault, broker or deployment change.
 - [ ] Preserve and rerun the PPM signed-event regression suite for every future onboarding.
