@@ -1,0 +1,24 @@
+{
+  "classification": "TEST-ONLY-NON-PRODUCTION",
+  "input": {
+    "tenantId": "72000000-0000-4000-8000-000000000004",
+    "actorId": "72000000-0000-4000-8000-000000000002",
+    "executingService": "Diten.DecisionIntelligenceService",
+    "delegated": false,
+    "verificationOutcome": "Verified"
+  },
+  "expectedAuditEventProvenance": {
+    "actorId": "72000000-0000-4000-8000-000000000002",
+    "metadata": {
+      "ExecutingService": "Diten.DecisionIntelligenceService"
+    }
+  },
+  "mustOmitMetadataFields": [
+    "DelegatedActorId",
+    "DelegatingPrincipalId",
+    "DelegationId",
+    "DelegatedOperationId",
+    "DelegatedPermission",
+    "DelegationVerifiedAtUtc"
+  ]
+}

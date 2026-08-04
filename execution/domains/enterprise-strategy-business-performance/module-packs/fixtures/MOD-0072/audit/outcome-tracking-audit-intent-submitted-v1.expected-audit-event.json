@@ -1,1 +1,23 @@
-{"tenantId":"72000000-0000-4000-8000-000000000004","correlationId":"72000000-0000-4000-8000-000000000005","actorType":"TenantUser","actorId":"72000000-0000-4000-8000-000000000002","category":"Integration","entityType":"Outcome","entityId":"72000000-0000-4000-8000-000000000003","operation":"Create","outcome":"Succeeded","occurredAtUtc":"2026-08-04T12:00:00.0000000Z","sourceService":"Diten.DecisionIntelligenceService","ModuleCode":"MOD-0072","sourceEventId":"72000000-0000-4000-8000-000000000001","sourceEventName":"decision-intelligence.outcome-tracking-audit-intent.submitted.v1","sourceEventVersion":1,"isMetaAudit":false,"redactionStatus":"None"}
+{
+  "inputEnvelope": {
+    "eventId": "72000000-0000-4000-8000-000000000001",
+    "eventName": "decision-intelligence.outcome-tracking-audit-intent.submitted.v1",
+    "eventVersion": 1,
+    "moduleCode": "MOD-0072",
+    "tenantId": "72000000-0000-4000-8000-000000000004",
+    "correlationId": "72000000-0000-4000-8000-000000000005",
+    "producer": "Diten.DecisionIntelligenceService",
+    "causationId": null,
+    "occurredAtUtc": "2026-08-04T12:00:00.0000000Z"
+  },
+  "expectedAuditEvent": {
+    "sourceService": "Diten.DecisionIntelligenceService",
+    "sourceModule": "MOD-0072",
+    "category": "AuditCategory.Integration",
+    "entityType": "OutcomeTracking.Outcome",
+    "entityId": "72000000-0000-4000-8000-000000000003",
+    "operation": "AuditOperation.Create",
+    "actorId": "72000000-0000-4000-8000-000000000002",
+    "occurredAtUtc": "2026-08-04T12:00:00.0000000Z"
+  }
+}

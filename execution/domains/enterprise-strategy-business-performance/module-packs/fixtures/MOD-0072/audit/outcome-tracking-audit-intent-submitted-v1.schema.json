@@ -1,1 +1,28 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"urn:diten:decision-intelligence:outcome-tracking-audit-intent-submitted:v1","title":"OutcomeTrackingAuditIntentSubmittedV1 canonical payload","type":"object","additionalProperties":false,"required":["auditIntentId","actorId","entityType","entityId","mutation","occurredAtUtc"],"properties":{"auditIntentId":{"type":"string","format":"uuid"},"actorId":{"type":"string","format":"uuid"},"entityType":{"type":"string","enum":["Outcome","OutcomeVersion","OutcomeMeasurement"]},"entityId":{"type":"string","format":"uuid"},"mutation":{"type":"string","enum":["Created","Retired","Published","Appended","Corrected"]},"occurredAtUtc":{"type":"string","format":"date-time","pattern":"Z$"}},"allOf":[{"if":{"properties":{"entityType":{"const":"Outcome"}},"required":["entityType"]},"then":{"properties":{"mutation":{"enum":["Created","Retired"]}}}},{"if":{"properties":{"entityType":{"const":"OutcomeVersion"}},"required":["entityType"]},"then":{"properties":{"mutation":{"const":"Published"}}}},{"if":{"properties":{"entityType":{"const":"OutcomeMeasurement"}},"required":["entityType"]},"then":{"properties":{"mutation":{"enum":["Appended","Corrected"]}}}}]}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:diten:decision-intelligence:outcome-tracking-audit-intent-submitted:v1",
+  "title": "OutcomeTrackingAuditIntentSubmittedV1 canonical payload",
+  "x-producer": "Diten.DecisionIntelligenceService",
+  "x-moduleCode": "MOD-0072",
+  "x-eventName": "decision-intelligence.outcome-tracking-audit-intent.submitted.v1",
+  "x-eventVersion": 1,
+  "x-profile": "MinimalMutationAuditV1",
+  "type": "object",
+  "required": ["auditIntentId", "actorId", "entityType", "entityId", "mutation", "occurredAtUtc"],
+  "properties": {
+    "auditIntentId": {"type": "string", "format": "uuid"},
+    "actorId": {"type": "string", "format": "uuid"},
+    "entityType": {"type": "string", "enum": ["Outcome", "OutcomeVersion", "OutcomeMeasurement"]},
+    "entityId": {"type": "string", "format": "uuid"},
+    "mutation": {"type": "string", "enum": ["Created", "Retired", "Published", "Appended", "Corrected"]},
+    "occurredAtUtc": {"type": "string", "format": "date-time", "pattern": "Z$"}
+  },
+  "oneOf": [
+    {"properties": {"entityType": {"const": "Outcome"}, "mutation": {"const": "Created"}}},
+    {"properties": {"entityType": {"const": "Outcome"}, "mutation": {"const": "Retired"}}},
+    {"properties": {"entityType": {"const": "OutcomeVersion"}, "mutation": {"const": "Published"}}},
+    {"properties": {"entityType": {"const": "OutcomeMeasurement"}, "mutation": {"const": "Appended"}}},
+    {"properties": {"entityType": {"const": "OutcomeMeasurement"}, "mutation": {"const": "Corrected"}}}
+  ],
+  "additionalProperties": false
+}

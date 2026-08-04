@@ -1,0 +1,87 @@
+{
+  "contractIdentity": {
+    "producer": "Diten.DecisionIntelligenceService",
+    "moduleCode": "MOD-0072",
+    "eventName": "decision-intelligence.outcome-tracking-audit-intent.submitted.v1",
+    "eventVersion": 1,
+    "profile": "MinimalMutationAuditV1",
+    "schemaId": "urn:diten:decision-intelligence:outcome-tracking-audit-intent-submitted:v1"
+  },
+  "pairBinding": {
+    "canonicalFixture": "outcome-tracking-audit-intent-submitted-v1.canonical.json",
+    "checksumFixture": "outcome-tracking-audit-intent-submitted-v1.canonical.sha256",
+    "schemaFixture": "outcome-tracking-audit-intent-submitted-v1.schema.json",
+    "expectedProjectionFixture": "outcome-tracking-audit-intent-submitted-v1.expected-audit-event.json",
+    "canonicalByteLength": 246,
+    "canonicalSha256": "6e1e750ffddc6f65d45556e703b0aa282b8469dec00bcc516a7a0a5f823cc2a3",
+    "checksumRecord": "64 lowercase hexadecimal characters followed by exactly one LF; no filename decoration",
+    "verificationOrder": [
+      "resolve exact case-sensitive sibling basenames",
+      "verify checksum record format",
+      "verify canonical bytes before deserialization",
+      "verify schema $id and five identity constants",
+      "verify envelope identity equals schema identity",
+      "validate canonical payload and exact entity/mutation pair",
+      "verify expected SourceService/SourceModule projection"
+    ],
+    "mustBindInOneTestCase": true
+  },
+  "positiveAllowlist": [
+    {"id":"P01","entityType":"Outcome","mutation":"Created","auditEntityType":"OutcomeTracking.Outcome","auditOperation":"AuditOperation.Create"},
+    {"id":"P02","entityType":"Outcome","mutation":"Retired","auditEntityType":"OutcomeTracking.Outcome","auditOperation":"AuditOperation.Deactivate"},
+    {"id":"P03","entityType":"OutcomeVersion","mutation":"Published","auditEntityType":"OutcomeTracking.OutcomeVersion","auditOperation":"AuditOperation.Activate"},
+    {"id":"P04","entityType":"OutcomeMeasurement","mutation":"Appended","auditEntityType":"OutcomeTracking.OutcomeMeasurement","auditOperation":"AuditOperation.Create"},
+    {"id":"P05","entityType":"OutcomeMeasurement","mutation":"Corrected","auditEntityType":"OutcomeTracking.OutcomeMeasurement","auditOperation":"AuditOperation.Update"}
+  ],
+  "negativeCrossPairs": [
+    {"id":"NXP01","entityType":"Outcome","mutation":"Published"},
+    {"id":"NXP02","entityType":"Outcome","mutation":"Appended"},
+    {"id":"NXP03","entityType":"Outcome","mutation":"Corrected"},
+    {"id":"NXP04","entityType":"OutcomeVersion","mutation":"Created"},
+    {"id":"NXP05","entityType":"OutcomeVersion","mutation":"Retired"},
+    {"id":"NXP06","entityType":"OutcomeVersion","mutation":"Appended"},
+    {"id":"NXP07","entityType":"OutcomeVersion","mutation":"Corrected"},
+    {"id":"NXP08","entityType":"OutcomeMeasurement","mutation":"Created"},
+    {"id":"NXP09","entityType":"OutcomeMeasurement","mutation":"Retired"},
+    {"id":"NXP10","entityType":"OutcomeMeasurement","mutation":"Published"}
+  ],
+  "negativeContractCases": [
+    {"id":"NC01","case":"checksum-filename","mutation":{"checksumFixture":"renamed.canonical.sha256"}},
+    {"id":"NC02","case":"checksum-format","mutation":{"checksumRecord":"6e1e750ffddc6f65d45556e703b0aa282b8469dec00bcc516a7a0a5f823cc2a3  outcome-tracking-audit-intent-submitted-v1.canonical.json\n"}},
+    {"id":"NC03","case":"checksum-value","mutation":{"canonicalSha256":"0000000000000000000000000000000000000000000000000000000000000000"}},
+    {"id":"NC04","case":"schema-id","mutation":{"schemaId":"urn:diten:decision-intelligence:wrong:v1"}},
+    {"id":"NC05","case":"schema-producer","mutation":{"x-producer":"Diten.FpaService"}},
+    {"id":"NC06","case":"schema-module-code","mutation":{"x-moduleCode":"MOD-0138"}},
+    {"id":"NC07","case":"schema-event-name","mutation":{"x-eventName":"decision-intelligence.outcome-tracking-audit-intent.submitted.v2"}},
+    {"id":"NC08","case":"schema-event-version","mutation":{"x-eventVersion":2}},
+    {"id":"NC09","case":"schema-profile","mutation":{"x-profile":"OtherProfile"}},
+    {"id":"NC10","case":"schema-checksum-pair","mutation":{"schemaFixture":"foreign.schema.json"}},
+    {"id":"NC11","case":"source-module","mutation":{"sourceModule":"MOD-0138"}},
+    {"id":"NC12","case":"module-code","mutation":{"moduleCode":"MOD-0138"}},
+    {"id":"NC13","case":"event-name","mutation":{"eventName":"decision-intelligence.outcome-tracking-audit-intent.submitted.v2"}},
+    {"id":"NC14","case":"event-version-value","mutation":{"eventVersion":2}},
+    {"id":"NC15","case":"event-version-type","mutation":{"eventVersion":"1"}},
+    {"id":"NC16","case":"noncanonical-property-order","mutation":{"propertyOrder":["actorId","auditIntentId","entityType","entityId","mutation","occurredAtUtc"]}},
+    {"id":"NC17","case":"noncanonical-trailing-lf","mutation":{"appendBytesHex":"0a"}},
+    {"id":"NC18","case":"noncanonical-bom","mutation":{"prependBytesHex":"efbbbf"}},
+    {"id":"NC19","case":"noncanonical-whitespace","mutation":{"insertAscii":" "}},
+    {"id":"NC20","case":"unknown-property","mutation":{"addProperty":{"unexpected":true}}},
+    {"id":"NC21","case":"unknown-entity","mutation":{"entityType":"DecisionOutcomeLink","mutation":"Created"}},
+    {"id":"NC22","case":"unknown-mutation","mutation":{"entityType":"Outcome","mutation":"Updated"}},
+    {"id":"NC23","case":"tenant-mismatch","mutation":{"envelopeTenantId":"72000000-0000-4000-8000-000000000099"}},
+    {"id":"NC24","case":"actor-mismatch","mutation":{"verifiedDelegatedActorId":"72000000-0000-4000-8000-000000000099"}},
+    {"id":"NC25","case":"operation-mismatch","mutation":{"delegatedOperationId":"outcome-tracking.outcomes.retire"}},
+    {"id":"NC26","case":"excluded-metric-entity","mutation":{"entityType":"OutcomeMetric","mutation":"Created"}},
+    {"id":"NC27","case":"excluded-scale-entity","mutation":{"entityType":"QualitativeScale","mutation":"Created"}},
+    {"id":"NC28","case":"missing-required-property","mutation":{"removeProperty":"actorId"}},
+    {"id":"NC29","case":"case-changed-property","mutation":{"renameProperty":{"actorId":"ActorId"}}},
+    {"id":"NC30","case":"event-type","mutation":{"eventType":"OutcomeTrackingAuditIntentSubmittedV2"}},
+    {"id":"NC31","case":"checksum-sibling-pair","mutation":{"canonicalFixture":"foreign.canonical.json"}}
+  ],
+  "negativeExpectedDisposition": {
+    "terminal": true,
+    "auditEventCreated": false,
+    "retry": false,
+    "normalizationOrFallback": false
+  }
+}

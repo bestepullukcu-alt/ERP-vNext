@@ -1,0 +1,43 @@
+{
+  "classification": "TEST-ONLY-NON-PRODUCTION",
+  "input": {
+    "issuer": "diten-auth-service",
+    "audience": "diten-decision-intelligence-service",
+    "servicePrincipalId": "72000000-0000-4000-8000-000000000006",
+    "clientId": "diten.decision-intelligence",
+    "authorizedParty": "diten.decision-intelligence",
+    "actorType": "service",
+    "tenantId": "72000000-0000-4000-8000-000000000004",
+    "delegatedActorId": "72000000-0000-4000-8000-000000000002",
+    "delegatedActorType": "tenant_user",
+    "delegationId": "72000000-0000-4000-8000-000000000007",
+    "operationId": "outcome-tracking.outcomes.create",
+    "permission": "decision-intelligence.outcomes.create",
+    "scope": "diten.s2s.delegated.invoke",
+    "requestHash": "YjdhZjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA",
+    "nonce": "72000000000000008000000000000008",
+    "jti": "72000000-0000-4000-8000-000000000009",
+    "issuedAt": 1785844500,
+    "notBefore": 1785844500,
+    "expiresAt": 1785844800,
+    "tenantGrantVersion": 17,
+    "servicePrincipalVersion": 3,
+    "credentialGeneration": 2,
+    "delegationVerifiedAtUtc": "2026-08-04T12:00:00.0000000Z",
+    "authenticationMethod": "DelegatedActorProofV1",
+    "verificationOutcome": "Verified"
+  },
+  "expectedAuditEventProvenance": {
+    "actorId": "72000000-0000-4000-8000-000000000002",
+    "metadata": {
+      "DelegatedActorId": "72000000-0000-4000-8000-000000000002",
+      "DelegatingPrincipalId": "72000000-0000-4000-8000-000000000006",
+      "DelegationId": "72000000-0000-4000-8000-000000000007",
+      "DelegatedOperationId": "outcome-tracking.outcomes.create",
+      "DelegatedPermission": "decision-intelligence.outcomes.create",
+      "DelegationVerifiedAtUtc": "2026-08-04T12:00:00.0000000Z",
+      "ExecutingService": "Diten.DecisionIntelligenceService"
+    }
+  },
+  "forbiddenProjectionFields": ["token","authorization","nonce","jti","requestHash","rawClaims","credential","secret","requestBody"]
+}

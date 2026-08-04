@@ -1,0 +1,27 @@
+{
+  "classification": "TEST-ONLY-NON-PRODUCTION",
+  "baselineFixture": "outcome-tracking-audit-intent-submitted-v1.delegated-provenance.positive.json",
+  "cases": [
+    {"id":"DPN01","case":"missing-delegation-id","remove":"input.delegationId"},
+    {"id":"DPN02","case":"broken-proof-signature","set":{"input.verificationOutcome":"SignatureInvalid"}},
+    {"id":"DPN03","case":"unverified-delegation","set":{"input.verificationOutcome":"Unverified"}},
+    {"id":"DPN04","case":"tenant-mismatch","set":{"input.tenantId":"72000000-0000-4000-8000-000000000099"}},
+    {"id":"DPN05","case":"actor-mismatch","set":{"input.delegatedActorId":"72000000-0000-4000-8000-000000000099"}},
+    {"id":"DPN06","case":"operation-mismatch","set":{"input.operationId":"outcome-tracking.outcomes.retire"}},
+    {"id":"DPN07","case":"permission-mismatch","set":{"input.permission":"decision-intelligence.outcomes.version"}},
+    {"id":"DPN08","case":"request-hash-mismatch","set":{"input.requestHash":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}},
+    {"id":"DPN09","case":"audience-mismatch","set":{"input.audience":"diten-fpa-service"}},
+    {"id":"DPN10","case":"multiple-audience","set":{"input.audience":["diten-decision-intelligence-service","diten-fpa-service"]}},
+    {"id":"DPN11","case":"client-authorized-party-mismatch","set":{"input.authorizedParty":"diten.fpa"}},
+    {"id":"DPN12","case":"scope-mismatch","set":{"input.scope":"diten.s2s.invoke"}},
+    {"id":"DPN13","case":"replayed-jti-nonce","set":{"input.replayReceipt":"AlreadyConsumed"}},
+    {"id":"DPN14","case":"stale-authorization-version","set":{"input.tenantGrantVersion":16}},
+    {"id":"DPN15","case":"expired-proof","set":{"input.expiresAt":1785844499}}
+  ],
+  "expectedDisposition": {
+    "terminalSecurityFailure": true,
+    "auditEventCreated": false,
+    "retry": false,
+    "existenceDisclosure": false
+  }
+}

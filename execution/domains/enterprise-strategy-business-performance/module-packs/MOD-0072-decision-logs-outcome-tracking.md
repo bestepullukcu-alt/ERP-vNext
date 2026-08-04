@@ -195,9 +195,10 @@ exclusively the technical optimistic-concurrency token and never appears as a bu
 
 ## 5. Repo Scope
 
-This authoring job owns only:
+This governance authoring job owns only:
 
 - `execution/domains/enterprise-strategy-business-performance/module-packs/MOD-0072-decision-logs-outcome-tracking.md`
+- `execution/domains/enterprise-strategy-business-performance/module-packs/fixtures/MOD-0072/audit/**`
 
 Any future implementation remains non-executable and requires this pack to become `approved` or
 `ready-for-dev`, explicit runtime/deployment authority, authoritative port, approved S2S/MOD-0018 and
@@ -753,13 +754,13 @@ envelope metadata, never payload fields. Unknown, missing, extra, case-changed o
 full entities; before/after snapshots; actual values; periods; evidence; permission inventories; secrets; and
 unbounded dictionaries/graphs are rejected. The event-specific initial allowlist is closed:
 
-| Exact `entityType` | Exact `mutation` | MOD-0021 canonical projection |
+| Exact `entityType` | Exact producer `mutation` | Exact MOD-0021 AuditEvent projection |
 |---|---|---|
-| `Outcome` | `Created` | entity `Outcome`; operation `Create` |
-| `Outcome` | `Retired` | entity `Outcome`; operation `Retire` |
-| `OutcomeVersion` | `Published` | entity `OutcomeVersion`; operation `PublishVersion` |
-| `OutcomeMeasurement` | `Appended` | entity `OutcomeMeasurement`; operation `Append` |
-| `OutcomeMeasurement` | `Corrected` | entity `OutcomeMeasurement`; operation `Correct` |
+| `Outcome` | `Created` | `OutcomeTracking.Outcome` / `AuditOperation.Create` |
+| `Outcome` | `Retired` | `OutcomeTracking.Outcome` / `AuditOperation.Deactivate` |
+| `OutcomeVersion` | `Published` | `OutcomeTracking.OutcomeVersion` / `AuditOperation.Activate` |
+| `OutcomeMeasurement` | `Appended` | `OutcomeTracking.OutcomeMeasurement` / `AuditOperation.Create` |
+| `OutcomeMeasurement` | `Corrected` | `OutcomeTracking.OutcomeMeasurement` / `AuditOperation.Update` |
 
 No other pair is accepted. Read/reference validation emits no mutation audit event. DecisionOutcomeLink audit
 publication is outside this initial event allowlist and remains blocked until a separately approved event-version
@@ -785,25 +786,46 @@ bounded overlap, expiry/revocation, fixed-time verification, freshness/skew, hea
 retry/DLQ/cancellation and redaction behavior without changing the PPM regression fixture.
 
 The authoritative governance fixture root is
-`fixtures/MOD-0072/audit/` relative to this pack. Its closed file set is:
+`fixtures/MOD-0072/audit/` relative to this pack. Its exact baseline and companion evidence set is:
 
 | Fixture | Exact purpose |
 |---|---|
 | `outcome-tracking-audit-intent-submitted-v1.canonical.json` | Exact minified UTF-8 canonical payload; 246 bytes, no BOM and no trailing newline |
-| `outcome-tracking-audit-intent-submitted-v1.expected-audit-event.json` | Exact MOD-0021 projection with `ModuleCode` = `MOD-0072` |
-| `outcome-tracking-audit-intent-submitted-v1.schema.json` | Draft 2020-12 six-field schema and closed entity/mutation pair rules |
-| `outcome-tracking-audit-intent-submitted-v1.canonical.sha256` | Lowercase SHA-256 checksum record for the canonical payload |
+| `outcome-tracking-audit-intent-submitted-v1.expected-audit-event.json` | Exact MOD-0021 projection with `sourceService` and `sourceModule = MOD-0072` |
+| `outcome-tracking-audit-intent-submitted-v1.schema.json` | Exact `$id`, five identity constants, six-field schema and five closed entity/mutation pairs |
+| `outcome-tracking-audit-intent-submitted-v1.canonical.sha256` | Exact 64 lowercase hex + one LF checksum record; no filename decoration |
 | `outcome-tracking-audit-intent-submitted-v1.signing-vector.json` | DI-specific test-only envelope/key/signing-input vector |
 | `outcome-tracking-audit-intent-submitted-v1.expected-signature.json` | DI-specific test-only expected HMAC-SHA256 signature |
+| `outcome-tracking-audit-intent-submitted-v1.compatibility-matrix.json` | Schema/checksum/envelope/projection pair binding, five positives, ten invalid cross-pairs and complete contract negatives |
+| `outcome-tracking-audit-intent-submitted-v1.delegated-provenance.positive.json` | Verified delegated actor/request binding and expected immutable AuditEvent provenance |
+| `outcome-tracking-audit-intent-submitted-v1.delegated-provenance.negative.json` | Missing/broken/mismatched delegated provenance terminal cases |
+| `outcome-tracking-audit-intent-submitted-v1.nondelegated-provenance.positive.json` | Non-delegated omission rule with authenticated `ExecutingService` retained |
 
 The canonical payload SHA-256 is exactly
 `6e1e750ffddc6f65d45556e703b0aa282b8469dec00bcc516a7a0a5f823cc2a3`. JSON property order is the literal
-file order and canonicalization never parses/re-serializes the bytes. EventVersion is a JSON numeric integer
-`1` in every envelope/vector/projection and rejects decimal-form or string-form alternatives. The expected
-MOD-0021 fixture maps category `Integration`, `ModuleCode` `MOD-0072` and the exact entity/operation projection
-declared above. The test-only key namespace, signing identity and expected signature are Decision
-Intelligence-specific; PPM, FP&A or any other producer
-key/id/secret/derived-material reuse is forbidden. Test-only vector material is never provisioned to runtime.
+file order and canonicalization never parses/re-serializes the bytes. The checksum record is exactly 65 bytes:
+the digest plus one LF, with no sibling filename. EventVersion is a JSON numeric integer `1` in every
+envelope/vector/projection and rejects decimal-form or string-form alternatives. The schema identity is the
+exact tuple `Diten.DecisionIntelligenceService + MOD-0072 +
+decision-intelligence.outcome-tracking-audit-intent.submitted.v1 + 1 + MinimalMutationAuditV1`. The expected
+MOD-0021 fixture maps `AuditCategory.Integration`, exact `sourceService`, exact `sourceModule = MOD-0072` and
+the exact entity/operation projection declared above. The test-only key namespace, signing identity and
+expected signature are Decision Intelligence-specific; PPM, FP&A or any other producer key/id/secret/
+derived-material reuse is forbidden. Test-only vector material is never provisioned to runtime.
+
+The compatibility matrix binds the exact case-sensitive canonical, checksum, schema and expected-projection
+sibling basenames in one verification case. Digest format/value is verified before deserialization; schema
+`$id` and all five constants must match the trusted envelope before the five exact allowlist pairs are
+evaluated. Any missing, renamed, foreign or mismatched pair member is terminal and creates no AuditEvent.
+The matrix covers all five positives, all ten invalid Cartesian cross-pairs and negative checksum, schema,
+SourceModule, ModuleCode/event/version/type, canonical-byte, tenant/actor/operation and unknown-property cases.
+
+Delegated provenance fixtures bind payload `actorId` to the verified effective actor and project exact
+`DelegatedActorId`, `DelegatingPrincipalId`, `DelegationId`, `DelegatedOperationId`, `DelegatedPermission`,
+`DelegationVerifiedAtUtc` and `ExecutingService` metadata without tokens, credentials, nonce, request body or
+unrestricted claims. Missing/broken/unverified provenance or tenant/actor/operation/permission/request binding
+mismatch is terminal with no AuditEvent and no retry. Non-delegated evidence omits every delegated/delegating
+field rather than writing null identities while retaining authenticated `ExecutingService`.
 
 MOD-0021 registers an explicit mapping for this exact producer/event version and fixture; event-name heuristics
 and generic catch-all mapping are forbidden. Its consumer transaction atomically commits inbox plus zero-or-one
@@ -867,8 +889,9 @@ runtime authority. This reconciliation satisfies none of those execution gates b
 38. Audit publication uses only `OutcomeTrackingAuditIntentSubmittedV1` / `decision-intelligence.outcome-tracking-audit-intent.submitted.v1` / numeric integer EventVersion `1` with the exact six-field Minimal Mutation Audit v1 payload and closed Outcome/version/measurement allowlist.
 39. Producer-local mutation/receipt/audit-intent/outbox atomicity, post-commit public `IEventBus`, exact MOD-0021 mapping fixture and exact MOD-0035 signed tuple are mandatory; no synchronous Platform dependency or direct broker/audit storage access exists.
 40. The PPM wrapper fixture remains unchanged and non-executable until every named bilateral, FU16, MOD-0021, MOD-0035, consumer-amendment, runtime-evidence and explicit-authority gate passes.
-41. The six-file governance fixture set is exact under `fixtures/MOD-0072/audit/`; canonical payload length is 246 bytes and SHA-256 is `6e1e750ffddc6f65d45556e703b0aa282b8469dec00bcc516a7a0a5f823cc2a3`.
+41. The ten-file governance fixture set is exact under `fixtures/MOD-0072/audit/`; canonical payload length is 246 bytes and SHA-256 is `6e1e750ffddc6f65d45556e703b0aa282b8469dec00bcc516a7a0a5f823cc2a3`.
 42. All audit envelope/projection/vector EventVersion values are JSON numeric integer `1`; DI test-only signing material is isolated from PPM/FP&A and has no runtime authority.
+43. Checksum/schema/envelope/projection pair binding, exact `SourceModule`, all five positive and ten invalid cross-pairs, complete contract negatives and delegated/non-delegated provenance fixtures fail closed as specified.
 
 ## 17. Test Expectations
 
@@ -922,6 +945,12 @@ runtime authority. This reconciliation satisfies none of those execution gates b
   property order, canonical byte length/SHA match, checksum verification passes and any byte/order change fails.
 - Signing vector: recomputed DI test-only HMAC equals the expected lowercase signature; EventVersion has integer
   JSON type/value `1`, and scans reject PPM/FP&A signing identity, key-id, secret or derived-material reuse.
+- Compatibility matrix: one bound test resolves exact sibling basenames, verifies 65-byte checksum format/value
+  before parse, exact schema `$id`/five constants, envelope identity and expected `SourceService`/`SourceModule`;
+  five positives pass and ten cross-pairs plus every named contract negative create no AuditEvent.
+- Delegated provenance: verified actor/service/request metadata produces the exact immutable provenance block;
+  missing/broken/unverified or tenant/actor/operation/permission/request mismatch is terminal. Non-delegated
+  evidence omits delegated fields and retains only authenticated `ExecutingService`.
 - Migration: prototype quarantine inventory/checksum; no legacy ES record is silently promoted or assigned a
   default tenant; explicit mapping/rejection/quarantine evidence for any future migration.
 - UI: Slim file contract, parent maximum 7, DataTable v2 verifier, seven-language resources, explicit tenant layout, read-only history, no evidence/PPM actual editor/approval action.
@@ -943,7 +972,8 @@ runtime authority. This reconciliation satisfies none of those execution gates b
 - [x] Transaction/idempotency/permanent receipt/unknown-commit behavior, projection non-persistence, post-commit IEventBus boundary and NO-OP migration are closed.
 - [x] Exact FU16 audience/client/owner, operation-to-permission manifest and delegated actor/request binding are documented; runtime provisioning/evidence remains separately blocked.
 - [x] Exact MOD-0021 mapping/fixture and MOD-0035 signed-producer onboarding contracts are documented; runtime integration/evidence remains separately blocked.
-- [x] Exact six-file audit fixture set, canonical checksum, integer EventVersion and DI-only test signing vector are recorded; runtime credentials remain separately blocked.
+- [x] Exact ten-file audit fixture set, canonical checksum, schema/pair binding, full allowlist/negative matrix,
+      delegated provenance and DI-only test signing vector are recorded; runtime credentials remain blocked.
 - [ ] Exact immutable Metric/Scale bootstrap fixture content is approved; without it quantitative/qualitative activation remains blocked.
 - [x] Metric/Scale administration is deferred to a separate amendment and the initial slice adds no commands/UI/permissions.
 - [x] First migration slice is NO-OP/quarantine-only; any later transformation requires separate authority.
@@ -994,3 +1024,4 @@ Only the following B-class blockers remain:
 | 2026-08-04 | Closed OutcomeTracking Core composition: exact layer/test paths, service-local base, eleven collections and tenant-first indexes, atomic mutation/receipt/audit/outbox transaction, permanent idempotency receipts, unknown-commit reconciliation, non-persisted projections, post-commit public IEventBus boundary and NO-OP migration. Kept only named port/PSS/bootstrap/deployment/MOD-0117 activation blockers. | User / Enterprise Strategy Control Tower |
 | 2026-08-04 | Reconciled Gate I onboarding from FU16 `40e38905`, MOD-0021 `de81a135` and MOD-0035 `23f290ec`: exact service audience/client/owner and operation-permission manifest; exact OutcomeTracking audit event, six-field payload and mutation allowlist; atomic local intent/outbox, post-commit IEventBus, consumer/signing fixtures and unchanged non-executable PPM wrapper boundary. Status remains draft; production authority remains none. | User / Enterprise Strategy Control Tower |
 | 2026-08-04 | Closed the MOD-0072 audit governance fixture: six exact fixture files, numeric integer EventVersion `1`, ModuleCode `MOD-0072`, 246-byte ordered/minified UTF-8 payload, SHA-256 `6e1e750f...cc2a3`, exact MOD-0021 projection and DI-only test signing vector/signature. No permission, Outcome semantic, status or production authority changed. | User / Enterprise Strategy Control Tower |
+| 2026-08-04 | Completed MOD-0072 audit fixtures against MOD-0021 checkpoint `9b75c213`: exact 65-byte checksum record, schema identity/pair enforcement, `SourceModule`, five-positive/ten-cross-pair and contract-negative matrix, delegated/non-delegated provenance fixtures. Canonical 246 bytes/SHA/signature, seven permissions, Outcome semantics and PPM no-copy remain unchanged; no runtime authority. | User / Enterprise Strategy Control Tower |
