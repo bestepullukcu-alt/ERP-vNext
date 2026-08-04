@@ -596,3 +596,238 @@ for this ID.
 - Cross-Legal-Entity organization tree.
 - LegalEntityId inheritance from parent Organization Unit.
 - Materialized Manager Chain / deep-chain optimization.
+
+---
+
+## Amendment — MOD-0007 Decision Authority Provider
+
+> **Amendment status: DRAFT / NON-EXECUTABLE.** This amendment does not change the parent pack's `done` status,
+> does not reopen MOD-0288, and does not authorize implementation. It adds a proposed read-only provider contract
+> for the future MOD-0007 consumer. Execution remains blocked by the human-review items in §DA-18 and by the
+> dedicated S2S identity/delegation gate described in §DA-14.
+
+### DA-1. Module Summary
+
+MOD-0288 is the authoritative system of record for its tenant-scoped Person references and Positions. This
+amendment proposes a dedicated internal provider through which **MOD-0007 — Decision Authority Provider** may
+resolve a decision authority reference or test whether a new reference may be created. The provider is a
+zero-write query surface; it does not change existing Person or Position CRUD behavior.
+
+### DA-2. Ownership and Boundaries
+
+- MOD-0288 owns authoritative Person/Position existence, tenant visibility, lifecycle facts, and referenceability.
+- MOD-0007 owns decision/rationale records and the decision-authority reference it persists or consumes.
+- MOD-0288 does not decide approval, task, WorkCenter, DWS, delegation, or decision-governance policy.
+- MOD-0007 must not derive authority validity from display data or from a non-authoritative public endpoint.
+- This amendment does not call or authorize DCP-006 Gate 2 and does not modify WorkCenter, task, DWS, or approval
+  code. See [DCP-006](../../../portfolio/delivery-capability-packs/DCP-006-portfolio-delivery-process-core.md).
+
+### DA-3. Owned Contract Object
+
+The exact reference type is `DecisionAuthorityReferenceV1`. It contains **exactly four fields** and no extension
+bag, display projection, tenant, actor, eligibility, lifecycle, or provenance field:
+
+```text
+DecisionAuthorityReferenceV1
+  ContractName
+  ContractVersion
+  AuthorityKind
+  AuthorityId
+```
+
+Locked values and domains:
+
+| Field | Exact rule |
+|---|---|
+| `ContractName` | Must equal `management-governance.decision-authority-reference`. |
+| `ContractVersion` | Must equal `1.0`. |
+| `AuthorityKind` | Exact allowlist: `Person` or `Position`; no other value or alias. |
+| `AuthorityId` | Required, non-empty GUID identifying the selected MOD-0288 record. |
+
+Mode is request metadata and is not a fifth contract field. Tenant and actor come only from authenticated context
+and are never accepted in the contract or query payload.
+
+### DA-4. Provider Operations and Modes
+
+The proposed provider accepts one `DecisionAuthorityReferenceV1` plus one exact mode:
+
+| Mode | Supported | Meaning |
+|---|---:|---|
+| `HistoricalResolve` | Yes | Resolve a tenant-visible non-technically-deleted record for historical display/audit, even when it is no longer eligible for a new reference. |
+| `NewReferenceEligibility` | Yes | Confirm that the record is tenant-visible, active, effective at provider evaluation time, and referenceable. |
+| `CurrentSelectionEligibility` | No | Always `400`; MOD-0288 does not expose this mode through this contract. |
+
+Any missing, malformed, case-drifted, or unknown mode is `400`. The provider does not silently default a mode.
+
+### DA-5. Repo Scope
+
+This governance-only amendment changes only
+`execution/domains/platform-shared-services/module-packs/MOD-0288-organization-person-position-directory.md`.
+Any future implementation needs a separately approved executable amendment or follow-up pack with exact files.
+
+### DA-6. Protected Paths
+
+- `.antigravity/**`.
+- `services/Diten.Platform/**`, `services/Diten.AuthService/**`, and `services/Diten.Platform.Common/**` in this
+  governance-only amendment.
+- `gateway/Diten.ApiGateway/**` and `frontend/Diten.Web/**`; the provider has no browser or Gateway route.
+- All public Person/Position controllers, routes, DTOs, CRUD handlers, and their current behavior.
+- WorkCenter, Tasks/MOD-0024, DWS, Workflow/Approvals/MOD-0023, and DCP-006 Gate 2 code and governance.
+- Other domain services and module packs.
+
+### DA-7. Dependencies
+
+- MOD-0288 Person/Position repositories remain the authoritative data source.
+- MOD-0007 must supply bilateral consumer/provider contract fixtures before implementation may be approved.
+- Authentication, S2S scope, service identity, actor delegation, revocation, and replay handling depend on a
+  dedicated **MOD-0018 Gate I follow-up**. The current MOD-0018 parent and listed FU chain do not define that
+  executable identity contract; see [MOD-0018](MOD-0018-rbac-abac-authorization.md).
+- No dependency on Person batch lookup-validation, Position public CRUD GET, Gateway, browser, Task, WorkCenter,
+  DWS, approval, or DCP-006 Gate 2 is introduced.
+
+### DA-8. Runtime Constraints
+
+- Dedicated internal S2S provider only; no browser-facing or Gateway route.
+- Zero writes, events, audit-side mutations, task creation, approval creation, or lifecycle changes.
+- Authenticate and validate required context **before** any Person/Position lookup.
+- Tenant and actor are read only from authenticated/delegated context; request-supplied tenant/actor is forbidden.
+- Use a bounded timeout. The authority decision has no retry and no cache: a caller must not reuse stale provider
+  output as current authority.
+- Dependency timeout, unavailability, or malformed provider/dependency response fails closed as `503`.
+- Person batch endpoint is not an authoritative-provider substitute. Position CRUD `GET` is not authoritative
+  validation.
+
+### DA-9. Layout and Shell Contract
+
+`shell: none` remains unchanged. This amendment adds no Razor view, frontend route, JavaScript, DataTable, RESX,
+browser call, or Gateway exposure.
+
+### DA-10. Backend File Convention
+
+No backend file is authorized by this draft. A future executable pack must define a dedicated internal query,
+handler, provider interface, transport adapter, response envelope, S2S policy, timeout configuration, and tests;
+it must not retrofit authoritative semantics into the existing public Person/Position CRUD handlers.
+
+### DA-11. Frontend File Contract
+
+No frontend files. The contract is not selectable or callable from a browser surface. Any future MOD-0007 UI
+calls its own backend, which in turn uses the dedicated S2S provider after Gate I is satisfied.
+
+### DA-12. Validation Rules and Lifecycle Matrix
+
+Common validation precedes lookup: exact contract name/version, supported mode, `AuthorityKind` allowlist, and
+non-empty `AuthorityId`. The authenticated tenant execution filter makes missing, cross-tenant, technically
+soft-deleted, and otherwise invisible records indistinguishable.
+
+| Kind | Mode | Authoritative lifecycle rule | Result |
+|---|---|---|---|
+| `Person` | `HistoricalResolve` | Same-tenant and `IsDeleted == false`; `Inactive`, `Deprecated`, and business `Status == Deleted` remain resolvable for history. | Success; missing/cross-tenant/technical soft-delete is `404`. |
+| `Person` | `NewReferenceEligibility` | Same-tenant, `IsDeleted == false`, `Status == Active`, and `IsReferenceable == true`; an effective-at-time rule is additionally required but is absent from current Person code. | **Human-review blocked**; it must not ship by treating “Active” as guessed effective dating. |
+| `Position` | `HistoricalResolve` | Same-tenant and `IsDeleted == false`; `IsArchived`, `Draft`, `Frozen`, `Closed`, future-effective, and past-effective records remain resolvable for history. | Success; missing/cross-tenant/technical soft-delete is `404`. |
+| `Position` | `NewReferenceEligibility` | Same-tenant, `IsDeleted == false`, `IsArchived == false`, `Status == Active`, `EffectiveFrom <= now`, and (`EffectiveTo == null` or `EffectiveTo > now`). | Success when all predicates pass; otherwise visible-but-ineligible is `409`. |
+
+Intervals use `[EffectiveFrom, EffectiveTo)`: equality at `EffectiveTo` is no longer effective. For Position,
+`EffectiveFrom == null` is not proven effective for this stricter provider and is therefore `409` under
+`NewReferenceEligibility`. `HistoricalResolve` never converts an inactive/archived/out-of-date visible record
+into a `404`.
+
+Person `Status == Deleted` is a **business status** and is distinct from technical `IsDeleted == true`. The former
+may resolve historically; the latter is excluded by the tenant execution filter and is indistinguishable from
+missing/cross-tenant as `404`. This provider must not bypass the execution filter to reveal tombstones.
+
+### DA-13. Failure Paths to Verify
+
+| Failure | Required result |
+|---|---:|
+| Malformed contract, unsupported/case-drifted mode, unsupported/case-drifted version/kind, or `CurrentSelectionEligibility` | `400` |
+| Missing/invalid authentication or required tenant/actor context | `401` |
+| Authenticated caller lacks the exact S2S scope, consumer profile, or valid actor delegation | `403` |
+| Missing, cross-tenant, technically soft-deleted, or otherwise invisible authority | indistinguishable `404` |
+| Visible authority fails `NewReferenceEligibility` lifecycle/referenceability predicates | `409` |
+| Provider/dependency timeout, unavailable transport/repository, or malformed dependency response | `503` |
+
+Authentication/context failure must be returned before lookup; tests must prove the repository/provider lookup was
+not invoked for `401` and `403` paths.
+
+### DA-14. Authorization Convention and Exact Consumer Allowlist
+
+The allowlist is closed and exact:
+
+| Consumer profile | `HistoricalResolve` | `NewReferenceEligibility` | `CurrentSelectionEligibility` |
+|---|---:|---:|---:|
+| `MOD-0007` | Allow | Allow | Deny (`400`) |
+| Any other profile, including generic platform/browser identities | Deny (`403`) | Deny (`403`) | Deny (`403`) |
+
+The dedicated S2S service identity, exact scope literal, signed/delegated actor evidence, revocation, replay, and
+tenant-binding rules are intentionally **not invented here**. They must be defined and approved by the MOD-0018
+Gate I follow-up. Until then, no identity can satisfy this allowlist and the provider is non-executable.
+
+### DA-15. Gateway and API Routing Decision
+
+Gateway change is forbidden. The future route, if approved, lives only on an internal service-to-service surface
+and is not registered in Ocelot, exposed through MVC, or callable by browser JavaScript. Existing public routes
+`/api/v1/platform/persons*` and `/api/platform/positions*` remain unchanged and are not aliases for this provider.
+
+### DA-16. Acceptance Criteria
+
+1. Parent frontmatter remains `status: done`; the amendment is visibly `DRAFT / NON-EXECUTABLE`.
+2. `DecisionAuthorityReferenceV1` has exactly the four fields in §DA-3, with the exact contract name/version and
+   `AuthorityKind` limited to `Person | Position`.
+3. Only `HistoricalResolve` and `NewReferenceEligibility` are supported; `CurrentSelectionEligibility` is `400`.
+4. The Person/Position matrix in §DA-12 is implemented without broadening visibility or bypassing soft-delete.
+5. Authentication/context and S2S authorization run before lookup; error mapping is exactly
+   `400/401/403/404/409/503` as §DA-13 defines.
+6. The provider is zero-write, bounded-timeout, no-retry, and non-authority-cacheable.
+7. Only the exact `MOD-0007` consumer profile/mode pairs in §DA-14 are permitted.
+8. Dedicated MOD-0018 Gate I S2S identity/delegation and bilateral MOD-0007 fixtures are approved before runtime.
+9. Public Person/Position endpoints and WorkCenter/task/DWS/approval behavior remain unchanged; Gate 2 is not called.
+
+### DA-17. Test Expectations
+
+- Bilateral MOD-0007 fixtures assert exact serialization/deserialization of all four fields and reject extras,
+  wrong casing, wrong name, wrong version, unknown kind, and unknown mode.
+- Matrix tests cover both kinds, both supported modes, all listed lifecycle states, both effective interval
+  boundaries, null Position dates, archive, business Person `Deleted`, technical soft-delete, missing, and
+  cross-tenant invisibility.
+- Authorization-order tests prove `401/403` performs zero repository lookup.
+- Status tests prove exact `400/401/403/404/409/503` mappings and indistinguishable `404` bodies.
+- Timeout/unavailable/malformed-dependency tests prove `503`, bounded cancellation, no retry, and no cached
+  authority fallback.
+- Architecture tests prove no public controller/Gateway/browser route and no write/event/task/approval/DWS call.
+- Regression tests prove existing Person batch and Position CRUD GET/public CRUD behavior is unchanged.
+
+### DA-18. Draft / Non-Executable Checklist
+
+- [x] Parent `done` status preserved.
+- [x] Exact four-field reference and Person/Position-only kind allowlist recorded.
+- [x] Provider modes, lifecycle matrix, failure mapping, protected paths, and no-Gateway boundary recorded.
+- [x] Current code reality inspected: Person has no effective dates; Position has status/archive/effective dates.
+- [ ] **HUMAN REVIEW BLOCKER:** choose an authoritative Person effective-at-time source/contract. Current Person
+  runtime cannot prove the required effective predicate, so Person `NewReferenceEligibility` is not executable.
+- [ ] **HUMAN REVIEW BLOCKER:** create/approve the dedicated MOD-0018 Gate I FU defining exact S2S identity,
+  scope, delegation, tenant binding, revocation, replay, and authentication ordering.
+- [ ] Bilateral MOD-0007 consumer/provider fixtures approved.
+- [ ] Exact internal transport/route and bounded timeout value approved in an executable follow-up.
+
+### DA-19. Implementation Notes
+
+Code-reality basis for this draft:
+
+- `PersonReference.IsReferenceable` currently means `!IsDeleted && Status == Active`; Person has no
+  `EffectiveFrom`/`EffectiveTo` field.
+- Position has `IsArchived`, `PositionStatus` (`Draft|Active|Frozen|Closed`), `EffectiveFrom`, and `EffectiveTo`.
+- `TenantRepository.ExecutionFilter` applies current `TenantId` and `IsDeleted == false`, which is why
+  missing/cross-tenant/technical-delete outcomes collapse to `404` without tombstone probing.
+- Existing Person lookup-validation is batched and emits per-item referenceability; it is not this authoritative
+  provider. Existing Position `GET` returns a CRUD projection and does not validate this contract or mode.
+
+No production behavior is authorized or changed by recording these observations.
+
+### DA-20. Follow-up Items
+
+- Human decision and executable contract for Person effective-at-time eligibility.
+- MOD-0018 Gate I FU for dedicated S2S identity, exact scope/delegation, tenant binding, replay, and revocation.
+- Bilateral MOD-0007 fixtures and strict four-field serialization tests.
+- Executable MOD-0288 provider follow-up/amendment with exact internal route, timeout value, response envelope,
+  observability boundary, and implementation file scope.
+- Security, lifecycle-matrix, dependency-failure, and public-endpoint regression test implementation.
