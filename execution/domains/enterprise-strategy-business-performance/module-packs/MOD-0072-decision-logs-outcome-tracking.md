@@ -800,6 +800,7 @@ The authoritative governance fixture root is
 | `outcome-tracking-audit-intent-submitted-v1.delegated-provenance.positive.json` | Verified delegated actor/request binding and expected immutable AuditEvent provenance |
 | `outcome-tracking-audit-intent-submitted-v1.delegated-provenance.negative.json` | Missing/broken/mismatched delegated provenance terminal cases |
 | `outcome-tracking-audit-intent-submitted-v1.nondelegated-provenance.positive.json` | Non-delegated omission rule with authenticated `ExecutingService` retained |
+| `outcome-tracking-audit-intent-submitted-v1.production-validator-rejection.json` | Nine universal terminal production-policy rejection cases using the otherwise-correct DI test-only signature |
 
 The canonical payload SHA-256 is exactly
 `6e1e750ffddc6f65d45556e703b0aa282b8469dec00bcc516a7a0a5f823cc2a3`. JSON property order is the literal
@@ -826,6 +827,16 @@ Delegated provenance fixtures bind payload `actorId` to the verified effective a
 unrestricted claims. Missing/broken/unverified provenance or tenant/actor/operation/permission/request binding
 mismatch is terminal with no AuditEvent and no retry. Non-delegated evidence omits every delegated/delegating
 field rather than writing null identities while retaining authenticated `ExecutingService`.
+
+The production-validator rejection fixture first proves, in the test harness only, that the committed
+lowercase HMAC is cryptographically correct for the exact 246-byte canonical payload, envelope and
+schema/checksum pair. It then proves that valid test cryptography grants no production authority: the test
+signing identity, test KeyId and correct test signature are universally rejected at the production signing
+identity/key allowlist boundary. The matrix also rejects test identity and KeyId assignment attempts to each
+of the `active` and `previous` production slots. These are rejected configuration attempts, never installed
+slot contents. The production credential resolver never loads the test key; no production secret or real
+production KeyId is created. Every case is a terminal security failure with no AuditEvent, retry, fallback,
+normalization or slot mutation; none is reducible to an invalid-HMAC case.
 
 MOD-0021 registers an explicit mapping for this exact producer/event version and fixture; event-name heuristics
 and generic catch-all mapping are forbidden. Its consumer transaction atomically commits inbox plus zero-or-one
@@ -889,9 +900,10 @@ runtime authority. This reconciliation satisfies none of those execution gates b
 38. Audit publication uses only `OutcomeTrackingAuditIntentSubmittedV1` / `decision-intelligence.outcome-tracking-audit-intent.submitted.v1` / numeric integer EventVersion `1` with the exact six-field Minimal Mutation Audit v1 payload and closed Outcome/version/measurement allowlist.
 39. Producer-local mutation/receipt/audit-intent/outbox atomicity, post-commit public `IEventBus`, exact MOD-0021 mapping fixture and exact MOD-0035 signed tuple are mandatory; no synchronous Platform dependency or direct broker/audit storage access exists.
 40. The PPM wrapper fixture remains unchanged and non-executable until every named bilateral, FU16, MOD-0021, MOD-0035, consumer-amendment, runtime-evidence and explicit-authority gate passes.
-41. The ten-file governance fixture set is exact under `fixtures/MOD-0072/audit/`; canonical payload length is 246 bytes and SHA-256 is `6e1e750ffddc6f65d45556e703b0aa282b8469dec00bcc516a7a0a5f823cc2a3`.
+41. The eleven-file governance fixture set is exact under `fixtures/MOD-0072/audit/`; canonical payload length is 246 bytes and SHA-256 is `6e1e750ffddc6f65d45556e703b0aa282b8469dec00bcc516a7a0a5f823cc2a3`.
 42. All audit envelope/projection/vector EventVersion values are JSON numeric integer `1`; DI test-only signing material is isolated from PPM/FP&A and has no runtime authority.
 43. Checksum/schema/envelope/projection pair binding, exact `SourceModule`, all five positive and ten invalid cross-pairs, complete contract negatives and delegated/non-delegated provenance fixtures fail closed as specified.
+44. Nine universal production-validator cases use the otherwise-correct DI test-only lowercase HMAC and prove terminal production identity/key allowlist rejection, including rejected `active`/`previous` slot assignment attempts, without provisioning test material or creating production credentials.
 
 ## 17. Test Expectations
 
@@ -945,6 +957,9 @@ runtime authority. This reconciliation satisfies none of those execution gates b
   property order, canonical byte length/SHA match, checksum verification passes and any byte/order change fails.
 - Signing vector: recomputed DI test-only HMAC equals the expected lowercase signature; EventVersion has integer
   JSON type/value `1`, and scans reject PPM/FP&A signing identity, key-id, secret or derived-material reuse.
+- Production-validator rejection: all nine cases retain the exact correct test HMAC and valid canonical/envelope/
+  schema/checksum preconditions, then fail at the production identity/key allowlist; the identity/KeyId ×
+  `active`/`previous` slot matrix is complete and applies no slot mutation, AuditEvent, retry or fallback.
 - Compatibility matrix: one bound test resolves exact sibling basenames, verifies 65-byte checksum format/value
   before parse, exact schema `$id`/five constants, envelope identity and expected `SourceService`/`SourceModule`;
   five positives pass and ten cross-pairs plus every named contract negative create no AuditEvent.
@@ -972,8 +987,9 @@ runtime authority. This reconciliation satisfies none of those execution gates b
 - [x] Transaction/idempotency/permanent receipt/unknown-commit behavior, projection non-persistence, post-commit IEventBus boundary and NO-OP migration are closed.
 - [x] Exact FU16 audience/client/owner, operation-to-permission manifest and delegated actor/request binding are documented; runtime provisioning/evidence remains separately blocked.
 - [x] Exact MOD-0021 mapping/fixture and MOD-0035 signed-producer onboarding contracts are documented; runtime integration/evidence remains separately blocked.
-- [x] Exact ten-file audit fixture set, canonical checksum, schema/pair binding, full allowlist/negative matrix,
-      delegated provenance and DI-only test signing vector are recorded; runtime credentials remain blocked.
+- [x] Exact eleven-file audit fixture set, canonical checksum, schema/pair binding, full allowlist/negative matrix,
+      delegated provenance, DI-only test signing vector and universal production-validator rejection matrix are
+      recorded; runtime credentials remain blocked.
 - [ ] Exact immutable Metric/Scale bootstrap fixture content is approved; without it quantitative/qualitative activation remains blocked.
 - [x] Metric/Scale administration is deferred to a separate amendment and the initial slice adds no commands/UI/permissions.
 - [x] First migration slice is NO-OP/quarantine-only; any later transformation requires separate authority.
@@ -1025,3 +1041,4 @@ Only the following B-class blockers remain:
 | 2026-08-04 | Reconciled Gate I onboarding from FU16 `40e38905`, MOD-0021 `de81a135` and MOD-0035 `23f290ec`: exact service audience/client/owner and operation-permission manifest; exact OutcomeTracking audit event, six-field payload and mutation allowlist; atomic local intent/outbox, post-commit IEventBus, consumer/signing fixtures and unchanged non-executable PPM wrapper boundary. Status remains draft; production authority remains none. | User / Enterprise Strategy Control Tower |
 | 2026-08-04 | Closed the MOD-0072 audit governance fixture: six exact fixture files, numeric integer EventVersion `1`, ModuleCode `MOD-0072`, 246-byte ordered/minified UTF-8 payload, SHA-256 `6e1e750f...cc2a3`, exact MOD-0021 projection and DI-only test signing vector/signature. No permission, Outcome semantic, status or production authority changed. | User / Enterprise Strategy Control Tower |
 | 2026-08-04 | Completed MOD-0072 audit fixtures against MOD-0021 checkpoint `9b75c213`: exact 65-byte checksum record, schema identity/pair enforcement, `SourceModule`, five-positive/ten-cross-pair and contract-negative matrix, delegated/non-delegated provenance fixtures. Canonical 246 bytes/SHA/signature, seven permissions, Outcome semantics and PPM no-copy remain unchanged; no runtime authority. | User / Enterprise Strategy Control Tower |
+| 2026-08-04 | Closed the MOD-0021 checkpoint `5349ed0` production-validator evidence gap with nine universal terminal rejection cases using the otherwise-correct DI test-only signature, including test identity/KeyId `active`/`previous` slot assignment attempts. No production credential, permission, Outcome semantic, PPM boundary, status or production authority changed. | User / Enterprise Strategy Control Tower |
