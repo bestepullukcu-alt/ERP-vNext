@@ -289,6 +289,7 @@ the affected exact revision; it never fabricates a source/target link. Same-Deci
 This draft authoring milestone changes only:
 
 - `execution/domains/management-governance/module-packs/MOD-0007-decision-rationale-log.md`
+- `execution/domains/management-governance/module-packs/fixtures/MOD-0007/audit/**`
 
 A future executable amendment may authorize exactly one of these mutually exclusive scopes; this draft grants
 no write authority to either.
@@ -319,7 +320,8 @@ consumer path is included.
   `services/Diten.Platform.Common/**`, `services/Diten.AuthService/**` and `services/Diten.Building.Blocks/**`
 - `frontend/Diten.Web/**`, including every WorkCenter artifact
 - `gateway/Diten.ApiGateway/**`, including every `ocelot.json`
-- `execution/domains/**` outside this exact pack file
+- `execution/domains/**` outside this exact pack file and its exact producer-owned
+  `module-packs/fixtures/MOD-0007/audit/**` fixture root
 - `execution/portfolio/**`, `execution/registries/**` and Blueprint workbooks
 - archive/frozen paths
 - DCP-006, MOD-0023, MOD-0117, MOD-0136, MOD-0138, MOD-0072, MOD-0024, MOD-0354, MOD-0355 and WorkCenter runtime/governance
@@ -707,6 +709,24 @@ The same root also owns test-only signing evidence:
   or runtime onboarding. A production validator must reject the `.test-only` signing identity/key ID even
   when the fixture signature is byte-correct; accepting it is a security test failure.
 
+MOD-0021 consumer checkpoint `9b75c2131ba1d353ee1ebf4029e00e07e206b7eb` identified two remaining
+producer-owned fixture gaps. They are closed without changing the canonical payload, checksum, signing input
+or expected signature:
+
+| Completion fixture | Exact role |
+|---|---|
+| `decision-registry-audit-intent-submitted-v1.allowlist-matrix.json` | Six positive entity/mutation pairs with exact MOD-0021 projections; six inverse cross-pair negatives; exact producer/module/event/integer-version acceptance; and negative producer, ModuleCode, event identity, numeric version, extra-field, noncanonical-order and schema/checksum-pair cases |
+| `decision-registry-audit-intent-submitted-v1.delegated-provenance-matrix.json` | One verified positive `DelegatedActorProofV1` trusted-context projection and explicit negative missing, malformed, tenant, actor, operation, permission and verification cases |
+
+The delegated fixture uses only MOD-0018-FU16 claim names. Its proof evidence is test-only verified transport
+context, never producer payload. `payload.actorId` is the effective actor and equals the verified
+`delegated_actor_id`; trusted `tenant_id` equals envelope tenant; `operation_id` and required `permission`
+match the exact create mapping. MOD-0021 projection is limited to `ActorId` plus
+`Metadata.DelegatedActorId`, `Metadata.DelegatingPrincipalId`, `Metadata.DelegationId`,
+`Metadata.DelegatedOperationId`, `Metadata.DelegatedPermission`, `Metadata.DelegationVerifiedAtUtc` and
+`Metadata.ExecutingService`. No email, display/role name, authority/person field, token, credential, request
+body or unrestricted claim is projected. Every negative case is terminal and creates no AuditEvent.
+
 ### MOD-0035 signed producer onboarding profile
 
 The producer-owned signing/onboarding request is exact: `Producer = Diten.ManagementGovernanceService`,
@@ -835,6 +855,12 @@ service port directly. Only `integration-agent` may modify `ocelot.json` after e
     those bytes without test-time regeneration.
 40. The MOD-0007 test-only signing vector reproduces the committed expected signature without any PPM
     identity/key reuse, while production validation rejects its test signing identity and key ID.
+41. The completion fixtures cover all six positive and all six inverse negative entity/mutation pairs plus
+    exact identity/version, extra-field, canonical-order and schema/checksum mismatch outcomes. Every rejected
+    case creates no AuditEvent.
+42. Delegated provenance fixtures keep the six-field producer payload unchanged, use only FU16 exact claim
+    names, bind tenant/effective actor/operation/permission to trusted context and project only the exact
+    MOD-0021 delegated metadata fields. Missing, malformed, mismatched or unverified provenance is terminal.
 
 ## 17. Test Expectations
 
@@ -998,6 +1024,8 @@ Minimum mutation matrix:
   expectation and signed-onboarding profile are fixed.
 - [x] Producer-owned MOD-0021 four-file canonical/projection/schema/checksum fixture set and separate
   MOD-0007 test-only signing vector/expected signature are committed at the exact fixture root.
+- [x] MOD-0021 checkpoint `9b75c213` delegated-provenance and complete positive/negative allowlist fixture
+  gaps are closed without changing canonical payload/hash/signature bytes.
 - [ ] MOD-0021/MOD-0035 consumer implementation, production credentials/keys, bilateral runtime verification
   and atomic-outbox evidence pass.
 - [ ] Matching MOD-0117 consumer amendment is approved.
@@ -1059,6 +1087,7 @@ Minimum mutation matrix:
 | 2026-08-04 | Closed Core Scaffold composition: exact collections/indexes and sole manifest, draft/publication/graph transaction boundaries, canonical durable receipt and unknown-commit reconciliation, no-op migration and MOD-0035-only post-commit delivery. | None; status/authorities remain unchanged; port, S2S provisioning, Position provider contract, exact audit event and PPM activation stay open. |
 | 2026-08-04 | Reconciled Gate I onboarding from MOD-0018-FU16, MOD-0021, MOD-0035 and MOD-0288 authority commits: fixed service audience/Client ID, delegation and permission manifest, producer audit identity/six-field allowlist, consumer mapping/fixture, signed transport profile and the Person/Position eligibility matrix. | None; parent remains `draft`, both authorities remain `none`, and no runtime, credential, route, key, configuration or consumer activation is authorized. |
 | 2026-08-04 | Added the producer-owned MOD-0007 audit fixture set at the exact MOD-0021 path, reconciled numeric integer `EventVersion = 1` and `ModuleCode = MOD-0007`, and added an isolated test-only signing vector plus expected signature. | None; test key/signing identity are explicitly production-denied, status remains `draft`, authorities remain `none`, and no runtime consumer/onboarding authority is created. |
+| 2026-08-04 | Closed the MOD-0021 `9b75c213` consumer findings with full positive/negative allowlist and delegated trusted-provenance matrices. | None; canonical payload/hash/signature remain byte-identical, status remains `draft`, authorities remain `none`, and no runtime/PSS/security implementation authority is created. |
 
 ## 20. Follow-up Items
 

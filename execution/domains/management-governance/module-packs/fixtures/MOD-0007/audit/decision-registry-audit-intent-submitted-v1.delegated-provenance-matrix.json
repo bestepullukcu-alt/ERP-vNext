@@ -1,0 +1,71 @@
+{
+  "fixtureKind": "DelegatedActorProofV1TrustedProvenanceCompatibilityMatrix",
+  "payloadBoundary": {
+    "canonicalPayloadFile": "decision-registry-audit-intent-submitted-v1.canonical.json",
+    "canonicalPayloadSha256": "0af26a132953b8ac0e364574482fffb04f4f50223a6095685837bac386ab55c4",
+    "rule": "Delegation and transport provenance never becomes a seventh producer payload field."
+  },
+  "trustedEnvelope": {
+    "eventId": "70000007-0000-4000-8000-000000000001",
+    "eventName": "management-governance.decision-registry-audit-intent.submitted.v1",
+    "eventVersion": 1,
+    "moduleCode": "MOD-0007",
+    "tenantId": "70000007-0000-4000-8000-000000000004",
+    "correlationId": "70000007-0000-4000-8000-000000000005",
+    "producer": "Diten.ManagementGovernanceService",
+    "occurredAtUtc": "2026-08-04T12:34:56.0000000Z"
+  },
+  "positiveCase": {
+    "caseId": "verified-delegated-create",
+    "proofContract": "DelegatedActorProofV1",
+    "verifiedProofClaims": {
+      "iss": "diten-auth-service",
+      "aud": "diten-management-governance-service",
+      "sub": "70000007-0000-4000-8000-000000000006",
+      "client_id": "diten.management-governance",
+      "azp": "diten.management-governance",
+      "actor_type": "service",
+      "tenant_id": "70000007-0000-4000-8000-000000000004",
+      "delegated_actor_id": "70000007-0000-4000-8000-000000000002",
+      "delegated_actor_type": "tenant_user",
+      "delegation_id": "70000007-0000-4000-8000-000000000007",
+      "operation_id": "decision-registry.drafts.create.v1",
+      "permission": ["management-governance.decisions.create"],
+      "scope": "diten.s2s.delegated.invoke",
+      "request_hash": "k_YvziIczL26G-HGjEwRuLrtb8qYKn3s9ctaEAZ0UVw",
+      "nonce": "8FUzLt5C9XPuNUNgc2_5kg",
+      "jti": "70000007-0000-4000-8000-000000000008",
+      "iat": 1785846840,
+      "nbf": 1785846840,
+      "exp": 1785847140,
+      "tenant_grant_version": 4,
+      "service_principal_version": 7,
+      "credential_generation": 2
+    },
+    "delegationVerifiedAtUtc": "2026-08-04T12:35:00.0000000Z",
+    "expectedAuditEvent": {
+      "actorId": "70000007-0000-4000-8000-000000000002",
+      "metadata": {
+        "DelegatedActorId": "70000007-0000-4000-8000-000000000002",
+        "DelegatingPrincipalId": "70000007-0000-4000-8000-000000000006",
+        "DelegationId": "70000007-0000-4000-8000-000000000007",
+        "DelegatedOperationId": "decision-registry.drafts.create.v1",
+        "DelegatedPermission": "management-governance.decisions.create",
+        "DelegationVerifiedAtUtc": "2026-08-04T12:35:00.0000000Z",
+        "ExecutingService": "Diten.ManagementGovernanceService"
+      }
+    },
+    "expectedDisposition": "Accepted",
+    "auditEventCreated": true
+  },
+  "negativeCases": [
+    {"caseId": "missing-proof", "proofPresent": false, "expectedDisposition": "TerminalSecurityFailure", "auditEventCreated": false},
+    {"caseId": "missing-delegation-id", "removeClaim": "delegation_id", "expectedDisposition": "TerminalSecurityFailure", "auditEventCreated": false},
+    {"caseId": "malformed-delegated-actor", "claimOverride": {"delegated_actor_id": "not-a-guid"}, "expectedDisposition": "TerminalSecurityFailure", "auditEventCreated": false},
+    {"caseId": "tenant-mismatch", "claimOverride": {"tenant_id": "70000007-0000-4000-8000-000000000014"}, "expectedDisposition": "TerminalSecurityFailure", "auditEventCreated": false},
+    {"caseId": "actor-mismatch", "claimOverride": {"delegated_actor_id": "70000007-0000-4000-8000-000000000012"}, "expectedDisposition": "TerminalSecurityFailure", "auditEventCreated": false},
+    {"caseId": "operation-mismatch", "claimOverride": {"operation_id": "decision-registry.drafts.revise.v1"}, "expectedDisposition": "TerminalSecurityFailure", "auditEventCreated": false},
+    {"caseId": "permission-mismatch", "claimOverride": {"permission": ["management-governance.decisions.read"]}, "expectedDisposition": "TerminalSecurityFailure", "auditEventCreated": false},
+    {"caseId": "unverified-delegation", "proofVerificationOutcome": "Unverified", "expectedDisposition": "TerminalSecurityFailure", "auditEventCreated": false}
+  ]
+}

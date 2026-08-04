@@ -1,0 +1,65 @@
+{
+  "fixtureKind": "MinimalMutationAuditV1AllowlistCompatibilityMatrix",
+  "identity": {
+    "producer": "Diten.ManagementGovernanceService",
+    "moduleCode": "MOD-0007",
+    "eventType": "DecisionRegistryAuditIntentSubmittedV1",
+    "eventName": "management-governance.decision-registry-audit-intent.submitted.v1",
+    "eventVersion": 1,
+    "profile": "MinimalMutationAuditV1"
+  },
+  "baseline": {
+    "canonicalPayloadFile": "decision-registry-audit-intent-submitted-v1.canonical.json",
+    "canonicalPayloadByteLength": 252,
+    "canonicalPayloadSha256": "0af26a132953b8ac0e364574482fffb04f4f50223a6095685837bac386ab55c4",
+    "schemaFile": "decision-registry-audit-intent-submitted-v1.schema.json",
+    "checksumFile": "decision-registry-audit-intent-submitted-v1.canonical.sha256"
+  },
+  "positiveCases": [
+    {
+      "caseId": "exact-identity-decision-draft-created",
+      "payloadUtf8": "{\"auditIntentId\":\"70000007-0000-4000-8000-000000000001\",\"actorId\":\"70000007-0000-4000-8000-000000000002\",\"entityType\":\"DecisionDraft\",\"entityId\":\"70000007-0000-4000-8000-000000000003\",\"mutation\":\"Created\",\"occurredAtUtc\":\"2026-08-04T12:34:56.0000000Z\"}",
+      "expectedProjection": {"sourceService": "Diten.ManagementGovernanceService", "sourceModule": "MOD-0007", "category": "AuditCategory.Integration", "entityType": "DecisionRegistry.DecisionDraft", "operation": "AuditOperation.Create"}
+    },
+    {
+      "caseId": "decision-draft-revised",
+      "payloadUtf8": "{\"auditIntentId\":\"70000007-0000-4000-8000-000000000011\",\"actorId\":\"70000007-0000-4000-8000-000000000002\",\"entityType\":\"DecisionDraft\",\"entityId\":\"70000007-0000-4000-8000-000000000012\",\"mutation\":\"Revised\",\"occurredAtUtc\":\"2026-08-04T12:34:56.0000000Z\"}",
+      "expectedProjection": {"sourceService": "Diten.ManagementGovernanceService", "sourceModule": "MOD-0007", "category": "AuditCategory.Integration", "entityType": "DecisionRegistry.DecisionDraft", "operation": "AuditOperation.Update"}
+    },
+    {
+      "caseId": "decision-draft-soft-deleted",
+      "payloadUtf8": "{\"auditIntentId\":\"70000007-0000-4000-8000-000000000021\",\"actorId\":\"70000007-0000-4000-8000-000000000002\",\"entityType\":\"DecisionDraft\",\"entityId\":\"70000007-0000-4000-8000-000000000022\",\"mutation\":\"SoftDeleted\",\"occurredAtUtc\":\"2026-08-04T12:34:56.0000000Z\"}",
+      "expectedProjection": {"sourceService": "Diten.ManagementGovernanceService", "sourceModule": "MOD-0007", "category": "AuditCategory.Integration", "entityType": "DecisionRegistry.DecisionDraft", "operation": "AuditOperation.Delete"}
+    },
+    {
+      "caseId": "decision-record-published",
+      "payloadUtf8": "{\"auditIntentId\":\"70000007-0000-4000-8000-000000000031\",\"actorId\":\"70000007-0000-4000-8000-000000000002\",\"entityType\":\"DecisionRecord\",\"entityId\":\"70000007-0000-4000-8000-000000000032\",\"mutation\":\"Published\",\"occurredAtUtc\":\"2026-08-04T12:34:56.0000000Z\"}",
+      "expectedProjection": {"sourceService": "Diten.ManagementGovernanceService", "sourceModule": "MOD-0007", "category": "AuditCategory.Integration", "entityType": "DecisionRegistry.DecisionRecord", "operation": "AuditOperation.Activate"}
+    },
+    {
+      "caseId": "decision-record-superseded",
+      "payloadUtf8": "{\"auditIntentId\":\"70000007-0000-4000-8000-000000000041\",\"actorId\":\"70000007-0000-4000-8000-000000000002\",\"entityType\":\"DecisionRecord\",\"entityId\":\"70000007-0000-4000-8000-000000000042\",\"mutation\":\"Superseded\",\"occurredAtUtc\":\"2026-08-04T12:34:56.0000000Z\"}",
+      "expectedProjection": {"sourceService": "Diten.ManagementGovernanceService", "sourceModule": "MOD-0007", "category": "AuditCategory.Integration", "entityType": "DecisionRegistry.DecisionRecord", "operation": "AuditOperation.LifecycleTransition"}
+    },
+    {
+      "caseId": "decision-record-withdrawn",
+      "payloadUtf8": "{\"auditIntentId\":\"70000007-0000-4000-8000-000000000051\",\"actorId\":\"70000007-0000-4000-8000-000000000002\",\"entityType\":\"DecisionRecord\",\"entityId\":\"70000007-0000-4000-8000-000000000052\",\"mutation\":\"Withdrawn\",\"occurredAtUtc\":\"2026-08-04T12:34:56.0000000Z\"}",
+      "expectedProjection": {"sourceService": "Diten.ManagementGovernanceService", "sourceModule": "MOD-0007", "category": "AuditCategory.Integration", "entityType": "DecisionRegistry.DecisionRecord", "operation": "AuditOperation.Deactivate"}
+    }
+  ],
+  "negativeCases": [
+    {"caseId": "cross-pair-draft-published", "entityType": "DecisionDraft", "mutation": "Published", "expectedDisposition": "TerminalContractFailure", "auditEventCreated": false},
+    {"caseId": "cross-pair-draft-superseded", "entityType": "DecisionDraft", "mutation": "Superseded", "expectedDisposition": "TerminalContractFailure", "auditEventCreated": false},
+    {"caseId": "cross-pair-draft-withdrawn", "entityType": "DecisionDraft", "mutation": "Withdrawn", "expectedDisposition": "TerminalContractFailure", "auditEventCreated": false},
+    {"caseId": "cross-pair-record-created", "entityType": "DecisionRecord", "mutation": "Created", "expectedDisposition": "TerminalContractFailure", "auditEventCreated": false},
+    {"caseId": "cross-pair-record-revised", "entityType": "DecisionRecord", "mutation": "Revised", "expectedDisposition": "TerminalContractFailure", "auditEventCreated": false},
+    {"caseId": "cross-pair-record-soft-deleted", "entityType": "DecisionRecord", "mutation": "SoftDeleted", "expectedDisposition": "TerminalContractFailure", "auditEventCreated": false},
+    {"caseId": "wrong-producer", "identityOverride": {"producer": "Diten.Platform"}, "expectedDisposition": "TerminalSecurityFailure", "auditEventCreated": false},
+    {"caseId": "wrong-module-code", "identityOverride": {"moduleCode": "MOD-0008"}, "expectedDisposition": "TerminalContractFailure", "auditEventCreated": false},
+    {"caseId": "wrong-event-identity", "identityOverride": {"eventName": "management-governance.decision-registry-audit-intent.rejected.v1"}, "expectedDisposition": "TerminalContractFailure", "auditEventCreated": false},
+    {"caseId": "wrong-numeric-version", "identityOverride": {"eventVersion": 2}, "expectedDisposition": "TerminalContractFailure", "auditEventCreated": false},
+    {"caseId": "additional-payload-field", "payloadUtf8": "{\"auditIntentId\":\"70000007-0000-4000-8000-000000000001\",\"actorId\":\"70000007-0000-4000-8000-000000000002\",\"entityType\":\"DecisionDraft\",\"entityId\":\"70000007-0000-4000-8000-000000000003\",\"mutation\":\"Created\",\"occurredAtUtc\":\"2026-08-04T12:34:56.0000000Z\",\"tenantId\":\"70000007-0000-4000-8000-000000000004\"}", "expectedDisposition": "TerminalContractFailure", "auditEventCreated": false},
+    {"caseId": "noncanonical-property-order", "payloadUtf8": "{\"actorId\":\"70000007-0000-4000-8000-000000000002\",\"auditIntentId\":\"70000007-0000-4000-8000-000000000001\",\"entityType\":\"DecisionDraft\",\"entityId\":\"70000007-0000-4000-8000-000000000003\",\"mutation\":\"Created\",\"occurredAtUtc\":\"2026-08-04T12:34:56.0000000Z\"}", "expectedDisposition": "TerminalContractFailure", "auditEventCreated": false},
+    {"caseId": "schema-checksum-pair-mismatch", "schemaIdentityOverride": {"x-moduleCode": "MOD-0008"}, "checksumOverride": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "expectedDisposition": "TerminalContractFailure", "auditEventCreated": false}
+  ]
+}
