@@ -6,7 +6,7 @@ service: Diten.AuthService
 shell: none
 golden_reference: none
 entity_base: GlobalEntity
-status: draft
+status: ready-for-dev
 owner: platform-team / security-architect
 branch: feature/pss/mod-0018-gate-i-s2s
 started: 2026-08-04
@@ -18,10 +18,10 @@ execution_authority: none
 
 # MOD-0018-FU16 — S2S Authorization, Delegation and Permission Provisioning
 
-> **GOVERNANCE-ONLY / NON-EXECUTABLE.** This draft defines the Gate I contract. It authorizes no runtime,
-> AuthService, Platform.Common, producer-service, frontend, gateway, seed, migration or deployment change. It
-> must be reviewed and promoted to `approved` or `ready-for-dev`, followed by separately authorized execution
-> packs, before implementation begins.
+> **READY-FOR-DEV / NON-RUNTIME.** This governance pack closes the Gate I pre-development design contract. It
+> authorizes no runtime, AuthService, Platform.Common, producer-service, frontend, gateway, seed, migration,
+> credential-provisioning or deployment change. Implementation still requires separately approved executable
+> packs and explicit implementation authority; production activation requires the open evidence gates in §18.
 
 > **Identity (DCP-002, proven).** `MOD-0018-FU16` is a follow-up of Blueprint-canonical parent `MOD-0018 —
 > RBAC / ABAC Authorization`. The registry contains no other FU16 and FU1/FU9/FU10/FU10a/FU10b/FU11–FU15
@@ -82,7 +82,9 @@ objects; MDM objects; a generic policy DSL; or any permission guessed by PSS.
 | `S2SReplayReceipt` | Security replay store | Unique `(Issuer, Jti)` and nonce/request binding until proof expiry plus skew |
 | `AuthorizationVersionVector` | AuthService | Tenant grant version + service-principal version + credential generation used for freshness checks |
 
-No runtime names above are authorized until an implementation pack locks persistence placement and retention.
+AuthService is the binding system of record for these logical persistence contracts. Exact collection/table names,
+physical placement and operational retention are deferred to an executable implementation pack; that deferral does
+not reopen ownership or contract approval.
 
 ## 4. Entity Fields
 
@@ -127,6 +129,42 @@ No runtime names above are authorized until an implementation pack locks persist
 | `credential_generation` | Accepted active/overlap credential generation |
 
 The proof contains no email, display name, role name, raw credential, refresh token or business payload.
+
+### Separate production S2S token family and signing profile
+
+- `DelegatedActorProofV1` is a separate token family/profile from the existing AuthService user/session JWT. The
+  existing HS256 user JWT issuer/audience, signing, validation and refresh behavior is frozen: it is neither migrated
+  nor reused by Gate I, and its symmetric secret must never sign or validate an S2S proof.
+- The S2S family uses exact protected header `typ = diten-delegated-actor-proof+jwt`, a dedicated AuthService issuance
+  application contract and a dedicated consumer authentication/validation scheme. The S2S scheme rejects user/session
+  JWTs, and the user/session scheme does not accept S2S proofs. Neither scheme falls through to the other. Exact
+  physical endpoint/route names remain an implementation-pack decision.
+- Production Gate I S2S signing is exactly `RS256` with an RSA key of at least 3072 bits. The protected JWT header
+  requires `alg = RS256` and one exact non-empty `kid`. `none`, HS256, any other asymmetric algorithm, a missing,
+  unknown, retired or duplicate `kid`, algorithm/key-type confusion, and token-supplied `jku`, `jwk` or `x5c` key
+  sources fail closed as `401`.
+- The private key remains only within an approved vault/HSM boundary. Consumers obtain public validation keys only
+  from the configured/pinned trusted AuthService HTTPS JWKS/validation-key provider. JWKS exposes public material for
+  current or explicitly overlap-valid credentials only. Static repository keys, embedded PEM material, retired-key
+  fallback, generic `diten-erp` validation, `X-Internal-Api-Key`, token-directed discovery and default/fallback secrets,
+  keys or authentication schemes are forbidden. If a required trusted key cannot be resolved and no valid trusted
+  cache entry exists, the authority is indeterminate and returns `503`; an invalid/untrusted key or signature is `401`.
+- `iat`, `nbf`, `exp`, `iss`, single `aud`, `jti`, `sub`, `client_id` and `azp` are mandatory. Maximum lifetime is
+  five minutes and maximum clock skew is 30 seconds. NumericDate ordering is `iat <= nbf < exp`, `exp - iat <= 300s`,
+  and neither `iat` nor `nbf` may be more than 30 seconds in the future. Acceptance is bounded by `nbf - 30s` and
+  `exp + 30s`; skew never permits a proof whose declared lifetime exceeds five minutes. Each receiver uses its exact
+  audience profile; generic or multiple audiences fail `401`.
+
+### Atomic replay receipt contract
+
+- One replay receipt records issuer, `jti`, nonce, request hash and `exp`. The datastore enforces unique `(Issuer,Jti)`
+  and unique `(Issuer,Nonce)` constraints. After signature and standard-claim validation but before protected
+  execution, the authority performs one atomic insert-if-absent; read-then-write is forbidden. It retains the receipt
+  until at least `exp + 30 seconds`; TTL cleanup is housekeeping and not the uniqueness correctness mechanism.
+- Reuse of the same `jti` or nonce, a changed method/path/body/tenant/actor/operation binding, and concurrent
+  duplicate consumption are terminal `401` outcomes.
+- Replay authority unavailable or indeterminate is `503`, never allow. No protected handler or repository may run
+  until token validation, freshness and atomic replay consumption all succeed.
 
 ## 5. Repo Scope
 
@@ -210,11 +248,11 @@ N/A. No frontend files, MVC proxies, JavaScript, navigation, RESX, offcanvas, mo
 | Input/state | Validation |
 |---|---|
 | Principal registration | Active, within lifecycle bounds, exact client/sub binding, audience and protocol scope allowlisted |
-| Credential | Signature valid, accepted algorithm/key id, active generation, not expired/revoked, rotation overlap valid |
-| JWT header | Approved asymmetric algorithm only for production; `kid` required; `none` and algorithm confusion rejected |
+| Credential | RS256 signature valid with trusted AuthService public key, RSA >=3072 bits, active generation, not expired/revoked, rotation overlap valid |
+| JWT header | Exact `alg=RS256` and one exact non-empty known `kid`; `none`, HS256, other algorithms, missing/unknown/duplicate kid and algorithm confusion rejected 401 |
 | JWT time | Required `iat/nbf/exp`; maximum five-minute lifetime and 30-second skew |
 | Delegation | Exact tenant, delegated actor, operation, permission and request hash; actor is active/referenceable |
-| Replay | Atomic first-write of issuer+jti and nonce binding; any duplicate or changed request is rejected |
+| Replay | Atomic unique `(Issuer,Jti)` and `(Issuer,Nonce)` first-write with request-hash binding retained through at least `exp + 30s`; duplicate, changed or concurrent reuse is 401; unavailable/indeterminate authority is 503 |
 | Manifest | Blueprint owner ID exists; module entitlement code separately declared; producer profile matches; keys are exact lowercase dotted owner values; duplicate/conflicting owner rejected |
 | Grant request | Server-derived tenant; exact role and permission IDs; tenant role may hold permission; authorized administrator; idempotency key required |
 | Freshness | Token versions equal current tenant grant/principal/credential versions; stale token rejected and reissue required |
@@ -256,6 +294,15 @@ authority dependency outage at any security decision point is `503` and no prote
 - Every tenant role grant is explicit, tenant-scoped, auditable and attributable to an authorized actor/idempotency
   key. Enable and reconcile create zero automatic grants; no entitlement event may auto-grant Admin, Viewer or any
   other role for Gate I producers.
+- Explicit grant provisioning requires an authenticated authorized actor and an idempotency key. Repeating the same
+  key with the exact same payload is a stable no-op returning the original result; the same key with a different
+  payload is `409` and creates no mutation.
+- Grant idempotency identity is exact `(TenantId, AuthenticatedActorId, Operation, IdempotencyKey)` and binds a
+  canonical hash of role, permission and requested mutation. AuthService atomically persists the idempotency receipt,
+  grant mutation and tenant authorization-version increment as one commit. An indeterminate commit is reconciled by
+  that identity and payload hash before retry; it never blindly reapplies. The immutable receipt remains for at least
+  the resulting grant/audit record retention period, including after grant removal, so an old key cannot acquire new
+  meaning.
 - Entitlement removal makes existing explicit grants dormant: rows remain, are excluded from effective claims and
   authorization, and are visible to authorized administrators. Disable/removal never deletes an explicit grant.
   Re-entitlement alone never makes a dormant grant effective and never creates or reconstructs a grant: effective
@@ -293,17 +340,18 @@ insufficient for delegated actor proof.
 - [ ] PPM retains `ExplicitOnlyPreserveOnEntitlementRemoval`, its exact 16-key contract and no default Admin/Viewer grant.
 - [ ] All four producer profiles pass governance closure with exact ModuleCodes and entitlement policies; executable
   onboarding remains blocked only until fixture/runtime evidence proves those decisions.
-- [ ] No runtime code/config/seed/gateway change is present in this draft authoring commit.
+- [ ] No runtime code/config/seed/gateway change is present in this governance promotion commit.
 
 ## 17. Test Expectations
 
 **Identity/token:** exact issuer; each single audience; wrong/generic/multiple audience rejection; scope rejection;
 client/sub/azp mismatch; invalid algorithm/kid/signature; expiry/skew; suspended/revoked principal; old credential
-generation; rotation overlap and cutoff.
+generation; rotation overlap and cutoff; separate HS256 user-JWT regression; RS256-only S2S, RSA key-size, exact-kid,
+trusted-JWKS and no-static/fallback-key negatives.
 
 **Delegation/replay:** tenant mismatch, actor mismatch, operation mismatch, permission mismatch, request-body/method/path
-change, duplicate jti, duplicate nonce, concurrent replay, revoked delegation, stale tenant-grant version and authority
-outage.
+change, duplicate jti, duplicate nonce, concurrent replay, receipt retention through `exp + 30s`, revoked delegation,
+stale tenant-grant version, authority outage/indeterminate 503 and proof that no protected handler/repository ran.
 
 **Catalog/grants:** manifest owner collision, invalid key, permission removal, explicit grant idempotency, conflict,
 cross-tenant role, unauthorized provisioner, no Admin/Viewer auto-grant, dormant removal and no-create re-entitlement.
@@ -320,8 +368,10 @@ authorization, structured-log capture proving redaction, and no secret/token in 
 - [x] FU16 collision check and DCP-002 preflight pass.
 - [x] Backend code reality and existing PPM explicit-grant policy inspected.
 - [x] Governance-only boundaries and 20 sections present.
-- [ ] Security Architect approves asymmetric signing/validation and replay-store design.
-- [ ] AuthService owner approves ServicePrincipal, manifest and explicit-grant persistence contracts.
+- [x] Security Architect approves the governance-level RS256-only asymmetric validation, freshness and atomic
+  replay-store design recorded in §§4, 12–14; this grants no runtime, deployment or production authority.
+- [x] AuthService owner approves AuthService as SoR for ServicePrincipal, credential metadata, manifest registry and
+  explicit tenant-role grant persistence contracts; this grants no runtime, deployment or production authority.
 - [x] MOD-0007 owner pack supplies the exact eight-operation / seven-permission manifest at checkpoint `7bdbd37e16c72cd80f081612a104cc3af7e2b4cd`.
 - [x] MOD-0136 owner pack supplies the exact fifteen-operation / fifteen-permission manifest at checkpoint `937aabf43683eac9a240f9101ee84c66db55423a`.
 - [x] MOD-0138 owner pack supplies the exact sixteen delegated mappings / sixteen permissions plus separate accepted-run worker authority at checkpoint `066d16c80b966a63aaa7430ee8dd14c120e7a4c2`.
@@ -330,13 +380,25 @@ authorization, structured-log capture proving redaction, and no secret/token in 
 - [x] Exact ModuleCodes and mandatory entitlement posture are closed for all four producer profiles: `MOD-0007`,
   `MOD-0136`, `MOD-0138` and `MOD-0072`; all are tenant-assignable, non-baseline, entitlement-gated and
   explicit-grant-only.
+- [x] MDM/legacy and PPM regression boundaries and required executable suites are named in §§6, 16–17 and 19.
+- [x] Physical routes, mTLS/network controls, vault/HSM keys, deployment retention and operational runbooks are
+  explicitly deferred to separately authorized implementation/activation packs rather than inferred here.
+- [x] Control Tower human review approves the formal Security Architect/AuthService-owner governance decisions and
+  promotes this pack to `ready-for-dev` without runtime authority.
+
+All pre-development design decisions are closed. `ready-for-dev` means design handoff only; it does not authorize
+implementation or production use.
+
+### Open implementation/review and production-evidence gates (not ready-for-dev blockers)
+
+- [ ] Executable packs and explicit user authority exist for every runtime change.
 - [ ] Fixture/runtime evidence proves each profile's ModuleCode registration, separate entitlement evaluation,
   zero-grant enable/reconcile, grant-preserving disable/removal and guarded dormant-grant effectiveness.
-- [ ] MDM/legacy and PPM regression suites are named in executable implementation packs.
-- [ ] Physical routes, mTLS/network controls, vault keys, retention and operational runbooks are approved.
-- [ ] Human review promotes status to `approved` or `ready-for-dev`.
-
-Until every unchecked item is closed, this pack is NON-EXECUTABLE and runtime work is blocked.
+- [ ] Executable MDM/legacy and PPM regression suites pass without behavioral change.
+- [ ] Approved vault/HSM generates and protects RSA >=3072-bit production keys; trusted JWKS/validation-key delivery,
+  exact `kid`, rotation, revocation and no-fallback behavior are proven.
+- [ ] Atomic replay-store concurrency, retention, 401/503 behavior and no-handler-before-validation are proven live.
+- [ ] Physical routes, mTLS/network controls, deployment retention, monitoring and operational runbooks pass review.
 
 ## 19. Implementation Notes
 
@@ -346,6 +408,11 @@ request binding, service principal or delegated actor proof. Platform.Common's s
 requires authenticated principal, non-empty tenant and subject and checks one exact permission claim; its module/
 feature handlers currently reject actors other than `tenant_user` (except platform-admin bypass). Existing internal
 routes use a shared `X-Internal-Api-Key`; Gate I does not promote that key into service/delegation proof.
+
+The existing user/session JWT implementation signs and validates with HS256 and the configured user-token secret.
+That is a protected regression boundary, not the Gate I implementation starting point. Gate I must add a separate
+RS256 S2S issuer/validation profile and key source without changing, migrating or sharing secret material with the
+existing HS256 user/session flow.
 
 AuthService already has `GrantSource` (`System/Module/Manual`), tenant role-permission rows, a role-assignment version
 and a closed `EntitlementPermissionPolicy`. `PPM` resolves to `ExplicitOnlyPreserveOnEntitlementRemoval`; other modules
@@ -360,10 +427,10 @@ in the [ledger](../../../portfolio/blueprint-master-plan-reconciliation.md).
 
 | Service | Blueprint owner modules | Exact audience | Client ID reservation | Producer permission source | Bilateral manifest | Remaining gate |
 |---|---|---|---|---|---|---|
-| `Diten.ManagementGovernanceService` | `MOD-0007` | `diten-management-governance-service` | `diten.management-governance` | MOD-0007 checkpoint `7bdbd37e16c72cd80f081612a104cc3af7e2b4cd` | ACCEPTED — 8 operations / 7 permissions | **BLOCKED:** fixture/runtime evidence absent |
-| `Diten.FpaService` / Budgeting | `MOD-0136` | `diten-fpa-service` | `diten.fpa` | MOD-0136 checkpoint `937aabf43683eac9a240f9101ee84c66db55423a` | ACCEPTED — 15 operations / 15 permissions | **BLOCKED:** fixture/runtime evidence absent |
-| `Diten.FpaService` / ScenarioPlanning | `MOD-0138` | `diten-fpa-service` | `diten.fpa` | MOD-0138 checkpoint `066d16c80b966a63aaa7430ee8dd14c120e7a4c2` | ACCEPTED — 16 delegated mappings / 16 permissions plus accepted-run worker authority | **BLOCKED:** fixture/runtime evidence absent |
-| `Diten.DecisionIntelligenceService` | `MOD-0072` | `diten-decision-intelligence-service` | `diten.decision-intelligence` | MOD-0072 checkpoint `5e5088ef6a5298b09b1dfcece9cf10ad2375aa29` | ACCEPTED — 9 operations / 7 permissions | **BLOCKED:** fixture/runtime evidence absent |
+| `Diten.ManagementGovernanceService` | `MOD-0007` | `diten-management-governance-service` | `diten.management-governance` | MOD-0007 checkpoint `7bdbd37e16c72cd80f081612a104cc3af7e2b4cd` | ACCEPTED — 8 operations / 7 permissions | **IMPLEMENTATION EVIDENCE OPEN:** fixture/runtime proof absent |
+| `Diten.FpaService` / Budgeting | `MOD-0136` | `diten-fpa-service` | `diten.fpa` | MOD-0136 checkpoint `937aabf43683eac9a240f9101ee84c66db55423a` | ACCEPTED — 15 operations / 15 permissions | **IMPLEMENTATION EVIDENCE OPEN:** fixture/runtime proof absent |
+| `Diten.FpaService` / ScenarioPlanning | `MOD-0138` | `diten-fpa-service` | `diten.fpa` | MOD-0138 checkpoint `066d16c80b966a63aaa7430ee8dd14c120e7a4c2` | ACCEPTED — 16 delegated mappings / 16 permissions plus accepted-run worker authority | **IMPLEMENTATION EVIDENCE OPEN:** fixture/runtime proof absent |
+| `Diten.DecisionIntelligenceService` | `MOD-0072` | `diten-decision-intelligence-service` | `diten.decision-intelligence` | MOD-0072 checkpoint `5e5088ef6a5298b09b1dfcece9cf10ad2375aa29` | ACCEPTED — 9 operations / 7 permissions | **IMPLEMENTATION EVIDENCE OPEN:** fixture/runtime proof absent |
 
 These client IDs and audiences identify workloads/receivers only. A ModuleCode is neither a service client ID nor an
 audience alias, and none of these values confers a producer permission. Shared FPA audience/client values do not merge
@@ -395,7 +462,7 @@ automatic Admin/Viewer grant. The protocol scope for every delegated entry is ex
 
 Distinct permission set: exactly seven values represented above. The binding ModuleCode is `MOD-0007`; it is
 tenant-assignable, non-baseline, entitlement-gated and explicit-grant-only for every listed operation. **Profile
-result: GOVERNANCE PASS / execution BLOCKED:** fixture/runtime evidence must prove the closed entitlement policy.
+result: GOVERNANCE PASS / runtime execution BLOCKED:** fixture/runtime evidence must prove the closed entitlement policy.
 
 #### MOD-0136 — Budgeting
 
@@ -419,7 +486,7 @@ result: GOVERNANCE PASS / execution BLOCKED:** fixture/runtime evidence must pro
 
 The binding ModuleCode is `MOD-0136`; it is tenant-assignable, non-baseline, entitlement-gated and
 explicit-grant-only for all fifteen operations. Its entitlement gate is independent from `MOD-0138`, including when
-both run in `Diten.FpaService`. **Profile result: GOVERNANCE PASS / execution BLOCKED:** fixture/runtime evidence must
+both run in `Diten.FpaService`. **Profile result: GOVERNANCE PASS / runtime execution BLOCKED:** fixture/runtime evidence must
 prove the closed entitlement policy and the independent FPA gate.
 
 #### MOD-0138 — Scenario Planning
@@ -449,7 +516,7 @@ accepted immutable comparator run carrying the original actor/request binding. T
 it is tenant-assignable, non-baseline, entitlement-gated and explicit-grant-only for the delegated acceptance path.
 Its entitlement gate is independent from `MOD-0136`, including when both run in `Diten.FpaService`; worker execution
 cannot bypass the entitlement decision captured at accepted-run creation. **Profile result: GOVERNANCE PASS /
-execution BLOCKED:** fixture/runtime evidence must prove the closed entitlement policy, independent FPA gate and
+runtime execution BLOCKED:** fixture/runtime evidence must prove the closed entitlement policy, independent FPA gate and
 worker-after-acceptance enforcement.
 
 #### MOD-0072 — Decision Logs & Outcome Tracking
@@ -468,7 +535,7 @@ worker-after-acceptance enforcement.
 
 Distinct permission set: exactly seven values represented above. The binding ModuleCode is `MOD-0072`; it is
 tenant-assignable, non-baseline, entitlement-gated and explicit-grant-only for all nine operations. **Profile result:
-GOVERNANCE PASS / execution BLOCKED:** fixture/runtime evidence must prove the closed entitlement policy.
+GOVERNANCE PASS / runtime execution BLOCKED:** fixture/runtime evidence must prove the closed entitlement policy.
 
 ### Collision and regression disposition
 
@@ -487,8 +554,10 @@ GOVERNANCE PASS / execution BLOCKED:** fixture/runtime evidence must prove the c
 1. Executable owner/AuthService packs supply fixture/runtime evidence for the four closed ModuleCode profiles,
    including independent `MOD-0136`/`MOD-0138` FPA gates, zero automatic grant on enable/reconcile, grant preservation
    on disable/removal, and current membership/grant/version checks before any dormant grant can become effective.
-2. Security Architecture locks asymmetric key type, JWKS/discovery, mTLS binding, replay retention and emergency revoke SLO.
-3. AuthService owner prepares separate executable slices for registry/token, manifest registration and explicit grants.
+2. Security Architecture carries the approved RS256/RSA >=3072, trusted JWKS, exact-kid and atomic-replay contract
+   into executable security/operations packs; mTLS binding and emergency revoke SLO remain activation evidence.
+3. AuthService owner prepares separate executable slices for the approved registry/token, credential-metadata,
+   manifest-registration and explicit-grant persistence contracts.
 4. Platform.Common owner decides the minimal additive protocol contract without weakening tenant-user handlers.
 5. Producer owners prepare separate onboarding implementations and negative interoperability tests.
 6. Integration owner defines internal routes/network policy only after service contracts are approved; no Gateway change is implied.
