@@ -603,3 +603,169 @@ Authorized replay preserves the same `EventId` and identical canonical payload b
 rejected. If the first delivery was not accepted, replay may create exactly one `AuditEvent`; if accepted,
 replay creates none. Idempotency is `ConsumerName + EventId`. Unauthorized replay is forbidden; no replay
 UI/API is in scope.
+
+---
+
+# Gate I Signed Producer Onboarding Amendment — DRAFT / NON-EXECUTABLE
+
+> **Authority:** Governance-only amendment. Parent frontmatter remains `status: partial`; no runtime slice is
+> promoted. This text authorizes no code, configuration, secret, broker, allowlist, deployment or producer
+> change. Four prospective producers remain unnamed and non-executable until each supplies an exact
+> producer-owned event fixture and receives separate approval. This amendment creates no business event name.
+
+## Amendment 1. Module Summary
+- Gate I governs signed producer onboarding onto the shared MOD-0035 transport.
+- Authorization is the exact tuple `Producer + EventName + EventVersion + SigningIdentity`; wildcard, prefix,
+  normalized, producer-only and key-only authorization are forbidden.
+- Existing PPM signed behavior is a regression boundary, not a credential template for other producers.
+
+## Amendment 2. Ownership and Boundaries
+- Each producer owns its business DTO, exact event identity/version, canonical fixture, transactional outbox
+  adapter, signing-key lifecycle request and post-commit publisher wiring.
+- PSS owns only shared transport/signing/onboarding mechanics, allowlist evaluation, broker delivery and
+  consumer verification. PSS does not invent, rename, serialize or own producer business events.
+- JWT/service credentials authenticate request S2S. Event HMAC authenticates immutable broker-event bytes.
+  Their credentials, validators, headers, rotation and fallback paths remain strictly separate.
+
+## Amendment 3. Owned Objects
+- Governance records only: onboarding manifest, fixture evidence, exact signing allowlist tuple,
+  active/previous key metadata, bounded overlap deadline, revocation record and verification matrix.
+- Secrets, keys, DTOs, handlers, controllers, repositories and runtime configuration are not owned here.
+
+## Amendment 4. Entity Fields
+| Field | Required rule |
+|---|---|
+| Producer | Exact ordinal fixture value; no trim/case normalization. |
+| EventName / EventVersion | Existing producer-owned identity; exact suffix match. |
+| SigningIdentity | Producer-specific; cannot equal PPM's or another producer's identity. |
+| ActiveKeyId | Exactly one per producer/signing identity. |
+| PreviousKeyId | At most one; accepted only during recorded overlap. |
+| OverlapDeadlineUtc | Required with previous key; bounded UTC deadline. |
+| RevokedAtUtc | Explicit revocation; rejection is immediate regardless of overlap. |
+| FixtureDigest | Covers exact envelope, headers, signing input, canonical bytes and expected signature. |
+
+## Amendment 5. Repo Scope
+- This amendment changes only this module-pack file. A future executable amendment must separately name the
+  producer-owned service/contracts/tests paths and narrowly required PSS eventing/tests paths.
+
+## Amendment 6. Protected Paths
+- All runtime paths (`services/**`, `frontend/**`, `gateway/**`), configurations, secrets, deployments, broker
+  resources and `.antigravity/**` are protected. Other governance files and the PPM fixture are protected too.
+
+## Amendment 7. Dependencies
+- Permanent shared identity: `Diten.BuildingBlocks.Eventing.EventTransportMessage`.
+- PPM regression identity only: `PpmAuditIntentSubmittedV1` / `ppm.audit-intent.submitted.v1`, scheme
+  `ppm-event-hmac-sha256.v1`.
+- Each prospective producer must supply an approved immutable exact fixture. Broker reachability and secret
+  distribution remain future runtime-evidence dependencies.
+
+## Amendment 8. Runtime Constraints
+- Every producer has a distinct credential/key. PPM key ids, secrets, signing identity, namespace or derived
+  material are never reused.
+- Rotation is exactly `active + previous`; previous is accepted only before its bounded overlap deadline.
+  Expiry and explicit revocation each independently reject it.
+- Signature verification performs strict decoding then fixed-time byte comparison; string equality and
+  early-exit comparisons are forbidden.
+- Signing binds scheme, EventId, EventName, EventVersion, TenantId, CorrelationId, Producer, CausationId,
+  OccurredAtUtc, payload byte length and exact canonical payload bytes.
+- Each fixture defines maximum age, allowed future clock skew, UTC clock source and boundary behavior. Missing,
+  non-UTC, stale and too-far-future timestamps fail closed; replay does not silently bypass freshness.
+- Canonical UTF-8 bytes are captured once, strictly validated, persisted, signed, transported, verified and
+  consumed unchanged. They are never parsed and reserialized for signing or verification.
+
+## Amendment 9. Layout & Shell Contract
+- `shell: none`; no UI, route, diagnostics, replay or public onboarding endpoint is authorized.
+
+## Amendment 10. Backend File Convention
+- Handler/controller commits business state plus its producer-local transactional outbox row only; it never
+  calls RabbitMQ, MassTransit or a broker adapter.
+- A producer-local post-commit publisher/worker invokes the shared eventing seam.
+- New producers emit only the permanent shared URN. The legacy Platform URN is inbound compatibility only and
+  is never emitted or republished.
+
+## Amendment 11. Frontend File Contract
+- No frontend, localization, DataTable, secret/key UI or replay surface is in scope.
+
+## Amendment 12. Validation Rules
+| Input | Fail-closed rule |
+|---|---|
+| Signature headers | Exactly one complete set; partial or duplicate sets reject. |
+| Header names | Exact canonical case; case-duplicate names reject before mapping. |
+| Header values | Non-empty exact values; leading/trailing whitespace, tab, CR or LF reject, never normalize. |
+| Allowlist tuple | Exact producer, name, version, scheme and signing identity. |
+| Key | Active, or non-revoked previous key before deadline. |
+| Signature | Exact lowercase fixture format plus fixed-time verification. |
+| Canonical bytes | Strict UTF-8, bounded, non-empty, fixture-identical; no reserialization. |
+| EventId | Non-empty and bound to immutable envelope/payload/metadata. |
+| OccurredAtUtc | UTC within approved age/future-skew window. |
+
+## Amendment 13. Failure Path to Verify
+- Unknown tuple/key, malformed signature, missing/partial/duplicate/case-duplicate/whitespace/CRLF header,
+  stale/future timestamp, revoked key or expired previous key is a terminal redacted rejection.
+- Same `ConsumerName + EventId` with identical immutable envelope, canonical bytes and trusted metadata is a
+  duplicate no-op. Any changed bound value is a fail-closed conflict, never a new event.
+- Transient transport failures retry. Closed Contract/Security/Validation/Unsupported failures dead-letter
+  directly. Caller/stopping cancellation propagates unchanged with no failure/DLQ write or attempt increment.
+
+## Amendment 14. Authorization Convention
+- Approval authorizes only the exact allowlist tuple and recorded active/previous ids. It grants no HTTP/JWT,
+  user, broker-admin, replay or wildcard authority. Explicit revocation overrides all other key state.
+
+## Amendment 15. Gateway / API Routing Decision
+- No Gateway/Ocelot/HTTP route. Signed broker events are not JWT-authenticated requests, and request S2S is not
+  a fallback event transport.
+
+## Amendment 16. Acceptance Criteria
+- [ ] Parent remains `partial`; amendment remains DRAFT / NON-EXECUTABLE.
+- [ ] Four producer slots remain non-executable until four separately owned exact fixtures are approved; no
+  placeholder event identity is minted.
+- [ ] Each fixture binds tuple, scheme, immutable envelope, canonical bytes/length, key id and signature.
+- [ ] Credentials are unique per producer and PPM material is not reused.
+- [ ] Rotation, overlap, expiry, revocation, fixed-time verification, envelope/payload binding, freshness/skew,
+  EventId replay, header rejection, retry/terminal/DLQ/cancellation, URN and redaction gates pass.
+- [ ] Existing PPM signed-event fixtures and behavior pass unchanged.
+
+## Amendment 17. Test Expectations
+### Rotation / revocation / replay matrix
+| Scenario | Expected |
+|---|---|
+| Active key + exact fixture | Accept once. |
+| Previous key before deadline | Accept once. |
+| Previous key at/after deadline | Terminal reject. |
+| Active/previous key revoked | Immediate terminal reject. |
+| Unknown, cross-producer or PPM-reused key | Terminal reject. |
+| Same EventId + identical bound values | Duplicate no-op. |
+| Same EventId + any changed bound value | Fail-closed conflict. |
+| Authorized replay | Same EventId and byte-identical payload only. |
+| Changed bytes or implicit freshness bypass | Terminal reject. |
+
+- Fixture tests cover valid bytes plus partial, unknown, duplicate, case-duplicate, whitespace, tab, CR/LF,
+  malformed hex, wrong length, stale, skew, envelope/payload mutation and reserialization attempts.
+- Transport tests prove outbound shared URN and legacy inbound-only behavior. Retry tests distinguish transient,
+  terminal and cancellation paths. Logs/config evidence excludes or irreversibly redacts secrets, signatures,
+  payload bytes, credentials and derived key material.
+- PPM regression covers immutable fixture, active/previous keys, wrong/reused key, fixed-time verifier,
+  canonical binding, replay/idempotency, retry/DLQ and shared/legacy URNs.
+
+## Amendment 18. Ready-for-dev Checklist
+- [ ] Producer 1 exact fixture approved; unique credential/key provisioned.
+- [ ] Producer 2 exact fixture approved; unique credential/key provisioned.
+- [ ] Producer 3 exact fixture approved; unique credential/key provisioned.
+- [ ] Producer 4 exact fixture approved; unique credential/key provisioned.
+- [ ] Exact non-wildcard tuples are owner-reviewed.
+- [ ] Overlap duration, freshness age, future skew, revocation authority and secret distribution are concrete
+  and executable, not TBD.
+- [ ] PPM regression is green without changing its credentials, identity, fixture, signing input or behavior.
+- [ ] Explicit user runtime approval and separately scoped implementation worktree are recorded.
+
+## Amendment 19. Implementation Notes
+- Reuse shared canonical UTF-8 payload/outbox mechanics; DTO construction and identity remain producer-owned.
+- Onboarding is deny-by-default. Ambiguous/duplicate/unknown/incomplete configuration fails startup.
+- Stable reason codes may be logged; raw headers, payload, signature, key, secret, credential and canonical bytes
+  may not. This amendment changes no runtime and leaves all onboarding gates open.
+
+## Amendment 20. Follow-up Items
+- [ ] Obtain four exact producer-owned fixtures without inventing event names in PSS.
+- [ ] Record owners, identities, unique key namespaces, bounded deadlines, freshness/skew and revocation authority.
+- [ ] Prepare a separately approved executable amendment/worktree only after all four fixture gates close.
+- [ ] Preserve and rerun the PPM signed-event regression suite for every future onboarding.
