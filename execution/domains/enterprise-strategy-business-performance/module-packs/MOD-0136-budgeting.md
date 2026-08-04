@@ -338,7 +338,8 @@ silently reformatted; unsorted lines canonicalize to the mandated sort. Extra/mi
 
 ### This draft authoring task
 
-- `execution/domains/enterprise-strategy-business-performance/module-packs/MOD-0136-budgeting.md` only.
+- `execution/domains/enterprise-strategy-business-performance/module-packs/MOD-0136-budgeting.md`.
+- `execution/domains/enterprise-strategy-business-performance/module-packs/fixtures/MOD-0136/audit/**`.
 
 ### Future implementation scope (non-authoritative until promotion)
 
@@ -480,7 +481,7 @@ explicit grant is never sufficient.
 - Producer module and MOD-0021 projection value: exact `ModuleCode = MOD-0136`.
 - Payload profile: **Minimal Mutation Audit v1**, with exactly the six lower-camel-case fields
   `auditIntentId`, `actorId`, `entityType`, `entityId`, `mutation`, `occurredAtUtc`. Canonical UTF-8 serialization
-  order is exactly `actorId`, `auditIntentId`, `entityId`, `entityType`, `mutation`, `occurredAtUtc`, matching the
+  order is exactly `auditIntentId`, `actorId`, `entityType`, `entityId`, `mutation`, `occurredAtUtc`, matching the
   permanent Minimal Mutation Audit v1 transport contract; property order is part of the byte fixture.
 - `auditIntentId` is a non-empty immutable GUID and equals envelope `EventId`; `actorId` is the effective
   authenticated/delegated actor; `occurredAtUtc` is UTC and equals envelope `OccurredAtUtc`.
@@ -516,7 +517,7 @@ The producer-owned canonical payload is exact UTF-8, minified, has no BOM or ter
 bytes and is fixed by the fixture rather than by an implementation-time reserialization:
 
 ```json
-{"actorId":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb","auditIntentId":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","entityId":"cccccccc-cccc-4ccc-8ccc-cccccccccccc","entityType":"BudgetVersion","mutation":"certified","occurredAtUtc":"2026-08-04T09:30:00.0000000Z"}
+{"auditIntentId":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","actorId":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb","entityType":"BudgetVersion","entityId":"cccccccc-cccc-4ccc-8ccc-cccccccccccc","mutation":"certified","occurredAtUtc":"2026-08-04T09:30:00.0000000Z"}
 ```
 
 Fixture root is exact:
@@ -524,12 +525,22 @@ Fixture root is exact:
 
 | Fixture | Exact purpose / checksum |
 |---|---|
-| `budgeting-audit-intent-submitted-v1.canonical.json` | Canonical six-field payload; SHA-256 `583f1b27b0b9a34ec0ec2623e2948907a08b769abee3b47f84d637cd7248f68a` |
-| `budgeting-audit-intent-submitted-v1.expected-audit-event.json` | Expected MOD-0021 projection with exact `ModuleCode = MOD-0136` |
-| `budgeting-audit-intent-submitted-v1.schema.json` | Closed JSON Schema; six required properties and no additional properties |
-| `budgeting-audit-intent-submitted-v1.canonical.sha256` | `sha256sum`-compatible checksum record for the canonical file |
-| `budgeting-audit-intent-submitted-v1.signing-vector.json` | Budgeting-only, explicitly test-only envelope/key/signing-input vector |
-| `budgeting-audit-intent-submitted-v1.expected-signature.txt` | Exact lowercase HMAC-SHA-256 signature `c31ad6267a6a4bc0a06a22bcfc17501dc74ed44482c0b0e0c1cca7cb7183f734` |
+| [`budgeting-audit-intent-submitted-v1.canonical.json`](fixtures/MOD-0136/audit/budgeting-audit-intent-submitted-v1.canonical.json) | Common-order canonical six-field payload; SHA-256 `de9534d5b6ce6f7ef7237e6bcf593dfaa460a79b63e6293495d0de25b5225fe8` |
+| [`budgeting-audit-intent-submitted-v1.expected-audit-event.json`](fixtures/MOD-0136/audit/budgeting-audit-intent-submitted-v1.expected-audit-event.json) | Exact envelope plus MOD-0021 projection with `SourceService = Diten.FpaService` and `SourceModule = MOD-0136` |
+| [`budgeting-audit-intent-submitted-v1.schema.json`](fixtures/MOD-0136/audit/budgeting-audit-intent-submitted-v1.schema.json) | Exact `$id`, producer/module/event/integer-version/profile constants, common order and 14 pair-sensitive alternatives |
+| [`budgeting-audit-intent-submitted-v1.canonical.sha256`](fixtures/MOD-0136/audit/budgeting-audit-intent-submitted-v1.canonical.sha256) | Exactly 64 lowercase hex plus one LF; no filename or other bytes |
+| [`budgeting-audit-intent-submitted-v1.signing-vector.json`](fixtures/MOD-0136/audit/budgeting-audit-intent-submitted-v1.signing-vector.json) | Budgeting-only test vector with production-rejection assertions |
+| [`budgeting-audit-intent-submitted-v1.expected-signature.txt`](fixtures/MOD-0136/audit/budgeting-audit-intent-submitted-v1.expected-signature.txt) | Exact lowercase test HMAC-SHA-256 `e4896c480405bebf25ba31732a1549136056f8addfc540bf4ac0b28fb9119579` |
+| [`budgeting-audit-intent-submitted-v1.allowlist-matrix.json`](fixtures/MOD-0136/audit/budgeting-audit-intent-submitted-v1.allowlist-matrix.json) | All 14 accepted pairs plus all 31 rejected pairs in the closed 5 × 9 Cartesian matrix |
+| [`budgeting-audit-intent-submitted-v1.delegated-provenance.valid.json`](fixtures/MOD-0136/audit/budgeting-audit-intent-submitted-v1.delegated-provenance.valid.json) | FU16 delegated positive and exact trusted provenance projection |
+| [`budgeting-audit-intent-submitted-v1.non-delegated-provenance.valid.json`](fixtures/MOD-0136/audit/budgeting-audit-intent-submitted-v1.non-delegated-provenance.valid.json) | Non-delegated positive; all delegated fields are absent rather than null/defaulted |
+| [`budgeting-audit-intent-submitted-v1.delegated-provenance.negative-matrix.json`](fixtures/MOD-0136/audit/budgeting-audit-intent-submitted-v1.delegated-provenance.negative-matrix.json) | Missing/malformed/mismatched/replayed/stale FU16 negative cases; zero projection |
+| [`budgeting-audit-intent-submitted-v1.contract-negative-matrix.json`](fixtures/MOD-0136/audit/budgeting-audit-intent-submitted-v1.contract-negative-matrix.json) | Raw-byte/checksum/schema/envelope/provenance/projection binding order and complete contract-negative set |
+
+The bilateral acceptance case is indivisible: it reads the raw canonical bytes, verifies the exact sidecar format
+and digest before deserialization, validates the exact schema identity/payload pair, validates the trusted envelope
+identity and provenance, then compares the exact projection. Any stage failure is terminal and produces zero
+AuditEvent records. Copying, reserializing, reordering or normalizing fixture bytes is forbidden.
 
 Its expected projection is `AuditCategory.System`, `AuditOperation.Activate`, entity type
 `Budgeting.BudgetVersion`, entity ID `cccccccc-cccc-4ccc-8ccc-cccccccccccc`, source module `MOD-0136`, effective
@@ -551,11 +562,11 @@ The exact non-wildcard signed allowlist tuple is:
 | Signing identity | `diten.fpa.budgeting.audit` |
 
 The signing identity, active/previous key IDs, key namespace and derived material are Budgeting-specific and must
-never equal or reuse PPM or ScenarioPlanning material. The checked-in test vector uses exact key ID
-`budgeting-mod-0136-fixture-current` and test-only secret
-`QEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaW1xdXl8=`; both are forbidden in runtime configuration, vaults and
+never equal or reuse PPM or ScenarioPlanning material. The checked-in test vector uses exact fixture identity
+`diten.fpa.budgeting.audit.fixture-test`, key ID `budgeting-mod-0136-fixture-current.test-only` and test-only secret
+`QEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaW1xdXl8=`; all three are forbidden in runtime configuration, vaults and
 production fixtures. Its 529-byte signing input has SHA-256
-`8bebb1ee3101ffc98d9c24212d3b69e0b891d65dfed02c66997c61ffab5ac964` and produces the exact expected signature
+`573564afd3a61cb72dc08680da9e4ee5fdf95acb458f5ef50783cc525f850d4b` and produces the exact expected signature
 recorded above. The onboarding fixture binds the exact immutable shared
 event envelope, the six-field canonical UTF-8 payload bytes and byte length, EventId, EventName, EventVersion,
 TenantId, CorrelationId, CausationId, Producer, OccurredAtUtc, signing scheme, signing identity, key ID and expected
@@ -564,6 +575,8 @@ overlap deadline, freshness/future-skew values, revocation authority and product
 from provisioned secret material; this draft exposes only the clearly marked test secret and remains deny-by-default
 until those runtime values and the MOD-0035 verification matrix pass. New producers emit only
 `Diten.BuildingBlocks.Eventing.EventTransportMessage`; the legacy Platform URN is inbound compatibility only.
+Production acceptance tests must reject the `testOnly` marker, fixture identity, fixture KeyId and a signature
+derived from the fixture secret independently, even when its HMAC is otherwise byte-correct.
 
 #### Atomic producer boundary and publication
 
@@ -957,9 +970,15 @@ S2S providers receive no browser/Gateway route. This pack does not modify `ocelo
 - [ ] Every protected S2S operation validates FU16 delegated actor, tenant, operation, permission, request hash,
   replay and freshness bindings independently; service identity or entitlement alone never authorizes access.
 - [ ] `BudgetingAuditIntentSubmittedV1` / `fpa.budgeting-audit-intent.submitted.v1` carries exactly the six-field
-  Minimal Mutation Audit v1 payload and passes the closed producer/entity/mutation mapping fixture.
+  Minimal Mutation Audit v1 payload in the common MOD-0021 canonical order and passes the indivisible
+  byte/checksum/schema/envelope/provenance/projection fixture binding.
+- [ ] All 14 allowed entity/mutation pairs project exactly, all 31 invalid Cartesian cross-pairs and every
+  contract-negative fixture terminate with zero AuditEvent records, and no financial or PPM snapshot field appears.
+- [ ] FU16 delegated and non-delegated positives project exact effective actor/executing-service semantics;
+  missing, malformed, mismatched, replayed, stale or revoked delegated provenance terminates with zero projection.
 - [ ] The MOD-0035 exact signed allowlist tuple, Budgeting-specific signing identity, immutable-byte binding,
-  rotation/revocation/freshness and PPM/ScenarioPlanning credential-isolation tests pass.
+  rotation/revocation/freshness and PPM/ScenarioPlanning credential-isolation tests pass; production rejects
+  the fixture marker, identity, KeyId and test-secret-derived signature independently.
 - [ ] Producer mutation, receipt, audit intent and outbox are atomic locally; publish is post-commit through
   `IEventBus` only, and MOD-0021 inbox plus audit outbox is consumer-local and idempotent.
 - [ ] The PPM BudgetVersion bilateral fixture passes unchanged while every MOD-0117 adapter remains
@@ -1000,6 +1019,14 @@ S2S providers receive no browser/Gateway route. This pack does not modify `ocelo
 - Gate I audit mapping: exact event type/name/version/producer/module, six-field canonical fixture, all closed
   entity/mutation pairs and expected MOD-0021 projections; reject extra/missing/reordered canonical fields,
   unknown pairs, metadata mismatch, duplicate-same bytes versus duplicate-changed bytes and missing delegated provenance.
+- Gate I fixture closure: verify the raw 254 bytes and common property order without reserialization; exact
+  65-byte checksum sidecar; complete schema identity tuple and 14 `oneOf` pairs; schema/checksum/envelope/projection
+  pair mismatch; all 14 positives and 31 cross-pair negatives; property reorder, whitespace, BOM, LF/CRLF,
+  checksum format/value, wrong schema/event/module/version/source projection, unknown property and forbidden
+  financial/PPM payload fields.
+- Gate I provenance: FU16 delegated positive, non-delegated positive with delegation fields absent, and every
+  missing/malformed/tenant-actor-operation-permission-request-hash/replay/freshness/revocation negative in the
+  committed matrices; rejected cases create zero AuditEvent records.
 - Gate I signed eventing: exact MOD-0035 allowlist tuple, Budgeting-only signing identity/key namespace,
   immutable shared-URN envelope/payload binding, active/previous overlap, expiry, revocation, freshness/skew,
   fixed-time verification, retry/terminal/DLQ/cancellation and unchanged PPM signed-event regression.
@@ -1075,10 +1102,13 @@ S2S providers receive no browser/Gateway route. This pack does not modify `ocelo
 - [x] FU16 delegated actor/request binding is reconciled for exact tenant, actor, operation, permission,
   request hash, replay and freshness checks; executable AuthService/producer evidence remains a later gate.
 - [x] `BudgetingAuditIntentSubmittedV1` / `fpa.budgeting-audit-intent.submitted.v1`, the exact six-field Minimal
-  Mutation Audit v1 payload, closed producer/entity/mutation allowlist and MOD-0021 mapping/fixture are fixed.
+  Mutation Audit v1 payload in common MOD-0021 order, closed 14-pair allowlist, 31 invalid cross-pairs and exact
+  `SourceService`/`SourceModule` MOD-0021 projection are fixed in committed fixtures.
+- [x] The raw-byte checksum/schema/envelope/provenance/projection pair contract, delegated/non-delegated positives
+  and complete delegated/contract negative matrices are fixed as executable consumer-test inputs.
 - [x] MOD-0035 onboarding inputs fix the exact signed allowlist tuple, Budgeting-specific signing identity,
-  immutable-byte/shared-URN boundary, test-only signing vector/signature and no credential reuse; production
-  key/signature/live-broker evidence remains open.
+  immutable-byte/shared-URN boundary, test-only signing vector/signature, production rejection assertions and no
+  credential reuse; production key/signature/live-broker evidence remains open.
 - [x] The PPM BudgetVersion bilateral fixture and adapter non-executability boundary are explicit; fixture
   presence cannot activate a MOD-0117 adapter before matching producer/consumer approval and runtime authority.
 - [x] Exact transaction sets, idempotency canonicalization/hash/receipt/replay, unknown-commit reconciliation,
@@ -1135,6 +1165,7 @@ S2S providers receive no browser/Gateway route. This pack does not modify `ocelo
 | 2026-08-04 | Closed Budgeting Core composition: exact collections/indexes/owner manifest, transaction sets, idempotency and unknown-commit behavior, atomic audit/outbox with post-commit `IEventBus`, fail-closed providers and NO-OP/quarantine-only initial migration. Runtime evidence, audit event identity, status and production authority remain open/unchanged. | User / FP&A Control Tower |
 | 2026-08-04 | Reconciled Gate I onboarding to FU16/MOD-0021/MOD-0035: exact FPA audience/client and separate MOD-0136 manifest, 15 operation-permission pairs, delegated request binding, Budgeting audit identity/six-field mapping/fixture, signed-producer tuple, atomic local outbox, post-commit `IEventBus` and non-executable PPM adapter boundary. Financial decisions, permission keys, normative hashes, draft status and production authority remain unchanged. | User / FP&A Control Tower |
 | 2026-08-04 | Closed the MOD-0136 governance audit fixtures: exact six-file Budgeting fixture set, `ModuleCode = MOD-0136`, numeric EventVersion `1`, minified ordered 254-byte canonical payload/checksum, expected MOD-0021 projection and Budgeting-only test signing vector/signature. MOD-0138/PPM key-vector reuse is prohibited; financial decisions/hashes, 15 permissions, draft status and production authority remain unchanged. | User / FP&A Control Tower |
+| 2026-08-04 | Corrected the draft/non-executable audit payload to the common MOD-0021 property order and atomically regenerated its digest/signature. Completed the exact checksum/schema identity, 14-positive/31-cross-pair allowlist, exact SourceService/SourceModule projection, schema/checksum/envelope/projection binding, FU16 delegated/non-delegated positives, delegated/contract negatives and production test-identity rejection fixtures. Financial ContentHash vectors, 15 permissions, business semantics, status and production authority remain unchanged. | User / FP&A Control Tower |
 
 ## 20. Follow-up Items
 
