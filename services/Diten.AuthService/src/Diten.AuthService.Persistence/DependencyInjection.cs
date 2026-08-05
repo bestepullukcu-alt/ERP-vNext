@@ -70,6 +70,9 @@ public static class DependencyInjection
         services.AddScoped<IIntegrationEventInboxRepository, IntegrationEventInboxRepository>();
         services.AddScoped<IAuthAuditService, AuthAuditService>();
         services.AddScoped<IMfaChallengeRepository, MfaChallengeRepository>();
+        services.AddScoped<IServicePrincipalRepository, ServicePrincipalRepository>();
+        services.AddScoped<IServiceCredentialDescriptorRepository, ServiceCredentialDescriptorRepository>();
+        services.AddScoped<IS2SReplayReceiptStore, S2SReplayReceiptStore>();
 
         // Ensure Indexes and Seed Data
         // Note: In a production environment, this might be handled by an initialization service or migration tool.
