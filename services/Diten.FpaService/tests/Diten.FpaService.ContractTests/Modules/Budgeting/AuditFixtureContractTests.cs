@@ -8,11 +8,12 @@ namespace Diten.FpaService.ContractTests.Modules.Budgeting;
 
 public sealed class AuditFixtureContractTests
 {
-    private static readonly string FixtureRoot=Path.Combine(AppContext.BaseDirectory,"Fixtures","Audit");
+    private static readonly string FixtureRoot=Path.Combine(AppContext.BaseDirectory,"Fixtures","Budgeting","Audit");
     private const string Prefix="budgeting-audit-intent-submitted-v1";
 
     [Fact] public void Canonical_payload_checksum_schema_and_order_are_exact()
     {
+        using(var provenance=JsonDocument.Parse(File.ReadAllBytes(Path.Combine(FixtureRoot,"..","snapshot-provenance.json"))))foreach(var entry in provenance.RootElement.GetProperty("files").EnumerateObject()){var file=Path.Combine(FixtureRoot,"..",entry.Name);var actual=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(file))).ToLowerInvariant();Assert.Equal(entry.Value.GetString(),actual);}
         var payload=File.ReadAllBytes(Path.Combine(FixtureRoot,$"{Prefix}.canonical.json"));
         Assert.Equal(254,payload.Length);
         Assert.False(payload.AsSpan().StartsWith(new byte[]{0xef,0xbb,0xbf}));
