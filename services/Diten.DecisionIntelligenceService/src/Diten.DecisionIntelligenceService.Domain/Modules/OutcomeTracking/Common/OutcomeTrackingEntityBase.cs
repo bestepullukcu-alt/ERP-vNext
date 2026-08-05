@@ -1,0 +1,2 @@
+namespace Diten.DecisionIntelligenceService.Domain.Modules.OutcomeTracking.Common;
+public abstract class OutcomeTrackingEntityBase { protected OutcomeTrackingEntityBase(Guid id,Guid tenantId,Guid actorId){if(id==Guid.Empty||tenantId==Guid.Empty||actorId==Guid.Empty)throw new ArgumentException();Id=id;TenantId=tenantId;CreatedByActorId=actorId;} public Guid Id{get;} public Guid TenantId{get;} public Guid CreatedByActorId{get;} public long Version{get;protected set;} }
