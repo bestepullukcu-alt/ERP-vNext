@@ -211,9 +211,12 @@ The immutable Metric/Scale bootstrap fixture content, production credentials/Key
 deployment/live evidence and MOD-0117 adapter activation remain review/runtime gates. They are not
 pre-development blockers for this bounded handoff and are not authorized by `ready-for-dev`.
 
-### Exact future primary logical scope
+### Exact bounded implementation scope
 
-These reserved logical paths define the only future production location; they authorize no file creation:
+These logical paths are the exact file-creation authority for the `ready-for-dev` bounded Core Scaffold &
+Contract-Test slice. Files may be created inside them only for the core project/module skeleton and named test
+harnesses governed by this pack. Their later runtime activation, endpoint/worker/provider use, deployment and
+production operation remain separately unauthorized:
 
 - `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Api/Modules/OutcomeTracking/**`
 - `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Application/Modules/OutcomeTracking/**`
@@ -227,18 +230,38 @@ These reserved logical paths define the only future production location; they au
 - `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.ContractTests/Modules/OutcomeTracking/**`
 - `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.SecurityTests/Modules/OutcomeTracking/**`
 
-Exact future composition files are:
+### Exact bounded project and composition authority
 
-- `...Api/Modules/OutcomeTracking/OutcomeTrackingModule.cs` — sole module composition entry point.
-- `...Application/Modules/OutcomeTracking/DependencyInjection.cs` — Application registrations only.
-- `...Domain/Modules/OutcomeTracking/Common/OutcomeTrackingEntityBase.cs` — concrete service-local logical
+The bounded slice explicitly authorizes creation of exactly these project-shell and host-composition files:
+
+- `services/Diten.DecisionIntelligenceService/Diten.DecisionIntelligenceService.sln`
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Api/Diten.DecisionIntelligenceService.Api.csproj`
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Application/Diten.DecisionIntelligenceService.Application.csproj`
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Domain/Diten.DecisionIntelligenceService.Domain.csproj`
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Persistence/Diten.DecisionIntelligenceService.Persistence.csproj`
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Infrastructure/Diten.DecisionIntelligenceService.Infrastructure.csproj`
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Api/Program.cs`
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Api/Modules/OutcomeTracking/OutcomeTrackingModule.cs`
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Application/Modules/OutcomeTracking/DependencyInjection.cs`
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Persistence/Modules/OutcomeTracking/DependencyInjection.cs`
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Infrastructure/Modules/OutcomeTracking/DependencyInjection.cs`
+
+`Program.cs` is compile/test composition only. It cannot bind port `5013` or any listener, call a host run/start
+method, register/map an endpoint, controller or provider, activate a worker/publisher/consumer, load production
+configuration/credentials, or create `launchSettings.json`, `appsettings*.json` or deployment evidence.
+
+The exact bounded module composition files also include:
+
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Api/Modules/OutcomeTracking/OutcomeTrackingModule.cs` — sole module composition entry point.
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Application/Modules/OutcomeTracking/DependencyInjection.cs` — Application registrations only.
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Domain/Modules/OutcomeTracking/Common/OutcomeTrackingEntityBase.cs` — concrete service-local logical
   `EntityBase`; importing an EnterpriseStrategy/FP&A/shared business base is forbidden.
-- `...Persistence/Modules/OutcomeTracking/DependencyInjection.cs` — repositories, Mongo mappings and local
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Persistence/Modules/OutcomeTracking/DependencyInjection.cs` — repositories, Mongo mappings and local
   transaction participants only.
-- `...Infrastructure/Modules/OutcomeTracking/DependencyInjection.cs` — post-commit public abstractions only;
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Infrastructure/Modules/OutcomeTracking/DependencyInjection.cs` — post-commit public abstractions only;
   no Domain/Persistence ownership.
 
-Concrete future test-project files are exactly:
+The existing exact test-project authority remains:
 
 - `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.UnitTests/Diten.DecisionIntelligenceService.UnitTests.csproj`
 - `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.IntegrationTests/Diten.DecisionIntelligenceService.IntegrationTests.csproj`
@@ -247,7 +270,7 @@ Concrete future test-project files are exactly:
 - `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.ContractTests/Diten.DecisionIntelligenceService.ContractTests.csproj`
 - `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.SecurityTests/Diten.DecisionIntelligenceService.SecurityTests.csproj`
 
-The single future owner manifest is exactly
+The single authorized owner manifest is exactly
 `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Persistence/Modules/OutcomeTracking/Manifests/OutcomeTrackingMongoOwnershipManifest.cs`.
 No second manifest, convention scan or configuration override may claim an OutcomeTracking collection/index.
 
@@ -326,8 +349,9 @@ foreign-owned or key-order-divergent index.
   ordinary delete, soft-delete, hard-delete, bulk-delete, TTL or exceptional purge operation.
 - `module-pack-standard.md` permits only `EntityBase`, `BaseEntity` or `GlobalEntity`, not `TBD`.
   Frontmatter therefore retains `entity_base: EntityBase` as the mandatory logical tenant-owned base contract.
-  It does not invent or select a concrete service-local CLR base type; that implementation remains blocked
-  until topology/service approval.
+  The bounded slice authorizes only the exact service-local
+  `Domain/Modules/OutcomeTracking/Common/OutcomeTrackingEntityBase.cs` implementation named in §5; importing
+  an EnterpriseStrategy, FP&A or shared business base remains forbidden.
 - Cross-tenant, missing or actor-invisible resources return indistinguishable `404`.
 - Existing immutable versions and measurements are never updated in place. Stale version/correction attempts
   return `409`; correction creates a new append-only record with complete provenance.
@@ -498,11 +522,11 @@ The bounded core implementation handoff follows the Slim Golden Reference shape 
 `{Verb}{Object}Handler`; validators are `{Verb}{Object}Validator`. `Command`, `Query` or `Request` suffixes
 on handler/validator names and generic `OutcomeTrackingContext` handlers are forbidden.
 
-The only reserved host/module boundary is
+The only authorized bounded host/module boundary is
 `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.{Api|Application|Domain|Persistence|Infrastructure}/Modules/OutcomeTracking/**`.
-This logical reservation is not scaffold or runtime authority. Host composition, concrete project/test paths
-are limited to the exact scopes and composition/test files enumerated in §5; no unlisted host file, runtime
-activation or deployment is authorized.
+This is scaffold/file-creation authority only for the exact `ready-for-dev` slice. Host composition and
+project/test files are limited to the exact §5 allowlist; no unlisted host file, runtime endpoint/listener,
+worker/publisher/consumer activation, deployment or production operation is authorized.
 
 ## 11. Frontend File Contract
 
@@ -893,13 +917,13 @@ runtime authority. This reconciliation satisfies none of those execution gates b
 22. Existing ES prototype fields remain quarantined pending separately authorized migration.
 23. Bilateral supported-version/error fixtures enforce exact names/versions/allowlists and `400/401/403/404/409/503` without fallback.
 24. Frontmatter service is exactly `Diten.DecisionIntelligenceService`; OutcomeTracking has no placement in FP&A fallback/primary or EnterpriseStrategy.
-25. OutcomeTracking uses only the five reserved `Modules/OutcomeTracking/**` layer scopes and future service-local test scopes; no scaffold authority exists.
+25. OutcomeTracking bounded scaffold/file creation is authorized only in the five exact `Modules/OutcomeTracking/**` layer scopes, six named test scopes and exact §5 project/composition allowlist; runtime activation remains unauthorized.
 26. Repository/collection/index ownership and Mongo sessions/transactions are OutcomeTracking-local with no FP&A or EnterpriseStrategy access/sharing.
 27. Inter-service communication is typed/versioned-contract-only; no foreign entity/repository/persistence DTO/session leakage, dual-write or second SoR exists.
 28. OutcomeReference provider is OutcomeTracking-owned internal S2S with no browser/Gateway route.
 29. MOD-0117 adapter remains non-executable until producer runtime evidence, bilateral fixtures, consumer amendment approval and explicit runtime authority all exist.
 30. Port `5013` is canonically reserved for `Diten.DecisionIntelligenceService`; it grants no listener, controller, route, Gateway, deployment or runtime activation authority.
-31. Exact five-layer composition/test project paths, service-local EntityBase, eleven collection names, single owner-manifest path and tenant-first named index matrix are closed without creating files.
+31. The bounded slice may create the exact five-layer project/composition files, six test projects/scopes, service-local EntityBase and single owner manifest named in §5; no file outside that allowlist or runtime activation is authorized.
 32. Each mutation atomically commits business state, permanent idempotency receipt, audit intent and required outbox; partial commit is forbidden.
 33. Same-key/same-payload replays stored result, changed payload returns `409`; unknown commit uses commit-only retry then receipt reconciliation, unresolved ambiguity returns `503`.
 34. ObservationStatus/referenceability and rebuild checkpoints are non-persisted; owner manifest forbids projection/checkpoint collections.
@@ -993,6 +1017,9 @@ runtime authority. This reconciliation satisfies none of those execution gates b
 - [x] OutcomeMeasurementReference is explicitly deferred from v1 and no contract identity is minted.
 - [x] Binding topology is reconciled: only `Diten.DecisionIntelligenceService/Modules/OutcomeTracking`; no FP&A/EnterpriseStrategy co-host or fallback/dual-write model.
 - [x] Canonical port `5013` is reserved for `Diten.DecisionIntelligenceService` without granting route, deployment or runtime authority.
+- [x] The exact solution, five source project files, compile/test-only `Program.cs`, four module composition files,
+      six test project files and `Modules/OutcomeTracking/**` test/source scopes are explicitly authorized for
+      bounded scaffold/file creation; unlisted host files and runtime activation remain unauthorized.
 - [x] Exact five-layer composition paths, concrete test-project roots, service-local EntityBase path, collection/index names and single owner manifest are closed.
 - [x] Transaction/idempotency/permanent receipt/unknown-commit behavior, projection non-persistence, post-commit IEventBus boundary and NO-OP migration are closed.
 - [x] FU16 checkpoint `cfbfee00` closes the exact audience/client/owner, operation-to-permission manifest and delegated actor/request pre-development contract; runtime provisioning/evidence remains gated.
@@ -1016,7 +1043,9 @@ The binding topology is the separate future `Diten.DecisionIntelligenceService` 
 actual-outcome SoR outside the Enterprise Strategy prototype. Core repo/test paths, module-local base path,
 collection/index manifest, transaction semantics and S2S/audit/signed-event pre-development contracts are
 closed above. Bootstrap fixture content, production credentials/KeyIds, deployment/live evidence and MOD-0117
-activation remain review/runtime gates. This promotion creates no runtime listener or deployment.
+activation remain review/runtime gates. The exact §5 solution/project/composition allowlist and bounded
+`Modules/OutcomeTracking/**` scopes are authorized for file creation and compile/test composition. This
+promotion creates no runtime listener, endpoint, worker, service-start evidence or deployment.
 
 ### Prototype quarantine/migration
 
@@ -1052,3 +1081,4 @@ The pre-development Core Scaffold & Contract-Test decision set is closed. Only t
 | 2026-08-04 | Completed MOD-0072 audit fixtures against MOD-0021 checkpoint `9b75c213`: exact 65-byte checksum record, schema identity/pair enforcement, `SourceModule`, five-positive/ten-cross-pair and contract-negative matrix, delegated/non-delegated provenance fixtures. Canonical 246 bytes/SHA/signature, seven permissions, Outcome semantics and PPM no-copy remain unchanged; no runtime authority. | User / Enterprise Strategy Control Tower |
 | 2026-08-04 | Closed the MOD-0021 checkpoint `5349ed0` production-validator evidence gap with nine universal terminal rejection cases using the otherwise-correct DI test-only signature, including test identity/KeyId `active`/`previous` slot assignment attempts. No production credential, permission, Outcome semantic, PPM boundary, status or production authority changed. | User / Enterprise Strategy Control Tower |
 | 2026-08-04 | Promoted the bounded Core Scaffold & Contract-Test handoff to `ready-for-dev` after canonical port `5013` and FU16 `cfbfee00`, MOD-0021 `525f6275`, MOD-0035 `f1568ace` pre-development authorities closed. Bootstrap content, production credentials, deployment/live evidence and MOD-0117 activation remain review/runtime gates; `production_authority: none`. | User / Enterprise Strategy Control Tower |
+| 2026-08-05 | Corrected the bounded scaffold authority contradiction: explicitly authorized the exact solution, five source projects, compile/test-only `Program.cs`, module composition files, six existing test projects and `Modules/OutcomeTracking/**` scopes for file creation. Runtime activation, endpoints, workers, deployment and all unlisted surfaces remain unauthorized; status stays `ready-for-dev` and `production_authority: none`. | User / Enterprise Strategy Control Tower |
