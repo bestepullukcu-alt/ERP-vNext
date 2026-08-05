@@ -1,0 +1,60 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.FpaService.Domain", "src/Diten.FpaService.Domain/Diten.FpaService.Domain.csproj", "{A0100001-0000-4000-8000-000000000136}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.FpaService.Application", "src/Diten.FpaService.Application/Diten.FpaService.Application.csproj", "{A0100002-0000-4000-8000-000000000136}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.FpaService.Persistence", "src/Diten.FpaService.Persistence/Diten.FpaService.Persistence.csproj", "{A0100003-0000-4000-8000-000000000136}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.FpaService.Infrastructure", "src/Diten.FpaService.Infrastructure/Diten.FpaService.Infrastructure.csproj", "{A0100004-0000-4000-8000-000000000136}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.FpaService.Api", "src/Diten.FpaService.Api/Diten.FpaService.Api.csproj", "{A0100005-0000-4000-8000-000000000136}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.FpaService.UnitTests", "tests/Diten.FpaService.UnitTests/Diten.FpaService.UnitTests.csproj", "{A0100006-0000-4000-8000-000000000136}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.FpaService.ArchitectureTests", "tests/Diten.FpaService.ArchitectureTests/Diten.FpaService.ArchitectureTests.csproj", "{A0100007-0000-4000-8000-000000000136}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.FpaService.ContractTests", "tests/Diten.FpaService.ContractTests/Diten.FpaService.ContractTests.csproj", "{A0100008-0000-4000-8000-000000000136}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A0100001-0000-4000-8000-000000000136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0100001-0000-4000-8000-000000000136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0100001-0000-4000-8000-000000000136}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0100001-0000-4000-8000-000000000136}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0100002-0000-4000-8000-000000000136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0100002-0000-4000-8000-000000000136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0100002-0000-4000-8000-000000000136}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0100002-0000-4000-8000-000000000136}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0100003-0000-4000-8000-000000000136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0100003-0000-4000-8000-000000000136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0100003-0000-4000-8000-000000000136}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0100003-0000-4000-8000-000000000136}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0100004-0000-4000-8000-000000000136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0100004-0000-4000-8000-000000000136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0100004-0000-4000-8000-000000000136}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0100004-0000-4000-8000-000000000136}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0100005-0000-4000-8000-000000000136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0100005-0000-4000-8000-000000000136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0100005-0000-4000-8000-000000000136}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0100005-0000-4000-8000-000000000136}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0100006-0000-4000-8000-000000000136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0100006-0000-4000-8000-000000000136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0100006-0000-4000-8000-000000000136}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0100006-0000-4000-8000-000000000136}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0100007-0000-4000-8000-000000000136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0100007-0000-4000-8000-000000000136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0100007-0000-4000-8000-000000000136}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0100007-0000-4000-8000-000000000136}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0100008-0000-4000-8000-000000000136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0100008-0000-4000-8000-000000000136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0100008-0000-4000-8000-000000000136}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0100008-0000-4000-8000-000000000136}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
