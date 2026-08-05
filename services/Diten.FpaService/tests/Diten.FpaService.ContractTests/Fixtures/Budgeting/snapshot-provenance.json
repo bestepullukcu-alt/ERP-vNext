@@ -1,0 +1,22 @@
+{
+  "classification": "TEST-ONLY-IMMUTABLE-SNAPSHOT",
+  "moduleCode": "MOD-0136",
+  "authoritativePackCheckpoint": "c12110491abd353ced31cd5a51a0142ad6e99ef1",
+  "auditFixtureCheckpoint": "711962a3fdc1226d947672dc9b48d29296c960a0",
+  "productionAuthority": "none",
+  "files": {
+    "Audit/budgeting-audit-intent-submitted-v1.allowlist-matrix.json": "67e5daa9ade8146375628d636d9b7592e360ec08201d996c000448834c43e996",
+    "Audit/budgeting-audit-intent-submitted-v1.canonical.json": "de9534d5b6ce6f7ef7237e6bcf593dfaa460a79b63e6293495d0de25b5225fe8",
+    "Audit/budgeting-audit-intent-submitted-v1.canonical.sha256": "78597f73bdec830cbbe25c83956ace09d8adac369a412b8261dda2e063dc4896",
+    "Audit/budgeting-audit-intent-submitted-v1.contract-negative-matrix.json": "7721c4ef23b2b4b89493ef78057659130fd55aaf9e89e3d6a9e26388a3d75164",
+    "Audit/budgeting-audit-intent-submitted-v1.delegated-provenance.negative-matrix.json": "c4f3a2dfcf34d2bd909ca14724cb95622f8c0dc6e22588bca6b8cbe74101f873",
+    "Audit/budgeting-audit-intent-submitted-v1.delegated-provenance.valid.json": "14678db6aa381369c272746a390797caaf6eda7eb5b7408963bd5ab848e45188",
+    "Audit/budgeting-audit-intent-submitted-v1.expected-audit-event.json": "5256ab80802beaef715395b41464d81e1e8e01723ffa482e9719d7630d1cb10d",
+    "Audit/budgeting-audit-intent-submitted-v1.expected-signature.txt": "50f18fe60a320df3d57f3c752e32cb54322fdc469dd75949edd82c1a4963d045",
+    "Audit/budgeting-audit-intent-submitted-v1.non-delegated-provenance.valid.json": "2ab9ff8100b8d100f0523f26a8ad362856908aa43f19a92817f0af33aed82217",
+    "Audit/budgeting-audit-intent-submitted-v1.schema.json": "471f2711c00ec16579a9728df10f111455075d3c908941fd7e37c725df5db3d9",
+    "Audit/budgeting-audit-intent-submitted-v1.signing-vector.json": "5f032b66636bc48c65d6a704106d6ac52e843817185c4c1c588fd33d55627499",
+    "Financial/budget-content-v1-vector-1.canonical.json": "2262b02bc94923998e72e797f4e3996246e38b69aaa34349b119a111b919be13",
+    "Financial/budget-content-v1-vector-2.canonical.json": "2e0c437ca89d23d2602f8b2320d158e59d924284761ed6d8d4529a05a319fceb"
+  }
+}

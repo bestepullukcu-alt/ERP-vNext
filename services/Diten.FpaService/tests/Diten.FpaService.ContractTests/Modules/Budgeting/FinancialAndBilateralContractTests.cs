@@ -53,5 +53,5 @@ public sealed class FinancialAndBilateralContractTests
         var lines=draftLines.Select(x=>new BudgetLine(Guid.Empty,x.PeriodReference,x.LineKey,x.LineType,x.Amount)).ToArray();
         return BudgetContentCanonicalizer.Write(Guid.Parse("11111111-1111-1111-1111-111111111111"),number,label,new("fpa.currency-reference","1.0","USD"),new("fpa.budget-fiscal-calendar-reference","1.0",calendarId),UnitSemantics.Units,baseline,start,notes,periods,lines);
     }
-    private static byte[] AuthorityVector(long number){var d=new DirectoryInfo(AppContext.BaseDirectory);while(d is not null&&!File.Exists(Path.Combine(d.FullName,"AGENTS.md")))d=d.Parent;var pack=Path.Combine(d!.FullName,"execution","domains","enterprise-strategy-business-performance","module-packs","MOD-0136-budgeting.md");var marker=$"\"BudgetVersionNumber\":{number},";return Encoding.UTF8.GetBytes(File.ReadLines(pack).Single(x=>x.StartsWith("{\"ContractName\":\"fpa.budget-content-canonical-json.v1\"",StringComparison.Ordinal)&&x.Contains(marker,StringComparison.Ordinal)));}
+    private static byte[] AuthorityVector(long number)=>File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory,"Fixtures","Budgeting","Financial",$"budget-content-v1-vector-{number}.canonical.json"));
 }
