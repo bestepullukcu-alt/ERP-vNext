@@ -4,6 +4,7 @@ using Diten.AuthService.Persistence.Configurations;
 using Diten.AuthService.Persistence.Repositories;
 using Diten.AuthService.Persistence.Seed;
 using Diten.AuthService.Persistence.Settings;
+using Diten.AuthService.Persistence.S2S;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -56,6 +57,7 @@ public static class DependencyInjection
 
         services.AddSingleton<IMongoClient>(client);
         services.AddSingleton<IMongoDatabase>(database);
+        services.AddSingleton<IS2SMongoContext, S2SMongoContext>();
 
         // Repositories
         services.AddScoped<IUserRepository, UserRepository>();
@@ -73,6 +75,7 @@ public static class DependencyInjection
         services.AddScoped<IServicePrincipalRepository, ServicePrincipalRepository>();
         services.AddScoped<IServiceCredentialDescriptorRepository, ServiceCredentialDescriptorRepository>();
         services.AddScoped<IS2SReplayReceiptStore, S2SReplayReceiptStore>();
+        services.AddScoped<IS2SProofAcceptanceCoordinator, S2SProofAcceptanceCoordinator>();
 
         // Ensure Indexes and Seed Data
         // Note: In a production environment, this might be handled by an initialization service or migration tool.

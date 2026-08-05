@@ -111,34 +111,5 @@ public static class MongoDbIndexConfigurations
                 new CreateIndexOptions { ExpireAfter = TimeSpan.FromHours(1), Name = "ttl_mfa_challenge_expiry" })
         });
 
-        // FU16-A global S2S identity registry. Mongo's default binary collation preserves exact case-sensitive values.
-        var servicePrincipals = database.GetCollection<ServicePrincipal>(ServicePrincipalRepository.CollectionName);
-        await servicePrincipals.Indexes.CreateOneAsync(new CreateIndexModel<ServicePrincipal>(
-            Builders<ServicePrincipal>.IndexKeys.Ascending(x => x.ClientId),
-            new CreateIndexOptions { Unique = true, Name = ServicePrincipalRepository.ClientIdUniqueIndexName }));
-
-        var credentials = database.GetCollection<ServiceCredentialDescriptor>(ServiceCredentialDescriptorRepository.CollectionName);
-        await credentials.Indexes.CreateManyAsync(new[]
-        {
-            new CreateIndexModel<ServiceCredentialDescriptor>(
-                Builders<ServiceCredentialDescriptor>.IndexKeys.Ascending(x => x.CredentialId),
-                new CreateIndexOptions { Unique = true, Name = ServiceCredentialDescriptorRepository.CredentialIdUniqueIndexName }),
-            new CreateIndexModel<ServiceCredentialDescriptor>(
-                Builders<ServiceCredentialDescriptor>.IndexKeys.Ascending(x => x.Kid),
-                new CreateIndexOptions { Unique = true, Name = ServiceCredentialDescriptorRepository.KidUniqueIndexName }),
-            new CreateIndexModel<ServiceCredentialDescriptor>(
-                Builders<ServiceCredentialDescriptor>.IndexKeys.Ascending(x => x.ServicePrincipalId).Ascending(x => x.Generation))
-        });
-
-        var replayReceipts = database.GetCollection<S2SReplayReceipt>(S2SReplayReceiptStore.CollectionName);
-        await replayReceipts.Indexes.CreateManyAsync(new[]
-        {
-            new CreateIndexModel<S2SReplayReceipt>(
-                Builders<S2SReplayReceipt>.IndexKeys.Ascending(x => x.Issuer).Ascending(x => x.Jti),
-                new CreateIndexOptions { Unique = true, Name = S2SReplayReceiptStore.IssuerJtiUniqueIndexName }),
-            new CreateIndexModel<S2SReplayReceipt>(
-                Builders<S2SReplayReceipt>.IndexKeys.Ascending(x => x.Issuer).Ascending(x => x.Nonce),
-                new CreateIndexOptions { Unique = true, Name = S2SReplayReceiptStore.IssuerNonceUniqueIndexName })
-        });
     }
 }

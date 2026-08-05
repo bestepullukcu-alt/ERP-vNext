@@ -59,6 +59,7 @@ public sealed class ServiceCredentialDescriptor : GlobalEntityBase
     public DateTimeOffset NotBeforeUtc { get; private init; }
     public DateTimeOffset ExpiresAtUtc { get; private init; }
     public long Generation { get; private init; }
+    public long ProofValidationFence { get; private set; }
     public DateTimeOffset? OverlapValidUntilUtc { get; private init; }
     public ServiceCredentialStatus Status { get; private set; } = ServiceCredentialStatus.Pending;
 

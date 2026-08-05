@@ -45,6 +45,7 @@ public sealed class ServicePrincipal : GlobalEntityBase
     public DateTimeOffset? ExpiresAtUtc { get; private init; }
     public long PrincipalVersion { get; private set; } = 1;
     public long CredentialGeneration { get; private set; }
+    public long ProofValidationFence { get; private set; }
 
     public bool AllowsAudience(string audience) => AllowedAudiences.Contains(audience, StringComparer.Ordinal);
     public bool AllowsProtocolScope(string scope) => AllowedProtocolScopes.Contains(scope, StringComparer.Ordinal);

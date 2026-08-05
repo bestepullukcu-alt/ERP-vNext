@@ -16,9 +16,9 @@ public sealed class S2SReplayReceipt : GlobalEntityBase
         Jti = S2SExactValue.Required(jti, nameof(jti));
         Nonce = S2SExactValue.Required(nonce, nameof(nonce));
         RequestHash = S2SExactValue.Required(requestHash, nameof(requestHash));
-        if (expiresAtUtc <= acceptedAtUtc) throw new S2SContractException("Replay receipt expiry must be in the future.", nameof(expiresAtUtc));
         ExpiresAtUtc = expiresAtUtc;
         RetainUntilUtc = expiresAtUtc.Add(MinimumRetentionSkew);
+        if (RetainUntilUtc < acceptedAtUtc) throw new S2SContractException("Replay receipt retention window has elapsed.", nameof(expiresAtUtc));
         AcceptedAtUtc = acceptedAtUtc;
         CreatedAt = acceptedAtUtc;
         CreatedBy = "s2s-replay-authority";

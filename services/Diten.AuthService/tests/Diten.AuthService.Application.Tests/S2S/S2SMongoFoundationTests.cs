@@ -2,6 +2,8 @@ using Diten.AuthService.Application.S2S;
 using Diten.AuthService.Domain.S2S;
 using Diten.AuthService.Persistence.Configurations;
 using Diten.AuthService.Persistence.Repositories;
+using Diten.AuthService.Persistence.S2S;
+using Diten.AuthService.Persistence.Settings;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -28,9 +30,11 @@ public sealed class S2SMongoFoundationTests
         try
         {
             await MongoDbIndexConfigurations.EnsureIndexesAsync(database);
-            var principals = new ServicePrincipalRepository(database);
-            var credentials = new ServiceCredentialDescriptorRepository(database);
-            var replay = new S2SReplayReceiptStore(database);
+            var context = Context(databaseName);
+            await S2SMongoIndexInitializer.EnsureAsync(context);
+            var principals = new ServicePrincipalRepository(context);
+            var credentials = new ServiceCredentialDescriptorRepository(context);
+            var replay = new S2SReplayReceiptStore(context);
             var principalId = Guid.NewGuid();
             var firstPrincipal = CreatePrincipal(principalId, "gate-i-producer");
             var secondPrincipal = CreatePrincipal(Guid.NewGuid(), "gate-i-producer");
@@ -105,7 +109,7 @@ public sealed class S2SMongoFoundationTests
         {
             await MongoDbIndexConfigurations.EnsureIndexesAsync(database);
             var collection = database.GetCollection<S2SReplayReceipt>(S2SReplayReceiptStore.CollectionName);
-            var store = new S2SReplayReceiptStore(database);
+            var store = new S2SReplayReceiptStore(Context(databaseName));
             using var cancelled = new CancellationTokenSource();
             cancelled.Cancel();
             var now = DateTimeOffset.UtcNow;
@@ -122,7 +126,10 @@ public sealed class S2SMongoFoundationTests
         var settings = MongoClientSettings.FromConnectionString("mongodb://127.0.0.1:1");
         settings.ServerSelectionTimeout = TimeSpan.FromMilliseconds(100);
         settings.ConnectTimeout = TimeSpan.FromMilliseconds(100);
-        var unavailable = new S2SReplayReceiptStore(new MongoClient(settings).GetDatabase("fu16_unavailable"));
+        var unavailable = new S2SReplayReceiptStore(new S2SMongoContext(new MongoDbSettings
+        {
+            ConnectionString = "mongodb://127.0.0.1:1", DatabaseName = "fu16_unavailable"
+        }));
         var acceptedAt = DateTimeOffset.UtcNow;
         var result = await unavailable.TryAcceptAsync(new S2SReplayReceipt("diten-auth-service", Guid.NewGuid().ToString("D"),
             Guid.NewGuid().ToString("D"), "hash", acceptedAt.AddMinutes(5), acceptedAt), CancellationToken.None);
@@ -141,6 +148,12 @@ public sealed class S2SMongoFoundationTests
         await database.RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
         return (client, database, databaseName);
     }
+
+    private static S2SMongoContext Context(string databaseName) => new(new MongoDbSettings
+    {
+        ConnectionString = RequiredMongoUri,
+        DatabaseName = databaseName
+    });
 
     private static async Task<T[]> RaceAsync<T>(TaskCompletionSource gate, Func<Task<T>> first, Func<Task<T>> second)
     {
