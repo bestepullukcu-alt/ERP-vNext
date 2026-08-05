@@ -1,0 +1,44 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.ManagementGovernanceService.Domain", "src/Diten.ManagementGovernanceService.Domain/Diten.ManagementGovernanceService.Domain.csproj", "{B60D39AC-CC35-4FE6-89FD-24C4BF44F301}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.ManagementGovernanceService.Application", "src/Diten.ManagementGovernanceService.Application/Diten.ManagementGovernanceService.Application.csproj", "{A50E5EFA-2E93-4612-9F34-C98B49CF6A02}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.ManagementGovernanceService.Persistence", "src/Diten.ManagementGovernanceService.Persistence/Diten.ManagementGovernanceService.Persistence.csproj", "{C9F6D6F5-93A4-4E56-BC5D-35F79C2C6A03}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.ManagementGovernanceService.Infrastructure", "src/Diten.ManagementGovernanceService.Infrastructure/Diten.ManagementGovernanceService.Infrastructure.csproj", "{E8CB7375-15CC-412D-9294-CC3A32FEA704}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.ManagementGovernanceService.Api", "src/Diten.ManagementGovernanceService.Api/Diten.ManagementGovernanceService.Api.csproj", "{039DC717-2BBE-467B-A354-B912989F6705}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.ManagementGovernanceService.Tests", "tests/Diten.ManagementGovernanceService.Tests/Diten.ManagementGovernanceService.Tests.csproj", "{728C8586-6580-4599-853C-FEA458FB1506}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.ManagementGovernanceService.IntegrationTests", "tests/Diten.ManagementGovernanceService.IntegrationTests/Diten.ManagementGovernanceService.IntegrationTests.csproj", "{08485B88-236D-4881-84CE-86B0E18ED007}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.ManagementGovernanceService.ArchitectureTests", "tests/Diten.ManagementGovernanceService.ArchitectureTests/Diten.ManagementGovernanceService.ArchitectureTests.csproj", "{D98BF4D3-727C-4164-8CD6-D1DC4E210708}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B60D39AC-CC35-4FE6-89FD-24C4BF44F301}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B60D39AC-CC35-4FE6-89FD-24C4BF44F301}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A50E5EFA-2E93-4612-9F34-C98B49CF6A02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A50E5EFA-2E93-4612-9F34-C98B49CF6A02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9F6D6F5-93A4-4E56-BC5D-35F79C2C6A03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9F6D6F5-93A4-4E56-BC5D-35F79C2C6A03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8CB7375-15CC-412D-9294-CC3A32FEA704}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8CB7375-15CC-412D-9294-CC3A32FEA704}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{039DC717-2BBE-467B-A354-B912989F6705}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{039DC717-2BBE-467B-A354-B912989F6705}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{728C8586-6580-4599-853C-FEA458FB1506}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{728C8586-6580-4599-853C-FEA458FB1506}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08485B88-236D-4881-84CE-86B0E18ED007}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08485B88-236D-4881-84CE-86B0E18ED007}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D98BF4D3-727C-4164-8CD6-D1DC4E210708}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D98BF4D3-727C-4164-8CD6-D1DC4E210708}.Debug|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+EndGlobal
