@@ -13,7 +13,7 @@ public sealed class TrustedTransportMetadata
     public const int MaxHeaderValueBytes = 512;
     public const int MaxTotalBytes = 1024;
 
-    private static readonly HashSet<string> AllowedNames = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> AllowedNames = new(StringComparer.Ordinal)
     {
         SignatureSchemeHeader,
         KeyIdHeader,
@@ -41,7 +41,7 @@ public sealed class TrustedTransportMetadata
     {
         ArgumentNullException.ThrowIfNull(headers);
 
-        var validated = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var validated = new Dictionary<string, string>(StringComparer.Ordinal);
         var totalBytes = 0;
         foreach (var header in headers)
         {
