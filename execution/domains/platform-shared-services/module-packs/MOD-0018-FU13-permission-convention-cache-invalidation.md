@@ -6,7 +6,7 @@ service: Diten.Platform
 shell: none
 golden_reference: none
 entity_base: GlobalEntity
-status: ready-for-dev
+status: review
 owner: platform-team
 branch: feature/governance/access-governance-execution
 started: 2026-06-10
@@ -16,17 +16,21 @@ form_field_count: 0
 
 # MOD-0018-FU13 — Permission Convention + Cache Invalidation Events
 
-> **Ready-for-dev note.** This pack is the module-pack contract authored + reviewed **before** any cache-invalidation
+> **Historical ready-for-dev note.** This pack was authored + reviewed **before** any cache-invalidation
 > runtime work begins (Access Governance step **AG-STEP-010**). It is grounded on read-only repo evidence (HEAD
 > `050dba4`). Authoring, decision-lock revision, and `draft → ready-for-dev` promotion made **no** runtime, seed,
 > migration, test, frontend, gateway, `.antigravity`, registry, or roadmap change. **All three design decisions are
-> LOCKED (§5, OD-FU13-01/02/03) from repo evidence — no open decision remains.** `ready-for-dev` authorizes
-> implementation **planning / handoff only**; production code still passes the orchestrator / add-module gate. Runtime
-> behavior stays fail-closed throughout.
+> LOCKED (§5, OD-FU13-01/02/03) from repo evidence — no open decision remains.**
+
+> **Implementation reconciliation (2026-08-06, local):** Current branch contains FU13 Groups A-C implementation
+> evidence: Platform per-instance temporary endpoint registration for `EntitlementCacheInvalidationConsumer`; AuthService
+> user-role removal refresh-token revoke; AuthService role-permission removal holder lookup + per-holder refresh-token
+> revoke. Existing validation evidence is recorded in §16. Frontmatter is now `review`, not `done`, because the live
+> 2-instance RabbitMQ fan-out proof remains open.
 
 > **Identity (DCP-002, proven).** Canonical ID `MOD-0018-FU13`, canonical name **Permission Convention + Cache
 > Invalidation Events**, slug `permission-convention-cache-invalidation`, parent **MOD-0018** (RBAC / ABAC
-> Authorization), owner `platform-shared-services`, registry status `planned`. Verified fail-closed with
+> Authorization), owner `platform-shared-services`, registry status `review / pending-smoke`. Verified fail-closed with
 > `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0018-FU13 --name "Permission Convention + Cache Invalidation Events" --parent MOD-0018`
 > → **exit 0** (`OK MOD-0018-FU13: proven against Blueprint/registry`); `--check-all` → exit 0, 0 hard violations. The
 > deprecated shorthand alias **`FU13`** must **not** be used as a standalone ID — use the parent-prefixed
@@ -78,7 +82,7 @@ ever **widens** access (fail-closed).
 | C2 | **Lookup memory cache** | `PlatformLookupMemoryCache` (`Diten.Platform.Infrastructure/Services/`) | lookup option lists | in-memory (TTL confirmed at impl time) | none authorization-specific — lookups are reference data, **not** an enforcement grant; fan-out (OD-FU13-02) applies if ever invalidated |
 | C3 | **Data-scope** (`EffectiveScopes`) | `OrgDataScopeResolver` (`Diten.Platform.Application/Authorization/OrgDataScopeResolver.cs`) | OrgUnit/Position/ManagerChain/LegalEntity scope set | **request-only** — no cross-request cache; re-queries repos each resolve | **N/A by construction** — recomputed per request |
 | C4 | **Request authorization context** | `JwtTenantAuthorizationContext` (FU12, `Diten.Platform.Infrastructure/Authorization/`) | hydrated org fields + scopes for the current request | **once-per-request, memoized, dies at request end** | **N/A** — no cross-request staleness |
-| C5 | **JWT access token claims** | issued by `Diten.AuthService` `TokenService` (`AccessTokenExpirationMinutes = 15`) | `permission`, `role`, `actor_type`, org claims baked at issuance | **immutable until refresh / expiry (≤15 min)** | **⚠️ none today** — see §5 OD-FU13-01 |
+| C5 | **JWT access token claims** | issued by `Diten.AuthService` `TokenService` (`AccessTokenExpirationMinutes = 15`) | `permission`, `role`, `actor_type`, org claims baked at issuance | **immutable until refresh / expiry (≤15 min)** | Historical gap at authoring; current branch has Groups B-C refresh-token revoke evidence — see §16 |
 
 **Key consequence.** C3/C4 are request-scoped → org/position/hierarchy/legal-entity changes are picked up on the
 **next request** automatically (no cross-request cache to evict). C1 is already event-invalidated. **C5 is the only
@@ -110,8 +114,9 @@ expires (≤15 min) or is refreshed — the `permission`/`role` claims are baked
   path re-reads the current role-permissions** (`RefreshTokenCommandHandler` → `GetRolesByUserAsync` →
   `GetPermissionsByRolesAsync` → `GenerateAccessToken`). **Single-user refresh-token revocation already exists**
   (`RefreshToken.Revoke`, `IRefreshTokenRepository.RevokeAllByUserAsync(userId, tenantId, ct)`, reused in 9 sites). The
-  **users-by-role resolution seam is MISSING** — `IUserRoleRepository` has only `GetRolesByUserAsync` / `AssignAsync` /
-  `RevokeAsync` / `ExistsAsync`, **no by-role query**. There is **no** enforcement-side deny-list/blacklist.
+  **users-by-role resolution seam was missing at authoring** — `IUserRoleRepository` had only `GetRolesByUserAsync` /
+  `AssignAsync` / `RevokeAsync` / `ExistsAsync`, **no by-role query**. Current branch has the tenant-scoped
+  `GetUserIdsByRoleAsync` seam recorded in §16. There is **no** enforcement-side deny-list/blacklist.
 - **Lock.** Maximum authorization-staleness window = **≤15-min access-token TTL**; grants re-evaluate at the next refresh.
   **v1 closes the refresh path on a *privilege removal* via existing/new repository methods (no events, no deny-list):**
   - **User-role removal** (`RevokeRoleCommandHandler`, single user): after `_userRoleRepository.RevokeAsync(...)`, call
@@ -330,21 +335,20 @@ implementation is performed here** — FU13 only ensures the events/timestamps e
 
 **Ordering:** Group A → Group B → Group C → integration audit → Group D.
 
-> **No open decision remains.** OD-FU13-01/02/03 are all locked (§5) from repo evidence; this pack is promoted to
-> **`ready-for-dev`** (implementation handoff only — no runtime code is written by this pack). AG-STEP-011 Explain Access
+> **No open decision remains.** OD-FU13-01/02/03 are all locked (§5) from repo evidence; implementation evidence is now
+> recorded locally. AG-STEP-011 Explain Access
 > (MOD-0018-FU14) remains a **downstream reference only** (§12) — not implemented here. Slice 5B / Slice 7 blockers and
 > the AG-STEP-008 roadmap row are untouched.
 
 ---
 
-## 16. Runtime implementation — completed in integration branch
+## 16. Runtime implementation evidence — recorded locally
 
-> **Pack status note.** Frontmatter stays **`ready-for-dev`** (repo convention: the sibling FU15 pack also kept
-> `ready-for-dev` after its runtime landed on the integration branch; `done` is reserved for runtime **merged to
-> `main`**, which is blocked by the merge-freeze). Runtime completion is recorded here as a section, not a status flip.
+> **Pack status note.** Frontmatter is **`review`**. Groups A-C implementation evidence exists, but `done` is blocked
+> until the live 2-instance RabbitMQ fan-out proof is completed.
 
-**Integration audit: PASS** (read-only audit @ HEAD `34e38cc`). **No PR / no merge; not merged to `main`** (`main`
-still `d3ab4a4`).
+**Integration audit: PASS** (read-only audit @ HEAD `34e38cc`). Current local branch contains the implementation
+evidence below; this reconciliation does not modify runtime code.
 
 **Runtime commits (Groups A → B → C → integration audit → this Group D):**
 - `3a8f9dd` — **Group A:** Platform per-instance entitlement-cache invalidation fan-out.

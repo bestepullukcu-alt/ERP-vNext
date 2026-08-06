@@ -45,12 +45,12 @@ This file is **separate from** [`module-id-registry.md`](module-id-registry.md) 
 
 | Module ID | Durum | % | Var olan | Eksik |
 |---|---|---|---|---|
-| MOD-0018 RBAC / ABAC (parent) | Backend+Frontend | 85 | Permission handler/requirement/policy provider; `[HasPermission]`; grant-source tracking; 5 admin screens | data-scope frontend; FU13 cache hooks |
+| MOD-0018 RBAC / ABAC (parent) | Backend+Frontend | 88 | Permission handler/requirement/policy provider; `[HasPermission]`; grant-source tracking; 5 admin screens; FU13 cache-invalidation implementation evidence recorded locally | data-scope frontend; FU13 live horizontal fan-out proof |
 | MOD-0018-FU9 RBAC Admin UI (5 screens) | Backend+Frontend | 95 | Users/Roles/Permissions/RoleAssignments/UserRoleAssignments full CRUD + grant-state JS + Vitest | RoleAssignments/UserRoleAssignments **row l10n minimal** |
 | MOD-0018-FU10a Pure Auth Decision Contract | Backend+Frontend | 90 | PermissionAuthorizationHandler + AuthorizationSnapshot cache contract | AuthService self-explain (read via Platform/FU14 only) |
 | MOD-0018-FU10b EntitlementChecker ResolvedFrom | Sadece-backend | 80 | EntitlementChecker + cache (Platform); integration tests | No entitlement-debug UI; batch-check TODO (perf) |
 | MOD-0018-FU12 Tenant Authorization Context | Backend+Frontend | 85 | JwtTenantAuthorizationContext (lazy org-scope init); 6 test files | No "context browser" UI |
-| MOD-0018-FU13 Permission Convention + Cache Invalidation | **Kısmi** | 40 | Cache key builder; event envelope | **No invalidation hook on role/perm mutation; TTL hardcoded 300s; no admin invalidate; no tests** (stale perms ≤5min) |
+| MOD-0018-FU13 Permission Convention + Cache Invalidation | Backend review / pending smoke | 90 | Groups A-C implementation evidence recorded locally: Platform per-instance temporary endpoint for `EntitlementCacheInvalidationConsumer`; AuthService user-role removal calls `RevokeAllByUserAsync`; role-permission removal uses tenant-scoped `GetUserIdsByRoleAsync` + per-holder refresh-token revoke; request-fresh data-scope unchanged. Validation evidence: Platform.API build 0 errors, Platform.Application.Tests 557/557, Platform.Eventing.Tests 56/56 with 3 pre-existing skipped, AuthService Application/Persistence/API builds 0 errors, AuthService.Application.Tests 30/30. | Not done until live 2-instance RabbitMQ fan-out proof verifies one invalidation event evicts both Platform instances' local `IMemoryCache`; no admin invalidate UI remains out of v1 scope. |
 | MOD-0018-FU14 Effective Access Explain | Backend+Frontend | 80 | SelfAccessExplainService + SelfAccess UI (two-observation, no combined verdict by design); tested | Cross-user explain deferred |
 | MOD-0018-FU15 Real DataScopeResolver | Sadece-backend | 90 | OrgDataScopeResolver (OrgUnit/Position/ManagerChain/LegalEntity from MOD-0288); tests | **No frontend** (org-scope browser); gated by MOD-0288 UI (C2) |
 | MOD-0017-FU01 Tenant Login Security Settings | Backend+Frontend | 85 | TenantLoginSettings client/policy; used in handlers | **No tenant-admin config UI** (MFA/session/password policy not self-service) |
@@ -75,7 +75,7 @@ Ordered by how much they block verticals:
 2. 🔴 **MOD-0023 Workflow + MOD-0024 Task — not built (0%).** Any vertical needing approvals/SLA/tasking (and MOD-0285 governed publish) is blocked until ≥ MVP.
 3. 🔴 **MOD-0285 Navigation runtime loader.** Until built, every new module needs a hand-edited hardcoded menu entry.
 4. 🟡 **MOD-0220 MDM Legal Entity — frontend.** Backend-only; HR/CRM commonly reference legal entities → needs UI.
-5. 🟡 **MOD-0033 Quota override admin UI** + **MOD-0018-FU13 cache invalidation** (stale-perm correctness) + **MOD-0017-FU01 tenant security self-service UI**.
+5. 🟡 **MOD-0033 Quota override admin UI** + **MOD-0018-FU13 live fan-out proof** (horizontal stale-perm correctness) + **MOD-0017-FU01 tenant security self-service UI**.
 6. 🟡 **MOD-0014 Module Boundary Registry — not built** (only needed if menu/grouping must be formal-boundary-driven; catalog-domain is a lighter substitute).
 
 ## Quality debt (cross-cutting)
@@ -85,7 +85,7 @@ Ordered by how much they block verticals:
 - **Backend-without-frontend:** MOD-0288, MOD-0220, MOD-0026 (ops), MOD-0035 (infra), MOD-0018-FU15.
 
 ## Access Governance — partial items the owner flagged (confirmed in code)
-- MOD-0018-FU13 cache invalidation: **no frontend, no tests** (40%).
+- MOD-0018-FU13 cache invalidation: implementation evidence + focused tests recorded; **live 2-instance RabbitMQ fan-out proof remains open** before marking done / horizontal scaling.
 - MOD-0017-FU01 tenant login security: **no self-service config UI** (85% backend).
 - MOD-0018-FU15 data-scope: **no frontend** (gated by MOD-0288 UI).
 - RoleAssignments / UserRoleAssignments: **row-level l10n incomplete**.

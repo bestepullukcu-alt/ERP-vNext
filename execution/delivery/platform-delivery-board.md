@@ -33,7 +33,7 @@ Below is the list of active development tasks and carry-overs extracted from the
 | **WIP-MOD-0012-prod-vault** | MOD-0012 | Hardening | Section 9.1 | Implement production Vault adapter & integration tests | planned | High | Antigravity / Gemini | `orchestrator` | TBD | TBD | None | Create Key Vault integration |
 | **WIP-MOD-0009-activated-events** | MOD-0009 | Feature | Section 9.1 | Emit missing TenantActivated, Provisioning Success/Failure events | planned | High | Antigravity / Gemini | `orchestrator` | TBD | TBD | None | Implement event emitters |
 | **WIP-MOD-0014-boundary-code** | MOD-0014 | Foundation | Section 9.1 | Write repository implementation for module boundaries checking | planned | High | Antigravity / Gemini | `/add-module` | TBD | TBD | None | Create boundary check handler |
-| **WIP-MOD-0018-rbac-wiring** | MOD-0018 | Integration | Section 9.1 | Wire RequiresModule/RequiresFeature decorators, invalidate cache, link audit sink | planned | High | Antigravity / Gemini | `orchestrator` | TBD | TBD | None | Decorate platform controllers |
+| **WIP-MOD-0018-rbac-wiring** | MOD-0018 | Integration | Section 9.1 | Wire RequiresModule/RequiresFeature decorators, audit sink, and remaining authorization hardening; FU13 cache invalidation implementation evidence is recorded locally | review | High | Antigravity / Gemini | `orchestrator` | TBD | TBD | FU13 live 2-instance RabbitMQ fan-out proof remains open before horizontal scaling | Review FU13 evidence; run live fan-out proof before marking FU13 done. |
 | **WIP-MOD-0298-cache-bulk-ops** | MOD-0298 | Hardening | Section 9.1 | Complete cache TTL, invalidation triggers, bulk operations and audit retrofit | planned | Medium | Antigravity / Gemini | `orchestrator` | TBD | TBD | None | Wire invalidation events |
 | **WIP-MOD-0035-live-smoke** | MOD-0035 | Testing | Section 9.1 | Validate local/live RabbitMQ outbox recovery and smoke tests | planned | High | Antigravity / Gemini | `testing-agent` | TBD | TBD | None | Build smoke runner test |
 | **WIP-MOD-0027-notification-harden** | MOD-0027 | Hardening | Section 9.1 | Add throttling, locale fallbacks, sensitive-variable guards, template UI | planned | High | Antigravity / Gemini | `orchestrator` | TBD | TBD | None | Implement sensitive guards |
@@ -81,6 +81,7 @@ The following milestones are officially marked as completed:
 * **MOD-0021-5C-H3**: Audit menu nodes and state-tracking toggles added to PSS master layout sidebar.
 * **MOD-0021-5C-H4**: Ayrı `_DetailsModal.cshtml` partial extracted successfully from inline index views.
 * **PSS-PLAN-RECON-2**: Aggregated reporting alias reconciliation complete.
+* **MOD-0018-FU13 implementation-status reconciliation (2026-08-06)**: Groups A-C implementation evidence exists locally: Platform per-instance temporary entitlement-cache invalidation endpoint, AuthService user-role refresh-token revoke, and role-permission tenant-scoped holder lookup + per-holder refresh-token revoke. Focused build/test evidence is recorded; FU13 remains not done until live 2-instance RabbitMQ fan-out proof confirms both Platform instances evict local `IMemoryCache`.
 
 ---
 
