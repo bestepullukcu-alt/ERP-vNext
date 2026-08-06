@@ -134,6 +134,62 @@ public sealed class WorkflowTransitionGateTests
     }
 
     [Fact]
+    public async Task Platform_global_caller_with_explicit_target_tenant_finds_tenant_workflow_and_restores_scope()
+    {
+        var f = Fixture(TenantA);
+        var runtime = await f.SeedAsync(WorkflowInstanceStatus.Active, ApprovalTaskStatus.WaitingApproval);
+        f.TenantContext.SetPlatformContext(Guid.Empty);
+
+        var response = await f.Handler.Handle(
+            Query(
+                targetScope: WorkflowTransitionGateTargetScope.Tenant,
+                targetTenantId: TenantA,
+                requiresWorkflowGate: true,
+                targetTenantSource: "WorkflowBindingMetadata"),
+            CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(WorkflowTransitionGateDecision.Blocked, response.Data!.Decision);
+        Assert.Equal(runtime.Instance.Id, response.Data.WorkflowInstanceId);
+        Assert.True(f.TenantContext.IsPlatformContext);
+        Assert.Equal(Guid.Empty, f.TenantContext.TenantId);
+    }
+
+    [Fact]
+    public async Task Tenant_actor_cannot_evaluate_another_target_tenant()
+    {
+        var f = Fixture(TenantA);
+
+        var response = await f.Handler.Handle(
+            Query(
+                targetScope: WorkflowTransitionGateTargetScope.Tenant,
+                targetTenantId: TenantB,
+                requiresWorkflowGate: true,
+                targetTenantSource: "WorkflowBindingMetadata"),
+            CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(403, response.StatusCode);
+        Assert.Equal(WorkflowReasonCodes.WorkflowTargetTenantMismatch, response.ReasonCode);
+        Assert.Null(response.Data);
+        Assert.False(f.TenantContext.IsPlatformContext);
+        Assert.Equal(TenantA, f.TenantContext.TenantId);
+    }
+
+    [Fact]
+    public async Task Required_gate_without_matching_workflow_fails_closed()
+    {
+        var f = Fixture(TenantA);
+
+        var response = await f.Handler.Handle(Query(requiresWorkflowGate: true), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(409, response.StatusCode);
+        Assert.Equal(WorkflowReasonCodes.WorkflowRequiredGateNotFound, response.ReasonCode);
+        Assert.Null(response.Data);
+    }
+
+    [Fact]
     public async Task Multiple_instances_for_object_use_latest_started_instance()
     {
         var f = Fixture(TenantA);
@@ -174,6 +230,53 @@ public sealed class WorkflowTransitionGateTests
     }
 
     [Fact]
+    public void Target_tenant_is_required_for_explicit_tenant_scope()
+    {
+        var validation = new EvaluateWorkflowTransitionGateValidator().Validate(
+            Query(
+                targetScope: WorkflowTransitionGateTargetScope.Tenant,
+                targetTenantSource: "WorkflowBindingMetadata"));
+
+        Assert.False(validation.IsValid);
+        Assert.Contains(validation.Errors, x => x.ErrorMessage == WorkflowReasonCodes.WorkflowTargetTenantRequired);
+    }
+
+    [Fact]
+    public void Undefined_target_scope_is_rejected()
+    {
+        var validation = new EvaluateWorkflowTransitionGateValidator().Validate(
+            Query(targetScope: (WorkflowTransitionGateTargetScope)99));
+
+        Assert.False(validation.IsValid);
+        Assert.Contains(validation.Errors, x => x.ErrorMessage == WorkflowReasonCodes.WorkflowInvalidTargetScope);
+    }
+
+    [Fact]
+    public void Existing_json_payload_defaults_to_current_tenant_optional_gate()
+    {
+        var json = """
+        {
+          "objectType": "PurchaseOrder",
+          "objectId": "PO-1",
+          "objectRef": "Purchasing|PurchaseOrder|PO-1",
+          "requestedTransition": "submit",
+          "requestedTargetState": "Submitted",
+          "actorId": "actor-001",
+          "reasonCode": "SUBMIT"
+        }
+        """;
+
+        var request = System.Text.Json.JsonSerializer.Deserialize<EvaluateWorkflowTransitionGateRequest>(
+            json,
+            new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        Assert.NotNull(request);
+        Assert.Null(request!.TargetScope);
+        Assert.Null(request.TargetTenantId);
+        Assert.Null(request.RequiresWorkflowGate);
+    }
+
+    [Fact]
     public void Transition_gate_permission_constant_is_defined_without_seed_side_effect()
     {
         Assert.Equal("platform.workflow.transitions.evaluate", WorkflowPermissions.TransitionsEvaluate);
@@ -201,7 +304,11 @@ public sealed class WorkflowTransitionGateTests
     private static EvaluateWorkflowTransitionGateQuery Query(
         string objectType = ObjectType,
         string objectId = ObjectId,
-        string objectRef = ObjectRef) =>
+        string objectRef = ObjectRef,
+        WorkflowTransitionGateTargetScope? targetScope = null,
+        Guid? targetTenantId = null,
+        bool? requiresWorkflowGate = null,
+        string? targetTenantSource = null) =>
         new(
             new EvaluateWorkflowTransitionGateRequest(
                 objectType,
@@ -210,7 +317,11 @@ public sealed class WorkflowTransitionGateTests
                 "submit",
                 "Submitted",
                 "actor-001",
-                "SUBMIT"),
+                "SUBMIT",
+                targetScope,
+                targetTenantId,
+                requiresWorkflowGate,
+                targetTenantSource),
             Correlation);
 
     private static TestFixture Fixture(Guid tenantId)
@@ -223,7 +334,7 @@ public sealed class WorkflowTransitionGateTests
             tenantContext,
             instances,
             tasks,
-            new EvaluateWorkflowTransitionGateHandler(instances, tasks));
+            new EvaluateWorkflowTransitionGateHandler(instances, tasks, tenantContext));
     }
 
     private sealed record RuntimeSeed(WorkflowInstance Instance, ApprovalTask? Task);

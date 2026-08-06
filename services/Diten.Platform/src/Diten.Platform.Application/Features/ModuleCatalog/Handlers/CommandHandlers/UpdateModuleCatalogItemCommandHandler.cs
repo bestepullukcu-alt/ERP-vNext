@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.ModuleCatalog.Commands;
+using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -85,6 +86,9 @@ public sealed class UpdateModuleCatalogItemCommandHandler : IRequestHandler<Upda
         // FIX-MODULE-ICON — SOFT + operator-owned: the admin form is the ONLY place the icon changes (self-registration
         // seeds it once, never re-writes). Allowed for self-registered modules too (icon is not a HARD field).
         item.Icon = string.IsNullOrWhiteSpace(request.Request.Icon) ? null : request.Request.Icon.Trim();
+        item.WorkflowBinding = request.Request.WorkflowBinding is null
+            ? item.WorkflowBinding
+            : BuildWorkflowBinding(item, request.Request.WorkflowBinding, item.WorkflowBinding);
 
         await _repository.UpdateAsync(item, ct);
         return Response<NoContent>.Success(204);
@@ -114,6 +118,35 @@ public sealed class UpdateModuleCatalogItemCommandHandler : IRequestHandler<Upda
             && request.Request.Status == item.Status.ToString()
             && request.Request.ModuleVersion.Trim() == item.ModuleVersion
             && request.Request.IsCoreModule == item.IsCoreModule
-            && request.Request.IsTenantAssignable == item.IsTenantAssignable;
+            && request.Request.IsTenantAssignable == item.IsTenantAssignable
+            && request.Request.WorkflowBinding is null;
+    }
+
+    private static ModuleCatalogWorkflowBindingMetadata BuildWorkflowBinding(
+        Diten.Platform.Domain.Entities.ModuleCatalogItem item,
+        ModuleCatalogWorkflowBindingRequest request,
+        ModuleCatalogWorkflowBindingMetadata? existing)
+    {
+        var now = DateTimeOffset.UtcNow;
+        return new ModuleCatalogWorkflowBindingMetadata
+        {
+            ObjectType = "ModuleCatalogItem",
+            ObjectId = item.Id.ToString(),
+            ObjectRef = $"ModuleCatalogItem:{item.ModuleCode}",
+            TargetTenantId = request.TargetTenantId,
+            TargetTenantSource = "WorkflowBindingMetadata",
+            RequiresWorkflowGate = request.RequiresWorkflowGate,
+            WorkflowDefinitionKey = string.IsNullOrWhiteSpace(request.WorkflowDefinitionKey)
+                ? null
+                : request.WorkflowDefinitionKey.Trim(),
+            WorkflowTemplateId = request.WorkflowTemplateId,
+            CreatedBy = string.IsNullOrWhiteSpace(existing?.CreatedBy) ? "system:module-catalog" : existing.CreatedBy,
+            CreatedAtUtc = existing?.CreatedAtUtc ?? now,
+            UpdatedBy = "system:module-catalog",
+            UpdatedAtUtc = now,
+            CorrelationId = string.IsNullOrWhiteSpace(request.CorrelationId)
+                ? existing?.CorrelationId ?? Guid.NewGuid().ToString()
+                : request.CorrelationId.Trim()
+        };
     }
 }

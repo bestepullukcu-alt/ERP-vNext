@@ -153,7 +153,7 @@ public sealed class WorkflowSlaEscalationTests
             timeoutAfterMinutes: 40);
 
         var response = await f.Run.Handle(Run(DateTimeOffset.UtcNow, "run-timeout"), CancellationToken.None);
-        var gate = await new EvaluateWorkflowTransitionGateHandler(f.Instances, f.Tasks)
+        var gate = await new EvaluateWorkflowTransitionGateHandler(f.Instances, f.Tasks, f.TenantContext)
             .Handle(new EvaluateWorkflowTransitionGateQuery(
                 new EvaluateWorkflowTransitionGateRequest(
                     runtime.Instance.ObjectType,

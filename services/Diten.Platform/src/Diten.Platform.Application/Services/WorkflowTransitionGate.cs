@@ -34,7 +34,11 @@ public sealed class WorkflowTransitionGate : IWorkflowTransitionGate
                 request.RequestedTransition,
                 request.RequestedTargetState,
                 request.ActorId,
-                request.ReasonCode),
+                request.ReasonCode,
+                request.TargetScope,
+                request.TargetTenantId,
+                request.RequiresWorkflowGate,
+                request.TargetTenantSource),
             correlationId);
 
         var response = await _mediator.Send(query, ct);
@@ -46,9 +50,10 @@ public sealed class WorkflowTransitionGate : IWorkflowTransitionGate
                 IsAllowed: false,
                 Decision: WorkflowTransitionGateDecision.Blocked.ToString(),
                 GateStatus: "EvaluationFailed",
-                BlockingReasonCode: "WorkflowGateEvaluationFailed",
+                BlockingReasonCode: response.ReasonCode ?? WorkflowReasonCodes.WorkflowEvaluationUnavailable,
                 BlockingMessage: error,
-                CorrelationId: correlationId);
+                CorrelationId: correlationId,
+                StatusCode: response.StatusCode);
         }
 
         // Allowed or NotApplicable (no workflow → nothing to gate) both permit the commit.
@@ -60,7 +65,8 @@ public sealed class WorkflowTransitionGate : IWorkflowTransitionGate
             GateStatus: data.GateStatus.ToString(),
             BlockingReasonCode: allowed ? null : data.BlockingReasonCode,
             BlockingMessage: allowed ? null : data.BlockingMessage,
-            CorrelationId: data.CorrelationId ?? correlationId);
+            CorrelationId: data.CorrelationId ?? correlationId,
+            StatusCode: allowed ? 200 : ToBlockedStatusCode(data.BlockingReasonCode));
     }
 
     public async Task EnsureAllowedOrThrowAsync(WorkflowGateRequest request, CancellationToken ct = default)
@@ -71,4 +77,15 @@ public sealed class WorkflowTransitionGate : IWorkflowTransitionGate
             throw new WorkflowTransitionBlockedException(result);
         }
     }
+
+    private static int ToBlockedStatusCode(string? reasonCode) =>
+        reasonCode switch
+        {
+            WorkflowReasonCodes.WorkflowInvalidTargetScope or
+            WorkflowReasonCodes.WorkflowTargetTenantRequired => 400,
+            WorkflowReasonCodes.WorkflowTargetTenantUnauthorized or
+            WorkflowReasonCodes.WorkflowTargetTenantMismatch => 403,
+            WorkflowReasonCodes.WorkflowEvaluationUnavailable => 503,
+            _ => 409
+        };
 }

@@ -13,7 +13,8 @@ public sealed class UpdateModuleCatalogItemCommandValidator : ModuleCatalogItemR
             x => x.Request.Service,
             x => x.Request.Status,
             x => x.Request.ModuleVersion,
-            x => x.Request.SortOrder)
+            x => x.Request.SortOrder,
+            x => x.Request.WorkflowBinding)
     {
     }
 }

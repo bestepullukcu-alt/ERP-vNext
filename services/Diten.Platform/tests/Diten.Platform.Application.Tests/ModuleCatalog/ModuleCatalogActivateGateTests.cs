@@ -42,10 +42,50 @@ public sealed class ModuleCatalogActivateGateTests
         var gate = new WorkflowTransitionGate(new GateMediator(WorkflowTransitionGateDecision.Blocked, WorkflowTransitionGateStatus.PendingApproval, blockingReason: WorkflowReasonCodes.WorkflowPendingApproval));
         var handler = new ActivateModuleCatalogItemCommandHandler(repo, gate);
 
-        await Assert.ThrowsAsync<WorkflowTransitionBlockedException>(
-            () => handler.Handle(new ActivateModuleCatalogItemCommand(item.Id), CancellationToken.None));
+        var response = await handler.Handle(new ActivateModuleCatalogItemCommand(item.Id), CancellationToken.None);
 
         // No commit: the item stays in Draft.
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(409, response.StatusCode);
+        Assert.Equal(WorkflowReasonCodes.WorkflowPendingApproval, response.ReasonCode);
+        Assert.Equal(ModuleCatalogStatus.Draft, item.Status);
+        Assert.Equal(0, repo.UpdateCount);
+    }
+
+    [Fact]
+    public async Task Activate_uses_stored_workflow_binding_metadata_for_target_tenant_scope()
+    {
+        var targetTenantId = Guid.Parse("77777777-7777-7777-7777-777777777777");
+        var item = Draft();
+        item.WorkflowBinding = new ModuleCatalogWorkflowBindingMetadata
+        {
+            ObjectType = "ModuleCatalogItem",
+            ObjectId = item.Id.ToString(),
+            ObjectRef = $"ModuleCatalogItem:{item.ModuleCode}",
+            TargetTenantId = targetTenantId,
+            TargetTenantSource = "WorkflowBindingMetadata",
+            RequiresWorkflowGate = true,
+            WorkflowDefinitionKey = "B09-FU01",
+            CorrelationId = "catalog-binding-correlation"
+        };
+        var repo = new FakeModuleCatalogRepository(item);
+        var mediator = new GateMediator(
+            WorkflowTransitionGateDecision.Blocked,
+            WorkflowTransitionGateStatus.PendingApproval,
+            blockingReason: WorkflowReasonCodes.WorkflowPendingApproval);
+        var gate = new WorkflowTransitionGate(mediator);
+        var handler = new ActivateModuleCatalogItemCommandHandler(repo, gate);
+
+        var response = await handler.Handle(new ActivateModuleCatalogItemCommand(item.Id), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(409, response.StatusCode);
+        Assert.NotNull(mediator.LastRequest);
+        Assert.Equal(WorkflowTransitionGateTargetScope.Tenant, mediator.LastRequest!.TargetScope);
+        Assert.Equal(targetTenantId, mediator.LastRequest.TargetTenantId);
+        Assert.True(mediator.LastRequest.RequiresWorkflowGate);
+        Assert.Equal("WorkflowBindingMetadata", mediator.LastRequest.TargetTenantSource);
+        Assert.Equal("catalog-binding-correlation", response.CorrelationId);
         Assert.Equal(ModuleCatalogStatus.Draft, item.Status);
         Assert.Equal(0, repo.UpdateCount);
     }
@@ -64,10 +104,13 @@ public sealed class ModuleCatalogActivateGateTests
         WorkflowTransitionGateStatus status,
         string? blockingReason = null) : IMediator
     {
+        public EvaluateWorkflowTransitionGateRequest? LastRequest { get; private set; }
+
         public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken ct = default)
         {
             if (request is EvaluateWorkflowTransitionGateQuery q)
             {
+                LastRequest = q.Request;
                 var data = new EvaluateWorkflowTransitionGateResponse(
                     decision,
                     status,

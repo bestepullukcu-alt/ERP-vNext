@@ -30,4 +30,24 @@ public sealed class ModuleCatalogItem : GlobalEntity
     // MC-4 — Manual (operator-added) vs SelfRegistered (code-owned via manifest). Default Manual: legacy docs with
     // no Origin field deserialize to Manual, preserving existing behaviour.
     public ModuleCatalogOrigin Origin { get; set; } = ModuleCatalogOrigin.Manual;
+
+    // MOD-0023-FU01 — optional governed source for tenant-scoped Workflow gate evaluation of this global object.
+    public ModuleCatalogWorkflowBindingMetadata? WorkflowBinding { get; set; }
+}
+
+public sealed class ModuleCatalogWorkflowBindingMetadata
+{
+    public string ObjectType { get; set; } = "ModuleCatalogItem";
+    public string ObjectId { get; set; } = string.Empty;
+    public string ObjectRef { get; set; } = string.Empty;
+    public Guid TargetTenantId { get; set; }
+    public string TargetTenantSource { get; set; } = "WorkflowBindingMetadata";
+    public bool RequiresWorkflowGate { get; set; }
+    public string? WorkflowDefinitionKey { get; set; }
+    public Guid? WorkflowTemplateId { get; set; }
+    public string CreatedBy { get; set; } = string.Empty;
+    public DateTimeOffset CreatedAtUtc { get; set; } = DateTimeOffset.UtcNow;
+    public string? UpdatedBy { get; set; }
+    public DateTimeOffset? UpdatedAtUtc { get; set; }
+    public string CorrelationId { get; set; } = string.Empty;
 }

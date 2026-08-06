@@ -33,7 +33,7 @@ public sealed class WorkflowTransitionGateMongoRepositoryTests
             var dbContext = new PlatformDbContext(client, database);
             var instances = new WorkflowInstanceRepository(dbContext, tenantContext);
             var tasks = new ApprovalTaskRepository(dbContext, tenantContext);
-            var handler = new EvaluateWorkflowTransitionGateHandler(instances, tasks);
+            var handler = new EvaluateWorkflowTransitionGateHandler(instances, tasks, tenantContext);
 
             await instances.CreateAsync(NewInstance(WorkflowInstanceStatus.Completed, DateTimeOffset.UtcNow.AddDays(-2)));
             var active = await instances.CreateAsync(NewInstance(WorkflowInstanceStatus.Active, DateTimeOffset.UtcNow.AddMinutes(-5)));

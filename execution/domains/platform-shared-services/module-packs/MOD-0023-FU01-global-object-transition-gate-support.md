@@ -64,6 +64,8 @@ Ready-for-dev decision reconciliation (2026-08-06):
 - Module Catalog-owned workflow-binding metadata shape is approved for ready-for-dev with `ObjectType`,
   `ObjectId`, `ObjectRef`, `TargetTenantId`, `TargetTenantSource`, `RequiresWorkflowGate`,
   `WorkflowDefinitionKey` or `WorkflowTemplateId`, actor/timestamp metadata, and `CorrelationId`.
+- Module Catalog-owned workflow-binding metadata storage is resolved for local implementation as optional
+  `ModuleCatalogItem.WorkflowBinding` metadata on the existing global catalog item.
 - Additive JSON compatibility defaults are approved for ready-for-dev: missing `TargetScope` defaults to
   `CurrentTenant`, missing `TargetTenantId` is valid only for `CurrentTenant`, and missing
   `RequiresWorkflowGate` preserves optional-gate behavior.
@@ -73,7 +75,7 @@ Ready-for-dev decision reconciliation (2026-08-06):
 - Module Catalog cleanup rule is approved for ready-for-dev: deactivate first when active, then soft-delete;
   direct soft-delete is allowed only for `Draft` or `Inactive`; hard delete and bulk delete remain prohibited.
 - The pack is promoted to `status: ready-for-dev` by explicit user approval on 2026-08-06. Runtime
-  implementation remains separately blocked until explicitly authorized.
+  implementation was explicitly authorized locally by the user on 2026-08-06.
 
 ## 2. Ownership and Boundaries
 
@@ -152,7 +154,7 @@ marks the gate as required.
 
 ## 5. Repo Scope
 
-Authorized future implementation scope after separate runtime implementation approval:
+Authorized local implementation scope after explicit runtime implementation approval:
 
 - `services/Diten.Platform/src/Diten.Platform.Application/Contracts/IWorkflowTransitionGate.cs`
 - `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/WorkflowModels.cs`
@@ -167,7 +169,8 @@ Authorized future implementation scope after separate runtime implementation app
 - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/**`
 - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/ModuleCatalog/**`
 
-This ready-for-dev promotion edits only this module pack file.
+No frontend, Gateway, appsettings, seed, migration, fixture-data, AuthService seed/grant, raw Mongo, or unrelated
+files are authorized by this local implementation.
 
 ## 6. Protected Paths
 
@@ -415,6 +418,7 @@ Focused tests required after implementation approval:
 - [x] HTTP mapping table is approved for ready-for-dev: unavailable evaluation maps to 503 Service Unavailable; workflow-blocked mutation remains 409 Conflict.
 - [x] Module Catalog activation target-tenant source is approved for ready-for-dev: stored workflow-binding metadata / governed ownership record, not free request input.
 - [x] Module Catalog-owned workflow-binding metadata shape is approved for ready-for-dev.
+- [x] Module Catalog-owned workflow-binding metadata storage is resolved for local implementation as optional `ModuleCatalogItem.WorkflowBinding`.
 - [x] Target tenant authority/source rules are approved for ready-for-dev; arbitrary client-supplied tenant ids are not accepted as sufficient authority.
 - [x] Evaluate endpoint vs mutation endpoint response semantics are approved for ready-for-dev.
 - [x] `WorkflowTransitionBlockedException` 409 mapping is approved for ready-for-dev; workflow-blocked mutation remains `409 Conflict`.
@@ -434,7 +438,7 @@ Focused tests required after implementation approval:
 - [x] Runtime scope criteria are recorded for ready-for-dev review: Platform Workflow + Module Catalog reference consumer only.
 - [x] Excluded runtime surfaces are recorded for ready-for-dev review: no frontend/Gateway/appsettings/seed/migration/fixture-data/AuthService seed-grant/raw Mongo scope.
 - [x] Final ready-for-dev status change is explicitly approved by the user (2026-08-06).
-- [ ] Runtime implementation is explicitly authorized after ready-for-dev.
+- [x] Runtime implementation is explicitly authorized after ready-for-dev for local implementation only (2026-08-06).
 
 ## 19. Implementation Notes
 
@@ -486,16 +490,12 @@ Recommended behavior:
 
 Open decisions:
 
-- Concrete storage location for the Module Catalog-owned workflow-binding metadata / governed ownership record.
 - Exact controller/service location for the approved Workflow task cancel/close cleanup APIs.
-- Explicit runtime implementation authorization after ready-for-dev.
 
 ## 20. Follow-up Items
 
-1. Select the concrete storage location for the Module Catalog-owned workflow-binding metadata / governed
-   ownership record.
-2. Confirm the concrete controller/service location for Workflow task cancel/close cleanup APIs.
-3. Carry the approved live fixture setup, ownership-check, cleanup, and retained-history contract into implementation review.
-4. After implementation, repeat B09-style live smoke without raw Mongo, bulk delete, fixture-data files, seed-file
+1. Confirm the concrete controller/service location for Workflow task cancel/close cleanup APIs.
+2. Carry the approved live fixture setup, ownership-check, cleanup, and retained-history contract into implementation review.
+3. After implementation, repeat B09-style live smoke without raw Mongo, bulk delete, fixture-data files, seed-file
    changes, or hard delete.
-5. After Module Catalog proof passes, reconcile MOD-0023 governance docs to remove the Module Catalog activation design gap.
+4. After Module Catalog proof passes, reconcile MOD-0023 governance docs to remove the Module Catalog activation design gap.
