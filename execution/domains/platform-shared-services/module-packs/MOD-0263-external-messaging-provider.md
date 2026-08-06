@@ -7,7 +7,7 @@ service: Diten.Platform
 shell: none
 golden_reference: none
 entity_base: BaseEntity
-status: approved
+status: review
 owner: Notification
 branch: feature/email-service
 started: 2026-05-18
@@ -26,6 +26,7 @@ form_field_count: 0
 - **MVP UI decision:** None. No Platform Admin UI, no tenant UI, no DataTable, no menu entry, no Razor view, no RESX.
 - **Golden Reference decision:** `golden_reference: none` because this is not a CRUD/DataTable module.
 - **Readiness decision:** `status: ready-for-dev`. All eight pre-dev blocker decisions in §1.1 are **Accepted for MVP** as of 2026-05-18. Batch 1 (SMTP/MailKit) may begin.
+- **Current review status:** `review / pending-live-smoke` as of 2026-08-07. SMTP/MailKit Batch 1 implementation evidence and focused validation are recorded; manual live SMTP smoke remains the completion gate.
 
 ### 1.1 Pre-dev blocker decisions (Accepted for MVP — 2026-05-18)
 | Decision | MVP decision | Blocker status |
@@ -38,6 +39,16 @@ form_field_count: 0
 | Audit emission | Rely on MOD-0027 lifecycle audit (`MarkNotificationDispatchSentCommand` / `MarkNotificationDispatchFailedCommand` are already `IAuditableCommand` via MOD-0021). MOD-0263 emits no extra audit in MVP unless the existing `IAuditService` seam makes a single redacted append trivial at provider boundary; otherwise defer. No second audit table or writer. | **Accepted for MVP.** |
 | Event publication | Rely on MOD-0027 lifecycle events (`NotificationDispatchSentV1` / `NotificationDispatchFailedV1` / `NotificationDispatchCancelledV1`). Provider-level events (e.g. `notifications.provider.config_invalid.v1`) are **deferred**; if ever added, only through MOD-0035 `IEventBus`. | **Accepted for MVP.** |
 | Production safety | `FakeMessagingProvider` registration is preserved and remains environment-gated by MOD-0027 Batch 1B. In `Production`, the provider resolver routes only to non-Fake adapters; Fake refusal to run in `Production` is unchanged. | **Accepted for MVP.** |
+
+### 1.2 Implementation evidence (review / pending-live-smoke - 2026-08-07)
+SMTP/MailKit Batch 1 implementation evidence recorded: `SmtpMessagingProvider`, `MailKitSmtpClientFactory`, `SmtpProviderOptions` / validator, `SecretReferenceResolver`, `MessagingProviderErrorMapper`, DI registration, MailKit package, and mocked-transport SMTP tests are present. Focused build/test validation passed. No real SMTP server, external network, secrets, appsettings edits, fixture data, seeds, migrations, frontend, Gateway, or AuthService changes were used. `FakeMessagingProvider` remains registered and production-blocked where applicable. Live SMTP smoke remains pending approved local SMTP catcher, tenant settings, secret-reference, and cleanup plan.
+
+Validation evidence:
+- SMTP provider focused tests passed: `22/22`.
+- MOD-0027 Batch 1 / dispatch adapter regression slice passed: `32/32`.
+- Platform API build passed: `0 warnings`, `0 errors`.
+- `git diff --check` passed.
+- NuGet vulnerability metadata lookup warning `NU1900` was observed because `api.nuget.org` was unavailable; it did not fail validation.
 
 ## 2. Ownership and Boundaries
 ### In-scope
@@ -352,7 +363,9 @@ Adapter-level validation is a thin re-check; it does not duplicate or replace MO
 - [x] Status changed from `draft` to `ready-for-dev` (2026-05-18).
 
 ## 19. Implementation Batches
-### Batch 1 — SMTP/MailKit adapter (MVP, ready-for-dev)
+### Batch 1 — SMTP/MailKit adapter (MVP, implementation evidence recorded; pending live SMTP smoke)
+Batch 1 code evidence is present and focused validation passed on 2026-08-07. The remaining completion gate is the manual live SMTP smoke with an approved local SMTP catcher, tenant settings, secret-reference setup, dispatch evidence, and cleanup/retention decision.
+
 **In-scope (Batch 1 only):**
 - Add `MailKit` package reference to `Diten.Platform.Infrastructure.csproj`.
 - Create `SmtpProviderOptions` + `IValidateOptions<SmtpProviderOptions>` (or equivalent existing options-validation pattern) wired with `ValidateOnStart()`.
@@ -391,6 +404,9 @@ Adapter-level validation is a thin re-check; it does not duplicate or replace MO
 ## 20. Follow-up Items
 - [x] Confirmed with user (2026-05-18): MailKit accepted as SMTP client library.
 - [x] Confirmed with user (2026-05-18): SendGrid deferred to Batch 2.
+- [x] SMTP/MailKit Batch 1 implementation evidence recorded (2026-08-07).
+- [x] Focused mocked-transport SMTP tests and Platform API build passed (2026-08-07).
+- [ ] Run approved live SMTP smoke with local SMTP catcher, tenant settings, secret reference, dispatch evidence, and cleanup/retention plan before marking MOD-0263 done.
 - [ ] After MVP ships, schedule a security review focused on log/audit redaction proof and the "no secret in any captured artifact" assertion.
 - [ ] If MOD-0041 Batch 2/3 lands OpenTelemetry tracing for outbound network calls, evaluate whether `SmtpMessagingProvider` should add `Activity` instrumentation — no work until that seam is public.
 - [ ] If MOD-0035 stabilizes a `notifications.provider.*` event family, MOD-0263 may optionally publish provider-level events. Until then, rely on MOD-0027 lifecycle events.
