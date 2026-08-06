@@ -3,7 +3,7 @@ id: MOD-0033-FU01
 name: Tenant Quota Governance UI
 slug: tenant-quota-governance-ui
 domain: platform-shared-services
-status: approved
+status: review
 owner: module-pack-author
 branch: feature/pss/mod-0033-consumer-quota-model
 parent_module: MOD-0033
@@ -51,9 +51,15 @@ The MVP is read-only:
 - Keep API call gateway enforcement clearly outside MVP.
 
 ## Status Decision
-`status: ready-for-dev`.
+`status: review`.
 
-Rationale: scope, source contracts, frontend proxy contract, RBAC expectation, failure paths, localization keys, UI behavior, acceptance criteria, test expectations, and output contract are defined enough for orchestrator implementation. Gateway route availability remains a pre-implementation verification item; if missing, implementation must stop and report the integration-agent dependency without editing `ocelot.json`.
+Rationale: implementation evidence exists for the read-only Tenant Quota Governance UI/proxy slice, and post-fix Platform/Gateway smoke is `PASS-with-gaps`. The slice is not `done` because live authenticated Web-cookie proof remains blocked and positive quota-row data was not available. Gateway route availability is proven through the existing `/api/platform/tenants/{tenantId}/quotas` path; `ocelot.json` was not edited.
+
+Implementation reconciliation:
+- Permission alignment fix committed locally as `d1ecd9c5`: Web same-origin quota proxy now checks canonical `platform.tenants.quotas.read`, matching Platform quota read endpoints.
+- Focused validation passed: `frontend/Diten.Web` build succeeded, Platform permission/alias/quota focused tests passed `35/35`, and `git diff --check` passed.
+- Post-fix read-only smoke result on 2026-08-07: Gateway and direct Platform quota list returned `200` with empty `data: []`; `users.max` read returned expected `404 QUOTA_USAGE_NOT_FOUND`.
+- Remaining closeout gaps: RabbitMQ unavailable made Platform health degraded (`503`), Web login did not provide reusable curl cookies for `/Platform/Tenants/{tenantId}/QuotaStatus`, no safe restricted actor was available, and the tenant used had no quota rows.
 
 ## Ownership and Boundaries
 Owned by this pack:
@@ -253,9 +259,7 @@ The section must be visible only to:
 
 Authorization must not rely on frontend visibility alone. The frontend proxy and any backend read-only endpoint used by this UI must also enforce authorization.
 
-ASSUMPTION: Existing Tenant Details commercial read permission will guard this section until final permission key is confirmed.
-
-🔴 TBD: Final Tenant Details Commercial read permission key must be verified during implementation and written to the handoff report. If no existing permission can be found, implementation must stop and report a blocker instead of creating a new permission.
+Verified permission key: `platform.tenants.quotas.read`. The Web same-origin quota proxy and Platform quota read endpoints are aligned on the canonical read key; legacy `platform.tenants.quotas.view` remains Platform-side alias compatibility only.
 
 ## Localization
 Localization scope is `en` and `tr`.
@@ -514,7 +518,7 @@ Implementation handoff must report:
 - Failure path proof.
 - Build commands and results.
 - UI smoke results.
-- Verified permission key:
+- Verified permission key: `platform.tenants.quotas.read`.
 - Verified Gateway route:
 - Verified Commercial insertion point file:
 - Verified proxy endpoint:
@@ -559,14 +563,14 @@ Recommended future handling:
 - Source and override source labels can be displayed as secondary admin-support text without adding a new backend contract.
 
 ## 🔴 TBD
-- Gateway exposes MOD-0033 read-only quota status endpoint. If missing, implementation must stop and report integration-agent dependency; do not modify `ocelot.json` in this pack.
-- Final permission key for Tenant Details commercial read access must be confirmed during implementation and included in the handoff report. If no existing permission exists, stop and report a blocker; do not create a new permission in this pack.
-- Confirm exact existing Tenant Details controller path during implementation: `frontend/Diten.Web/Controllers/Platform/TenantsController.cs` or the current tenant details proxy/controller file.
-- Confirm the Commercial tab `Module Entitlements` section/partial file. Tenant Quota Governance must be inserted after it; if it cannot be found, report current composition and propose insertion point instead of inventing a new design.
+- Live authenticated Web-cookie proof for `/Platform/Tenants/{tenantId}/QuotaStatus` remains pending; curl login returned JSON but no reusable auth cookie.
+- Positive quota-row render proof remains pending because the safe existing tenant used in smoke had no `quota_usages` rows.
+- Restricted non-bypass actor proof remains pending because no safe existing restricted token/session was available.
+- Platform health remains degraded when RabbitMQ is unavailable; this is an environment gap for full live closeout.
 
 ## Final Decisions
 - This is a MOD-0046+ Tenant Core UI extension.
-- This pack is ready for development.
+- This pack is in review / pending-web-smoke after local implementation evidence and post-fix smoke.
 - This pack is read-only MVP.
 - Technical quota keys are not primary user-facing labels.
 - Browser calls only same-origin frontend proxy endpoints.
@@ -580,3 +584,5 @@ Recommended future handling:
 - MOD-0033 consume/release/reset/enforcement behavior is untouched.
 - Subscription lifecycle ownership is untouched.
 - DataTable / Golden Reference is not applicable.
+- Verified permission key is `platform.tenants.quotas.read`; legacy `.view` remains Platform-side alias compatibility only.
+- Post-fix smoke is `PASS-with-gaps` as of 2026-08-07: Platform/Gateway read path passed with empty data; Web-cookie proof remains pending.

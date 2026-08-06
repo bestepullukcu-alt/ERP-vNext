@@ -81,6 +81,7 @@ The following milestones are officially marked as completed:
 * **MOD-0021-5C-H3**: Audit menu nodes and state-tracking toggles added to PSS master layout sidebar.
 * **MOD-0021-5C-H4**: Ayrı `_DetailsModal.cshtml` partial extracted successfully from inline index views.
 * **PSS-PLAN-RECON-2**: Aggregated reporting alias reconciliation complete.
+* **MOD-0033-FU01 Tenant Quota Governance UI post-fix smoke (2026-08-07)**: Local fix `d1ecd9c5` aligns the Web same-origin quota proxy with Platform on canonical `platform.tenants.quotas.read`; Web build passed and focused Platform permission/alias/quota tests passed 35/35. Read-only Platform/Gateway smoke is **PASS-with-gaps** with empty quota data. FU01 remains `review / pending-web-smoke` until authenticated Web proxy proof and accepted closeout evidence exist. Quota override/admin mutation UI remains outside FU01.
 
 ---
 
