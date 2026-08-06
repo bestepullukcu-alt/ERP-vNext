@@ -1274,3 +1274,52 @@ closed pre-development fixture/design gate or revoke ready-for-dev implementatio
 - Revisit profile versioning only through an explicit compatibility decision; do not evolve the six-field
   minimum implicitly.
 - Parent status changes, if ever warranted, require a separate explicit governance decision.
+
+---
+
+# Amendment 21 — Gate I Executable Contract Foundation
+
+> **Amendment status: READY-FOR-DEV / BOUNDED IMPLEMENTATION AUTHORITY / NON-PRODUCTION.** This amendment
+> supersedes only Amendment 20's non-runtime restriction for the exact sequential checkpoints and repository
+> paths below. The parent frontmatter remains `status: ready-for-dev` and is not promoted or otherwise changed.
+
+## Exact Executable Scope and Exclusions
+
+Executable authority is limited to:
+
+- `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/**`.
+- `services/Diten.Building.Blocks/tests/Diten.BuildingBlocks.Eventing.Tests/**`.
+- `services/Diten.Platform/src/Diten.Platform.Infrastructure/Eventing/**`.
+- Only when required for Gate I transactional acceptance, the exact Gate I inbox persistence model and index
+  files under the existing Platform persistence boundary.
+- `services/Diten.Platform/tests/**/Eventing/**`.
+
+`services/Diten.AuthService/**`, every producer service, producer-owned fixtures, the MOD-0117 adapter, Gateway,
+frontend, WorkCenter, production configuration or secrets, deployment and activation remain forbidden. Producer
+fixtures must be referenced at their owner checkpoint; they are not copied or regenerated in PSS scope.
+
+## Sequential Checkpoints
+
+1. **Contract & Security Foundation.** Implement and verify the shared MOD-0035 signing/verification contract in
+   BuildingBlocks only: exact ordinal authorization tuple; active plus at most one previous key; UTC overlap;
+   irreversible revocation; 24-hour maximum age; 2-minute future skew; signing/verification providers and input
+   builder; injected `TimeProvider`; pre-dictionary raw-header duplicate/case-duplicate detection; exact canonical
+   three-header set; whitespace/CRLF/byte-limit rejection; terminal Contract/Security/Validation/Unsupported
+   classification distinct from transient dependency exceptions. `TrustedTransportMetadata` becomes exact
+   ordinal without changing existing PPM behavior. No Platform runtime code is authorized in this checkpoint.
+2. **MOD-0021 Transactional Acceptance.** After Checkpoint 1 passes, implement Platform consumer acceptance only
+   in the authorized paths. Inbox decision and exactly zero-or-one audit outbox result must share one local
+   transaction. Duplicate/conflict, terminal/transient, mapping, provenance and PPM regression matrices must pass.
+3. **Broker Evidence.** After Checkpoints 1 and 2 pass, demonstrate non-production broker delivery,
+   retry/DLQ/alarm and authorized replay evidence. No committed secret, production configuration, deployment or
+   activation is authorized.
+
+Checkpoint 1 evidence consists of focused unit/contract tests, the mutation matrix and the complete BuildingBlocks
+Eventing regression. RabbitMQ, MongoDB and live processes are not required or authorized for that checkpoint.
+Checkpoint 2 must close Amendment 20's transactional runtime-evidence boxes before Checkpoint 3 begins.
+
+## Authority Result
+
+This slice is **READY-FOR-DEV / BOUNDED IMPLEMENTATION AUTHORITY / NON-PRODUCTION**. Authority is sequential,
+path-bounded and fail-closed. It grants no producer publication, production identity/key/vault, HTTP route,
+frontend, deployment or activation authority. Parent and producer statuses remain unchanged.
