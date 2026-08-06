@@ -864,3 +864,72 @@ authority and a separately scoped implementation worktree are still mandatory be
 - [ ] Obtain explicit runtime authority in a separately scoped implementation worktree before any code,
   production allowlist/key/vault, broker or deployment change.
 - [ ] Preserve and rerun the PPM signed-event regression suite for every future onboarding.
+
+---
+
+# Gate I Eventing Executable Amendment — READY-FOR-DEV / BOUNDED IMPLEMENTATION AUTHORITY / NON-PRODUCTION
+
+> **Authority:** This amendment supersedes only the earlier Gate I amendment's `NON-RUNTIME` implementation
+> restriction for the exact files and checkpoints below. It grants bounded executable authority for a
+> non-production foundation; it does not promote or change the parent frontmatter `status: partial`.
+
+## Executable Boundary
+
+Authorized repository scope is exactly:
+
+- `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/**`.
+- `services/Diten.Building.Blocks/tests/Diten.BuildingBlocks.Eventing.Tests/**`.
+- `services/Diten.Platform/src/Diten.Platform.Infrastructure/Eventing/**`.
+- Only when required for Gate I transactional acceptance, the exact Gate I inbox persistence model and index
+  files under the existing Platform persistence boundary.
+- `services/Diten.Platform/tests/**/Eventing/**`.
+
+Everything else remains out of scope, including `services/Diten.AuthService/**`, producer-service runtime or
+fixtures, the MOD-0117 adapter, Gateway, frontend, WorkCenter, production configuration or secrets, deployment,
+activation, live broker provisioning and production identities or keys. Producer fixtures are consumed from
+their owner-declared checkpoints and must not be copied, regenerated or rewritten.
+
+## Checkpoint 1 — Contract & Security Foundation
+
+This checkpoint may change only the two `Diten.BuildingBlocks.Eventing` paths above. It must deliver:
+
+- `SignedEventAuthorizationTuple` with exact `StringComparison.Ordinal` producer, event name, numeric version,
+  scheme and signing-identity matching; normalization, trimming, case folding, prefix and wildcard matching are
+  forbidden.
+- Exactly one active key and at most one previous key, an explicit UTC overlap deadline, immediate and
+  irreversible generation revocation, maximum event age of 24 hours and allowed future skew of 2 minutes.
+- `IEventSigningKeyProvider`, `IEventVerificationKeyProvider`, `IEventSigningInputBuilder` and
+  `IEventSignatureVerifier`, all using an injected `TimeProvider` where current time affects a decision.
+- A raw-header extractor that detects duplicate and case-duplicate header names before dictionary construction;
+  exactly the canonical three-header signature set is accepted. Unknown, missing, partial, whitespace, tab,
+  CR/LF, malformed, non-canonical-case and byte-limit violations fail closed.
+- Terminal `Contract`, `Security`, `Validation` and `Unsupported` dispositions distinct from transient dependency
+  exceptions. Terminal failures are never made retryable by wrapping them as dependency failures.
+- `TrustedTransportMetadata` exact ordinal header-name behavior. Existing PPM signed-event fixtures, identities,
+  signing input and behavior remain byte-for-byte regression boundaries.
+
+Required evidence is the focused unit/contract suite, the header/security/freshness/key-state mutation matrix,
+and the complete BuildingBlocks Eventing regression. This checkpoint writes no Platform runtime code, starts no
+RabbitMQ/Mongo/live process, creates no production material, and remains unstaged until separately reviewed.
+
+## Checkpoint 2 — MOD-0021 Transactional Acceptance
+
+This checkpoint begins only after Checkpoint 1 evidence passes. It may use only the authorized Platform Eventing,
+exact Gate I inbox persistence model/index and Platform Eventing test paths. Acceptance must atomically persist
+the consumer inbox decision and exactly zero-or-one MOD-0021 audit outbox result, preserve
+`ConsumerName + EventId` duplicate/conflict semantics, classify terminal versus transient failures, and keep the
+existing PPM mapping unchanged. It does not authorize producer, Gateway, frontend or deployment work.
+
+## Checkpoint 3 — Broker Evidence
+
+This checkpoint begins only after Checkpoints 1 and 2 pass. It is evidence, not production activation: broker
+delivery, retry/DLQ/alarm and authorized replay must be demonstrated with non-production configuration and no
+committed secret. Production configuration, key/vault assignment, deployment and activation require a separate
+explicit authority decision.
+
+## Promotion Gate
+
+The amendment disposition is **READY-FOR-DEV / BOUNDED IMPLEMENTATION AUTHORITY / NON-PRODUCTION**. Each
+checkpoint is sequential and fail-closed. Passing a checkpoint does not widen repository scope or authorize the
+next checkpoint's production activation. Parent status, producer pack statuses and MOD-0117 authority remain
+unchanged.
