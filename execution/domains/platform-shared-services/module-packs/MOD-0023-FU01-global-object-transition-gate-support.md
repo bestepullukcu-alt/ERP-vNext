@@ -39,6 +39,12 @@ This pack recommends explicit `TargetScope` + `TargetTenantId` on the gate reque
 Platform/global workflow instances are rejected for this follow-up, and silent `NotApplicable` for ambiguous
 global-object gating is not allowed.
 
+The target tenant is not a client-trust shortcut. For platform/global mutations, `TargetTenantId` must come from
+an approved consumer-owned source of authority for the object being mutated, not from an arbitrary browser field.
+For Module Catalog activation that source remains an open decision: candidate sources are an explicit
+platform-admin activation request field, a stored workflow-binding/governance record, or another approved
+Module Catalog ownership record that can be audited and validated before the gate lookup runs.
+
 ## 2. Ownership and Boundaries
 
 ### In scope
@@ -49,6 +55,8 @@ global-object gating is not allowed.
 - In-process gate behavior for source modules that call `IWorkflowTransitionGate`.
 - Module Catalog activation as the reference consumer proof.
 - Focused tests around tenant scope resolution, cross-tenant rejection, and blocked/unavailable behavior.
+- Additive request compatibility for existing JSON clients that omit the new fields.
+- Audit/correlation metadata expectations for the effective target tenant used by cross-context gate evaluation.
 
 ### Out of scope
 
@@ -72,6 +80,7 @@ This follow-up owns contract-level changes only after approval:
 | `IWorkflowTransitionGate` implementation | Preserve fail-closed semantics and map controlled gate failures. |
 | Workflow gate reason/error codes | Stable codes for invalid target scope, workflow blocked, and evaluation unavailable. |
 | Module Catalog activation reference consumer | Prove a global object transition can be blocked by a tenant-scoped Workflow instance when explicit tenant scope is supplied. |
+| Audit/correlation metadata | Record effective target tenant, source object reference, and correlation id for cross-context gate decisions. |
 
 No new persistent entity is approved by this draft.
 
@@ -86,9 +95,14 @@ Proposed additive request fields:
 | `TargetScope` | enum/string | Yes after contract update | `WorkflowGateRequest`, `EvaluateWorkflowTransitionGateRequest` | Proposed values: `CurrentTenant`, `Tenant`. `CurrentTenant` preserves existing tenant-call behavior. |
 | `TargetTenantId` | `Guid?` | Conditional | `WorkflowGateRequest`, `EvaluateWorkflowTransitionGateRequest` | Required when `TargetScope = Tenant`; must be absent or ignored for pure current-tenant calls depending on final compatibility decision. |
 | `RequiresWorkflowGate` | `bool?` | Open decision | optional API/internal caller metadata | If true and no scoped Workflow instance is found, response must fail closed instead of returning `NotApplicable`. |
+| `TargetTenantSource` | enum/string | Open decision | optional internal metadata, not necessarily public API | Records whether target tenant came from current context, activation request, stored workflow binding, or another approved object-owner source. |
 
 Existing object fields remain unchanged: `ObjectType`, `ObjectId`, `ObjectRef`, `RequestedTransition`,
 `RequestedTargetState`, `ActorId`, `ReasonCode`, and `CorrelationId`.
+
+Backward compatibility rule: existing JSON payloads that omit all new fields must deserialize and behave as
+`TargetScope = CurrentTenant`, `TargetTenantId = null`, and optional-gate semantics unless the consumer explicitly
+marks the gate as required.
 
 ## 5. Repo Scope
 
@@ -102,6 +116,8 @@ Authorized future implementation scope after the pack is approved / ready-for-de
 - `services/Diten.Platform/src/Diten.Platform.Application/Services/WorkflowTransitionGate.cs`
 - `services/Diten.Platform/src/Diten.Platform.Application/Features/ModuleCatalog/Handlers/CommandHandlers/ActivateModuleCatalogItemCommandHandler.cs`
 - `services/Diten.Platform/src/Diten.Platform.API/Controllers/WorkflowDefinitionsController.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Controllers/Common/**` or existing exception mapping surface only if
+  needed to map `WorkflowTransitionBlockedException` consistently.
 - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/**`
 - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/ModuleCatalog/**`
 
@@ -129,6 +145,7 @@ This draft creation edits only this module pack file.
 | Module Catalog | Reference consumer for platform/global object activation. | Existing global object model. |
 | MOD-0018 Auth/RBAC | Permission enforcement for workflow evaluate and module-catalog update actions. | Consumed; no seed/grant edit in this FU unless separately approved. |
 | MOD-0021 Audit | Correlation and target tenant audit metadata must remain consistent. | Consumed. |
+| Existing exception handling / API result mapping | Needed to turn `WorkflowTransitionBlockedException` into a controlled mutation response. | Must reuse existing surface; no new global error subsystem. |
 
 ## 8. Runtime Constraints
 
@@ -138,6 +155,14 @@ This draft creation edits only this module pack file.
 - `TargetTenantId` must never authorize cross-tenant access by itself; actor policy and permission checks remain required.
 - `Guid.Empty` is not a valid tenant target for tenant-scoped Workflow gate evaluation.
 - Gate evaluation must remain read-only against Workflow and source business objects.
+- `TenantScope` use must be constrained to the smallest repository lookup block and must restore the previous
+  context in all success/failure paths.
+- The standalone evaluate endpoint may return a successful evaluation payload for `Blocked`; a source-object
+  mutation blocked by `WorkflowTransitionBlockedException` must map to a controlled non-success mutation response.
+- The new contract must be additive: older clients that omit target-scope fields must continue to work for
+  current-tenant optional gate evaluation.
+- Audit/correlation metadata for a scoped platform/global evaluation must include the effective target tenant
+  when one is used.
 
 ## 9. Layout & Shell Contract
 
@@ -170,14 +195,19 @@ DataTable contract.
 
 Proposed validation rules after implementation approval:
 
-- `TargetScope` is required and must be one of the approved enum values.
+- `TargetScope` defaults to `CurrentTenant` for omitted JSON fields unless the final compatibility decision
+  explicitly rejects defaulting.
+- `TargetScope` must be one of the approved enum values.
 - `TargetTenantId` is required when `TargetScope = Tenant`.
 - `TargetTenantId` must not be `Guid.Empty`.
 - Tenant users cannot supply a `TargetTenantId` different from their resolved tenant.
 - Platform/partner actors may supply `TargetTenantId` only when the endpoint/action has the workflow evaluate
   permission and the consuming command is approved to perform tenant-scoped gate checks.
+- `TargetTenantSource` must be present in audit/internal metadata for platform/global mutations that use
+  `TargetScope = Tenant`.
 - If `RequiresWorkflowGate = true`, no matching Workflow instance is a controlled blocked/unavailable outcome,
   not `NotApplicable`.
+- If `RequiresWorkflowGate` is omitted, existing optional-gate behavior is preserved for current-tenant callers.
 - Existing field validation for object type/id/ref, requested transition/target state, actor id, and reason code remains.
 
 ## 13. Failure Path to Verify
@@ -192,6 +222,8 @@ Proposed validation rules after implementation approval:
 | Gate repository/service unavailable | Controlled workflow-unavailable mapping; source transition blocked. |
 | No Workflow found while gate is optional | Existing `NotApplicable` behavior remains allowed. |
 | No Workflow found while gate is required | Controlled blocked/unavailable result; no silent bypass. |
+| `TenantScope` throws or downstream lookup fails | Previous tenant context is restored; response fails closed. |
+| Existing client omits new JSON fields | Current-tenant optional-gate behavior is preserved. |
 
 ## 14. Authorization Convention
 
@@ -207,8 +239,11 @@ Actor rules:
 
 - Tenant actors may evaluate gates only for their resolved tenant.
 - Platform/partner actors may evaluate a tenant-scoped gate only through explicit `TargetScope = Tenant` and
-  non-empty `TargetTenantId`.
+  non-empty `TargetTenantId` from an approved source of authority.
 - Missing or unauthorized actor context must fail closed.
+- `TargetTenantId` in a request is an input to validation and scoping, not authorization by itself.
+- Audit metadata for cross-context evaluation must record actor, effective target tenant, source object,
+  target-tenant source, and correlation id.
 
 ## 15. Gateway / API Routing Decision
 
@@ -218,9 +253,31 @@ The existing route family remains:
 
 - Platform direct API: `POST /api/v1/workflow/transitions/evaluate`
 - Gateway exposure: existing `/api/v1/workflow/**` routing remains integration-agent owned.
+- Module Catalog mutation route remains separate: `POST /api/platform/module-catalog/{id}/activate`.
 
 If a future contract adds public fields to the API request, Gateway should require no route change. If a new route
 is proposed later, it must be handled as a separate integration-agent task.
+
+Route behavior distinction:
+
+- `POST /api/v1/workflow/transitions/evaluate` is a read-only evaluation endpoint. A `Blocked` decision may be
+  returned as a successful `Response<EvaluateWorkflowTransitionGateResponse>` because the endpoint successfully
+  evaluated the gate.
+- `POST /api/platform/module-catalog/{id}/activate` is a mutation endpoint. If the gate blocks, throws
+  `WorkflowTransitionBlockedException`, or is unavailable, the mutation must return a controlled non-success
+  response and leave the source object unchanged.
+
+Proposed HTTP mapping:
+
+| Scenario | Evaluate endpoint | Mutation endpoint |
+|---|---|---|
+| Workflow active / pending approval | 200 with `Decision=Blocked`, `GateStatus=PendingApproval` | 409 `WORKFLOW_PENDING_APPROVAL` or equivalent controlled reason |
+| Invalid target scope / missing required target tenant | 400 controlled validation failure | 400 controlled validation failure; no mutation |
+| Unauthorized target tenant / cross-tenant tenant actor | 403 controlled failure | 403 controlled failure; no mutation |
+| Workflow evaluation unavailable | Non-success controlled response; fail closed | 409 or 503 per final decision; no mutation |
+| Optional no-workflow | 200 `NotApplicable` | Mutation may proceed if consumer rules allow |
+| Required no-workflow | 409 controlled required-gate failure | 409 controlled required-gate failure; no mutation |
+| `WorkflowTransitionBlockedException` from in-process gate | N/A unless exposed by a caller | 409 controlled blocked-transition response |
 
 ## 16. Acceptance Criteria
 
@@ -233,6 +290,12 @@ is proposed later, it must be handled as a separate integration-agent task.
 - Module Catalog activation leaves the catalog item in `Draft` when the gate blocks or is unavailable.
 - Module Catalog activation can proceed when the relevant tenant Workflow is approved/completed and Module Catalog status rules pass.
 - HTTP/API mapping is controlled and documented for invalid scope, blocked workflow, unavailable workflow evaluation, and optional no-workflow cases.
+- `WorkflowTransitionBlockedException` raised by an in-process consumer maps to HTTP 409 for mutation endpoints.
+- The standalone evaluate endpoint preserves successful blocked-evaluation semantics and does not pretend a
+  blocked decision is an endpoint failure.
+- JSON backward compatibility is proven for older evaluate/gate payloads that omit new fields.
+- Audit/correlation records include the effective target tenant and target-tenant source for scoped
+  platform/global evaluations.
 - No frontend, Gateway, appsettings, seeds, migrations, fixture-data, or raw Mongo data changes are included in this FU unless separately approved.
 
 ## 17. Test Expectations
@@ -246,6 +309,11 @@ Focused tests required after implementation approval:
 - Module Catalog activation tests using the real gate path that prove active Workflow blocks activation and approved Workflow allows activation.
 - Mongo-backed repository/gate test reusing the B09 pattern to prove no `DateTimeOffset` sort regression.
 - API/controller test or integration test proving HTTP status mapping and `Response<T>` reason/correlation behavior.
+- JSON serialization/deserialization tests proving old payloads without `TargetScope`, `TargetTenantId`, or
+  `RequiresWorkflowGate` remain valid and use current-tenant optional-gate semantics.
+- Tests proving `TenantScope` restores the prior tenant context after successful lookup, blocked lookup,
+  validation failure, and repository exception.
+- Tests proving audit/correlation metadata carries effective target tenant for platform/global scoped evaluation.
 
 ## 18. Ready-for-dev Checklist
 
@@ -255,6 +323,11 @@ Focused tests required after implementation approval:
 - [ ] Decision on `RequiresWorkflowGate` field is approved or explicitly deferred.
 - [ ] HTTP mapping table is approved.
 - [ ] Module Catalog activation target-tenant source is approved.
+- [ ] Target tenant authority/source rules are approved; arbitrary client-supplied tenant ids are not accepted as sufficient authority.
+- [ ] Evaluate endpoint vs mutation endpoint response semantics are approved.
+- [ ] `WorkflowTransitionBlockedException` 409 mapping is approved.
+- [ ] Additive JSON compatibility behavior is approved.
+- [ ] Audit/correlation target-tenant metadata requirements are approved.
 - [ ] MOD-0018/AuthService confirms no new permission seed/grant is needed, or approves the exact new permission.
 - [ ] Runtime scope remains limited to Platform Workflow + Module Catalog reference consumer files.
 - [ ] No frontend/Gateway/appsettings/seed/migration/fixture-data scope is added.
@@ -275,6 +348,14 @@ Recommended behavior:
 - Platform/global consumers must opt into tenant-scoped evaluation explicitly.
 - Required gate with missing scope must fail closed.
 - Optional gate with no matching Workflow may keep the current `NotApplicable` behavior.
+- `TenantScope.Begin` / `BeginPlatform` usage, if selected, must wrap only the Workflow repository lookup and
+  active-task lookup and must restore the prior context with `IDisposable`/`using` semantics.
+- Evaluate endpoint and mutation endpoint semantics remain intentionally different: evaluate reports the
+  decision; mutation maps blocked decisions to no-commit failures.
+- `WorkflowTransitionBlockedException` is the in-process signal for source-object mutation paths and should map
+  to HTTP 409 with stable reason/correlation metadata.
+- `TargetTenantId` authority must be proven from the object/consumer contract before lookup; it is not a
+  permission grant and not a tenant-isolation bypass.
 - Module Catalog activation is the first proof point, not a general license for every global object to use Workflow without a pack-level consumer decision.
 
 Open decisions:
@@ -283,6 +364,10 @@ Open decisions:
 - Whether `RequiresWorkflowGate` belongs in the generic gate request or remains consumer-specific.
 - Exact HTTP status mapping for workflow-blocked: candidate `409 Conflict` for blocked/invalid state, `400 Bad Request` for invalid scope, `503 Service Unavailable` or fail-closed `409` for unavailable evaluation.
 - Whether a new permission key is needed for platform actors evaluating tenant-scoped gates.
+- Whether `TargetTenantSource` is a persisted audit field, transient audit metadata, or derived from an existing
+  object-binding record.
+- Whether Module Catalog should expose target tenant in the activation request or require a stored binding before
+  activation can be gate-required.
 
 ## 20. Follow-up Items
 
@@ -290,5 +375,7 @@ Open decisions:
 2. Resolve the target-tenant source for Module Catalog activation.
 3. Finalize HTTP error mapping and reason codes.
 4. Decide whether to add `RequiresWorkflowGate`.
-5. After implementation, repeat B09-style live smoke without creating raw Mongo fixture data.
-6. After Module Catalog proof passes, reconcile MOD-0023 governance docs to remove the Module Catalog activation design gap.
+5. Finalize additive JSON compatibility expectations before implementation.
+6. Finalize audit/correlation target-tenant metadata requirements.
+7. After implementation, repeat B09-style live smoke without creating raw Mongo fixture data.
+8. After Module Catalog proof passes, reconcile MOD-0023 governance docs to remove the Module Catalog activation design gap.
