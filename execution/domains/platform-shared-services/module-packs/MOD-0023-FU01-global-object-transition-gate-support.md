@@ -296,6 +296,18 @@ Proposed HTTP mapping:
 - JSON backward compatibility is proven for older evaluate/gate payloads that omit new fields.
 - Audit/correlation records include the effective target tenant and target-tenant source for scoped
   platform/global evaluations.
+- Live proof uses an approved API-created fixture contract only: one non-baseline `Draft` or `Inactive`
+  `ModuleCatalogItem`, one tenant-scoped active Workflow instance bound to that item, and one active approval
+  task for that instance.
+- Live proof verifies ownership before mutation: the catalog item id/code, target tenant, Workflow instance,
+  and active approval task must match the intended fixture before any activation/deactivation/cancel/archive
+  style action is attempted.
+- Live fixture cleanup uses only approved APIs: cancel/close the Workflow task through the Workflow task API,
+  deactivate the Module Catalog item if activation occurred, then soft-delete the Module Catalog item through
+  the Module Catalog API. Raw Mongo edits, bulk delete, fixture-data files, seed files, and hard delete are
+  prohibited.
+- Workflow history, transition logs, audit records, and soft-deleted/deactivated lifecycle traces are expected
+  to remain after cleanup as regulated execution evidence; cleanup must not attempt to erase history.
 - No frontend, Gateway, appsettings, seeds, migrations, fixture-data, or raw Mongo data changes are included in this FU unless separately approved.
 
 ## 17. Test Expectations
@@ -314,6 +326,18 @@ Focused tests required after implementation approval:
 - Tests proving `TenantScope` restores the prior tenant context after successful lookup, blocked lookup,
   validation failure, and repository exception.
 - Tests proving audit/correlation metadata carries effective target tenant for platform/global scoped evaluation.
+- Live smoke plan must create fixture records only through approved APIs:
+  - one non-baseline `ModuleCatalogItem` in `Draft` or `Inactive` status;
+  - one tenant-scoped active Workflow instance whose `ObjectType`, `ObjectId`, and `ObjectRef` bind to that
+    Module Catalog item;
+  - one active approval task for that Workflow instance.
+- Live smoke must record fixture ids and perform ownership checks before mutation. If ownership cannot be proven,
+  the smoke stops without cleanup mutation and reports the blocker.
+- Cleanup smoke must use approved APIs only: Workflow task cancel/close first, Module Catalog deactivate if
+  needed, then Module Catalog soft-delete. No raw Mongo, no bulk delete, no fixture-data files, no seed-file
+  changes, and no hard delete.
+- Cleanup verification must read back current object state where APIs allow it and record that Workflow history
+  remains as expected instead of being erased.
 
 ## 18. Ready-for-dev Checklist
 
@@ -328,6 +352,13 @@ Focused tests required after implementation approval:
 - [ ] `WorkflowTransitionBlockedException` 409 mapping is approved.
 - [ ] Additive JSON compatibility behavior is approved.
 - [ ] Audit/correlation target-tenant metadata requirements are approved.
+- [ ] Live fixture setup contract is approved: exactly one non-baseline Draft/Inactive Module Catalog item,
+  one tenant-scoped active Workflow instance bound to it, and one active approval task.
+- [ ] Live fixture ownership checks before mutation are approved.
+- [ ] Live fixture cleanup contract is approved: workflow task cancel/close API, Module Catalog deactivate API
+  when applicable, Module Catalog soft-delete API, with remaining Workflow history expected.
+- [ ] Raw Mongo cleanup, bulk delete, fixture-data files, seed-file changes, and hard delete are explicitly
+  prohibited for FU01 live proof.
 - [ ] MOD-0018/AuthService confirms no new permission seed/grant is needed, or approves the exact new permission.
 - [ ] Runtime scope remains limited to Platform Workflow + Module Catalog reference consumer files.
 - [ ] No frontend/Gateway/appsettings/seed/migration/fixture-data scope is added.
@@ -368,6 +399,9 @@ Open decisions:
   object-binding record.
 - Whether Module Catalog should expose target tenant in the activation request or require a stored binding before
   activation can be gate-required.
+- Exact cleanup API path for Workflow task cancellation/closure in the approved live-smoke actor context.
+- Whether Module Catalog cleanup should prefer `Inactive -> soft-delete` or direct soft-delete when the item was
+  never activated.
 
 ## 20. Follow-up Items
 
@@ -377,5 +411,7 @@ Open decisions:
 4. Decide whether to add `RequiresWorkflowGate`.
 5. Finalize additive JSON compatibility expectations before implementation.
 6. Finalize audit/correlation target-tenant metadata requirements.
-7. After implementation, repeat B09-style live smoke without creating raw Mongo fixture data.
-8. After Module Catalog proof passes, reconcile MOD-0023 governance docs to remove the Module Catalog activation design gap.
+7. Approve the live fixture setup, ownership-check, cleanup, and retained-history contract before ready-for-dev.
+8. After implementation, repeat B09-style live smoke without raw Mongo, bulk delete, fixture-data files, seed-file
+   changes, or hard delete.
+9. After Module Catalog proof passes, reconcile MOD-0023 governance docs to remove the Module Catalog activation design gap.
