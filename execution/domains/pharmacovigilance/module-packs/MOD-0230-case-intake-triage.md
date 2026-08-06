@@ -440,6 +440,79 @@ Future route implementation must define:
 Frontend consumption must use a same-origin MVC proxy profile for this tenant UI. Direct browser-to-Gateway calls
 are not the preferred profile for MOD-0230; direct service-port calls from frontend remain forbidden.
 
+## Pending Approval Decision Checklist
+
+This checklist records decisions required for user review. All items remain pending unless separately approved by
+the user. Recording this checklist does not change `status: draft`, approve MOD-0230 for `ready-for-dev`,
+authorize runtime, close W-3A0, close OD-7, or approve `Diten.PvgService` scaffold work.
+
+### DCP-level
+
+- [ ] DCP-004 is approved from `draft` to `approved` / `ready-for-execution`.
+- [ ] DCP-004 authorization is limited to governance sequencing until each member pack separately reaches
+      `approved` / `ready-for-dev`.
+- [ ] W-3A0 remains excluded from this delivery stage but is not waived as a production blocker.
+- [ ] Urgent W-3 delivery-slice override remains planning metadata only and does not rewrite Blueprint wave
+      metadata.
+- [ ] MOD-0231 uses `Signal Minimum Scope` only as a delivery slice.
+- [ ] MOD-0234 remains no-shell / no-placeholder / no-runtime for this first-stage DCP.
+- [ ] OD-2 is closed by approved W-3A0 foundation remediation scope and owner, or approved production-grade
+      external contract substitution.
+- [ ] OD-7 is closed by approved PVG build/buy/partner strategy and integration boundary.
+
+### MOD-0230-level
+
+- [ ] MOD-0230 Case Intake & Triage is approved from `draft` to `approved` / `ready-for-dev`.
+- [ ] Recorded draft decisions are accepted: `shell: tenant`, `entity_base: EntityBase`,
+      `golden_reference: compact`, and `form_field_count: 16`.
+- [ ] The 16 create/edit fields, required/optional classification, and PHI/PII sensitivity classes are approved.
+- [ ] Field-level masking, row/field access, audit payload, evidence-link, and fail-closed behavior are approved
+      for each intake field.
+- [ ] MOD-0230 actor roles and permission matrix are approved with MOD-0018 / AuthService seed-grant ownership.
+- [ ] Triage/routing states, route targets, and Workflow/Inbox behavior are approved.
+- [ ] MOD-0230 handoff contract consumed by MOD-0231 is approved.
+- [ ] No delete and no bulk-delete are approved as exclusions; archive/void remains unavailable until
+      retention/legal-hold approval.
+
+### Runtime authorization
+
+- [ ] W-3A0 path is approved: close the foundation work directly or accept production-grade external contract
+      substitution for REG-PV-BASE dependencies.
+- [ ] OD-7 build/buy/partner boundary is approved: internal Diten build, partner system, or hybrid partner-aware
+      Diten control wrapper.
+- [ ] Service boundary is approved: dedicated `Diten.PvgService` or another explicit approved boundary.
+- [ ] `Diten.PvgService` scaffold is explicitly authorized before any service folder, port, DI, appsettings, route,
+      collection, seed, job, or test is created.
+- [ ] Future Gateway ownership and route work assignment to integration-agent are approved.
+- [ ] Future frontend route/profile is approved only after runtime is authorized: tenant shell, same-origin MVC
+      proxy, and no direct service-port calls.
+- [ ] Retention/legal-hold/archive policy is approved, including archive reason, actor, UTC timestamp, correlation
+      ID, AuditEvent, legal-hold block behavior, and export/read visibility.
+- [ ] MOD-0018 RBAC/permissions contract is approved: canonical keys, actor context, tenant authorization, and
+      seed/grant ownership.
+- [ ] MOD-0019 masking/row-field security contract is approved: sensitivity vocabulary, masking/omit/deny behavior,
+      and fail-closed policy.
+- [ ] MOD-0021 AuditEvent v1 contract is approved: event shape, payload allow-list, redaction, and failure behavior.
+- [ ] MOD-0023 Workflow/Inbox v1 contract is approved: transition gates, inbox routing, assignment, and
+      blocked/unavailable behavior.
+- [ ] MOD-0031 Evidence-Link contract is approved: object references, evidence completeness, link/query API, and no
+      fake evidence fallback.
+- [ ] Blueprint MOD-0040 / TRACE-BUNDLE contract is approved: canonical IDs, external IDs, `X-Correlation-Id`, trace
+      stitching, and regulated error model.
+- [ ] MOD-0288 is used only if routing or assignment consumes organization/person/position references.
+
+### Still-excluded work
+
+- [ ] W-3A0 remediation implementation remains excluded unless separately approved.
+- [ ] MOD-0231, MOD-0232, and MOD-0234 runtime implementation remains excluded until their own packs are
+      `approved` / `ready-for-dev`.
+- [ ] MOD-0234 shell, dashboard, placeholder endpoint, menu entry, fake data, service scaffold, and route remain
+      excluded.
+- [ ] MOD-0004 and MOD-0063 are not MOD-0230 runtime blockers unless MOD-0230 emits analytics/data-product outputs;
+      they remain hard MOD-0234 Signal MVP gates.
+- [ ] AI extraction, summarization, recommendation, routing, or scoring remains excluded until governed-AI controls
+      are approved.
+
 ## Acceptance Criteria
 
 Acceptance criteria for this draft pack:
