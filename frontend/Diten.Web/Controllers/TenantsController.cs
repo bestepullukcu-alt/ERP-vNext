@@ -10,7 +10,7 @@ namespace Diten.Web.Controllers;
 [Route("Platform/[controller]")]
 public sealed class TenantsController : Controller
 {
-    private const string QuotaViewPermission = "platform.tenants.quotas.view";
+    private const string QuotaViewPermission = "platform.tenants.quotas.read";
     private static readonly IReadOnlySet<string> StandardQuotaKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
         "users.max",
