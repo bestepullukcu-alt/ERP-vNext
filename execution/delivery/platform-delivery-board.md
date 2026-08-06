@@ -81,6 +81,7 @@ The following milestones are officially marked as completed:
 * **MOD-0021-5C-H3**: Audit menu nodes and state-tracking toggles added to PSS master layout sidebar.
 * **MOD-0021-5C-H4**: Ayrı `_DetailsModal.cshtml` partial extracted successfully from inline index views.
 * **PSS-PLAN-RECON-2**: Aggregated reporting alias reconciliation complete.
+* **MOD-0027-FU04C implementation-status reconciliation (2026-08-06)**: Tenant producer eventCode migration implementation evidence exists for `tenant.user.invited`, `tenant.lifecycle.suspended`, and `tenant.lifecycle.reactivated`; Platform.API build, focused Application tests 29/29, Eventing test project, and `git diff --check` are recorded as PASS. FU04C remains not done until live closeout smoke proves invite/suspend/reactivate dispatch through the live runtime path.
 
 ---
 
