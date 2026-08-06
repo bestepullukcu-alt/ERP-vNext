@@ -116,7 +116,7 @@ This follow-up owns contract-level changes only after runtime implementation is 
 | Audit/correlation metadata | Record effective target tenant, source object reference, and correlation id for cross-context gate decisions. |
 
 No new standalone persistent entity is approved by this pack. Module Catalog-owned workflow-binding metadata is
-recorded as governed object-owned metadata pending final storage-location selection.
+implemented as optional governed object-owned metadata on `ModuleCatalogItem.WorkflowBinding`.
 
 ## 4. Entity Fields
 
@@ -162,7 +162,14 @@ Authorized local implementation scope after explicit runtime implementation appr
 - `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Handlers/QueryHandlers/EvaluateWorkflowTransitionGateHandler.cs`
 - `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Validators/EvaluateWorkflowTransitionGateValidator.cs`
 - `services/Diten.Platform/src/Diten.Platform.Application/Services/WorkflowTransitionGate.cs`
+- `services/Diten.Platform/src/Diten.Platform.Domain/Entities/ModuleCatalogItem.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/ModuleCatalog/ModuleCatalogContracts.cs`
 - `services/Diten.Platform/src/Diten.Platform.Application/Features/ModuleCatalog/Handlers/CommandHandlers/ActivateModuleCatalogItemCommandHandler.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/ModuleCatalog/Handlers/CommandHandlers/CreateModuleCatalogItemCommandHandler.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/ModuleCatalog/Handlers/CommandHandlers/UpdateModuleCatalogItemCommandHandler.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/ModuleCatalog/Validators/CreateModuleCatalogItemCommandValidator.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/ModuleCatalog/Validators/ModuleCatalogItemRequestValidator.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/ModuleCatalog/Validators/UpdateModuleCatalogItemCommandValidator.cs`
 - `services/Diten.Platform/src/Diten.Platform.API/Controllers/WorkflowDefinitionsController.cs`
 - `services/Diten.Platform/src/Diten.Platform.API/Controllers/Common/**` or existing exception mapping surface only if
   needed to map `WorkflowTransitionBlockedException` consistently.
@@ -298,6 +305,12 @@ Existing permission keys remain the base:
 Permission strategy is approved for ready-for-dev as reuse of these existing keys. No new MOD-0018-owned key,
 AuthService seed, or AuthService grant change is approved for this FU.
 
+Implementation authority note after commit `5858ef4b`: Module Catalog activation uses `ModuleCatalogItem.WorkflowBinding`
+as the governed source for target tenant scope. The direct `POST /api/v1/workflow/transitions/evaluate` endpoint remains
+a permission-based read-only evaluation surface; platform callers can submit `TargetScope = Tenant` and
+`TargetTenantId` only with `platform.workflow.transitions.evaluate`. This is a residual authority-control gap to revisit
+if direct evaluation is later treated as source-of-authority proof rather than diagnostic/read-only evaluation.
+
 Actor rules:
 
 - Tenant actors may evaluate gates only for their resolved tenant.
@@ -331,7 +344,7 @@ Route behavior distinction:
   `WorkflowTransitionBlockedException`, or is unavailable, the mutation must return a controlled non-success
   response and leave the source object unchanged.
 
-Approved draft HTTP mapping:
+Implemented ready-for-dev HTTP mapping:
 
 | Scenario | Evaluate endpoint | Mutation endpoint |
 |---|---|---|
@@ -408,6 +421,16 @@ Focused tests required after implementation approval:
   delete.
 - Cleanup verification must read back current object state where APIs allow it and record that Workflow history
   remains as expected instead of being erased.
+
+Coverage status after local implementation commit `5858ef4b`:
+
+- Present: handler/unit coverage for request validation, explicit tenant scope lookup, tenant cross-scope denial,
+  required-gate fail-closed behavior, legacy JSON/default compatibility, Module Catalog `WorkflowBinding`
+  persistence, Module Catalog activation binding handoff, controlled blocked activation response, and the existing
+  Mongo-backed transition-gate sort regression.
+- Follow-up: API/controller mapping coverage for final HTTP envelopes, repository-exception `TenantScope`
+  restoration coverage, and audit/correlation target-tenant evidence tests remain open unless implemented in a
+  later local runtime/test pass.
 
 ## 18. Ready-for-dev Checklist
 
