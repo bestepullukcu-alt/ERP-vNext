@@ -41,20 +41,29 @@ global-object gating is not allowed.
 
 The target tenant is not a client-trust shortcut. For platform/global mutations, `TargetTenantId` must come from
 an approved consumer-owned source of authority for the object being mutated, not from an arbitrary browser field.
-For Module Catalog activation that source remains an open decision: candidate sources are an explicit
-platform-admin activation request field, a stored workflow-binding/governance record, or another approved
-Module Catalog ownership record that can be audited and validated before the gate lookup runs.
+For Module Catalog activation, the approved draft source is stored workflow-binding metadata / a governed ownership
+record that can be audited and validated before the gate lookup runs. Free request input is explicitly rejected as
+the source of authority.
 
 Partial draft decision reconciliation (2026-08-06):
 
 - `TargetScope` values are approved for draft planning as `CurrentTenant` and `Tenant`.
 - `TargetTenantId` authority rules are approved for draft planning as documented: target tenant must come from an
   approved consumer-owned source of authority and is not sufficient authorization by itself.
+- Module Catalog target-tenant source is approved for draft planning as stored workflow-binding metadata /
+  governed ownership record, not free request input.
+- `RequiresWorkflowGate` is approved for draft planning as a generic field on `WorkflowGateRequest`;
+  Module Catalog sets it `true` when activation requires approval.
+- Unavailable evaluation maps to `503 Service Unavailable`; workflow-blocked mutation remains `409 Conflict`.
+- Permission strategy reuses `platform.workflow.transitions.evaluate` and `platform.module-catalog.update`;
+  no AuthService seed/grant change is approved for this FU.
+- Audit/correlation metadata is transient for this FU; `TargetTenantSource` is derived from the approved
+  binding/governed ownership record.
 - Live fixture setup, ownership-check, cleanup, and retained-history strategy is approved for draft planning as
   documented in §§16-18.
-- The following decisions remain unresolved and keep this pack in `status: draft`: Module Catalog target-tenant
-  source, `RequiresWorkflowGate` ownership, unavailable-evaluation HTTP mapping, permission strategy, and
-  audit/correlation metadata persistence/source form.
+- The pack remains in `status: draft` because user approval for ready-for-dev, DCP-002 evidence confirmation,
+  runtime-scope approval, and no-frontend/Gateway/appsettings/seed/migration/fixture-data scope confirmation
+  remain unchecked.
 
 ## 2. Ownership and Boundaries
 
@@ -105,8 +114,8 @@ Proposed additive request fields:
 |---|---|---:|---|---|
 | `TargetScope` | enum/string | Yes after contract update | `WorkflowGateRequest`, `EvaluateWorkflowTransitionGateRequest` | Approved draft values: `CurrentTenant`, `Tenant`. `CurrentTenant` preserves existing tenant-call behavior. |
 | `TargetTenantId` | `Guid?` | Conditional | `WorkflowGateRequest`, `EvaluateWorkflowTransitionGateRequest` | Required when `TargetScope = Tenant`; must be absent or ignored for pure current-tenant calls depending on final compatibility decision. |
-| `RequiresWorkflowGate` | `bool?` | Open decision | optional API/internal caller metadata | If true and no scoped Workflow instance is found, response must fail closed instead of returning `NotApplicable`. |
-| `TargetTenantSource` | enum/string | Open decision | optional internal metadata, not necessarily public API | Records whether target tenant came from current context, activation request, stored workflow binding, or another approved object-owner source. |
+| `RequiresWorkflowGate` | `bool?` | Conditional | `WorkflowGateRequest`; API exposure remains additive if needed | Approved as a generic gate field. If true and no scoped Workflow instance is found, response must fail closed instead of returning `NotApplicable`. Module Catalog sets it true when activation requires approval. |
+| `TargetTenantSource` | enum/string | Required in transient audit metadata for scoped platform/global evaluation | internal metadata, not necessarily public API | Approved as transient audit metadata for this FU, derived from stored workflow-binding metadata / governed ownership record. |
 
 Existing object fields remain unchanged: `ObjectType`, `ObjectId`, `ObjectRef`, `RequestedTransition`,
 `RequestedTargetState`, `ActorId`, `ReasonCode`, and `CorrelationId`.
@@ -154,8 +163,8 @@ This draft creation edits only this module pack file.
 | `TenantScope` helper | Candidate mechanism to temporarily resolve a tenant-scoped repository lookup from a platform/global caller. | Existing. |
 | Tenant context middleware | Platform routes currently resolve as platform context with `Guid.Empty`; this is the source of the gap. | Existing; not modified by default. |
 | Module Catalog | Reference consumer for platform/global object activation. | Existing global object model. |
-| MOD-0018 Auth/RBAC | Permission enforcement for workflow evaluate and module-catalog update actions. | Consumed; no seed/grant edit in this FU unless separately approved. |
-| MOD-0021 Audit | Correlation and target tenant audit metadata must remain consistent. | Consumed. |
+| MOD-0018 Auth/RBAC | Permission enforcement for workflow evaluate and module-catalog update actions. | Consumed; existing keys reused, no AuthService seed/grant edit in this FU. |
+| MOD-0021 Audit | Correlation and target tenant audit metadata must remain consistent. | Consumed; transient metadata only for this FU. |
 | Existing exception handling / API result mapping | Needed to turn `WorkflowTransitionBlockedException` into a controlled mutation response. | Must reuse existing surface; no new global error subsystem. |
 
 ## 8. Runtime Constraints
@@ -173,7 +182,8 @@ This draft creation edits only this module pack file.
 - The new contract must be additive: older clients that omit target-scope fields must continue to work for
   current-tenant optional gate evaluation.
 - Audit/correlation metadata for a scoped platform/global evaluation must include the effective target tenant
-  when one is used.
+  when one is used; for FU01 this metadata is transient and derives `TargetTenantSource` from the approved
+  workflow-binding/governed ownership record.
 
 ## 9. Layout & Shell Contract
 
@@ -218,6 +228,7 @@ Draft validation rules after implementation approval:
   `TargetScope = Tenant`.
 - If `RequiresWorkflowGate = true`, no matching Workflow instance is a controlled blocked/unavailable outcome,
   not `NotApplicable`.
+- Module Catalog sets `RequiresWorkflowGate = true` when activation requires approval.
 - If `RequiresWorkflowGate` is omitted, existing optional-gate behavior is preserved for current-tenant callers.
 - Existing field validation for object type/id/ref, requested transition/target state, actor id, and reason code remains.
 
@@ -243,8 +254,8 @@ Existing permission keys remain the base:
 - `platform.workflow.transitions.evaluate`
 - `platform.module-catalog.update`
 
-This FU does not approve new AuthService seed/grant work by default. If a new permission is later needed for
-cross-context gate evaluation, it must be explicitly recorded and handled through MOD-0018/AuthService ownership.
+Permission strategy is approved for draft planning as reuse of these existing keys. No new MOD-0018-owned key,
+AuthService seed, or AuthService grant change is approved for this FU.
 
 Actor rules:
 
@@ -254,7 +265,8 @@ Actor rules:
 - Missing or unauthorized actor context must fail closed.
 - `TargetTenantId` in a request is an input to validation and scoping, not authorization by itself.
 - Audit metadata for cross-context evaluation must record actor, effective target tenant, source object,
-  target-tenant source, and correlation id.
+  target-tenant source, and correlation id. For FU01, this is transient audit metadata and `TargetTenantSource`
+  is derived from the approved workflow-binding/governed ownership record.
 
 ## 15. Gateway / API Routing Decision
 
@@ -285,7 +297,7 @@ Proposed HTTP mapping:
 | Workflow active / pending approval | 200 with `Decision=Blocked`, `GateStatus=PendingApproval` | 409 `WORKFLOW_PENDING_APPROVAL` or equivalent controlled reason |
 | Invalid target scope / missing required target tenant | 400 controlled validation failure | 400 controlled validation failure; no mutation |
 | Unauthorized target tenant / cross-tenant tenant actor | 403 controlled failure | 403 controlled failure; no mutation |
-| Workflow evaluation unavailable | Non-success controlled response; fail closed | 409 or 503 per final decision; no mutation |
+| Workflow evaluation unavailable | 503 `WORKFLOW_EVALUATION_UNAVAILABLE` or equivalent controlled reason; fail closed | 503 `WORKFLOW_EVALUATION_UNAVAILABLE` or equivalent controlled reason; no mutation |
 | Optional no-workflow | 200 `NotApplicable` | Mutation may proceed if consumer rules allow |
 | Required no-workflow | 409 controlled required-gate failure | 409 controlled required-gate failure; no mutation |
 | `WorkflowTransitionBlockedException` from in-process gate | N/A unless exposed by a caller | 409 controlled blocked-transition response |
@@ -306,7 +318,8 @@ Proposed HTTP mapping:
   blocked decision is an endpoint failure.
 - JSON backward compatibility is proven for older evaluate/gate payloads that omit new fields.
 - Audit/correlation records include the effective target tenant and target-tenant source for scoped
-  platform/global evaluations.
+  platform/global evaluations; for FU01 this is transient metadata derived from the approved binding/governed
+  ownership record.
 - Live proof uses an approved API-created fixture contract only: one non-baseline `Draft` or `Inactive`
   `ModuleCatalogItem`, one tenant-scoped active Workflow instance bound to that item, and one active approval
   task for that instance.
@@ -355,14 +368,14 @@ Focused tests required after implementation approval:
 - [ ] User approves this draft pack.
 - [ ] DCP-002 follow-up identity evidence remains recorded.
 - [x] Final enum names for `TargetScope` are approved for draft planning: `CurrentTenant`, `Tenant`.
-- [ ] Decision on `RequiresWorkflowGate` field is approved or explicitly deferred.
-- [ ] HTTP mapping table is approved.
-- [ ] Module Catalog activation target-tenant source is approved.
+- [x] Decision on `RequiresWorkflowGate` field is approved for draft planning: generic field in `WorkflowGateRequest`; Module Catalog sets it true when activation requires approval.
+- [x] HTTP mapping table is approved for draft planning: unavailable evaluation maps to 503 Service Unavailable; workflow-blocked mutation remains 409 Conflict.
+- [x] Module Catalog activation target-tenant source is approved for draft planning: stored workflow-binding metadata / governed ownership record, not free request input.
 - [x] Target tenant authority/source rules are approved for draft planning; arbitrary client-supplied tenant ids are not accepted as sufficient authority.
-- [ ] Evaluate endpoint vs mutation endpoint response semantics are approved.
-- [ ] `WorkflowTransitionBlockedException` 409 mapping is approved.
+- [x] Evaluate endpoint vs mutation endpoint response semantics are approved for draft planning.
+- [x] `WorkflowTransitionBlockedException` 409 mapping is approved for draft planning; workflow-blocked mutation remains `409 Conflict`.
 - [ ] Additive JSON compatibility behavior is approved.
-- [ ] Audit/correlation target-tenant metadata requirements are approved.
+- [x] Audit/correlation target-tenant metadata requirements are approved for draft planning: transient metadata with `TargetTenantSource` derived from approved binding/governed ownership record.
 - [x] Live fixture setup contract is approved for draft planning: exactly one non-baseline Draft/Inactive Module Catalog item,
   one tenant-scoped active Workflow instance bound to it, and one active approval task.
 - [x] Live fixture ownership checks before mutation are approved for draft planning.
@@ -370,7 +383,7 @@ Focused tests required after implementation approval:
   when applicable, Module Catalog soft-delete API, with remaining Workflow history expected.
 - [x] Raw Mongo cleanup, bulk delete, fixture-data files, seed-file changes, and hard delete are explicitly
   prohibited for FU01 live proof.
-- [ ] MOD-0018/AuthService confirms no new permission seed/grant is needed, or approves the exact new permission.
+- [x] MOD-0018/AuthService permission strategy is approved for draft planning: reuse existing keys; no AuthService seed/grant change.
 - [ ] Runtime scope remains limited to Platform Workflow + Module Catalog reference consumer files.
 - [ ] No frontend/Gateway/appsettings/seed/migration/fixture-data scope is added.
 
@@ -398,18 +411,23 @@ Recommended behavior:
   to HTTP 409 with stable reason/correlation metadata.
 - `TargetTenantId` authority must be proven from the object/consumer contract before lookup; it is not a
   permission grant and not a tenant-isolation bypass.
+- Module Catalog target tenant comes from stored workflow-binding metadata / governed ownership record, not free
+  request input.
+- `RequiresWorkflowGate` is a generic `WorkflowGateRequest` field; Module Catalog sets it true when activation
+  requires approval.
+- Workflow evaluation unavailable maps to `503 Service Unavailable`; workflow-blocked mutation remains
+  `409 Conflict`.
+- Permission strategy reuses `platform.workflow.transitions.evaluate` and `platform.module-catalog.update`;
+  no AuthService seed/grant change is part of FU01.
+- Audit/correlation metadata is transient for FU01, with `TargetTenantSource` derived from the approved
+  binding/governed ownership record.
 - Module Catalog activation is the first proof point, not a general license for every global object to use Workflow without a pack-level consumer decision.
 
 Open decisions:
 
-- How Module Catalog activation obtains the target tenant: request body, route/query parameter, linked governance record, or approved workflow-binding metadata.
-- Whether `RequiresWorkflowGate` belongs in the generic gate request or remains consumer-specific.
-- Exact HTTP status mapping for workflow-blocked: candidate `409 Conflict` for blocked/invalid state, `400 Bad Request` for invalid scope, `503 Service Unavailable` or fail-closed `409` for unavailable evaluation.
-- Whether a new permission key is needed for platform actors evaluating tenant-scoped gates.
-- Whether `TargetTenantSource` is a persisted audit field, transient audit metadata, or derived from an existing
-  object-binding record.
-- Whether Module Catalog should expose target tenant in the activation request or require a stored binding before
-  activation can be gate-required.
+- Concrete shape/location of the stored workflow-binding metadata / governed ownership record.
+- Exact code values for `WORKFLOW_EVALUATION_UNAVAILABLE`, `WORKFLOW_PENDING_APPROVAL`, and required-gate failures.
+- Whether additive JSON compatibility behavior is fully approved for ready-for-dev or needs an explicit owner check.
 - Exact cleanup API path for Workflow task cancellation/closure in the approved live-smoke actor context.
 - Whether Module Catalog cleanup should prefer `Inactive -> soft-delete` or direct soft-delete when the item was
   never activated.
@@ -417,12 +435,11 @@ Open decisions:
 ## 20. Follow-up Items
 
 1. Review and approve/reject this pack for ready-for-dev.
-2. Resolve the target-tenant source for Module Catalog activation.
-3. Finalize HTTP error mapping and reason codes.
-4. Decide whether to add `RequiresWorkflowGate`.
-5. Finalize additive JSON compatibility expectations before implementation.
-6. Finalize audit/correlation target-tenant metadata requirements.
-7. Approve the live fixture setup, ownership-check, cleanup, and retained-history contract before ready-for-dev.
-8. After implementation, repeat B09-style live smoke without raw Mongo, bulk delete, fixture-data files, seed-file
+2. Define the concrete stored workflow-binding metadata / governed ownership record shape.
+3. Finalize reason-code constants for unavailable evaluation, pending approval, and required no-workflow failures.
+4. Finalize additive JSON compatibility expectations before ready-for-dev.
+5. Finalize transient audit/correlation target-tenant metadata shape.
+6. Carry the approved live fixture setup, ownership-check, cleanup, and retained-history contract into ready-for-dev review.
+7. After implementation, repeat B09-style live smoke without raw Mongo, bulk delete, fixture-data files, seed-file
    changes, or hard delete.
-9. After Module Catalog proof passes, reconcile MOD-0023 governance docs to remove the Module Catalog activation design gap.
+8. After Module Catalog proof passes, reconcile MOD-0023 governance docs to remove the Module Catalog activation design gap.
