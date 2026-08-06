@@ -76,6 +76,8 @@ public static class DependencyInjection
         services.AddScoped<IServiceCredentialDescriptorRepository, ServiceCredentialDescriptorRepository>();
         services.AddScoped<IS2SReplayReceiptStore, S2SReplayReceiptStore>();
         services.AddScoped<IS2SProofAcceptanceCoordinator, S2SProofAcceptanceCoordinator>();
+        services.AddSingleton<IPermissionCatalogTransactionProbe>(_ => NoOpPermissionCatalogTransactionProbe.Instance);
+        services.AddScoped<IPermissionCatalogManifestRegistrar, PermissionCatalogManifestRegistrar>();
 
         // Ensure Indexes and Seed Data
         // Note: In a production environment, this might be handled by an initialization service or migration tool.
