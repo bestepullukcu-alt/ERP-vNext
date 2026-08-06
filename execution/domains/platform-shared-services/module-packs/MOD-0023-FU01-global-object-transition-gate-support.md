@@ -7,7 +7,7 @@ service: Diten.Platform
 shell: none
 golden_reference: none
 entity_base: TenantScopedEntity
-status: draft
+status: ready-for-dev
 owner: platform-shared-services
 branch: feature/pss/mod-0023-fu01-global-object-transition-gate-support
 started: 2026-08-06
@@ -17,7 +17,7 @@ form_field_count: 0
 
 # MOD-0023-FU01 — Global Object Transition Gate Support
 
-> **Draft only.** This follow-up pack does not authorize runtime implementation. It records the proposed
+> **Ready for development planning.** This follow-up pack does not authorize runtime implementation by itself. It records the approved
 > cross-context transition-gate contract needed after B09 identified that Module Catalog activation is a
 > platform/global operation while the blocking Workflow instance is tenant-scoped.
 
@@ -41,39 +41,39 @@ global-object gating is not allowed.
 
 The target tenant is not a client-trust shortcut. For platform/global mutations, `TargetTenantId` must come from
 an approved consumer-owned source of authority for the object being mutated, not from an arbitrary browser field.
-For Module Catalog activation, the approved draft source is stored workflow-binding metadata / a governed ownership
+For Module Catalog activation, the approved ready-for-dev source is stored workflow-binding metadata / a governed ownership
 record that can be audited and validated before the gate lookup runs. Free request input is explicitly rejected as
 the source of authority.
 
-Partial draft decision reconciliation (2026-08-06):
+Ready-for-dev decision reconciliation (2026-08-06):
 
-- `TargetScope` values are approved for draft planning as `CurrentTenant` and `Tenant`.
-- `TargetTenantId` authority rules are approved for draft planning as documented: target tenant must come from an
+- `TargetScope` values are approved for ready-for-dev as `CurrentTenant` and `Tenant`.
+- `TargetTenantId` authority rules are approved for ready-for-dev as documented: target tenant must come from an
   approved consumer-owned source of authority and is not sufficient authorization by itself.
-- Module Catalog target-tenant source is approved for draft planning as stored workflow-binding metadata /
+- Module Catalog target-tenant source is approved for ready-for-dev as stored workflow-binding metadata /
   governed ownership record, not free request input.
-- `RequiresWorkflowGate` is approved for draft planning as a generic field on `WorkflowGateRequest`;
+- `RequiresWorkflowGate` is approved for ready-for-dev as a generic field on `WorkflowGateRequest`;
   Module Catalog sets it `true` when activation requires approval.
 - Unavailable evaluation maps to `503 Service Unavailable`; workflow-blocked mutation remains `409 Conflict`.
 - Permission strategy reuses `platform.workflow.transitions.evaluate` and `platform.module-catalog.update`;
   no AuthService seed/grant change is approved for this FU.
 - Audit/correlation metadata is transient for this FU; `TargetTenantSource` is derived from the approved
   binding/governed ownership record.
-- Live fixture setup, ownership-check, cleanup, and retained-history strategy is approved for draft planning as
+- Live fixture setup, ownership-check, cleanup, and retained-history strategy is approved for ready-for-dev as
   documented in §§16-18.
-- Module Catalog-owned workflow-binding metadata shape is approved for draft planning with `ObjectType`,
+- Module Catalog-owned workflow-binding metadata shape is approved for ready-for-dev with `ObjectType`,
   `ObjectId`, `ObjectRef`, `TargetTenantId`, `TargetTenantSource`, `RequiresWorkflowGate`,
   `WorkflowDefinitionKey` or `WorkflowTemplateId`, actor/timestamp metadata, and `CorrelationId`.
-- Additive JSON compatibility defaults are approved for draft planning: missing `TargetScope` defaults to
+- Additive JSON compatibility defaults are approved for ready-for-dev: missing `TargetScope` defaults to
   `CurrentTenant`, missing `TargetTenantId` is valid only for `CurrentTenant`, and missing
   `RequiresWorkflowGate` preserves optional-gate behavior.
-- Reason-code constants and HTTP mappings are approved for draft planning as recorded in §§13-15.
-- Workflow fixture cleanup path is approved for draft planning as Workflow task cancel API first, controlled
+- Reason-code constants and HTTP mappings are approved for ready-for-dev as recorded in §§13-15.
+- Workflow fixture cleanup path is approved for ready-for-dev as Workflow task cancel API first, controlled
   close API as fallback, then Module Catalog lifecycle cleanup.
-- Module Catalog cleanup rule is approved for draft planning: deactivate first when active, then soft-delete;
+- Module Catalog cleanup rule is approved for ready-for-dev: deactivate first when active, then soft-delete;
   direct soft-delete is allowed only for `Draft` or `Inactive`; hard delete and bulk delete remain prohibited.
-- The pack remains in `status: draft` because user approval to mark ready-for-dev and runtime implementation
-  authorization are still not granted.
+- The pack is promoted to `status: ready-for-dev` by explicit user approval on 2026-08-06. Runtime
+  implementation remains separately blocked until explicitly authorized.
 
 ## 2. Ownership and Boundaries
 
@@ -96,11 +96,11 @@ Partial draft decision reconciliation (2026-08-06):
 - Adding frontend UI, menu entries, Gateway routes, appsettings, seeds, migrations, fixture data, or raw Mongo cleanup.
 - Reworking tenant middleware globally.
 - Modifying AuthService permission seed/grant ownership.
-- Treating this draft as ready-for-dev or implementation approval.
+- Treating this ready-for-dev pack as runtime implementation approval.
 
 ## 3. Owned Objects
 
-This follow-up owns contract-level changes only after approval:
+This follow-up owns contract-level changes only after runtime implementation is explicitly authorized:
 
 | Object / contract | Ownership decision |
 |---|---|
@@ -113,18 +113,18 @@ This follow-up owns contract-level changes only after approval:
 | Module Catalog-owned workflow-binding metadata | Governed object-owned source for target tenant and required-gate authority. |
 | Audit/correlation metadata | Record effective target tenant, source object reference, and correlation id for cross-context gate decisions. |
 
-No new standalone persistent entity is approved by this draft. Module Catalog-owned workflow-binding metadata is
+No new standalone persistent entity is approved by this pack. Module Catalog-owned workflow-binding metadata is
 recorded as governed object-owned metadata pending final storage-location selection.
 
 ## 4. Entity Fields
 
 No new MongoDB entity is created by this follow-up.
 
-Approved draft additive request fields:
+Approved ready-for-dev additive request fields:
 
 | Field | Type | Required | Applies to | Notes |
 |---|---|---:|---|---|
-| `TargetScope` | enum/string | Yes after contract update | `WorkflowGateRequest`, `EvaluateWorkflowTransitionGateRequest` | Approved draft values: `CurrentTenant`, `Tenant`. `CurrentTenant` preserves existing tenant-call behavior. |
+| `TargetScope` | enum/string | Yes after contract update | `WorkflowGateRequest`, `EvaluateWorkflowTransitionGateRequest` | Approved ready-for-dev values: `CurrentTenant`, `Tenant`. `CurrentTenant` preserves existing tenant-call behavior. |
 | `TargetTenantId` | `Guid?` | Conditional | `WorkflowGateRequest`, `EvaluateWorkflowTransitionGateRequest` | Required when `TargetScope = Tenant`; omitted for pure current-tenant calls. |
 | `RequiresWorkflowGate` | `bool?` | Conditional | `WorkflowGateRequest`; API exposure remains additive if needed | Approved as a generic gate field. If true and no scoped Workflow instance is found, response must fail closed instead of returning `NotApplicable`. Module Catalog sets it true when activation requires approval. |
 | `TargetTenantSource` | enum/string | Required in transient audit metadata for scoped platform/global evaluation | internal metadata, not necessarily public API | Approved as transient audit metadata for this FU, derived from stored workflow-binding metadata / governed ownership record. |
@@ -132,7 +132,7 @@ Approved draft additive request fields:
 Existing object fields remain unchanged: `ObjectType`, `ObjectId`, `ObjectRef`, `RequestedTransition`,
 `RequestedTargetState`, `ActorId`, `ReasonCode`, and `CorrelationId`.
 
-Approved Module Catalog-owned workflow-binding metadata shape for draft planning:
+Approved Module Catalog-owned workflow-binding metadata shape for ready-for-dev:
 
 | Field | Type | Required | Notes |
 |---|---|---:|---|
@@ -152,7 +152,7 @@ marks the gate as required.
 
 ## 5. Repo Scope
 
-Authorized future implementation scope after the pack is approved / ready-for-dev:
+Authorized future implementation scope after separate runtime implementation approval:
 
 - `services/Diten.Platform/src/Diten.Platform.Application/Contracts/IWorkflowTransitionGate.cs`
 - `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/WorkflowModels.cs`
@@ -167,7 +167,7 @@ Authorized future implementation scope after the pack is approved / ready-for-de
 - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/**`
 - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/ModuleCatalog/**`
 
-This draft creation edits only this module pack file.
+This ready-for-dev promotion edits only this module pack file.
 
 ## 6. Protected Paths
 
@@ -240,10 +240,10 @@ DataTable contract.
 
 ## 12. Validation Rules
 
-Draft validation rules after implementation approval:
+Ready-for-dev validation rules after separate runtime implementation approval:
 
 - `TargetScope` defaults to `CurrentTenant` for omitted JSON fields.
-- `TargetScope` must be one of the approved draft values: `CurrentTenant` or `Tenant`.
+- `TargetScope` must be one of the approved ready-for-dev values: `CurrentTenant` or `Tenant`.
 - `TargetTenantId` is required when `TargetScope = Tenant`.
 - Missing `TargetTenantId` remains valid only when the effective `TargetScope` is `CurrentTenant`.
 - `TargetTenantId` must not be `Guid.Empty`.
@@ -258,7 +258,7 @@ Draft validation rules after implementation approval:
 - If `RequiresWorkflowGate` is omitted, existing optional-gate behavior is preserved for current-tenant callers.
 - Existing field validation for object type/id/ref, requested transition/target state, actor id, and reason code remains.
 
-Approved reason-code constants for draft planning:
+Approved reason-code constants for ready-for-dev:
 
 | Code | HTTP mapping | Use |
 |---|---:|---|
@@ -292,7 +292,7 @@ Existing permission keys remain the base:
 - `platform.workflow.transitions.evaluate`
 - `platform.module-catalog.update`
 
-Permission strategy is approved for draft planning as reuse of these existing keys. No new MOD-0018-owned key,
+Permission strategy is approved for ready-for-dev as reuse of these existing keys. No new MOD-0018-owned key,
 AuthService seed, or AuthService grant change is approved for this FU.
 
 Actor rules:
@@ -408,32 +408,32 @@ Focused tests required after implementation approval:
 
 ## 18. Ready-for-dev Checklist
 
-- [ ] User approves this draft pack.
-- [x] DCP-002 follow-up identity evidence is recorded for draft planning.
-- [x] Final enum names for `TargetScope` are approved for draft planning: `CurrentTenant`, `Tenant`.
-- [x] Decision on `RequiresWorkflowGate` field is approved for draft planning: generic field in `WorkflowGateRequest`; Module Catalog sets it true when activation requires approval.
-- [x] HTTP mapping table is approved for draft planning: unavailable evaluation maps to 503 Service Unavailable; workflow-blocked mutation remains 409 Conflict.
-- [x] Module Catalog activation target-tenant source is approved for draft planning: stored workflow-binding metadata / governed ownership record, not free request input.
-- [x] Module Catalog-owned workflow-binding metadata shape is approved for draft planning.
-- [x] Target tenant authority/source rules are approved for draft planning; arbitrary client-supplied tenant ids are not accepted as sufficient authority.
-- [x] Evaluate endpoint vs mutation endpoint response semantics are approved for draft planning.
-- [x] `WorkflowTransitionBlockedException` 409 mapping is approved for draft planning; workflow-blocked mutation remains `409 Conflict`.
-- [x] Additive JSON compatibility behavior is approved for draft planning: omitted fields preserve current-tenant optional-gate behavior.
-- [x] Reason-code constants are approved for draft planning.
-- [x] Audit/correlation target-tenant metadata requirements are approved for draft planning: transient metadata with `TargetTenantSource` derived from approved binding/governed ownership record.
-- [x] Live fixture setup contract is approved for draft planning: exactly one non-baseline Draft/Inactive Module Catalog item,
+- [x] User approves this pack for ready-for-dev (2026-08-06).
+- [x] DCP-002 follow-up identity evidence is recorded for ready-for-dev.
+- [x] Final enum names for `TargetScope` are approved for ready-for-dev: `CurrentTenant`, `Tenant`.
+- [x] Decision on `RequiresWorkflowGate` field is approved for ready-for-dev: generic field in `WorkflowGateRequest`; Module Catalog sets it true when activation requires approval.
+- [x] HTTP mapping table is approved for ready-for-dev: unavailable evaluation maps to 503 Service Unavailable; workflow-blocked mutation remains 409 Conflict.
+- [x] Module Catalog activation target-tenant source is approved for ready-for-dev: stored workflow-binding metadata / governed ownership record, not free request input.
+- [x] Module Catalog-owned workflow-binding metadata shape is approved for ready-for-dev.
+- [x] Target tenant authority/source rules are approved for ready-for-dev; arbitrary client-supplied tenant ids are not accepted as sufficient authority.
+- [x] Evaluate endpoint vs mutation endpoint response semantics are approved for ready-for-dev.
+- [x] `WorkflowTransitionBlockedException` 409 mapping is approved for ready-for-dev; workflow-blocked mutation remains `409 Conflict`.
+- [x] Additive JSON compatibility behavior is approved for ready-for-dev: omitted fields preserve current-tenant optional-gate behavior.
+- [x] Reason-code constants are approved for ready-for-dev.
+- [x] Audit/correlation target-tenant metadata requirements are approved for ready-for-dev: transient metadata with `TargetTenantSource` derived from approved binding/governed ownership record.
+- [x] Live fixture setup contract is approved for ready-for-dev: exactly one non-baseline Draft/Inactive Module Catalog item,
   one tenant-scoped active Workflow instance bound to it, and one active approval task.
-- [x] Live fixture ownership checks before mutation are approved for draft planning.
-- [x] Live fixture cleanup contract is approved for draft planning: workflow task cancel/close API, Module Catalog deactivate API
+- [x] Live fixture ownership checks before mutation are approved for ready-for-dev.
+- [x] Live fixture cleanup contract is approved for ready-for-dev: workflow task cancel/close API, Module Catalog deactivate API
   when applicable, Module Catalog soft-delete API, with remaining Workflow history expected.
-- [x] Workflow task cleanup API path is approved for draft planning: cancel first, controlled close fallback.
-- [x] Module Catalog cleanup lifecycle rule is approved for draft planning: deactivate active items before soft-delete; direct soft-delete only for Draft/Inactive items.
+- [x] Workflow task cleanup API path is approved for ready-for-dev: cancel first, controlled close fallback.
+- [x] Module Catalog cleanup lifecycle rule is approved for ready-for-dev: deactivate active items before soft-delete; direct soft-delete only for Draft/Inactive items.
 - [x] Raw Mongo cleanup, bulk delete, fixture-data files, seed-file changes, and hard delete are explicitly
   prohibited for FU01 live proof.
-- [x] MOD-0018/AuthService permission strategy is approved for draft planning: reuse existing keys; no AuthService seed/grant change.
+- [x] MOD-0018/AuthService permission strategy is approved for ready-for-dev: reuse existing keys; no AuthService seed/grant change.
 - [x] Runtime scope criteria are recorded for ready-for-dev review: Platform Workflow + Module Catalog reference consumer only.
 - [x] Excluded runtime surfaces are recorded for ready-for-dev review: no frontend/Gateway/appsettings/seed/migration/fixture-data/AuthService seed-grant/raw Mongo scope.
-- [ ] Final ready-for-dev status change is explicitly approved by the user.
+- [x] Final ready-for-dev status change is explicitly approved by the user (2026-08-06).
 - [ ] Runtime implementation is explicitly authorized after ready-for-dev.
 
 ## 19. Implementation Notes
@@ -442,7 +442,7 @@ Options considered:
 
 | Option | Assessment |
 |---|---|
-| Explicit `TargetScope` / `TargetTenantId` on gate request | Recommended and partially approved for draft planning. It preserves tenant-scoped Workflow storage while making platform/global consumers declare the tenant context needed for evaluation. |
+| Explicit `TargetScope` / `TargetTenantId` on gate request | Approved for ready-for-dev. It preserves tenant-scoped Workflow storage while making platform/global consumers declare the tenant context needed for evaluation. |
 | Platform/global Workflow instances | Rejected for this FU. It would require broad persistence/model changes and risks weakening tenant isolation. |
 | Disallow global-object workflow gating | Safe but insufficient. It formalizes the limitation but does not close the Module Catalog activation proof gap. |
 
@@ -488,16 +488,14 @@ Open decisions:
 
 - Concrete storage location for the Module Catalog-owned workflow-binding metadata / governed ownership record.
 - Exact controller/service location for the approved Workflow task cancel/close cleanup APIs.
-- Final user approval to move this draft pack to ready-for-dev.
 - Explicit runtime implementation authorization after ready-for-dev.
 
 ## 20. Follow-up Items
 
-1. Review and approve/reject this pack for ready-for-dev.
-2. Select the concrete storage location for the Module Catalog-owned workflow-binding metadata / governed
+1. Select the concrete storage location for the Module Catalog-owned workflow-binding metadata / governed
    ownership record.
-3. Confirm the concrete controller/service location for Workflow task cancel/close cleanup APIs.
-4. Carry the approved live fixture setup, ownership-check, cleanup, and retained-history contract into ready-for-dev review.
-5. After implementation, repeat B09-style live smoke without raw Mongo, bulk delete, fixture-data files, seed-file
+2. Confirm the concrete controller/service location for Workflow task cancel/close cleanup APIs.
+3. Carry the approved live fixture setup, ownership-check, cleanup, and retained-history contract into implementation review.
+4. After implementation, repeat B09-style live smoke without raw Mongo, bulk delete, fixture-data files, seed-file
    changes, or hard delete.
-6. After Module Catalog proof passes, reconcile MOD-0023 governance docs to remove the Module Catalog activation design gap.
+5. After Module Catalog proof passes, reconcile MOD-0023 governance docs to remove the Module Catalog activation design gap.
