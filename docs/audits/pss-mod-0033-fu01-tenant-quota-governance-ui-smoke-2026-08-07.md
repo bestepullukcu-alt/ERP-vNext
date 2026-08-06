@@ -4,7 +4,7 @@
 
 - **Date:** 2026-08-07
 - **Branch:** `codex/pss/mod-0023-transition-gate-sort-fix`
-- **Permission fix:** `d1ecd9c5 fix: align tenant quota proxy permission key`
+- **Permission fix:** `44eb63fe fix: align tenant quota proxy permission key`
 - **Result:** PASS-with-gaps
 
 The local fix aligns the Web same-origin quota proxy with the Platform quota API on canonical permission key `platform.tenants.quotas.read`. Legacy `platform.tenants.quotas.view` remains Platform-side alias compatibility only.

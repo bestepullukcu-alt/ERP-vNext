@@ -56,7 +56,7 @@ The MVP is read-only:
 Rationale: implementation evidence exists for the read-only Tenant Quota Governance UI/proxy slice, and post-fix Platform/Gateway smoke is `PASS-with-gaps`. The slice is not `done` because live authenticated Web-cookie proof remains blocked and positive quota-row data was not available. Gateway route availability is proven through the existing `/api/platform/tenants/{tenantId}/quotas` path; `ocelot.json` was not edited.
 
 Implementation reconciliation:
-- Permission alignment fix committed locally as `d1ecd9c5`: Web same-origin quota proxy now checks canonical `platform.tenants.quotas.read`, matching Platform quota read endpoints.
+- Permission alignment fix committed locally as `44eb63fe`: Web same-origin quota proxy now checks canonical `platform.tenants.quotas.read`, matching Platform quota read endpoints.
 - Focused validation passed: `frontend/Diten.Web` build succeeded, Platform permission/alias/quota focused tests passed `35/35`, and `git diff --check` passed.
 - Post-fix read-only smoke result on 2026-08-07: Gateway and direct Platform quota list returned `200` with empty `data: []`; `users.max` read returned expected `404 QUOTA_USAGE_NOT_FOUND`.
 - Remaining closeout gaps: RabbitMQ unavailable made Platform health degraded (`503`), Web login did not provide reusable curl cookies for `/Platform/Tenants/{tenantId}/QuotaStatus`, no safe restricted actor was available, and the tenant used had no quota rows.
