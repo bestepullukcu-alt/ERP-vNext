@@ -525,6 +525,11 @@ Future implementation test expectations must include:
 
 - This pack is intentionally incomplete because it is a draft planning artifact.
 - DCP-004 is still `draft`; this pack cannot be used to start runtime work.
+- Readiness checkpoint recorded 2026-08-07: MOD-0230 is the first PVG candidate to move toward readiness, but it
+  remains `draft` and is not `ready-for-dev`. It is blocked by DCP-004 not being `approved` /
+  `ready-for-execution`, W-3A0 owner/scope/foundation closure or accepted production-grade external contracts,
+  `service: TBD`, retention/legal-hold, archive/void activation, and concrete interface contracts for MOD-0018,
+  MOD-0019, MOD-0021, MOD-0023, MOD-0031, and Blueprint MOD-0040 / TRACE-BUNDLE.
 - Frontmatter decisions reconciled 2026-08-04: `shell: tenant`, `entity_base: EntityBase`,
   `form_field_count: 16`, and `golden_reference: compact`. `service` remains TBD.
 - Service boundary reconciled 2026-08-04: future boundary is dedicated `Diten.PvgService` with a hybrid
@@ -538,6 +543,14 @@ Future implementation test expectations must include:
 - Delete policy reconciled 2026-08-04: no hard delete, no bulk delete, no normal user delete. Archive/void only
   after retention/legal-hold approval, with reason, actor, UTC timestamp, correlation id, and AuditEvent; blocked
   under legal hold.
+- Recommended draft-planning decisions remain: dedicated future `Diten.PvgService`, `EntityBase`, tenant shell,
+  no hard delete, no bulk delete, no normal user delete, and archive/void only after retention/legal-hold approval.
+- Actor roles and permission keys remain proposed only: PVG Intake Agent, PVG Triage Lead, PVG Safety Manager,
+  PVG Compliance Auditor, and PVG System Integration using `pvg.case-intake-triage.read`, `.create`, `.update`,
+  `.triage`, `.route`, `.archive`, and `.export`; delete and bulk-delete permission keys remain explicitly
+  excluded.
+- Explicit runtime exclusions remain in force: no service scaffold, frontend, Gateway, route, collection, seed,
+  appsettings, menu, job, or runtime code is authorized by this draft.
 - MOD-0230 is Blueprint W-3. MOD-0231/MOD-0232/MOD-0234 urgent W-3 slice handling is governed by DCP-004 and does not change this pack's canonical identity.
 - REG-PV-BASE is the minimum integration contract for this module: SSO+RBAC/ABAC, PHI/PII masking hooks, AuditEvent v1, Workflow/Inbox v1, Evidence-Link, OTel, Correlation-ID, and Error Model.
 - Blueprint MOD-0040 / TRACE-BUNDLE is the intended reference for canonical/external IDs, correlation header, trace

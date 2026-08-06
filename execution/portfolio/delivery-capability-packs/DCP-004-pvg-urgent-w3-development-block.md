@@ -262,7 +262,8 @@ menu, module-catalog, or runtime work.
 
 ## 15. Gate criteria
 
-- **DCP approval gate:** This DCP remains `draft` until explicit user approval.
+- **DCP approval gate:** This DCP remains `draft` and review-ready for governance discussion, but it is not
+  `approved` / `ready-for-execution` until explicit user approval.
 - **Domain gate:** PVG owner domain and branch short code are decided (`pharmacovigilance` / `pvg`); runtime remains blocked by DCP/member-pack gates.
 - **Member module-pack gate:** each member receives a separate module pack with status `draft` first, then user-approved `approved` / `ready-for-dev` before implementation.
 - **DCP-002 gate:** each canonical member keeps exact Blueprint ID/name proof; any future FU/child identity must pass `verify_module_id.py`.
@@ -286,7 +287,7 @@ menu, module-catalog, or runtime work.
 
 | Member | Runtime acceptance status | Blocking prerequisites |
 |--------|---------------------------|------------------------|
-| MOD-0230 | BLOCKED until W-3A0 foundations close | REG-PV-BASE: workflow/inbox, audit, masking, RBAC/ABAC, evidence-link, OTel/correlation/error model |
+| MOD-0230 | BLOCKED until W-3A0 foundations close or production-grade external contracts are explicitly accepted | REG-PV-BASE: workflow/inbox, audit, masking, RBAC/ABAC, evidence-link, OTel/correlation/error model |
 | MOD-0231 Signal Minimum Scope | BLOCKED until MOD-0230 contract + W-3A0 foundations close | Case Intake & Triage, Evidence Linking, CASE-LIFECYCLE |
 | MOD-0232 | BLOCKED until MOD-0231 signal-minimum contract + CODESET gates close | Case Processing minimum scope, MedDRA source/version/license, coding audit/export |
 | MOD-0234 | BLOCKED for runtime; contract-only allowed after upstream contracts | Hard MOD-0063 Data Warehouse / Lakehouse and MOD-0004 Metric & Semantic Registry gates, review workflow, evidence pack, OTel |
@@ -342,4 +343,11 @@ menu, module-catalog, or runtime work.
   or test changes.
 - 2026-08-04: Cross-pack audit reconciliation strengthened MOD-0004 and MOD-0063 wording as hard MOD-0234 Signal
   MVP runtime gates.
+- 2026-08-07: MOD-0230 readiness audit recorded that DCP-004 remains `draft` / review-ready only, not
+  `ready-for-execution`. OD-2 remains open for W-3A0 owner/scope/foundation closure, and OD-7 remains open for
+  build/buy/partner strategy and integration boundary. MOD-0230 is the first PVG candidate, but runtime remains
+  blocked by DCP/member-pack approval gates, W-3A0 or accepted production-grade external contracts, service
+  boundary approval, retention/legal-hold, archive/void policy, and concrete interface contracts for MOD-0018,
+  MOD-0019, MOD-0021, MOD-0023, MOD-0031, and Blueprint MOD-0040 / TRACE-BUNDLE. This note authorizes no service
+  scaffold, frontend, Gateway, route, collection, seed, appsettings, menu, job, or runtime code.
 - Reconciliation: implementation-phase results will be added here only after this DCP is approved and future member module packs are executed.
