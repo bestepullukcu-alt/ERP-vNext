@@ -443,4 +443,10 @@ member module pack, authorize runtime, close OD-2, or close OD-7.
   consume MOD-0230 handoff fields/states plus audit, correlation, evidence, masking, workflow, and
   retention/legal-hold/archive-void expectations before it can move toward `ready-for-dev`. MOD-0230 handoff
   approval remains a blocker and this DCP authorizes no runtime work.
+- 2026-08-07: MOD-0232 dependency readiness reconciled against the latest MOD-0230 and MOD-0231 draft packets.
+  MOD-0232 depends on MOD-0231 source-term and lifecycle handoff, must consume case state, seriousness,
+  narrative/source-term context, product text / exposure context, and inherited audit/correlation/evidence/masking
+  expectations, remains blocked by CODESET and MedDRA source/license/version/import governance, and can produce
+  MOD-0234-consumable coded output only after upstream contracts are approved and coding reaches `Approved`. This
+  DCP authorizes no runtime work.
 - Reconciliation: implementation-phase results will be added here only after this DCP is approved and future member module packs are executed.

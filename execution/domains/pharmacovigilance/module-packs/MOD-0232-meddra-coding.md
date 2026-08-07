@@ -374,6 +374,29 @@ case-processing assessment, or lifecycle state.
 Missing MOD-0231 source-term/case-processing contract must block MOD-0232 create, assign-code, review, approve,
 recode, and export. No untraceable coding work item may be created from incomplete or cross-tenant source data.
 
+### MOD-0230 / MOD-0231 Upstream Draft Expectations Consumed by MOD-0232
+
+These expectations are inherited from the latest MOD-0230 and MOD-0231 draft planning packets. They are not
+approvals, do not move MOD-0232 to `ready-for-dev`, and do not authorize runtime implementation.
+
+- MOD-0232 depends on MOD-0231 source-term and lifecycle handoff. The handoff must identify the same-tenant case
+  processing record, source term candidate, lifecycle state allowed for coding, workflow state, evidence readiness,
+  and correlation / trace bundle context.
+- MOD-0232 must consume MOD-0231 case state, seriousness, narrative/source-term context, product text or product
+  exposure context, and the audit/correlation/evidence/masking expectations inherited from MOD-0230 and refined by
+  MOD-0231. It must not redefine case-processing lifecycle state, intake ownership, evidence object references,
+  masking policy, or canonical/external ID policy.
+- MOD-0232 remains blocked by CODESET and MedDRA source/license/version/import governance. No dictionary import,
+  storage, search, display, export, cache, seed, fixture, localization, or static term list may be introduced until
+  source/provider, license, versioning, import validation, allowed use, and redistribution policy are approved.
+- MOD-0232 can produce coded output for MOD-0234 only after upstream MOD-0230 and MOD-0231 contracts are approved
+  and the coding workflow reaches `Approved`. `ExportReady` remains an export packaging state and is not a
+  substitute for final coded-output approval.
+- Missing MOD-0231 source-term/lifecycle handoff, missing MOD-0230 inherited trace/evidence/masking/audit
+  expectation, missing CODESET contract, unavailable MedDRA source/license/version policy, unavailable MOD-0019
+  masking policy, unavailable MOD-0021 audit contract, unavailable MOD-0023 workflow gate, unavailable MOD-0031
+  evidence-link contract, or missing Blueprint MOD-0040 / TRACE-BUNDLE context must fail closed.
+
 ### MedDRA Source / License / Version / Import Governance
 
 Recommended governance posture:
@@ -629,6 +652,11 @@ Future implementation test expectations must include:
   MOD-0234 `Approved` consumption gate, and actor/permission matrix were recorded 2026-08-04 as planning decisions.
   They do not resolve MOD-0231, CODESET, MedDRA governance, W-3A0, MOD-0023, MOD-0031, MOD-0021, MOD-0019, or
   TRACE-BUNDLE blockers.
+- MOD-0230 / MOD-0231 upstream draft expectations reconciled 2026-08-07: MOD-0232 depends on MOD-0231
+  source-term and lifecycle handoff and must consume case state, seriousness, narrative/source-term context,
+  product text / exposure context, and inherited audit/correlation/evidence/masking expectations before MOD-0232
+  can move toward `ready-for-dev`. This does not approve the MOD-0231 handoff contract, CODESET, MedDRA
+  source/license/version/import governance, or runtime work.
 - Delete and bulk-delete policy reconciled 2026-08-04: delete and bulk-delete are excluded. Archive/void remains
   blocked until retention/legal-hold approval.
 - Treat MOD-0231 as the required upstream source of case-processing source terms. MOD-0232 must not duplicate the
