@@ -107,7 +107,7 @@ No create/edit runtime surface is approved for the DCP-004 first-stage Signal MV
 planning only. It is not a DataTable module at this stage. If a future approved implementation introduces a
 create/edit UI, this pack must be revised with a concrete field count and then choose `slim` or `compact`.
 
-Approved Signal MVP object model fields for planning only:
+Signal MVP object model fields recorded for planning only:
 
 | Field | Required | Source type | Sensitivity class | Notes / blocker |
 |---|---|---|---|---|
@@ -449,7 +449,7 @@ handoff unavailable behavior.
 
 ### Signal MVP Workflow States
 
-Approved Signal MVP workflow states for planning only:
+Signal MVP workflow states recorded for planning only:
 
 ```text
 CandidateIdentified
@@ -526,7 +526,7 @@ pvg.signal-management.delete
 pvg.signal-management.bulk-delete
 ```
 
-Approved actor role / permission matrix for planning only:
+Actor role / permission matrix recorded for planning only:
 
 | Role | read | screen-candidate | review | review-metrics | evaluate | decide | escalate | export | archive |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
