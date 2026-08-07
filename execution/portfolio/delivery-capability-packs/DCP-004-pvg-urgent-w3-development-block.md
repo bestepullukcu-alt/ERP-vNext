@@ -439,4 +439,8 @@ member module pack, authorize runtime, close OD-2, or close OD-7.
   preserves no hard delete, no bulk delete, and no normal user delete; records archive/void metadata and
   legal-hold/read-export/fail-closed expectations; retention/legal-hold approval remains an open blocker and this
   DCP authorizes no runtime work.
+- 2026-08-07: MOD-0231 dependency readiness reconciled against the latest MOD-0230 draft packets. MOD-0231 must
+  consume MOD-0230 handoff fields/states plus audit, correlation, evidence, masking, workflow, and
+  retention/legal-hold/archive-void expectations before it can move toward `ready-for-dev`. MOD-0230 handoff
+  approval remains a blocker and this DCP authorizes no runtime work.
 - Reconciliation: implementation-phase results will be added here only after this DCP is approved and future member module packs are executed.

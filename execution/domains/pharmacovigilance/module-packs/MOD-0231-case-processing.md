@@ -220,6 +220,28 @@ records, intake artifacts, triage state, or routing decisions.
 Missing MOD-0230 handoff contract must block MOD-0231 create, process, assessment, and signal handoff. No assumed
 Safety Case master state may be created from incomplete or cross-tenant intake data.
 
+### MOD-0230 Upstream Draft Expectations Consumed by MOD-0231
+
+These expectations are inherited from the latest MOD-0230 draft planning packets. They are not approvals, do not
+move MOD-0231 to `ready-for-dev`, and do not authorize runtime implementation.
+
+- MOD-0231 depends on MOD-0230 handoff fields and states, including same-tenant Safety Case Intake ID,
+  server-resolved tenant context, triage outcome, route target queue, evidence references, workflow instance
+  reference if approved, and correlation / trace bundle continuity.
+- MOD-0231 must consume the MOD-0230 interface contract expectations for audit, correlation, evidence, masking, and
+  workflow behavior. It must not redefine MOD-0230 intake records, intake artifacts, triage state, routing
+  decisions, evidence object references, or canonical/external ID policy.
+- MOD-0231 cannot move to `ready-for-dev` until the MOD-0230 handoff contract is approved and compatible with the
+  MOD-0230 draft interface contract packet for MOD-0018, MOD-0019, MOD-0021, MOD-0023, MOD-0031, and Blueprint
+  MOD-0040 / TRACE-BUNDLE.
+- MOD-0231 archive/void/legal-hold behavior must align with the MOD-0230 retention/legal-hold/archive-void packet:
+  no hard delete, no bulk delete, no normal user delete, archive and void are non-destructive states only after
+  retention/legal-hold approval, legal hold blocks archive/void, and required metadata includes reason, actor, UTC
+  timestamp, correlation ID, AuditEvent, previous state, target state, tenant context, and object reference.
+- Missing MOD-0230 handoff, missing MOD-0230 retention/legal-hold decision, unavailable MOD-0019 masking policy,
+  unavailable MOD-0021 audit contract, unavailable MOD-0023 workflow gate, unavailable MOD-0031 evidence-link
+  contract, or missing Blueprint MOD-0040 / TRACE-BUNDLE context must fail closed.
+
 ### Minimum Lifecycle States Before MOD-0234 Consumption
 
 Recommended minimum lifecycle states for Signal Minimum Scope:
@@ -574,6 +596,10 @@ Future implementation test expectations must include:
   Golden Reference. Detailed validation, masking, audit, workflow, evidence, and test rules remain blockers.
 - MOD-0230 handoff and minimum MOD-0234 consumption lifecycle states were recorded 2026-08-04 as planning
   decisions. They do not resolve MOD-0230, MOD-0023, MOD-0031, MOD-0021, MOD-0019, or TRACE-BUNDLE blockers.
+- MOD-0230 upstream draft expectations reconciled 2026-08-07: MOD-0231 must consume the MOD-0230 handoff fields,
+  states, audit/correlation/evidence/masking/workflow contract expectations, and retention/legal-hold/archive-void
+  packet before MOD-0231 can move toward `ready-for-dev`. This does not approve the MOD-0230 handoff contract or
+  authorize runtime work.
 - Delete and bulk-delete policy reconciled 2026-08-04: delete and bulk-delete are excluded. Archive/void remains
   blocked until retention/legal-hold approval.
 - MOD-0230 is a hard upstream dependency. MOD-0231 must not redefine intake records, intake artifacts, triage state,
