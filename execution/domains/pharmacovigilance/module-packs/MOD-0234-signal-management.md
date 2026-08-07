@@ -148,6 +148,23 @@ and aggregate access, audit, evidence, workflow, MOD-0004, MOD-0063, and TRACE-B
 MOD-0234 consumes upstream contracts. It must not re-own intake, case-processing, MedDRA coding, dictionary,
 evidence-link, workflow, metric, or data-product ownership.
 
+### MOD-0230 / MOD-0231 / MOD-0232 Upstream Readiness Expectations
+
+These expectations are inherited from the latest MOD-0230, MOD-0231, and MOD-0232 draft planning packets. They are
+not approvals, do not move MOD-0234 to `ready-for-dev`, and do not authorize runtime implementation.
+
+- MOD-0234 depends on approved outputs from MOD-0230, MOD-0231, and MOD-0232. Draft upstream handoff language is
+  planning evidence only until those module packs and interface contracts are approved.
+- MOD-0234 consumes only approved coded output from MOD-0232 and approved lifecycle / safety-case context from
+  MOD-0230 and MOD-0231. Unapproved, draft, incomplete, unavailable, cross-tenant, unmasked, unaudited, or
+  untraceable upstream context must fail closed.
+- MOD-0004 Metric & Semantic Registry and MOD-0063 Data Warehouse / Lakehouse remain hard Signal MVP runtime gates.
+  Signal MVP runtime cannot start without approved semantic metric IDs, threshold concepts, data-product contracts,
+  cohort definitions, lineage, refresh/as-of semantics, and access controls.
+- MOD-0234 remains no-shell / no-placeholder / no-runtime for this DCP-004 stage. No dashboard, endpoint, menu,
+  fake signal data, service scaffold, gateway route, frontend route, collection, seed, job, or runtime config is
+  authorized.
+
 MOD-0231 Signal Minimum Scope inputs:
 
 | MOD-0231 field / output | MOD-0234 use | Status |
