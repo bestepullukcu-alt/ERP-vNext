@@ -304,6 +304,11 @@ member module pack, authorize runtime, close OD-2, or close OD-7.
 - [ ] Approve triage/routing states, route targets, and Workflow/Inbox behavior.
 - [ ] Approve the MOD-0230 handoff contract consumed by MOD-0231.
 - [ ] Approve no delete and no bulk-delete; archive/void remains unavailable until retention/legal-hold approval.
+- [ ] Review and approve the MOD-0230 draft interface contract packet before `ready-for-dev`; it covers
+      MOD-0018 actor/action/tenant/seed-grant ownership, MOD-0019 mask/omit/deny and fail-closed behavior,
+      MOD-0021 redacted AuditEvent v1 payload/correlation/failure behavior, MOD-0023 triage states/queues/gates,
+      MOD-0031 evidence object references/link types/provenance/completeness, and Blueprint MOD-0040 /
+      TRACE-BUNDLE canonical IDs, external IDs, `X-Correlation-Id`, and regulated error model.
 
 ### Runtime authorization
 
@@ -422,4 +427,7 @@ member module pack, authorize runtime, close OD-2, or close OD-7.
   boundary approval, retention/legal-hold, archive/void policy, and concrete interface contracts for MOD-0018,
   MOD-0019, MOD-0021, MOD-0023, MOD-0031, and Blueprint MOD-0040 / TRACE-BUNDLE. This note authorizes no service
   scaffold, frontend, Gateway, route, collection, seed, appsettings, menu, job, or runtime code.
+- 2026-08-07: MOD-0230 draft interface contract packet added as a governance expectation only. It defines draft
+  expectations for MOD-0018, MOD-0019, MOD-0021, MOD-0023, MOD-0031, and Blueprint MOD-0040 / TRACE-BUNDLE; the
+  dependent contracts remain open blockers and this DCP remains `draft`.
 - Reconciliation: implementation-phase results will be added here only after this DCP is approved and future member module packs are executed.
