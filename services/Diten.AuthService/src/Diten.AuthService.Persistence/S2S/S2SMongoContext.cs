@@ -30,10 +30,7 @@ public sealed class S2SMongoContext : IS2SMongoContext
         DatabaseName = settings.DatabaseName;
         _client = new Lazy<MongoClient>(() =>
         {
-            var clientSettings = MongoClientSettings.FromConnectionString(settings.ConnectionString);
-#pragma warning disable CS0618
-            clientSettings.GuidRepresentation = S2SGuidRepresentationPolicy.Canonical;
-#pragma warning restore CS0618
+            var clientSettings = MongoGuidRepresentationPolicy.CreateClientSettings(settings.ConnectionString);
             return new MongoClient(clientSettings);
         }, LazyThreadSafetyMode.ExecutionAndPublication);
         _database = new Lazy<IMongoDatabase>(() => _client.Value.GetDatabase(DatabaseName), LazyThreadSafetyMode.ExecutionAndPublication);

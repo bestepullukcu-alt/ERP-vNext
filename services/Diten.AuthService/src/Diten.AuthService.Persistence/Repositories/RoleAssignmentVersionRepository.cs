@@ -11,14 +11,17 @@ namespace Diten.AuthService.Persistence.Repositories;
 public sealed class RoleAssignmentVersionRepository : IRoleAssignmentVersionService
 {
     private readonly IMongoCollection<RoleAssignmentVersionDocument> _collection;
+    private readonly AuthCommonUuidCompatibilityGuard _compatibilityGuard;
 
     public RoleAssignmentVersionRepository(IMongoDatabase database)
     {
         _collection = database.GetCollection<RoleAssignmentVersionDocument>("auth_role_assignment_versions");
+        _compatibilityGuard = new AuthCommonUuidCompatibilityGuard(database);
     }
 
     public async Task<long> GetAsync(Guid tenantId, CancellationToken ct)
     {
+        await _compatibilityGuard.EnsureRoleAssignmentVersionCompatibleAsync(tenantId, ct);
         var doc = await _collection
             .Find(Builders<RoleAssignmentVersionDocument>.Filter.Eq(x => x.TenantId, tenantId))
             .FirstOrDefaultAsync(ct);
@@ -27,6 +30,7 @@ public sealed class RoleAssignmentVersionRepository : IRoleAssignmentVersionServ
 
     public async Task<long> IncrementAsync(Guid tenantId, CancellationToken ct)
     {
+        await _compatibilityGuard.EnsureRoleAssignmentVersionCompatibleAsync(tenantId, ct);
         var update = Builders<RoleAssignmentVersionDocument>.Update
             .Inc(x => x.Version, 1)
             .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow);

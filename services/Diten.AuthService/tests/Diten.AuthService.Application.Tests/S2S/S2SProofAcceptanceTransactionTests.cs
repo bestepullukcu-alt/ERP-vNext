@@ -8,6 +8,7 @@ using MongoDB.Driver;
 
 namespace Diten.AuthService.Application.Tests.S2S;
 
+[Collection(AuthServiceRealMongoTestCollection.Name)]
 public sealed class S2SProofAcceptanceTransactionTests
 {
     [Fact]

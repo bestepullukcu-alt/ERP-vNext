@@ -25,7 +25,7 @@ public static class DependencyInjection
         ]);
 
         // MongoDB Serializers
-        BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+        MongoGuidRepresentationPolicy.EnsureGlobalSerializer();
 
         // MongoDB Conventions - Globally ignore extra elements to prevent deserialization errors on schema changes
         var conventionPack = new ConventionPack
@@ -51,7 +51,7 @@ public static class DependencyInjection
         services.AddSingleton(mongoSettings);
 
         // Drivers
-        var clientSettings = MongoClientSettings.FromConnectionString(mongoSettings.ConnectionString);
+        var clientSettings = MongoGuidRepresentationPolicy.CreateClientSettings(mongoSettings.ConnectionString);
         var client = new MongoClient(clientSettings);
         var database = client.GetDatabase(mongoSettings.DatabaseName);
 
@@ -78,6 +78,9 @@ public static class DependencyInjection
         services.AddScoped<IS2SProofAcceptanceCoordinator, S2SProofAcceptanceCoordinator>();
         services.AddSingleton<IPermissionCatalogTransactionProbe>(_ => NoOpPermissionCatalogTransactionProbe.Instance);
         services.AddScoped<IPermissionCatalogManifestRegistrar, PermissionCatalogManifestRegistrar>();
+        services.AddSingleton<IExplicitRoleGrantProvisioningAuthorizer>(_ => UnboundExplicitRoleGrantProvisioningAuthorizer.Instance);
+        services.AddSingleton<IExplicitRoleGrantTransactionProbe>(_ => NoOpExplicitRoleGrantTransactionProbe.Instance);
+        services.AddScoped<IExplicitRoleGrantProvisioningCoordinator, ExplicitRoleGrantProvisioningCoordinator>();
 
         // Ensure Indexes and Seed Data
         // Note: In a production environment, this might be handled by an initialization service or migration tool.

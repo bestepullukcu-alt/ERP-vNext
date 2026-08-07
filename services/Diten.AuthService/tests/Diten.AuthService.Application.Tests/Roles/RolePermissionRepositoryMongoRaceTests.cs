@@ -23,6 +23,7 @@ internal static class MongoSerializationTestBootstrap
 /// Real-Mongo proof for the production E11000 catch/query path. There is intentionally no
 /// skip-if-unavailable fallback: a missing Mongo test dependency fails this acceptance gate.
 /// </summary>
+[Collection(Diten.AuthService.Application.Tests.S2S.AuthServiceRealMongoTestCollection.Name)]
 public sealed class RolePermissionRepositoryMongoRaceTests
 {
     private static string MongoUri =>

@@ -46,6 +46,7 @@ public sealed class Permission : GlobalEntityBase
     public string DisplayName { get; private set; } = string.Empty;
     public string? Description { get; private set; }
     public bool IsSystem { get; private set; }
+    public long ExplicitGrantValidationFence { get; private set; }
 
     /// <summary>İŞ3-FAZ0 — authz scope (tenant vs platform-admin). Faz 0: derived from Module, persisted, round-trips.</summary>
     public PermissionScope Scope { get; private set; }

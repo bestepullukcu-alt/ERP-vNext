@@ -7,13 +7,14 @@ namespace Diten.AuthService.Persistence.S2S;
 
 internal static class S2SGuidRepresentationPolicy
 {
-    internal const GuidRepresentation Canonical = GuidRepresentation.Standard;
+    internal const GuidRepresentation Canonical = MongoGuidRepresentationPolicy.Canonical;
 
     private static readonly object Gate = new();
     private static bool _configured;
 
     internal static void EnsureConfigured()
     {
+        MongoGuidRepresentationPolicy.EnsureGlobalSerializer();
         if (Volatile.Read(ref _configured)) return;
         lock (Gate)
         {
