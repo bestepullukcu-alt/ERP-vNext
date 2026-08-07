@@ -14,6 +14,8 @@ target: ""
 form_field_count: 0
 parent_module: MOD-0018
 execution_authority: none
+production_authority: none
+execution_activation: none
 ---
 
 # MOD-0018-FU16 — S2S Authorization, Delegation and Permission Provisioning
@@ -563,3 +565,66 @@ GOVERNANCE PASS / runtime execution BLOCKED:** fixture/runtime evidence must pro
 6. Integration owner defines internal routes/network policy only after service contracts are approved; no Gateway change is implied.
 7. Operations owner defines rotation, compromise response, redaction verification, audit retention and 503 alerting.
 8. PPM and MDM owners sign regression evidence before Gate I production rollout.
+
+### Gate I Model A amendment — Auth FU16-B2B Attestation Consumer Enforcement
+
+Control Tower selects **Model A**: FU16-B2B consumes the short-lived signed Platform entitlement attestation defined
+by [CAND-CAP-0002-FU05](CAND-CAP-0002-FU05-tenant-module-entitlements.md). This is a bounded-stale design with an
+absolute maximum accepted stale window of 15 seconds; it is not and must never be represented as zero-stale. Model B
+or a claim that Platform entitlement state participates in the Auth MongoDB transaction is outside this decision.
+
+The bounded implementation slice is named **Auth FU16-B2B Attestation Consumer Enforcement**. It may implement only
+the following additive enforcement contract:
+
+1. `platform.entitlement-attestation` version `1.0` is a dedicated entitlement-attestation token/contract family.
+   It must not be issued, accepted, logged or relabeled as `DelegatedActorProofV1`; neither validation scheme may
+   fall through to the other.
+2. The consumer requires exact issuer `diten-platform-service`, sole audience `diten-auth-service`, protected header
+   `typ=diten-entitlement-attestation+jwt`, `alg=RS256`, one exact trusted active `kid`, and exact claims
+   `contract_id=platform.entitlement-attestation` and `contract_version=1.0`. Wrong family, issuer, audience, type,
+   algorithm, key identity, signature or version is rejected before authorization.
+3. The attestation `tenant_id`, normalized `module_code` and canonical `request_hash` must exactly equal the
+   server-derived tenant, owner-profile ModuleCode and FU16 canonical request hash. Alias, wildcard, trim,
+   case-fold-at-validation, alternate serialization and request replay do not match.
+4. The complete `EntitlementStateVersionV1` vector and hard `valid_until_utc` boundary are mandatory. All three
+   monotonic components must be trustworthy, comparable and no older than the consumer's observed fence.
+   `valid_until_utc` may not be extended by clock skew. Missing, incomparable or unverifiable version authority,
+   invalid signature/family, or an expired attestation can never authorize execution.
+5. Only `Allowed` proceeds to the remaining FU16 gates. Authoritative `Missing`, `Disabled`, `Expired` or
+   `NotApplicable` maps to `403`. Provider unavailable/timeout/malformed/indeterminate, invalid or expired
+   attestation, and unavailable/indeterminate trustworthy key or version authority map to `503`, except that a
+   cryptographically verified authentication/identity failure attributable to supplied credentials or bytes
+   remains the existing pack's `401` class. Specifically wrong issuer/audience/typ/alg/kid, bad signature or
+   TenantId/ModuleCode/request-hash binding is `401`; inability to obtain trustworthy key/version/provider state is
+   `503`. No protected handler runs in either case.
+6. Cache and last-known-good data must never produce allow. A cache may retain only an already verified attestation
+   under its exact tenant/module/request-hash/version key and only until its unextended `valid_until_utc`; stale,
+   superseded, incomparable, expired or invalidated entries are rejected. There is no offline allow mode.
+7. During the local Auth authorization transaction, service principal, credential generation, delegated actor's
+   current membership, still-existing explicit grant, authorization version and replay receipt consumption are read
+   or written under one Auth snapshot/fence. Any changed component aborts and retries or fails closed; token claims
+   alone are insufficient. The verified Platform attestation is immutable external input to this transaction, not a
+   Platform record enlisted in it.
+8. Although the common Mongo client is now Standard, a dedicated session may reach common collections only through
+   the exact allowlisted wrapper `IFu16AuthorizationTransactionSession`. Its closed operations are principal read,
+   credential-generation read, actor-membership read, explicit-role-grant read, authorization-version read and
+   replay-receipt insert. Activation requires a BSON serializer/representation compatibility gate for every shared
+   identifier/version field and executable proof that every operation uses the same `IClientSessionHandle` and the
+   same underlying `MongoClient`; arbitrary common repository access or a second client/session is forbidden.
+9. Platform entitlement state, its version vector and its signing-key lifecycle remain Platform-owned and are not
+   part of the Auth Mongo transaction. Model A supplies only signed bounded-stale evidence; transaction language,
+   diagrams and tests must not imply cross-service ACID or zero-stale entitlement revocation.
+10. Offline UUID representation migration remains a separate deployment blocker. No online fallback, dual-format
+    comparison or implicit conversion is authorized. Production activation stays blocked until the separately
+    approved migration proves backup/restore, full collection conversion, BSON compatibility and rollback evidence.
+
+**Slice acceptance and evidence boundary:** tests must cover exact family/header/claim validation, all four
+authoritative deny results as `403`, the `401` identity failures above, every uncertainty/expiry/version failure as
+`503`, no cache/LKG allow, the 15-second hard boundary, vector rollback/incomparability, same-session/same-client
+transaction evidence, snapshot changes across every local authorization component, and the offline UUID blocker.
+Existing PPM `ExplicitOnlyPreserveOnEntitlementRemoval`, its exact Phase 2A grant set, deny behavior and dormant-grant
+semantics remain unchanged.
+
+This amendment is `ready-for-dev` governance only. `execution_authority: none`, `production_authority: none` and
+`execution_activation: none` remain binding. It creates no endpoint/runtime code, route, credential, key, migration
+or deployment and grants no production activation authority.

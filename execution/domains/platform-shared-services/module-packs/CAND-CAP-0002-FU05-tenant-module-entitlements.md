@@ -3,11 +3,13 @@ file_name: CAND-CAP-0002-FU05-tenant-module-entitlements.md
 id: CAND-CAP-0002-FU05
 name: Tenant Module Entitlements
 domain: platform-shared-services
-status: approved
+status: ready-for-dev
 owner: platform-team
 branch: feature/pss/mod-0298-tenant-module-entitlements
 created_at: 2026-05-11
 golden_reference: slim
+production_authority: none
+execution_activation: none
 ---
 
 # CAND-CAP-0002-FU05 — Tenant Module Entitlements
@@ -377,6 +379,67 @@ The PSS-owned physical contract is `platform.ppm-entitlement-decision.v1` at
   payloads fail closed into retry/DLQ; unknown event names remain safely ignored.
 - This provider contract does not authorize or implement the PPM-service consumer, Gateway routing, PPM
   permission enforcement, or audit delivery.
+
+### Gate I Model A amendment — Platform Entitlement Decision/Attestation Foundation
+
+This amendment is an additive, typed and versioned extension to PSS-B1. The existing
+`platform.ppm-entitlement-decision.v1` endpoint, its exact response shape, explicit-grant separation, authoritative
+allow/deny `200` behavior and indeterminate `503` behavior remain unchanged. No existing PPM v1 field, status,
+credential rule, route or runtime behavior is renamed, removed or reinterpreted.
+
+The new logical contract identity is exactly `platform.entitlement-attestation`, contract version exactly `1.0`,
+and JWT `typ` exactly `diten-entitlement-attestation+jwt`. It is a separate contract/token family and is not the PPM
+v1 response. Physical route selection remains an executable-pack decision. The bounded implementation slice is
+named **Platform Entitlement Decision/Attestation Foundation** and may implement only the following closed contract:
+
+1. The input and signed payload bind the exact non-empty `TenantId`, the exact normalized `ModuleCode`, and the
+   consumer-supplied canonical request hash. `ModuleCode` normalization is invariant uppercase using Unicode NFC;
+   leading/trailing whitespace, aliases, wildcard, culture-sensitive casing and post-signature normalization are
+   rejected. The canonical request hash is base64url SHA-256 of the FU16 canonical method, path, tenant, operation
+   and body-digest bytes; it is copied exactly into the attestation.
+2. The authoritative decision enum is closed to `Allowed`, `Missing`, `Disabled`, `Expired` and `NotApplicable`.
+   `Allowed` is the sole allow value. The other four are authoritative business-deny values and may be signed so the
+   consumer can map them to `403`; they are never collapsed into `Allowed` or infrastructure uncertainty.
+3. Provider unavailable, timeout, malformed authoritative data or an indeterminate decision returns a typed `503`
+   response and emits no attestation. A last-known-good decision, cache default or synthetic deny cannot substitute
+   for the missing authoritative evaluation.
+4. Every decision carries exact monotonic vector `EntitlementStateVersionV1 = { physicalEntitlementVersion,
+   subscriptionPlanVersion, moduleApplicabilityVersion }`. The three unsigned 64-bit components respectively fence
+   physical tenant entitlement changes, subscription/selected-plan changes, and module-catalog applicability
+   changes. Each relevant authoritative mutation increments its component before a decision can be issued; wrap,
+   reset, missing component or incomparable vector is indeterminate `503`.
+5. Cache keys include `TenantId`, normalized `ModuleCode`, contract identity/version and the complete version vector.
+   A cache write whose vector is older or incomparable to the current fence is rejected. Invalidation applies only
+   monotonically; duplicate invalidation is idempotent, while out-of-order/incomparable invalidation fails closed and
+   cannot resurrect an older allow.
+6. The issuer is exactly `diten-platform-service`, the sole audience is exactly `diten-auth-service`, and signing is
+   exactly `RS256` with a Platform-owned RSA key of at least 3072 bits. Protected header `kid` is mandatory and exact.
+   Platform owns key generation, private-key custody, publication of trusted public validation keys, overlap,
+   retirement, emergency revocation and audit. Unknown, retired, duplicated or unavailable trustworthy `kid` state
+   cannot issue an attestation.
+7. Signed claims use exact lower-snake-case names: `contract_id`, `contract_version`, `tenant_id`, `module_code`,
+   `request_hash`, `decision`, the three version-vector members, `resolved_at_utc`, `valid_until_utc`, `iss`, `aud`,
+   `iat`, `jti`. The protected header and payload are UTF-8 JSON canonicalized with RFC 8785 JCS before base64url
+   encoding; duplicate keys, insignificant-field aliases, non-NFC strings, non-integer versions and non-canonical
+   timestamps are malformed. UTC instants use RFC 3339 with exactly three fractional digits and `Z`; the signature
+   covers the exact canonical header and payload bytes.
+8. `valid_until_utc - resolved_at_utc` and `valid_until_utc - iat` are each at most 15 seconds. Revocation/invalidation
+   propagation plus acceptance may expose at most a 15-second stale window. `valid_until_utc` is a hard authorization
+   boundary and must not be extended by validator clock skew. Clock-skew handling may reject early; it may never allow
+   after `valid_until_utc`.
+9. `effective_from_utc` is absent in version `1.0`. It may be added only by a future additive contract version after
+   an authoritative effective-dating field and mutation rule actually exist; current storage must not be described
+   as if it already provides that fact.
+10. PPM regression is binding: explicit grants remain separate from entitlement; authoritative deny remains `200` in
+    the existing PPM v1 provider; provider/dependency indeterminate remains `503`; enablement creates no grant;
+    removal preserves dormant explicit grants. Model A adds no mutation to those behaviors.
+
+**Slice acceptance and evidence boundary:** contract tests must cover all five business outcomes, typed no-token
+`503`, exact bindings, canonical-byte/signature fixtures, all three version components, stale-write and out-of-order
+invalidation rejection, key overlap/retirement, the hard 15-second validity boundary, and unchanged PPM v1 snapshots.
+This amendment is `ready-for-dev` governance only. `production_authority: none` and `execution_activation: none`
+remain binding: no endpoint, runtime code, route, credential, key, migration or deployment is created here. Consumer
+enforcement is separately bounded by [MOD-0018-FU16](MOD-0018-FU16-s2s-authorization-delegation-permission-provisioning.md).
 
 ## Revision Summary
 - **Physical Source ile Projection Source Ayrımı:** `Source` enumunun fiziksel kayıtlarda (`ManualOverride`, `Addon`, `Trial`, `System`) kullanılması ile read-model/UI üzerinde görüntülenen (`Plan` dahil) ayrımı netleştirildi.
