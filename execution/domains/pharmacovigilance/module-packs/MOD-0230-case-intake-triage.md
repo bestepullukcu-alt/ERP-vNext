@@ -225,6 +225,22 @@ W-3A0, does not move MOD-0230 to `ready-for-dev`, and does not authorize runtime
   may be introduced only after retention/legal-hold approval; it requires reason, actor, UTC timestamp,
   correlation id, and AuditEvent. Archive/void is blocked under legal hold.
 
+### Draft Retention / Legal-Hold / Archive-Void Packet
+
+This packet records draft retention expectations only. It does not approve retention policy, does not enable
+archive/void, does not move MOD-0230 to `ready-for-dev`, and does not authorize runtime implementation.
+
+| Topic | Draft expectation | Required closure before `ready-for-dev` |
+|---|---|---|
+| Delete exclusions | MOD-0230 must not support hard delete, bulk delete, or normal user delete. No future `DELETE` endpoint, bulk-delete command, or destructive persistence shortcut may be introduced for regulated intake records. | Approved exclusion remains recorded in permissions, API routing, backend convention, and test expectations. |
+| Archive definition | Archive means a controlled non-destructive lifecycle state that removes the intake record from active operational queues while preserving the regulated record, evidence references, traceability, auditability, and authorized read/export visibility. | Approved archive state name, allowed source states, target state, actor authority, retention effect, and read/export behavior. |
+| Void definition | Void means a controlled non-destructive invalidation state for intake records created in error, duplicate, or otherwise unusable under approved reason codes. Void must preserve the record, previous state, target state, evidence references, and audit trail; it must not erase PHI/PII or source provenance. | Approved void reason codes, allowed source states, target state, actor authority, downstream handoff impact, and read/export behavior. |
+| Legal hold | Legal hold blocks archive and void mutations unless a later compliance-owned exception contract explicitly allows a non-destructive state marker. A held record must remain discoverable to authorized compliance/audit actors and must not be hidden by ordinary archive filters. | Approved legal-hold source of truth, block/exception behavior, actor authority, and failure response. |
+| Required metadata | Any future archive/void mutation must record reason, actor, UTC timestamp, correlation ID, AuditEvent reference, previous state, target state, tenant context, and object reference. Free-text reason content must be redacted or reason-code constrained according to MOD-0019 and MOD-0021. | Approved metadata shape, reason-code taxonomy, redaction policy, AuditEvent payload allow-list, and correlation propagation. |
+| PHI/PII visibility | Archived or voided records remain subject to the same or stricter MOD-0019 masking/row-field rules. Default list views should omit archived/voided records unless explicitly requested by authorized actors. Export is masked-only unless a later field policy approval permits more. | Approved read/export visibility matrix for intake agents, triage leads, safety managers, compliance auditors, and integrations. |
+| Policy unavailable | If retention, legal-hold, archive/void, masking, or audit policy is unavailable, archive/void must fail closed. The operation must be absent, denied, or blocked with a regulated safe error; no fallback mutation may occur. | Approved unavailable-policy behavior, error reason codes, and fail-closed tests. |
+| Test expectations | Future implementation tests must prove archive/void is blocked before retention/legal-hold approval, blocked under legal hold, denied for unauthorized actors, denied or masked when MOD-0019 is unavailable, blocked or queued when MOD-0021 audit is unavailable, records previous/target state and required metadata on allowed paths, preserves evidence and trace references, and keeps hard delete/bulk delete absent. | Approved test matrix before `ready-for-dev`; no runtime tests are required while this pack remains draft. |
+
 ## Layout & Shell Contract
 
 `shell: tenant`

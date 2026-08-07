@@ -324,6 +324,11 @@ member module pack, authorize runtime, close OD-2, or close OD-7.
       direct service-port calls.
 - [ ] Approve retention/legal-hold/archive policy: archive reason, actor, UTC timestamp, correlation ID, AuditEvent,
       legal-hold block behavior, and export/read visibility.
+- [ ] Review and approve the MOD-0230 draft retention/legal-hold/archive-void packet before `ready-for-dev`; it
+      keeps hard delete, bulk delete, and normal user delete excluded; defines archive versus void; requires
+      reason, actor, UTC timestamp, correlation ID, AuditEvent, previous state, target state, tenant context, and
+      object reference; defines legal-hold block behavior; requires PHI/PII read/export visibility rules; and
+      requires fail-closed tests for blocked and allowed archive/void paths.
 - [ ] Approve MOD-0018 RBAC/permissions contract: canonical keys, actor context, tenant authorization, and
       seed/grant ownership.
 - [ ] Approve MOD-0019 masking/row-field security contract: sensitivity vocabulary, masking/omit/deny behavior, and
@@ -430,4 +435,8 @@ member module pack, authorize runtime, close OD-2, or close OD-7.
 - 2026-08-07: MOD-0230 draft interface contract packet added as a governance expectation only. It defines draft
   expectations for MOD-0018, MOD-0019, MOD-0021, MOD-0023, MOD-0031, and Blueprint MOD-0040 / TRACE-BUNDLE; the
   dependent contracts remain open blockers and this DCP remains `draft`.
+- 2026-08-07: MOD-0230 draft retention/legal-hold/archive-void packet added as a governance expectation only. It
+  preserves no hard delete, no bulk delete, and no normal user delete; records archive/void metadata and
+  legal-hold/read-export/fail-closed expectations; retention/legal-hold approval remains an open blocker and this
+  DCP authorizes no runtime work.
 - Reconciliation: implementation-phase results will be added here only after this DCP is approved and future member module packs are executed.
