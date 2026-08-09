@@ -381,6 +381,9 @@
   <data name="ProductMaster" xml:space="preserve">
     <value>Maestro de Productos</value>
   </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Editar</value>
+  </data>
   <data name="Delete" xml:space="preserve">
     <value>Eliminar</value>
   </data>

@@ -40,6 +40,17 @@ const TaskRecurrenceRuleList = (function () {
     const syncL10n = () => {
         const current = window.L10n;
         if (current && typeof current === 'object' && Object.keys(current).length) L = current;
+
+        /*
+         * The export menu's own label is the one piece of DataTable chrome that does NOT come from the shared
+         * Dt* pack: dt-defaults reads it from window.L10n.Action. Left unset it falls back to the vendor's
+         * English "Action" — measured live on this very screen while every other string around it was Turkish.
+         * Seeded from the page's own Export wording so the menu and the button agree.
+         */
+        if (L.Export) {
+            window.L10n = window.L10n || {};
+            window.L10n.Action = L.Export;
+        }
     };
 
     const getAuthHeaders = (includeJson = false) =>

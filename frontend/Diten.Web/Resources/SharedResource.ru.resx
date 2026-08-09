@@ -381,6 +381,9 @@
   <data name="ProductMaster" xml:space="preserve">
     <value>Справочник продуктов</value>
   </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Изменить</value>
+  </data>
   <data name="Delete" xml:space="preserve">
     <value>Удалить</value>
   </data>
