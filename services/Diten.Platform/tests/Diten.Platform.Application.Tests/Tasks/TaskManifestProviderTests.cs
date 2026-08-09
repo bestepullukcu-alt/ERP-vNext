@@ -112,6 +112,25 @@ public sealed class TaskManifestProviderTests
     }
 
     [Fact]
+    public void The_recurrence_rule_SETTINGS_page_IS_reachable_from_the_menu()
+    {
+        /*
+         * BL-052. The Phase 4 engine shipped complete and unreachable — entity, hourly sweep, five CRUD
+         * endpoints — with no page and no manifest entry, so nothing in the menu could ever lead to it.
+         *
+         * It follows the field-definition screen's rule rather than the Task Center's: defining WHEN work gets
+         * created is a configuration authority, not "where is my work". That is why it carries its own
+         * permission instead of Read/Create — those are in PersonalWorkSurfaceScoped, and a nav-visible page
+         * holding one of them would fragment the Task Center, which the test above forbids.
+         */
+        var page = Manifest.Pages.Single(p => p.RoutePath == "/Tasks/RecurrenceRules");
+
+        Assert.True(page.IsNavigationVisible);
+        Assert.DoesNotContain(page.RequiredPermission, TaskPermissions.PersonalWorkSurfaceScoped);
+        Assert.Equal(TaskPermissions.RecurrenceManage, page.RequiredPermission);
+    }
+
+    [Fact]
     public void The_rule_follows_the_PERMISSION_so_a_future_personal_page_inherits_it()
     {
         /*

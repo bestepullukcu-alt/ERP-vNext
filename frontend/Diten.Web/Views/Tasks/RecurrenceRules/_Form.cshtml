@@ -1,0 +1,161 @@
+@model Diten.Web.Models.TaskRecurrenceRules.TaskRecurrenceRuleEditViewModel
+@using Diten.Web.Views.Tasks.RecurrenceRules
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskRecurrenceRulesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var action = isEdit ? "Edit" : "Create";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a asp-controller="TaskRecurrenceRules" asp-action="Index">@Localizer["RecurrenceRulesTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-controller="TaskRecurrenceRules" asp-action="Index" class="btn btn-label-secondary">
+            @SharedLocalizer["Cancel"]
+        </a>
+        <button type="submit" form="taskRecurrenceRuleForm" class="btn btn-primary">
+            @(isEdit ? SharedLocalizer["Update"] : SharedLocalizer["Save"])
+        </button>
+    </div>
+</div>
+
+<form id="taskRecurrenceRuleForm" asp-controller="TaskRecurrenceRules" asp-action="@action" asp-route-id="@Model.Id" method="post"
+      class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="ExpectedVersion" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ScheduleSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="Name" class="form-label fw-medium">@Localizer["Name"] <span class="text-danger">*</span></label>
+                            <input asp-for="Name" class="form-control" maxlength="200" placeholder="@Localizer["NamePlaceholder"]" required />
+                            <div class="form-text">@Localizer["NameHint"]</div>
+                            <span asp-validation-for="Name" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="Interval" class="form-label fw-medium">@Localizer["Interval"]</label>
+                            <input asp-for="Interval" type="number" class="form-control" min="1" max="365" />
+                            <span asp-validation-for="Interval" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-8">
+                            <label asp-for="Frequency" class="form-label fw-medium">@Localizer["Frequency"] <span class="text-danger">*</span></label>
+                            @* The five the engine's enum actually has. A sixth would deserialize to nothing on
+                               the far side and the rule would sit there never firing. *@
+                            <select asp-for="Frequency" class="select2 form-select" required>
+                                <option value="Daily">@Localizer["FrequencyDaily"]</option>
+                                <option value="Weekly">@Localizer["FrequencyWeekly"]</option>
+                                <option value="Monthly">@Localizer["FrequencyMonthly"]</option>
+                                <option value="Quarterly">@Localizer["FrequencyQuarterly"]</option>
+                                <option value="Yearly">@Localizer["FrequencyYearly"]</option>
+                            </select>
+                            <div class="form-text">@Localizer["IntervalHint"]</div>
+                            <span asp-validation-for="Frequency" class="text-danger small mt-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["AssignmentSection"]</h6>
+
+                    @* The rule the engine states in code, said out loud to the person filling the form. It is
+                       not a warning about a value they can pick — the value is not offered, and the model
+                       refuses it if the markup is edited. *@
+                    <div class="alert alert-info" role="note">@Localizer["AssignmentNoSelfHint"]</div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="AssignmentTarget" class="form-label fw-medium">@Localizer["AssignmentTarget"] <span class="text-danger">*</span></label>
+                            <select asp-for="AssignmentTarget" class="select2 form-select" data-recurrence-target required>
+                                <option value="Person">@Localizer["AssignmentPerson"]</option>
+                                <option value="PositionPool">@Localizer["AssignmentPool"]</option>
+                            </select>
+                            <span asp-validation-for="AssignmentTarget" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12" data-recurrence-person>
+                            <label asp-for="AssigneeUserId" class="form-label fw-medium">@Localizer["Assignee"]</label>
+                            @* Populated from /Tasks/api/assignable-people by form.js — the same lookup the task
+                               form uses, so a rule cannot name somebody the task form could not. *@
+                            <select asp-for="AssigneeUserId" class="select2 form-select" data-recurrence-assignee></select>
+                            <div class="form-text">@Localizer["AssigneeHint"]</div>
+                            <span asp-validation-for="AssigneeUserId" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 d-none" data-recurrence-pool>
+                            <label asp-for="PoolPositionId" class="form-label fw-medium">@Localizer["PoolPosition"]</label>
+                            <select asp-for="PoolPositionId" class="select2 form-select" data-recurrence-position></select>
+                            <div class="form-text">@Localizer["PoolPositionHint"]</div>
+                            <span asp-validation-for="PoolPositionId" class="text-danger small mt-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["WindowSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="StartsAt" class="form-label fw-medium">@Localizer["StartsAt"]</label>
+                            <input asp-for="StartsAt" type="text" class="form-control flatpickr-date" autocomplete="off" />
+                            <span asp-validation-for="StartsAt" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="EndsAt" class="form-label fw-medium">@Localizer["EndsAt"]</label>
+                            <input asp-for="EndsAt" type="text" class="form-control flatpickr-date" autocomplete="off" />
+                            @* Empty is an ANSWER here, not a missing value: most real recurring work has no end
+                               date at all. Said in the hint so nobody invents one to get past the form. *@
+                            <div class="form-text">@Localizer["EndsAtHint"]</div>
+                            <span asp-validation-for="EndsAt" class="text-danger small mt-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["TemplateSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="TaskTemplateId" class="form-label fw-medium">@Localizer["TaskTemplate"]</label>
+                            <select asp-for="TaskTemplateId" class="select2 form-select" data-recurrence-template>
+                                <option value="">@Localizer["TemplateNone"]</option>
+                            </select>
+                            <div class="form-text">@Localizer["TaskTemplateHint"]</div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch mt-2">
+                                <input type="hidden" name="IsActive" value="false" />
+                                <input asp-for="IsActive" class="form-check-input" role="switch" value="true" />
+                                <label asp-for="IsActive" class="form-check-label ms-2">@SharedLocalizer["Active"]</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

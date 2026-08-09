@@ -22,6 +22,18 @@ public static class TaskPermissions
     public const string FieldDefinitionsManage = "platform.tasks.field-definitions.manage";
 
     /// <summary>
+    /// Managing WHEN work gets created — the recurrence rules (BL-052).
+    ///
+    /// <para>Its own key rather than <see cref="Create"/>, and the reason is the same one that keeps
+    /// <see cref="FieldDefinitionsManage"/> separate: defining a schedule is a configuration authority, not the
+    /// act of doing or receiving work. The rule endpoints used to sit on Read/Create/Update/Delete, all of which
+    /// are <see cref="PersonalWorkSurfaceScoped"/> — so a menu entry for the screen would have been a second
+    /// answer to "where is my work". Nobody could reach those endpoints from a screen before this slice, so
+    /// there is no caller to strand by moving them.</para>
+    /// </summary>
+    public const string RecurrenceManage = "platform.tasks.recurrence-rules.manage";
+
+    /// <summary>
     /// The permissions that gate a <b>personal work surface</b> — a page that shows or acts on the viewer's own
     /// task INSTANCES.
     ///
@@ -468,6 +480,9 @@ public sealed record AssignablePersonDto(
     Guid OrganizationUnitId,
     string OrganizationUnitCode,
     string OrganizationUnitName);
+
+/// <summary>One bindable template, for a picker: nothing but what a picker can show and send.</summary>
+public sealed record TaskTemplateLookupDto(Guid Id, string Name);
 
 public sealed record AssignablePositionDto(
     Guid PositionId,

@@ -376,7 +376,7 @@ public sealed class TasksController : CustomBaseController
     // nothing until then, and that is configuration rather than a defect.
 
     [HttpGet("recurrence-rules")]
-    [HasPermission(TaskPermissions.Read)]
+    [HasPermission(TaskPermissions.RecurrenceManage)]
     public async Task<IActionResult> GetRecurrenceRules(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetTaskRecurrenceRuleListQuery(CorrelationId), ct);
@@ -384,7 +384,7 @@ public sealed class TasksController : CustomBaseController
     }
 
     [HttpGet("recurrence-rules/{id:guid}")]
-    [HasPermission(TaskPermissions.Read)]
+    [HasPermission(TaskPermissions.RecurrenceManage)]
     public async Task<IActionResult> GetRecurrenceRule(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetTaskRecurrenceRuleByIdQuery(id, CorrelationId), ct);
@@ -392,7 +392,7 @@ public sealed class TasksController : CustomBaseController
     }
 
     [HttpPost("recurrence-rules")]
-    [HasPermission(TaskPermissions.Create)]
+    [HasPermission(TaskPermissions.RecurrenceManage)]
     public async Task<IActionResult> CreateRecurrenceRule(
         [FromBody] CreateTaskRecurrenceRuleRequest request, CancellationToken ct)
     {
@@ -401,7 +401,7 @@ public sealed class TasksController : CustomBaseController
     }
 
     [HttpPut("recurrence-rules/{id:guid}")]
-    [HasPermission(TaskPermissions.Update)]
+    [HasPermission(TaskPermissions.RecurrenceManage)]
     public async Task<IActionResult> UpdateRecurrenceRule(
         Guid id, [FromBody] UpdateTaskRecurrenceRuleRequest request, CancellationToken ct)
     {
@@ -410,7 +410,7 @@ public sealed class TasksController : CustomBaseController
     }
 
     [HttpDelete("recurrence-rules/{id:guid}")]
-    [HasPermission(TaskPermissions.Delete)]
+    [HasPermission(TaskPermissions.RecurrenceManage)]
     public async Task<IActionResult> DeleteRecurrenceRule(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new DeleteTaskRecurrenceRuleCommand(id, CorrelationId), ct);
@@ -439,6 +439,18 @@ public sealed class TasksController : CustomBaseController
     public async Task<IActionResult> GetAssignablePeople(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetTaskAssignmentPersonLookupQuery(CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// Templates a recurrence rule can be bound to (BL-052). Guarded by Create, because binding a template is
+    /// part of defining what gets created — the same permission the rule endpoints below already require.
+    /// </summary>
+    [HttpGet("lookups/task-templates")]
+    [HasPermission(TaskPermissions.RecurrenceManage)]
+    public async Task<IActionResult> GetTaskTemplates(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetTaskTemplateLookupQuery(CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 

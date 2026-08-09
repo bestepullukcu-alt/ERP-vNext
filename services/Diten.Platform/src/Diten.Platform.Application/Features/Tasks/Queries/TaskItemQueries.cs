@@ -34,6 +34,17 @@ public sealed record GetTaskAssignmentPersonLookupQuery(string CorrelationId)
     : IRequest<Response<IReadOnlyList<AssignablePersonDto>>>;
 
 /// <summary>
+/// Templates a recurrence rule may be bound to (BL-052).
+///
+/// <para>A LOOKUP, not a management list: id + name is everything a picker needs. It exists because the rule
+/// screen offers "generate each task from this template" and there was no way to enumerate them — the repository
+/// could already list them, nothing exposed it, and a picker with no source is a control that can never be
+/// filled. Active only: binding a rule to a retired template would generate work from a shape nobody maintains.</para>
+/// </summary>
+public sealed record GetTaskTemplateLookupQuery(string CorrelationId)
+    : IRequest<Response<IReadOnlyList<TaskTemplateLookupDto>>>;
+
+/// <summary>
 /// Every recurrence rule the tenant can see, ACTIVE OR NOT — a paused rule that vanished from the list could
 /// never be resumed (Phase 4).
 /// </summary>

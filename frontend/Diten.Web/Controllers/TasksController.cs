@@ -230,6 +230,15 @@ public sealed class TasksController : Controller
     /// People a task may be assigned to (whoever holds a position). Carries the display name, position and
     /// organization unit so the picker never has to show a user GUID.
     /// </summary>
+    /// <summary>
+    /// Templates a recurrence rule can be bound to (BL-052). Listed here BY HAND like every other non-transition
+    /// route: a path Platform serves and this proxy does not answers 404 inside the web tier, which is how
+    /// `inquire` once shipped unreachable.
+    /// </summary>
+    [HttpGet("api/task-templates")]
+    public Task<IActionResult> ApiTaskTemplates()
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/lookups/task-templates", readBody: false);
+
     [HttpGet("api/assignable-people")]
     public Task<IActionResult> ApiAssignablePeople()
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/lookups/assignable-people", readBody: false);

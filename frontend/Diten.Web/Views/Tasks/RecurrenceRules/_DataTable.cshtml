@@ -1,0 +1,39 @@
+@using Diten.Web.Views.Tasks.RecurrenceRules
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskRecurrenceRulesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@*
+    No select-all checkbox and no bulk bar, unlike the sibling field-definition screen.
+
+    Not an omission: MOD-0024 exposes five CRUD endpoints for recurrence rules and NO bulk-delete. A bulk bar
+    wired to an endpoint that does not exist is a button that fails, and inventing a client-side loop would be a
+    second bulk shape in one controller. Row-level retire is the whole vocabulary the server actually has.
+*@
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-taskrecurrencerules" data-dt-standard="v2" class="datatables-taskrecurrencerules table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="all">@Localizer["Name"]</th>
+                    <th>@Localizer["Frequency"]</th>
+                    <th>@Localizer["StartsAt"]</th>
+                    <th>@Localizer["EndsAt"]</th>
+                    <th>@Localizer["AssignmentTarget"]</th>
+                    <th>@Localizer["LastGeneratedAt"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

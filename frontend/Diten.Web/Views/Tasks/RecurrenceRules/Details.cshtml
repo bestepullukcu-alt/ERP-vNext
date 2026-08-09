@@ -1,0 +1,84 @@
+@model Diten.Web.Models.TaskRecurrenceRules.TaskRecurrenceRuleEditViewModel
+@using Diten.Web.Views.Tasks.RecurrenceRules
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskRecurrenceRulesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Model.Name;
+    Layout = "_LayoutTenantShell";
+
+    var frequencyLabel = Localizer["Frequency" + Model.Frequency].Value;
+    var intervalSuffix = Model.Interval is > 1 ? $" · {Localizer["Interval"].Value} {Model.Interval}" : string.Empty;
+    var assignmentLabel = Model.AssignmentTarget switch
+    {
+        "Person" => Localizer["AssignmentPerson"].Value,
+        "PositionPool" => Localizer["AssignmentPool"].Value,
+        // Not mapped on purpose: no rule can carry any other target, so one that did should read as itself and
+        // be noticed rather than be given a friendly name that hides it.
+        _ => Model.AssignmentTarget
+    };
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@Model.Name</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a asp-controller="TaskRecurrenceRules" asp-action="Index">@Localizer["RecurrenceRulesTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@Model.Name</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-controller="TaskRecurrenceRules" asp-action="Index" class="btn btn-label-secondary">
+            @SharedLocalizer["Cancel"]
+        </a>
+        <a asp-controller="TaskRecurrenceRules" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+            @Localizer["EditItem"]
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ScheduleSection"]</h6>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 fw-medium">@Localizer["Frequency"]</dt>
+                    <dd class="col-sm-8">@(frequencyLabel + intervalSuffix)</dd>
+
+                    <dt class="col-sm-4 fw-medium">@Localizer["StartsAt"]</dt>
+                    <dd class="col-sm-8">@(Model.StartsAt?.ToString("yyyy-MM-dd") ?? SharedLocalizer["NotAvailable"].Value)</dd>
+
+                    <dt class="col-sm-4 fw-medium">@Localizer["EndsAt"]</dt>
+                    @* Open-ended is stated, never left blank: an empty cell reads as missing data. *@
+                    <dd class="col-sm-8">@(Model.EndsAt?.ToString("yyyy-MM-dd") ?? Localizer["OpenEnded"].Value)</dd>
+                </dl>
+            </div>
+        </section>
+
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["AssignmentSection"]</h6>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 fw-medium">@Localizer["AssignmentTarget"]</dt>
+                    <dd class="col-sm-8">@assignmentLabel</dd>
+                </dl>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@SharedLocalizer["Status"]</h6>
+                <span class="badge @(Model.IsActive ? "bg-label-success" : "bg-label-secondary")">
+                    @(Model.IsActive ? SharedLocalizer["Active"].Value : SharedLocalizer["Passive"].Value)
+                </span>
+            </div>
+        </section>
+    </div>
+</div>

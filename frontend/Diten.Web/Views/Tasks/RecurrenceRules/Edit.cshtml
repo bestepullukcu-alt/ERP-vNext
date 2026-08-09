@@ -1,0 +1,16 @@
+@model Diten.Web.Models.TaskRecurrenceRules.TaskRecurrenceRuleEditViewModel
+@using Diten.Web.Views.Tasks.RecurrenceRules
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskRecurrenceRulesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleEdit"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "edit";
+}
+
+<partial name="~/Views/Tasks/RecurrenceRules/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/js/Tasks/RecurrenceRules/form.js" asp-append-version="true"></script>
+}

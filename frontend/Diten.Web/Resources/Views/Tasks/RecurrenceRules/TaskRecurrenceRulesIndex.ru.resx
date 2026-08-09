@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="RecurrenceRulesTitle" xml:space="preserve"><value>Правила повторяющихся задач</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Правила, создающие работу по расписанию. Правило задаёт КОГДА и В КАКОЙ ФОРМЕ; ежечасный обход создаёт каждый период ровно один раз.</value></data>
+  <data name="AddNewRule" xml:space="preserve"><value>Добавить правило</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Изменить правило</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Добавить правило</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить правило</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Name" xml:space="preserve"><value>Название</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>напр. Закрытие месяца</value></data>
+  <data name="NameHint" xml:space="preserve"><value>Без шаблона создаваемые задачи получают это название.</value></data>
+  <data name="Frequency" xml:space="preserve"><value>Периодичность</value></data>
+  <data name="FrequencyDaily" xml:space="preserve"><value>Ежедневно</value></data>
+  <data name="FrequencyWeekly" xml:space="preserve"><value>Еженедельно</value></data>
+  <data name="FrequencyMonthly" xml:space="preserve"><value>Ежемесячно</value></data>
+  <data name="FrequencyQuarterly" xml:space="preserve"><value>Ежеквартально</value></data>
+  <data name="FrequencyYearly" xml:space="preserve"><value>Ежегодно</value></data>
+  <data name="Interval" xml:space="preserve"><value>Каждые</value></data>
+  <data name="IntervalHint" xml:space="preserve"><value>2 + Еженедельно означает раз в две недели.</value></data>
+  <data name="ScheduleSection" xml:space="preserve"><value>Расписание</value></data>
+  <data name="WindowSection" xml:space="preserve"><value>Период</value></data>
+  <data name="AssignmentSection" xml:space="preserve"><value>Назначение</value></data>
+  <data name="TemplateSection" xml:space="preserve"><value>Шаблон</value></data>
+  <data name="StartsAt" xml:space="preserve"><value>Дата начала</value></data>
+  <data name="EndsAt" xml:space="preserve"><value>Дата окончания</value></data>
+  <data name="EndsAtHint" xml:space="preserve"><value>Оставьте пустым для бессрочного правила.</value></data>
+  <data name="OpenEnded" xml:space="preserve"><value>Бессрочно</value></data>
+  <data name="AssignmentTarget" xml:space="preserve"><value>Назначить</value></data>
+  <data name="AssignmentPerson" xml:space="preserve"><value>Человеку</value></data>
+  <data name="AssignmentPool" xml:space="preserve"><value>В пул (должность)</value></data>
+  <data name="Assignee" xml:space="preserve"><value>Человек</value></data>
+  <data name="AssigneeHint" xml:space="preserve"><value>Каждая созданная задача ждёт во входящих этого человека, пока он её не примет.</value></data>
+  <data name="PoolPosition" xml:space="preserve"><value>Должность</value></data>
+  <data name="PoolPositionHint" xml:space="preserve"><value>Созданная работа предлагается тем, кто занимает эту должность.</value></data>
+  <data name="AssignmentNoSelfHint" xml:space="preserve"><value>Правило нельзя назначить «себе»: обход выполняется в фоне и не имеет «себя», такая работа не дойдёт ни до кого, но израсходует свой период.</value></data>
+  <data name="TaskTemplate" xml:space="preserve"><value>Шаблон</value></data>
+  <data name="TaskTemplateHint" xml:space="preserve"><value>Необязательно. С шаблоном каждая задача создаётся со своим чек-листом; без него это простое напоминание.</value></data>
+  <data name="TemplateNone" xml:space="preserve"><value>Без шаблона</value></data>
+  <data name="LastGeneratedAt" xml:space="preserve"><value>Последнее создание</value></data>
+  <data name="NeverGenerated" xml:space="preserve"><value>Пока нет</value></data>
+  <data name="GeneratedByRule" xml:space="preserve"><value>Создано правилом повторения</value></data>
+  <data name="RecurrenceFrequencyInvalid" xml:space="preserve"><value>Выберите одну из перечисленных периодичностей.</value></data>
+  <data name="RecurrenceAssignmentTargetInvalid" xml:space="preserve"><value>Выберите человека или пул.</value></data>
+  <data name="RecurrenceAssigneeRequired" xml:space="preserve"><value>Выберите человека, которому принадлежит создаваемая работа.</value></data>
+  <data name="RecurrencePoolRequired" xml:space="preserve"><value>Выберите должность, которой предлагается создаваемая работа.</value></data>
+  <data name="RecurrenceWindowInvalid" xml:space="preserve"><value>Дата окончания должна быть позже даты начала.</value></data>
+</root>

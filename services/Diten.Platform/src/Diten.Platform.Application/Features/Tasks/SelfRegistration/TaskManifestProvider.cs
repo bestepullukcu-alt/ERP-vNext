@@ -36,6 +36,7 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
     private const string PageTaskDetail = "TASK_DETAIL";
     private const string PageTaskEdit = "TASK_EDIT";
     private const string PageTaskFieldDefinitions = "TASK_FIELD_DEFINITIONS";
+    private const string PageTaskRecurrenceRules = "TASK_RECURRENCE_RULES";
 
     public ModuleManifestDocument GetManifest() =>
         new(
@@ -148,6 +149,38 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                             IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("DELETE", "Delete Field Definition",
                             TaskPermissions.FieldDefinitionsManage, "Row", 30,
+                            IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
+                    ]),
+
+                /*
+                 * The recurring-rule admin surface (BL-052). Registered here for the same reason the field
+                 * definitions are: this area's menu is rendered from the module catalog, so a hard-coded <li>
+                 * would be a second, unmanaged entry Menu Settings could neither reorder nor hide.
+                 *
+                 * Nav-visible, and it may be: RecurrenceManage is deliberately NOT in PersonalWorkSurfaceScoped,
+                 * because defining WHEN work is created is a configuration authority rather than an answer to
+                 * "where is my work". The screen also works by direct URL without this entry — the menu makes it
+                 * FINDABLE, not reachable.
+                 */
+                new ModuleManifestPage(
+                    PageCode: PageTaskRecurrenceRules,
+                    DisplayName: "Recurring Task Rules",
+                    RoutePath: "/Tasks/RecurrenceRules",
+                    RequiredPermission: TaskPermissions.RecurrenceManage,
+                    ParentPageCode: PageTasks,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 30,
+                    Actions:
+                    [
+                        new ModuleManifestAction("CREATE", "Create Recurrence Rule",
+                            TaskPermissions.RecurrenceManage, "Toolbar", 10,
+                            IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("EDIT", "Edit Recurrence Rule",
+                            TaskPermissions.RecurrenceManage, "Row", 20,
+                            IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("DELETE", "Delete Recurrence Rule",
+                            TaskPermissions.RecurrenceManage, "Row", 30,
                             IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
                     ])
             ],

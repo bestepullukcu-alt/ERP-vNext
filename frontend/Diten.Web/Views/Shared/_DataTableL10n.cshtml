@@ -1,0 +1,31 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    BL-047b — the ONE delivery path for the DataTable chrome's language.
+
+    The vendor supplies "Showing 1 to 9 of 9 entries", the pager and the empty-table sentence in English, and
+    overrides them only when the config carries a translation. SharedResource has carried all six strings in all
+    seven languages for a long time; what did not exist was a way for them to reach the 61 files that build a
+    table. BL-047 fixed WorkCenterNext by seeding its own payload — so the next screen (a Turkish
+    /Tasks/FieldDefinitions, measured 2026-08-10) was born English.
+
+    This is rendered ONCE by each layout, beside dt-defaults.js, which reads it lazily. Nothing is per-page: a
+    page that must remember to include something is a page that will forget, which is the whole defect.
+
+    A page that wants its OWN wording still wins — dt-defaults reads `window.L10n` first, key by key.
+*@
+@{
+    string[] dtKeys = ["DtInfo", "DtInfoEmpty", "DtInfoFiltered", "DtEmptyTable", "DtNoRecords", "DtZeroRecords"];
+    var dtPayload = new Dictionary<string, string>();
+    foreach (var key in dtKeys)
+    {
+        var localized = SharedLocalizer[key];
+        // A missing resource returns its own KEY as the value. Writing that through would print "DtInfo" on
+        // screen — worse than the English it replaced, and unreadable in every language.
+        if (!localized.IsResourceNotFound)
+        {
+            dtPayload[key] = localized.Value;
+        }
+    }
+}
+<script id="datatable-l10n" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(dtPayload))</script>
