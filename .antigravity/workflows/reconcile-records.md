@@ -49,6 +49,12 @@ doğrulanması gerekir:
 
 Ayrıca "YAPILDI" diyen her maddede verilen commit hash'ini `git show --stat` ile teyit et.
 
+- **✅ ama doğrulanmamış** → demir kural #10 bir maddenin **canlıda doğrulandığında** kapanmasını
+  şart koşar. `✅` taşıyan her kayıtta doğrulama izi ara: canlı ölçüm tablosu, ekran/uç nokta
+  çıktısı, ya da CT doğrulama başlığı. Yalnız "testler yeşil" diyen bir ✅, **kapanmamış madde
+  olarak raporlanır.** Ölçülmüş gerekçe: BL-043 ve BL-042 aynı gün ✅ kapatıldı, ikisinde de kod
+  doğru ve testler yeşildi, ikisinin de akışı canlıda çalışmıyordu (BL-050, BL-051).
+
 **Çıktı — Tablo 1:** `BL/WC no | maddenin iddiası | koddaki gerçek | BAYAT/YANLIŞ | kanıt`
 Yalnız uyuşmayanları listele; uyuşanları tek satırda say.
 

@@ -786,6 +786,37 @@ proxy returns 503 — a release blocker.
 - [x] `Classification`/`AccessState`/`Redacted` present in schema (BL-024-ready); unauthorized values never
   reach the browser.
 
+### Post-test-round — acceptance gate & transition contract (BL-042 … BL-051)
+
+> **Neden ayrı bir başlık.** Bu kutular CT'nin 2026-07-31 canlı test turunda **açılan** kusurlardan
+> doğdu; hiçbiri yukarıdaki fazların kapsamında değildi. Kutu ancak **canlıda ölçüldükten** sonra
+> işaretlenir — demir kural #10'un yeni eşiği. `[ ]` burada "kod yok" demek değil, "kod var, canlı
+> doğrulama yok/başarısız" demektir; hangisi olduğu satırda yazar.
+
+- [x] **Kabul, yaşam döngüsünden çıkarsanmaz.** `TaskItem.AcceptedByUserId` kalıcı işaret; `IsAccepted`
+  yalnız ona bakar. *(BL-042 · CT canlı: planlanmış görev kabul edildi → `owned/admitted`, `lifecycle`
+  `Planned` kaldı.)*
+- [x] **Planlanmış + kişiye atanmış görev Gelen Kutusu'nda kilitlenmez.** *(BL-042 · CT canlı ölçüldü.)*
+- [x] **Sonuç değiştirmeyen `accept` başarı raporlamaz** → `409 · TASK_ALREADY_ACCEPTED`. *(CT canlı.)*
+- [x] **Geriye dönük veri:** mevcut kabul edilmiş görevler Gelen Kutusu'na düşmez; backfill yüklemi eski
+  `IsAccepted` kuralının birebir kopyası ve idempotent. *(CT canlı: dağılım turdan önceki hâlinde.)*
+- [x] **Her geçiş, uç noktasının bildirdiği gövdeyi gönderir.** `inquire`/`return` → `{expectedVersion,
+  reason}`, `reassign` → `+ assigneeUserId`, diğerleri jenerik gövde. Eşleme, iki tarafı da **dosyadan
+  okuyan** bir testle bağlı. *(BL-043 · CT canlı: `inquire` 204, `Waiting`, gerekçe sunucuda.)*
+- [x] **Devretme diyaloğu kişi seçtirir** ve seçilen kişinin kimliğini gönderir; lookup DTO'larının alan
+  adları da aynı iki-taraflı testin kapsamında. *(BL-050 · CT canlı: seçenek değerleri dolu, 204.)*
+- [x] **Kabul kapısı devret/iade/bırak sonrası YENİDEN AÇILIR** — iş, alan kişinin Gelen Kutusu'na
+  `pendingAcceptance` olarak düşer. *(BL-051 · CT canlı: devret→geri devret sonrası
+  `assigned/pendingAcceptance`; kabul sonrası `owned/admitted` — kapı hem açılıyor hem kapanıyor.)*
+- [x] **Reopen fazla hevesli değil** — kabul edilmiş görevler kabul edilmiş kalır. *(CT canlı: dağılım
+  devretmede tam bir kalem kaydı, kabulden sonra tabana döndü; toplu Gelen Kutusu dökülmesi yok.)*
+- [x] **Kapı durumu tek bir yerden değiştirilir**; `AcceptedByUserId` setter'ı **private**, doğrudan atama
+  yapan kod derlenmiyor, ve "gate reopens" diyen üç yorum artık kodun gerçekten yaptığını anlatıyor.
+- [ ] **`return` uçtan uca canlı doğrulandı.** Koşulamadı — kusur değil, koşul eksikliği:
+  `TaskWorkItemProvider.cs:1152` iadeyi yalnız **ayrı bir talep eden varsa** sunuyor ve bu ortamda talep
+  eden = atanan. İkinci bir kullanıcı oturumu gerektirir. Sözleşme testi gerçek C# record'unu okuyarak
+  gövdeyi kapsıyor; **davranış** ölçülmedi.
+
 ## 17. Test Expectations
 **Unit** — assignment target → contract mapping (all three); lifecycle→normalized table (every value);
 `waitingContext` pairing; pool claim concurrency (409); position lookup filtering (Draft/archived excluded);

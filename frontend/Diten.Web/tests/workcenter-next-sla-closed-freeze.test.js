@@ -293,6 +293,22 @@ describe("BL-046(c): the badge reports the close, and never overrules the server
     expect(aWeekOn).toBe(onTheDay);
   });
 
+  it("states lateness WITHOUT a count when the overrun is under a day", async () => {
+    // CT live measurement (2026-08-09): due 18:00, closed 21:04 the SAME DAY. The server says overdue — it
+    // genuinely ran past the deadline — but the day-granular difference floors to 0 and the screen read
+    // "closed 0 days late", which a human reads as NOT late. State and sentence disagreed, which is the exact
+    // failure this whole branch exists to end. A sub-day overrun drops the number and states the fact.
+    await bootHistory([closedItem(1, {
+      dueAt: "2026-07-18T18:00:00+00:00",
+      closedAt: "2026-07-18T21:04:00+00:00",
+      slaState: "overdue"
+    })], PINNED_NOW);
+
+    const text = app().textContent;
+    expect(text).toContain("SlaClosedLate");
+    expect(text).not.toContain("SlaClosedLateByDays(0)");
+  });
+
   it("states lateness WITHOUT a count when nothing said when it closed", async () => {
     // The honest fallback: a number derived from today would be the original defect wearing a new label.
     await bootHistory([closedItem(1, {

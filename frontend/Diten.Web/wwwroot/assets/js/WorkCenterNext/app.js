@@ -284,11 +284,19 @@
          * exactly what reporting reads History for — it just stops moving.
          *
          * With no closing instant there is no frozen number to quote, so it states the fact without one.
+         *
+         * ZERO IS NOT A NUMBER WORTH QUOTING (CT live measurement, 2026-08-09). A task due 18:00 and closed 21:04
+         * the SAME DAY is late — the server says overdue — but the day-granular difference floors to 0, and
+         * "closed 0 days late" reads to a human as "not late". The state and the sentence disagreed again, which
+         * is the exact failure this branch was written to end. So a sub-day overrun drops the number and states
+         * the fact, reusing the label that already exists for the no-closing-instant case.
          */
         if (isTerminal(item)) {
             if (item.slaState === 'no-sla' || d == null) { return t('SlaNoSla'); }
             if (item.slaState !== 'overdue') { return t('SlaClosedOnTime'); }
-            return item.closedAt ? tf('SlaClosedLateByDays', Math.abs(d)) : t('SlaClosedLate');
+            return item.closedAt && Math.abs(d) >= 1
+                ? tf('SlaClosedLateByDays', Math.abs(d))
+                : t('SlaClosedLate');
         }
         switch (item.slaState) {
             case 'overdue': return tf('SlaOverdueByDays', Math.abs(d));
