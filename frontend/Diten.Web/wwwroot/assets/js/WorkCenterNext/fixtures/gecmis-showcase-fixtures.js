@@ -45,7 +45,10 @@
             source: source('finance', 'PeriodCloseTask', 'FIN-CLOSE-Q1', { deepLink: '/WorkCenterNext?source=finance&id=FIN-CLOSE-Q1' }),
             requester: { id: 'USR-201', displayName: 'Deniz Koç' },
             priority: 'High',
-            dueAt: '2026-07-18'
+            dueAt: '2026-07-18',
+            // Closed the day it was due — the fixture's own activity entry says so. Without this the demo
+            // would call it late (BL-046): the catalogue would measure it against the showcase's today.
+            closedAt: '2026-07-18T16:40:00+03:00'
         }),
         // ── DONE — approval the viewer decided ───────────────────────────────
         done('GECMIS-APPROVAL-DONE-01', 'approval', 'GecmisTitleSupplierContract', {
@@ -64,7 +67,10 @@
             source: source('procurement', 'FrameworkContractApproval', 'PROC-FC-338', { deepLink: '/WorkCenterNext?source=procurement&id=PROC-FC-338' }),
             requester: { id: 'USR-104', displayName: 'Aylin Ersoy' },
             priority: 'Medium',
-            dueAt: '2026-07-20'
+            // Deliberately three days BEFORE the decision below: the History showcase needs one genuinely
+            // late close, or the frozen 'closed N days late' badge has nothing to demonstrate.
+            dueAt: '2026-07-17',
+            closedAt: '2026-07-20T10:05:00+03:00'
         }),
         // ── CANCELLED — superseded task ──────────────────────────────────────
         done('GECMIS-TASK-CANCELLED-01', 'task', 'GecmisTitleReportTemplate', {
@@ -91,7 +97,9 @@
             source: source('workcenter', 'Task', 'TASK-RPT-OLD', { deepLink: '/WorkCenterNext?source=workcenter&id=TASK-RPT-OLD' }),
             requester: { id: 'USR-OWN', displayName: 'Selin Aras' },
             priority: 'Low',
-            dueAt: '2026-07-16'
+            dueAt: '2026-07-16',
+            // Called off a day before the deadline — cancelled is terminal too, and it froze then.
+            closedAt: '2026-07-15T13:20:00+03:00'
         })
     ];
 

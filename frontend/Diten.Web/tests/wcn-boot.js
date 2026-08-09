@@ -37,9 +37,13 @@ const loadModules = () => {
  * @param {object[]} config.items              Projection items the stubbed network answers with.
  * @param {boolean} [config.neverResolve]      Leave the fetch pending, so the loading state can be observed.
  * @param {boolean} [config.withoutTasksScripts] Reproduce a host view that forgot to load Tasks/api.js + form.js.
+ * @param {object}  [config.wcn]              Translator override — see the default below.
+ * @param {Function} [config.now]             "Today", for surfaces whose wording is measured against it.
  * @returns {Promise<{created: object[], posted: object[]}>} What the write stubs recorded.
  */
-const bootSurface = ({ rootAttrs = "", items = [], neverResolve = false, withoutTasksScripts = false } = {}) => {
+const bootSurface = ({
+  rootAttrs = "", items = [], neverResolve = false, withoutTasksScripts = false, wcn = null, now = null
+} = {}) => {
   // A previous boot leaves its modules on `global`; app.js would then read the OLD data module and the new DOM.
   ["WorkCenterNextData", "WorkCenterNextApi", "WorkCenterNextContract", "WorkCenterNextFixtures"]
     .forEach((key) => { delete global[key]; });
@@ -54,12 +58,23 @@ const bootSurface = ({ rootAttrs = "", items = [], neverResolve = false, without
     global.history.replaceState(null, "", "/WorkCenterNext");
   }
 
-  // t/tf/tn echo the key back, so an assertion naming a resource key is asserting the key the code chose —
-  // not a translation that could drift independently.
-  global.WCN = { t: (key) => key, tf: (key) => key, tn: (key) => key };
+  /*
+   * t/tf/tn echo the key back, so an assertion naming a resource key is asserting the key the code chose — not a
+   * translation that could drift independently.
+   *
+   * A caller may pass its own (BL-046): when the ARGUMENT is the thing under test — a day count that must stop
+   * moving — the key alone cannot tell a frozen sentence from a drifting one.
+   */
+  global.WCN = wcn || { t: (key) => key, tf: (key) => key, tn: (key) => key };
   document.body.innerHTML = `<div id="wcnApp" class="wcn-app" ${rootAttrs} data-wcn-fixtures=""></div>`;
 
   loadModules();
+
+  /*
+   * "Today", pinned BEFORE the payload is mapped, because the mapper is where date wording is derived. A test
+   * that pinned it afterwards would be asserting against the real wall clock and would rot on its own.
+   */
+  if (now) { global.WorkCenterNextData.setNowProvider(now); }
 
   const mapped = global.WorkCenterNextApi.mapPayload(items);
   // The fixtures these harnesses hand in must satisfy the executable contract, or the test is describing an item

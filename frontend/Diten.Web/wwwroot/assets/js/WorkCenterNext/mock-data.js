@@ -165,10 +165,16 @@
      * is a server policy (WorkAggregation:Sla:DueSoonWithinWorkingDays) and is not mirrored here on purpose —
      * two copies of a threshold is how the copies start disagreeing.
      */
-    const computeShowcaseSla = (dueAt) => {
+    const computeShowcaseSla = (dueAt, closedAt) => {
         if (!dueAt) { return { state: 'no-sla', diffDays: null }; }
         const due = new Date(`${dueAt}T00:00:00`);
-        const reference = referenceDate('fixture');
+        /*
+         * BL-046, in the showcase's own terms. The catalogue plays the part of a server, so it has to answer this
+         * question the way one does: FINISHED work is measured from the day it closed, not from the demo's today.
+         * Without this, a History fixture whose own activity log says it was closed on time would still be
+         * painted late — the demo contradicting itself where the real surface no longer does.
+         */
+        const reference = closedAt ? new Date(`${dateOnly(closedAt)}T00:00:00`) : referenceDate('fixture');
         const base = new Date(reference.getFullYear(), reference.getMonth(), reference.getDate());
         const diffDays = Math.round((due - base) / 86400000);
         return { state: diffDays < 0 ? 'overdue' : diffDays <= 2 ? 'due-soon' : 'on-track', diffDays };
@@ -188,6 +194,36 @@
         const reference = referenceDate(provenance);
         const base = new Date(reference.getFullYear(), reference.getMonth(), reference.getDate());
         return Math.round((due - base) / 86400000);
+    };
+
+    /*
+     * The DAY part of an absolute value, whether it arrived as a date ('2026-07-20') or as a full instant
+     * ('2026-07-20T16:30:00+00:00'). Deadlines are a whole-day question — "closed two days late" — so the clock
+     * time is dropped rather than allowed to turn a two-day overrun into 1.8.
+     */
+    const dateOnly = (value) => {
+        const match = /^(\d{4}-\d{2}-\d{2})/.exec(String(value || ''));
+        return match ? match[1] : null;
+    };
+
+    /*
+     * BL-046 — how late FINISHED work was, measured between its own two absolute dates and nothing else.
+     *
+     * The sign follows daysUntil deliberately (negative = past the deadline), so the label's arithmetic reads the
+     * same whichever branch produced the number.
+     *
+     * This is the half that makes the badge stop lying. `daysUntil` is right for live work — an open deadline
+     * genuinely IS a day nearer tomorrow — and catastrophic for closed work: History read "11 days late" one
+     * morning and "12 days late" the next about a task nobody had touched. Today is not part of this answer.
+     */
+    const daysLateAtClose = (dueAt, closedAt) => {
+        const due = dateOnly(dueAt);
+        const closed = dateOnly(closedAt);
+        if (!due || !closed) { return null; }
+        const dueDay = new Date(`${due}T00:00:00`);
+        const closedDay = new Date(`${closed}T00:00:00`);
+        if (Number.isNaN(dueDay.getTime()) || Number.isNaN(closedDay.getTime())) { return null; }
+        return Math.round((dueDay - closedDay) / 86400000);
     };
     const tabFor = (item) => {
         if (['Done', 'Cancelled'].includes(item.normalizedStatus)) { return 'history'; }
@@ -286,7 +322,9 @@
                 + 'that changes origin also changes which guards apply to it.');
         }
         const item = clone(fixture);
-        const showcaseSla = provenance === 'fixture' ? computeShowcaseSla(item.dueAt) : null;
+        const showcaseSla = provenance === 'fixture'
+            ? computeShowcaseSla(item.dueAt, isTerminal(item) ? item.closedAt : null)
+            : null;
         item.itemType = item.workIntent;
         item.lifecycle = item.taskLifecycle;
         item.status = item.normalizedStatus === 'InProgress' ? 'In Progress' : item.normalizedStatus;
@@ -354,8 +392,19 @@
          * The showcase catalogue keeps its own answer because it has no server behind it.
          */
         item.slaState = showcaseSla ? (item.slaState || showcaseSla.state) : (item.slaState || 'no-sla');
-        // Derived late, for the LABEL only — see daysUntil.
-        item.slaDiffDays = daysUntil(item.dueAt, provenance);
+        // Absent for every provider that cannot say when its work closed (MOD-0023 today) — null, never invented.
+        item.closedAt = item.closedAt || null;
+        /*
+         * Derived late, for the LABEL only — see daysUntil. EXCEPT once the work is closed (BL-046): a finished
+         * item is measured between its deadline and its closing day, so the count is a fact about that task
+         * rather than a fact about today, and it reads the same tomorrow.
+         *
+         * A closed item whose provider sent no closing instant falls back to the live count. That keeps sorting
+         * sensible, and the label never prints it — slaLabel says "closed late" without a number rather than
+         * quoting one that would drift, which is the original defect wearing a new word.
+         */
+        const frozenDiff = isTerminal(item) ? daysLateAtClose(item.dueAt, item.closedAt) : null;
+        item.slaDiffDays = frozenDiff === null ? daysUntil(item.dueAt, provenance) : frozenDiff;
         item.actions = item.actions.map((candidate) => {
             const mapped = actionForPresentation(candidate);
             mapped.primary = candidate.code === item.primaryActionCode;

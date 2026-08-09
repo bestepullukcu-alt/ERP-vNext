@@ -478,7 +478,17 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
              * The badge is NOT dropped: closing late is exactly what reporting wants to see. Freezing it keeps
              * the information and removes the lie.
              */
-            SlaState: _sla.Resolve(task.DueAt, SlaReferenceInstant(task, terminal)));
+            SlaState: _sla.Resolve(task.DueAt, SlaReferenceInstant(task, terminal)),
+            /*
+             * The other half of BL-046, and it does not work alone. Freezing the STATE here while the client
+             * still counted the days against today produced "-2 days LEFT" on a live screen — the count needs
+             * the instant to measure from, so the instant travels.
+             *
+             * Only the REAL timestamp, never SlaReferenceInstant's now-fallback: a fabricated closing time would
+             * freeze a lie instead of a fact. When it is genuinely absent the client says "closed late" without
+             * a number rather than quoting one.
+             */
+            ClosedAt: terminal ? task.CompletedAt ?? task.CancelledAt : null);
     }
 
     /// <summary>

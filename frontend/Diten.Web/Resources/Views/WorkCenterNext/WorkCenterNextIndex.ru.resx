@@ -140,6 +140,15 @@
   <data name="SlaOverdueByDays" xml:space="preserve">
     <value>Просрочено на {0} дн.</value>
   </data>
+  <data name="SlaClosedLateByDays" xml:space="preserve">
+    <value>Закрыто с опозданием на {0} дн.</value>
+  </data>
+  <data name="SlaClosedLate" xml:space="preserve">
+    <value>Закрыто с опозданием</value>
+  </data>
+  <data name="SlaClosedOnTime" xml:space="preserve">
+    <value>Закрыто вовремя</value>
+  </data>
   <data name="StatusPending" xml:space="preserve">
     <value>Ожидает</value>
   </data>

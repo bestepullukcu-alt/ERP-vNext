@@ -124,7 +124,17 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
             WaitingContext: waitingContext,
             Escalation: escalation,
             DueAt: task.DueAt,
-            SlaState: _sla.Resolve(task.DueAt, DateTimeOffset.UtcNow));
+            /*
+             * BL-046 applies here too, and for the same reason it does in MOD-0024's provider: a decided
+             * approval was still being measured against today, so it went on getting later every morning it sat
+             * in History. The clock stops when the task closed.
+             *
+             * ApprovalTask records one closing timestamp (CompletedAt) for every terminal disposition —
+             * approved, rejected, cancelled, timed out. When it is missing there is nothing honest to freeze, so
+             * this falls back to now exactly as before rather than inventing an instant.
+             */
+            SlaState: _sla.Resolve(task.DueAt, (isTerminal ? task.CompletedAt : null) ?? DateTimeOffset.UtcNow),
+            ClosedAt: isTerminal ? task.CompletedAt : null);
     }
 
     // Charter §10.1 — raw ApprovalTaskStatus is mapped by the enum, never by parsing status text.

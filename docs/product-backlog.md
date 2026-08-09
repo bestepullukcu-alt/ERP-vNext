@@ -624,12 +624,35 @@ cd frontend/Diten.Web && npx vitest run tests/workcenter-next-search-and-chrome.
 dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~TaskHandoverTests"
 ```
 
-#### ⚠️ KAPANIŞ (KISMİ) — BL-046 · BL-047 · BL-049 — 2026-08-01 · `a786d194` — **CANLI DOĞRULAMA BEKLİYOR**
+#### ⚠️ KAPANIŞ (KISMİ) — BL-046 · BL-047 · BL-049 — 2026-08-01 · `a786d194`
 
 > **Bugünün iki dersi bu turda uygulandı.** (1) *Arz düzeldi, teslimat yok:* BL-047 için bu kez **tüketicinin
 > sözlüğü** test ediliyor, payload değil. (2) *Yarım düzeltme kusurdan kötü olabilir:* BL-046'nın gün sayısı
 > için sözleşme alanı **hâlâ yok**, o yüzden o yarı **yapılmadı** — ama önceki turda benim ürettiğim
 > `-2g kaldı` regresyonu kapatıldı.
+
+#### 🔬 CT CANLI TURU — 2026-08-01, `9574fce2` sonrası (süreç 00:36 > ikili 00:36)
+
+| Madde | Sonuç |
+|---|---|
+| **BL-047** | ✅ **DOĞRULANDI.** Tablo alt bilgisi *"8 kayıttan 1 - 8 arasındaki kayıtlar gösteriliyor"*; sayfada İngilizce kalıntı **yok**. Tablo monte edildikten sonra `window.L10n`'da **6** `Dt*` anahtarı. *(İlk okumamda 0 çıktı — tohumlama montaj sırasında olduğu için; ölçüm sırası benim hatamdı, kusur değil.)* |
+| **BL-049** | ✅ **DOĞRULANDI.** Ekranda tam GUID **yok**; kısaltılmış `523a954e…8237` + *"Referansı kopyala"* düğmesi. Başarısızlık yolu da çalışıyor: pano reddedince **görünür** *"Referans kopyalanamadı"* çıkıyor. **Başarı yolu ölçülmedi** — betikle yapılan tıklama güvenilir kullanıcı hareketi sayılmadığı için tarayıcı `NotAllowedError` verdi; gerçek tıklamayla sahibin doğrulaması gerekiyor. |
+| **BL-046** | ❌ **AÇIK KALIYOR.** `-Ng kaldı` gitti ✓ ama yeni bir tutarsızlık ölçüldü — aşağıda. |
+| **BL-045** | ⬜ Yapılmadı (ikinci kez, bilinçli). |
+
+**BL-046 — ölçülen yeni sonuç: ekran artık SUNUCUYLA ÇELİŞİYOR.**
+Negatif koruması, geçmiş tarihli her kalemi `slaState`'ten **bağımsız olarak** "gecikmiş" ifadesine
+yönlendiriyor. Sonuç, zamanında kapanmış işin geç kapanmış gibi görünmesi:
+
+| kalem | son tarih | sunucu `slaState` | ekranda |
+|---|---|---|---|
+| Ay sonu kapanış kontrol listesi (İptal) | 2026-07-30 | **on-track** | **"2g gecikmiş"** |
+| Üretim tesisi 2 kapasite raporu (Tamam) | 2026-07-31 | **on-track** | **"1g gecikmiş"** |
+
+Yani madde bir adım ilerledi (**okunamaz** → **okunabilir**) ama hedefine varmadı: rozet hâlâ kapanmış
+iş hakkında **yanlış** konuşuyor, üstelik artık sunucunun kendi kararına da aykırı. Kalan iş değişmedi:
+projeksiyona kapanış zamanı alanı + dağarcığa bildirim + istemcinin gün sayısını ondan türetmesi.
+`Done`/`Cancelled` kalemde istemci, sunucunun `slaState`'ini **ezmemeli**.
 
 **BL-047 — tablo dili, TÜKETİCİ tarafı**
 `dt-defaults.js:8` `window.L10n` okuyor; `app.js` oraya yalnız `Search` ve `Action` tohumluyordu. Altı `Dt*`
@@ -678,6 +701,82 @@ rg -n "d < 0|d === 0" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js
 rg -n "previewField\('bx-hash'" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js   # boş olmalı
 cd frontend/Diten.Web && npx vitest run tests/workcenter-next-search-and-chrome.test.js
 ```
+
+#### ⚠️ KAPANIŞ (KISMİ) — BL-046 · BL-045 — 2026-08-09 — **CANLI DOĞRULAMA BEKLİYOR**
+
+> **Bu turun iki dersi, uygulandığı yer.** (1) *Yarım düzeltme kusurdan kötü olabilir:* BL-046 bu kez üç
+> parçanın **üçü birden** gönderildi — sözleşme alanı, dağarcık bildirimi, istemci hesabı. İkisi gönderilseydi
+> yine yeni bir yalan çıkardı, o yüzden bölünmedi. (2) *Arz düzeldi, teslimat yok:* alanı üreten tarafın
+> testi **yetmez** sayıldı; `ClosedAt`'in tel üstüne çıktığı sunucu tarafında, proxy'nin gövdeyi olduğu gibi
+> geçirdiği ise okunarak ayrıca doğrulandı.
+
+**BL-046 — kapanmış görevin gün sayısı** *(üç parça, tek dilim)*
+
+| parça | ne yapıldı |
+|---|---|
+| (a) sözleşme alanı | `WorkItemProjectionDto.ClosedAt` — opsiyonel, null'ken **hiç yazılmaz**, kuyrukta. `TaskWorkItemProvider` `CompletedAt ?? CancelledAt` gönderir (terminal değilse **null**); `WorkItemProjectionService` (MOD-0023) `CompletedAt` gönderir ve **kendi slaState'ini de** kapanışta dondurur — orada hâlâ `UtcNow` ile ölçülüyordu. |
+| (a) dağarcık | `fixture-contract.js` `closedAt`'i **tanır**: varsa doğrulanır, asla zorunlu değil (BL-038). İki hata: `CLOSED_AT_INVALID` (ayrıştırılamaz an) ve `CLOSED_AT_ON_OPEN_ITEM` (açık işte kapanış anı — çelişki). |
+| (b) gün sayısı | `mock-data.js daysLateAtClose(dueAt, closedAt)`. Terminal kalemde sayı **bugüne hiç bakmaz**. Kapanış anı yoksa canlı sayıya düşer ama **etikete çıkmaz**. |
+| (c) ezme yok | `app.js slaLabel` terminal dalı **önce** döner: durum sunucunun, sayı iki tarihin farkı. `on-track` diyen kapanmış iş artık "gecikmiş" **diyemez**. |
+
+**Rozet silinmedi, donduruldu.** Yeni 3 dize, **7 dilde**: `SlaClosedLateByDays` ("{0}g gecikmeyle kapandı"),
+`SlaClosedLate` (sayı yokken), `SlaClosedOnTime`.
+**Terminal olmayan kalemdeki `d<=0` boşluğu korundu** (`0g kaldı` / `-Ng kaldı` geri gelemez) — ve orada
+"gecikmiş" demek sunucuyla çelişmez, çünkü iş hâlâ canlı.
+**Showcase da hizalandı:** `computeShowcaseSla` terminal fixture'ı kapanış gününden ölçüyor; Geçmiş
+fixture'larının üçüne kendi etkinlik kayıtlarındaki kapanış anı yazıldı. Biri **bilerek geç kapatıldı**, yoksa
+donmuş "geç kapandı" rozetinin gösterecek örneği kalmıyordu.
+
+**KIRMIZI kanıtı (vacuity değil):** düzeltmeden önce iki yeni dosya birlikte **14 test düşürdü**; kalan 12'si
+(ölçülen şeklin yeniden üretimi, canlı geri sayımın sürmesi, sekme rozetinin sabitliği) o anda da geçiyordu —
+yani kırmızıların hepsi gerçek davranış farkı. Sunucu yarısı ayrıca **mutasyonla** ölçüldü: `ClosedAt: null`
+yapılınca 2 test düşüyor (null bekleyen 2'si doğal olarak ayakta kalıyor). 7 dil kapısı da mutasyonla ölçüldü:
+`ru.resx`'ten tek anahtar silinince l10n testi düşüyor.
+
+**BL-045 — çip ↔ segment sayaçları (faceted)** *(üçüncü turda yapıldı)*
+
+Karar uygulandı: **segment sayaçları çip/arama altında yeniden hesaplanıyor**. Çip "SLA riski 3" derken segment
+barı artık *2 · 1 · 0* diyor — "1'i Bekleyen'de" bilgisi **fazladan bir gösterim icat etmeden** oradan okunuyor.
+Süsleme yapılmadı; nihai gösterim sahibin UX turunda karara bağlanacak.
+
+**Reddedilen alternatif teste çakıldı:** çip sayacı aktif segmente **daraltılmıyor** — Bekleyen'e geçince de 3
+diyor. Sinyal, statüden bağımsız bir eksendir.
+
+**Üç yolun üçü birden hizalandı** (talimatın şartı): `segmentCount` · `typeCount` · `signalCount` artık tek bir
+`facetItems(except)` tabanından besleniyor; bir sayaç **kendi eksenini** hiç uygulamaz, diğer hepsini uygular.
+"Tümü" çipi de aynı tabana alındı — tip ekseninin sıfır durumu olduğu için yanındaki çiplerle çelişmesi
+kaçınılmazdı. **Sekme rozetleri değişmedi ve değişmemeli:** başka sekmeden okunan bir sayıdır; `app.js`'teki o
+yorum silinmedi, **daraltıldı**.
+
+**CANLI DOĞRULAMA ADIMLARI (CT):**
+1. **BL-046 / sunucuyla çelişki** — Geçmiş'te *"Ay sonu kapanış kontrol listesi"* (İptal) ve *"Üretim tesisi 2
+   kapasite raporu"* (Tamam): ikisi de **"Zamanında kapandı"** demeli. `SlaOverdueByDays` metni ("Ng gecikmiş")
+   Geçmiş sekmesinde **hiç görünmemeli**.
+2. **BL-046 / donma** — Geçmiş'te gecikmeyle kapanmış bir kalemin sayısını not al; **ertesi gün aynı sayı**
+   olmalı. (Aynı şey ağ yanıtından da okunabilir: kalem `closedAt` taşıyor mu?)
+3. **BL-046 / rozet duruyor** — gecikmeyle kapanmış kalem hâlâ **"{N}g gecikmeyle kapandı"** demeli; rozet
+   silinmiş olmamalı.
+4. **BL-046 / eski veri** — `CompletedAt`/`CancelledAt` taşımayan eski bir kapanmış kalem varsa: **sayısız**
+   "Gecikmeyle kapandı" demeli, uydurulmuş bir sayı değil.
+5. **BL-045** — İşlerim'de "SLA riski" çipini aç: segment sayaçları **değişmeli** ve toplamları çipin sayısına
+   **eşit** olmalı. Bekleyen'e geç: satır sayısı o segmentin sayacına eşit, çip hâlâ **3**.
+6. **BL-045 / sekme** — çip açıkken üstteki sekme rozetleri **değişmemeli**.
+7. **l10n** — sayfayı 7 dilde aç; yeni üç ifade hiçbirinde ham anahtar (`SlaClosed…`) olarak görünmemeli.
+
+**Yeniden ölçüm (sayı değil, komut):**
+```
+rg -n "ClosedAt" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Providers/TaskWorkItemProvider.cs
+rg -n "ClosedAt" services/Diten.Platform/src/Diten.Platform.Application/Features/WorkAggregation/Services/WorkItemProjectionService.cs
+rg -n "CLOSED_AT_" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/fixture-contract.js
+rg -n "daysLateAtClose" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/mock-data.js
+rg -n "facetItems" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js
+rg -n "SlaClosedOnTime" frontend/Diten.Web/Resources/Views/WorkCenterNext/   # 7 dosya
+cd frontend/Diten.Web && npx vitest run tests/workcenter-next-sla-closed-freeze.test.js tests/workcenter-next-faceted-counters.test.js
+dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~TaskHandoverTests"
+```
+
+*(Not: depoda `tests/strategy-*`, `tests/planning-cycles-*`, `tests/objectives-edit-hydration` altında **9 test
+bu turdan ÖNCE de düşüyordu** — dokunulmamış ağaçta ölçüldü, bu dilimle ilgisi yok.)*
 
 ### BL-050 — 🔴 Devretme kişi seçicisi yanlış alanı okuyor: seçilemez liste
 - **Belirti (canlı, 2026-07-31):** Devretme diyaloğu iki kişiyi doğru gösteriyor (*Agent Sub*,

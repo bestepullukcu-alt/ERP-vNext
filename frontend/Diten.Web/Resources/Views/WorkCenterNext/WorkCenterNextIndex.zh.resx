@@ -140,6 +140,15 @@
   <data name="SlaOverdueByDays" xml:space="preserve">
     <value>逾期 {0} 天</value>
   </data>
+  <data name="SlaClosedLateByDays" xml:space="preserve">
+    <value>逾期 {0} 天关闭</value>
+  </data>
+  <data name="SlaClosedLate" xml:space="preserve">
+    <value>逾期关闭</value>
+  </data>
+  <data name="SlaClosedOnTime" xml:space="preserve">
+    <value>按时关闭</value>
+  </data>
   <data name="StatusPending" xml:space="preserve">
     <value>待处理</value>
   </data>

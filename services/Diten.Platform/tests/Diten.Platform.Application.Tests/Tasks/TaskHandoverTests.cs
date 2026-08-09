@@ -249,10 +249,11 @@ public sealed class TaskHandoverTests
 
     // ── BL-046: a finished task is measured from when it closed, not from today ──────────────────────────
     //
-    // SCOPE, stated: slaState is a STRING (overdue / due-soon / on-track / no-sla). The day COUNT the user reads
-    // ("11 days late") is derived client-side from dueAt against today, and the projection sends no closing
-    // timestamp, so freezing that number needs a contract addition — recorded, not done here. What IS fixed is
-    // the state itself, which was equally wrong and is the half the server owns.
+    // TWO HALVES, and they only work together. The STATE (overdue / due-soon / on-track / no-sla) froze first,
+    // and shipping that alone made the screen read "-2 days LEFT" — the client had no instant to measure the day
+    // COUNT from, so it went on subtracting from today. The closing instant now travels with the state, which is
+    // what lets the count stop moving. Sending one without the other is what turned this item into a two-round
+    // regression, so the emission is asserted here rather than assumed downstream.
 
     [Fact]
     public async Task Work_finished_ON_TIME_does_not_drift_into_overdue_as_the_calendar_moves()
@@ -319,6 +320,78 @@ public sealed class TaskHandoverTests
         var item = Assert.Single(await Provider(repository).GetWorkItemsAsync(Actor(TaskTestData.Me)));
 
         Assert.Equal("overdue", item.SlaState);
+    }
+
+    [Fact]
+    public async Task A_closed_task_SENDS_the_instant_it_closed()
+    {
+        /*
+         * The delivery half. A state frozen on the server and a count still measured from today is precisely the
+         * combination that put "-2 days left" on a live screen: the client cannot freeze a number it has nothing
+         * to subtract. So the instant is asserted on the wire, not inferred from the state beside it.
+         */
+        var closed = DateTimeOffset.UtcNow.AddDays(-39);
+        var task = AssignedTask();
+        task.DueAt = DateTimeOffset.UtcNow.AddDays(-40);
+        task.CompletedAt = closed;
+        task.Lifecycle = TaskLifecycle.Done;
+        var repository = new FakeTaskItemRepository(task);
+
+        var item = Assert.Single(await Provider(repository).GetWorkItemsAsync(Actor(TaskTestData.Me)));
+
+        Assert.Equal(closed, item.ClosedAt);
+    }
+
+    [Fact]
+    public async Task A_CANCELLED_task_sends_the_instant_it_was_called_off()
+    {
+        // Cancelled is terminal too — "finished" is the claim, not "succeeded" — and it carries its own
+        // timestamp. Reading only CompletedAt would have left every cancelled item drifting.
+        var cancelled = DateTimeOffset.UtcNow.AddDays(-3);
+        var task = AssignedTask();
+        task.DueAt = DateTimeOffset.UtcNow.AddDays(-5);
+        task.CancelledAt = cancelled;
+        task.Lifecycle = TaskLifecycle.Cancelled;
+        var repository = new FakeTaskItemRepository(task);
+
+        var item = Assert.Single(await Provider(repository).GetWorkItemsAsync(Actor(TaskTestData.Me)));
+
+        Assert.Equal(cancelled, item.ClosedAt);
+    }
+
+    [Fact]
+    public async Task LIVE_work_sends_no_closing_instant_at_all()
+    {
+        /*
+         * Non-vacuity for the two above, and a contract rule: open work has not closed. A timestamp on a running
+         * task would freeze its count while it is still running — the defect, inverted.
+         */
+        var task = AssignedTask();
+        task.DueAt = DateTimeOffset.UtcNow.AddDays(-5);
+        task.Lifecycle = TaskLifecycle.InProgress;
+        var repository = new FakeTaskItemRepository(task);
+
+        var item = Assert.Single(await Provider(repository).GetWorkItemsAsync(Actor(TaskTestData.Me)));
+
+        Assert.Null(item.ClosedAt);
+    }
+
+    [Fact]
+    public async Task A_terminal_task_with_no_closing_timestamp_sends_NOTHING_rather_than_today()
+    {
+        /*
+         * The honest gap. The STATE falls back to now (better than dropping the item), but the INSTANT must not:
+         * a fabricated closing time would freeze a lie, and the client can only tell the difference if the field
+         * is genuinely absent — it then says "closed late" without a number.
+         */
+        var task = AssignedTask();
+        task.DueAt = DateTimeOffset.UtcNow.AddDays(-10);
+        task.Lifecycle = TaskLifecycle.Done;
+        var repository = new FakeTaskItemRepository(task);
+
+        var item = Assert.Single(await Provider(repository).GetWorkItemsAsync(Actor(TaskTestData.Me)));
+
+        Assert.Null(item.ClosedAt);
     }
 
     // ── BL-051: the acceptance gate must REOPEN when work changes hands ──────────────────────────────────

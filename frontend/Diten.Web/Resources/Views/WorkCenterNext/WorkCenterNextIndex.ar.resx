@@ -140,6 +140,15 @@
   <data name="SlaOverdueByDays" xml:space="preserve">
     <value>متأخر {0} يوم</value>
   </data>
+  <data name="SlaClosedLateByDays" xml:space="preserve">
+    <value>أُغلق متأخرًا {0} يوم</value>
+  </data>
+  <data name="SlaClosedLate" xml:space="preserve">
+    <value>أُغلق متأخرًا</value>
+  </data>
+  <data name="SlaClosedOnTime" xml:space="preserve">
+    <value>أُغلق في الموعد</value>
+  </data>
   <data name="StatusPending" xml:space="preserve">
     <value>قيد الانتظار</value>
   </data>

@@ -140,6 +140,15 @@
   <data name="SlaOverdueByDays" xml:space="preserve">
     <value>{0}g gecikmiş</value>
   </data>
+  <data name="SlaClosedLateByDays" xml:space="preserve">
+    <value>{0}g gecikmeyle kapandı</value>
+  </data>
+  <data name="SlaClosedLate" xml:space="preserve">
+    <value>Gecikmeyle kapandı</value>
+  </data>
+  <data name="SlaClosedOnTime" xml:space="preserve">
+    <value>Zamanında kapandı</value>
+  </data>
   <data name="StatusPending" xml:space="preserve">
     <value>Beklemede</value>
   </data>

@@ -271,6 +271,25 @@
 
     const slaLabel = (item) => {
         const d = item.slaDiffDays;
+        /*
+         * BL-046 — FINISHED work is REPORTED, never counted down, and the server has the last word on it.
+         *
+         * Three things went wrong here in sequence, each on a live screen: the count kept climbing after the task
+         * closed; then a half-fix made it read "-2 days LEFT"; then a negative guard sent every past-dated item
+         * to "late" REGARDLESS OF STATE, so a task the projection called on-track — closed on time — was told it
+         * was a day late. The screen contradicted the projection, which is worse than the drift it replaced.
+         *
+         * So the terminal branch comes first and answers on its own terms: the state is the server's (it froze it
+         * at closing time), and the number comes from dueAt ↔ closedAt. The badge is KEPT — a late close is
+         * exactly what reporting reads History for — it just stops moving.
+         *
+         * With no closing instant there is no frozen number to quote, so it states the fact without one.
+         */
+        if (isTerminal(item)) {
+            if (item.slaState === 'no-sla' || d == null) { return t('SlaNoSla'); }
+            if (item.slaState !== 'overdue') { return t('SlaClosedOnTime'); }
+            return item.closedAt ? tf('SlaClosedLateByDays', Math.abs(d)) : t('SlaClosedLate');
+        }
         switch (item.slaState) {
             case 'overdue': return tf('SlaOverdueByDays', Math.abs(d));
             case 'due-soon':
@@ -279,13 +298,14 @@
                 return tf('SlaDueInDays', d);
             case 'on-track':
                 /*
-                 * BL-046 — the boundary the label never had. `d` is derived from dueAt against TODAY, so a task
-                 * whose deadline has passed can still carry an on-track state (a closed one, now that the server
-                 * freezes the state at closing time) and printed "-2 days left". Nonsense is worse than the wrong
-                 * number it replaced: the old text was inaccurate but readable.
+                 * The boundary the label never had, for work still in flight. `d` is derived from dueAt against
+                 * TODAY, so an open task whose deadline has passed printed "-2 days left" — and d === 0 printed
+                 * "0 days left". Neither is a sentence; "left" is the wrong word once the deadline is not in the
+                 * future, whatever the state says.
                  *
-                 * d <= 0 means the deadline is not in the future, so "left" is the wrong word whatever the state
-                 * says. This also closes the pre-existing on-track + d === 0 case, which read "0 days left".
+                 * The overdue wording here does NOT contradict the server: this is LIVE work, and a deadline that
+                 * has passed is a fact the reader can act on. The closed case — where overruling the projection
+                 * WAS the defect — never reaches this switch; it returns above.
                  */
                 if (d == null) { return t('SlaNoSla'); }
                 if (d < 0) { return tf('SlaOverdueByDays', Math.abs(d)); }
@@ -393,23 +413,54 @@
     const isTerminal = (item) => data.isTerminal(item);
     const inTab = (item, tab) => item.catalogVisible !== false && !item.dismissed && itemInScope(item)
         && (tab === 'history' ? isTerminal(item) : item.tab === tab && !isTerminal(item));
-    // Tab counters ignore in-tab filters so they reflect the true load per scope.
+    /*
+     * TAB counters ignore in-tab filters, and still should (BL-045 narrowed this claim rather than deleting it).
+     * A tab badge is a claim about that tab's whole load and is read from the OTHER tabs, where the current
+     * tab's chip or search box means nothing. The SEGMENT counters below no longer ignore them — that sentence
+     * used to cover both, and covering both is what let the chip and the segment bar describe two different
+     * populations at once.
+     */
     const tabCount = (tab) => state.items.filter((item) => inTab(item, tab)).length
         + (tab === 'inbox' ? state.triggers.length : 0);
 
-    // Items in the current tab (before segment/chip filters) — used for segment
-    // and chip counts so those reflect what the tab really holds.
+    // Items in the current tab, before any in-tab filter — the population every in-tab counter starts from.
     const tabItems = () => state.items.filter((item) => inTab(item, state.tab));
-    const segmentCount = (seg) => tabItems().filter((i) => data.segmentFor(i) === seg).length;
-    const typeCount = (ty) => tabItems().filter((i) => i.itemType === ty).length
-        + (state.tab === 'inbox' && ty === 'meetingInvite' ? state.triggers.length : 0);
-    const signalCount = (sig) => tabItems().filter((i) => SIGNAL_TEST[sig](i)).length;
 
-    // Advanced filters shared by list + kanban + calendar (priority, mode, group,
-    // module, search) — everything except the tab-specific segment filter.
-    const passesFilters = (item) => {
-        if (state.typeFilter.size && !state.typeFilter.has(item.itemType)) { return false; }
-        if (state.signalFilter.size) {
+    /*
+     * BL-045 — FACETED counters. Each counter applies every OTHER in-tab filter and never its own axis, so the
+     * number a reader sees and the list they can reach describe the same population.
+     *
+     * THE DEFECT: the "SLA riski" chip said 3, clicking it produced 2 rows, and the segment counters did not
+     * move — the third at-risk item was sitting in Bekleyen with nothing on screen saying so.
+     *
+     * The rule is deliberately NOT symmetric, and the asymmetry is the product decision (CT):
+     *   SEGMENT counters recompute under the chips — "SLA riski 3, and 1 of them is in Bekleyen".
+     *   CHIP counters stay independent of the SEGMENT. Narrowing the chip to the active segment was the
+     *   rejected alternative: a signal is an axis of its own, and folding it under status hides exactly the
+     *   item the reader is hunting for.
+     *
+     * All the in-tab counters go through here, on purpose. They used to be three separate expressions, and a
+     * half-faceted set would only move today's inconsistency to the chip next door.
+     */
+    const facetItems = (except) => tabItems().filter((item) => passesFilters(item, except));
+    const segmentCount = (seg) => facetItems().filter((i) => data.segmentFor(i) === seg).length;
+    const typeCount = (ty) => facetItems('type').filter((i) => i.itemType === ty).length
+        + (state.tab === 'inbox' && ty === 'meetingInvite' ? state.triggers.length : 0);
+    const signalCount = (sig) => facetItems('signal').filter((i) => SIGNAL_TEST[sig](i)).length;
+    // The "Tümü" chip is the type axis's own zero state, so it counts the same population its siblings do —
+    // left on the raw tab total it would have disagreed with the chips beside it the moment any filter was on.
+    const allTypesCount = () => facetItems('type').length + state.triggers.length;
+
+    /*
+     * Advanced filters shared by list + kanban + calendar (priority, mode, group, module, search) — everything
+     * except the tab-specific segment filter.
+     *
+     * `except` names ONE axis to skip, for the faceted counters above: a facet never applies its own filter, or
+     * an active chip would count only itself and the reader could never see what turning it off would restore.
+     */
+    const passesFilters = (item, except) => {
+        if (except !== 'type' && state.typeFilter.size && !state.typeFilter.has(item.itemType)) { return false; }
+        if (except !== 'signal' && state.signalFilter.size) {
             for (const sig of state.signalFilter) { if (!SIGNAL_TEST[sig](item)) { return false; } }
         }
         if (state.moduleFilter.length && !state.moduleFilter.includes(item.sourceModule)) { return false; }
@@ -682,7 +733,7 @@
     const buildInboxChips = () => {
         const allActive = state.typeFilter.size === 0;
         const allChip = `<button type="button" class="wcn-fchip${allActive ? ' active' : ''}" data-wcn-inbox-all aria-pressed="${allActive}">` +
-            `<i class="bx bx-collection"></i><span>${esc(t('ChipAll'))}</span><span class="wcn-fchip-count">${tabItems().length + state.triggers.length}</span></button>`;
+            `<i class="bx bx-collection"></i><span>${esc(t('ChipAll'))}</span><span class="wcn-fchip-count">${allTypesCount()}</span></button>`;
         const mainChips = INBOX_MAIN.map((cfg) => {
             const on = state.typeFilter.has(cfg.key);
             const c = typeCount(cfg.key);

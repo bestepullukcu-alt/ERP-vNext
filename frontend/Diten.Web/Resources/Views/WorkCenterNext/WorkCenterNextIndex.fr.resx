@@ -140,6 +140,15 @@
   <data name="SlaOverdueByDays" xml:space="preserve">
     <value>{0}j de retard</value>
   </data>
+  <data name="SlaClosedLateByDays" xml:space="preserve">
+    <value>Clôturé avec {0}j de retard</value>
+  </data>
+  <data name="SlaClosedLate" xml:space="preserve">
+    <value>Clôturé en retard</value>
+  </data>
+  <data name="SlaClosedOnTime" xml:space="preserve">
+    <value>Clôturé dans les délais</value>
+  </data>
   <data name="StatusPending" xml:space="preserve">
     <value>En attente</value>
   </data>

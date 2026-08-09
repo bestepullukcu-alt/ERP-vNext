@@ -351,7 +351,25 @@ public sealed record WorkItemProjectionDto(
     /// had configurable values disappeared from the surface entirely. Half a capability is worse than none.</para>
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    WorkItemBusinessContextDto? BusinessContext = null);
+    WorkItemBusinessContextDto? BusinessContext = null,
+    /// <summary>
+    /// WHEN this work finished — present only on terminal items (BL-046).
+    ///
+    /// <para>This is the one exception the "no day count on the wire" rule above needs, and it is not an
+    /// exception at all: what travels is an ABSOLUTE instant, exactly like <see cref="DueAt"/>. The client
+    /// subtracts the two and gets a number that is a fact about the task rather than a fact about today.</para>
+    ///
+    /// <para>Without it the History tab read "Completed · 11 days late" one morning and "12 days late" the next
+    /// about a task nobody had touched, because the only date the client had to measure from was today. Freezing
+    /// the <see cref="SlaState"/> alone was not enough — half of that fix shipped once, and the screen then said
+    /// "-2 days LEFT". The state and the instant are one change.</para>
+    ///
+    /// <para>Optional and omitted when null, for the usual reason: a provider whose records carry no closing
+    /// timestamp must be able to stay silent rather than have its work dropped. The client then reports the
+    /// lateness WITHOUT a number instead of quoting one that would drift.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    DateTimeOffset? ClosedAt = null);
 
 /// <summary>The configurable-field container. Sections cap at six — the contract's LIMITS.maxSections.</summary>
 public sealed record WorkItemBusinessContextDto(IReadOnlyList<WorkItemBusinessSectionDto> Sections);

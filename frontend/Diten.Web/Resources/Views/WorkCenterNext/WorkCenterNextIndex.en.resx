@@ -140,6 +140,15 @@
   <data name="SlaOverdueByDays" xml:space="preserve">
     <value>Overdue {0}d</value>
   </data>
+  <data name="SlaClosedLateByDays" xml:space="preserve">
+    <value>Closed {0}d late</value>
+  </data>
+  <data name="SlaClosedLate" xml:space="preserve">
+    <value>Closed late</value>
+  </data>
+  <data name="SlaClosedOnTime" xml:space="preserve">
+    <value>Closed on time</value>
+  </data>
   <data name="StatusPending" xml:space="preserve">
     <value>Pending</value>
   </data>

@@ -141,6 +141,14 @@
     const enabledInlineActions = (fixture) => (fixture.actions || [])
         .filter((action) => action.enabled && (action.depth || fixture.actionDepth || 'inline') === 'inline');
 
+    /*
+     * Is this work finished? EITHER field is enough, because the two can disagree on the wire and "finished" is
+     * the stronger claim — the same definition mock-data.js exports and app.js reads, deliberately, so a fixture
+     * the contract calls open cannot be one the surface files under History.
+     */
+    const isTerminalFixture = (fixture) => ['Done', 'Cancelled'].includes(fixture.normalizedStatus)
+        || ['Done', 'Cancelled'].includes(fixture.taskLifecycle);
+
     const validateActionSet = (fixture, errors) => {
         if (!Array.isArray(fixture.actions)) {
             push(errors, fixture, 'ACTIONS_REQUIRED', 'actions');
@@ -304,6 +312,26 @@
          */
         if (fixture.slaState !== undefined && fixture.slaState !== null && !SLA_STATES.includes(fixture.slaState)) {
             push(errors, fixture, 'SLA_STATE_INVALID', 'slaState');
+        }
+        /*
+         * closedAt — WHEN this work finished, and the only thing that lets a finished item's day count stop
+         * moving (BL-046).
+         *
+         * It is declared here rather than left to slide in as an undeclared field, because in this repository an
+         * undeclared field is a field that changes meaning without anyone noticing (BL-032). Same shape as
+         * slaState: validated when PRESENT, never required — MOD-0023's approval provider has no closing
+         * timestamp to give, and requiring one would DELETE its work from the surface rather than nudge it.
+         *
+         * Two things ARE errors. An unparseable instant, because the client does arithmetic on it and a silent
+         * NaN is how "-2 days left" reached a live screen. And a closing instant on OPEN work, because that is
+         * not a nuance — it is a contradiction, and the day count would freeze on an item that is still running.
+         */
+        if (fixture.closedAt !== undefined && fixture.closedAt !== null) {
+            if (Number.isNaN(new Date(fixture.closedAt).getTime())) {
+                push(errors, fixture, 'CLOSED_AT_INVALID', 'closedAt');
+            } else if (!isTerminalFixture(fixture)) {
+                push(errors, fixture, 'CLOSED_AT_ON_OPEN_ITEM', 'closedAt');
+            }
         }
         /*
          * Activity entries. `at` is ABSOLUTE and a pre-computed "N days ago" is forbidden outright: whoever
