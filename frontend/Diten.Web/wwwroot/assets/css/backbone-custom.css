@@ -2168,6 +2168,24 @@ div.dt-container div.dt-search input {
     text-overflow: ellipsis;
 }
 
+/*
+ * Menüde yatay kaydırma çubuğu çıkmasın.
+ *
+ * Ölçüm (CT, 2026-08-10): kenar çubuğu 260px · `.menu-inner` clientWidth 245px · scrollWidth 260px.
+ * Aradaki 15px, DİKEY kaydırma çubuğunun kapladığı yer: menü uzayınca (BL-059 baypası katalogdan
+ * gelen modülleri açtı, yükseklik 798→1039px) dikey çubuk belirdi, iç genişlik 15px daraldı, ama
+ * `li` kutuları 260px kalmaya devam etti → 15px yatay taşma.
+ *
+ * Taşan şey İÇERİK DEĞİL: en geniş menü bağlantısının metni 228px ve kutusuna sığıyor (ölçüldü).
+ * Yatay kaydırmayla görülebilecek hiçbir şey yok, yalnız boşluk. O yüzden gizlemek kayıpsızdır.
+ *
+ * Menü büyüdükçe tekrar etmesin diye kural bir kez konuyor: her yeni modül katalogdan geldiğinde
+ * menü uzar, ve bu düzeltme olmadan aynı çubuk her seferinde geri gelir.
+ */
+#layout-menu .menu-inner {
+    overflow-x: hidden;
+}
+
 [data-semidark-menu="true"] #layout-menu .menu-item.active>.menu-link,
 #layout-menu[data-bs-theme="dark"] .menu-item.active>.menu-link {
     background-color: rgba(105, 108, 255, 0.16) !important;
