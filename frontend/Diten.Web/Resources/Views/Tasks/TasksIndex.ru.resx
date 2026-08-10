@@ -78,6 +78,12 @@
   <data name="ErrorUnavailable" xml:space="preserve"><value>Служба задач недоступна. Повторите попытку.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>Задач пока нет</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>Создайте первую задачу — она появится здесь и в Центре задач.</value></data>
+  <data name="CustomFieldOptionPlaceholder" xml:space="preserve"><value>Выберите…</value></data>
+  <data name="CustomFieldBooleanYes" xml:space="preserve"><value>Да</value></data>
+  <data name="CustomFieldBooleanNo" xml:space="preserve"><value>Нет</value></data>
+  <data name="ErrorFieldValueInvalid" xml:space="preserve"><value>Одно из дополнительных полей пустое или содержит значение, которое поле не принимает.</value></data>
+  <data name="ErrorFieldDefinitionUnknown" xml:space="preserve"><value>Эта форма предлагает поле, которое больше не определено. Обновите страницу и повторите попытку.</value></data>
+  <data name="ErrorFieldLimitExceeded" xml:space="preserve"><value>Дополнительные поля превышают ограничение: слишком много разделов, слишком много полей в разделе или слишком длинное значение.</value></data>
   <data name="RequiredFieldHint" xml:space="preserve"><value>Обязательно</value></data>
   <data name="ErrorOccurred" xml:space="preserve"><value>При обработке запроса произошла ошибка.</value></data>
   <data name="ActionOk" xml:space="preserve"><value>ОК</value></data>
@@ -93,6 +99,8 @@
   <data name="ErrorApprovalPending" xml:space="preserve"><value>Задача ожидает решения согласующего.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Отменить эту задачу может только тот, кто её запросил. Если вы не хотите эту работу, верните её.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Укажите, чего ожидает задача.</value></data>
+  <data name="ErrorTitleRequired" xml:space="preserve"><value>Укажите название.</value></data>
+  <data name="ErrorTitleTooLong" xml:space="preserve"><value>Название может содержать не более 200 символов.</value></data>
   <data name="ErrorHandoverReasonRequired" xml:space="preserve"><value>Укажите, почему вы передаёте эту задачу.</value></data>
   <data name="ErrorReturnNotAssignee" xml:space="preserve"><value>Вернуть задачу может только её текущий исполнитель.</value></data>
   <data name="ErrorReassignNotPermitted" xml:space="preserve"><value>Переназначить задачу может только текущий исполнитель или её заказчик.</value></data>

@@ -78,6 +78,12 @@
   <data name="ErrorUnavailable" xml:space="preserve"><value>The task service could not be reached. Try again.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>No tasks yet</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>Create your first task to see it here and in the Task Center.</value></data>
+  <data name="CustomFieldOptionPlaceholder" xml:space="preserve"><value>Select…</value></data>
+  <data name="CustomFieldBooleanYes" xml:space="preserve"><value>Yes</value></data>
+  <data name="CustomFieldBooleanNo" xml:space="preserve"><value>No</value></data>
+  <data name="ErrorFieldValueInvalid" xml:space="preserve"><value>One of the additional fields is missing or holds a value the field does not accept.</value></data>
+  <data name="ErrorFieldDefinitionUnknown" xml:space="preserve"><value>This form offers a field that is no longer defined. Reload the page and try again.</value></data>
+  <data name="ErrorFieldLimitExceeded" xml:space="preserve"><value>The additional fields exceed a limit: too many sections, too many fields in one section, or a value that is too long.</value></data>
   <data name="RequiredFieldHint" xml:space="preserve"><value>Required</value></data>
   <data name="ErrorOccurred" xml:space="preserve"><value>An error occurred while processing your request.</value></data>
   <data name="ActionOk" xml:space="preserve"><value>OK</value></data>
@@ -93,6 +99,8 @@
   <data name="ErrorApprovalPending" xml:space="preserve"><value>The task is waiting for the approver's decision.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Only the person who requested this task can cancel it. If you do not want the work, return it instead.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Say what the task is waiting for.</value></data>
+  <data name="ErrorTitleRequired" xml:space="preserve"><value>A title is required.</value></data>
+  <data name="ErrorTitleTooLong" xml:space="preserve"><value>The title may be at most 200 characters.</value></data>
   <data name="ErrorHandoverReasonRequired" xml:space="preserve"><value>Say why you are handing this task on.</value></data>
   <data name="ErrorReturnNotAssignee" xml:space="preserve"><value>Only the person the task is assigned to can return it.</value></data>
   <data name="ErrorReassignNotPermitted" xml:space="preserve"><value>Only the current assignee or the requester can reassign this task.</value></data>

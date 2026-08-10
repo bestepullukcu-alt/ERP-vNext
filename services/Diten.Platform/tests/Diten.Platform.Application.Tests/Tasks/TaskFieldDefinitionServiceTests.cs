@@ -52,6 +52,55 @@ public sealed class TaskFieldDefinitionServiceTests
         Assert.False(result.IsValid);
     }
 
+    /*
+     * THE ASYMMETRY, closed. Requiredness used to be checked only for a field that had been SUPPLIED, so the way
+     * around it was to leave the field out: the form blocked an empty box, and anything that skipped the form —
+     * curl, a stale page, another client — stored a task with the required field simply absent. "Required" was a
+     * client-side opinion. Both sides hold it now.
+     */
+    [Fact]
+    public async Task A_required_field_that_is_OMITTED_is_rejected_too()
+    {
+        var definition = Definition("regulatory.phase", TaskFieldValueType.Text);
+        definition.IsRequired = true;
+
+        var result = await Service(definition).ValidateAndMaterializeAsync(null);
+
+        Assert.False(result.IsValid);
+        Assert.Equal(TaskReasonCodes.FieldValueInvalid, result.ReasonCode);
+    }
+
+    [Fact]
+    public async Task A_partial_payload_still_has_to_carry_every_required_field()
+    {
+        var optional = Definition("regulatory.phase", TaskFieldValueType.Text);
+        var required = Definition("regulatory.market", TaskFieldValueType.Text);
+        required.IsRequired = true;
+
+        var result = await Service(optional, required)
+            .ValidateAndMaterializeAsync([new TaskFieldValueDto("regulatory.phase", TaskFieldValueType.Text, "II")]);
+
+        Assert.False(result.IsValid);
+        Assert.Contains("regulatory.market", result.Message);
+    }
+
+    [Fact]
+    public async Task A_machine_made_task_is_not_refused_for_a_field_nobody_could_have_filled()
+    {
+        /*
+         * The recurrence sweep and creation-from-template pass enforceRequired: false, and say so at their call
+         * sites. A sweep has nobody to ask: refusing would not collect the value, it would stop the recurrence
+         * while the period is consumed anyway — the same failure this module already shipped once for assignment.
+         */
+        var definition = Definition("regulatory.phase", TaskFieldValueType.Text);
+        definition.IsRequired = true;
+
+        var result = await Service(definition)
+            .ValidateAndMaterializeAsync(null, CancellationToken.None, enforceRequired: false);
+
+        Assert.True(result.IsValid);
+    }
+
     [Fact]
     public async Task Duplicate_values_for_one_definition_are_rejected()
     {

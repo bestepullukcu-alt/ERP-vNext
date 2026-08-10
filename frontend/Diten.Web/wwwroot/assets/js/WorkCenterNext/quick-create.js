@@ -78,6 +78,24 @@
         const result = await global.TasksApi.create(global.TaskForm.buildCreatePayload(draft));
 
         if (!result.ok) {
+            /*
+             * A REQUIRED configurable field this offcanvas does not carry. Quick create is deliberately a short
+             * form — it has title, target, due date and priority, and nothing else — so once a tenant marks a
+             * configurable field required, no draft made here can satisfy the server.
+             *
+             * Repeating the refusal would leave the user pressing a button that cannot ever work. Instead the
+             * draft is HANDED OVER to the detailed form, which renders those fields: the same depth handover
+             * "Detaylı form" already performs, taken automatically at the one moment it is forced.
+             */
+            if (result.reasonCode === 'TASK_FIELD_VALUE_INVALID') {
+                await global.DitenModal.warning({
+                    title: global.TasksApi.failureMessage(result),
+                    confirmButtonText: t('actionOpenDetailed')
+                });
+                openDetailed();
+                return null;
+            }
+
             // Chosen by reason code, so the user is told the actual cause (no position/unit, permission, …)
             // instead of a generic "an error occurred".
             global.DitenModal.error({

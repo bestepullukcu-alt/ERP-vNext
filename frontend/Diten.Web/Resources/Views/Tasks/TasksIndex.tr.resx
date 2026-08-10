@@ -78,6 +78,12 @@
   <data name="ErrorUnavailable" xml:space="preserve"><value>Görev servisine ulaşılamadı. Tekrar deneyin.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>Henüz görev yok</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>İlk görevinizi oluşturun; burada ve Görev Merkezi'nde görünecek.</value></data>
+  <data name="CustomFieldOptionPlaceholder" xml:space="preserve"><value>Seçiniz…</value></data>
+  <data name="CustomFieldBooleanYes" xml:space="preserve"><value>Evet</value></data>
+  <data name="CustomFieldBooleanNo" xml:space="preserve"><value>Hayır</value></data>
+  <data name="ErrorFieldValueInvalid" xml:space="preserve"><value>Ek alanlardan biri boş ya da alanın kabul etmediği bir değer taşıyor.</value></data>
+  <data name="ErrorFieldDefinitionUnknown" xml:space="preserve"><value>Bu form, artık tanımlı olmayan bir alan sunuyor. Sayfayı yenileyip yeniden deneyin.</value></data>
+  <data name="ErrorFieldLimitExceeded" xml:space="preserve"><value>Ek alanlar bir sınırı aşıyor: çok fazla bölüm, bir bölümde çok fazla alan ya da fazla uzun bir değer.</value></data>
   <data name="RequiredFieldHint" xml:space="preserve"><value>Zorunlu</value></data>
   <data name="ErrorOccurred" xml:space="preserve"><value>İşlem sırasında bir hata oluştu.</value></data>
   <data name="ActionOk" xml:space="preserve"><value>Tamam</value></data>
@@ -93,6 +99,8 @@
   <data name="ErrorApprovalPending" xml:space="preserve"><value>Görev, onaylayan kişinin kararını bekliyor.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Bu görevi yalnızca talep eden kişi iptal edebilir. İşi istemiyorsanız iade edin.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Görevin neyi beklediğini yazın.</value></data>
+  <data name="ErrorTitleRequired" xml:space="preserve"><value>Başlık girin.</value></data>
+  <data name="ErrorTitleTooLong" xml:space="preserve"><value>Başlık en fazla 200 karakter olabilir.</value></data>
   <data name="ErrorHandoverReasonRequired" xml:space="preserve"><value>Görevi neden devrettiğinizi yazın.</value></data>
   <data name="ErrorReturnNotAssignee" xml:space="preserve"><value>Görevi yalnızca üzerine atanmış kişi iade edebilir.</value></data>
   <data name="ErrorReassignNotPermitted" xml:space="preserve"><value>Bu görevi yalnızca mevcut atanan kişi veya talep eden yeniden atayabilir.</value></data>

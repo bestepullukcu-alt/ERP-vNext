@@ -134,6 +134,14 @@ public static class TaskReasonCodes
     public const string FieldCodeImmutable = "FIELD_CODE_IMMUTABLE";
 
     /// <summary>
+    /// A field's option list could not be produced: it declares no source, or the lookup key / reference set it
+    /// names does not resolve. REPORTED rather than answered with an empty list — an empty list and an
+    /// unresolvable source look identical to a client, and the difference decides whether the field is offered
+    /// at all.
+    /// </summary>
+    public const string FieldOptionsUnresolved = "FIELD_OPTIONS_UNRESOLVED";
+
+    /// <summary>
     /// A bulk retire named more definitions than one request may carry. REFUSED rather than truncated: silently
     /// processing the first N and reporting success is the "5 deleted" lie in another form.
     /// </summary>
@@ -580,6 +588,12 @@ public sealed record TaskFieldDefinitionDto(
     bool IsActive,
     int Version,
     DateTimeOffset CreatedAt);
+
+/// <summary>
+/// One choice a configurable field offers. Flattened on purpose: a platform lookup and a published reference
+/// value have different shapes upstream, and the form must not have to know which kind it is looking at.
+/// </summary>
+public sealed record TaskFieldOptionDto(string Value, string Label);
 
 // ── Phase 4: recurrence ──────────────────────────────────────────────────────
 

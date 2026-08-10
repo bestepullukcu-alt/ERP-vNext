@@ -51,6 +51,12 @@
         TASK_COMMENT_TEXT_INVALID: 'errorCommentTextInvalid',
         // A plan write with no date at all (a 400, not a 409 — it never reaches BLOCKING_REASON_CODES).
         TASK_PLAN_DATE_REQUIRED: 'errorPlanDateRequired',
+        // Configurable fields (Phase 5). The server is the authority on these — a required field left empty, an
+        // unknown definition code, a contract limit — and each refusal needs its own sentence, because "an error
+        // occurred" beside a form of tenant-defined fields names nothing the user can act on.
+        TASK_FIELD_VALUE_INVALID: 'errorFieldValueInvalid',
+        TASK_FIELD_DEFINITION_UNKNOWN: 'errorFieldDefinitionUnknown',
+        TASK_FIELD_LIMIT_EXCEEDED: 'errorFieldLimitExceeded',
         APPROVAL_PENDING: 'errorApprovalPending',
         // An unmet predecessor. Same string the PROJECTION uses to disable the button, deliberately: the greyed
         // control and this refusal are one fact seen from two sides.
@@ -61,6 +67,18 @@
         // reason code BEFORE the status, so this replaces the generic "you are not allowed" with the reason.
         TASK_CANCEL_NOT_REQUESTER: 'errorCancelNotRequester',
         TASK_WAITING_REASON_REQUIRED: 'errorWaitingReasonRequired',
+        /*
+         * BL-040/BL-048 — codes DERIVED from a FluentValidation rule, not curated by hand.
+         *
+         * `VALIDATION_<FIELD>_<RULE>` is what ValidationReasonCode builds when a rule does not name its own code,
+         * so the field and the rule are in the code and the SERVER's English sentence never has to be shown. That
+         * sentence is what carried the untranslated field name ("'Request Title', 200 karakterden…"): the raw
+         * `errors` text is never rendered here, but without a mapped code the reader only got the generic
+         * message. Two rules on Title, because "missing" and "too long" are different sentences in every
+         * language.
+         */
+        VALIDATION_REQUEST_TITLE_NOT_EMPTY: 'errorTitleRequired',
+        VALIDATION_REQUEST_TITLE_MAXIMUM_LENGTH: 'errorTitleTooLong',
         // Handing work back (return) or on (reassign): both refuse without a reason, and both refuse an actor
         // who is neither the holder nor the requester.
         TASK_HANDOVER_REASON_REQUIRED: 'errorHandoverReasonRequired',
@@ -149,6 +167,16 @@
         // reason code), and there is no ExpectedVersion-carrying generic path that would let a caller forget it.
         plan: (id, payload) => request('POST', `/${id}/plan`, payload),
         assignablePositions: () => request('GET', '/assignable-positions'),
+        // ── Phase 5: configurable fields ─────────────────────────────────────
+        // The catalogue the form renders. An ordinary task READ, not the manage permission: a user who may
+        // create a task must be able to see the fields they are asked to fill.
+        fieldDefinitions: () => request('GET', '/field-definitions'),
+        /*
+         * One field's option list, resolved SERVER-SIDE from the definition's own OptionsSourceKind/Key. The
+         * browser never names a lookup key or a reference set: the definition does, so a tenant cannot reach a
+         * data set merely by asking for it.
+         */
+        fieldOptions: (code) => request('GET', `/field-definitions/${encodeURIComponent(code)}/options`),
         assignablePeople: () => request('GET', '/assignable-people'),
 
         // ── Phase 2 ──────────────────────────────────────────────────────────

@@ -8,7 +8,17 @@ namespace Diten.Platform.Application.Features.Tasks.Commands;
 // server-side tenant context. Every state-changing command carries an expected version so a concurrent write
 // produces a controlled 409 instead of a silent overwrite (pack §13).
 
-public sealed record CreateTaskItemCommand(CreateTaskItemRequest Request, string CorrelationId)
+/// <param name="EnforceRequiredFields">
+/// Whether a REQUIRED configurable field the request never mentions refuses the create. True for a person
+/// filling the form. The MACHINE-made paths — the recurrence sweep and creation from a template — pass false
+/// and say why at their call sites: a sweep has nobody to ask, so refusing would not collect the value, it
+/// would stop the recurrence while the period is consumed anyway.
+/// Trailing and defaulted so every existing caller keeps the strict behaviour without being edited.
+/// </param>
+public sealed record CreateTaskItemCommand(
+    CreateTaskItemRequest Request,
+    string CorrelationId,
+    bool EnforceRequiredFields = true)
     : IRequest<Response<Guid>>;
 
 public sealed record UpdateTaskItemCommand(Guid Id, UpdateTaskItemRequest Request, string CorrelationId)

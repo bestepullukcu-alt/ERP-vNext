@@ -236,7 +236,14 @@ public sealed class GenerateDueRecurringTasksHandler
                         DelegationAllowed: false,
                         FieldValues: null,
                         Watchers: null),
-                    correlationId),
+                    correlationId,
+                    /*
+                     * A sweep has nobody to ask for a required configurable field. Refusing here would not
+                     * collect the value — it would stop the recurrence silently while the period is consumed
+                     * anyway, which is the exact failure this handler already fixed once for assignment.
+                     * Recorded as BL-058: the rule editor has to carry field values before this can tighten.
+                     */
+                    EnforceRequiredFields: false),
                 ct);
         }
 

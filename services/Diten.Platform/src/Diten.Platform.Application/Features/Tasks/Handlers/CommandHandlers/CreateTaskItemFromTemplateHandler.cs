@@ -72,6 +72,13 @@ public sealed class CreateTaskItemFromTemplateHandler
             // half of E5.
             ChecklistTemplateId: template.ChecklistTemplateId);
 
-        return await _mediator.Send(new CreateTaskItemCommand(createRequest, command.CorrelationId), ct);
+        /*
+         * A template supplies whatever DEFAULT field values it carries and nothing else — there is no form here
+         * to ask for the rest. Enforcing requiredness would make every template that predates a required
+         * definition unusable, with no screen on which to fix it. The gap is real and recorded (BL-058): the
+         * template editor has to offer the configurable fields before this can tighten.
+         */
+        return await _mediator.Send(
+            new CreateTaskItemCommand(createRequest, command.CorrelationId, EnforceRequiredFields: false), ct);
     }
 }

@@ -10,6 +10,10 @@
     // Where a completed create/edit returns to: the Task Center owns the personal work list.
     const WORK_CENTER_URL = '/WorkCenterNext';
 
+    // MOD-0024's own module code, as declared by its manifest (`TaskManifestProvider.ModuleCode`). A field
+    // definition may be restricted to one consuming module; this form only offers the ones that reach it.
+    const TASK_MODULE_CODE = 'tasks';
+
     const el = (id) => document.getElementById(id);
     const setValue = (id, value) => { const node = el(id); if (node && value != null) { node.value = value; } };
     const setChecked = (id, value) => { const node = el(id); if (node) { node.checked = !!value; } };
@@ -59,6 +63,94 @@
         setChecked('taskDelegationAllowed', draft.delegationAllowed);
     };
 
+    /* ── Configurable fields (Phase 5) ────────────────────────────────────────────────────────────────────
+     *
+     * The form has carried `#taskCustomFields`/`#taskCustomFieldsRow` since Phase 1 with NO code touching
+     * either id: a tenant could define a field and never see it here. This is the code that fills them.
+     *
+     * Definitions live for the page's lifetime, because both the save and the edit hydration have to read the
+     * SAME list the controls were rendered from — re-fetching could render one shape and post another.
+     */
+    let customFieldDefinitions = [];
+
+    const customFieldsRow = () => el('taskCustomFieldsRow');
+
+    // Which definitions this surface offers: live, and either module-agnostic or claimed by MOD-0024 itself.
+    const applicableDefinitions = (rows) => (rows || []).filter((definition) =>
+        definition
+        && definition.isActive !== false
+        && (!definition.appliesToModuleCode || definition.appliesToModuleCode === TASK_MODULE_CODE));
+
+    /*
+     * Resolve every option-driven field's list BEFORE rendering, so a field is either offered complete or not
+     * offered at all. Person fields reuse the assignable-people list the assignee picker already loaded — the
+     * same people, labelled the same way, rather than a second vocabulary for the same concept.
+     */
+    const loadCustomFieldOptions = async (definitions, people) => {
+        const byCode = {};
+
+        const personLabels = {
+            placeholder: t('assigneeSelectPlaceholder'),
+            empty: t('assigneeEmpty'),
+            nameUnavailable: t('personNameUnavailable')
+        };
+        const personOptions = (people || []).map((row) => ({
+            value: row.userId,
+            label: global.TaskForm.formatPersonLabel(row, personLabels.nameUnavailable)
+        }));
+
+        await Promise.all(definitions.map(async (definition) => {
+            const kind = global.TaskForm.customFieldControlKind(definition);
+            if (kind === 'person') {
+                byCode[definition.code] = personOptions;
+                return;
+            }
+            if (kind !== 'select') { return; }
+
+            const result = await global.TasksApi.fieldOptions(definition.code);
+            if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+                byCode[definition.code] = result.data;
+                return;
+            }
+            // Not silent: renderCustomFields will drop the field, and this says which source failed and how.
+            global.console?.warn?.(
+                `[Tasks] options for field "${definition.code}" could not be resolved `
+                + `(${definition.optionsSourceKind}/${definition.optionsSourceKey || '—'}): `
+                + `status ${result.status}${result.reasonCode ? `, ${result.reasonCode}` : ''}.`);
+        }));
+
+        return byCode;
+    };
+
+    const bootCustomFields = async (people) => {
+        const row = customFieldsRow();
+        const section = el('taskCustomFields');
+        if (!row || !section) { return; }
+
+        const result = await global.TasksApi.fieldDefinitions();
+        if (!result.ok) {
+            global.console?.warn?.(
+                `[Tasks] the configurable field catalogue could not be read (status ${result.status}); the `
+                + 'section stays hidden.');
+            return;
+        }
+
+        customFieldDefinitions = applicableDefinitions(result.data);
+        if (customFieldDefinitions.length === 0) { return; }
+
+        const options = await loadCustomFieldOptions(customFieldDefinitions, people);
+        const rendered = global.TaskForm.renderCustomFields(row, customFieldDefinitions, options, {
+            optionPlaceholder: t('customFieldOptionPlaceholder'),
+            booleanYes: t('customFieldBooleanYes'),
+            booleanNo: t('customFieldBooleanNo'),
+            translate: t
+        });
+
+        // No definition survived rendering ⇒ the section stays hidden. An empty heading would announce a
+        // capability the page cannot offer.
+        section.classList.toggle('d-none', rendered.length === 0);
+    };
+
     const syncVisibility = () => {
         const form = el('taskForm');
         global.TaskForm.applyTargetVisibility(form, el('taskAssignmentTarget')?.value);
@@ -93,6 +185,9 @@
             nameUnavailable: t('personNameUnavailable')
         });
 
+        // Before any hydration: the controls have to EXIST before stored values can be written into them.
+        await bootCustomFields(people.ok ? people.data || [] : []);
+
         if (mode === 'create') {
             // Continue the quick-create draft if one was handed over.
             const draft = global.TaskForm.readDraft();
@@ -112,6 +207,9 @@
                 });
                 setValue('taskSpentHours', existing.data.spentHours);
                 setValue('taskRemainingHours', existing.data.remainingHours ?? '');
+                // The stored configurable values. Without this the edit posts back a payload with every one of
+                // them emptied: a read-only create would have become a data-LOSING edit.
+                global.TaskForm.writeCustomFieldValues(customFieldsRow(), existing.data.fieldValues || []);
             }
         }
 
@@ -121,9 +219,14 @@
         syncVisibility();
 
         el('taskSubmit')?.addEventListener('click', async () => {
-            const draft = readForm();
+            const fieldValues = global.TaskForm.readCustomFieldValues(customFieldsRow(), customFieldDefinitions);
+            const draft = { ...readForm(), fieldValues };
+
             const check = global.TaskForm.validateDraft(draft);
-            if (!check.valid) {
+            // A required configurable field left empty blocks the save here AND is refused by the server. Both
+            // sides hold the rule on purpose: a client-only rule is a suggestion.
+            const fieldCheck = global.TaskForm.validateCustomFields(customFieldDefinitions, fieldValues);
+            if (!check.valid || !fieldCheck.valid) {
                 global.DitenModal.warning({ title: t('requiredFieldHint'), confirmButtonText: t('actionOk') });
                 return;
             }

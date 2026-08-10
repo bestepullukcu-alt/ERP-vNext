@@ -307,6 +307,25 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// The option list one configurable field offers, resolved from the source ITS OWN definition names.
+    ///
+    /// <para>An ordinary task READ, not the manage permission: a user who may create a task has to be able to
+    /// fill the fields they are asked for. Gating this behind
+    /// <see cref="TaskPermissions.FieldDefinitionsManage"/> would leave every ordinary user with an empty
+    /// picker — and an unfillable selector is the same class of defect as a payload nobody reads.</para>
+    ///
+    /// <para>The route takes a CODE, not an id, and never a lookup key or a set code: the definition is the
+    /// allow-list, so this cannot be used to read a reference set no field points at.</para>
+    /// </summary>
+    [HttpGet("field-definitions/{code}/options")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> GetFieldDefinitionOptions(string code, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetTaskFieldDefinitionOptionsQuery(code, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpGet("field-definitions/{id:guid}")]
     [HasPermission(TaskPermissions.Read)]
     public async Task<IActionResult> GetFieldDefinition(Guid id, CancellationToken ct)

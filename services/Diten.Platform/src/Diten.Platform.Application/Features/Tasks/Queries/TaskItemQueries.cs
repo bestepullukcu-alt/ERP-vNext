@@ -63,3 +63,14 @@ public sealed record GetTaskFieldDefinitionListQuery(string CorrelationId)
 
 public sealed record GetTaskFieldDefinitionByIdQuery(Guid Id, string CorrelationId)
     : IRequest<Response<TaskFieldDefinitionDto>>;
+
+/// <summary>
+/// The option list ONE configurable field offers, resolved from that definition's own
+/// <c>OptionsSourceKind</c>/<c>OptionsSourceKey</c>.
+///
+/// <para>The caller names a FIELD, never a lookup key or a reference set. That is the whole point of resolving
+/// server-side: the definition is the allow-list, so a tenant cannot reach a data set merely by asking for it,
+/// and the browser never has to know which of the two source kinds a field uses.</para>
+/// </summary>
+public sealed record GetTaskFieldDefinitionOptionsQuery(string Code, string CorrelationId)
+    : IRequest<Response<IReadOnlyList<TaskFieldOptionDto>>>;

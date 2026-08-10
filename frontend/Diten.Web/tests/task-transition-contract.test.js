@@ -173,17 +173,25 @@ const OPTION_VALUE_READS = (file) => {
   return source
     .split("\n")
     .filter((line) => /option\.value\s*=|<option value=/.test(line))
-    .flatMap((line) => [...line.matchAll(/\b(?:person|row|item|p)\.([A-Za-z][A-Za-z0-9]*)\b/g)].map((m) => m[1]));
+    .flatMap((line) =>
+      [...line.matchAll(/\b(?:person|row|item|choice|p)\.([A-Za-z][A-Za-z0-9]*)\b/g)].map((m) => m[1]));
 };
 
 const LOOKUP_READERS = [
   ["AssignablePersonDto", "frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js", "userId"],
   ["AssignablePersonDto", "frontend/Diten.Web/wwwroot/assets/js/Tasks/form.js", "userId"],
-  ["AssignablePositionDto", "frontend/Diten.Web/wwwroot/assets/js/Tasks/form.js", "positionId"]
+  ["AssignablePositionDto", "frontend/Diten.Web/wwwroot/assets/js/Tasks/form.js", "positionId"],
+  // Phase 5 — a configurable field's option list is a THIRD lookup whose rows become <option> values, so it
+  // joins the same guard rather than being trusted because it is new.
+  ["TaskFieldOptionDto", "frontend/Diten.Web/wwwroot/assets/js/Tasks/form.js", "value"]
 ];
 
 describe("lookup responses are read by the field the server actually sends", () => {
-  it.each([["AssignablePersonDto", "userId"], ["AssignablePositionDto", "positionId"]])(
+  it.each([
+    ["AssignablePersonDto", "userId"],
+    ["AssignablePositionDto", "positionId"],
+    ["TaskFieldOptionDto", "value"]
+  ])(
     "%s declares the id field its clients use", (recordName, idField) => {
       // The anchor: rename the DTO field and this fails before any client assertion can mislead.
       expect(serverFields(recordName)).toContain(idField);
@@ -198,7 +206,10 @@ describe("lookup responses are read by the field the server actually sends", () 
      */
     const declared = new Set([
       ...serverFields("AssignablePersonDto"),
-      ...serverFields("AssignablePositionDto")
+      ...serverFields("AssignablePositionDto"),
+      // A configurable field's options are resolved server-side and flattened to {value,label}; the control
+      // renders `choice.value`, so that field has to be one the record actually declares.
+      ...serverFields("TaskFieldOptionDto")
     ]);
 
     [...new Set(LOOKUP_READERS.map(([, file]) => file))].forEach((file) => {

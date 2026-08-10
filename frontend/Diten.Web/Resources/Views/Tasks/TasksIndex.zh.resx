@@ -78,6 +78,12 @@
   <data name="ErrorUnavailable" xml:space="preserve"><value>无法连接任务服务，请重试。</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>暂无任务</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>创建第一个任务后，它将显示在此处和任务中心。</value></data>
+  <data name="CustomFieldOptionPlaceholder" xml:space="preserve"><value>请选择…</value></data>
+  <data name="CustomFieldBooleanYes" xml:space="preserve"><value>是</value></data>
+  <data name="CustomFieldBooleanNo" xml:space="preserve"><value>否</value></data>
+  <data name="ErrorFieldValueInvalid" xml:space="preserve"><value>某个附加字段为空，或包含该字段不接受的值。</value></data>
+  <data name="ErrorFieldDefinitionUnknown" xml:space="preserve"><value>此表单提供了一个已不存在的字段。请刷新页面后重试。</value></data>
+  <data name="ErrorFieldLimitExceeded" xml:space="preserve"><value>附加字段超出限制：分区过多、单个分区字段过多，或值过长。</value></data>
   <data name="RequiredFieldHint" xml:space="preserve"><value>必填</value></data>
   <data name="ErrorOccurred" xml:space="preserve"><value>处理您的请求时发生错误。</value></data>
   <data name="ActionOk" xml:space="preserve"><value>确定</value></data>
@@ -93,6 +99,8 @@
   <data name="ErrorApprovalPending" xml:space="preserve"><value>该任务正在等待审批人的决定。</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>只有提出该任务的人才能取消它。如果您不想接手，请退回。</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>请说明该任务在等待什么。</value></data>
+  <data name="ErrorTitleRequired" xml:space="preserve"><value>请填写标题。</value></data>
+  <data name="ErrorTitleTooLong" xml:space="preserve"><value>标题最多 200 个字符。</value></data>
   <data name="ErrorHandoverReasonRequired" xml:space="preserve"><value>请说明移交该任务的原因。</value></data>
   <data name="ErrorReturnNotAssignee" xml:space="preserve"><value>只有该任务的当前负责人才能退回它。</value></data>
   <data name="ErrorReassignNotPermitted" xml:space="preserve"><value>只有当前负责人或提出该任务的人才能重新分配它。</value></data>

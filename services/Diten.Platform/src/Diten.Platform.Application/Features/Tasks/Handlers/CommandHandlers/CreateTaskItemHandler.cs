@@ -163,7 +163,8 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         }
 
         // ── Configurable fields (pack §12 K1) ───────────────────────────────
-        var fields = await _fieldDefinitions.ValidateAndMaterializeAsync(request.FieldValues, ct);
+        var fields = await _fieldDefinitions.ValidateAndMaterializeAsync(
+            request.FieldValues, ct, command.EnforceRequiredFields);
         if (!fields.IsValid)
         {
             return Fail(fields.Message ?? "Invalid task field value.",

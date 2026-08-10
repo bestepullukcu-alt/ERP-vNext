@@ -123,6 +123,15 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiFieldDefinitions()
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/field-definitions", readBody: false);
 
+    // One field's option list. Declared BEFORE the {id:guid} route so the two cannot be confused, and taking a
+    // code rather than an id because the form knows definitions by code — the same key the stored values join on.
+    [HttpGet("api/field-definitions/{code}/options")]
+    public Task<IActionResult> ApiFieldDefinitionOptions(string code)
+        => ProxyAsync(
+            HttpMethod.Get,
+            $"{_gatewayUrl}/api/v1/tasks/field-definitions/{Uri.EscapeDataString(code)}/options",
+            readBody: false);
+
     [HttpGet("api/field-definitions/{id:guid}")]
     public Task<IActionResult> ApiFieldDefinition(Guid id)
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/field-definitions/{id}", readBody: false);

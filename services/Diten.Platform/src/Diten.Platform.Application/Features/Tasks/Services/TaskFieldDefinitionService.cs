@@ -15,9 +15,22 @@ namespace Diten.Platform.Application.Features.Tasks.Services;
 /// </summary>
 public interface ITaskFieldDefinitionService
 {
+    /// <summary>
+    /// Validate supplied values against their definitions.
+    /// </summary>
+    /// <param name="enforceRequired">
+    /// Whether a REQUIRED definition the payload never mentions is a refusal. True for every act a person
+    /// performs — the form blocks the empty field and the server refuses it, deliberately the same rule in two
+    /// places, because a client-only rule is a suggestion.
+    ///
+    /// <para>FALSE for machine-made tasks (the recurrence sweep, creation from a template). A sweep has nobody
+    /// to ask: refusing there would not collect the missing value, it would silently stop the recurrence and
+    /// consume the period anyway. Those paths are named at their call sites.</para>
+    /// </param>
     Task<TaskFieldValidationResult> ValidateAndMaterializeAsync(
         IReadOnlyList<TaskFieldValueDto>? values,
-        CancellationToken ct = default);
+        CancellationToken ct = default,
+        bool enforceRequired = true);
 }
 
 public sealed record TaskFieldValidationResult(
@@ -37,14 +50,28 @@ public sealed class TaskFieldDefinitionService : ITaskFieldDefinitionService
 
     public async Task<TaskFieldValidationResult> ValidateAndMaterializeAsync(
         IReadOnlyList<TaskFieldValueDto>? values,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        bool enforceRequired = true)
     {
+        var active = await _definitions.ListActiveAsync(ct);
+
         if (values is null || values.Count == 0)
         {
-            return new TaskFieldValidationResult(true, [], null, null);
+            /*
+             * An EMPTY payload used to be accepted unconditionally, which made "required" a client-side opinion:
+             * the form blocked the empty field, and anything that skipped the form — curl, a stale page, another
+             * client — stored a task with the required field simply absent. Requiredness was only ever checked
+             * for a field that had been SUPPLIED, so omitting it was the way around it.
+             */
+            var missingEntirely = enforceRequired
+                ? active.FirstOrDefault(definition => definition.IsRequired)
+                : null;
+
+            return missingEntirely is null
+                ? new TaskFieldValidationResult(true, [], null, null)
+                : Invalid(TaskReasonCodes.FieldValueInvalid, $"Field '{missingEntirely.Code}' is required.");
         }
 
-        var active = await _definitions.ListActiveAsync(ct);
         var byCode = active.ToDictionary(d => d.Code, StringComparer.OrdinalIgnoreCase);
 
         var materialized = new List<TaskFieldValue>(values.Count);
@@ -107,6 +134,17 @@ public sealed class TaskFieldDefinitionService : ITaskFieldDefinitionService
                 AccessState = definition.DefaultAccessState,
                 Redacted = false
             });
+        }
+
+        // The same rule for a PARTIAL payload: a required definition nobody mentioned is missing, not absent by
+        // agreement. Checked after the loop so a supplied-but-empty value reports first, with its own message.
+        if (enforceRequired)
+        {
+            var omitted = active.FirstOrDefault(definition => definition.IsRequired && !seen.Contains(definition.Code));
+            if (omitted is not null)
+            {
+                return Invalid(TaskReasonCodes.FieldValueInvalid, $"Field '{omitted.Code}' is required.");
+            }
         }
 
         // Contract bounds: sections ≤ 6, fields per section ≤ 8, primary fields ≤ 8 across the whole item.

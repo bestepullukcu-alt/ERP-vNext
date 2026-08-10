@@ -785,6 +785,31 @@ proxy returns 503 — a release blocker.
 - [x] Definitions are tenant-configurable; values validate against definitions + contract limits.
 - [x] `Classification`/`AccessState`/`Redacted` present in schema (BL-024-ready); unauthorized values never
   reach the browser.
+- [x] **Tanımlanan alan, oluşturma formunda GÖRÜNÜYOR.** *(2026-08-10.)* Bu kutu Faz 5'te hiç yoktu ve
+  eksikliği tam olarak buydu: `_Form.cshtml` Faz 1'den beri `#taskCustomFields` (doğuştan `d-none`) +
+  `#taskCustomFieldsRow` taşıyordu ve **bu iki id'ye dokunan tek satır JS yoktu** — tenant alan tanımlar,
+  formda göremezdi. Şimdi form aktif tanımları çekip render ediyor, değerleri `FieldValues` olarak
+  gönderiyor, düzenlemede geri dolduruyor. Bölüm, render edilen alan yoksa gizli kalıyor.
+- [x] **Seçenek listesi alanları SUNUCUDA çözülüyor** — `GET /api/v1/tasks/field-definitions/{code}/options`,
+  `TaskPermissions.Read` ile (yönetim izniyle değil: görev açabilen kişi doldurması istenen alanı
+  doldurabilmeli). Tarayıcı hiçbir zaman bir lookup anahtarı ya da referans seti adı **söylemiyor** —
+  **tanımın kendisi allow-list**. Bu uç olmadan tenant'ın kendi seti okunamazdı: tenant'a açık BRD okuması
+  üç global sete (`legal-form`/`country`/`base-currency`) allow-list'li, gerisi 404. Çözülemeyen kaynak
+  **rapor ediliyor**, boş liste ile karıştırılmıyor; form o alanı **hiç göstermiyor** (BL-050 dersi: doldurulamayan
+  seçici, okunmayan payload ile aynı sınıf).
+- [x] **Zorunlu alan iki tarafta da tutuyor.** Önceden zorunluluk yalnız **gönderilen** alan için
+  denetleniyordu: alanı hiç göndermemek kuralın etrafından dolaşmanın yoluydu, yani "zorunlu" istemci
+  görüşüydü. Artık form boş bırakılan alanda kaydı engelliyor **ve** sunucu, aktif-zorunlu bir tanımı
+  hiç anmayan isteği `TASK_FIELD_VALUE_INVALID` ile reddediyor.
+- [ ] **Bu turda kontrolü OLMAYAN tipler** (yarım kontrol gösterilmiyor, alan hiç render edilmiyor,
+  sebebi konsola yazılıyor): `Reference` — keyfi bir varlığı işaret ediyor ve neyi işaret ettiğini çözen
+  jenerik bir çözücü yok; sunulabilecek tek kontrol çıplak GUID kutusu olurdu. Ayrıca **seçenek kaynağı
+  olmayan `Status`** (boş açılır liste olurdu) ve **sayısal/tarih alana tanımlanmış seçenek kaynağı**
+  (kod, sunucunun `IsWellFormed` denetiminden geçmez). Render edilenler: Metin · Sayı · Para birimi ·
+  Yüzde · Tarih · Tarih-saat · Evet/Hayır · Bağlantı · Durum (kaynaklı) · Kişi (atanabilir kişiler).
+- [ ] **Makine yolları zorunluluk dışında** — şablondan üretim ve tekrarlama süpürmesi
+  (`EnforceRequiredFields: false`, gerekçesi çağrı yerinde). BL-058.
+- [ ] **CANLI DOĞRULAMA BEKLİYOR** — yukarıdaki üç `[x]` testle yeşil, canlıda ölçülmedi. Demir kural #10.
 
 ### Post-test-round — acceptance gate & transition contract (BL-042 … BL-051)
 

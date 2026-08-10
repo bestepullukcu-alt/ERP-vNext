@@ -78,6 +78,12 @@
   <data name="ErrorUnavailable" xml:space="preserve"><value>No se pudo contactar con el servicio de tareas. Inténtelo de nuevo.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>Aún no hay tareas</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>Cree su primera tarea para verla aquí y en el Centro de tareas.</value></data>
+  <data name="CustomFieldOptionPlaceholder" xml:space="preserve"><value>Seleccionar…</value></data>
+  <data name="CustomFieldBooleanYes" xml:space="preserve"><value>Sí</value></data>
+  <data name="CustomFieldBooleanNo" xml:space="preserve"><value>No</value></data>
+  <data name="ErrorFieldValueInvalid" xml:space="preserve"><value>Uno de los campos adicionales está vacío o contiene un valor que el campo no acepta.</value></data>
+  <data name="ErrorFieldDefinitionUnknown" xml:space="preserve"><value>Este formulario ofrece un campo que ya no está definido. Recargue la página e inténtelo de nuevo.</value></data>
+  <data name="ErrorFieldLimitExceeded" xml:space="preserve"><value>Los campos adicionales superan un límite: demasiadas secciones, demasiados campos en una sección o un valor demasiado largo.</value></data>
   <data name="RequiredFieldHint" xml:space="preserve"><value>Obligatorio</value></data>
   <data name="ErrorOccurred" xml:space="preserve"><value>Se produjo un error al procesar su solicitud.</value></data>
   <data name="ActionOk" xml:space="preserve"><value>Aceptar</value></data>
@@ -93,6 +99,8 @@
   <data name="ErrorApprovalPending" xml:space="preserve"><value>La tarea está esperando la decisión de la persona que aprueba.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Solo quien solicitó esta tarea puede cancelarla. Si no quiere el trabajo, devuélvalo.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Indique qué está esperando la tarea.</value></data>
+  <data name="ErrorTitleRequired" xml:space="preserve"><value>Se requiere un título.</value></data>
+  <data name="ErrorTitleTooLong" xml:space="preserve"><value>El título puede tener como máximo 200 caracteres.</value></data>
   <data name="ErrorHandoverReasonRequired" xml:space="preserve"><value>Indique por qué traspasa esta tarea.</value></data>
   <data name="ErrorReturnNotAssignee" xml:space="preserve"><value>Solo la persona asignada puede devolver la tarea.</value></data>
   <data name="ErrorReassignNotPermitted" xml:space="preserve"><value>Solo la persona asignada o quien la solicitó pueden reasignar esta tarea.</value></data>

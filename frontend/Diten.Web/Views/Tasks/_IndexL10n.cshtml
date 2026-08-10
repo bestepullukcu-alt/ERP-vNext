@@ -59,6 +59,13 @@
         SectionGovernance = Localizer["SectionGovernance"].Value,
         SectionCustomFields = Localizer["SectionCustomFields"].Value,
 
+        // Phase 5 — the configurable fields the form renders from the tenant's own definitions. The field LABELS
+        // are tenant content and come from the definition itself; only the control's own furniture is translated
+        // here (a picker's placeholder, and the two words a yes/no field offers).
+        CustomFieldOptionPlaceholder = Localizer["CustomFieldOptionPlaceholder"].Value,
+        CustomFieldBooleanYes = Localizer["CustomFieldBooleanYes"].Value,
+        CustomFieldBooleanNo = Localizer["CustomFieldBooleanNo"].Value,
+
         ColumnTitle = Localizer["ColumnTitle"].Value,
         ColumnStatus = Localizer["ColumnStatus"].Value,
         ColumnPriority = Localizer["ColumnPriority"].Value,
@@ -122,6 +129,8 @@
         ErrorApprovalPending = Localizer["ErrorApprovalPending"].Value,
         ErrorCancelNotRequester = Localizer["ErrorCancelNotRequester"].Value,
         ErrorWaitingReasonRequired = Localizer["ErrorWaitingReasonRequired"].Value,
+        ErrorTitleRequired = Localizer["ErrorTitleRequired"].Value,
+        ErrorTitleTooLong = Localizer["ErrorTitleTooLong"].Value,
         ErrorHandoverReasonRequired = Localizer["ErrorHandoverReasonRequired"].Value,
         ErrorReturnNotAssignee = Localizer["ErrorReturnNotAssignee"].Value,
         ErrorReassignNotPermitted = Localizer["ErrorReassignNotPermitted"].Value,
@@ -130,6 +139,11 @@
         ErrorApprovalRejected = Localizer["ErrorApprovalRejected"].Value,
         ErrorApprovalCancelled = Localizer["ErrorApprovalCancelled"].Value,
         ErrorApprovalNotApproved = Localizer["ErrorApprovalNotApproved"].Value,
-        ErrorApprovalGateUnavailable = Localizer["ErrorApprovalGateUnavailable"].Value
+        ErrorApprovalGateUnavailable = Localizer["ErrorApprovalGateUnavailable"].Value,
+        // The server's refusals about configurable fields. It is the authority on requiredness — the form blocks
+        // the empty field first, and these are what the user reads when the server refuses anyway.
+        ErrorFieldValueInvalid = Localizer["ErrorFieldValueInvalid"].Value,
+        ErrorFieldDefinitionUnknown = Localizer["ErrorFieldDefinitionUnknown"].Value,
+        ErrorFieldLimitExceeded = Localizer["ErrorFieldLimitExceeded"].Value
     })
 </script>
