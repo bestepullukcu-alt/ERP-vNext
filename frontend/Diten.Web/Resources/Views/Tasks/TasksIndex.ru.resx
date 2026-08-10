@@ -125,4 +125,9 @@
   <data name="CardEmailDescription" xml:space="preserve"><value>Когда включено, участникам приходит письмо при назначении, изменении и завершении задачи.</value></data>
   <data name="CardDelegationTitle" xml:space="preserve"><value>Настройки передачи</value></data>
   <data name="CardDelegationDescription" xml:space="preserve"><value>Когда включено, исполнитель может передать задачу другому человеку, не спрашивая вас.</value></data>
+  <data name="ReviewTypeQuick" xml:space="preserve"><value>Быстрая проверка</value></data>
+  <data name="ReviewTypeQuickHint" xml:space="preserve"><value>Проверяющий утверждает работу напрямую.</value></data>
+  <data name="ReviewTypeMeeting" xml:space="preserve"><value>Совещание по проверке</value></data>
+  <data name="ReviewTypeMeetingHint" xml:space="preserve"><value>Работа оценивается на совещании.</value></data>
+  <data name="ReviewTypeMeetingDisabledReason" xml:space="preserve"><value>Пока недоступно: модуль совещаний не создан. До тех пор применяется быстрая проверка.</value></data>
 </root>

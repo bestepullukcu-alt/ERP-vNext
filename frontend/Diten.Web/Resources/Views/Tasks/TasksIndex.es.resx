@@ -125,4 +125,9 @@
   <data name="CardEmailDescription" xml:space="preserve"><value>Cuando está activo, las personas implicadas reciben un correo al asignarse, actualizarse y completarse la tarea.</value></data>
   <data name="CardDelegationTitle" xml:space="preserve"><value>Ajustes de delegación</value></data>
   <data name="CardDelegationDescription" xml:space="preserve"><value>Cuando está activo, la persona asignada puede pasar esta tarea a otra sin consultarle antes.</value></data>
+  <data name="ReviewTypeQuick" xml:space="preserve"><value>Revisión rápida</value></data>
+  <data name="ReviewTypeQuickHint" xml:space="preserve"><value>La persona revisora aprueba el trabajo directamente.</value></data>
+  <data name="ReviewTypeMeeting" xml:space="preserve"><value>Reunión de revisión</value></data>
+  <data name="ReviewTypeMeetingHint" xml:space="preserve"><value>El trabajo se evalúa en una reunión.</value></data>
+  <data name="ReviewTypeMeetingDisabledReason" xml:space="preserve"><value>Aún no disponible: el módulo de reuniones no existe. Mientras tanto se aplica la revisión rápida.</value></data>
 </root>

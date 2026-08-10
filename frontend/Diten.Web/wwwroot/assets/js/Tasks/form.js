@@ -522,7 +522,10 @@
             }
 
             const column = doc.createElement('div');
-            column.className = 'col-md-4';
+            // The SAME width the rest of the form uses for a field. At col-md-4 two configurable fields sat in a
+            // row that everything above them filled with two — so the tenant's own fields were the one part of
+            // the page that did not line up.
+            column.className = 'col-md-6';
 
             const label = doc.createElement('label');
             label.className = 'form-label';
@@ -778,6 +781,52 @@
             }
 
             $node.select2(settings);
+
+            /*
+             * THE NOTIFICATION BRIDGE, and it belongs here rather than beside each listener.
+             *
+             * select2 announces a choice the jQuery way — $(select).trigger('change') — and jQuery's trigger does
+             * NOT run listeners added with addEventListener. So the moment a control became a select2, every
+             * native `change` listener on it went deaf: choosing "Bir kişi" stopped opening the assignee picker,
+             * and the same for the pool and both governance switches. Three listeners broke at once and nothing
+             * failed, because the producer changed and the consumers were never told.
+             *
+             * Binding is therefore what guarantees delivery: a control cannot be enhanced here and stay silent,
+             * so a fourth conditional field added tomorrow works without knowing any of this. The guard keeps a
+             * plain native change from being re-broadcast — jQuery hears those too, and the pair would loop.
+             */
+            $node.on('change', (event) => {
+                // A change that already came from the DOM has reached the native listeners on its own; only a
+                // jQuery-SYNTHESISED one (which is what select2 fires) needs carrying across. jQuery marks the
+                // difference itself: a wrapped native event has `originalEvent`, a triggered one does not. Using
+                // that instead of a re-entrancy flag means the bridge cannot echo its own dispatch.
+                if (event && event.originalEvent) { return; }
+                node.dispatchEvent(new global.Event('change', { bubbles: true }));
+            });
+        });
+
+        return nodes.length;
+    };
+
+    /*
+     * Tags as CHIPS, using the library the rest of the app already uses for exactly this (the tenant-security
+     * screen's IP and country lists). A plain text box asked the user to know that commas separate tags and gave
+     * no sign of what had been entered.
+     *
+     * `originalInputValueFormat` keeps the underlying <input> comma-separated, so parseTags — and therefore the
+     * array the API receives — is unchanged. That is the same reason the security screen passes it.
+     */
+    const enhanceTags = (root) => {
+        const scope = root || global.document;
+        if (!scope || typeof global.Tagify !== 'function') { return 0; }
+
+        const nodes = Array.from(scope.querySelectorAll('#taskTags'))
+            .filter((node) => !node.__tagify);
+
+        nodes.forEach((node) => {
+            node.__tagify = new global.Tagify(node, {
+                originalInputValueFormat: (values) => values.map((v) => v.value).join(',')
+            });
         });
 
         return nodes.length;
@@ -819,6 +868,7 @@
         applyTargetVisibility,
         enhanceSelects,
         enhanceDates,
+        enhanceTags,
         WATCHER_ROLE,
         selectWatchers,
         renderPositionOptions,

@@ -67,7 +67,11 @@ describe("MOD-0024 task localization", () => {
       form.lastIndexOf("<section", form.indexOf('id="taskReviewRequired"')),
       form.indexOf('id="taskApprovalRequired"'));
 
-    expect(card).not.toContain("disabled");
+    // The SWITCH itself, not the card: the card also holds the review-TYPE choice, whose meeting option is
+    // deliberately disabled (and explains itself). Asserting on the whole card would forbid that.
+    const toggle = /<input[^>]*id="taskReviewRequired"[^>]*>/.exec(card);
+    expect(toggle, "the review switch is gone").toBeTruthy();
+    expect(toggle[0]).not.toContain("disabled");
     expect(card).toContain("ReviewRequiredHint");
     expect(form).not.toContain("ReviewComingSoonHint");
   });

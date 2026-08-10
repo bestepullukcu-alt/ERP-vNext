@@ -178,14 +178,43 @@
                than when it might arrive. *@
             <section class="card mb-4">
                 <div class="card-body p-4">
-                    <h6 class="d-flex align-items-center gap-2 mb-1">
+                    <h6 class="text-uppercase text-heading fw-semibold d-flex align-items-center gap-2 mb-1">
                         <i class="bx bx-search-alt text-primary"></i>@Localizer["CardReviewTitle"]
                     </h6>
                     <p class="text-muted small mb-3">@Localizer["ReviewRequiredHint"]</p>
 
-                    <div class="form-check form-switch mb-2">
+                    <div class="form-check form-switch mb-3">
                         <input class="form-check-input" type="checkbox" id="taskReviewRequired" name="reviewRequired" />
                         <label class="form-check-label" for="taskReviewRequired">@Localizer["FieldReviewRequired"]</label>
+                    </div>
+
+                    @* REVIEW TYPE — the place, not the feature. There is exactly ONE review type today ("quick":
+                       the reviewer approves directly), and it was nameless; naming it is what makes the second one
+                       legible when it arrives. The meeting option is DISABLED and says WHY (DEC-001: a dead
+                       control with no explanation gets reported as a bug), and nothing about this choice reaches
+                       the server — one value needs no field, and an unread property in the contract is a question
+                       every future reader has to answer. *@
+                    <div class="d-none mb-3" data-task-field="reviewer">
+                        <div class="form-check mb-1">
+                            <input class="form-check-input" type="radio" name="reviewType" value="Quick"
+                                   id="taskReviewTypeQuick" checked />
+                            <label class="form-check-label" for="taskReviewTypeQuick">
+                                @Localizer["ReviewTypeQuick"]
+                                <span class="d-block text-muted small">@Localizer["ReviewTypeQuickHint"]</span>
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="reviewType" value="Meeting"
+                                   id="taskReviewTypeMeeting" disabled
+                                   aria-describedby="taskReviewTypeMeetingReason" />
+                            <label class="form-check-label text-muted" for="taskReviewTypeMeeting">
+                                @Localizer["ReviewTypeMeeting"]
+                                <span class="d-block small">@Localizer["ReviewTypeMeetingHint"]</span>
+                            </label>
+                            <div class="form-text" id="taskReviewTypeMeetingReason">
+                                @Localizer["ReviewTypeMeetingDisabledReason"]
+                            </div>
+                        </div>
                     </div>
                     @* The reviewer CANDIDATE is a PICKER now, not a text box: its value goes to a Guid parameter,
                        so a typed name produced a refusal and a typed GUID was the only thing that worked. Same
@@ -204,7 +233,7 @@
 
             <section class="card mb-4">
                 <div class="card-body p-4">
-                    <h6 class="d-flex align-items-center gap-2 mb-1">
+                    <h6 class="text-uppercase text-heading fw-semibold d-flex align-items-center gap-2 mb-1">
                         <i class="bx bx-user-check text-primary"></i>@Localizer["CardApprovalTitle"]
                     </h6>
                     <p class="text-muted small mb-3">@Localizer["CardApprovalDescription"]</p>
@@ -232,7 +261,7 @@
                watcher rows — the old comma-separated text box was thrown away by the payload builder entirely. *@
             <section class="card mb-4">
                 <div class="card-body p-4">
-                    <h6 class="d-flex align-items-center gap-2 mb-1">
+                    <h6 class="text-uppercase text-heading fw-semibold d-flex align-items-center gap-2 mb-1">
                         <i class="bx bx-show text-primary"></i>@Localizer["CardWatchersTitle"]
                     </h6>
                     <p class="text-muted small mb-3">@Localizer["WatchersHint"]</p>
@@ -244,7 +273,7 @@
 
             <section class="card mb-4">
                 <div class="card-body p-4">
-                    <h6 class="d-flex align-items-center gap-2 mb-1">
+                    <h6 class="text-uppercase text-heading fw-semibold d-flex align-items-center gap-2 mb-1">
                         <i class="bx bx-envelope text-primary"></i>@Localizer["CardEmailTitle"]
                     </h6>
                     <p class="text-muted small mb-3">@Localizer["CardEmailDescription"]</p>
@@ -261,7 +290,7 @@
 
             <section class="card mb-4">
                 <div class="card-body p-4">
-                    <h6 class="d-flex align-items-center gap-2 mb-1">
+                    <h6 class="text-uppercase text-heading fw-semibold d-flex align-items-center gap-2 mb-1">
                         <i class="bx bx-transfer-alt text-primary"></i>@Localizer["CardDelegationTitle"]
                     </h6>
                     <p class="text-muted small mb-3">@Localizer["CardDelegationDescription"]</p>

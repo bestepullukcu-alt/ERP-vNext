@@ -1707,6 +1707,31 @@ Sonra iade et → talep edende `pendingAcceptance`.
   içinden) · tam paket `npx vitest run` — taban 9 kırmızı (strategy/objectives/planning, Tasks dışı) ·
   `dotnet build frontend/Diten.Web` · canlı: inceleyen SEÇ → kaydet → düzenlemede **ad** dolu gelmeli.
 
+### BL-066 — 🔴→🟢 select2 bildirim kopukluğu: koşullu alanlar hiç açılmıyordu (KOD YAZILDI, CANLI DOĞRULAMA BEKLİYOR)
+- **Belirti (sahip ekranda, CT ölçtü):** "Kime → Bir kişi" seçiliyor, **Atanan kişi alanı açılmıyor**; havuzda
+  da aynı. Yalnız "Kendim" çalışıyordu — yani form kişiye/havuza görev **atayamıyordu**.
+- **Kök neden — sınıf hatası, tek tel değil:** select2 değişikliği **jQuery ile** bildiriyor
+  (`$(select).trigger('change')`), sayfa ise **yerel** dinliyordu (`addEventListener('change', …)`).
+  jQuery'nin trigger'ı yerel dinleyicileri çağırmaz. Bir önceki tur her seçiciyi select2'ye çevirdi —
+  **üretici değişti, tüketiciler değişmedi** ve select2'ye bağlı her yerel `change` dinleyicisi aynı anda
+  sağır oldu (üç tanesi).
+- **Çözüm bağlamanın kendisinde:** `TaskForm.enhanceSelects` artık bağladığı her select'in jQuery
+  değişikliğini yerel bir olaya **köprülüyor**. Yani "select2'ye bağlandı ama haber vermiyor" durumu yapısal
+  olarak imkânsız; yarın eklenecek dördüncü koşullu alan bu ayrıntıyı hiç bilmeden çalışır. Döngü koruması
+  jQuery'nin kendi ayrımıyla: yerelden gelen olayın `originalEvent`'i vardır, `trigger`'ınki yoktur.
+- **Test neden bu kez yakalıyor:** guard **gerçek jQuery + gerçek select2** vendor dosyalarını yükleyip
+  select2'nin kendi yolunu sürüyor (`$(el).val(x).trigger('change')`). Yerel olay gönderen bir test bu kusuru
+  bir kez daha kaçırırdı — bugün tam olarak öyle olmuştu. Uçtan uca vaka, atanan alanın **görünür olduğunu**
+  da iddia ediyor: onsuz test, alan hiç açılmasa bile programatik değer atayıp yeşil verirdi (ilk yazımda
+  öyle oldu, düzeltildi).
+- **Aynı turda:** kart başlıkları golden'ın `text-uppercase` reçetesine hizalandı · yapılandırılabilir alan
+  ızgarası `col-md-4` → `col-md-6` (formun geri kalanıyla aynı) · etiketler **Tagify** çipleri (deponun
+  mevcut deseni: tenant-security IP/ülke listeleri; `originalInputValueFormat` ile alt input virgüllü kalıyor,
+  sunucunun beklediği **dizi şekli değişmedi**) · inceleme türü BL-064 · e-posta tercihleri BL-065.
+- **Yeniden ölçüm:** `npx vitest run tests/tasks-form-select2-notification.test.js` (frontend/Diten.Web
+  içinden) · `dotnet build frontend/Diten.Web` · canlı: "Kime → Bir kişi" seç, alan **açılmalı**; kişi seç,
+  kaydet, görev o kişide olmalı.
+
 ### BL-063 — 🟢 Onay akışı diyagramı: ancak gerçek rotayı okuyabilirse çizilir
 - **Nereden çıktı:** sahibin create prototipinde onay kartının içinde üç kutuluk bir şema var —
   `Görev Oluşturulur → Yönetici Onaylar → Göreve Başlanır` + *"Yönetici onay verene kadar görev
@@ -1727,6 +1752,40 @@ Sonra iade et → talep edende `pendingAcceptance`.
   yapmak, çizilmiş bir varsayımı gerçek sanmaktır.
 - **Yeniden ölçüm:** `rg -n "Onay Akışı|approval-flow" frontend/Diten.Web/Views/Tasks` (bugün boş
   olmalı) · MOD-0023 tarafında rota okuma ucu var mı.
+
+### BL-064 — 🟡 "Review Toplantısı" inceleme türü: yeri açıldı, modül bekliyor
+- **Bugün ne var:** görev formunda inceleme kartında **inceleme türü** seçimi var: *Hızlı inceleme*
+  (varsayılan, seçili) ve *Review toplantısı* (**devre dışı**, sebebini söyleyen yardım metniyle:
+  "toplantı modülü yapılmadı"). DEC-001 gereği sebepsiz ölü kontrol bırakılmadı.
+- **Bu bir davranış değişikliği DEĞİL:** bugün tek inceleme türü var — inceleyen doğrudan onaylar — ve o
+  türün adı yoktu. Seçim, **bugünkü davranışı adıyla görünür kılıyor**; ikinci tür geldiğinde okunur olması
+  için. Sunucuya **yeni alan gitmiyor** (`reviewType` payload'da yok; test bunu pinliyor): tek değerin
+  alanı olmaz, okunmayan bir sözleşme alanı ise her gelecek okuyucunun cevaplaması gereken bir soru olur.
+- **Ne gerekiyor (tetikleyici):** bir **toplantı modülü** — toplantı oluşturma, katılımcı, tarih, karar
+  kaydı. Geldiğinde: (1) seçenek etkinleşir, (2) `reviewType` sözleşmeye **o zaman** eklenir,
+  (3) MOD-0023'e "toplantı sonucu = review kararı" dikişi tanımlanır.
+- **Yeniden ölçüm:** `rg -n "taskReviewTypeMeeting" frontend/Diten.Web/Views/Tasks/_Form.cshtml` (disabled
+  olmalı) · toplantı modülü manifest'i var mı.
+
+### BL-065 — 🟡 Görev başına bildirim tercihi: ekranda yeri var, sözleşmede karşılığı YOK
+- **Sahibin mockup'ı** e-posta kartında iki tercih istiyor: **hangi olaylarda** bildirim (son tarih
+  yaklaşınca · durum değişince · yorum eklenince · gecikmede) ve **ne zaman hatırlatılsın**
+  (1 gün / 3 gün / 1 hafta / 2 hafta / aynı gün).
+- **ÖLÇÜM (2026-08-11) — karşılığı yok:** `TaskItem`'da bildirimle ilgili **tek** alan var:
+  `EmailNotificationsEnabled` (bool, `TaskItem.cs:146`). `CreateTaskItemRequest`/`UpdateTaskItemRequest`
+  da yalnız onu taşıyor. `TaskNotificationEvents` (`TaskModels.cs:257`) beş olay **kodu** tanımlıyor
+  (`assigned · claimed · duesoon · completed · approvalrequested`) ama bunlar **manifest/dispatch
+  seviyesi** — görev başına "bu olayda haber ver" tercihi değil. Depoda `NotificationPreference` diye bir
+  varlık **yok**.
+- **Karar: kart bugünkü hâlinde bırakıldı (yalnız aç/kapa).** Seçtirip hiçbir yere yazmayan kontrol koymak,
+  bu turlarda defalarca düzelttiğimiz *"ekran tamam der, arkada bir şey yok"* kusurunun ta kendisi olurdu.
+- **Ne gerekiyor:** görev başına bildirim tercihi **sözleşmesi** — (a) olay seçimi: `TaskNotificationEvents`
+  kodlarından bir alt küme (`IReadOnlyList<string> NotifyOnEvents`), (b) hatırlatma önceliği: `duesoon`
+  olayının kaç gün önce tetikleneceği (`int? ReminderLeadDays`), (c) ikisinin de `TaskItem`'da saklanması ve
+  dispatch tarafında **okunması** — saklanıp okunmayan tercih de aynı kusur. Mevcut `EmailNotificationsEnabled`
+  ana anahtar olarak kalır (kapalıysa hiçbiri gönderilmez).
+- **Yeniden ölçüm:** `rg -n "NotifyOnEvents|ReminderLeadDays|NotificationPreference" services/Diten.Platform/src`
+  (bugün boş) · `grep -n "EmailNotificationsEnabled" services/Diten.Platform/src/Diten.Platform.Domain/Entities/Tasks/TaskItem.cs`
 
 ---
 

@@ -125,4 +125,9 @@
   <data name="CardEmailDescription" xml:space="preserve"><value>Açıkken görev atandıkça, güncellendikçe ve tamamlandıkça ilgili kişilere e-posta gönderilir.</value></data>
   <data name="CardDelegationTitle" xml:space="preserve"><value>Devir ayarları</value></data>
   <data name="CardDelegationDescription" xml:space="preserve"><value>Açıkken görevi üstlenen kişi, size sormadan görevi bir başkasına devredebilir.</value></data>
+  <data name="ReviewTypeQuick" xml:space="preserve"><value>Hızlı inceleme</value></data>
+  <data name="ReviewTypeQuickHint" xml:space="preserve"><value>İnceleyen kişi işi doğrudan onaylar.</value></data>
+  <data name="ReviewTypeMeeting" xml:space="preserve"><value>Review toplantısı</value></data>
+  <data name="ReviewTypeMeetingHint" xml:space="preserve"><value>İş, bir toplantıda değerlendirilir.</value></data>
+  <data name="ReviewTypeMeetingDisabledReason" xml:space="preserve"><value>Henüz kullanılamıyor: toplantı modülü yapılmadı. Bu sürede hızlı inceleme uygulanır.</value></data>
 </root>

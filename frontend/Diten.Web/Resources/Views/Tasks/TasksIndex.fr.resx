@@ -125,4 +125,9 @@
   <data name="CardEmailDescription" xml:space="preserve"><value>Lorsque cette option est active, les personnes concernées reçoivent un e-mail à l’attribution, à la mise à jour et à la clôture de la tâche.</value></data>
   <data name="CardDelegationTitle" xml:space="preserve"><value>Paramètres de délégation</value></data>
   <data name="CardDelegationDescription" xml:space="preserve"><value>Lorsque cette option est active, la personne affectée peut confier cette tâche à quelqu’un d’autre sans vous consulter.</value></data>
+  <data name="ReviewTypeQuick" xml:space="preserve"><value>Revue rapide</value></data>
+  <data name="ReviewTypeQuickHint" xml:space="preserve"><value>Le relecteur approuve le travail directement.</value></data>
+  <data name="ReviewTypeMeeting" xml:space="preserve"><value>Réunion de revue</value></data>
+  <data name="ReviewTypeMeetingHint" xml:space="preserve"><value>Le travail est évalué lors d’une réunion.</value></data>
+  <data name="ReviewTypeMeetingDisabledReason" xml:space="preserve"><value>Pas encore disponible : le module de réunions n’existe pas. La revue rapide s’applique en attendant.</value></data>
 </root>

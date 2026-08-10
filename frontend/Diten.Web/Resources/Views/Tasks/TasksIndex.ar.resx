@@ -125,4 +125,9 @@
   <data name="CardEmailDescription" xml:space="preserve"><value>عند التفعيل، يتلقى المعنيون رسالة بريد عند إسناد المهمة وتحديثها وإكمالها.</value></data>
   <data name="CardDelegationTitle" xml:space="preserve"><value>إعدادات التفويض</value></data>
   <data name="CardDelegationDescription" xml:space="preserve"><value>عند التفعيل، يمكن للمكلَّف تسليم هذه المهمة إلى شخص آخر دون الرجوع إليك.</value></data>
+  <data name="ReviewTypeQuick" xml:space="preserve"><value>مراجعة سريعة</value></data>
+  <data name="ReviewTypeQuickHint" xml:space="preserve"><value>يعتمد المراجع العمل مباشرة.</value></data>
+  <data name="ReviewTypeMeeting" xml:space="preserve"><value>اجتماع مراجعة</value></data>
+  <data name="ReviewTypeMeetingHint" xml:space="preserve"><value>يُقيَّم العمل في اجتماع.</value></data>
+  <data name="ReviewTypeMeetingDisabledReason" xml:space="preserve"><value>غير متاح بعد: وحدة الاجتماعات لم تُنشأ. تُطبَّق المراجعة السريعة في هذه الأثناء.</value></data>
 </root>

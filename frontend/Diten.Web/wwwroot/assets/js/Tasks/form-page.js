@@ -317,6 +317,8 @@
         // flatpickr after hydration too, for the same reason: it reads the input's value when it initialises, so
         // a picker built before the stored date was written in would open on today instead of the task's date.
         global.TaskForm.enhanceDates(form);
+        // Chips after hydration for the same reason as the rest: Tagify reads the input's value when it starts.
+        global.TaskForm.enhanceTags(form);
 
         el('taskAssignmentTarget')?.addEventListener('change', syncVisibility);
         el('taskApprovalRequired')?.addEventListener('change', syncVisibility);
