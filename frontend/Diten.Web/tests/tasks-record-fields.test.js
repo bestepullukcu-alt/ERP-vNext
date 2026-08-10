@@ -86,15 +86,23 @@ describe("MOD-0024 module-record fields", () => {
       return { row, rendered };
     };
 
-    it("renders a search box beside the value control, because a dropdown cannot hold five thousand records", () => {
+    it("marks the control as server-paged, which is what makes its search reach the server", () => {
+      /*
+       * This used to assert a second control — a hand-rolled search <input> beside the picker — because a
+       * dropdown cannot hold five thousand records and select2's local search filters only what is loaded. The
+       * need is unchanged; the shape is not. select2's `ajax` gives the picker its own server-backed search, so
+       * the field is ONE control again and this attribute is the flag enhanceSelects keys that decision off.
+       * The search itself is driven end to end in tasks-form-pickers-dates-governance.
+       */
       const { row, rendered } = renderOne(recordDefinition(), {
         "delivery.department": [record(UNIT_A, "Kalite Güvence", "QA-01")]
       });
 
       expect(rendered).toEqual(["delivery.department"]);
-      const search = row.querySelector('[data-custom-field-search="delivery.department"]');
-      expect(search, "no search input was rendered for a record field").not.toBeNull();
-      expect(search.tagName).toBe("INPUT");
+      expect(row.querySelector('[data-custom-field-search="delivery.department"]'),
+        "the second search box is back — one field, one control").toBeNull();
+      const control = row.querySelector('[data-custom-field="delivery.department"]');
+      expect(control.getAttribute("data-custom-field-record")).toBe("1");
     });
 
     it("puts the identity in the option VALUE and the business key beside the name in its text", () => {

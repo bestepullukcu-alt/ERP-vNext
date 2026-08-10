@@ -188,34 +188,12 @@ describe("select2 covers the generated controls too", () => {
   });
 
   /*
-   * A record field keeps its own search box because that search runs on the SERVER: the control holds one page of
-   * a source that can have thousands of rows, so select2's built-in search — which filters only the options
-   * already in the DOM — would quietly search the page instead of the source and report "no results" for records
-   * that exist. Two search boxes on one control is the confusion the owner asked about, so the record control
-   * must suppress select2's own.
+   * A record field's search USED to be a second control beside the picker, and this file pinned that shape. It
+   * was the right diagnosis (select2's local search filters only the loaded options, so on a server-paged source
+   * it would report "no results" for records that exist) with an incomplete fix: select2's own `ajax` feature is
+   * built for exactly that case. The single-control contract now lives in tasks-form-pickers-dates-governance,
+   * which drives the transport for real — including the stale-answer guard. Nothing is pinned twice.
    */
-  test("a record picker keeps the server search and suppresses select2's own", () => {
-    const { window, settings } = buildWindow();
-    const row = window.document.getElementById("taskCustomFieldsRow");
-
-    window.TaskForm.renderCustomFields(row, [{
-      code: "DEPARTMENT", valueType: "Reference", isActive: true, labelText: "Department",
-      optionsSourceKind: "ModuleRecord", optionsSourceKey: "organization/units", sortOrder: 10
-    }], { DEPARTMENT: [{ value: "d1", label: "QA" }] }, { optionPlaceholder: "—" });
-
-    const control = row.querySelector('[data-custom-field="DEPARTMENT"]');
-    expect(control, "the record control was not rendered").toBeTruthy();
-    expect(row.querySelector("[data-custom-field-search]"), "the server search box is gone").toBeTruthy();
-    expect(control.getAttribute("data-select2-search"),
-      "the record control does not declare that select2's search is off").toBe("off");
-
-    // And the declaration is HONOURED at bind time — the attribute alone would be decoration.
-    window.TaskForm.enhanceSelects(row);
-    const recordSettings = settings.find(([node]) => node === control);
-    expect(recordSettings, "the record control was never enhanced").toBeTruthy();
-    expect(recordSettings[1].minimumResultsForSearch,
-      "select2 still renders its own search box on a server-searched control").toBe(Infinity);
-  });
 });
 
 /*

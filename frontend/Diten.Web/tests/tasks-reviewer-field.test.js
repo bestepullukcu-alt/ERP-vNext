@@ -47,9 +47,12 @@ describe("MOD-0024 reviewer field", () => {
     it("uses the same kind of control as the approval manager rather than a new picker", () => {
       // "Do not invent a new selector": both are the same input shape, so the two governance fields read as one
       // pattern instead of two.
+      // Both are PICKERS now, filled from the assignable-people lookup: their values reach Guid parameters, so a
+      // text box meant the only correct input was a typed GUID. What this guards is unchanged — the two
+      // governance person fields are the same kind of control as each other, not two invented ones.
       const form = html();
-      expect(form).toContain('type="text" class="form-control" id="taskReviewer"');
-      expect(form).toContain('type="text" class="form-control" id="taskApprovalManager"');
+      expect(form).toMatch(/<select class="select2 form-select" id="taskReviewer"/);
+      expect(form).toMatch(/<select class="select2 form-select" id="taskApprovalManager"/);
     });
   });
 

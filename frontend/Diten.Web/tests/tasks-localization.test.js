@@ -61,10 +61,14 @@ describe("MOD-0024 task localization", () => {
     // state this slice replaced.
     const form = fs.readFileSync(
       path.resolve(__dirname, "..", "Views", "Tasks", "_Form.cshtml"), "utf8");
-    const block = form.slice(form.indexOf('id="taskReviewRequired"'), form.indexOf('id="taskApprovalRequired"'));
+    // The review switch and its sentence now live in a CARD of their own, with the sentence above the switch as
+    // the card's description — so the block is the card, not "everything between the two switches".
+    const card = form.slice(
+      form.lastIndexOf("<section", form.indexOf('id="taskReviewRequired"')),
+      form.indexOf('id="taskApprovalRequired"'));
 
-    expect(block).not.toContain("disabled");
-    expect(block).toContain("ReviewRequiredHint");
+    expect(card).not.toContain("disabled");
+    expect(card).toContain("ReviewRequiredHint");
     expect(form).not.toContain("ReviewComingSoonHint");
   });
 

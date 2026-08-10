@@ -117,4 +117,12 @@
   <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>输入以搜索…</value></data>
   <data name="CustomFieldRecordUnavailable" xml:space="preserve"><value>记录不可用</value></data>
   <data name="ErrorFieldOptionSourceInvalid" xml:space="preserve"><value>此字段指向没有任何模块提供的来源。请联系管理员更正其定义。</value></data>
+  <data name="CardReviewTitle" xml:space="preserve"><value>审阅设置</value></data>
+  <data name="CardApprovalTitle" xml:space="preserve"><value>审批负责人</value></data>
+  <data name="CardApprovalDescription" xml:space="preserve"><value>请选择在任务开始前进行审批的负责人。任务创建后将向其发送审批请求。</value></data>
+  <data name="CardWatchersTitle" xml:space="preserve"><value>关注者</value></data>
+  <data name="CardEmailTitle" xml:space="preserve"><value>邮件通知</value></data>
+  <data name="CardEmailDescription" xml:space="preserve"><value>开启后，任务在指派、更新和完成时会向相关人员发送邮件。</value></data>
+  <data name="CardDelegationTitle" xml:space="preserve"><value>转派设置</value></data>
+  <data name="CardDelegationDescription" xml:space="preserve"><value>开启后，任务负责人无需事先征求您的同意即可将任务转派给他人。</value></data>
 </root>

@@ -117,4 +117,12 @@
   <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>Type to search…</value></data>
   <data name="CustomFieldRecordUnavailable" xml:space="preserve"><value>Record unavailable</value></data>
   <data name="ErrorFieldOptionSourceInvalid" xml:space="preserve"><value>This field points at a source no module offers. Ask an administrator to correct its definition.</value></data>
+  <data name="CardReviewTitle" xml:space="preserve"><value>Review settings</value></data>
+  <data name="CardApprovalTitle" xml:space="preserve"><value>Approval manager</value></data>
+  <data name="CardApprovalDescription" xml:space="preserve"><value>Choose the manager who approves this task before work starts. An approval request is sent to them once the task is created.</value></data>
+  <data name="CardWatchersTitle" xml:space="preserve"><value>Watchers</value></data>
+  <data name="CardEmailTitle" xml:space="preserve"><value>Email notifications</value></data>
+  <data name="CardEmailDescription" xml:space="preserve"><value>When on, the people involved are emailed as the task is assigned, updated and completed.</value></data>
+  <data name="CardDelegationTitle" xml:space="preserve"><value>Delegation settings</value></data>
+  <data name="CardDelegationDescription" xml:space="preserve"><value>When on, the assignee may hand this task to someone else without asking you first.</value></data>
 </root>

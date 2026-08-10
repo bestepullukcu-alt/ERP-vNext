@@ -35,6 +35,11 @@
         reviewerCandidateUserId: el('taskReviewer')?.value,
         approvalRequired: el('taskApprovalRequired')?.checked,
         approvalManagerUserId: el('taskApprovalManager')?.value,
+        // The watcher picker is a multi-select, so its answer is a LIST of identities. buildCreatePayload turns
+        // them into the TaskWatcherRequest rows the server declares.
+        watchers: Array.from(el('taskWatchers')?.selectedOptions || [])
+            .map((option) => option.value)
+            .filter(Boolean),
         emailNotificationsEnabled: el('taskEmailNotifications')?.checked,
         delegationAllowed: el('taskDelegationAllowed')?.checked
     });
@@ -57,6 +62,9 @@
         setValue('taskReviewer', draft.reviewerCandidateUserId);
         setChecked('taskApprovalRequired', draft.approvalRequired);
         setValue('taskApprovalManager', draft.approvalManagerUserId);
+        // Watchers are rows on the wire and identities in the control; the picker is already filled with the
+        // people lookup by now, so the stored identities come back as NAMES.
+        global.TaskForm.selectWatchers(el('taskWatchers'), draft.watchers);
         if (draft.emailNotificationsEnabled !== undefined) {
             setChecked('taskEmailNotifications', draft.emailNotificationsEnabled);
         }
@@ -132,42 +140,24 @@
     };
 
     /*
-     * Wire every record picker's search box to the server.
+     * The server search a record picker runs, handed to select2's `ajax` rather than to a search box of our own.
      *
-     * Debounced, because a keystroke-per-request turns a five-thousand-row source into five thousand requests;
-     * and guarded by a sequence number, because a slow answer for "Kal" must not overwrite the answer for
-     * "Kalite" that arrived first. Both are the ordinary failures of a search-as-you-type control, and both are
-     * invisible until the picker shows results for something the user already finished typing.
+     * This used to be a hand-rolled <input type="search"> above each record control, with select2's own search
+     * switched off — two controls for one field, because select2's local search filters only the options already
+     * in the DOM and a record control holds one page of a much larger source. `ajax` is the feature for exactly
+     * that case: the user types in the picker, select2 asks this. The debounce moved to select2's `delay` and
+     * the stale-answer guard into the transport (both in TaskForm.enhanceSelects); what stays here is the one
+     * thing this file owns — reaching the API.
      */
-    const RECORD_SEARCH_DEBOUNCE_MS = 250;
+    const searchRecords = async (code, term) => {
+        const result = await global.TasksApi.fieldRecords(code, { term });
+        if (result.ok) { return result.data || []; }
 
-    const wireRecordSearch = (row) => {
-        if (!row) { return; }
-
-        row.querySelectorAll('[data-custom-field-search]').forEach((input) => {
-            const code = input.getAttribute('data-custom-field-search');
-            let timer = null;
-            let sequence = 0;
-
-            input.addEventListener('input', () => {
-                global.clearTimeout(timer);
-                timer = global.setTimeout(async () => {
-                    const mine = ++sequence;
-                    const result = await global.TasksApi.fieldRecords(code, { term: input.value });
-                    // A stale answer is discarded rather than rendered: the user has typed since.
-                    if (mine !== sequence) { return; }
-                    if (!result.ok) {
-                        global.console?.warn?.(
-                            `[Tasks] searching records for field "${code}" failed `
-                            + `(status ${result.status}${result.reasonCode ? `, ${result.reasonCode}` : ''}).`);
-                        return;
-                    }
-                    global.TaskForm.renderRecordOptions(row, code, result.data || [], {
-                        optionPlaceholder: t('customFieldOptionPlaceholder')
-                    });
-                }, RECORD_SEARCH_DEBOUNCE_MS);
-            });
-        });
+        // Not silent: an unreachable source reads as "no results" in the picker, and this says why.
+        global.console?.warn?.(
+            `[Tasks] searching records for field "${code}" failed `
+            + `(status ${result.status}${result.reasonCode ? `, ${result.reasonCode}` : ''}).`);
+        return [];
     };
 
     /*
@@ -228,8 +218,6 @@
             translate: t
         });
 
-        wireRecordSearch(row);
-
         // No definition survived rendering ⇒ the section stays hidden. An empty heading would announce a
         // capability the page cannot offer.
         section.classList.toggle('d-none', rendered.length === 0);
@@ -263,11 +251,24 @@
         // People who currently hold a position (pack §12 K6.4). Loaded before any draft is written back, so a
         // handed-over assignee id can select its option.
         const people = await global.TasksApi.assignablePeople();
-        global.TaskForm.renderPersonOptions(el('taskAssignee'), people.ok ? people.data || [] : [], {
+        const peopleRows = people.ok ? people.data || [] : [];
+        const personLabels = {
             placeholder: t('assigneeSelectPlaceholder'),
             empty: t('assigneeEmpty'),
             nameUnavailable: t('personNameUnavailable')
-        });
+        };
+        global.TaskForm.renderPersonOptions(el('taskAssignee'), peopleRows, personLabels);
+
+        /*
+         * The reviewer, the approval manager and the watchers are the SAME question as the assignee — "which
+         * person?" — so they are answered from the same lookup and rendered by the same function. They were bare
+         * text inputs whose contents went straight to a Guid parameter, which meant the only correct way to fill
+         * them was to type a GUID; and the watcher box, being a string where the payload wanted a list, threw its
+         * contents away entirely.
+         */
+        global.TaskForm.renderPersonOptions(el('taskReviewer'), peopleRows, personLabels);
+        global.TaskForm.renderPersonOptions(el('taskApprovalManager'), peopleRows, personLabels);
+        global.TaskForm.renderPersonOptions(el('taskWatchers'), peopleRows, personLabels, { multiple: true });
 
         // Before any hydration: the controls have to EXIST before stored values can be written into them.
         await bootCustomFields(people.ok ? people.data || [] : []);
@@ -312,7 +313,10 @@
          * enhance the two markup selects and leave everything built afterwards bare — the partial fix that looks
          * finished because the static half of the form is correct.
          */
-        global.TaskForm.enhanceSelects(form);
+        global.TaskForm.enhanceSelects(form, { searchRecords });
+        // flatpickr after hydration too, for the same reason: it reads the input's value when it initialises, so
+        // a picker built before the stored date was written in would open on today instead of the task's date.
+        global.TaskForm.enhanceDates(form);
 
         el('taskAssignmentTarget')?.addEventListener('change', syncVisibility);
         el('taskApprovalRequired')?.addEventListener('change', syncVisibility);

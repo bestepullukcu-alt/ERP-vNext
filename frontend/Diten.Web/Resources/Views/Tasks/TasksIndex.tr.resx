@@ -117,4 +117,12 @@
   <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>Aramak için yazın…</value></data>
   <data name="CustomFieldRecordUnavailable" xml:space="preserve"><value>Kayıt bulunamıyor</value></data>
   <data name="ErrorFieldOptionSourceInvalid" xml:space="preserve"><value>Bu alan, hiçbir modülün sunmadığı bir kaynağı gösteriyor. Tanımını düzeltmesi için yöneticinize başvurun.</value></data>
+  <data name="CardReviewTitle" xml:space="preserve"><value>İnceleme ayarları</value></data>
+  <data name="CardApprovalTitle" xml:space="preserve"><value>Onay yöneticisi</value></data>
+  <data name="CardApprovalDescription" xml:space="preserve"><value>Bu göreve başlamadan önce onay verecek yöneticiyi seçin. Görev oluşturulduktan sonra yöneticiye onay talebi gönderilir.</value></data>
+  <data name="CardWatchersTitle" xml:space="preserve"><value>İzleyiciler</value></data>
+  <data name="CardEmailTitle" xml:space="preserve"><value>E-posta bildirimleri</value></data>
+  <data name="CardEmailDescription" xml:space="preserve"><value>Açıkken görev atandıkça, güncellendikçe ve tamamlandıkça ilgili kişilere e-posta gönderilir.</value></data>
+  <data name="CardDelegationTitle" xml:space="preserve"><value>Devir ayarları</value></data>
+  <data name="CardDelegationDescription" xml:space="preserve"><value>Açıkken görevi üstlenen kişi, size sormadan görevi bir başkasına devredebilir.</value></data>
 </root>

@@ -99,7 +99,7 @@
             emailNotificationsEnabled: draft.emailNotificationsEnabled !== false,
             delegationAllowed: !!draft.delegationAllowed,
             fieldValues: Array.isArray(draft.fieldValues) ? draft.fieldValues : [],
-            watchers: Array.isArray(draft.watchers) ? draft.watchers : []
+            watchers: toWatcherRequests(draft.watchers)
         };
     };
 
@@ -199,9 +199,10 @@
      * Fill a person <select>. An empty list is a REAL state — nobody in the tenant holds a position — and gets an
      * explanation rather than a silently empty dropdown the user cannot interpret.
      */
-    const renderPersonOptions = (selectEl, rows, labels) => {
+    const renderPersonOptions = (selectEl, rows, labels, options) => {
         if (!selectEl) { return; }
         const text = labels || {};
+        const multiple = !!(options && options.multiple);
         selectEl.innerHTML = '';
 
         if (!rows || rows.length === 0) {
@@ -216,10 +217,15 @@
         }
 
         selectEl.disabled = false;
-        const placeholder = global.document.createElement('option');
-        placeholder.value = '';
-        placeholder.textContent = text.placeholder || '';
-        selectEl.appendChild(placeholder);
+        // A MULTI-select gets no placeholder row: in a list box a placeholder is just another selectable line,
+        // and selecting it would post an empty identity among the real ones. Single-select keeps it — there it
+        // is the "nothing chosen" state, which is a legitimate answer for an optional field.
+        if (!multiple) {
+            const placeholder = global.document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = text.placeholder || '';
+            selectEl.appendChild(placeholder);
+        }
 
         rows.forEach((row) => {
             const option = global.document.createElement('option');
@@ -227,6 +233,57 @@
             option.textContent = formatPersonLabel(row, text.nameUnavailable);
             selectEl.appendChild(option);
         });
+    };
+
+    /*
+     * Watcher rows are objects on the wire — TaskWatcherRequest(UserId, Role, PositionId) — but a <select> holds
+     * identities. This selects the stored ones in a picker that has already been filled from the people lookup,
+     * so the edit form shows NAMES for identities it stored, rather than the raw list the API answered with.
+     * A stored identity that no longer holds a position is not in the list any more; it is skipped rather than
+     * invented, which is the same rule the record pickers follow.
+     */
+    const selectWatchers = (selectEl, watcherRows) => {
+        if (!selectEl) { return []; }
+        const wanted = new Set((watcherRows || [])
+            .map((row) => (typeof row === 'string' ? row : row && row.userId))
+            .filter(Boolean)
+            .map(String));
+
+        const matched = [];
+        Array.from(selectEl.options).forEach((option) => {
+            option.selected = wanted.has(option.value);
+            if (option.selected) { matched.push(option.value); }
+        });
+        return matched;
+    };
+
+    // What the form sends for a person it is only WATCHING. The other watcher role (Consultant) is a different
+    // capability with its own approval semantics (BL-053) and is deliberately not offered here.
+    const WATCHER_ROLE = 'Watcher';
+
+    /*
+     * Accepts either the identities a multi-select yields or rows already in wire shape, and always returns wire
+     * shape. Before this, readForm handed buildCreatePayload a comma-separated STRING while the payload only
+     * forwarded arrays — so every watcher the user entered was dropped without a word.
+     */
+    const toWatcherRequests = (watchers) => {
+        if (!Array.isArray(watchers)) { return []; }
+        return watchers
+            .map((entry) => {
+                if (typeof entry === 'string') {
+                    const userId = entry.trim();
+                    return userId.length > 0 ? { userId, role: WATCHER_ROLE, positionId: null } : null;
+                }
+                if (entry && entry.userId) {
+                    return {
+                        userId: entry.userId,
+                        role: entry.role || WATCHER_ROLE,
+                        positionId: entry.positionId ?? null
+                    };
+                }
+                return null;
+            })
+            .filter(Boolean);
     };
 
     /* ── Configurable fields (Phase 5) ────────────────────────────────────────────────────────────────────
@@ -359,17 +416,20 @@
             // Marks the control as one whose options are a PAGE of a larger set, not the whole set. Hydration
             // reads this: a value missing from a complete list is a bad value, a value missing from a page is
             // ordinary and must be added rather than dropped.
+            /*
+             * A record control holds ONE PAGE of a source that can have thousands of rows, so its search has to
+             * reach the SERVER. That used to mean a hand-rolled search box above the control with select2's own
+             * search switched off — two controls for one field. select2's `ajax` is the feature for precisely
+             * this: the user types in select2's own box and select2 asks the server. This attribute is what
+             * enhanceSelects keys that decision off, and it is also what hydration reads to tell "missing from a
+             * page" (ordinary) from "missing from a complete list" (a bad value).
+             */
             if (kind === 'record') {
                 select.setAttribute('data-custom-field-record', '1');
-                /*
-                 * A record picker gets select2's LOOK but not select2's search box, and the reason is that the two
-                 * searches are not the same search. select2 filters the <option>s already in the DOM; a record
-                 * control holds ONE PAGE of a source that can have thousands of rows. Offering select2's box here
-                 * would search the page while looking like it searched the source — "no results" for a record that
-                 * exists. The search that reaches the server is the input rendered beside the control, and it stays
-                 * the only one, so the user sees one search box rather than two that disagree.
-                 */
-                select.setAttribute('data-select2-search', 'off');
+                // The prompt the picker shows before anything is chosen. It was the old search box's placeholder
+                // ("type to search"), which still says exactly the right thing now that the typing happens inside
+                // the picker — so the string keeps its job rather than being orphaned.
+                select.setAttribute('data-placeholder', text.recordSearchPlaceholder || text.optionPlaceholder || '');
             }
 
             const placeholder = doc.createElement('option');
@@ -484,21 +544,12 @@
             column.appendChild(label);
 
             /*
-             * A record field gets a SEARCH BOX, and this is the whole reason it is not a plain dropdown: a source
-             * can hold five thousand records, and an <option> list of five thousand is not a control — it is a
-             * scroll bar with a truncation nobody announced. The user types, the SERVER searches, the page comes
-             * back.
+             * A record field used to get its OWN search input here, above the control: a source can hold five
+             * thousand records and they must never all cross the wire, so the search had to reach the server and
+             * select2's local one could not. That produced two controls for one field. The search box is gone —
+             * enhanceSelects now hands the same server search to select2's `ajax`, so the user types in the
+             * picker itself. `recordSearchPlaceholder` is still used, as that picker's prompt.
              */
-            if (kind === 'record') {
-                const search = doc.createElement('input');
-                search.type = 'search';
-                search.className = 'form-control form-control-sm mb-2';
-                search.setAttribute('data-custom-field-search', definition.code);
-                search.setAttribute('aria-label', `${label.textContent}`);
-                search.placeholder = (labels && labels.recordSearchPlaceholder) || '';
-                column.appendChild(search);
-            }
-
             column.appendChild(control);
             container.appendChild(column);
             rendered.push(definition.code);
@@ -660,10 +711,54 @@
      * defines a field. `select2-hidden-accessible` is select2's own marker for "already bound", so a second call
      * re-binds nothing.
      */
-    const enhanceSelects = (root) => {
+    /*
+     * How long select2 waits after the last keystroke before asking the server. A request per keystroke turns a
+     * five-thousand-row source into five thousand requests; this is the same 250ms the hand-rolled search box
+     * used, kept rather than re-chosen.
+     */
+    const RECORD_SEARCH_DELAY_MS = 250;
+
+    /*
+     * WHICH CONTROLS ROUND-TRIP, stated once as a rule rather than per field:
+     * a control is server-searched exactly when its options are a PAGE of a larger source — which is what
+     * `data-custom-field-record` marks (a ModuleRecord-backed field). Everything else — a lookup list, the
+     * people picker, priority, the assignment target — already holds every row it will ever have, so select2's
+     * own local search is both correct and instant. Asking the server for those would be a round trip to filter
+     * a list the browser is already holding.
+     */
+    const isServerSearched = (node) => !!node && node.getAttribute('data-custom-field-record') === '1';
+
+    /*
+     * The transport select2 uses for a server-searched control.
+     *
+     * Guarded by a sequence number, because a slow answer for "Kal" must not overwrite the answer for "Kalite"
+     * that arrived first — an ordinary failure of search-as-you-type, and invisible until the picker shows
+     * results for something the user already finished typing. select2's `delay` covers the debounce.
+     */
+    const recordSearchTransport = (node, code, searchRecords) => {
+        let sequence = 0;
+        return (params, success, failure) => {
+            const mine = ++sequence;
+            const term = (params && params.data && params.data.term) || '';
+            Promise.resolve(searchRecords(code, term))
+                .then((rows) => {
+                    if (mine !== sequence) { return; }   // stale: the user has typed since.
+                    success({
+                        results: (rows || []).map((row) => ({ id: row.value, text: optionText(row) }))
+                    });
+                })
+                .catch((error) => {
+                    if (mine !== sequence) { return; }
+                    if (typeof failure === 'function') { failure(error); }
+                });
+        };
+    };
+
+    const enhanceSelects = (root, options) => {
         const scope = root || global.document;
         if (!scope || typeof global.jQuery !== 'function') { return 0; }
 
+        const searchRecords = options && options.searchRecords;
         const nodes = Array.from(scope.querySelectorAll('select.select2'))
             .filter((node) => !node.classList.contains('select2-hidden-accessible'));
 
@@ -671,11 +766,40 @@
             const $node = global.jQuery(node);
             $node.wrap('<div class="position-relative"></div>');
             const settings = { dropdownParent: $node.parent() };
-            // See buildCustomFieldControl: a server-searched control must not also offer select2's own box.
-            if (node.getAttribute('data-select2-search') === 'off') {
-                settings.minimumResultsForSearch = Infinity;
+            const placeholder = node.getAttribute('data-placeholder');
+            if (placeholder) { settings.placeholder = placeholder; }
+
+            if (isServerSearched(node) && typeof searchRecords === 'function') {
+                const code = node.getAttribute('data-custom-field');
+                settings.ajax = {
+                    delay: RECORD_SEARCH_DELAY_MS,
+                    transport: recordSearchTransport(node, code, searchRecords)
+                };
             }
+
             $node.select2(settings);
+        });
+
+        return nodes.length;
+    };
+
+    /*
+     * The date fields, the way the golden reference does them.
+     *
+     * A native <input type="date"> takes its display format from the OPERATING SYSTEM's locale, so an Arabic
+     * page still rendered gg.aa.yyyy — the page's own language never entered into it. flatpickr renders the
+     * calendar itself, and `dateFormat: 'Y-m-d'` keeps the value the input carries EXACTLY what the native
+     * control produced, so nothing about what the API receives changes.
+     */
+    const enhanceDates = (root) => {
+        const scope = root || global.document;
+        if (!scope) { return 0; }
+
+        const nodes = Array.from(scope.querySelectorAll('.flatpickr-date'))
+            .filter((node) => typeof node.flatpickr === 'function' && !node._flatpickr);
+
+        nodes.forEach((node) => {
+            node.flatpickr({ monthSelectorType: 'static', dateFormat: 'Y-m-d', allowInput: true });
         });
 
         return nodes.length;
@@ -694,6 +818,9 @@
         clearDraft,
         applyTargetVisibility,
         enhanceSelects,
+        enhanceDates,
+        WATCHER_ROLE,
+        selectWatchers,
         renderPositionOptions,
         renderPersonOptions,
         // Phase 5 — configurable fields.

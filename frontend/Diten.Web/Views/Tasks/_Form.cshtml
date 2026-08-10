@@ -110,11 +110,6 @@
                                    autocomplete="off" />
                         </div>
 
-                        <div class="col-12">
-                            <label class="form-label fw-medium" for="taskWatchers">@Localizer["FieldWatchers"]</label>
-                            <input type="text" class="form-control" id="taskWatchers" name="watchers" autocomplete="off" />
-                            <div class="form-text">@Localizer["WatchersHint"]</div>
-                        </div>
                     </div>
                 </div>
             </section>
@@ -127,15 +122,15 @@
                             <label class="form-label fw-medium" for="taskDueAt">
                                 @Localizer["FieldDueAt"] <span class="text-danger">*</span>
                             </label>
-                            <input type="date" class="form-control" id="taskDueAt" name="dueAt" required />
+                            <input type="text" class="form-control flatpickr-date" id="taskDueAt" name="dueAt" placeholder="YYYY-MM-DD" required />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="taskStartAt">@Localizer["FieldStartAt"]</label>
-                            <input type="date" class="form-control" id="taskStartAt" name="startAt" />
+                            <input type="text" class="form-control flatpickr-date" id="taskStartAt" name="startAt" placeholder="YYYY-MM-DD" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="taskPlannedDate">@Localizer["FieldPlannedDate"]</label>
-                            <input type="date" class="form-control" id="taskPlannedDate" name="plannedDate" />
+                            <input type="text" class="form-control flatpickr-date" id="taskPlannedDate" name="plannedDate" placeholder="YYYY-MM-DD" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="taskEstimateHours">@Localizer["FieldEstimateHours"]</label>
@@ -173,33 +168,46 @@
             </section>
         </div>
 
-        @* Governance is a column of switches with two conditional pickers — narrow suits it, and it keeps the
-           wide column for the fields the user actually types into. *@
+        @* Governance is FIVE decisions, and they were one card. Each is now its own card with an icon, a title
+           and one sentence saying what happens if it is on — a heading alone ("Onay yöneticisi") tells the user
+           the name of a field they are already looking at.
+           Deliberately NOT here: the consultant watcher role (BL-053) and the approval-flow diagram. *@
         <div class="col-12 col-lg-4">
+
+            @* Phase 3b: review is implemented, so the switch is live and the sentence says what it DOES rather
+               than when it might arrive. *@
             <section class="card mb-4">
                 <div class="card-body p-4">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionGovernance"]</h6>
+                    <h6 class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bx bx-search-alt text-primary"></i>@Localizer["CardReviewTitle"]
+                    </h6>
+                    <p class="text-muted small mb-3">@Localizer["ReviewRequiredHint"]</p>
 
-                    @* Phase 3b: review is implemented, so the switch is live and the hint says what it DOES rather
-                       than when it might arrive. *@
                     <div class="form-check form-switch mb-2">
-                        <input class="form-check-input" type="checkbox" id="taskReviewRequired" name="reviewRequired"
-                               aria-describedby="taskReviewRequiredHint" />
+                        <input class="form-check-input" type="checkbox" id="taskReviewRequired" name="reviewRequired" />
                         <label class="form-check-label" for="taskReviewRequired">@Localizer["FieldReviewRequired"]</label>
-                        <div class="form-text" id="taskReviewRequiredHint">@Localizer["ReviewRequiredHint"]</div>
                     </div>
-                    @* The reviewer CANDIDATE — same pattern as the approval manager below, deliberately: same kind
-                       of field, same d-none toggle keyed off its own switch, same required marker. It is mandatory
-                       because MOD-0023 refuses to start a review with nobody to route it to, so a task saved
-                       without one could never be submitted. Who may ACTUALLY review is still MOD-0023's decision. *@
-                    <div class="d-none mb-3" data-task-field="reviewer">
+                    @* The reviewer CANDIDATE is a PICKER now, not a text box: its value goes to a Guid parameter,
+                       so a typed name produced a refusal and a typed GUID was the only thing that worked. Same
+                       people lookup as the assignee — one vocabulary for "which person?".
+                       Mandatory while the switch is on because MOD-0023 refuses to start a review with nobody to
+                       route it to. Who may ACTUALLY review is still MOD-0023's decision. *@
+                    <div class="d-none" data-task-field="reviewer">
                         <label class="form-label fw-medium" for="taskReviewer">
                             @Localizer["FieldReviewer"] <span class="text-danger">*</span>
                         </label>
-                        <input type="text" class="form-control" id="taskReviewer"
-                               name="reviewerCandidateUserId" autocomplete="off" />
+                        <select class="select2 form-select" id="taskReviewer" name="reviewerCandidateUserId"></select>
                         <div class="form-text">@Localizer["ReviewerHint"]</div>
                     </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bx bx-user-check text-primary"></i>@Localizer["CardApprovalTitle"]
+                    </h6>
+                    <p class="text-muted small mb-3">@Localizer["CardApprovalDescription"]</p>
 
                     <div class="form-check form-switch mb-2">
                         <input class="form-check-input" type="checkbox" id="taskApprovalRequired"
@@ -208,22 +216,56 @@
                             @Localizer["FieldApprovalRequired"]
                         </label>
                     </div>
-                    <div class="d-none mb-3" data-task-field="approvalManager">
+                    <div class="d-none" data-task-field="approvalManager">
                         <label class="form-label fw-medium" for="taskApprovalManager">
                             @Localizer["FieldApprovalManager"] <span class="text-danger">*</span>
                         </label>
-                        <input type="text" class="form-control" id="taskApprovalManager"
-                               name="approvalManagerUserId" autocomplete="off" />
+                        <select class="select2 form-select" id="taskApprovalManager"
+                                name="approvalManagerUserId"></select>
                         <div class="form-text">@Localizer["ApprovalHint"]</div>
                     </div>
+                </div>
+            </section>
 
-                    <div class="form-check form-switch mb-2">
+            @* Watchers moved out of the assignment card: watching is not an assignment, and it belongs beside the
+               other decisions about who hears about this task. Multi-select, because the API takes a LIST of
+               watcher rows — the old comma-separated text box was thrown away by the payload builder entirely. *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bx bx-show text-primary"></i>@Localizer["CardWatchersTitle"]
+                    </h6>
+                    <p class="text-muted small mb-3">@Localizer["WatchersHint"]</p>
+
+                    <label class="form-label fw-medium" for="taskWatchers">@Localizer["FieldWatchers"]</label>
+                    <select class="select2 form-select" id="taskWatchers" name="watchers" multiple></select>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bx bx-envelope text-primary"></i>@Localizer["CardEmailTitle"]
+                    </h6>
+                    <p class="text-muted small mb-3">@Localizer["CardEmailDescription"]</p>
+
+                    <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="taskEmailNotifications"
                                name="emailNotificationsEnabled" checked />
                         <label class="form-check-label" for="taskEmailNotifications">
                             @Localizer["FieldEmailNotifications"]
                         </label>
                     </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bx bx-transfer-alt text-primary"></i>@Localizer["CardDelegationTitle"]
+                    </h6>
+                    <p class="text-muted small mb-3">@Localizer["CardDelegationDescription"]</p>
+
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="taskDelegationAllowed"
                                name="delegationAllowed" />

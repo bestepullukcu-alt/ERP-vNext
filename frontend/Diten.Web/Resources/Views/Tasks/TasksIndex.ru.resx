@@ -117,4 +117,12 @@
   <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>Введите для поиска…</value></data>
   <data name="CustomFieldRecordUnavailable" xml:space="preserve"><value>Запись недоступна</value></data>
   <data name="ErrorFieldOptionSourceInvalid" xml:space="preserve"><value>Это поле указывает на источник, который не предоставляет ни один модуль. Попросите администратора исправить его определение.</value></data>
+  <data name="CardReviewTitle" xml:space="preserve"><value>Настройки проверки</value></data>
+  <data name="CardApprovalTitle" xml:space="preserve"><value>Согласующий руководитель</value></data>
+  <data name="CardApprovalDescription" xml:space="preserve"><value>Выберите руководителя, который согласует задачу до начала работы. Запрос на согласование отправляется ему сразу после создания задачи.</value></data>
+  <data name="CardWatchersTitle" xml:space="preserve"><value>Наблюдатели</value></data>
+  <data name="CardEmailTitle" xml:space="preserve"><value>Уведомления по электронной почте</value></data>
+  <data name="CardEmailDescription" xml:space="preserve"><value>Когда включено, участникам приходит письмо при назначении, изменении и завершении задачи.</value></data>
+  <data name="CardDelegationTitle" xml:space="preserve"><value>Настройки передачи</value></data>
+  <data name="CardDelegationDescription" xml:space="preserve"><value>Когда включено, исполнитель может передать задачу другому человеку, не спрашивая вас.</value></data>
 </root>

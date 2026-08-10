@@ -10,7 +10,14 @@
 @* Title + breadcrumb + actions come from _Form.cshtml (golden reference pattern), shared with Create. *@
 <partial name="~/Views/Tasks/_Form.cshtml" />
 
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+}
+
 @section Scripts {
+    @* The dates are flatpickr fields, like the golden reference: a native <input type="date"> takes its format
+       from the OPERATING SYSTEM's locale, so an Arabic page still rendered gg.aa.yyyy. *@
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
     <partial name="~/Views/Tasks/_IndexL10n.cshtml" />
     @* form-page.js announces every save and every refusal through DitenModal, and this page never loaded it:
        a successful create THREW before it could navigate, so the user saw nothing, clicked again, and made a

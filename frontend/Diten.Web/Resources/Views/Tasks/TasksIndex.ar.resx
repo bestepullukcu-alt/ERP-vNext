@@ -117,4 +117,12 @@
   <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>اكتب للبحث…</value></data>
   <data name="CustomFieldRecordUnavailable" xml:space="preserve"><value>السجل غير متاح</value></data>
   <data name="ErrorFieldOptionSourceInvalid" xml:space="preserve"><value>يشير هذا الحقل إلى مصدر لا توفّره أي وحدة. اطلب من المسؤول تصحيح تعريفه.</value></data>
+  <data name="CardReviewTitle" xml:space="preserve"><value>إعدادات المراجعة</value></data>
+  <data name="CardApprovalTitle" xml:space="preserve"><value>مدير الاعتماد</value></data>
+  <data name="CardApprovalDescription" xml:space="preserve"><value>اختر المدير الذي يعتمد هذه المهمة قبل بدء العمل. يُرسل إليه طلب اعتماد فور إنشاء المهمة.</value></data>
+  <data name="CardWatchersTitle" xml:space="preserve"><value>المتابعون</value></data>
+  <data name="CardEmailTitle" xml:space="preserve"><value>إشعارات البريد الإلكتروني</value></data>
+  <data name="CardEmailDescription" xml:space="preserve"><value>عند التفعيل، يتلقى المعنيون رسالة بريد عند إسناد المهمة وتحديثها وإكمالها.</value></data>
+  <data name="CardDelegationTitle" xml:space="preserve"><value>إعدادات التفويض</value></data>
+  <data name="CardDelegationDescription" xml:space="preserve"><value>عند التفعيل، يمكن للمكلَّف تسليم هذه المهمة إلى شخص آخر دون الرجوع إليك.</value></data>
 </root>

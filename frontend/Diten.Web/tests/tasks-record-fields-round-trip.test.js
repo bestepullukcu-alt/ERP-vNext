@@ -100,9 +100,35 @@ describe("MOD-0024 module-record field — the whole round trip", () => {
     };
   };
 
+  /*
+   * jQuery stubbed at the ONE seam select2 is reached through, recording the settings the page hands each
+   * control. select2 itself is not under test here; what is, is that the record picker gets a server-backed
+   * search and that the search reaches the API.
+   */
+  let select2Settings = [];
+  const stubJQuery = () => {
+    select2Settings = [];
+    const jq = (selectorOrNode) => {
+      const nodes = typeof selectorOrNode === "string"
+        ? Array.from(document.querySelectorAll(selectorOrNode))
+        : [selectorOrNode];
+      const api = {
+        length: nodes.length,
+        each(cb) { nodes.forEach((n, i) => cb.call(n, i, n)); return api; },
+        wrap() { return api; }, parent() { return api; },
+        hasClass() { return false; }, on() { return api; },
+        select2(options) { nodes.forEach((n) => select2Settings.push([n, options || {}])); return api; }
+      };
+      return api;
+    };
+    global.$ = jq;
+    global.jQuery = jq;
+  };
+
   /** Boot the real page against the DOM and let its async load settle. */
   const boot = async (mode, taskId) => {
     document.body.innerHTML = FORM_HTML.replace("MODE", mode).replace("TASKID", taskId || "");
+    stubJQuery();
     delete global.TaskForm;
     delete global.TasksApi;
     loadScript("wwwroot/assets/js/Tasks/form.js");
@@ -128,7 +154,8 @@ describe("MOD-0024 module-record field — the whole round trip", () => {
 
     const section = document.getElementById("taskCustomFields");
     expect(section.classList.contains("d-none"), "the extra-fields section stayed hidden").toBe(false);
-    expect(document.querySelector('[data-custom-field-search="delivery.department"]')).not.toBeNull();
+    // ONE control: the picker itself carries the search now (select2 ajax), so the second search box is gone.
+    expect(document.querySelector('[data-custom-field-search="delivery.department"]')).toBeNull();
     expect(document.querySelector('[data-custom-field="delivery.department"]')).not.toBeNull();
   });
 
@@ -188,17 +215,21 @@ describe("MOD-0024 module-record field — the whole round trip", () => {
     await boot("create");
     requested.length = 0;
 
-    const search = document.querySelector('[data-custom-field-search="delivery.department"]');
-    search.value = "Ruhsat";
-    search.dispatchEvent(new window.Event("input"));
+    /*
+     * The search lives in select2's own box now, reached through its `ajax` transport — so the page is driven
+     * where select2 would drive it. jQuery is stubbed at that one seam (see the harness) and the settings the
+     * page handed select2 are what gets exercised; everything below them is the real page.
+     */
+    const control = document.querySelector('[data-custom-field="delivery.department"]');
+    const settings = select2Settings.find(([node]) => node === control)?.[1];
+    expect(settings?.ajax, "the record picker was never given a server-backed search").toBeTruthy();
 
-    await new Promise((resolve) => setTimeout(resolve, 400));
+    const results = await new Promise((resolve, reject) =>
+      settings.ajax.transport({ data: { term: "Ruhsat" } }, resolve, reject));
 
     const searchCall = requested.find((url) => url.includes("/records?term="));
     expect(searchCall, "typing in the picker never reached the server").toBeTruthy();
-
-    const control = document.querySelector('[data-custom-field="delivery.department"]');
-    expect([...control.options].some((option) => option.value === DEPARTMENT_B)).toBe(true);
+    expect(results.results.some((row) => row.id === DEPARTMENT_B)).toBe(true);
   });
 
   it("hides the field and says why when the module offers nothing", async () => {

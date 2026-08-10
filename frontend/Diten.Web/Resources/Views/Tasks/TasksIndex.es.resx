@@ -117,4 +117,12 @@
   <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>Escriba para buscar…</value></data>
   <data name="CustomFieldRecordUnavailable" xml:space="preserve"><value>Registro no disponible</value></data>
   <data name="ErrorFieldOptionSourceInvalid" xml:space="preserve"><value>Este campo apunta a una fuente que ningún módulo ofrece. Pida a un administrador que corrija su definición.</value></data>
+  <data name="CardReviewTitle" xml:space="preserve"><value>Ajustes de revisión</value></data>
+  <data name="CardApprovalTitle" xml:space="preserve"><value>Responsable de aprobación</value></data>
+  <data name="CardApprovalDescription" xml:space="preserve"><value>Elija al responsable que aprobará esta tarea antes de comenzar. Se le enviará una solicitud de aprobación en cuanto se cree la tarea.</value></data>
+  <data name="CardWatchersTitle" xml:space="preserve"><value>Observadores</value></data>
+  <data name="CardEmailTitle" xml:space="preserve"><value>Notificaciones por correo</value></data>
+  <data name="CardEmailDescription" xml:space="preserve"><value>Cuando está activo, las personas implicadas reciben un correo al asignarse, actualizarse y completarse la tarea.</value></data>
+  <data name="CardDelegationTitle" xml:space="preserve"><value>Ajustes de delegación</value></data>
+  <data name="CardDelegationDescription" xml:space="preserve"><value>Cuando está activo, la persona asignada puede pasar esta tarea a otra sin consultarle antes.</value></data>
 </root>
