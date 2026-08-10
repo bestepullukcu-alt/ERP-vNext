@@ -1694,7 +1694,7 @@ Sonra iade et → talep edende `pendingAcceptance`.
   **işletim sistemi** dilinden alıyordu, Arapça sayfada bile gg.aa.yyyy.
 - **Yönetişim beş karta bölündü:** İnceleme Ayarları · Onay Yöneticisi · İzleyiciler · E-posta Bildirimleri ·
   Devir Ayarları — her biri ikon + başlık + bir cümle. İzleyiciler Atama kartından buraya taşındı (izlemek atama
-  değildir). **Danışman kartı ve onay akışı diyagramı YAPILMADI** (BL-053 / ayrı madde).
+  değildir). **Danışman kartı ve onay akışı diyagramı YAPILMADI** (BL-053 / BL-063).
 - **l10n:** 7 yeni anahtar × 7 dil (`CardReviewTitle · CardApprovalTitle · CardApprovalDescription ·
   CardWatchersTitle · CardEmailTitle · CardEmailDescription · CardDelegationTitle · CardDelegationDescription`);
   mevcut `ReviewRequiredHint · ApprovalHint · WatchersHint` cümle olarak yeniden kullanıldı.
@@ -1706,6 +1706,27 @@ Sonra iade et → talep edende `pendingAcceptance`.
 - **Yeniden ölçüm:** `npx vitest run tests/tasks-form-pickers-dates-governance.test.js` (frontend/Diten.Web
   içinden) · tam paket `npx vitest run` — taban 9 kırmızı (strategy/objectives/planning, Tasks dışı) ·
   `dotnet build frontend/Diten.Web` · canlı: inceleyen SEÇ → kaydet → düzenlemede **ad** dolu gelmeli.
+
+### BL-063 — 🟢 Onay akışı diyagramı: ancak gerçek rotayı okuyabilirse çizilir
+- **Nereden çıktı:** sahibin create prototipinde onay kartının içinde üç kutuluk bir şema var —
+  `Görev Oluşturulur → Yönetici Onaylar → Göreve Başlanır` + *"Yönetici onay verene kadar görev
+  'Onay Bekliyor' durumunda kalır. Reddedilirse görev iptal edilir."*
+- **2026-08-11 turunda bilinçli olarak YAPILMADI.** Gerekçe (ajan önerdi, CT kabul etti):
+  > Form yalnız *"onay gerekli, yönetici şu kişi"* der. Bundan sonrasına — kaç aşama, hangi sıra,
+  > reddedilince iptal mi geri mi — **MOD-0023 karar verir.** Sabit üç kutu çizmek, MOD-0024'ün
+  > kontrol etmediği bir akışı kullanıcıya vaat etmek olur.
+- **Neden bu, mimari sınırın kendisi:** MOD-0024 onayı **raporlar, karar vermez** (Binding A).
+  Ekran da bu sınıra uymak zorunda. Yarın MOD-0023'te iki aşamalı bir onay tanımlanırsa, resim olarak
+  çizilmiş şema **yalan söyler ve kimse fark etmez** — çünkü şema veri değil, resimdir.
+- **İki meşru yol, biri seçilecek:**
+  - *(a)* Diyagram **MOD-0023'ten gerçek rotayı okur** ve onu çizer. Gerekli dikiş: iş akışı
+    tanımının adımlarını (aşama · rol · reddetme davranışı) okunabilir biçimde veren bir uç.
+    Bu, WC-1'deki "sağlayıcı kendi gerçeğini bildirir" deseninin aynısı.
+  - *(b)* Diyagram hiç çizilmez; kartta tek cümle kalır. **Bugünkü davranış budur ve dürüsttür.**
+- **CT önerisi:** (b) ile devam; (a) ancak MOD-0023 rota okuma ucu geldiğinde. O uç yokken (a)'yı
+  yapmak, çizilmiş bir varsayımı gerçek sanmaktır.
+- **Yeniden ölçüm:** `rg -n "Onay Akışı|approval-flow" frontend/Diten.Web/Views/Tasks` (bugün boş
+  olmalı) · MOD-0023 tarafında rota okuma ucu var mı.
 
 ---
 
