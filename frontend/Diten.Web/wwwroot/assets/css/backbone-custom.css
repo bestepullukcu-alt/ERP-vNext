@@ -2148,6 +2148,26 @@ div.dt-container div.dt-search input {
     color: #a3a4cc !important;
 }
 
+/*
+ * Menü bölüm başlığı taşmasını otomatik kırp.
+ *
+ * Ölçüm (CT, 2026-08-10): kenar çubuğu 260px, iç boşluk sonrası 228px kalıyor, "PLATFORM PAYLAŞILAN
+ * HİZMETLER" 241px istiyor → 13px taşıyor ve KIRPILMADAN kesiliyor. Vendor `white-space: nowrap`
+ * veriyor (core.css:25798) ama kutu `display:inline` + `overflow:visible` olduğu için
+ * `text-overflow: ellipsis` devreye giremiyor — ellipsis blok kutu ve taşma gizleme ister.
+ *
+ * Domain adları manifest'ten geliyor ve dil değiştikçe uzuyor; başlık başına elle kısaltma yerine
+ * kuralı bir kez koymak, sonraki her modülün ve her dilin kendiliğinden doğru davranmasını sağlar.
+ * Daraltılmış menüde vendor zaten `overflow:hidden; opacity:0` uyguluyor (core.css:26096) — bu kural
+ * onunla çakışmaz, aynı yönde çalışır.
+ */
+#layout-menu .menu-header .menu-header-text {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 [data-semidark-menu="true"] #layout-menu .menu-item.active>.menu-link,
 #layout-menu[data-bs-theme="dark"] .menu-item.active>.menu-link {
     background-color: rgba(105, 108, 255, 0.16) !important;

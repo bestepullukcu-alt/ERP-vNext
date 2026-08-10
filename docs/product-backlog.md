@@ -1586,7 +1586,18 @@ Sonra iade et → talep edende `pendingAcceptance`.
 - **Neden önemli — menü temizliğinin ÖN KOŞULU:** LEGACY-NAV'daki elle yazılmış bağlantıları silmek
   ancak aynı sayfalar **katalogdan geldikten sonra** güvenlidir. Baypas olmadan silinirse beş sayfa
   menüden tamamen kaybolur (URL ile erişilebilir kalır, menüden bulunamaz).
+- **Durum (2026-08-10): KOD YAZILDI, CANLI DOĞRULAMA BEKLİYOR.** Baypas `TenantModuleAccessService`
+  `GetEffectiveAccessDetailAsync` içinde, baseline kontrolünün **hemen ardından**: yalnız tam
+  `SystemTenantRules.IsSystemTenantId(tenantId)` + modül kendi içinde doğrulanır (mevcut · `IsDeleted:false` ·
+  `Status:Active` · `IsTenantAssignable`). Erişim `Source = "PlatformSystemTenant"` olarak raporlanır;
+  baseline modüller sistem kiracısında da `"Baseline"` demeye devam eder (semantik değişmedi). Permission
+  kapısı el değmemiş — bu yalnız kiracı entitlement duvarını kaldırır.
+  Testler `tests/Diten.Platform.Application.Tests/AccessGovernance/PlatformSystemTenantModuleAccessTests.cs`:
+  pozitif (entitlement'sız erişim + sebep alanı) **düzeltmeden önce kırmızıydı**; negatifler (müşteri kiracısı ·
+  pasif · soft-deleted · tenant-assignable değil · katalogda yok · baseline korunumu) düzeltmeden önce de
+  sonra da yeşil — regresyon nöbetçisi olarak yazıldılar.
 - **Yeniden ölçüm:** `rg -n "IsSystemTenantId|PlatformSystemTenantId" services/Diten.Platform/src/Diten.Platform.Application/Services/TenantModuleAccessService.cs` ·
+  `dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~PlatformSystemTenantModuleAccessTests"` ·
   canlı: platform kiracısında menüde *Alan Tanımları* ve *Yinelenen Kurallar* görünmeli.
 
 ### BL-060 — 🟡 Sol menüde elle yazılmış bağlantılar ve çift bölüm başlığı (BL-059'dan SONRA)

@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements;
+using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
 
 namespace Diten.Platform.Application.Services;
@@ -56,6 +57,29 @@ public sealed class TenantModuleAccessService : ITenantModuleAccessService
             return new TenantModuleEffectiveAccessDto(
                 tenantId, normalizedCode, displayName, "Baseline",
                 Domain.Enums.TenantModuleEffectiveAccess.Active, true, null, null);
+        }
+
+        // BL-059 — the platform system tenant passes the tenant ENTITLEMENT gate for every catalog module that is
+        // active and tenant-assignable, so each newly self-registered module shows up for platform admins without
+        // an operator opening an entitlement row by hand. Deliberately narrow:
+        //   · only the EXACT SystemTenantRules.PlatformSystemTenantId — customer tenants are untouched,
+        //   · the module state is re-verified HERE (exists · not soft-deleted · Active · IsTenantAssignable) rather
+        //     than trusting a caller-side filter such as the navigation handler's GetAssignableModulesAsync: this
+        //     service is reached from several call paths, and a filter that loosens later must not silently widen
+        //     the bypass,
+        //   · IsBaseline semantics are unchanged — this is a separate access reason, not a baseline promotion
+        //     (baseline is evaluated above and keeps reporting "Baseline"),
+        //   · like baseline, this only removes the tenant entitlement wall. The per-user permission gate (each
+        //     page's RequiredPermission) still applies downstream, as do domain SoD / maker-checker rules.
+        if (SystemTenantRules.IsSystemTenantId(tenantId)
+            && module is { IsDeleted: false, IsTenantAssignable: true, Status: Domain.Enums.ModuleCatalogStatus.Active })
+        {
+            var systemTenantDisplayName = module.DisplayName ?? module.ModuleName ?? normalizedCode;
+            return new TenantModuleEffectiveAccessDto(
+                tenantId, normalizedCode, systemTenantDisplayName, "PlatformSystemTenant",
+                Domain.Enums.TenantModuleEffectiveAccess.Active, true,
+                "Platform system tenant — entitlement-free for active, tenant-assignable catalog modules (BL-059).",
+                null);
         }
 
         var physicalRows = await _entitlementRepository.GetByTenantAndModuleAsync(tenantId, normalizedCode, ct);
