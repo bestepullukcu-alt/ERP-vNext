@@ -144,8 +144,18 @@ plus forward-jumps (`Draft→Beta/Active`, `Preview→Active`). No demotion. Sel
   **all 7 tenant languages** (`en, tr, fr, es, zh, ar, ru`) in `frontend/Diten.Web/Resources/SharedResource.{lang}.resx`,
   via the same **l10n gate**. This is what makes a new module localize automatically — the lookup stays generic.
 - **Graceful fallback (but a defect):** a missing key degrades to the English server default (never a raw key), so
-  the menu never breaks — but a tenant module shipping without its keys is incomplete. The guard test
-  `NavL10nContractTests` fails the build if a **current** nav code lacks a key in any of the 7 files.
+  the menu never breaks — but a tenant module shipping without its keys is incomplete, and the fallback is
+  **invisible**: the sidebar just prints English and every test stays green.
+- **Guard (2026-08-10):** `frontend/Diten.Web.Tests/Navigation/NavManifestL10nGuardTests` **derives** the expected
+  key set from every `*ManifestProvider.cs` in `services/` — module code, manifest `Domain`, and each page with
+  `IsNavigationVisible: true` — and turns each code into a resx key with the shipping
+  `NavNameLocalizer.Normalize` (no second copy of the transform). It fails if a key is **missing**, **empty**, or
+  **echoes its own name** in any of the 7 files. Nothing has to be added to the test when a module ships: writing
+  the manifest is what puts it under guard. It fails `dotnet test`, not `dotnet build` — a missing resx key cannot
+  be a C# compile error. Re-measure:
+  `dotnet test frontend/Diten.Web.Tests --filter "FullyQualifiedName~NavManifestL10nGuardTests"`.
+  The older `NavL10nContractTests` (Platform tests) now only pins the localizer's override/fallback precedence;
+  its hand-typed code lists were removed — they were the reason three of these defects reached production.
 
 ## Ready-for-dev checklist (manifest)
 - [ ] ModuleManifestProvider exists, ModuleCode = clean slug.
@@ -156,4 +166,4 @@ plus forward-jumps (`Draft→Beta/Active`, `Preview→Active`). No demotion. Sel
 - [ ] Completeness tests (both directions) green.
 - [ ] Restart → module + pages + actions appear in catalog with no manual add; re-restart idempotent (no dup).
 - [ ] Nav-visible pages have meaningful DisplayName + RoutePath → auto-searchable in tenant Ctrl+K (§7); no JSON edit.
-- [ ] Tenant module: shipped `Nav.Module.{ModuleCode}` + `Nav.Page.{PageCode}` (+ `Nav.Domain.{Domain}` if new domain) in all 7 tenant resx (§8); `NavL10nContractTests` green.
+- [ ] Tenant module: shipped `Nav.Module.{ModuleCode}` + `Nav.Page.{PageCode}` (+ `Nav.Domain.{Domain}` if new domain) in all 7 tenant resx (§8); `NavManifestL10nGuardTests` green (it derives its expectations from your manifest — nothing to add to the test).

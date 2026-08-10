@@ -1,85 +1,22 @@
-using System.Xml.Linq;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.Navigation;
 
-// FEAT-NAV-L10N — the tenant nav is localized generically by stable code (Nav.Domain.{code}/Nav.Module.{code}/
-// Nav.Page.{code}) in the frontend. This guard keeps the CURRENT nav set's keys complete across all 7 tenant
-// languages (a missing key fails the build) and pins the frontend localizer's precedence contract. The lookup
-// itself stays generic — this only asserts today's shipped data is present. Future self-registered modules add
-// their own keys via the same l10n gate (see module-self-registration-standard.md).
+// FEAT-NAV-L10N — this file used to ALSO assert that every nav code had a resx key in all seven tenant languages,
+// from module/domain/page lists TYPED BY HAND right here. That is why three live defects shipped green on
+// 2026-08-10: `tasks`, TASK_RECURRENCE_RULES and the work-aggregation nav page were simply never added to those
+// lists, so nothing asserted them. A guard whose expectation set is maintained by memory guards nothing.
+//
+// The key-coverage assertions now live in frontend/Diten.Web.Tests/Navigation/NavManifestL10nGuardTests, which
+// DERIVES the expected set from the manifest provider sources and applies the shipping
+// NavNameLocalizer.Normalize — no hand list, and no second copy of the key transform (this file used to carry
+// one, which is the same drift risk one level down).
+//
+// What stays here: the precedence pin. The localizer lives in the web app and cannot be referenced from the
+// Platform test assembly, so its contract is asserted against its SOURCE — the same approach as the
+// password-bridge AuthGateway guard.
 public sealed class NavL10nContractTests
 {
-    private static readonly string[] SupportedLanguages = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
-
-    // The current nav-visible set, written in a REALISTIC emitted form (manifest domain is PascalCase; the running
-    // catalog normalizes module codes to UPPERCASE-with-dashes via ModuleCatalogCodeNormalizer; page codes carry
-    // underscores). The lookup is casing/separator-immune, so the test derives keys through the SAME Normalize()
-    // the runtime uses — a future casing/separator drift can't pass the test while failing at runtime.
-    private static readonly string[] DomainCodes =
-    [
-        "Administration", "DevEnablement", "DocumentManagement", "MasterDataManagement", "PlatformSharedServices"
-    ];
-
-    private static readonly string[] ModuleCodes =
-    [
-        "ACCESS-GOVERNANCE", "TENANT-SETTINGS", "GOLDENSLIM", "GOLDENCOMPACT",
-        "DOCUMENT-MANAGEMENT", "LEGAL-ENTITY", "REFERENCE-DATA", "ORGANIZATION", "WORKFLOW"
-    ];
-
-    private static readonly string[] PageCodes =
-    [
-        "USERS", "ROLES", "ROLE_PERMISSIONS", "USER_ROLES", "SECURITY_SETTINGS", "MENU_SETTINGS", "RECORDS",
-        "QMS_BASELINES", "INSTANCES", "CONTROLLED_DOCUMENTS", "TEMPLATE_MASTERS", "TEMPLATE_VARIANTS",
-        "ACCESS_MATRIX", "LEGAL_ENTITIES", "RD_SETS", "ORGANIZATION_UNITS", "POSITIONS", "POSITION_ASSIGNMENTS",
-        "DEFINITIONS",
-        // MOD-0024's one nav-visible page — the field-definition catalogue. Its sibling task pages are personal
-        // work surfaces and stay out of the nav, so they need no key here.
-        "TASK_FIELD_DEFINITIONS"
-    ];
-
-    private static IEnumerable<string> AllExpectedKeys() =>
-        DomainCodes.Select(c => "Nav.Domain." + Normalize(c))
-            .Concat(ModuleCodes.Select(c => "Nav.Module." + Normalize(c)))
-            .Concat(PageCodes.Select(c => "Nav.Page." + Normalize(c)));
-
-    // Must stay identical to NavNameLocalizer.Normalize (frontend): uppercase + strip every non-alphanumeric char.
-    private static string Normalize(string code) =>
-        new string(code.Where(char.IsLetterOrDigit).Select(char.ToUpperInvariant).ToArray());
-
-    [Fact]
-    public void Every_current_nav_code_has_a_key_in_all_seven_resx_files()
-    {
-        var resourcesDir = Path.Combine(RepoRoot(), "frontend", "Diten.Web", "Resources");
-
-        foreach (var language in SupportedLanguages)
-        {
-            var keys = ResxKeys(Path.Combine(resourcesDir, $"SharedResource.{language}.resx"));
-            foreach (var expected in AllExpectedKeys())
-            {
-                Assert.True(keys.Contains(expected), $"SharedResource.{language}.resx is missing nav key: {expected}");
-            }
-        }
-    }
-
-    [Fact]
-    public void Nav_values_are_non_empty_in_all_seven_languages()
-    {
-        var resourcesDir = Path.Combine(RepoRoot(), "frontend", "Diten.Web", "Resources");
-
-        foreach (var language in SupportedLanguages)
-        {
-            var values = ResxValues(Path.Combine(resourcesDir, $"SharedResource.{language}.resx"));
-            foreach (var expected in AllExpectedKeys())
-            {
-                Assert.True(values.TryGetValue(expected, out var value) && !string.IsNullOrWhiteSpace(value),
-                    $"SharedResource.{language}.resx has an empty value for {expected}");
-            }
-        }
-    }
-
-    // Pin the frontend localizer's precedence contract (it lives in the web app, not referenceable from here, so we
-    // assert against its source — same approach as the password-bridge AuthGateway guard):
     //   • an OVERRIDE is rendered as-typed (isOverride short-circuits before any lookup);
     //   • a missing key (ResourceNotFound) falls back to the server default name — never the raw key.
     [Fact]
@@ -99,48 +36,6 @@ public sealed class NavL10nContractTests
         Assert.Contains("char.IsLetterOrDigit", source);
         Assert.Contains("ToUpperInvariant", source);
     }
-
-    [Fact]
-    public void Normalize_is_casing_and_separator_immune()
-    {
-        Assert.Equal("ACCESSGOVERNANCE", Normalize("access-governance"));
-        Assert.Equal("ACCESSGOVERNANCE", Normalize("ACCESS-GOVERNANCE"));      // catalog UPPERCASE-dash form
-        Assert.Equal("PLATFORMSHAREDSERVICES", Normalize("PLATFORM-SHARED-SERVICES"));
-        Assert.Equal(Normalize("Platform Shared Services"), Normalize("PLATFORM-SHARED-SERVICES"));
-        Assert.Equal(Normalize("PlatformSharedServices"), Normalize("PLATFORM-SHARED-SERVICES"));
-        Assert.Equal("ROLEPERMISSIONS", Normalize("ROLE_PERMISSIONS"));
-        Assert.Equal("DEVENABLEMENT", Normalize("DevEnablement"));
-    }
-
-    [Fact]
-    public void Normalized_key_exists_for_every_real_emitted_code_variant()
-    {
-        var resourcesDir = Path.Combine(RepoRoot(), "frontend", "Diten.Web", "Resources");
-        var keys = ResxKeys(Path.Combine(resourcesDir, "SharedResource.en.resx"));
-
-        // Prove the runtime path: whatever casing/separators the catalog emits, normalize lands on a present key.
-        foreach (var variant in new[] { "access-governance", "ACCESS-GOVERNANCE", "Access Governance" })
-        {
-            Assert.True(keys.Contains("Nav.Module." + Normalize(variant)), $"no key for module variant '{variant}'");
-        }
-
-        foreach (var variant in new[] { "DevEnablement", "DEVENABLEMENT", "Dev Enablement" })
-        {
-            Assert.True(keys.Contains("Nav.Domain." + Normalize(variant)), $"no key for domain variant '{variant}'");
-        }
-    }
-
-    private static HashSet<string> ResxKeys(string path) =>
-        XDocument.Load(path).Root!.Elements("data")
-            .Select(d => (string?)d.Attribute("name"))
-            .Where(n => n is not null)
-            .Select(n => n!)
-            .ToHashSet(StringComparer.Ordinal);
-
-    private static Dictionary<string, string> ResxValues(string path) =>
-        XDocument.Load(path).Root!.Elements("data")
-            .Where(d => d.Attribute("name") is not null)
-            .ToDictionary(d => (string)d.Attribute("name")!, d => d.Element("value")?.Value ?? string.Empty, StringComparer.Ordinal);
 
     private static string RepoRoot()
     {
