@@ -182,10 +182,18 @@
                 <div class="menu-inner-shadow"></div>
 
                 <ul class="menu-inner py-1">
-                    <!-- Workspace Section -->
-                    <li class="menu-header small text-uppercase">
-                        <span class="menu-header-text">@SharedLocalizer["Workspace"]</span>
-                    </li>
+                    @* BL-060 — the hand-written "Workspace" (Çalışma Alanı) header that used to open this list was
+                       REMOVED. Measured: it printed the SharedResource key `Workspace` = "Çalışma Alanı", the exact
+                       same text the dynamic menu prints for the Workspace domain (`Nav.Domain.WORKSPACE`), so the
+                       sidebar showed the section title twice and the two looked like two separate sections. After
+                       the four document-management duplicates below were deleted, the only item left under it was
+                       Reconciliation — a DOCUMENT-MANAGEMENT page, not a workspace one — so the header was not just
+                       duplicated, it was mislabelling its own content. It was not re-pointed at
+                       `Nav.Domain.DOCUMENTMANAGEMENT` either: that would only move the collision (the dynamic menu
+                       already prints "Doküman Yönetimi" for the catalogue pages). The single remaining hand-written
+                       document link renders headerless until it is catalogued, which is what it actually is — a
+                       stray entry, not a section. The `Workspace` resx key is left in place (harmless, still used
+                       by the dynamic domain map's sibling keys). *@
                     @* WC-1b — the Task Center (Görev Merkezi) is rendered DATA-DRIVEN by the DynamicModuleMenu
                        below, from the `work-aggregation` module catalog entry (page WORKCENTER → /WorkCenterNext,
                        gated on platform.work-aggregation.inbox.view) — same migration Access Governance and
@@ -211,75 +219,36 @@
                        hand-written link that is indistinguishable from a catalogue link masks the next outage the
                        same way.
 
-                       FOUR OF THESE ARE ALREADY DUPLICATES. Measured against platform_module_page_descriptors:
-                         /DocumentManagementControlledDocuments → CONTROLLED_DOCUMENTS  (nav-visible, Active)
-                         /DocumentManagementTemplateMasters     → TEMPLATE_MASTERS      (nav-visible, Active)
-                         /DocumentManagementTemplateVariants    → TEMPLATE_VARIANTS     (nav-visible, Active)
-                         /DocumentManagementAccessMatrix        → ACCESS_MATRIX         (nav-visible, Active)
-                       so the moment the dynamic menu returns groups again, each of those four appears TWICE.
+                       FOUR OF THESE WERE DUPLICATES AND ARE NOW DELETED (BL-060, 2026-08-10). Once BL-059 let the
+                       platform system tenant past the entitlement gate, the catalogue started serving these four
+                       routes itself and the sidebar showed each of them TWICE. Measured against
+                       platform_module_page_descriptors before deleting — every one of them nav-visible and Active:
+                         /DocumentManagementControlledDocuments → CONTROLLED_DOCUMENTS
+                         /DocumentManagementTemplateMasters     → TEMPLATE_MASTERS
+                         /DocumentManagementTemplateVariants    → TEMPLATE_VARIANTS
+                         /DocumentManagementAccessMatrix        → ACCESS_MATRIX
+                       Their @if (Perms.Has(...)) guards went with them — the catalogue carries the same per-page
+                       RequiredPermission, so no gate was lost. Their resx label keys (ControlledDocuments,
+                       TemplateMasters, TemplateVariants, AccessMatrix) are left in place, harmless.
 
-                       TWO CANNOT BE MOVED TODAY:
-                         /DocumentManagementReconciliation — no nav-visible catalogue page for this route
-                         /HCM/Employees/Create             — HCM has NO module row in the catalogue at all
-                       which is why this block is MARKED rather than deleted. Deleting it while the dynamic menu
-                       is still returning 401 would leave the tenant with no sidebar whatsoever; the removal
-                       belongs AFTER the menu is confirmed healthy, and it is a deletion of the four duplicates
-                       plus a catalogue registration for the other two — not a move.
+                       TWO REMAIN AND ARE STILL HAND-WRITTEN — see the removal condition on each below. This fence
+                       therefore STAYS: there is still hand-written content behind it, and that is exactly what the
+                       marker is for.
                        ═══════════════════════════════════════════════════════════════════════════════════════
                     *@
-                    @* MOD-0029-FU01 — Controlled Documents (TenantShell). FE-B UX guard: shown only with the
-                       view permission; backend (FU01 Layer 1 + Layer 2) is authoritative. The folder-share
-                       wizard and add-document/template flows are reached from this page. *@
-                    @if (Perms.Has("platform.document-management.controlled-documents.view"))
-                    {
-                        <li class="menu-item @(activeController == "DocumentManagementControlledDocuments" ? "active" : "")">
-                            <a href="/DocumentManagementControlledDocuments" class="menu-link">
-                                <i class="menu-icon tf-icons bx bx-file"></i>
-                                <div>@SharedLocalizer["ControlledDocuments"]</div>
-                            </a>
-                        </li>
-                    }
-
-                    @* MOD-0029-FU02 — Corporate Template Masters (TenantShell). FE-B UX guard: shown only with
-                       the view permission; backend (FU02 Layer 1) is authoritative. Publish-version, deprecate
-                       and adoption-impact actions are reached from this page. *@
-                    @if (Perms.Has("platform.document-management.template-masters.view"))
-                    {
-                        <li class="menu-item @(activeController == "DocumentManagementTemplateMasters" ? "active" : "")">
-                            <a href="/DocumentManagementTemplateMasters" class="menu-link">
-                                <i class="menu-icon tf-icons bx bx-copy"></i>
-                                <div>@SharedLocalizer["TemplateMasters"]</div>
-                            </a>
-                        </li>
-                    }
-
-                    @* MOD-0029-FU03 — Template Variant Drift (TenantShell). FE-B UX guard: shown only with the
-                       view permission; backend (FU03 Layer 1) is authoritative. Compare and rebase actions are
-                       reached from this page. *@
-                    @if (Perms.Has("platform.document-management.template-variants.view"))
-                    {
-                        <li class="menu-item @(activeController == "DocumentManagementTemplateVariants" ? "active" : "")">
-                            <a href="/DocumentManagementTemplateVariants" class="menu-link">
-                                <i class="menu-icon tf-icons bx bx-git-branch"></i>
-                                <div>@SharedLocalizer["TemplateVariants"]</div>
-                            </a>
-                        </li>
-                    }
-
-                    @* MOD-0029-FU04 — Document Access Matrix (TenantShell). FE-B UX guard: shown only with the
-                       access view permission; backend (FU04 Layer 1) is authoritative. *@
-                    @if (Perms.Has("platform.document-management.access.view"))
-                    {
-                        <li class="menu-item @(activeController == "DocumentManagementAccessMatrix" ? "active" : "")">
-                            <a href="/DocumentManagementAccessMatrix" class="menu-link">
-                                <i class="menu-icon tf-icons bx bx-lock-alt"></i>
-                                <div>@SharedLocalizer["AccessMatrix"]</div>
-                            </a>
-                        </li>
-                    }
-
                     @* MOD-0028-FU10 — Reconciliation, Evidence & Deviations (TenantShell). FE-B UX guard: shown only
-                       with the QMS baseline view permission; backend (FU09 Layer 1) is authoritative. *@
+                       with the QMS baseline view permission; backend (FU09 Layer 1) is authoritative.
+
+                       BL-060 — STILL HAND-WRITTEN, and the last document-management link that is. The other four
+                       were deleted because the catalogue serves them; this one is not in the catalogue at all:
+                       DocumentManagementManifestProvider declares no page for /DocumentManagementReconciliation, so
+                       deleting this <li> would remove Mutabakat from the sidebar entirely (the route keeps working,
+                       nobody can find it). Owner: the document-management module owner, via the manifest.
+                       REMOVAL CONDITION (measurable, not a TODO): delete this block once
+                         rg -n "DocumentManagementReconciliation" \
+                           services/Diten.Platform/src/Diten.Platform.Application/Features/DocumentManagement/SelfRegistration/DocumentManagementManifestProvider.cs
+                       returns a page with IsNavigationVisible: true, AND that page is observed in the tenant
+                       sidebar under the Doküman Yönetimi group. Manifest alone is not enough — measure the menu. *@
                     @if (Perms.Has("platform.document-management.qms-baselines.view"))
                     {
                         <li class="menu-item @(activeController == "DocumentManagementReconciliation" ? "active" : "")">
@@ -294,11 +263,14 @@
                        Menu Settings /TenantNavigation) are now rendered DATA-DRIVEN by the DynamicModuleMenu below
                        (ACCESS-GOVERNANCE + TENANT-SETTINGS baseline modules, both permission-gated per descriptor).
                        The hardcoded Tenant Settings bridge <li>s were removed to stop the menu showing them twice. *@
-                    @* Controlled Documents / Template Masters / Template Variants / Access Matrix (document-management),
-                       plus Security Settings + Menu Settings (tenant-settings baseline) are now rendered DATA-DRIVEN by
-                       the DynamicModuleMenu below — their nav page-descriptors are self-registered in the module catalog.
-                       The previously-hardcoded copies were removed to avoid a duplicated menu section. *@
-
+                    @* BL-060 — STILL HAND-WRITTEN. Employee Drafts is not a duplicate: HCM has NO module row in the
+                       module catalogue at all (no manifest, therefore no page descriptor and no domain group), so
+                       this header + link are the only way the page is reachable from the sidebar. Owner: the HCM
+                       module owner — NOT this layout, and not the document-management manifest.
+                       REMOVAL CONDITION (measurable, not a TODO): delete this whole @if block once
+                         rg -rn "HCM/Employees/Create" --glob "*ManifestProvider.cs" services/
+                       returns a nav-visible page, AND that page is observed in the tenant sidebar under an HCM
+                       domain group. Until then, deleting it hides a working page from every user. *@
                     @if (canAccessHcmEmployeeDraft)
                     {
                         <li class="menu-header small text-uppercase">

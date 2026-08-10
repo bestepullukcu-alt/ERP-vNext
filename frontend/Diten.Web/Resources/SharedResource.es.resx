@@ -557,6 +557,9 @@
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>Centro de tareas</value>
   </data>
+  <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
+    <value>Reglas de tareas recurrentes</value>
+  </data>
   <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
     <value>Definiciones de campos</value>
   </data>

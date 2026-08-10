@@ -557,6 +557,9 @@
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>任务中心</value>
   </data>
+  <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
+    <value>重复任务规则</value>
+  </data>
   <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
     <value>字段定义</value>
   </data>

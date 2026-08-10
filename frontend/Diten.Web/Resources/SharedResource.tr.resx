@@ -616,6 +616,9 @@
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>Görev Merkezi</value>
   </data>
+  <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
+    <value>Yinelenen Görev Kuralları</value>
+  </data>
   <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
     <value>Alan Tanımları</value>
   </data>

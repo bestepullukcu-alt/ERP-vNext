@@ -1627,6 +1627,22 @@ Sonra iade et → talep edende `pendingAcceptance`.
   sahibin manifest eksiğini **gizliyor**; silinince eksik görünür hale gelir ve sahibi düzeltir.
   Bedeli: sahibi düzeltene kadar sayfa menüden bulunamaz (URL çalışmaya devam eder).
 - **CT önerisi:** BL-059 önce → çiftler görünür → sonra sil. Böylece kayıp penceresi hiç oluşmaz.
+- **Durum (2026-08-10): KOD YAZILDI, CANLI DOĞRULAMA BEKLİYOR.** BL-059 canlı doğrulandıktan sonra dört
+  çift bağlantı `_LayoutTenantShell.cshtml`'den `@if (Perms.Has(...))` sarmalayıcılarıyla birlikte silindi
+  (`/DocumentManagementControlledDocuments` · `/DocumentManagementTemplateMasters` ·
+  `/DocumentManagementTemplateVariants` · `/DocumentManagementAccessMatrix`) — dördü de katalogdan
+  `Doküman Yönetimi` grubu altında geliyor, sayfa başına `RequiredPermission` katalogda taşındığı için kapı
+  kaybı yok. **Mutabakat ve HCM Çalışan Taslakları silinmedi**; her ikisinin üstünde ölçülebilir silme koşulu
+  yazılı (manifest'te nav-visible sayfa **ve** menüde görülmesi — ikisi birden). LEGACY-NAV çiti duruyor.
+  **Çift "Çalışma Alanı" başlığı:** elle bloktaki başlık **kaldırıldı** — `Workspace` resx anahtarı ile dinamik
+  menünün `Nav.Domain.WORKSPACE` anahtarı aynı metni ("Çalışma Alanı") basıyordu ve silmelerden sonra elle
+  başlığın altında yalnız bir **doküman** sayfası kalıyordu (yanlış domain + çift ad). `Nav.Domain.DOCUMENTMANAGEMENT`
+  ile değiştirilmedi: bu yalnız çakışmayı "Doküman Yönetimi"ne taşırdı. Kalan tek elle bağlantı başlıksız duruyor —
+  olduğu şey bu: bölüm değil, kataloglanmayı bekleyen tekil bir giriş.
+- **Yeniden ölçüm:** `rg -n 'menu-header-text|href="/(Document|HCM)[^"]*"' frontend/Diten.Web/Views/Shared/_LayoutTenantShell.cshtml` ·
+  `rg -c 'Perms.Has\("platform.document-management' frontend/Diten.Web/Views/Shared/_LayoutTenantShell.cshtml` (1 olmalı) ·
+  canlı: `dotnet build frontend/Diten.Web` + yeniden başlat, sonra kiracı menüsünde dört rotanın **katalogdan**
+  geldiğini ve "Çalışma Alanı" başlığının **tek** kaldığını gör.
 
 ---
 
