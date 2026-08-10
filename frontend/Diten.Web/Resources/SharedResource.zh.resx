@@ -519,6 +519,7 @@
   <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>法律实体</value></data>
   <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>参考数据</value></data>
   <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>组织</value></data>
+  <data name="Nav.Module.TASKS" xml:space="preserve"><value>任务</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>工作流</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>用户</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>角色</value></data>

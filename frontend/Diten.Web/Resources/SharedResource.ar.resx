@@ -519,6 +519,7 @@
   <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>كيان قانوني</value></data>
   <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>البيانات المرجعية</value></data>
   <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>المؤسسة</value></data>
+  <data name="Nav.Module.TASKS" xml:space="preserve"><value>المهام</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>سير العمل</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>المستخدمون</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>الأدوار</value></data>
