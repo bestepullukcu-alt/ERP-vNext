@@ -4,6 +4,11 @@ namespace Diten.PvgService.Application.RegPvBase;
 
 public sealed class PvgIntakeDraftApplicationService
 {
+    private const string CreatePermission = "pvg.mod0230.intake.create";
+    private const string UpdatePermission = "pvg.mod0230.intake.update";
+    private const string TriagePermission = "pvg.mod0230.intake.triage";
+    private const string RoutePermission = "pvg.mod0230.intake.route";
+
     private static readonly PvgIntakeField[] FieldSecurityControlledFields = PvgIntakeFieldDefinition
         .ApprovedFields
         .Where(definition => definition.Sensitivity != PvgFieldSensitivity.PublicMetadata)
@@ -13,16 +18,19 @@ public sealed class PvgIntakeDraftApplicationService
     private readonly IPvgFieldSecurityPolicy _fieldSecurityPolicy;
     private readonly IPvgWorkflowTransitionGate _workflowTransitionGate;
     private readonly IPvgEvidenceLinkPort _evidenceLinkPort;
+    private readonly IPvgPermissionGate _permissionGate;
     private readonly Dictionary<string, SafetyCaseIntake> _drafts = new(StringComparer.Ordinal);
 
     public PvgIntakeDraftApplicationService(
         IPvgFieldSecurityPolicy fieldSecurityPolicy,
         IPvgWorkflowTransitionGate workflowTransitionGate,
-        IPvgEvidenceLinkPort evidenceLinkPort)
+        IPvgEvidenceLinkPort evidenceLinkPort,
+        IPvgPermissionGate permissionGate)
     {
         _fieldSecurityPolicy = fieldSecurityPolicy;
         _workflowTransitionGate = workflowTransitionGate;
         _evidenceLinkPort = evidenceLinkPort;
+        _permissionGate = permissionGate;
     }
 
     public async ValueTask<PvgIntakeDraftMutationResult> CreateDraftAsync(
@@ -35,15 +43,28 @@ public sealed class PvgIntakeDraftApplicationService
             return InvalidMutation(validation);
         }
 
+        var guardrailDecision = await EnsureMutationGuardrailsAsync(
+            command.TenantContext,
+            command.ActorContext,
+            command.CorrelationContext,
+            PvgIntakeOperation.Create,
+            CreatePermission,
+            cancellationToken);
+        if (guardrailDecision is not null)
+        {
+            return new PvgIntakeDraftMutationResult(guardrailDecision, null, null);
+        }
+
         var fieldDecision = await EnsureFieldSecurityAsync(
             PvgIntakeOperation.Create,
             "create",
             command.TenantContext.TenantId,
+            command.ActorContext.ActorId,
             FieldSecurityControlledFields,
             cancellationToken);
         if (fieldDecision is not null)
         {
-            return new PvgIntakeDraftMutationResult(fieldDecision, null);
+            return new PvgIntakeDraftMutationResult(fieldDecision, null, null);
         }
 
         if (HasEvidenceReferences(command.Draft.EvidenceLinkReferences))
@@ -51,11 +72,12 @@ public sealed class PvgIntakeDraftApplicationService
             var evidenceDecision = await EnsureEvidenceAsync(
                 PvgIntakeOperation.Create,
                 command.TenantContext.TenantId,
+                command.ActorContext.ActorId,
                 null,
                 cancellationToken);
             if (evidenceDecision is not null)
             {
-                return new PvgIntakeDraftMutationResult(evidenceDecision, null);
+                return new PvgIntakeDraftMutationResult(evidenceDecision, null, null);
             }
         }
 
@@ -79,7 +101,10 @@ public sealed class PvgIntakeDraftApplicationService
             EvidenceLinkReferences = command.Draft.EvidenceLinkReferences ?? []
         };
 
-        return new PvgIntakeDraftMutationResult(Succeeded(PvgIntakeOperation.Create, PvgIntakeStatus.IntakeCreated), draftId);
+        return new PvgIntakeDraftMutationResult(
+            Succeeded(PvgIntakeOperation.Create, PvgIntakeStatus.IntakeCreated),
+            draftId,
+            BuildAuditIntent(command.ActorContext, PvgIntakeOperation.Create, PvgIntakeStatus.IntakeCreated, CreatePermission));
     }
 
     public async ValueTask<PvgIntakeDraftMutationResult> UpdateDraftAsync(
@@ -92,6 +117,18 @@ public sealed class PvgIntakeDraftApplicationService
             return InvalidMutation(validation);
         }
 
+        var guardrailDecision = await EnsureMutationGuardrailsAsync(
+            command.TenantContext,
+            command.ActorContext,
+            command.CorrelationContext,
+            PvgIntakeOperation.Update,
+            UpdatePermission,
+            cancellationToken);
+        if (guardrailDecision is not null)
+        {
+            return new PvgIntakeDraftMutationResult(guardrailDecision, null, null);
+        }
+
         if (!TryGetDraft(command.TenantContext, command.IntakeDraftId, out _))
         {
             return BlockedMutation(PvgApplicationReasonCodes.IntakeDraftNotFound);
@@ -101,11 +138,12 @@ public sealed class PvgIntakeDraftApplicationService
             PvgIntakeOperation.Update,
             "update",
             command.TenantContext.TenantId,
+            command.ActorContext.ActorId,
             FieldSecurityControlledFields,
             cancellationToken);
         if (fieldDecision is not null)
         {
-            return new PvgIntakeDraftMutationResult(fieldDecision, null);
+            return new PvgIntakeDraftMutationResult(fieldDecision, null, null);
         }
 
         if (HasEvidenceReferences(command.Draft.EvidenceLinkReferences))
@@ -113,11 +151,12 @@ public sealed class PvgIntakeDraftApplicationService
             var evidenceDecision = await EnsureEvidenceAsync(
                 PvgIntakeOperation.Update,
                 command.TenantContext.TenantId,
+                command.ActorContext.ActorId,
                 command.IntakeDraftId,
                 cancellationToken);
             if (evidenceDecision is not null)
             {
-                return new PvgIntakeDraftMutationResult(evidenceDecision, null);
+                return new PvgIntakeDraftMutationResult(evidenceDecision, null, null);
             }
         }
 
@@ -144,7 +183,8 @@ public sealed class PvgIntakeDraftApplicationService
 
         return new PvgIntakeDraftMutationResult(
             Succeeded(PvgIntakeOperation.Update, PvgIntakeStatus.IntakeUpdated),
-            command.IntakeDraftId);
+            command.IntakeDraftId,
+            BuildAuditIntent(command.ActorContext, PvgIntakeOperation.Update, PvgIntakeStatus.IntakeUpdated, UpdatePermission));
     }
 
     public async ValueTask<PvgIntakeDraftMutationResult> TriageDraftAsync(
@@ -157,6 +197,18 @@ public sealed class PvgIntakeDraftApplicationService
             return InvalidMutation(validation);
         }
 
+        var guardrailDecision = await EnsureMutationGuardrailsAsync(
+            command.TenantContext,
+            command.ActorContext,
+            command.CorrelationContext,
+            PvgIntakeOperation.Triage,
+            TriagePermission,
+            cancellationToken);
+        if (guardrailDecision is not null)
+        {
+            return new PvgIntakeDraftMutationResult(guardrailDecision, null, null);
+        }
+
         if (!TryGetDraft(command.TenantContext, command.IntakeDraftId, out var draft))
         {
             return BlockedMutation(PvgApplicationReasonCodes.IntakeDraftNotFound);
@@ -166,30 +218,33 @@ public sealed class PvgIntakeDraftApplicationService
             PvgIntakeOperation.Triage,
             command.TenantContext.TenantId,
             command.IntakeDraftId,
+            command.ActorContext.ActorId,
             draft.Status,
             PvgIntakeStatus.Triaged,
             null,
             cancellationToken);
         if (workflowDecision is not null)
         {
-            return new PvgIntakeDraftMutationResult(workflowDecision, null);
+            return new PvgIntakeDraftMutationResult(workflowDecision, null, null);
         }
 
         var evidenceDecision = await EnsureEvidenceAsync(
             PvgIntakeOperation.Triage,
             command.TenantContext.TenantId,
+            command.ActorContext.ActorId,
             command.IntakeDraftId,
             cancellationToken);
         if (evidenceDecision is not null)
         {
-            return new PvgIntakeDraftMutationResult(evidenceDecision, null);
+            return new PvgIntakeDraftMutationResult(evidenceDecision, null, null);
         }
 
         draft.MarkTriaged(command.Draft.TriageOutcome!.Value, command.Draft.TriageReason);
 
         return new PvgIntakeDraftMutationResult(
             Succeeded(PvgIntakeOperation.Triage, PvgIntakeStatus.Triaged),
-            command.IntakeDraftId);
+            command.IntakeDraftId,
+            BuildAuditIntent(command.ActorContext, PvgIntakeOperation.Triage, PvgIntakeStatus.Triaged, TriagePermission));
     }
 
     public async ValueTask<PvgIntakeDraftMutationResult> RouteDraftAsync(
@@ -202,6 +257,18 @@ public sealed class PvgIntakeDraftApplicationService
             return InvalidMutation(validation);
         }
 
+        var guardrailDecision = await EnsureMutationGuardrailsAsync(
+            command.TenantContext,
+            command.ActorContext,
+            command.CorrelationContext,
+            PvgIntakeOperation.Route,
+            RoutePermission,
+            cancellationToken);
+        if (guardrailDecision is not null)
+        {
+            return new PvgIntakeDraftMutationResult(guardrailDecision, null, null);
+        }
+
         if (!TryGetDraft(command.TenantContext, command.IntakeDraftId, out var draft))
         {
             return BlockedMutation(PvgApplicationReasonCodes.IntakeDraftNotFound);
@@ -211,41 +278,45 @@ public sealed class PvgIntakeDraftApplicationService
             PvgIntakeOperation.Route,
             "route",
             command.TenantContext.TenantId,
+            command.ActorContext.ActorId,
             [PvgIntakeField.RouteTargetQueue],
             cancellationToken);
         if (fieldDecision is not null)
         {
-            return new PvgIntakeDraftMutationResult(fieldDecision, null);
+            return new PvgIntakeDraftMutationResult(fieldDecision, null, null);
         }
 
         var workflowDecision = await EnsureWorkflowAsync(
             PvgIntakeOperation.Route,
             command.TenantContext.TenantId,
             command.IntakeDraftId,
+            command.ActorContext.ActorId,
             draft.Status,
             PvgIntakeStatus.RoutePending,
             null,
             cancellationToken);
         if (workflowDecision is not null)
         {
-            return new PvgIntakeDraftMutationResult(workflowDecision, null);
+            return new PvgIntakeDraftMutationResult(workflowDecision, null, null);
         }
 
         var evidenceDecision = await EnsureEvidenceAsync(
             PvgIntakeOperation.Route,
             command.TenantContext.TenantId,
+            command.ActorContext.ActorId,
             command.IntakeDraftId,
             cancellationToken);
         if (evidenceDecision is not null)
         {
-            return new PvgIntakeDraftMutationResult(evidenceDecision, null);
+            return new PvgIntakeDraftMutationResult(evidenceDecision, null, null);
         }
 
         draft.MarkRoutePending(Required(command.Draft.RouteTargetQueue));
 
         return new PvgIntakeDraftMutationResult(
             Succeeded(PvgIntakeOperation.Route, PvgIntakeStatus.RoutePending),
-            command.IntakeDraftId);
+            command.IntakeDraftId,
+            BuildAuditIntent(command.ActorContext, PvgIntakeOperation.Route, PvgIntakeStatus.RoutePending, RoutePermission));
     }
 
     public async ValueTask<PvgIntakeDraftQueryResult> GetDraftByIdAsync(
@@ -262,6 +333,7 @@ public sealed class PvgIntakeDraftApplicationService
             PvgIntakeOperation.GetById,
             "detail",
             query.TenantContext.TenantId,
+            null,
             FieldSecurityControlledFields,
             cancellationToken);
         if (fieldDecision is not null)
@@ -293,6 +365,7 @@ public sealed class PvgIntakeDraftApplicationService
             PvgIntakeOperation.GetList,
             "list",
             query.TenantContext.TenantId,
+            null,
             FieldSecurityControlledFields,
             cancellationToken);
         if (fieldDecision is not null)
@@ -317,13 +390,14 @@ public sealed class PvgIntakeDraftApplicationService
         PvgIntakeOperation operation,
         string surface,
         string tenantId,
+        string? actorId,
         IEnumerable<PvgIntakeField> fields,
         CancellationToken cancellationToken)
     {
         foreach (var field in fields.Distinct())
         {
             var decision = await _fieldSecurityPolicy.EvaluateAsync(
-                new PvgFieldSecurityRequest(operation, surface, field.ToString(), tenantId, null, null, null),
+                new PvgFieldSecurityRequest(operation, surface, field.ToString(), tenantId, actorId, null, null),
                 cancellationToken);
             if (!decision.IsAllowed || !decision.IsSatisfied)
             {
@@ -338,6 +412,7 @@ public sealed class PvgIntakeDraftApplicationService
         PvgIntakeOperation operation,
         string tenantId,
         string intakeDraftId,
+        string actorId,
         PvgIntakeStatus fromState,
         PvgIntakeStatus toState,
         string? routeTargetQueue,
@@ -348,7 +423,7 @@ public sealed class PvgIntakeDraftApplicationService
                 operation,
                 tenantId,
                 intakeDraftId,
-                null,
+                actorId,
                 fromState.ToString(),
                 toState.ToString(),
                 routeTargetQueue,
@@ -363,11 +438,12 @@ public sealed class PvgIntakeDraftApplicationService
     private async ValueTask<PvgApplicationResult?> EnsureEvidenceAsync(
         PvgIntakeOperation operation,
         string tenantId,
+        string actorId,
         string? intakeDraftId,
         CancellationToken cancellationToken)
     {
         var decision = await _evidenceLinkPort.EvaluateAsync(
-            new PvgEvidenceLinkRequest(operation, tenantId, intakeDraftId, null, null, null),
+            new PvgEvidenceLinkRequest(operation, tenantId, intakeDraftId, actorId, null, null),
             cancellationToken);
 
         return decision.IsAllowed && decision.IsSatisfied
@@ -396,19 +472,74 @@ public sealed class PvgIntakeDraftApplicationService
     }
 
     private static PvgIntakeDraftMutationResult InvalidMutation(PvgValidationResult validation) =>
-        new(PvgApplicationResult.Invalid(validation.Failures), null);
+        new(PvgApplicationResult.Invalid(validation.Failures), null, null);
 
     private static PvgIntakeDraftQueryResult InvalidQuery(PvgValidationResult validation) =>
         new(PvgApplicationResult.Invalid(validation.Failures), []);
 
     private static PvgIntakeDraftMutationResult BlockedMutation(string reasonCode) =>
-        new(PvgApplicationResult.Blocked(reasonCode), null);
+        new(PvgApplicationResult.Blocked(reasonCode), null, null);
 
     private static PvgIntakeDraftQueryResult BlockedQuery(string reasonCode) =>
         new(PvgApplicationResult.Blocked(reasonCode), []);
 
     private static PvgApplicationResult Succeeded(PvgIntakeOperation operation, PvgIntakeStatus? status) =>
         PvgApplicationResult.Succeeded(new PvgApplicationSuccessMetadata(operation, status, DateTimeOffset.UtcNow));
+
+    private async ValueTask<PvgApplicationResult?> EnsureMutationGuardrailsAsync(
+        PvgServerTenantContext tenantContext,
+        PvgActorContext? actorContext,
+        PvgCorrelationContext? correlationContext,
+        PvgIntakeOperation operation,
+        string requiredPermission,
+        CancellationToken cancellationToken)
+    {
+        if (actorContext is null ||
+            string.IsNullOrWhiteSpace(actorContext.ActorId) ||
+            string.IsNullOrWhiteSpace(actorContext.ActorKind))
+        {
+            return PvgApplicationResult.Blocked(PvgPermissionReasonCodes.ActorContextRequired);
+        }
+
+        var correlationValidation = ValidateCorrelationContext(correlationContext);
+        if (correlationValidation is not null)
+        {
+            return correlationValidation;
+        }
+
+        var permissionDecision = await _permissionGate.EvaluateAsync(
+            new PvgPermissionRequest(
+                operation,
+                requiredPermission,
+                tenantContext.TenantId,
+                actorContext.ActorId,
+                correlationContext!.CorrelationId),
+            cancellationToken);
+
+        return permissionDecision.IsAllowed
+            ? null
+            : PvgApplicationResult.Blocked(permissionDecision.ReasonCode);
+    }
+
+    private static PvgApplicationResult? ValidateCorrelationContext(PvgCorrelationContext? correlationContext)
+    {
+        if (correlationContext is null || string.IsNullOrWhiteSpace(correlationContext.CorrelationId))
+        {
+            return PvgApplicationResult.Blocked(PvgPermissionReasonCodes.CorrelationContextRequired);
+        }
+
+        var correlationId = correlationContext.CorrelationId.Trim();
+        return correlationId.Length > 128 || correlationId.Any(char.IsWhiteSpace)
+            ? PvgApplicationResult.Blocked(PvgPermissionReasonCodes.CorrelationContextInvalid)
+            : null;
+    }
+
+    private static PvgAuditIntent BuildAuditIntent(
+        PvgActorContext actorContext,
+        PvgIntakeOperation operation,
+        PvgIntakeStatus status,
+        string requiredPermission) =>
+        new(operation, status, requiredPermission, actorContext.ActorKind, true, DateTimeOffset.UtcNow);
 
     private static bool HasEvidenceReferences(IReadOnlyCollection<string>? evidenceLinkReferences) =>
         evidenceLinkReferences is not null && evidenceLinkReferences.Any(reference => !string.IsNullOrWhiteSpace(reference));

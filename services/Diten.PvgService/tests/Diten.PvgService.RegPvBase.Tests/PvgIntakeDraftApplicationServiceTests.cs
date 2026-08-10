@@ -14,7 +14,9 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         "free text narrative with PHI",
         "triage free-text reason",
         "queue-safety-review",
-        "raw exception message"
+        "raw exception message",
+        "actor-secret-456",
+        "corr-secret-789"
     ];
 
     [Fact]
@@ -24,16 +26,83 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         var fieldPolicy = new RecordingFieldSecurityPolicy(callLog);
         var workflowGate = new RecordingWorkflowTransitionGate(callLog);
         var evidencePort = new RecordingEvidenceLinkPort(callLog);
-        var service = new PvgIntakeDraftApplicationService(fieldPolicy, workflowGate, evidencePort);
+        var service = NewService(fieldPolicy, workflowGate, evidencePort, new RecordingPermissionGate(callLog));
 
         var invalid = await service.CreateDraftAsync(
-            new CreateIntakeDraftCommand(new PvgServerTenantContext("tenant-secret-123"), InvalidCreateRequest()));
+            CreateCommand(InvalidCreateRequest()));
 
         Assert.False(invalid.Result.IsSuccess);
         Assert.Equal(PvgApplicationOutcome.Invalid, invalid.Result.Outcome);
         Assert.Null(invalid.IntakeDraftId);
+        Assert.Null(invalid.AuditIntent);
         Assert.Empty(callLog);
         AssertSafe(invalid);
+    }
+
+    [Fact]
+    public async Task Missing_actor_blocks_mutation_before_permission_ports_and_audit_intent()
+    {
+        var callLog = new List<string>();
+        var service = NewService(
+            new RecordingFieldSecurityPolicy(callLog),
+            new RecordingWorkflowTransitionGate(callLog),
+            new RecordingEvidenceLinkPort(callLog),
+            new RecordingPermissionGate(callLog));
+
+        var blocked = await service.CreateDraftAsync(
+            new CreateIntakeDraftCommand(TenantContext(), null!, CorrelationContext(), ValidCreateRequest()));
+
+        Assert.False(blocked.Result.IsSuccess);
+        Assert.Equal(PvgPermissionReasonCodes.ActorContextRequired, blocked.Result.ReasonCode);
+        Assert.Null(blocked.IntakeDraftId);
+        Assert.Null(blocked.AuditIntent);
+        Assert.Empty(callLog);
+        AssertSafe(blocked);
+    }
+
+    [Fact]
+    public async Task Missing_permission_blocks_mutation_before_ports_and_audit_intent()
+    {
+        var callLog = new List<string>();
+        var permissionGate = new RecordingPermissionGate(callLog)
+        {
+            Decision = PvgPermissionDecision.Denied(PvgPermissionReasonCodes.PermissionDenied)
+        };
+        var service = NewService(
+            new RecordingFieldSecurityPolicy(callLog),
+            new RecordingWorkflowTransitionGate(callLog),
+            new RecordingEvidenceLinkPort(callLog),
+            permissionGate);
+
+        var blocked = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+
+        Assert.False(blocked.Result.IsSuccess);
+        Assert.Equal(PvgPermissionReasonCodes.PermissionDenied, blocked.Result.ReasonCode);
+        Assert.Null(blocked.IntakeDraftId);
+        Assert.Null(blocked.AuditIntent);
+        Assert.Equal(["permission:Create:pvg.mod0230.intake.create"], callLog);
+        AssertSafe(blocked);
+    }
+
+    [Fact]
+    public async Task Invalid_correlation_blocks_mutation_before_permission_ports_and_audit_intent()
+    {
+        var callLog = new List<string>();
+        var service = NewService(
+            new RecordingFieldSecurityPolicy(callLog),
+            new RecordingWorkflowTransitionGate(callLog),
+            new RecordingEvidenceLinkPort(callLog),
+            new RecordingPermissionGate(callLog));
+
+        var blocked = await service.CreateDraftAsync(
+            new CreateIntakeDraftCommand(TenantContext(), ActorContext(), new PvgCorrelationContext("corr secret 789"), ValidCreateRequest()));
+
+        Assert.False(blocked.Result.IsSuccess);
+        Assert.Equal(PvgPermissionReasonCodes.CorrelationContextInvalid, blocked.Result.ReasonCode);
+        Assert.Null(blocked.IntakeDraftId);
+        Assert.Null(blocked.AuditIntent);
+        Assert.Empty(callLog);
+        AssertSafe(blocked);
     }
 
     [Fact]
@@ -44,16 +113,22 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         {
             Decision = PvgPortDecision.FieldSecurityDenied()
         };
-        var service = NewService(fieldPolicy, new RecordingWorkflowTransitionGate(callLog), new RecordingEvidenceLinkPort(callLog));
+        var service = NewService(
+            fieldPolicy,
+            new RecordingWorkflowTransitionGate(callLog),
+            new RecordingEvidenceLinkPort(callLog),
+            new RecordingPermissionGate(callLog));
 
         var result = await service.CreateDraftAsync(
-            new CreateIntakeDraftCommand(new PvgServerTenantContext("tenant-secret-123"), ValidCreateRequest()));
+            CreateCommand(ValidCreateRequest()));
 
         Assert.False(result.Result.IsSuccess);
         Assert.Equal(PvgApplicationOutcome.Blocked, result.Result.Outcome);
         Assert.Equal(PvgSafeReasonCodes.FieldSecurityPolicyUnavailable, result.Result.ReasonCode);
         Assert.Null(result.IntakeDraftId);
-        Assert.StartsWith("field:", callLog.Single(), StringComparison.Ordinal);
+        Assert.Null(result.AuditIntent);
+        Assert.Equal("permission:Create:pvg.mod0230.intake.create", callLog[0]);
+        Assert.StartsWith("field:", callLog[1], StringComparison.Ordinal);
         AssertSafe(result);
     }
 
@@ -64,13 +139,20 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         var service = NewService(
             new RecordingFieldSecurityPolicy(callLog),
             new RecordingWorkflowTransitionGate(callLog),
-            new RecordingEvidenceLinkPort(callLog));
+            new RecordingEvidenceLinkPort(callLog),
+            new RecordingPermissionGate(callLog));
 
         var created = await service.CreateDraftAsync(
-            new CreateIntakeDraftCommand(new PvgServerTenantContext("tenant-secret-123"), ValidCreateRequest()));
+            CreateCommand(ValidCreateRequest()));
 
         Assert.True(created.Result.IsSuccess);
         Assert.NotNull(created.IntakeDraftId);
+        Assert.NotNull(created.AuditIntent);
+        Assert.Equal(PvgIntakeOperation.Create, created.AuditIntent.Operation);
+        Assert.Equal("pvg.mod0230.intake.create", created.AuditIntent.RequiredPermission);
+        Assert.Equal("HumanUser", created.AuditIntent.ActorKind);
+        Assert.True(created.AuditIntent.HasCorrelation);
+        Assert.Equal("permission:Create:pvg.mod0230.intake.create", callLog[0]);
         Assert.Contains(callLog, entry => entry.StartsWith("field:", StringComparison.Ordinal));
         Assert.Contains(callLog, entry => entry == "evidence:Create");
 
@@ -90,19 +172,26 @@ public sealed class PvgIntakeDraftApplicationServiceTests
     {
         var callLog = new List<string>();
         var fieldPolicy = new RecordingFieldSecurityPolicy(callLog);
-        var service = NewService(fieldPolicy, new RecordingWorkflowTransitionGate(callLog), new RecordingEvidenceLinkPort(callLog));
+        var service = NewService(
+            fieldPolicy,
+            new RecordingWorkflowTransitionGate(callLog),
+            new RecordingEvidenceLinkPort(callLog),
+            new RecordingPermissionGate(callLog));
         var created = await service.CreateDraftAsync(
-            new CreateIntakeDraftCommand(new PvgServerTenantContext("tenant-secret-123"), ValidCreateRequest()));
+            CreateCommand(ValidCreateRequest()));
         fieldPolicy.Decision = PvgPortDecision.FieldSecurityDenied();
 
         var updated = await service.UpdateDraftAsync(
             new UpdateIntakeDraftCommand(
-                new PvgServerTenantContext("tenant-secret-123"),
+                TenantContext(),
+                ActorContext(),
+                CorrelationContext(),
                 created.IntakeDraftId!,
                 ValidUpdateRequest()));
 
         Assert.False(updated.Result.IsSuccess);
         Assert.Equal(PvgSafeReasonCodes.FieldSecurityPolicyUnavailable, updated.Result.ReasonCode);
+        Assert.Null(updated.AuditIntent);
 
         fieldPolicy.Decision = AllowedDecision();
         var fetched = await service.GetDraftByIdAsync(
@@ -119,19 +208,27 @@ public sealed class PvgIntakeDraftApplicationServiceTests
     {
         var callLog = new List<string>();
         var workflowGate = new RecordingWorkflowTransitionGate(callLog);
-        var service = NewService(new RecordingFieldSecurityPolicy(callLog), workflowGate, new RecordingEvidenceLinkPort(callLog));
+        var service = NewService(
+            new RecordingFieldSecurityPolicy(callLog),
+            workflowGate,
+            new RecordingEvidenceLinkPort(callLog),
+            new RecordingPermissionGate(callLog));
         var created = await service.CreateDraftAsync(
-            new CreateIntakeDraftCommand(new PvgServerTenantContext("tenant-secret-123"), ValidCreateRequest()));
+            CreateCommand(ValidCreateRequest()));
         workflowGate.Decision = PvgPortDecision.WorkflowTransitionDenied();
 
         var triaged = await service.TriageDraftAsync(
             new TriageIntakeDraftCommand(
-                new PvgServerTenantContext("tenant-secret-123"),
+                TenantContext(),
+                ActorContext(),
+                CorrelationContext(),
                 created.IntakeDraftId!,
                 new PvgTriageIntakeDraftRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason")));
 
         Assert.False(triaged.Result.IsSuccess);
         Assert.Equal(PvgSafeReasonCodes.WorkflowTransitionGateUnavailable, triaged.Result.ReasonCode);
+        Assert.Null(triaged.AuditIntent);
+        Assert.Contains("permission:Triage:pvg.mod0230.intake.triage", callLog);
         Assert.Contains("workflow:Triage", callLog);
         Assert.DoesNotContain("evidence:Triage", callLog);
 
@@ -149,19 +246,27 @@ public sealed class PvgIntakeDraftApplicationServiceTests
     {
         var callLog = new List<string>();
         var evidencePort = new RecordingEvidenceLinkPort(callLog);
-        var service = NewService(new RecordingFieldSecurityPolicy(callLog), new RecordingWorkflowTransitionGate(callLog), evidencePort);
+        var service = NewService(
+            new RecordingFieldSecurityPolicy(callLog),
+            new RecordingWorkflowTransitionGate(callLog),
+            evidencePort,
+            new RecordingPermissionGate(callLog));
         var created = await service.CreateDraftAsync(
-            new CreateIntakeDraftCommand(new PvgServerTenantContext("tenant-secret-123"), ValidCreateRequest()));
+            CreateCommand(ValidCreateRequest()));
         evidencePort.Decision = PvgPortDecision.EvidenceLinkDenied();
 
         var routed = await service.RouteDraftAsync(
             new RouteIntakeDraftCommand(
-                new PvgServerTenantContext("tenant-secret-123"),
+                TenantContext(),
+                ActorContext(),
+                CorrelationContext(),
                 created.IntakeDraftId!,
                 new PvgRouteIntakeDraftRequest("queue-safety-review")));
 
         Assert.False(routed.Result.IsSuccess);
         Assert.Equal(PvgSafeReasonCodes.EvidenceLinkUnavailable, routed.Result.ReasonCode);
+        Assert.Null(routed.AuditIntent);
+        Assert.Contains("permission:Route:pvg.mod0230.intake.route", callLog);
         Assert.Contains("workflow:Route", callLog);
         Assert.Contains("evidence:Route", callLog);
 
@@ -179,9 +284,13 @@ public sealed class PvgIntakeDraftApplicationServiceTests
     {
         var callLog = new List<string>();
         var fieldPolicy = new RecordingFieldSecurityPolicy(callLog);
-        var service = NewService(fieldPolicy, new RecordingWorkflowTransitionGate(callLog), new RecordingEvidenceLinkPort(callLog));
+        var service = NewService(
+            fieldPolicy,
+            new RecordingWorkflowTransitionGate(callLog),
+            new RecordingEvidenceLinkPort(callLog),
+            new RecordingPermissionGate(callLog));
         var created = await service.CreateDraftAsync(
-            new CreateIntakeDraftCommand(new PvgServerTenantContext("tenant-secret-123"), ValidCreateRequest()));
+            CreateCommand(ValidCreateRequest()));
         fieldPolicy.Decision = PvgPortDecision.FieldSecurityDenied();
 
         var fetched = await service.GetDraftByIdAsync(
@@ -222,8 +331,18 @@ public sealed class PvgIntakeDraftApplicationServiceTests
     private static PvgIntakeDraftApplicationService NewService(
         IPvgFieldSecurityPolicy fieldPolicy,
         IPvgWorkflowTransitionGate workflowGate,
-        IPvgEvidenceLinkPort evidencePort) =>
-        new(fieldPolicy, workflowGate, evidencePort);
+        IPvgEvidenceLinkPort evidencePort,
+        IPvgPermissionGate? permissionGate = null) =>
+        new(fieldPolicy, workflowGate, evidencePort, permissionGate ?? new RecordingPermissionGate([]));
+
+    private static PvgServerTenantContext TenantContext() => new("tenant-secret-123");
+
+    private static PvgActorContext ActorContext() => new("actor-secret-456", "HumanUser");
+
+    private static PvgCorrelationContext CorrelationContext() => new("corr-secret-789");
+
+    private static CreateIntakeDraftCommand CreateCommand(PvgCreateIntakeDraftRequest request) =>
+        new(TenantContext(), ActorContext(), CorrelationContext(), request);
 
     private static PvgCreateIntakeDraftRequest ValidCreateRequest() =>
         new(
@@ -315,6 +434,19 @@ public sealed class PvgIntakeDraftApplicationServiceTests
             CancellationToken cancellationToken = default)
         {
             callLog.Add($"evidence:{request.Operation}");
+            return ValueTask.FromResult(Decision);
+        }
+    }
+
+    private sealed class RecordingPermissionGate(List<string> callLog) : IPvgPermissionGate
+    {
+        public PvgPermissionDecision Decision { get; set; } = PvgPermissionDecision.Allowed();
+
+        public ValueTask<PvgPermissionDecision> EvaluateAsync(
+            PvgPermissionRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            callLog.Add($"permission:{request.Operation}:{request.RequiredPermission}");
             return ValueTask.FromResult(Decision);
         }
     }
