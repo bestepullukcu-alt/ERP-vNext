@@ -1559,6 +1559,66 @@ Sonra iade et → talep edende `pendingAcceptance`.
 
 ---
 
+### BL-059 — 🟠 Platform sistem kiracısı entitlement kapısını geçmeli (KARAR VERİLDİ, YAPILMADI)
+- **Sorun (CT canlı ölçümü 2026-08-10):** Platform Admin Tenant'ta menü **eksik**. Ölçüm:
+  `work-aggregation` (IsBaseline:false) menüde **var** → *Görev Merkezi*; `tasks` (IsBaseline:false)
+  menüde **yok** → *Alan Tanımları* ve *Yinelenen Kurallar* görünmüyor. `document-management`'ın dört
+  sayfası da manifest'te **var** ama katalogdan **gelmiyor** — menüde yalnız elle yazılmış (LEGACY-NAV)
+  hâlleriyle duruyorlar. Yani her yeni modül için **elle entitlement** açmak gerekiyor.
+- **⚠ KARAR ZATEN VERİLDİ (2026-08-10, sahip + Codex incelemesi) AMA HİÇBİR YERE YAZILMAMIŞTI.** Bu madde
+  o boşluğu kapatıyor. Karar metni:
+  > Platform Admin Tenant, katalogda **aktif ve tenant-assignable** bütün modüllerde entitlement kapısını
+  > geçer; **permission kontrolü devam eder**. Sonraki modüllerde ayrı entitlement açılmaz.
+- **Anlaşılmış güvenlik sınırları (Codex incelemesinden, aynen korunur):**
+  - yalnız **tam** `SystemTenantRules.PlatformSystemTenantId` (`…0001`); GUID elle yazılmaz,
+  - baypas **kendi içinde** doğrular: modül mevcut · soft-deleted değil · `Active` · `IsTenantAssignable`
+    (üstteki `GetAssignableAsync` süzgecine **güvenilmez** — defense-in-depth),
+  - **müşteri kiracılarının** entitlement davranışı birebir korunur (negatif test zorunlu),
+  - `IsBaseline` semantiği **değişmez** (bir modülü baseline yapmak onu tüm müşterilere açardı),
+  - **permission kontrolü asla atlanmaz**,
+  - sonuç "baseline" değil, ayrı bir **`PlatformSystemTenant`** erişim nedeni olarak raporlanır.
+- **⚠ CT'nin eklediği ve karar sırasında kabul edilen uyarı — yan etki, kendiliğinden oluşuyor:** baypas
+  + `FullCatalogPermissionGrantService` (her yeni permission'ı `…0001` SuperAdmin'e otomatik verir)
+  birlikte, platform yöneticisine her iş modülünün ekranlarında **görme değil işletme** yetkisi verir.
+  Sahip bunu bilerek kabul etti ("bütün modülleri oradan kontrol ediyoruz"), **ama domain seviyesindeki
+  SoD / maker-checker / lifecycle / actor kuralları asla baypas edilmez** — permission sahibi olmak
+  onaysız geçişe izin vermez.
+- **Neden önemli — menü temizliğinin ÖN KOŞULU:** LEGACY-NAV'daki elle yazılmış bağlantıları silmek
+  ancak aynı sayfalar **katalogdan geldikten sonra** güvenlidir. Baypas olmadan silinirse beş sayfa
+  menüden tamamen kaybolur (URL ile erişilebilir kalır, menüden bulunamaz).
+- **Yeniden ölçüm:** `rg -n "IsSystemTenantId|PlatformSystemTenantId" services/Diten.Platform/src/Diten.Platform.Application/Services/TenantModuleAccessService.cs` ·
+  canlı: platform kiracısında menüde *Alan Tanımları* ve *Yinelenen Kurallar* görünmeli.
+
+### BL-060 — 🟡 Sol menüde elle yazılmış bağlantılar ve çift bölüm başlığı (BL-059'dan SONRA)
+- **Ölçüm (CT canlı, 2026-08-10) — menünün bugünkü hâli:**
+  ```
+  ── Çalışma Alanı              ← ELLE (LEGACY-NAV)
+     Kontrollü Belgeler · Kurumsal Şablonlar · Şablon Varyantları · Erişim Matrisi · Mutabakat
+  ── İnsan Sermayesi Yönetimi   ← ELLE
+     Çalışan Taslakları
+  ── Geliştirici Etkinleştirme  ← KATALOG
+  ── Çalışma Alanı              ← KATALOG  (aynı başlık İKİNCİ kez)
+     Görev Merkezi
+  ── Yönetim                    ← KATALOG
+  ```
+  **"Çalışma Alanı" başlığı iki kez basılıyor** — biri elle blok, biri dinamik menü.
+- **Altı bağlantının ölçülmüş durumu:**
+  | Bağlantı | Manifest | Bugün katalogdan geliyor mu | Yapılacak |
+  |---|---|---|---|
+  | Kontrollü Belgeler · Kurumsal Şablonlar · Şablon Varyantları · Erişim Matrisi | ✓ var | ✗ (entitlement yok) | BL-059'dan sonra **sil** |
+  | Mutabakat (`/DocumentManagementReconciliation`) | ✗ **yok** | ✗ | önce **manifest'e eklenmeli** (sahibi), sonra sil |
+  | Çalışan Taslakları (`/HCM/Employees/Create`) | ✗ **yok** | ✗ | **HCM sahibinin işi**, dokunulmaz |
+- **⛔ SIRA ŞARTI:** bir bağlantı ancak **manifest'te var VE menüde katalogdan görünüyor** ise silinir.
+  Yalnız manifest yeterli değil — bugün dördü manifest'te olduğu hâlde entitlement kapısında duruyor.
+  Ölçmeden silmek, çalışan bir menüyü kırmaktır.
+- **Sahibin duruşu (2026-08-10):** *"silsek ne olur, modül silinmeyecek sonuçta; diğer developer'a
+  söyledim, o düzeltsin."* **Meşru bir risk tercihi** ve bir üstünlüğü var: elle yazılmış bağlantı,
+  sahibin manifest eksiğini **gizliyor**; silinince eksik görünür hale gelir ve sahibi düzeltir.
+  Bedeli: sahibi düzeltene kadar sayfa menüden bulunamaz (URL çalışmaya devam eder).
+- **CT önerisi:** BL-059 önce → çiftler görünür → sonra sil. Böylece kayıp penceresi hiç oluşmaz.
+
+---
+
 ## Açık kararlar
 
 ### DEC-002 — Zaman kaydının sahibi (DCP-003 B2) · **teyit bekliyor, açık tercih değil**
