@@ -28,7 +28,9 @@ const serverFields = (recordName) => {
 
   return match[1]
     .split(",")
-    .map((part) => part.trim().split(/\s+/).pop())     // "int ExpectedVersion" → "ExpectedVersion"
+    // "string? Secondary = null" → "Secondary". A default value used to be swallowed whole and the parameter
+    // read back as "null", which would have quietly excused any client field named after an optional parameter.
+    .map((part) => part.trim().split("=")[0].trim().split(/\s+/).pop())
     .filter(Boolean)
     .map((name) => name.charAt(0).toLowerCase() + name.slice(1));
 };
@@ -225,6 +227,52 @@ describe("lookup responses are read by the field the server actually sends", () 
       expect(OPTION_VALUE_READS(file).length, `${file}: the option-value scan found nothing to check`)
         .toBeGreaterThan(0);
     });
+  });
+
+  /*
+   * The same two-sided method for the two records this round added to the wire. Neither becomes an <option>
+   * through a line the scan above can see — one is read inside a label formatter, the other inside a helper that
+   * builds the element — so the read sites are named here instead of guessed at. What is NOT restated is either
+   * record's field list: both come from TaskModels.cs.
+   */
+  it.each([
+    /*
+     * A record's option carries a THIRD field beyond value/label: the disambiguating line that holds the
+     * business key. It is the field that keeps a GUID off the screen while still telling the reader which
+     * record they picked, so a rename on the server must fail here rather than as a picker of bare names.
+     */
+    [
+      "TaskFieldOptionDto",
+      "frontend/Diten.Web/wwwroot/assets/js/Tasks/form.js",
+      /\bchoice\.([A-Za-z][A-Za-z0-9]*)\b/g
+    ],
+    /*
+     * The administrator's source chooser. Its <option> values are source KEYS, and a key read from a field the
+     * server does not send would render the whole list unselectable — BL-050 moved to the admin screen.
+     */
+    [
+      "TaskFieldOptionSourceDto",
+      "frontend/Diten.Web/wwwroot/assets/js/Tasks/FieldDefinitions/form.js",
+      /\bsource\.([A-Za-z][A-Za-z0-9]*)\b/g
+    ]
+  ])("%s is read only by fields it declares", (recordName, file, pattern) => {
+    const source = fs.readFileSync(path.join(repoRoot, file), "utf8")
+      // Comments strip first: these files DOCUMENT the shapes they consume, and an assertion that cannot tell
+      // prose from code would forbid explaining the contract it guards.
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/[^\n]*/g, "");
+
+    // PascalCase spellings are the same field: this repo's payloads have arrived both ways, and the readers
+    // accept either. The claim is about which FIELD is read, not about its casing.
+    const declared = new Set(serverFields(recordName));
+    const read = [...new Set([...source.matchAll(pattern)].map((m) => m[1]))];
+
+    // Non-vacuity: a pattern that matched nothing would satisfy the assertion below forever.
+    expect(read.length, `${file}: the ${recordName} read scan found nothing to check`).toBeGreaterThan(0);
+
+    const invented = read.filter(
+      (name) => !declared.has(name) && !declared.has(name.charAt(0).toLowerCase() + name.slice(1)));
+    expect(invented, `${file} reads ${invented.join("/")}, which ${recordName} does not declare`).toEqual([]);
   });
 
   it("reads a person's id from ONE place in app.js, not three across the repo", () => {

@@ -519,7 +519,7 @@ public sealed class TaskFieldDefinitionManagementTests
             var tenant = new FakeTenantContext(TaskTestData.Tenant);
             Definitions = new FakeTaskFieldDefinitionRepository();
             var user = new FakeCurrentUserContext(TaskTestData.Me);
-            Validator = new TaskFieldDefinitionService(Definitions);
+            Validator = new TaskFieldDefinitionService(Definitions, TaskRecordSourceDoubles.None);
 
             var correlation = new CorrelationContext();
             correlation.SetCorrelationId("corr");
@@ -615,9 +615,9 @@ public sealed class TaskFieldDefinitionManagementTests
             => request switch
             {
                 CreateTaskFieldDefinitionCommand c => (Task<TResponse>)(object)
-                    new CreateTaskFieldDefinitionHandler(definitions, tenant, user).Handle(c, ct),
+                    new CreateTaskFieldDefinitionHandler(definitions, tenant, user, TaskRecordSourceDoubles.None).Handle(c, ct),
                 UpdateTaskFieldDefinitionCommand c => (Task<TResponse>)(object)
-                    new UpdateTaskFieldDefinitionHandler(definitions, user).Handle(c, ct),
+                    new UpdateTaskFieldDefinitionHandler(definitions, user, TaskRecordSourceDoubles.None).Handle(c, ct),
                 DeleteTaskFieldDefinitionCommand c => (Task<TResponse>)(object)
                     new DeleteTaskFieldDefinitionHandler(definitions, user).Handle(c, ct),
                 // The bulk handler is given THIS mediator, so its loop reaches the real single handler above —

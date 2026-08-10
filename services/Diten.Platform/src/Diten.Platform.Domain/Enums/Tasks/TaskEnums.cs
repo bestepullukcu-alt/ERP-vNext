@@ -130,8 +130,23 @@ public enum TaskFieldImportance
 public enum TaskFieldOptionsSourceKind
 {
     None = 0,
+
+    /// <summary>A platform list: language, currency, timezone. Short and fixed.</summary>
     PlatformLookup = 1,
-    BusinessReferenceData = 2
+
+    /// <summary>A governed reference set: country, legal form, and a tenant's own sets. Short and fixed.</summary>
+    BusinessReferenceData = 2,
+
+    /// <summary>
+    /// ANOTHER MODULE'S RECORDS — departments, positions, and later products or suppliers. Not a fixed list:
+    /// there can be thousands, so the value is SEARCHED rather than enumerated, and what is stored is the
+    /// record's identity rather than its label.
+    ///
+    /// <para>The pattern is old and has three names already: SAP's check table with its F4 search help, Oracle's
+    /// table-validated value set behind a descriptive flexfield, ServiceNow's reference field. All three say the
+    /// same sentence — the administrator defines the FIELD, and another module owns the VALUES.</para>
+    /// </summary>
+    ModuleRecord = 3
 }
 
 /// <summary>

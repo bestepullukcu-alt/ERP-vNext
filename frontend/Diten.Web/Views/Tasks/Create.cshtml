@@ -16,6 +16,10 @@
 
 @section Scripts {
     <partial name="~/Views/Tasks/_IndexL10n.cshtml" />
+    @* form-page.js announces every save and every refusal through DitenModal, and this page never loaded it:
+       a successful create THREW before it could navigate, so the user saw nothing, clicked again, and made a
+       second task. Found by running the page, not by a test — 1500 of those were green. *@
+    <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
     <script src="~/assets/js/Tasks/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
     <script src="~/assets/js/Tasks/form.js" asp-append-version="true"></script>

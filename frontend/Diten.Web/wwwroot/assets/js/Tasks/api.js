@@ -57,6 +57,9 @@
         TASK_FIELD_VALUE_INVALID: 'errorFieldValueInvalid',
         TASK_FIELD_DEFINITION_UNKNOWN: 'errorFieldDefinitionUnknown',
         TASK_FIELD_LIMIT_EXCEEDED: 'errorFieldLimitExceeded',
+        // A field pointing at a module record source nobody registered. Its own sentence, because the reader
+        // can do nothing about it themselves — the definition is an administrator's to correct.
+        FIELD_OPTION_SOURCE_INVALID: 'errorFieldOptionSourceInvalid',
         APPROVAL_PENDING: 'errorApprovalPending',
         // An unmet predecessor. Same string the PROJECTION uses to disable the button, deliberately: the greyed
         // control and this refusal are one fact seen from two sides.
@@ -177,6 +180,31 @@
          * data set merely by asking for it.
          */
         fieldOptions: (code) => request('GET', `/field-definitions/${encodeURIComponent(code)}/options`),
+        /*
+         * The same resolution, for a field whose values are ANOTHER MODULE'S RECORDS. Separate method, not a
+         * separate contract: it answers the same TaskFieldOptionDto the line above does, because a picker must
+         * not have to know which kind of source filled it.
+         *
+         * `term` is a SEARCH the server performs — a source can hold thousands of records, and the reason this
+         * is not a dropdown is that they must never all cross the wire. `ids` is the edit path: identities
+         * already on the task, resolved back into records the form can display.
+         */
+        fieldRecords: (code, options) => {
+            const query = new URLSearchParams();
+            if (options?.term) { query.set('term', options.term); }
+            if (options?.ids?.length) { query.set('ids', options.ids.join(',')); }
+            const suffix = query.toString();
+            return request(
+                'GET',
+                `/field-definitions/${encodeURIComponent(code)}/records${suffix ? `?${suffix}` : ''}`);
+        },
+        /*
+         * The sources an administrator may point a field at, for a chosen kind. Not part of the task form: this
+         * feeds the field-definition SCREEN, where the source used to be typed by hand and a typo produced a
+         * field that silently never appeared.
+         */
+        fieldOptionSources: (kind) =>
+            request('GET', `/field-definitions/option-sources?kind=${encodeURIComponent(kind)}`),
         assignablePeople: () => request('GET', '/assignable-people'),
 
         // ── Phase 2 ──────────────────────────────────────────────────────────

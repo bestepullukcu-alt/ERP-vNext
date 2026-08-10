@@ -326,6 +326,53 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// The records ONE configurable field offers, searched in the module that owns them.
+    ///
+    /// <para>Same permission and same reasoning as the options route it sits beside: filling a field you were
+    /// asked to fill is an ordinary task read. Same allow-list too — the caller names a FIELD, and the definition
+    /// decides which source is reachable, so this cannot be turned into a general "search any module" endpoint.
+    /// </para>
+    ///
+    /// <para>It answers the same <c>TaskFieldOptionDto</c> the options route does, because a picker must not have
+    /// to know which kind of source filled it. <c>ids</c> is the EDIT path: the identities already on a task,
+    /// resolved back into records the form can display.</para>
+    /// </summary>
+    [HttpGet("field-definitions/{code}/records")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> SearchFieldDefinitionRecords(
+        string code,
+        [FromQuery] string? term,
+        [FromQuery] string? ids,
+        [FromQuery] int? take,
+        CancellationToken ct)
+    {
+        var identities = string.IsNullOrWhiteSpace(ids)
+            ? null
+            : ids.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        var response = await _mediator.Send(
+            new GetTaskFieldDefinitionOptionsQuery(code, CorrelationId, term, identities, take), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// The sources an administrator may point a field at, for the kind they picked — what the field-definition
+    /// screen offers instead of a free-text box, so a key can no longer be mistyped into a field that silently
+    /// never appears.
+    ///
+    /// <para>The MANAGE permission, unlike the two routes above: this is the shaping act, not the filling one.
+    /// </para>
+    /// </summary>
+    [HttpGet("field-definitions/option-sources")]
+    [HasPermission(TaskPermissions.FieldDefinitionsManage)]
+    public async Task<IActionResult> GetFieldOptionSources(
+        [FromQuery] TaskFieldOptionsSourceKind kind, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetTaskFieldOptionSourcesQuery(kind, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpGet("field-definitions/{id:guid}")]
     [HasPermission(TaskPermissions.Read)]
     public async Task<IActionResult> GetFieldDefinition(Guid id, CancellationToken ct)

@@ -3,11 +3,31 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<TaskFieldDefinitionsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Microsoft.Extensions.Localization.IStringLocalizer<TaskFieldDefinitionsIndex> StringLocalizer
 @{
     var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
     var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
     var action = isEdit ? "Edit" : "Create";
+
+    // Every source name this tenant's language has words for, keyed by the STABLE key the server sends. Read by
+    // PREFIX rather than from a list: a module that registers a source is translated by adding seven resx lines,
+    // and no file here has to learn its name. Same bridge the tenant navigation uses for module and page names.
+    const string sourceLabelPrefix = "OptionSource.";
+    var sourceLabels = StringLocalizer.GetAllStrings(includeParentCultures: true)
+        .Where(entry => entry.Name.StartsWith(sourceLabelPrefix, StringComparison.Ordinal)
+                        && !entry.ResourceNotFound)
+        .ToDictionary(entry => entry.Name, entry => entry.Value, StringComparer.Ordinal);
 }
+
+<script id="taskfielddefinitions-form-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        sourceLabels,
+        selectSourcePlaceholder = Localizer["OptionsSourceKeySelect"].Value,
+        noSources = Localizer["OptionsSourceKeyNone"].Value,
+        loadFailed = Localizer["OptionsSourceKeyLoadFailed"].Value
+    })
+</script>
 
 <div class="d-flex align-items-center justify-content-between mb-3">
     <div>
@@ -108,12 +128,21 @@
                                 <option value="None">@Localizer["OptionsSourceNone"]</option>
                                 <option value="PlatformLookup">@Localizer["OptionsSourcePlatformLookup"]</option>
                                 <option value="BusinessReferenceData">@Localizer["OptionsSourceBusinessReferenceData"]</option>
+                                <option value="ModuleRecord">@Localizer["OptionsSourceModuleRecord"]</option>
                             </select>
                             <div class="form-text">@Localizer["OptionsSourceHint"]</div>
                         </div>
-                        <div class="col-12">
+                        <div class="col-12" data-options-source-key-group>
+                            @* CHOSEN, never typed. This box used to be free text, and a mistyped key produced a
+                               definition that saved cleanly and then never appeared on any form: the resolver
+                               refused the unknown source and the renderer — correctly — dropped the field. Both
+                               protections stay; what is removed is the way to reach them. *@
                             <label asp-for="OptionsSourceKey" class="form-label fw-medium">@Localizer["OptionsSourceKey"]</label>
-                            <input asp-for="OptionsSourceKey" class="form-control" maxlength="120" placeholder="@Localizer["OptionsSourceKeyPlaceholder"]" />
+                            @* The stored key travels on the element: the list is fetched after load, so without it an edit
+                               would render an empty control and save the field's source away. *@
+                            <select asp-for="OptionsSourceKey" class="form-select" data-options-source-key
+                                    data-selected="@Model.OptionsSourceKey"></select>
+                            <div class="form-text" data-options-source-key-hint>@Localizer["OptionsSourceKeyHint"]</div>
                         </div>
                         <div class="col-12">
                             <label asp-for="AppliesToModuleCode" class="form-label fw-medium">@Localizer["AppliesToModuleCode"]</label>

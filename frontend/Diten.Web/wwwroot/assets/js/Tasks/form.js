@@ -257,24 +257,45 @@
     // from the tenant's assignable people, the same list the assignee picker uses.
     const OPTION_DRIVEN_TYPES = new Set(['Text', 'Status']);
 
+    /*
+     * A source KIND, not a source key. The distinction matters: this file may know that some fields are backed
+     * by another module's records, and must never know WHICH module — the day it names one is the day adding the
+     * Product module means editing the form.
+     */
+    const MODULE_RECORD_KIND = 'ModuleRecord';
+
+    // The one value type whose stored value IS an identity, so it is the only one a record source can back.
+    const IDENTITY_VALUE_TYPE = 'Reference';
+
     const hasOptionsSource = (definition) =>
         !!definition
         && definition.optionsSourceKind
         && definition.optionsSourceKind !== 'None'
         && String(definition.optionsSourceKey || '').trim().length > 0;
 
+    const isModuleRecordSource = (definition) =>
+        hasOptionsSource(definition) && definition.optionsSourceKind === MODULE_RECORD_KIND;
+
     /*
      * Which control a definition gets, or null when this round renders none.
      *
-     * `Reference` is deliberately absent: it points at an arbitrary entity and there is no generic resolver for
-     * what it points at, so the only control we could offer is a raw GUID box — a control the user cannot fill
-     * correctly. Omitted entirely rather than shipped half-working.
+     * `Reference` used to be absent entirely, and the reason was sound: it points at an arbitrary entity with no
+     * generic resolver, so the only control we could offer was a raw GUID box the user cannot fill correctly.
+     * A MODULE RECORD source is exactly that missing resolver — the definition now says which module owns the
+     * values — so a Reference field that names one gets a searchable picker, and one that names none is still
+     * omitted for the original reason.
      */
     const customFieldControlKind = (definition) => {
         if (!definition) { return null; }
         const type = definition.valueType;
 
         if (type === 'Person') { return 'person'; }
+
+        if (isModuleRecordSource(definition)) {
+            // The value stored is an identity. On a Number or a Date the server refuses it, so offering a
+            // control here would only produce a refusal the user cannot act on.
+            return type === IDENTITY_VALUE_TYPE ? 'record' : null;
+        }
 
         if (hasOptionsSource(definition)) {
             // An option code is a string. Declaring a source on a numeric/date/boolean field would produce
@@ -311,13 +332,31 @@
         link: 'url'
     };
 
+    /*
+     * What ONE choice reads as. `choice.secondary` is TaskFieldOptionDto's optional disambiguating line — the
+     * business key, and the unit where two facilities can each own a "QA Specialist".
+     *
+     * Shared by every option-driven kind on purpose: the short sources send no secondary, so they are unchanged,
+     * and a record's key reaches the reader through the same line rather than a second formatter. What is never
+     * shown is `choice.value` — that is the identity, and BL-049 is about exactly this line.
+     */
+    const optionText = (choice) => {
+        const label = choice.label == null ? '' : String(choice.label);
+        const secondary = choice.secondary == null ? '' : String(choice.secondary).trim();
+        return secondary.length > 0 ? `${label} — ${secondary}` : label;
+    };
+
     const buildCustomFieldControl = (definition, kind, options, labels) => {
         const doc = global.document;
         const text = labels || {};
 
-        if (kind === 'select' || kind === 'person' || kind === 'boolean') {
+        if (kind === 'select' || kind === 'person' || kind === 'boolean' || kind === 'record') {
             const select = doc.createElement('select');
             select.className = 'form-select';
+            // Marks the control as one whose options are a PAGE of a larger set, not the whole set. Hydration
+            // reads this: a value missing from a complete list is a bad value, a value missing from a page is
+            // ordinary and must be added rather than dropped.
+            if (kind === 'record') { select.setAttribute('data-custom-field-record', '1'); }
 
             const placeholder = doc.createElement('option');
             placeholder.value = '';
@@ -334,7 +373,7 @@
             rows.forEach((choice) => {
                 const option = doc.createElement('option');
                 option.value = choice.value;
-                option.textContent = choice.label;
+                option.textContent = optionText(choice);
                 select.appendChild(option);
             });
             return select;
@@ -385,7 +424,7 @@
                 return;
             }
 
-            const needsOptions = kind === 'select' || kind === 'person';
+            const needsOptions = kind === 'select' || kind === 'person' || kind === 'record';
             const resolved = options[definition.code];
             if (needsOptions && (!Array.isArray(resolved) || resolved.length === 0)) {
                 global.console?.warn?.(
@@ -429,6 +468,23 @@
             label.setAttribute('for', controlId);
 
             column.appendChild(label);
+
+            /*
+             * A record field gets a SEARCH BOX, and this is the whole reason it is not a plain dropdown: a source
+             * can hold five thousand records, and an <option> list of five thousand is not a control — it is a
+             * scroll bar with a truncation nobody announced. The user types, the SERVER searches, the page comes
+             * back.
+             */
+            if (kind === 'record') {
+                const search = doc.createElement('input');
+                search.type = 'search';
+                search.className = 'form-control form-control-sm mb-2';
+                search.setAttribute('data-custom-field-search', definition.code);
+                search.setAttribute('aria-label', `${label.textContent}`);
+                search.placeholder = (labels && labels.recordSearchPlaceholder) || '';
+                column.appendChild(search);
+            }
+
             column.appendChild(control);
             container.appendChild(column);
             rendered.push(definition.code);
@@ -462,12 +518,65 @@
             .filter(Boolean);
     };
 
+    const isRecordControl = (control) =>
+        !!control && control.getAttribute && control.getAttribute('data-custom-field-record') === '1';
+
+    /*
+     * Replace a record picker's options with a freshly searched page, keeping the CURRENT selection in the list.
+     *
+     * Dropping it would be the data-loss bug wearing a different hat: the user picks a department, types in the
+     * search box to check something, and the value they already chose disappears from the control — so the save
+     * posts a task without it. A selection survives its own search.
+     */
+    const renderRecordOptions = (container, code, rows, labels) => {
+        const control = customFieldControl(container, code);
+        if (!control) { return; }
+
+        const doc = global.document;
+        const text = labels || {};
+        const selectedValue = control.value;
+        const selectedText = control.selectedOptions && control.selectedOptions[0]
+            ? control.selectedOptions[0].textContent
+            : '';
+
+        control.innerHTML = '';
+
+        const placeholder = doc.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = text.optionPlaceholder || '';
+        control.appendChild(placeholder);
+
+        (rows || []).forEach((choice) => {
+            const option = doc.createElement('option');
+            option.value = choice.value;
+            option.textContent = optionText(choice);
+            control.appendChild(option);
+        });
+
+        if (!selectedValue) { return; }
+        if (![...control.options].some((option) => option.value === selectedValue)) {
+            const kept = doc.createElement('option');
+            kept.value = selectedValue;
+            kept.textContent = selectedText;
+            control.appendChild(kept);
+        }
+        control.value = selectedValue;
+    };
+
     /*
      * Put stored values back on an EDIT. Without this a read-only create becomes a data-losing edit: the form
      * would post back a payload with every configurable field emptied.
+     *
+     * `recordsByCode` carries the records the SERVER resolved for the identities already on the task. A record
+     * picker only ever holds one PAGE of its source, so a task saved months ago routinely points at something
+     * that page does not contain — and a <select> given a value with no matching <option> silently keeps its old
+     * one. That is how an edit posts back a different department than it displayed.
      */
-    const writeCustomFieldValues = (container, values) => {
+    const writeCustomFieldValues = (container, values, recordsByCode, labels) => {
         if (!container) { return; }
+        const resolved = recordsByCode || {};
+        const text = labels || {};
+
         (values || []).forEach((entry) => {
             if (!entry || !entry.definitionCode) { return; }
             const control = customFieldControl(container, entry.definitionCode);
@@ -475,6 +584,24 @@
 
             const raw = entry.value == null ? '' : String(entry.value);
             const type = control.getAttribute('data-custom-field-type') || entry.valueType;
+
+            if (isRecordControl(control) && raw.length > 0) {
+                if (![...control.options].some((option) => option.value === raw)) {
+                    const match = (resolved[entry.definitionCode] || [])
+                        .find((row) => String(row.value) === raw);
+                    const option = global.document.createElement('option');
+                    option.value = raw;
+                    /*
+                     * A record the server could not resolve — deleted upstream, say — still has an identity on
+                     * the task, and the user must NOT be shown it (BL-049). They are told the record is
+                     * unavailable; the value itself is preserved so an unrelated edit does not silently clear it.
+                     */
+                    option.textContent = match ? optionText(match) : (text.recordUnavailable || '');
+                    control.appendChild(option);
+                }
+                control.value = raw;
+                return;
+            }
 
             // The server stores a full timestamp; `input[type=date]` only accepts yyyy-MM-dd and silently
             // rejects anything else, which is how a hydrated date arrives EMPTY and is then saved away.
@@ -527,6 +654,8 @@
         customFieldControlKind,
         customFieldLabel,
         renderCustomFields,
+        // Configurable fields backed by ANOTHER MODULE'S RECORDS.
+        renderRecordOptions,
         readCustomFieldValues,
         writeCustomFieldValues,
         validateCustomFields

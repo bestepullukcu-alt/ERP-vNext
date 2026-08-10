@@ -2,8 +2,10 @@ using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.BusinessReferenceData.Models;
 using Diten.Platform.Application.Features.BusinessReferenceData.Services;
+using Diten.Platform.Application.Features.Lookups;
 using Diten.Platform.Application.Features.Lookups.Services;
 using Diten.Platform.Application.Features.Tasks.Queries;
+using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
@@ -73,6 +75,12 @@ public sealed class GetTaskFieldDefinitionByIdHandler
 ///
 /// <para>An unresolvable source is REPORTED, never answered with an empty list: the form drops a field it cannot
 /// fill, and it can only make that decision if "no options" and "no such source" arrive differently.</para>
+///
+/// <para><b>All THREE source kinds land here, and none of them has a private path.</b> A module record source is
+/// the awkward one — it can hold thousands of rows, so it is searched rather than enumerated — but the search
+/// term and the cap live on the shared query and the short sources apply them to the list they already had. The
+/// alternative, a second endpoint for records, is how the second source stops obeying the contract and the third
+/// one rewrites it.</para>
 /// </summary>
 public sealed class GetTaskFieldDefinitionOptionsHandler
     : IRequestHandler<GetTaskFieldDefinitionOptionsQuery, Response<IReadOnlyList<TaskFieldOptionDto>>>
@@ -80,6 +88,7 @@ public sealed class GetTaskFieldDefinitionOptionsHandler
     private readonly ITaskFieldDefinitionRepository _definitions;
     private readonly IPlatformLookupProvider _lookups;
     private readonly IBusinessReferenceDataConsumerQueryService _referenceData;
+    private readonly ITaskRecordSourceRegistry _recordSources;
     private readonly ITenantContext _tenantContext;
     private readonly IConfiguration _configuration;
 
@@ -87,12 +96,14 @@ public sealed class GetTaskFieldDefinitionOptionsHandler
         ITaskFieldDefinitionRepository definitions,
         IPlatformLookupProvider lookups,
         IBusinessReferenceDataConsumerQueryService referenceData,
+        ITaskRecordSourceRegistry recordSources,
         ITenantContext tenantContext,
         IConfiguration configuration)
     {
         _definitions = definitions;
         _lookups = lookups;
         _referenceData = referenceData;
+        _recordSources = recordSources;
         _tenantContext = tenantContext;
         _configuration = configuration;
     }
@@ -121,11 +132,14 @@ public sealed class GetTaskFieldDefinitionOptionsHandler
         }
 
         var key = definition.OptionsSourceKey.Trim();
+        var take = TaskRecordSearchLimits.Clamp(request.Take);
+        var ids = request.Ids?.Where(id => !string.IsNullOrWhiteSpace(id)).ToList();
 
         var options = definition.OptionsSourceKind switch
         {
             TaskFieldOptionsSourceKind.PlatformLookup => await ResolvePlatformLookupAsync(key, ct),
             TaskFieldOptionsSourceKind.BusinessReferenceData => await ResolveReferenceDataAsync(key, ct),
+            TaskFieldOptionsSourceKind.ModuleRecord => await ResolveModuleRecordsAsync(key, request.Term, ids, take, ct),
             _ => null
         };
 
@@ -137,7 +151,71 @@ public sealed class GetTaskFieldDefinitionOptionsHandler
                 404, TaskReasonCodes.FieldOptionsUnresolved, request.CorrelationId);
         }
 
-        return Response<IReadOnlyList<TaskFieldOptionDto>>.Success(options, correlationId: request.CorrelationId);
+        /*
+         * Term and id filtering applied ONCE, after resolution, so the two short sources get searching for free
+         * and never grow their own copy of it. A record source has already applied both — it has to, because
+         * pulling five thousand rows back to filter them here is the thing the cap exists to prevent — and
+         * re-applying them to what it returned changes nothing.
+         */
+        return Response<IReadOnlyList<TaskFieldOptionDto>>.Success(
+            Narrow(options, request.Term, ids, take), correlationId: request.CorrelationId);
+    }
+
+    /// <summary>
+    /// The shared narrowing every source's result passes through: hydration by identity when ids were named,
+    /// otherwise a term filter and the cap.
+    /// </summary>
+    private static IReadOnlyList<TaskFieldOptionDto> Narrow(
+        IReadOnlyList<TaskFieldOptionDto> options, string? term, IReadOnlyList<string>? ids, int take)
+    {
+        if (ids is { Count: > 0 })
+        {
+            // A hydration is NOT capped: every stored value must come back, or the edit form silently drops the
+            // ones past the limit and posts a task with fields it never showed.
+            var wanted = ids.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            return options.Where(option => wanted.Contains(option.Value)).ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(term))
+        {
+            var needle = term.Trim();
+            options = options
+                .Where(option =>
+                    option.Label.Contains(needle, StringComparison.CurrentCultureIgnoreCase)
+                    || option.Value.Contains(needle, StringComparison.CurrentCultureIgnoreCase)
+                    || (option.Secondary?.Contains(needle, StringComparison.CurrentCultureIgnoreCase) ?? false))
+                .ToList();
+        }
+
+        return options.Count <= take ? options : options.Take(take).ToList();
+    }
+
+    /// <summary>
+    /// Another module's records, through the registry rather than a switch. An unregistered key returns null and
+    /// becomes the ordinary "source could not be resolved" refusal — the same answer a mistyped lookup key gets,
+    /// which is why the form needs no new rule to drop the field.
+    /// </summary>
+    private async Task<IReadOnlyList<TaskFieldOptionDto>?> ResolveModuleRecordsAsync(
+        string sourceKey, string? term, IReadOnlyList<string>? ids, int take, CancellationToken ct)
+    {
+        var source = _recordSources.Find(sourceKey);
+        if (source is null)
+        {
+            return null;
+        }
+
+        var records = ids is { Count: > 0 }
+            ? await source.ResolveAsync(ids, ct)
+            : await source.SearchAsync(term, take, ct);
+
+        // Value = identity, Label = the name, Secondary = the business key and whatever disambiguates it. This
+        // is the ONE place a record becomes an option, so no caller ever sees the record shape.
+        return records
+            .Select(record => new TaskFieldOptionDto(
+                record.Id,
+                record.Name,
+                string.IsNullOrWhiteSpace(record.Secondary) ? record.Code : $"{record.Code} · {record.Secondary}"))
+            .ToList();
     }
 
     private async Task<IReadOnlyList<TaskFieldOptionDto>?> ResolvePlatformLookupAsync(
@@ -206,6 +284,121 @@ public sealed class GetTaskFieldDefinitionOptionsHandler
     private static Response<IReadOnlyList<TaskFieldOptionDto>> Fail(
         string message, int status, string reasonCode, string correlationId)
         => Response<IReadOnlyList<TaskFieldOptionDto>>.Fail(message, status, reasonCode, correlationId);
+}
+
+/// <summary>
+/// What an administrator may CHOOSE as a field's option source, for the kind they picked.
+///
+/// <para>The screen used to take the key as free text, and a typo produced a field that disappeared: the
+/// resolver refused the unknown source and the form dropped the field rather than showing an unfillable picker.
+/// Both of those behaviours are correct and both stay. What is removed is the way to get there — a key that can
+/// only be chosen cannot be mistyped.</para>
+/// </summary>
+public sealed class GetTaskFieldOptionSourcesHandler
+    : IRequestHandler<GetTaskFieldOptionSourcesQuery, Response<IReadOnlyList<TaskFieldOptionSourceDto>>>
+{
+    /*
+     * The platform keys this screen offers. NOT every key PlatformLookupProvider answers: the rest are operator
+     * surfaces (audit categories, notification channels, subscription cycles) that belong on a task about as
+     * much as a database table name does. Listed rather than reflected — BL-040's lesson is that reflection over
+     * a shape nobody re-checks fails silently, and this list is short enough to read.
+     */
+    private static readonly IReadOnlyList<(string Key, string ResourceKey)> PlatformLookupSources =
+    [
+        (PlatformLookupKeys.Countries, TaskFieldOptionSourceLabels.KeyFor(PlatformLookupKeys.Countries)),
+        (PlatformLookupKeys.Currencies, TaskFieldOptionSourceLabels.KeyFor(PlatformLookupKeys.Currencies)),
+        (PlatformLookupKeys.Languages, TaskFieldOptionSourceLabels.KeyFor(PlatformLookupKeys.Languages)),
+        (PlatformLookupKeys.Timezones, TaskFieldOptionSourceLabels.KeyFor(PlatformLookupKeys.Timezones))
+    ];
+
+    private readonly IBusinessReferenceDataStewardshipRepository _sets;
+    private readonly ITaskRecordSourceRegistry _recordSources;
+    private readonly ITenantContext _tenantContext;
+    private readonly IConfiguration _configuration;
+
+    public GetTaskFieldOptionSourcesHandler(
+        IBusinessReferenceDataStewardshipRepository sets,
+        ITaskRecordSourceRegistry recordSources,
+        ITenantContext tenantContext,
+        IConfiguration configuration)
+    {
+        _sets = sets;
+        _recordSources = recordSources;
+        _tenantContext = tenantContext;
+        _configuration = configuration;
+    }
+
+    public async Task<Response<IReadOnlyList<TaskFieldOptionSourceDto>>> Handle(
+        GetTaskFieldOptionSourcesQuery request, CancellationToken ct)
+    {
+        IReadOnlyList<TaskFieldOptionSourceDto> sources = request.Kind switch
+        {
+            TaskFieldOptionsSourceKind.PlatformLookup => PlatformLookupSources
+                .Select(entry => new TaskFieldOptionSourceDto(entry.Key, entry.Key, entry.ResourceKey, null))
+                .ToList(),
+
+            TaskFieldOptionsSourceKind.BusinessReferenceData => await ListReferenceSetsAsync(ct),
+
+            // The registry, not a list: a module that registers a source appears here without this file being
+            // edited, which is the whole reason the registry exists.
+            TaskFieldOptionsSourceKind.ModuleRecord => _recordSources.All
+                .Select(source => new TaskFieldOptionSourceDto(
+                    source.SourceKey, source.SourceKey, source.LabelResourceKey, source.ModuleCode))
+                .ToList(),
+
+            // "None" is an answer, not a failure: the screen asks for every kind including the one with no
+            // sources, and an empty list is exactly what it should render.
+            _ => []
+        };
+
+        return Response<IReadOnlyList<TaskFieldOptionSourceDto>>.Success(
+            sources, correlationId: request.CorrelationId);
+    }
+
+    /// <summary>
+    /// The tenant's own reference sets, PLUS the seeded universal ones that live under the reference tenant —
+    /// the same two-step read <see cref="GetTaskFieldDefinitionOptionsHandler"/> performs, because a screen that
+    /// cannot offer "country" while the resolver happily resolves it is a screen that teaches the wrong thing.
+    /// </summary>
+    private async Task<IReadOnlyList<TaskFieldOptionSourceDto>> ListReferenceSetsAsync(CancellationToken ct)
+    {
+        var byCode = new Dictionary<string, TaskFieldOptionSourceDto>(StringComparer.OrdinalIgnoreCase);
+
+        await CollectAsync(byCode, ct);
+
+        if (Guid.TryParse(_configuration["BusinessReferenceData:CatalogLoad:TenantId"], out var referenceTenantId)
+            && referenceTenantId != Guid.Empty
+            && referenceTenantId != _tenantContext.TenantId)
+        {
+            using (TenantScope.Begin(_tenantContext, referenceTenantId))
+            {
+                await CollectAsync(byCode, ct);
+            }
+        }
+
+        return byCode.Values.OrderBy(dto => dto.Label, StringComparer.CurrentCultureIgnoreCase).ToList();
+    }
+
+    private async Task CollectAsync(
+        Dictionary<string, TaskFieldOptionSourceDto> byCode, CancellationToken ct)
+    {
+        var page = await _sets.QuerySetsAsync(
+            new BusinessReferenceDataSetListQuery(
+                Search: null, Status: null, ScopeType: null,
+                Page: 1, PageSize: 200, Sort: "setCode"),
+            ct);
+
+        // Only sets that have actually PUBLISHED a version. The resolver reads published values, so a draft set
+        // resolves to nothing — offering it here would recreate the vanishing field this endpoint exists to
+        // prevent, this time with a key nobody mistyped.
+        foreach (var set in page.Items.Where(set =>
+                     set.PublishedVersionId is not null
+                     && set.Status == Domain.Entities.BusinessReferenceDataSetStatus.Active))
+        {
+            // A tenant's set carries its OWN name — the tenant's words, not a resource key we could translate.
+            byCode.TryAdd(set.SetCode, new TaskFieldOptionSourceDto(set.SetCode, set.Name, null, null));
+        }
+    }
 }
 
 public static class TaskFieldDefinitionMapper

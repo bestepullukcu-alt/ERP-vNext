@@ -114,4 +114,7 @@
   <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>اختر شخصًا…</value></data>
   <data name="AssigneeEmpty" xml:space="preserve"><value>لا يشغل أحد وظيفة بعد، لذا لا يوجد من يمكن الإسناد إليه. اطلب من المسؤول تعيين الوظائف أولاً.</value></data>
   <data name="PersonNameUnavailable" xml:space="preserve"><value>الاسم غير متوفر</value></data>
+  <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>اكتب للبحث…</value></data>
+  <data name="CustomFieldRecordUnavailable" xml:space="preserve"><value>السجل غير متاح</value></data>
+  <data name="ErrorFieldOptionSourceInvalid" xml:space="preserve"><value>يشير هذا الحقل إلى مصدر لا توفّره أي وحدة. اطلب من المسؤول تصحيح تعريفه.</value></data>
 </root>

@@ -414,7 +414,7 @@ public sealed class TaskChecklistSubtaskTests
                 LegalEntityId = Guid.NewGuid()
             }),
             new FakePositionAssignmentRepository(),
-            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository()),
+            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None),
             new TaskLifecycleService(), new FakeTaskApprovalService(), templates, runs, new TaskChecklistService(),
             new FakeTaskNotificationService(),
             new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant),
@@ -478,7 +478,7 @@ public sealed class TaskChecklistSubtaskTests
                 LegalEntityId = Guid.NewGuid()
             }),
             new FakePositionAssignmentRepository(),
-            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository()),
+            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None),
             new TaskLifecycleService(),
             new FakeTaskApprovalService(),
             new FakeChecklistTemplateRepository(),

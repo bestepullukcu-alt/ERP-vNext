@@ -1,4 +1,5 @@
 using Diten.Platform.Domain.Entities.Tasks;
+using Diten.Platform.Domain.Enums.Tasks;
 
 namespace Diten.Platform.Application.Features.Tasks.Services;
 
@@ -26,6 +27,49 @@ public static class TaskFieldDefinitionRules
 
     public const string CodeImmutableMessage =
         "A field definition's code cannot be changed after it is created.";
+
+    public const string RecordSourceValueTypeMessage =
+        "A field whose values come from another module's records stores an identity, so its value type must be "
+        + "Reference.";
+
+    /// <summary>
+    /// A record-backed definition has to name a source some module actually registered, and it has to be the
+    /// value type that can hold an identity.
+    ///
+    /// <para>Refused HERE rather than left to the reader. The form already drops a field whose source will not
+    /// resolve — correctly, because an empty picker is worse than no field — but the administrator who saved that
+    /// definition then watches it never appear and has nothing to go on. The typo used to be possible because the
+    /// key was typed; it is now chosen, and this is the second lock on the same door: a client can still POST
+    /// anything.</para>
+    /// </summary>
+    /// <param name="isRegisteredSource">
+    /// Whether the registry knows this key. Passed in rather than resolved here so this class stays a pure rule —
+    /// the same reason every other check in it takes its facts as arguments.
+    /// </param>
+    public static (string ReasonCode, string Message)? ValidateOptionSource(
+        TaskFieldOptionsSourceKind kind,
+        string? sourceKey,
+        TaskFieldValueType valueType,
+        Func<string, bool> isRegisteredSource)
+    {
+        ArgumentNullException.ThrowIfNull(isRegisteredSource);
+
+        if (kind != TaskFieldOptionsSourceKind.ModuleRecord)
+        {
+            return null;
+        }
+
+        if (valueType != TaskFieldValueType.Reference)
+        {
+            return (TaskReasonCodes.FieldOptionSourceInvalid, RecordSourceValueTypeMessage);
+        }
+
+        var key = sourceKey?.Trim();
+        return string.IsNullOrWhiteSpace(key) || !isRegisteredSource(key)
+            ? (TaskReasonCodes.FieldOptionSourceInvalid,
+                $"No module offers records under the source '{key ?? string.Empty}'.")
+            : null;
+    }
 
     /// <summary>
     /// EXACTLY ONE label source. Both set is ambiguous — the projection would have to guess which one the screen

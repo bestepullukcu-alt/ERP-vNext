@@ -72,4 +72,15 @@
   <data name="EditBtn" xml:space="preserve">
     <value>编辑</value>
   </data>
+  <data name="OptionsSourceModuleRecord" xml:space="preserve"><value>其他模块的记录</value></data>
+  <data name="OptionsSourceKeyHint" xml:space="preserve"><value>请选择来源。列表取决于上方的类型；更改类型会清除已选项。</value></data>
+  <data name="OptionsSourceKeySelect" xml:space="preserve"><value>选择来源…</value></data>
+  <data name="OptionsSourceKeyNone" xml:space="preserve"><value>该类型在此租户下没有可用来源。</value></data>
+  <data name="OptionsSourceKeyLoadFailed" xml:space="preserve"><value>无法读取来源列表。</value></data>
+  <data name="OptionSource.organization-unit" xml:space="preserve"><value>组织单元</value></data>
+  <data name="OptionSource.position" xml:space="preserve"><value>岗位</value></data>
+  <data name="OptionSource.countries" xml:space="preserve"><value>国家/地区</value></data>
+  <data name="OptionSource.currencies" xml:space="preserve"><value>货币</value></data>
+  <data name="OptionSource.languages" xml:space="preserve"><value>语言</value></data>
+  <data name="OptionSource.timezones" xml:space="preserve"><value>时区</value></data>
 </root>

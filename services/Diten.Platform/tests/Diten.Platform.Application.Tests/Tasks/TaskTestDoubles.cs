@@ -1115,3 +1115,58 @@ internal sealed class FakeNotificationLocaleResolver(string locale = "en")
     public Task<string> ResolveAsync(Guid tenantId, string? requested, CancellationToken ct = default)
         => Task.FromResult(string.IsNullOrWhiteSpace(requested) ? locale : requested.Trim().ToLowerInvariant());
 }
+
+/*
+ * ── Module-record sources ────────────────────────────────────────────────────────────────────────────────────
+ *
+ * A source with a fixed set of rows, used to prove the CONTRACT rather than any particular module's query. The
+ * real OrganizationUnit and Position sources have their own tests; here the point is that a caller can hold two
+ * different sources and not be able to tell them apart.
+ */
+internal sealed class FakeTaskRecordSource(
+    string sourceKey,
+    params Diten.Platform.Application.Features.Tasks.Services.TaskRecordDto[] records)
+    : Diten.Platform.Application.Features.Tasks.Services.ITaskRecordSource
+{
+    private readonly List<Diten.Platform.Application.Features.Tasks.Services.TaskRecordDto> _records = [.. records];
+
+    /// <summary>Every term this source was searched with, so a test can prove the search reached the source.</summary>
+    internal List<string?> SearchTerms { get; } = [];
+
+    public string SourceKey => sourceKey;
+    public string ModuleCode => "test";
+    public string LabelResourceKey => $"recordSource_{sourceKey}";
+
+    public Task<IReadOnlyList<Diten.Platform.Application.Features.Tasks.Services.TaskRecordDto>> SearchAsync(
+        string? term, int take, CancellationToken ct)
+    {
+        SearchTerms.Add(term);
+        IReadOnlyList<Diten.Platform.Application.Features.Tasks.Services.TaskRecordDto> hits = _records
+            .Where(record => string.IsNullOrWhiteSpace(term)
+                             || record.Name.Contains(term, StringComparison.OrdinalIgnoreCase)
+                             || record.Code.Contains(term, StringComparison.OrdinalIgnoreCase))
+            .Take(take)
+            .ToList();
+        return Task.FromResult(hits);
+    }
+
+    public Task<IReadOnlyList<Diten.Platform.Application.Features.Tasks.Services.TaskRecordDto>> ResolveAsync(
+        IReadOnlyCollection<string> ids, CancellationToken ct)
+    {
+        IReadOnlyList<Diten.Platform.Application.Features.Tasks.Services.TaskRecordDto> hits = _records
+            .Where(record => ids.Contains(record.Id, StringComparer.OrdinalIgnoreCase))
+            .ToList();
+        return Task.FromResult(hits);
+    }
+}
+
+internal static class TaskRecordSourceDoubles
+{
+    /// <summary>No module offers records. The default for every suite that is not about record fields.</summary>
+    internal static Diten.Platform.Application.Features.Tasks.Services.ITaskRecordSourceRegistry None
+        => new Diten.Platform.Application.Features.Tasks.Services.TaskRecordSourceRegistry([]);
+
+    internal static Diten.Platform.Application.Features.Tasks.Services.ITaskRecordSourceRegistry With(
+        params Diten.Platform.Application.Features.Tasks.Services.ITaskRecordSource[] sources)
+        => new Diten.Platform.Application.Features.Tasks.Services.TaskRecordSourceRegistry(sources);
+}

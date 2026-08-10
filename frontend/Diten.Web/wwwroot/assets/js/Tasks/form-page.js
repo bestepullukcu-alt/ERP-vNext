@@ -105,9 +105,18 @@
                 byCode[definition.code] = personOptions;
                 return;
             }
-            if (kind !== 'select') { return; }
+            if (kind !== 'select' && kind !== 'record') { return; }
 
-            const result = await global.TasksApi.fieldOptions(definition.code);
+            /*
+             * A record source is resolved HERE, beside the other two kinds, and that placement is the point.
+             * Its first page is fetched the same way, judged by the same rule, and dropped by the same code —
+             * so an unresolvable module source hides its field for exactly the reason a mistyped lookup key
+             * does, with no second rule to keep in step.
+             */
+            const result = kind === 'record'
+                ? await global.TasksApi.fieldRecords(definition.code)
+                : await global.TasksApi.fieldOptions(definition.code);
+
             if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
                 byCode[definition.code] = result.data;
                 return;
@@ -117,6 +126,78 @@
                 `[Tasks] options for field "${definition.code}" could not be resolved `
                 + `(${definition.optionsSourceKind}/${definition.optionsSourceKey || '—'}): `
                 + `status ${result.status}${result.reasonCode ? `, ${result.reasonCode}` : ''}.`);
+        }));
+
+        return byCode;
+    };
+
+    /*
+     * Wire every record picker's search box to the server.
+     *
+     * Debounced, because a keystroke-per-request turns a five-thousand-row source into five thousand requests;
+     * and guarded by a sequence number, because a slow answer for "Kal" must not overwrite the answer for
+     * "Kalite" that arrived first. Both are the ordinary failures of a search-as-you-type control, and both are
+     * invisible until the picker shows results for something the user already finished typing.
+     */
+    const RECORD_SEARCH_DEBOUNCE_MS = 250;
+
+    const wireRecordSearch = (row) => {
+        if (!row) { return; }
+
+        row.querySelectorAll('[data-custom-field-search]').forEach((input) => {
+            const code = input.getAttribute('data-custom-field-search');
+            let timer = null;
+            let sequence = 0;
+
+            input.addEventListener('input', () => {
+                global.clearTimeout(timer);
+                timer = global.setTimeout(async () => {
+                    const mine = ++sequence;
+                    const result = await global.TasksApi.fieldRecords(code, { term: input.value });
+                    // A stale answer is discarded rather than rendered: the user has typed since.
+                    if (mine !== sequence) { return; }
+                    if (!result.ok) {
+                        global.console?.warn?.(
+                            `[Tasks] searching records for field "${code}" failed `
+                            + `(status ${result.status}${result.reasonCode ? `, ${result.reasonCode}` : ''}).`);
+                        return;
+                    }
+                    global.TaskForm.renderRecordOptions(row, code, result.data || [], {
+                        optionPlaceholder: t('customFieldOptionPlaceholder')
+                    });
+                }, RECORD_SEARCH_DEBOUNCE_MS);
+            });
+        });
+    };
+
+    /*
+     * Resolve the identities a task already carries back into records, so the EDIT form can display them.
+     *
+     * Without this the picker holds only its first page, and a task pointing at anything outside that page
+     * cannot render its own value — the control keeps the old one and the save posts a different record than the
+     * screen showed. Yesterday's round caught this exact shape on date fields.
+     */
+    const resolveStoredRecords = async (definitions, values) => {
+        const byCode = {};
+        const wanted = (definitions || []).filter(
+            (definition) => global.TaskForm.customFieldControlKind(definition) === 'record');
+
+        await Promise.all(wanted.map(async (definition) => {
+            const ids = (values || [])
+                .filter((entry) => entry?.definitionCode === definition.code && entry.value)
+                .map((entry) => String(entry.value));
+            if (ids.length === 0) { return; }
+
+            const result = await global.TasksApi.fieldRecords(definition.code, { ids });
+            if (result.ok && Array.isArray(result.data)) {
+                byCode[definition.code] = result.data;
+                return;
+            }
+            // The value is still written back — losing it would be worse — but it will read as unavailable
+            // rather than as a raw identity (BL-049), and the reason is here rather than nowhere.
+            global.console?.warn?.(
+                `[Tasks] stored records for field "${definition.code}" could not be resolved `
+                + `(status ${result.status}${result.reasonCode ? `, ${result.reasonCode}` : ''}).`);
         }));
 
         return byCode;
@@ -143,8 +224,11 @@
             optionPlaceholder: t('customFieldOptionPlaceholder'),
             booleanYes: t('customFieldBooleanYes'),
             booleanNo: t('customFieldBooleanNo'),
+            recordSearchPlaceholder: t('customFieldRecordSearchPlaceholder'),
             translate: t
         });
+
+        wireRecordSearch(row);
 
         // No definition survived rendering ⇒ the section stays hidden. An empty heading would announce a
         // capability the page cannot offer.
@@ -209,7 +293,14 @@
                 setValue('taskRemainingHours', existing.data.remainingHours ?? '');
                 // The stored configurable values. Without this the edit posts back a payload with every one of
                 // them emptied: a read-only create would have become a data-LOSING edit.
-                global.TaskForm.writeCustomFieldValues(customFieldsRow(), existing.data.fieldValues || []);
+                //
+                // Record fields need their identities resolved FIRST — the picker holds one page, and a stored
+                // value outside it has no option to select without this.
+                const storedValues = existing.data.fieldValues || [];
+                const storedRecords = await resolveStoredRecords(customFieldDefinitions, storedValues);
+                global.TaskForm.writeCustomFieldValues(
+                    customFieldsRow(), storedValues, storedRecords,
+                    { recordUnavailable: t('customFieldRecordUnavailable') });
             }
         }
 

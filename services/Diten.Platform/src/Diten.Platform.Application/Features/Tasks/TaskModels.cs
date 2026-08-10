@@ -142,6 +142,17 @@ public static class TaskReasonCodes
     public const string FieldOptionsUnresolved = "FIELD_OPTIONS_UNRESOLVED";
 
     /// <summary>
+    /// The DEFINITION itself names an option source that cannot work: a module record source no module has
+    /// registered, or a record source on a value type that cannot hold an identity.
+    ///
+    /// <para>Refused at the WRITE, deliberately. The reader already drops a field whose source will not resolve,
+    /// and that protection is correct — but a field the administrator saved and then never saw again is a defect
+    /// they cannot diagnose. Saying no at the moment of typing costs one message; saying nothing costs a support
+    /// call.</para>
+    /// </summary>
+    public const string FieldOptionSourceInvalid = "FIELD_OPTION_SOURCE_INVALID";
+
+    /// <summary>
     /// A bulk retire named more definitions than one request may carry. REFUSED rather than truncated: silently
     /// processing the first N and reporting success is the "5 deleted" lie in another form.
     /// </summary>
@@ -590,10 +601,37 @@ public sealed record TaskFieldDefinitionDto(
     DateTimeOffset CreatedAt);
 
 /// <summary>
-/// One choice a configurable field offers. Flattened on purpose: a platform lookup and a published reference
-/// value have different shapes upstream, and the form must not have to know which kind it is looking at.
+/// One choice a configurable field offers. Flattened on purpose: a platform lookup, a published reference value
+/// and another module's record have three different shapes upstream, and the form must not have to know which
+/// kind it is looking at.
+///
+/// <para><b>Value is always the identity and Label is always what the reader recognises.</b> For a lookup or a
+/// reference set those are the code and its label. For a module record the identity is the record's id and the
+/// label is its NAME — so renaming the record renames it on the task, and the raw identity never reaches the
+/// screen (BL-049).</para>
 /// </summary>
-public sealed record TaskFieldOptionDto(string Value, string Label);
+/// <param name="Secondary">
+/// An optional second line that disambiguates: the business key, and the organization unit where two facilities
+/// can each own a "QA Specialist". Null for the short fixed sources, whose label already says everything.
+/// </param>
+public sealed record TaskFieldOptionDto(string Value, string Label, string? Secondary = null);
+
+/// <summary>
+/// One source an administrator may point a field at — a platform lookup key, a reference set code, or a
+/// registered module record source. What the field-definition screen offers INSTEAD of a free-text box.
+/// </summary>
+/// <param name="Key">Exactly what gets stored in <c>OptionsSourceKey</c>. Data, never a display string.</param>
+/// <param name="Label">
+/// What the administrator reads. A tenant's reference set carries its own name; ours carry a resource key, and
+/// <paramref name="LabelResourceKey"/> says which — the same split the field definition itself already makes
+/// between a system label and a tenant's own words.
+/// </param>
+/// <param name="ModuleCode">Which module owns the records. Null for the two non-record kinds.</param>
+public sealed record TaskFieldOptionSourceDto(
+    string Key,
+    string Label,
+    string? LabelResourceKey,
+    string? ModuleCode);
 
 // ── Phase 4: recurrence ──────────────────────────────────────────────────────
 

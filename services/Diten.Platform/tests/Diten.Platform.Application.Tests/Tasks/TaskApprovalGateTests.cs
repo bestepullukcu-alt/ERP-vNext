@@ -269,7 +269,7 @@ public sealed class TaskApprovalGateTests
                 LegalEntityId = Guid.NewGuid()
             }),
             new FakePositionAssignmentRepository(),
-            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository()),
+            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None),
             new TaskLifecycleService(), approvals,
             new FakeChecklistTemplateRepository(), new FakeChecklistRunRepository(), new TaskChecklistService(),
             new FakeTaskNotificationService(),

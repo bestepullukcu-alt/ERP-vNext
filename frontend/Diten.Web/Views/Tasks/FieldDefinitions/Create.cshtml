@@ -12,5 +12,7 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    @* The form asks the server which sources exist, so it needs the same API client the task form uses. *@
+    <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
     <script src="~/assets/js/Tasks/FieldDefinitions/form.js" asp-append-version="true"></script>
 }

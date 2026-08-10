@@ -70,7 +70,40 @@ public sealed record GetTaskFieldDefinitionByIdQuery(Guid Id, string Correlation
 ///
 /// <para>The caller names a FIELD, never a lookup key or a reference set. That is the whole point of resolving
 /// server-side: the definition is the allow-list, so a tenant cannot reach a data set merely by asking for it,
-/// and the browser never has to know which of the two source kinds a field uses.</para>
+/// and the browser never has to know which of the three source kinds a field uses.</para>
+///
+/// <para><b>ONE query for all three kinds, and that is the point.</b> A platform lookup and a reference set are
+/// short and fixed; another module's records are neither, so they are SEARCHED. Giving records their own query
+/// would have produced two resolution paths, and the second path is where a source stops obeying the contract —
+/// the WC-1 lesson. Instead the shape that a large source needs (a term and a cap) is on the ONE query, and the
+/// short sources simply apply it to the list they already had.</para>
 /// </summary>
-public sealed record GetTaskFieldDefinitionOptionsQuery(string Code, string CorrelationId)
+/// <param name="Term">
+/// What the user typed. Null or empty = the first page, so a picker opens with something in it.
+/// </param>
+/// <param name="Ids">
+/// Identities already stored on a task, to be resolved back into records for the EDIT form. When present the
+/// term is ignored: this is a hydration, not a search. Without it the round trip loses data — a value the first
+/// page does not contain cannot be rendered, and a control that cannot render its value posts back a different
+/// one.
+/// </param>
+public sealed record GetTaskFieldDefinitionOptionsQuery(
+    string Code,
+    string CorrelationId,
+    string? Term = null,
+    IReadOnlyList<string>? Ids = null,
+    int? Take = null)
     : IRequest<Response<IReadOnlyList<TaskFieldOptionDto>>>;
+
+/// <summary>
+/// Which option sources an administrator may PICK when defining a field, for the kind they chose.
+///
+/// <para>It exists because the source key used to be free text, and a mistyped key produced a field that
+/// silently vanished from the form: the resolver refused the unknown source and the renderer — correctly —
+/// dropped the field. The protection was right; the typing was the defect. A key that can only be CHOSEN cannot
+/// be mistyped.</para>
+/// </summary>
+public sealed record GetTaskFieldOptionSourcesQuery(
+    Domain.Enums.Tasks.TaskFieldOptionsSourceKind Kind,
+    string CorrelationId)
+    : IRequest<Response<IReadOnlyList<TaskFieldOptionSourceDto>>>;

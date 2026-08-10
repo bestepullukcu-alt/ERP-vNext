@@ -24,15 +24,18 @@ public sealed class CreateTaskFieldDefinitionHandler
     private readonly ITaskFieldDefinitionRepository _definitions;
     private readonly ITenantContext _tenantContext;
     private readonly ICurrentUserContext _currentUser;
+    private readonly ITaskRecordSourceRegistry _recordSources;
 
     public CreateTaskFieldDefinitionHandler(
         ITaskFieldDefinitionRepository definitions,
         ITenantContext tenantContext,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        ITaskRecordSourceRegistry recordSources)
     {
         _definitions = definitions;
         _tenantContext = tenantContext;
         _currentUser = currentUser;
+        _recordSources = recordSources;
     }
 
     public async Task<Response<Guid>> Handle(CreateTaskFieldDefinitionCommand command, CancellationToken ct)
@@ -50,6 +53,16 @@ public sealed class CreateTaskFieldDefinitionHandler
         {
             return Response<Guid>.Fail(
                 labelInvalid.Message, 400, labelInvalid.ReasonCode, command.CorrelationId);
+        }
+
+        // A record source nobody registered would save cleanly and then never appear on a form. Refused where
+        // the administrator can still see the reason.
+        if (TaskFieldDefinitionRules.ValidateOptionSource(
+                request.OptionsSourceKind, request.OptionsSourceKey, request.ValueType,
+                key => _recordSources.Find(key) is not null) is { } sourceInvalid)
+        {
+            return Response<Guid>.Fail(
+                sourceInvalid.Message, 400, sourceInvalid.ReasonCode, command.CorrelationId);
         }
 
         // The code is the join key for every value stored under it, so a duplicate is not a naming annoyance —
@@ -102,12 +115,16 @@ public sealed class UpdateTaskFieldDefinitionHandler
 {
     private readonly ITaskFieldDefinitionRepository _definitions;
     private readonly ICurrentUserContext _currentUser;
+    private readonly ITaskRecordSourceRegistry _recordSources;
 
     public UpdateTaskFieldDefinitionHandler(
-        ITaskFieldDefinitionRepository definitions, ICurrentUserContext currentUser)
+        ITaskFieldDefinitionRepository definitions,
+        ICurrentUserContext currentUser,
+        ITaskRecordSourceRegistry recordSources)
     {
         _definitions = definitions;
         _currentUser = currentUser;
+        _recordSources = recordSources;
     }
 
     public async Task<Response<NoContent>> Handle(UpdateTaskFieldDefinitionCommand command, CancellationToken ct)
@@ -125,6 +142,16 @@ public sealed class UpdateTaskFieldDefinitionHandler
         {
             return Response<NoContent>.Fail(
                 labelInvalid.Message, 400, labelInvalid.ReasonCode, command.CorrelationId);
+        }
+
+        // The SAME rule as on create. An edit that could reach a state a create refuses is how the second write
+        // path ends up with no checks at all — this module has met that shape three times.
+        if (TaskFieldDefinitionRules.ValidateOptionSource(
+                request.OptionsSourceKind, request.OptionsSourceKey, request.ValueType,
+                key => _recordSources.Find(key) is not null) is { } sourceInvalid)
+        {
+            return Response<NoContent>.Fail(
+                sourceInvalid.Message, 400, sourceInvalid.ReasonCode, command.CorrelationId);
         }
 
         var existing = await _definitions.ListAllAsync(ct);

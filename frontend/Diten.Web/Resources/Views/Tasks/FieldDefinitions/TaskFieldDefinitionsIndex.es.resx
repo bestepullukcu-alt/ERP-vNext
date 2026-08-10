@@ -72,4 +72,15 @@
   <data name="EditBtn" xml:space="preserve">
     <value>Editar</value>
   </data>
+  <data name="OptionsSourceModuleRecord" xml:space="preserve"><value>Registros de otro módulo</value></data>
+  <data name="OptionsSourceKeyHint" xml:space="preserve"><value>Elija una fuente. La lista depende del tipo anterior; cambiar el tipo borra la elección.</value></data>
+  <data name="OptionsSourceKeySelect" xml:space="preserve"><value>Elegir una fuente…</value></data>
+  <data name="OptionsSourceKeyNone" xml:space="preserve"><value>Este tipo no ofrece ninguna fuente en este inquilino.</value></data>
+  <data name="OptionsSourceKeyLoadFailed" xml:space="preserve"><value>No se pudo leer la lista de fuentes.</value></data>
+  <data name="OptionSource.organization-unit" xml:space="preserve"><value>Unidades organizativas</value></data>
+  <data name="OptionSource.position" xml:space="preserve"><value>Puestos</value></data>
+  <data name="OptionSource.countries" xml:space="preserve"><value>Países</value></data>
+  <data name="OptionSource.currencies" xml:space="preserve"><value>Monedas</value></data>
+  <data name="OptionSource.languages" xml:space="preserve"><value>Idiomas</value></data>
+  <data name="OptionSource.timezones" xml:space="preserve"><value>Zonas horarias</value></data>
 </root>

@@ -114,4 +114,7 @@
   <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>选择人员…</value></data>
   <data name="AssigneeEmpty" xml:space="preserve"><value>目前无人担任职位，因此没有可分配的人员。请先让管理员分配职位。</value></data>
   <data name="PersonNameUnavailable" xml:space="preserve"><value>姓名不可用</value></data>
+  <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>输入以搜索…</value></data>
+  <data name="CustomFieldRecordUnavailable" xml:space="preserve"><value>记录不可用</value></data>
+  <data name="ErrorFieldOptionSourceInvalid" xml:space="preserve"><value>此字段指向没有任何模块提供的来源。请联系管理员更正其定义。</value></data>
 </root>

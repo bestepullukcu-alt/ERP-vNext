@@ -72,4 +72,15 @@
   <data name="EditBtn" xml:space="preserve">
     <value>Изменить</value>
   </data>
+  <data name="OptionsSourceModuleRecord" xml:space="preserve"><value>Записи другого модуля</value></data>
+  <data name="OptionsSourceKeyHint" xml:space="preserve"><value>Выберите источник. Список зависит от типа выше; смена типа сбрасывает выбор.</value></data>
+  <data name="OptionsSourceKeySelect" xml:space="preserve"><value>Выберите источник…</value></data>
+  <data name="OptionsSourceKeyNone" xml:space="preserve"><value>Для этого типа в данном тенанте нет источников.</value></data>
+  <data name="OptionsSourceKeyLoadFailed" xml:space="preserve"><value>Не удалось прочитать список источников.</value></data>
+  <data name="OptionSource.organization-unit" xml:space="preserve"><value>Организационные единицы</value></data>
+  <data name="OptionSource.position" xml:space="preserve"><value>Должности</value></data>
+  <data name="OptionSource.countries" xml:space="preserve"><value>Страны</value></data>
+  <data name="OptionSource.currencies" xml:space="preserve"><value>Валюты</value></data>
+  <data name="OptionSource.languages" xml:space="preserve"><value>Языки</value></data>
+  <data name="OptionSource.timezones" xml:space="preserve"><value>Часовые пояса</value></data>
 </root>

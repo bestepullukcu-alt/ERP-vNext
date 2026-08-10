@@ -132,6 +132,31 @@ public sealed class TasksController : Controller
             $"{_gatewayUrl}/api/v1/tasks/field-definitions/{Uri.EscapeDataString(code)}/options",
             readBody: false);
 
+    /// <summary>
+    /// One field's records, searched in the module that owns them. The query string is forwarded WHOLE — the
+    /// term, the ids and the cap are Platform's contract, not this tier's, and re-listing them here is how a
+    /// parameter gets dropped silently.
+    /// </summary>
+    [HttpGet("api/field-definitions/{code}/records")]
+    public Task<IActionResult> ApiFieldDefinitionRecords(string code)
+        => ProxyAsync(
+            HttpMethod.Get,
+            $"{_gatewayUrl}/api/v1/tasks/field-definitions/{Uri.EscapeDataString(code)}/records"
+            + Request.QueryString.Value,
+            readBody: false);
+
+    /// <summary>
+    /// The sources an administrator may choose from on the field-definition screen. Declared before the
+    /// {id:guid} route for the same reason the two above are: "option-sources" is not a Guid, but a route that
+    /// only fails at match time is a route nobody notices until the screen is empty.
+    /// </summary>
+    [HttpGet("api/field-definitions/option-sources")]
+    public Task<IActionResult> ApiFieldOptionSources()
+        => ProxyAsync(
+            HttpMethod.Get,
+            $"{_gatewayUrl}/api/v1/tasks/field-definitions/option-sources{Request.QueryString.Value}",
+            readBody: false);
+
     [HttpGet("api/field-definitions/{id:guid}")]
     public Task<IActionResult> ApiFieldDefinition(Guid id)
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/field-definitions/{id}", readBody: false);

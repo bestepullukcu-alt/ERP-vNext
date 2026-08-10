@@ -508,7 +508,7 @@ public sealed class TaskRecurrenceGenerationTests
                 LegalEntityId = Guid.NewGuid()
             }),
             new FakePositionAssignmentRepository(),
-            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository()),
+            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None),
             new TaskLifecycleService(),
             new FakeTaskApprovalService(),
             new FakeChecklistTemplateRepository(),

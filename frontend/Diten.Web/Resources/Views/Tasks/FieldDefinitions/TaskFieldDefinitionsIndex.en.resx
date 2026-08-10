@@ -72,4 +72,15 @@
   <data name="EditBtn" xml:space="preserve">
     <value>Edit</value>
   </data>
+  <data name="OptionsSourceModuleRecord" xml:space="preserve"><value>Another module's records</value></data>
+  <data name="OptionsSourceKeyHint" xml:space="preserve"><value>Choose a source. The list depends on the kind above, and changing the kind clears the choice.</value></data>
+  <data name="OptionsSourceKeySelect" xml:space="preserve"><value>Choose a source…</value></data>
+  <data name="OptionsSourceKeyNone" xml:space="preserve"><value>This kind offers no source in this tenant.</value></data>
+  <data name="OptionsSourceKeyLoadFailed" xml:space="preserve"><value>The source list could not be read.</value></data>
+  <data name="OptionSource.organization-unit" xml:space="preserve"><value>Organization units</value></data>
+  <data name="OptionSource.position" xml:space="preserve"><value>Positions</value></data>
+  <data name="OptionSource.countries" xml:space="preserve"><value>Countries</value></data>
+  <data name="OptionSource.currencies" xml:space="preserve"><value>Currencies</value></data>
+  <data name="OptionSource.languages" xml:space="preserve"><value>Languages</value></data>
+  <data name="OptionSource.timezones" xml:space="preserve"><value>Time zones</value></data>
 </root>

@@ -65,6 +65,10 @@
         CustomFieldOptionPlaceholder = Localizer["CustomFieldOptionPlaceholder"].Value,
         CustomFieldBooleanYes = Localizer["CustomFieldBooleanYes"].Value,
         CustomFieldBooleanNo = Localizer["CustomFieldBooleanNo"].Value,
+        // A field backed by another module's records: the search box's prompt, and what a record the server
+        // could not resolve reads as — never its raw identity (BL-049).
+        CustomFieldRecordSearchPlaceholder = Localizer["CustomFieldRecordSearchPlaceholder"].Value,
+        CustomFieldRecordUnavailable = Localizer["CustomFieldRecordUnavailable"].Value,
 
         ColumnTitle = Localizer["ColumnTitle"].Value,
         ColumnStatus = Localizer["ColumnStatus"].Value,
@@ -143,6 +147,7 @@
         // The server's refusals about configurable fields. It is the authority on requiredness — the form blocks
         // the empty field first, and these are what the user reads when the server refuses anyway.
         ErrorFieldValueInvalid = Localizer["ErrorFieldValueInvalid"].Value,
+        ErrorFieldOptionSourceInvalid = Localizer["ErrorFieldOptionSourceInvalid"].Value,
         ErrorFieldDefinitionUnknown = Localizer["ErrorFieldDefinitionUnknown"].Value,
         ErrorFieldLimitExceeded = Localizer["ErrorFieldLimitExceeded"].Value
     })

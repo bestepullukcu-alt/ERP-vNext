@@ -198,6 +198,22 @@ public static class DependencyInjection
         services.AddScoped<Features.Tasks.Services.ITaskAssignmentResolver, Features.Tasks.Services.TaskAssignmentResolver>();
         services.AddScoped<Features.Tasks.Services.ITaskFieldDefinitionService,
             Features.Tasks.Services.TaskFieldDefinitionService>();
+
+        /*
+         * Configurable fields that point at ANOTHER MODULE'S RECORDS (SAP's check table, Oracle's
+         * table-validated value set, ServiceNow's reference field).
+         *
+         * ⛔ THIS IS THE ONLY PLACE A SOURCE IS NAMED. Nothing downstream knows the word "position": the registry
+         * is built from whatever ITaskRecordSource implementations are in the container, and every consumer
+         * reaches one through it. Adding the Product module's records is adding a LINE HERE — no switch to
+         * extend, no key list to update, no resolver to teach.
+         */
+        services.AddScoped<Features.Tasks.Services.ITaskRecordSource,
+            Features.Tasks.Services.RecordSources.OrganizationUnitRecordSource>();
+        services.AddScoped<Features.Tasks.Services.ITaskRecordSource,
+            Features.Tasks.Services.RecordSources.PositionRecordSource>();
+        services.AddScoped<Features.Tasks.Services.ITaskRecordSourceRegistry,
+            Features.Tasks.Services.TaskRecordSourceRegistry>();
         // Phase 2 — the single owner of "may this task be completed?" (blocking checklist items).
         services.AddScoped<Features.Tasks.Services.ITaskChecklistService,
             Features.Tasks.Services.TaskChecklistService>();

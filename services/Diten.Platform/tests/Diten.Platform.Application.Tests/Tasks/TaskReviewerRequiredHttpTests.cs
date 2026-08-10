@@ -253,7 +253,7 @@ public sealed class TaskReviewerRequiredHttpTests
                     LegalEntityId = Guid.NewGuid()
                 }),
                 new FakePositionAssignmentRepository(),
-                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository()),
+                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None),
                 new TaskLifecycleService(),
                 new FakeTaskApprovalService(),
                 new FakeChecklistTemplateRepository(),
@@ -274,7 +274,7 @@ public sealed class TaskReviewerRequiredHttpTests
                     Name = "Genel Merkez",
                     LegalEntityId = Guid.NewGuid()
                 }),
-                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository()),
+                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None),
                 new FakeCurrentUserContext(TaskTestData.Me),
                 new FakeTaskApprovalService(),
                 Reviews,

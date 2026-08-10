@@ -114,4 +114,7 @@
   <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Kişi seçin…</value></data>
   <data name="AssigneeEmpty" xml:space="preserve"><value>Henüz hiç kimsenin pozisyonu yok, bu yüzden atanacak kişi bulunmuyor. Önce yöneticinizden pozisyon ataması yapmasını isteyin.</value></data>
   <data name="PersonNameUnavailable" xml:space="preserve"><value>Ad bilgisi yok</value></data>
+  <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>Aramak için yazın…</value></data>
+  <data name="CustomFieldRecordUnavailable" xml:space="preserve"><value>Kayıt bulunamıyor</value></data>
+  <data name="ErrorFieldOptionSourceInvalid" xml:space="preserve"><value>Bu alan, hiçbir modülün sunmadığı bir kaynağı gösteriyor. Tanımını düzeltmesi için yöneticinize başvurun.</value></data>
 </root>

@@ -42,10 +42,14 @@ public sealed record TaskFieldValidationResult(
 public sealed class TaskFieldDefinitionService : ITaskFieldDefinitionService
 {
     private readonly ITaskFieldDefinitionRepository _definitions;
+    private readonly ITaskRecordSourceRegistry _recordSources;
 
-    public TaskFieldDefinitionService(ITaskFieldDefinitionRepository definitions)
+    public TaskFieldDefinitionService(
+        ITaskFieldDefinitionRepository definitions,
+        ITaskRecordSourceRegistry recordSources)
     {
         _definitions = definitions;
+        _recordSources = recordSources;
     }
 
     public async Task<TaskFieldValidationResult> ValidateAndMaterializeAsync(
@@ -117,7 +121,7 @@ public sealed class TaskFieldDefinitionService : ITaskFieldDefinitionService
                     $"Field '{definition.Code}' exceeds {TaskFieldLimits.MaxTextLengthPerField} characters.");
             }
 
-            if (!IsWellFormed(definition.ValueType, supplied.Value))
+            if (!IsRecordBacked(definition) && !IsWellFormed(definition.ValueType, supplied.Value))
             {
                 return Invalid(
                     TaskReasonCodes.FieldValueInvalid,
@@ -175,7 +179,76 @@ public sealed class TaskFieldDefinitionService : ITaskFieldDefinitionService
                 $"At most {TaskFieldLimits.MaxPrimaryFields} primary fields are allowed.");
         }
 
+        /*
+         * A record-backed value must name a record that EXISTS. This is the check table's whole purpose in every
+         * system that has one: the field does not merely look like an identity, it points at something.
+         *
+         * Done here rather than in IsWellFormed because it is an I/O question, and done in ONE batch per source
+         * rather than per value because a task with six record fields would otherwise make six round trips.
+         */
+        var recordCheck = await ValidateRecordValuesAsync(materialized, byCode, ct);
+        if (recordCheck is not null)
+        {
+            return recordCheck;
+        }
+
         return new TaskFieldValidationResult(true, materialized, null, null);
+    }
+
+    private static bool IsRecordBacked(TaskFieldDefinition definition) =>
+        definition.OptionsSourceKind == TaskFieldOptionsSourceKind.ModuleRecord;
+
+    /// <summary>
+    /// Every record-backed value resolved against the source its own definition names. Null when they all check
+    /// out; a refusal otherwise.
+    ///
+    /// <para>An UNREGISTERED source is refused too. A definition can only be saved with a registered source, so
+    /// reaching this means the module that owned it is gone — and accepting the value then would store a pointer
+    /// into nothing while the form, which drops the field, shows the user no way to correct it.</para>
+    /// </summary>
+    private async Task<TaskFieldValidationResult?> ValidateRecordValuesAsync(
+        IReadOnlyList<TaskFieldValue> values,
+        Dictionary<string, TaskFieldDefinition> byCode,
+        CancellationToken ct)
+    {
+        var recordValues = values
+            .Where(value => !string.IsNullOrWhiteSpace(value.Value)
+                            && byCode.TryGetValue(value.DefinitionCode, out var definition)
+                            && IsRecordBacked(definition))
+            .ToList();
+
+        if (recordValues.Count == 0)
+        {
+            return null;
+        }
+
+        foreach (var group in recordValues.GroupBy(value => byCode[value.DefinitionCode].OptionsSourceKey?.Trim()))
+        {
+            var source = _recordSources.Find(group.Key);
+            if (source is null)
+            {
+                return Invalid(
+                    TaskReasonCodes.FieldOptionSourceInvalid,
+                    $"No module offers records under the source '{group.Key ?? string.Empty}'.");
+            }
+
+            var ids = group.Select(value => value.Value!).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            var resolved = (await source.ResolveAsync(ids, ct))
+                .Select(record => record.Id)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var missing = group.FirstOrDefault(value => !resolved.Contains(value.Value!));
+            if (missing is not null)
+            {
+                // The identity is named in the SERVER's message, never in the reader's: this text reaches a log
+                // and a developer, while the browser is told by reason code (BL-049).
+                return Invalid(
+                    TaskReasonCodes.FieldValueInvalid,
+                    $"Field '{missing.DefinitionCode}' points at no record in source '{group.Key}'.");
+            }
+        }
+
+        return null;
     }
 
     private static TaskFieldValidationResult Invalid(string reasonCode, string message)

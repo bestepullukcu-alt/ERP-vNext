@@ -202,7 +202,13 @@ public sealed class TaskFieldDefinitionServiceTests
     }
 
     private static TaskFieldDefinitionService Service(params TaskFieldDefinition[] definitions)
-        => new(new FakeTaskFieldDefinitionRepository(definitions));
+        => new(new FakeTaskFieldDefinitionRepository(definitions), TaskRecordSourceDoubles.None);
+
+    /// <summary>The same service, given the module record sources a record-backed definition points at.</summary>
+    private static TaskFieldDefinitionService ServiceWithSources(
+        Diten.Platform.Application.Features.Tasks.Services.ITaskRecordSource[] sources,
+        params TaskFieldDefinition[] definitions)
+        => new(new FakeTaskFieldDefinitionRepository(definitions), TaskRecordSourceDoubles.With(sources));
 
     private static TaskFieldDefinition Definition(
         string code, TaskFieldValueType type, string section = "General") => new()
