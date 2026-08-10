@@ -26,17 +26,20 @@ Ilk kapsam yalnizca DCP-004 tarafindan tanimlanan urgent W-3 first-stage governa
 
 - W-3A0 foundation remediation development; not waived, still a production blocker.
 - Operational runtime implementation, production deployment, supplier qualification, validation, collections,
-  seed data, jobs, migrations, and any runtime surface outside the MOD-0230 build/test gate.
+  seed data, jobs, migrations, and any runtime surface outside the MOD-0230/MOD-0231 build/test gates.
 - MOD-0234 runtime shell, placeholder dashboard, placeholder endpoint, menu entry, or fake data.
 - Full W-4/W-5 PV scope outside DCP-004, including MOD-0233, MOD-0235, MOD-0236, MOD-0237, MOD-0238, and MOD-0239.
 - AI summarization, extraction, recommendation, or routing implementation until governed-AI prerequisites are approved.
 
 ## Domain-Level Repo Scope
 
-**Authorized now (updated 2026-08-09 - DCP-004 `approved`, MOD-0230 `ready-for-dev`):**
+**Authorized now (updated 2026-08-10 - DCP-004 `approved`, MOD-0230/MOD-0231 `ready-for-dev` for build/test):**
 
 - `execution/domains/pharmacovigilance/**`
-- `services/Diten.PvgService/**` - dedicated PVG service, port **5011** (OD-7). MOD-0230 slice 1 only.
+- `services/Diten.PvgService/**` - dedicated PVG service boundary, port **5011** (OD-7). MOD-0230 slice 1 and
+  MOD-0231 Signal Minimum Scope class-library contracts/tests only. MOD-0231 must stay non-operational: no API
+  host, controllers, appsettings, persistence, Mongo, repositories, Gateway route, frontend, seeds, jobs, partner
+  integration, AI, archive/void/export/delete/bulk-delete, or runtime endpoint.
 - `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/**` plus matching JS / l10n / resource files.
 - `gateway/Diten.ApiGateway/**/ocelot.json` - one MOD-0230 route family, integration-agent-owned.
   Upstream `/api/pv-case-intake-triage`, downstream `/api/v1/pv-case-intake-triage` (NET-001).
@@ -47,7 +50,8 @@ supplier qualification, and validation approval remain unauthorized.**
 
 **Still blocked:**
 
-- MOD-0231, MOD-0232, MOD-0234 runtime - their packs remain `draft`.
+- MOD-0231 operational runtime; its build/test gate is open only for non-operational class-library contracts/tests.
+- MOD-0232 and MOD-0234 runtime - their packs remain `draft`.
 - Archive, void, export, seed data, and background jobs for MOD-0230 (out of slice 1).
 - Any AI behaviour.
 
@@ -72,14 +76,15 @@ supplier qualification, and validation approval remain unauthorized.**
 
 ## Runtime Decisions
 
-> MOD-0230 build/test preparation is governed by its ready-for-dev module pack and DCP-004. This domain config
-> does not authorize operational runtime, production use, supplier qualification, or validation.
+> MOD-0230 and MOD-0231 build/test preparation is governed by their ready-for-dev module packs and DCP-004. This
+> domain config does not authorize operational runtime, production use, supplier qualification, or validation.
 
 - **Identity and naming:** Blueprint canonical IDs/names are mandatory. Ref: [DCP-002](../../portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md).
 - **Orchestration boundary:** DCP-004 stays the first-stage capability contract until user approval changes it. Ref: [DCP-004](../../portfolio/delivery-capability-packs/DCP-004-pvg-urgent-w3-development-block.md).
 - **Gateway and ports:** MOD-0230 records `Diten.PvgService` on port 5011 and one route family for the build/test
-  gate only. `.antigravity/rules/ports.md` remains protected and has not been updated here. No other PVG route or
-  port is reserved. Ref: [.antigravity/rules/ports.md](../../../.antigravity/rules/ports.md), [.antigravity/rules/routes.md](../../../.antigravity/rules/routes.md).
+  gate only. MOD-0231 records no additional port and no Gateway route. `.antigravity/rules/ports.md` remains
+  protected and has not been updated here. No other PVG route or port is reserved. Ref:
+  [.antigravity/rules/ports.md](../../../.antigravity/rules/ports.md), [.antigravity/rules/routes.md](../../../.antigravity/rules/routes.md).
 - **Security and regulated data:** PHI/PII masking, row/field security, RBAC/ABAC, audit, correlation, evidence-link, and regulated error-model gates must remain fail-closed. Full owner approvals still gate operational runtime. Ref: [.antigravity/rules/security-jwt.md](../../../.antigravity/rules/security-jwt.md), [.antigravity/rules/multi-tenancy.md](../../../.antigravity/rules/multi-tenancy.md).
 - **Localization and UI:** MOD-0230 tenant UI is limited to the build/test gate if executed by its pack. Other PVG UI remains unauthorized. Approved UI must follow repo localization/layout rules. Ref: [.antigravity/rules/localization-standard.md](../../../.antigravity/rules/localization-standard.md), [.antigravity/rules/views-organization.md](../../../.antigravity/rules/views-organization.md).
 - **Data and persistence:** no operational collection/schema/index is authorized here. Future persistence decisions belong in approved member module packs and remain subject to the operational runtime gate. Ref: [.antigravity/rules/entity-base-template.md](../../../.antigravity/rules/entity-base-template.md), [.antigravity/rules/mongo-indexing.md](../../../.antigravity/rules/mongo-indexing.md).
@@ -88,11 +93,12 @@ supplier qualification, and validation approval remain unauthorized.**
 
 - This PVG governance scaffold exists and contains DCP-004 member module packs for:
   - `MOD-0230 Case Intake & Triage` - `ready-for-dev` for the build/test gate only
-  - `MOD-0231 Case Processing`
+  - `MOD-0231 Case Processing` - `ready-for-dev` for the build/test gate only; Signal Minimum Scope delivery slice
   - `MOD-0232 MedDRA Coding`
   - `MOD-0234 Signal Management`
-- **2026-08-09:** DCP-004 is `approved`; MOD-0230 is `ready-for-dev` for the build/test gate. MOD-0231, MOD-0232,
-  and MOD-0234 remain `draft` and authorize no implementation.
+- **2026-08-09:** DCP-004 is `approved`; MOD-0230 is `ready-for-dev` for the build/test gate.
+- **2026-08-10:** MOD-0231 is `ready-for-dev` for the build/test gate only. MOD-0232 and MOD-0234 remain `draft`
+  and authorize no implementation.
 - MOD-0230 consumes MOD-0019, MOD-0023, and MOD-0031 through fail-closed PVG-owned ports
   (`IPvgFieldSecurityPolicy`, `IPvgWorkflowTransitionGate`, `IPvgEvidenceLinkPort`) because those modules have no
   runtime. Ports are interface + deny default only; they must never store policy, host a workflow engine, or

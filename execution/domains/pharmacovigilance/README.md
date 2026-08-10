@@ -3,12 +3,13 @@
 **Kisaltma:** `PVG`
 **Kisa kod (branch):** `pvg`
 **Delivery Capability Pack:** [DCP-004 - PVG Urgent W-3 Development Block](../../portfolio/delivery-capability-packs/DCP-004-pvg-urgent-w3-development-block.md)
-**Runtime status (2026-08-09):** DCP-004 is `approved` for sequencing. **MOD-0230 Case Intake & Triage is
-`ready-for-dev` for the build/test gate only**, because that status is already recorded in the current MOD-0230
-and DCP-004 governance docs. Service `Diten.PvgService` (port 5011), tenant UI, and one gateway route family are
-limited to local / dev / CI build-test preparation. **Operational runtime, production, supplier qualification,
-and validation remain unauthorized** for every member. MOD-0231, MOD-0232, and MOD-0234 remain `draft`. Seed
-data, background jobs, menu entries, module-catalog work, archive/void, export, and all AI behaviour remain blocked.
+**Runtime status (2026-08-10):** DCP-004 is `approved` for sequencing. **MOD-0230 Case Intake & Triage and
+MOD-0231 Case Processing are `ready-for-dev` for the build/test gate only.** MOD-0231 is limited to the Signal
+Minimum Scope delivery slice and future non-operational class-library contracts/tests under `Diten.PvgService`.
+MOD-0230 service `Diten.PvgService` (port 5011), tenant UI, and one gateway route family remain limited to local /
+dev / CI build-test preparation. **Operational runtime, production, supplier qualification, and validation remain
+unauthorized** for every member. MOD-0232 and MOD-0234 remain `draft`. Seed data, background jobs, menu entries,
+module-catalog work, archive/void, export, and all AI behaviour remain blocked.
 Any detailed fast-track plan remains a pending support package and is not normative until committed.
 
 ## Is Tanimi
@@ -29,7 +30,7 @@ Ilk governance kapsami DCP-004 tarafindan sinirlandirilan urgent W-3 delivery bl
 - W-3A0 foundation remediation development; dependency olarak kalir, build kapsamina girmez.
 - Operational runtime, production deployment, supplier qualification, validation, database collection, seed, job,
   migration, or any runtime surface outside the MOD-0230 build/test gate.
-- Member module-pack execution or ready-for-dev promotion without explicit approval.
+- Member operational runtime execution without explicit approval.
 - MOD-0234 runtime shell or placeholder UI/service.
 - Full W-4/W-5 PV modules outside DCP-004 first-stage scope.
 
@@ -37,10 +38,10 @@ Ilk governance kapsami DCP-004 tarafindan sinirlandirilan urgent W-3 delivery bl
 
 - [domain-config.md](domain-config.md) - sinirlar, repo scope, protected paths, ownership boundaries, runtime decision links
 - MOD-0230 slice-1 work-pack details - pending support package; not normative until committed
-- [module-packs/](module-packs/) - member module packs; MOD-0230 is build/test `ready-for-dev`, while the other
-  DCP-004 members remain `draft`:
+- [module-packs/](module-packs/) - member module packs; MOD-0230 and MOD-0231 are build/test `ready-for-dev`,
+  while the other DCP-004 members remain `draft`:
   - MOD-0230 Case Intake & Triage
-  - MOD-0231 Case Processing
+  - MOD-0231 Case Processing - Signal Minimum Scope delivery slice only
   - MOD-0232 MedDRA Coding
   - MOD-0234 Signal Management
 - [DCP-004](../../portfolio/delivery-capability-packs/DCP-004-pvg-urgent-w3-development-block.md) - approved
