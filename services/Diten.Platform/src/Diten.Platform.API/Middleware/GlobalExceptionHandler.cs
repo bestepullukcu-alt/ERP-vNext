@@ -78,9 +78,24 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         return problemDetails;
     }
 
+    /// <summary>
+    /// BL-040 — a validation failure now carries a stable reason code, ADDITIVELY.
+    ///
+    /// <para>Everything this body had before is still here: the title, the <c>detail</c> sentence and the
+    /// per-field <c>errors</c> map. That is deliberate — six client files read <c>problem.detail</c> off a
+    /// validation failure, so replacing the shape (which is what "make the behaviour's reflective factory work"
+    /// would have done) takes the message away from all of them. What is added is one extension.</para>
+    ///
+    /// <para>The extension is named exactly <c>reason_code</c> because that is the field the frontend bridge
+    /// reads, and it is the same name the blocked-transition path already uses. Without it, a FluentValidation
+    /// failure reached the user as untranslatable English.</para>
+    /// </summary>
     private static ProblemDetails CreateValidationProblemDetails(ValidationException ex)
     {
-        var firstErrorMessage = ex.Errors.FirstOrDefault()?.ErrorMessage
+        // ONE ordering for both, so the code and the sentence describe the same failure. Picking them
+        // independently would localize a message about a different field than the one the text names.
+        var firstFailure = ex.Errors.FirstOrDefault();
+        var firstErrorMessage = firstFailure?.ErrorMessage
             ?? "One or more validation failures have occurred.";
 
         var errors = ex.Errors
@@ -90,12 +105,22 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
                 x => x.Select(e => e.ErrorMessage).ToArray()
             );
 
-        return new ValidationProblemDetails(errors)
+        var problemDetails = new ValidationProblemDetails(errors)
         {
             Title = "Validation Error",
             Status = (int)HttpStatusCode.BadRequest,
+            // Diagnostic only, like the blocked-transition detail above: the user-facing sentence comes from the
+            // reason code through the frontend's resx bridge.
             Detail = firstErrorMessage
         };
+
+        var reasonCode = ValidationReasonCode.From(firstFailure);
+        if (!string.IsNullOrWhiteSpace(reasonCode))
+        {
+            problemDetails.Extensions["reason_code"] = reasonCode;
+        }
+
+        return problemDetails;
     }
 
     private static ProblemDetails CreateProblemDetails(string detail, string title, int status)
