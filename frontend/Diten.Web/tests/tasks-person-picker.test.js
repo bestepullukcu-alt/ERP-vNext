@@ -126,7 +126,7 @@ describe("MOD-0024 person picker", () => {
       const detailed = read("Views", "Tasks", "_Form.cshtml");
 
       expect(quick).toContain('<select class="form-select" id="quickAssignee">');
-      expect(detailed).toContain('<select class="form-select" id="taskAssignee"');
+      expect(detailed).toMatch(/<select class="[^"]*form-select[^"]*" id="taskAssignee"/);
       // The bare input demanded a GUID.
       expect(quick).not.toMatch(/<input[^>]*id="quickAssignee"/);
       expect(detailed).not.toMatch(/<input[^>]*id="taskAssignee"/);

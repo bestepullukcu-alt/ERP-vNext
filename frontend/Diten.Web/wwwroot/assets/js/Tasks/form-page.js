@@ -304,12 +304,29 @@
             }
         }
 
+        /*
+         * select2 LAST, after every control exists and after hydration has written its values in.
+         *
+         * Order is the whole point: the assignee/pool pickers are filled by fetch, the configurable controls are
+         * created by renderCustomFields, and an edit writes stored values into all of them. Binding earlier would
+         * enhance the two markup selects and leave everything built afterwards bare — the partial fix that looks
+         * finished because the static half of the form is correct.
+         */
+        global.TaskForm.enhanceSelects(form);
+
         el('taskAssignmentTarget')?.addEventListener('change', syncVisibility);
         el('taskApprovalRequired')?.addEventListener('change', syncVisibility);
         el('taskReviewRequired')?.addEventListener('change', syncVisibility);
         syncVisibility();
 
-        el('taskSubmit')?.addEventListener('click', async () => {
+        /*
+         * The save is bound to the FORM's submit, not to the button's click: the actions now sit in the header
+         * and reach the form through `form="taskForm"`, which is a submit — and it also means Enter in a text
+         * field saves, like every other form in the app. preventDefault keeps the browser from navigating; the
+         * payload still goes through TasksApi exactly as before.
+         */
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
             const fieldValues = global.TaskForm.readCustomFieldValues(customFieldsRow(), customFieldDefinitions);
             const draft = { ...readForm(), fieldValues };
 

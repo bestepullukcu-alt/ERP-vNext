@@ -4,191 +4,235 @@
 @{
     var mode = (ViewData["FormMode"] as string) ?? "create";
     var taskId = ViewData["TaskId"] as string ?? string.Empty;
+    var isEdit = mode == "edit";
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
 }
 
-@* MOD-0024 — the DETAILED form, shared by Create and Edit (Golden Reference Compact: full page, not offcanvas).
+@* MOD-0024 — the DETAILED form, shared by Create and Edit. Aligned to the Golden Reference Compact form
+   (DevEnablement/GoldenReferenceCompact/_Form.cshtml): header row with breadcrumb and the actions top-right, then
+   one <section class="card"> per logical group, select2 on every picker.
    The quick-create offcanvas hands its draft to this same form, so switching depth loses nothing.
    Field visibility is driven by data-task-field + the assignment target; all toggling is class-based (FG-003). *@
-<div class="card" id="taskForm" data-task-mode="@mode" data-task-id="@taskId">
-    <div class="card-body">
 
-        <h6 class="text-muted text-uppercase small mb-3">@Localizer["SectionBasics"]</h6>
-        <div class="row g-3 mb-4">
-            <div class="col-md-8">
-                <label class="form-label" for="taskTitle">
-                    @Localizer["FieldTitle"] <span class="text-danger">*</span>
-                </label>
-                <input type="text" class="form-control" id="taskTitle" name="title" maxlength="200"
-                       placeholder="@Localizer["FieldTitlePlaceholder"]" required />
-            </div>
-            <div class="col-md-4">
-                <label class="form-label" for="taskPriority">@Localizer["FieldPriority"]</label>
-                <select class="form-select" id="taskPriority" name="priority">
-                    <option value="Low">@Localizer["PriorityLow"]</option>
-                    <option value="Medium" selected>@Localizer["PriorityMedium"]</option>
-                    <option value="High">@Localizer["PriorityHigh"]</option>
-                </select>
-            </div>
-            <div class="col-12">
-                <label class="form-label" for="taskDescription">@Localizer["FieldDescription"]</label>
-                <textarea class="form-control" id="taskDescription" name="description" rows="3"
-                          maxlength="4000"></textarea>
-            </div>
-        </div>
-
-        <h6 class="text-muted text-uppercase small mb-3">@Localizer["SectionAssignment"]</h6>
-        <div class="row g-3 mb-4">
-            <div class="col-md-4">
-                <label class="form-label" for="taskAssignmentTarget">
-                    @Localizer["FieldAssignmentTarget"] <span class="text-danger">*</span>
-                </label>
-                <select class="form-select" id="taskAssignmentTarget" name="assignmentTarget">
-                    <option value="SelfAssigned" selected>@Localizer["TargetSelf"]</option>
-                    <option value="Person">@Localizer["TargetPerson"]</option>
-                    <option value="PositionPool">@Localizer["TargetPool"]</option>
-                </select>
-            </div>
-
-            @* Shown only for the Person target — a pool task has no assignee until it is claimed.
-               A picker, not a text box: each option reads "Name — Position — Unit", and a user GUID is never
-               shown or typed (pack §12 K6.4). *@
-            <div class="col-md-4 d-none" data-task-field="assignee">
-                <label class="form-label" for="taskAssignee">
-                    @Localizer["FieldAssignee"] <span class="text-danger">*</span>
-                </label>
-                <select class="form-select" id="taskAssignee" name="assigneeUserId"></select>
-                <div class="form-text">@Localizer["AssigneeHint"]</div>
-            </div>
-
-            @* Shown only for the Pool target. Each option carries its unit so work cannot be pooled to the
-               wrong facility. *@
-            <div class="col-md-4 d-none" data-task-field="poolPosition">
-                <label class="form-label" for="taskPoolPosition">
-                    @Localizer["FieldPoolPosition"] <span class="text-danger">*</span>
-                </label>
-                <select class="form-select" id="taskPoolPosition" name="poolPositionId"></select>
-                <div class="form-text">@Localizer["PoolPositionHint"]</div>
-            </div>
-
-            <div class="col-md-4 d-none" data-task-field="organizationUnit">
-                <label class="form-label" for="taskOrganizationUnit">@Localizer["FieldOrganizationUnit"]</label>
-                <input type="text" class="form-control" id="taskOrganizationUnit" name="organizationUnitId"
-                       autocomplete="off" />
-            </div>
-
-            <div class="col-12">
-                <label class="form-label" for="taskWatchers">@Localizer["FieldWatchers"]</label>
-                <input type="text" class="form-control" id="taskWatchers" name="watchers" autocomplete="off" />
-                <div class="form-text">@Localizer["WatchersHint"]</div>
-            </div>
-        </div>
-
-        <h6 class="text-muted text-uppercase small mb-3">@Localizer["SectionPlanning"]</h6>
-        <div class="row g-3 mb-4">
-            <div class="col-md-3">
-                <label class="form-label" for="taskDueAt">
-                    @Localizer["FieldDueAt"] <span class="text-danger">*</span>
-                </label>
-                <input type="date" class="form-control" id="taskDueAt" name="dueAt" required />
-            </div>
-            <div class="col-md-3">
-                <label class="form-label" for="taskStartAt">@Localizer["FieldStartAt"]</label>
-                <input type="date" class="form-control" id="taskStartAt" name="startAt" />
-            </div>
-            <div class="col-md-3">
-                <label class="form-label" for="taskPlannedDate">@Localizer["FieldPlannedDate"]</label>
-                <input type="date" class="form-control" id="taskPlannedDate" name="plannedDate" />
-            </div>
-            <div class="col-md-3">
-                <label class="form-label" for="taskEstimateHours">@Localizer["FieldEstimateHours"]</label>
-                <input type="number" min="0" step="0.25" class="form-control" id="taskEstimateHours"
-                       name="estimateHours" />
-            </div>
-            <div class="col-12">
-                <label class="form-label" for="taskTags">@Localizer["FieldTags"]</label>
-                <input type="text" class="form-control" id="taskTags" name="tags" autocomplete="off" />
-            </div>
-
-            @* Effort actuals are execution-only: a new task is always zero, so the field is read-only here. *@
-            <div class="col-md-3 d-none" data-task-field="spentHours">
-                <label class="form-label" for="taskSpentHours">@Localizer["FieldSpentHours"]</label>
-                <input type="text" class="form-control" id="taskSpentHours" readonly disabled />
-                <div class="form-text">@Localizer["SpentHoursReadOnlyHint"]</div>
-            </div>
-            <div class="col-md-3 d-none" data-task-field="remainingHours">
-                <label class="form-label" for="taskRemainingHours">@Localizer["FieldRemainingHours"]</label>
-                <input type="text" class="form-control" id="taskRemainingHours" readonly disabled />
-            </div>
-        </div>
-
-        <h6 class="text-muted text-uppercase small mb-3">@Localizer["SectionGovernance"]</h6>
-        <div class="row g-3 mb-4">
-            <div class="col-md-6">
-                @* Phase 3b: review is implemented, so the switch is live and the hint says what it DOES rather
-                   than when it might arrive. *@
-                <div class="form-check form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" id="taskReviewRequired" name="reviewRequired"
-                           aria-describedby="taskReviewRequiredHint" />
-                    <label class="form-check-label" for="taskReviewRequired">@Localizer["FieldReviewRequired"]</label>
-                    <div class="form-text" id="taskReviewRequiredHint">@Localizer["ReviewRequiredHint"]</div>
-                </div>
-                @* The reviewer CANDIDATE — same pattern as the approval manager below, deliberately: same kind of
-                   field, same d-none toggle keyed off its own switch, same required marker. It is mandatory
-                   because MOD-0023 refuses to start a review with nobody to route it to, so a task saved without
-                   one could never be submitted. Who may ACTUALLY review is still MOD-0023's decision. *@
-                <div class="d-none mb-2" data-task-field="reviewer">
-                    <label class="form-label" for="taskReviewer">
-                        @Localizer["FieldReviewer"] <span class="text-danger">*</span>
-                    </label>
-                    <input type="text" class="form-control" id="taskReviewer"
-                           name="reviewerCandidateUserId" autocomplete="off" />
-                    <div class="form-text">@Localizer["ReviewerHint"]</div>
-                </div>
-                <div class="form-check form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" id="taskApprovalRequired"
-                           name="approvalRequired" />
-                    <label class="form-check-label" for="taskApprovalRequired">
-                        @Localizer["FieldApprovalRequired"]
-                    </label>
-                </div>
-                <div class="d-none" data-task-field="approvalManager">
-                    <label class="form-label" for="taskApprovalManager">
-                        @Localizer["FieldApprovalManager"] <span class="text-danger">*</span>
-                    </label>
-                    <input type="text" class="form-control" id="taskApprovalManager"
-                           name="approvalManagerUserId" autocomplete="off" />
-                    <div class="form-text">@Localizer["ApprovalHint"]</div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-check form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" id="taskEmailNotifications"
-                           name="emailNotificationsEnabled" checked />
-                    <label class="form-check-label" for="taskEmailNotifications">
-                        @Localizer["FieldEmailNotifications"]
-                    </label>
-                </div>
-                <div class="form-check form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" id="taskDelegationAllowed"
-                           name="delegationAllowed" />
-                    <label class="form-check-label" for="taskDelegationAllowed">
-                        @Localizer["FieldDelegationAllowed"]
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        @* Configurable fields (Phase 5 supplies the definition UI; the form renders whatever is defined). *@
-        <div class="d-none" id="taskCustomFields" data-task-field="customFields">
-            <h6 class="text-muted text-uppercase small mb-3">@Localizer["SectionCustomFields"]</h6>
-            <div class="row g-3 mb-4" id="taskCustomFieldsRow"></div>
-        </div>
-
-        <div class="d-flex gap-2">
-            <button type="button" class="btn btn-primary" id="taskSubmit">
-                @(mode == "edit" ? Localizer["ActionSave"] : Localizer["ActionCreate"])
-            </button>
-            <a class="btn btn-label-secondary" href="/Tasks">@Localizer["ActionCancel"]</a>
-        </div>
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/Tasks">@Localizer["TasksTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    @* The actions live HERE and nowhere else. The reference puts them beside the title, and a second copy at the
+       bottom of a long form only asks the user which of the two buttons is the real one.
+       The submit is bound to the form by id (reference pattern) — which is also what lets the shared
+       required-field tracker find this form's submit and render its badge next to it. *@
+    <div class="d-flex align-items-center gap-2">
+        <a class="btn btn-label-secondary" href="/Tasks">@Localizer["ActionCancel"]</a>
+        <button type="submit" form="taskForm" class="btn btn-primary" id="taskSubmit">
+            @(isEdit ? Localizer["ActionSave"] : Localizer["ActionCreate"])
+        </button>
     </div>
 </div>
+
+<form id="taskForm" data-task-mode="@mode" data-task-id="@taskId" novalidate>
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionBasics"]</h6>
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-medium" for="taskTitle">
+                                @Localizer["FieldTitle"] <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="taskTitle" name="title" maxlength="200"
+                                   placeholder="@Localizer["FieldTitlePlaceholder"]" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-medium" for="taskPriority">@Localizer["FieldPriority"]</label>
+                            <select class="select2 form-select" id="taskPriority" name="priority">
+                                <option value="Low">@Localizer["PriorityLow"]</option>
+                                <option value="Medium" selected>@Localizer["PriorityMedium"]</option>
+                                <option value="High">@Localizer["PriorityHigh"]</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="taskDescription">@Localizer["FieldDescription"]</label>
+                            <textarea class="form-control" id="taskDescription" name="description" rows="3"
+                                      maxlength="4000"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionAssignment"]</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="taskAssignmentTarget">
+                                @Localizer["FieldAssignmentTarget"] <span class="text-danger">*</span>
+                            </label>
+                            <select class="select2 form-select" id="taskAssignmentTarget" name="assignmentTarget">
+                                <option value="SelfAssigned" selected>@Localizer["TargetSelf"]</option>
+                                <option value="Person">@Localizer["TargetPerson"]</option>
+                                <option value="PositionPool">@Localizer["TargetPool"]</option>
+                            </select>
+                        </div>
+
+                        @* Shown only for the Person target — a pool task has no assignee until it is claimed.
+                           A picker, not a text box: each option reads "Name — Position — Unit", and a user GUID is
+                           never shown or typed (pack §12 K6.4). *@
+                        <div class="col-md-6 d-none" data-task-field="assignee">
+                            <label class="form-label fw-medium" for="taskAssignee">
+                                @Localizer["FieldAssignee"] <span class="text-danger">*</span>
+                            </label>
+                            <select class="select2 form-select" id="taskAssignee" name="assigneeUserId"></select>
+                            <div class="form-text">@Localizer["AssigneeHint"]</div>
+                        </div>
+
+                        @* Shown only for the Pool target. Each option carries its unit so work cannot be pooled to
+                           the wrong facility. *@
+                        <div class="col-md-6 d-none" data-task-field="poolPosition">
+                            <label class="form-label fw-medium" for="taskPoolPosition">
+                                @Localizer["FieldPoolPosition"] <span class="text-danger">*</span>
+                            </label>
+                            <select class="select2 form-select" id="taskPoolPosition" name="poolPositionId"></select>
+                            <div class="form-text">@Localizer["PoolPositionHint"]</div>
+                        </div>
+
+                        <div class="col-md-6 d-none" data-task-field="organizationUnit">
+                            <label class="form-label fw-medium" for="taskOrganizationUnit">@Localizer["FieldOrganizationUnit"]</label>
+                            <input type="text" class="form-control" id="taskOrganizationUnit" name="organizationUnitId"
+                                   autocomplete="off" />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="taskWatchers">@Localizer["FieldWatchers"]</label>
+                            <input type="text" class="form-control" id="taskWatchers" name="watchers" autocomplete="off" />
+                            <div class="form-text">@Localizer["WatchersHint"]</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionPlanning"]</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="taskDueAt">
+                                @Localizer["FieldDueAt"] <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" class="form-control" id="taskDueAt" name="dueAt" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="taskStartAt">@Localizer["FieldStartAt"]</label>
+                            <input type="date" class="form-control" id="taskStartAt" name="startAt" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="taskPlannedDate">@Localizer["FieldPlannedDate"]</label>
+                            <input type="date" class="form-control" id="taskPlannedDate" name="plannedDate" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="taskEstimateHours">@Localizer["FieldEstimateHours"]</label>
+                            <input type="number" min="0" step="0.25" class="form-control" id="taskEstimateHours"
+                                   name="estimateHours" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="taskTags">@Localizer["FieldTags"]</label>
+                            <input type="text" class="form-control" id="taskTags" name="tags" autocomplete="off" />
+                        </div>
+
+                        @* Effort actuals are execution-only: a new task is always zero, so the field is read-only
+                           here. *@
+                        <div class="col-md-6 d-none" data-task-field="spentHours">
+                            <label class="form-label fw-medium" for="taskSpentHours">@Localizer["FieldSpentHours"]</label>
+                            <input type="text" class="form-control" id="taskSpentHours" readonly disabled />
+                            <div class="form-text">@Localizer["SpentHoursReadOnlyHint"]</div>
+                        </div>
+                        <div class="col-md-6 d-none" data-task-field="remainingHours">
+                            <label class="form-label fw-medium" for="taskRemainingHours">@Localizer["FieldRemainingHours"]</label>
+                            <input type="text" class="form-control" id="taskRemainingHours" readonly disabled />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* Configurable fields get a card of their own because their CONTENT is tenant-owned: the count, the
+               labels and the sections all change per tenant, so mixing them into a fixed card would make that
+               card's shape unpredictable. Hidden until at least one definition renders. *@
+            <section class="card mb-4 d-none" id="taskCustomFields" data-task-field="customFields">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionCustomFields"]</h6>
+                    <div class="row g-3" id="taskCustomFieldsRow"></div>
+                </div>
+            </section>
+        </div>
+
+        @* Governance is a column of switches with two conditional pickers — narrow suits it, and it keeps the
+           wide column for the fields the user actually types into. *@
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionGovernance"]</h6>
+
+                    @* Phase 3b: review is implemented, so the switch is live and the hint says what it DOES rather
+                       than when it might arrive. *@
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="taskReviewRequired" name="reviewRequired"
+                               aria-describedby="taskReviewRequiredHint" />
+                        <label class="form-check-label" for="taskReviewRequired">@Localizer["FieldReviewRequired"]</label>
+                        <div class="form-text" id="taskReviewRequiredHint">@Localizer["ReviewRequiredHint"]</div>
+                    </div>
+                    @* The reviewer CANDIDATE — same pattern as the approval manager below, deliberately: same kind
+                       of field, same d-none toggle keyed off its own switch, same required marker. It is mandatory
+                       because MOD-0023 refuses to start a review with nobody to route it to, so a task saved
+                       without one could never be submitted. Who may ACTUALLY review is still MOD-0023's decision. *@
+                    <div class="d-none mb-3" data-task-field="reviewer">
+                        <label class="form-label fw-medium" for="taskReviewer">
+                            @Localizer["FieldReviewer"] <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="taskReviewer"
+                               name="reviewerCandidateUserId" autocomplete="off" />
+                        <div class="form-text">@Localizer["ReviewerHint"]</div>
+                    </div>
+
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="taskApprovalRequired"
+                               name="approvalRequired" />
+                        <label class="form-check-label" for="taskApprovalRequired">
+                            @Localizer["FieldApprovalRequired"]
+                        </label>
+                    </div>
+                    <div class="d-none mb-3" data-task-field="approvalManager">
+                        <label class="form-label fw-medium" for="taskApprovalManager">
+                            @Localizer["FieldApprovalManager"] <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="taskApprovalManager"
+                               name="approvalManagerUserId" autocomplete="off" />
+                        <div class="form-text">@Localizer["ApprovalHint"]</div>
+                    </div>
+
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="taskEmailNotifications"
+                               name="emailNotificationsEnabled" checked />
+                        <label class="form-check-label" for="taskEmailNotifications">
+                            @Localizer["FieldEmailNotifications"]
+                        </label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="taskDelegationAllowed"
+                               name="delegationAllowed" />
+                        <label class="form-check-label" for="taskDelegationAllowed">
+                            @Localizer["FieldDelegationAllowed"]
+                        </label>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

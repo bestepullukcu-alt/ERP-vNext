@@ -39,8 +39,11 @@ const definition = {
 const FIRST_PAGE = [{ value: DEPARTMENT_A, label: "Kalite Güvence", secondary: "QA-01" }];
 const SEARCH_HIT = [{ value: DEPARTMENT_B, label: "Ruhsatlandırma", secondary: "REG-02" }];
 
+// Mirrors the real page after the golden-reference alignment: a real <form>, with the actions in the header and
+// the submit bound to it by id. The save is a form submit now, so a fixture built on a <div> would post nothing.
 const FORM_HTML = `
-  <div id="taskForm" data-task-mode="MODE" data-task-id="TASKID">
+  <button type="submit" form="taskForm" id="taskSubmit">save</button>
+  <form id="taskForm" data-task-mode="MODE" data-task-id="TASKID">
     <input id="taskTitle" />
     <select id="taskAssignmentTarget"><option value="SelfAssigned" selected>self</option></select>
     <select id="taskAssignee"></select>
@@ -52,8 +55,7 @@ const FORM_HTML = `
     <input type="checkbox" id="taskEmailNotifications" checked />
     <input type="checkbox" id="taskDelegationAllowed" />
     <div class="d-none" id="taskCustomFields"><div id="taskCustomFieldsRow"></div></div>
-    <button type="button" id="taskSubmit">save</button>
-  </div>`;
+  </form>`;
 
 describe("MOD-0024 module-record field — the whole round trip", () => {
   let sent;

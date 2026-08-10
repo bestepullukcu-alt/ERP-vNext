@@ -7,11 +7,10 @@
     ViewData["FormMode"] = "create";
 }
 
-<div class="mb-3">
-    <h5 class="mb-0">@Localizer["FormTitleCreate"]</h5>
-    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
-</div>
-
+@* The title, the breadcrumb and the actions all live in _Form.cshtml, like the golden reference — one header for
+   both Create and Edit. The description sentence that used to sit here was dropped: "Yeni Görev" already says
+   what the page is, so the sentence restated the title in longer words. If a title ever needs explaining, the
+   title is what should be fixed. *@
 <partial name="~/Views/Tasks/_Form.cshtml" />
 
 @section Scripts {

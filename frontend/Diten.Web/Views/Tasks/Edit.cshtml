@@ -7,10 +7,7 @@
     ViewData["FormMode"] = "edit";
 }
 
-<div class="mb-3">
-    <h5 class="mb-0">@Localizer["FormTitleEdit"]</h5>
-</div>
-
+@* Title + breadcrumb + actions come from _Form.cshtml (golden reference pattern), shared with Create. *@
 <partial name="~/Views/Tasks/_Form.cshtml" />
 
 @section Scripts {

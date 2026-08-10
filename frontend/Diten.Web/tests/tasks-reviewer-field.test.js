@@ -35,7 +35,7 @@ describe("MOD-0024 reviewer field", () => {
       const approval = form.slice(form.indexOf('data-task-field="approvalManager"'));
 
       // Hidden until its switch is on — the same class-based toggle, never inline style (FG-003).
-      expect(form).toContain('class="d-none mb-2" data-task-field="reviewer"');
+      expect(form).toMatch(/class="d-none[^"]*" data-task-field="reviewer"/);
       // The required marker both fields carry.
       expect(reviewer).toContain('text-danger');
       expect(approval).toContain('text-danger');

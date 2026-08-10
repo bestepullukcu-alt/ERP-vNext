@@ -1644,6 +1644,36 @@ Sonra iade et → talep edende `pendingAcceptance`.
   canlı: `dotnet build frontend/Diten.Web` + yeniden başlat, sonra kiracı menüsünde dört rotanın **katalogdan**
   geldiğini ve "Çalışma Alanı" başlığının **tek** kaldığını gör.
 
+### BL-061 — 🟢 Görev formu golden referansa hizalandı (KOD YAZILDI, CANLI DOĞRULAMA BEKLİYOR)
+- **Kapsam:** yalnız `/Tasks/Create` + `/Tasks/{id}/Edit`. Alan eklenmedi/çıkarılmadı; yerleşim, gruplama ve
+  kontrol tipi değişti. Referans: `Views/DevEnablement/GoldenReferenceCompact/_Form.cshtml` (desen icat edilmedi).
+- **Yapılanlar:** tüm select'ler `select2 form-select`; tek kart → **beş** `<section class="card">`
+  (Temel bilgiler · Atama · Planlama · Ek alanlar | sağ sütun: Yönetişim); açıklama cümlesi yerine
+  **h5 + breadcrumb** (başlık `_Form.cshtml`'e taşındı, Create/Edit tek başlık paylaşıyor); Kaydet/İptal
+  **başlık satırında, tek kopya** (`<button type="submit" form="taskForm">`, kayıt artık form submit'i — Enter da
+  kaydediyor); `#taskCustomFields` kendi kartı.
+- **KARAR — dinamik select'ler (K4):** yapılandırılabilir alanların select'leri JS ile üretildiği için markup'ı
+  düzeltmek yetmezdi. `TaskForm.enhanceSelects(root)` eklendi ve **renderCustomFields + hidrasyondan SONRA**
+  çağrılıyor; üretilen select'ler `select2` sınıfını kendileri taşıyor.
+- **KARAR — zorunlu alan rozeti (#5):** rozet **eklendi**, çünkü yapılandırılabilir zorunlu alanları da sayıyor.
+  Paylaşılan `required-fields-tracker.js` yalnız `<form>` içinde çalışıyordu (form artık gerçek `<form>`) ve
+  sonradan eklenen kontrollere dinlemez bağlamıyordu; MutationObserver ile hem **eklenen** hem **görünür olan**
+  (`d-none` kalkan) alanlar sayılıyor. Sayamasaydı hiç eklenmeyecekti. Yan bulgu: gözlemciye "kendi rozetini
+  yoksay" koruması şart — testte iki rozet birbirini tetikleyip sonsuz döngü yaptı, `data-required-tracker` ile
+  kapatıldı.
+- **KARAR — arama kutusu + açılır liste (#6, sahibin sorusu):** ayrı arama kutusu **kaldırılamaz**. Ölçüm:
+  record alanı sunucuda arıyor (`TasksApi.fieldRecords(code, {term})`) ve kontrol kaynağın **tek sayfasını**
+  tutuyor; select2'nin kendi araması yalnız DOM'daki option'ları süzer, yani var olan bir kayıt için "sonuç yok"
+  derdi — yalan söyleyen bir arama kutusu. Çözüm: sunucu araması kalır, **select2'nin kendi arama kutusu
+  kapatılır** (`data-select2-search="off"` → `minimumResultsForSearch: Infinity`), böylece kullanıcı tek arama
+  görür.
+- **Inline CSS:** yok (FG-003 temiz). **Yeni l10n stringi yok** — mevcut anahtarlar kullanıldı
+  (`TasksTitle · FormTitleCreate/Edit · Section* · Action*`, yedi dilde mevcut). `PageDescription` artık
+  kullanılmıyor, silinmedi (zararsız).
+- **Yeniden ölçüm:** `npx vitest run tests/tasks-form-golden-alignment.test.js` (frontend/Diten.Web içinden) ·
+  `dotnet build frontend/Diten.Web` · canlı: forma bir görev kaydet, düzenlemede geri gel — yapılandırılabilir
+  alan değerleri yerinde olmalı.
+
 ---
 
 ## Açık kararlar

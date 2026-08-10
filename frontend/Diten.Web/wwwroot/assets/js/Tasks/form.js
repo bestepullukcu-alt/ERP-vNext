@@ -352,11 +352,25 @@
 
         if (kind === 'select' || kind === 'person' || kind === 'boolean' || kind === 'record') {
             const select = doc.createElement('select');
-            select.className = 'form-select';
+            // `select2` here, not only in the .cshtml: these controls are BUILT, so markup-only styling would
+            // leave every tenant-defined dropdown looking different from the form around it. enhanceSelects()
+            // binds them after they are rendered.
+            select.className = 'form-select select2';
             // Marks the control as one whose options are a PAGE of a larger set, not the whole set. Hydration
             // reads this: a value missing from a complete list is a bad value, a value missing from a page is
             // ordinary and must be added rather than dropped.
-            if (kind === 'record') { select.setAttribute('data-custom-field-record', '1'); }
+            if (kind === 'record') {
+                select.setAttribute('data-custom-field-record', '1');
+                /*
+                 * A record picker gets select2's LOOK but not select2's search box, and the reason is that the two
+                 * searches are not the same search. select2 filters the <option>s already in the DOM; a record
+                 * control holds ONE PAGE of a source that can have thousands of rows. Offering select2's box here
+                 * would search the page while looking like it searched the source — "no results" for a record that
+                 * exists. The search that reaches the server is the input rendered beside the control, and it stays
+                 * the only one, so the user sees one search box rather than two that disagree.
+                 */
+                select.setAttribute('data-select2-search', 'off');
+            }
 
             const placeholder = doc.createElement('option');
             placeholder.value = '';
@@ -636,6 +650,37 @@
         return { valid: errors.length === 0, errors };
     };
 
+    /*
+     * Bind select2 to every `.select2` inside `root` that is not bound yet — the same wrap+dropdownParent shape
+     * the golden reference form uses, so the two look identical.
+     *
+     * It takes a ROOT and is safe to call again because half this form is built after load: the static pickers
+     * exist in the markup, the configurable ones are created by renderCustomFields, and binding once at
+     * DOMContentLoaded would enhance only the first half — a fix that looks complete on screen until a tenant
+     * defines a field. `select2-hidden-accessible` is select2's own marker for "already bound", so a second call
+     * re-binds nothing.
+     */
+    const enhanceSelects = (root) => {
+        const scope = root || global.document;
+        if (!scope || typeof global.jQuery !== 'function') { return 0; }
+
+        const nodes = Array.from(scope.querySelectorAll('select.select2'))
+            .filter((node) => !node.classList.contains('select2-hidden-accessible'));
+
+        nodes.forEach((node) => {
+            const $node = global.jQuery(node);
+            $node.wrap('<div class="position-relative"></div>');
+            const settings = { dropdownParent: $node.parent() };
+            // See buildCustomFieldControl: a server-searched control must not also offer select2's own box.
+            if (node.getAttribute('data-select2-search') === 'off') {
+                settings.minimumResultsForSearch = Infinity;
+            }
+            $node.select2(settings);
+        });
+
+        return nodes.length;
+    };
+
     global.TaskForm = {
         DRAFT_STORAGE_KEY,
         TARGET,
@@ -648,6 +693,7 @@
         writeDraft,
         clearDraft,
         applyTargetVisibility,
+        enhanceSelects,
         renderPositionOptions,
         renderPersonOptions,
         // Phase 5 — configurable fields.
