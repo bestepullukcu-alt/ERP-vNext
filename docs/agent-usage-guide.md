@@ -190,6 +190,31 @@ A5. İlk modül → Yol B'ye geç          B7. PR
 
 > **Git güvenliği:** Staging / commit / push yalnızca [GIT-002 git-safety.md](../.antigravity/rules/git-safety.md) kapılarıyla ve açık kullanıcı onayıyla yapılır; `main`'e doğrudan push yoktur.
 
+## Paralel Agent Lane / Worktree Geliştirmesi
+
+Paralel AI geliştirmesi [CONTROL TOWER SOP](./control-tower-sop.md) tarafından yönetilir.
+
+**Terminoloji**
+
+- **Build Lane** — build planındaki mantıksal bağımlılık/sıralama akışı.
+- **Agent Lane** — versiyonlu Work Package'ları yürüten, CONTROL TOWER tarafından yönetilen AI sohbeti/workspace'i.
+- **Work Package** — bir Agent Lane'e dispatch edilen, sınırları belli yürütülebilir sözleşme.
+
+**Kurallar**
+
+- Paralel iş **ayrı worktree** ve **kesişmeyen yazılabilir kapsam** kullanır.
+- Paylaşılan sözleşmeler, migration zincirleri, permission tanımları, global route aileleri ve paylaşılan
+  core kayıtlarında **single-writer** uygulanır.
+- `Parallel-safe with` **CONTROL TOWER tarafından belirlenir**; ajan tarafından varsayılmaz.
+- Agent Lane sohbet geçmişi **system of record değildir**.
+- Cross-module iş, capability kapanışından önce **integration doğrulaması** gerektirir.
+
+Kanonik ayrıntı: [CONTROL TOWER SOP](./control-tower-sop.md) §§3.2, 16, 20, 27 ·
+günlük hızlı kapı: [Operating Card](./control-tower-operating-card.md)
+
+> Bu bölüm paralel geliştirme politikasını **ikinci kez tanımlamaz**; keşfedilebilirlik girişidir,
+> kanonik ayrıntı SOP'ta kalır.
+
 ## Slim / Compact Seçimi
 
 DataTable modüllerinde create/edit formundaki kullanıcı alanları sayılır.
