@@ -878,7 +878,35 @@ dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --fil
 *(Not: depoda `tests/strategy-*`, `tests/planning-cycles-*`, `tests/objectives-edit-hydration` altında **9 test
 bu turdan ÖNCE de düşüyordu** — dokunulmamış ağaçta ölçüldü, bu dilimle ilgisi yok.)*
 
-#### ⚠️ KAPANIŞ (KISMİ) — yapılandırılabilir alanlar: **başka modülün kayıtları** (kaynak sözleşmesi) — 2026-08-10
+#### ✅ KAPANIŞ — yapılandırılabilir alanlar: **başka modülün kayıtları** — `be7918ed` · CT canlı doğrulaması 2026-08-10
+
+> **Uçtan uca ölçüldü.** `"Fin"` yazıldı → `GET .../delivery.department/records?term=Fin` →
+> `{value:"967a6cd5-…", label:"Finans", secondary:"OU-FIN"}` → liste tek satıra daraldı → kaydet **201**
+> → sunucuda **kimlik** saklandı (ad değil) → düzenlemede **"Finans — OU-FIN" dolu geldi**.
+> Sözleşmenin en kritik iddiası tuttu: **ekranda ad+kod, veritabanında kimlik.**
+>
+> **Hata yolları:** olmayan kayıt kimliği → `400 TASK_FIELD_VALUE_INVALID` · olmayan tanım →
+> `404 TASK_FIELD_DEFINITION_UNKNOWN`.
+>
+> **İŞ 1 doğrulandı:** kaynak anahtarı artık açılır liste (`Yok · Platform listesi · İş referans
+> verisi · Başka modülün kayıtları` → `Organizasyon birimleri · Pozisyonlar`) **ve düzenlemede
+> seçili geliyor** — ajanın ölçemediği madde buydu.
+>
+> **Arapça/RTL doğrulandı:** `dir="rtl"`, başlık ve yer tutucular Arapça, ham anahtar yok,
+> **`—` ayıracı bozulmadı** (`Finans — OU-FIN`). *Ekrandaki "Faz/Pazar/Departman/Regulatory"
+> çeviri değil **tenant içeriğidir**; çevrilmemeleri doğru davranış.*
+>
+> **CT'nin ölçmediği tek madde:** 5000 kayıt. İki kaynak da bellek içi süzüyor — ajan bunu bilinçli
+> sınır olarak beyan etti ve sözleşmenin parçası olmadığını yazdı. Asıl sınav ürün modülüyle.
+>
+> **Ajanın kendi turunda bulduğu kusur, kayda değer:** `/Tasks/Create` ve `/Edit`, `form-page.js`'in
+> çağırdığı `premium-modal.js`'i **hiç yüklemiyordu**. 201 döndükten sonra sayfa ne bildirim veriyor
+> ne yönlendiriyordu — tur tekrar Kaydet'e bastı ve **tek niyetten iki görev** çıktı. Bu, SOP K5'in
+> ("arz düzeldi ≠ teslimat oldu") ders kitabı vakası. Düzeltildi ve *"sayfa kendi betiğinin
+> çağırdığını yüklüyor mu"* testiyle sabitlendi.
+>
+> **UX turuna devredilen gözlem (kusur değil):** aramalı alanda arama kutusu ile seçim listesi ayrı
+> ayrı duruyor (etiket → arama → liste); çalışıyor ama iki alan gibi okunuyor.
 
 > **Desen icat edilmedi.** SAP'ın *check table + F4 search help*'i, Oracle'ın *table-validated value set*'i,
 > ServiceNow'ın *reference field*'ı aynı cümleyi söylüyor: **alanı yönetici tanımlar, değerleri başka modül
