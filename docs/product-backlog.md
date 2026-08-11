@@ -1784,8 +1784,171 @@ Sonra iade et → talep edende `pendingAcceptance`.
   olayının kaç gün önce tetikleneceği (`int? ReminderLeadDays`), (c) ikisinin de `TaskItem`'da saklanması ve
   dispatch tarafında **okunması** — saklanıp okunmayan tercih de aynı kusur. Mevcut `EmailNotificationsEnabled`
   ana anahtar olarak kalır (kapalıysa hiçbiri gönderilmez).
-- **Yeniden ölçüm:** `rg -n "NotifyOnEvents|ReminderLeadDays|NotificationPreference" services/Diten.Platform/src`
-  (bugün boş) · `grep -n "EmailNotificationsEnabled" services/Diten.Platform/src/Diten.Platform.Domain/Entities/Tasks/TaskItem.cs`
+- **DURUM (2026-08-11): ÜÇ KATMAN DA YAZILDI, CANLI DOĞRULAMA BEKLİYOR.**
+  - **Saklama:** `TaskItem.NotifyOnEvents` (`IReadOnlyList<string>?`) · `ReminderLeadDays` (`int?`) ·
+    `LastDueSoonReminderKey` (`string?`). **Neden nullable:** `null` = "hiç seçilmedi" → bugünkü davranış (her
+    olay gider). Boş liste = "hiçbiri", ayrı bir seçim. Non-nullable boş liste varsayılanı, deploy anında
+    **mevcut her görevi susturur** — varsayılan kılığına girmiş bir veri göçü olurdu; bu yüzden **backfill YOK**,
+    anlamlı varsayılan var. Hatırlatma **gün sayısı** olarak (BL-030: DateTimeOffset dizi olarak saklanıyor,
+    sorgu kırıyor). `EmailNotificationsEnabled` ana anahtar olarak duruyor ve önce kontrol ediliyor.
+  - **Sözleşme + form:** create/update istekleri iki tercihi taşıyor (update'te `null` = "bu çağıran bu alanı
+    düzenlemiyor", `ApprovalRequired` ile aynı kural — gidiş-dönüşte veri kaybını önler). E-posta kartında beş
+    olay çoklu seçimi + hatırlatma tekli seçimi; **yalnız gerçekten gönderilebilen olaylar** listeleniyor ve
+    `duesoon` bu listeye **ancak göndericisi aynı turda yazıldığı için** girdi. Ana anahtar kapalıyken blok
+    gizleniyor ve payload'da tercih **gönderilmiyor**; hatırlatma süresi de `duesoon` seçili değilken gizli.
+  - **Gönderici:** `TaskNotificationService` tercihi ana anahtarın **yanında** okuyor.
+    `SendDueSoonRemindersHandler` + `TaskDueSoonSweepJob` (yeni) — `TaskRecurrenceSweepJob` ile birebir aynı
+    şekil: aktif kiracıları dolaşır, `TenantScope.Begin` içinde tenant-scoped komutu çalıştırır.
+    **Idempotency görevin üstünde:** son tarih başına claim anahtarı (`LastDueSoonReminderKey`), **gönderimden
+    ÖNCE** expected-version yazımıyla damgalanıyor (recurrence claim'inin aynısı) — elle çalıştırılan komut da
+    korunur. Anahtar **son tarihe** bağlı, böylece ertelenen görev yeni tarihinde yeniden hatırlatılır.
+  - **⚠ İŞİ NE KAPALI TUTUYOR — sevkiyattaki gerçek (2026-08-11 düzeltmesi):** kodda iki bayrak var
+    (`RegisterStandardJobs` **VE** `EnabledJobs[...]`) ama **`RegisterStandardJobs` hem `appsettings.json` hem
+    `appsettings.Development.json` içinde TRUE**. Yani **Development'ta işi kapalı tutan TEK şey per-job
+    `false`** — "iki kez kapalı" ifadesi boolean için doğru, sevkiyat için yanlıştı ve düzeltildi.
+    **Production'da ayrı ve gerçek bir kapı var:** `BackgroundJobs:Enabled = false` (base appsettings) —
+    zamanlayıcının tamamı kapalı. "Hatırlatma gelmedi" önce bir yapılandırma sorusudur (BL-055 dersi).
+  - **Bilinen sınır (dürüstçe):** süpürme `GetAllForTenantAsync` + bellek içi süzme kullanıyor ve tur başına
+    `MaxTasksPerTenant`=200 ile sınırlı — depoda son-tarih sorgusu yok. Kiracı başına görev sayısı büyüdüğünde
+    indeksli bir sorgu gerekir.
+  - **Kapanış turu (2026-08-11) — doğrulamada çıkan altı bulgu kapatıldı:**
+    1. **Hatırlatma kapatılamıyordu.** Sözleşme "düzenlemiyorum" ile "temizliyorum"u aynı `null` ile
+       söylüyordu → form "Hatırlatma yok" derdi, hiçbir şey kaydolmazdı, süpürme e-posta atmaya devam ederdi.
+       **Karar: tercihler TEK BLOK olarak düzenlenir**; `NotifyOnEvents` non-null ise çağıran bloğu
+       düzenliyordur ve `ReminderLeadDays` **olduğu gibi** uygulanır (null = temizle). Sentinel (-1) veya ikinci
+       bir "temizle" alanı **seçilmedi**: sözleşmeye sihirli sayı sokardı, blok ise tek formda tek karttır ve
+       `ReviewRequired` + reviewer emsali zaten bu şekli kullanıyor. **Yalnız süreyi güncelleyen çağıran:**
+       bloğu düzenlemiyor sayılır, **yok sayılır** — korumak istediği olay listesini birlikte göndermelidir
+       (form her kayıtta bunu yapar). Frontend'de `buildUpdatePayload` eklendi: düzenleme her zaman olay
+       listesini taşır, yoksa temizleme sessizce kaybolurdu.
+    2. **Claim-before-send sırası artık ölçülüyor.** `FakeTaskItemRepository.ForcedUpdateConflicts` ile sürüm
+       çakışması enjekte ediliyor; test "hiç e-posta gitmedi + AlreadyReminded=1" diyor. Sıra ters çevrildiğinde
+       **kırmızı** oluyor (kanıtlandı).
+    3. **Vacuous test kaldırıldı.** Süpürme testleri artık **gerçek** `TaskNotificationService` üzerinde koşuyor;
+       filtreyi yeniden yazan sahte silindi (kopya ayrıca kaymıştı: varsayılan karşılaştırıcı ↔ `StringComparer.Ordinal`).
+       Üretim filtresi silinince ilgili test artık **kırmızı** oluyor (kanıtlandı).
+    4. **Test double'ın `Detach`'i sığdı** — `Tags`/`FieldValues` paylaşılan referanstı. Derin kopya eklendi;
+       sızıntıyı gösteren test var.
+    5. **`Failed` sayacı düşüyordu** — hem due-soon hem **recurrence** süpürmesi komutun `Failed` alanını
+       okumuyordu, yani her gönderimi patlayan kiracı temiz koşu olarak loglanıyordu. **İkisi de düzeltildi**
+       (recurrence sadık bir kopya olduğu için yeni kusur değildi ama aynı yalanı söylüyordu; ayrı backlog
+       maddesi açmak yerine iki satırla kapatmak dürüst olanıydı).
+- **Yeniden ölçüm:** `dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~TaskNotificationPreferenceTests"` ·
+  `npx vitest run tests/tasks-notification-preferences.test.js` (frontend/Diten.Web içinden) ·
+  `rg -n "TaskDueSoonSweepJob" services/Diten.Platform/src/Diten.Platform.Application/BackgroundJobs/PlatformRecurringJobRegistrar.cs`
+  - **Son tur (2026-08-11) — bir 🔴 ve dört 🟡 daha kapatıldı:**
+    1. **Vazgeçen görev claim'i yakıyordu.** `IsDue` yalnız tarihe/yaşam döngüsüne bakıyor, tercih süzgeci bir kat
+       altta — ve damga süzgeçten **önce** atılıyordu. "Son tarih yaklaştığında" tikini kaldır → damga atılır,
+       e-posta gitmez → tiki geri koy → **o son tarih için hatırlatma bir daha asla gelmez**. Varsayılan süre
+       seçili geldiği için olağan yoldu. **Çözüm tek-sahip kuralına uyarak:** süzgeç `IsDue`'ya
+       **kopyalanmadı**; kural `TaskNotificationPolicy`'ye çıkarıldı, `ITaskNotificationService.WouldNotify`
+       **default interface** üyesi olarak ona devrediyor (böylece 13 dosyadaki sahte de aynayı kopyalamak zorunda
+       kalmadı), süpürme **damgalamadan önce soruyor**. Üç test: tik yokken damga **null kalıyor** · fikir
+       değişince aynı son tarih için hatırlatma geliyor · ana anahtar için aynısı. Guard silindiğinde üçü de
+       kırmızı (kanıtlandı).
+    2. **"Derin kopya" fazla iddiaydı.** Liste yeniden ayrılıyordu ama `TaskFieldValue` mutable — `Value` yerinde
+       değiştirilince depoya sızıyordu; ayrıca başarılı `UpdateAsync` çağıranın listelerini depoya veriyordu.
+       **Karar: vaadi daraltmak yerine tutmak** — elemanlar da klonlanıyor, hem okumada hem yazımda. İki test.
+    3. **Kardeş işteki bayat "twice" metni** (recurrence job + registrar) due-soon ile aynı gerçeğe uyduruldu.
+    4. **Yinelenen görevler hatırlatma alamıyor** → **BL-067** açıldı (Priority/Tags sabitliği de aynı maddede).
+       Bu turda taşınmadı: tercihlerin yeri şablon, şablon ekranı yok (BL-054) — düzenlenemeyen bir alana yazmak
+       aynı kusurun tekrarı olurdu. Koda da açıklama satırı bırakıldı.
+    5. **Ana anahtar kapalıyken eski tercihler korunuyor** — davranış **kasıtlı** (geçici sessizlik, kullanıcının
+       hiç dönmediği ayarları yok etmemeli) ve artık **testi var**, bir sonraki tur kusur sanıp bozmasın diye.
+  - **Kapanış kalemi (2026-08-11): `TaskFieldValue` klonu bir üyeyi düşürüyordu.** `DetachCollections` altı
+    yazılabilir üyeden **beşini** elle sayıyordu; **`Classification`** düşüyordu — yani `Confidential` bir alan
+    değeri depodan **`Normal`** olarak dönüyordu. Bu, `Redacted` ile birlikte BL-024'ün "tarayıcı payload'ından
+    çıkar" kuralını taşıyan alan.
+    **Asıl bulgu tek alan değil, aynı dosyadaki disiplin farkıydı:** `CopyWritableFields` **yansıma** kullanıyor
+    (yeni alan kendiliğinden taşınır), eleman klonu **elle liste** idi (yeni alan sessizce düşer).
+    **Karar: (a) + (b) birlikte.** (a) eleman klonu da **yansımaya** çevrildi — tek yöntem, tek disiplin, sınıfın
+    tamamını kapatır. (b) üye listesini **yansımayla türeten** bir guard testi eklendi
+    (`EVERY_writable_member_of_a_field_value_survives_detachment`): her yazılabilir üyeye varsayılanından
+    **farklı** bir değer verip geri okuyor. Yalnız (a) yapılsaydı, yarın yansımanın yetmediği bir üye tipi
+    (ör. iç içe mutable nesne) eklendiğinde yine sessizce kaybederdik; yalnız (b) yapılsaydı elle listeyi her
+    seferinde biri güncellemek zorunda kalırdı. Test ayrıca bilmediği bir üye tipiyle karşılaşınca
+    **kapsamı daraltmak yerine** açık bir hata veriyor.
+    Kanıt: klondan bir üye düşürüldüğünde **iki test de kırmızı** (biri somut alanı, biri sınıfı yakalıyor).
+  - **Kapanış kalemi B (2026-08-11): sahte bildirim servisi kuralın YARISINI uyguluyordu.**
+    `TaskTestDoubles.FakeTaskNotificationService.NotifyAsync` yorumu *"gerçek servisin AYNI iki atlama kuralını
+    uygular"* diyordu; kod yalnız `EmailNotificationsEnabled`'a bakıyordu. BL-065 ikinci kuralı
+    (`NotifyOnEvents`) eklediğinde sahte güncellenmedi → **yorum yanlış hale geldi** ve bu sahteyi kullanan
+    **13 test dosyası**, üretimin artık kullanmadığı bir politikayı ölçmeye başladı. "Bildirim gitmedi" diyen bir
+    iddianın üretimden **farklı bir sebeple** doğru olması, izinli bir sahteden daha kötüdür: test kanıt gibi
+    okunur.
+    **Düzeltme tek satır:** sahte de `TaskNotificationPolicy.WouldNotify(task, eventCode)` çağırıyor — ayna bitti,
+    yorum doğrulandı, politikaya eklenecek bir sonraki kural bu metodu kimse düzenlemeden 13 dosyaya ulaşır.
+    Test **eşdeğerlik** olarak yazıldı (sahte ile gerçek servisin aynı girdiye aynı cevabı vermesi), tek tek
+    beklenti olarak değil — önemli olan hangisinin ne dediği değil, **ayrışamamaları**.
+    **Beklenen sonuç doğrulandı:** 13 dosyanın hiçbiri kırmızıya dönmedi (hiçbiri `NotifyOnEvents` set etmiyor),
+    yani sahte bugüne kadar yanlış bir şey ölçmemişti — yalnız yeni kuralı ölçmüyordu.
+  - **CANLI DOĞRULAMA TURU (2026-08-11) — iki kusur, ikisi de bu turun kodunun merkezinde:**
+    - **A. Başarısız gönderim claim'i yakıyordu.** Canlı kanıt: `PROVIDER_REJECTED` (Mailpit AUTH duyurmuyor,
+      dev config dummy kimlik gönderiyor) → damga atılmıştı → o son tarih **kalıcı sessizleşti**, ancak tarih
+      değiştirilerek kurtarıldı. Dosyanın "belgelenmiş ödünleşim" dediği şey ilk canlı koşuda gerçekleşti.
+      **Seçilen tasarım: (a) claim teslimle kesinleşir.** Damga hâlâ gönderimden **önce** atılıyor (çökme
+      durumunda çift gönderim yerine sessizliğe düşmek doğrusu), ama sonuç `Dispatched` değilse damga
+      **expected-version ile geri alınıyor** ve sonraki süpürme aynı son tarihi yeniden deniyor.
+      **Reddedilen alternatif (b) "denendi/teslim edildi" + sınırlı yeniden deneme:** ikinci bir alan ve bir
+      yeniden deneme politikası gerektiriyor, ve terminal durumu **yine kalıcı kayıp** — sadece önünde daha çok
+      makine var. (a) tek yazımla aynı kurtarmayı sağlıyor; kurşun penceresi günler genişliğinde olduğu için
+      saatlik süpürmenin içinde bol şans var. **Geri alma yazımı da başarısız olursa bugünkü davranışa düşer —
+      yani hiçbir durumda öncekinden kötü değil.** Yarış kaybı (`ForcedUpdateConflicts`) **ayrı tutuldu**:
+      "yarışı kaybettim" claim'i serbest bırakmaz, çünkü onu başka bir koşucu tutuyor.
+    - **B. Süpürme kaybolan hatırlatmayı temiz koşu diye raporluyordu** (`Sent=0 AlreadyReminded=0 FailedTasks=0
+      FailedTenants=0`). Sebep: yalnız `Dispatched` sayılıyordu ve yalnız **exception** hata sayılıyordu; arada
+      kalan her sonuç hiçbir sayaca girmiyordu. **Düzeltme:** `SendDueSoonRemindersResponse` sonuçları ayırıyor
+      (`RemindersSent · AlreadyReminded · NotDelivered · Failed`) ve **her değerlendirilen görev tam olarak bir
+      sayaca** giriyor — testi bu toplamı iddia ediyor. Süpürme işi hepsini topluyor ve **kayıp varsa log satırı
+      Warning**, yoksa Information. Aynı boşluk **recurrence süpürmesinde de vardı** (`SkippedUnassigned` hiç
+      toplanmıyordu) — o da düzeltildi.
+    - **C. Bildirimler yanlış dilde** → ölçüldü, **BL-068** açıldı (kapsam: beş görev bildiriminin hepsi).
+    - **Ortam notu (ürün kusuru değil):** Mailpit varsayılan olarak AUTH duyurmuyor; dev config dummy kimlik
+      gönderdiği için MailKit `NotSupportedException` atıyor. Çözüm
+      `mailpit --smtp-auth-accept-any --smtp-auth-allow-insecure`. Depoda dev kurulum belgesi **yoktu**;
+      `docs/dev-environment.md` oluşturuldu (Mailpit + RabbitMQ + işlerin varsayılan kapalılığı + bildirim dili).
+
+### BL-067 — 🟡 Yinelenen görevler şablonsuz doğuyor: hatırlatma, öncelik, etiket hiç ayarlanamıyor
+- **Ölçüm (2026-08-11):** `GenerateDueRecurringTasksHandler.cs:209-238` şablonsuz dalda **sabit** bir istek
+  kuruyor: `Priority: Medium · Tags: null · ReviewRequired: false · ApprovalRequired: false ·
+  DelegationAllowed: false · FieldValues: null`, ve BL-065 sonrası `NotifyOnEvents`/`ReminderLeadDays` de
+  **null**. Sonuç: **yinelenen görev due-soon hatırlatması hiç alamıyor** — süpürme yalnız kurşun süresi seçilmiş
+  görevleri hatırlatır, burada seçen kimse yok. Hatırlatmaya en çok ihtiyacı olan görev tipi bu.
+- **BL-065'in regresyonu DEĞİL:** şablon dalının zaten ince olmasının sonucu; BL-065 yalnız görünür kıldı.
+- **Neden bu turda TAŞINMADI (karar + gerekçe):** tercihlerin doğru yeri `TaskTemplate`, ve **şablon yönetim
+  ekranı yok** (BL-054). Kimsenin düzenleyemediği bir şablona alan eklemek, bu turlarda beş kez düzelttiğimiz
+  *"saklanıyor ama ayarlanamıyor"* kusurunun aynısı olurdu. Kuralın (`TaskRecurrenceRule`) üstüne koymak da
+  yanlış yer: kural **ne zaman**ı söyler, **ne**yi değil.
+- **Sıra şartı:** BL-054 (şablon ekranı) → sonra bu madde. Yapılacak: `TaskTemplate`'e
+  `DefaultNotifyOnEvents` + `DefaultReminderLeadDays` (+ `DefaultTags`, `DefaultPriority` zaten var mı ölç) ·
+  şablon ekranında düzenlenebilir · `GenerateDueRecurringTasksHandler` şablonlu **ve** şablonsuz dalda bunları
+  aktarsın.
+- **Yeniden ölçüm:** `rg -n "NotifyOnEvents|ReminderLeadDays" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/CommandHandlers/GenerateDueRecurringTasksHandler.cs`
+  (bugün yalnız açıklama satırı) · canlı: yinelenen kuraldan doğan görevi Düzenle'de aç — hatırlatma **seçilmemiş**
+  gelmeli, ve bu beklenen davranıştır.
+
+### BL-068 — 🟡 Görev bildirimleri kiracının dilinde gidiyor, OKUYANIN dilinde değil
+- **Canlı gözlem (2026-08-11):** kiracı arayüzü Türkçe, şablonlar 7 dilde seed'li, ama hatırlatma **İngilizce**
+  gitti: *"A task is due soon: CT BL-065 hatirlatma testi"*.
+- **ÖLÇÜM — kusur değil, tasarımın sınırı:** `TenantNotificationLocaleResolver` zinciri **kaynaktan ölçüldü**:
+  (1) çağıranın verdiği locale → (2) `Tenant.Settings.Language` → (3) `Tenant.DefaultLanguage` → (4) `"en"`.
+  `TaskNotificationService` `Locale: null` geçiyor (kendi dokümanında yazılı: gönderenin UI kültürü **okuyanın**
+  dili değildir), yani dil **kiracı kaydından** geliyor. Dev'de `TenantManagement:DefaultLanguage = "en"`
+  (`appsettings.Development.json:78`) → kiracı kaydı "en" → e-posta İngilizce. Arayüz dili istek başına
+  seçiliyor ve **hiçbir yere yazılmıyor**.
+- **Kapsam duesoon DEĞİL:** beş görev bildiriminin **hepsi** aynı çözücüden geçiyor (`assigned · claimed ·
+  duesoon · completed · approvalrequested`). Yani tek bir olayın değil, kanalın tamamının sorusu.
+- **Kök eksik:** **kullanıcı başına dil alanı yok.** AuthService `User`/`PlatformUser` üzerinde Locale/Language/
+  Culture alanı **yok** (ölçüldü), `internal/users/contacts` ucu id + ad + e-posta döndürüyor.
+  `TaskNotificationService` sınıf dokümanı bunu zaten "eksik, eklendiğinde 1.5. halka olur" diye yazmış.
+- **Bu turda DÜZELTİLMEDİ (karar):** küçük bir iş değil — ya (a) AuthService `User`'a dil alanı + contacts ucu +
+  `TaskNotificationRecipient` alanı + dil grubuna göre çoklu dispatch, ya (b) en azından kiracı ayarları
+  ekranından `Settings.Language`'in gerçekten yazıldığının doğrulanması. (a) servis sınırı aşıyor.
+  **Ara çözüm önerisi (ucuz, dürüst):** kiracı dilini kiracı ayarlarından ayarlanabilir kılmak/doğrulamak —
+  o zaman en azından "kiracının dili" doğru olur; okuyan başına dil (a) ile gelir.
+- **Yeniden ölçüm:** `rg -n "Locale: null" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Services/TaskNotificationService.cs` ·
+  `rg -n "Language|Locale" services/Diten.AuthService/src/Diten.AuthService.Domain/Entities/*.cs` (bugün boş) ·
+  canlı: kiracı kaydının `Settings.Language`'i ne, e-posta hangi dilde geldi.
 
 ---
 

@@ -130,4 +130,17 @@
   <data name="ReviewTypeMeeting" xml:space="preserve"><value>Réunion de revue</value></data>
   <data name="ReviewTypeMeetingHint" xml:space="preserve"><value>Le travail est évalué lors d’une réunion.</value></data>
   <data name="ReviewTypeMeetingDisabledReason" xml:space="preserve"><value>Pas encore disponible : le module de réunions n’existe pas. La revue rapide s’applique en attendant.</value></data>
+  <data name="NotifyEventsLabel" xml:space="preserve"><value>Me prévenir lorsque</value></data>
+  <data name="NotifyEventAssigned" xml:space="preserve"><value>La tâche est attribuée</value></data>
+  <data name="NotifyEventClaimed" xml:space="preserve"><value>Une tâche du pool est prise en charge</value></data>
+  <data name="NotifyEventDueSoon" xml:space="preserve"><value>L’échéance approche</value></data>
+  <data name="NotifyEventCompleted" xml:space="preserve"><value>La tâche est terminée</value></data>
+  <data name="NotifyEventApprovalRequested" xml:space="preserve"><value>Une approbation est demandée</value></data>
+  <data name="ReminderLeadLabel" xml:space="preserve"><value>Me rappeler avant l’échéance</value></data>
+  <data name="ReminderLeadNone" xml:space="preserve"><value>Aucun rappel</value></data>
+  <data name="ReminderLeadSameDay" xml:space="preserve"><value>Le jour même</value></data>
+  <data name="ReminderLead1" xml:space="preserve"><value>1 jour avant</value></data>
+  <data name="ReminderLead3" xml:space="preserve"><value>3 jours avant</value></data>
+  <data name="ReminderLead7" xml:space="preserve"><value>1 semaine avant</value></data>
+  <data name="ReminderLead14" xml:space="preserve"><value>2 semaines avant</value></data>
 </root>

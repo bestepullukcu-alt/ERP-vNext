@@ -64,6 +64,9 @@ public static class TaskItemMapper
         task.ApprovalManagerUserId,
         task.WorkflowInstanceId,
         task.EmailNotificationsEnabled,
+        // BL-065 — null travels as null: the form shows "everything" for a task whose owner never chose.
+        task.NotifyOnEvents,
+        task.ReminderLeadDays,
         task.DelegationAllowed,
         task.ProcessInstanceId,
         // A redacted value is OMITTED from the payload — never sent and hidden with CSS (BL-024-ready).

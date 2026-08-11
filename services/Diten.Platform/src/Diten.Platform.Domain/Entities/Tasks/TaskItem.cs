@@ -145,6 +145,40 @@ public sealed class TaskItem : TenantScopedEntity
 
     public bool EmailNotificationsEnabled { get; set; } = true;
 
+    /// <summary>
+    /// BL-065 — which events this task sends email for, as <see cref="TaskNotificationEvents"/> codes.
+    ///
+    /// <para><b>NULL means never chosen</b>, and every dispatchable event is sent — which is exactly today's
+    /// behaviour, so a task written before this field existed keeps notifying after deploy. An EMPTY list means
+    /// the owner chose none. The distinction is the whole reason this is nullable rather than defaulting to an
+    /// empty list: a non-nullable default would deserialise every existing task into "notify me about nothing"
+    /// and silence the system on the way up — a data migration wearing a default value's clothes.</para>
+    ///
+    /// <para><see cref="EmailNotificationsEnabled"/> stays the master switch: off means nothing is sent, whatever
+    /// is listed here.</para>
+    /// </summary>
+    public IReadOnlyList<string>? NotifyOnEvents { get; set; }
+
+    /// <summary>
+    /// BL-065 — how many days BEFORE <see cref="DueAt"/> the due-soon reminder is sent. Null: no reminder.
+    ///
+    /// <para>A COUNT OF DAYS, not a stored instant, and that is deliberate: BL-030 was a DateTimeOffset that
+    /// serialised as an array and broke every query that touched it. A number also survives the due date moving —
+    /// the reminder is re-derived rather than left pointing at a date that no longer means anything.</para>
+    /// </summary>
+    public int? ReminderLeadDays { get; set; }
+
+    /// <summary>
+    /// BL-065 — the due-soon reminder already sent for a particular deadline, as a claim key.
+    ///
+    /// <para>The sweep runs hourly and a lead window is days wide, so "did we already remind about THIS deadline"
+    /// has to be answered from the task itself. Keyed on the due date, so postponing a task and reaching its new
+    /// deadline earns a new reminder — a plain "reminded" boolean would silence it forever. The claim is stamped
+    /// under an expected-version write BEFORE the send, the same discipline the recurrence sweep uses for its
+    /// period claim, so a hand-run command is guarded too and not only the scheduler.</para>
+    /// </summary>
+    public string? LastDueSoonReminderKey { get; set; }
+
     /// <summary>Policy flag only. Delegation ELIGIBILITY remains MOD-0018's decision (pack §12 Y5).</summary>
     public bool DelegationAllowed { get; set; }
 

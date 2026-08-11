@@ -130,4 +130,17 @@
   <data name="ReviewTypeMeeting" xml:space="preserve"><value>اجتماع مراجعة</value></data>
   <data name="ReviewTypeMeetingHint" xml:space="preserve"><value>يُقيَّم العمل في اجتماع.</value></data>
   <data name="ReviewTypeMeetingDisabledReason" xml:space="preserve"><value>غير متاح بعد: وحدة الاجتماعات لم تُنشأ. تُطبَّق المراجعة السريعة في هذه الأثناء.</value></data>
+  <data name="NotifyEventsLabel" xml:space="preserve"><value>أبلغني عند</value></data>
+  <data name="NotifyEventAssigned" xml:space="preserve"><value>إسناد المهمة</value></data>
+  <data name="NotifyEventClaimed" xml:space="preserve"><value>استلام مهمة من المجموعة</value></data>
+  <data name="NotifyEventDueSoon" xml:space="preserve"><value>اقتراب تاريخ الاستحقاق</value></data>
+  <data name="NotifyEventCompleted" xml:space="preserve"><value>اكتمال المهمة</value></data>
+  <data name="NotifyEventApprovalRequested" xml:space="preserve"><value>طلب الاعتماد</value></data>
+  <data name="ReminderLeadLabel" xml:space="preserve"><value>ذكّرني قبل تاريخ الاستحقاق</value></data>
+  <data name="ReminderLeadNone" xml:space="preserve"><value>بدون تذكير</value></data>
+  <data name="ReminderLeadSameDay" xml:space="preserve"><value>في اليوم نفسه</value></data>
+  <data name="ReminderLead1" xml:space="preserve"><value>قبل يوم واحد</value></data>
+  <data name="ReminderLead3" xml:space="preserve"><value>قبل 3 أيام</value></data>
+  <data name="ReminderLead7" xml:space="preserve"><value>قبل أسبوع</value></data>
+  <data name="ReminderLead14" xml:space="preserve"><value>قبل أسبوعين</value></data>
 </root>

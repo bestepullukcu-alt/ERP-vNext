@@ -61,6 +61,15 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
 
     public IReadOnlyList<TaskItem> Items => _items;
 
+    /// <summary>
+    /// How many of the NEXT expected-version writes must lose their race.
+    ///
+    /// <para>Without this, "claim before send" and "send before claim" pass the same tests: nothing could make the
+    /// conditional write fail, so the ORDER of the two steps was never observable. A guard nothing can trip is a
+    /// comment, not a guarantee.</para>
+    /// </summary>
+    public int ForcedUpdateConflicts { get; set; }
+
     public Task<TaskItem> CreateAsync(TaskItem task, CancellationToken ct = default)
     {
         _items.Add(task);
@@ -96,7 +105,50 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
         };
 
         CopyWritableFields(from: source, to: copy);
+        DetachCollections(from: source, to: copy);
         return copy;
+    }
+
+    /*
+     * The COLLECTIONS, down to their ELEMENTS.
+     *
+     * Reflection copies references, so without this a handler that appended to Tags or FieldValues on its copy
+     * reached into the stored document with no write at all. Re-allocating the lists alone was still a half-
+     * truth: TaskFieldValue's Value, Redacted and AccessState all have setters, so editing a value IN PLACE
+     * leaked the same way. Tags need no element clone — strings cannot be edited in place.
+     */
+    private static void DetachCollections(TaskItem from, TaskItem to)
+    {
+        to.Tags = [.. from.Tags];
+        to.FieldValues = from.FieldValues.Select(CloneFieldValue).ToList();
+    }
+
+    /*
+     * BY REFLECTION, exactly like CopyWritableFields above — and that sameness is the point.
+     *
+     * The hand-written version listed five of TaskFieldValue's six writable members and dropped Classification,
+     * so a Confidential value came back from the store as Normal: the member carrying the BL-024 "omit from the
+     * browser payload" rule, silently downgraded. One missing line was the symptom; the cause was two different
+     * disciplines in one file, one of which carries new properties automatically and one of which forgets them.
+     * A property added to TaskFieldValue tomorrow now travels here without anyone remembering this method —
+     * and EVERY_writable_member_of_a_field_value_survives_detachment fails if that ever stops being true.
+     */
+    private static TaskFieldValue CloneFieldValue(TaskFieldValue source)
+    {
+        var clone = new TaskFieldValue
+        {
+            DefinitionCode = source.DefinitionCode,
+            ValueType = source.ValueType
+        };
+
+        foreach (var property in typeof(TaskFieldValue)
+                     .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+                     .Where(p => p is { CanRead: true, CanWrite: true }))
+        {
+            property.SetValue(clone, property.GetValue(source));
+        }
+
+        return clone;
     }
 
     /// <summary>Every writable property, so the double can never decide which fields are persistable.</summary>
@@ -110,9 +162,13 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
         }
     }
 
+    // DETACHED copies, for the same reason GetByIdAsync hands them out: Mongo deserializes a fresh document per
+    // read. Handing out the stored reference made every expected-version write from a list read look like a LOST
+    // RACE — the handler stamps the entity, and the double then compared the stored object with itself. A sweep
+    // that reads a list and writes a claim could not be tested at all until this matched the real repository.
     public Task<IReadOnlyList<TaskItem>> GetAllForTenantAsync(CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<TaskItem>>(
-            _items.Where(x => x.TenantId == TaskTestData.Tenant && !x.IsDeleted).ToList());
+            _items.Where(x => x.TenantId == TaskTestData.Tenant && !x.IsDeleted).Select(Detach).ToList());
 
     public Task<IReadOnlyList<TaskItem>> ListByAssigneeAsync(Guid userId, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<TaskItem>>(_items
@@ -148,6 +204,14 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
 
     public Task<bool> UpdateAsync(TaskItem task, int expectedVersion, CancellationToken ct = default)
     {
+        if (ForcedUpdateConflicts > 0)
+        {
+            // Exactly what Mongo's conditional write does when another writer got there first: no exception, a
+            // FALSE, and the stored document untouched.
+            ForcedUpdateConflicts--;
+            return Task.FromResult(false);
+        }
+
         // The real repository stamps the passed entity BEFORE its conditional write (TaskRepositories.cs:79), so a
         // handler that writes twice in one request (persist the edit, then store the workflow instance id) can pass
         // task.Version the second time. The double must stamp it too, or that second write always misses.
@@ -165,6 +229,10 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
         // WorkflowInstanceId, return 204, and the next read would still show the old value — the test double, not
         // the code, decided what "saved" meant.
         CopyWritableFields(from: task, to: stored);
+        // …and the stored document gets its OWN collections. Copying the caller's references would make every
+        // later edit of theirs into stored state, with no write and no version check — the same leak as an
+        // undetached read, on the way back out.
+        DetachCollections(from: task, to: stored);
         stored.Version = expectedVersion + 1;
         return Task.FromResult(true);
     }
@@ -840,11 +908,16 @@ internal sealed class FakeTaskNotificationService
         }
 
         /*
-         * The double applies the SAME two skip rules the real service does, so a handler test can assert "no
-         * notification" and mean it. A double that recorded every call regardless would make every skip test
-         * pass for the wrong reason — the handler would look correct while the rule lived only here.
+         * The task's own settings are asked of TaskNotificationPolicy — the SAME owner production asks — rather
+         * than restated here. This used to check the master switch only, while the real service had gained the
+         * per-event preference too, so the comment above it ("the same two skip rules") had quietly become false
+         * and thirteen handler test files were measuring a policy production no longer used. Delegating means the
+         * next rule added to the policy reaches every one of those files without anyone editing this method.
+         *
+         * A double that recorded every call regardless would be worse still: every "no notification" assertion
+         * would pass for the wrong reason.
          */
-        if (!task.EmailNotificationsEnabled)
+        if (!Diten.Platform.Application.Features.Tasks.Services.TaskNotificationPolicy.WouldNotify(task, eventCode))
         {
             return Task.FromResult(
                 Diten.Platform.Application.Features.Tasks.Services.TaskNotificationOutcome.Skipped);
@@ -915,12 +988,20 @@ internal sealed class RecordingNotificationDispatchAdapter
     /// <summary>Makes the notification layer refuse, so "a refusal does not fail the write" can be proved.</summary>
     public string? FailWithReasonCode { get; set; }
 
+    /// <summary>Makes the layer THROW rather than refuse — a transport that died, not one that said no.</summary>
+    public bool ThrowOnDispatch { get; set; }
+
     public Task<Diten.Platform.Application.Common.Response<Diten.Platform.Application.Features.Notifications.NotificationDispatchDto>>
         DispatchByEventCodeAsync(
             Diten.Platform.Application.Features.Notifications.Services.NotificationEventDispatchRequest request,
             CancellationToken ct = default)
     {
         Requests.Add(request);
+
+        if (ThrowOnDispatch)
+        {
+            throw new InvalidOperationException("The mail transport is down.");
+        }
 
         return Task.FromResult(FailWithReasonCode is null
             ? Diten.Platform.Application.Common.Response<

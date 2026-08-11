@@ -97,11 +97,40 @@
             approvalRequired: !!draft.approvalRequired,
             approvalManagerUserId: draft.approvalRequired ? trimOrNull(draft.approvalManagerUserId) : null,
             emailNotificationsEnabled: draft.emailNotificationsEnabled !== false,
+            /*
+             * BL-065 — the per-event preference and the reminder lead time.
+             *
+             * Dropped with the channel, exactly as the reviewer is dropped with the review requirement: with the
+             * master switch off the card is hidden, so whatever the boxes hold is not a choice anyone made and
+             * storing it would record a preference nobody expressed. Null then means "not chosen", which is the
+             * state every task written before this field carries — and which the server reads as "everything".
+             */
+            notifyOnEvents: draft.emailNotificationsEnabled === false
+                ? null
+                : (Array.isArray(draft.notifyOnEvents) ? draft.notifyOnEvents : null),
+            reminderLeadDays: draft.emailNotificationsEnabled === false
+                ? null
+                : parseNumberOrNull(draft.reminderLeadDays),
             delegationAllowed: !!draft.delegationAllowed,
             fieldValues: Array.isArray(draft.fieldValues) ? draft.fieldValues : [],
             watchers: toWatcherRequests(draft.watchers)
         };
     };
+
+    /*
+     * The EDIT body: the create body plus the version the edit was based on.
+     *
+     * It exists as its own function because of one asymmetry the server cares about. An update tells "I am not
+     * editing the notification preferences" from "I am clearing them" by whether `notifyOnEvents` travels, and
+     * inside such an edit the lead time is applied verbatim — null included. The form always renders the card, so
+     * an edit always carries the list, and "no reminder" actually switches the reminder off. Built inline at the
+     * call site, that rule was one spread operator away from being lost, and losing it is silent: the save
+     * succeeds and the reminder keeps arriving.
+     */
+    const buildUpdatePayload = (draft, expectedVersion) => ({
+        ...buildCreatePayload(draft),
+        expectedVersion: Number(expectedVersion) || 1
+    });
 
     /*
      * Client-side pre-checks that mirror the server's validator, so the user is told immediately rather than
@@ -809,6 +838,31 @@
     };
 
     /*
+     * BL-065 — put a stored preference back on the controls.
+     *
+     * NULL is not "nothing ticked": it means the owner never chose, and the server sends every event for such a
+     * task. Showing an empty card for it would tell the user the opposite of what the system does, so null ticks
+     * everything — which is also what saving it back then makes explicit.
+     */
+    const applyNotificationPreferences = (root, notifyOnEvents, reminderLeadDays) => {
+        const scope = root || global.document;
+        if (!scope || !scope.querySelectorAll) { return; }
+
+        const chosen = Array.isArray(notifyOnEvents) ? notifyOnEvents : null;
+        scope.querySelectorAll('[name="notifyOnEvents"]').forEach((box) => {
+            box.checked = chosen === null ? true : chosen.includes(box.value);
+        });
+
+        const lead = scope.querySelector('[name="reminderLeadDays"]');
+        if (lead) {
+            // 0 is a real answer ("on the day"), so only null/undefined clears the control.
+            lead.value = reminderLeadDays === null || reminderLeadDays === undefined
+                ? ''
+                : String(reminderLeadDays);
+        }
+    };
+
+    /*
      * Tags as CHIPS, using the library the rest of the app already uses for exactly this (the tenant-security
      * screen's IP and country lists). A plain text box asked the user to know that commas separate tags and gave
      * no sign of what had been entered.
@@ -861,6 +915,7 @@
         formatPositionLabel,
         formatPersonLabel,
         buildCreatePayload,
+        buildUpdatePayload,
         validateDraft,
         readDraft,
         writeDraft,
@@ -869,6 +924,7 @@
         enhanceSelects,
         enhanceDates,
         enhanceTags,
+        applyNotificationPreferences,
         WATCHER_ROLE,
         selectWatchers,
         renderPositionOptions,

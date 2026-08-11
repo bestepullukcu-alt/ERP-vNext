@@ -110,6 +110,29 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
         task.ReviewRequired = request.ReviewRequired;
         task.ReviewerCandidateUserId = request.ReviewerCandidateUserId;
         task.EmailNotificationsEnabled = request.EmailNotificationsEnabled;
+        /*
+         * BL-065 — the notification preferences are edited as ONE BLOCK, and NotifyOnEvents is what says the
+         * caller is editing it.
+         *
+         * The first version applied each field only when non-null, which made "I am not editing this" and "I am
+         * clearing this" the same null: choosing "no reminder" in the form saved nothing and the sweep kept
+         * emailing. Inside an edit of the block the lead time is therefore applied VERBATIM — null included, so
+         * the reminder can actually be switched off.
+         *
+         * The cost, stated rather than discovered: a caller that sends ONLY a lead time is not editing the block,
+         * so it is ignored rather than half-applied. Such a caller must send the event list it wants kept —
+         * which is exactly what the form does on every save. The alternative (a -1 sentinel or a second
+         * "clear" field) buys per-field editing at the price of a magic number in the contract, and this block is
+         * one card in one form.
+         *
+         * Same shape as ReviewRequired + the reviewer above, deliberately: fields that only make sense together
+         * travel together.
+         */
+        if (request.NotifyOnEvents is not null)
+        {
+            task.NotifyOnEvents = request.NotifyOnEvents;
+            task.ReminderLeadDays = request.ReminderLeadDays;
+        }
         task.DelegationAllowed = request.DelegationAllowed;
         task.FieldValues = fields.Values.ToList();
         task.UpdatedBy = _currentUser.ActorName;

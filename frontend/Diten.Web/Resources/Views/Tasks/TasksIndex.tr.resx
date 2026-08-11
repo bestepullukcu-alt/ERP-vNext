@@ -130,4 +130,17 @@
   <data name="ReviewTypeMeeting" xml:space="preserve"><value>Review toplantısı</value></data>
   <data name="ReviewTypeMeetingHint" xml:space="preserve"><value>İş, bir toplantıda değerlendirilir.</value></data>
   <data name="ReviewTypeMeetingDisabledReason" xml:space="preserve"><value>Henüz kullanılamıyor: toplantı modülü yapılmadı. Bu sürede hızlı inceleme uygulanır.</value></data>
+  <data name="NotifyEventsLabel" xml:space="preserve"><value>Şu durumlarda haber ver</value></data>
+  <data name="NotifyEventAssigned" xml:space="preserve"><value>Görev atandığında</value></data>
+  <data name="NotifyEventClaimed" xml:space="preserve"><value>Havuzdaki görev üstlenildiğinde</value></data>
+  <data name="NotifyEventDueSoon" xml:space="preserve"><value>Son tarih yaklaştığında</value></data>
+  <data name="NotifyEventCompleted" xml:space="preserve"><value>Görev tamamlandığında</value></data>
+  <data name="NotifyEventApprovalRequested" xml:space="preserve"><value>Onay talep edildiğinde</value></data>
+  <data name="ReminderLeadLabel" xml:space="preserve"><value>Son tarihten önce hatırlat</value></data>
+  <data name="ReminderLeadNone" xml:space="preserve"><value>Hatırlatma yok</value></data>
+  <data name="ReminderLeadSameDay" xml:space="preserve"><value>Aynı gün</value></data>
+  <data name="ReminderLead1" xml:space="preserve"><value>1 gün önce</value></data>
+  <data name="ReminderLead3" xml:space="preserve"><value>3 gün önce</value></data>
+  <data name="ReminderLead7" xml:space="preserve"><value>1 hafta önce</value></data>
+  <data name="ReminderLead14" xml:space="preserve"><value>2 hafta önce</value></data>
 </root>

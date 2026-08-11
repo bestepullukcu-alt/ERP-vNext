@@ -130,4 +130,17 @@
   <data name="ReviewTypeMeeting" xml:space="preserve"><value>Review meeting</value></data>
   <data name="ReviewTypeMeetingHint" xml:space="preserve"><value>The work is assessed in a meeting.</value></data>
   <data name="ReviewTypeMeetingDisabledReason" xml:space="preserve"><value>Not available yet: the meeting module has not been built. Quick review is used in the meantime.</value></data>
+  <data name="NotifyEventsLabel" xml:space="preserve"><value>Notify me when</value></data>
+  <data name="NotifyEventAssigned" xml:space="preserve"><value>The task is assigned</value></data>
+  <data name="NotifyEventClaimed" xml:space="preserve"><value>A pool task is claimed</value></data>
+  <data name="NotifyEventDueSoon" xml:space="preserve"><value>The due date is approaching</value></data>
+  <data name="NotifyEventCompleted" xml:space="preserve"><value>The task is completed</value></data>
+  <data name="NotifyEventApprovalRequested" xml:space="preserve"><value>Approval is requested</value></data>
+  <data name="ReminderLeadLabel" xml:space="preserve"><value>Remind me before the due date</value></data>
+  <data name="ReminderLeadNone" xml:space="preserve"><value>No reminder</value></data>
+  <data name="ReminderLeadSameDay" xml:space="preserve"><value>On the day</value></data>
+  <data name="ReminderLead1" xml:space="preserve"><value>1 day before</value></data>
+  <data name="ReminderLead3" xml:space="preserve"><value>3 days before</value></data>
+  <data name="ReminderLead7" xml:space="preserve"><value>1 week before</value></data>
+  <data name="ReminderLead14" xml:space="preserve"><value>2 weeks before</value></data>
 </root>

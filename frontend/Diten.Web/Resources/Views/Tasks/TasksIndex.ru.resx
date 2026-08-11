@@ -130,4 +130,17 @@
   <data name="ReviewTypeMeeting" xml:space="preserve"><value>Совещание по проверке</value></data>
   <data name="ReviewTypeMeetingHint" xml:space="preserve"><value>Работа оценивается на совещании.</value></data>
   <data name="ReviewTypeMeetingDisabledReason" xml:space="preserve"><value>Пока недоступно: модуль совещаний не создан. До тех пор применяется быстрая проверка.</value></data>
+  <data name="NotifyEventsLabel" xml:space="preserve"><value>Уведомлять меня, когда</value></data>
+  <data name="NotifyEventAssigned" xml:space="preserve"><value>Задача назначена</value></data>
+  <data name="NotifyEventClaimed" xml:space="preserve"><value>Задачу из пула взяли в работу</value></data>
+  <data name="NotifyEventDueSoon" xml:space="preserve"><value>Приближается срок</value></data>
+  <data name="NotifyEventCompleted" xml:space="preserve"><value>Задача завершена</value></data>
+  <data name="NotifyEventApprovalRequested" xml:space="preserve"><value>Запрошено согласование</value></data>
+  <data name="ReminderLeadLabel" xml:space="preserve"><value>Напомнить до срока</value></data>
+  <data name="ReminderLeadNone" xml:space="preserve"><value>Без напоминания</value></data>
+  <data name="ReminderLeadSameDay" xml:space="preserve"><value>В тот же день</value></data>
+  <data name="ReminderLead1" xml:space="preserve"><value>За 1 день</value></data>
+  <data name="ReminderLead3" xml:space="preserve"><value>За 3 дня</value></data>
+  <data name="ReminderLead7" xml:space="preserve"><value>За неделю</value></data>
+  <data name="ReminderLead14" xml:space="preserve"><value>За 2 недели</value></data>
 </root>

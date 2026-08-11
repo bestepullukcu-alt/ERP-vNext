@@ -236,6 +236,10 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
             ApprovalRequired = request.ApprovalRequired,
             ApprovalManagerUserId = request.ApprovalManagerUserId,
             EmailNotificationsEnabled = request.EmailNotificationsEnabled,
+            // BL-065 — null stays null: "never chosen" is a real state and means every event, which is what
+            // every task did before the preference existed.
+            NotifyOnEvents = request.NotifyOnEvents,
+            ReminderLeadDays = request.ReminderLeadDays,
             DelegationAllowed = request.DelegationAllowed,
             FieldValues = fields.Values.ToList(),
             CreatedBy = _currentUser.ActorName

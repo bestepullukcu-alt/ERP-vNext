@@ -278,12 +278,60 @@
                     </h6>
                     <p class="text-muted small mb-3">@Localizer["CardEmailDescription"]</p>
 
-                    <div class="form-check form-switch">
+                    <div class="form-check form-switch mb-3">
                         <input class="form-check-input" type="checkbox" id="taskEmailNotifications"
                                name="emailNotificationsEnabled" checked />
                         <label class="form-check-label" for="taskEmailNotifications">
                             @Localizer["FieldEmailNotifications"]
                         </label>
+                    </div>
+
+                    @* BL-065 — WHICH events, and HOW LONG BEFORE.
+                       Only events something actually sends are listed. `duesoon` earns its place in this same
+                       change: until now it was a code in the manifest with no sender anywhere, so offering it
+                       would have been a checkbox promising an email nothing produces.
+                       The whole block hides with the master switch — nobody should tune a channel that is off. *@
+                    <div class="d-none" data-task-field="notificationPrefs">
+                        <label class="form-label fw-medium">@Localizer["NotifyEventsLabel"]</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="taskNotifyAssigned"
+                                   name="notifyOnEvents" value="platform.tasks.assigned" checked />
+                            <label class="form-check-label" for="taskNotifyAssigned">@Localizer["NotifyEventAssigned"]</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="taskNotifyClaimed"
+                                   name="notifyOnEvents" value="platform.tasks.claimed" checked />
+                            <label class="form-check-label" for="taskNotifyClaimed">@Localizer["NotifyEventClaimed"]</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="taskNotifyDueSoon"
+                                   name="notifyOnEvents" value="platform.tasks.duesoon" checked />
+                            <label class="form-check-label" for="taskNotifyDueSoon">@Localizer["NotifyEventDueSoon"]</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="taskNotifyCompleted"
+                                   name="notifyOnEvents" value="platform.tasks.completed" checked />
+                            <label class="form-check-label" for="taskNotifyCompleted">@Localizer["NotifyEventCompleted"]</label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="taskNotifyApprovalRequested"
+                                   name="notifyOnEvents" value="platform.tasks.approvalrequested" checked />
+                            <label class="form-check-label" for="taskNotifyApprovalRequested">@Localizer["NotifyEventApprovalRequested"]</label>
+                        </div>
+
+                        @* The lead time only means something if the due-soon reminder is on, so it follows that
+                           checkbox rather than sitting there doing nothing. Days, never a date (BL-030). *@
+                        <div class="d-none" data-task-field="reminderLead">
+                            <label class="form-label fw-medium" for="taskReminderLeadDays">@Localizer["ReminderLeadLabel"]</label>
+                            <select class="select2 form-select" id="taskReminderLeadDays" name="reminderLeadDays">
+                                <option value="">@Localizer["ReminderLeadNone"]</option>
+                                <option value="0">@Localizer["ReminderLeadSameDay"]</option>
+                                <option value="1">@Localizer["ReminderLead1"]</option>
+                                <option value="3" selected>@Localizer["ReminderLead3"]</option>
+                                <option value="7">@Localizer["ReminderLead7"]</option>
+                                <option value="14">@Localizer["ReminderLead14"]</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </section>

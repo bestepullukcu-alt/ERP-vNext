@@ -23,10 +23,12 @@ namespace Diten.Platform.Application.Features.Tasks.BackgroundJobs;
 /// leaves it to the handler's transition-log keys: a guard that only exists in the scheduler protects nothing
 /// when someone triggers the command by hand.</para>
 ///
-/// <para><b>OFF unless switched on, twice.</b> The job runs only when <c>BackgroundJobs:RegisterStandardJobs</c>
-/// is true AND <c>BackgroundJobs:EnabledJobs["Diten.Platform.MOD-0024.TaskRecurrenceSweepJob"]</c> is true. Both,
-/// not either — see PlatformRecurringJobRegistrar. Say so wherever recurrence is documented: otherwise
-/// "recurrence doesn't work" gets reported as a bug when it is a job nobody enabled.</para>
+/// <para><b>What actually keeps it off.</b> Two switches guard it — <c>BackgroundJobs:RegisterStandardJobs</c>
+/// and <c>EnabledJobs["Diten.Platform.MOD-0024.TaskRecurrenceSweepJob"]</c> — but the first is TRUE in both
+/// appsettings.json and appsettings.Development.json, so in a running Development environment the per-job flag is
+/// the ONLY thing holding it. Production adds one more real gate: <c>BackgroundJobs:Enabled</c> is false there,
+/// which stops the whole scheduler. Say so wherever recurrence is documented: "recurrence doesn't work" is a
+/// configuration question before it is a defect.</para>
 /// </summary>
 public sealed class TaskRecurrenceSweepJob : IBackgroundJobHandler<TaskRecurrenceSweepJobArgs>
 {
@@ -64,6 +66,12 @@ public sealed class TaskRecurrenceSweepJob : IBackgroundJobHandler<TaskRecurrenc
         var tenants = await _tenantRegistry.GetActiveTenantsAsync(cancellationToken);
         var generated = 0;
         var alreadyGenerated = 0;
+        // Per-RULE failures. The command counts them; this job used to drop the number, so a tenant whose every
+        // rule failed was logged as a clean run. Fixed here rather than left as a faithful copy of a defect.
+        var failedRules = 0;
+        // Rules that owed work and could not say WHOSE it was. The command has always counted them and this job
+        // dropped the number — the same hole the due-soon sweep had: work not done, reported as a clean run.
+        var skippedUnassigned = 0;
         var failedTenants = 0;
 
         foreach (var tenant in tenants)
@@ -86,6 +94,8 @@ public sealed class TaskRecurrenceSweepJob : IBackgroundJobHandler<TaskRecurrenc
                     {
                         generated += data.TasksGenerated;
                         alreadyGenerated += data.AlreadyGenerated;
+                        failedRules += data.Failed;
+                        skippedUnassigned += data.SkippedUnassigned;
                     }
                 }
             }
@@ -105,12 +115,26 @@ public sealed class TaskRecurrenceSweepJob : IBackgroundJobHandler<TaskRecurrenc
             }
         }
 
-        _logger.LogInformation(
-            "task.recurrence.sweep.completed Tenants={Tenants} Generated={Generated} AlreadyGenerated={AlreadyGenerated} FailedTenants={FailedTenants} CorrelationId={CorrelationId}",
-            tenants.Count,
-            generated,
-            alreadyGenerated,
-            failedTenants,
-            correlationId);
+        // Same rule as the due-soon sweep: a run that lost work is not logged at the level a quiet one is.
+        var lostWork = failedRules + skippedUnassigned + failedTenants;
+        const string completedTemplate =
+            "task.recurrence.sweep.completed Tenants={Tenants} Generated={Generated} "
+            + "AlreadyGenerated={AlreadyGenerated} FailedRules={FailedRules} "
+            + "SkippedUnassigned={SkippedUnassigned} FailedTenants={FailedTenants} CorrelationId={CorrelationId}";
+
+        if (lostWork > 0)
+        {
+            _logger.LogWarning(
+                completedTemplate,
+                tenants.Count, generated, alreadyGenerated, failedRules, skippedUnassigned, failedTenants,
+                correlationId);
+        }
+        else
+        {
+            _logger.LogInformation(
+                completedTemplate,
+                tenants.Count, generated, alreadyGenerated, failedRules, skippedUnassigned, failedTenants,
+                correlationId);
+        }
     }
 }

@@ -130,4 +130,17 @@
   <data name="ReviewTypeMeeting" xml:space="preserve"><value>评审会议</value></data>
   <data name="ReviewTypeMeetingHint" xml:space="preserve"><value>工作在会议中进行评估。</value></data>
   <data name="ReviewTypeMeetingDisabledReason" xml:space="preserve"><value>暂不可用：会议模块尚未开发。在此期间采用快速审阅。</value></data>
+  <data name="NotifyEventsLabel" xml:space="preserve"><value>在以下情况通知我</value></data>
+  <data name="NotifyEventAssigned" xml:space="preserve"><value>任务被指派时</value></data>
+  <data name="NotifyEventClaimed" xml:space="preserve"><value>池中任务被领取时</value></data>
+  <data name="NotifyEventDueSoon" xml:space="preserve"><value>截止日期临近时</value></data>
+  <data name="NotifyEventCompleted" xml:space="preserve"><value>任务完成时</value></data>
+  <data name="NotifyEventApprovalRequested" xml:space="preserve"><value>请求审批时</value></data>
+  <data name="ReminderLeadLabel" xml:space="preserve"><value>在截止日期前提醒我</value></data>
+  <data name="ReminderLeadNone" xml:space="preserve"><value>不提醒</value></data>
+  <data name="ReminderLeadSameDay" xml:space="preserve"><value>当天</value></data>
+  <data name="ReminderLead1" xml:space="preserve"><value>提前 1 天</value></data>
+  <data name="ReminderLead3" xml:space="preserve"><value>提前 3 天</value></data>
+  <data name="ReminderLead7" xml:space="preserve"><value>提前 1 周</value></data>
+  <data name="ReminderLead14" xml:space="preserve"><value>提前 2 周</value></data>
 </root>

@@ -41,6 +41,11 @@
             .map((option) => option.value)
             .filter(Boolean),
         emailNotificationsEnabled: el('taskEmailNotifications')?.checked,
+        // BL-065 — the ticked events and the lead time. buildCreatePayload drops both when the channel is off.
+        notifyOnEvents: Array.from(document.querySelectorAll('[name="notifyOnEvents"]'))
+            .filter((box) => box.checked)
+            .map((box) => box.value),
+        reminderLeadDays: el('taskReminderLeadDays')?.value,
         delegationAllowed: el('taskDelegationAllowed')?.checked
     });
 
@@ -68,6 +73,10 @@
         if (draft.emailNotificationsEnabled !== undefined) {
             setChecked('taskEmailNotifications', draft.emailNotificationsEnabled);
         }
+        // BL-065 — null means the owner never chose, and the server emails about everything for such a task; the
+        // card has to show that rather than an empty list.
+        global.TaskForm.applyNotificationPreferences(
+            document, draft.notifyOnEvents ?? null, draft.reminderLeadDays ?? null);
         setChecked('taskDelegationAllowed', draft.delegationAllowed);
     };
 
@@ -234,6 +243,19 @@
         form?.querySelectorAll('[data-task-field="reviewer"]').forEach((node) => {
             node.classList.toggle('d-none', !el('taskReviewRequired')?.checked);
         });
+        /*
+         * BL-065 — the preferences belong to the channel, and the lead time belongs to the reminder. Nobody
+         * should be tuning which events reach a switched-off channel, and a lead time with the due-soon reminder
+         * unticked is a control that does nothing.
+         */
+        const emailOn = !!el('taskEmailNotifications')?.checked;
+        form?.querySelectorAll('[data-task-field="notificationPrefs"]').forEach((node) => {
+            node.classList.toggle('d-none', !emailOn);
+        });
+        const dueSoonOn = !!el('taskNotifyDueSoon')?.checked;
+        form?.querySelectorAll('[data-task-field="reminderLead"]').forEach((node) => {
+            node.classList.toggle('d-none', !(emailOn && dueSoonOn));
+        });
     };
 
     const boot = async () => {
@@ -323,6 +345,8 @@
         el('taskAssignmentTarget')?.addEventListener('change', syncVisibility);
         el('taskApprovalRequired')?.addEventListener('change', syncVisibility);
         el('taskReviewRequired')?.addEventListener('change', syncVisibility);
+        el('taskEmailNotifications')?.addEventListener('change', syncVisibility);
+        el('taskNotifyDueSoon')?.addEventListener('change', syncVisibility);
         syncVisibility();
 
         /*
@@ -345,13 +369,11 @@
                 return;
             }
 
-            const payload = global.TaskForm.buildCreatePayload(draft);
             const result = mode === 'edit'
-                ? await global.TasksApi.update(taskId, {
-                    ...payload,
-                    expectedVersion: Number(form.getAttribute('data-task-version') || 1)
-                })
-                : await global.TasksApi.create(payload);
+                ? await global.TasksApi.update(
+                    taskId,
+                    global.TaskForm.buildUpdatePayload(draft, form.getAttribute('data-task-version')))
+                : await global.TasksApi.create(global.TaskForm.buildCreatePayload(draft));
 
             if (result.ok) {
                 global.TaskForm.clearDraft();

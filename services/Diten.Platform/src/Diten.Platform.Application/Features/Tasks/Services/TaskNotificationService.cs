@@ -61,6 +61,40 @@ public interface ITaskNotificationService
 
     /// <summary>Everyone currently holding the task's pool position — the "offered to a pool" audience.</summary>
     Task<IReadOnlyList<Guid>> ResolvePoolHoldersAsync(TaskItem task, CancellationToken ct);
+
+    /// <summary>
+    /// Would this task send this event at all, on its own settings? Asked by callers that must do something
+    /// IRREVERSIBLE before sending — the due-soon sweep stamps a per-deadline claim, and a claim spent on a
+    /// notification that was then filtered out silences that deadline forever.
+    ///
+    /// <para>Audience is deliberately NOT considered: it is the caller's to resolve, and "nobody to tell" is a
+    /// different answer from "this task does not want this event".</para>
+    ///
+    /// <para>A DEFAULT implementation delegating to <see cref="TaskNotificationPolicy"/>, so the rule has exactly
+    /// one owner. Restating it in the service — or in a test double — is how the previous copy drifted to a
+    /// different string comparer without anything failing.</para>
+    /// </summary>
+    bool WouldNotify(TaskItem task, string eventCode) => TaskNotificationPolicy.WouldNotify(task, eventCode);
+}
+
+/// <summary>
+/// The task's OWN answer to "do you want this event?", in one place.
+///
+/// <para>Two rules, in order: the master switch, then the per-event preference. Null preferences mean the owner
+/// never chose, which is what every task written before BL-065 carries and must keep behaving as — every event
+/// goes out. An empty list is a choice, and means none.</para>
+/// </summary>
+public static class TaskNotificationPolicy
+{
+    public static bool WouldNotify(TaskItem task, string eventCode)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+
+        if (!task.EmailNotificationsEnabled) { return false; }
+
+        return task.NotifyOnEvents is not { } chosenEvents
+               || chosenEvents.Contains(eventCode, StringComparer.Ordinal);
+    }
 }
 
 /// <summary>
@@ -154,8 +188,12 @@ public sealed class TaskNotificationService : ITaskNotificationService
     {
         ArgumentNullException.ThrowIfNull(task);
 
-        // The task's own opt-out, honoured before anything is resolved or sent.
-        if (!task.EmailNotificationsEnabled)
+        /*
+         * The task's own settings — master switch, then the per-event preference — honoured before anything is
+         * resolved or sent. Both live in TaskNotificationPolicy so the sweep can ask the SAME question before it
+         * spends a claim, rather than a second copy of it drifting away from this one.
+         */
+        if (!TaskNotificationPolicy.WouldNotify(task, eventCode))
         {
             return TaskNotificationOutcome.Skipped;
         }

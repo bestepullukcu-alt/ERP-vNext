@@ -30,3 +30,12 @@ public sealed record GenerateDueRecurringTasksCommand(
     DateTimeOffset? NowUtc,
     int MaxRules,
     string CorrelationId) : IRequest<Response<GenerateDueRecurringTasksResponse>>;
+
+/// <summary>
+/// BL-065 — sweep the tenant's open tasks and send the due-soon reminder for the ones inside their own lead
+/// window. Tenant-scoped like every other command; the JOB is what walks the tenants.
+/// </summary>
+public sealed record SendDueSoonRemindersCommand(
+    DateTimeOffset? NowUtc,
+    int MaxTasks,
+    string CorrelationId) : IRequest<Response<SendDueSoonRemindersResponse>>;

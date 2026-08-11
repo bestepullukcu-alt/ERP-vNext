@@ -233,6 +233,15 @@ public sealed class GenerateDueRecurringTasksHandler
                         ApprovalRequired: false,
                         ApprovalManagerUserId: null,
                         EmailNotificationsEnabled: true,
+                        /*
+                         * BL-067 — a generated task carries NO notification preferences (null) and therefore no
+                         * due-soon reminder: the sweep only reminds when a lead time was chosen, and nothing here
+                         * can choose one. That is deliberate for now, not an oversight — the preference belongs
+                         * on the TEMPLATE, and templates have no management screen yet (BL-054), so adding fields
+                         * to something nobody can edit would be another control that stores what no one can set.
+                         * Priority, Tags and the review/approval flags are hard-coded here for exactly the same
+                         * reason and are the same backlog item.
+                         */
                         DelegationAllowed: false,
                         FieldValues: null,
                         Watchers: null),

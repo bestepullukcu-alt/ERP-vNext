@@ -316,7 +316,15 @@ public sealed record CreateTaskItemRequest(
     /// MOD-0023 cannot start a review with nobody to route it to. A candidate hint, not a decision: MOD-0023 and
     /// MOD-0018 resolve who may actually act.
     /// </summary>
-    Guid? ReviewerCandidateUserId = null);
+    Guid? ReviewerCandidateUserId = null,
+    /// <summary>
+    /// BL-065 — which events this task emails about (<see cref="TaskNotificationEvents"/> codes). NULL means the
+    /// caller is not choosing, and the task keeps the "every event" behaviour every task had before this field;
+    /// an empty list means "none". Trailing and optional so every earlier payload stays valid.
+    /// </summary>
+    IReadOnlyList<string>? NotifyOnEvents = null,
+    /// <summary>BL-065 — days before the due date to send the reminder. Null: no reminder.</summary>
+    int? ReminderLeadDays = null);
 
 public sealed record UpdateTaskItemRequest(
     string Title,
@@ -344,7 +352,15 @@ public sealed record UpdateTaskItemRequest(
     /// the review requirement and the reviewer has to travel with it. An edit that drops the reviewer while the
     /// requirement stays on is refused rather than silently stripping it.
     /// </summary>
-    Guid? ReviewerCandidateUserId = null);
+    Guid? ReviewerCandidateUserId = null,
+    /// <summary>
+    /// BL-065 — which events this task emails about (<see cref="TaskNotificationEvents"/> codes). NULL means the
+    /// caller is not choosing, and the task keeps the "every event" behaviour every task had before this field;
+    /// an empty list means "none". Trailing and optional so every earlier payload stays valid.
+    /// </summary>
+    IReadOnlyList<string>? NotifyOnEvents = null,
+    /// <summary>BL-065 — days before the due date to send the reminder. Null: no reminder.</summary>
+    int? ReminderLeadDays = null);
 
 public sealed record TaskWatcherRequest(Guid UserId, TaskWatcherRole Role, Guid? PositionId);
 
@@ -456,6 +472,9 @@ public sealed record TaskItemDetailDto(
     Guid? ApprovalManagerUserId,
     Guid? WorkflowInstanceId,
     bool EmailNotificationsEnabled,
+    /// <summary>BL-065 — null when the owner never chose; the form reads that as "everything".</summary>
+    IReadOnlyList<string>? NotifyOnEvents,
+    int? ReminderLeadDays,
     bool DelegationAllowed,
     string? ProcessInstanceId,
     IReadOnlyList<TaskFieldValueDto> FieldValues,
@@ -711,3 +730,21 @@ public sealed record GenerateDueRecurringTasksResponse(
     /// <c>Failed</c> keeps "needs fixing, nothing lost" distinct from "something went wrong".
     /// </summary>
     int SkippedUnassigned = 0);
+
+/// <summary>
+/// BL-065 — what one due-soon sweep did.
+///
+/// <para>Every considered task lands in exactly ONE of these counters. The first version had only "sent" and
+/// "failed (threw)", so an outcome that was neither — a provider refusal, nobody reachable — fell through all of
+/// them and the sweep logged a clean run while a reminder was lost. Counters that do not add up are how a
+/// scheduler reports success it did not have.</para>
+/// </summary>
+public sealed record SendDueSoonRemindersResponse(
+    int TasksConsidered,
+    int RemindersSent,
+    /// <summary>Already claimed for this deadline — the ordinary case on every sweep after the first.</summary>
+    int AlreadyReminded,
+    /// <summary>Attempted and NOT delivered (refused, nobody reachable): the claim was released for a retry.</summary>
+    int NotDelivered,
+    /// <summary>The send threw. Also released for a retry.</summary>
+    int Failed);
