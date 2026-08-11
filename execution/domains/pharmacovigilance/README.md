@@ -4,14 +4,18 @@
 **Kisa kod (branch):** `pvg`
 **Delivery Capability Pack:** [DCP-004 - PVG Urgent W-3 Development Block](../../portfolio/delivery-capability-packs/DCP-004-pvg-urgent-w3-development-block.md)
 **Runtime status (2026-08-11):** DCP-004 is `approved` for sequencing. **MOD-0230 Case Intake & Triage,
-MOD-0231 Case Processing, and MOD-0232 MedDRA Coding are `ready-for-dev` for the build/test gate only.** MOD-0231
-is limited to the Signal Minimum Scope delivery slice and MOD-0232 is limited to non-operational MedDRA Coding
-class-library contracts/tests under `Diten.PvgService`.
+MOD-0231 Case Processing, MOD-0232 MedDRA Coding, and MOD-0234 Signal Management are `ready-for-dev` for the
+build/test gate only.** MOD-0231 is limited to the Signal Minimum Scope delivery slice, MOD-0232 is limited to
+non-operational MedDRA Coding class-library contracts/tests under `Diten.PvgService`, and MOD-0234 is limited to
+no-shell Signal MVP class-library contracts/tests under `Diten.PvgService`.
 MOD-0230 service `Diten.PvgService` (port 5011), tenant UI, and one gateway route family remain limited to local /
 dev / CI build-test preparation. **Operational runtime, production, supplier qualification, and validation remain
-unauthorized** for every member. MOD-0234 remains `draft`. MedDRA dictionary import, dictionary redistribution,
-static MedDRA data, cache/search index, seed data, background jobs, menu entries, module-catalog work, archive/void,
-export, delete, bulk-delete, and all AI behaviour remain blocked.
+unauthorized** for every member. MOD-0234 keeps `shell: none` and `golden_reference: none`; no runtime shell,
+placeholder dashboard, fake signal, fake metric, fake cohort, Gateway route, frontend, appsettings, data product
+stub, seed, job, collection, migration, partner integration, export/delete/bulk-delete, or AI behavior is
+authorized. MedDRA dictionary import, dictionary redistribution, static MedDRA data, cache/search index, seed data,
+background jobs, menu entries, module-catalog work, archive/void, export, delete, bulk-delete, and all AI behaviour
+remain blocked.
 Any detailed fast-track plan remains a pending support package and is not normative until committed.
 
 ## Is Tanimi
@@ -33,19 +37,19 @@ Ilk governance kapsami DCP-004 tarafindan sinirlandirilan urgent W-3 delivery bl
 - Operational runtime, production deployment, supplier qualification, validation, database collection, seed, job,
   migration, or any runtime surface outside the member build/test gates.
 - Member operational runtime execution without explicit approval.
-- MOD-0234 runtime shell or placeholder UI/service.
+- MOD-0234 runtime shell, placeholder UI/service, fake signal, fake metric, or fake cohort.
 - Full W-4/W-5 PV modules outside DCP-004 first-stage scope.
 
 ## Domain-Specific Belgeler
 
 - [domain-config.md](domain-config.md) - sinirlar, repo scope, protected paths, ownership boundaries, runtime decision links
 - MOD-0230 slice-1 work-pack details - pending support package; not normative until committed
-- [module-packs/](module-packs/) - member module packs; MOD-0230, MOD-0231, and MOD-0232 are build/test
-  `ready-for-dev`, while MOD-0234 remains `draft`:
+- [module-packs/](module-packs/) - member module packs; MOD-0230, MOD-0231, MOD-0232, and MOD-0234 are build/test
+  `ready-for-dev`:
   - MOD-0230 Case Intake & Triage
   - MOD-0231 Case Processing - Signal Minimum Scope delivery slice only
   - MOD-0232 MedDRA Coding - non-operational class-library contracts/tests only
-  - MOD-0234 Signal Management
+  - MOD-0234 Signal Management - no-shell Signal MVP class-library contracts/tests only
 - [DCP-004](../../portfolio/delivery-capability-packs/DCP-004-pvg-urgent-w3-development-block.md) - approved
   sequencing contract; operational runtime remains closed
 

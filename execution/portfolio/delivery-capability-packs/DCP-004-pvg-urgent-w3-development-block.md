@@ -26,13 +26,14 @@ decision_records: "pending support package - not normative until committed"
 > module pack is `approved` / `ready-for-dev`.
 >
 > **2026-08-11 status update:** condition (a) is satisfied - this pack is `approved`. Condition (b) is satisfied
-> for **MOD-0230, MOD-0231, and MOD-0232 only**, and only for their **build/test gates**. MOD-0231 is limited to
-> Signal Minimum Scope non-operational class-library contracts/tests under `Diten.PvgService`. MOD-0232 is limited
-> to MedDRA Coding non-operational class-library contracts/tests under `Diten.PvgService`; no dictionary import,
-> dictionary redistribution, static MedDRA data, cache/search index, API host, Gateway, frontend, appsettings,
-> Mongo, collections, seeds, jobs, migrations, partner integration, AI, export, delete, or bulk-delete is
-> authorized. MOD-0234 remains `draft` and authorizes no implementation. Member authorization is further split
-> into a **build/test gate** and an **operational runtime gate**; see §10 "Build gate vs operational runtime gate".
+> for **MOD-0230, MOD-0231, MOD-0232, and MOD-0234**, and only for their **build/test gates**. MOD-0231 is limited
+> to Signal Minimum Scope non-operational class-library contracts/tests under `Diten.PvgService`. MOD-0232 is
+> limited to MedDRA Coding non-operational class-library contracts/tests under `Diten.PvgService`. MOD-0234 is
+> limited to no-shell Signal MVP non-operational class-library contracts/tests under `Diten.PvgService`; no shell,
+> placeholder dashboard, fake signal, fake metric, fake cohort, data-product stub, dictionary import/search/cache,
+> API host, Gateway, frontend, appsettings, Mongo, collections, seeds, jobs, migrations, partner integration, AI,
+> export, delete, or bulk-delete is authorized. Member authorization is further split into a **build/test gate**
+> and an **operational runtime gate**; see §10 "Build gate vs operational runtime gate".
 
 > **User constraint:** This draft does **not** develop Urgent foundation remediation W-3A0, does **not**
 > include next-stage W-4/W-5 modules outside the requested urgent slices, and does **not** start
@@ -67,9 +68,9 @@ decision_records: "pending support package - not normative until committed"
   - MOD-0231 Case Processing - promoted on 2026-08-10 to `ready-for-dev` for the build/test gate only; delivery
     slice remains Signal Minimum Scope.
   - MOD-0232 MedDRA Coding - promoted on 2026-08-11 to `ready-for-dev` for the build/test gate only.
-  - MOD-0234 Signal Management.
-- MOD-0234 remains `draft` and authorizes no implementation. MOD-0230, MOD-0231, and MOD-0232 build/test gate
-  authorization does not authorize operational runtime.
+  - MOD-0234 Signal Management - promoted on 2026-08-11 to `ready-for-dev` for the build/test gate only; no-shell
+    Signal MVP non-operational class-library contracts/tests only.
+- MOD-0230, MOD-0231, MOD-0232, and MOD-0234 build/test gate authorization does not authorize operational runtime.
 
 **DCP-002 identity proof (2026-08-04):**
 
@@ -145,7 +146,7 @@ a delivery slice or MVP scope only, never as the canonical module name.
 | Safety Case master record and lifecycle state | MOD-0231 Case Processing | Build/test gate open for Signal Minimum Scope class-library contracts/tests; operational runtime blocked |
 | Coded terms on Safety Case and MedDRA assignments | MOD-0232 MedDRA Coding | Build/test gate open for non-operational class-library contracts/tests only; CODESET and dictionary/version contracts remain operational blockers |
 | MedDRA dictionary version references | MOD-0232 MedDRA Coding plus external terminology source governance | External terminology dependency; not waived |
-| Signal hypothesis, evaluation, review decision, linked evidence | MOD-0234 Signal Management | Contract/object-model planning only; no shell/runtime |
+| Signal hypothesis, evaluation, review decision, linked evidence | MOD-0234 Signal Management | Build/test gate open for no-shell non-operational class-library contracts/tests only; operational runtime blocked |
 | Audit event storage | MOD-0021 Audit Trail Service | External prerequisite; repo registry says ready-for-dev / implemented evidence, final consumption gate still required |
 | Workflow/inbox/review engine | MOD-0023 Workflow Designer | External prerequisite; registry says review / planned |
 | Row/field security and data masking | MOD-0019 Data Masking & Row/Field Security | External prerequisite; no repo pack found during authoring |
@@ -207,15 +208,16 @@ required and not completed.
 2. PVG domain ownership is decided; the governance scaffold now exists, and runtime remains blocked by DCP/member-pack gates.
 3. W-3A0-Lite is satisfied for MOD-0230 build/test through fail-closed PVG-owned consumption ports. W-3A0-Full
    remains closed for operational runtime. This DCP does **not** waive those dependencies.
-4. Each member module pack is created separately. MOD-0230, MOD-0231, and MOD-0232 are `ready-for-dev` for the
-   build/test gate only; MOD-0234 remains `draft`.
+4. Each member module pack is created separately. MOD-0230, MOD-0231, MOD-0232, and MOD-0234 are `ready-for-dev`
+   for the build/test gate only.
 5. DCP-002 preflight remains mandatory for any future child/follow-up identity. No new MOD or FU number may be invented.
 6. Build/buy/partner decision for PVG is resolved before service boundaries are materialized; Blueprint records these modules as Buy/Partner.
 
 ## 10. Architecture decisions
 
-- **Domain status:** `pharmacovigilance` is the approved owner domain. The governance scaffold now exists. MOD-0230
-  alone has a build/test gate; operational runtime remains unauthorized for every member.
+- **Domain status:** `pharmacovigilance` is the approved owner domain. The governance scaffold now exists.
+  MOD-0230, MOD-0231, MOD-0232, and MOD-0234 have build/test gates; operational runtime remains unauthorized for
+  every member.
 - **Runtime creation guard:** The MOD-0230 build/test gate is local/dev/CI only. No operational runtime, production
   deployment, supplier qualification, validation, collection, seed, job, permission seed, archive/void, export,
   delete, bulk-delete, or AI implementation is authorized.
@@ -237,7 +239,7 @@ runtime, not production use, not supplier qualification, not validation approval
 
 | Gate | Condition | Authorizes | Current state |
 |---|---|---|---|
-| **Build / test gate** | DCP-004 `approved` + member pack `approved` / `ready-for-dev` | Local / dev / CI build-test work only, constrained by each member pack | **Open for MOD-0230** as of 2026-08-09; **open for MOD-0231** as of 2026-08-10 for non-operational class-library contracts/tests only; **open for MOD-0232** as of 2026-08-11 for non-operational class-library contracts/tests only |
+| **Build / test gate** | DCP-004 `approved` + member pack `approved` / `ready-for-dev` | Local / dev / CI build-test work only, constrained by each member pack | **Open for MOD-0230** as of 2026-08-09; **open for MOD-0231** as of 2026-08-10 for non-operational class-library contracts/tests only; **open for MOD-0232** as of 2026-08-11 for non-operational class-library contracts/tests only; **open for MOD-0234** as of 2026-08-11 for no-shell non-operational class-library contracts/tests only |
 | **Operational runtime gate** | Build gate + real MOD-0019, MOD-0023, MOD-0031 + named retention / legal-hold owner | Production, supplier qualification, validation | **Closed for every member** - unchanged |
 
 ### W-3A0-Lite consumption ports (added 2026-08-09, per OD-2)
@@ -265,11 +267,14 @@ This waives nothing. The `PVG-MOD0230-FieldSecurity-Contract v1`, `PVG-MOD0230-W
 - Urgent W-3D: MOD-0234 Signal Management, Signal MVP contracts/gates only.
 
 This DCP began as documentation and governance preparation. Later governance reconciliation added the PVG scaffold
-and member packs. MOD-0230, MOD-0231, and MOD-0232 now have local/dev/CI build-test gates. MOD-0231 is limited to
+and member packs. MOD-0230, MOD-0231, MOD-0232, and MOD-0234 now have local/dev/CI build-test gates. MOD-0231 is limited to
 Signal Minimum Scope non-operational class-library contracts/tests. MOD-0232 is limited to MedDRA Coding
 non-operational class-library contracts/tests; dictionary import, dictionary redistribution, static MedDRA data,
 cache/search index, API host, Gateway, frontend, appsettings, Mongo, collections, seeds, jobs, migrations, partner
-integration, AI, export, delete, and bulk-delete remain blocked. MOD-0234 remains draft. Operational
+integration, AI, export, delete, and bulk-delete remain blocked. MOD-0234 is limited to no-shell Signal MVP
+non-operational class-library contracts/tests; shell, placeholder dashboard, fake signal, fake metric, fake cohort,
+data-product stub, Gateway, frontend, appsettings, Mongo, collections, seeds, jobs, migrations, partner
+integration, AI, export, delete, and bulk-delete remain blocked. Operational
 runtime, database, seed, appsettings, jobs, menu, module-catalog, production, supplier qualification, and validation
 remain unauthorized.
 
@@ -381,7 +386,7 @@ contract unless the owner explicitly approves the named artifact/version and sup
 | MOD-0230 | Operational runtime BLOCKED until W-3A0-Full foundations close | REG-PV-BASE: real MOD-0019, MOD-0023, MOD-0031, retention/legal-hold owner, OTel/correlation/error model evidence |
 | MOD-0231 Signal Minimum Scope | Build/test gate OPEN for non-operational class-library contracts/tests only; operational runtime BLOCKED until MOD-0230 handoff + W-3A0-Full foundations close | Case Intake & Triage, Evidence Linking, CASE-LIFECYCLE |
 | MOD-0232 | Build/test gate OPEN for non-operational class-library contracts/tests only; operational runtime BLOCKED until MOD-0231 source-term/lifecycle handoff + CODESET / MedDRA governance close | Case Processing minimum scope, MedDRA source/version/license, coding audit/export |
-| MOD-0234 | BLOCKED for runtime; contract-only allowed after upstream contracts | Hard MOD-0063 Data Warehouse / Lakehouse and MOD-0004 Metric & Semantic Registry gates, review workflow, evidence pack, OTel |
+| MOD-0234 | Build/test gate OPEN for no-shell non-operational class-library contracts/tests only; operational runtime BLOCKED until upstream + hard signal gates close | Hard MOD-0063 Data Warehouse / Lakehouse and MOD-0004 Metric & Semantic Registry gates, upstream MOD-0230/0231/0232 contracts, review workflow, evidence pack, OTel |
 
 ## 17. Downstream business-module impacts
 
@@ -432,9 +437,8 @@ contract unless the owner explicitly approves the named artifact/version and sup
 - 2026-08-04: Later governance reconciliation created the PVG governance scaffold and draft member module packs for
   MOD-0230 Case Intake & Triage, MOD-0231 Case Processing, MOD-0232 MedDRA Coding, and MOD-0234 Signal Management.
   MOD-0230 and MOD-0231 were later promoted to build/test `ready-for-dev`; MOD-0231 is limited to
-  non-operational class-library contracts/tests. This note is superseded for MOD-0232 by the 2026-08-11 build/test
-  gate update below. MOD-0234 remains a draft/planning artifact and authorizes no service, frontend, gateway,
-  runtime, appsettings, seed, menu, or test changes.
+  non-operational class-library contracts/tests. This note is superseded for MOD-0232 and MOD-0234 by the
+  2026-08-11 build/test gate updates below.
 - 2026-08-04: Cross-pack audit reconciliation strengthened MOD-0004 and MOD-0063 wording as hard MOD-0234 Signal
   MVP runtime gates.
 - 2026-08-09: Deep audit findings were reviewed as pending support package material. They are not normative from a separate audit artifact until committed; blocker findings summarized in this DCP are upheld.
@@ -446,10 +450,15 @@ contract unless the owner explicitly approves the named artifact/version and sup
 - 2026-08-09: MOD-0231, MOD-0232, and MOD-0234 remained `status: draft`. MOD-0234 remained contract-only with `shell: none` and `golden_reference: none`, unchanged.
 - 2026-08-10: MOD-0231 promoted to `ready-for-dev` for the **build/test gate only**. Service boundary is
   `Diten.PvgService` for non-operational class-library contracts/tests only. Operational runtime remains closed;
-  MOD-0232 was still `status: draft` at that time. MOD-0234 remains `status: draft`.
+  MOD-0232 and MOD-0234 were still `status: draft` at that time.
 - 2026-08-11: MOD-0232 promoted to `ready-for-dev` for the **build/test gate only**. Service boundary is
   `Diten.PvgService` for non-operational MedDRA Coding class-library contracts/tests only. Operational runtime,
   dictionary import, dictionary redistribution, static MedDRA data, cache/search index, API host, Gateway,
   frontend, appsettings, Mongo, collections, seeds, jobs, migrations, partner integration, AI, export, delete, and
-  bulk-delete remain closed. MOD-0234 remains `status: draft`.
+  bulk-delete remain closed. MOD-0234 was still `status: draft` at that time.
+- 2026-08-11: MOD-0234 promoted to `ready-for-dev` for the **build/test gate only**. Service boundary is
+  `Diten.PvgService` for no-shell Signal MVP non-operational class-library contracts/tests only. Operational
+  runtime, shell, placeholder dashboard, fake signal, fake metric, fake cohort, data-product stub, API host,
+  Gateway, frontend, appsettings, Mongo, collections, seeds, jobs, migrations, partner integration, AI, export,
+  delete, and bulk-delete remain closed.
 - Reconciliation: implementation-phase results will be added here as member module packs are executed.
