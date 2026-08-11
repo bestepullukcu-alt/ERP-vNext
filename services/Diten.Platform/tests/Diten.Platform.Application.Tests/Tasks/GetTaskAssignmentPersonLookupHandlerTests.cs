@@ -1,6 +1,8 @@
 using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Application.Features.Tasks.Handlers.QueryHandlers;
 using Diten.Platform.Application.Features.Tasks.Queries;
+using Diten.Platform.Application.Features.Tasks.Services;
+using Diten.Platform.Common.Authorization;
 using Diten.Platform.Domain.Entities.Organization;
 using Xunit;
 
@@ -241,14 +243,30 @@ public sealed class GetTaskAssignmentPersonLookupHandlerTests
             new FakePositionAssignmentRepository(assignments),
             new FakePositionRepository(positions),
             new FakeOrganizationUnitRepository(units),
-            resolver ?? new FakeUserDisplayNameResolver(names ?? []));
+            resolver ?? new FakeUserDisplayNameResolver(names ?? []),
+            EverythingInScope(positions, units));
 
         var response = await handler.Handle(
             new GetTaskAssignmentPersonLookupQuery("corr"), CancellationToken.None);
 
         Assert.True(response.IsSuccessful);
-        return response.Data!;
+        return response.Data!.People;
     }
+
+    /// <summary>
+    /// BL-057 added a company scope in front of this lookup. These tests are about the OTHER filters — dates,
+    /// cancellation, draft positions, name resolution — so the actor is granted every unit in the fixture
+    /// explicitly (leg 3 of the rule). The scope rule itself has its own suite in
+    /// <c>TaskAssignmentScopeTests</c>; duplicating it here would make these tests fail for the wrong reason.
+    /// </summary>
+    private static ITaskAssignmentScopeResolver EverythingInScope(Position[] positions, OrganizationUnit[] units)
+        => new TaskAssignmentScopeResolver(
+            new FakeDataScopeResolver(
+                [.. units.Select(u => new EntitlementDataScope(EntitlementDataScopeKind.OrgUnit, u.Id, u.Code))]),
+            new FakePositionRepository(positions),
+            new FakeOrganizationUnitRepository(units),
+            new FakeTenantContext(TaskTestData.Tenant),
+            new FakeCurrentUserContext(TaskTestData.Me));
 
     private static PositionAssignment Holder(Guid userId, Guid positionId) => new()
     {

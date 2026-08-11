@@ -110,6 +110,10 @@
   <data name="ErrorApprovalNotApproved" xml:space="preserve"><value>L'approbation n'est pas encore terminée, cette étape n'est pas autorisée.</value></data>
   <data name="ErrorApprovalGateUnavailable" xml:space="preserve"><value>L'approbation n'a pas pu être vérifiée pour le moment, l'action n'a pas été appliquée. Réessayez dans un instant.</value></data>
   <data name="AssigneeHint" xml:space="preserve"><value>Seules les personnes occupant actuellement un poste peuvent recevoir du travail.</value></data>
+  <data name="ExcludedHint" xml:space="preserve"><value>{0} personnes ne sont pas affichées :</value></data>
+  <data name="ExcludedNoActivePosition" xml:space="preserve"><value>{0} n'occupent aucun poste actif</value></data>
+  <data name="ExcludedPositionNotActive" xml:space="preserve"><value>{0} occupent un poste inactif</value></data>
+  <data name="ExcludedOutOfScope" xml:space="preserve"><value>{0} sont hors de votre périmètre</value></data>
   <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Sélectionnez une personne…</value></data>
   <data name="AssigneeEmpty" xml:space="preserve"><value>Personne n'occupe encore de poste, il n'y a donc personne à qui assigner. Demandez d'abord à un administrateur d'attribuer des postes.</value></data>
   <data name="PersonNameUnavailable" xml:space="preserve"><value>Nom indisponible</value></data>

@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Tasks.Queries;
+using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Domain.Entities.Organization;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -28,15 +29,18 @@ public sealed class GetTaskAssignmentPositionLookupHandler
     private readonly IPositionRepository _positions;
     private readonly IOrganizationUnitRepository _organizationUnits;
     private readonly IPositionAssignmentRepository _positionAssignments;
+    private readonly ITaskAssignmentScopeResolver _scopes;
 
     public GetTaskAssignmentPositionLookupHandler(
         IPositionRepository positions,
         IOrganizationUnitRepository organizationUnits,
-        IPositionAssignmentRepository positionAssignments)
+        IPositionAssignmentRepository positionAssignments,
+        ITaskAssignmentScopeResolver scopes)
     {
         _positions = positions;
         _organizationUnits = organizationUnits;
         _positionAssignments = positionAssignments;
+        _scopes = scopes;
     }
 
     public async Task<Response<IReadOnlyList<AssignablePositionDto>>> Handle(
@@ -49,6 +53,12 @@ public sealed class GetTaskAssignmentPositionLookupHandler
 
         var unitById = units.ToDictionary(u => u.Id);
         var now = DateTimeOffset.UtcNow;
+
+        // BL-057 — the SAME rule the people picker uses, from the same place. Pooling work is assigning it to
+        // whoever holds the position, so a pool outside my scope is the same boundary crossing as a person
+        // outside it. Written twice these two would drift, and the drift is invisible: one picker narrows, the
+        // other stays wide, and pooled work reaches a company the actor may not reach directly.
+        var scope = await _scopes.ResolveAsync(ct);
 
         // Half-open interval, consistent with OrgDataScopeResolver / TenantOrganizationMapper.
         var holderCounts = assignments
@@ -70,6 +80,11 @@ public sealed class GetTaskAssignmentPositionLookupHandler
             // A position whose unit cannot be resolved is skipped rather than shown without its facility label:
             // an unlabelled pool entry is exactly how work reaches the wrong facility.
             if (!unitById.TryGetValue(position.OrganizationUnitId, out var unit) || unit.IsArchived)
+            {
+                continue;
+            }
+
+            if (!scope.Allows(position.Id, unit.Id, unit.LegalEntityId))
             {
                 continue;
             }

@@ -110,6 +110,10 @@
   <data name="ErrorApprovalNotApproved" xml:space="preserve"><value>The approval is not complete yet, so this step is not allowed.</value></data>
   <data name="ErrorApprovalGateUnavailable" xml:space="preserve"><value>The approval could not be checked just now, so nothing was changed. Try again shortly.</value></data>
   <data name="AssigneeHint" xml:space="preserve"><value>Only people who currently hold a position can be assigned work.</value></data>
+  <data name="ExcludedHint" xml:space="preserve"><value>{0} people are not listed:</value></data>
+  <data name="ExcludedNoActivePosition" xml:space="preserve"><value>{0} hold no active position</value></data>
+  <data name="ExcludedPositionNotActive" xml:space="preserve"><value>{0} are on a position that is not active</value></data>
+  <data name="ExcludedOutOfScope" xml:space="preserve"><value>{0} are outside your scope</value></data>
   <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Select a person…</value></data>
   <data name="AssigneeEmpty" xml:space="preserve"><value>No one holds a position yet, so there is nobody to assign to. Ask an administrator to assign positions first.</value></data>
   <data name="PersonNameUnavailable" xml:space="preserve"><value>Name unavailable</value></data>

@@ -2,6 +2,7 @@ using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Application.Features.Tasks.Handlers.CommandHandlers;
 using MediatR;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Common.Authorization;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Organization;
 using Diten.Platform.Domain.Entities.Tasks;
@@ -36,6 +37,20 @@ internal sealed class FakeCurrentUserContext(Guid userId) : ICurrentUserContext
     public string? DisplayName => "Me";
     public string ActorName => Email!;
     public bool IsAuthenticated => true;
+}
+
+/// <summary>
+/// Stands in for MOD-0018-FU15's <c>OrgDataScopeResolver</c> (BL-057).
+///
+/// <para>The scopes are handed in rather than derived, so a test states the org reality it wants in one line and
+/// the assertion is about the TASK rule rather than about re-deriving the resolver's own behaviour. An empty
+/// array is the resolver's real fail-closed answer for a user with no active position assignment.</para>
+/// </summary>
+internal sealed class FakeDataScopeResolver(params EntitlementDataScope[] scopes) : IDataScopeResolver
+{
+    public Task<IReadOnlyList<EntitlementDataScope>> ResolveAsync(
+        Guid tenantId, Guid userId, string moduleCode, string? featureCode, CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyList<EntitlementDataScope>>(scopes.ToList());
 }
 
 internal sealed class FakeTenantContext(Guid tenantId) : ITenantContext

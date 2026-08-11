@@ -504,7 +504,31 @@ public sealed class TasksController : CustomBaseController
     [HasPermission(TaskPermissions.Assign)]
     public async Task<IActionResult> GetAssignablePeople(CancellationToken ct)
     {
-        var response = await _mediator.Send(new GetTaskAssignmentPersonLookupQuery(CorrelationId), ct);
+        var response = await _mediator.Send(
+            new GetTaskAssignmentPersonLookupQuery(CorrelationId, TaskPersonLookupPurpose.Assignment), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// People who may DECIDE about a task — the approver and the reviewer (BL-057).
+    ///
+    /// <para>Deliberately NOT the same list as <c>assignable-people</c>, and this is the endpoint that exists so
+    /// the difference cannot be lost. Assignment is limited to the actor's company scope; approval authority is
+    /// not, because it belongs to the PROCESS rather than to the requester. A box produced in GMG TR is
+    /// legitimately approved in GMG AZ by somebody who is neither above nor below the author — every leg of the
+    /// assignment rule fails for them, and the work is still entirely proper. Serving both lists from one
+    /// endpoint would have meant one filter for four pickers, which silently kills intra-group approval.</para>
+    ///
+    /// <para>Guarded by CREATE rather than ASSIGN: choosing who approves is part of defining the task, not of
+    /// handing work to anyone. The list still only contains people holding a live position in this tenant —
+    /// "exempt" means exempt from the COMPANY scope, not from every boundary.</para>
+    /// </summary>
+    [HttpGet("lookups/decision-makers")]
+    [HasPermission(TaskPermissions.Create)]
+    public async Task<IActionResult> GetDecisionMakers(CancellationToken ct)
+    {
+        var response = await _mediator.Send(
+            new GetTaskAssignmentPersonLookupQuery(CorrelationId, TaskPersonLookupPurpose.Decision), ct);
         return CreateActionResultInstance(response);
     }
 

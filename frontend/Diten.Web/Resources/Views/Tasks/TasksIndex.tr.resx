@@ -110,6 +110,10 @@
   <data name="ErrorApprovalNotApproved" xml:space="preserve"><value>Onay henüz tamamlanmadı, bu adıma geçilemez.</value></data>
   <data name="ErrorApprovalGateUnavailable" xml:space="preserve"><value>Onay şu anda kontrol edilemedi, işlem uygulanmadı. Kısa süre sonra tekrar deneyin.</value></data>
   <data name="AssigneeHint" xml:space="preserve"><value>Yalnızca hâlihazırda bir pozisyonu olan kişilere görev atanabilir.</value></data>
+  <data name="ExcludedHint" xml:space="preserve"><value>{0} kişi listelenmedi:</value></data>
+  <data name="ExcludedNoActivePosition" xml:space="preserve"><value>{0} kişinin aktif pozisyonu yok</value></data>
+  <data name="ExcludedPositionNotActive" xml:space="preserve"><value>{0} kişinin pozisyonu aktif değil</value></data>
+  <data name="ExcludedOutOfScope" xml:space="preserve"><value>{0} kişi kapsamınız dışında</value></data>
   <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Kişi seçin…</value></data>
   <data name="AssigneeEmpty" xml:space="preserve"><value>Henüz hiç kimsenin pozisyonu yok, bu yüzden atanacak kişi bulunmuyor. Önce yöneticinizden pozisyon ataması yapmasını isteyin.</value></data>
   <data name="PersonNameUnavailable" xml:space="preserve"><value>Ad bilgisi yok</value></data>

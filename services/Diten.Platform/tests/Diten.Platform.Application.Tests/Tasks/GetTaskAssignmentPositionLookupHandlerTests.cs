@@ -1,5 +1,7 @@
 using Diten.Platform.Application.Features.Tasks.Handlers.QueryHandlers;
 using Diten.Platform.Application.Features.Tasks.Queries;
+using Diten.Platform.Application.Features.Tasks.Services;
+using Diten.Platform.Common.Authorization;
 using Diten.Platform.Domain.Entities.Organization;
 using Xunit;
 
@@ -127,7 +129,22 @@ public sealed class GetTaskAssignmentPositionLookupHandlerTests
         => new(
             new FakePositionRepository(positions),
             new FakeOrganizationUnitRepository(units),
-            new FakePositionAssignmentRepository(assignments ?? []));
+            new FakePositionAssignmentRepository(assignments ?? []),
+            EverythingInScope(positions, units));
+
+    /// <summary>
+    /// BL-057 put a company scope in front of this lookup too. These tests are about the unit LABEL and the
+    /// draft/archived filter, so the actor is granted every unit in the fixture explicitly (leg 3). The scope
+    /// rule has its own suite in <c>TaskAssignmentScopeTests</c>.
+    /// </summary>
+    private static ITaskAssignmentScopeResolver EverythingInScope(Position[] positions, OrganizationUnit[] units)
+        => new TaskAssignmentScopeResolver(
+            new FakeDataScopeResolver(
+                [.. units.Select(u => new EntitlementDataScope(EntitlementDataScopeKind.OrgUnit, u.Id, u.Code))]),
+            new FakePositionRepository(positions),
+            new FakeOrganizationUnitRepository(units),
+            new FakeTenantContext(TaskTestData.Tenant),
+            new FakeCurrentUserContext(TaskTestData.Me));
 
     private static Position Position(string code, string name, Guid unitId) => new()
     {

@@ -55,6 +55,10 @@ public static class DependencyInjection
         services.AddScoped<IPlatformCatalogContract, PlatformCatalogContract>();
         services.AddSingleton<ITemporaryAccessProvider, NoOpTemporaryAccessProvider>();
         services.AddScoped<IDataScopeResolver, OrgDataScopeResolver>();
+        // BL-057 — MOD-0024's translation of the scopes above into "may I hand work to this position?". It
+        // CONSUMES IDataScopeResolver rather than recomputing anything; see TaskAssignmentScopeResolver.
+        services.AddScoped<Features.Tasks.Services.ITaskAssignmentScopeResolver,
+            Features.Tasks.Services.TaskAssignmentScopeResolver>();
         services.AddScoped<ITenantModuleAccessService, TenantModuleAccessService>();
         services.AddScoped<IActorSafetyGuard, ActorSafetyGuard>();
         services.AddScoped<IQuotaService, QuotaService>();

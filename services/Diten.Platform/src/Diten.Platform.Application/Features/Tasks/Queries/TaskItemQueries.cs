@@ -30,8 +30,14 @@ public sealed record GetTaskAssignmentPositionLookupQuery(string CorrelationId)
 /// <para>Each row carries the position AND its organization unit, for the same reason the position lookup does:
 /// two people holding "QA Specialist" in different facilities are otherwise indistinguishable.</para>
 /// </summary>
-public sealed record GetTaskAssignmentPersonLookupQuery(string CorrelationId)
-    : IRequest<Response<IReadOnlyList<AssignablePersonDto>>>;
+/// <para>BL-057 — <paramref name="Purpose"/> selects which rule applies. An ASSIGNMENT list is limited to the
+/// actor's company scope; a DECISION list (approver, reviewer) is exempt from it, because approval authority
+/// belongs to the process rather than to the requester. One query and one handler on purpose: two handlers would
+/// be two places to disagree about who holds a live position.</para>
+public sealed record GetTaskAssignmentPersonLookupQuery(
+    string CorrelationId,
+    TaskPersonLookupPurpose Purpose = TaskPersonLookupPurpose.Assignment)
+    : IRequest<Response<AssignablePersonLookupDto>>;
 
 /// <summary>
 /// Templates a recurrence rule may be bound to (BL-052).

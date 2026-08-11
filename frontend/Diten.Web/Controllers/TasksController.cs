@@ -277,6 +277,15 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiAssignablePeople()
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/lookups/assignable-people", readBody: false);
 
+    /// <summary>
+    /// BL-057 — who may DECIDE about a task (approver, reviewer), as opposed to who may receive it. Listed by
+    /// hand like every other non-transition route, for the reason above: a path Platform serves and this proxy
+    /// does not answers 404 inside the web tier.
+    /// </summary>
+    [HttpGet("api/decision-makers")]
+    public Task<IActionResult> ApiDecisionMakers()
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/lookups/decision-makers", readBody: false);
+
     private async Task<IActionResult> ProxyAsync(HttpMethod method, string targetUrl, bool readBody)
     {
         if (!TryCreateTenantRequest(method, targetUrl, out var request))

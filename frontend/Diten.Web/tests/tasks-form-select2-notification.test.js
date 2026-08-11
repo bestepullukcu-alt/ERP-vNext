@@ -138,12 +138,17 @@ describe("the page's conditional fields open when the user picks, end to end", (
     global.fetch = async (url, init) => {
       const body = init?.body ? JSON.parse(init.body) : null;
       const ok = (data) => ({ ok: true, status: 200, json: async () => ({ data }) });
-      if (url.endsWith("/assignable-people")) {
-        return ok([{
-          userId: PERSON, displayName: "Selin Aras", positionId: "p1", positionCode: "QA-1",
-          positionName: "QA Specialist", organizationUnitId: "u1", organizationUnitCode: "FAC-A",
-          organizationUnitName: "Facility A"
-        }]);
+      // BL-057 — the people lookup answers `{ people, excluded }` now, and the decision pickers have their own
+      // (scope-exempt) endpoint. The same person serves both here: this suite is about the select2 notification
+      // seam, not about the scope rule, which has its own suite.
+      const person = {
+        userId: PERSON, displayName: "Selin Aras", positionId: "p1", positionCode: "QA-1",
+        positionName: "QA Specialist", organizationUnitId: "u1", organizationUnitCode: "FAC-A",
+        organizationUnitName: "Facility A", legalEntityId: "le1"
+      };
+      const nobodyExcluded = { total: 0, noActivePosition: 0, positionNotActive: 0, outOfScope: 0 };
+      if (url.endsWith("/assignable-people") || url.endsWith("/decision-makers")) {
+        return ok({ people: [person], excluded: nobodyExcluded });
       }
       if (url.endsWith("/assignable-positions")) { return ok([]); }
       if (url.endsWith("/field-definitions")) { return ok([]); }

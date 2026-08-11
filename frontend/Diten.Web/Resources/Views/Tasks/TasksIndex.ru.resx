@@ -110,6 +110,10 @@
   <data name="ErrorApprovalNotApproved" xml:space="preserve"><value>Согласование ещё не завершено, поэтому этот шаг недоступен.</value></data>
   <data name="ErrorApprovalGateUnavailable" xml:space="preserve"><value>Сейчас не удалось проверить согласование, действие не выполнено. Повторите попытку чуть позже.</value></data>
   <data name="AssigneeHint" xml:space="preserve"><value>Работу можно назначить только сотрудникам, занимающим должность.</value></data>
+  <data name="ExcludedHint" xml:space="preserve"><value>{0} чел. не показаны:</value></data>
+  <data name="ExcludedNoActivePosition" xml:space="preserve"><value>{0} не занимают действующую должность</value></data>
+  <data name="ExcludedPositionNotActive" xml:space="preserve"><value>{0} занимают неактивную должность</value></data>
+  <data name="ExcludedOutOfScope" xml:space="preserve"><value>{0} вне вашей области видимости</value></data>
   <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Выберите сотрудника…</value></data>
   <data name="AssigneeEmpty" xml:space="preserve"><value>Пока никто не занимает должность, назначить работу некому. Попросите администратора сначала назначить должности.</value></data>
   <data name="PersonNameUnavailable" xml:space="preserve"><value>Имя недоступно</value></data>

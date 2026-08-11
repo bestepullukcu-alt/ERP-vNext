@@ -285,6 +285,48 @@
         return fixed.concat(custom);
     };
 
+    /*
+     * BL-072 — WHY the people picker is shorter than the user expects.
+     *
+     * Six reasons drop a candidate and the picker used to report none of them: the list just came back short,
+     * and the only way to find out why was to read the database. The server counts them by reason (it is the
+     * only side that knows), and this turns those counts into one sentence.
+     *
+     * ⚠ COUNTS ONLY, and that is a security boundary rather than a nicety. BL-057's whole purpose is that the
+     * out-of-scope people are not visible; naming them here would hand back exactly what the rule withholds.
+     * This function therefore reads NOTHING but the four integers — a payload carrying names or ids renders the
+     * same sentence, because nothing else is ever looked at.
+     */
+    const EXCLUSION_REASONS = [
+        { field: 'noActivePosition', key: 'excludedNoActivePosition' },
+        { field: 'positionNotActive', key: 'excludedPositionNotActive' },
+        { field: 'outOfScope', key: 'excludedOutOfScope' }
+    ];
+
+    const countOf = (summary, field) => {
+        const value = summary ? summary[field] : 0;
+        return Number.isInteger(value) && value > 0 ? value : 0;
+    };
+
+    // "{0} kişi listelenmedi" — the count is interpolated in the browser so the sentence stays one resx entry
+    // per language instead of three fragments the translator has to reassemble.
+    const withCount = (template, count) => String(template).replace('{0}', String(count));
+
+    const describeExcludedCandidates = (summary, translate) => {
+        const t = typeof translate === 'function' ? translate : ((key) => key);
+        const total = countOf(summary, 'total');
+        if (total === 0) { return ''; }
+
+        // A reason with a zero count is left out: "0 pozisyonu aktif değil" is noise, not information.
+        const parts = EXCLUSION_REASONS
+            .map(({ field, key }) => ({ count: countOf(summary, field), key }))
+            .filter((reason) => reason.count > 0)
+            .map((reason) => withCount(t(reason.key), reason.count));
+
+        const head = withCount(t('excludedHint'), total);
+        return parts.length > 0 ? `${head} ${parts.join(' · ')}` : head;
+    };
+
     // ── Shared draft: quick mode and the detailed form are the SAME draft (pack §12 K9 / DEV-1) ──
     const writeDraft = (draft, storage) => {
         const store = storage || global.sessionStorage;
@@ -1047,6 +1089,8 @@
         // Which event codes a task in this shape can actually produce, and what the "Zorunlu" dialog names.
         notificationEventApplies,
         missingRequiredFields,
+        // BL-072 — the "N kişi listelenmedi" sentence, built from counts and nothing else.
+        describeExcludedCandidates,
         readDraft,
         writeDraft,
         clearDraft,

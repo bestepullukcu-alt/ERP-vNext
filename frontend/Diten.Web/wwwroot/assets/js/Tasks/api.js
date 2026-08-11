@@ -205,7 +205,20 @@
          */
         fieldOptionSources: (kind) =>
             request('GET', `/field-definitions/option-sources?kind=${encodeURIComponent(kind)}`),
+        /*
+         * BL-057 — TWO people lists, and they are two on purpose.
+         *
+         * `assignablePeople` answers "who may RECEIVE this work" and is limited to the actor's company scope:
+         * same legal entity, below me in the reporting chain, or a scope granted to me. Its answer is an OBJECT
+         * — `{ people, excluded }` — because only the server knows WHY somebody is missing (BL-072).
+         *
+         * `decisionMakers` answers "who may DECIDE about this work" (approver, reviewer) and is exempt from that
+         * scope. A task produced in GMG TR is legitimately approved in GMG AZ by somebody who is neither above
+         * nor below the author: approval authority belongs to the PROCESS, not to the requester. Serving both
+         * from one call is the mistake that silently kills intra-group approval.
+         */
         assignablePeople: () => request('GET', '/assignable-people'),
+        decisionMakers: () => request('GET', '/decision-makers'),
 
         // ── Phase 2 ──────────────────────────────────────────────────────────
         // expectedVersion guards the checklist RUN, which has its own version separate from the task's.

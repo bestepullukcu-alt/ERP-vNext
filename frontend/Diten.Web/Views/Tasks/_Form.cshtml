@@ -93,6 +93,13 @@
                             </label>
                             <select class="select2 form-select" id="taskAssignee" name="assigneeUserId"></select>
                             <div class="form-text">@Localizer["AssigneeHint"]</div>
+                            @* BL-072 — WHY the list is shorter than expected. Six reasons drop a candidate and
+                               the picker used to report none of them; the server counts them by reason and this
+                               is where that count is read out. Hidden until there IS something to say — an empty
+                               explanation is its own kind of noise. Counts only, never names: the people held
+                               back by the company scope must stay invisible (BL-057). *@
+                            <div class="form-text text-warning d-none" data-task-field="assigneeExcluded"
+                                 id="taskAssigneeExcluded"></div>
                         </div>
 
                         @* Shown only for the Pool target. Each option carries its unit so work cannot be pooled to

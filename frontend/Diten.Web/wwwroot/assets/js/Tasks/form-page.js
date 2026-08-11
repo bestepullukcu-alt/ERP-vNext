@@ -259,6 +259,21 @@
         rendered?.focus?.({ preventScroll: true });
     };
 
+    /*
+     * BL-072 — render the server's exclusion breakdown under the assignee picker, or nothing at all.
+     *
+     * Class toggle, never an inline style (FG-003). `textContent`, never `innerHTML`: the sentence is built from
+     * translated templates and integers, and there is no reason for this node to be able to render markup.
+     */
+    const renderExcludedHint = (excluded) => {
+        const node = el('taskAssigneeExcluded');
+        if (!node) { return; }
+
+        const text = global.TaskForm.describeExcludedCandidates(excluded, t);
+        node.textContent = text;
+        node.classList.toggle('d-none', text.length === 0);
+    };
+
     const syncVisibility = () => {
         const form = el('taskForm');
         global.TaskForm.applyTargetVisibility(form, el('taskAssignmentTarget')?.value);
@@ -308,30 +323,53 @@
             global.TaskForm.renderPositionOptions(el('taskPoolPosition'), positions.data || []);
         }
 
-        // People who currently hold a position (pack §12 K6.4). Loaded before any draft is written back, so a
-        // handed-over assignee id can select its option.
+        /*
+         * TWO people lists, and this is the one place the difference is made — BL-057.
+         *
+         * All four person pickers used to draw from ONE list, so narrowing "the list" would have been a
+         * one-line change and would have silently killed intra-group approval: a task produced in GMG TR is
+         * legitimately approved in GMG AZ by somebody who is neither above nor below the author, in another
+         * company. Every leg of the assignment rule fails for that person and the work is still entirely
+         * proper — because approval authority belongs to the PROCESS, not to the requester.
+         *
+         *   assignableRows → who may RECEIVE the work   → company-scoped   → assignee, watchers
+         *   decisionRows   → who may DECIDE about it    → scope-EXEMPT     → reviewer, approval manager
+         *
+         * Watchers ride the scoped list deliberately: watching is not deciding, it is seeing — and letting
+         * another company's employee watch a task is a data-access decision (Poland is inside the EU/GDPR,
+         * Turkey is not), so it follows the receiving rule rather than the deciding one.
+         *
+         * Loaded before any draft is written back, so a handed-over assignee id can select its option.
+         */
         const people = await global.TasksApi.assignablePeople();
-        const peopleRows = people.ok ? people.data || [] : [];
+        // The lookup answers `{ people, excluded }` now — only the server can say WHY somebody is missing.
+        const assignableRows = people.ok ? people.data?.people || [] : [];
         const personLabels = {
             placeholder: t('assigneeSelectPlaceholder'),
             empty: t('assigneeEmpty'),
             nameUnavailable: t('personNameUnavailable')
         };
-        global.TaskForm.renderPersonOptions(el('taskAssignee'), peopleRows, personLabels);
+        global.TaskForm.renderPersonOptions(el('taskAssignee'), assignableRows, personLabels);
+        global.TaskForm.renderPersonOptions(el('taskWatchers'), assignableRows, personLabels, { multiple: true });
+
+        // BL-072 — say why the list is short, from the server's own breakdown. Never inferred here: the client
+        // cannot tell "nobody holds a position" from "they work for another company".
+        renderExcludedHint(people.ok ? people.data?.excluded : null);
 
         /*
-         * The reviewer, the approval manager and the watchers are the SAME question as the assignee — "which
-         * person?" — so they are answered from the same lookup and rendered by the same function. They were bare
-         * text inputs whose contents went straight to a Guid parameter, which meant the only correct way to fill
-         * them was to type a GUID; and the watcher box, being a string where the payload wanted a list, threw its
-         * contents away entirely.
+         * The reviewer and the approval manager are the same QUESTION as the assignee — "which person?" — and
+         * are rendered by the same function, but they are not the same ANSWER. They were bare text inputs whose
+         * contents went straight to a Guid parameter, which meant the only correct way to fill them was to type
+         * a GUID.
          */
-        global.TaskForm.renderPersonOptions(el('taskReviewer'), peopleRows, personLabels);
-        global.TaskForm.renderPersonOptions(el('taskApprovalManager'), peopleRows, personLabels);
-        global.TaskForm.renderPersonOptions(el('taskWatchers'), peopleRows, personLabels, { multiple: true });
+        const decisions = await global.TasksApi.decisionMakers();
+        const decisionRows = decisions.ok ? decisions.data?.people || [] : [];
+        global.TaskForm.renderPersonOptions(el('taskReviewer'), decisionRows, personLabels);
+        global.TaskForm.renderPersonOptions(el('taskApprovalManager'), decisionRows, personLabels);
 
         // Before any hydration: the controls have to EXIST before stored values can be written into them.
-        await bootCustomFields(people.ok ? people.data || [] : []);
+        // Person-typed configurable fields follow the ASSIGNMENT rule: they name someone who does the work.
+        await bootCustomFields(assignableRows);
 
         if (mode === 'create') {
             // Continue the quick-create draft if one was handed over.

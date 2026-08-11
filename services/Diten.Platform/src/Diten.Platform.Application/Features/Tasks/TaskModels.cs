@@ -517,7 +517,69 @@ public sealed record AssignablePersonDto(
     string PositionName,
     Guid OrganizationUnitId,
     string OrganizationUnitCode,
-    string OrganizationUnitName);
+    string OrganizationUnitName,
+    // BL-057 — which company the row belongs to. The position DTO has carried this from the start; the person
+    // DTO did not, so the client could not tell two same-named people in different companies apart even after
+    // the scope rule started deciding which of them may appear at all.
+    Guid LegalEntityId);
+
+/// <summary>
+/// WHY the people picker is shorter than the user expects — BL-072.
+///
+/// <para>The lookup drops a candidate for six different reasons and used to say none of them: the list simply
+/// came back short. On a nine-card form that leaves the user with no move except asking a developer to read the
+/// database, which is exactly what happened.</para>
+///
+/// <para><b>⚠ Counts only, and that is a security boundary rather than a nicety.</b> Naming the people held back
+/// by <see cref="OutOfScope"/> would hand back precisely what BL-057's rule withholds. Every member of this
+/// record is an <see cref="int"/>, and a test asserts that it stays that way.</para>
+/// </summary>
+public sealed record ExcludedCandidateSummary(
+    /// <summary>Distinct people who have an assignment but produced no row.</summary>
+    int Total,
+    /// <summary>No assignment in force: not started, already ended, or cancelled.</summary>
+    int NoActivePosition,
+    /// <summary>Held a position that is Draft/archived, or whose unit is archived.</summary>
+    int PositionNotActive,
+    /// <summary>Assignable in principle, but outside the actor's scope (BL-057).</summary>
+    int OutOfScope)
+{
+    public static ExcludedCandidateSummary None { get; } = new(0, 0, 0, 0);
+}
+
+/// <summary>
+/// The people lookup's answer: the rows, plus why the rest are missing.
+///
+/// <para>The breakdown is computed on the SERVER because only the server knows it. A client that inferred
+/// "someone must be hidden" from a short list would be guessing, and it could not distinguish "nobody holds a
+/// position" from "they are in another company".</para>
+/// </summary>
+public sealed record AssignablePersonLookupDto(
+    IReadOnlyList<AssignablePersonDto> People,
+    ExcludedCandidateSummary Excluded);
+
+/// <summary>
+/// WHICH question the people lookup is answering — BL-057, and the single most tempting mistake in that change.
+///
+/// <para>All four pickers on the create form drew from one list, so applying the scope to "the list" would have
+/// silently killed intra-group approval: a task produced in GMG TR is legitimately approved in GMG AZ by
+/// somebody who is neither above nor below the author and works for another company.</para>
+/// </summary>
+public enum TaskPersonLookupPurpose
+{
+    /// <summary>
+    /// Who may RECEIVE the work — assignee, watcher. Scope-limited: doing work for me is an organizational
+    /// relationship, and crossing a company boundary without one is a data-protection question.
+    /// </summary>
+    Assignment = 0,
+
+    /// <summary>
+    /// Who may DECIDE about the work — approver, reviewer. Scope-EXEMPT: the authority belongs to the process,
+    /// not to the requester (SAP resolves it through agent determination, Oracle through approval rules). Still
+    /// bounded by the tenant and by holding a live position; "exempt" means exempt from the COMPANY scope only.
+    /// </summary>
+    Decision = 1
+}
 
 /// <summary>One bindable template, for a picker: nothing but what a picker can show and send.</summary>
 public sealed record TaskTemplateLookupDto(Guid Id, string Name);
