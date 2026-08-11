@@ -97,8 +97,12 @@ describe("MOD-0024 task localization", () => {
     [
       "TasksTitle", "PageDescription", "AddNewTask", "QuickCreateTitle",
       "FieldTitle", "FieldAssignmentTarget", "TargetSelf", "TargetPerson", "TargetPool",
-      "FieldAssignee", "FieldPoolPosition", "PoolPositionHint", "FieldOrganizationUnit",
+      // FieldOrganizationUnit and FieldPlannedDate are deliberately ABSENT: the closing round withdrew both
+      // controls from the form (the unit is the server's cascade, the planned date is the Plan transition's), so
+      // a translated label for either would be a string with nothing to label.
+      "FieldAssignee", "FieldPoolPosition", "PoolPositionHint",
       "FieldDueAt", "FieldEstimateHours", "FieldSpentHours", "SpentHoursReadOnlyHint",
+      "RequiredFieldHint", "RequiredFieldsMissing",
       "FieldApprovalRequired", "ApprovalHint", "FieldWatchers", "WatchersHint",
       "LifecycleOpen", "LifecycleInProgress", "LifecycleDone", "LifecycleCancelled",
       "ActionClaim", "ErrorAlreadyClaimed", "ErrorNoAccess", "ErrorUnavailable",

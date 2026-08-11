@@ -23,10 +23,8 @@
   <data name="FieldAssignee" xml:space="preserve"><value>Atanan kişi</value></data>
   <data name="FieldPoolPosition" xml:space="preserve"><value>Pozisyon</value></data>
   <data name="PoolPositionHint" xml:space="preserve"><value>Her pozisyonun yanında birimi görünür; böylece iş yanlış tesise düşmez.</value></data>
-  <data name="FieldOrganizationUnit" xml:space="preserve"><value>Organizasyon birimi</value></data>
   <data name="FieldDueAt" xml:space="preserve"><value>Bitiş tarihi</value></data>
   <data name="FieldStartAt" xml:space="preserve"><value>Başlangıç tarihi</value></data>
-  <data name="FieldPlannedDate" xml:space="preserve"><value>Planlanan tarih</value></data>
   <data name="FieldEstimateHours" xml:space="preserve"><value>Tahmin (saat)</value></data>
   <data name="FieldRemainingHours" xml:space="preserve"><value>Kalan (saat)</value></data>
   <data name="FieldSpentHours" xml:space="preserve"><value>Harcanan (saat)</value></data>
@@ -85,6 +83,7 @@
   <data name="ErrorFieldDefinitionUnknown" xml:space="preserve"><value>Bu form, artık tanımlı olmayan bir alan sunuyor. Sayfayı yenileyip yeniden deneyin.</value></data>
   <data name="ErrorFieldLimitExceeded" xml:space="preserve"><value>Ek alanlar bir sınırı aşıyor: çok fazla bölüm, bir bölümde çok fazla alan ya da fazla uzun bir değer.</value></data>
   <data name="RequiredFieldHint" xml:space="preserve"><value>Zorunlu</value></data>
+  <data name="RequiredFieldsMissing" xml:space="preserve"><value>Lütfen şu zorunlu alanları doldurun:</value></data>
   <data name="ErrorOccurred" xml:space="preserve"><value>İşlem sırasında bir hata oluştu.</value></data>
   <data name="ActionOk" xml:space="preserve"><value>Tamam</value></data>
   <data name="ErrorOrganizationUnitUnresolved" xml:space="preserve"><value>Bu görev için organizasyon birimi belirlenemedi. Yöneticinizden size bir pozisyon atamasını veya bir kök organizasyon birimi tanımlamasını isteyin.</value></data>
@@ -132,7 +131,7 @@
   <data name="ReviewTypeMeetingDisabledReason" xml:space="preserve"><value>Henüz kullanılamıyor: toplantı modülü yapılmadı. Bu sürede hızlı inceleme uygulanır.</value></data>
   <data name="NotifyEventsLabel" xml:space="preserve"><value>Şu durumlarda haber ver</value></data>
   <data name="NotifyEventAssigned" xml:space="preserve"><value>Görev atandığında</value></data>
-  <data name="NotifyEventClaimed" xml:space="preserve"><value>Havuzdaki görev üstlenildiğinde</value></data>
+  <data name="NotifyEventClaimed" xml:space="preserve"><value>Havuzdan üstlenilince</value></data>
   <data name="NotifyEventDueSoon" xml:space="preserve"><value>Son tarih yaklaştığında</value></data>
   <data name="NotifyEventCompleted" xml:space="preserve"><value>Görev tamamlandığında</value></data>
   <data name="NotifyEventApprovalRequested" xml:space="preserve"><value>Onay talep edildiğinde</value></data>
@@ -143,4 +142,6 @@
   <data name="ReminderLead3" xml:space="preserve"><value>3 gün önce</value></data>
   <data name="ReminderLead7" xml:space="preserve"><value>1 hafta önce</value></data>
   <data name="ReminderLead14" xml:space="preserve"><value>2 hafta önce</value></data>
+  <data name="FieldReviewTypeLabel" xml:space="preserve"><value>İnceleme türü</value></data>
+  <data name="FieldDescriptionPlaceholder" xml:space="preserve"><value>Ne yapılacak ve görevi üstlenenin başlamadan önce bilmesi gerekenler.</value></data>
 </root>

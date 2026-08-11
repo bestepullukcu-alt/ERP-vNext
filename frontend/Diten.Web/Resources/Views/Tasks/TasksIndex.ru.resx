@@ -23,10 +23,8 @@
   <data name="FieldAssignee" xml:space="preserve"><value>Исполнитель</value></data>
   <data name="FieldPoolPosition" xml:space="preserve"><value>Должность</value></data>
   <data name="PoolPositionHint" xml:space="preserve"><value>Рядом с каждой должностью показано подразделение, чтобы работа не попала не на тот объект.</value></data>
-  <data name="FieldOrganizationUnit" xml:space="preserve"><value>Организационная единица</value></data>
   <data name="FieldDueAt" xml:space="preserve"><value>Срок</value></data>
   <data name="FieldStartAt" xml:space="preserve"><value>Дата начала</value></data>
-  <data name="FieldPlannedDate" xml:space="preserve"><value>Планируемая дата</value></data>
   <data name="FieldEstimateHours" xml:space="preserve"><value>Оценка (часы)</value></data>
   <data name="FieldRemainingHours" xml:space="preserve"><value>Осталось (часы)</value></data>
   <data name="FieldSpentHours" xml:space="preserve"><value>Затрачено (часы)</value></data>
@@ -85,6 +83,7 @@
   <data name="ErrorFieldDefinitionUnknown" xml:space="preserve"><value>Эта форма предлагает поле, которое больше не определено. Обновите страницу и повторите попытку.</value></data>
   <data name="ErrorFieldLimitExceeded" xml:space="preserve"><value>Дополнительные поля превышают ограничение: слишком много разделов, слишком много полей в разделе или слишком длинное значение.</value></data>
   <data name="RequiredFieldHint" xml:space="preserve"><value>Обязательно</value></data>
+  <data name="RequiredFieldsMissing" xml:space="preserve"><value>Заполните обязательные поля:</value></data>
   <data name="ErrorOccurred" xml:space="preserve"><value>При обработке запроса произошла ошибка.</value></data>
   <data name="ActionOk" xml:space="preserve"><value>ОК</value></data>
   <data name="ErrorOrganizationUnitUnresolved" xml:space="preserve"><value>Не удалось определить организационную единицу для этой задачи. Попросите администратора назначить вам должность или создать корневую организационную единицу.</value></data>
@@ -132,7 +131,7 @@
   <data name="ReviewTypeMeetingDisabledReason" xml:space="preserve"><value>Пока недоступно: модуль совещаний не создан. До тех пор применяется быстрая проверка.</value></data>
   <data name="NotifyEventsLabel" xml:space="preserve"><value>Уведомлять меня, когда</value></data>
   <data name="NotifyEventAssigned" xml:space="preserve"><value>Задача назначена</value></data>
-  <data name="NotifyEventClaimed" xml:space="preserve"><value>Задачу из пула взяли в работу</value></data>
+  <data name="NotifyEventClaimed" xml:space="preserve"><value>Задачу взяли из пула</value></data>
   <data name="NotifyEventDueSoon" xml:space="preserve"><value>Приближается срок</value></data>
   <data name="NotifyEventCompleted" xml:space="preserve"><value>Задача завершена</value></data>
   <data name="NotifyEventApprovalRequested" xml:space="preserve"><value>Запрошено согласование</value></data>
@@ -143,4 +142,6 @@
   <data name="ReminderLead3" xml:space="preserve"><value>За 3 дня</value></data>
   <data name="ReminderLead7" xml:space="preserve"><value>За неделю</value></data>
   <data name="ReminderLead14" xml:space="preserve"><value>За 2 недели</value></data>
+  <data name="FieldReviewTypeLabel" xml:space="preserve"><value>Тип проверки</value></data>
+  <data name="FieldDescriptionPlaceholder" xml:space="preserve"><value>Что нужно сделать и что исполнителю важно знать до начала работы.</value></data>
 </root>

@@ -4525,7 +4525,16 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 
 /* Section headers mirror the Golden Compact overview cards: upper-cased, heading colour,
    semibold. Sections that carry an icon keep a primary-tinted leading glyph. */
-.security-section-title {
+/*
+ * Section title: a small primary glyph inline before an uppercase heading.
+ *
+ * Two names, ONE rule. The tenant-security screen named it first; the task form needed the same thing and a
+ * tinted icon box was tried there and rejected — too loud above a card's controls. Sharing the selector instead
+ * of writing a second rule with the same declarations keeps the two screens from drifting; renaming
+ * .security-section-title everywhere would read better but edits a screen that has no business changing here.
+ */
+.security-section-title,
+.card-section-title {
     display: flex;
     align-items: center;
     gap: .5rem;
@@ -4533,7 +4542,8 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
     text-transform: uppercase;
     color: var(--bs-heading-color);
 }
-.security-section-title .bx {
+.security-section-title .bx,
+.card-section-title .bx {
     font-size: 1.125rem;
     color: var(--bs-primary);
 }
@@ -4601,6 +4611,103 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 .security-method-switch .form-check-input {
     margin-inline-start: 0;
     float: none;
+}
+
+/* The sentence under a section title. Pairs with .card-section-title above. */
+.card-section-desc {
+    font-size: .8125rem;
+    line-height: 1.35;
+    color: var(--bs-secondary-color);
+}
+
+/*
+ * Boxed radio choice with a selected state.
+ *
+ * The BOX is the reference-data draft wizard's shape (`form-check border rounded p-3`) — same element, so a user
+ * meets one way of "choose one of these, each with a subtitle" across the product. What is added here is the
+ * SELECTED treatment the wizard never needed: a primary border and a faint primary wash, so the current choice is
+ * visible without reading the radios.
+ *
+ * Driven by :has(:checked) — the box follows the input itself. A JS-toggled class would be a second record of
+ * which option is chosen, and the two go out of step the first time anything sets the value programmatically
+ * (hydrating an edit form does exactly that).
+ */
+.choice-box {
+    /*
+     * The box owns its LAYOUT as well as its border.
+     *
+     * Bootstrap's .form-check indents the label (`padding-left: 1.5em`) and pulls the input back out with a
+     * matching negative margin — right for a check in a list, wrong inside a bordered card: the radio hung
+     * outside the border and the padding read uneven, wider on the left than anywhere else. A flex row with one
+     * padding value fixes both, and nothing has to guess at ems.
+     *
+     * The border is here for the same reason: Bootstrap's `.border` utility declares
+     * `border-color: … !important`, so the selected state below could never repaint it without an !important war.
+     */
+    display: flex;
+    align-items: flex-start;
+    gap: .625rem;
+    padding: .875rem 1rem;
+    border: 1px solid var(--bs-border-color);
+    transition: border-color .15s ease-in-out, background-color .15s ease-in-out;
+}
+.choice-box .form-check-input {
+    /* No negative pull, no float: the radio is a flex item like the text beside it. */
+    margin-inline-start: 0;
+    margin-block-start: .1875rem;
+    float: none;
+    flex: 0 0 auto;
+}
+.choice-box .form-check-label {
+    cursor: pointer;
+}
+.choice-box:has(.form-check-input:disabled) .form-check-label {
+    cursor: default;
+}
+/*
+ * Compact variant: same box, tighter. Five notification events at the review type's padding would fill the
+ * column and out-shout the card they sit in; the review type has two options and can afford the room.
+ */
+.choice-box--compact {
+    padding: .5rem .75rem;
+    gap: .5rem;
+    align-items: center;
+}
+/* The event's own glyph, between the tick and the label — what makes five rows scannable rather than uniform. */
+.choice-box-glyph {
+    font-size: 1.0625rem;
+    line-height: 1;
+    flex: 0 0 auto;
+}
+
+.choice-box-body {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+}
+/*
+ * Hover: the SAME treatment the Task Center list rows use for a selectable row, so "this responds to me" looks
+ * one way across the product rather than one way per screen.
+ *
+ * Only on a box that is neither chosen nor unavailable: hovering the chosen option must not wash out its
+ * stronger selected tint, and a disabled choice should not pretend to react. Written as explicit :not()s rather
+ * than relying on source order — :has() specificity is not worth reasoning about twice.
+ */
+.choice-box:hover:not(:has(.form-check-input:checked)):not(:has(.form-check-input:disabled)) {
+    background-color: rgba(var(--bs-primary-rgb), 0.035);
+    border-color: color-mix(in sRGB, var(--bs-primary) 45%, var(--bs-border-color));
+}
+.choice-box:has(.form-check-input:checked) {
+    border-color: var(--bs-primary);
+    background-color: rgba(var(--bs-primary-rgb), .06);
+}
+/* A choice that cannot be taken reads as unavailable rather than merely unselected. */
+.choice-box:has(.form-check-input:disabled) {
+    background-color: var(--bs-secondary-bg);
+}
+.choice-box-note {
+    font-size: .8125rem;
+    line-height: 1.35;
+    color: var(--bs-secondary-color);
 }
 
 /* Password-policy strength meter: four segments that fill as rules activate. */

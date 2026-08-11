@@ -65,6 +65,66 @@ describe("the email card offers the events that exist, and only those", () => {
     expect(source, "the lead time is not tied to the duesoon choice").toContain("reminderLead");
   });
 
+  test("each event is a boxed choice with its own icon, like the review types", () => {
+    /*
+     * The five events were a plain stack of checkboxes — a wall of text with nothing to scan by. They are the
+     * same KIND of thing the review type is (pick from a short list, each with a meaning), so they get the same
+     * box: `.choice-box`, already in the stylesheet from that round. One visual language, not two.
+     *
+     * The icon is what makes the list scannable: a deadline, a completion and an approval request read as
+     * different events at a glance instead of as five identical rows.
+     */
+    // Split on the box opening rather than trying to match a closing tag: the review-type boxes wrap their text
+    // in a body div and the event boxes do not, so any single closing pattern is wrong for one of them.
+    const form = TASK_FORM();
+    const boxes = form.split('<div class="form-check choice-box').slice(1)
+      .filter((box) => box.slice(0, box.indexOf("</div>")).includes('name="notifyOnEvents"'));
+
+    expect(boxes.length, "the events are not boxed choices").toBe(5);
+    boxes.forEach((box) => {
+      const head = box.slice(0, box.indexOf("</div>"));
+      const code = /value="([^"]+)"/.exec(head)[1];
+      expect(head, `${code} has no icon`).toMatch(/<i class="bx /);
+    });
+  });
+
+  test("every icon the form asks for actually EXISTS in the icon set", () => {
+    /*
+     * `bx-hand-right` was picked from memory of the boxicons catalogue. This project ships ICONIFY, whose set is
+     * not identical, and the missing glyph rendered as a blank 17×17 gap — no error, no warning, just a hole in
+     * one row of five. Every icon name in the form is therefore checked against the stylesheet that has to draw
+     * it, so the next confident guess fails here instead of on screen.
+     */
+    const icons = read("wwwroot", "assets", "vendor", "fonts", "iconify-icons.css");
+    const used = [...new Set([...TASK_FORM().matchAll(/class="bx (bx-[a-z0-9-]+)/g)].map((m) => m[1]))];
+
+    expect(used.length, "the form uses no icons at all").toBeGreaterThan(4);
+    const missing = used.filter((name) => !icons.includes(`.${name}`));
+    expect(missing, `icon names with nothing to draw them:\n${missing.join("\n")}`).toHaveLength(0);
+  });
+
+  test("a hoverable box borrows the Task Center list row's hover, not a new one", () => {
+    // The list rows in the Task Center already answer "what does hovering a selectable row look like here".
+    const css = read("wwwroot", "assets", "css", "backbone-custom.css");
+    // Anchored at line start: a skin override (`:root[data-skin=bordered] .wcn-row:hover`) appears first and
+    // carries no background, so a plain indexOf finds the wrong rule and reads nothing.
+    const rowStart = css.search(/^\.wcn-row:hover \{/m);
+    expect(rowStart, "the Task Center row hover moved").toBeGreaterThan(-1);
+    const rowRule = css.slice(rowStart, css.indexOf("}", rowStart));
+    const tint = /background-color:\s*([^;]+);/.exec(rowRule)[1].trim();
+
+    const boxHover = css.slice(css.indexOf(".choice-box:hover"));
+    expect(boxHover.slice(0, boxHover.indexOf("}")), "the box invented its own hover tint").toContain(tint);
+  });
+
+  test("the event list is compact — five boxes must not out-shout the card", () => {
+    // The review type has two options and room to breathe; five events at the same padding would take over the
+    // column. A modifier, so the compact size is a documented variant rather than an override somewhere.
+    const css = read("wwwroot", "assets", "css", "backbone-custom.css");
+    expect(css, "there is no compact variant of the boxed choice").toMatch(/\.choice-box--compact\s*\{/);
+    expect(TASK_FORM()).toMatch(/choice-box choice-box--compact/);
+  });
+
   test("a reminder lead time is a NUMBER of days, never a date", () => {
     // BL-030: a stored instant serialises as an array and breaks the query. The control offers day counts.
     const form = TASK_FORM();

@@ -23,10 +23,8 @@
   <data name="FieldAssignee" xml:space="preserve"><value>Personne assignée</value></data>
   <data name="FieldPoolPosition" xml:space="preserve"><value>Poste</value></data>
   <data name="PoolPositionHint" xml:space="preserve"><value>L'unité est affichée à côté de chaque poste afin que le travail n'aille jamais au mauvais site.</value></data>
-  <data name="FieldOrganizationUnit" xml:space="preserve"><value>Unité organisationnelle</value></data>
   <data name="FieldDueAt" xml:space="preserve"><value>Date d'échéance</value></data>
   <data name="FieldStartAt" xml:space="preserve"><value>Date de début</value></data>
-  <data name="FieldPlannedDate" xml:space="preserve"><value>Date planifiée</value></data>
   <data name="FieldEstimateHours" xml:space="preserve"><value>Estimation (heures)</value></data>
   <data name="FieldRemainingHours" xml:space="preserve"><value>Restant (heures)</value></data>
   <data name="FieldSpentHours" xml:space="preserve"><value>Passé (heures)</value></data>
@@ -85,6 +83,7 @@
   <data name="ErrorFieldDefinitionUnknown" xml:space="preserve"><value>Ce formulaire propose un champ qui n'est plus défini. Rechargez la page et réessayez.</value></data>
   <data name="ErrorFieldLimitExceeded" xml:space="preserve"><value>Les champs supplémentaires dépassent une limite : trop de sections, trop de champs dans une section, ou une valeur trop longue.</value></data>
   <data name="RequiredFieldHint" xml:space="preserve"><value>Obligatoire</value></data>
+  <data name="RequiredFieldsMissing" xml:space="preserve"><value>Veuillez renseigner les champs obligatoires :</value></data>
   <data name="ErrorOccurred" xml:space="preserve"><value>Une erreur s'est produite lors du traitement de votre demande.</value></data>
   <data name="ActionOk" xml:space="preserve"><value>OK</value></data>
   <data name="ErrorOrganizationUnitUnresolved" xml:space="preserve"><value>Aucune unité organisationnelle n'a pu être déterminée pour cette tâche. Demandez à un administrateur de vous attribuer un poste ou de définir une unité organisationnelle racine.</value></data>
@@ -132,7 +131,7 @@
   <data name="ReviewTypeMeetingDisabledReason" xml:space="preserve"><value>Pas encore disponible : le module de réunions n’existe pas. La revue rapide s’applique en attendant.</value></data>
   <data name="NotifyEventsLabel" xml:space="preserve"><value>Me prévenir lorsque</value></data>
   <data name="NotifyEventAssigned" xml:space="preserve"><value>La tâche est attribuée</value></data>
-  <data name="NotifyEventClaimed" xml:space="preserve"><value>Une tâche du pool est prise en charge</value></data>
+  <data name="NotifyEventClaimed" xml:space="preserve"><value>Tâche du pool prise</value></data>
   <data name="NotifyEventDueSoon" xml:space="preserve"><value>L’échéance approche</value></data>
   <data name="NotifyEventCompleted" xml:space="preserve"><value>La tâche est terminée</value></data>
   <data name="NotifyEventApprovalRequested" xml:space="preserve"><value>Une approbation est demandée</value></data>
@@ -143,4 +142,6 @@
   <data name="ReminderLead3" xml:space="preserve"><value>3 jours avant</value></data>
   <data name="ReminderLead7" xml:space="preserve"><value>1 semaine avant</value></data>
   <data name="ReminderLead14" xml:space="preserve"><value>2 semaines avant</value></data>
+  <data name="FieldReviewTypeLabel" xml:space="preserve"><value>Type de revue</value></data>
+  <data name="FieldDescriptionPlaceholder" xml:space="preserve"><value>Ce qui doit être fait, et ce que la personne affectée doit savoir avant de commencer.</value></data>
 </root>

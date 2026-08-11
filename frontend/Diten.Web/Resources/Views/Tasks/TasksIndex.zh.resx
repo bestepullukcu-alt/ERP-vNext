@@ -23,10 +23,8 @@
   <data name="FieldAssignee" xml:space="preserve"><value>负责人</value></data>
   <data name="FieldPoolPosition" xml:space="preserve"><value>岗位</value></data>
   <data name="PoolPositionHint" xml:space="preserve"><value>每个岗位旁均显示所属单位，避免任务分配到错误的场所。</value></data>
-  <data name="FieldOrganizationUnit" xml:space="preserve"><value>组织单位</value></data>
   <data name="FieldDueAt" xml:space="preserve"><value>截止日期</value></data>
   <data name="FieldStartAt" xml:space="preserve"><value>开始日期</value></data>
-  <data name="FieldPlannedDate" xml:space="preserve"><value>计划日期</value></data>
   <data name="FieldEstimateHours" xml:space="preserve"><value>预计（小时）</value></data>
   <data name="FieldRemainingHours" xml:space="preserve"><value>剩余（小时）</value></data>
   <data name="FieldSpentHours" xml:space="preserve"><value>已用（小时）</value></data>
@@ -85,6 +83,7 @@
   <data name="ErrorFieldDefinitionUnknown" xml:space="preserve"><value>此表单提供了一个已不存在的字段。请刷新页面后重试。</value></data>
   <data name="ErrorFieldLimitExceeded" xml:space="preserve"><value>附加字段超出限制：分区过多、单个分区字段过多，或值过长。</value></data>
   <data name="RequiredFieldHint" xml:space="preserve"><value>必填</value></data>
+  <data name="RequiredFieldsMissing" xml:space="preserve"><value>请填写以下必填字段：</value></data>
   <data name="ErrorOccurred" xml:space="preserve"><value>处理您的请求时发生错误。</value></data>
   <data name="ActionOk" xml:space="preserve"><value>确定</value></data>
   <data name="ErrorOrganizationUnitUnresolved" xml:space="preserve"><value>无法为此任务确定组织单位。请让管理员为您分配职位或定义根组织单位。</value></data>
@@ -132,7 +131,7 @@
   <data name="ReviewTypeMeetingDisabledReason" xml:space="preserve"><value>暂不可用：会议模块尚未开发。在此期间采用快速审阅。</value></data>
   <data name="NotifyEventsLabel" xml:space="preserve"><value>在以下情况通知我</value></data>
   <data name="NotifyEventAssigned" xml:space="preserve"><value>任务被指派时</value></data>
-  <data name="NotifyEventClaimed" xml:space="preserve"><value>池中任务被领取时</value></data>
+  <data name="NotifyEventClaimed" xml:space="preserve"><value>池中任务被领取</value></data>
   <data name="NotifyEventDueSoon" xml:space="preserve"><value>截止日期临近时</value></data>
   <data name="NotifyEventCompleted" xml:space="preserve"><value>任务完成时</value></data>
   <data name="NotifyEventApprovalRequested" xml:space="preserve"><value>请求审批时</value></data>
@@ -143,4 +142,6 @@
   <data name="ReminderLead3" xml:space="preserve"><value>提前 3 天</value></data>
   <data name="ReminderLead7" xml:space="preserve"><value>提前 1 周</value></data>
   <data name="ReminderLead14" xml:space="preserve"><value>提前 2 周</value></data>
+  <data name="FieldReviewTypeLabel" xml:space="preserve"><value>审阅类型</value></data>
+  <data name="FieldDescriptionPlaceholder" xml:space="preserve"><value>需要完成什么，以及负责人开始前需要了解的信息。</value></data>
 </root>

@@ -23,10 +23,8 @@
   <data name="FieldAssignee" xml:space="preserve"><value>Persona asignada</value></data>
   <data name="FieldPoolPosition" xml:space="preserve"><value>Puesto</value></data>
   <data name="PoolPositionHint" xml:space="preserve"><value>La unidad se muestra junto a cada puesto para que el trabajo no llegue al centro equivocado.</value></data>
-  <data name="FieldOrganizationUnit" xml:space="preserve"><value>Unidad organizativa</value></data>
   <data name="FieldDueAt" xml:space="preserve"><value>Fecha de vencimiento</value></data>
   <data name="FieldStartAt" xml:space="preserve"><value>Fecha de inicio</value></data>
-  <data name="FieldPlannedDate" xml:space="preserve"><value>Fecha planificada</value></data>
   <data name="FieldEstimateHours" xml:space="preserve"><value>Estimación (horas)</value></data>
   <data name="FieldRemainingHours" xml:space="preserve"><value>Restante (horas)</value></data>
   <data name="FieldSpentHours" xml:space="preserve"><value>Dedicado (horas)</value></data>
@@ -85,6 +83,7 @@
   <data name="ErrorFieldDefinitionUnknown" xml:space="preserve"><value>Este formulario ofrece un campo que ya no está definido. Recargue la página e inténtelo de nuevo.</value></data>
   <data name="ErrorFieldLimitExceeded" xml:space="preserve"><value>Los campos adicionales superan un límite: demasiadas secciones, demasiados campos en una sección o un valor demasiado largo.</value></data>
   <data name="RequiredFieldHint" xml:space="preserve"><value>Obligatorio</value></data>
+  <data name="RequiredFieldsMissing" xml:space="preserve"><value>Complete los campos obligatorios:</value></data>
   <data name="ErrorOccurred" xml:space="preserve"><value>Se produjo un error al procesar su solicitud.</value></data>
   <data name="ActionOk" xml:space="preserve"><value>Aceptar</value></data>
   <data name="ErrorOrganizationUnitUnresolved" xml:space="preserve"><value>No se pudo determinar una unidad organizativa para esta tarea. Pida a un administrador que le asigne un puesto o que defina una unidad organizativa raíz.</value></data>
@@ -132,7 +131,7 @@
   <data name="ReviewTypeMeetingDisabledReason" xml:space="preserve"><value>Aún no disponible: el módulo de reuniones no existe. Mientras tanto se aplica la revisión rápida.</value></data>
   <data name="NotifyEventsLabel" xml:space="preserve"><value>Avisarme cuando</value></data>
   <data name="NotifyEventAssigned" xml:space="preserve"><value>Se asigna la tarea</value></data>
-  <data name="NotifyEventClaimed" xml:space="preserve"><value>Se toma una tarea del grupo</value></data>
+  <data name="NotifyEventClaimed" xml:space="preserve"><value>Se toma del grupo</value></data>
   <data name="NotifyEventDueSoon" xml:space="preserve"><value>Se acerca la fecha límite</value></data>
   <data name="NotifyEventCompleted" xml:space="preserve"><value>Se completa la tarea</value></data>
   <data name="NotifyEventApprovalRequested" xml:space="preserve"><value>Se solicita una aprobación</value></data>
@@ -143,4 +142,6 @@
   <data name="ReminderLead3" xml:space="preserve"><value>3 días antes</value></data>
   <data name="ReminderLead7" xml:space="preserve"><value>1 semana antes</value></data>
   <data name="ReminderLead14" xml:space="preserve"><value>2 semanas antes</value></data>
+  <data name="FieldReviewTypeLabel" xml:space="preserve"><value>Tipo de revisión</value></data>
+  <data name="FieldDescriptionPlaceholder" xml:space="preserve"><value>Qué hay que hacer y lo que la persona asignada debe saber antes de empezar.</value></data>
 </root>

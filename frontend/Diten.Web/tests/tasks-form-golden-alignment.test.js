@@ -93,6 +93,15 @@ describe("the task form follows the golden reference structure", () => {
     expect(count(source, /id="taskSubmit"/g)).toBe(1);
     expect(count(source, /ActionCancel/g)).toBe(1);
   });
+
+  test("the description box tells the user what belongs in it", () => {
+    // Every other free-text field on this form carries a placeholder; the description was the one that did not,
+    // so it opened as an unexplained empty box. Localized, never a literal.
+    const source = read(TASK_FORM);
+    const textarea = /<textarea[^>]*id="taskDescription"[\s\S]{0,300}?>/.exec(source);
+    expect(textarea, "the description field is gone").toBeTruthy();
+    expect(textarea[0], "the description has no placeholder").toMatch(/placeholder="@Localizer\[/);
+  });
 });
 
 describe("select2 covers the generated controls too", () => {

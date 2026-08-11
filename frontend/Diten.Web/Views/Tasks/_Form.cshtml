@@ -62,7 +62,8 @@
                         <div class="col-12">
                             <label class="form-label fw-medium" for="taskDescription">@Localizer["FieldDescription"]</label>
                             <textarea class="form-control" id="taskDescription" name="description" rows="3"
-                                      maxlength="4000"></textarea>
+                                      maxlength="4000"
+                                      placeholder="@Localizer["FieldDescriptionPlaceholder"]"></textarea>
                         </div>
                     </div>
                 </div>
@@ -104,12 +105,14 @@
                             <div class="form-text">@Localizer["PoolPositionHint"]</div>
                         </div>
 
-                        <div class="col-md-6 d-none" data-task-field="organizationUnit">
-                            <label class="form-label fw-medium" for="taskOrganizationUnit">@Localizer["FieldOrganizationUnit"]</label>
-                            <input type="text" class="form-control" id="taskOrganizationUnit" name="organizationUnitId"
-                                   autocomplete="off" />
-                        </div>
-
+                        @* NOT here: the organization unit. The server's own rule is that every task HAS one and
+                           the user never picks it (pack §12 K6): the cascade runs request → the assignee's
+                           position's unit → the tenant root. A box on the form sat at step ONE of that cascade,
+                           so a typed value silently overrode the person's real unit — the task was filed
+                           somewhere the assignee does not work, with no warning. The information it asked for is
+                           already visible: every person and position option reads "Name — Position — Unit".
+                           The contract keeps OrganizationUnitId nullable, because an integration may genuinely
+                           know the unit; only the FORM withdraws the question. *@
                     </div>
                 </div>
             </section>
@@ -124,15 +127,25 @@
                             </label>
                             <input type="text" class="form-control flatpickr-date" id="taskDueAt" name="dueAt" placeholder="YYYY-MM-DD" required />
                         </div>
-                        <div class="col-md-6">
+                        @* PLANNING IS THE DOER'S, THE DEADLINE IS THE REQUESTER'S.
+                           The due date above is a commitment the requester owns ("when I need it by") and is
+                           required for every target. Start date and estimate answer a different question — "how
+                           will I fit this in" — and only the person doing the work can answer it. Filling them in
+                           on someone else's behalf puts you inside their week; the same split SAP and Oracle
+                           draw between the demand and the schedule.
+                           So they follow the assignment target, through the data-task-field mechanism the
+                           assignee and pool pickers already use. Visible by default because the default target
+                           is "Kendim". *@
+                        <div class="col-md-6" data-task-field="startAt">
                             <label class="form-label fw-medium" for="taskStartAt">@Localizer["FieldStartAt"]</label>
                             <input type="text" class="form-control flatpickr-date" id="taskStartAt" name="startAt" placeholder="YYYY-MM-DD" />
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium" for="taskPlannedDate">@Localizer["FieldPlannedDate"]</label>
-                            <input type="text" class="form-control flatpickr-date" id="taskPlannedDate" name="plannedDate" placeholder="YYYY-MM-DD" />
-                        </div>
-                        <div class="col-md-6">
+                        @* NOT here: the planned date. It is the PLAN TRANSITION's output — PlanTaskItemCommand
+                           moves the task to Planned and requires the date — so writing it at create produced a
+                           task carrying a planned date while not being Planned: one fact in two places,
+                           contradicting itself at birth. It stays in the contract, because the transition uses
+                           it; an EDIT carries the stored value through rather than clearing it. *@
+                        <div class="col-md-6" data-task-field="estimateHours">
                             <label class="form-label fw-medium" for="taskEstimateHours">@Localizer["FieldEstimateHours"]</label>
                             <input type="number" min="0" step="0.25" class="form-control" id="taskEstimateHours"
                                    name="estimateHours" />
@@ -178,10 +191,8 @@
                than when it might arrive. *@
             <section class="card mb-4">
                 <div class="card-body p-4">
-                    <h6 class="text-uppercase text-heading fw-semibold d-flex align-items-center gap-2 mb-1">
-                        <i class="bx bx-search-alt text-primary"></i>@Localizer["CardReviewTitle"]
-                    </h6>
-                    <p class="text-muted small mb-3">@Localizer["ReviewRequiredHint"]</p>
+                    <h6 class="card-section-title mb-1"><i class="bx bx-search-alt"></i>@Localizer["CardReviewTitle"]</h6>
+                    <p class="card-section-desc mb-4">@Localizer["ReviewRequiredHint"]</p>
 
                     <div class="form-check form-switch mb-3">
                         <input class="form-check-input" type="checkbox" id="taskReviewRequired" name="reviewRequired" />
@@ -194,49 +205,65 @@
                        control with no explanation gets reported as a bug), and nothing about this choice reaches
                        the server — one value needs no field, and an unread property in the contract is a question
                        every future reader has to answer. *@
-                    <div class="d-none mb-3" data-task-field="reviewer">
-                        <div class="form-check mb-1">
-                            <input class="form-check-input" type="radio" name="reviewType" value="Quick"
-                                   id="taskReviewTypeQuick" checked />
-                            <label class="form-check-label" for="taskReviewTypeQuick">
-                                @Localizer["ReviewTypeQuick"]
-                                <span class="d-block text-muted small">@Localizer["ReviewTypeQuickHint"]</span>
-                            </label>
-                        </div>
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="radio" name="reviewType" value="Meeting"
-                                   id="taskReviewTypeMeeting" disabled
-                                   aria-describedby="taskReviewTypeMeetingReason" />
-                            <label class="form-check-label text-muted" for="taskReviewTypeMeeting">
-                                @Localizer["ReviewTypeMeeting"]
-                                <span class="d-block small">@Localizer["ReviewTypeMeetingHint"]</span>
-                            </label>
-                            <div class="form-text" id="taskReviewTypeMeetingReason">
-                                @Localizer["ReviewTypeMeetingDisabledReason"]
-                            </div>
-                        </div>
-                    </div>
-                    @* The reviewer CANDIDATE is a PICKER now, not a text box: its value goes to a Guid parameter,
-                       so a typed name produced a refusal and a typed GUID was the only thing that worked. Same
-                       people lookup as the assignee — one vocabulary for "which person?".
+                    @* WHO first, then HOW — the order the decision is actually made in. The reviewer CANDIDATE is
+                       a PICKER, not a text box: its value goes to a Guid parameter, so a typed name produced a
+                       refusal and a typed GUID was the only thing that ever worked. Same people lookup as the
+                       assignee — one vocabulary for "which person?".
                        Mandatory while the switch is on because MOD-0023 refuses to start a review with nobody to
                        route it to. Who may ACTUALLY review is still MOD-0023's decision. *@
                     <div class="d-none" data-task-field="reviewer">
-                        <label class="form-label fw-medium" for="taskReviewer">
-                            @Localizer["FieldReviewer"] <span class="text-danger">*</span>
-                        </label>
-                        <select class="select2 form-select" id="taskReviewer" name="reviewerCandidateUserId"></select>
-                        <div class="form-text">@Localizer["ReviewerHint"]</div>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium" for="taskReviewer">
+                                @Localizer["FieldReviewer"] <span class="text-danger">*</span>
+                            </label>
+                            <select class="select2 form-select" id="taskReviewer" name="reviewerCandidateUserId"></select>
+                        </div>
+
+                        @* Boxed choices, the shape the reference-data wizard already uses for "one of these, each
+                           with a subtitle". The selected box is marked by the stylesheet from the radio's own
+                           :checked state, so nothing has to keep a class in step with the value. *@
+                        <label class="form-label fw-medium">@Localizer["FieldReviewTypeLabel"]</label>
+                        <div class="form-check choice-box rounded mb-2">
+                            <input class="form-check-input" type="radio" name="reviewType" value="Quick"
+                                   id="taskReviewTypeQuick" checked />
+                            <div class="choice-box-body">
+                                <label class="form-check-label" for="taskReviewTypeQuick">
+                                    <span class="fw-medium d-block">@Localizer["ReviewTypeQuick"]</span>
+                                    <span class="choice-box-note d-block">@Localizer["ReviewTypeQuickHint"]</span>
+                                </label>
+                            </div>
+                        </div>
+                        @* Disabled, and it SAYS why (DEC-001): a dead control with no explanation gets filed as a
+                           bug. The reason stays inside the box it explains rather than floating below the group. *@
+                        <div class="form-check choice-box rounded mb-3">
+                            <input class="form-check-input" type="radio" name="reviewType" value="Meeting"
+                                   id="taskReviewTypeMeeting" disabled
+                                   aria-describedby="taskReviewTypeMeetingReason" />
+                            @* Label and reason share a column, so the reason lines up under the title instead of
+                               becoming a third item on the radio's row. *@
+                            <div class="choice-box-body">
+                                <label class="form-check-label text-muted" for="taskReviewTypeMeeting">
+                                    <span class="fw-medium d-block">@Localizer["ReviewTypeMeeting"]</span>
+                                    <span class="choice-box-note d-block">@Localizer["ReviewTypeMeetingHint"]</span>
+                                </label>
+                                <div class="choice-box-note mt-2" id="taskReviewTypeMeetingReason">
+                                    @Localizer["ReviewTypeMeetingDisabledReason"]
+                                </div>
+                            </div>
+                        </div>
+
+                        @* The rule behind the required reviewer, as a callout rather than four lines of grey
+                           form-text under a control — the same alert the field-definition screen uses for
+                           "here is how this behaves". *@
+                        <div class="alert alert-info mb-0" role="note">@Localizer["ReviewerHint"]</div>
                     </div>
                 </div>
             </section>
 
             <section class="card mb-4">
                 <div class="card-body p-4">
-                    <h6 class="text-uppercase text-heading fw-semibold d-flex align-items-center gap-2 mb-1">
-                        <i class="bx bx-user-check text-primary"></i>@Localizer["CardApprovalTitle"]
-                    </h6>
-                    <p class="text-muted small mb-3">@Localizer["CardApprovalDescription"]</p>
+                    <h6 class="card-section-title mb-1"><i class="bx bx-user-check"></i>@Localizer["CardApprovalTitle"]</h6>
+                    <p class="card-section-desc mb-4">@Localizer["CardApprovalDescription"]</p>
 
                     <div class="form-check form-switch mb-2">
                         <input class="form-check-input" type="checkbox" id="taskApprovalRequired"
@@ -261,10 +288,8 @@
                watcher rows — the old comma-separated text box was thrown away by the payload builder entirely. *@
             <section class="card mb-4">
                 <div class="card-body p-4">
-                    <h6 class="text-uppercase text-heading fw-semibold d-flex align-items-center gap-2 mb-1">
-                        <i class="bx bx-show text-primary"></i>@Localizer["CardWatchersTitle"]
-                    </h6>
-                    <p class="text-muted small mb-3">@Localizer["WatchersHint"]</p>
+                    <h6 class="card-section-title mb-1"><i class="bx bx-show"></i>@Localizer["CardWatchersTitle"]</h6>
+                    <p class="card-section-desc mb-4">@Localizer["WatchersHint"]</p>
 
                     <label class="form-label fw-medium" for="taskWatchers">@Localizer["FieldWatchers"]</label>
                     <select class="select2 form-select" id="taskWatchers" name="watchers" multiple></select>
@@ -273,10 +298,8 @@
 
             <section class="card mb-4">
                 <div class="card-body p-4">
-                    <h6 class="text-uppercase text-heading fw-semibold d-flex align-items-center gap-2 mb-1">
-                        <i class="bx bx-envelope text-primary"></i>@Localizer["CardEmailTitle"]
-                    </h6>
-                    <p class="text-muted small mb-3">@Localizer["CardEmailDescription"]</p>
+                    <h6 class="card-section-title mb-1"><i class="bx bx-envelope"></i>@Localizer["CardEmailTitle"]</h6>
+                    <p class="card-section-desc mb-4">@Localizer["CardEmailDescription"]</p>
 
                     <div class="form-check form-switch mb-3">
                         <input class="form-check-input" type="checkbox" id="taskEmailNotifications"
@@ -293,29 +316,47 @@
                        The whole block hides with the master switch — nobody should tune a channel that is off. *@
                     <div class="d-none" data-task-field="notificationPrefs">
                         <label class="form-label fw-medium">@Localizer["NotifyEventsLabel"]</label>
-                        <div class="form-check">
+                        <div class="form-check choice-box choice-box--compact rounded mb-2">
                             <input class="form-check-input" type="checkbox" id="taskNotifyAssigned"
                                    name="notifyOnEvents" value="platform.tasks.assigned" checked />
+                            <i class="bx bx-user-plus choice-box-glyph text-primary"></i>
                             <label class="form-check-label" for="taskNotifyAssigned">@Localizer["NotifyEventAssigned"]</label>
                         </div>
-                        <div class="form-check">
+                        @* STRUCTURALLY impossible outside a pool: ClaimTaskItemHandler refuses to claim anything
+                           whose target is not PositionPool, so on a "Kendim"/"Bir kişi" task this box promises an
+                           email nothing can ever produce. Target-driven, so it rides the same visibleFieldsFor
+                           mechanism as the pickers. *@
+                        <div class="form-check choice-box choice-box--compact rounded mb-2 d-none"
+                             data-task-field="notifyClaimed">
                             <input class="form-check-input" type="checkbox" id="taskNotifyClaimed"
                                    name="notifyOnEvents" value="platform.tasks.claimed" checked />
+                            <i class="bx bx-log-in choice-box-glyph text-info"></i>
                             <label class="form-check-label" for="taskNotifyClaimed">@Localizer["NotifyEventClaimed"]</label>
                         </div>
-                        <div class="form-check">
+                        <div class="form-check choice-box choice-box--compact rounded mb-2">
                             <input class="form-check-input" type="checkbox" id="taskNotifyDueSoon"
                                    name="notifyOnEvents" value="platform.tasks.duesoon" checked />
+                            <i class="bx bx-time-five choice-box-glyph text-warning"></i>
                             <label class="form-check-label" for="taskNotifyDueSoon">@Localizer["NotifyEventDueSoon"]</label>
                         </div>
-                        <div class="form-check">
+                        <div class="form-check choice-box choice-box--compact rounded mb-2">
                             <input class="form-check-input" type="checkbox" id="taskNotifyCompleted"
                                    name="notifyOnEvents" value="platform.tasks.completed" checked />
+                            <i class="bx bx-check-circle choice-box-glyph text-success"></i>
                             <label class="form-check-label" for="taskNotifyCompleted">@Localizer["NotifyEventCompleted"]</label>
                         </div>
-                        <div class="form-check mb-3">
+                        @* Governed by ANOTHER CONTROL ON THIS PAGE: no approval is ever requested unless the
+                           approval switch above is on, so the event follows that switch — the same mechanism the
+                           reminder lead uses to follow the due-soon box.
+                           `assigned` and `completed` deliberately do NOT hide: on a self-assigned task they are
+                           quiet today (the actor is the recipient and the service excludes them), but both fire
+                           the moment the task is delegated or reassigned — which the delegation switch on this
+                           very page allows. Hiding them would silently opt the owner out of a real email. *@
+                        <div class="form-check choice-box choice-box--compact rounded mb-3 d-none"
+                             data-task-field="notifyApprovalRequested">
                             <input class="form-check-input" type="checkbox" id="taskNotifyApprovalRequested"
                                    name="notifyOnEvents" value="platform.tasks.approvalrequested" checked />
+                            <i class="bx bx-shield-quarter choice-box-glyph text-primary"></i>
                             <label class="form-check-label" for="taskNotifyApprovalRequested">@Localizer["NotifyEventApprovalRequested"]</label>
                         </div>
 
@@ -338,10 +379,8 @@
 
             <section class="card mb-4">
                 <div class="card-body p-4">
-                    <h6 class="text-uppercase text-heading fw-semibold d-flex align-items-center gap-2 mb-1">
-                        <i class="bx bx-transfer-alt text-primary"></i>@Localizer["CardDelegationTitle"]
-                    </h6>
-                    <p class="text-muted small mb-3">@Localizer["CardDelegationDescription"]</p>
+                    <h6 class="card-section-title mb-1"><i class="bx bx-transfer-alt"></i>@Localizer["CardDelegationTitle"]</h6>
+                    <p class="card-section-desc mb-4">@Localizer["CardDelegationDescription"]</p>
 
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="taskDelegationAllowed"

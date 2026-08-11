@@ -33,11 +33,9 @@
         PersonNameUnavailable = Localizer["PersonNameUnavailable"].Value,
         FieldPoolPosition = Localizer["FieldPoolPosition"].Value,
         PoolPositionHint = Localizer["PoolPositionHint"].Value,
-        FieldOrganizationUnit = Localizer["FieldOrganizationUnit"].Value,
 
         FieldDueAt = Localizer["FieldDueAt"].Value,
         FieldStartAt = Localizer["FieldStartAt"].Value,
-        FieldPlannedDate = Localizer["FieldPlannedDate"].Value,
         FieldEstimateHours = Localizer["FieldEstimateHours"].Value,
         FieldRemainingHours = Localizer["FieldRemainingHours"].Value,
         FieldSpentHours = Localizer["FieldSpentHours"].Value,
@@ -104,6 +102,9 @@
         EmptyTitle = Localizer["EmptyTitle"].Value,
         EmptyDescription = Localizer["EmptyDescription"].Value,
         RequiredFieldHint = Localizer["RequiredFieldHint"].Value,
+        // Names the empty fields rather than only asserting that some exist: "Zorunlu" alone, on a nine-card
+        // form, left the user reading the DOM to find which control was blank.
+        RequiredFieldsMissing = Localizer["RequiredFieldsMissing"].Value,
 
         Save = SharedLocalizer["Save"].Value,
         Cancel = SharedLocalizer["Cancel"].Value,

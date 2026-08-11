@@ -19,21 +19,62 @@
     };
 
     /*
-     * Which assignment fields are relevant for a target.
+     * Which fields are relevant for a target — the ONE rule the DOM toggling and the payload both read.
+     *
      * A pool task has NO assignee (it is claimed later) and a person task has no pool position — sending the
      * wrong one is rejected by the API, so the form must not offer it.
+     *
+     * `startAt`/`estimateHours` are here for a different reason, and it is worth stating: the DUE date is the
+     * requester's commitment ("when I need it by") and applies to every target, but the START date and the
+     * ESTIMATE are the doer's plan ("how I fit it in"). Filling those in for someone else is planning their week
+     * for them, so they are offered only when the doer IS the requester.
+     *
+     * `notifyClaimed` is the email event for a pool task being taken. ClaimTaskItemHandler refuses to claim
+     * anything that is not a pool task, so outside a pool the box promises an email nothing can produce.
+     *
+     * The organization unit is deliberately ABSENT from this map: the form no longer asks for it at all. The
+     * server derives it (pack §12 K6) and a typed value used to win that cascade silently.
      */
     const visibleFieldsFor = (target) => {
         switch (target) {
             case TARGET.PERSON:
-                return { assignee: true, poolPosition: false, organizationUnit: true };
+                return {
+                    assignee: true, poolPosition: false,
+                    startAt: false, estimateHours: false, notifyClaimed: false
+                };
             case TARGET.POOL:
-                return { assignee: false, poolPosition: true, organizationUnit: true };
+                return {
+                    assignee: false, poolPosition: true,
+                    startAt: false, estimateHours: false, notifyClaimed: true
+                };
             case TARGET.SELF:
             default:
-                // Self-assigned resolves both the assignee and the unit server-side from the actor.
-                return { assignee: false, poolPosition: false, organizationUnit: false };
+                // Self-assigned resolves the assignee server-side from the actor, and the doer is the requester.
+                return {
+                    assignee: false, poolPosition: false,
+                    startAt: true, estimateHours: true, notifyClaimed: false
+                };
         }
+    };
+
+    /*
+     * Which notification events can actually be produced for the task as it is being described.
+     *
+     * The rule the form now holds in one place: a hidden event is not a choice the user made, so it must not
+     * travel. Two events are conditional and the rest always apply —
+     *   claimed           → only a pool task is ever claimed (visibleFieldsFor owns that)
+     *   approvalrequested → only a task that requires approval ever requests one
+     * `assigned` and `completed` stay unconditionally: quiet on a self-assigned task today, but both fire after a
+     * handover or a reassignment, and dropping them would silently opt the owner out of a real email.
+     */
+    const NOTIFY_CLAIMED = 'platform.tasks.claimed';
+    const NOTIFY_APPROVAL_REQUESTED = 'platform.tasks.approvalrequested';
+
+    const notificationEventApplies = (code, draft) => {
+        const target = (draft && draft.assignmentTarget) || TARGET.SELF;
+        if (code === NOTIFY_CLAIMED) { return visibleFieldsFor(target).notifyClaimed; }
+        if (code === NOTIFY_APPROVAL_REQUESTED) { return !!(draft && draft.approvalRequired); }
+        return true;
     };
 
     /*
@@ -69,8 +110,13 @@
 
     /*
      * Build the create body. Deliberately absent, because the server owns them:
-     *   - lifecycle  → the system decides the initial state (an approval-gated task is not startable)
-     *   - spentHours → always 0 on a new task; it only moves through execution
+     *   - lifecycle          → the system decides the initial state (an approval-gated task is not startable)
+     *   - spentHours         → always 0 on a new task; it only moves through execution
+     *   - organizationUnitId → the server's cascade derives it and the user never picks one (pack §12 K6). The
+     *                          key is dropped even when a stale draft carries it, because a value here WINS that
+     *                          cascade and would misfile the task under a unit the assignee does not work in.
+     *   - plannedDate        → the output of the PLAN TRANSITION, which also moves the task to Planned. Writing
+     *                          it here produced a task that has a planned date and is not Planned.
      */
     const buildCreatePayload = (draft) => {
         const target = draft.assignmentTarget || TARGET.SELF;
@@ -84,11 +130,12 @@
             // Only ever send the field that belongs to the chosen target.
             assigneeUserId: visible.assignee ? trimOrNull(draft.assigneeUserId) : null,
             poolPositionId: visible.poolPosition ? trimOrNull(draft.poolPositionId) : null,
-            organizationUnitId: trimOrNull(draft.organizationUnitId),
+            // The deadline is the requester's and always travels; the plan is the doer's and only travels when
+            // the doer IS the requester. A hidden control must not send a value — that exact defect ("hidden but
+            // sent") shipped once already, on the reminder lead time.
             dueAt: trimOrNull(draft.dueAt),
-            startAt: trimOrNull(draft.startAt),
-            plannedDate: trimOrNull(draft.plannedDate),
-            estimateHours: parseNumberOrNull(draft.estimateHours),
+            startAt: visible.startAt ? trimOrNull(draft.startAt) : null,
+            estimateHours: visible.estimateHours ? parseNumberOrNull(draft.estimateHours) : null,
             tags: parseTags(draft.tags),
             reviewRequired: !!draft.reviewRequired,
             // Dropped with the requirement, exactly as the approval manager is: sending a reviewer for a task
@@ -105,9 +152,16 @@
              * storing it would record a preference nobody expressed. Null then means "not chosen", which is the
              * state every task written before this field carries — and which the server reads as "everything".
              */
+            /*
+             * The list is also FILTERED to the events this task can actually produce: an event whose box the
+             * form hides is not a choice anyone made, and storing it would record a preference for an email that
+             * cannot be sent. Null stays null — filtering must never turn "not chosen" into a list.
+             */
             notifyOnEvents: draft.emailNotificationsEnabled === false
                 ? null
-                : (Array.isArray(draft.notifyOnEvents) ? draft.notifyOnEvents : null),
+                : (Array.isArray(draft.notifyOnEvents)
+                    ? draft.notifyOnEvents.filter((code) => notificationEventApplies(code, draft))
+                    : null),
             reminderLeadDays: draft.emailNotificationsEnabled === false
                 ? null
                 : parseNumberOrNull(draft.reminderLeadDays),
@@ -127,10 +181,40 @@
      * call site, that rule was one spread operator away from being lost, and losing it is silent: the save
      * succeeds and the reminder keeps arriving.
      */
-    const buildUpdatePayload = (draft, expectedVersion) => ({
-        ...buildCreatePayload(draft),
-        expectedVersion: Number(expectedVersion) || 1
-    });
+    /*
+     * The fields the form no longer DISPLAYS but the task may still HOLD.
+     *
+     * UpdateTaskItemHandler assigns these unconditionally — `task.PlannedDate = request.PlannedDate` — so a
+     * payload that merely omits one CLEARS it. Withdrawing a control must not delete the data behind it:
+     *   - plannedDate  belongs to the Plan transition, and a planned task carries a real date
+     *   - startAt/estimateHours belong to the doer, who fills them in after the task reaches them; the requester
+     *     reopening a delegated task must not erase the assignee's own plan
+     * So an EDIT carries the STORED value through. This is the opposite of "hidden but sent": nothing the user
+     * typed travels — what travels is what the server already had.
+     *
+     * Carried through only where the form shows NO control. A field the user can still edit must stay clearable:
+     * restoring an estimate the owner just emptied would be the same silent overwrite in the other direction.
+     */
+    const buildUpdatePayload = (draft, expectedVersion, preserved) => {
+        const payload = {
+            ...buildCreatePayload(draft),
+            expectedVersion: Number(expectedVersion) || 1
+        };
+
+        const stored = preserved || {};
+        const visible = visibleFieldsFor(draft.assignmentTarget || TARGET.SELF);
+        // plannedDate has no control at all now; the other two have one only when the doer is the requester.
+        const withheld = ['plannedDate']
+            .concat(visible.startAt ? [] : ['startAt'])
+            .concat(visible.estimateHours ? [] : ['estimateHours']);
+
+        withheld.forEach((key) => {
+            const value = stored[key];
+            if (value !== null && value !== undefined && value !== '') { payload[key] = value; }
+        });
+
+        return payload;
+    };
 
     /*
      * Client-side pre-checks that mirror the server's validator, so the user is told immediately rather than
@@ -156,6 +240,49 @@
         }
 
         return { valid: errors.length === 0, errors };
+    };
+
+    /*
+     * WHICH field is missing, by name — the whole point of this function.
+     *
+     * The save used to open a dialog reading only "Zorunlu". On a nine-card form that tells the user a rule they
+     * already know and nothing about where to look; finding the empty control meant reading the DOM. So each
+     * validator error is mapped to the control it belongs to and to the label the user can actually see, and the
+     * caller focuses and scrolls to the first one.
+     *
+     * The order is the validator's order, which is the form's order, so "the first missing field" is also the
+     * topmost one on screen.
+     */
+    const REQUIRED_FIELD_ANCHORS = {
+        title: { id: 'taskTitle', labelKey: 'fieldTitle' },
+        dueAt: { id: 'taskDueAt', labelKey: 'fieldDueAt' },
+        assigneeUserId: { id: 'taskAssignee', labelKey: 'fieldAssignee' },
+        poolPositionId: { id: 'taskPoolPosition', labelKey: 'fieldPoolPosition' },
+        approvalManagerUserId: { id: 'taskApprovalManager', labelKey: 'fieldApprovalManager' },
+        reviewerCandidateUserId: { id: 'taskReviewer', labelKey: 'fieldReviewer' }
+    };
+
+    // The id renderCustomFields gives a configurable control — stated once, read by both sides.
+    const customFieldControlId = (code) => `taskCustomField_${String(code).replace(/[^A-Za-z0-9_-]/g, '_')}`;
+
+    const missingRequiredFields = (check, fieldCheck, definitions, translate) => {
+        const t = typeof translate === 'function' ? translate : ((key) => key);
+        const byCode = new Map((definitions || []).filter(Boolean).map((d) => [d.code, d]));
+
+        const fixed = ((check && check.errors) || [])
+            .map((error) => REQUIRED_FIELD_ANCHORS[error])
+            .filter(Boolean)
+            .map((anchor) => ({ id: anchor.id, label: t(anchor.labelKey) }));
+
+        // A tenant's configurable field is named by ITS label, never by its code: the code is an internal key
+        // and telling the user "PHASE is required" is the same failure as showing them a GUID (BL-049).
+        const custom = ((fieldCheck && fieldCheck.errors) || [])
+            .map((code) => ({
+                id: customFieldControlId(code),
+                label: customFieldLabel(byCode.get(code), t) || code
+            }));
+
+        return fixed.concat(custom);
     };
 
     // ── Shared draft: quick mode and the detailed form are the SAME draft (pack §12 K9 / DEV-1) ──
@@ -569,7 +696,7 @@
             const control = buildCustomFieldControl(definition, kind, resolved, labels);
             control.setAttribute('data-custom-field', definition.code);
             control.setAttribute('data-custom-field-type', definition.valueType);
-            const controlId = `taskCustomField_${String(definition.code).replace(/[^A-Za-z0-9_-]/g, '_')}`;
+            const controlId = customFieldControlId(definition.code);
             control.id = controlId;
             label.setAttribute('for', controlId);
 
@@ -917,6 +1044,9 @@
         buildCreatePayload,
         buildUpdatePayload,
         validateDraft,
+        // Which event codes a task in this shape can actually produce, and what the "Zorunlu" dialog names.
+        notificationEventApplies,
+        missingRequiredFields,
         readDraft,
         writeDraft,
         clearDraft,

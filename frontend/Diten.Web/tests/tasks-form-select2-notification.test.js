@@ -235,7 +235,19 @@ describe("every card heading is styled the same way", () => {
     const headings = [...TASK_FORM().matchAll(/<h6 class="([^"]*)"/g)].map((m) => m[1]);
     expect(headings.length).toBeGreaterThanOrEqual(9);
 
-    const odd = headings.filter((cls) => !cls.includes("text-uppercase"));
+    /*
+     * Uppercase by EITHER route: the utility class the reference uses, or .card-section-title, whose shared rule
+     * declares the same transform. Asserting the utility alone would forbid the shared rule for no reason — what
+     * matters is that every heading on this form is cased alike, not which line does it. The rule is checked
+     * below so this cannot become a loophole.
+     */
+    const css = read("wwwroot", "assets", "css", "backbone-custom.css");
+    const shared = css.slice(css.indexOf(".security-section-title,"));
+    expect(shared.slice(0, shared.indexOf("}")), "the shared title rule is not uppercase")
+      .toMatch(/text-transform:\s*uppercase/);
+
+    const odd = headings.filter(
+      (cls) => !cls.includes("text-uppercase") && !cls.includes("card-section-title"));
     expect(odd, `headings not using the reference's case:\n${odd.join("\n")}`).toHaveLength(0);
   });
 });
@@ -259,9 +271,73 @@ describe("the review type has a place, with the meeting option disabled and expl
 
   test("the disabled option SAYS why, rather than looking broken", () => {
     const form = TASK_FORM();
-    const meeting = form.slice(form.indexOf('id="taskReviewTypeMeeting"'));
+    // Bounded by the callout that follows the choice group, not by a character count: the reason has to live
+    // INSIDE the option it explains, and a fixed window just breaks whenever the markup around it grows.
+    const meeting = form.slice(
+      form.indexOf('id="taskReviewTypeMeeting"'), form.indexOf('alert alert-info'));
     // DEC-001: a dead control with no explanation gets reported as a bug. The reason is localized, never literal.
-    expect(meeting.slice(0, 600)).toMatch(/ReviewTypeMeetingDisabledReason/);
+    expect(meeting).toMatch(/ReviewTypeMeetingDisabledReason/);
+    expect(meeting).toMatch(/aria-describedby="taskReviewTypeMeetingReason"/);
+  });
+
+  test("the reviewer picker comes FIRST, then the type", () => {
+    /*
+     * Reading order follows the decision order: you pick WHO reviews, then HOW. The first version put the type
+     * above the picker, so the card opened with a choice about a review whose reviewer was not yet on screen.
+     */
+    const form = TASK_FORM();
+    expect(form.indexOf('id="taskReviewer"'))
+      .toBeLessThan(form.indexOf('id="taskReviewTypeQuick"'));
+  });
+
+  test("each type is a BOXED choice, the pattern the reference-data wizard already uses", () => {
+    // Not a new control: `form-check border rounded` is how this app already renders a choice with a subtitle.
+    const wizard = read("Views", "Platform", "ReferenceData", "DraftWizard.cshtml");
+    expect(wizard, "the reference pattern moved").toMatch(/form-check border rounded/);
+
+    const form = TASK_FORM();
+    for (const id of ["taskReviewTypeQuick", "taskReviewTypeMeeting"]) {
+      const box = form.slice(form.lastIndexOf('<div class="', form.indexOf(`id="${id}"`)), form.indexOf(`id="${id}"`));
+      expect(box, `${id} is not rendered as a boxed choice`).toMatch(/choice-box/);
+    }
+  });
+
+  test("the radio sits INSIDE the box, with even padding", () => {
+    /*
+     * Bootstrap's .form-check indents its label and pulls the input back out with a negative margin — a layout
+     * meant for a check in a list, not for one inside a bordered card. Combined with a padding utility it hung
+     * the radio outside the border, and the box's own padding was uneven top-to-bottom against left-to-right.
+     * So the box owns its layout: flex row, one padding value, no negative pull.
+     */
+    const css = read("wwwroot", "assets", "css", "backbone-custom.css");
+    const start = css.indexOf(".choice-box {");
+    const rule = css.slice(start, css.indexOf("}", start));
+
+    expect(rule, "the box does not lay itself out").toMatch(/display:\s*flex/);
+    expect(rule, "the box has no padding of its own — it borrows a utility").toMatch(/padding:/);
+    expect(css, "the negative pull that put the radio outside is still in force")
+      .toMatch(/\.choice-box \.form-check-input\s*\{[^}]*margin-inline-start:\s*0/s);
+
+    // Padding must not come from a utility class either, or the two fight.
+    expect(TASK_FORM(), "the box still carries a padding utility").not.toMatch(/choice-box[^"]*\bp-3\b/);
+  });
+
+  test("the selected box is marked by the stylesheet, not by a class the view toggles", () => {
+    /*
+     * The selected state follows the radio itself (:has(:checked)), so nothing has to keep a CSS class in step
+     * with what the user clicked — a second source of truth for "which one is chosen" is how these drift.
+     */
+    const css = read("wwwroot", "assets", "css", "backbone-custom.css");
+    expect(css).toMatch(/\.choice-box\s*\{/);
+    expect(css, "the selected box has no distinct treatment").toMatch(/\.choice-box:has\(/);
+  });
+
+  test("the long explanation is an info callout, not a paragraph of form-text", () => {
+    const form = TASK_FORM();
+    const card = form.slice(form.indexOf('id="taskReviewRequired"'), form.indexOf('id="taskApprovalRequired"'));
+
+    expect(card, "the reviewer rule is still loose form-text").toMatch(/alert alert-info/);
+    expect(card).toMatch(/ReviewerHint/);
   });
 
   test("nothing new goes on the wire for it", () => {

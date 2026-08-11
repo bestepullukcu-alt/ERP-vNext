@@ -25,10 +25,10 @@
         assignmentTarget: el('taskAssignmentTarget')?.value,
         assigneeUserId: el('taskAssignee')?.value,
         poolPositionId: el('taskPoolPosition')?.value,
-        organizationUnitId: el('taskOrganizationUnit')?.value,
+        // No organizationUnitId and no plannedDate: the form asks for neither. The unit is the server's cascade
+        // (a typed value used to win it and misfile the task), and the planned date is the Plan transition's.
         dueAt: el('taskDueAt')?.value,
         startAt: el('taskStartAt')?.value,
-        plannedDate: el('taskPlannedDate')?.value,
         estimateHours: el('taskEstimateHours')?.value,
         tags: el('taskTags')?.value,
         reviewRequired: el('taskReviewRequired')?.checked,
@@ -57,10 +57,8 @@
         setValue('taskAssignmentTarget', draft.assignmentTarget);
         setValue('taskAssignee', draft.assigneeUserId);
         setValue('taskPoolPosition', draft.poolPositionId);
-        setValue('taskOrganizationUnit', draft.organizationUnitId);
         setValue('taskDueAt', (draft.dueAt || '').slice(0, 10));
         setValue('taskStartAt', (draft.startAt || '').slice(0, 10));
-        setValue('taskPlannedDate', (draft.plannedDate || '').slice(0, 10));
         setValue('taskEstimateHours', draft.estimateHours);
         setValue('taskTags', Array.isArray(draft.tags) ? draft.tags.join(', ') : draft.tags);
         setChecked('taskReviewRequired', draft.reviewRequired);
@@ -89,6 +87,15 @@
      * SAME list the controls were rendered from — re-fetching could render one shape and post another.
      */
     let customFieldDefinitions = [];
+
+    /*
+     * What the TASK holds for fields this form no longer displays.
+     *
+     * The update handler assigns plannedDate/startAt/estimateHours unconditionally, so an edit that simply omits
+     * them wipes them. Captured at hydration and handed to buildUpdatePayload, which puts back only the ones
+     * that have no control on screen — so removing a control cannot delete the data behind it.
+     */
+    let withheldOnEdit = {};
 
     const customFieldsRow = () => el('taskCustomFieldsRow');
 
@@ -232,6 +239,26 @@
         section.classList.toggle('d-none', rendered.length === 0);
     };
 
+    /*
+     * Put the user in front of the field the dialog just named.
+     *
+     * Two details the obvious one-liner gets wrong. A select2 control's own <select> is HIDDEN — select2 renders
+     * a sibling in its place — so both the scroll and the focus have to go to what is actually on screen. And the
+     * scroll targets the field's COLUMN, so the label scrolls into view with the control rather than under the
+     * sticky header.
+     */
+    const focusMissing = (control) => {
+        if (!control) { return; }
+
+        const column = control.closest('[data-task-field], .col-12, .col-md-4, .col-md-6, .col-md-8') || control;
+        column.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        const rendered = control.classList.contains('select2-hidden-accessible')
+            ? control.parentElement?.querySelector('.select2-selection')
+            : control;
+        rendered?.focus?.({ preventScroll: true });
+    };
+
     const syncVisibility = () => {
         const form = el('taskForm');
         global.TaskForm.applyTargetVisibility(form, el('taskAssignmentTarget')?.value);
@@ -242,6 +269,17 @@
         // Same rule for the reviewer, keyed off its OWN switch.
         form?.querySelectorAll('[data-task-field="reviewer"]').forEach((node) => {
             node.classList.toggle('d-none', !el('taskReviewRequired')?.checked);
+        });
+        /*
+         * The approval-request EMAIL follows the approval switch for the same reason the manager field does: no
+         * approval is ever requested unless the switch is on, so offering the box there is a promise nothing
+         * keeps. The claim event is target-driven instead, and rides applyTargetVisibility above.
+         */
+        const approvalOn = !!el('taskApprovalRequired')?.checked;
+        form?.querySelectorAll('[data-task-field="notifyApprovalRequested"]').forEach((node) => {
+            node.classList.toggle('d-none', !approvalOn);
+            const box = node.querySelector('input');
+            if (box) { box.disabled = !approvalOn; }
         });
         /*
          * BL-065 — the preferences belong to the channel, and the lead time belongs to the reminder. Nobody
@@ -306,6 +344,11 @@
             const existing = await global.TasksApi.get(taskId);
             if (existing.ok && existing.data) {
                 writeForm(existing.data);
+                withheldOnEdit = {
+                    plannedDate: (existing.data.plannedDate || '').slice(0, 10) || null,
+                    startAt: (existing.data.startAt || '').slice(0, 10) || null,
+                    estimateHours: existing.data.estimateHours ?? null
+                };
                 form.setAttribute('data-task-version', existing.data.version);
                 // Effort actuals are visible on edit but never editable.
                 ['spentHours', 'remainingHours'].forEach((field) => {
@@ -365,14 +408,30 @@
             // sides hold the rule on purpose: a client-only rule is a suggestion.
             const fieldCheck = global.TaskForm.validateCustomFields(customFieldDefinitions, fieldValues);
             if (!check.valid || !fieldCheck.valid) {
-                global.DitenModal.warning({ title: t('requiredFieldHint'), confirmButtonText: t('actionOk') });
+                /*
+                 * NAME the fields. "Zorunlu" alone, on a nine-card form, tells the user a rule they already know
+                 * and nothing about where to look — finding the empty control meant reading the DOM.
+                 */
+                const missing = global.TaskForm.missingRequiredFields(
+                    check, fieldCheck, customFieldDefinitions, t);
+                // And take the user there AFTER the dialog closes: the first missing field is the topmost one,
+                // because the validator reports them in the form's own order. A dialog that names a field nine
+                // cards down is only half an answer. Focusing while the dialog is still open would fight it for
+                // the focus and leave the confirm button unreachable by keyboard.
+                await global.DitenModal.warning({
+                    title: t('requiredFieldHint'),
+                    message: `${t('requiredFieldsMissing')} ${missing.map((entry) => entry.label).join(', ')}`,
+                    confirmButtonText: t('actionOk')
+                });
+                focusMissing(missing.length > 0 ? el(missing[0].id) : null);
                 return;
             }
 
             const result = mode === 'edit'
                 ? await global.TasksApi.update(
                     taskId,
-                    global.TaskForm.buildUpdatePayload(draft, form.getAttribute('data-task-version')))
+                    global.TaskForm.buildUpdatePayload(
+                        draft, form.getAttribute('data-task-version'), withheldOnEdit))
                 : await global.TasksApi.create(global.TaskForm.buildCreatePayload(draft));
 
             if (result.ok) {

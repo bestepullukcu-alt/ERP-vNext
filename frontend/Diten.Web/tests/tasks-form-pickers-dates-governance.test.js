@@ -263,7 +263,10 @@ describe("the dates use the golden reference's picker", () => {
 
     expect(form.match(/type="date"/g),
       "a native date input remains — its format follows the OS locale, not the page's").toBeNull();
-    for (const id of ["taskDueAt", "taskStartAt", "taskPlannedDate"]) {
+    // taskPlannedDate is deliberately NOT here any more: the closing round withdrew it from the create form
+    // because it is the Plan transition's output (see tasks-form-closing-round.test.js). The two dates the form
+    // still owns keep the reference's picker.
+    for (const id of ["taskDueAt", "taskStartAt"]) {
       const tag = new RegExp(`<input[^>]*id="${id}"[^>]*>`).exec(form)
         || new RegExp(`<input[^>]*id="${id}"[\\s\\S]{0,200}?/>`).exec(form);
       expect(tag, `${id} is missing`).toBeTruthy();
@@ -304,12 +307,13 @@ describe("the dates use the golden reference's picker", () => {
 
     const payload = TaskForm.buildCreatePayload({
       title: "t", assignmentTarget: "SelfAssigned",
-      dueAt: "2026-08-12", startAt: "2026-08-10", plannedDate: "2026-08-11"
+      dueAt: "2026-08-12", startAt: "2026-08-10"
     });
 
     expect(payload.dueAt).toBe("2026-08-12");
+    // Self-assigned, so the doer's own plan travels. plannedDate is no longer part of the create body at all —
+    // the closing round's suite pins that; here the point is only the FORMAT of what does travel.
     expect(payload.startAt).toBe("2026-08-10");
-    expect(payload.plannedDate).toBe("2026-08-11");
   });
 });
 
@@ -328,8 +332,37 @@ describe("governance is one card per decision", () => {
       expect(card, `governance card #${index + 1} has no icon`).toMatch(/<i class="[^"]*\bbx\b/);
       expect(card, `governance card #${index + 1} has no heading`).toMatch(/<h6[^>]*>/);
       // One sentence of explanation, from the resx — never a literal string in the view.
-      expect(card, `governance card #${index + 1} has no description`).toMatch(/class="[^"]*text-muted[^"]*"/);
+      expect(card, `governance card #${index + 1} has no description`)
+        .toMatch(/class="[^"]*card-section-desc[^"]*"/);
     });
+  });
+
+  test("the card heading is the security screen's section title — the same rule, not a copy of it", () => {
+    /*
+     * A tinted icon BOX was tried first and rejected on sight: too loud for a header. The look the owner asked
+     * for is the one the tenant-security screen already uses for its section titles — a small primary glyph
+     * inline before the uppercase heading, no box.
+     *
+     * Shared by SELECTOR rather than by a second rule with the same declarations: one recipe, two names, so the
+     * two screens cannot drift apart. Renaming .security-section-title everywhere would have been the tidier
+     * name but touches a screen this change has no business editing.
+     */
+    const css = read("wwwroot", "assets", "css", "backbone-custom.css");
+    expect(css, "the two titles no longer share one rule")
+      .toMatch(/\.security-section-title,\s*\.card-section-title\s*\{/);
+    expect(css, "the tinted box was left behind in the stylesheet").not.toMatch(/\.card-section-icon\s*\{/);
+
+    const column = governanceColumn(TASK_FORM());
+    const cards = column.split(/<section class="card/).slice(1);
+
+    cards.forEach((card, index) => {
+      expect(card, `governance card #${index + 1} does not use the shared section title`)
+        .toMatch(/<h6 class="card-section-title[^"]*"><i class="bx /);
+      expect(card, `governance card #${index + 1} still carries the rejected icon box`)
+        .not.toMatch(/card-section-icon/);
+    });
+
+    expect(TASK_FORM(), "the form gained an inline style").not.toMatch(/style="/);
   });
 
   test("the five decisions each have a home, and watchers left the assignment card", () => {

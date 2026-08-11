@@ -23,10 +23,8 @@
   <data name="FieldAssignee" xml:space="preserve"><value>المسؤول</value></data>
   <data name="FieldPoolPosition" xml:space="preserve"><value>المنصب</value></data>
   <data name="PoolPositionHint" xml:space="preserve"><value>تظهر الوحدة بجوار كل منصب حتى لا يُوجَّه العمل إلى الموقع الخطأ.</value></data>
-  <data name="FieldOrganizationUnit" xml:space="preserve"><value>الوحدة التنظيمية</value></data>
   <data name="FieldDueAt" xml:space="preserve"><value>تاريخ الاستحقاق</value></data>
   <data name="FieldStartAt" xml:space="preserve"><value>تاريخ البدء</value></data>
-  <data name="FieldPlannedDate" xml:space="preserve"><value>التاريخ المخطط</value></data>
   <data name="FieldEstimateHours" xml:space="preserve"><value>التقدير (ساعات)</value></data>
   <data name="FieldRemainingHours" xml:space="preserve"><value>المتبقي (ساعات)</value></data>
   <data name="FieldSpentHours" xml:space="preserve"><value>المستغرق (ساعات)</value></data>
@@ -85,6 +83,7 @@
   <data name="ErrorFieldDefinitionUnknown" xml:space="preserve"><value>يعرض هذا النموذج حقلاً لم يعد معرَّفاً. أعد تحميل الصفحة وحاول مرة أخرى.</value></data>
   <data name="ErrorFieldLimitExceeded" xml:space="preserve"><value>تتجاوز الحقول الإضافية أحد الحدود: أقسام كثيرة جداً، أو حقول كثيرة في قسم واحد، أو قيمة طويلة جداً.</value></data>
   <data name="RequiredFieldHint" xml:space="preserve"><value>مطلوب</value></data>
+  <data name="RequiredFieldsMissing" xml:space="preserve"><value>يرجى تعبئة الحقول المطلوبة:</value></data>
   <data name="ErrorOccurred" xml:space="preserve"><value>حدث خطأ أثناء معالجة طلبك.</value></data>
   <data name="ActionOk" xml:space="preserve"><value>حسنًا</value></data>
   <data name="ErrorOrganizationUnitUnresolved" xml:space="preserve"><value>لم يتم تحديد وحدة تنظيمية لهذه المهمة. اطلب من المسؤول تعيين وظيفة لك أو تحديد وحدة تنظيمية جذرية.</value></data>
@@ -143,4 +142,6 @@
   <data name="ReminderLead3" xml:space="preserve"><value>قبل 3 أيام</value></data>
   <data name="ReminderLead7" xml:space="preserve"><value>قبل أسبوع</value></data>
   <data name="ReminderLead14" xml:space="preserve"><value>قبل أسبوعين</value></data>
+  <data name="FieldReviewTypeLabel" xml:space="preserve"><value>نوع المراجعة</value></data>
+  <data name="FieldDescriptionPlaceholder" xml:space="preserve"><value>ما المطلوب إنجازه، وما ينبغي أن يعرفه المكلَّف قبل البدء.</value></data>
 </root>
