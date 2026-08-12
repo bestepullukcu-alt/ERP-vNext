@@ -35,6 +35,12 @@ decision_records: "pending support package - not normative until committed"
 > export, delete, or bulk-delete is authorized. Member authorization is further split into a **build/test gate**
 > and an **operational runtime gate**; see §10 "Build gate vs operational runtime gate".
 
+> **2026-08-12 final governance package reconciliation:** this branch is the final all-four PVG governance package
+> for DCP-004, MOD-0230, MOD-0231, MOD-0232, and MOD-0234 build/test sequencing. It preserves the MOD-0230 runtime
+> authorization packet as **draft / not approved**. PVG operational runtime remains **NO-GO**; MOD-0231, MOD-0232,
+> and MOD-0234 operational runtime remain blocked until MOD-0230 runtime handoff evidence and their own downstream
+> gates are approved.
+
 > **User constraint:** This draft does **not** develop Urgent foundation remediation W-3A0, does **not**
 > include next-stage W-4/W-5 modules outside the requested urgent slices, and does **not** start
 > MOD-0234 runtime implementation as a shell. W-3A0 dependencies are recorded as external prerequisites
@@ -71,6 +77,8 @@ decision_records: "pending support package - not normative until committed"
   - MOD-0234 Signal Management - promoted on 2026-08-11 to `ready-for-dev` for the build/test gate only; no-shell
     Signal MVP non-operational class-library contracts/tests only.
 - MOD-0230, MOD-0231, MOD-0232, and MOD-0234 build/test gate authorization does not authorize operational runtime.
+- This DCP branch is reconciled as the final all-four PVG governance package. It does not mark runtime approvals,
+  does not approve production use, and does not convert the MOD-0230 runtime authorization packet out of draft.
 
 **DCP-002 identity proof (2026-08-04):**
 

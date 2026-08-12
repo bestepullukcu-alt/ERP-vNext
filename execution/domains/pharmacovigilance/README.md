@@ -3,11 +3,13 @@
 **Kisaltma:** `PVG`
 **Kisa kod (branch):** `pvg`
 **Delivery Capability Pack:** [DCP-004 - PVG Urgent W-3 Development Block](../../portfolio/delivery-capability-packs/DCP-004-pvg-urgent-w3-development-block.md)
-**Runtime status (2026-08-11):** DCP-004 is `approved` for sequencing. **MOD-0230 Case Intake & Triage,
+**Runtime status (2026-08-12):** DCP-004 is `approved` for sequencing. This branch is reconciled as the final
+all-four PVG governance package for MOD-0230, MOD-0231, MOD-0232, and MOD-0234 build/test sequencing. **MOD-0230 Case Intake & Triage,
 MOD-0231 Case Processing, MOD-0232 MedDRA Coding, and MOD-0234 Signal Management are `ready-for-dev` for the
 build/test gate only.** MOD-0231 is limited to the Signal Minimum Scope delivery slice, MOD-0232 is limited to
 non-operational MedDRA Coding class-library contracts/tests under `Diten.PvgService`, and MOD-0234 is limited to
 no-shell Signal MVP class-library contracts/tests under `Diten.PvgService`.
+The MOD-0230 runtime authorization packet remains **draft / not approved**.
 MOD-0230 service `Diten.PvgService` (port 5011), tenant UI, and one gateway route family remain limited to local /
 dev / CI build-test preparation. **Operational runtime, production, supplier qualification, and validation remain
 unauthorized** for every member. MOD-0234 keeps `shell: none` and `golden_reference: none`; no runtime shell,
@@ -51,7 +53,7 @@ Ilk governance kapsami DCP-004 tarafindan sinirlandirilan urgent W-3 delivery bl
   - MOD-0232 MedDRA Coding - non-operational class-library contracts/tests only
   - MOD-0234 Signal Management - no-shell Signal MVP class-library contracts/tests only
 - [DCP-004](../../portfolio/delivery-capability-packs/DCP-004-pvg-urgent-w3-development-block.md) - approved
-  sequencing contract; operational runtime remains closed
+  sequencing contract and final all-four PVG governance package; operational runtime remains closed
 
 ## Otorite Hiyerarsisi (Yeni Modul Yazarken)
 

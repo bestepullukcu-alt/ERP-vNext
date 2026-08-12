@@ -35,7 +35,8 @@ Ilk kapsam yalnizca DCP-004 tarafindan tanimlanan urgent W-3 first-stage governa
 
 ## Domain-Level Repo Scope
 
-**Authorized now (updated 2026-08-11 - DCP-004 `approved`, MOD-0230/MOD-0231/MOD-0232/MOD-0234 `ready-for-dev` for build/test):**
+**Authorized now (updated 2026-08-12 - final all-four PVG governance package; DCP-004 `approved`,
+MOD-0230/MOD-0231/MOD-0232/MOD-0234 `ready-for-dev` for build/test):**
 
 - `execution/domains/pharmacovigilance/**`
 - `services/Diten.PvgService/**` - dedicated PVG service boundary, port **5011** (OD-7). MOD-0230 slice 1,
@@ -50,7 +51,8 @@ Ilk kapsam yalnizca DCP-004 tarafindan tanimlanan urgent W-3 first-stage governa
 - `tests/**` for the above.
 
 **All of the above is authorized for the build/test gate only: local, dev, and CI. Production deployment,
-supplier qualification, and validation approval remain unauthorized.**
+supplier qualification, and validation approval remain unauthorized. The MOD-0230 runtime authorization packet is
+recorded as draft / not approved and does not open operational runtime.**
 
 **Still blocked:**
 
@@ -109,6 +111,9 @@ supplier qualification, and validation approval remain unauthorized.**
 - **2026-08-11:** MOD-0232 and MOD-0234 are `ready-for-dev` for the build/test gate only. MOD-0234 keeps
   `shell: none` and authorizes no operational runtime, shell, placeholder dashboard, fake signal, fake metric, or
   fake cohort.
+- **2026-08-12:** Final all-four PVG governance package reconciliation recorded. MOD-0230 runtime authorization
+  packet remains draft / not approved. Operational runtime remains **NO-GO**; MOD-0231, MOD-0232, and MOD-0234
+  operational runtime remain blocked.
 - MOD-0230 consumes MOD-0019, MOD-0023, and MOD-0031 through fail-closed PVG-owned ports
   (`IPvgFieldSecurityPolicy`, `IPvgWorkflowTransitionGate`, `IPvgEvidenceLinkPort`) because those modules have no
   runtime. Ports are interface + deny default only; they must never store policy, host a workflow engine, or
