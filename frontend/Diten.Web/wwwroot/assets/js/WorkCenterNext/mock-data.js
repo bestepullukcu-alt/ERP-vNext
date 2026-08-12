@@ -344,6 +344,19 @@
         item.accepted = item.admissionState === 'admitted';
         item.claimed = item.ownershipState === 'owned';
         item.startedOnce = item.executionState === 'active' || item.executionState === 'paused';
+        /*
+         * WHICH SEAT THE READER IS IN — derived here, BEFORE the person objects are flattened to names.
+         *
+         * The detail page showed a role chip with no text on every real task, because `viewerRole` is a fixture
+         * field and the projection has never carried one. It does carry `isCurrentUser` on assignee/requester —
+         * the one thing the server can state for certain — so the role is read from that. A fixture that
+         * declares its own role keeps it; when neither person is the caller nothing is claimed and the chip
+         * does not render at all.
+         */
+        if (!item.viewerRole) {
+            if (item.assignee?.isCurrentUser) { item.viewerRole = 'Owner'; }
+            else if (item.requester?.isCurrentUser) { item.viewerRole = 'Creator'; }
+        }
         // A person is { id, displayName } — fixtures carry the name, the real projection cannot yet resolve it
         // (no user-directory seam in Platform), so fall back to "Me" for the caller and to a plain
         // name-unavailable label for anyone else. Never render a raw user GUID.

@@ -318,15 +318,22 @@ describe("subtasks and checklist say what they mean", () => {
 describe("the gates card reports governance without deciding it", () => {
   const withGates = (gates) => projectionItem({ gates });
 
-  it("says so when nothing is required", async () => {
+  it("says NOTHING when nothing is required — the card does not appear at all", async () => {
+    /*
+     * ⚠ THIS REVERSES THIS TEST'S OWN EARLIER CLAIM, on the owner's decision (2026-08-12), and the reason is a
+     * measurement rather than a preference. The old rule — "no approval needed is an answer the holder wants" —
+     * produced, on a real task, a full-height card whose entire content was the word "Gerekmiyor" twice, above
+     * the fold, pushing the state that DID apply below it. A gate that never applied is not part of "where does
+     * this stand"; it is the absence of a gate. Gates and dates are now one status card, and a task with
+     * neither renders none.
+     */
     await bootDetailPage(withGates({
       approval: { required: false, status: "notRequired" },
       review: { required: false, status: "notRequired" }
     }));
 
-    expect(app().textContent).toContain("GatesLabel");
-    // "No approval needed" is an answer the holder wants — it is not the same as a gate that is satisfied.
-    expect(app().textContent).toContain("GateStatusNotRequired");
+    expect(app().textContent).not.toContain("GateStatusNotRequired");
+    expect(app().querySelector(".wcn-gates")).toBeNull();
   });
 
   it("names who an outstanding approval is waiting on", async () => {

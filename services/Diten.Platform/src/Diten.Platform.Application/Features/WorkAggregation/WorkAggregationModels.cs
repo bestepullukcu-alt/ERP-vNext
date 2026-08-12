@@ -369,7 +369,38 @@ public sealed record WorkItemProjectionDto(
     /// lateness WITHOUT a number instead of quoting one that would drift.</para>
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    DateTimeOffset? ClosedAt = null);
+    DateTimeOffset? ClosedAt = null,
+    /// <summary>
+    /// WHAT THE WORK IS, in the requester's own words.
+    ///
+    /// <para>Measured 2026-08-12: the detail page could say "15 days overdue" and could not say what the work
+    /// WAS — the create form has collected a description since Phase 1 and the projection never carried it, so
+    /// the one question a detail page exists to answer had no data behind it.</para>
+    ///
+    /// <para>A DISPLAY label, exactly like <see cref="Title"/>: it is text a person typed, not a resource key
+    /// this module owns. Omitted when the description is absent OR blank — a whitespace-only description would
+    /// otherwise render as an empty paragraph under a heading.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemLabelDto? Summary = null,
+    /// <summary>
+    /// The doer's own start date, the companion to <see cref="EstimateHours"/> and the counterpart of
+    /// <see cref="DueAt"/>: the deadline is the requester's commitment, the start and the estimate are the plan
+    /// of whoever does the work. Omitted when nobody has stated one.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    DateTimeOffset? StartAt = null,
+    /// <summary>How long the doer expects this to take, in hours. Omitted when unestimated — zero is a real
+    /// estimate and must not be how "nobody said" is spelled.</summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    decimal? EstimateHours = null,
+    /// <summary>
+    /// The task's own tags. Omitted when there are none: an empty array would reach the client as a present
+    /// container and render an empty chip strip, which is the same "labelled blank" this round removes
+    /// everywhere else.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<string>? Tags = null);
 
 /// <summary>The configurable-field container. Sections cap at six — the contract's LIMITS.maxSections.</summary>
 public sealed record WorkItemBusinessContextDto(IReadOnlyList<WorkItemBusinessSectionDto> Sections);

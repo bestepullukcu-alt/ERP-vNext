@@ -278,6 +278,36 @@
   <data name="DetailSummary" xml:space="preserve">
     <value>Resumen</value>
   </data>
+  <data name="SummaryCardLabel" xml:space="preserve">
+    <value>Resumen</value>
+  </data>
+  <data name="StatusCardLabel" xml:space="preserve">
+    <value>Situación</value>
+  </data>
+  <data name="TechnicalDetailsLabel" xml:space="preserve">
+    <value>Detalles técnicos</value>
+  </data>
+  <data name="TechVersionValue" xml:space="preserve">
+    <value>Versión {0}</value>
+  </data>
+  <data name="DetailStartAt" xml:space="preserve">
+    <value>Fecha de inicio</value>
+  </data>
+  <data name="DetailEstimate" xml:space="preserve">
+    <value>Estimación</value>
+  </data>
+  <data name="DetailTags" xml:space="preserve">
+    <value>Etiquetas</value>
+  </data>
+  <data name="DetailPriority" xml:space="preserve">
+    <value>Prioridad</value>
+  </data>
+  <data name="EstimateHoursValue" xml:space="preserve">
+    <value>{0} h</value>
+  </data>
+  <data name="ShowAllCount" xml:space="preserve">
+    <value>Ver todo ({0})</value>
+  </data>
   <data name="DetailContext" xml:space="preserve">
     <value>Contexto de origen</value>
   </data>

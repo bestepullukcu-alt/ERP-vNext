@@ -278,6 +278,36 @@
   <data name="DetailSummary" xml:space="preserve">
     <value>Özet</value>
   </data>
+  <data name="SummaryCardLabel" xml:space="preserve">
+    <value>Özet</value>
+  </data>
+  <data name="StatusCardLabel" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="TechnicalDetailsLabel" xml:space="preserve">
+    <value>Teknik bilgi</value>
+  </data>
+  <data name="TechVersionValue" xml:space="preserve">
+    <value>{0}. sürüm</value>
+  </data>
+  <data name="DetailStartAt" xml:space="preserve">
+    <value>Başlangıç tarihi</value>
+  </data>
+  <data name="DetailEstimate" xml:space="preserve">
+    <value>Tahmin</value>
+  </data>
+  <data name="DetailTags" xml:space="preserve">
+    <value>Etiketler</value>
+  </data>
+  <data name="DetailPriority" xml:space="preserve">
+    <value>Öncelik</value>
+  </data>
+  <data name="EstimateHoursValue" xml:space="preserve">
+    <value>{0} saat</value>
+  </data>
+  <data name="ShowAllCount" xml:space="preserve">
+    <value>Tümünü gör ({0})</value>
+  </data>
   <data name="DetailContext" xml:space="preserve">
     <value>Kaynak bağlamı</value>
   </data>

@@ -523,7 +523,19 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
              * freeze a lie instead of a fact. When it is genuinely absent the client says "closed late" without
              * a number rather than quoting one.
              */
-            ClosedAt: terminal ? task.CompletedAt ?? task.CancelledAt : null);
+            ClosedAt: terminal ? task.CompletedAt ?? task.CancelledAt : null,
+            /*
+             * WHAT THE WORK IS. The form has collected these four since Phase 1 and none of them reached the
+             * Task Center, so the detail page could say a task was fifteen days overdue without saying what it
+             * asked for or when it was due. Each is omitted when absent rather than emitted empty — the screen
+             * prints a row only for a fact that exists.
+             */
+            Summary: string.IsNullOrWhiteSpace(task.Description)
+                ? null
+                : WorkItemLabelDto.Display(task.Description),
+            StartAt: task.StartAt,
+            EstimateHours: task.EstimateHours,
+            Tags: task.Tags is { Count: > 0 } ? task.Tags.ToList() : null);
     }
 
     /// <summary>

@@ -253,6 +253,23 @@
         `<span class="wcn-chip wcn-chip-${kind}"${title ? ` title="${esc(title)}"` : ''}>` +
         `<i class="bx ${icon}"></i><span>${esc(text)}</span></span>`;
 
+    /*
+     * WHOSE seat the reader is in — and NOTHING when that is unknown.
+     *
+     * MEASURED LIVE: this chip rendered as an icon with an empty label on every real task. `viewerRole` is not
+     * a projection field, so `t(undefined)` returned "" and the chip said nothing at all. A chip with no text
+     * is worse than no chip: it looks like a label that failed to load.
+     *
+     * Where the answer IS knowable it is now derived rather than invented — the projection marks the caller on
+     * `assignee`/`requester` (`isCurrentUser`), and mock-data turns that into a role before the person objects
+     * are flattened to names. Where it is not knowable, this returns nothing.
+     */
+    const roleChip = (item) => {
+        const key = ROLE_KEY[item.viewerRole];
+        if (!key) { return ''; }
+        return chip('role', 'bx-user-check', t(key));
+    };
+
     const typeLabel = (item) => t(TYPE_KEY[item.itemType] || item.itemType);
     // normalizedStatus is already resolved by the provider/aggregation projection.
     const displayStatus = (item) => item.status;
@@ -1505,22 +1522,58 @@
         </div>`;
     };
 
-    // Source due date vs personal planned date (spec v2 §3/§4) — kept visually
-    // distinct; a personal plan that lands after the source deadline is flagged.
-    const renderPlanDates = (item) => {
-        if (!item.dueAt && !item.plannedDate) { return ''; }
-        const conflict = item.dueAt && item.plannedDate && item.plannedDate > item.dueAt;
-        // The empty text is PER CELL: "SLA yok" answers "is there a deadline?", which says nothing about whether
-        // the user has planned the work. One shared placeholder made a missing personal plan read as "SLA yok".
-        const cell = (labelKey, value, emptyKey, cls) =>
-            `<div class="wcn-date-cell${cls ? ' ' + cls : ''}"><span class="wcn-date-label">${esc(t(labelKey))}</span><span class="wcn-date-value">${esc(value || t(emptyKey))}</span></div>`;
-        return `<div class="wcn-detail-section">
-            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('DatesLabel'))}</h6>
-            <div class="wcn-dates">
-                ${cell('SourceDueLabel', item.dueAt, 'SlaNoSla', item.slaState === 'overdue' ? 'wcn-date-overdue' : '')}
-                ${cell('PlannedDateLabel', item.plannedDate, 'PlannedDateNone', conflict ? 'wcn-date-conflict' : '')}
+    /*
+     * WHAT IS THIS? — the card a detail page owes its reader before anything else.
+     *
+     * MEASURED (2026-08-12, live): the page opened straight into "what can you do about it". The description
+     * was nowhere, and neither were the due date, the start date, the estimate or the tags — the chip said
+     * "15 gün gecikmiş" and the page never said what the deadline WAS. Four of those fields were missing from
+     * the WC-1 projection entirely and were added to it in the same round; the other three were on the wire
+     * already and simply never rendered as fields.
+     *
+     * EMPTY FIELDS ARE NOT PRINTED. A "Son tarih: —" row is a claim that the value was checked and found empty;
+     * the reader cannot tell it from a value that failed to load. summaryFact drops the row instead.
+     */
+    const summaryFact = (icon, labelKey, value) => {
+        if (value === null || value === undefined || value === '') { return ''; }
+        return `<div class="wcn-fact">
+            <i class="bx ${icon}" aria-hidden="true"></i>
+            <div class="wcn-fact-body">
+                <span class="wcn-fact-label">${esc(t(labelKey))}</span>
+                <span class="wcn-fact-value">${esc(value)}</span>
             </div>
-            ${conflict ? `<div class="wcn-date-warn" role="note"><i class="bx bx-error-circle"></i><span>${esc(t('PlanConflict'))}</span></div>` : ''}
+        </div>`;
+    };
+
+    const renderSummary = (item) => {
+        // A tag strip is rendered only when there ARE tags: an empty strip is the chip-shaped version of a dash.
+        const tags = Array.isArray(item.tags) && item.tags.length
+            ? `<div class="wcn-fact wcn-fact-wide">
+                <i class="bx bx-purchase-tag-alt" aria-hidden="true"></i>
+                <div class="wcn-fact-body">
+                    <span class="wcn-fact-label">${esc(t('DetailTags'))}</span>
+                    <span class="wcn-fact-tags">${item.tags.map((tag) => `<span class="wcn-tag">${esc(tag)}</span>`).join('')}</span>
+                </div>
+            </div>`
+            : '';
+
+        const facts = summaryFact('bx-user-check', 'DetailAssignee', item.assignee)
+            + summaryFact('bx-user', 'DetailRequester', item.requester)
+            + summaryFact('bx-calendar-exclamation', 'SourceDueLabel', item.dueAt)
+            + summaryFact('bx-calendar', 'DetailStartAt', item.startAt)
+            + summaryFact('bx-flag', 'DetailPriority', hasPriority(item) ? priorityLabel(item) : '')
+            + summaryFact('bx-time-five', 'DetailEstimate',
+                item.estimateHours === null || item.estimateHours === undefined
+                    ? '' : tf('EstimateHoursValue', item.estimateHours))
+            + tags;
+
+        // Neither a description nor a single fact: the card would be a heading over nothing.
+        if (!item.summary && !facts) { return ''; }
+
+        return `<div class="wcn-detail-section">
+            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('SummaryCardLabel'))}</h6>
+            ${item.summary ? `<p class="wcn-detail-summary">${esc(item.summary)}</p>` : ''}
+            ${facts ? `<div class="wcn-facts">${facts}</div>` : ''}
         </div>`;
     };
 
@@ -1586,6 +1639,15 @@
 
     const gateRow = (labelKey, gate) => {
         if (!gate) { return ''; }
+        /*
+         * ⚠ REVERSES AN EARLIER DECISION, on the owner's call (2026-08-12).
+         *
+         * The old rule printed a notRequired gate too, arguing that "no approval needed" is itself an answer.
+         * Measured on a real task that produced a full-height card reading "Onay: Gerekmiyor / İnceleme:
+         * Gerekmiyor" — two lines saying nothing, above the fold, pushing the state that DOES apply below it.
+         * A gate that never applied is not part of "where does this stand"; it is the absence of a gate.
+         */
+        if (gate.status === 'notRequired') { return ''; }
         const statusKey = GATE_STATUS_KEY[gate.status];
         // An unknown status renders nothing rather than a raw token: the projection is the authority on the
         // vocabulary, and inventing a label for a value we do not know is how gibberish reaches the screen.
@@ -1600,16 +1662,59 @@
         </li>`;
     };
 
-    const renderGates = (item) => {
-        const gates = item.gates;
-        if (!gates) { return ''; }
+    /*
+     * WHERE DOES THIS STAND — gates and dates, one card.
+     *
+     * They were two, and they answer the same question: a gate says what has to happen before the work may
+     * proceed, a date says by when. Split across two cards the reader assembles the answer themselves, and on a
+     * task with neither an approval nor a review the gates card was a full-height box whose whole content was
+     * the word "Gerekmiyor" twice.
+     *
+     * REPORTING ONLY, unchanged (charter Binding A): no approve/reject control lives here. MOD-0024 has been
+     * caught once growing a second approval engine; this card says why work is waiting and on whom, and stops.
+     */
+    const renderStatusCard = (item) => {
+        const gates = item.gates || {};
         const rows = gateRow('GateApproval', gates.approval) + gateRow('GateReview', gates.review);
-        if (!rows) { return ''; }
+
+        const conflict = item.dueAt && item.plannedDate && item.plannedDate > item.dueAt;
+        // Per-cell empty text: "SLA yok" answers "is there a deadline?" and says nothing about whether the
+        // holder has planned the work. One shared placeholder made a missing plan read as "no SLA".
+        const dateCell = (labelKey, value, emptyKey, cls) => (value || emptyKey
+            ? `<div class="wcn-date-cell${cls ? ' ' + cls : ''}"><span class="wcn-date-label">${esc(t(labelKey))}</span><span class="wcn-date-value">${esc(value || t(emptyKey))}</span></div>`
+            : '');
+        const dates = (item.dueAt || item.plannedDate)
+            ? `<div class="wcn-dates">
+                ${dateCell('SourceDueLabel', item.dueAt, 'SlaNoSla', item.slaState === 'overdue' ? 'wcn-date-overdue' : '')}
+                ${dateCell('PlannedDateLabel', item.plannedDate, 'PlannedDateNone', conflict ? 'wcn-date-conflict' : '')}
+            </div>
+            ${conflict ? `<div class="wcn-date-warn" role="note"><i class="bx bx-error-circle"></i><span>${esc(t('PlanConflict'))}</span></div>` : ''}`
+            : '';
+
+        // Nothing to report is not a card. A task with no gates and no dates says nothing here rather than
+        // announcing that it has nothing to say.
+        if (!rows && !dates) { return ''; }
+
         return `<div class="wcn-detail-section">
-            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('GatesLabel'))}</h6>
-            <ul class="wcn-gates">${rows}</ul>
+            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('StatusCardLabel'))}</h6>
+            ${rows ? `<ul class="wcn-gates">${rows}</ul>` : ''}
+            ${dates}
         </div>`;
     };
+
+    /*
+     * HOW MANY ROWS A CARD SHOWS BEFORE IT SCROLLS ITSELF.
+     *
+     * MEASURED in the browser: a subtask row is 40px and an activity entry is two lines at ~56px. The rail
+     * beside them (actions + status + note) runs ~520px on a live task. Eight subtasks ≈ 320px and five
+     * activity entries ≈ 280px, so the two content cards together stay near the rail's height instead of
+     * running past it and leaving the right-hand column stranded against a void.
+     *
+     * ⚠ A SCROLL, NOT A TAB, and not a truncation. Everything stays reachable in place; "show all" simply
+     * releases the cap. A tab here would hide a gate — the very thing this page must never do.
+     */
+    const SUBTASK_VISIBLE_LIMIT = 8;
+    const ACTIVITY_VISIBLE_LIMIT = 5;
 
     // Subtasks — full: complete/add here; readonly: progress + "edit in source".
     const SUBTASK_ICON = {
@@ -1698,9 +1803,18 @@
         const openNotice = openSubtasks.length
             ? `<p class="wcn-block-hint" role="note"><i class="bx bx-lock-alt"></i>${esc(tf('SubtasksBlockingNotice', openSubtasks.length))}</p>`
             : '';
+        /*
+         * TOO MANY: the list scrolls inside its own card and says how many there are. The cap is released by a
+         * class toggle (FG-003) rather than by re-rendering, so a half-typed quick-add is not thrown away.
+         */
+        const capped = subtaskItems.length > SUBTASK_VISIBLE_LIMIT;
+        const list = capped
+            ? `<div class="wcn-scrollcap" data-wcn-scrollcap><ul class="wcn-subtasks">${rows}</ul></div>
+               <button type="button" class="btn btn-sm btn-label-secondary wcn-showall" data-wcn-showall>${esc(tf('ShowAllCount', subtaskItems.length))}</button>`
+            : `<ul class="wcn-subtasks">${rows}</ul>`;
         const body = subtaskItems.length
-            ? `<ul class="wcn-subtasks">${rows}</ul>${openNotice}`
-            : `<p class="wcn-block-hint">${esc(t('SubtasksEmpty'))}</p>`;
+            ? `${list}${openNotice}`
+            : '';
         /*
          * A LIST card, not a checklist: heading and count on the left, its add controls on the right — the shape
          * the main page's list cards already use. Read as a checklist while the quick-add input sat under a bare
@@ -1709,6 +1823,32 @@
          * NO search box, deliberately. A task has three to ten subtasks; a filter earns its space at fifteen or
          * more, and that is rare. Same reasoning that kept a full DataTable out.
          */
+        /*
+         * NOTHING YET IS ONE LINE, not a card.
+         *
+         * MEASURED: on a fresh task "Henüz alt görev yok" and "Henüz etkinlik kaydı yok" were two full-height
+         * boxes, so half the page announced that there was nothing on it. The line still carries the action —
+         * an empty state that cannot be acted on is just an apology.
+         */
+        if (!subtaskItems.length) {
+            /*
+             * The QUICK-ADD ITSELF is the action on this line, not a button that opens something else. An
+             * earlier draft of this line offered the detailed panel instead and thereby removed the one-line
+             * add from the exact place it matters most — a parent with no children yet. Two tests caught it.
+             */
+            return `<div class="wcn-empty-line">
+                <i class="bx bx-list-check" aria-hidden="true"></i>
+                <span class="wcn-empty-text">${esc(t('SubtasksEmpty'))}</span>
+                ${full
+                    ? `<div class="wcn-subtask-add wcn-empty-action">
+                        <input type="text" class="form-control form-control-sm" data-wcn-subtask-input placeholder="${esc(t('SubtaskAddPlaceholder'))}">
+                        <button type="button" class="btn btn-sm btn-label-primary" data-wcn-subtask-add="${item.id}">${esc(t('SubtaskAdd'))}</button>
+                        <button type="button" class="btn btn-sm btn-label-secondary" data-wcn-subtask-add-detailed="${item.id}">${esc(t('SubtaskAddDetailed'))}</button>
+                       </div>`
+                    : ''}
+            </div>`;
+        }
+
         return `<div class="wcn-detail-section">
             <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
                 <h6 class="text-uppercase text-heading fw-semibold mb-0">
@@ -2063,11 +2203,32 @@
      * does not appear, because a dash claims the value was checked and found empty. That is the page's standing
      * rule and the one place it diverges from the reference on purpose.
      */
-    const renderSourceContext = (item) => `<div class="wcn-detail-section">
-            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('DetailContext'))}</h6>
-            <div class="row g-4">
-                ${previewField('bx-user', 'DetailRequester', item.requester)}
-                ${previewField('bx-user-check', 'DetailAssignee', item.assignee)}
+    /*
+     * TECHNICAL DETAILS — kept for support, folded away for everyone else.
+     *
+     * MEASURED: this was the biggest card on the page and every line of it was developer data — the source
+     * record GUID, the canonical module, the source object type ("task"), the concurrency token rendered as
+     * "version: 8", the action depth. Support genuinely needs all of it, so nothing is deleted; it starts
+     * CLOSED, and what it shows when opened is written in the reader's language rather than in the wire's.
+     *
+     * A <details> element rather than a JS toggle: the open/closed state is the browser's to keep, it works
+     * without script, and it is keyboard-reachable and announced for free.
+     */
+    const technicalVersion = (item) => {
+        // "version: 8" is the wire's own spelling of the concurrency token. A number in a sentence is what a
+        // person reads; the KIND stays in the title attribute for whoever actually needs to know it.
+        const concurrency = item.concurrency;
+        if (!concurrency || concurrency.token === null || concurrency.token === undefined) { return ''; }
+        const numeric = /^\d+$/.test(String(concurrency.token));
+        return numeric ? tf('TechVersionValue', concurrency.token) : String(concurrency.token);
+    };
+
+    const renderTechnicalDetails = (item) => `<details class="wcn-tech">
+            <summary class="wcn-tech-summary">
+                <i class="bx bx-code-alt" aria-hidden="true"></i>
+                <span>${esc(t('TechnicalDetailsLabel'))}</span>
+            </summary>
+            <div class="row g-4 wcn-tech-body">
                 ${previewField('bx-flag', 'DetailNativeStatus', item.nativeStatusText)}
                 ${referenceField(item)}
                 ${previewField('bx-cube', 'DetailModuleName', item.sourceModuleName || item.sourceModule)}
@@ -2075,14 +2236,13 @@
                 ${previewField('bx-category', 'DetailSourceType', item.sourceObjectType || item.sourceType)}
                 ${previewField('bx-link-external', 'DetailActionDepth',
                     t(item.actionDepth === 'deeplink' ? 'ActionDepthDeeplink' : 'ActionDepthInline'))}
-                ${previewField('bx-git-branch', 'DetailSourceVersion',
-                    item.concurrency ? `${item.concurrency.kind}: ${item.concurrency.token}` : '')}
+                ${previewField('bx-git-branch', 'DetailSourceVersion', technicalVersion(item))}
                 ${previewField('bx-cog', 'DetailLifecycleOwner', item.lifecycleOwner?.providerCode)}
             </div>
             <button type="button" class="btn btn-sm btn-label-primary wcn-opensource" data-wcn-open="${item.id}" aria-label="${esc(tf('OpenSourceAria', item.sourceModuleName || item.sourceModule, item.sourceId))}">
                 <i class="bx bx-link-external"></i><span>${esc(t('DetailOpenSource'))}</span>
             </button>
-        </div>`;
+        </details>`;
 
     const detailHtml = (item) => {
         if (!item) {
@@ -2165,8 +2325,13 @@
         // main column (work content, wide) beside a sidebar (source/status meta,
         // narrow), and a full-width activity feed. Widths are driven by content:
         // wide work → col-lg-8, compact meta → col-lg-4, conversation → col-12.
+        /*
+         * A card that holds ONLY an empty line gets the slim padding: at p-4 the padding was twice the height of
+         * the sentence inside it, so "there is nothing here" still occupied a box. Measured 73px → 57px.
+         */
         const card = (inner) => inner
-            ? `<section class="card backbone-preview-section wcn-detail-card p-4">${inner}</section>`
+            ? `<section class="card backbone-preview-section wcn-detail-card ${
+                inner.includes('wcn-empty-line') ? 'wcn-detail-card--slim p-3' : 'p-4'}">${inner}</section>`
             : '';
         const reviewNote = (item.itemType === 'task' && item.lifecycle === 'PendingReview')
             ? `<div class="wcn-review-note"><i class="bx bx-hourglass"></i><span>${esc(t('AwaitingReview'))}</span></div>`
@@ -2180,25 +2345,35 @@
          * They are gated the same way every other block is (hasCap / data present), so there is one mechanism
          * rather than a special case per card.
          */
-        const summarySection = item.summary
-            ? `<div class="wcn-detail-section">
-                <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('DetailSummary'))}</h6>
-                <p class="wcn-detail-summary">${esc(item.summary)}</p>
-            </div>`
-            : '';
+
         // Capability declared but empty is a VALID state and gets an explanation instead of vanishing — the same
         // distinction renderChecklist makes. Not declared at all means the provider does not offer activity, and
         // then there is nothing to head. The composer keeps its own gate because it is the WRITE half: a closed
         // task still shows its feed and no longer offers the box.
-        const activitySection = hasCap(item, 'activity')
-            ? `<div class="wcn-detail-section">
-                <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('ActivityLabel'))}</h6>
-                ${renderComposer(item)}
-                ${item.activity.length
-                    ? `<ul class="wcn-audit">${auditRows}</ul>`
-                    : `<p class="wcn-block-hint">${esc(t('ActivityEmpty'))}</p>`}
-            </div>`
-            : '';
+        /*
+         * NOTHING WRITTEN YET is one line — but only when there is also nothing to WRITE WITH. A live task still
+         * gets its composer, because "no activity" plus a comment box is a card with a purpose; on a closed task
+         * the composer is gone and the full-height "Henüz etkinlik kaydı yok" box was pure announcement.
+         */
+        const composer = renderComposer(item);
+        const activityCapped = hasCap(item, 'activity') && item.activity.length > ACTIVITY_VISIBLE_LIMIT;
+        const activitySection = !hasCap(item, 'activity')
+            ? ''
+            : (!item.activity.length && !composer)
+                ? `<div class="wcn-empty-line">
+                    <i class="bx bx-message-square-detail" aria-hidden="true"></i>
+                    <span class="wcn-empty-text">${esc(t('ActivityEmpty'))}</span>
+                </div>`
+                : `<div class="wcn-detail-section">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('ActivityLabel'))}</h6>
+                    ${composer}
+                    ${item.activity.length
+                        ? (activityCapped
+                            ? `<div class="wcn-scrollcap" data-wcn-scrollcap><ul class="wcn-audit">${auditRows}</ul></div>
+                               <button type="button" class="btn btn-sm btn-label-secondary wcn-showall" data-wcn-showall>${esc(tf('ShowAllCount', item.activity.length))}</button>`
+                            : `<ul class="wcn-audit">${auditRows}</ul>`)
+                        : `<p class="wcn-block-hint">${esc(t('ActivityEmpty'))}</p>`}
+                </div>`;
 
         // Command card — identity, status, actions and personal overlay. Everything
         // the viewer decides on lives here, above the read-only detail cards.
@@ -2212,7 +2387,7 @@
             <div class="wcn-detail-chips">
                 ${chip(SLA_KIND[item.slaState], 'bx-time-five', slaLabel(item))}
                 ${priorityChip(item)}
-                ${chip('role', 'bx-user-check', t(ROLE_KEY[item.viewerRole] || item.viewerRole))}
+                ${roleChip(item)}
             </div>
             ${renderLifecycleStepper(item)}
             ${reviewNote}
@@ -2235,7 +2410,9 @@
          * the columns stack and the action rail follows the content, so it is never the only thing visible.
          */
         const content = [
-            card(summarySection),
+            // FIRST, always: "what is this?" is the question a detail page owes its reader before "what can you
+            // do about it?" — which is what the page used to open with.
+            card(renderSummary(item)),
             card(renderBusinessContext(item)),
             card(renderParentContext(item)),
             card(renderSubtasks(item)),
@@ -2249,14 +2426,18 @@
             card(activitySection)
         ].filter(Boolean).join('');
 
+        /*
+         * THE DECISION RAIL, in the order a decision is actually made: what can I do · where does this stand ·
+         * what did I note · and, folded away, what the machine knows. Gates and dates used to be two cards and
+         * are one now; the source-context card is the same data behind a <details>.
+         */
         const rail = [
             card(renderActionRail(item)),
-            card(renderGates(item)),
+            card(renderStatusCard(item)),
             // Personal note sits UNDER the actions: it is something the viewer writes, not something the task says.
             card(`${renderNote(item)}${personal}`),
-            card(renderPlanDates(item)),
-            card(renderSourceContext(item)),
-            card(`${renderDelegation(item)}${renderApprovalChain(item)}`)
+            card(`${renderDelegation(item)}${renderApprovalChain(item)}`),
+            card(renderTechnicalDetails(item))
         ].filter(Boolean).join('');
 
         /*
@@ -2287,7 +2468,7 @@
         return `<div class="wcn-detail wcn-details-page">
             <div class="row g-4 wcn-detail-grid">
                 <div class="col-12">${pageHeader}</div>
-                <div class="col-12">${commandCard}</div>
+                <div class="col-12 wcn-detail-head">${commandCard}</div>
                 <div class="col-12 col-lg-8 wcn-detail-content">${content}</div>
                 <div class="col-12 col-lg-4 wcn-detail-rail">${rail}</div>
             </div>

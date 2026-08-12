@@ -53,6 +53,13 @@
         // Same normalization as dueAt, and for the same reason: the wire carries a full ISO instant, the date
         // input and renderPlanDates both expect a date-only string.
         item.plannedDate = toDateOnly(dto.plannedDate);
+        /*
+         * MEASURED LIVE the moment the field first rendered: the summary card printed
+         * "2026-07-26T07:51:18.432407+03:00". `startAt` is a full ISO instant on the wire exactly like the two
+         * dates above it, and a date the reader is asked to read must arrive as a date. Normalized at the SAME
+         * seam rather than formatted at the render site, so the next surface to show it inherits the fix.
+         */
+        item.startAt = toDateOnly(dto.startAt);
         item.escalated = !!(dto.escalated || (dto.escalation && dto.escalation.escalated));
         return item;
     };

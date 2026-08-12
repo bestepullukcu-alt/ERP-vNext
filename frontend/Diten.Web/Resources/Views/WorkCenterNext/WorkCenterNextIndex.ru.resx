@@ -278,6 +278,36 @@
   <data name="DetailSummary" xml:space="preserve">
     <value>Сводка</value>
   </data>
+  <data name="SummaryCardLabel" xml:space="preserve">
+    <value>Сводка</value>
+  </data>
+  <data name="StatusCardLabel" xml:space="preserve">
+    <value>Текущее состояние</value>
+  </data>
+  <data name="TechnicalDetailsLabel" xml:space="preserve">
+    <value>Технические данные</value>
+  </data>
+  <data name="TechVersionValue" xml:space="preserve">
+    <value>Версия {0}</value>
+  </data>
+  <data name="DetailStartAt" xml:space="preserve">
+    <value>Дата начала</value>
+  </data>
+  <data name="DetailEstimate" xml:space="preserve">
+    <value>Оценка</value>
+  </data>
+  <data name="DetailTags" xml:space="preserve">
+    <value>Теги</value>
+  </data>
+  <data name="DetailPriority" xml:space="preserve">
+    <value>Приоритет</value>
+  </data>
+  <data name="EstimateHoursValue" xml:space="preserve">
+    <value>{0} ч</value>
+  </data>
+  <data name="ShowAllCount" xml:space="preserve">
+    <value>Показать все ({0})</value>
+  </data>
   <data name="DetailContext" xml:space="preserve">
     <value>Контекст источника</value>
   </data>

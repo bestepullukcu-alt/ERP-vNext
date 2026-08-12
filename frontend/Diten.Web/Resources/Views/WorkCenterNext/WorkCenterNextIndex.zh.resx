@@ -278,6 +278,36 @@
   <data name="DetailSummary" xml:space="preserve">
     <value>摘要</value>
   </data>
+  <data name="SummaryCardLabel" xml:space="preserve">
+    <value>摘要</value>
+  </data>
+  <data name="StatusCardLabel" xml:space="preserve">
+    <value>当前状态</value>
+  </data>
+  <data name="TechnicalDetailsLabel" xml:space="preserve">
+    <value>技术信息</value>
+  </data>
+  <data name="TechVersionValue" xml:space="preserve">
+    <value>第 {0} 版</value>
+  </data>
+  <data name="DetailStartAt" xml:space="preserve">
+    <value>开始日期</value>
+  </data>
+  <data name="DetailEstimate" xml:space="preserve">
+    <value>预估</value>
+  </data>
+  <data name="DetailTags" xml:space="preserve">
+    <value>标签</value>
+  </data>
+  <data name="DetailPriority" xml:space="preserve">
+    <value>优先级</value>
+  </data>
+  <data name="EstimateHoursValue" xml:space="preserve">
+    <value>{0} 小时</value>
+  </data>
+  <data name="ShowAllCount" xml:space="preserve">
+    <value>查看全部（{0}）</value>
+  </data>
   <data name="DetailContext" xml:space="preserve">
     <value>来源上下文</value>
   </data>

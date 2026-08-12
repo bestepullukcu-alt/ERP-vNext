@@ -109,11 +109,13 @@ describe("WorkCenterNext localization resources", () => {
     // single shared placeholder in renderPlanDates, so this pins the call sites.
     const app = fs.readFileSync(
       path.resolve(__dirname, "../wwwroot/assets/js/WorkCenterNext/app.js"), "utf8");
-    const fn = app.slice(app.indexOf("const renderPlanDates"), app.indexOf("const renderPlanDates") + 1200);
+    // The dates moved INTO the status card when gates and dates were merged (2026-08-12); the per-cell rule
+    // they carry is the point of this test and moved with them.
+    const fn = app.slice(app.indexOf("const renderStatusCard"), app.indexOf("const renderStatusCard") + 2400);
 
-    expect(fn).toContain("cell('SourceDueLabel', item.dueAt, 'SlaNoSla'");
-    expect(fn).toContain("cell('PlannedDateLabel', item.plannedDate, 'PlannedDateNone'");
-    // The old shape hardcoded the fallback inside cell() instead of taking it per call.
+    expect(fn).toContain("dateCell('SourceDueLabel', item.dueAt, 'SlaNoSla'");
+    expect(fn).toContain("dateCell('PlannedDateLabel', item.plannedDate, 'PlannedDateNone'");
+    // The old shape hardcoded the fallback inside the cell helper instead of taking it per call.
     expect(fn).not.toMatch(/value \|\| t\('SlaNoSla'\)/);
   });
 

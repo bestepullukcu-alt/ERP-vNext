@@ -6687,3 +6687,80 @@ tags.diten-tags .tagify__input {
     color: var(--bs-secondary-color);
     padding-block: .5rem .25rem;
 }
+
+/* ── TASK DETAIL — three regions ──────────────────────────────────────────────────────────────────────────
+   head (what this is) · content (what it says) · rail (what you can do). No tabs: a gate behind a tab is a gate
+   nobody sees, and "3 open subtasks must be closed" is exactly the sentence that would hide there. */
+
+/* The summary card's fact grid: label above value, two per line, one line each. */
+.wcn-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: .875rem 1.25rem;
+}
+
+.wcn-fact { display: flex; align-items: flex-start; gap: .5rem; min-width: 0; }
+.wcn-fact-wide { grid-column: 1 / -1; }
+.wcn-fact > i { font-size: 1rem; line-height: 1.4; color: var(--bs-secondary-color); }
+.wcn-fact-body { min-width: 0; display: flex; flex-direction: column; }
+.wcn-fact-label {
+    font-size: .6875rem;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: var(--bs-secondary-color);
+}
+.wcn-fact-value { font-weight: 500; overflow-wrap: anywhere; }
+.wcn-fact-tags { display: flex; flex-wrap: wrap; gap: .25rem; margin-block-start: .125rem; }
+.wcn-tag {
+    display: inline-flex;
+    padding: .0625rem .5rem;
+    border-radius: 1rem;
+    font-size: .75rem;
+    background-color: var(--bs-secondary-bg);
+    color: var(--bs-body-color);
+}
+
+/* NOTHING YET is a line, not a card. A full-height box announcing an absence is how half a new task's page
+   became "there is nothing here". */
+.wcn-empty-line {
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    padding-block: .625rem;
+    color: var(--bs-secondary-color);
+}
+.wcn-empty-line > i { font-size: 1.125rem; }
+.wcn-empty-text { flex: 1 1 auto; min-width: 0; }
+.wcn-empty-action { flex: 0 0 auto; }
+
+/* Past its threshold a list scrolls INSIDE its own card — never a tab, and never a truncation: everything
+   stays reachable, and "show all" releases the cap. */
+.wcn-scrollcap { max-block-size: 20rem; overflow-y: auto; }
+.wcn-scrollcap.wcn-scrollcap-open { max-block-size: none; overflow-y: visible; }
+.wcn-showall { margin-block-start: .5rem; }
+
+/* Technical details: kept for support, folded away for everyone else. */
+.wcn-tech > .wcn-tech-summary {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    cursor: pointer;
+    font-size: .75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: var(--bs-secondary-color);
+    list-style: none;
+}
+.wcn-tech > .wcn-tech-summary::-webkit-details-marker { display: none; }
+.wcn-tech > .wcn-tech-summary::after {
+    content: "\203A";
+    margin-inline-start: auto;
+    font-size: 1.125rem;
+    line-height: 1;
+    transition: transform .15s ease;
+}
+.wcn-tech[open] > .wcn-tech-summary::after { transform: rotate(90deg); }
+[dir="rtl"] .wcn-tech > .wcn-tech-summary::after { transform: rotate(180deg); }
+[dir="rtl"] .wcn-tech[open] > .wcn-tech-summary::after { transform: rotate(90deg); }
+.wcn-tech-body { margin-block-start: 1rem; }
