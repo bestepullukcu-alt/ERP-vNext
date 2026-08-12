@@ -368,6 +368,48 @@ contract unless the owner explicitly approves the named artifact/version and sup
 | `PVG-MOD0230-RetentionLegalHoldArchiveVoid-v1` | Compliance / legal-hold / records-retention owner, aligned with MOD-0019, MOD-0021, trace, workflow, evidence owners as applicable | Approver, approval date, artifact/link, version, retention/legal-hold/archive/void rules, archive/void blocked-before-approval proof, legal-hold block proof, no hard delete/bulk-delete proof | Market-generic retention assumption, draft retention matrix, unapproved archive/void wording, missing legal-hold proof | Owner approves class-specific policy and tests prove archive/void/delete paths fail closed as required |
 | MOD-0230 operational runtime authorization | User / PVG system owner / Enterprise Architecture, with platform operations and validation approval where required | Approver, approval date, artifact/link, version, approved runtime scope, service boundary, port/topology, appsettings policy, tenant isolation, safe telemetry/errors/audit metadata, no delete/bulk-delete, archive/void status, all exposed-surface fail-closed tests | Local scaffold approval, docs-only planning approval, supplier paper, draft service boundary, untested startup/config behavior | Explicit operational runtime authorization is granted and the row can be marked approved |
 
+### MOD-0230 Runtime Authorization Packet Summary
+
+The detailed MOD-0230 runtime authorization packet is recorded in the MOD-0230 module pack as a **draft / not
+approved** future authorization shape. This DCP summary preserves the sequencing decision: PVG operational runtime is
+currently **NO-GO**.
+
+Runtime may be requested later only for MOD-0230 first, backend-only, local/dev/CI, and fail-closed. MOD-0231,
+MOD-0232, and MOD-0234 operational runtime remain blocked until MOD-0230 handoff evidence and their own downstream
+gates are approved.
+
+Required MOD-0230 runtime approval inputs:
+
+- explicit MOD-0230 runtime authorization by the user / PVG system owner / Enterprise Architecture
+- MOD-0018 RBAC approval
+- MOD-0019 FieldSecurity / masking approval
+- MOD-0021 AuditEvent approval
+- MOD-0023 Workflow/Inbox approval
+- MOD-0031 EvidenceLink approval
+- TRACE-BUNDLE / Blueprint MOD-0040 trace authority approval
+- MOD-0041 / Ops observability and regulated error-model approval
+- retention / legal-hold / archive-void decision
+- service port `5011` approval
+- service-local `appsettings*.json` policy approval
+- startup fail-closed policy approval
+- no-PHI/PII logs, traces, metrics, audit metadata, validation errors, and regulated errors proof
+- tenant isolation proof
+
+Allowed paths after explicit approval are limited to `services/Diten.PvgService/src/Diten.PvgService.Api/**`,
+`Application/RegPvBase/**`, `Domain/RegPvBase/**`, `Infrastructure/RegPvBase/**`, `services/Diten.PvgService/tests/**`,
+service-local project files, and service-local `appsettings*.json` with no secrets, no PHI/PII, no partner credentials,
+and no permissive fallback.
+
+Forbidden until separately approved: `frontend/**`, `gateway/**`, seeds, fixtures, sample PHI/PII, jobs, collections,
+migrations, repositories, Mongo, persistence, partner integration, AI, archive, void, export, delete, bulk-delete,
+MOD-0231 runtime, MOD-0232 runtime, MOD-0234 runtime, production use, supplier qualification, CSV validation, and
+deployment.
+
+Validation expectations for any later authorized runtime slice include `git diff --check`, focused
+`Diten.PvgService` build/tests, API startup fail-closed tests, no client `TenantId`, cross-tenant denial, missing
+contract/policy block tests, no sensitive echo in results/logs/traces/metrics/errors/audit metadata, appsettings
+policy tests, and no forbidden path changes.
+
 ## 16. Acceptance criteria
 
 **Acceptance for this DCP sequencing contract:**

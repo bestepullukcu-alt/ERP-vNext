@@ -599,6 +599,126 @@ Acceptance criteria for the **operational runtime gate** (all open - do not chec
 - [ ] All three non-production port adapters are removed from the environment.
 - [ ] MOD-0230 operational runtime authorization is granted.
 
+## MOD-0230 Runtime Authorization Packet (Draft / Not Approved)
+
+This packet records the minimum evidence required before MOD-0230 can move from non-operational build/test scaffold
+to backend operational runtime planning. It is a governance request shape only. It does not approve runtime, does not
+authorize API host startup, does not authorize persistence, does not authorize Gateway/frontend work, and does not
+authorize production use.
+
+Current decision: **NO-GO for PVG operational runtime**. The only future runtime path that may be requested first is
+MOD-0230 backend-only, local/dev/CI, fail-closed runtime. MOD-0231, MOD-0232, and MOD-0234 operational runtime remain
+blocked until MOD-0230 runtime handoff evidence and their own downstream gates are approved.
+
+### Required Approval Gates
+
+All gates below must be owner-approved and evidence-backed before MOD-0230 runtime work starts:
+
+- [ ] MOD-0230 operational runtime authorization explicitly granted by the user / PVG system owner / Enterprise Architecture.
+- [ ] MOD-0018 RBAC owner approval for runtime permission enforcement, actor context, seed/grant ownership, tenant scope, and deny behavior.
+- [ ] MOD-0019 FieldSecurity / masking owner approval for all MOD-0230 fields and every exposed surface.
+- [ ] MOD-0021 AuditEvent owner approval for append/event shape, outage behavior, redaction, and correlation propagation.
+- [ ] MOD-0023 Workflow/Inbox owner approval for gate-before-commit triage/route behavior.
+- [ ] MOD-0031 EvidenceLink owner approval for required evidence links, completeness rules, outage behavior, and no fake packs.
+- [ ] TRACE-BUNDLE / Blueprint MOD-0040 trace authority approval for canonical IDs, external-reference non-authority, and correlation.
+- [ ] MOD-0041 / Ops observability and regulated error-model owner approval for telemetry/error redaction and outage behavior.
+- [ ] Retention / legal-hold / archive-void decision approved, even if archive/void remain absent in the first runtime slice.
+- [ ] Service port policy approved for `Diten.PvgService` port `5011`, including correction of protected port registry drift if required.
+- [ ] Service-local `appsettings*.json` policy approved.
+- [ ] Startup fail-closed policy approved.
+- [ ] No-PHI/PII logs, traces, metrics, audit metadata, validation errors, and regulated errors proof supplied.
+- [ ] Tenant isolation proof supplied.
+
+### Allowed Paths After Explicit Runtime Approval
+
+Only these paths may be considered for the first approved MOD-0230 backend runtime slice:
+
+- `services/Diten.PvgService/src/Diten.PvgService.Api/**`
+- `services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/**`
+- `services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/**`
+- `services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/**`
+- `services/Diten.PvgService/tests/**`
+- service-local solution/project files required to wire the approved backend runtime slice
+- service-local `appsettings*.json` only when it contains no secrets, no PHI/PII, no partner credentials, and no permissive fallback
+
+### Forbidden Until Separately Approved
+
+- `frontend/**`
+- `gateway/**`
+- seeds, fixtures, sample PHI/PII, or sample regulated safety data
+- jobs, collections, migrations, repositories, Mongo, or persistence paths unless specifically approved in the runtime packet
+- partner integration
+- AI behavior
+- archive, void, export, delete, or bulk-delete
+- MOD-0231, MOD-0232, or MOD-0234 operational runtime
+- production use, supplier qualification, CSV validation, or deployment
+
+### Service Port And Appsettings Policy
+
+`Diten.PvgService` may continue to use proposed port `5011` in governance language only. Runtime startup on that port
+requires explicit port/topology approval. `.antigravity/rules/ports.md` remains a protected path and must not be
+edited without separate approval.
+
+Approved `appsettings*.json` content must be service-local, local/dev/CI scoped, and minimum necessary. It may carry
+non-secret feature flags and safe endpoint placeholders only if missing or disabled configuration fails closed. It
+must not contain secrets, partner credentials, PHI/PII, sample patient/reporter data, permissive fallback flags, or
+policy values that bypass RBAC, masking, audit, workflow, evidence, trace, or observability gates.
+
+### Startup Fail-Closed Requirements
+
+The MOD-0230 API host, if later approved, must fail startup or block regulated mutation when any required runtime
+contract is missing, disabled, unavailable, or configured to a non-production adapter outside explicitly allowed
+local/dev/CI test mode. Required startup/config checks include RBAC, FieldSecurity, AuditEvent, WorkflowTransitionGate,
+EvidenceLink, TRACE-BUNDLE/correlation, ObservabilityErrorModel, retention/archive/void status, tenant context
+resolution, service port binding, and appsettings policy.
+
+No degraded path may silently allow a regulated create, update, triage, or route mutation unless the owning authority
+has approved that degraded path and the behavior is covered by tests.
+
+### Tenant Isolation Rules
+
+- Tenant context must be server-resolved.
+- Client payloads, query strings, route values, or headers must not supply authoritative `TenantId`.
+- Cross-tenant reads must return safe 404/empty/not-found style behavior with no existence leak.
+- Cross-tenant mutations must deny before mutation and must not disclose the target tenant, object existence, or raw request values.
+- Tenant values must not appear in validation errors, regulated error payloads, logs, traces, metrics, audit metadata, or safe result shapes.
+
+### PHI/PII And Regulated Safety Controls
+
+- Raw patient identifiers, reporter identifiers, contact details, safety narratives, triage free text, source document
+  content, and external reference values must not enter logs, traces, metrics, validation errors, regulated errors, or
+  audit metadata.
+- Allowed runtime responses must use safe reason codes, metadata-only envelopes, redacted hashes, precision indicators,
+  or controlled taxonomy codes where approved.
+- Missing FieldSecurity, ObservabilityErrorModel, AuditEvent redaction, or trace policy must block regulated mutation or
+  use only an explicitly approved fail-closed/degraded behavior.
+
+### Audit / Workflow / Evidence / Trace / Error Requirements
+
+- Audit: create, update, triage, route, denial, and failure paths need owner-approved audit intent/append behavior.
+  Audit outage must block mutation or use only an owner-approved durable outbox path.
+- Workflow: triage and route transitions must call the owner-approved gate before commit. Missing queue, assignment,
+  reason code, tenant/object mismatch, unavailable gate, or blocked transition must prevent mutation.
+- Evidence: required evidence links and completeness rules must be owner-approved. Missing or unavailable EvidenceLink
+  must block required lifecycle gates; no fake evidence pack or duplicated content is allowed.
+- Trace: canonical IDs must be server-generated; external references are non-authoritative; missing/invalid correlation
+  must block regulated mutation; duplicate or mismatch ambiguity must fail safely.
+- Errors/observability: regulated errors, logs, traces, and metrics must carry only safe codes and safe metadata. Raw
+  exception messages, stack traces, PHI/PII, tenant values, and free text must not be emitted.
+
+### Validation Required Before Runtime Work Can Be Accepted
+
+- `git diff --check`
+- focused `Diten.PvgService` build and tests
+- API startup fail-closed tests
+- no client-supplied `TenantId` tests
+- cross-tenant read/write denial tests
+- missing RBAC, FieldSecurity, AuditEvent, WorkflowTransitionGate, EvidenceLink, trace/correlation, and error-model block tests
+- no sensitive echo tests for results, logs, traces, metrics, validation errors, regulated errors, and audit metadata
+- appsettings policy tests proving no permissive fallback and no production use of non-production adapters
+- no forbidden path changes
+- no archive, void, export, delete, or bulk-delete runtime surface
+
 ## Test Expectations
 
 Slice 1 test expectations - **required before slice 1 is accepted**:
