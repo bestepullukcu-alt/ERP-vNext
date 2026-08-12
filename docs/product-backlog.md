@@ -11,6 +11,48 @@
 
 ---
 
+## DURUM DİZİNİ (CT, 2026-08-13)
+
+> **Bu dizin bir gezinme aracıdır, otorite değildir.** Bir madde ile bu dizin çelişirse **madde gövdesi**
+> doğrudur. Dizin, 80 maddelik dosyada "bugün ne kaldı" sorusunu gövdeleri okumadan cevaplamak için var.
+>
+> ⚠ **Sınıflandırma otomatik DEĞİL:** aşağıdaki üç grup CT'nin **canlı doğruladığı** maddelerdir. Kalan
+> **60 madde gözden geçirilmedi** — "açık" sayılırlar ama bu bir ölçüm değil, varsayımdır. Bir sonraki
+> ayıklama turu onları derecelendirmeli (38'inin işareti bile yok: BL-001…BL-041 işaret geleneğinden önce
+> yazıldı).
+
+**✅ Bu oturumda KAPANDI — canlı doğrulandı, arşiv adayı**
+
+| Madde | Ne kapandı | Kanıt |
+|---|---|---|
+| BL-065 | Görev başına bildirim tercihi + son tarih hatırlatması (üç katman: saklama · sözleşme · gönderici) | Süpürme canlı çalıştı, reddedilen gönderim yeniden denendi, ikinci tetikte tekrar göndermedi |
+| BL-072 | Aday seçicide sessiz eleme → sayılı ipucu | "1 kişi listelenmedi: 1 kişi kapsamınız dışında" ekranda, isim sızdırmıyor |
+
+**🟠 YARIM — yarısı kapandı, yarısı duruyor. Bir sonraki ayıklamada İKİYE BÖLÜNMELİ**
+
+| Madde | Kapanan | Açık kalan |
+|---|---|---|
+| BL-057 | Atama/havuz **seçicileri** kapsamla süzülüyor; onaycı listesi bilerek muaf | Liste · Gelen Kutusu · Havuz **ekran** süzmesi · şirket seçici · şirkete göre raporlama |
+| BL-023 | "Ekibim" kapsam seçici · yukarı akan iş **talep** oluyor (MOD-0023'e devir) | Talebin **sonucu** Görev Merkezi'nde okunmuyor (rozet/durum yok) |
+
+**🆕 Bu oturumda AÇILDI (16)** — BL-067 · BL-068 · BL-071 · BL-073 · BL-074 · BL-075 · BL-076 · BL-077 ·
+BL-078 · BL-079 · BL-080 · BL-081 · BL-082 (+ BL-060…BL-066 aralığındaki daha erken kayıtlar)
+
+**⛔ BİZDE DEĞİL / BLOKE** — sayımdan düşer, beklenen şey madde gövdesinde yazılı
+
+| Madde | Bekleyen |
+|---|---|
+| BL-067 | BL-054 (görev şablonu ekranı) |
+| BL-068 | AuthService'te kullanıcı dili alanı yok |
+| BL-071 | Employee modülünü **başka bir geliştirici** yazıyor — bizden çıkan şey **karar notu** |
+| BL-075 | MDM isim çözücüsü (tüzel kişi adı Platform'da yok) |
+| BL-079 | Kontrol listesi şablon **okuma ucu** yok |
+| BL-081 | `_Layout.cshtml` başka bir ekranın işi |
+
+---
+
+---
+
 ## Foundation guardrail'leri (ŞİMDİ uygulanır — ERTELENMEZ)
 
 > Bunlar ertelenen özellik DEĞİL; **bugünden itibaren geçerli mimari kurallardır.** Bedavadırlar (ekstra iş yok) ama uygulanmazsa ileride BL-007/BL-008 eklerken **geriye dönük ayıklama/migration acısı** doğar. Antigravity ajanları ve developer'lar bunlara uyar.
