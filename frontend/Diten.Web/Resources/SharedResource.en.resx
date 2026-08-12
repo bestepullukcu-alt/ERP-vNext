@@ -623,4 +623,13 @@
   <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
     <value>Field Definitions</value>
   </data>
+  <data name="TagsPlaceholder" xml:space="preserve">
+    <value>Type a tag and press Enter</value>
+  </data>
+  <data name="TagsCount" xml:space="preserve">
+    <value>{0} tags</value>
+  </data>
+  <data name="TagsRemove" xml:space="preserve">
+    <value>Remove {0}</value>
+  </data>
 </root>

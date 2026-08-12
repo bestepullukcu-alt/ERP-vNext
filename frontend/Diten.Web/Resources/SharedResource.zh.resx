@@ -564,4 +564,13 @@
   <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
     <value>字段定义</value>
   </data>
+  <data name="TagsPlaceholder" xml:space="preserve">
+    <value>输入标签后按回车</value>
+  </data>
+  <data name="TagsCount" xml:space="preserve">
+    <value>{0} 个标签</value>
+  </data>
+  <data name="TagsRemove" xml:space="preserve">
+    <value>移除 {0}</value>
+  </data>
 </root>

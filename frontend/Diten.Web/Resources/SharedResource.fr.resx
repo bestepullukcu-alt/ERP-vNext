@@ -564,4 +564,13 @@
   <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
     <value>Définitions de champs</value>
   </data>
+  <data name="TagsPlaceholder" xml:space="preserve">
+    <value>Saisissez une étiquette et appuyez sur Entrée</value>
+  </data>
+  <data name="TagsCount" xml:space="preserve">
+    <value>{0} étiquettes</value>
+  </data>
+  <data name="TagsRemove" xml:space="preserve">
+    <value>Supprimer {0}</value>
+  </data>
 </root>

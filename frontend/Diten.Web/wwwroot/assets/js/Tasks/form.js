@@ -1032,27 +1032,16 @@
     };
 
     /*
-     * Tags as CHIPS, using the library the rest of the app already uses for exactly this (the tenant-security
-     * screen's IP and country lists). A plain text box asked the user to know that commas separate tags and gave
-     * no sign of what had been entered.
+     * Tags as CHIPS — through the SHARED component, not through Tagify directly.
      *
-     * `originalInputValueFormat` keeps the underlying <input> comma-separated, so parseTags — and therefore the
-     * array the API receives — is unchanged. That is the same reason the security screen passes it.
+     * Three screens used to construct Tagify independently on the library's default CSS, so a change to one
+     * drifted the other two. DitenTags owns the construction, the comma contract and the layout; this function
+     * is now just "which input, on this page".
      */
     const enhanceTags = (root) => {
         const scope = root || global.document;
-        if (!scope || typeof global.Tagify !== 'function') { return 0; }
-
-        const nodes = Array.from(scope.querySelectorAll('#taskTags'))
-            .filter((node) => !node.__tagify);
-
-        nodes.forEach((node) => {
-            node.__tagify = new global.Tagify(node, {
-                originalInputValueFormat: (values) => values.map((v) => v.value).join(',')
-            });
-        });
-
-        return nodes.length;
+        if (!global.DitenTags) { return 0; }
+        return global.DitenTags.enhance(scope, { selector: '#taskTags' }).length;
     };
 
     /*

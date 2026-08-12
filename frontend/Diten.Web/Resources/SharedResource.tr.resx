@@ -623,4 +623,13 @@
   <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
     <value>Alan Tanımları</value>
   </data>
+  <data name="TagsPlaceholder" xml:space="preserve">
+    <value>Etiket yazıp Enter'a basın</value>
+  </data>
+  <data name="TagsCount" xml:space="preserve">
+    <value>{0} etiket</value>
+  </data>
+  <data name="TagsRemove" xml:space="preserve">
+    <value>{0} etiketini kaldır</value>
+  </data>
 </root>

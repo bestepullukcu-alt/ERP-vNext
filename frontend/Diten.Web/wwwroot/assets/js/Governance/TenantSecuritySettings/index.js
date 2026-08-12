@@ -366,14 +366,16 @@ const TenantSecuritySettings = (function () {
     };
 
     const initTagify = () => {
-        if (typeof window.Tagify !== 'function') return;
-        // Keep the original <input> value comma-separated so the existing splitList() payload logic works.
-        const opts = { originalInputValueFormat: (values) => values.map((v) => v.value).join(',') };
+        // Through the SHARED component (assets/js/shared/diten-tags.js), never `new Tagify` here. The
+        // comma-separated <input> value that splitList() reads is the component's own contract, so this screen
+        // no longer restates it — three copies of one rule is how they drift.
+        if (!window.DitenTags) return;
         const ipInput = form?.elements.allowedIps;
         const countryInput = form?.elements.allowedCountries;
-        if (ipInput) tagifyIps = new window.Tagify(ipInput, opts);
+        if (ipInput) tagifyIps = window.DitenTags.enhance(form, { selector: '[name="allowedIps"]' })[0] || null;
         if (countryInput) {
-            tagifyCountries = new window.Tagify(countryInput, opts);
+            tagifyCountries = window.DitenTags.enhance(form, { selector: '[name="allowedCountries"]' })[0] || null;
+            if (!tagifyCountries) { return; }
             // Normalise country codes to upper-case ISO alpha-2 as the user types.
             tagifyCountries.on('add', (e) => {
                 const raw = e.detail?.data?.value || '';

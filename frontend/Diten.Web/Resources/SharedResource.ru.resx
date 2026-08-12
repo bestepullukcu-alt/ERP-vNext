@@ -564,4 +564,13 @@
   <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
     <value>Определения полей</value>
   </data>
+  <data name="TagsPlaceholder" xml:space="preserve">
+    <value>Введите метку и нажмите Enter</value>
+  </data>
+  <data name="TagsCount" xml:space="preserve">
+    <value>меток: {0}</value>
+  </data>
+  <data name="TagsRemove" xml:space="preserve">
+    <value>Удалить {0}</value>
+  </data>
 </root>

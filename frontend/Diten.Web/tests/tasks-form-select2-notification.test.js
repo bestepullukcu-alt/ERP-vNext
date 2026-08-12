@@ -406,12 +406,25 @@ describe("tags are entered as chips, using the pattern the repo already has", ()
   });
 
   test("the tag field is initialised, keeping the input comma-separated", () => {
+    /*
+     * The SEAM moved and the CONTRACT did not. Tagify is now constructed by the shared component
+     * (assets/js/shared/diten-tags.js) rather than by form.js — three screens building it independently is what
+     * made them drift. So this test loads the component too and asserts the same thing it always did: the
+     * underlying <input> stays comma-separated, because parseTags and therefore the API depend on it.
+     */
     delete global.TaskForm;
+    delete global.DitenTags;
+    loadScript("wwwroot/assets/js/shared/diten-tags.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
     document.body.innerHTML = '<input id="taskTags" />';
 
     const built = [];
-    global.Tagify = function Tagify(input, options) { built.push([input, options]); this.input = input; };
+    global.Tagify = function Tagify(input, options) {
+      built.push([input, options]);
+      this.input = input;
+      this.value = [];
+      this.on = () => this;
+    };
 
     global.TaskForm.enhanceTags(document);
 

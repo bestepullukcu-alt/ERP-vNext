@@ -4861,6 +4861,134 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 }
 
 /* ==========================================================================
+   DitenTags — the ONE tag input (assets/js/shared/diten-tags.js)
+   --------------------------------------------------------------------------
+   LAYOUT "C": the box stays EMPTY and the chips flow BELOW it.
+
+   The reason is ALIGNMENT, not taste. Every control on these forms is 36px;
+   Tagify's own chips live INSIDE the control and grow it to ~60px as they
+   accumulate, which breaks the row the field shares with its neighbour. So the
+   in-box chips are removed here and re-rendered underneath by the component,
+   from the same value.
+
+   Logical properties throughout, so Arabic (RTL) needs no second rule, and every
+   colour is a token so both themes follow automatically.
+   ========================================================================== */
+
+/* THE CLAIM: one line, always. Not min-block-size — that still grows.
+   38px is MEASURED from the neighbouring .form-control in this theme (border-box:
+   20.625px line + 2 x 7.688px padding + 2 x 1px border), not a nominal number —
+   the whole point is that the tag field lines up with the control beside it. */
+.diten-tags {
+    block-size: 38px;
+    display: flex;
+    align-items: center;
+    inline-size: 100%;
+    padding-block: 0;
+    padding-inline: 0.75rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    background-color: var(--bs-body-bg);
+    --tags-border-color: transparent;   /* the border above is ours; Tagify must not draw a second one */
+}
+
+.diten-tags:focus-within {
+    border-color: var(--bs-primary);
+}
+
+/* The chips Tagify renders inside its own control. Removed rather than hidden
+   from assistive tech alone: they are re-rendered in the strip below, and two
+   copies in the accessibility tree would announce every tag twice. */
+.diten-tags .tagify__tag {
+    display: none;
+}
+
+.diten-tags .tagify__input {
+    margin: 0;
+    padding: 0;
+    min-inline-size: 0;
+    flex: 1 1 auto;
+    line-height: 34px;
+}
+
+/* THE ELEMENT TAGIFY REPLACES. Hidden by CLASS, not by sibling position.
+   Tagify's own rule is `.tagify + input`, and the strip we insert between the two
+   breaks that adjacency — which is exactly how the raw comma value reappeared as a
+   second box under the chips. `!important` because `.form-control` is what wins
+   otherwise, and it is the same weapon tagify.css uses for the same fight.
+   Off-screen rather than display:none, mirroring the vendor: the element stays a
+   real, submittable control carrying the comma-separated value the payload reads. */
+.diten-tags-source {
+    position: absolute !important;
+    inset-inline-start: -9999em !important;
+    transform: scale(0) !important;
+}
+
+/* ── the strip, below the box ─────────────────────────────────────────────── */
+.diten-tags-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem;
+    margin-block-start: 0.5rem;
+}
+
+/* NEUTRAL on purpose. A tag is neither a link nor a call to action; the accent
+   colour belongs to the one primary control on the form ("Oluştur"). Surface +
+   hairline, exactly like the other quiet chrome. */
+.diten-tags-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding-block: 0.125rem;
+    padding-inline: 0.25rem 0.125rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-sm);
+    background-color: var(--bs-secondary-bg);
+    color: var(--bs-body-color);
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+    max-inline-size: 100%;
+}
+
+.diten-tags-chip-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-inline-start: 0.25rem;
+}
+
+/* 24px is the touch-target floor, so the glyph stays small while the hit area
+   does not — a 12px "×" is a target only a mouse can hit. */
+.diten-tags-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 24px;
+    min-block-size: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--bs-border-radius-sm);
+    background: transparent;
+    color: var(--bs-secondary-color);
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.diten-tags-remove:hover,
+.diten-tags-remove:focus-visible {
+    background-color: var(--bs-tertiary-bg);
+    color: var(--bs-body-color);
+}
+
+/* Quiet: a count is context, not information the user came for. */
+.diten-tags-count {
+    color: var(--bs-secondary-color);
+    font-size: 0.8125rem;
+    margin-inline-start: 0.25rem;
+}
+
+/* ==========================================================================
    WorkCenterNext — cross-module personal work inbox (docs/workcenter-rebuild-spec.md)
    Sneat FOUNDATION (tokens/card/badge/button) + bespoke work-management
    components (list-row, split-detail, table board). Fully namespaced .wcn-*
