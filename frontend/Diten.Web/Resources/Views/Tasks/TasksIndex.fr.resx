@@ -110,6 +110,8 @@
   <data name="ErrorApprovalNotApproved" xml:space="preserve"><value>L'approbation n'est pas encore terminée, cette étape n'est pas autorisée.</value></data>
   <data name="ErrorApprovalGateUnavailable" xml:space="preserve"><value>L'approbation n'a pas pu être vérifiée pour le moment, l'action n'a pas été appliquée. Réessayez dans un instant.</value></data>
   <data name="AssigneeHint" xml:space="preserve"><value>Seules les personnes occupant actuellement un poste peuvent recevoir du travail.</value></data>
+  <data name="ActionSendRequest" xml:space="preserve"><value>Envoyer la demande</value></data>
+  <data name="UpwardRequestHint" xml:space="preserve"><value>Cette personne vous est hiérarchiquement supérieure : le travail est ENVOYÉ COMME DEMANDE et non attribué. C'est elle qui décide de l'accepter.</value></data>
   <data name="ExcludedHint" xml:space="preserve"><value>{0} personnes ne sont pas affichées :</value></data>
   <data name="ExcludedNoActivePosition" xml:space="preserve"><value>{0} n'occupent aucun poste actif</value></data>
   <data name="ExcludedPositionNotActive" xml:space="preserve"><value>{0} occupent un poste inactif</value></data>

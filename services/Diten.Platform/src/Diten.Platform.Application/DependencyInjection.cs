@@ -59,6 +59,9 @@ public static class DependencyInjection
         // CONSUMES IDataScopeResolver rather than recomputing anything; see TaskAssignmentScopeResolver.
         services.AddScoped<Features.Tasks.Services.ITaskAssignmentScopeResolver,
             Features.Tasks.Services.TaskAssignmentScopeResolver>();
+        // BL-023 — turns that resolver's DESCENT into "my team". Walks nothing of its own.
+        services.AddScoped<Features.Tasks.Services.ITaskTeamResolver,
+            Features.Tasks.Services.TaskTeamResolver>();
         services.AddScoped<ITenantModuleAccessService, TenantModuleAccessService>();
         services.AddScoped<IActorSafetyGuard, ActorSafetyGuard>();
         services.AddScoped<IQuotaService, QuotaService>();
@@ -229,6 +232,15 @@ public static class DependencyInjection
         // Phase 3b — the REVIEW handoff: the same engine asked a second question, never a second engine.
         services.AddScoped<Features.Tasks.Services.ITaskReviewService,
             Features.Tasks.Services.TaskReviewService>();
+        /*
+         * BL-023 Part B — the UPWARD WORK REQUEST handoff: the same engine asked a THIRD question, never a
+         * third engine. Beside it, the direction test that decides when to ask it — which reads the resolver's
+         * existing ManagerChain scope rather than walking the chain again.
+         */
+        services.AddScoped<Features.Tasks.Services.ITaskAssignmentDirection,
+            Features.Tasks.Services.TaskAssignmentDirection>();
+        services.AddScoped<Features.Tasks.Services.ITaskUpwardRequestService,
+            Features.Tasks.Services.TaskUpwardRequestService>();
 
         /*
          * WC-2 — the working-time seam and the SLA decision that rides on it.

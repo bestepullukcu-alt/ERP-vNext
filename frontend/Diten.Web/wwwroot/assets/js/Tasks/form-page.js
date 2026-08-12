@@ -274,6 +274,47 @@
         node.classList.toggle('d-none', text.length === 0);
     };
 
+    /*
+     * BL-023 — say (and MEAN) that upward work is a request.
+     *
+     * The direction comes from the SERVER, asked per chosen person, because the reporting chain lives there and
+     * a browser guess would drift from what the create handler actually does. The button's word and the
+     * server's behaviour therefore cannot disagree — which is the whole point: a control that quietly behaves
+     * differently from its label is the defect this project keeps correcting.
+     *
+     * Fail-safe direction: an unreachable answer leaves the ordinary "Oluştur", because wrongly promising a
+     * request is worse than wrongly promising an assignment (the server still opens the request either way).
+     */
+    let upwardCheck = 0;
+
+    const applyUpwardDirection = (isUpward) => {
+        const submit = el('taskSubmit');
+        if (submit) {
+            const label = isUpward
+                ? submit.getAttribute('data-task-label-upward')
+                : submit.getAttribute('data-task-label-default');
+            if (label) { submit.textContent = label; }
+        }
+        el('taskForm')?.querySelectorAll('[data-task-field="upwardRequest"]').forEach((node) => {
+            node.classList.toggle('d-none', !isUpward);
+        });
+    };
+
+    const refreshAssignmentDirection = async () => {
+        const target = el('taskAssignmentTarget')?.value;
+        const assignee = el('taskAssignee')?.value;
+
+        // Only a PERSON target can be upward: a pool has no single holder, and self-assignment never is.
+        if (target !== 'Person' || !assignee) { applyUpwardDirection(false); return; }
+
+        // Sequence guard: a slow answer for a previously chosen person must not relabel the button after the
+        // user has moved on — the same stale-answer failure the record search had.
+        const mine = ++upwardCheck;
+        const result = await global.TasksApi.assignmentDirection(assignee);
+        if (mine !== upwardCheck) { return; }
+        applyUpwardDirection(!!(result.ok && result.data && result.data.isUpward));
+    };
+
     const syncVisibility = () => {
         const form = el('taskForm');
         global.TaskForm.applyTargetVisibility(form, el('taskAssignmentTarget')?.value);
@@ -424,6 +465,9 @@
         global.TaskForm.enhanceTags(form);
 
         el('taskAssignmentTarget')?.addEventListener('change', syncVisibility);
+        // BL-023 — the direction depends on WHO, so both controls have to re-ask.
+        el('taskAssignmentTarget')?.addEventListener('change', refreshAssignmentDirection);
+        el('taskAssignee')?.addEventListener('change', refreshAssignmentDirection);
         el('taskApprovalRequired')?.addEventListener('change', syncVisibility);
         el('taskReviewRequired')?.addEventListener('change', syncVisibility);
         el('taskEmailNotifications')?.addEventListener('change', syncVisibility);

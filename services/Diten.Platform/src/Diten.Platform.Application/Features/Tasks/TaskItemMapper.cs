@@ -84,5 +84,8 @@ public static class TaskItemMapper
         task.CreatedAt,
         task.UpdatedAt,
         task.ReviewerCandidateUserId,
-        task.ReviewWorkflowInstanceId);
+        task.ReviewWorkflowInstanceId,
+        // BL-023 — the upward request's instance, so the detail surface can show that the work was ASKED for
+        // rather than assigned. A link only; the decision stays MOD-0023's.
+        task.RequestWorkflowInstanceId);
 }

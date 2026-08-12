@@ -431,6 +431,9 @@
   <data name="TabsLabel" xml:space="preserve">
     <value>علامات التبويب</value>
   </data>
+  <data name="ScopeTeam" xml:space="preserve"><value>فريقي</value></data>
+  <data name="ScopeTeamCount" xml:space="preserve"><value>{0} أشخاص</value></data>
+  <data name="ScopeTeamEmpty" xml:space="preserve"><value>لا أحد يتبعك في التسلسل الإداري، لذا لا يوجد فريق لعرضه.</value></data>
   <data name="TabInbox" xml:space="preserve">
     <value>صندوق الوارد</value>
   </data>

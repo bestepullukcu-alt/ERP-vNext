@@ -101,8 +101,15 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         IPositionRepository positions,
         IOrganizationUnitRepository organizationUnits,
         IWorkItemSlaCalculator sla,
-        ITaskFieldDefinitionRepository fieldDefinitions)
+        ITaskFieldDefinitionRepository fieldDefinitions,
+        /*
+         * BL-023 — resolves "my team" for the Ekibim scope. OPTIONAL on purpose: a caller that never asks for
+         * that scope (every caller before this change, and every test that pins Self behaviour) is unaffected,
+         * and an absent resolver can only ever narrow the answer to Self — it can never widen one.
+         */
+        ITaskTeamResolver? teamResolver = null)
     {
+        _teamResolver = teamResolver;
         _sla = sla;
         _fieldDefinitions = fieldDefinitions;
         _positions = positions;
@@ -123,6 +130,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// the working-time seam behind it can be swapped, which is the entire point of the slice.
     /// </summary>
     private readonly IWorkItemSlaCalculator _sla;
+
+    /// <summary>BL-023 — the descent that answers "whose work is my team's". Null ⇒ only the Self scope is served.</summary>
+    private readonly ITaskTeamResolver? _teamResolver;
 
     /// <summary>
     /// The configurable-field catalogue (Phase 5). Read ONCE per page — a stored value carries only its code, so
@@ -154,16 +164,41 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         WorkItemActor actor,
         CancellationToken ct = default)
     {
-        var mine = await _tasks.ListByAssigneeAsync(actor.UserId, ct);
+        /*
+         * BL-023 — WHOSE work. Two scopes, and Team is deliberately NOT a superset of Self: merging them would
+         * double every row and answer neither question ("what must I do" vs "what is my team carrying").
+         *
+         * Team never includes POOL work: an unclaimed pooled task belongs to nobody yet, so it is not any
+         * subordinate's load. Showing it under a manager's team view would count work that may never land there.
+         */
+        List<TaskItem> tasks;
+        if (actor.Scope == WorkItemScope.Team)
+        {
+            var team = _teamResolver is null
+                ? TaskTeamScope.None
+                : await _teamResolver.ResolveTeamAsync(ct);
 
-        // Pool work is offered to positions, so the actor's active positions decide what they may see/claim.
-        var positionIds = await ResolveActivePositionIdsAsync(actor.UserId, ct);
-        var pooled = await _tasks.ListUnclaimedByPositionsAsync(positionIds, ct);
+            var theirs = new List<TaskItem>();
+            foreach (var member in team.UserIds)
+            {
+                theirs.AddRange(await _tasks.ListByAssigneeAsync(member, ct));
+            }
 
-        var tasks = mine
-            .Concat(pooled)
-            .DistinctBy(t => t.Id)
-            .ToList();
+            tasks = theirs.DistinctBy(t => t.Id).ToList();
+        }
+        else
+        {
+            var mine = await _tasks.ListByAssigneeAsync(actor.UserId, ct);
+
+            // Pool work is offered to positions, so the actor's active positions decide what they may see/claim.
+            var positionIds = await ResolveActivePositionIdsAsync(actor.UserId, ct);
+            var pooled = await _tasks.ListUnclaimedByPositionsAsync(positionIds, ct);
+
+            tasks = mine
+                .Concat(pooled)
+                .DistinctBy(t => t.Id)
+                .ToList();
+        }
 
         // Phase 2 containers, both batched: one read for every task's checklist and one for every task's
         // children. Per-task reads here would be an N+1 over the whole page.

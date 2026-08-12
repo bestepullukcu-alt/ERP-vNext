@@ -110,6 +110,8 @@
   <data name="ErrorApprovalNotApproved" xml:space="preserve"><value>审批尚未完成，因此不允许执行此操作。</value></data>
   <data name="ErrorApprovalGateUnavailable" xml:space="preserve"><value>暂时无法查询审批状态，操作未生效。请稍后重试。</value></data>
   <data name="AssigneeHint" xml:space="preserve"><value>只能将工作分配给当前担任职位的人员。</value></data>
+  <data name="ActionSendRequest" xml:space="preserve"><value>发送请求</value></data>
+  <data name="UpwardRequestHint" xml:space="preserve"><value>此人在汇报关系中是您的上级，因此该工作不会被指派，而是作为请求发送。由对方决定是否接受。</value></data>
   <data name="ExcludedHint" xml:space="preserve"><value>有 {0} 人未列出：</value></data>
   <data name="ExcludedNoActivePosition" xml:space="preserve"><value>{0} 人没有生效的岗位</value></data>
   <data name="ExcludedPositionNotActive" xml:space="preserve"><value>{0} 人的岗位未启用</value></data>

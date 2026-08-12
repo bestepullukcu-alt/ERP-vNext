@@ -13,6 +13,18 @@
 (function (global) {
     const ENDPOINT = '/WorkCenterNext/api/work-items';
 
+    /*
+     * BL-023 — WHOSE work is being listed.
+     *
+     * A SCOPE, not a tab. The axis law is locked (tab = ownership, segment = state, chip = type + signal), and
+     * "my team" asks the same ownership question about a different person — so it belongs on a header control
+     * and the tab strip is untouched. This is the SAP My Inbox shape.
+     *
+     * Enumerated here rather than passed through as free text: an unrecognised value must collapse to SELF
+     * (the fail-safe direction) in the browser, instead of being handed to the server to interpret.
+     */
+    const SCOPE = { SELF: 'self', TEAM: 'team' };
+
     const STATUS = {
         OK: 'ok',
         UNAUTHORIZED: 'unauthorized',   // 401 — no/expired session
@@ -93,10 +105,20 @@
         return STATUS.ERROR;
     };
 
-    const fetchWorkItems = async () => {
+    const scopeOf = (options) => (options && options.scope === SCOPE.TEAM ? SCOPE.TEAM : SCOPE.SELF);
+
+    /*
+     * The URL for a scope. SELF keeps the bare endpoint EXACTLY as it was: every existing caller passes no
+     * options, and a query string appearing on the default call would be a change nobody asked for (and one the
+     * proxy's own tests pin).
+     */
+    const endpointFor = (scope) => (scope === SCOPE.TEAM ? `${ENDPOINT}?scope=${SCOPE.TEAM}` : ENDPOINT);
+
+    const fetchWorkItems = async (options) => {
+        const url = endpointFor(scopeOf(options));
         let response;
         try {
-            response = await global.fetch(ENDPOINT, {
+            response = await global.fetch(url, {
                 method: 'GET',
                 headers: { Accept: 'application/json' },
                 credentials: 'same-origin'
@@ -121,8 +143,41 @@
         return { status: STATUS.OK, httpStatus: response.status, items: mapped.items, errors: mapped.errors };
     };
 
+    /*
+     * BL-023 — does the caller have anybody reporting to them?
+     *
+     * Asked as its OWN question rather than inferred from an empty team list: "nobody reports to you" and "your
+     * team has no open work" look identical in an empty array, and telling them apart is the entire point of the
+     * empty-state decision (the option is disabled WITH a reason, never silently blank).
+     *
+     * FAILS CLOSED. An unreachable answer means the option stays off — offering a scope that will error is worse
+     * than not offering it, and the disabled reason still explains itself.
+     */
+    const TEAM_AVAILABILITY_ENDPOINT = '/WorkCenterNext/api/team-availability';
+
+    const fetchTeamAvailability = async () => {
+        try {
+            const response = await global.fetch(TEAM_AVAILABILITY_ENDPOINT, {
+                method: 'GET',
+                headers: { Accept: 'application/json' },
+                credentials: 'same-origin'
+            });
+            if (!response.ok) { return { hasTeam: false, memberCount: 0 }; }
+
+            const payload = await response.json();
+            const data = (payload && payload.data) || {};
+            return { hasTeam: !!data.hasTeam, memberCount: Number(data.memberCount) || 0 };
+        } catch (_) {
+            return { hasTeam: false, memberCount: 0 };
+        }
+    };
+
     global.WorkCenterNextApi = {
         ENDPOINT,
+        TEAM_AVAILABILITY_ENDPOINT,
+        fetchTeamAvailability,
+        SCOPE,
+        endpointFor,
         STATUS,
         toDateOnly,
         adaptProjection,

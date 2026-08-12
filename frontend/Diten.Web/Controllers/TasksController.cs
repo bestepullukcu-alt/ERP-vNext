@@ -282,6 +282,12 @@ public sealed class TasksController : Controller
     /// hand like every other non-transition route, for the reason above: a path Platform serves and this proxy
     /// does not answers 404 inside the web tier.
     /// </summary>
+    /// <summary>BL-023 — would assigning to this person be an upward REQUEST rather than an order?</summary>
+    [HttpGet("api/assignment-direction/{userId:guid}")]
+    public Task<IActionResult> ApiAssignmentDirection(Guid userId)
+        => ProxyAsync(HttpMethod.Get,
+            $"{_gatewayUrl}/api/v1/tasks/lookups/assignment-direction/{userId}", readBody: false);
+
     [HttpGet("api/decision-makers")]
     public Task<IActionResult> ApiDecisionMakers()
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/lookups/decision-makers", readBody: false);

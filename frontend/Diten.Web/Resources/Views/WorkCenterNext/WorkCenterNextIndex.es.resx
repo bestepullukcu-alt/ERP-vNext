@@ -431,6 +431,9 @@
   <data name="TabsLabel" xml:space="preserve">
     <value>Pestañas</value>
   </data>
+  <data name="ScopeTeam" xml:space="preserve"><value>Mi equipo</value></data>
+  <data name="ScopeTeamCount" xml:space="preserve"><value>{0} personas</value></data>
+  <data name="ScopeTeamEmpty" xml:space="preserve"><value>Nadie le reporta, así que no hay ningún equipo que mostrar.</value></data>
   <data name="TabInbox" xml:space="preserve">
     <value>Bandeja de entrada</value>
   </data>

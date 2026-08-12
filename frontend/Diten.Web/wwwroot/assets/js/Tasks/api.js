@@ -219,6 +219,13 @@
          */
         assignablePeople: () => request('GET', '/assignable-people'),
         decisionMakers: () => request('GET', '/decision-makers'),
+        /*
+         * BL-023 — is this person ABOVE me? Asked so the submit button can say what it will DO before it is
+         * pressed. The server answers from the same reporting-chain scope it uses when it opens the request, so
+         * the label and the behaviour cannot drift apart.
+         */
+        assignmentDirection: (userId) =>
+            request('GET', `/assignment-direction/${encodeURIComponent(userId)}`),
 
         // ── Phase 2 ──────────────────────────────────────────────────────────
         // expectedVersion guards the checklist RUN, which has its own version separate from the task's.

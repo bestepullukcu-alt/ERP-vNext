@@ -42,9 +42,19 @@ public sealed class WorkItemsController : CustomBaseController
         _providers = providers;
     }
 
+    /// <summary>
+    /// BL-023 — <c>?scope=team</c> lists the caller's SUBORDINATES' own work instead of their own.
+    ///
+    /// <para>A query parameter rather than a second endpoint, because it is the same question about a different
+    /// owner; and the same permission, because seeing your team's load is not a different capability — WHO your
+    /// team is comes from the org chart and is already scope-limited (BL-057), so no extra grant can widen it.
+    /// An unrecognised value binds to <see cref="WorkItemScope.Self"/>, which is the fail-safe direction.</para>
+    /// </summary>
     [HttpGet("mine")]
     [HasPermission(WorkAggregationPermissions.InboxView)]
-    public async Task<IActionResult> GetMine(CancellationToken ct)
+    public async Task<IActionResult> GetMine(
+        CancellationToken ct,
+        [FromQuery] WorkItemScope scope = WorkItemScope.Self)
     {
         var isPlatformActor = IsPlatformActor(User);
 
@@ -63,8 +73,21 @@ public sealed class WorkItemsController : CustomBaseController
         }
 
         var response = await _mediator.Send(
-            new GetMyWorkItemsQuery(isPlatformActor, granted, CorrelationId),
+            new GetMyWorkItemsQuery(isPlatformActor, granted, CorrelationId, scope),
             ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// BL-023 — whether the caller has anybody reporting to them, so the scope control can be DISABLED with a
+    /// reason instead of offering a view that will always be empty. Same permission as the list: who your team
+    /// is comes from the org chart and is already scope-limited, so this widens nothing.
+    /// </summary>
+    [HttpGet("team-availability")]
+    [HasPermission(WorkAggregationPermissions.InboxView)]
+    public async Task<IActionResult> GetTeamAvailability(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetMyTeamAvailabilityQuery(CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 

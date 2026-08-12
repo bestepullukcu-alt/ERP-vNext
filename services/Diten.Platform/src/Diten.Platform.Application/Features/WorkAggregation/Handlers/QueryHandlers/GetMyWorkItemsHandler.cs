@@ -34,7 +34,11 @@ public sealed class GetMyWorkItemsHandler
         var actor = new WorkItemActor(
             UserId: _currentUser.UserId,
             IsPlatformActor: request.IsPlatformActor,
-            GrantedPermissions: request.GrantedPermissions);
+            GrantedPermissions: request.GrantedPermissions)
+        {
+            // BL-023 — a provider with no team concept ignores this; the Tasks provider honours it.
+            Scope = request.Scope
+        };
 
         var aggregated = new List<WorkItemProjectionDto>();
 

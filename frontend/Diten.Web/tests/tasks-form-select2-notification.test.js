@@ -276,10 +276,13 @@ describe("the review type has a place, with the meeting option disabled and expl
 
   test("the disabled option SAYS why, rather than looking broken", () => {
     const form = TASK_FORM();
-    // Bounded by the callout that follows the choice group, not by a character count: the reason has to live
+    // Bounded by the callout that FOLLOWS the choice group, not by a character count: the reason has to live
     // INSIDE the option it explains, and a fixed window just breaks whenever the markup around it grows.
-    const meeting = form.slice(
-      form.indexOf('id="taskReviewTypeMeeting"'), form.indexOf('alert alert-info'));
+    // Searched FROM the meeting option rather than from the start of the file — the assignment card grew an
+    // alert of its own (BL-023's upward notice), and a bare indexOf found that one instead, silently emptying
+    // this slice and turning a real assertion into a comparison against "".
+    const meetingAt = form.indexOf('id="taskReviewTypeMeeting"');
+    const meeting = form.slice(meetingAt, form.indexOf('alert alert-info', meetingAt));
     // DEC-001: a dead control with no explanation gets reported as a bug. The reason is localized, never literal.
     expect(meeting).toMatch(/ReviewTypeMeetingDisabledReason/);
     expect(meeting).toMatch(/aria-describedby="taskReviewTypeMeetingReason"/);

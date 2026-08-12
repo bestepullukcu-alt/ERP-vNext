@@ -54,9 +54,26 @@ public class WorkCenterNextController : Controller
 
     // Same-origin read proxy for the personal work-item projection (WC-1, read-only).
     // browser → /WorkCenterNext/api/work-items → Gateway (5000) → Platform. No token or tenant id in JS.
+    /// <summary>
+    /// BL-023 — <c>?scope=team</c> asks for the caller's SUBORDINATES' work instead of their own.
+    ///
+    /// <para>The value is not passed through as free text: an unrecognised scope collapses to the caller's own
+    /// work, which is the fail-safe direction. A proxy that dropped the parameter instead would answer the
+    /// caller's OWN list under a header reading "Ekibim" — wrong data, no error, nothing to notice.</para>
+    /// </summary>
     [HttpGet("/WorkCenterNext/api/work-items")]
-    public Task<IActionResult> WorkItems()
-        => ProxyGetAsync($"{_gatewayUrl}/api/v1/work-items/mine");
+    public Task<IActionResult> WorkItems([FromQuery] string? scope = null)
+    {
+        var upstream = string.Equals(scope, "team", StringComparison.OrdinalIgnoreCase)
+            ? $"{_gatewayUrl}/api/v1/work-items/mine?scope=team"
+            : $"{_gatewayUrl}/api/v1/work-items/mine";
+        return ProxyGetAsync(upstream);
+    }
+
+    /// <summary>BL-023 — does the caller have a team? Drives whether the scope option is enabled.</summary>
+    [HttpGet("/WorkCenterNext/api/team-availability")]
+    public Task<IActionResult> TeamAvailability()
+        => ProxyGetAsync($"{_gatewayUrl}/api/v1/work-items/team-availability");
 
     private async Task<IActionResult> ProxyGetAsync(string targetUrl)
     {

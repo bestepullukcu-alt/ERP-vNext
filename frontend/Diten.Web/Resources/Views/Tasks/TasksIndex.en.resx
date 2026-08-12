@@ -110,6 +110,8 @@
   <data name="ErrorApprovalNotApproved" xml:space="preserve"><value>The approval is not complete yet, so this step is not allowed.</value></data>
   <data name="ErrorApprovalGateUnavailable" xml:space="preserve"><value>The approval could not be checked just now, so nothing was changed. Try again shortly.</value></data>
   <data name="AssigneeHint" xml:space="preserve"><value>Only people who currently hold a position can be assigned work.</value></data>
+  <data name="ActionSendRequest" xml:space="preserve"><value>Send request</value></data>
+  <data name="UpwardRequestHint" xml:space="preserve"><value>This person is above you in the reporting line, so the work is SENT AS A REQUEST rather than assigned. They decide whether to accept it.</value></data>
   <data name="ExcludedHint" xml:space="preserve"><value>{0} people are not listed:</value></data>
   <data name="ExcludedNoActivePosition" xml:space="preserve"><value>{0} hold no active position</value></data>
   <data name="ExcludedPositionNotActive" xml:space="preserve"><value>{0} are on a position that is not active</value></data>

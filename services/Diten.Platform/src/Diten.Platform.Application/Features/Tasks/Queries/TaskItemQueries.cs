@@ -40,6 +40,20 @@ public sealed record GetTaskAssignmentPersonLookupQuery(
     : IRequest<Response<AssignablePersonLookupDto>>;
 
 /// <summary>
+/// BL-023 — is <paramref name="TargetUserId"/> ABOVE the caller in the reporting chain? The create form asks so
+/// the submit button can say "Talep gönder" instead of "Oluştur"; the server answers from the same scope it uses
+/// when it opens the request, so the label cannot drift from the behaviour.
+/// </summary>
+public sealed record GetTaskAssignmentDirectionQuery(Guid TargetUserId, string CorrelationId)
+    : IRequest<Response<TaskAssignmentDirectionDto>>;
+
+/// <summary>
+/// Whether the assignment goes up. Counts and booleans only — WHO the caller's managers are is not answered
+/// here; that would be a second, unguarded way to read the org chart.
+/// </summary>
+public sealed record TaskAssignmentDirectionDto(bool IsUpward);
+
+/// <summary>
 /// Templates a recurrence rule may be bound to (BL-052).
 ///
 /// <para>A LOOKUP, not a management list: id + name is everything a picker needs. It exists because the rule

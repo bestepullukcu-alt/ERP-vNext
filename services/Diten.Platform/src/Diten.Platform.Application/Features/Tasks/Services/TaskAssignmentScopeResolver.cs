@@ -57,17 +57,20 @@ public sealed class TaskAssignmentScope
     private readonly HashSet<Guid> _orgUnitIds;
     private readonly HashSet<Guid> _positionIds;
     private readonly HashSet<Guid> _subordinatePositionIds;
+    private readonly HashSet<Guid> _managerChainPositionIds;
 
     internal TaskAssignmentScope(
         HashSet<Guid> legalEntityIds,
         HashSet<Guid> orgUnitIds,
         HashSet<Guid> positionIds,
-        HashSet<Guid> subordinatePositionIds)
+        HashSet<Guid> subordinatePositionIds,
+        HashSet<Guid>? managerChainPositionIds = null)
     {
         _legalEntityIds = legalEntityIds;
         _orgUnitIds = orgUnitIds;
         _positionIds = positionIds;
         _subordinatePositionIds = subordinatePositionIds;
+        _managerChainPositionIds = managerChainPositionIds ?? [];
     }
 
     /// <summary>
@@ -75,11 +78,28 @@ public sealed class TaskAssignmentScope
     /// user with no active position assignment. The picker must report the count rather than render a bare empty
     /// list (BL-072) — an empty list with no explanation is the defect, not the emptiness.
     /// </summary>
-    public static TaskAssignmentScope Empty { get; } = new([], [], [], []);
+    public static TaskAssignmentScope Empty { get; } = new([], [], [], [], []);
 
     /// <summary>True when the actor has no scope at all — used to explain an empty picker.</summary>
     public bool IsEmpty
         => _legalEntityIds.Count == 0 && _orgUnitIds.Count == 0 && _subordinatePositionIds.Count == 0;
+
+    /// <summary>
+    /// The positions BELOW me in the reporting chain — BL-023's "my team", derived once here and read by
+    /// everything that needs the descent. Exposed rather than recomputed: a second walk over
+    /// <see cref="Position.ReportsToPositionId"/> would be a second truth about the same field.
+    /// </summary>
+    public IReadOnlySet<Guid> SubordinatePositionIds => _subordinatePositionIds;
+
+    /// <summary>
+    /// The positions ABOVE me — the resolver's <c>ManagerChain</c> scope, passed through UNCHANGED.
+    ///
+    /// <para>Deliberately NOT used by <see cref="Allows"/>: reading it there would make every subordinate able
+    /// to assign work to their own boss, which is precisely what BL-023 turns into a request instead. It is
+    /// exposed so <c>TaskAssignmentDirection</c> can answer "is this upward?" without deriving a second ascent
+    /// over the same column.</para>
+    /// </summary>
+    public IReadOnlySet<Guid> ManagerChainPositionIds => _managerChainPositionIds;
 
     /// <summary>
     /// May work be handed to the holder of this position?
@@ -142,8 +162,10 @@ public sealed class TaskAssignmentScopeResolver : ITaskAssignmentScopeResolver
         // ManagerChain is deliberately NOT read here: it points upward (my managers) and assignability points
         // downward. Reading it would make every subordinate able to assign work to their own boss.
         var subordinates = await ResolveSubordinatePositionsAsync(positionIds, ct);
+        // Carried through unchanged for BL-023's direction test; Allows() still ignores it, on purpose.
+        var managerChain = Ids(scopes, EntitlementDataScopeKind.ManagerChain);
 
-        return new TaskAssignmentScope(legalEntityIds, orgUnitIds, positionIds, subordinates);
+        return new TaskAssignmentScope(legalEntityIds, orgUnitIds, positionIds, subordinates, managerChain);
     }
 
     private static HashSet<Guid> Ids(IReadOnlyList<EntitlementDataScope> scopes, EntitlementDataScopeKind kind)

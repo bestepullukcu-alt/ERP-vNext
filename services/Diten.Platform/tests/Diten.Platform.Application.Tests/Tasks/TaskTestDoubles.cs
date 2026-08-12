@@ -1266,3 +1266,60 @@ internal static class TaskRecordSourceDoubles
         params Diten.Platform.Application.Features.Tasks.Services.ITaskRecordSource[] sources)
         => new Diten.Platform.Application.Features.Tasks.Services.TaskRecordSourceRegistry(sources);
 }
+
+/// <summary>
+/// BL-023 — builds a <see cref="Diten.Platform.Application.Features.Tasks.Providers.TaskWorkItemProvider"/> wired
+/// for the SCOPE tests: real org data, a real scope resolver and a real team resolver behind it.
+///
+/// <para>It exists because the provider takes fourteen collaborators and the scope tests care about exactly
+/// three of them; spelling the other eleven out per test would bury the one thing being asserted.</para>
+/// </summary>
+internal static class TaskWorkItemProviderHarness
+{
+    internal static Diten.Platform.Application.Features.Tasks.Providers.TaskWorkItemProvider Create(
+        Position[] positions,
+        OrganizationUnit[] units,
+        PositionAssignment[] assignments,
+        TaskItem[] tasks,
+        EntitlementDataScope[]? scopes = null)
+    {
+        var scopeResolver = new Diten.Platform.Application.Features.Tasks.Services.TaskAssignmentScopeResolver(
+            new FakeDataScopeResolver(scopes ?? DefaultScopes(positions, units)),
+            new FakePositionRepository(positions),
+            new FakeOrganizationUnitRepository(units),
+            new FakeTenantContext(TaskTestData.Tenant),
+            new FakeCurrentUserContext(TaskTestData.Me));
+
+        return new Diten.Platform.Application.Features.Tasks.Providers.TaskWorkItemProvider(
+            new FakeTaskItemRepository(tasks),
+            new FakePositionAssignmentRepository(assignments),
+            new Diten.Platform.Application.Features.Tasks.Services.TaskLifecycleService(),
+            new Diten.Platform.Application.Features.Tasks.Services.TaskAssignmentResolver(),
+            new FakeUserDisplayNameResolver(),
+            new FakeChecklistRunRepository(),
+            new FakeTaskApprovalService(),
+            new FakeTaskDependencyRepository(),
+            new FakeTaskCommentRepository(),
+            new FakePositionRepository(positions),
+            new FakeOrganizationUnitRepository(units),
+            SlaForTests.Real(),
+            new FakeTaskFieldDefinitionRepository(),
+            new Diten.Platform.Application.Features.Tasks.Services.TaskTeamResolver(
+                scopeResolver, new FakePositionAssignmentRepository(assignments)));
+    }
+
+    /// <summary>The actor's own position plus their unit and legal entity — what MOD-0018-FU15 would emit.</summary>
+    private static EntitlementDataScope[] DefaultScopes(Position[] positions, OrganizationUnit[] units)
+    {
+        var mine = positions.FirstOrDefault(p => p.Name == "Boss");
+        var unit = mine is null ? null : units.FirstOrDefault(u => u.Id == mine.OrganizationUnitId);
+        if (mine is null || unit is null) { return []; }
+
+        return
+        [
+            new EntitlementDataScope(EntitlementDataScopeKind.Position, mine.Id, mine.Code),
+            new EntitlementDataScope(EntitlementDataScopeKind.OrgUnit, unit.Id, unit.Code),
+            new EntitlementDataScope(EntitlementDataScopeKind.LegalEntity, unit.LegalEntityId, "LE")
+        ];
+    }
+}

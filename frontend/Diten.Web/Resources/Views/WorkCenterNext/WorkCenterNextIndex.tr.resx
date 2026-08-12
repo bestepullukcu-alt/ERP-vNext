@@ -431,6 +431,9 @@
   <data name="TabsLabel" xml:space="preserve">
     <value>Sekmeler</value>
   </data>
+  <data name="ScopeTeam" xml:space="preserve"><value>Ekibim</value></data>
+  <data name="ScopeTeamCount" xml:space="preserve"><value>{0} kişi</value></data>
+  <data name="ScopeTeamEmpty" xml:space="preserve"><value>Size rapor veren kimse yok, bu yüzden gösterilecek bir ekip de yok.</value></data>
   <data name="TabInbox" xml:space="preserve">
     <value>Gelen Kutusu</value>
   </data>

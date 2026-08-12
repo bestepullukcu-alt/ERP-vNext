@@ -558,11 +558,38 @@ public sealed record WorkItemGateDto(
 // The caller's effective context, assembled by the API layer from the authenticated principal. UserId is
 // resolved server-side (never from the client payload); permission flags are evaluated from the principal's
 // claims via the existing PermissionClaimEvaluator seam. A platform actor passes every permission.
+/// <summary>
+/// BL-023 — WHOSE work the caller is asking about.
+///
+/// <para>Not a tab and not a filter: the axis law is locked (tab = ownership, segment = state, chip = type +
+/// signal), so a manager wanting to see their team changes the SCOPE and keeps every tab exactly as it was. This
+/// is the SAP My Inbox shape.</para>
+/// </summary>
+public enum WorkItemScope
+{
+    /// <summary>Work that is mine — assigned to me, or pooled to a position I hold. The default and the
+    /// behaviour every caller had before this existed.</summary>
+    Self = 0,
+
+    /// <summary>
+    /// My subordinates' OWN work, including tasks I never assigned. Deliberately NOT a superset of
+    /// <see cref="Self"/>: merging the two would double every row and answer neither question.
+    /// </summary>
+    Team = 1
+}
+
 public sealed record WorkItemActor(
     Guid UserId,
     bool IsPlatformActor,
     IReadOnlySet<string> GrantedPermissions)
 {
+    /// <summary>
+    /// BL-023 — whose work to list. Additive with a <see cref="WorkItemScope.Self"/> default so every existing
+    /// provider and caller keeps its behaviour unchanged; a provider that has no team concept simply ignores it
+    /// (WorkflowApprovalWorkItemProvider does, and says so).
+    /// </summary>
+    public WorkItemScope Scope { get; init; } = WorkItemScope.Self;
+
     // Effective permission check mirroring the API enforcement semantics: platform actors pass all; otherwise
     // the key must be in the granted set the controller evaluated from claims.
     public bool Has(string permissionKey) => IsPlatformActor || GrantedPermissions.Contains(permissionKey);

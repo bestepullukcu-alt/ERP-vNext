@@ -30,7 +30,13 @@
        required-field tracker find this form's submit and render its badge next to it. *@
     <div class="d-flex align-items-center gap-2">
         <a class="btn btn-label-secondary" href="/Tasks">@Localizer["ActionCancel"]</a>
-        <button type="submit" form="taskForm" class="btn btn-primary" id="taskSubmit">
+        @* BL-023 — the label is REPLACED when the chosen assignee is above the requester: work that flows up
+           the reporting chain is a request the manager may refuse, not an order. A button that quietly behaves
+           differently from what it says is the defect this project keeps correcting, so the word changes with
+           the behaviour. *@
+        <button type="submit" form="taskForm" class="btn btn-primary" id="taskSubmit"
+                data-task-label-default="@(isEdit ? Localizer["ActionSave"] : Localizer["ActionCreate"])"
+                data-task-label-upward="@Localizer["ActionSendRequest"]">
             @(isEdit ? Localizer["ActionSave"] : Localizer["ActionCreate"])
         </button>
     </div>
@@ -100,6 +106,12 @@
                                back by the company scope must stay invisible (BL-057). *@
                             <div class="form-text text-warning d-none" data-task-field="assigneeExcluded"
                                  id="taskAssigneeExcluded"></div>
+                            @* BL-023 — says what will happen BEFORE the user presses the button. Hidden until
+                               the chosen person is actually above them. *@
+                            <div class="alert alert-info mt-3 d-none" role="note"
+                                 data-task-field="upwardRequest" id="taskUpwardNotice">
+                                @Localizer["UpwardRequestHint"]
+                            </div>
                         </div>
 
                         @* Shown only for the Pool target. Each option carries its unit so work cannot be pooled to

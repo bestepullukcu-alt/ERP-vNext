@@ -492,7 +492,12 @@ public sealed record TaskItemDetailDto(
     /// </summary>
     Guid? ReviewerCandidateUserId = null,
     /// <summary>The review's MOD-0023 instance. The LINK only; the verdict is read from MOD-0023.</summary>
-    Guid? ReviewWorkflowInstanceId = null);
+    Guid? ReviewWorkflowInstanceId = null,
+    /// <summary>
+    /// BL-023 — the UPWARD WORK REQUEST's MOD-0023 instance, when the assignee sits above the requester. The
+    /// LINK only: whether the work was accepted is MOD-0023's answer, never a field here.
+    /// </summary>
+    Guid? RequestWorkflowInstanceId = null);
 
 public sealed record TaskWatcherDto(Guid Id, Guid UserId, string Role, Guid? PositionId);
 

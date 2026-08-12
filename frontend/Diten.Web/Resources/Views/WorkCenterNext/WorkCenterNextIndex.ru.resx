@@ -431,6 +431,9 @@
   <data name="TabsLabel" xml:space="preserve">
     <value>Вкладки</value>
   </data>
+  <data name="ScopeTeam" xml:space="preserve"><value>Моя команда</value></data>
+  <data name="ScopeTeamCount" xml:space="preserve"><value>{0} чел.</value></data>
+  <data name="ScopeTeamEmpty" xml:space="preserve"><value>Вам никто не подчиняется, поэтому команду показать нельзя.</value></data>
   <data name="TabInbox" xml:space="preserve">
     <value>Входящие</value>
   </data>

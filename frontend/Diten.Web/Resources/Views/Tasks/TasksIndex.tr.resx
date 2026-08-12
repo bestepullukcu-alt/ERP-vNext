@@ -110,6 +110,8 @@
   <data name="ErrorApprovalNotApproved" xml:space="preserve"><value>Onay henüz tamamlanmadı, bu adıma geçilemez.</value></data>
   <data name="ErrorApprovalGateUnavailable" xml:space="preserve"><value>Onay şu anda kontrol edilemedi, işlem uygulanmadı. Kısa süre sonra tekrar deneyin.</value></data>
   <data name="AssigneeHint" xml:space="preserve"><value>Yalnızca hâlihazırda bir pozisyonu olan kişilere görev atanabilir.</value></data>
+  <data name="ActionSendRequest" xml:space="preserve"><value>Talep gönder</value></data>
+  <data name="UpwardRequestHint" xml:space="preserve"><value>Bu kişi raporlama zincirinde sizin üstünüzde, bu yüzden iş atanmaz; TALEP olarak gönderilir. Kabul edip etmeyeceğine o karar verir.</value></data>
   <data name="ExcludedHint" xml:space="preserve"><value>{0} kişi listelenmedi:</value></data>
   <data name="ExcludedNoActivePosition" xml:space="preserve"><value>{0} kişinin aktif pozisyonu yok</value></data>
   <data name="ExcludedPositionNotActive" xml:space="preserve"><value>{0} kişinin pozisyonu aktif değil</value></data>

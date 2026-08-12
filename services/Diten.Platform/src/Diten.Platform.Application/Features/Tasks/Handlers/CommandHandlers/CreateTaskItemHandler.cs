@@ -39,6 +39,9 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
     private readonly ITaskChecklistService _checklistService;
     private readonly ITaskNotificationService _taskNotifications;
     private readonly ICurrentUserContext _currentUser;
+    // BL-023 — is the assignee above me, and if so who carries the request. Neither decides anything.
+    private readonly ITaskAssignmentDirection? _direction;
+    private readonly ITaskUpwardRequestService? _upwardRequests;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<CreateTaskItemHandler> _logger;
 
@@ -58,7 +61,14 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         ITaskNotificationService taskNotifications,
         ICurrentUserContext currentUser,
         ITenantContext tenantContext,
-        ILogger<CreateTaskItemHandler> logger)
+        ILogger<CreateTaskItemHandler> logger,
+        /*
+         * BL-023 — OPTIONAL on purpose. A caller that supplies neither gets exactly the behaviour that shipped
+         * before this change (every assignment is a plain order), which is what the existing suites pin. An
+         * absent pair can only ever SKIP the request; it can never open one by accident.
+         */
+        ITaskAssignmentDirection? direction = null,
+        ITaskUpwardRequestService? upwardRequests = null)
     {
         _tasks = tasks;
         _assignments = assignments;
@@ -74,6 +84,8 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         _checklistService = checklistService;
         _taskNotifications = taskNotifications;
         _currentUser = currentUser;
+        _direction = direction;
+        _upwardRequests = upwardRequests;
         _tenantContext = tenantContext;
         _logger = logger;
     }
@@ -246,6 +258,33 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         };
 
         await _tasks.CreateAsync(task, ct);
+
+        /*
+         * ── BL-023 — UPWARD work is a REQUEST, not an order ───────────────────
+         *
+         * A subordinate cannot instruct their own manager. When the assignee sits ABOVE the requester in the
+         * reporting chain, a MOD-0023 instance is opened so the manager can accept or refuse — the same handoff
+         * approval and review already use, asked as a third question under its own object type.
+         *
+         * MOD-0024 DECIDES NOTHING here (Binding A): it opens the request, stores the link and moves on. The
+         * outcome is read back through the workflow, never resolved locally. Downward and sideways assignments
+         * are untouched and stay plain orders.
+         *
+         * Started after creation for the same reason approval is: the instance references the task id. A
+         * request that cannot be opened leaves the task intact — losing work the user already typed is never
+         * the better failure.
+         */
+        if (_direction is not null && _upwardRequests is not null
+            && assigneeUserId is { } upwardCandidate
+            && await _direction.IsUpwardAsync(upwardCandidate, ct))
+        {
+            var requestInstanceId = await _upwardRequests.TryStartRequestAsync(task, ct);
+            if (requestInstanceId is not null)
+            {
+                task.RequestWorkflowInstanceId = requestInstanceId;
+                await _tasks.UpdateAsync(task, task.Version, ct);
+            }
+        }
 
         // ── Approval handoff to MOD-0023 (pack §12 K2) ───────────────────────
         // Started after creation because the instance references the task id. If it cannot start, the TASK IS

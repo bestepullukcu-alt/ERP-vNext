@@ -143,6 +143,16 @@ public sealed class TaskItem : TenantScopedEntity
     /// </summary>
     public Guid? ReviewWorkflowInstanceId { get; set; }
 
+    /// <summary>
+    /// BL-023 — the MOD-0023 instance carrying an UPWARD WORK REQUEST: work whose assignee sits above the
+    /// requester in the reporting chain, which is asked for rather than ordered.
+    ///
+    /// <para>A LINK, not a status — the same thing the two above are, and separate from them for the same
+    /// reason: three different questions about one task must not share one instance, or each gate would read
+    /// another's decision.</para>
+    /// </summary>
+    public Guid? RequestWorkflowInstanceId { get; set; }
+
     public bool EmailNotificationsEnabled { get; set; } = true;
 
     /// <summary>

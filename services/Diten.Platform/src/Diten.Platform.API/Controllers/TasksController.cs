@@ -523,6 +523,22 @@ public sealed class TasksController : CustomBaseController
     /// handing work to anyone. The list still only contains people holding a live position in this tenant —
     /// "exempt" means exempt from the COMPANY scope, not from every boundary.</para>
     /// </summary>
+    /// <summary>
+    /// BL-023 — would assigning to this person be an UPWARD request rather than an order?
+    ///
+    /// <para>Asked by the create form so the button can read "Talep gönder" BEFORE the user presses it: a
+    /// control that silently behaves differently from its own label is the defect this project keeps
+    /// correcting. The answer comes from the same ManagerChain scope the server uses when it actually opens the
+    /// request, so the label and the behaviour cannot disagree.</para>
+    /// </summary>
+    [HttpGet("lookups/assignment-direction/{userId:guid}")]
+    [HasPermission(TaskPermissions.Create)]
+    public async Task<IActionResult> GetAssignmentDirection(Guid userId, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetTaskAssignmentDirectionQuery(userId, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpGet("lookups/decision-makers")]
     [HasPermission(TaskPermissions.Create)]
     public async Task<IActionResult> GetDecisionMakers(CancellationToken ct)

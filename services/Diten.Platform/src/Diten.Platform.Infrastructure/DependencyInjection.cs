@@ -128,6 +128,9 @@ public static class DependencyInjection
         // own section so a tenant can point review and approval at different flows.
         services.Configure<Diten.Platform.Application.Features.Tasks.Services.TaskReviewOptions>(
             configuration.GetSection(Diten.Platform.Application.Features.Tasks.Services.TaskReviewOptions.SectionName));
+        // BL-023 Part B — the upward work-request template code, on the same terms as the two above.
+        services.Configure<Diten.Platform.Application.Features.Tasks.Services.TaskUpwardRequestOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.Tasks.Services.TaskUpwardRequestOptions.SectionName));
         // WC-2 — how far ahead of a deadline the warning window opens. A POLICY a tenant may tune, which is why
         // it is here and not declared in the executable contract (the contract declares the state VOCABULARY).
         services.Configure<Diten.Platform.Application.Features.WorkAggregation.Services.WorkItemSlaOptions>(

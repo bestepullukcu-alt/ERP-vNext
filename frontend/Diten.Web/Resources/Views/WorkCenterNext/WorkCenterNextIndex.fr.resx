@@ -431,6 +431,9 @@
   <data name="TabsLabel" xml:space="preserve">
     <value>Onglets</value>
   </data>
+  <data name="ScopeTeam" xml:space="preserve"><value>Mon équipe</value></data>
+  <data name="ScopeTeamCount" xml:space="preserve"><value>{0} personnes</value></data>
+  <data name="ScopeTeamEmpty" xml:space="preserve"><value>Personne ne vous est rattaché, il n'y a donc aucune équipe à afficher.</value></data>
   <data name="TabInbox" xml:space="preserve">
     <value>Boîte de réception</value>
   </data>

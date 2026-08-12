@@ -110,6 +110,8 @@
   <data name="ErrorApprovalNotApproved" xml:space="preserve"><value>لم يكتمل الاعتماد بعد، لذا هذه الخطوة غير مسموحة.</value></data>
   <data name="ErrorApprovalGateUnavailable" xml:space="preserve"><value>تعذّر التحقق من الاعتماد الآن ولم يُنفَّذ الإجراء. حاول مرة أخرى بعد قليل.</value></data>
   <data name="AssigneeHint" xml:space="preserve"><value>لا يمكن إسناد العمل إلا للأشخاص الذين يشغلون وظيفة حاليًا.</value></data>
+  <data name="ActionSendRequest" xml:space="preserve"><value>إرسال الطلب</value></data>
+  <data name="UpwardRequestHint" xml:space="preserve"><value>هذا الشخص أعلى منك في التسلسل الإداري، لذلك يُرسل العمل كطلب بدلاً من إسناده. وهو من يقرر قبوله.</value></data>
   <data name="ExcludedHint" xml:space="preserve"><value>لم يتم إدراج {0} من الأشخاص:</value></data>
   <data name="ExcludedNoActivePosition" xml:space="preserve"><value>{0} ليس لديهم منصب نشط</value></data>
   <data name="ExcludedPositionNotActive" xml:space="preserve"><value>{0} في منصب غير نشط</value></data>

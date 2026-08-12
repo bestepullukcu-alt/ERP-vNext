@@ -75,7 +75,16 @@
         segment: 'aktif',        // meaningful within İşlerim
         view: 'list',
         viewsByTab: { inbox: 'list', islerim: 'list', havuz: 'list', history: 'list' },
-        scope: 'mine',           // 'mine' | 'all' | <delegator name> (N-way delegation)
+        /*
+         * 'mine' | 'all' | <delegator name> (N-way delegation) | 'team' (BL-023).
+         *
+         * 'team' joins the SAME control rather than becoming a fifth tab: the axis law fixes tab = OWNERSHIP,
+         * and "my team" asks that same ownership question about somebody else — which is exactly what this
+         * dropdown already does for delegation. SAP My Inbox has the same shape.
+         */
+        scope: 'mine',
+        // Answered by the server at boot (org chart), never inferred from an empty list — see loadTeamAvailability.
+        team: { hasTeam: false, memberCount: 0 },
         group: 'all',            // Havuz group-queue filter
         priorityFilter: 'all',
         modeFilter: 'all',
@@ -149,6 +158,9 @@
         // "all" only means something when there is delegated work to include, and the selector does not offer it
         // otherwise — so a hand-typed ?scope=all must not strand the surface in a state with no visible control.
         const scopeAllowed = scope === 'mine'
+            // BL-023 — a hand-typed ?scope=team must not strand a user who has no reports in a view whose
+            // control is disabled. Same guard the delegation scopes already use, same reason.
+            || (scope === 'team' && state.team.hasTeam)
             || (data.delegators.length > 0 && (scope === 'all' || data.delegators.some((d) => d.name === scope)));
         if (scope && scopeAllowed) { state.scope = scope; }
         state.group = params.get('group') || 'all';
@@ -414,8 +426,12 @@
     // 'all' = combined (mine + every delegation), with per-row "X adına" badges.
     const itemInScope = (item) =>
         state.scope === 'all' ? true
-            : state.scope === 'mine' ? !item.delegator
-                : item.delegator === state.scope;
+            // BL-023 — the TEAM scope is not a delegation filter over the same rows: the server already
+            // answered with a different set (my subordinates' work). Filtering it by `delegator` here would
+            // hide every one of them, because none of them is delegated to me.
+            : state.scope === 'team' ? true
+                : state.scope === 'mine' ? !item.delegator
+                    : item.delegator === state.scope;
     // ONE definition of "closed", owned by the data module. It used to be duplicated here, and the action filter
     // getActions now applies (BL-038) depends on this surface agreeing with it exactly — two copies would drift.
     const isTerminal = (item) => data.isTerminal(item);
@@ -554,12 +570,20 @@
         // Current scope → the person/delegation dropdown label.
         const scopeLabel = state.scope === 'mine' ? t('ScopeMine')
             : state.scope === 'all' ? t('ScopeAll')
-                : tf('OnBehalfShort', state.scope);
-        const scopeIcon = (k) => k === 'mine' ? 'bx-user' : k === 'all' ? 'bx-layer' : 'bx-user-voice';
+                : state.scope === 'team' ? t('ScopeTeam')
+                    : tf('OnBehalfShort', state.scope);
+        const scopeIcon = (k) => k === 'mine' ? 'bx-user'
+            : k === 'all' ? 'bx-layer'
+                : k === 'team' ? 'bx-group' : 'bx-user-voice';
         const ownBadge = (state.scope !== 'mine' && urgent)
             ? `<span class="wcn-own-urgent" title="${esc(t('OwnUrgentTip'))}">${urgent}</span>` : '';
-        const scopeItem = (key, label, sub) =>
-            `<li><button type="button" class="dropdown-item wcn-dd-item${state.scope === key ? ' active' : ''}" data-wcn-scope="${esc(key)}">
+        /*
+         * `disabled` carries its own REASON in the subtitle. Hiding the row was rejected: a hidden control
+         * cannot explain its absence, so a manager who expects a team reads the feature as missing rather than
+         * their org chart as empty. Disabled + a sentence is the only variant that answers the real question.
+         */
+        const scopeItem = (key, label, sub, disabled) =>
+            `<li><button type="button" class="dropdown-item wcn-dd-item${state.scope === key ? ' active' : ''}" data-wcn-scope="${esc(key)}"${disabled ? ' disabled aria-disabled="true"' : ''}>
                 <i class="bx ${scopeIcon(key)}"></i><span>${esc(label)}</span>${sub ? `<small class="wcn-dd-sub">${esc(sub)}</small>` : ''}
             </button></li>`;
         /*
@@ -587,6 +611,14 @@
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end wcn-dd-menu">
                         ${scopeItem('mine', t('ScopeMine'), data.currentUser.title)}
+                        ${/* BL-023 — my subordinates' OWN work, including what I never assigned. Always
+                              listed: when nobody reports to the user it is disabled and SAYS SO, because a
+                              missing row and a missing feature are indistinguishable to the reader. */ ''}
+                        ${scopeItem(
+                            'team',
+                            t('ScopeTeam'),
+                            state.team.hasTeam ? tf('ScopeTeamCount', state.team.memberCount) : t('ScopeTeamEmpty'),
+                            !state.team.hasTeam)}
                         ${delegations.length ? `${delegatorItems}
                         <li><hr class="dropdown-divider"></li>
                         ${scopeItem('all', t('ScopeAll'), t('ScopeAllSub'))}` : ''}
@@ -4491,7 +4523,26 @@
         }
 
         const scopeEl = event.target.closest('[data-wcn-scope]');
-        if (scopeEl) { state.scope = scopeEl.getAttribute('data-wcn-scope'); state.selectedId = null; state.tableSelected.clear(); state.bulkFailedIds.clear(); render(); return; }
+        if (scopeEl) {
+            if (scopeEl.hasAttribute('disabled')) { return; }   // no team ⇒ the row explains itself, nothing more
+            const previous = state.scope;
+            state.scope = scopeEl.getAttribute('data-wcn-scope');
+            state.selectedId = null;
+            state.tableSelected.clear();
+            state.bulkFailedIds.clear();
+            /*
+             * BL-023 — the delegation scopes filter rows the browser already holds; the TEAM scope is a
+             * DIFFERENT QUERY (my subordinates' work is never in the personal projection). So crossing that
+             * boundary in either direction has to go back to the server, or the list silently keeps showing
+             * whichever set was fetched first.
+             */
+            if ((previous === 'team') !== (state.scope === 'team')) {
+                loadWorkItems();
+                return;
+            }
+            render();
+            return;
+        }
 
         const actionEl = event.target.closest('[data-wcn-action]');
         if (actionEl) {
@@ -4819,7 +4870,18 @@
         const api = global.WorkCenterNextApi;
         if (!api) { state.loadState = 'error'; state.loadError = 'error'; render(); return; }
 
-        const result = await api.fetchWorkItems();
+        /*
+         * BL-023 — ask the ORG CHART whether this user has reports, before the control is drawn.
+         *
+         * Not inferred from an empty team list: "nobody reports to you" and "your team has no open work" are
+         * indistinguishable in an empty array, and telling them apart is the whole empty-state decision. Asked
+         * once per load and fail-closed, so an unreachable answer disables the option rather than offering one
+         * that will error.
+         */
+        state.team = await api.fetchTeamAvailability();
+
+        const result = await api.fetchWorkItems(
+            { scope: state.scope === 'team' ? api.SCOPE.TEAM : api.SCOPE.SELF });
         if (result.status === api.STATUS.OK) {
             state.items = result.items;
             // Triggers/meetings/notes have no provider yet — they stay empty until one lands (DEC-1).

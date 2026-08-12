@@ -12,5 +12,7 @@ namespace Diten.Platform.Application.Features.WorkAggregation.Queries;
 public sealed record GetMyWorkItemsQuery(
     bool IsPlatformActor,
     IReadOnlySet<string> GrantedPermissions,
-    string CorrelationId)
+    string CorrelationId,
+    // BL-023 — whose work. Defaulted so every existing caller is unchanged.
+    WorkItemScope Scope = WorkItemScope.Self)
     : IRequest<Response<IReadOnlyList<WorkItemProjectionDto>>>;

@@ -431,6 +431,9 @@
   <data name="TabsLabel" xml:space="preserve">
     <value>标签页</value>
   </data>
+  <data name="ScopeTeam" xml:space="preserve"><value>我的团队</value></data>
+  <data name="ScopeTeamCount" xml:space="preserve"><value>{0} 人</value></data>
+  <data name="ScopeTeamEmpty" xml:space="preserve"><value>没有人向您汇报，因此没有可显示的团队。</value></data>
   <data name="TabInbox" xml:space="preserve">
     <value>收件箱</value>
   </data>
