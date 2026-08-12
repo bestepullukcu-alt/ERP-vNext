@@ -36,14 +36,14 @@ public sealed record TaskTeamScope(bool HasTeam, IReadOnlyCollection<Guid> UserI
 public sealed class TaskTeamResolver : ITaskTeamResolver
 {
     private readonly ITaskAssignmentScopeResolver _scopes;
-    private readonly IPositionAssignmentRepository _assignments;
+    private readonly ITaskSeatDirectory _seats;
 
     public TaskTeamResolver(
         ITaskAssignmentScopeResolver scopes,
-        IPositionAssignmentRepository assignments)
+        ITaskSeatDirectory seats)
     {
         _scopes = scopes;
-        _assignments = assignments;
+        _seats = seats;
     }
 
     public async Task<TaskTeamScope> ResolveTeamAsync(CancellationToken ct)
@@ -57,16 +57,7 @@ public sealed class TaskTeamResolver : ITaskTeamResolver
             return TaskTeamScope.None;
         }
 
-        var now = DateTimeOffset.UtcNow;
-        var userIds = (await _assignments.GetAllAsync(ct))
-            // Half-open interval, the same one every other reader of this table uses.
-            .Where(a => !a.IsCancelled
-                        && a.EffectiveFrom <= now
-                        && (a.EffectiveTo is null || a.EffectiveTo > now))
-            .Where(a => subordinatePositions.Contains(a.PositionId))
-            .Select(a => a.UserId)
-            .Distinct()
-            .ToList();
+        var userIds = await _seats.HoldersOfAsync(subordinatePositions, ct);
 
         // HasTeam reports the ORG CHART, not the headcount: a manager whose subordinate position is currently
         // vacant still has a team, and telling them "you have no team" would be wrong about their org.

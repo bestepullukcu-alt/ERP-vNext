@@ -29,16 +29,16 @@ public interface ITaskAssignmentDirection
 public sealed class TaskAssignmentDirection : ITaskAssignmentDirection
 {
     private readonly ITaskAssignmentScopeResolver _scopes;
-    private readonly IPositionAssignmentRepository _assignments;
+    private readonly ITaskSeatDirectory _seats;
     private readonly ICurrentUserContext _currentUser;
 
     public TaskAssignmentDirection(
         ITaskAssignmentScopeResolver scopes,
-        IPositionAssignmentRepository assignments,
+        ITaskSeatDirectory seats,
         ICurrentUserContext currentUser)
     {
         _scopes = scopes;
-        _assignments = assignments;
+        _seats = seats;
         _currentUser = currentUser;
     }
 
@@ -57,15 +57,7 @@ public sealed class TaskAssignmentDirection : ITaskAssignmentDirection
             return false;
         }
 
-        var now = DateTimeOffset.UtcNow;
-
-        // Upward exactly when the target currently HOLDS one of the positions above me. Half-open interval, the
-        // same one every other reader of this table uses.
-        return (await _assignments.GetAllAsync(ct))
-            .Any(a => a.UserId == targetUserId
-                      && !a.IsCancelled
-                      && a.EffectiveFrom <= now
-                      && (a.EffectiveTo is null || a.EffectiveTo > now)
-                      && managerPositions.Contains(a.PositionId));
+        // Upward exactly when the target currently HOLDS one of the positions above me.
+        return await _seats.HoldsAnyAsync(targetUserId, managerPositions, ct);
     }
 }

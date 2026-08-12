@@ -2,6 +2,7 @@ using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Application.Features.Tasks.Handlers.CommandHandlers;
 using MediatR;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Common.Authorization;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Organization;
@@ -281,8 +282,43 @@ internal sealed class FakeTaskAssignmentRepository : ITaskAssignmentRepository
             _events.Where(x => x.TaskItemId == taskItemId).ToList());
 }
 
-internal sealed class FakePositionAssignmentRepository(params PositionAssignment[] seed) : IPositionAssignmentRepository
+/// <summary>
+/// The seeded assignment table, and — since the seat-directory refactor — the seat directory over it.
+///
+/// <para><b>Why it wears both hats.</b> Nine consumers stopped taking <c>IPositionAssignmentRepository</c> and
+/// started taking <see cref="ITaskSeatDirectory"/>. Every existing test constructs them with this double, so the
+/// alternative was editing dozens of test bodies for a refactor that changes no behaviour — and an edited test
+/// is a test whose evidence you have to re-earn. Implementing the directory here keeps every one of those bodies
+/// byte-identical.</para>
+///
+/// <para>The directory members DELEGATE to the real <see cref="TaskSeatDirectory"/> rather than re-implementing
+/// the active-window rule: a second copy in test code would defeat the entire point of the round, and it would
+/// be the copy that never fails.</para>
+/// </summary>
+internal sealed class FakePositionAssignmentRepository(params PositionAssignment[] seed)
+    : IPositionAssignmentRepository, ITaskSeatDirectory
 {
+    private TaskSeatDirectory? _directory;
+    private TaskSeatDirectory Directory => _directory ??= new TaskSeatDirectory(this);
+
+    public Task<IReadOnlyList<PositionAssignment>> ActiveAsync(CancellationToken ct)
+        => Directory.ActiveAsync(ct);
+
+    public Task<IReadOnlyList<PositionAssignment>> ActiveForUserAsync(Guid userId, CancellationToken ct)
+        => Directory.ActiveForUserAsync(userId, ct);
+
+    public Task<IReadOnlyList<Guid>> PositionIdsForUserAsync(Guid userId, CancellationToken ct)
+        => Directory.PositionIdsForUserAsync(userId, ct);
+
+    public Task<bool> HoldsAnyAsync(Guid userId, IReadOnlySet<Guid> positionIds, CancellationToken ct)
+        => Directory.HoldsAnyAsync(userId, positionIds, ct);
+
+    public Task<IReadOnlyList<Guid>> HoldersOfAsync(IReadOnlySet<Guid> positionIds, CancellationToken ct)
+        => Directory.HoldersOfAsync(positionIds, ct);
+
+    public Task<IReadOnlySet<Guid>> EverAssignedUserIdsAsync(CancellationToken ct)
+        => Directory.EverAssignedUserIdsAsync(ct);
+
     // Mirrors the tenant execution filter: another tenant's row is invisible, exactly as TenantRepository<T> makes it.
     public Task<IReadOnlyList<PositionAssignment>> GetAllAsync(CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<PositionAssignment>>(

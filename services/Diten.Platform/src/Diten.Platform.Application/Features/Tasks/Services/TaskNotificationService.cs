@@ -159,7 +159,7 @@ public sealed class TaskNotificationService : ITaskNotificationService
     private readonly INotificationEventDispatchAdapter _notifications;
     private readonly INotificationLocaleResolver _localeResolver;
     private readonly ITaskNotificationRecipientResolver _recipients;
-    private readonly IPositionAssignmentRepository _positionAssignments;
+    private readonly ITaskSeatDirectory _seats;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<TaskNotificationService> _logger;
 
@@ -167,14 +167,14 @@ public sealed class TaskNotificationService : ITaskNotificationService
         INotificationEventDispatchAdapter notifications,
         INotificationLocaleResolver localeResolver,
         ITaskNotificationRecipientResolver recipients,
-        IPositionAssignmentRepository positionAssignments,
+        ITaskSeatDirectory seats,
         ITenantContext tenantContext,
         ILogger<TaskNotificationService> logger)
     {
         _notifications = notifications;
         _localeResolver = localeResolver;
         _recipients = recipients;
-        _positionAssignments = positionAssignments;
+        _seats = seats;
         _tenantContext = tenantContext;
         _logger = logger;
     }
@@ -302,18 +302,7 @@ public sealed class TaskNotificationService : ITaskNotificationService
             return [];
         }
 
-        // Half-open interval, the same rule every other position read in this module uses.
-        var now = DateTimeOffset.UtcNow;
-        var assignments = await _positionAssignments.GetAllAsync(ct);
-
-        return assignments
-            .Where(a => a.PositionId == positionId
-                        && !a.IsCancelled
-                        && a.EffectiveFrom <= now
-                        && (a.EffectiveTo is null || a.EffectiveTo > now))
-            .Select(a => a.UserId)
-            .Distinct()
-            .ToList();
+        return await _seats.HoldersOfAsync(new HashSet<Guid> { positionId }, ct);
     }
 
     /// <summary>

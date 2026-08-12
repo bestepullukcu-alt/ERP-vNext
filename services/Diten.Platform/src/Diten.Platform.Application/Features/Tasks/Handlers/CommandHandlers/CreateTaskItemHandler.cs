@@ -30,7 +30,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
     private readonly ITaskWatcherRepository _watchers;
     private readonly IPositionRepository _positions;
     private readonly IOrganizationUnitRepository _organizationUnits;
-    private readonly IPositionAssignmentRepository _positionAssignments;
+    private readonly ITaskSeatDirectory _seats;
     private readonly ITaskFieldDefinitionService _fieldDefinitions;
     private readonly ITaskLifecycleService _lifecycle;
     private readonly ITaskApprovalService _approvals;
@@ -51,7 +51,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         ITaskWatcherRepository watchers,
         IPositionRepository positions,
         IOrganizationUnitRepository organizationUnits,
-        IPositionAssignmentRepository positionAssignments,
+        ITaskSeatDirectory seats,
         ITaskFieldDefinitionService fieldDefinitions,
         ITaskLifecycleService lifecycle,
         ITaskApprovalService approvals,
@@ -75,7 +75,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         _watchers = watchers;
         _positions = positions;
         _organizationUnits = organizationUnits;
-        _positionAssignments = positionAssignments;
+        _seats = seats;
         _fieldDefinitions = fieldDefinitions;
         _lifecycle = lifecycle;
         _approvals = approvals;
@@ -389,16 +389,8 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
 
     private async Task<Guid?> ResolveUnitForUserAsync(Guid userId, CancellationToken ct)
     {
-        var now = DateTimeOffset.UtcNow;
-        var assignments = await _positionAssignments.GetAllAsync(ct);
-        var active = assignments
-            .Where(a => a.UserId == userId
-                        && !a.IsCancelled
-                        && a.EffectiveFrom <= now
-                        && (a.EffectiveTo is null || a.EffectiveTo > now))
-            // A primary assignment is the person's "home" unit when they hold several.
-            .OrderBy(a => a.AssignmentType)
-            .ToList();
+        // PRIMARY first — a person holding several seats has one "home", and it decides the task's unit.
+        var active = await _seats.ActiveForUserAsync(userId, ct);
 
         foreach (var assignment in active)
         {

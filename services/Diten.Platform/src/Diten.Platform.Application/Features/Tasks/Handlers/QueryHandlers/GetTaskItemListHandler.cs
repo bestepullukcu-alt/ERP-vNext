@@ -15,20 +15,20 @@ public sealed class GetTaskItemListHandler
     : IRequestHandler<GetTaskItemListQuery, Response<IReadOnlyList<TaskItemListItemDto>>>
 {
     private readonly ITaskItemRepository _tasks;
-    private readonly IPositionAssignmentRepository _positionAssignments;
+    private readonly ITaskSeatDirectory _seats;
     private readonly ITaskLifecycleService _lifecycle;
     private readonly ITaskApprovalService _approvals;
     private readonly ICurrentUserContext _currentUser;
 
     public GetTaskItemListHandler(
         ITaskItemRepository tasks,
-        IPositionAssignmentRepository positionAssignments,
+        ITaskSeatDirectory seats,
         ITaskLifecycleService lifecycle,
         ITaskApprovalService approvals,
         ICurrentUserContext currentUser)
     {
         _tasks = tasks;
-        _positionAssignments = positionAssignments;
+        _seats = seats;
         _lifecycle = lifecycle;
         _approvals = approvals;
         _currentUser = currentUser;
@@ -42,8 +42,8 @@ public sealed class GetTaskItemListHandler
 
         var mine = await _tasks.ListByAssigneeAsync(userId, ct);
 
-        // Pool work is offered to POSITIONS, so resolve the actor's currently-held positions first. Intervals are
-        // half-open: EffectiveFrom <= now && (EffectiveTo == null || EffectiveTo > now).
+        // Pool work is offered to POSITIONS, so resolve the actor's currently-held seats first. What "currently"
+        // means is the seat directory's business, not this handler's.
         var positionIds = await ResolveActivePositionIdsAsync(userId, ct);
         var pooled = await _tasks.ListUnclaimedByPositionsAsync(positionIds, ct);
 
@@ -75,15 +75,6 @@ public sealed class GetTaskItemListHandler
 
     private async Task<IReadOnlyList<Guid>> ResolveActivePositionIdsAsync(Guid userId, CancellationToken ct)
     {
-        var now = DateTimeOffset.UtcNow;
-        var assignments = await _positionAssignments.GetAllAsync(ct);
-        return assignments
-            .Where(a => a.UserId == userId
-                        && !a.IsCancelled
-                        && a.EffectiveFrom <= now
-                        && (a.EffectiveTo is null || a.EffectiveTo > now))
-            .Select(a => a.PositionId)
-            .Distinct()
-            .ToList();
+        return await _seats.PositionIdsForUserAsync(userId, ct);
     }
 }

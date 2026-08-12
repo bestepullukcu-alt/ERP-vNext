@@ -23,7 +23,7 @@ public sealed class ClaimTaskItemHandler : IRequestHandler<ClaimTaskItemCommand,
 {
     private readonly ITaskItemRepository _tasks;
     private readonly ITaskAssignmentRepository _assignments;
-    private readonly IPositionAssignmentRepository _positionAssignments;
+    private readonly ITaskSeatDirectory _seats;
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
     private readonly ITaskNotificationService _notifications;
@@ -32,7 +32,7 @@ public sealed class ClaimTaskItemHandler : IRequestHandler<ClaimTaskItemCommand,
     public ClaimTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
-        IPositionAssignmentRepository positionAssignments,
+        ITaskSeatDirectory seats,
         ICurrentUserContext currentUser,
         ITenantContext tenantContext,
         ITaskNotificationService notifications,
@@ -41,7 +41,7 @@ public sealed class ClaimTaskItemHandler : IRequestHandler<ClaimTaskItemCommand,
         _logger = logger;
         _tasks = tasks;
         _assignments = assignments;
-        _positionAssignments = positionAssignments;
+        _seats = seats;
         _currentUser = currentUser;
         _tenantContext = tenantContext;
         _notifications = notifications;
@@ -132,12 +132,6 @@ public sealed class ClaimTaskItemHandler : IRequestHandler<ClaimTaskItemCommand,
             return false;
         }
 
-        var now = DateTimeOffset.UtcNow;
-        var assignments = await _positionAssignments.GetAllAsync(ct);
-        return assignments.Any(a => a.PositionId == positionId
-                                    && a.UserId == userId
-                                    && !a.IsCancelled
-                                    && a.EffectiveFrom <= now
-                                    && (a.EffectiveTo is null || a.EffectiveTo > now));
+        return await _seats.HoldsAnyAsync(userId, new HashSet<Guid> { positionId.Value }, ct);
     }
 }

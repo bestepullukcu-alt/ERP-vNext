@@ -77,7 +77,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private const string GateRejected = "rejected";
 
     private readonly ITaskItemRepository _tasks;
-    private readonly IPositionAssignmentRepository _positionAssignments;
+    private readonly ITaskSeatDirectory _seats;
     private readonly ITaskLifecycleService _lifecycle;
     private readonly ITaskAssignmentResolver _assignmentResolver;
     private readonly IUserDisplayNameResolver _displayNames;
@@ -90,7 +90,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
 
     public TaskWorkItemProvider(
         ITaskItemRepository tasks,
-        IPositionAssignmentRepository positionAssignments,
+        ITaskSeatDirectory seats,
         ITaskLifecycleService lifecycle,
         ITaskAssignmentResolver assignmentResolver,
         IUserDisplayNameResolver displayNames,
@@ -117,7 +117,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         _dependencies = dependencies;
         _comments = comments;
         _tasks = tasks;
-        _positionAssignments = positionAssignments;
+        _seats = seats;
         _lifecycle = lifecycle;
         _assignmentResolver = assignmentResolver;
         _displayNames = displayNames;
@@ -1317,15 +1317,6 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
 
     private async Task<IReadOnlyList<Guid>> ResolveActivePositionIdsAsync(Guid userId, CancellationToken ct)
     {
-        var now = DateTimeOffset.UtcNow;
-        var assignments = await _positionAssignments.GetAllAsync(ct);
-        return assignments
-            .Where(a => a.UserId == userId
-                        && !a.IsCancelled
-                        && a.EffectiveFrom <= now
-                        && (a.EffectiveTo is null || a.EffectiveTo > now))
-            .Select(a => a.PositionId)
-            .Distinct()
-            .ToList();
+        return await _seats.PositionIdsForUserAsync(userId, ct);
     }
 }

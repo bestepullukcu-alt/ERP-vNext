@@ -34,20 +34,20 @@ namespace Diten.Platform.Application.Features.Tasks.Handlers.QueryHandlers;
 public sealed class GetTaskAssignmentPersonLookupHandler
     : IRequestHandler<GetTaskAssignmentPersonLookupQuery, Response<AssignablePersonLookupDto>>
 {
-    private readonly IPositionAssignmentRepository _positionAssignments;
+    private readonly ITaskSeatDirectory _seats;
     private readonly IPositionRepository _positions;
     private readonly IOrganizationUnitRepository _organizationUnits;
     private readonly IUserDisplayNameResolver _displayNames;
     private readonly ITaskAssignmentScopeResolver _scopes;
 
     public GetTaskAssignmentPersonLookupHandler(
-        IPositionAssignmentRepository positionAssignments,
+        ITaskSeatDirectory seats,
         IPositionRepository positions,
         IOrganizationUnitRepository organizationUnits,
         IUserDisplayNameResolver displayNames,
         ITaskAssignmentScopeResolver scopes)
     {
-        _positionAssignments = positionAssignments;
+        _seats = seats;
         _positions = positions;
         _organizationUnits = organizationUnits;
         _displayNames = displayNames;
@@ -68,7 +68,7 @@ public sealed class GetTaskAssignmentPersonLookupHandler
         GetTaskAssignmentPersonLookupQuery request,
         CancellationToken ct)
     {
-        var assignments = await _positionAssignments.GetAllAsync(ct);
+        var active = await _seats.ActiveAsync(ct);
         var positions = await _positions.GetAllAsync(ct);
         var units = await _organizationUnits.GetAllAsync(ct);
 
@@ -94,21 +94,16 @@ public sealed class GetTaskAssignmentPersonLookupHandler
             }
         }
 
-        // Half-open interval, consistent with the org-unit fallback and the position lookup.
-        var active = assignments
-            .Where(a => !a.IsCancelled
-                        && a.EffectiveFrom <= now
-                        && (a.EffectiveTo is null || a.EffectiveTo > now))
-            // A primary assignment is the person's "home" position when they hold several.
-            .OrderBy(a => a.AssignmentType)
-            .ToList();
+        // Windowed by the seat directory; only the PRIMARY-first ordering is this handler's own —
+        // a person holding several seats should be listed by their home position.
+        var homeFirst = active.OrderBy(a => a.AssignmentType).ToList();
 
         // Anyone with an assignment row at all is a CANDIDATE; whoever never reaches `rows` is reported as
         // excluded. Without this the "no active position" case would be invisible — those rows are filtered out
         // above, so the loop below never sees them.
-        var candidates = assignments.Select(a => a.UserId).ToHashSet();
+        var candidates = await _seats.EverAssignedUserIdsAsync(ct);
 
-        foreach (var assignment in active)
+        foreach (var assignment in homeFirst)
         {
             // One row per person: a second position would duplicate the same human in the picker.
             if (listed.Contains(assignment.UserId))

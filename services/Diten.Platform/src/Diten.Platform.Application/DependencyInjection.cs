@@ -55,6 +55,13 @@ public static class DependencyInjection
         services.AddScoped<IPlatformCatalogContract, PlatformCatalogContract>();
         services.AddSingleton<ITemporaryAccessProvider, NoOpTemporaryAccessProvider>();
         services.AddScoped<IDataScopeResolver, OrgDataScopeResolver>();
+        /*
+         * The ONE surface MOD-0024 asks "who sits in which seat" through. Nine files used to inject the
+         * assignment repository directly and each re-wrote the active-window rule; BL-071 moves that fact to
+         * HCM, and this is the single file that will have to learn it.
+         */
+        services.AddScoped<Features.Tasks.Services.ITaskSeatDirectory,
+            Features.Tasks.Services.TaskSeatDirectory>();
         // BL-057 — MOD-0024's translation of the scopes above into "may I hand work to this position?". It
         // CONSUMES IDataScopeResolver rather than recomputing anything; see TaskAssignmentScopeResolver.
         services.AddScoped<Features.Tasks.Services.ITaskAssignmentScopeResolver,

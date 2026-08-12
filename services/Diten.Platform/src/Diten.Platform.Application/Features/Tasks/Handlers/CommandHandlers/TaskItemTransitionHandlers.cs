@@ -934,7 +934,7 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
 {
     private readonly ITaskItemRepository _tasks;
     private readonly ITaskAssignmentRepository _assignments;
-    private readonly IPositionAssignmentRepository _positionAssignments;
+    private readonly ITaskSeatDirectory _seats;
     private readonly IPositionRepository _positions;
     private readonly IOrganizationUnitRepository _organizationUnits;
     private readonly ICurrentUserContext _currentUser;
@@ -943,7 +943,7 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
     public ReassignTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
-        IPositionAssignmentRepository positionAssignments,
+        ITaskSeatDirectory seats,
         IPositionRepository positions,
         IOrganizationUnitRepository organizationUnits,
         ICurrentUserContext currentUser,
@@ -951,7 +951,7 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
     {
         _tasks = tasks;
         _assignments = assignments;
-        _positionAssignments = positionAssignments;
+        _seats = seats;
         _positions = positions;
         _organizationUnits = organizationUnits;
         _currentUser = currentUser;
@@ -1007,10 +1007,9 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
         // The same rule the people picker uses — see TaskAssigneeEligibility for why it is shared rather than
         // written twice. Refusing here is what stops work landing on somebody the product will not offer.
         var assignable = TaskAssigneeEligibility.ResolveAssignableUserIds(
-            await _positionAssignments.GetAllAsync(ct),
+            await _seats.ActiveAsync(ct),
             await _positions.GetAllAsync(ct),
-            await _organizationUnits.GetAllAsync(ct),
-            DateTimeOffset.UtcNow);
+            await _organizationUnits.GetAllAsync(ct));
 
         if (!assignable.Contains(command.Request.AssigneeUserId))
         {

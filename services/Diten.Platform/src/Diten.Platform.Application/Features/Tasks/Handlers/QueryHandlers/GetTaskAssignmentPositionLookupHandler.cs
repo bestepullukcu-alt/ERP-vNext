@@ -28,18 +28,18 @@ public sealed class GetTaskAssignmentPositionLookupHandler
 {
     private readonly IPositionRepository _positions;
     private readonly IOrganizationUnitRepository _organizationUnits;
-    private readonly IPositionAssignmentRepository _positionAssignments;
+    private readonly ITaskSeatDirectory _seats;
     private readonly ITaskAssignmentScopeResolver _scopes;
 
     public GetTaskAssignmentPositionLookupHandler(
         IPositionRepository positions,
         IOrganizationUnitRepository organizationUnits,
-        IPositionAssignmentRepository positionAssignments,
+        ITaskSeatDirectory seats,
         ITaskAssignmentScopeResolver scopes)
     {
         _positions = positions;
         _organizationUnits = organizationUnits;
-        _positionAssignments = positionAssignments;
+        _seats = seats;
         _scopes = scopes;
     }
 
@@ -49,7 +49,7 @@ public sealed class GetTaskAssignmentPositionLookupHandler
     {
         var positions = await _positions.GetAllAsync(ct);
         var units = await _organizationUnits.GetAllAsync(ct);
-        var assignments = await _positionAssignments.GetAllAsync(ct);
+        var assignments = await _seats.ActiveAsync(ct);
 
         var unitById = units.ToDictionary(u => u.Id);
         var now = DateTimeOffset.UtcNow;
@@ -60,11 +60,8 @@ public sealed class GetTaskAssignmentPositionLookupHandler
         // other stays wide, and pooled work reaches a company the actor may not reach directly.
         var scope = await _scopes.ResolveAsync(ct);
 
-        // Half-open interval, consistent with OrgDataScopeResolver / TenantOrganizationMapper.
+        // Already windowed by the seat directory — this only groups what it returned.
         var holderCounts = assignments
-            .Where(a => !a.IsCancelled
-                        && a.EffectiveFrom <= now
-                        && (a.EffectiveTo is null || a.EffectiveTo > now))
             .GroupBy(a => a.PositionId)
             .ToDictionary(g => g.Key, g => g.Select(a => a.UserId).Distinct().Count());
 
