@@ -96,7 +96,12 @@ const bootSurface = ({
   }
 
   global.TasksApi = {
-    create: (payload) => { created.push(payload); return Promise.resolve({ ok: true, status: 201, data: { id: "new" } }); },
+    /*
+     * The live endpoint answers with the new id AS THE BODY — `data: "f8536220-…"`, not `{ id }`. This stub
+     * said `{ id: "new" }`, and that lie hid a real defect: the code read `data.id`, got undefined, and the
+     * just-added row was never marked. A double that is kinder than the server proves nothing.
+     */
+    create: (payload) => { created.push(payload); return Promise.resolve({ ok: true, status: 201, data: "new-subtask-id" }); },
     get: () => Promise.resolve({ ok: true, status: 200, data: {} }),
     transition: () => Promise.resolve({ ok: true, status: 204 }),
     addComment: (taskId, payload) => { posted.push({ taskId, payload }); return Promise.resolve({ ok: true, status: 201, data: { id: "c1" } }); },

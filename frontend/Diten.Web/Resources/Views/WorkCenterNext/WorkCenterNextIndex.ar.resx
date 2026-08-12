@@ -308,6 +308,9 @@
   <data name="ShowAllCount" xml:space="preserve">
     <value>عرض الكل ({0})</value>
   </data>
+  <data name="ShowLess" xml:space="preserve">
+    <value>عرض أقل</value>
+  </data>
   <data name="DetailContext" xml:space="preserve">
     <value>سياق المصدر</value>
   </data>
@@ -758,8 +761,32 @@
   <data name="SubtasksLabel" xml:space="preserve">
     <value>المهام الفرعية</value>
   </data>
+  <data name="SubtaskDoneCount" xml:space="preserve">
+    <value>{0} مكتملة</value>
+  </data>
+  <data name="SubtaskProgressCount" xml:space="preserve">
+    <value>{0} / {1} مكتملة</value>
+  </data>
+  <data name="SubtaskInheritsHint" xml:space="preserve">
+    <value>يُورَث تاريخ الاستحقاق والأولوية والمسند إليه من المهمة الأصل.</value>
+  </data>
+  <data name="SubtaskOpen" xml:space="preserve">
+    <value>فتح</value>
+  </data>
+  <data name="SubtaskCheckDoneReason" xml:space="preserve">
+    <value>مكتملة بالفعل.</value>
+  </data>
+  <data name="SubtaskCheckCancelledReason" xml:space="preserve">
+    <value>لا يمكن إكمال عمل مُلغى.</value>
+  </data>
+  <data name="SubtaskCheckAria" xml:space="preserve">
+    <value>إكمال هذه المهمة الفرعية</value>
+  </data>
+  <data name="SubtaskRowMenuAria" xml:space="preserve">
+    <value>إجراءات {0}</value>
+  </data>
   <data name="SubtaskAddPlaceholder" xml:space="preserve">
-    <value>مهمة فرعية جديدة…</value>
+    <value>أضف مهمة فرعية واضغط Enter</value>
   </data>
   <data name="SubtaskAdd" xml:space="preserve">
     <value>إضافة</value>
@@ -1421,6 +1448,9 @@
   <data name="GuidancePendingAcceptance" xml:space="preserve">
     <value>تنتظر هذه المهمة قبولك. تولَّها، أو أعد إسنادها إن لم تكن لك.</value>
   </data>
+  <data name="GuidanceChildrenRunning" xml:space="preserve">
+    <value>‏{0} مهام فرعية قيد التنفيذ بالفعل.</value>
+  </data>
   <data name="GuidancePendingClaim" xml:space="preserve">
     <value>هذه المهمة في التجمّع. تولَّها لتصبح لك.</value>
   </data>
@@ -1437,7 +1467,7 @@
     <value>هذه المهمة متوقفة مؤقتًا: {0}</value>
   </data>
   <data name="SubtaskAddDetailed" xml:space="preserve">
-    <value>إضافة بالتفصيل</value>
+    <value>+ إضافة مهمة بالتفصيل</value>
   </data>
   <data name="SubtaskCreateTitle" xml:space="preserve">
     <value>مهمة فرعية جديدة</value>
@@ -1627,9 +1657,6 @@
   </data>
   <data name="SubtaskOpenAria" xml:space="preserve">
     <value>فتح المهمة الفرعية «{0}»</value>
-  </data>
-  <data name="SubtaskToggleAria" xml:space="preserve">
-    <value>إكمال المهمة الفرعية «{0}»</value>
   </data>
   <data name="HavuzTitleInvoiceMatch" xml:space="preserve">
     <value>مطابقة الفاتورة الواردة</value>

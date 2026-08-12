@@ -802,16 +802,15 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             .Select(child => new WorkItemSubtaskDto(
                 Id: child.Id.ToString(),
                 Title: child.Title,
-                // Cancelled is NOT "not started": called-off work is not waiting to begin, and reading it that
-                // way sends someone to do it. It is also the distinction BL-035 will need — a cancelled subtask
-                // must not gate its parent.
-                Status: child.Lifecycle switch
-                {
-                    TaskLifecycle.Done => "done",
-                    TaskLifecycle.Cancelled => "cancelled",
-                    TaskLifecycle.InProgress or TaskLifecycle.PendingReview or TaskLifecycle.Waiting => "in-progress",
-                    _ => "not-started"
-                },
+                /*
+                 * The SHARED vocabulary, not a second copy of it. TaskBlockingRules.StateOf is where
+                 * lifecycle → contract-state is decided (cancelled is its own value and never folded into
+                 * not-started, because called-off work is not waiting to begin). This switch was written out
+                 * again here, character-for-character; the browser now reads `in-progress` to say "already
+                 * running", so a drift between the two spellings would make that sentence count the wrong
+                 * children.
+                 */
+                Status: TaskBlockingRules.StateOf(child),
                 // A subtask carries its OWN holder and date; without them the row can only repeat its title,
                 // and "who is doing this and by when" is the reason to look at the list at all.
                 Assignee: Person(child.AssigneeUserId, actor, displayNames),

@@ -237,10 +237,13 @@ describe("many subtasks do not push the rail off the screen", () => {
   });
 
   test("past the threshold the list is capped and offers 'show all' — not a tab", () => {
+    // The cap and its control live in ONE helper now (they were rendered twice, and the second copy is where
+    // the missing click handler hid), so the renderer is asserted to USE it.
     const source = fn("renderSubtasks");
     expect(source).toContain("SUBTASK_VISIBLE_LIMIT");
-    expect(source).toContain("wcn-scrollcap");
-    expect(source).toContain("ShowAllCount");
+    expect(source).toContain("cappedList('subtasks'");
+    expect(fn("cappedList")).toContain("wcn-scrollcap");
+    expect(fn("cappedList")).toContain("ShowAllCount");
   });
 
   test("the cap is a scroll, so nothing becomes unreachable", () => {
@@ -488,7 +491,13 @@ describe("the rendered page", () => {
     expect(cap, "a 12-row list is not capped").not.toBeNull();
     // Nothing is dropped — the cap is a scroll, and every row is still in the DOM.
     expect(cap.querySelectorAll(".wcn-subtask")).toHaveLength(12);
-    expect(app().querySelector("[data-wcn-showall]"), "there is no way to release the cap").not.toBeNull();
+    /*
+     * ⚠ THIS ASSERTION USED TO CLAIM MORE THAN IT MEASURED. Its name said "there is no way to release the cap"
+     * and it checked that a BUTTON EXISTS. The button existed and released nothing — `data-wcn-showall` had no
+     * click handler anywhere in app.js, so the control was drawn dead. The claim is split in two now: the button
+     * is present HERE, and it actually works in "the cap can be released", below.
+     */
+    expect(app().querySelector("[data-wcn-showall]"), "the cap offers no control at all").not.toBeNull();
   });
 
   it("leaves a SHORT list uncapped", async () => {
@@ -518,5 +527,710 @@ describe("the rendered page", () => {
     }));
     // The one thing a tab would have hidden.
     expect(app().textContent).toContain("SubtasksBlockingNotice");
+  });
+});
+
+// ── 11. the parent nobody accepted, whose children are already working ──────
+
+describe("a task waiting to be accepted says when its children are already running", () => {
+  /*
+   * <b>What the owner saw.</b> A task reading "Bu görev kabulünü bekliyor" — nobody has taken it — with three
+   * subtasks reading "Devam ediyor". Both are true at once, and the page said nothing about the combination.
+   *
+   * <b>Why this is a SIGNAL and not a rule.</b> Nothing in TaskBlockingRules ties a child's START to the
+   * parent's acceptance, and that direction is deliberate: if it did, one person forgetting to press "Accept"
+   * would stop three people working. Jira and Azure DevOps behave the same way; top-down release (SAP WBS) is a
+   * project-system model, not a task-centre one. What was missing is not a prohibition, it is a sentence.
+   *
+   * <b>Where the number comes from — MEASURED.</b> The projection already carries each subtask's status in the
+   * contract vocabulary (WorkItemSubtaskDto.Status: done | in-progress | not-started | cancelled), which is
+   * what lets the list print "Devam ediyor" today. Nothing was added to the wire for this round.
+   */
+  const running = (n) => ({ id: `r${n}`, title: `Çalışan ${n}`, status: "in-progress", canCancel: false });
+  const cancelled = (n) => ({ id: `c${n}`, title: `İptal ${n}`, status: "cancelled", canCancel: false });
+
+  const pendingAcceptance = (items) => projectionItem({
+    admissionState: "pendingAcceptance",
+    ownershipState: "assigned",
+    normalizedStatus: "Pending",
+    taskLifecycle: "Open",
+    executionState: "notStarted",
+    subtasks: { mode: "full", items }
+  });
+
+  const banner = () => app().querySelector(".wcn-guidance");
+
+  it("says it, with the count, INSIDE the acceptance banner", async () => {
+    await boot(pendingAcceptance([running(1), running(2)]));
+
+    const banners = app().querySelectorAll(".wcn-guidance");
+    expect(banners, "a second banner appeared instead of a second sentence").toHaveLength(1);
+    expect(banner().textContent).toContain("GuidancePendingAcceptance");
+    expect(banner().textContent).toContain("GuidanceChildrenRunning:2");
+  });
+
+  it("stays silent when there are no subtasks at all", async () => {
+    await boot(pendingAcceptance([]));
+    expect(banner().textContent).not.toContain("GuidanceChildrenRunning");
+  });
+
+  it("stays silent when the only subtasks are CANCELLED", async () => {
+    // Called-off work is not work in progress — the same rule TaskBlockingRules states once and this derives.
+    await boot(pendingAcceptance([cancelled(1), cancelled(2)]));
+    expect(banner().textContent).not.toContain("GuidanceChildrenRunning");
+  });
+
+  it("stays silent for a NOT-STARTED child — 'already running' would not be true", async () => {
+    await boot(pendingAcceptance([{ id: "n1", title: "Beklemede", status: "not-started", canCancel: false }]));
+    expect(banner().textContent).not.toContain("GuidanceChildrenRunning");
+  });
+
+  it("stays silent once the task HAS been accepted, however busy its children are", async () => {
+    await boot(projectionItem({ subtasks: { mode: "full", items: [running(1), running(2)] } }));
+    const note = app().querySelector(".wcn-guidance");
+    expect(note ? note.textContent : "").not.toContain("GuidanceChildrenRunning");
+  });
+
+  it("BLOCKS NOTHING — the actions on the banner's task are untouched", async () => {
+    /*
+     * The line between a signal and a gate, asserted. A page that grew a warning AND disabled something would
+     * have quietly changed the product's direction.
+     */
+    const withChildren = await boot(pendingAcceptance([running(1), running(2)]));
+    const enabled = [...app().querySelectorAll(".wcn-actrail button:not([disabled])")].length;
+
+    await boot(pendingAcceptance([]));
+    const baseline = [...app().querySelectorAll(".wcn-actrail button:not([disabled])")].length;
+
+    expect(enabled, "running children disabled an action").toBe(baseline);
+    expect(withChildren).toBeTruthy();
+  });
+
+  it("is one sentence in seven languages, with its counter", () => {
+    const LANGS = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
+    LANGS.forEach((lang) => {
+      const xml = read("Resources", "Views", "WorkCenterNext", `WorkCenterNextIndex.${lang}.resx`);
+      const entry = /<data name="GuidanceChildrenRunning"[^>]*>\s*<value>([^<]*)<\/value>/.exec(xml);
+      expect(entry, `GuidanceChildrenRunning missing in ${lang}`).toBeTruthy();
+      expect(entry[1], `no {0} in ${lang}`).toContain("{0}");
+    });
+  });
+
+  it("counts through ONE definition of 'cancelled does not count'", () => {
+    // Written twice, the two would drift and the count would disagree with the blocking notice below it.
+    const app_ = APP();
+    expect(app_).toMatch(/const isCancelledSubtask/);
+    expect(fn("runningSubtaskCount")).toContain("isCancelledSubtask");
+    expect(fn("renderSubtasks")).toContain("isCancelledSubtask");
+  });
+});
+
+// ── 12. the subtask list as a CHECKLIST (A2) ────────────────────────────────
+
+describe("the subtask list reads and behaves like a checklist", () => {
+  /*
+   * <b>Layout A2.</b> Progress at the top (a count and a thin bar, so "how much is left" is answered without
+   * reading rows), the ADD row directly under it (it was at the bottom, and its two buttons were detached in the
+   * card's top-right corner), then two-layer rows: title on top, holder and date beneath, status and the row
+   * menu on the right.
+   *
+   * <b>The checkbox is a promise.</b> A box that cannot be ticked lies about what it is, so it COMPLETES the
+   * subtask — through the ordinary transition endpoint, with no new rule and no optimistic tick. If the server
+   * refuses (the child has its own gates), the refusal is what the user sees.
+   *
+   * <b>MEASURED, and this is the part a fixed list would get wrong.</b> The projection states exactly two
+   * permissions per subtask row: `canCancel` (server-evaluated, per row, because a child's requester is its own)
+   * and `status`. It carries NO per-row action set. So the menu is built from those two facts plus navigation —
+   * and "reassign" is deliberately absent, because nothing on the wire says this actor may reassign that child
+   * and a button that 409s is the defect this project already shipped once.
+   */
+  const child = (overrides) => Object.assign({
+    id: "11111111-1111-1111-1111-111111111111",
+    title: "Bütçe kalemini doğrula",
+    status: "not-started",
+    assignee: { id: "u1", displayName: "Deniz Koç" },
+    dueAt: "2026-08-20T00:00:00+00:00",
+    canCancel: true
+  }, overrides);
+
+  const withSubtasks = (items) => projectionItem({ subtasks: { mode: "full", items } });
+  const list = () => app().querySelector(".wcn-subtasks");
+  const rows = () => [...app().querySelectorAll(".wcn-subtask")];
+
+  // ── progress ──
+  it("says how many are done, as a count AND a bar", async () => {
+    await boot(withSubtasks([
+      child({ id: "a", status: "done" }), child({ id: "b" }), child({ id: "c" })
+    ]));
+
+    const card = list().closest(".wcn-detail-section");
+    // The visible reading is the DONE count; the full "1 / 3" is the bar's accessible name (item 8: the total
+    // is the badge's job, and printing it twice is what confused the reader).
+    expect(card.textContent).toContain("SubtaskDoneCount:1");
+
+    const bar = card.querySelector("progress.wcn-progress");
+    expect(bar.getAttribute("aria-label")).toContain("SubtaskProgressCount:1");
+    expect(bar, "there is no progress bar").not.toBeNull();
+    expect(bar.getAttribute("value")).toBe("1");
+    expect(bar.getAttribute("max")).toBe("3");
+  });
+
+  it("counts CANCELLED work in neither half — it is not done and not outstanding", async () => {
+    await boot(withSubtasks([child({ id: "a", status: "done" }), child({ id: "b", status: "cancelled" })]));
+    const bar = app().querySelector("progress.wcn-progress");
+    expect(bar.getAttribute("value")).toBe("1");
+    expect(bar.getAttribute("max"), "a cancelled subtask still counts as outstanding work").toBe("1");
+  });
+
+  // ── the add row ──
+  it("puts the add row ABOVE the list, not under it", async () => {
+    await boot(withSubtasks([child()]));
+    const add = app().querySelector(".wcn-subtask-add");
+    expect(add, "there is no add row").not.toBeNull();
+    expect(add.compareDocumentPosition(list()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("reuses the page's OWN search-input pattern rather than inventing a second one", async () => {
+    await boot(withSubtasks([child()]));
+    const box = app().querySelector(".wcn-subtask-add .wcn-search.wcn-search-inline");
+    expect(box, "the add box does not use wcn-search wcn-search-inline").not.toBeNull();
+    expect(box.querySelector("[data-wcn-subtask-input]")).not.toBeNull();
+    expect(box.querySelector("i.bx"), "the pattern's leading icon is missing").not.toBeNull();
+  });
+
+  it("labels 'add in detail' with WORDS — there is no universal glyph for it", async () => {
+    await boot(withSubtasks([child()]));
+    const detailed = app().querySelector("[data-wcn-subtask-add-detailed]");
+    expect(detailed.textContent.trim().length, "the detailed-add button is icon-only").toBeGreaterThan(0);
+  });
+
+  it("adds on ENTER, through the same write path the button used", async () => {
+    const { created } = await boot(withSubtasks([child()]));
+    const input = app().querySelector("[data-wcn-subtask-input]");
+    input.value = "Yeni alt görev";
+    input.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(created.map((c) => c.title)).toContain("Yeni alt görev");
+  });
+
+  it("SAYS what a quick-added subtask inherits — it was silent about it", async () => {
+    /*
+     * Measured: quick-add does not skip the required fields, it inherits them (dueAt from the parent, priority
+     * and assignee from the parent record). The server requires a due date on every task, so this always
+     * happened — and nothing on screen said so.
+     */
+    await boot(withSubtasks([child()]));
+    expect(app().querySelector(".wcn-subtask-add-hint").textContent).toContain("SubtaskInheritsHint");
+  });
+
+  // ── the checkbox ──
+  it("is a CHECKBOX now, and ticking it completes the subtask through the transition endpoint", async () => {
+    const calls = [];
+    await boot(withSubtasks([child({ id: "sub-1" })]));
+    global.TasksApi.transition = (id, code) => { calls.push({ id, code }); return Promise.resolve({ ok: true, status: 204 }); };
+
+    app().querySelector(".wcn-subtask-check").click();
+    await new Promise((r) => setTimeout(r, 0));
+
+    /*
+     * The COUNT is not asserted, and that is a property of the harness rather than of the code: every boot in
+     * this file leaves its document listeners behind (jsdom keeps one document per file), so a single click is
+     * heard once per boot so far. What matters — and what is asserted — is that the click reaches the ordinary
+     * completion transition for THIS subtask, and reaches nothing else.
+     */
+    expect(calls.length, "no transition was attempted").toBeGreaterThan(0);
+    calls.forEach((call) => {
+      expect(call.code).toBe("complete");
+      expect(call.id).toBe("sub-1");
+    });
+  });
+
+  it("does NOT tick optimistically — a refusal leaves the row exactly as it was, and says why", async () => {
+    await boot(withSubtasks([child({ id: "sub-1" })]));
+    const toasts = [];
+    global.TasksApi.transition = () => Promise.resolve({ ok: false, status: 409 });
+    global.TasksApi.isTransitionBlocked = () => true;
+    global.TasksApi.failureMessage = () => "Alt görevin kendi kapısı açık";
+    global.Swal = { fire: (opts) => { toasts.push(opts); return Promise.resolve({ isConfirmed: false }); } };
+
+    app().querySelector(".wcn-subtask-check").click();
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(rows()[0].classList.contains("wcn-subtask-done"), "the row marked itself done anyway").toBe(false);
+  });
+
+  it("disables the box on a row that cannot be completed, and says why in its title", async () => {
+    await boot(withSubtasks([child({ id: "d", status: "done" }), child({ id: "c", status: "cancelled" })]));
+
+    rows().forEach((row) => {
+      const box = row.querySelector(".wcn-subtask-check");
+      expect(box.disabled, "a terminal row still offers its checkbox").toBe(true);
+      expect((box.getAttribute("title") || "").length, "a disabled box gives no reason").toBeGreaterThan(0);
+    });
+  });
+
+  // ── the row menu ──
+  it("offers the row's actions from what the SERVER said about that row", async () => {
+    await boot(withSubtasks([child({ id: "x", canCancel: true })]));
+    const row = rows()[0];
+
+    // Two actions (open · cancel) ⇒ a menu.
+    expect(row.querySelector("[data-wcn-subtask-menu]"), "no row menu").not.toBeNull();
+    expect(row.querySelector("[data-wcn-subtask-cancel]"), "cancel is missing though canCancel is true").not.toBeNull();
+    expect(row.querySelector("[data-wcn-open-task]"), "there is no way to open the subtask").not.toBeNull();
+  });
+
+  it("drops cancel when the server says this actor may not cancel — and then shows NO menu", async () => {
+    /*
+     * One action is not a menu. A ⋯ that opens a single item is a click nobody needs, and it hides the one
+     * thing it holds.
+     */
+    await boot(withSubtasks([child({ id: "x", canCancel: false })]));
+    const row = rows()[0];
+
+    expect(row.querySelector("[data-wcn-subtask-cancel]")).toBeNull();
+    expect(row.querySelector("[data-wcn-subtask-menu]"), "a menu opened for a single action").toBeNull();
+    expect(row.querySelector("[data-wcn-open-task]"), "the single action is not offered directly").not.toBeNull();
+  });
+
+  it("invents NO action the wire cannot justify — reassign is not offered", async () => {
+    // The projection states `canCancel` and `status` per row and nothing else. A reassign button here would be
+    // a guess, and the guess is a 409.
+    await boot(withSubtasks([child()]));
+    expect(app().querySelector(".wcn-subtask [data-wcn-subtask-reassign]")).toBeNull();
+    expect(fn("renderSubtasks")).not.toContain("reassign");
+  });
+
+  // ── what must not have changed ──
+  it("still prints the gate line that blocks the parent", async () => {
+    await boot(withSubtasks([child({ id: "a" }), child({ id: "b" })]));
+    expect(app().textContent).toContain("SubtasksBlockingNotice");
+  });
+
+  it("still sinks cancelled rows below the live ones", async () => {
+    await boot(withSubtasks([
+      child({ id: "cancelled-first", status: "cancelled" }),
+      child({ id: "live", status: "not-started" })
+    ]));
+    expect(rows()[0].className).not.toContain("wcn-subtask-cancelled");
+  });
+
+  it("still caps the list at eight and offers 'show all'", async () => {
+    // Presence only — that the control WORKS is asserted in its own tests below, because this one was written
+    // as if presence proved it and it did not.
+    await boot(withSubtasks(Array.from({ length: 12 }, (_, i) => child({ id: `s${i}` }))));
+    expect(app().querySelector(".wcn-scrollcap")).not.toBeNull();
+    expect(app().querySelector("[data-wcn-showall]")).not.toBeNull();
+  });
+
+  it("still says nothing-yet in ONE line, with the add row on it", async () => {
+    await boot(withSubtasks([]));
+    const empty = app().querySelector(".wcn-empty-line");
+    expect(empty).not.toBeNull();
+    expect(empty.querySelector("[data-wcn-subtask-input]")).not.toBeNull();
+  });
+
+  it("keeps the row one line high: the title is clipped, not wrapped", () => {
+    const rule = /^\.wcn-subtask-title\s*\{([^}]*)\}/m.exec(CSS());
+    expect(rule, ".wcn-subtask-title has no rule").toBeTruthy();
+    expect(rule[1]).toMatch(/text-overflow:\s*ellipsis/);
+    expect(rule[1]).toMatch(/white-space:\s*nowrap/);
+    expect(rule[1]).toMatch(/overflow:\s*hidden/);
+  });
+
+  it("names the server's refusal instead of 'an error occurred' — measured live", () => {
+    /*
+     * FOUND BY THE CHECKBOX ITSELF, on its first live click: completing a not-started child returns
+     * 409 TASK_INVALID_STATE, the code was unmapped, and the user read the generic sentence while the console
+     * printed the app's own "add it to REASON_CODE_MESSAGE_KEYS" warning. A tick that fails must say what to do
+     * next.
+     */
+    const api = read("wwwroot", "assets", "js", "Tasks", "api.js");
+    expect(api).toMatch(/TASK_INVALID_STATE:\s*'errorTaskInvalidState'/);
+    // …and it is a RULE, not a race: the surface refreshes and explains rather than blaming a concurrent edit.
+    const set = api.slice(api.indexOf("const BLOCKING_REASON_CODES = new Set(["));
+    expect(set.slice(0, set.indexOf("]);"))).toContain("'TASK_INVALID_STATE'");
+
+    ["en", "tr", "fr", "es", "zh", "ar", "ru"].forEach((lang) => {
+      expect(read("Resources", "Views", "Tasks", `TasksIndex.${lang}.resx`), `${lang} has no sentence for it`)
+        .toContain('name="ErrorTaskInvalidState"');
+    });
+    expect(read("Views", "Tasks", "_IndexL10n.cshtml")).toContain("ErrorTaskInvalidState");
+  });
+
+  it("reads the people lookup's OBJECT shape — the twin of a defect BL-057 left behind", () => {
+    /*
+     * Also found live, in the same click: `assignablePeople()` answers `{ people, excluded }` and this call site
+     * still took `.data`, so `state.assignablePeople` became an object and the NEXT render died on
+     * `people.map is not a function` — taking the whole page down, not just the picker.
+     */
+    const app_ = APP();
+    expect(app_).toMatch(/Array\.isArray\(people\.data\?\.people\)/);
+    expect(app_).not.toMatch(/state\.assignablePeople = \(people\.ok && people\.data\) \? people\.data :/);
+  });
+
+  it("puts the new strings in all seven languages, with their counters", () => {
+    const LANGS = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
+    const KEYS = ["SubtaskProgressCount", "SubtaskInheritsHint", "SubtaskAddDetailed", "SubtaskOpen",
+      "SubtaskCheckDoneReason", "SubtaskCheckCancelledReason"];
+    LANGS.forEach((lang) => {
+      const xml = read("Resources", "Views", "WorkCenterNext", `WorkCenterNextIndex.${lang}.resx`);
+      KEYS.forEach((key) => expect(xml, `${lang} has no ${key}`).toContain(`name="${key}"`));
+      const counted = /<data name="SubtaskProgressCount"[^>]*>\s*<value>([^<]*)<\/value>/.exec(xml);
+      expect(counted[1], `${lang} SubtaskProgressCount has no counters`).toMatch(/\{0\}[\s\S]*\{1\}/);
+    });
+  });
+});
+
+// ── 13. the ten-item round: two real defects, eight of layout ───────────────
+
+describe("cancelling a subtask actually cancels it", () => {
+  /*
+   * <b>MEASURED LIVE, and it is the worst kind of defect.</b> ⋯ → "Cancel subtask" → the confirm dialog opens →
+   * "Yes" → NO network request, no toast, the row unchanged. The user believes they cancelled something.
+   *
+   * <b>Cause.</b> confirmDestructive resolved FALSE on the next tick — `setTimeout(() => resolve(false), 0)` —
+   * because showConfirm "does not report dismissal". It does: the third argument takes an `onCancel` callback.
+   * So the promise settled to false a millisecond after the dialog opened, and the user's click seconds later
+   * resolved an already-settled promise into nothing.
+   */
+  const child = (overrides) => Object.assign({
+    id: "sub-1", title: "Bütçe kalemini doğrula", status: "in-progress",
+    assignee: null, dueAt: null, canCancel: true
+  }, overrides);
+  const withSubtasks = (items) => projectionItem({ subtasks: { mode: "full", items } });
+
+  const withConfirm = (behaviour) => {
+    // The real MOD-0013 shape: a callback for yes, options.onCancel for no — and NEITHER fires synchronously.
+    global.showConfirm = (message, callback, options) => {
+      setTimeout(() => {
+        if (behaviour === "yes") { callback(); } else if (options && options.onCancel) { options.onCancel(); }
+      }, 5);
+    };
+  };
+
+  afterEach(() => { delete global.showConfirm; });
+
+  it("calls the cancel transition once the user confirms", async () => {
+    const calls = [];
+    await boot(withSubtasks([child()]));
+    withConfirm("yes");
+    global.TasksApi.transition = (id, code) => { calls.push({ id, code }); return Promise.resolve({ ok: true, status: 204 }); };
+
+    app().querySelector("[data-wcn-subtask-cancel]").click();
+    await new Promise((r) => setTimeout(r, 30));
+
+    expect(calls.length, "the confirmed cancel reached no endpoint at all").toBeGreaterThan(0);
+    calls.forEach((call) => {
+      expect(call.code).toBe("cancel");
+      expect(call.id).toBe("sub-1");
+    });
+  });
+
+  it("calls NOTHING when the user dismisses the dialog", async () => {
+    const calls = [];
+    await boot(withSubtasks([child()]));
+    withConfirm("no");
+    global.TasksApi.transition = (id, code) => { calls.push({ id, code }); return Promise.resolve({ ok: true, status: 204 }); };
+
+    app().querySelector("[data-wcn-subtask-cancel]").click();
+    await new Promise((r) => setTimeout(r, 30));
+
+    expect(calls).toHaveLength(0);
+  });
+
+  it("shows the server's reason when the cancel is refused", async () => {
+    await boot(withSubtasks([child()]));
+    withConfirm("yes");
+    global.TasksApi.transition = () => Promise.resolve({ ok: false, status: 409, reasonCode: "TASK_INVALID_STATE" });
+    global.TasksApi.failureMessage = () => "Bu görev bu durumdayken iptal edilemez";
+
+    app().querySelector("[data-wcn-subtask-cancel]").click();
+    await new Promise((r) => setTimeout(r, 30));
+
+    // The row must not pretend: nothing is marked cancelled on the client's say-so.
+    expect(app().querySelector(".wcn-subtask").className).not.toContain("wcn-subtask-cancelled");
+  });
+
+  it("sends the subtask's OWN version with the cancel — measured live as a 409", () => {
+    /*
+     * The second half of the same defect, and it only became visible once the dialog stopped resolving early:
+     * the request went out with `{}`, the server compared version 0 against the real one, and every cancel came
+     * back "somebody changed it first" about a task nobody had touched.
+     */
+    const source = fn("cancelSubtask");
+    expect(source).toContain("expectedVersion");
+    expect(source).not.toMatch(/transition\(subtaskId, 'cancel', \{\}\)/);
+    // One resolver for both writes against a child, so they cannot disagree about where the version comes from.
+    expect(source).toContain("subtaskVersion");
+    expect(fn("completeSubtask")).toContain("subtaskVersion");
+  });
+
+  it("no longer resolves the dialog behind the user's back", () => {
+    // The exact line that caused it, pinned so a future "simplification" cannot bring it back.
+    expect(fn("confirmDestructive")).not.toMatch(/setTimeout\([^)]*resolve\(false\)/);
+    expect(fn("confirmDestructive")).toContain("onCancel");
+  });
+});
+
+describe("a write does not throw the reader back to the top of the page", () => {
+  /*
+   * MEASURED: scrollY 600 → add a subtask with Enter → scrollY 0. The page does not RELOAD (no navigation), it
+   * re-renders: `root.innerHTML = …` collapses the document, the browser clamps the scroll, and the position is
+   * gone. On a long detail page, adding three subtasks in a row means scrolling back three times.
+   */
+  it("render() puts the scroll position back — of the element that ACTUALLY scrolls", () => {
+    /*
+     * MEASURED IN THE BROWSER: `window.scrollY` reads 0 on this theme while the page is visibly scrolled — the
+     * shell scrolls the root element, and the position lives on `document.scrollingElement.scrollTop`. The
+     * first version of this fix captured window.scrollY, restored 0 to 0, and changed nothing.
+     */
+    const source = fn("render") + fn("scroller");
+    expect(source).toMatch(/scrollingElement/);
+    expect(source).toMatch(/scrollTop/);
+  });
+
+  it("and keeps the caret in the box you were typing in", () => {
+    /*
+     * Focus preservation ALREADY existed here (captureFocus/restoreFocus, from the a11y round) and knew about
+     * the search box, rows and controls — not about the text boxes this page has since grown. Extended rather
+     * than duplicated: a second focus mechanism beside the first is how they drift.
+     */
+    const source = fn("captureFocus") + fn("restoreFocus");
+    expect(source).toMatch(/activeElement/);
+    expect(source).toContain("data-wcn-subtask-input");
+    expect(APP(), "a second focus mechanism was added beside the existing one").not.toMatch(/const focusSignature/);
+  });
+
+  it("does not blank the page to a spinner on a RE-read — the cause behind the cause", async () => {
+    /*
+     * The scroll restore was correct and did nothing, because the position was already lost before it ran:
+     * every write called loadWorkItems, which blanked the page to a loading state first. The document collapsed
+     * and the browser clamped the offset to zero. A spinner belongs to the first load, when there is nothing on
+     * screen to keep.
+     */
+    const source = fn("loadWorkItems");
+    expect(source).toMatch(/firstLoad/);
+    expect(source).not.toMatch(/^\s*state\.loadState = 'loading';\s*$\n\s*state\.loadError/m);
+  });
+
+  it("restores it after the list is re-read, not only after the first paint", async () => {
+    await boot(projectionItem({ subtasks: { mode: "full", items: [] } }));
+    // A real scroll cannot be measured in jsdom (no layout), so the CALL is what is asserted here and the
+    // pixels are measured in the browser.
+    expect(APP()).toMatch(/after\.scrollTop = scrollTop/);
+  });
+});
+
+describe("the card's chrome", () => {
+  const child = (overrides) => Object.assign({
+    id: "c1", title: "Bütçe", status: "not-started", assignee: null, dueAt: null, canCancel: true
+  }, overrides);
+  const withSubtasks = (items) => projectionItem({ subtasks: { mode: "full", items } });
+
+  it("gives the add row's button the same height as its input", () => {
+    const rule = /^\.wcn-subtask-add\s+\.btn\s*\{([^}]*)\}/m.exec(CSS());
+    expect(rule, "the add row's button has no height rule").toBeTruthy();
+    expect(rule[1]).toMatch(/2\.375rem|38px/);
+  });
+
+  it("names the detailed add for what it CREATES, and does not compete with Enter", async () => {
+    await boot(withSubtasks([child()]));
+    const button = app().querySelector("[data-wcn-subtask-add-detailed]");
+    // Outline, not solid: the input already carries the primary path (Enter), and two solid buttons side by
+    // side make the reader choose between two things that do the same job.
+    expect(button.className).toContain("btn-outline-primary");
+    expect(button.className).not.toContain("btn-label-secondary");
+  });
+
+  it("separates the rows with a hairline, and does not double it at the ends", () => {
+    const rule = /^\.wcn-subtasks\s*>\s*li\s*\+\s*li\s*\{([^}]*)\}/m.exec(CSS());
+    expect(rule, "there is no li + li separator rule").toBeTruthy();
+    expect(rule[1]).toMatch(/border-block-start/);
+    // A rule on every li would draw a line above the first row and below the last.
+    expect(CSS()).not.toMatch(/^\.wcn-subtasks\s*>\s*li\s*\{[^}]*border-block-start/m);
+  });
+
+  it("makes the gate line LOOK like the block it is", async () => {
+    await boot(withSubtasks([child({ id: "a" }), child({ id: "b" })]));
+    const gate = app().querySelector(".wcn-subtask-gate");
+    expect(gate, "the gate line is still plain text").not.toBeNull();
+    // The page's existing alert pattern — no new colour was invented for it.
+    expect(gate.className).toContain("alert");
+    expect(gate.textContent).toContain("SubtasksBlockingNotice");
+  });
+
+  it("counts ONCE: a badge for how many there are, a reading for how many are done", async () => {
+    /*
+     * DECISION (item 8). "ALT GÖREVLER 5" beside "1 / 5 tamam" prints the total twice, which is exactly the
+     * confusion reported. The badge keeps the total; the right-hand reading drops the denominator and says
+     * "1 done". Two numbers, two jobs, no repetition — and the full "1 / 5" survives as the progress bar's
+     * accessible name, where a screen reader needs the whole statement.
+     */
+    await boot(withSubtasks([child({ id: "a", status: "done" }), child({ id: "b" })]));
+    const card = app().querySelector(".wcn-subtasks").closest(".wcn-detail-section");
+
+    const badge = card.querySelector(".wcn-subtask-count");
+    expect(badge, "the total is not in a badge").not.toBeNull();
+    expect(badge.className).toContain("badge");
+    expect(badge.textContent.trim()).toBe("2");
+
+    const reading = card.querySelector(".wcn-subtask-progress").textContent;
+    expect(reading).toContain("SubtaskDoneCount:1");
+    expect(reading, "the total is printed twice").not.toContain("/");
+
+    expect(card.querySelector("progress").getAttribute("aria-label")).toContain("SubtaskProgressCount:1");
+  });
+
+  it("uses the LIST surface's row menu, not a second one", async () => {
+    /*
+     * Measured on the list: `btn btn-icon dropdown-toggle hide-arrow` + `bx-dots-vertical-rounded icon-md`, and
+     * a `dropdown-menu dropdown-menu-end m-0`. Two surfaces with two kebabs is how a UI stops being one product.
+     */
+    await boot(withSubtasks([child()]));
+    const toggle = app().querySelector(".wcn-subtask [data-bs-toggle='dropdown']");
+    expect(toggle, "the row has no menu").not.toBeNull();
+    expect(toggle.className).toContain("btn-icon");
+    expect(toggle.className).toContain("hide-arrow");
+    expect(toggle.querySelector("i.bx-dots-vertical-rounded"), "the kebab is not the list's kebab").not.toBeNull();
+
+    const menu = app().querySelector(".wcn-subtask .dropdown-menu");
+    expect(menu.className).toContain("dropdown-menu-end");
+    expect(menu.querySelector(".dropdown-item.wcn-menu-item")).not.toBeNull();
+    // Destructive items read as destructive there, so they do here.
+    expect(menu.querySelector("[data-wcn-subtask-cancel]").className).toContain("text-danger");
+  });
+
+  it("marks the row it just added so the reader can see where it went", async () => {
+    const source = APP();
+    expect(source).toMatch(/flashSubtaskId/);
+    expect(CSS()).toMatch(/\.wcn-subtask-flash/);
+    // The create response is the id ITSELF on the wire; reading `data.id` returned undefined and marked nothing.
+    expect(source).toMatch(/typeof result\.data === 'string'/);
+  });
+
+  it("puts the new strings in seven languages", () => {
+    ["en", "tr", "fr", "es", "zh", "ar", "ru"].forEach((lang) => {
+      const xml = read("Resources", "Views", "WorkCenterNext", `WorkCenterNextIndex.${lang}.resx`);
+      expect(xml, `${lang} has no SubtaskDoneCount`).toContain('name="SubtaskDoneCount"');
+      const detailed = /<data name="SubtaskAddDetailed"[^>]*>\s*<value>([^<]*)<\/value>/.exec(xml);
+      expect(detailed[1], `${lang} still labels it without the plus`).toContain("+");
+    });
+  });
+});
+
+// ── 14. the cap can actually be released ────────────────────────────────────
+
+describe("'show all' releases the cap — the control, not its picture", () => {
+  /*
+   * <b>MEASURED LIVE.</b> 17 rows, the wrapper capped at 320px with 854px of content, the button rendered with
+   * an EMPTY `data-wcn-showall` value — and no click handler for that attribute anywhere in app.js. Clicking it
+   * changed nothing: 17 rows before, 17 after; 320px before, 320px after.
+   *
+   * <b>Why the suite missed it.</b> The test that should have caught it asserted the button EXISTS while its own
+   * name claimed the cap could be released. A drawn control is not a working one, and that gap is the fifth
+   * vacuous assertion found this session — so these tests count ROWS and read the wrapper's own class, never
+   * the button's presence.
+   */
+  const child = (n) => ({ id: `s${n}`, title: `Alt görev ${n}`, status: "not-started", assignee: null, dueAt: null, canCancel: false });
+  const comment = (n) => ({ id: `a${n}`, kind: "comment", text: `Yorum ${n}`, actor: { id: "u1", displayName: "Deniz" }, at: "2026-08-01T09:00:00+00:00" });
+
+  const manySubtasks = () => projectionItem({
+    subtasks: { mode: "full", items: Array.from({ length: 17 }, (_, i) => child(i + 1)) }
+  });
+  const manyComments = () => projectionItem({
+    workItemCapabilities: ["planning", "execution", "subtasks", "activity"],
+    subtasks: { mode: "full", items: [] },
+    activity: Array.from({ length: 9 }, (_, i) => comment(i + 1))
+  });
+
+  const capOf = (selector) => {
+    const list = app().querySelector(selector);
+    return list ? list.closest(".wcn-scrollcap") : null;
+  };
+
+  it("the subtask cap OPENS: the wrapper stops capping and every row is in the flow", async () => {
+    await boot(manySubtasks());
+
+    const before = capOf(".wcn-subtasks");
+    expect(before, "the 17-row list is not capped to begin with").not.toBeNull();
+    expect(before.className, "the wrapper starts open").not.toContain("wcn-scrollcap-open");
+
+    app().querySelector("[data-wcn-showall]").click();
+    await new Promise((r) => setTimeout(r, 0));
+
+    const after = capOf(".wcn-subtasks");
+    // Either the wrapper is gone or it is explicitly opened — what must NOT survive is a live cap.
+    const stillCapped = after && !after.className.includes("wcn-scrollcap-open");
+    expect(stillCapped, "the cap is still capping after 'show all'").toBeFalsy();
+    expect(app().querySelectorAll(".wcn-subtask")).toHaveLength(17);
+  });
+
+  it("the ACTIVITY cap opens too — the same dead button was rendered twice", async () => {
+    await boot(manyComments());
+
+    const before = capOf(".wcn-audit");
+    expect(before, "the 9-entry feed is not capped").not.toBeNull();
+
+    app().querySelector("[data-wcn-showall]").click();
+    await new Promise((r) => setTimeout(r, 0));
+
+    const after = capOf(".wcn-audit");
+    expect(after && !after.className.includes("wcn-scrollcap-open"),
+      "the activity cap is still capping").toBeFalsy();
+    expect(app().querySelectorAll(".wcn-audit-item")).toHaveLength(9);
+  });
+
+  it("the button knows WHICH list it opens — an empty attribute cannot address anything", async () => {
+    await boot(manySubtasks());
+    expect(app().querySelector("[data-wcn-showall]").getAttribute("data-wcn-showall")).toBe("subtasks");
+  });
+
+  it("turns into 'show less' once open, so an opened cap can be closed again", async () => {
+    /*
+     * DECISION: the button STAYS and changes its word. Hiding it would strand a seventeen-row list open with no
+     * way back — a new dead end in place of the old dead button. Toggling also keeps one control for one
+     * concept, which is what made the missing handler findable in the first place.
+     */
+    await boot(manySubtasks());
+    app().querySelector("[data-wcn-showall]").click();
+    await new Promise((r) => setTimeout(r, 0));
+
+    const button = app().querySelector("[data-wcn-showall]");
+    expect(button, "the control vanished, so the list cannot be collapsed again").not.toBeNull();
+    expect(button.textContent).toContain("ShowLess");
+
+    button.click();
+    await new Promise((r) => setTimeout(r, 0));
+    const capped = capOf(".wcn-subtasks");
+    expect(capped, "the list did not collapse again").not.toBeNull();
+    expect(capped.className).not.toContain("wcn-scrollcap-open");
+  });
+
+  it("opening one list does not open the other", async () => {
+    // Two cards, two answers: expanding the subtasks must not silently expand the feed underneath it.
+    await boot(projectionItem({
+      workItemCapabilities: ["planning", "execution", "subtasks", "activity"],
+      subtasks: { mode: "full", items: Array.from({ length: 17 }, (_, i) => child(i + 1)) },
+      activity: Array.from({ length: 9 }, (_, i) => comment(i + 1))
+    }));
+
+    app().querySelector("[data-wcn-showall='subtasks']").click();
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(capOf(".wcn-audit").className, "the activity feed opened by itself").not.toContain("wcn-scrollcap-open");
+  });
+
+  it("keeps the reader's place when the list grows under them", () => {
+    // The expansion goes through the same render, so it inherits this round's scroll/focus preservation.
+    expect(fn("render")).toMatch(/scrollTop/);
+  });
+
+  it("says 'show less' in seven languages", () => {
+    ["en", "tr", "fr", "es", "zh", "ar", "ru"].forEach((lang) => {
+      expect(read("Resources", "Views", "WorkCenterNext", `WorkCenterNextIndex.${lang}.resx`),
+        `${lang} has no ShowLess`).toContain('name="ShowLess"');
+    });
   });
 });

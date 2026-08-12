@@ -308,6 +308,9 @@
   <data name="ShowAllCount" xml:space="preserve">
     <value>Показать все ({0})</value>
   </data>
+  <data name="ShowLess" xml:space="preserve">
+    <value>Показать меньше</value>
+  </data>
   <data name="DetailContext" xml:space="preserve">
     <value>Контекст источника</value>
   </data>
@@ -758,8 +761,32 @@
   <data name="SubtasksLabel" xml:space="preserve">
     <value>Подзадачи</value>
   </data>
+  <data name="SubtaskDoneCount" xml:space="preserve">
+    <value>{0} готово</value>
+  </data>
+  <data name="SubtaskProgressCount" xml:space="preserve">
+    <value>{0} / {1} готово</value>
+  </data>
+  <data name="SubtaskInheritsHint" xml:space="preserve">
+    <value>Срок, приоритет и исполнитель наследуются от родительской задачи.</value>
+  </data>
+  <data name="SubtaskOpen" xml:space="preserve">
+    <value>Открыть</value>
+  </data>
+  <data name="SubtaskCheckDoneReason" xml:space="preserve">
+    <value>Уже выполнена.</value>
+  </data>
+  <data name="SubtaskCheckCancelledReason" xml:space="preserve">
+    <value>Отменённую работу нельзя завершить.</value>
+  </data>
+  <data name="SubtaskCheckAria" xml:space="preserve">
+    <value>Завершить подзадачу</value>
+  </data>
+  <data name="SubtaskRowMenuAria" xml:space="preserve">
+    <value>Действия для {0}</value>
+  </data>
   <data name="SubtaskAddPlaceholder" xml:space="preserve">
-    <value>Новая подзадача…</value>
+    <value>Добавьте подзадачу и нажмите Enter</value>
   </data>
   <data name="SubtaskAdd" xml:space="preserve">
     <value>Добавить</value>
@@ -1421,6 +1448,9 @@
   <data name="GuidancePendingAcceptance" xml:space="preserve">
     <value>Эта задача ждёт вашего принятия. Возьмите её или переназначьте, если она не ваша.</value>
   </data>
+  <data name="GuidanceChildrenRunning" xml:space="preserve">
+    <value>{0} подзадач уже выполняются.</value>
+  </data>
   <data name="GuidancePendingClaim" xml:space="preserve">
     <value>Эта задача в пуле. Возьмите её, чтобы она стала вашей.</value>
   </data>
@@ -1437,7 +1467,7 @@
     <value>Задача приостановлена: {0}</value>
   </data>
   <data name="SubtaskAddDetailed" xml:space="preserve">
-    <value>Добавить подробно</value>
+    <value>+ Добавить задачу подробно</value>
   </data>
   <data name="SubtaskCreateTitle" xml:space="preserve">
     <value>Новая подзадача</value>
@@ -1627,9 +1657,6 @@
   </data>
   <data name="SubtaskOpenAria" xml:space="preserve">
     <value>Открыть подзадачу «{0}»</value>
-  </data>
-  <data name="SubtaskToggleAria" xml:space="preserve">
-    <value>Завершить подзадачу «{0}»</value>
   </data>
   <data name="HavuzTitleInvoiceMatch" xml:space="preserve">
     <value>Сопоставить входящий счёт</value>

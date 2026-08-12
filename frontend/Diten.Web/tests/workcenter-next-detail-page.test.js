@@ -145,7 +145,9 @@ describe("adding a subtask reads the title the user typed", () => {
     input.value = "Banka ekstresini iste";
     input.dispatchEvent(new window.Event("input", { bubbles: true }));
 
-    app().querySelector("[data-wcn-subtask-add]").click();
+    // ENTER is the quick-add now: the button was removed when the add row moved to the top of the card and
+    // adopted the page's search-input pattern. The write path behind it is unchanged.
+    input.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     /*
@@ -170,7 +172,7 @@ describe("the Details route can actually write", () => {
 
     const input = app().querySelector("[data-wcn-subtask-input]");
     input.value = "CT ikinci deneme";
-    app().querySelector("[data-wcn-subtask-add]").click();
+    input.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(created.length).toBeGreaterThan(0);
@@ -198,9 +200,9 @@ describe("the Details route can actually write", () => {
     console.error = (...args) => errors.push(args.join(" "));
     try {
       await bootDetailPage(projectionItem(), { withoutTasksScripts: true });
-      const input = app().querySelector("[data-wcn-subtask-input]");
-      input.value = "CT ikinci deneme";
-      app().querySelector("[data-wcn-subtask-add]").click();
+      // Any click that reaches the async handler will do; the quick-add is keyboard-driven now, so this uses
+      // the other control on the same row.
+      app().querySelector("[data-wcn-subtask-add-detailed]").click();
       await new Promise((resolve) => setTimeout(resolve, 10));
     } finally {
       console.error = original;
@@ -533,8 +535,13 @@ describe("subtask rows carry who has it and when it is due", () => {
       }
     }));
 
-    expect(app().querySelector(".wcn-subtask-assignee").textContent).toContain("Merve Şahin");
-    expect(app().querySelector(".wcn-subtask-due").textContent).toContain("2026-08-03");
+    /*
+     * A2 made the row two layers: the holder and the date share ONE quiet line under the title instead of
+     * being two chips beside it. What they SAY is the claim; which element carries them is layout.
+     */
+    const meta = app().querySelector(".wcn-subtask-body .wcn-subtask-meta");
+    expect(meta.textContent).toContain("Merve Şahin");
+    expect(meta.textContent).toContain("2026-08-03");
   });
 
   it("shows nothing at all when a subtask has no holder", async () => {
@@ -1016,11 +1023,19 @@ describe("the subtask card is a list card", () => {
     const heading = Array.from(app().querySelectorAll(".wcn-detail-section h6"))
       .find((h) => h.textContent.includes("SubtasksLabel"));
     expect(heading).not.toBeNull();
-    expect(heading.querySelector(".wcn-count-inline").textContent).toBe("2");
+    // The total moved into a badge (and out of the right-hand reading, which now says only how many are done):
+    // "ALT GÖREVLER 5" beside "1 / 5 tamam" printed the same number twice.
+    expect(heading.querySelector(".wcn-subtask-count").textContent.trim()).toBe("2");
 
-    const header = heading.parentElement;
-    expect(header.querySelector("[data-wcn-subtask-add-inline]")).not.toBeNull();
-    expect(header.querySelector("[data-wcn-subtask-add-detailed]")).not.toBeNull();
+    /*
+     * The two add controls used to sit in the card's top-right corner, detached from the input they drove. A2
+     * moved them into ONE add row directly under the progress bar; the header now carries the count and the
+     * progress reading, which is what a checklist header is for.
+     */
+    const card = heading.closest(".wcn-detail-section");
+    expect(card.querySelector(".wcn-subtask-add [data-wcn-subtask-input]")).not.toBeNull();
+    expect(card.querySelector(".wcn-subtask-add [data-wcn-subtask-add-detailed]")).not.toBeNull();
+    expect(card.querySelector(".wcn-subtask-progress")).not.toBeNull();
   });
 
   // Deliberate: a task carries a handful of subtasks. A filter earns its space at fifteen, and this is not that.
@@ -1034,16 +1049,17 @@ describe("the subtask card is a list card", () => {
     });
   });
 
-  it("keeps exactly one quick-add control, which the header button focuses", async () => {
+  it("keeps exactly ONE quick-add control, and it is the input itself", async () => {
+    /*
+     * There used to be an input plus a header button that only focused it — two controls for one action. The
+     * input now carries the parent id and Enter submits, so the thing you type into IS the thing that adds.
+     */
     await bootDetailPage(withSubtasks([child()]));
 
-    expect(app().querySelectorAll("[data-wcn-subtask-input]")).toHaveLength(1);
-    expect(app().querySelectorAll("[data-wcn-subtask-add]")).toHaveLength(1);
-
-    app().querySelector("[data-wcn-subtask-add-inline]").click();
-    // onClick is async and the listener defers it through a promise, so the effect lands a tick later.
-    await new Promise((resolve) => { setTimeout(resolve, 0); });
-    expect(document.activeElement).toBe(app().querySelector("[data-wcn-subtask-input]"));
+    const inputs = app().querySelectorAll("[data-wcn-subtask-input]");
+    expect(inputs).toHaveLength(1);
+    expect(inputs[0].getAttribute("data-wcn-subtask-add")).toBe(TASK_ID);
+    expect(app().querySelectorAll("button[data-wcn-subtask-add]"), "the old add button is back").toHaveLength(0);
   });
 });
 
@@ -1393,10 +1409,15 @@ describe("an open subtask is named in the blocked banner", () => {
   it("counts only the open subtasks in the card's notice", async () => {
     await bootDetailPage(withOpenSubtask());
 
-    // One in-progress, one cancelled: the cancelled one is not open and must not be counted.
-    const notice = Array.from(app().querySelectorAll(".wcn-block-hint"))
+    /*
+     * One in-progress, one cancelled: the cancelled one is not open and must not be counted. The notice is an
+     * ALERT now rather than a grey hint — it is the sentence that says why "Complete" will refuse, and it read
+     * as ordinary body text. Only its appearance changed; the wording and the condition did not.
+     */
+    const notice = Array.from(app().querySelectorAll(".wcn-subtask-gate"))
       .find((el) => el.textContent.includes("SubtasksBlockingNotice"));
     expect(notice).not.toBeUndefined();
+    expect(notice.className).toContain("alert");
   });
 
   it("says nothing about blocking when every subtask is closed", async () => {

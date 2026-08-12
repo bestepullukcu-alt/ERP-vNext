@@ -46,6 +46,15 @@
         // MOD-0024's own refusals.
         TASK_CONCURRENCY_CONFLICT: 'errorConcurrencyRefreshed',
         CHECKLIST_INCOMPLETE: 'errorChecklistIncomplete',
+        /*
+         * The transition does not exist FROM THIS STATE — "complete" on a task nobody has started, say.
+         *
+         * MEASURED LIVE (2026-08-12) the moment the subtask list grew a checkbox: ticking a not-started child
+         * returned 409 TASK_INVALID_STATE and the user read "İşlem sırasında bir hata oluştu", because the code
+         * was unmapped. The app's own console warning said so. A tick-box that fails must say what to do next,
+         * and "start it first" is exactly that.
+         */
+        TASK_INVALID_STATE: 'errorTaskInvalidState',
         // Commenting on a closed task, and a comment that is empty or over the length limit.
         TASK_COMMENT_TASK_CLOSED: 'errorCommentTaskClosed',
         TASK_COMMENT_TEXT_INVALID: 'errorCommentTextInvalid',
@@ -107,6 +116,9 @@
      */
     const BLOCKING_REASON_CODES = new Set([
         'APPROVAL_PENDING',
+        // A RULE about the task's state, not a race — so the surface refreshes and explains rather than saying
+        // "somebody changed it first", which would be a different (and wrong) instruction.
+        'TASK_INVALID_STATE',
         'CHECKLIST_INCOMPLETE',
         'DEPENDENCY_BLOCKED',
         'SUBTASK_BLOCKED',

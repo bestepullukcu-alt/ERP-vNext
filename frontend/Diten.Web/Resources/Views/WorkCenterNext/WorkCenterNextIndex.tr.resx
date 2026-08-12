@@ -308,6 +308,9 @@
   <data name="ShowAllCount" xml:space="preserve">
     <value>Tümünü gör ({0})</value>
   </data>
+  <data name="ShowLess" xml:space="preserve">
+    <value>Daha az göster</value>
+  </data>
   <data name="DetailContext" xml:space="preserve">
     <value>Kaynak bağlamı</value>
   </data>
@@ -758,8 +761,32 @@
   <data name="SubtasksLabel" xml:space="preserve">
     <value>Alt Görevler</value>
   </data>
+  <data name="SubtaskDoneCount" xml:space="preserve">
+    <value>{0} tamam</value>
+  </data>
+  <data name="SubtaskProgressCount" xml:space="preserve">
+    <value>{0} / {1} tamam</value>
+  </data>
+  <data name="SubtaskInheritsHint" xml:space="preserve">
+    <value>Son tarih, öncelik ve atanan ebeveynden alınır.</value>
+  </data>
+  <data name="SubtaskOpen" xml:space="preserve">
+    <value>Aç</value>
+  </data>
+  <data name="SubtaskCheckDoneReason" xml:space="preserve">
+    <value>Zaten tamamlandı.</value>
+  </data>
+  <data name="SubtaskCheckCancelledReason" xml:space="preserve">
+    <value>İptal edilmiş iş tamamlanamaz.</value>
+  </data>
+  <data name="SubtaskCheckAria" xml:space="preserve">
+    <value>Bu alt görevi tamamla</value>
+  </data>
+  <data name="SubtaskRowMenuAria" xml:space="preserve">
+    <value>{0} için işlemler</value>
+  </data>
   <data name="SubtaskAddPlaceholder" xml:space="preserve">
-    <value>Yeni alt görev…</value>
+    <value>Alt görev ekle ve Enter'a bas</value>
   </data>
   <data name="SubtaskAdd" xml:space="preserve">
     <value>Ekle</value>
@@ -1421,6 +1448,9 @@
   <data name="GuidancePendingAcceptance" xml:space="preserve">
     <value>Bu görev kabulünü bekliyor. Kabul edin, ya da size ait değilse başkasına atayın.</value>
   </data>
+  <data name="GuidanceChildrenRunning" xml:space="preserve">
+    <value>{0} alt görev şimdiden devam ediyor.</value>
+  </data>
   <data name="GuidancePendingClaim" xml:space="preserve">
     <value>Bu görev havuzda. Sizin olması için üstlenin.</value>
   </data>
@@ -1437,7 +1467,7 @@
     <value>Bu görev duraklatıldı: {0}</value>
   </data>
   <data name="SubtaskAddDetailed" xml:space="preserve">
-    <value>Detaylı ekle</value>
+    <value>+ Detaylı görev ekle</value>
   </data>
   <data name="SubtaskCreateTitle" xml:space="preserve">
     <value>Yeni alt görev</value>
@@ -1627,9 +1657,6 @@
   </data>
   <data name="SubtaskOpenAria" xml:space="preserve">
     <value>'{0}' alt görevini aç</value>
-  </data>
-  <data name="SubtaskToggleAria" xml:space="preserve">
-    <value>'{0}' alt görevini tamamla</value>
   </data>
   <data name="HavuzTitleInvoiceMatch" xml:space="preserve">
     <value>Gelen fatura eşleştirme</value>

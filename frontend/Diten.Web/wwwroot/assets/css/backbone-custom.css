@@ -6764,3 +6764,80 @@ tags.diten-tags .tagify__input {
 [dir="rtl"] .wcn-tech > .wcn-tech-summary::after { transform: rotate(180deg); }
 [dir="rtl"] .wcn-tech[open] > .wcn-tech-summary::after { transform: rotate(90deg); }
 .wcn-tech-body { margin-block-start: 1rem; }
+
+/* ── SUBTASK LIST — checklist layout (A2) ─────────────────────────────────────────────────────────────────
+   Progress on top, the add row under it, then two-layer rows. The row's height must not depend on its title:
+   a wrapped title makes the list change height as it is scrolled, which is the same defect the picker rows
+   had. So the title clips and everything beside it refuses to shrink. */
+
+.wcn-subtask-progress { font-size: .75rem; color: var(--bs-secondary-color); white-space: nowrap; }
+
+/* The add row reuses the page's search-input pattern; only the layout is stated here. */
+.wcn-subtask-add { display: flex; align-items: center; gap: .5rem; margin-block: .25rem .25rem; }
+.wcn-subtask-add .wcn-search { flex: 1 1 auto; min-inline-size: 0; }
+.wcn-subtask-add .wcn-search .form-control { inline-size: 100%; min-inline-size: 0; padding-inline-end: .75rem; }
+.wcn-subtask-add-hint { margin-block: 0 .625rem; }
+
+/* One row, two layers. `min-width: 0` on the body is what lets the title clip instead of pushing the row wide. */
+.wcn-subtask { align-items: center; gap: .625rem; }
+.wcn-subtask-body { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; }
+.wcn-subtask-title {
+    display: block;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.wcn-subtask-body .wcn-subtask-meta { display: block; overflow: hidden; text-overflow: ellipsis; }
+
+/* The box: a real control, so it looks tickable and says why when it is not. */
+.wcn-subtask-check {
+    flex: 0 0 auto;
+    border: 0; background: transparent; padding: 0; cursor: pointer;
+    display: inline-flex; font-size: 1.25rem; line-height: 1;
+    color: var(--bs-secondary-color);
+}
+.wcn-subtask-check:hover:not([disabled]) { color: var(--bs-primary); }
+.wcn-subtask-check[disabled] { cursor: default; opacity: .55; }
+.wcn-subtask-done .wcn-subtask-check { color: var(--bs-success); }
+
+/* The row's own action — a single button when there is one action, a ⋯ when there are two. */
+.wcn-subtask-rowaction {
+    flex: 0 0 auto;
+    border: 0; background: transparent; padding: .125rem; cursor: pointer;
+    display: inline-flex; font-size: 1rem; line-height: 1;
+    color: var(--bs-secondary-color); border-radius: .25rem;
+}
+.wcn-subtask-rowaction:hover { color: var(--bs-body-color); background: var(--bs-secondary-bg); }
+.wcn-subtask-status { margin-inline-start: 0; flex: 0 0 auto; }
+
+/* ── SUBTASK CARD — the ten-item round ────────────────────────────────────────────────────────────────────
+   Two controls side by side must be the same height, rows need a line between them, the gate must look like a
+   gate, and the row you just added should be findable. */
+
+/* The add row's button matches the input it stands beside: 38px, the height every control on these forms has. */
+.wcn-subtask-add .btn { min-block-size: 2.375rem; padding-block: 0; display: inline-flex; align-items: center; }
+
+/* A hairline BETWEEN rows — `li + li`, so no line is drawn above the first or below the last. */
+.wcn-subtasks > li + li {
+    border-block-start: 1px solid color-mix(in sRGB, var(--bs-border-color) 65%, transparent);
+    padding-block-start: .375rem;
+}
+
+/* The gate is a block notice, in the page's existing alert pattern. Its own top margin only — the card's
+   padding supplies the space underneath, so the card breathes evenly top and bottom. */
+.wcn-subtask-gate { margin-block: .75rem 0; padding: .625rem .875rem; font-size: .8125rem; }
+.wcn-subtask-gate i { font-size: 1rem; line-height: 1.4; }
+
+/* The total, as a badge; the done-count reads beside it as quiet text, so the two never look like one number. */
+.wcn-subtask-count { font-size: .6875rem; font-weight: 600; }
+
+/* The row that was just added — a brief wash, then nothing. Never a status colour. */
+.wcn-subtask-flash { animation: wcn-subtask-flash 2.4s ease-out 1; border-radius: .375rem; }
+@keyframes wcn-subtask-flash {
+    0%   { background-color: color-mix(in sRGB, var(--bs-primary) 18%, transparent); }
+    100% { background-color: transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .wcn-subtask-flash { animation: none; background-color: color-mix(in sRGB, var(--bs-primary) 10%, transparent); }
+}

@@ -308,6 +308,9 @@
   <data name="ShowAllCount" xml:space="preserve">
     <value>Tout afficher ({0})</value>
   </data>
+  <data name="ShowLess" xml:space="preserve">
+    <value>Afficher moins</value>
+  </data>
   <data name="DetailContext" xml:space="preserve">
     <value>Contexte source</value>
   </data>
@@ -758,8 +761,32 @@
   <data name="SubtasksLabel" xml:space="preserve">
     <value>Sous-tâches</value>
   </data>
+  <data name="SubtaskDoneCount" xml:space="preserve">
+    <value>{0} terminées</value>
+  </data>
+  <data name="SubtaskProgressCount" xml:space="preserve">
+    <value>{0} / {1} terminées</value>
+  </data>
+  <data name="SubtaskInheritsHint" xml:space="preserve">
+    <value>L'échéance, la priorité et le responsable sont hérités de la tâche parente.</value>
+  </data>
+  <data name="SubtaskOpen" xml:space="preserve">
+    <value>Ouvrir</value>
+  </data>
+  <data name="SubtaskCheckDoneReason" xml:space="preserve">
+    <value>Déjà terminée.</value>
+  </data>
+  <data name="SubtaskCheckCancelledReason" xml:space="preserve">
+    <value>Un travail annulé ne peut pas être terminé.</value>
+  </data>
+  <data name="SubtaskCheckAria" xml:space="preserve">
+    <value>Terminer cette sous-tâche</value>
+  </data>
+  <data name="SubtaskRowMenuAria" xml:space="preserve">
+    <value>Actions pour {0}</value>
+  </data>
   <data name="SubtaskAddPlaceholder" xml:space="preserve">
-    <value>Nouvelle sous-tâche…</value>
+    <value>Ajoutez une sous-tâche et appuyez sur Entrée</value>
   </data>
   <data name="SubtaskAdd" xml:space="preserve">
     <value>Ajouter</value>
@@ -1421,6 +1448,9 @@
   <data name="GuidancePendingAcceptance" xml:space="preserve">
     <value>Cette tâche attend que vous l'acceptiez. Prenez-la en charge, ou réattribuez-la si elle n'est pas pour vous.</value>
   </data>
+  <data name="GuidanceChildrenRunning" xml:space="preserve">
+    <value>{0} sous-tâches sont déjà en cours.</value>
+  </data>
   <data name="GuidancePendingClaim" xml:space="preserve">
     <value>Cette tâche est dans le pool. Réclamez-la pour qu’elle soit la vôtre.</value>
   </data>
@@ -1437,7 +1467,7 @@
     <value>Cette tâche est en pause : {0}</value>
   </data>
   <data name="SubtaskAddDetailed" xml:space="preserve">
-    <value>Ajouter en détail</value>
+    <value>+ Ajouter une tâche détaillée</value>
   </data>
   <data name="SubtaskCreateTitle" xml:space="preserve">
     <value>Nouvelle sous-tâche</value>
@@ -1627,9 +1657,6 @@
   </data>
   <data name="SubtaskOpenAria" xml:space="preserve">
     <value>Ouvrir la sous-tâche « {0} »</value>
-  </data>
-  <data name="SubtaskToggleAria" xml:space="preserve">
-    <value>Terminer la sous-tâche « {0} »</value>
   </data>
   <data name="HavuzTitleInvoiceMatch" xml:space="preserve">
     <value>Rapprocher la facture entrante</value>

@@ -308,6 +308,9 @@
   <data name="ShowAllCount" xml:space="preserve">
     <value>Show all ({0})</value>
   </data>
+  <data name="ShowLess" xml:space="preserve">
+    <value>Show less</value>
+  </data>
   <data name="DetailContext" xml:space="preserve">
     <value>Source context</value>
   </data>
@@ -758,8 +761,32 @@
   <data name="SubtasksLabel" xml:space="preserve">
     <value>Subtasks</value>
   </data>
+  <data name="SubtaskDoneCount" xml:space="preserve">
+    <value>{0} done</value>
+  </data>
+  <data name="SubtaskProgressCount" xml:space="preserve">
+    <value>{0} / {1} done</value>
+  </data>
+  <data name="SubtaskInheritsHint" xml:space="preserve">
+    <value>Due date, priority and assignee are inherited from the parent task.</value>
+  </data>
+  <data name="SubtaskOpen" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="SubtaskCheckDoneReason" xml:space="preserve">
+    <value>Already completed.</value>
+  </data>
+  <data name="SubtaskCheckCancelledReason" xml:space="preserve">
+    <value>Cancelled work cannot be completed.</value>
+  </data>
+  <data name="SubtaskCheckAria" xml:space="preserve">
+    <value>Complete this subtask</value>
+  </data>
+  <data name="SubtaskRowMenuAria" xml:space="preserve">
+    <value>Actions for {0}</value>
+  </data>
   <data name="SubtaskAddPlaceholder" xml:space="preserve">
-    <value>New subtask…</value>
+    <value>Add a subtask and press Enter</value>
   </data>
   <data name="SubtaskAdd" xml:space="preserve">
     <value>Add</value>
@@ -1421,6 +1448,9 @@
   <data name="GuidancePendingAcceptance" xml:space="preserve">
     <value>This task is waiting for you to accept it. Take it on, or reassign it if it is not yours.</value>
   </data>
+  <data name="GuidanceChildrenRunning" xml:space="preserve">
+    <value>{0} subtasks are already in progress.</value>
+  </data>
   <data name="GuidancePendingClaim" xml:space="preserve">
     <value>This task is in the pool. Claim it to make it yours.</value>
   </data>
@@ -1437,7 +1467,7 @@
     <value>This task is paused: {0}</value>
   </data>
   <data name="SubtaskAddDetailed" xml:space="preserve">
-    <value>Add in detail</value>
+    <value>+ Add detailed task</value>
   </data>
   <data name="SubtaskCreateTitle" xml:space="preserve">
     <value>New subtask</value>
@@ -1627,9 +1657,6 @@
   </data>
   <data name="SubtaskOpenAria" xml:space="preserve">
     <value>Open subtask '{0}'</value>
-  </data>
-  <data name="SubtaskToggleAria" xml:space="preserve">
-    <value>Complete subtask '{0}'</value>
   </data>
   <data name="HavuzTitleInvoiceMatch" xml:space="preserve">
     <value>Match incoming invoice</value>

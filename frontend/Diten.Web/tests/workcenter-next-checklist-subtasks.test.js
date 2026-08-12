@@ -236,8 +236,14 @@ describe("MOD-0024 Phase 2 — checklist and subtasks", () => {
       const fn = app.slice(app.indexOf("const renderSubtasks"), app.indexOf("const DEP_TYPE_KEY"));
       expect(fn).toContain("SubtasksBlockingNotice");
       expect(fn).not.toContain("SubtasksOpenNotice");
-      // A cancelled subtask is not open, so it must not be counted among the blockers.
-      expect(fn).toContain("'cancelled'");
+      /*
+       * A cancelled subtask is not open and must not be counted among the blockers. The literal used to be
+       * spelled here; it now goes through `isCancelledSubtask`, the ONE place the browser states that rule —
+       * the running-children signal reads the same predicate, and two spellings would let the two counts
+       * disagree.
+       */
+      expect(fn).toContain("isCancelledSubtask");
+      expect(app).toContain("const isCancelledSubtask");
     });
   });
 
@@ -289,7 +295,13 @@ describe("MOD-0024 Phase 2 — checklist and subtasks", () => {
 
     it("is reachable and labelled for a keyboard or screen reader", () => {
       expect(renderer).toContain("SubtaskOpenAria");
-      expect(renderer).toContain("SubtaskToggleAria");
+      /*
+       * The status GLYPH became a real CHECKBOX (A2), so its label is no longer "toggle": an enabled box says
+       * what ticking it does, and a disabled one says WHY it cannot be ticked — a greyed control with no reason
+       * is reported as a bug, and on touch there is no tooltip to hover for.
+       */
+      expect(renderer).toContain("SubtaskCheckAria");
+      expect(renderer).toContain("SUBTASK_CHECK_BLOCKED_KEY");
     });
 
     it("opening is a DIFFERENT control from completing, so a click cannot do both", () => {

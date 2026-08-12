@@ -98,6 +98,16 @@
         selectedId: null,
         tableSelected: new Set(),
         subtaskPanelId: null,
+        // The row just added, so the reader can see WHERE it landed. Cleared after one paint — a permanent
+        // highlight would become another status colour nobody declared.
+        flashSubtaskId: null,
+        /*
+         * WHICH CAPPED LISTS THE READER HAS OPENED, by list key ('subtasks' | 'activity').
+         *
+         * Per LIST, not one flag: the two cards answer different questions, and opening the subtasks must not
+         * silently unfold the feed underneath. Not persisted — an expansion is about this reading of this page.
+         */
+        expandedLists: {},
         subtaskPanelDraft: null,
         subtaskPanelRecord: null,
         subtaskPanelSaving: false,
@@ -1335,6 +1345,27 @@
     };
 
     /*
+     * CALLED-OFF WORK NEVER COUNTS — written once, here.
+     *
+     * The server states this rule in TaskBlockingRules ("Nothing CANCELLED ever blocks"); the browser needs it
+     * twice over — for the notice that names the open children holding up completion, and for the running-child
+     * signal below. Two spellings of it would let the count disagree with the sentence under it.
+     */
+    const isCancelledSubtask = (subtask) => subtask && subtask.status === 'cancelled';
+
+    /*
+     * HOW MANY CHILDREN ARE ALREADY WORKING.
+     *
+     * "Running" is narrower than "open": a not-started child is not evidence that work has begun, and the
+     * sentence this feeds claims exactly that. `in-progress` is the projection's own vocabulary for
+     * started-and-not-finished (WorkItemSubtaskDto.Status), which the server derives from
+     * TaskBlockingRules.StateOf — so this reads a decision rather than making one.
+     */
+    const runningSubtaskCount = (item) => ((item.subtasks && item.subtasks.items) || [])
+        .filter((subtask) => !isCancelledSubtask(subtask) && subtask.status === 'in-progress')
+        .length;
+
+    /*
      * What this task needs from the viewer RIGHT NOW, in a sentence.
      *
      * The page can already show a dozen true facts without answering "so what do I do?". Keyed by state, and an
@@ -1354,12 +1385,31 @@
         return null;
     };
 
+    /*
+     * NOBODY HAS ACCEPTED THIS, AND THREE CHILDREN ARE ALREADY WORKING.
+     *
+     * Both facts were on the page and the combination was not: the banner said "waiting to be accepted" while
+     * the list below it said "Devam ediyor" three times, and nothing joined them.
+     *
+     * ⚠ A SIGNAL, NOT A GATE, and the direction is deliberate. No rule ties a child's start to its parent's
+     * acceptance — if one did, a single unpressed "Accept" would stop everyone below it. So this adds a
+     * SENTENCE to the banner that already exists: no new banner, no new colour, nothing disabled, and no rule
+     * added to TaskBlockingRules.
+     *
+     * It appears only when BOTH conditions hold. A sentence printed unconditionally carries no information.
+     */
     const renderGuidance = (item) => {
         const guidance = guidanceFor(item);
         if (!guidance) { return ''; }
         const text = guidance.text || t(guidance.key);
+
+        const running = item.admissionState === 'pendingAcceptance' ? runningSubtaskCount(item) : 0;
+        const runningNote = running > 0
+            ? `<span class="wcn-guidance-note">${esc(tf('GuidanceChildrenRunning', running))}</span>`
+            : '';
+
         return `<div class="alert alert-${guidance.kind} wcn-guidance d-flex align-items-start gap-2" role="note">
-            <i class="bx bx-info-circle"></i><span>${esc(text)}</span>
+            <i class="bx bx-info-circle"></i><span>${esc(text)}${runningNote ? ' ' : ''}${runningNote}</span>
         </div>`;
     };
 
@@ -1703,6 +1753,29 @@
     };
 
     /*
+     * THE CAP, AND THE CONTROL THAT RELEASES IT — one helper, because the same pair is rendered twice.
+     *
+     * ⚠ MEASURED DEAD (2026-08-12): both cards drew `<button data-wcn-showall>` with an EMPTY value and there
+     * was no click handler for that attribute anywhere. Seventeen rows stayed seventeen, 320px stayed 320px. A
+     * control that is drawn but wired to nothing is worse than no control: it answers the reader's question
+     * with silence.
+     *
+     * The button now carries its LIST KEY (an empty attribute cannot address anything), toggles rather than
+     * disappears — hiding it would strand an opened list with no way back — and the expansion goes through the
+     * ordinary render, so it inherits this round's scroll and focus preservation.
+     */
+    const cappedList = (key, listHtml, total) => {
+        const open = !!state.expandedLists[key];
+        const body = open
+            ? listHtml
+            : `<div class="wcn-scrollcap" data-wcn-scrollcap>${listHtml}</div>`;
+        return `${body}
+            <button type="button" class="btn btn-sm btn-label-secondary wcn-showall" data-wcn-showall="${esc(key)}">
+                ${esc(open ? t('ShowLess') : tf('ShowAllCount', total))}
+            </button>`;
+    };
+
+    /*
      * HOW MANY ROWS A CARD SHOWS BEFORE IT SCROLLS ITSELF.
      *
      * MEASURED in the browser: a subtask row is 40px and an activity entry is two lines at ~56px. The rail
@@ -1714,6 +1787,9 @@
      * releases the cap. A tab here would hide a gate — the very thing this page must never do.
      */
     const SUBTASK_VISIBLE_LIMIT = 8;
+    // How long the just-added row stays marked. Long enough to be seen after the list repaints, short enough
+    // that it never reads as a status.
+    const SUBTASK_FLASH_MS = 2500;
     const ACTIVITY_VISIBLE_LIMIT = 5;
 
     // Subtasks — full: complete/add here; readonly: progress + "edit in source".
@@ -1743,125 +1819,239 @@
         </div>`;
     };
 
+    /*
+     * THE ADD ROW — one helper, used by the list AND by the empty line, so the two cannot drift into two
+     * different ways of adding a subtask.
+     *
+     * The input reuses the page's OWN search pattern (`wcn-search wcn-search-inline`): same 38px box, same
+     * inset icon. Inventing a second input shape for the same page is how a surface starts looking assembled
+     * rather than designed.
+     *
+     * ENTER submits — the placeholder says so, and the keydown handler reads the parent id off this input, so
+     * there is exactly one control and no button that could disagree with it. "Add in detail" is WORDS, not a
+     * glyph: a funnel means "filter" everywhere, and nothing means "add with more fields" anywhere.
+     */
+    const subtaskAddRow = (item) => `<div class="wcn-subtask-add">
+            <div class="wcn-search wcn-search-inline">
+                <i class="bx bx-plus" aria-hidden="true"></i>
+                <input type="text" class="form-control shadow-none" data-wcn-subtask-input
+                       data-wcn-subtask-add="${item.id}"
+                       placeholder="${esc(t('SubtaskAddPlaceholder'))}"
+                       aria-label="${esc(t('SubtaskAddPlaceholder'))}">
+            </div>
+            <!--
+                OUTLINE primary, not solid, and the reason is the input beside it: Enter already carries the
+                primary path, so a second solid button would ask the reader to choose between two controls that
+                do the same job. Outline says "this also adds" in the primary hue without competing.
+            -->
+            <button type="button" class="btn btn-outline-primary"
+                    data-wcn-subtask-add-detailed="${item.id}">${esc(t('SubtaskAddDetailed'))}</button>
+        </div>`;
+
+    /*
+     * WHAT A QUICK-ADDED SUBTASK INHERITS — measured, and previously unsaid.
+     *
+     * Quick-add does not skip the required fields; it takes them from the parent (its due date, its priority,
+     * its assignee — and SelfAssigned when the parent is a pool with no holder). The server requires a due date
+     * on EVERY task, so this has always happened silently. Saying it also explains what "add in detail" is for:
+     * inheriting the assignee means you cannot hand the child to somebody else from here.
+     */
+    const subtaskInheritHint = () =>
+        `<p class="wcn-block-hint wcn-subtask-add-hint">${esc(t('SubtaskInheritsHint'))}</p>`;
+
+    /*
+     * WHY A ROW'S BOX IS DISABLED — never just greyed out. A disabled control with no reason is reported as a
+     * bug, and on touch there is not even a tooltip to hover for.
+     */
+    const SUBTASK_CHECK_BLOCKED_KEY = {
+        done: 'SubtaskCheckDoneReason',
+        cancelled: 'SubtaskCheckCancelledReason'
+    };
+
+    /*
+     * THE ROW MENU — built from what the SERVER said about THAT ROW, never from a fixed list.
+     *
+     * ⚠ MEASURED (2026-08-12): the projection states exactly two things per subtask — `status` and `canCancel`
+     * (evaluated per row, because a child's requester is its own, not the parent's). It carries NO per-row
+     * action set. So the row offers: OPEN (navigation, which needs no permission) and CANCEL (only when the
+     * server said so). REASSIGN is deliberately absent — nothing on the wire says this actor may reassign this
+     * child, and a button that comes back 409 is a defect this project has already shipped once.
+     *
+     * ONE action is not a menu: a ⋯ hiding a single item is a click nobody needs, so it renders as the action
+     * itself.
+     */
+    const subtaskRowActions = (subtask) => {
+        const actions = [
+            {
+                code: 'open',
+                labelKey: 'SubtaskOpen',
+                icon: 'bx-link-external',
+                attrs: `data-wcn-open-task="${esc(subtask.id)}"`
+            }
+        ];
+        if (subtask.canCancel) {
+            actions.push({
+                code: 'cancel',
+                labelKey: 'SubtaskCancel',
+                icon: 'bx-x-circle',
+                destructive: true,
+                attrs: `data-wcn-subtask-cancel="${esc(subtask.id)}" data-wcn-subtask-title="${esc(subtask.title)}"`
+            });
+        }
+        return actions;
+    };
+
+    const subtaskRowMenu = (subtask) => {
+        const actions = subtaskRowActions(subtask);
+        if (actions.length === 0) { return ''; }
+
+        if (actions.length === 1) {
+            const only = actions[0];
+            return `<button type="button" class="btn btn-icon wcn-subtask-rowaction" ${only.attrs}
+                        title="${esc(t(only.labelKey))}" aria-label="${esc(t(only.labelKey))}">
+                    <i class="bx ${only.icon} icon-md"></i>
+                </button>`;
+        }
+
+        /*
+         * THE LIST'S OWN KEBAB, measured and reused: `btn btn-icon dropdown-toggle hide-arrow` with
+         * `bx-dots-vertical-rounded icon-md`, and a `dropdown-menu dropdown-menu-end m-0` of
+         * `dropdown-item wcn-menu-item` rows — destructive ones in `text-danger`. Two surfaces with two
+         * different row menus is how one product starts reading as two.
+         */
+        const items = actions.map((action) =>
+            `<li><button type="button" class="dropdown-item wcn-menu-item${action.destructive ? ' text-danger' : ''}" ${action.attrs}>
+                <i class="bx ${action.icon}"></i><span>${esc(t(action.labelKey))}</span>
+            </button></li>`).join('');
+
+        return `<div class="dropdown wcn-subtask-menu">
+            <button type="button" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"
+                    data-wcn-subtask-menu aria-expanded="false"
+                    title="${esc(t('ActionsLabel'))}" aria-label="${esc(tf('SubtaskRowMenuAria', subtask.title))}">
+                <i class="bx bx-dots-vertical-rounded icon-md"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end m-0">${items}</ul>
+        </div>`;
+    };
+
     const renderSubtasks = (item) => {
         // Same capability rule as the checklist: declared-but-empty is valid and must explain itself, because a
         // parent with no children yet is exactly where "add a subtask" belongs.
         if (!hasCap(item, 'subtasks') || !item.subtasks) { return ''; }
         const subtaskItems = item.subtasks.items || [];
         const full = item.subtasks.mode === 'full' && !isTerminal(item);
-        /*
-         * A compact row, not a grid. A task has a handful of subtasks, so paging, export and column pickers cost
-         * more than they carry — but "who has it and when is it due" is exactly why anyone opens the list, so
-         * each row carries them WHEN THEY EXIST. An absent holder or date renders nothing at all; a dash would
-         * be a claim that the field was checked and found empty.
-         */
-        // Cancelled subtasks sink below the live ones. They are history, and three of them at the top of a list
-        // reads as work waiting to be done.
-        const ordered = subtaskItems.slice().sort((a, b) =>
-            (a.status === 'cancelled' ? 1 : 0) - (b.status === 'cancelled' ? 1 : 0));
-        const rows = ordered.map((s) =>
-            `<li class="wcn-subtask wcn-subtask-${s.status}">
-                <button type="button" class="wcn-subtask-toggle" ${full ? `data-wcn-subtask="${item.id}:${s.id}"` : 'disabled'}
-                        aria-label="${esc(tf('SubtaskToggleAria', s.title))}">
-                    <i class="bx ${SUBTASK_ICON[s.status] || 'bx-circle'}"></i>
-                </button>
-                <button type="button" class="wcn-subtask-title wcn-linklike" data-wcn-open-task="${esc(s.id)}"
-                        aria-label="${esc(tf('SubtaskOpenAria', s.title))}">${esc(s.title)}</button>
-                ${s.assignee?.displayName
-                    ? `<span class="wcn-subtask-meta wcn-subtask-assignee"><i class="bx bx-user"></i>${esc(s.assignee.displayName)}</span>`
-                    : ''}
-                ${s.dueAt
-                    ? `<span class="wcn-subtask-meta wcn-subtask-due"><i class="bx bx-calendar"></i>${esc(String(s.dueAt).slice(0, 10))}</span>`
-                    : ''}
-                ${SUBTASK_STATUS_KEY[s.status]
-                    ? `<span class="wcn-subtask-status">${esc(t(SUBTASK_STATUS_KEY[s.status]))}</span>`
-                    : ''}
-                ${s.canCancel
-                    ? `<button type="button" class="wcn-subtask-cancel" data-wcn-subtask-cancel="${esc(s.id)}"
-                               data-wcn-subtask-title="${esc(s.title)}"
-                               title="${esc(t('SubtaskCancel'))}" aria-label="${esc(tf('SubtaskCancelAria', s.title))}">
-                        <i class="bx bx-x-circle"></i>
-                       </button>`
-                    : ''}
-            </li>`).join('');
-        // The one-line add stays where it is; the header's "Add" simply focuses it, so there is still exactly one
-        // quick-add control rather than two that could disagree.
-        const adder = full
-            ? `<div class="wcn-subtask-add">
-                <input type="text" class="form-control form-control-sm" data-wcn-subtask-input placeholder="${esc(t('SubtaskAddPlaceholder'))}">
-                <button type="button" class="btn btn-sm btn-label-primary" data-wcn-subtask-add="${item.id}">${esc(t('SubtaskAdd'))}</button>
-               </div>`
-            : `<p class="wcn-block-hint"><i class="bx bx-link-external"></i>${esc(t('SubtasksReadonlyHint'))}</p>`;
-        /*
-         * Open subtasks DO block their parent's completion (BL-035, owner decision 2026-07-29). This notice used to
-         * say the opposite, on the reasoning that a second blocking mechanism would make "why can't I finish this?"
-         * unanswerable — the banner above now answers it, naming each open child by title.
-         *
-         * `cancelled` is NOT open: called-off work cannot be finished and must not hold the parent.
-         */
-        const openSubtasks = subtaskItems.filter((s) => s.status !== 'done' && s.status !== 'cancelled');
-        const openNotice = openSubtasks.length
-            ? `<p class="wcn-block-hint" role="note"><i class="bx bx-lock-alt"></i>${esc(tf('SubtasksBlockingNotice', openSubtasks.length))}</p>`
-            : '';
-        /*
-         * TOO MANY: the list scrolls inside its own card and says how many there are. The cap is released by a
-         * class toggle (FG-003) rather than by re-rendering, so a half-typed quick-add is not thrown away.
-         */
-        const capped = subtaskItems.length > SUBTASK_VISIBLE_LIMIT;
-        const list = capped
-            ? `<div class="wcn-scrollcap" data-wcn-scrollcap><ul class="wcn-subtasks">${rows}</ul></div>
-               <button type="button" class="btn btn-sm btn-label-secondary wcn-showall" data-wcn-showall>${esc(tf('ShowAllCount', subtaskItems.length))}</button>`
-            : `<ul class="wcn-subtasks">${rows}</ul>`;
-        const body = subtaskItems.length
-            ? `${list}${openNotice}`
-            : '';
-        /*
-         * A LIST card, not a checklist: heading and count on the left, its add controls on the right — the shape
-         * the main page's list cards already use. Read as a checklist while the quick-add input sat under a bare
-         * heading with no count.
-         *
-         * NO search box, deliberately. A task has three to ten subtasks; a filter earns its space at fifteen or
-         * more, and that is rare. Same reasoning that kept a full DataTable out.
-         */
-        /*
-         * NOTHING YET IS ONE LINE, not a card.
-         *
-         * MEASURED: on a fresh task "Henüz alt görev yok" and "Henüz etkinlik kaydı yok" were two full-height
-         * boxes, so half the page announced that there was nothing on it. The line still carries the action —
-         * an empty state that cannot be acted on is just an apology.
-         */
+
         if (!subtaskItems.length) {
             /*
-             * The QUICK-ADD ITSELF is the action on this line, not a button that opens something else. An
-             * earlier draft of this line offered the detailed panel instead and thereby removed the one-line
-             * add from the exact place it matters most — a parent with no children yet. Two tests caught it.
+             * NOTHING YET is one line, and the line still adds. The quick-add lives HERE too — a parent with no
+             * children is exactly where adding one matters most, and an earlier draft that replaced it with a
+             * button to somewhere else was caught by two tests.
              */
             return `<div class="wcn-empty-line">
                 <i class="bx bx-list-check" aria-hidden="true"></i>
                 <span class="wcn-empty-text">${esc(t('SubtasksEmpty'))}</span>
-                ${full
-                    ? `<div class="wcn-subtask-add wcn-empty-action">
-                        <input type="text" class="form-control form-control-sm" data-wcn-subtask-input placeholder="${esc(t('SubtaskAddPlaceholder'))}">
-                        <button type="button" class="btn btn-sm btn-label-primary" data-wcn-subtask-add="${item.id}">${esc(t('SubtaskAdd'))}</button>
-                        <button type="button" class="btn btn-sm btn-label-secondary" data-wcn-subtask-add-detailed="${item.id}">${esc(t('SubtaskAddDetailed'))}</button>
-                       </div>`
-                    : ''}
+                ${full ? `<div class="wcn-empty-action">${subtaskAddRow(item)}</div>` : ''}
             </div>`;
         }
 
+        // Cancelled subtasks sink below the live ones. They are history, and three of them at the top of a list
+        // reads as work waiting to be done.
+        const ordered = subtaskItems.slice().sort((a, b) =>
+            (isCancelledSubtask(a) ? 1 : 0) - (isCancelledSubtask(b) ? 1 : 0));
+
+        /*
+         * A CHECKLIST ROW: a box, then two layers (title over holder·date), then the state and the row menu.
+         *
+         * The box is not decoration. It completes the subtask through the ordinary transition endpoint — a
+         * subtask IS a task, there is no half-lifecycle for children — and nothing is ticked optimistically:
+         * the refreshed projection decides what the row says next. A child has its own gates, and when the
+         * server refuses, its reason is what the user reads.
+         */
+        const rows = ordered.map((s) => {
+            const terminal = s.status === 'done' || isCancelledSubtask(s);
+            const blockedKey = SUBTASK_CHECK_BLOCKED_KEY[s.status];
+            const disabled = !full || terminal;
+            const reason = blockedKey ? t(blockedKey) : (full ? t('SubtaskCheckAria') : t('SubtasksReadonlyHint'));
+            const meta = [
+                s.assignee?.displayName || '',
+                s.dueAt ? String(s.dueAt).slice(0, 10) : ''
+            ].filter(Boolean).join(' · ');
+
+            return `<li class="wcn-subtask wcn-subtask-${s.status}${s.id === state.flashSubtaskId ? ' wcn-subtask-flash' : ''}">
+                <button type="button" class="wcn-subtask-check"${disabled ? ' disabled' : ''}
+                        ${full && !terminal ? `data-wcn-subtask="${item.id}:${s.id}"` : ''}
+                        title="${esc(reason)}" aria-label="${esc(reason)}" aria-pressed="${s.status === 'done'}">
+                    <i class="bx ${s.status === 'done' ? 'bxs-check-square' : isCancelledSubtask(s) ? 'bx-x-square' : 'bx-square'}"></i>
+                </button>
+                <div class="wcn-subtask-body">
+                    <button type="button" class="wcn-subtask-title wcn-linklike" data-wcn-open-task="${esc(s.id)}"
+                            aria-label="${esc(tf('SubtaskOpenAria', s.title))}">${esc(s.title)}</button>
+                    ${meta ? `<span class="wcn-subtask-meta">${esc(meta)}</span>` : ''}
+                </div>
+                ${SUBTASK_STATUS_KEY[s.status]
+                    ? `<span class="wcn-subtask-status">${esc(t(SUBTASK_STATUS_KEY[s.status]))}</span>`
+                    : ''}
+                ${subtaskRowMenu(s)}
+            </li>`;
+        }).join('');
+
+        /*
+         * TOO MANY: the list scrolls inside its own card and says how many there are. A scroll, never a tab and
+         * never a truncation — everything stays reachable.
+         */
+        const capped = subtaskItems.length > SUBTASK_VISIBLE_LIMIT;
+        const list = capped
+            ? cappedList('subtasks', `<ul class="wcn-subtasks">${rows}</ul>`, subtaskItems.length)
+            : `<ul class="wcn-subtasks">${rows}</ul>`;
+
+        /*
+         * Open subtasks DO block their parent's completion (BL-035, owner decision 2026-07-29). The banner above
+         * names each open child; this line says how many there are.
+         *
+         * `cancelled` is NOT open: called-off work cannot be finished and must not hold the parent.
+         */
+        const openSubtasks = subtaskItems.filter((s) => s.status !== 'done' && !isCancelledSubtask(s));
+        /*
+         * The gate READS like a gate now. It is the sentence that says why "Complete" will refuse, and it was
+         * grey body text among grey body text. The page's existing alert pattern carries it — no new colour was
+         * invented, and neither the wording nor the condition changed.
+         */
+        const openNotice = openSubtasks.length
+            ? `<div class="alert alert-warning wcn-subtask-gate d-flex align-items-start gap-2" role="note">
+                <i class="bx bx-lock-alt"></i><span>${esc(tf('SubtasksBlockingNotice', openSubtasks.length))}</span>
+               </div>`
+            : '';
+
+        /*
+         * PROGRESS, the checklist's own shape (same <progress class="wcn-progress">, so the two lists read as
+         * one family). Cancelled work counts in NEITHER half: it is not done, and it is not outstanding either
+         * — counting it as remaining would make a card of called-off children look like a card of unfinished
+         * ones.
+         */
+        const live = subtaskItems.filter((s) => !isCancelledSubtask(s));
+        const done = live.filter((s) => s.status === 'done').length;
+
+        /*
+         * TWO NUMBERS, TWO JOBS — and neither repeats the other.
+         *
+         * "ALT GÖREVLER 5" beside "1 / 5 tamam" printed the total twice, which is exactly the confusion that was
+         * reported. The badge keeps the TOTAL (how many there are); the reading on the right drops the
+         * denominator and says how many are DONE. The full "1 / 5" survives as the progress bar's accessible
+         * name, where a screen reader needs the whole statement rather than half of it.
+         */
         return `<div class="wcn-detail-section">
-            <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
-                <h6 class="text-uppercase text-heading fw-semibold mb-0">
+            <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                <h6 class="text-uppercase text-heading fw-semibold mb-0 d-flex align-items-center gap-2">
                     ${esc(t('SubtasksLabel'))}
-                    ${subtaskItems.length ? `<span class="wcn-count-inline">${subtaskItems.length}</span>` : ''}
+                    <span class="badge bg-label-secondary wcn-subtask-count">${subtaskItems.length}</span>
                 </h6>
-                ${full ? `<div class="d-flex align-items-center gap-2 flex-shrink-0">
-                    <button type="button" class="btn btn-sm btn-label-primary" data-wcn-subtask-add-inline="${item.id}">${esc(t('SubtaskAdd'))}</button>
-                    <button type="button" class="btn btn-sm btn-label-secondary" data-wcn-subtask-add-detailed="${item.id}">${esc(t('SubtaskAddDetailed'))}</button>
-                </div>` : ''}
+                <span class="wcn-subtask-progress">${esc(tf('SubtaskDoneCount', done))}</span>
             </div>
-            ${body}
-            ${adder}
+            <progress class="wcn-progress" value="${done}" max="${live.length}"
+                      aria-label="${esc(tf('SubtaskProgressCount', done, live.length))}"></progress>
+            ${full ? `${subtaskAddRow(item)}${subtaskInheritHint()}` : `<p class="wcn-block-hint"><i class="bx bx-link-external"></i>${esc(t('SubtasksReadonlyHint'))}</p>`}
+            ${list}
+            ${openNotice}
         </div>`;
     };
 
@@ -2369,8 +2559,7 @@
                     ${composer}
                     ${item.activity.length
                         ? (activityCapped
-                            ? `<div class="wcn-scrollcap" data-wcn-scrollcap><ul class="wcn-audit">${auditRows}</ul></div>
-                               <button type="button" class="btn btn-sm btn-label-secondary wcn-showall" data-wcn-showall>${esc(tf('ShowAllCount', item.activity.length))}</button>`
+                            ? cappedList('activity', `<ul class="wcn-audit">${auditRows}</ul>`, item.activity.length)
                             : `<ul class="wcn-audit">${auditRows}</ul>`)
                         : `<p class="wcn-block-hint">${esc(t('ActivityEmpty'))}</p>`}
                 </div>`;
@@ -2684,8 +2873,14 @@
 
         // The picker is the SAME list the server will accept — reassign validates against it, so offering anyone
         // else here would build a form whose submit is refused.
+        /*
+         * `.data.people` — the lookup answers an OBJECT, `{ people, excluded }`, since BL-057. This line kept
+         * reading `.data`, so `state.assignablePeople` became an object and the next render died on
+         * `people.map is not a function` — the whole page, not just the picker. Found live while ticking a
+         * subtask checkbox. Same defect the quick-create offcanvas had after that round; this was its twin.
+         */
         const people = await global.TasksApi.assignablePeople();
-        state.assignablePeople = (people.ok && people.data) ? people.data : [];
+        state.assignablePeople = (people.ok && Array.isArray(people.data?.people)) ? people.data.people : [];
         if (!people.ok) { console.warn('[WorkCenterNext] Assignable people could not be read; the picker is empty.'); }
         render();
     };
@@ -2726,23 +2921,63 @@
      * "a cancelled subtask does not gate its parent" rule needs it to still exist. Permanent deletion, if it is
      * ever wanted, belongs on the full page where the whole record is in view.
      */
+    /*
+     * THE SUBTASK'S OWN VERSION — the one thing every write against a child needs.
+     *
+     * A subtask is its own task with its own concurrency token. It is in `state.items` only when it is also
+     * assigned to the reader, which is NOT the ordinary case, so the record is fetched when it is missing —
+     * exactly as the quick-edit panel does. Returns null when the record cannot be read, and the caller stops.
+     */
+    const subtaskVersion = async (subtaskId) => {
+        const known = Number(itemById(subtaskId)?.concurrency?.token ?? NaN);
+        if (Number.isFinite(known)) { return known; }
+
+        const record = await global.TasksApi.get(subtaskId);
+        if (!record.ok || !record.data) {
+            toast(global.TasksApi.failureMessage(record), 'error');
+            return null;
+        }
+        return Number(record.data.version ?? 0);
+    };
+
     const cancelSubtask = async (subtaskId, title) => {
         const confirmed = await confirmDestructive(tf('SubtaskCancelConfirm', title));
         if (!confirmed) { return; }
 
-        const result = await global.TasksApi.transition(subtaskId, 'cancel', {});
+        /*
+         * ⚠ WITH ITS VERSION. This sent `{}` — no expectedVersion — so the server compared 0 against the real
+         * one and refused every cancel as a concurrency conflict. Measured live: the request went out and came
+         * back 409 "somebody changed it first", about a task nobody had touched. The confirm-dialog bug hid this
+         * one completely: while the dialog resolved false, the request was never sent at all.
+         */
+        const expectedVersion = await subtaskVersion(subtaskId);
+        if (expectedVersion === null) { return; }
+
+        const result = await global.TasksApi.transition(subtaskId, 'cancel', { expectedVersion });
         if (!result.ok) { toast(global.TasksApi.failureMessage(result), 'error'); return; }
         toast(tf('ToastSubtaskCancelled', title));
         await loadWorkItems();
+        render();
     };
 
-    /* MOD-0013 is the ONE confirm implementation in the app; a page-local dialog would be a second one. */
+    /*
+     * MOD-0013 is the ONE confirm implementation in the app; a page-local dialog would be a second one.
+     *
+     * ⚠ THE BUG THIS SHAPE CAUSED, written down because it was invisible: the previous version resolved FALSE
+     * on the next tick — "showConfirm does not report dismissal" — so the promise settled a millisecond after
+     * the dialog opened. The user then clicked "Yes" seconds later, the callback resolved an already-settled
+     * promise, and NOTHING happened: no request, no toast, no change. A destructive action that silently does
+     * nothing is worse than one that fails loudly.
+     *
+     * showConfirm DOES report dismissal — `options.onCancel` — so both paths resolve, and neither resolves
+     * early. Nothing here settles until the person answers.
+     */
     const confirmDestructive = (message) => new Promise((resolve) => {
         if (typeof global.showConfirm === 'function') {
-            global.showConfirm(message, () => resolve(true), { confirmButtonText: t('SubtaskCancelConfirmYes') });
-            // showConfirm does not report dismissal, so a cancelled dialog simply never resolves true; resolve
-            // false on the next tick if the callback has not fired.
-            global.setTimeout(() => resolve(false), 0);
+            global.showConfirm(
+                message,
+                () => resolve(true),
+                { confirmButtonText: t('SubtaskCancelConfirmYes'), onCancel: () => resolve(false) });
             return;
         }
         console.warn('[WorkCenterNext] window.showConfirm is unavailable; the destructive action was not offered.');
@@ -3119,6 +3354,15 @@
         if (el.matches && el.matches('[data-wcn-search]')) {
             return { kind: 'search', caret: el.selectionStart };
         }
+        /*
+         * THE PAGE'S OTHER TEXT BOXES. Adding a subtask with Enter re-renders the card, and without this the
+         * caret lands on <body> — so the second subtask cannot be typed without reaching for the mouse. Matched
+         * by marker attribute rather than id: ids do not survive an innerHTML swap intact, and a positional
+         * selector would restore focus to the wrong box on a page that has several.
+         */
+        const marker = ['data-wcn-subtask-input', 'data-wcn-note-input', 'data-wcn-comment-input']
+            .find((attribute) => el.hasAttribute && el.hasAttribute(attribute));
+        if (marker) { return { kind: 'text', marker, caret: el.selectionStart, value: el.value }; }
         const row = el.closest && el.closest('[data-wcn-row]');
         if (row) { return { kind: 'row', id: row.getAttribute('data-wcn-row') }; }
         const ctl = el.closest && el.closest('[data-wcn-view],[data-wcn-tab],[data-wcn-scope],[data-wcn-sort]');
@@ -3139,6 +3383,16 @@
             if (node) { node.focus(); try { node.setSelectionRange(snap.caret, snap.caret); } catch (e) { /* noop */ } return; }
         } else if (snap && snap.kind === 'row') {
             node = document.querySelector(`#wcnApp .wcn-row[data-wcn-row="${snap.id}"], #wcnApp .wcn-tr[data-wcn-row="${snap.id}"]`);
+        } else if (snap && snap.kind === 'text') {
+            node = document.querySelector(`#wcnApp [${snap.marker}]`);
+            if (node) {
+                node.focus();
+                // A half-typed value survives a repaint caused by something else; an ADD deliberately leaves the
+                // box empty, and `!node.value` is what tells those two apart.
+                if (snap.value && !node.value) { node.value = snap.value; }
+                try { node.setSelectionRange(snap.caret, snap.caret); } catch (e) { /* not a text input */ }
+                return;
+            }
         } else if (snap && snap.kind === 'ctl') {
             node = document.querySelector(`#wcnApp [${snap.attr}="${snap.val}"]`);
         }
@@ -3395,9 +3649,54 @@
         syncUrl();
     };
 
+    /*
+     * WHERE THE READER WAS — the SCROLL half.
+     *
+     * MEASURED: scrollY 600 → add a subtask with Enter → scrollY 0. The page does not reload; `innerHTML = …`
+     * collapses the document for an instant and the browser clamps the scroll to the shorter body. On a long
+     * detail page that means scrolling back after every single write, and the owner read it as "the page keeps
+     * refreshing". The FOCUS half already existed (captureFocus/restoreFocus) and only had to learn about the
+     * text boxes this page grew.
+     */
+    /*
+     * WHICH ELEMENT ACTUALLY SCROLLS — measured, because the obvious answer is wrong here.
+     *
+     * `window.scrollY` reads 0 on this theme even when the page is plainly scrolled: the shell scrolls the
+     * ROOT ELEMENT (`html.layout-navbar-fixed`), and its position is `document.scrollingElement.scrollTop`. A
+     * first attempt at this fix captured and restored window.scrollY, i.e. it restored 0 to 0 and changed
+     * nothing on screen while looking correct in code.
+     */
+    const scroller = () => global.document.scrollingElement || global.document.documentElement;
+
     const render = () => {
+        const box = scroller();
+        const scrollTop = box ? box.scrollTop : 0;
+        const scrollLeft = box ? box.scrollLeft : 0;
         try {
             renderUnsafe();
+            /*
+             * After the paint, not before: the new DOM has to exist before it can be scrolled back to. The swap
+             * shortens the document for an instant and the browser clamps the offset to the shorter body, which
+             * is why an ordinary write threw the reader to the top of a long page.
+             */
+            const restoreScroll = () => {
+                const after = scroller();
+                if (!after) { return; }
+                after.scrollTop = scrollTop;
+                after.scrollLeft = scrollLeft;
+            };
+            if (scrollTop || scrollLeft) {
+                restoreScroll();
+                /*
+                 * AND AGAIN ON THE NEXT FRAME. The first assignment lands before the replaced content has been
+                 * laid out, so the browser clamps it to the height of a page that is momentarily shorter —
+                 * measured live: the offset was restored to 0 and looked, in code, exactly like a working fix.
+                 * The second pass runs once the new height is real.
+                 */
+                if (typeof global.requestAnimationFrame === 'function') {
+                    global.requestAnimationFrame(restoreScroll);
+                }
+            }
         } catch (error) {
             state.loadState = 'error';
             state.loadError = error;
@@ -3696,18 +3995,22 @@
     };
 
     const completeSubtask = async (subtaskId) => {
-        // The subtask is its own row in state, so it carries its own concurrency token.
+        // The subtask is its own row in state when it is also assigned to me, and then it carries its own
+        // concurrency token.
         const subtask = itemById(subtaskId);
-        if (!isRealTaskItem(subtask)) {
-            console.warn(`[WorkCenterNext] Subtask completion ignored: ${subtaskId} is not an engine task, `
-                + 'or is not present as its own row (it may not be assigned to you).');
-            return;
-        }
 
-        const result = await global.TasksApi.transition(subtaskId, 'complete', {
-            expectedVersion: Number(subtask.concurrency?.token ?? 0)
-        });
-        await afterPhase2Write(result, 'ToastActionApplied', subtask.title);
+        /*
+         * A CHECKBOX MUST NOT FAIL IN SILENCE. This used to warn to the console and return whenever the child
+         * was not one of MY rows — the ordinary case for a subtask somebody else holds — so the box visibly did
+         * nothing. The version comes from the shared resolver instead; the SERVER still decides, and its refusal
+         * is what the reader sees.
+         */
+        const expectedVersion = await subtaskVersion(subtaskId);
+        if (expectedVersion === null) { return; }
+        const title = subtask?.title || '';
+
+        const result = await global.TasksApi.transition(subtaskId, 'complete', { expectedVersion });
+        await afterPhase2Write(result, 'ToastActionApplied', title);
     };
 
     const postComment = async (taskId, text) => {
@@ -3780,7 +4083,35 @@
         });
         payload.parentTaskItemId = parentId;
 
-        await afterPhase2Write(await global.TasksApi.create(payload), 'ToastSubtaskAdded', text);
+        const result = await global.TasksApi.create(payload);
+        /*
+         * WHICH ROW IS MINE. A write re-reads the whole list and repaints it, so a new row simply appears among
+         * the others — the same paint the owner read as "the page refreshed". Marking it for a moment turns
+         * "something changed" into "that one is the thing I just typed".
+         */
+        /*
+         * ⚠ THE CREATE RESPONSE IS THE ID ITSELF, not an object around it — measured against the live endpoint
+         * (`{ ok: true, status: 201, data: "f8536220-…" }`). The first version read `data.id`, got undefined,
+         * and the new row was never marked; the test harness's own stub answered `{ id: "new" }` and hid it.
+         * Both shapes are accepted so neither the server nor a future envelope can silence this again.
+         */
+        const newId = result.ok
+            ? (typeof result.data === 'string' ? result.data : (result.data && result.data.id))
+            : null;
+        state.flashSubtaskId = newId ? String(newId) : null;
+        await afterPhase2Write(result, 'ToastSubtaskAdded', text);
+        if (state.flashSubtaskId) {
+            const flashed = state.flashSubtaskId;
+            /*
+             * The mark expires WITHOUT a re-render: the CSS animation runs once and is already over by the time
+             * this fires, so all that is left to do is stop a LATER repaint from replaying it. Calling render()
+             * here would repaint the page seconds after the user's last action — a paint nobody asked for, and
+             * one that stepped on an open panel in the test suite before this comment existed.
+             */
+            global.setTimeout(() => {
+                if (state.flashSubtaskId === flashed) { state.flashSubtaskId = null; }
+            }, SUBTASK_FLASH_MS);
+        }
     };
 
     const applyAction = (item, action, reason, assigneeUserId) => {
@@ -4526,6 +4857,20 @@
     };
 
     const onKeydown = (event) => {
+        /*
+         * ENTER ADDS THE SUBTASK — before the typing guard, because this fires INSIDE a text field.
+         *
+         * The parent id rides on the input itself, so the row has exactly one control and there is no button
+         * that could point at a different parent. AWAITED through the same addSubtask the button used: an
+         * un-awaited async call rejects into nothing, which is precisely how this action once failed in silence.
+         */
+        if (event.key === 'Enter' && event.target.matches && event.target.matches('[data-wcn-subtask-input]')) {
+            event.preventDefault();
+            const parentId = event.target.getAttribute('data-wcn-subtask-add');
+            const text = event.target.value;
+            if (parentId) { addSubtask(parentId, text); }
+            return;
+        }
         // Escape in the search box clears the current query (before the typing guard).
         if (event.key === 'Escape' && event.target.matches && event.target.matches('[data-wcn-search]')) {
             if (state.search) { event.preventDefault(); state.search = ''; render(); }
@@ -4783,10 +5128,14 @@
             completeSubtask(subtaskId);
             return;
         }
-        const subAddInlineEl = event.target.closest('[data-wcn-subtask-add-inline]');
-        if (subAddInlineEl) {
-            const input = document.querySelector('#wcnApp [data-wcn-subtask-input]');
-            if (input) { input.focus(); }
+        /*
+         * THE HANDLER THAT DID NOT EXIST. Everything else about the cap worked — the wrapper, the CSS, the
+         * count in the label — and this one branch was missing, so the button was decoration.
+         */
+        const showAllEl = event.target.closest('[data-wcn-showall]');
+        if (showAllEl) {
+            const key = showAllEl.getAttribute('data-wcn-showall');
+            if (key) { state.expandedLists[key] = !state.expandedLists[key]; render(); }
             return;
         }
         const subAddDetailedEl = event.target.closest('[data-wcn-subtask-add-detailed]');
@@ -4806,10 +5155,13 @@
                 subCancelEl.getAttribute('data-wcn-subtask-title'));
             return;
         }
-        const subAddEl = event.target.closest('[data-wcn-subtask-add]');
+        /*
+         * The quick-add BUTTON is gone: `data-wcn-subtask-add` now lives on the input itself and Enter submits
+         * (onKeydown). A click path is kept for anything that still carries the attribute on a button — the
+         * subtask create panel does — so both surfaces reach the one write path.
+         */
+        const subAddEl = event.target.closest('button[data-wcn-subtask-add]');
         if (subAddEl) {
-            // Read the input from the card the button belongs to, not from the document: one card per page today,
-            // but a page-wide lookup silently binds to whichever card happens to come first.
             const card = subAddEl.closest('.wcn-subtask-add') || subAddEl.closest('.wcn-detail-card');
             const input = (card || document).querySelector('[data-wcn-subtask-input]');
             // AWAITED on purpose: an un-awaited async call rejects into nothing, and that is precisely how this
@@ -5033,9 +5385,24 @@
     };
 
     const loadWorkItems = async () => {
-        state.loadState = 'loading';
+        /*
+         * A REFRESH IS NOT A LOAD, and conflating the two is what made every write feel like a page reload.
+         *
+         * MEASURED: each write re-reads the projection, and this used to blank the page to a spinner first. The
+         * document collapsed to a few hundred pixels, the browser clamped the scroll to the shorter body, and
+         * the position was already gone by the time the real content came back — so restoring it afterwards
+         * restored a zero. The focus went the same way, and the "which row did I just add" mark with it.
+         *
+         * The spinner belongs to the FIRST load, when there is genuinely nothing on screen. A re-read over
+         * existing content keeps the content, the height, the scroll and the caret; if it fails, the error
+         * state still takes over below.
+         */
+        const firstLoad = !Array.isArray(state.items) || state.items.length === 0;
         state.loadError = null;
-        render();
+        if (firstLoad) {
+            state.loadState = 'loading';
+            render();
+        }
 
         if (data.showcaseFixturesEnabled && data.showcaseFixturesEnabled()) {
             state.items = data.buildItems();

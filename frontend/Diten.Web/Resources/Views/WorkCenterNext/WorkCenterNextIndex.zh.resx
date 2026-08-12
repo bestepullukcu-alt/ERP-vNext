@@ -308,6 +308,9 @@
   <data name="ShowAllCount" xml:space="preserve">
     <value>查看全部（{0}）</value>
   </data>
+  <data name="ShowLess" xml:space="preserve">
+    <value>收起</value>
+  </data>
   <data name="DetailContext" xml:space="preserve">
     <value>来源上下文</value>
   </data>
@@ -758,8 +761,32 @@
   <data name="SubtasksLabel" xml:space="preserve">
     <value>子任务</value>
   </data>
+  <data name="SubtaskDoneCount" xml:space="preserve">
+    <value>{0} 已完成</value>
+  </data>
+  <data name="SubtaskProgressCount" xml:space="preserve">
+    <value>{0} / {1} 已完成</value>
+  </data>
+  <data name="SubtaskInheritsHint" xml:space="preserve">
+    <value>截止日期、优先级和负责人继承自父任务。</value>
+  </data>
+  <data name="SubtaskOpen" xml:space="preserve">
+    <value>打开</value>
+  </data>
+  <data name="SubtaskCheckDoneReason" xml:space="preserve">
+    <value>已完成。</value>
+  </data>
+  <data name="SubtaskCheckCancelledReason" xml:space="preserve">
+    <value>已取消的工作无法完成。</value>
+  </data>
+  <data name="SubtaskCheckAria" xml:space="preserve">
+    <value>完成此子任务</value>
+  </data>
+  <data name="SubtaskRowMenuAria" xml:space="preserve">
+    <value>{0} 的操作</value>
+  </data>
   <data name="SubtaskAddPlaceholder" xml:space="preserve">
-    <value>新建子任务…</value>
+    <value>输入子任务后按 Enter</value>
   </data>
   <data name="SubtaskAdd" xml:space="preserve">
     <value>添加</value>
@@ -1421,6 +1448,9 @@
   <data name="GuidancePendingAcceptance" xml:space="preserve">
     <value>该任务正在等待你接受。接手它，或者如果不属于你，请重新分配。</value>
   </data>
+  <data name="GuidanceChildrenRunning" xml:space="preserve">
+    <value>已有 {0} 个子任务在进行中。</value>
+  </data>
   <data name="GuidancePendingClaim" xml:space="preserve">
     <value>该任务在任务池中。认领它即可归你负责。</value>
   </data>
@@ -1437,7 +1467,7 @@
     <value>该任务已暂停：{0}</value>
   </data>
   <data name="SubtaskAddDetailed" xml:space="preserve">
-    <value>详细添加</value>
+    <value>+ 添加详细任务</value>
   </data>
   <data name="SubtaskCreateTitle" xml:space="preserve">
     <value>新建子任务</value>
@@ -1627,9 +1657,6 @@
   </data>
   <data name="SubtaskOpenAria" xml:space="preserve">
     <value>打开子任务“{0}”</value>
-  </data>
-  <data name="SubtaskToggleAria" xml:space="preserve">
-    <value>完成子任务“{0}”</value>
   </data>
   <data name="HavuzTitleInvoiceMatch" xml:space="preserve">
     <value>匹配收到的发票</value>
