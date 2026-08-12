@@ -359,9 +359,20 @@
         const mode = form.getAttribute('data-task-mode') || 'create';
         const taskId = form.getAttribute('data-task-id');
 
+        /*
+         * One labels object for every picker on the page, and it is also what select2's row templates read —
+         * two vocabularies for the same list is how the pool row ends up reading "{0} kişi" on one surface.
+         */
+        const personLabels = {
+            placeholder: t('assigneeSelectPlaceholder'),
+            empty: t('assigneeEmpty'),
+            nameUnavailable: t('personNameUnavailable'),
+            holderCount: t('pickerHolderCount')
+        };
+
         const positions = await global.TasksApi.assignablePositions();
         if (positions.ok) {
-            global.TaskForm.renderPositionOptions(el('taskPoolPosition'), positions.data || []);
+            global.TaskForm.renderPositionOptions(el('taskPoolPosition'), positions.data || [], personLabels);
         }
 
         /*
@@ -385,11 +396,6 @@
         const people = await global.TasksApi.assignablePeople();
         // The lookup answers `{ people, excluded }` now — only the server can say WHY somebody is missing.
         const assignableRows = people.ok ? people.data?.people || [] : [];
-        const personLabels = {
-            placeholder: t('assigneeSelectPlaceholder'),
-            empty: t('assigneeEmpty'),
-            nameUnavailable: t('personNameUnavailable')
-        };
         global.TaskForm.renderPersonOptions(el('taskAssignee'), assignableRows, personLabels);
         global.TaskForm.renderPersonOptions(el('taskWatchers'), assignableRows, personLabels, { multiple: true });
 
@@ -457,7 +463,7 @@
          * enhance the two markup selects and leave everything built afterwards bare — the partial fix that looks
          * finished because the static half of the form is correct.
          */
-        global.TaskForm.enhanceSelects(form, { searchRecords });
+        global.TaskForm.enhanceSelects(form, { searchRecords, rowLabels: personLabels });
         // flatpickr after hydration too, for the same reason: it reads the input's value when it initialises, so
         // a picker built before the stored date was written in would open on today instead of the task's date.
         global.TaskForm.enhanceDates(form);

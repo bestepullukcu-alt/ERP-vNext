@@ -369,16 +369,247 @@
         });
     };
 
-    const renderPositionOptions = (selectEl, rows) => {
+    /* ── THE PICKER ROW ───────────────────────────────────────────────────────────────────────────────────
+     *
+     * One string per option is what the pickers had, and it failed structurally rather than cosmetically:
+     * "Alidf ufanoglu — CT Fabrika Md — E2E Test Unit" puts three facts at the same weight in a 38px control,
+     * so a long one WRAPS and a wrapped row is taller than its neighbours — the list changes height as it is
+     * scrolled. Two layers fix the weight; clipping the quiet one fixes the height.
+     *
+     * ⚠ BUILT, NEVER PRINTED. select2's templateResult renders raw HTML and a display name is user data, so a
+     * name carrying markup would execute. Every node below is createElement + textContent: escaping is
+     * STRUCTURAL, not a helper somebody has to remember. No innerHTML appears anywhere in this block, and a
+     * test reads this file to keep it that way.
+     */
+
+    /*
+     * The circle. Two words or more → first and LAST initial, so a middle name never wins. ONE word → its first
+     * two letters, because a lone glyph reads as a rendering error rather than a monogram. No name at all → a
+     * neutral "?", never a letter borrowed from the id (BL-049: the id is not shown, not even one character).
+     */
+    const personInitials = (name) => {
+        const words = String(name || '').trim().split(/\s+/).filter((word) => word.length > 0);
+        if (words.length === 0) { return '?'; }
+        if (words.length === 1) { return words[0].slice(0, 2).toLocaleUpperCase(); }
+        return (words[0][0] + words[words.length - 1][0]).toLocaleUpperCase();
+    };
+
+    // "Muhasebe Md · Finans" — a middot, not an em dash: the dash was carrying the same weight as the words.
+    const SECONDARY_SEPARATOR = ' · ';
+
+    const joinParts = (parts) => parts
+        .map((part) => (part === null || part === undefined ? '' : String(part).trim()))
+        .filter((part) => part.length > 0)
+        .join(SECONDARY_SEPARATOR);
+
+    const rowNode = (avatar, primary, secondary) => {
+        const doc = global.document;
+        const root = doc.createElement('span');
+        root.className = secondary === null ? 'diten-opt diten-opt--single' : 'diten-opt';
+        root.appendChild(avatar);
+
+        const body = doc.createElement('span');
+        body.className = 'diten-opt-body';
+
+        const primaryLine = doc.createElement('span');
+        primaryLine.className = 'diten-opt-primary';
+        primaryLine.textContent = primary;
+        body.appendChild(primaryLine);
+
+        if (secondary !== null) {
+            const secondaryLine = doc.createElement('span');
+            secondaryLine.className = 'diten-opt-secondary';
+            secondaryLine.textContent = secondary;
+            body.appendChild(secondaryLine);
+        }
+
+        root.appendChild(body);
+        return root;
+    };
+
+    const initialsAvatar = (name) => {
+        const avatar = global.document.createElement('span');
+        avatar.className = 'diten-opt-avatar';
+        avatar.textContent = personInitials(name);
+        return avatar;
+    };
+
+    // A seat is not a person, so it gets a glyph rather than initials — "CT" for "CT Fabrika Md" would read as
+    // somebody's monogram.
+    const glyphAvatar = (glyph) => {
+        const doc = global.document;
+        const avatar = doc.createElement('span');
+        avatar.className = 'diten-opt-avatar diten-opt-avatar--glyph';
+        const icon = doc.createElement('i');
+        icon.className = `bx ${glyph}`;
+        icon.setAttribute('aria-hidden', 'true');
+        avatar.appendChild(icon);
+        return avatar;
+    };
+
+    const personName = (row, labels) => row.displayName || (labels && labels.nameUnavailable) || '';
+
+    const personOptionNode = (row, labels) => {
+        const name = personName(row, labels);
+        return rowNode(
+            initialsAvatar(row.displayName),
+            name,
+            joinParts([row.positionName || row.positionCode, row.organizationUnitName || row.organizationUnitCode]));
+    };
+
+    // Chosen → one line. The closed control is 38px; a second line would grow it, and the unit is the part the
+    // user has already decided about, so it is what the collapsed line drops.
+    const personSelectionNode = (row, labels) => rowNode(
+        initialsAvatar(row.displayName),
+        joinParts([personName(row, labels), row.positionName || row.positionCode]),
+        null);
+
+    // "{0} kişi" — how many people would actually be offered this pooled work. ZERO is said rather than hidden:
+    // pooling at an empty position means nobody is offered the task, which is exactly what the user needs to see.
+    const holderCountText = (row, labels) => {
+        const template = (labels && labels.holderCount) || '';
+        if (!template) { return ''; }
+        const count = Number.isFinite(row.activeHolderCount) ? row.activeHolderCount : 0;
+        return withCount(template, count);
+    };
+
+    const positionOptionNode = (row, labels) => rowNode(
+        glyphAvatar('bx-group'),
+        row.positionName || row.positionCode || '',
+        joinParts([row.organizationUnitName || row.organizationUnitCode, holderCountText(row, labels)]));
+
+    const positionSelectionNode = (row, labels) => rowNode(
+        glyphAvatar('bx-group'),
+        joinParts([row.positionName || row.positionCode, row.organizationUnitName || row.organizationUnitCode]),
+        null);
+
+    /*
+     * The two row kinds. A seat's kind is 'seat' rather than 'position' deliberately: a bare "position" is also
+     * a configurable field's OPTIONS SOURCE KEY, and a guard in tasks-record-fields.test.js refuses to let this
+     * file name any source key — a client that knows source keys has to be edited when a module is added. The
+     * word also matches what the backend calls the same thing (ITaskSeatDirectory).
+     */
+    const ROW_BUILDERS = {
+        person: { result: personOptionNode, selection: personSelectionNode },
+        seat: { result: positionOptionNode, selection: positionSelectionNode }
+    };
+
+    /*
+     * What select2 calls for each line. Three cases and each is deliberate:
+     *   - a GROUP heading (`children`) → returned as a STRING, so select2's own escaping applies to a label
+     *     that is also tenant data;
+     *   - a line with no row behind it (a search hint, say) → its plain text, unchanged;
+     *   - a real row → the built node.
+     */
+    const pickerRowTemplate = (kind, labels, mode) => {
+        const builders = ROW_BUILDERS[kind];
+        const build = builders && (mode === 'selection' ? builders.selection : builders.result);
+        return (data) => {
+            if (!data) { return ''; }
+            const row = data.element && data.element.ditenRow;
+            if (!row || !build) { return data.text; }
+            return build(row, labels);
+        };
+    };
+
+    /*
+     * WHICH GROUP a row belongs to. The owner's question was "three factories under me — do their people not
+     * blur together?", and in a flat list they do: two facilities can each have a "Üretim Şefi" and only the
+     * trailing unit label told them apart. So rows sit under their unit.
+     *
+     * A unit NAME can repeat across companies, and two headings reading "Üretim" are worse than none — they
+     * say the two lists are one. Where the name is ambiguous the unit CODE disambiguates it. The code is real
+     * data; the COMPANY name would be the natural label and Platform does not have it (see the note in
+     * renderPersonOptions), so nothing is invented here.
+     */
+    const groupLabels = (rows) => {
+        const byId = new Map();
+        rows.forEach((row) => {
+            const id = String(row.organizationUnitId || '');
+            if (!byId.has(id)) {
+                byId.set(id, {
+                    name: row.organizationUnitName || row.organizationUnitCode || '',
+                    code: row.organizationUnitCode || ''
+                });
+            }
+        });
+
+        const nameCounts = new Map();
+        byId.forEach((unit) => nameCounts.set(unit.name, (nameCounts.get(unit.name) || 0) + 1));
+
+        const labelsById = new Map();
+        byId.forEach((unit, id) => {
+            const ambiguous = (nameCounts.get(unit.name) || 0) > 1 && unit.code;
+            labelsById.set(id, ambiguous ? `${unit.name} (${unit.code})` : unit.name);
+        });
+        return labelsById;
+    };
+
+    /*
+     * Fill a select with grouped options.
+     *
+     * The option's TEXT stays the full one-line label on purpose: select2 searches the option text, so a user
+     * typing "Finans" must still match a row whose unit only appears on the second layer. What changed is how
+     * the line is DISPLAYED, not what it says.
+     *
+     * The row object rides on the option (`option.ditenRow`) so the template never has to re-parse a label back
+     * into fields.
+     */
+    const fillGroupedOptions = (selectEl, rows, kind, valueOf, textOf) => {
+        const doc = global.document;
+        const byId = groupLabels(rows);
+        const groups = new Map();
+
+        selectEl.setAttribute('data-diten-rows', kind);
+
+        rows.forEach((row) => {
+            const id = String(row.organizationUnitId || '');
+            let group = groups.get(id);
+            if (!group) {
+                group = doc.createElement('optgroup');
+                group.label = byId.get(id) || '';
+                groups.set(id, group);
+                selectEl.appendChild(group);
+            }
+
+            const option = doc.createElement('option');
+            option.value = valueOf(row);
+            option.textContent = textOf(row);
+            option.ditenRow = row;
+            group.appendChild(option);
+        });
+    };
+
+    /*
+     * THE PLACEHOLDER IS NOT A ROW.
+     *
+     * It used to be an <option> carrying "Kişi seçin…", so it appeared inside the dropdown as a selectable line
+     * — and choosing it emptied the field. select2 takes a placeholder of its own and removes the matching
+     * empty option from the results by id, so the prompt shows in the closed control and nowhere else. The
+     * option still has to EXIST (select2 requires a blank first option on a single select) but it carries no
+     * text: even if something rendered it, it could not read as a choice.
+     */
+    const applyPlaceholder = (selectEl, text, multiple) => {
+        if (multiple) { return; }
+        selectEl.setAttribute('data-placeholder', text || '');
+        const blank = global.document.createElement('option');
+        blank.value = '';
+        blank.textContent = '';
+        selectEl.appendChild(blank);
+    };
+
+    const renderPositionOptions = (selectEl, rows, labels) => {
         if (!selectEl) { return; }
         selectEl.innerHTML = '';
-        (rows || []).forEach((row) => {
-            const option = global.document.createElement('option');
-            option.value = row.positionId;
+        const text = labels || {};
+        applyPlaceholder(selectEl, text.placeholder, false);
+        fillGroupedOptions(
+            selectEl,
+            rows || [],
+            'seat',
+            (row) => row.positionId,
             // The unit label is the whole point — see formatPositionLabel.
-            option.textContent = formatPositionLabel(row);
-            selectEl.appendChild(option);
-        });
+            (row) => formatPositionLabel(row));
     };
 
     /*
@@ -415,22 +646,26 @@
         }
 
         selectEl.disabled = false;
-        // A MULTI-select gets no placeholder row: in a list box a placeholder is just another selectable line,
-        // and selecting it would post an empty identity among the real ones. Single-select keeps it — there it
-        // is the "nothing chosen" state, which is a legitimate answer for an optional field.
-        if (!multiple) {
-            const placeholder = global.document.createElement('option');
-            placeholder.value = '';
-            placeholder.textContent = text.placeholder || '';
-            selectEl.appendChild(placeholder);
-        }
+        // A MULTI-select gets no placeholder at all: in a list box a placeholder is just another selectable
+        // line, and selecting it would post an empty identity among the real ones.
+        applyPlaceholder(selectEl, text.placeholder, multiple);
 
-        rows.forEach((row) => {
-            const option = global.document.createElement('option');
-            option.value = row.userId;
-            option.textContent = formatPersonLabel(row, text.nameUnavailable);
-            selectEl.appendChild(option);
-        });
+        /*
+         * Grouped by ORGANIZATION UNIT, and the company is deliberately absent from the heading.
+         *
+         * ⚠ MEASURED: AssignablePersonDto carries `LegalEntityId` (BL-057) and NO legal entity NAME — Platform
+         * has none to give. Company names live in MDM (MOD-0220) and reach the browser through a proxy the
+         * document module uses. Printing the id would be the GUID-on-screen defect (BL-049) and inventing a
+         * name is not an option, so the heading says the unit. That also answers the question actually asked:
+         * a "factory" IS an organization unit. If companies must head the groups later, the name has to come
+         * from where names live, which is a cross-service resolver and its own piece of work.
+         */
+        fillGroupedOptions(
+            selectEl,
+            rows,
+            'person',
+            (row) => row.userId,
+            (row) => formatPersonLabel(row, text.nameUnavailable));
     };
 
     /*
@@ -970,6 +1205,18 @@
             const placeholder = node.getAttribute('data-placeholder');
             if (placeholder) { settings.placeholder = placeholder; }
 
+            /*
+             * The two-layer row, but ONLY where there are rows behind the options. Priority, the assignment
+             * target and the reminder lead are plain word lists: giving them an avatar and a second line would
+             * invent structure their options do not have.
+             */
+            const rowKind = node.getAttribute('data-diten-rows');
+            if (rowKind && ROW_BUILDERS[rowKind]) {
+                const labels = (options && options.rowLabels) || {};
+                settings.templateResult = pickerRowTemplate(rowKind, labels, 'result');
+                settings.templateSelection = pickerRowTemplate(rowKind, labels, 'selection');
+            }
+
             if (isServerSearched(node) && typeof searchRecords === 'function') {
                 const code = node.getAttribute('data-custom-field');
                 settings.ajax = {
@@ -1106,6 +1353,13 @@
         selectWatchers,
         renderPositionOptions,
         renderPersonOptions,
+        // The two-layer picker row: built as DOM, never as HTML, so a name cannot become markup.
+        personInitials,
+        personOptionNode,
+        personSelectionNode,
+        positionOptionNode,
+        positionSelectionNode,
+        pickerRowTemplate,
         // Phase 5 — configurable fields.
         customFieldControlKind,
         customFieldLabel,

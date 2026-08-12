@@ -61,7 +61,9 @@ describe("MOD-0024 task form", () => {
         { positionId: "2", positionName: "QA Specialist", organizationUnitName: "Facility B" }
       ]);
 
-      const labels = [...select.options].map((o) => o.textContent);
+      // The blank first option is select2's placeholder anchor, not a choice; the option TEXT still carries the
+      // full one-line label because that is what select2's local search matches on.
+      const labels = [...select.options].map((o) => o.textContent).filter((text) => text.length > 0);
       expect(labels).toEqual(["QA Specialist — Facility A", "QA Specialist — Facility B"]);
     });
   });

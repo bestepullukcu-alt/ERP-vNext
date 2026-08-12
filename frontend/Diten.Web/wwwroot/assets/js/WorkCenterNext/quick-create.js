@@ -24,7 +24,10 @@
     const personLabels = () => ({
         placeholder: t('assigneeSelectPlaceholder'),
         empty: t('assigneeEmpty'),
-        nameUnavailable: t('personNameUnavailable')
+        nameUnavailable: t('personNameUnavailable'),
+        // The pool row's second layer — "{0} kişi". The SAME labels object feeds both pickers and select2's
+        // row templates, so the offcanvas and the full form cannot drift into two vocabularies.
+        holderCount: t('pickerHolderCount')
     });
 
     const readDraft = () => ({
@@ -139,7 +142,7 @@
         // Each option carries its organization unit so pooled work cannot silently reach the wrong facility.
         const positions = await global.TasksApi.assignablePositions();
         if (positions.ok) {
-            global.TaskForm.renderPositionOptions(el('quickPoolPosition'), positions.data || []);
+            global.TaskForm.renderPositionOptions(el('quickPoolPosition'), positions.data || [], personLabels());
         }
 
         /*
@@ -169,7 +172,7 @@
          * empty picker first would produce a permanently empty dropdown.
          */
         const offcanvasRoot = el(OFFCANVAS_ID);
-        global.TaskForm.enhanceSelects(offcanvasRoot);
+        global.TaskForm.enhanceSelects(offcanvasRoot, { rowLabels: personLabels() });
         global.TaskForm.enhanceDates(offcanvasRoot);
     };
 

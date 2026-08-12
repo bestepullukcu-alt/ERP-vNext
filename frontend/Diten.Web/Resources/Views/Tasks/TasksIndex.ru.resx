@@ -121,6 +121,7 @@
   <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Выберите сотрудника…</value></data>
   <data name="AssigneeEmpty" xml:space="preserve"><value>Пока никто не занимает должность, назначить работу некому. Попросите администратора сначала назначить должности.</value></data>
   <data name="PersonNameUnavailable" xml:space="preserve"><value>Имя недоступно</value></data>
+  <data name="PickerHolderCount" xml:space="preserve"><value>{0} чел.</value></data>
   <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>Введите для поиска…</value></data>
   <data name="CustomFieldRecordUnavailable" xml:space="preserve"><value>Запись недоступна</value></data>
   <data name="ErrorFieldOptionSourceInvalid" xml:space="preserve"><value>Это поле указывает на источник, который не предоставляет ни один модуль. Попросите администратора исправить его определение.</value></data>

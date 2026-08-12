@@ -6589,3 +6589,101 @@ tags.diten-tags .tagify__input {
 .wcn-guidance i { font-size: 1.125rem; line-height: 1.45; }
 /* Destructive actions live behind their own menu, apart from the explained actions above. */
 .wcn-actrail-menu .dropdown-toggle { inline-size: 100%; }
+
+/* ── PICKER ROW — two layers that cannot change height ────────────────────────────────────────────────────
+   MOD-0024 assignment pickers (people and position pools), rendered through select2's templateResult.
+
+   The defect this replaces was structural, not cosmetic: one string per option ("Name — Position — Unit") put
+   three facts at the same weight in a 38px control, so a long one wrapped and the list changed height as it was
+   scrolled. Two layers give the name its weight; clipping the quiet layer pins the height.
+
+   FLOW-RELATIVE ONLY. The avatar leads the row because it is the first flex child, not because it is "on the
+   left" — so Arabic mirrors with the document and needs no rule of its own. No margin-left/right lives here. */
+.diten-opt {
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    min-width: 0;
+    inline-size: 100%;
+}
+
+/* Without min-width:0 a flex child refuses to shrink below its content, and text-overflow never triggers —
+   the row grows instead of clipping. This one line is what makes every ellipsis below work. */
+.diten-opt-body {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+}
+
+.diten-opt-primary {
+    display: block;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+    line-height: 1.25;
+}
+
+/* The layer that gets cut. Quieter and smaller, because it disambiguates rather than identifies. */
+.diten-opt-secondary {
+    display: block;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: .75rem;
+    line-height: 1.25;
+    color: var(--bs-secondary-color);
+}
+
+/* The circle keeps its size whatever the name does. */
+.diten-opt-avatar {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2rem;
+    block-size: 2rem;
+    border-radius: 50%;
+    background-color: var(--bs-primary-bg-subtle, rgba(105, 108, 255, .16));
+    color: var(--bs-primary);
+    font-size: .6875rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: .02em;
+}
+
+.diten-opt-avatar--glyph { font-size: 1rem; }
+
+/* CHOSEN — one line, inside a control pinned at 38px. A second line would grow the box, so the collapsed row
+   is capped here rather than trusted to stay short. */
+.diten-opt--single {
+    height: 2.125rem;
+    line-height: 1.25;
+}
+
+.diten-opt--single .diten-opt-avatar {
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+    font-size: .5625rem;
+}
+
+.diten-opt--single .diten-opt-avatar--glyph { font-size: .875rem; }
+
+/* Every result row is the same height whatever it holds — the "list must not jump" claim, stated once. */
+.select2-container--default .select2-results__option .diten-opt { block-size: 2.5rem; }
+
+/* select2 renders the selection inside its own single-line box; these let the row fill it and clip inside it. */
+.select2-container--default .select2-selection--single .select2-selection__rendered .diten-opt { min-width: 0; }
+.select2-container--default .select2-selection--single .select2-selection__rendered { display: flex; }
+
+/* The group heading: a unit name, not a choice. Quieter than the rows and clearly not clickable. */
+.select2-container--default .select2-results__group {
+    font-size: .6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--bs-secondary-color);
+    padding-block: .5rem .25rem;
+}

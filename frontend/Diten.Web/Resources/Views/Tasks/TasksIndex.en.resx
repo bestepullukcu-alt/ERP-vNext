@@ -121,6 +121,7 @@
   <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Select a person…</value></data>
   <data name="AssigneeEmpty" xml:space="preserve"><value>No one holds a position yet, so there is nobody to assign to. Ask an administrator to assign positions first.</value></data>
   <data name="PersonNameUnavailable" xml:space="preserve"><value>Name unavailable</value></data>
+  <data name="PickerHolderCount" xml:space="preserve"><value>{0} person(s)</value></data>
   <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>Type to search…</value></data>
   <data name="CustomFieldRecordUnavailable" xml:space="preserve"><value>Record unavailable</value></data>
   <data name="ErrorFieldOptionSourceInvalid" xml:space="preserve"><value>This field points at a source no module offers. Ask an administrator to correct its definition.</value></data>

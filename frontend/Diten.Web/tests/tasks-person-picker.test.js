@@ -78,13 +78,21 @@ describe("MOD-0024 person picker", () => {
 
     const select = () => document.getElementById("who");
 
-    it("renders one option per person, plus a placeholder", () => {
+    it("renders one option per person, and the prompt is NOT one of them", () => {
+      /*
+       * The prompt used to be an <option> carrying "Kişi seçin…", so it appeared inside the open dropdown as a
+       * selectable line — and choosing it emptied the field. It is select2's placeholder now: the blank option
+       * still exists because select2 requires one on a single select, but it carries no text and select2
+       * removes it from the results by id. The prompt travels as data-placeholder instead.
+       */
       global.TaskForm.renderPersonOptions(
         select(), [person(), person({ userId: BOB, displayName: "Deniz Koç" })], labels);
 
       const options = [...select().options];
       expect(options).toHaveLength(3);
-      expect(options[0].textContent).toBe("Kişi seçin…");
+      expect(options[0].value).toBe("");
+      expect(options[0].textContent).toBe("");
+      expect(select().getAttribute("data-placeholder")).toBe("Kişi seçin…");
       expect(options[1].value).toBe(ALICE);
       expect(options[2].value).toBe(BOB);
       expect(select().disabled).toBe(false);
