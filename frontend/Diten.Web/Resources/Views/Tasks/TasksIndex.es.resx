@@ -24,6 +24,7 @@
   <data name="FieldPoolPosition" xml:space="preserve"><value>Puesto</value></data>
   <data name="PoolPositionHint" xml:space="preserve"><value>La unidad se muestra junto a cada puesto para que el trabajo no llegue al centro equivocado.</value></data>
   <data name="FieldDueAt" xml:space="preserve"><value>Fecha de vencimiento</value></data>
+  <data name="FieldDueAtPlaceholder" xml:space="preserve"><value>AAAA-MM-DD</value></data>
   <data name="FieldStartAt" xml:space="preserve"><value>Fecha de inicio</value></data>
   <data name="FieldEstimateHours" xml:space="preserve"><value>Estimación (horas)</value></data>
   <data name="FieldEstimateHoursPlaceholder" xml:space="preserve"><value>p. ej. 8</value></data>

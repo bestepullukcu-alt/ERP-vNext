@@ -53,11 +53,16 @@
         const instance = offcanvasInstance();
         if (!instance) { return false; }
 
-        // A due date is required for every target, so default it to today rather than leaving an empty required
-        // field the user has to discover.
+        /*
+         * A due date is required for every target, so default it to today rather than leaving an empty required
+         * field the user has to discover. Written THROUGH the picker when one is bound: setting `.value`
+         * directly leaves flatpickr's own state stale, so the calendar would open on the wrong month and the
+         * next pick would fight the text in the box.
+         */
         const dueAt = el('quickDueAt');
         if (dueAt && !dueAt.value) {
-            dueAt.value = new Date().toISOString().slice(0, 10);
+            const today = new Date().toISOString().slice(0, 10);
+            if (dueAt._flatpickr) { dueAt._flatpickr.setDate(today, false); } else { dueAt.value = today; }
         }
 
         instance.show();
@@ -137,9 +142,35 @@
             global.TaskForm.renderPositionOptions(el('quickPoolPosition'), positions.data || []);
         }
 
-        // People who currently hold a position. An empty list is explained, not left blank.
+        /*
+         * People who currently hold a position, and who I may hand work to (BL-057 narrows this to my company
+         * scope). An empty list is explained, not left blank.
+         *
+         * `.data.people` — the lookup answers an OBJECT, `{ people, excluded }`, since BL-057. This file kept
+         * passing `.data` straight through, and an object is not an array: the picker rendered its "nobody
+         * holds a position" empty state on every load, on a tenant full of people. The full form was updated in
+         * that round and this shortcut was not.
+         */
         const people = await global.TasksApi.assignablePeople();
-        global.TaskForm.renderPersonOptions(el('quickAssignee'), people.ok ? people.data || [] : [], personLabels());
+        const peopleRows = people.ok ? people.data?.people || [] : [];
+        global.TaskForm.renderPersonOptions(el('quickAssignee'), peopleRows, personLabels());
+
+        /*
+         * The FULL FORM's own enhancers, called rather than copied. The two surfaces share one draft, so a
+         * second implementation here would be a second truth about the same value — the date would render one
+         * way before "Detaylı form" and another way after it.
+         *
+         * enhanceSelects wraps each control in a `.position-relative` div and points select2's dropdownParent
+         * at that wrapper. That is also what makes select2 usable INSIDE an offcanvas: the dropdown is rendered
+         * next to its control instead of being appended to <body>, so it inherits the offcanvas's stacking
+         * context and cannot end up painted underneath the backdrop.
+         *
+         * Both run AFTER the options are rendered — select2 copies the option list at bind time, so binding an
+         * empty picker first would produce a permanently empty dropdown.
+         */
+        const offcanvasRoot = el(OFFCANVAS_ID);
+        global.TaskForm.enhanceSelects(offcanvasRoot);
+        global.TaskForm.enhanceDates(offcanvasRoot);
     };
 
     global.WcnQuickCreate = { TASK_CREATED_EVENT, open, close, submit, readDraft, openDetailed, wire };

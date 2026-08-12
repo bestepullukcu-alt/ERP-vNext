@@ -6,61 +6,110 @@
    This is a SHORTCUT that creates a task in four fields, or hands its draft to the full compact form via
    "More options" — it is never an alternative EDIT surface (edit is always the full page), and it shares one
    draft with that form so switching depth loses nothing. Named _QuickCreateOffcanvas so the forbidden
-   _CreateEditOffcanvas filename stays unused. *@
+   _CreateEditOffcanvas filename stays unused.
+
+   ⚠ THE REFERENCE IS SLIM, NOT COMPACT — Compact has no such surface to copy. The header/body/footer shape
+   below is Views/DevEnablement/GoldenReferenceSlim/_CreateEditOffcanvas.cshtml, and a test derives those
+   classes from that file rather than restating them.
+
+   The ICONS are the full form's too, field for field: the same draft crosses between the two surfaces, so a
+   glyph that differed on either side of one click would be the same defect in another coat.
+
+   The CONTROLS are the full form's, not lookalikes: the same draft crosses between the two surfaces, so the
+   date is a flatpickr field and the selects are select2 here exactly as they are there. Pressing "Detaylı
+   form" must not hand the same value to a different KIND of control. *@
 <div class="offcanvas offcanvas-end" tabindex="-1" id="taskQuickCreate" aria-labelledby="taskQuickCreateLabel">
-    <div class="offcanvas-header">
+    <div class="offcanvas-header p-4">
         <h5 class="offcanvas-title" id="taskQuickCreateLabel">@Localizer["QuickCreateTitle"]</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@Localizer["ActionCancel"]"></button>
     </div>
-    <div class="offcanvas-body">
+
+    <div class="offcanvas-body border-top p-4">
         <div class="mb-3">
-            <label class="form-label" for="quickTitle">
+            <label class="form-label fw-medium" for="quickTitle">
                 @Localizer["FieldTitle"] <span class="text-danger">*</span>
             </label>
-            <input type="text" class="form-control" id="quickTitle" maxlength="200"
-                   placeholder="@Localizer["FieldTitlePlaceholder"]" />
+            <div class="diten-field">
+                <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
+                <input type="text" class="form-control" id="quickTitle" maxlength="200"
+                       placeholder="@Localizer["FieldTitlePlaceholder"]" />
+            </div>
         </div>
         <div class="mb-3">
-            <label class="form-label" for="quickTarget">@Localizer["FieldAssignmentTarget"]</label>
-            <select class="form-select" id="quickTarget">
-                <option value="SelfAssigned" selected>@Localizer["TargetSelf"]</option>
-                <option value="Person">@Localizer["TargetPerson"]</option>
-                <option value="PositionPool">@Localizer["TargetPool"]</option>
-            </select>
+            <label class="form-label fw-medium" for="quickTarget">@Localizer["FieldAssignmentTarget"]</label>
+            <div class="diten-field">
+                <i class="bx bx-directions diten-field-icon" aria-hidden="true"></i>
+                <select class="select2 form-select" id="quickTarget">
+                    <option value="SelfAssigned" selected>@Localizer["TargetSelf"]</option>
+                    <option value="Person">@Localizer["TargetPerson"]</option>
+                    <option value="PositionPool">@Localizer["TargetPool"]</option>
+                </select>
+            </div>
         </div>
         @* A picker, not a text box: the field used to demand a raw user GUID. Options are "Name — Position —
            Unit" so two people in the same position are distinguishable (pack §12 K6.4). *@
         <div class="mb-3 d-none" data-task-field="assignee">
-            <label class="form-label" for="quickAssignee">@Localizer["FieldAssignee"]</label>
-            <select class="form-select" id="quickAssignee"></select>
+            <label class="form-label fw-medium" for="quickAssignee">@Localizer["FieldAssignee"]</label>
+            <div class="diten-field">
+                <i class="bx bx-user diten-field-icon" aria-hidden="true"></i>
+                <select class="select2 form-select" id="quickAssignee"></select>
+            </div>
             <div class="form-text">@Localizer["AssigneeHint"]</div>
         </div>
         <div class="mb-3 d-none" data-task-field="poolPosition">
-            <label class="form-label" for="quickPoolPosition">@Localizer["FieldPoolPosition"]</label>
-            <select class="form-select" id="quickPoolPosition"></select>
+            <label class="form-label fw-medium" for="quickPoolPosition">@Localizer["FieldPoolPosition"]</label>
+            <div class="diten-field">
+                <i class="bx bx-group diten-field-icon" aria-hidden="true"></i>
+                <select class="select2 form-select" id="quickPoolPosition"></select>
+            </div>
             <div class="form-text">@Localizer["PoolPositionHint"]</div>
         </div>
         <div class="mb-3">
-            <label class="form-label" for="quickDueAt">
+            <label class="form-label fw-medium" for="quickDueAt">
                 @Localizer["FieldDueAt"] <span class="text-danger">*</span>
             </label>
-            <input type="date" class="form-control" id="quickDueAt" />
+            @* Same control and same icon rule as the full form. A native browser date input takes its format
+               from the OPERATING SYSTEM, so an Arabic page still rendered gg.aa.yyyy — and it was a different
+               control from the one the very same draft meets one click later.
+               (The forbidden attribute is deliberately not spelled out in this comment: the guard test greps
+               the whole file for it, and prose would read as a violation.) *@
+            <div class="diten-field">
+                <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                <input type="text" class="form-control flatpickr-date" id="quickDueAt"
+                       placeholder="@Localizer["FieldDueAtPlaceholder"]" />
+            </div>
         </div>
-        <div class="mb-4">
-            <label class="form-label" for="quickPriority">@Localizer["FieldPriority"]</label>
-            <select class="form-select" id="quickPriority">
-                <option value="Low">@Localizer["PriorityLow"]</option>
-                <option value="Medium" selected>@Localizer["PriorityMedium"]</option>
-                <option value="High">@Localizer["PriorityHigh"]</option>
-            </select>
+        <div class="mb-0">
+            <label class="form-label fw-medium" for="quickPriority">@Localizer["FieldPriority"]</label>
+            <div class="diten-field">
+                <i class="bx bx-flag diten-field-icon" aria-hidden="true"></i>
+                <select class="select2 form-select" id="quickPriority">
+                    <option value="Low">@Localizer["PriorityLow"]</option>
+                    <option value="Medium" selected>@Localizer["PriorityMedium"]</option>
+                    <option value="High">@Localizer["PriorityHigh"]</option>
+                </select>
+            </div>
         </div>
+    </div>
 
+    @* The reference's footer: bordered, padded, and the two ends of the row are the two ends of the decision.
+       The buttons used to sit inside the body, so they scrolled away with the form and both hugged the left.
+
+       "Detaylı form" is grouped with CANCEL rather than beside the primary action, and that is a decision:
+       it is a NAVIGATION, not a commit — it saves nothing and leaves this surface. Standing next to "Oluştur"
+       it would read as a second way to finish and force a choice between two primary-looking buttons; beside
+       cancel it reads as "leave here, continue elsewhere", and the footer keeps exactly ONE primary action,
+       which is the reference's shape. *@
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-primary" id="quickSubmit">@Localizer["ActionCreate"]</button>
+            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+                @Localizer["ActionCancel"]
+            </button>
             @* Hands the current draft to the detailed form — nothing typed is lost. *@
             <button type="button" class="btn btn-label-secondary" id="quickMoreOptions">
                 @Localizer["ActionOpenDetailed"]
             </button>
         </div>
+        <button type="button" class="btn btn-primary" id="quickSubmit">@Localizer["ActionCreate"]</button>
     </div>
 </div>

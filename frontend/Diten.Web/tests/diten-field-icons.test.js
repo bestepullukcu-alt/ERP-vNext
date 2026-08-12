@@ -134,6 +134,30 @@ describe("the tag box's text starts on the same line as its neighbours'", () => 
 
 // ── 2. the icons ────────────────────────────────────────────────────────────
 
+/*
+ * THE BINDING MAP. Owner-decided, with three deliberate departures where the brief's glyph repeated the icon
+ * already in that field's own card heading (see the "never repeats its own card header" test).
+ */
+const ICON_MAP = {
+  taskTitle: "bx-text",
+  taskPriority: "bx-flag",
+  taskDescription: "bx-align-left",
+  taskAssignmentTarget: "bx-directions",
+  taskAssignee: "bx-user",
+  taskPoolPosition: "bx-group",
+  taskDueAt: "bx-calendar",
+  taskStartAt: "bx-calendar",
+  taskEstimateHours: "bx-time-five",
+  taskTags: "bx-purchase-tag-alt",
+  taskSpentHours: "bx-time-five",
+  taskRemainingHours: "bx-hourglass",
+  // Differentiated from their card headings (bx-search-alt / bx-user-check / bx-show):
+  taskReviewer: "bx-user-voice",
+  taskApprovalManager: "bx-user",
+  taskWatchers: "bx-group",
+  taskReminderLeadDays: "bx-bell"
+};
+
 describe("an icon marks the fields where typing is not the whole story", () => {
   const iconWrapper = (id) => {
     const form = FORM();
@@ -151,19 +175,19 @@ describe("an icon marks the fields where typing is not the whole story", () => {
     return between;
   };
 
-  test("the two dates, the tags and the estimate carry one", () => {
-    ["taskDueAt", "taskStartAt", "taskTags", "taskEstimateHours"].forEach((id) => {
+  test("every mapped field has a wrapper and a glyph", () => {
+    Object.keys(ICON_MAP).forEach((id) => {
       const wrapper = iconWrapper(id);
       expect(wrapper, `${id} has no icon wrapper`).toBeTruthy();
       expect(wrapper, `${id} has no icon`).toMatch(/<i class="[^"]*\bbx\b/);
     });
   });
 
-  test("each icon says what the field DOES — calendar, tag, clock", () => {
-    expect(iconWrapper("taskDueAt")).toMatch(/bx-calendar\b/);
-    expect(iconWrapper("taskStartAt")).toMatch(/bx-calendar\b/);
-    expect(iconWrapper("taskTags")).toMatch(/bx-purchase-tag-alt\b/);
-    expect(iconWrapper("taskEstimateHours")).toMatch(/bx-time-five\b/);
+  test("each field carries the glyph the map assigns it", () => {
+    Object.entries(ICON_MAP).forEach(([id, glyph]) => {
+      expect(iconWrapper(id), `${id} does not carry ${glyph}`)
+        .toMatch(new RegExp(`${glyph}(?![a-z-])`));
+    });
   });
 
   test("the estimate says what a value looks like", () => {
@@ -185,21 +209,50 @@ describe("an icon marks the fields where typing is not the whole story", () => {
     expect(missing, `icon names with nothing to draw them:\n${missing.join("\n")}`).toHaveLength(0);
   });
 
-  test("the card's PRIMARY fields get none — this is the rule, pinned", () => {
+  test("EVERY field carries an icon — the rule the owner replaced the old one with", () => {
     /*
-     * THE RULE, so the next round does not add icons "for consistency":
+     * ⚠ THIS REPLACES A DELETED TEST, deliberately and in place.
      *
-     *   ICON     — due date, start date (open a calendar) · tags (Enter makes a chip) · estimate (a unit and a
-     *              shape the user has to guess otherwise)
-     *   NO ICON  — task title, description
+     * The previous round pinned the opposite rule — "the card's PRIMARY fields get none", on the reasoning that
+     * an icon is secondary chrome and would flatten title/description to the weight of everything else. The
+     * OWNER decided against that: every field gets one. Deleting the old test without putting this one here
+     * would have quietly narrowed the coverage to "the four fields that already had icons", so the successor
+     * asserts the WHOLE map instead.
      *
-     * Title and description are the card's PRIMARY fields. An icon is secondary chrome, and putting one on
-     * them drops them to the same visual weight as everything else — the opposite of what the layout is for.
-     * An icon marks a field that carries something EXTRA, not every field.
+     * Configurable fields stay out: they are rendered by renderCustomFields from tenant definitions, and their
+     * value types are not fixed, so there is no glyph to pick per field.
      */
-    ["taskTitle", "taskDescription"].forEach((id) => {
-      expect(iconWrapper(id), `${id} is a primary field and must not carry an icon`).toBeNull();
+    Object.keys(ICON_MAP).forEach((id) => {
+      expect(iconWrapper(id), `${id} has no icon — every field carries one now`).toBeTruthy();
     });
+
+    // …and the count is pinned, so a field added later cannot slip through unnoticed.
+    const wrappers = [...FORM().matchAll(/class="diten-field[ "]/g)].length;
+    expect(wrappers, "a field was added or removed without updating the icon map")
+      .toBe(Object.keys(ICON_MAP).length);
+  });
+
+  test("the icon says what the FIELD is, and never repeats its own card header", () => {
+    /*
+     * DECISION, asked for and recorded here.
+     *
+     * Three governance cards already carry a glyph in their heading — review = magnifier, approval =
+     * user-check, watchers = eye — and the brief's map put the SAME glyph on the field inside each of them.
+     * Measured on screen, the watchers card is a header, one line of description and one field: the same eye
+     * twice inside ~60px.
+     *
+     * That is not reinforcement. The card icon names a DECISION ("is a review required?"); the field icon names
+     * an INPUT ("which person?"). One glyph answering two different questions in one card is ambiguity, not
+     * emphasis. So the three field glyphs are differentiated and the CARD glyphs are untouched.
+     */
+    const cardIcons = [...FORM().matchAll(/card-section-title[^>]*><i class="bx (bx-[a-z-]+)"/g)].map((m) => m[1]);
+    expect(cardIcons.length, "the card headings lost their icons").toBeGreaterThanOrEqual(5);
+
+    [["taskReviewer", "bx-search-alt"], ["taskApprovalManager", "bx-user-check"], ["taskWatchers", "bx-show"]]
+      .forEach(([id, cardGlyph]) => {
+        expect(cardIcons, `${cardGlyph} is no longer a card heading icon`).toContain(cardGlyph);
+        expect(ICON_MAP[id], `${id} repeats its own card heading's glyph`).not.toBe(cardGlyph);
+      });
   });
 
   test("the icon is hidden from assistive tech — the label already says what the field is", () => {
@@ -268,7 +321,124 @@ describe("an icon marks the fields where typing is not the whole story", () => {
   });
 });
 
-// ── 3. the calendar icon is not decoration ──────────────────────────────────
+// ── 3. the two shapes that are not a 38px single-line input ─────────────────
+
+describe("a textarea and a select2 need the icon placed differently", () => {
+  test("the textarea's icon aligns with the FIRST LINE, not with the middle", () => {
+    /*
+     * `inset-block-start: calc(38px / 2)` centres the glyph on a one-line control. A textarea is four rows
+     * tall, so the same rule would park the icon in the middle of the paragraph — beside line three, pointing
+     * at nothing. It belongs on the first line, where the text starts.
+     *
+     * A modifier CLASS rather than `:has(textarea)`: the markup already knows which control it wrapped, and an
+     * explicit name is what the next reader can grep for.
+     */
+    const wrapper = (() => {
+      const form = FORM();
+      const at = form.indexOf('id="taskDescription"');
+      return form.slice(form.lastIndexOf('class="diten-field', at), at);
+    })();
+
+    expect(wrapper, "the description's icon is not marked as top-aligned")
+      .toMatch(/diten-field-icon--top/);
+
+    const rule = /\.diten-field-icon--top\s*\{([^}]*)\}/.exec(CSS());
+    expect(rule, "there is no top-aligned variant").toBeTruthy();
+    expect(rule[1], "the variant still centres on a 38px control").not.toMatch(/calc\(38px/);
+    expect(rule[1], "the variant does not undo the centring transform").toMatch(/transform:\s*none/);
+  });
+
+  test("a select2 control makes room for the icon in the box select2 renders", () => {
+    /*
+     * select2 replaces the <select> with its own container, so padding the original element does nothing: the
+     * text the user sees lives in `.select2-selection__rendered`. Both shapes are covered — single for the
+     * eight single pickers, multiple for the watcher list.
+     */
+    const css = CSS();
+    const rule = /\.diten-field[^{]*select2-selection__rendered[^{]*\{([^}]*)\}/.exec(css);
+
+    expect(rule, "select2's own text box is never padded past the icon").toBeTruthy();
+    expect(rule[1]).toMatch(/padding-inline-start:\s*calc\(/);
+    expect(rule[0], "the multi-select (watchers) is not covered").toMatch(/multiple/);
+
+    /*
+     * MEASURED: select2.css carries this at (0,4,0) —
+     * `.select2-container.select2-container--default .select2-selection--single .select2-selection__rendered`
+     * — so a three-class rule loses outright. The single pickers sat at 16px while the multi-select, whose
+     * vendor rule is weaker, was already right at 40px. And the FOCUS/OPEN variants re-state the padding, so
+     * without them the text slides the moment the picker is clicked.
+     */
+    expect(rule[0], "the rule cannot out-specify select2.css")
+      .toMatch(/select2-container\.select2-container--default/);
+    const focusRule = /\.diten-field[^{]*select2-container--focus[^{]*\{([^}]*)\}/.exec(css);
+    expect(focusRule, "the focus/open state is not held").toBeTruthy();
+    expect(focusRule[0], "the open state is not held").toMatch(/select2-container--open/);
+    /*
+     * …and it keeps the vendor's BORDER COMPENSATION. The theme thickens the focus border to 2px and subtracts
+     * that width from the padding so the text stays put; an override that dropped the subtraction reintroduced
+     * the shift — measured as the text stepping 40px → 41px on open.
+     */
+    expect(focusRule[1], "the border compensation was dropped and the text shifts on focus")
+      .toMatch(/-\s*var\(--bs-select-border-width\)/);
+  });
+
+  test("RTL gets its own rule — select2's container carries its own dir", () => {
+    /*
+     * MEASURED: select2 stamps `dir="rtl"` on its container, so `padding-inline-start` resolves against THAT
+     * element rather than the page. Computed `padding-inline-start` read 39px while the effective right-side
+     * padding (the text side in RTL) stayed at select2's 35px — the select2 text sat 4px inside the plain
+     * inputs next to it. Only the TEXT side is overridden; the arrow side stays select2's business.
+     */
+    const rule = /\.diten-field[^{]*select2-container\[dir="rtl"\][^{]*\{([^}]*)\}/.exec(CSS());
+
+    expect(rule, "RTL falls back to the logical property and drifts").toBeTruthy();
+    expect(rule[1], "the text side is not corrected under RTL").toMatch(/padding-right:\s*calc\(/);
+    expect(rule[1], "the arrow side was overridden too").not.toMatch(/padding-left/);
+  });
+
+  test("select2's own arrow stays on the far side — the icon must not push it", () => {
+    // The icon is on the inline START; select2's arrow is on the inline END. Padding the wrong side would
+    // shove the arrow inward and leave a gap where the icon is.
+    const rule = /\.diten-field[^{]*select2-selection__rendered[^{]*\{([^}]*)\}/.exec(CSS());
+    expect(rule[1], "the arrow side was padded instead").not.toMatch(/padding-inline-end/);
+  });
+});
+
+// ── 4. the shortcut carries the SAME icons ──────────────────────────────────
+
+describe("the quick-create offcanvas uses the same glyphs", () => {
+  const QUICK = () => read("Views", "Tasks", "_QuickCreateOffcanvas.cshtml");
+
+  // The four fields the shortcut has, paired with the full form's control they mirror.
+  const SHARED = {
+    quickTitle: "taskTitle",
+    quickTarget: "taskAssignmentTarget",
+    quickAssignee: "taskAssignee",
+    quickPoolPosition: "taskPoolPosition",
+    quickPriority: "taskPriority",
+    quickDueAt: "taskDueAt"
+  };
+
+  test("every shared field carries the FULL FORM's glyph, derived not restated", () => {
+    /*
+     * The two surfaces share one draft. An icon set that drifts between them is exactly the class of defect
+     * these rounds keep correcting — the same value would wear a different mark on either side of one click.
+     */
+    const quick = QUICK();
+    Object.entries(SHARED).forEach(([quickId, taskId]) => {
+      const at = quick.indexOf(`id="${quickId}"`);
+      expect(at, `${quickId} is gone`).toBeGreaterThan(-1);
+      const openedAt = quick.lastIndexOf('class="diten-field', at);
+      expect(openedAt, `${quickId} has no icon wrapper`).toBeGreaterThan(-1);
+      const wrapper = quick.slice(openedAt, at);
+      expect(wrapper.includes("</div>"), `${quickId}'s wrapper closed before the control`).toBe(false);
+      expect(wrapper, `${quickId} does not carry ${ICON_MAP[taskId]}`)
+        .toMatch(new RegExp(`${ICON_MAP[taskId]}(?![a-z-])`));
+    });
+  });
+});
+
+// ── 5. the calendar icon is not decoration ──────────────────────────────────
 
 describe("clicking the calendar icon opens the calendar", () => {
   test("the page binds the icon to the picker", () => {

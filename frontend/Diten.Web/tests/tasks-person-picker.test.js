@@ -125,7 +125,10 @@ describe("MOD-0024 person picker", () => {
       const quick = read("Views", "Tasks", "_QuickCreateOffcanvas.cshtml");
       const detailed = read("Views", "Tasks", "_Form.cshtml");
 
-      expect(quick).toContain('<select class="form-select" id="quickAssignee">');
+      // Matched on the ELEMENT, not on an exact class string: the quick surface later gained `select2` on the
+      // same control (it now uses the full form's enhancer), and pinning the literal made this test fail for a
+      // change that is exactly what it wanted — a real picker rather than a text box.
+      expect(quick).toMatch(/<select class="[^"]*form-select[^"]*" id="quickAssignee"/);
       expect(detailed).toMatch(/<select class="[^"]*form-select[^"]*" id="taskAssignee"/);
       // The bare input demanded a GUID.
       expect(quick).not.toMatch(/<input[^>]*id="quickAssignee"/);

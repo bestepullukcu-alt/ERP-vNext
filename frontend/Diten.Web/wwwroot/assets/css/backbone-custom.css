@@ -4895,6 +4895,62 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
     cursor: pointer;
 }
 
+/* A TEXTAREA is not a 38px line, so the centring above would park the glyph beside line three, pointing at
+   nothing. Top-aligned instead, on the first line where the text starts. The block offset matches the theme's
+   own vertical padding so the icon and the first character share a baseline. A modifier class rather than
+   :has(textarea) — the markup already knows what it wrapped, and a name is what the next reader greps for. */
+.diten-field-icon--top {
+    inset-block-start: 0.543rem;
+    transform: none;
+}
+
+/* SELECT2 renders its own box, so padding the original <select> does nothing: the text the user reads lives in
+   `.select2-selection__rendered`. Only the inline START is padded — select2's arrow sits on the inline END, and
+   padding that side would shove the arrow inward and leave a hole where the icon is.
+
+   ⚠ THE SPECIFICITY IS DELIBERATE, and measured. select2.css carries
+   `.select2-container.select2-container--default .select2-selection--single .select2-selection__rendered`
+   at (0,4,0); a three-class rule here ties nothing and simply loses — the text sat at 16px instead of 40px
+   while the multi-select, whose vendor rule is weaker, was already correct. Five classes wins outright.
+
+   The FOCUS and OPEN variants are listed for the same reason the tag box's are: select2 re-states the padding
+   with `calc(.9375rem - border-width)` on both, so without them the text slid sideways the moment the picker
+   was clicked. */
+.diten-field .select2-container.select2-container--default .select2-selection--single .select2-selection__rendered,
+.diten-field .select2-container.select2-container--default .select2-selection--multiple .select2-selection__rendered {
+    padding-inline-start: calc(0.9375rem + 1rem + 0.5rem);
+}
+
+/* RTL, and it needs its OWN rule rather than trusting the logical property above.
+   select2 stamps `dir="rtl"` on its container, so `padding-inline-start` resolves against THAT element's
+   direction rather than the page's — measured: `padding-inline-start` computed 39px while the effective
+   `padding-right` (the text side in RTL) stayed at select2's own 35px, leaving the select2 text 4px inside the
+   plain inputs beside it. Only the TEXT side is set; the arrow side is left to select2, which moves the arrow
+   itself under RTL. */
+.diten-field .select2-container[dir="rtl"].select2-container--default .select2-selection--single .select2-selection__rendered,
+.diten-field .select2-container[dir="rtl"].select2-container--default .select2-selection--multiple .select2-selection__rendered {
+    padding-right: calc(0.9375rem + 1rem + 0.5rem);
+}
+
+.diten-field .select2-container[dir="rtl"].select2-container--default.select2-container--focus .select2-selection--single .select2-selection__rendered,
+.diten-field .select2-container[dir="rtl"].select2-container--default.select2-container--focus .select2-selection--multiple .select2-selection__rendered,
+.diten-field .select2-container[dir="rtl"].select2-container--default.select2-container--open .select2-selection--single .select2-selection__rendered,
+.diten-field .select2-container[dir="rtl"].select2-container--default.select2-container--open .select2-selection--multiple .select2-selection__rendered {
+    padding-right: calc(0.9375rem + 1rem + 0.5rem - var(--bs-select-border-width));
+}
+
+/* FOCUS / OPEN — the same inset MINUS the border growth, which is what the vendor rule it replaces was doing.
+   The theme thickens the focus border to 2px and subtracts `--bs-select-border-width` from the padding so the
+   text does not move; overriding the padding without keeping that compensation put the shift back — measured
+   as the text stepping 40px → 41px the moment the picker opened. Keeping the border change is deliberate: it
+   is the focus indicator. */
+.diten-field .select2-container.select2-container--default.select2-container--focus .select2-selection--single .select2-selection__rendered,
+.diten-field .select2-container.select2-container--default.select2-container--focus .select2-selection--multiple .select2-selection__rendered,
+.diten-field .select2-container.select2-container--default.select2-container--open .select2-selection--single .select2-selection__rendered,
+.diten-field .select2-container.select2-container--default.select2-container--open .select2-selection--multiple .select2-selection__rendered {
+    padding-inline-start: calc(0.9375rem + 1rem + 0.5rem - var(--bs-select-border-width));
+}
+
 /* Room for the icon, measured from the SAME theme inset the icon sits at:
    inset + glyph + gap. Both control kinds, because the tag box is a <tags>
    element and not a .form-control.

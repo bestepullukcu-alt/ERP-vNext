@@ -24,6 +24,7 @@
   <data name="FieldPoolPosition" xml:space="preserve"><value>المنصب</value></data>
   <data name="PoolPositionHint" xml:space="preserve"><value>تظهر الوحدة بجوار كل منصب حتى لا يُوجَّه العمل إلى الموقع الخطأ.</value></data>
   <data name="FieldDueAt" xml:space="preserve"><value>تاريخ الاستحقاق</value></data>
+  <data name="FieldDueAtPlaceholder" xml:space="preserve"><value>YYYY-MM-DD</value></data>
   <data name="FieldStartAt" xml:space="preserve"><value>تاريخ البدء</value></data>
   <data name="FieldEstimateHours" xml:space="preserve"><value>التقدير (ساعات)</value></data>
   <data name="FieldEstimateHoursPlaceholder" xml:space="preserve"><value>مثال: 8</value></data>

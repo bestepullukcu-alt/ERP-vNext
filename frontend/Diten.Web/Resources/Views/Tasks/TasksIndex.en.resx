@@ -24,6 +24,7 @@
   <data name="FieldPoolPosition" xml:space="preserve"><value>Position</value></data>
   <data name="PoolPositionHint" xml:space="preserve"><value>The unit is shown next to each position so work is never pooled to the wrong facility.</value></data>
   <data name="FieldDueAt" xml:space="preserve"><value>Due date</value></data>
+  <data name="FieldDueAtPlaceholder" xml:space="preserve"><value>YYYY-MM-DD</value></data>
   <data name="FieldStartAt" xml:space="preserve"><value>Start date</value></data>
   <data name="FieldEstimateHours" xml:space="preserve"><value>Estimate (hours)</value></data>
   <data name="FieldEstimateHoursPlaceholder" xml:space="preserve"><value>e.g. 8</value></data>

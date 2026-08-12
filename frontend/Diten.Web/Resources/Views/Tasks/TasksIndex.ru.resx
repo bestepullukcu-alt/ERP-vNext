@@ -24,6 +24,7 @@
   <data name="FieldPoolPosition" xml:space="preserve"><value>Должность</value></data>
   <data name="PoolPositionHint" xml:space="preserve"><value>Рядом с каждой должностью показано подразделение, чтобы работа не попала не на тот объект.</value></data>
   <data name="FieldDueAt" xml:space="preserve"><value>Срок</value></data>
+  <data name="FieldDueAtPlaceholder" xml:space="preserve"><value>ГГГГ-ММ-ДД</value></data>
   <data name="FieldStartAt" xml:space="preserve"><value>Дата начала</value></data>
   <data name="FieldEstimateHours" xml:space="preserve"><value>Оценка (часы)</value></data>
   <data name="FieldEstimateHoursPlaceholder" xml:space="preserve"><value>напр. 8</value></data>
