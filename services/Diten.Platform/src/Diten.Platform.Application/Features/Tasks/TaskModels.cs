@@ -324,7 +324,31 @@ public sealed record CreateTaskItemRequest(
     /// </summary>
     IReadOnlyList<string>? NotifyOnEvents = null,
     /// <summary>BL-065 — days before the due date to send the reminder. Null: no reminder.</summary>
-    int? ReminderLeadDays = null);
+    int? ReminderLeadDays = null,
+    /// <summary>
+    /// Checklist items typed on the create form, in the order the author put them.
+    ///
+    /// <para><b>Why they travel WITH the task instead of following it.</b> Until now the only way to give a new
+    /// task a checklist was a second call, and a second call has a failure mode with no good answer: the task is
+    /// written, the checklist is not, and the user is looking at a success message. One request removes that
+    /// question rather than answering it.</para>
+    ///
+    /// <para>Composes with <see cref="ChecklistTemplateId"/> rather than competing: a template's items land
+    /// first and these are appended after them, which is the order the author saw on screen.</para>
+    /// </summary>
+    IReadOnlyList<CreateChecklistItemRequest>? ChecklistItems = null);
+
+/// <summary>
+/// One checklist item as the create form describes it. No <c>Code</c> and no <c>SortOrder</c>: the code is the
+/// server's to mint (it is an identifier, not content), and the order is the ARRAY's — a client that sends a
+/// separate sort field can contradict its own list, and then two readers disagree about what "first" means.
+/// </summary>
+public sealed record CreateChecklistItemRequest(
+    /// <summary>What the author typed. TEXT, never a resource key — see <see cref="AddChecklistItemRequest"/>.</summary>
+    string Text,
+    ChecklistItemRequirement Requirement = ChecklistItemRequirement.Optional,
+    /// <summary>Needs supporting evidence before it can be ticked. The evidence itself is MOD-0031's.</summary>
+    bool EvidenceRequired = false);
 
 public sealed record UpdateTaskItemRequest(
     string Title,

@@ -1445,6 +1445,33 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Пунктов чек-листа пока нет.</value>
   </data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve">
+    <value>Введите пункт и нажмите Enter</value>
+  </data>
+  <data name="ChecklistLevelOptional" xml:space="preserve">
+    <value>Необязательно</value>
+  </data>
+  <data name="ChecklistLevelRequired" xml:space="preserve">
+    <value>Обязательно</value>
+  </data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve">
+    <value>Блокирующий</value>
+  </data>
+  <data name="ChecklistRequiredOpen" xml:space="preserve">
+    <value>Открытых обязательных пунктов: {0}</value>
+  </data>
+  <data name="ConfirmRequiredOpen" xml:space="preserve">
+    <value>Не отмечено обязательных пунктов: {0}. Задача всё равно будет закрыта.</value>
+  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve">
+    <value>Требуется подтверждающий документ. Привязка документа заработает после подключения модуля документов.</value>
+  </data>
+  <data name="ChecklistLevelHint" xml:space="preserve">
+    <value>Изменить уровень: Необязательно → Обязательно → Блокирующий</value>
+  </data>
+  <data name="ToastChecklistItemAdded" xml:space="preserve">
+    <value>Пункт добавлен</value>
+  </data>
   <data name="GuidancePendingAcceptance" xml:space="preserve">
     <value>Эта задача ждёт вашего принятия. Возьмите её или переназначьте, если она не ваша.</value>
   </data>
@@ -1627,6 +1654,66 @@
   </data>
   <data name="ActivityEmpty" xml:space="preserve">
     <value>Активности пока нет.</value>
+  </data>
+  <data name="AuditEventCreated" xml:space="preserve">
+    <value>Задача создана</value>
+  </data>
+  <data name="AuditEventAccepted" xml:space="preserve">
+    <value>Задача принята</value>
+  </data>
+  <data name="AuditEventPlanned" xml:space="preserve">
+    <value>Задача запланирована</value>
+  </data>
+  <data name="AuditEventStarted" xml:space="preserve">
+    <value>Работа начата</value>
+  </data>
+  <data name="AuditEventResumed" xml:space="preserve">
+    <value>Работа возобновлена</value>
+  </data>
+  <data name="AuditEventWaiting" xml:space="preserve">
+    <value>Поставлена на ожидание</value>
+  </data>
+  <data name="AuditEventSubmittedForReview" xml:space="preserve">
+    <value>Отправлена на проверку</value>
+  </data>
+  <data name="AuditEventReviewCancelled" xml:space="preserve">
+    <value>Требование проверки снято</value>
+  </data>
+  <data name="AuditEventCompleted" xml:space="preserve">
+    <value>Завершена</value>
+  </data>
+  <data name="AuditEventCancelled" xml:space="preserve">
+    <value>Отменена</value>
+  </data>
+  <data name="AuditEventClaimed" xml:space="preserve">
+    <value>Взята из пула</value>
+  </data>
+  <data name="AuditEventReleased" xml:space="preserve">
+    <value>Возвращена в пул</value>
+  </data>
+  <data name="AuditEventReassigned" xml:space="preserve">
+    <value>Переназначена</value>
+  </data>
+  <data name="AuditEventReturned" xml:space="preserve">
+    <value>Возвращена заказчику</value>
+  </data>
+  <data name="AuditEventUnknown" xml:space="preserve">
+    <value>Задача обновлена</value>
+  </data>
+  <data name="ActivityFilterLabel" xml:space="preserve">
+    <value>Фильтр активности</value>
+  </data>
+  <data name="ActivityFilterAll" xml:space="preserve">
+    <value>Все</value>
+  </data>
+  <data name="ActivityFilterCommentsOnly" xml:space="preserve">
+    <value>Только комментарии</value>
+  </data>
+  <data name="ActivityNoComments" xml:space="preserve">
+    <value>В этой задаче пока нет комментариев.</value>
+  </data>
+  <data name="ActivityHistoryStartsHere" xml:space="preserve">
+    <value>Шаги, которые задача прошла до начала ведения журнала, не записаны.</value>
   </data>
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>Подзадач пока нет.</value>

@@ -46,6 +46,28 @@ public interface ITaskItemRepository
     Task DeleteAsync(Guid id, CancellationToken ct = default);
 }
 
+/// <summary>
+/// WC-1 — the append-only lifecycle event log. Written by <see cref="ITaskItemRepository"/> as it commits, never
+/// by a handler: see <see cref="Domain.Enums.Tasks.TaskTransitionKind"/> for why the decision that a transition
+/// happened belongs to the write and not to the writer.
+///
+/// <para>There is no update and no delete, and that is the whole interface — an event log with a mutator is a
+/// story someone can revise.</para>
+/// </summary>
+public interface ITaskTransitionRepository
+{
+    Task<TaskTransition> CreateAsync(TaskTransition transition, CancellationToken ct = default);
+
+    /// <summary>One task's history, NEWEST FIRST and stably ordered — the same order and the same tie-break
+    /// <see cref="ITaskCommentRepository"/> uses, because the two are merged into one feed.</summary>
+    Task<IReadOnlyList<TaskTransition>> ListByTaskIdAsync(Guid taskItemId, CancellationToken ct = default);
+
+    /// <summary>A whole page of tasks' history in ONE read — the projection renders many tasks at once.</summary>
+    Task<IReadOnlyList<TaskTransition>> ListByTaskIdsAsync(
+        IReadOnlyCollection<Guid> taskItemIds,
+        CancellationToken ct = default);
+}
+
 public interface ITaskAssignmentRepository
 {
     Task<TaskAssignment> CreateAsync(TaskAssignment assignment, CancellationToken ct = default);

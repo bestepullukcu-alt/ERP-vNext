@@ -124,7 +124,15 @@ describe("the detail page shows a declared capability even when its data is empt
   });
 
   it("explains an empty activity list instead of hiding the section", () => {
-    expect(app().textContent).toContain("ActivityEmpty");
+    /*
+     * The card still speaks — but WC-1 changed WHICH sentence is honest here. This item is engine-backed and
+     * carries no `created` event, which means the log did not cover its beginning; "nothing has been recorded
+     * yet" would be true about the record and false about the task. The gap line says the accurate thing, and
+     * the two never appear together (they would contradict each other).
+     */
+    expect(app().querySelector(".wcn-audit-gap")).not.toBeNull();
+    expect(app().textContent).toContain("ActivityHistoryStartsHere");
+    expect(app().textContent).not.toContain("ActivityEmpty");
   });
 });
 
@@ -1536,9 +1544,11 @@ describe("the comment composer writes to the engine", () => {
       activity: [{ id: "C1", kind: "comment", text: "dün", actor: "Deniz Koç", at: "2026-07-24T09:10:00+00:00" }]
     }));
 
+    // WC-1 split the comment row: the author now has its own line above the message, so the meta line carries
+    // the time alone. Both facts are still on screen — this asserts where each one lives now.
+    expect(app().querySelector(".wcn-audit-author").textContent).toContain("Deniz Koç");
     const meta = app().querySelector(".wcn-audit-meta");
     expect(meta).not.toBeNull();
-    expect(meta.textContent).toContain("Deniz Koç");
     // TimeToday / TimeYesterday / TimeDaysAgo — whichever, it must be DERIVED and not blank.
     expect(meta.textContent).toMatch(/Time(Today|Yesterday|DaysAgo)/);
   });
@@ -1548,7 +1558,7 @@ describe("the comment composer writes to the engine", () => {
       activity: [{ id: "C1", kind: "comment", text: "anonim", at: "2026-07-24T09:10:00+00:00" }]
     }));
 
-    expect(app().querySelector(".wcn-audit-meta").textContent).toContain("CommentAuthorUnknown");
+    expect(app().querySelector(".wcn-audit-author").textContent).toContain("CommentAuthorUnknown");
   });
 });
 

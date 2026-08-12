@@ -79,6 +79,16 @@ public sealed class AcceptTaskItemHandler : IRequestHandler<AcceptTaskItemComman
 
         task.UpdatedBy = _currentUser.ActorName;
 
+        /*
+         * WC-1 — what this write IS. Accepting a PLANNED task moves neither the lifecycle nor the holder, so
+         * without this the repository's diff would see only the acceptance mark and could not name the act.
+         */
+        task.Declare(
+            TaskTransitionKind.Accepted,
+            _currentUser.UserId,
+            command.Request.Note,
+            command.Request.ReasonCode);
+
         if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))
         {
             return Response<NoContent>.Fail(
@@ -153,6 +163,11 @@ public sealed class ReleaseTaskItemHandler : IRequestHandler<ReleaseTaskItemComm
         task.ReopenAcceptanceGate();
         task.Lifecycle = TaskLifecycle.Open;
         task.UpdatedBy = _currentUser.ActorName;
+        task.Declare(
+            TaskTransitionKind.Released,
+            _currentUser.UserId,
+            command.Request.Note,
+            command.Request.ReasonCode);
 
         if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))
         {
@@ -410,8 +425,14 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
             }
         }
 
+        var previousLifecycle = task.Lifecycle;
         task.Lifecycle = command.Target;
         task.UpdatedBy = _currentUser.ActorName;
+        task.Declare(
+            KindFor(previousLifecycle, command.Target),
+            _currentUser.UserId,
+            reason: null,
+            reasonCode: command.Request.ReasonCode);
 
         switch (command.Target)
         {
@@ -459,6 +480,32 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
     }
 
     /// <summary>
+    /// WC-1 — which ACT this generic transition is, in the event log's vocabulary.
+    ///
+    /// <para>The target alone does not answer it: reaching <c>InProgress</c> from <c>Waiting</c> is resuming work
+    /// somebody put down, and reaching it from <c>Planned</c> is starting it. Two different sentences for whoever
+    /// reads the history later, so the previous state decides.</para>
+    ///
+    /// <para><c>Open</c> falls to <see cref="TaskTransitionKind.Unknown"/> because no edge in the lifecycle matrix
+    /// targets it through this command — release, return and reassign rewind to Open through their own handlers,
+    /// each declaring its own kind. If an edge to Open is ever added here, the coverage test fails on the Unknown
+    /// rather than the history quietly filling with unnamed entries. That is the intended failure.</para>
+    /// </summary>
+    private static TaskTransitionKind KindFor(TaskLifecycle from, TaskLifecycle to)
+        => to switch
+        {
+            TaskLifecycle.Done => TaskTransitionKind.Completed,
+            TaskLifecycle.Cancelled => TaskTransitionKind.Cancelled,
+            TaskLifecycle.InProgress => from == TaskLifecycle.Waiting
+                ? TaskTransitionKind.Resumed
+                : TaskTransitionKind.Started,
+            TaskLifecycle.Planned => TaskTransitionKind.Planned,
+            TaskLifecycle.Waiting => TaskTransitionKind.Waiting,
+            TaskLifecycle.PendingReview => TaskTransitionKind.SubmittedForReview,
+            _ => TaskTransitionKind.Unknown
+        };
+
+    /// <summary>
     /// Cancelling a parent cancels its still-open subtasks.
     ///
     /// <para>A subtask exists to serve its parent, so leaving it open would strand work in someone's İşlerim with
@@ -482,6 +529,13 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
             child.CancelledAt = DateTimeOffset.UtcNow;
             child.ClosureReasonCode = command.Request.ReasonCode;
             child.UpdatedBy = _currentUser.ActorName;
+            // The child's own history records the cancellation as its own event, actored by whoever called off the
+            // parent. Its holder learns from the child's feed why work they were carrying stopped.
+            child.Declare(
+                TaskTransitionKind.Cancelled,
+                _currentUser.UserId,
+                reason: null,
+                reasonCode: command.Request.ReasonCode);
 
             await _tasks.UpdateAsync(child, child.Version, ct);
         }
@@ -644,6 +698,7 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
         task.ReviewWorkflowInstanceId = instanceId;
         task.Lifecycle = TaskLifecycle.PendingReview;
         task.UpdatedBy = _currentUser.ActorName;
+        task.Declare(TaskTransitionKind.SubmittedForReview, _currentUser.UserId);
 
         if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))
         {
@@ -727,6 +782,13 @@ public sealed class PlanTaskItemHandler : IRequestHandler<PlanTaskItemCommand, R
         task.Lifecycle = TaskLifecycle.Planned;
         task.PlannedDate = command.Request.PlannedDate;
         task.UpdatedBy = _currentUser.ActorName;
+        /*
+         * Declared even for a RE-plan, where Planned → Planned moves nothing the diff can see. Moving a date IS a
+         * transition — "this slipped twice" is a fact the history has to be able to tell — so the intent is what
+         * makes the entry, and the repository writes it because something was declared rather than because
+         * something differed.
+         */
+        task.Declare(TaskTransitionKind.Planned, _currentUser.UserId);
 
         if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))
         {
@@ -803,6 +865,9 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
         task.Lifecycle = TaskLifecycle.Waiting;
         task.WaitingReason = reason;
         task.UpdatedBy = _currentUser.ActorName;
+        // The reason travels into the history because WaitingReason is CLEARED when the task resumes: without a
+        // copy here, "what was this blocked on in March" would have no answer anywhere.
+        task.Declare(TaskTransitionKind.Waiting, _currentUser.UserId, reason);
 
         if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))
         {
@@ -891,6 +956,15 @@ public sealed class ReturnTaskItemHandler : IRequestHandler<ReturnTaskItemComman
         task.ReopenAcceptanceGate();
         task.Lifecycle = TaskLifecycle.Open;
         task.UpdatedBy = _currentUser.ActorName;
+        /*
+         * Returned, NOT reassigned — and this is precisely why the kind is declared instead of inferred. A return
+         * and a reassignment back to the requester leave byte-identical documents behind: same new holder, same
+         * reopened gate, same rewound lifecycle. Only the writer knows which sentence it meant.
+         *
+         * (The TaskAssignment row below still says Reassigned, because that enum is persisted and has no Returned
+         * value; the distinction lives here, where it can be added without rewriting existing history.)
+         */
+        task.Declare(TaskTransitionKind.Returned, _currentUser.UserId, reason);
 
         if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))
         {
@@ -1030,6 +1104,7 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
         task.ReopenAcceptanceGate();
         task.Lifecycle = TaskLifecycle.Open;
         task.UpdatedBy = _currentUser.ActorName;
+        task.Declare(TaskTransitionKind.Reassigned, _currentUser.UserId, reason);
 
         if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))
         {

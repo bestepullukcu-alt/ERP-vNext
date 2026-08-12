@@ -247,6 +247,10 @@ public static class DependencyInjection
         services.AddScoped<ISlaEscalationRuleRepository, SlaEscalationRuleRepository>();
 
         // MOD-0024 Task Engine Repositories (Phase 1 uses the first five; the rest exist so Phases 2–5 are additive)
+        // The transition log is registered BEFORE the task repository that writes to it — not that the order
+        // matters to the container, but the dependency direction is worth reading in one glance: every task write
+        // goes through TaskItemRepository, and TaskItemRepository is what records the history (WC-1).
+        services.AddScoped<ITaskTransitionRepository, TaskTransitionRepository>();
         services.AddScoped<ITaskItemRepository, TaskItemRepository>();
         services.AddScoped<ITaskAssignmentRepository, TaskAssignmentRepository>();
         services.AddScoped<ITaskDependencyRepository, TaskDependencyRepository>();

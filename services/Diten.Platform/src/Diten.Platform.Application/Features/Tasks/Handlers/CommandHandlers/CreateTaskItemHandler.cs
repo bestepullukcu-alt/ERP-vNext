@@ -257,6 +257,11 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
             CreatedBy = _currentUser.ActorName
         };
 
+        // WC-1 — the entry that OPENS this task's history, and the marker that tells a later reader the log was
+        // running for it. A task whose feed has no `created` predates the log entirely, and the screen says so
+        // rather than presenting an incomplete story as a complete one.
+        task.Declare(TaskTransitionKind.Created, actorId);
+
         await _tasks.CreateAsync(task, ct);
 
         /*
@@ -300,25 +305,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
             }
         }
 
-        // A checklist template becomes a live run on the new task (pack §12 E1/E5). After creation so the run can
-        // carry the task's id; a missing or inactive template is logged and skipped rather than failing the
-        // creation — losing the task because a template vanished is the worse outcome.
-        if (request.ChecklistTemplateId is { } checklistTemplateId && checklistTemplateId != Guid.Empty)
-        {
-            var checklistTemplate = await _checklistTemplates.GetByIdAsync(checklistTemplateId, ct);
-            if (checklistTemplate is not null && checklistTemplate.IsActive)
-            {
-                await _checklistRuns.CreateAsync(
-                    _checklistService.Instantiate(_tenantContext.TenantId, task.Id, checklistTemplate), ct);
-            }
-            else
-            {
-                _logger.LogWarning(
-                    "Checklist template {TemplateId} requested for task {TaskId} is missing or inactive; "
-                    + "the task was created WITHOUT a checklist.",
-                    checklistTemplateId, task.Id);
-            }
-        }
+        await CreateChecklistAsync(task, request, ct);
 
         await _assignments.CreateAsync(new TaskAssignment
         {
@@ -364,6 +351,113 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
     /// task's opt-out, skipping the actor's own action, resolving real addresses, never failing the write) live
     /// in one place now because four events need them.</para>
     /// </summary>
+    /// <summary>
+    /// The new task's checklist: a template's items, then the ones the author typed on the form, in that order.
+    ///
+    /// <para><b>One run, built once.</b> Template and ad-hoc items are not two features here — they are two
+    /// SOURCES for one list, and the author saw them as one list on screen. Instantiating the template and then
+    /// appending through the add path would have written the run twice and made the second write's
+    /// expected-version check meaningless on a document nobody else can have touched yet.</para>
+    ///
+    /// <para><b>After the task, and never at its expense.</b> The run references the task's id, so it cannot be
+    /// written first, and Mongo gives no transaction across the two. A run that fails to write therefore leaves
+    /// the TASK standing: what the user typed into the form is their work, and destroying it to keep a checklist
+    /// intact is the worse trade. That was already the template branch's rule; the reason it is now safe for
+    /// typed items too is that the detail page grew an add row in this same round — the recovery path exists,
+    /// which is exactly what made it acceptable to keep the task.</para>
+    ///
+    /// <para>Logged at ERROR rather than warning when items are lost, because unlike a vanished template this is
+    /// content a person entered seconds ago.</para>
+    /// </summary>
+    private async Task CreateChecklistAsync(TaskItem task, CreateTaskItemRequest request, CancellationToken ct)
+    {
+        var run = await BuildTemplateRunAsync(task, request, ct);
+
+        // Blank lines are DROPPED rather than refused. A trailing empty row is a slip of the form, not a request
+        // to fail a create that is otherwise valid, and the author cannot see a difference between the two.
+        var typed = (request.ChecklistItems ?? [])
+            .Where(item => !string.IsNullOrWhiteSpace(item.Text))
+            .ToList();
+
+        if (typed.Count == 0)
+        {
+            if (run is not null)
+            {
+                await _checklistRuns.CreateAsync(run, ct);
+            }
+
+            return;
+        }
+
+        run ??= new ChecklistRun
+        {
+            TenantId = _tenantContext.TenantId,
+            TaskItemId = task.Id,
+            CreatedBy = _currentUser.ActorName
+        };
+
+        foreach (var item in typed)
+        {
+            run.Items.Add(new ChecklistRunItem
+            {
+                // The server mints the identifier; the text is content and never an id. Same shape
+                // AddChecklistItemHandler uses, so an item added on day one and one added later are alike.
+                Code = $"adhoc-{Guid.NewGuid():N}",
+                LabelResourceKey = null,
+                LabelText = item.Text.Trim(),
+                Requirement = item.Requirement,
+                EvidenceRequired = item.EvidenceRequired,
+                // Position in the list, continuing past whatever the template contributed.
+                SortOrder = run.Items.Count,
+                Completed = false
+            });
+        }
+
+        run.Status = _checklistService.ResolveStatus(run);
+
+        try
+        {
+            await _checklistRuns.CreateAsync(run, ct);
+        }
+        catch (Exception error)
+        {
+            _logger.LogError(
+                error,
+                "Task {TaskId} was created but its {ItemCount}-item checklist could not be stored. The task is "
+                + "KEPT; the items must be re-entered from the task's detail page.",
+                task.Id, typed.Count);
+        }
+    }
+
+    /// <summary>
+    /// The template half, or null when none was asked for or the one asked for is gone.
+    ///
+    /// <para>A missing or retired template is logged and skipped rather than failing the creation — losing the
+    /// task because a template vanished is the worse outcome, and the same judgement the caller above makes.</para>
+    /// </summary>
+    private async Task<ChecklistRun?> BuildTemplateRunAsync(
+        TaskItem task,
+        CreateTaskItemRequest request,
+        CancellationToken ct)
+    {
+        if (request.ChecklistTemplateId is not { } templateId || templateId == Guid.Empty)
+        {
+            return null;
+        }
+
+        var template = await _checklistTemplates.GetByIdAsync(templateId, ct);
+        if (template is not null && template.IsActive)
+        {
+            return _checklistService.Instantiate(_tenantContext.TenantId, task.Id, template);
+        }
+
+        _logger.LogWarning(
+            "Checklist template {TemplateId} requested for task {TaskId} is missing or inactive; "
+            + "the task was created WITHOUT its template items.",
+            templateId, task.Id);
+        return null;
+    }
+
     private async Task NotifyAssignedAsync(TaskItem task, CancellationToken ct)
     {
         // Self-assigned work needs no "you were assigned" email — but that is the SERVICE's actor rule now, so

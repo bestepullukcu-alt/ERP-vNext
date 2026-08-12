@@ -305,12 +305,25 @@ public sealed class TaskChecklistSubtaskTests
     // ── Capability ⇔ container, both directions ───────────────────────────────
 
     [Fact]
-    public async Task A_task_with_no_checklist_declares_neither_the_capability_nor_the_container()
+    public async Task A_task_with_no_checklist_STILL_declares_the_container_so_a_first_item_can_be_added()
     {
+        /*
+         * This assertion is the reverse of what it said until the create/add round, and the reversal is the
+         * point. While the only way to get a checklist was to name a template at creation, a task with no run
+         * could never grow one, so declaring an empty container would have been an offer the product could not
+         * keep. The shell now has an add row on both the create form and the detail page — and under the old
+         * rule that row was unreachable exactly where it was needed: a task with no run declared no capability,
+         * the card was never drawn, and the only place to add a first item was a task that already had one.
+         *
+         * `subtasks` has always worked this way for the same reason. Version 0 says "no run exists yet", which
+         * is the branch AddChecklistItemHandler already takes when it finds none.
+         */
         var item = await ProjectOne(InProgressTask(), new FakeChecklistRunRepository(), new FakeTaskApprovalService());
 
-        Assert.DoesNotContain("checklist", item.WorkItemCapabilities);
-        Assert.Null(item.Checklist);
+        Assert.Contains("checklist", item.WorkItemCapabilities);
+        Assert.NotNull(item.Checklist);
+        Assert.Empty(item.Checklist!.Items);
+        Assert.Equal(0, item.Checklist.Version);
     }
 
     [Fact]
@@ -445,7 +458,7 @@ public sealed class TaskChecklistSubtaskTests
         FakeTaskApprovalService? approvals = null)
         => new(tasks, new FakePositionAssignmentRepository(), new TaskLifecycleService(),
             new TaskAssignmentResolver(), new FakeUserDisplayNameResolver(), runs,
-            approvals ?? new FakeTaskApprovalService(), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
+            approvals ?? new FakeTaskApprovalService(), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
 
     private static Task<Application.Common.Response<Application.Common.NoContent>> Transition(
         FakeTaskItemRepository tasks,

@@ -1445,6 +1445,33 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Aucun élément de liste de contrôle.</value>
   </data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve">
+    <value>Saisissez un élément et appuyez sur Entrée</value>
+  </data>
+  <data name="ChecklistLevelOptional" xml:space="preserve">
+    <value>Facultatif</value>
+  </data>
+  <data name="ChecklistLevelRequired" xml:space="preserve">
+    <value>Obligatoire</value>
+  </data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve">
+    <value>Bloquant</value>
+  </data>
+  <data name="ChecklistRequiredOpen" xml:space="preserve">
+    <value>{0} élément(s) obligatoire(s) encore ouvert(s)</value>
+  </data>
+  <data name="ConfirmRequiredOpen" xml:space="preserve">
+    <value>{0} élément(s) obligatoire(s) ne sont pas cochés. La tâche sera clôturée quand même.</value>
+  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve">
+    <value>Une preuve est requise. Le lien vers un document sera actif une fois le module documentaire raccordé.</value>
+  </data>
+  <data name="ChecklistLevelHint" xml:space="preserve">
+    <value>Changer le niveau : Facultatif → Obligatoire → Bloquant</value>
+  </data>
+  <data name="ToastChecklistItemAdded" xml:space="preserve">
+    <value>Élément ajouté</value>
+  </data>
   <data name="GuidancePendingAcceptance" xml:space="preserve">
     <value>Cette tâche attend que vous l'acceptiez. Prenez-la en charge, ou réattribuez-la si elle n'est pas pour vous.</value>
   </data>
@@ -1627,6 +1654,66 @@
   </data>
   <data name="ActivityEmpty" xml:space="preserve">
     <value>Aucune activité enregistrée pour l'instant.</value>
+  </data>
+  <data name="AuditEventCreated" xml:space="preserve">
+    <value>Tâche créée</value>
+  </data>
+  <data name="AuditEventAccepted" xml:space="preserve">
+    <value>Tâche acceptée</value>
+  </data>
+  <data name="AuditEventPlanned" xml:space="preserve">
+    <value>Tâche planifiée</value>
+  </data>
+  <data name="AuditEventStarted" xml:space="preserve">
+    <value>Travail commencé</value>
+  </data>
+  <data name="AuditEventResumed" xml:space="preserve">
+    <value>Travail repris</value>
+  </data>
+  <data name="AuditEventWaiting" xml:space="preserve">
+    <value>Mise en attente</value>
+  </data>
+  <data name="AuditEventSubmittedForReview" xml:space="preserve">
+    <value>Soumise pour revue</value>
+  </data>
+  <data name="AuditEventReviewCancelled" xml:space="preserve">
+    <value>Exigence de revue retirée</value>
+  </data>
+  <data name="AuditEventCompleted" xml:space="preserve">
+    <value>Terminée</value>
+  </data>
+  <data name="AuditEventCancelled" xml:space="preserve">
+    <value>Annulée</value>
+  </data>
+  <data name="AuditEventClaimed" xml:space="preserve">
+    <value>Prise dans le vivier</value>
+  </data>
+  <data name="AuditEventReleased" xml:space="preserve">
+    <value>Remise dans le vivier</value>
+  </data>
+  <data name="AuditEventReassigned" xml:space="preserve">
+    <value>Réattribuée</value>
+  </data>
+  <data name="AuditEventReturned" xml:space="preserve">
+    <value>Renvoyée au demandeur</value>
+  </data>
+  <data name="AuditEventUnknown" xml:space="preserve">
+    <value>Tâche mise à jour</value>
+  </data>
+  <data name="ActivityFilterLabel" xml:space="preserve">
+    <value>Filtre d'activité</value>
+  </data>
+  <data name="ActivityFilterAll" xml:space="preserve">
+    <value>Tout</value>
+  </data>
+  <data name="ActivityFilterCommentsOnly" xml:space="preserve">
+    <value>Commentaires seulement</value>
+  </data>
+  <data name="ActivityNoComments" xml:space="preserve">
+    <value>Aucun commentaire sur cette tâche pour l'instant.</value>
+  </data>
+  <data name="ActivityHistoryStartsHere" xml:space="preserve">
+    <value>Les étapes suivies par cette tâche avant le début de l'enregistrement ne sont pas consignées.</value>
   </data>
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>Aucune sous-tâche.</value>

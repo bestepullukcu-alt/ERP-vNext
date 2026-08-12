@@ -130,6 +130,20 @@
   <data name="CardApprovalTitle" xml:space="preserve"><value>审批负责人</value></data>
   <data name="CardApprovalDescription" xml:space="preserve"><value>请选择在任务开始前进行审批的负责人。任务创建后将向其发送审批请求。</value></data>
   <data name="CardWatchersTitle" xml:space="preserve"><value>关注者</value></data>
+  <data name="CardChecklistTitle" xml:space="preserve"><value>检查清单</value></data>
+  <data name="CardChecklistDescription" xml:space="preserve"><value>本任务的步骤。条目在任务创建后勾选；存在阻断条目时任务无法关闭。</value></data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>输入条目后按 Enter</value></data>
+  <data name="ChecklistAddButton" xml:space="preserve"><value>添加</value></data>
+  <data name="ChecklistAddHint" xml:space="preserve"><value>点击标签可更改级别。目前还没有模板列表。</value></data>
+  <data name="ChecklistLevelOptional" xml:space="preserve"><value>可选</value></data>
+  <data name="ChecklistLevelRequired" xml:space="preserve"><value>必填</value></data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve"><value>阻断</value></data>
+  <data name="ChecklistLevelHint" xml:space="preserve"><value>更改级别：可选 → 必填 → 阻断</value></data>
+  <data name="ChecklistEvidenceToggle" xml:space="preserve"><value>需要证据</value></data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>需要证明文件。文档模块接入后即可关联文档。</value></data>
+  <data name="ChecklistRemove" xml:space="preserve"><value>移除条目</value></data>
+  <data name="ChecklistMoveUp" xml:space="preserve"><value>上移</value></data>
+  <data name="ChecklistMoveDown" xml:space="preserve"><value>下移</value></data>
   <data name="CardEmailTitle" xml:space="preserve"><value>邮件通知</value></data>
   <data name="CardEmailDescription" xml:space="preserve"><value>开启后，任务在指派、更新和完成时会向相关人员发送邮件。</value></data>
   <data name="CardDelegationTitle" xml:space="preserve"><value>转派设置</value></data>

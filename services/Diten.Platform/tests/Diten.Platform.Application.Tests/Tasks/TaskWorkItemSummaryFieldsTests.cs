@@ -119,7 +119,7 @@ public sealed class TaskWorkItemSummaryFieldsTests
             new FakeChecklistRunRepository(),
             new FakeTaskApprovalService(),
             new FakeTaskDependencyRepository(),
-            new FakeTaskCommentRepository(),
+            new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(),
             new FakePositionRepository(),
             new FakeOrganizationUnitRepository(),
             SlaForTests.Real(),

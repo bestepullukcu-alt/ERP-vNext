@@ -46,7 +46,10 @@
             .filter((box) => box.checked)
             .map((box) => box.value),
         reminderLeadDays: el('taskReminderLeadDays')?.value,
-        delegationAllowed: el('taskDelegationAllowed')?.checked
+        delegationAllowed: el('taskDelegationAllowed')?.checked,
+        // Read back from the LIST, whose order is the order that travels — see readChecklistItems for why the
+        // DOM is the single source of truth here rather than a parallel array.
+        checklistItems: global.TaskForm.readChecklistItems(el('taskChecklistItems'))
     });
 
     const writeForm = (draft) => {
@@ -76,6 +79,219 @@
         global.TaskForm.applyNotificationPreferences(
             document, draft.notifyOnEvents ?? null, draft.reminderLeadDays ?? null);
         setChecked('taskDelegationAllowed', draft.delegationAllowed);
+        /*
+         * Only on CREATE. An edit's payload has no `checklistItems` — the checklist is a separate document with
+         * its own version and its own add/tick endpoints, and rendering the create editor on the edit page would
+         * offer to rewrite it wholesale. That is the FULL-REPLACE hazard TaskComment's own comment describes,
+         * pointed at a list somebody may have been ticking while the form was open.
+         */
+        renderChecklist(draft.checklistItems);
+    };
+
+    /* ── Checklist rows on the create form ────────────────────────────────────────────────────────────────
+     *
+     * The card is always drawn (see _Form.cshtml for why it is not hidden-until-used), so everything here is
+     * about its CONTENTS. The count beside the heading appears only when there is something to count.
+     */
+    const checklistList = () => el('taskChecklistItems');
+
+    /**
+     * The count beside the heading, and the evidence hint under the list. Both are pure readouts of the DOM, so
+     * every path that changes the list calls this one function rather than each remembering both.
+     */
+    const refreshChecklistCount = () => {
+        const list = checklistList();
+        const rows = list ? [...list.querySelectorAll('[data-task-checklist-row]')] : [];
+
+        const badge = document.querySelector('[data-task-checklist-count]');
+        if (badge) {
+            badge.textContent = rows.length > 0 ? String(rows.length) : '';
+            badge.classList.toggle('d-none', rows.length === 0);
+        }
+
+        // Said once, under the list, and only when something actually carries the flag — see _Form.cshtml for
+        // why the paperclip has to explain itself rather than imply an enforcement that does not exist.
+        const hint = document.querySelector('[data-task-checklist-evidence-hint]');
+        if (hint) {
+            hint.classList.toggle('d-none', !rows.some((row) => row.dataset.evidence === '1'));
+        }
+
+        // Whether an arrow can do anything depends on where its row now sits, so it is re-derived here with
+        // everything else the list's shape decides. One call site for "the list changed", not three.
+        global.TaskForm.applyChecklistPositions(list);
+    };
+
+    /**
+     * Rebuilds the whole list. Used only where the list itself changes shape — hydration and add.
+     *
+     * A toggle or a move must NOT come through here: replacing every row detaches the one the pointer is on,
+     * and the next press lands on a node that is no longer in the document.
+     */
+    const renderChecklist = (items) => {
+        const list = checklistList();
+        if (!list) { return; }
+        global.TaskForm.renderChecklistItems(list, items, t);
+        refreshChecklistCount();
+    };
+
+    /** Commits whatever is in the input as a new row, at the DEFAULT level. */
+    const addChecklistItem = () => {
+        const input = el('taskChecklistInput');
+        const text = (input?.value || '').trim();
+        // Silence on empty: an "enter something" toast for pressing Enter in an empty box is noise, and the
+        // placeholder already says what the box is for.
+        if (!text) { return; }
+
+        renderChecklist([
+            ...global.TaskForm.readChecklistItems(checklistList()),
+            { text, requirement: global.TaskForm.CHECKLIST_DEFAULT_LEVEL, evidenceRequired: false }
+        ]);
+        input.value = '';
+        // Focus stays in the box: the author is usually typing a LIST, not one line.
+        input.focus();
+    };
+
+    /**
+     * The card's own click handling, delegated so it survives every re-render.
+     *
+     * Bound to the LIST and the add button rather than to the document: this card is not the only thing on the
+     * page, and a document-wide handler here would be one more thing every other click has to walk past.
+     */
+    const bindChecklist = (mode) => {
+        /*
+         * The card is REMOVED on the edit page, not merely left empty.
+         *
+         * An edit posts no checklist, so an editor here would take what the user typed and drop it on save
+         * without a word — the silent-loss shape this codebase keeps having to remove. Removed rather than
+         * hidden so nothing can un-hide it later and re-open the same hole.
+         */
+        if (mode !== 'create') {
+            el('taskChecklistCard')?.remove();
+            return;
+        }
+
+        const list = checklistList();
+        const input = el('taskChecklistInput');
+        if (!list || !input) { return; }
+
+        /*
+         * DRAG, ON TOP OF THE BUTTONS — never instead of them.
+         *
+         * WCAG 2.2 §2.5.7 (Dragging Movements) requires a single-pointer alternative for anything that can be
+         * dragged, and the up/down buttons ARE that alternative: they are real <button>s, so they take Tab
+         * focus and fire on Enter and Space with no extra code. Sortable itself has no keyboard story, so the
+         * buttons carry the keyboard path outright rather than duplicating a drag interaction — which is the
+         * choice Jira, Notion and Linear all make.
+         *
+         * `Sortable` may legitimately be absent (a host page that does not load it, or a jsdom test), and the
+         * card must keep working when it is: reordering already works through the buttons, so a missing library
+         * costs the mouse gesture and nothing else. Guarded rather than assumed.
+         */
+        if (global.Sortable) {
+            global.Sortable.create(list, {
+                animation: 150,
+                /*
+                 * Sortable's OWN drag, not the browser's native HTML5 one.
+                 *
+                 * Two reasons, and the second is why it was changed after the first live attempt. Native DnD
+                 * renders its own drag image from the element, which ignores `ghostClass` and looks nothing
+                 * like the rest of this form; and it responds only to real OS-level input, so the gesture
+                 * cannot be exercised by anything except a human hand — no test, no scripted check, no
+                 * evidence. A feature that cannot be observed is a feature nobody can prove still works.
+                 */
+                forceFallback: true,
+                fallbackTolerance: 3,
+                // The grip is the ONLY drag surface. Dragging from anywhere on the row would swallow the clicks
+                // meant for the level chip, the paperclip and the remove — three controls on a 38px line.
+                handle: '[data-task-checklist-grip]',
+                draggable: '[data-task-checklist-row]',
+                ghostClass: 'task-checklist-ghost',
+                // Sortable MOVES the existing node, exactly as insertBefore does, so the DOM stays the single
+                // source of truth and readChecklistItems needs no telling. Only the count/hint readout is
+                // re-derived — and nothing is re-rendered, so the row under the pointer survives the drop.
+                onEnd: refreshChecklistCount
+            });
+        }
+
+        document.querySelector('[data-task-checklist-add]')?.addEventListener('click', addChecklistItem);
+
+        input.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter') { return; }
+            /*
+             * Enter here adds an ITEM; it must not submit the form. The save is bound to the form's submit
+             * precisely so Enter saves from any text field — which is right everywhere except in a box whose
+             * whole purpose is repeated entry. Without this, typing the first item would create the task.
+             */
+            event.preventDefault();
+            addChecklistItem();
+        });
+
+        list.addEventListener('click', (event) => {
+            const row = event.target.closest('[data-task-checklist-row]');
+            if (!row) { return; }
+
+            if (event.target.closest('[data-task-checklist-remove]')) {
+                // The row goes; the others stay exactly as they are. Only the count needs saying again.
+                row.remove();
+                refreshChecklistCount();
+                return;
+            }
+
+            /*
+             * The two TOGGLES change one row and rebuild nothing.
+             *
+             * ⚠ They used to re-render the whole list, and that was wrong in a way only a live click found: the
+             * re-render replaces every row, so the node under the pointer is detached the instant it is used.
+             * A second press then lands on an element no longer in the document and does nothing — pressing the
+             * level chip twice left it one step short, and pressing evidence right after a level change did not
+             * register at all. Nothing about the LIST changes here, so nothing about the list should be rebuilt.
+             */
+            const levelButton = event.target.closest('[data-task-checklist-level]');
+            if (levelButton) {
+                const next = global.TaskForm.nextChecklistLevel(row.dataset.requirement);
+                row.dataset.requirement = next;
+                levelButton.textContent = t(
+                    next === 'Blocking' ? 'checklistLevelBlocking'
+                        : next === 'Required' ? 'checklistLevelRequired'
+                            : 'checklistLevelOptional');
+                return;
+            }
+
+            const evidenceButton = event.target.closest('[data-task-checklist-evidence]');
+            if (evidenceButton) {
+                const on = row.dataset.evidence !== '1';
+                row.dataset.evidence = on ? '1' : '';
+                evidenceButton.setAttribute('aria-pressed', on ? 'true' : 'false');
+                // The hint appears with the first flagged row and goes with the last — the count helper owns
+                // both readouts so neither can be updated without the other.
+                refreshChecklistCount();
+                return;
+            }
+
+            const move = event.target.closest('[data-task-checklist-move]');
+            if (move) {
+                /*
+                 * Reordering the DOM IS reordering the data — the list is the single source of truth, so there
+                 * is no array to keep in step and no chance of the two disagreeing.
+                 *
+                 * insertBefore MOVES the existing node rather than copying it, so the button the pointer is on
+                 * survives and a second press keeps working. Re-rendering here would replace it and strand the
+                 * user after one step — the same defect the two toggles above had.
+                 */
+                const direction = move.getAttribute('data-task-checklist-move');
+                const sibling = direction === 'up' ? row.previousElementSibling : row.nextElementSibling;
+                if (sibling) {
+                    direction === 'up' ? list.insertBefore(row, sibling) : list.insertBefore(sibling, row);
+                    /*
+                     * The arrows change meaning the moment the row lands: a row pushed to the top can no longer
+                     * go up. Re-derived rather than rebuilt, so the button the user is holding stays the same
+                     * element — and if that press disabled it, focus stays on a disabled control, which is
+                     * exactly what "you have reached the end" should feel like.
+                     */
+                    refreshChecklistCount();
+                }
+            }
+        });
     };
 
     /* ── Configurable fields (Phase 5) ────────────────────────────────────────────────────────────────────
@@ -469,6 +685,7 @@
         global.TaskForm.enhanceDates(form);
         // Chips after hydration for the same reason as the rest: Tagify reads the input's value when it starts.
         global.TaskForm.enhanceTags(form);
+        bindChecklist(mode);
 
         el('taskAssignmentTarget')?.addEventListener('change', syncVisibility);
         // BL-023 — the direction depends on WHO, so both controls have to re-ask.

@@ -254,7 +254,7 @@ public sealed class TaskReviewProjectionTests
             new FakeChecklistRunRepository(),
             states,
             new FakeTaskDependencyRepository(),
-            new FakeTaskCommentRepository(),
+            new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(),
             new FakePositionRepository(),
             new FakeOrganizationUnitRepository(),
             SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());

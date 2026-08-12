@@ -130,6 +130,20 @@
   <data name="CardApprovalTitle" xml:space="preserve"><value>Responsable d’approbation</value></data>
   <data name="CardApprovalDescription" xml:space="preserve"><value>Choisissez le responsable qui approuvera cette tâche avant son démarrage. Une demande d’approbation lui est envoyée dès la création de la tâche.</value></data>
   <data name="CardWatchersTitle" xml:space="preserve"><value>Observateurs</value></data>
+  <data name="CardChecklistTitle" xml:space="preserve"><value>Liste de contrôle</value></data>
+  <data name="CardChecklistDescription" xml:space="preserve"><value>Les étapes de cette tâche. Les éléments se cochent après la création ; un élément bloquant empêche la clôture de la tâche.</value></data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Saisissez un élément et appuyez sur Entrée</value></data>
+  <data name="ChecklistAddButton" xml:space="preserve"><value>Ajouter</value></data>
+  <data name="ChecklistAddHint" xml:space="preserve"><value>Cliquez sur l'étiquette pour changer de niveau. Il n'y a pas encore de liste de modèles.</value></data>
+  <data name="ChecklistLevelOptional" xml:space="preserve"><value>Facultatif</value></data>
+  <data name="ChecklistLevelRequired" xml:space="preserve"><value>Obligatoire</value></data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve"><value>Bloquant</value></data>
+  <data name="ChecklistLevelHint" xml:space="preserve"><value>Changer le niveau : Facultatif → Obligatoire → Bloquant</value></data>
+  <data name="ChecklistEvidenceToggle" xml:space="preserve"><value>Exiger une preuve</value></data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Une preuve est requise. Le lien vers un document sera actif une fois le module documentaire raccordé.</value></data>
+  <data name="ChecklistRemove" xml:space="preserve"><value>Supprimer l'élément</value></data>
+  <data name="ChecklistMoveUp" xml:space="preserve"><value>Monter</value></data>
+  <data name="ChecklistMoveDown" xml:space="preserve"><value>Descendre</value></data>
   <data name="CardEmailTitle" xml:space="preserve"><value>Notifications par e-mail</value></data>
   <data name="CardEmailDescription" xml:space="preserve"><value>Lorsque cette option est active, les personnes concernées reçoivent un e-mail à l’attribution, à la mise à jour et à la clôture de la tâche.</value></data>
   <data name="CardDelegationTitle" xml:space="preserve"><value>Paramètres de délégation</value></data>

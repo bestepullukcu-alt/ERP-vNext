@@ -1445,6 +1445,33 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Aún no hay elementos de verificación.</value>
   </data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve">
+    <value>Escriba un elemento y pulse Intro</value>
+  </data>
+  <data name="ChecklistLevelOptional" xml:space="preserve">
+    <value>Opcional</value>
+  </data>
+  <data name="ChecklistLevelRequired" xml:space="preserve">
+    <value>Obligatorio</value>
+  </data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve">
+    <value>Bloqueante</value>
+  </data>
+  <data name="ChecklistRequiredOpen" xml:space="preserve">
+    <value>{0} elemento(s) obligatorio(s) sin cerrar</value>
+  </data>
+  <data name="ConfirmRequiredOpen" xml:space="preserve">
+    <value>{0} elemento(s) obligatorio(s) sin marcar. La tarea se cerrará de todos modos.</value>
+  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve">
+    <value>Se requiere evidencia. El enlace a un documento se activará cuando se conecte el módulo documental.</value>
+  </data>
+  <data name="ChecklistLevelHint" xml:space="preserve">
+    <value>Cambiar el nivel: Opcional → Obligatorio → Bloqueante</value>
+  </data>
+  <data name="ToastChecklistItemAdded" xml:space="preserve">
+    <value>Elemento añadido</value>
+  </data>
   <data name="GuidancePendingAcceptance" xml:space="preserve">
     <value>Esta tarea espera que la aceptes. Asúmela o reasígnala si no te corresponde.</value>
   </data>
@@ -1627,6 +1654,66 @@
   </data>
   <data name="ActivityEmpty" xml:space="preserve">
     <value>Todavía no hay actividad registrada.</value>
+  </data>
+  <data name="AuditEventCreated" xml:space="preserve">
+    <value>Tarea creada</value>
+  </data>
+  <data name="AuditEventAccepted" xml:space="preserve">
+    <value>Tarea aceptada</value>
+  </data>
+  <data name="AuditEventPlanned" xml:space="preserve">
+    <value>Tarea planificada</value>
+  </data>
+  <data name="AuditEventStarted" xml:space="preserve">
+    <value>Trabajo iniciado</value>
+  </data>
+  <data name="AuditEventResumed" xml:space="preserve">
+    <value>Trabajo reanudado</value>
+  </data>
+  <data name="AuditEventWaiting" xml:space="preserve">
+    <value>Puesta en espera</value>
+  </data>
+  <data name="AuditEventSubmittedForReview" xml:space="preserve">
+    <value>Enviada a revisión</value>
+  </data>
+  <data name="AuditEventReviewCancelled" xml:space="preserve">
+    <value>Requisito de revisión retirado</value>
+  </data>
+  <data name="AuditEventCompleted" xml:space="preserve">
+    <value>Completada</value>
+  </data>
+  <data name="AuditEventCancelled" xml:space="preserve">
+    <value>Cancelada</value>
+  </data>
+  <data name="AuditEventClaimed" xml:space="preserve">
+    <value>Tomada del grupo</value>
+  </data>
+  <data name="AuditEventReleased" xml:space="preserve">
+    <value>Devuelta al grupo</value>
+  </data>
+  <data name="AuditEventReassigned" xml:space="preserve">
+    <value>Reasignada</value>
+  </data>
+  <data name="AuditEventReturned" xml:space="preserve">
+    <value>Devuelta al solicitante</value>
+  </data>
+  <data name="AuditEventUnknown" xml:space="preserve">
+    <value>Tarea actualizada</value>
+  </data>
+  <data name="ActivityFilterLabel" xml:space="preserve">
+    <value>Filtro de actividad</value>
+  </data>
+  <data name="ActivityFilterAll" xml:space="preserve">
+    <value>Todo</value>
+  </data>
+  <data name="ActivityFilterCommentsOnly" xml:space="preserve">
+    <value>Solo comentarios</value>
+  </data>
+  <data name="ActivityNoComments" xml:space="preserve">
+    <value>Aún no hay comentarios en esta tarea.</value>
+  </data>
+  <data name="ActivityHistoryStartsHere" xml:space="preserve">
+    <value>Los pasos que dio esta tarea antes de que empezara el registro no están registrados.</value>
   </data>
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>Aún no hay subtareas.</value>

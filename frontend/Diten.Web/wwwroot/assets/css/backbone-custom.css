@@ -6086,6 +6086,207 @@ tags.diten-tags .tagify__input {
 .wcn-audit-dot i { font-size: .75rem; }
 .wcn-audit-comment .wcn-audit-text { padding: .375rem .5rem; border-radius: .375rem; background: color-mix(in sRGB, var(--bs-primary) 7%, var(--bs-body-bg)); }
 
+/* WC-1 — a person's sentence and a state change are not the same kind of thing, so they do not look alike.
+   The COMMENT keeps the conversational shape: a monogram, a name, the message in its own bubble. The EVENT is
+   one quiet line with an arrow and no face — nobody replies to a state change, and giving it an avatar would put
+   the machine in the conversation as a participant. */
+.wcn-audit-comment { align-items: flex-start; }
+/* Reuses .diten-opt-avatar (the picker's circle) so a person looks the same wherever they appear; only the
+   size is stepped down, because a feed row is not a picker row. */
+.wcn-audit-avatar { inline-size: 1.75rem; block-size: 1.75rem; font-size: .625rem; }
+.wcn-audit-author { font-size: .75rem; font-weight: 600; color: var(--bs-heading-color, var(--bs-body-color)); }
+
+.wcn-audit-event { align-items: center; gap: .375rem; }
+.wcn-audit-arrow { font-size: .875rem; flex: 0 0 auto; color: var(--bs-secondary-color); opacity: .75; }
+/* The arrow means "moved to", which is a DIRECTION and not a shape: in Arabic it has to point the way the
+   sentence runs, or it reads as moving backwards. Everything else in these rows is logical-property based and
+   flips on its own; a glyph cannot. */
+[dir="rtl"] .wcn-audit-arrow { transform: scaleX(-1); }
+/* ONE line. The event is context for the conversation, not a turn in it, so it stays quieter than the
+   comment beside it and never wraps into a second row of equal weight. */
+.wcn-audit-line {
+    font-size: .75rem;
+    color: var(--bs-secondary-color);
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+/* The actor's own words, when the act carried a reason — the half a code cannot hold. */
+.wcn-audit-reason { display: block; font-size: .6875rem; color: var(--bs-secondary-color); opacity: .85; }
+
+/* Where the recorded history runs out on a task older than the log. Deliberately the quietest thing in the
+   card: it explains an absence, and an absence must not shout louder than the entries above it. */
+.wcn-audit-gap {
+    margin-block: .625rem 0;
+    font-size: .6875rem;
+    color: var(--bs-secondary-color);
+    opacity: .8;
+}
+
+/* WC-1 item 12 — the "Required" level's visible consequence. Deliberately NOT styled like the blocking notice
+   above it: blocking says the task cannot close, this says it can and something is still owed. Same quiet hint
+   weight as the rest of the card, distinguished only by its icon. */
+.wcn-check-required { color: var(--bs-secondary-color); }
+.wcn-check-required i { color: var(--bs-warning); margin-inline-end: .25rem; }
+
+/* The per-row evidence mark. A STATEMENT, not a control — nothing can attach a document yet, and the alert
+   below the list says so. Not a button, so it takes no tab stop and promises no click. */
+.wcn-check-evidence { flex: 0 0 auto; color: var(--bs-secondary-color); opacity: .7; font-size: .875rem; }
+
+/* ── A CARD'S HEADING GLYPH ────────────────────────────────────────────────
+   Every card title on the task form and the task detail page carries one, and they all read at one size and one
+   colour so the surface speaks a single language. Matches `.card-section-title .bx` exactly — that idiom was
+   already on the governance cards, and this is the same rule extended to the cards that had none.
+
+   The glyph names the CARD ("which question does this answer"); a field's glyph names the INPUT ("which value
+   goes here"). They must never be the same picture in the same card, or the heading reads as a repeat of the
+   first row. */
+.dt-card-icon { flex: 0 0 auto; font-size: 1.125rem; color: var(--bs-primary); }
+
+/* An inline alert inside a card: Bootstrap's alert padding and margins are sized for a page banner and dwarf a
+   card section, so this trims them without touching the alert's own colour system (which already answers to the
+   dark theme). Used by the checklist's evidence notice on BOTH surfaces, so the two cannot drift apart. */
+.dt-inline-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+    margin-block-end: 0;
+    padding: .5rem .625rem;
+    font-size: .75rem;
+    line-height: 1.5;
+}
+.dt-inline-alert > i { flex: 0 0 auto; font-size: .9375rem; line-height: 1.4; }
+
+/* The same warning inside the completion confirm. Left-aligned against the dialog's centred body because it is
+   a sentence to READ, not a title to glance at. */
+.wcn-confirm-warning {
+    margin-block-start: .75rem;
+    padding: .5rem .625rem;
+    border-radius: .375rem;
+    background: color-mix(in sRGB, var(--bs-warning) 14%, var(--bs-body-bg));
+    color: var(--bs-body-color);
+    font-size: .8125rem;
+    text-align: start;
+}
+
+/* The checklist's level chip on the detail add row. Reuses .wcn-chip-filter's shape so the two controls on this
+   page that mean "pick one of a few" look alike; only the strict end is coloured, because that is the one that
+   changes what the task DOES. */
+.wcn-check-level { flex: 0 0 auto; align-self: center; white-space: nowrap; }
+.wcn-check-level[data-level="Blocking"] {
+    border-color: var(--bs-danger);
+    background: color-mix(in sRGB, var(--bs-danger) 12%, var(--bs-body-bg));
+    color: var(--bs-danger);
+    font-weight: 600;
+}
+.wcn-check-level[data-level="Required"] {
+    border-color: var(--bs-warning);
+    color: var(--bs-warning);
+    font-weight: 600;
+}
+
+/* ── Checklist rows on the CREATE form (MOD-0024) ──────────────────────────
+   The steps of a task, written before the task exists. One line per item, and it must stay one line: the row is
+   read far more often than it is edited, so the controls are quiet until the eye looks for them. */
+.task-checklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .375rem; }
+.task-checklist-row {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .375rem .5rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: .375rem;
+    background: var(--bs-body-bg);
+}
+/* The drag surface. `grab` is the whole affordance — the icon alone does not say "you may pull this". */
+.task-checklist-grip {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    color: var(--bs-secondary-color);
+    opacity: .45;
+    cursor: grab;
+    font-size: 1rem;
+}
+.task-checklist-grip:active { cursor: grabbing; }
+.task-checklist-row:hover .task-checklist-grip { opacity: .9; }
+/* While a row is being dragged. Faint rather than hidden: the reader has to see WHERE it currently sits. */
+.task-checklist-ghost { opacity: .35; }
+
+/* The two move controls, stacked into the height of one row so reordering costs no vertical space. They stay
+   beside the grip permanently — WCAG 2.2 §2.5.7 wants a single-pointer alternative to every drag, and these
+   are also the only keyboard path (Sortable has none). */
+.task-checklist-move { display: inline-flex; flex-direction: column; flex: 0 0 auto; }
+.task-checklist-move .task-checklist-btn { block-size: .9375rem; font-size: .75rem; }
+.task-checklist-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: .8125rem;
+    color: var(--bs-body-color);
+    overflow-wrap: anywhere;
+}
+.task-checklist-btn {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    padding: 0 .1875rem;
+    line-height: 1;
+    cursor: pointer;
+}
+.task-checklist-btn:hover { color: var(--bs-primary); }
+.task-checklist-remove:hover { color: var(--bs-danger); }
+/* Pressed = the item needs evidence. The paperclip stays visible either way, so the control is discoverable
+   before it is used — an icon that appears only once it is on cannot be found. */
+.task-checklist-evidence[aria-pressed="true"] { color: var(--bs-primary); }
+/* The level, as a chip that names its own state — never a blank for "Optional", which reads as "not set"
+   rather than as a choice. Only the two strict levels take colour. */
+.task-checklist-level {
+    flex: 0 0 auto;
+    border: 1px solid var(--bs-border-color);
+    background: transparent;
+    color: var(--bs-secondary-color);
+    border-radius: 1rem;
+    padding: .0625rem .5rem;
+    font-size: .6875rem;
+    line-height: 1.4;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.task-checklist-row[data-requirement="Required"] .task-checklist-level {
+    border-color: var(--bs-warning);
+    color: var(--bs-warning);
+    font-weight: 600;
+}
+.task-checklist-row[data-requirement="Blocking"] .task-checklist-level {
+    border-color: var(--bs-danger);
+    background: color-mix(in sRGB, var(--bs-danger) 12%, var(--bs-body-bg));
+    color: var(--bs-danger);
+    font-weight: 600;
+}
+
+/* THE FILTER — chips, never tabs. A tab claims two lists with two owners; this is one story told two ways. */
+.wcn-audit-filter { display: flex; flex-wrap: wrap; gap: .375rem; margin-block-end: .75rem; }
+.wcn-chip-filter {
+    border: 1px solid var(--bs-border-color);
+    background: transparent;
+    color: var(--bs-secondary-color);
+    border-radius: 1rem;
+    padding: .1875rem .625rem;
+    font-size: .6875rem;
+    line-height: 1.4;
+    cursor: pointer;
+}
+.wcn-chip-filter:hover { border-color: var(--bs-primary); color: var(--bs-primary); }
+.wcn-chip-filter.active {
+    border-color: var(--bs-primary);
+    background: color-mix(in sRGB, var(--bs-primary) 12%, var(--bs-body-bg));
+    color: var(--bs-primary);
+    font-weight: 600;
+}
+
 /* Capability depth blocks (Faz 2) ------------------------------------------ */
 .wcn-count-inline { font-weight: 600; color: var(--bs-primary); margin-inline-start: .25rem; }
 .wcn-progress { display: block; inline-size: 100%; block-size: .375rem; border: 0; border-radius: 1rem; background: var(--bs-border-color); overflow: hidden; margin-block-end: .625rem; appearance: none; }

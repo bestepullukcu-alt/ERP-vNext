@@ -157,11 +157,12 @@ public sealed class TaskWorkItemProviderTests
         Assert.DoesNotContain("businessContext", bareItem.WorkItemCapabilities);
         Assert.Contains("businessContext", fieldItem.WorkItemCapabilities);
 
-        // Phase 2: `checklist` follows the DATA (no run → not declared), but `subtasks` follows the task's
-        // POSITION in the hierarchy — a top-level task can always be given children, so the container is offered
-        // even while empty. Both directions are asserted in TaskChecklistSubtaskTests.
-        Assert.DoesNotContain("checklist", fieldItem.WorkItemCapabilities);
-        Assert.Null(fieldItem.Checklist);
+        // `checklist` and `subtasks` both follow what the task CAN HOLD rather than what it holds: either can be
+        // given a first entry from the shell, so the container is offered while empty. `businessContext` above
+        // does not — its fields are a tenant's configuration, not something the reader can add here, and an
+        // empty block would be an offer with nothing behind it. Both directions in TaskChecklistSubtaskTests.
+        Assert.Contains("checklist", fieldItem.WorkItemCapabilities);
+        Assert.NotNull(fieldItem.Checklist);
         Assert.Contains("subtasks", fieldItem.WorkItemCapabilities);
         Assert.NotNull(fieldItem.Subtasks);
     }
@@ -291,7 +292,7 @@ public sealed class TaskWorkItemProviderTests
             new TaskAssignmentResolver(),
             new FakeUserDisplayNameResolver(),
             new FakeChecklistRunRepository(),
-            new FakeTaskApprovalService().Pending(instanceId), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
+            new FakeTaskApprovalService().Pending(instanceId), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
 
         var items = await provider.GetWorkItemsAsync(Actor(), CancellationToken.None);
 
@@ -318,7 +319,7 @@ public sealed class TaskWorkItemProviderTests
             new TaskLifecycleService(),
             new TaskAssignmentResolver(),
             new FakeUserDisplayNameResolver(),
-            new FakeChecklistRunRepository(), new FakeTaskApprovalService(), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
+            new FakeChecklistRunRepository(), new FakeTaskApprovalService(), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
 
     private static WorkItemActor Actor() => new(
         TaskTestData.Me,

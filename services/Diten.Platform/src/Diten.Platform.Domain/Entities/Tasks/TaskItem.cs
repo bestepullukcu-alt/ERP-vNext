@@ -75,6 +75,45 @@ public sealed class TaskItem : TenantScopedEntity
     /// </summary>
     public void ReopenAcceptanceGate() => AcceptedByUserId = null;
 
+    // ── The lifecycle event log's declaration seam (WC-1) ────────────────────
+
+    /// <summary>
+    /// WHAT this write is, and why — declared by the handler, consumed by the repository.
+    ///
+    /// <para>Not persisted: it lives for the length of one command. A PRIVATE FIELD rather than a property, which
+    /// keeps it off the document (the driver auto-maps public members only) and out of the reflection-based test
+    /// double's "copy every writable property" sweep — a detached read must start with nothing declared, exactly
+    /// as a fresh Mongo read does.</para>
+    /// </summary>
+    private TaskTransitionIntent? _declaredIntent;
+
+    /// <summary>
+    /// Say what this write IS before performing it: <c>task.Declare(TaskTransitionKind.Planned, actorId)</c>.
+    ///
+    /// <para><b>Declaring does not record anything.</b> The record is written by the repository, only if the
+    /// conditional write actually lands, and only if the document really moved — so a handler that declares an
+    /// intent and then loses an expected-version race writes no history, and a handler that forgets to declare
+    /// still writes history (as <see cref="TaskTransitionKind.Unknown"/>, which fails the coverage test). Neither
+    /// side can produce a lie on its own.</para>
+    ///
+    /// <para>The last declaration wins. One command is one act; a handler that declares twice has changed its mind
+    /// about what it is doing, and the later word is the truer one.</para>
+    /// </summary>
+    public void Declare(
+        TaskTransitionKind kind,
+        Guid? actorUserId,
+        string? reason = null,
+        string? reasonCode = null)
+        => _declaredIntent = new TaskTransitionIntent(kind, actorUserId, reason, reasonCode);
+
+    /// <summary>
+    /// What the writer declared, or null when nothing was said. Read by the repository as it commits.
+    ///
+    /// <para>A METHOD rather than a property, so the test double's "copy every writable property" reflection
+    /// cannot see it and a declaration cannot survive a detach.</para>
+    /// </summary>
+    public TaskTransitionIntent? ReadDeclaredIntent() => _declaredIntent;
+
     /// <summary>The offered POSITION for a pool task (MOD-0288 Position; always unit-bound — §12 K4).</summary>
     public Guid? PoolPositionId { get; set; }
 
@@ -233,6 +272,16 @@ public sealed class TaskItem : TenantScopedEntity
     public string? ClosureReasonCode { get; set; }
     public DateTimeOffset? DeletedAt { get; set; }
 }
+
+/// <summary>
+/// One command's declaration of what it is doing to a task (WC-1). Transient — see
+/// <see cref="TaskItem.Declare"/> for why it is never persisted and never survives a read.
+/// </summary>
+public sealed record TaskTransitionIntent(
+    TaskTransitionKind Kind,
+    Guid? ActorUserId,
+    string? Reason,
+    string? ReasonCode);
 
 /// <summary>
 /// A configurable field's value, embedded on the task. Mirrors the executable contract's businessContext field

@@ -85,6 +85,12 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private readonly ITaskApprovalService _approvals;
     private readonly ITaskDependencyRepository _dependencies;
     private readonly ITaskCommentRepository _comments;
+
+    /// <summary>
+    /// WC-1 — the lifecycle event log. REQUIRED, not optional like the team resolver: an absent team resolver can
+    /// only narrow a scope, while an absent history would publish a feed that looks complete and is not.
+    /// </summary>
+    private readonly ITaskTransitionRepository _transitions;
     private readonly IPositionRepository _positions;
     private readonly IOrganizationUnitRepository _organizationUnits;
 
@@ -98,6 +104,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         ITaskApprovalService approvals,
         ITaskDependencyRepository dependencies,
         ITaskCommentRepository comments,
+        ITaskTransitionRepository transitions,
         IPositionRepository positions,
         IOrganizationUnitRepository organizationUnits,
         IWorkItemSlaCalculator sla,
@@ -116,6 +123,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         _organizationUnits = organizationUnits;
         _dependencies = dependencies;
         _comments = comments;
+        _transitions = transitions;
         _tasks = tasks;
         _seats = seats;
         _lifecycle = lifecycle;
@@ -214,6 +222,17 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             .GroupBy(child => child.ParentTaskItemId!.Value)
             .ToDictionary(group => group.Key, group => (IReadOnlyList<TaskItem>)group.ToList());
 
+        /*
+         * WC-1 — every task's history for the whole page in ONE read, like every other container here.
+         *
+         * Read BEFORE the display names on purpose: an event's actor is resolved live rather than snapshotted
+         * (see TaskTransition), so those ids have to join the SAME batch. Resolving them afterwards would be a
+         * second directory round-trip per page, and resolving them per row an N+1 across every history on screen.
+         */
+        var transitionsByTask = (await _transitions.ListByTaskIdsAsync(taskIds, ct))
+            .GroupBy(transition => transition.TaskItemId)
+            .ToDictionary(group => group.Key, group => (IReadOnlyList<TaskTransition>)group.ToList());
+
         // ONE batched resolve for the whole page — never one call per task, and cached between requests. It runs
         // after the children are known so subtask holders ride the SAME batch; resolving them per row would be an
         // N+1 across the page. Best effort: if AuthService is down this comes back empty and names are omitted.
@@ -221,6 +240,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // The approval manager joins the batch so the gates card can name a person instead of an id.
             .SelectMany(t => new[] { t.AssigneeUserId, t.CreatedByUserId, t.ApprovalManagerUserId })
             .Concat(childrenByParent.SelectMany(pair => pair.Value).Select(child => child.AssigneeUserId))
+            // Whoever performed each recorded act. A history that says "the task was released" without saying by
+            // whom answers half the question it was asked.
+            .Concat(transitionsByTask.SelectMany(pair => pair.Value).Select(transition => transition.ActorUserId))
             .Where(id => id is not null && id != Guid.Empty)
             .Select(id => id!.Value)
             .Distinct()
@@ -308,6 +330,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     edgesByTask.GetValueOrDefault(t.Id, []),
                     edgeTasks,
                     commentsByTask.GetValueOrDefault(t.Id, []),
+                    transitionsByTask.GetValueOrDefault(t.Id, []),
                     poolLabels,
                     fieldDefinitions);
             })
@@ -336,6 +359,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         IReadOnlyList<TaskDependency>? edges = null,
         IReadOnlyDictionary<Guid, TaskItem>? edgeTasks = null,
         IReadOnlyList<TaskComment>? comments = null,
+        IReadOnlyList<TaskTransition>? transitions = null,
         IReadOnlyDictionary<Guid, string>? poolLabels = null,
         IReadOnlyDictionary<string, TaskFieldDefinition>? fieldDefinitions = null)
     {
@@ -356,7 +380,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // actions may be offered — and the contract requires every blocked action to be present and disabled,
         // never hidden. A hidden button teaches the reader nothing about why the work will not move.
         var dependencies = ToDependencies(task, edges ?? [], edgeTasks);
-        var activity = ToActivity(comments ?? []);
+        var activity = ToActivity(comments ?? [], transitions ?? [], displayNames);
 
         /*
          * THE FOUR CONDITIONAL CONTAINERS, DECIDED ONCE.
@@ -377,7 +401,20 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          * the day they stopped agreeing an item would disappear.
          */
         var dependencyList = dependencies.Count == 0 ? null : dependencies;
-        var checklistBlock = checklist is null ? null : ToChecklist(checklist);
+        /*
+         * The checklist container is emitted for EVERY task, run or no run — the same rule subtasks follow
+         * below, and now for the same reason.
+         *
+         * It used to be `checklist is null ? null : …`, which was correct while the only way to get a checklist
+         * was to ask for a template at creation: a task with no run could never grow one, so declaring an empty
+         * container would have been an offer the product could not keep. The shell now has an add row, and the
+         * old condition became a trap — a task with no run declared no capability, the card was never drawn, and
+         * the only way to add the first item was on a task that already had one. Discoverable only if you
+         * already had it.
+         *
+         * Declared-and-empty is a state the contract models (CAPABILITY_CONTAINER_REQUIRED); a half is not.
+         */
+        var checklistBlock = checklist is null ? EmptyChecklist : ToChecklist(checklist);
         // A subtask cannot have subtasks. A parent always gets the container, even empty, because the shell
         // offers "add a subtask" there — declared-and-empty is a state the contract models; a half is not.
         var subtasks = task.ParentTaskItemId is null ? ToSubtasks(children, actor, displayNames) : null;
@@ -637,6 +674,16 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// localizes, an ad-hoc item the user typed becomes display text. Emitting a resource label for typed text is
     /// what puts a raw key on screen.
     /// </summary>
+    /// <summary>
+    /// A task that has no run yet — an empty list at version 0.
+    ///
+    /// <para><b>Version 0 is load-bearing, not a placeholder.</b> The add endpoint reads it as "no run exists,
+    /// create one", which is exactly the branch <c>AddChecklistItemHandler</c> already takes when it finds none.
+    /// Sending version 1 would claim a document that is not there, and the first add would then look like a lost
+    /// expected-version race to a user who is the only person on the page.</para>
+    /// </summary>
+    private static readonly WorkItemChecklistDto EmptyChecklist = new([], Version: 0);
+
     private static WorkItemChecklistDto ToChecklist(ChecklistRun run)
         => new(run.Items
             .OrderBy(item => item.SortOrder)
@@ -927,10 +974,21 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     }
 
     /// <summary>
-    /// The feed, newest first (the repository already orders it that way, and the composer sits at the top).
-    /// Comments only — see <see cref="WorkItemActivityEntryDto"/> for why there is no derived event history.
+    /// ONE feed, two kinds, newest first — what happened and what people said about it, read together.
+    ///
+    /// <para><b>Merged here rather than by the client</b>, because "newest first" has to be decided once. Both
+    /// repositories already order their own half by <c>CreatedAt</c> with the same <c>Id</c> tie-break, so this
+    /// re-sorts the union by the identical key and the two halves interleave exactly where their timestamps say
+    /// they should. A client stitching two pre-sorted lists would have to re-derive that rule, and the day the two
+    /// rules disagreed the feed would silently reorder itself.</para>
+    ///
+    /// <para>An event carries NO text: its sentence is built in the reader's language from the codes in
+    /// <see cref="WorkItemActivityEventDto"/>. A comment carries no event. Neither half fakes the other's shape.</para>
     /// </summary>
-    private static IReadOnlyList<WorkItemActivityEntryDto> ToActivity(IReadOnlyList<TaskComment> comments)
+    private static IReadOnlyList<WorkItemActivityEntryDto> ToActivity(
+        IReadOnlyList<TaskComment> comments,
+        IReadOnlyList<TaskTransition> transitions,
+        IReadOnlyDictionary<Guid, string> displayNames)
         => comments
             .Select(comment => new WorkItemActivityEntryDto(
                 Id: comment.Id.ToString(),
@@ -940,6 +998,24 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 // unavailable" and an id is not a person.
                 Actor: string.IsNullOrWhiteSpace(comment.AuthorDisplayName) ? null : comment.AuthorDisplayName,
                 At: comment.CreatedAt))
+            .Concat(transitions.Select(transition => new WorkItemActivityEntryDto(
+                Id: transition.Id.ToString(),
+                Kind: "event",
+                Text: null,
+                // Resolved LIVE from the page's batched directory read, unlike a comment's snapshotted author —
+                // see TaskTransition for why the two differ. Absent from the batch means the person could not be
+                // resolved, and the row then names nobody rather than printing an id.
+                Actor: transition.ActorUserId is { } actorId
+                    ? displayNames.GetValueOrDefault(actorId)
+                    : null,
+                At: transition.CreatedAt,
+                Event: new WorkItemActivityEventDto(
+                    Code: TaskTransitionCodes.For(transition.Kind),
+                    From: transition.FromLifecycle.ToString(),
+                    To: transition.ToLifecycle.ToString(),
+                    Reason: string.IsNullOrWhiteSpace(transition.Reason) ? null : transition.Reason))))
+            .OrderByDescending(entry => entry.At)
+            .ThenByDescending(entry => entry.Id)
             .ToList();
 
     /// <summary>

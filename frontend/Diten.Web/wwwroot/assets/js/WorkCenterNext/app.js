@@ -108,6 +108,22 @@
          * silently unfold the feed underneath. Not persisted — an expansion is about this reading of this page.
          */
         expandedLists: {},
+        /*
+         * WHICH HALF OF THE FEED IS SHOWING — 'all' | 'comments'.
+         *
+         * Not persisted, for the same reason an expansion is not: it is about this reading of this page. The
+         * detail view is a page load, so it starts at 'all' every time — a filter left on one task can never hide
+         * another task's events from a reader who never asked for it.
+         */
+        activityFilter: 'all',
+        /*
+         * The level the NEXT checklist item will be added at. Optional by default, for the reason the create
+         * form gives at length: a Blocking default manufactures tasks nobody can close and nobody chose that.
+         *
+         * It STICKS between adds on purpose — somebody entering three blocking items should press the level
+         * once, not three times — and resets with the page, so it can never leak onto another task.
+         */
+        checklistDraftLevel: 'Optional',
         subtaskPanelDraft: null,
         subtaskPanelRecord: null,
         subtaskPanelSaving: false,
@@ -379,6 +395,59 @@
         if (days === 0) { return t('TimeToday'); }
         if (days === 1) { return t('TimeYesterday'); }
         return tf('TimeDaysAgo', days);
+    };
+
+    /*
+     * A PERSON'S MONOGRAM — the same rule the assignee picker uses (Tasks/form.js personInitials), because a
+     * person has to look like the same person wherever they appear.
+     *
+     * Two or more words take the first and last initial; a single word takes its first two characters, which is
+     * what keeps "Ayşe" from rendering as a lone "A" beside "AT". Locale-aware upper-casing, so Turkish dotted
+     * and dotless i do not swap places.
+     *
+     * ⚠ The picker's copy still lives in Tasks/form.js — a different bundle with no export seam. Consolidating
+     * them is raised as its own item rather than smuggled into this round; what matters here is that app.js has
+     * ONE algorithm rather than a second improvised one.
+     */
+    const personInitials = (name) => {
+        const words = String(name || '').trim().split(/\s+/).filter(Boolean);
+        if (!words.length) { return '?'; }
+        const raw = words.length > 1
+            ? words[0].charAt(0) + words[words.length - 1].charAt(0)
+            : words[0].slice(0, 2);
+        return raw.toLocaleUpperCase();
+    };
+
+    /*
+     * WHAT AN EVENT SAYS, in the reader's language.
+     *
+     * The server sends a CODE (`planned`, `released`, `reassigned`), never a sentence — one composed on the
+     * server would be composed in one language, and this product ships seven. The code becomes a resource key
+     * here, where the seven live.
+     *
+     * `eventKey` is the older fixture/optimistic shape and still resolves: the showcase fixtures and the local
+     * "you just pressed this" entries write it, and dropping it would blank every row on those surfaces.
+     *
+     * A code this shell does not know falls back to a generic line rather than printing the token — a raw key or
+     * a bare `submittedForReview` reaching a user is a defect this codebase has shipped before. The test for
+     * "known" is the CONTRACT's vocabulary, not whether the resx happens to hold the string: a missing
+     * translation is a gap to fix, while an unrecognised code is a server ahead of this shell, and the two must
+     * not be diagnosed by the same check.
+     */
+    const KNOWN_EVENT_CODES = new Set(
+        (global.WorkCenterNextContract && global.WorkCenterNextContract.enums
+            && global.WorkCenterNextContract.enums.ACTIVITY_EVENT_CODES) || []);
+
+    const eventSentence = (entry) => {
+        if (entry.eventKey) {
+            return entry.eventKey === 'AuditActionStamp'
+                ? tf('AuditActionStamp', entry.actionLabel)
+                : t(entry.eventKey);
+        }
+
+        const code = entry.event && entry.event.code;
+        if (!code || !KNOWN_EVENT_CODES.has(code) || code === 'unknown') { return t('AuditEventUnknown'); }
+        return t('AuditEvent' + code.charAt(0).toLocaleUpperCase('en') + code.slice(1));
     };
 
     // actions[] is the single effective command projection. The browser never
@@ -1503,7 +1572,7 @@
 
         return `${available
             ? `<div class="wcn-detail-section">
-                <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('ActionsAvailable'))}</h6>
+                ${cardHead('bx-bolt-circle', 'ActionsAvailable')}
                 <ul class="wcn-actrail">${available}</ul>
             </div>`
             : ''}
@@ -1566,7 +1635,7 @@
             : '';
 
         return `<div class="wcn-detail-section">
-            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('StepBarLabel'))}</h6>
+            ${cardHead('bx-git-branch', 'StepBarLabel')}
             <ol class="wcn-steps${cancelled ? ' wcn-steps-cancelled' : ''}">${rendered}</ol>
             ${paused}
         </div>`;
@@ -1621,7 +1690,7 @@
         if (!item.summary && !facts) { return ''; }
 
         return `<div class="wcn-detail-section">
-            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('SummaryCardLabel'))}</h6>
+            ${cardHead('bx-info-circle', 'SummaryCardLabel')}
             ${item.summary ? `<p class="wcn-detail-summary">${esc(item.summary)}</p>` : ''}
             ${facts ? `<div class="wcn-facts">${facts}</div>` : ''}
         </div>`;
@@ -1631,16 +1700,58 @@
     // aggregator; define-the-work stays in the source (deep-link). ─────────────
     const hasCap = (item, cap) => Array.isArray(item.workItemCapabilities) && item.workItemCapabilities.indexOf(cap) >= 0;
 
+    /*
+     * ADDING an item, on the SAME row shape the subtask card uses: 38px, icon inside, Enter commits. A third
+     * add pattern in one product is how a product starts reading as three.
+     *
+     * The one thing it adds beside the input is the LEVEL, because the level is the only part of a checklist
+     * item that changes what the task DOES: a Blocking item refuses `complete`. An add row that could not
+     * express it would ship the half of the feature that does nothing.
+     *
+     * Absent on a closed task — its checklist is history, and the server refuses the write too.
+     */
+    const checklistAddRow = (item) => `<div class="wcn-subtask-add">
+            <div class="wcn-search wcn-search-inline">
+                <i class="bx bx-list-plus" aria-hidden="true"></i>
+                <input type="text" class="form-control shadow-none" data-wcn-check-input
+                       data-wcn-check-add="${item.id}"
+                       placeholder="${esc(t('ChecklistAddPlaceholder'))}"
+                       aria-label="${esc(t('ChecklistAddPlaceholder'))}">
+            </div>
+            <button type="button" class="wcn-chip-filter wcn-check-level" data-wcn-check-level
+                    title="${esc(t('ChecklistLevelHint'))}"
+                    data-level="${esc(state.checklistDraftLevel)}">${
+                        esc(t('ChecklistLevel' + state.checklistDraftLevel))}</button>
+        </div>`;
+
+    /*
+     * OPEN "REQUIRED" ITEMS — the ones that must be done and do NOT stop the task.
+     *
+     * Counted WITHOUT the blocking ones, even though a blocking item is mandatory too. On the wire a Blocking
+     * item carries `required: true` as well (ToChecklist derives it as "not Optional"), so counting naively
+     * would report the same item twice in two different sentences — one saying the task cannot close, the other
+     * saying it can. The blocking notice speaks for those; this speaks for the rest.
+     */
+    const openRequiredItems = (item) =>
+        ((item && item.checklist && item.checklist.items) || [])
+            .filter((entry) => entry.required && !entry.blocking && !entry.done);
+
     // Checklist — interactive (checking is "doing the work", stays here).
     const renderChecklist = (item) => {
-        // Capability present but empty is a VALID state (the contract requires the container), so an empty
-        // checklist gets an explanation instead of the block silently vanishing.
+        // Capability present but empty is a VALID state (the contract requires the container), and it is now the
+        // ORDINARY state: the provider ships the container for every task so a first item can be added here.
         if (!hasCap(item, 'checklist') || !item.checklist) { return ''; }
         const items = item.checklist.items || [];
+        const canAdd = !isTerminal(item);
         if (!items.length) {
+            /*
+             * Empty AND unaddable is the only case that gets a bare sentence. Otherwise the add row IS the empty
+             * state: a line saying "there is nothing here" above a box for putting something there is noise, and
+             * this card is the only place the capability can be discovered at all.
+             */
             return `<div class="wcn-detail-section">
-                <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('ChecklistLabel'))}</h6>
-                <p class="wcn-block-hint">${esc(t('ChecklistEmpty'))}</p>
+                ${cardHead('bx-list-check', 'ChecklistLabel')}
+                ${canAdd ? checklistAddRow(item) : `<p class="wcn-block-hint">${esc(t('ChecklistEmpty'))}</p>`}
             </div>`;
         }
         const done = items.filter((c) => c.done).length;
@@ -1651,6 +1762,16 @@
                     <i class="bx ${c.done ? 'bxs-check-square' : 'bx-square'}"></i>
                 </button>
                 <span class="wcn-check-text">${esc(c.text)}</span>
+                ${/*
+                   * The paperclip says this item was marked as NEEDING EVIDENCE. It is a statement, not a
+                   * control: nothing here can attach anything yet, and the hint below the list says exactly
+                   * that. A flag stored and never shown is the defect this round is closing; a flag shown as a
+                   * button that does nothing would be the same defect wearing a nicer shirt.
+                   */''}
+                ${c.evidenceRequired
+                    ? `<i class="bx bx-paperclip wcn-check-evidence" title="${esc(t('ChecklistEvidenceHint'))}"
+                          aria-label="${esc(t('ChecklistEvidenceHint'))}"></i>`
+                    : ''}
             </li>`).join('');
         // The reason completion is unavailable must be READABLE on the page — a disabled button with only a
         // tooltip leaves a keyboard or touch user with no explanation at all.
@@ -1658,12 +1779,38 @@
         const notice = blocked
             ? `<p class="wcn-block-hint" role="note"><i class="bx bx-error-circle"></i>${esc(t('WorkAggregation_ActionDisabled_ChecklistIncomplete'))}</p>`
             : '';
+        /*
+         * SIGNAL (a) FOR "REQUIRED" — the level that was stored and did nothing.
+         *
+         * Three levels shipped and two behaved: Blocking stopped completion, Optional was meant to do nothing,
+         * and Required was indistinguishable from Optional anywhere on screen. A user chose it and the system
+         * ignored it — the same "stored but inert" class this module has had to fix repeatedly.
+         *
+         * Quiet by construction: it states a count and nothing more. It must NOT look like the blocking notice,
+         * because the whole point of the level is that the task can still close.
+         */
+        const openRequired = openRequiredItems(item);
+        const requiredNotice = openRequired.length
+            ? `<p class="wcn-block-hint wcn-check-required" role="note">
+                <i class="bx bx-info-circle"></i>${esc(tf('ChecklistRequiredOpen', openRequired.length))}</p>`
+            : '';
+        // Said once, under the list, when anything on it carries the flag — the per-row paperclip is the mark
+        // and this is the sentence that explains what the mark will mean.
+        const evidenceHint = items.some((c) => c.evidenceRequired)
+            // An ALERT, matching the create form and the two gates on this page. It reports a condition the
+            // reader did not create and cannot yet act on; a hint line reads as description instead.
+            ? `<div class="alert alert-secondary dt-inline-alert wcn-check-evidence-hint" role="note">
+                <i class="bx bx-paperclip"></i><span>${esc(t('ChecklistEvidenceHint'))}</span></div>`
+            : '';
         return `<div class="wcn-detail-section">
-            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('ChecklistLabel'))} <span class="wcn-count-inline">${done}/${items.length}</span></h6>
+            ${cardHead('bx-list-check', 'ChecklistLabel', `<span class="wcn-count-inline">${done}/${items.length}</span>`)}
             <p class="wcn-block-hint">${esc(t(items.some((c) => c.blocking) ? 'ChecklistBlocksCompletion' : 'ChecklistDoesNotBlock'))}</p>
             <progress class="wcn-progress" value="${done}" max="${items.length}" aria-label="${esc(t('ChecklistLabel'))}"></progress>
             <ul class="wcn-checks">${rows}</ul>
             ${notice}
+            ${requiredNotice}
+            ${evidenceHint}
+            ${canAdd ? checklistAddRow(item) : ''}
         </div>`;
     };
 
@@ -1746,7 +1893,7 @@
         if (!rows && !dates) { return ''; }
 
         return `<div class="wcn-detail-section">
-            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('StatusCardLabel'))}</h6>
+            ${cardHead('bx-pulse', 'StatusCardLabel')}
             ${rows ? `<ul class="wcn-gates">${rows}</ul>` : ''}
             ${dates}
         </div>`;
@@ -1791,6 +1938,24 @@
     // that it never reads as a status.
     const SUBTASK_FLASH_MS = 2500;
     const ACTIVITY_VISIBLE_LIMIT = 5;
+
+    /*
+     * WHEN THE FEED EARNS A FILTER — measured against what a task's history actually costs.
+     *
+     * A task that goes straight through records six entries: created, accepted, planned, started, submitted for
+     * review, completed. Put it down once and pick it back up and it is eight. That is the ORDINARY ceiling, so a
+     * threshold anywhere under it would put a permanent control on every finished task — chrome that is present
+     * for everyone and useful to no one. (Seven entries is the case that prompted this measurement; the filter
+     * must not appear for it.)
+     *
+     * Twelve is one full pass PLUS a change of hands — reassigned, re-accepted, re-planned, restarted. At that
+     * point the events genuinely outnumber the conversation and scanning for "what did someone SAY" is a real
+     * question. Below it, the eye does the filtering faster than a click can.
+     *
+     * ⚠ CHIPS, NOT TABS. A tab would claim these are two lists with two owners; they are one story told by two
+     * kinds of entry, and the axis law reserves tabs for ownership.
+     */
+    const ACTIVITY_FILTER_MIN_EVENTS = 12;
 
     // Subtasks — full: complete/add here; readonly: progress + "edit in source".
     const SUBTASK_ICON = {
@@ -2042,7 +2207,7 @@
         return `<div class="wcn-detail-section">
             <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
                 <h6 class="text-uppercase text-heading fw-semibold mb-0 d-flex align-items-center gap-2">
-                    ${esc(t('SubtasksLabel'))}
+                    <i class="bx bx-sitemap dt-card-icon" aria-hidden="true"></i>${esc(t('SubtasksLabel'))}
                     <span class="badge bg-label-secondary wcn-subtask-count">${subtaskItems.length}</span>
                 </h6>
                 <span class="wcn-subtask-progress">${esc(tf('SubtaskDoneCount', done))}</span>
@@ -2128,7 +2293,7 @@
                 <span class="wcn-badge wcn-badge-${DEP_STATE_KIND[d.state] || 'secondary'}">${esc(t(DEP_STATE_KEY[d.state] || d.state))}</span>
             </li>`).join('');
         return `<div class="wcn-detail-section">
-            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('DependenciesLabel'))}</h6>
+            ${cardHead('bx-link', 'DependenciesLabel')}
             <ul class="wcn-deps">${rows}</ul>
             <p class="wcn-block-hint"><i class="bx bx-link-external"></i>${esc(t('DepsReadonlyHint'))}</p>
         </div>`;
@@ -2140,7 +2305,7 @@
         const rows = item.attachments.map((a) =>
             `<li class="wcn-attach" data-wcn-attach="${esc(a.name)}"><i class="bx bx-paperclip"></i><span class="wcn-attach-name">${esc(a.name)}</span><span class="wcn-attach-size">${esc(a.size)}</span></li>`).join('');
         return `<div class="wcn-detail-section">
-            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('AttachmentsLabel'))}</h6>
+            ${cardHead('bx-paperclip', 'AttachmentsLabel')}
             <ul class="wcn-attachments">${rows}</ul>
         </div>`;
     };
@@ -2151,7 +2316,7 @@
             `<li class="wcn-attach"><i class="bx bx-shield-quarter"></i><span class="wcn-attach-name">${esc(data.resolveLabel(entry.label) || entry.id)}</span></li>`
         ).join('');
         return `<div class="wcn-detail-section">
-            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('EvidenceMissing'))}</h6>
+            ${cardHead('bx-file-find', 'EvidenceMissing')}
             ${entries ? `<ul class="wcn-attachments">${entries}</ul>` : `<p class="text-muted mb-0">${esc(t('ActionDisabledEvidenceIncomplete'))}</p>`}
         </div>`;
     };
@@ -2160,7 +2325,7 @@
     const renderNote = (item) => {
         if (isTerminal(item)) { return ''; }
         return `<div class="wcn-detail-section">
-            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('NoteLabel'))}</h6>
+            ${cardHead('bx-note', 'NoteLabel')}
             <div class="wcn-note">
                 <textarea class="form-control form-control-sm" data-wcn-note-input rows="2" placeholder="${esc(t('NotePlaceholder'))}">${esc(item.note || '')}</textarea>
                 <button type="button" class="btn btn-sm btn-label-secondary" data-wcn-note-save="${item.id}">${esc(t('NoteSave'))}</button>
@@ -2190,7 +2355,7 @@
             ? `<span class="wcn-ts-live"><span class="wcn-ts-dot"></span><span id="wcnTimerValue">00:00</span><span class="wcn-ts-runtxt">${esc(t('TimerRunning'))}</span></span>`
             : '';
         return `<div class="wcn-detail-section">
-            <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('TimesheetLabel'))}</h6>
+            ${cardHead('bx-stopwatch', 'TimesheetLabel')}
             <div class="wcn-timesheet">
                 <span class="wcn-ts-icon"><i class="bx bx-time"></i></span>
                 <span class="wcn-ts-total">${esc(formatMinutes(ts.loggedMinutes))}</span>
@@ -2213,6 +2378,21 @@
             return `${amount.toLocaleString()} ${currency || ''}`.trim();
         }
     };
+
+    /*
+     * A CARD'S HEADING, with the glyph that says what the card IS.
+     *
+     * One helper rather than a dozen copies of the same markup, and one place where the icon rule lives: the
+     * glyph names the CARD ("which question does this answer"), never a field inside it ("which value goes
+     * here"). The two vocabularies are kept apart deliberately — the same separation the field icons were given
+     * a round earlier, applied one level up.
+     *
+     * `trailing` carries whatever the heading already showed beside its title (a count, a badge), so adopting
+     * the icon changed no card's existing content.
+     */
+    const cardHead = (icon, titleKey, trailing = '') =>
+        `<h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2">
+            <i class="bx ${icon} dt-card-icon" aria-hidden="true"></i>${esc(t(titleKey))}${trailing}</h6>`;
 
     const sectionHead = (icon, titleKey) =>
         `<div class="wcn-business-head"><span class="wcn-business-icon"><i class="bx ${icon}"></i></span><h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t(titleKey))}</h6></div>`;
@@ -2494,17 +2674,45 @@
                     <i class="bx bx-moon"></i><span>${esc(t(isSnoozed ? 'Unsnooze' : 'Snooze'))}</span>
                 </button>
             </div>`;
-        const auditRows = item.activity.map((entry) => {
-            const isComment = entry.kind === 'comment';
-            const text = isComment ? entry.text
-                : entry.eventKey === 'AuditActionStamp' ? tf('AuditActionStamp', entry.actionLabel)
-                    : t(entry.eventKey);
-            return `<li class="wcn-audit-item${isComment ? ' wcn-audit-comment' : ''}">
-                <span class="wcn-audit-dot"><i class="bx ${isComment ? 'bx-message-rounded' : 'bx-git-commit'}"></i></span>
-                <div class="wcn-audit-body">
-                    <span class="wcn-audit-text">${esc(text)}</span>
-                    <span class="wcn-audit-meta">${esc(entry.actor || t('CommentAuthorUnknown'))}${entry.atMs ? ` · ${esc(agoLabel(entry.atMs, item.provenance))}` : ''}</span>
-                </div>
+        /*
+         * TWO KINDS, TWO SHAPES — because a sentence somebody wrote and a state that changed are not the same
+         * kind of thing, and reading them at the same weight makes the conversation disappear into the log.
+         *
+         *   comment → an avatar, a name, and the message. It looks like somebody speaking, because it is; it can
+         *             be replied to, and the person is the first thing you need.
+         *   event   → no avatar, one quiet line, an arrow. Nobody replies to a state change, and giving it a face
+         *             would make the machine look like a participant in the conversation.
+         *
+         * They shared one 46px row until now. The visible split is the point of the change, so a test asserts the
+         * two are STRUCTURALLY different rather than merely differently classed.
+         */
+        const visibleActivity = state.activityFilter === 'comments'
+            ? item.activity.filter((entry) => entry.kind === 'comment')
+            : item.activity;
+
+        const auditRows = visibleActivity.map((entry) => {
+            if (entry.kind === 'comment') {
+                const author = entry.actor || t('CommentAuthorUnknown');
+                return `<li class="wcn-audit-item wcn-audit-comment">
+                    <span class="diten-opt-avatar wcn-audit-avatar" aria-hidden="true">${esc(personInitials(author))}</span>
+                    <div class="wcn-audit-body">
+                        <span class="wcn-audit-author">${esc(author)}</span>
+                        <span class="wcn-audit-text">${esc(entry.text)}</span>
+                        ${entry.atMs ? `<span class="wcn-audit-meta">${esc(agoLabel(entry.atMs, item.provenance))}</span>` : ''}
+                    </div>
+                </li>`;
+            }
+
+            // One line: what happened · who · when. The reason, when the act carried one, follows in the actor's
+            // own words — it is the half of "returned" that the code cannot carry.
+            const parts = [eventSentence(entry), entry.actor || t('CommentAuthorUnknown')];
+            if (entry.atMs) { parts.push(agoLabel(entry.atMs, item.provenance)); }
+            return `<li class="wcn-audit-item wcn-audit-event">
+                <i class="bx bx-right-arrow-alt wcn-audit-arrow" aria-hidden="true"></i>
+                <span class="wcn-audit-line">${esc(parts.join(' · '))}${
+                    entry.event && entry.event.reason
+                        ? `<span class="wcn-audit-reason">${esc(entry.event.reason)}</span>`
+                        : ''}</span>
             </li>`;
         }).join('');
 
@@ -2546,22 +2754,75 @@
          * the composer is gone and the full-height "Henüz etkinlik kaydı yok" box was pure announcement.
          */
         const composer = renderComposer(item);
-        const activityCapped = hasCap(item, 'activity') && item.activity.length > ACTIVITY_VISIBLE_LIMIT;
+
+        /*
+         * THE FILTER, and the two conditions that earn it.
+         *
+         * It appears only when the EVENTS pass the measured threshold — not the whole feed. A busy conversation
+         * needs no filter (the chip would offer to hide nothing), and a long machine log is exactly what makes
+         * finding a person's sentence hard.
+         */
+        const eventCount = item.activity.filter((entry) => entry.kind !== 'comment').length;
+        const activityFilter = eventCount < ACTIVITY_FILTER_MIN_EVENTS ? '' :
+            `<div class="wcn-audit-filter" role="group" aria-label="${esc(t('ActivityFilterLabel'))}">
+                ${['all', 'comments'].map((mode) => `<button type="button"
+                    class="wcn-chip-filter${state.activityFilter === mode ? ' active' : ''}"
+                    aria-pressed="${state.activityFilter === mode}"
+                    data-wcn-activity-filter="${mode}">${
+                        esc(t(mode === 'all' ? 'ActivityFilterAll' : 'ActivityFilterCommentsOnly'))}</button>`).join('')}
+            </div>`;
+
+        /*
+         * A TASK OLDER THAN THE LOG SAYS SO.
+         *
+         * Every task written from WC-1 onwards opens its history with a `created` event, so a feed without one is
+         * a task whose earlier steps were never recorded. Nothing is reconstructed for it — deriving a timeline
+         * from the timestamps a task happens to carry is the precise move this feature refused — and the reader
+         * is told outright, in one quiet line, rather than being shown a hole that looks like a complete story.
+         *
+         * Placed at the FOOT of the feed, where the history runs out, because that is where the reader meets the
+         * gap.
+         *
+         * ⚠ THE EMPTY FEED IS THE CASE THAT MATTERS, and the first cut of this got it wrong by requiring at least
+         * one recorded event before saying anything. A pre-WC-1 task typically has NO events at all, so it showed
+         * "Henüz etkinlik kaydı yok" — which is true about the RECORD and false about the task: things happened
+         * to it and none were written down. That is the partial-history trap in its zero case, and it is exactly
+         * the surface this whole feature exists to stop shipping. The rule is therefore the plain one: no
+         * `created` entry means the log did not cover this task's beginning, whatever else the feed holds.
+         *
+         * Gated on `provenance === 'api'` because the showcase catalogue writes `eventKey` and never `event.code`
+         * — every fixture would otherwise claim its history had been cut short.
+         */
+        const historyGap = (item.provenance === 'api'
+            && !item.activity.some((entry) => entry.event && entry.event.code === 'created'))
+            ? `<p class="wcn-audit-gap">${esc(t('ActivityHistoryStartsHere'))}</p>`
+            : '';
+
+        const activityCapped = hasCap(item, 'activity') && visibleActivity.length > ACTIVITY_VISIBLE_LIMIT;
         const activitySection = !hasCap(item, 'activity')
             ? ''
-            : (!item.activity.length && !composer)
+            // `!historyGap` joins the condition because a task older than the log must never take the slim
+            // "nothing here" line: that sentence is true of the RECORD and false of the task, and it is the one
+            // place the reader would be left believing an unrecorded past was an empty one.
+            : (!item.activity.length && !composer && !historyGap)
                 ? `<div class="wcn-empty-line">
                     <i class="bx bx-message-square-detail" aria-hidden="true"></i>
                     <span class="wcn-empty-text">${esc(t('ActivityEmpty'))}</span>
                 </div>`
                 : `<div class="wcn-detail-section">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('ActivityLabel'))}</h6>
+                    ${cardHead('bx-message-square-detail', 'ActivityLabel')}
                     ${composer}
-                    ${item.activity.length
+                    ${activityFilter}
+                    ${visibleActivity.length
                         ? (activityCapped
-                            ? cappedList('activity', `<ul class="wcn-audit">${auditRows}</ul>`, item.activity.length)
+                            ? cappedList('activity', `<ul class="wcn-audit">${auditRows}</ul>`, visibleActivity.length)
                             : `<ul class="wcn-audit">${auditRows}</ul>`)
-                        : `<p class="wcn-block-hint">${esc(t('ActivityEmpty'))}</p>`}
+                        : (state.activityFilter === 'comments'
+                            ? `<p class="wcn-block-hint">${esc(t('ActivityNoComments'))}</p>`
+                            // "Nothing was recorded yet" and "the record does not reach back this far" are
+                            // different sentences, and printing both would contradict itself.
+                            : historyGap ? '' : `<p class="wcn-block-hint">${esc(t('ActivityEmpty'))}</p>`)}
+                    ${historyGap}
                 </div>`;
 
         // Command card — identity, status, actions and personal overlay. Everything
@@ -3360,7 +3621,7 @@
          * by marker attribute rather than id: ids do not survive an innerHTML swap intact, and a positional
          * selector would restore focus to the wrong box on a page that has several.
          */
-        const marker = ['data-wcn-subtask-input', 'data-wcn-note-input', 'data-wcn-comment-input']
+        const marker = ['data-wcn-subtask-input', 'data-wcn-check-input', 'data-wcn-note-input', 'data-wcn-comment-input']
             .find((attribute) => el.hasAttribute && el.hasAttribute(attribute));
         if (marker) { return { kind: 'text', marker, caret: el.selectionStart, value: el.value }; }
         const row = el.closest && el.closest('[data-wcn-row]');
@@ -3992,6 +4253,35 @@
             expectedVersion: Number(item.checklist?.version ?? 0)
         });
         await afterPhase2Write(result, 'ToastChecklistUpdated');
+    };
+
+    /*
+     * ADD an item to a task's checklist — the write the detail page never had.
+     *
+     * `expectedVersion` comes from the projected run, and **0 is a real value**: the provider ships an empty
+     * container at version 0 for a task with no run at all, and AddChecklistItemHandler reads that as "start
+     * one". Coercing it to 1 would claim a document that is not there and turn a first item into a phantom
+     * concurrency conflict for the only person on the page.
+     */
+    const addChecklistItem = async (taskId, text) => {
+        const trimmed = String(text || '').trim();
+        // Silence on empty, like the subtask row: the placeholder already says what the box is for, and a toast
+        // for pressing Enter in an empty field is noise.
+        if (!trimmed) { return; }
+
+        const item = itemById(taskId);
+        if (!isRealTaskItem(item)) {
+            console.warn(`[WorkCenterNext] Checklist add ignored for non-engine item ${taskId} `
+                + `(provider="${item?.source?.providerCode || 'unknown'}") — no backend owns it.`);
+            return;
+        }
+
+        const result = await global.TasksApi.addChecklistItem(taskId, {
+            text: trimmed,
+            requirement: state.checklistDraftLevel,
+            expectedVersion: Number(item.checklist?.version ?? 0)
+        });
+        await afterPhase2Write(result, 'ToastChecklistItemAdded');
     };
 
     const completeSubtask = async (subtaskId) => {
@@ -4637,9 +4927,26 @@
             const body = item.delegator
                 ? tf('ConfirmBodyOnBehalf', item.title, item.delegator)
                 : tf('ConfirmBody', item.title);
+            /*
+             * SIGNAL (b) FOR "REQUIRED" — said at the moment it matters, and at no cost to the flow.
+             *
+             * `complete` ALREADY opens this confirm (the projection marks it high-consequence), so naming the
+             * open required items here interrupts nothing that was not already interrupted. That is what made
+             * (b) worth doing alongside the card's counter rather than instead of it: the counter is for
+             * somebody reading the task, this is for somebody closing it — and a person can close a task from
+             * the LIST, where the card is not on screen at all.
+             *
+             * It is a WARNING, not a gate. The task still closes if they confirm; `Required` means "must be
+             * done", not "must be done first", and turning it into a second blocker would erase the difference
+             * between the two levels from the other direction.
+             */
+            const stillOpen = action.code === 'complete' ? openRequiredItems(item) : [];
+            const requiredWarning = stillOpen.length
+                ? `<div class="wcn-confirm-warning">${esc(tf('ConfirmRequiredOpen', stillOpen.length))}</div>`
+                : '';
             global.Swal.fire({
                 title: actionLabel(action),
-                html: `<div class="wcn-confirm-body">${esc(body)}</div>`,
+                html: `<div class="wcn-confirm-body">${esc(body)}</div>${requiredWarning}`,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: t('ConfirmProceed'),
@@ -4869,6 +5176,15 @@
             const parentId = event.target.getAttribute('data-wcn-subtask-add');
             const text = event.target.value;
             if (parentId) { addSubtask(parentId, text); }
+            return;
+        }
+        // The checklist's add row, on the same terms as the subtask row above it: the task id rides on the
+        // input, Enter commits, and the call is awaited through the same path the level chip does not touch.
+        if (event.key === 'Enter' && event.target.matches && event.target.matches('[data-wcn-check-input]')) {
+            event.preventDefault();
+            const taskId = event.target.getAttribute('data-wcn-check-add');
+            const text = event.target.value;
+            if (taskId) { addChecklistItem(taskId, text); }
             return;
         }
         // Escape in the search box clears the current query (before the typing guard).
@@ -5136,6 +5452,24 @@
         if (showAllEl) {
             const key = showAllEl.getAttribute('data-wcn-showall');
             if (key) { state.expandedLists[key] = !state.expandedLists[key]; render(); }
+            return;
+        }
+        const checkLevelEl = event.target.closest('[data-wcn-check-level]');
+        if (checkLevelEl) {
+            // Weakest-first, so a reader who keeps pressing walks toward the strict end rather than starting
+            // there. Same order and same three values the create form cycles through.
+            const order = ['Optional', 'Required', 'Blocking'];
+            state.checklistDraftLevel = order[(order.indexOf(state.checklistDraftLevel) + 1) % order.length];
+            render();
+            return;
+        }
+        const activityFilterEl = event.target.closest('[data-wcn-activity-filter]');
+        if (activityFilterEl) {
+            state.activityFilter = activityFilterEl.getAttribute('data-wcn-activity-filter');
+            // The cap is released per list and the filter changes what that list CONTAINS, so an expansion made
+            // over forty entries must not carry into a view of four.
+            state.expandedLists.activity = false;
+            render();
             return;
         }
         const subAddDetailedEl = event.target.closest('[data-wcn-subtask-add-detailed]');

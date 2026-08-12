@@ -7,6 +7,7 @@ using Diten.Platform.Common.Authorization;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Organization;
 using Diten.Platform.Domain.Entities.Tasks;
+using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Domain.Repositories;
 
 namespace Diten.Platform.Application.Tests.Tasks;
@@ -86,11 +87,77 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
     /// </summary>
     public int ForcedUpdateConflicts { get; set; }
 
+    /// <summary>
+    /// WC-1 — the lifecycle event log this store writes to, exactly as the real repository does.
+    ///
+    /// <para><b>It lives HERE rather than being injected</b> because that is where it lives in production: the
+    /// decision that a transition happened belongs to the write, not to the writer, so a double that let a handler
+    /// test opt out of recording would be testing a system nobody ships. Every handler test therefore gets the
+    /// history for free, and <c>repo.Transitions.Events</c> is how a test reads it.</para>
+    ///
+    /// <para>Hand it to <c>TaskWorkItemProvider</c> when a projection test needs to see what the handlers wrote.</para>
+    /// </summary>
+    public FakeTaskTransitionRepository Transitions { get; } = new();
+
     public Task<TaskItem> CreateAsync(TaskItem task, CancellationToken ct = default)
     {
         _items.Add(task);
+
+        // The entry that opens the task's history — see TaskItemRepository.CreateAsync for why every new task has
+        // one and why nothing older is backfilled.
+        var intent = task.ReadDeclaredIntent();
+        Record(task.Id, intent?.Kind ?? TaskTransitionKind.Created, task.Lifecycle, task.Lifecycle, intent);
         return Task.FromResult(task);
     }
+
+    /*
+     * The pre-image diff, mirroring TaskItemRepository.UpdateAsync's FindOneAndReplace.
+     *
+     * `stored` is the previous document and has not been overwritten yet at the call site, so the comparison here
+     * is the same comparison the driver's ReturnDocument.Before gives production. Keeping the two in step is what
+     * makes a handler test's assertion about history mean anything about the running system.
+     */
+    private void RecordIfMoved(TaskItem previous, TaskItem current)
+    {
+        var moved = previous.Lifecycle != current.Lifecycle
+                    || previous.AssigneeUserId != current.AssigneeUserId
+                    || previous.AcceptedByUserId != current.AcceptedByUserId;
+
+        var intent = current.ReadDeclaredIntent();
+        if (!moved && intent is null)
+        {
+            return;
+        }
+
+        Record(current.Id, intent?.Kind ?? TaskTransitionKind.Unknown, previous.Lifecycle, current.Lifecycle, intent);
+    }
+
+    private void Record(
+        Guid taskItemId,
+        TaskTransitionKind kind,
+        TaskLifecycle from,
+        TaskLifecycle to,
+        TaskTransitionIntent? intent)
+        => Transitions.CreateAsync(new TaskTransition
+        {
+            TenantId = TaskTestData.Tenant,
+            /*
+             * A DISTINCT CreatedAt per entry, nudged forward by how many are already logged.
+             *
+             * Several transitions inside one test can land in the same tick, and the feed's whole contract is that
+             * it is time-ordered — an assertion about "created, then accepted, then started" would otherwise pass
+             * or fail on clock resolution. The Id tie-break keeps a tied order STABLE; this makes it CORRECT,
+             * which is what the test is actually about.
+             */
+            CreatedAt = DateTimeOffset.UtcNow.AddMilliseconds(Transitions.Count),
+            TaskItemId = taskItemId,
+            Kind = kind,
+            FromLifecycle = from,
+            ToLifecycle = to,
+            ActorUserId = intent?.ActorUserId,
+            Reason = intent?.Reason,
+            ReasonCode = intent?.ReasonCode
+        });
 
     public Task<IReadOnlyList<TaskItem>> ListByIdsAsync(
         IReadOnlyCollection<Guid> ids,
@@ -244,6 +311,9 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
         // every field outside that list silently unwritable: a handler could persist ApprovalRequired or
         // WorkflowInstanceId, return 204, and the next read would still show the old value — the test double, not
         // the code, decided what "saved" meant.
+        // BEFORE the overwrite, while `stored` is still the pre-image — the whole basis of the diff.
+        RecordIfMoved(previous: stored, current: task);
+
         CopyWritableFields(from: task, to: stored);
         // …and the stored document gets its OWN collections. Copying the caller's references would make every
         // later edit of theirs into stored state, with no write and no version check — the same leak as an
@@ -263,6 +333,42 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
 
         return Task.CompletedTask;
     }
+}
+
+/// <summary>
+/// WC-1 — the in-memory lifecycle event log. Ordered NEWEST FIRST with the same <c>Id</c> tie-break the real
+/// repository uses, because a projection test that saw a different order from production would prove nothing
+/// about the feed the user reads.
+/// </summary>
+internal sealed class FakeTaskTransitionRepository : ITaskTransitionRepository
+{
+    private readonly List<TaskTransition> _events = [];
+
+    public IReadOnlyList<TaskTransition> Events => _events;
+
+    /// <summary>How many entries are already in the log — used to keep their timestamps distinct (see
+    /// <c>FakeTaskItemRepository.Record</c>).</summary>
+    public int Count => _events.Count;
+
+    public Task<TaskTransition> CreateAsync(TaskTransition transition, CancellationToken ct = default)
+    {
+        _events.Add(transition);
+        return Task.FromResult(transition);
+    }
+
+    public Task<IReadOnlyList<TaskTransition>> ListByTaskIdAsync(Guid taskItemId, CancellationToken ct = default)
+        => Task.FromResult(Order(_events.Where(x => x.TaskItemId == taskItemId)));
+
+    public Task<IReadOnlyList<TaskTransition>> ListByTaskIdsAsync(
+        IReadOnlyCollection<Guid> taskItemIds,
+        CancellationToken ct = default)
+        => Task.FromResult(Order(_events.Where(x => taskItemIds.Contains(x.TaskItemId))));
+
+    private static IReadOnlyList<TaskTransition> Order(IEnumerable<TaskTransition> transitions)
+        => transitions
+            .OrderByDescending(transition => transition.CreatedAt)
+            .ThenByDescending(transition => transition.Id)
+            .ToList();
 }
 
 internal sealed class FakeTaskAssignmentRepository : ITaskAssignmentRepository
@@ -620,8 +726,22 @@ internal sealed class FakeChecklistRunRepository(params ChecklistRun[] seed) : I
 
     public IReadOnlyList<ChecklistRun> Runs => _runs;
 
+    /// <summary>
+    /// Makes the next <see cref="CreateAsync"/> throw, the way a store that is briefly unreachable does.
+    ///
+    /// <para>Without it, "the task survives when its checklist cannot be written" is untestable — nothing could
+    /// make that write fail, so the decision would be a comment rather than a guarantee.</para>
+    /// </summary>
+    public bool FailNextCreate { get; set; }
+
     public Task<ChecklistRun> CreateAsync(ChecklistRun run, CancellationToken ct = default)
     {
+        if (FailNextCreate)
+        {
+            FailNextCreate = false;
+            throw new InvalidOperationException("Checklist run could not be stored.");
+        }
+
         _runs.Add(run);
         return Task.FromResult(run);
     }
@@ -1335,7 +1455,7 @@ internal static class TaskWorkItemProviderHarness
             new FakeChecklistRunRepository(),
             new FakeTaskApprovalService(),
             new FakeTaskDependencyRepository(),
-            new FakeTaskCommentRepository(),
+            new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(),
             new FakePositionRepository(positions),
             new FakeOrganizationUnitRepository(units),
             SlaForTests.Real(),

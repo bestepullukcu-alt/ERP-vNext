@@ -86,6 +86,23 @@
     const ACTIVITY_KINDS = ['comment', 'event'];
 
     /*
+     * WHICH ACTS an `event` entry can report (WC-1). Mirrors MOD-0024's TaskTransitionCodes value for value.
+     *
+     * The shell turns each of these into a localized sentence, so the list is what it can NAME — a code outside
+     * it renders as a generic "the task changed" line rather than as a raw token on screen.
+     *
+     * ⚠ Deliberately NOT enforced by validateItems, unlike ACTIVITY_KINDS above. An unknown kind is a broken
+     * entry, but an unknown CODE is simply a server that shipped a new transition before this shell learned its
+     * word for it — and pushing an error there would DROP the whole work item, taking its title, its actions and
+     * everything else off the surface over one row in a feed. That is the failure this contract has already paid
+     * for once with `dependencies`.
+     */
+    const ACTIVITY_EVENT_CODES = [
+        'created', 'accepted', 'planned', 'started', 'resumed', 'waiting', 'submittedForReview',
+        'reviewCancelled', 'completed', 'cancelled', 'claimed', 'released', 'reassigned', 'returned', 'unknown'
+    ];
+
+    /*
      * WHO a work item is waiting on: a TYPED identity, or nothing at all.
      *
      * Three shapes have been in circulation — {id, displayName, isCurrentUser} from the projection, a bare
@@ -466,7 +483,7 @@
     };
 
     global.WorkCenterNextContract = {
-        enums: { WORK_INTENTS, ASSIGNMENT_MODES, OWNERSHIP_STATES, ADMISSION_STATES, NORMALIZED_STATUSES, TASK_LIFECYCLES, EXECUTION_STATES, TIMER_STATES, SYSTEM_STATES, ACTION_DEPTHS, REVIEW_MEETING_REQUIREMENTS, WAITING_CONTEXT_TYPES, SUBTASK_STATUSES, PRIORITIES, SLA_STATES, DEPENDENCY_TYPES, DEPENDENCY_DIRECTIONS, ACTIVITY_KINDS, CAPABILITIES, VALUE_TYPES },
+        enums: { WORK_INTENTS, ASSIGNMENT_MODES, OWNERSHIP_STATES, ADMISSION_STATES, NORMALIZED_STATUSES, TASK_LIFECYCLES, EXECUTION_STATES, TIMER_STATES, SYSTEM_STATES, ACTION_DEPTHS, REVIEW_MEETING_REQUIREMENTS, WAITING_CONTEXT_TYPES, SUBTASK_STATUSES, PRIORITIES, SLA_STATES, DEPENDENCY_TYPES, DEPENDENCY_DIRECTIONS, ACTIVITY_KINDS, ACTIVITY_EVENT_CODES, CAPABILITIES, VALUE_TYPES },
         limits: LIMITS,
         isLabel,
         isSafeLink,

@@ -130,6 +130,20 @@
   <data name="CardApprovalTitle" xml:space="preserve"><value>Approval manager</value></data>
   <data name="CardApprovalDescription" xml:space="preserve"><value>Choose the manager who approves this task before work starts. An approval request is sent to them once the task is created.</value></data>
   <data name="CardWatchersTitle" xml:space="preserve"><value>Watchers</value></data>
+  <data name="CardChecklistTitle" xml:space="preserve"><value>Checklist</value></data>
+  <data name="CardChecklistDescription" xml:space="preserve"><value>The steps of this task. Items are ticked after the task is created; a blocking item keeps the task from closing.</value></data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Type an item and press Enter</value></data>
+  <data name="ChecklistAddButton" xml:space="preserve"><value>Add</value></data>
+  <data name="ChecklistAddHint" xml:space="preserve"><value>Click the label to change the level. There is no template list yet.</value></data>
+  <data name="ChecklistLevelOptional" xml:space="preserve"><value>Optional</value></data>
+  <data name="ChecklistLevelRequired" xml:space="preserve"><value>Required</value></data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve"><value>Blocking</value></data>
+  <data name="ChecklistLevelHint" xml:space="preserve"><value>Change the level: Optional → Required → Blocking</value></data>
+  <data name="ChecklistEvidenceToggle" xml:space="preserve"><value>Require evidence</value></data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Evidence is required. Attaching a document becomes possible once the document module is connected.</value></data>
+  <data name="ChecklistRemove" xml:space="preserve"><value>Remove item</value></data>
+  <data name="ChecklistMoveUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="ChecklistMoveDown" xml:space="preserve"><value>Move down</value></data>
   <data name="CardEmailTitle" xml:space="preserve"><value>Email notifications</value></data>
   <data name="CardEmailDescription" xml:space="preserve"><value>When on, the people involved are emailed as the task is assigned, updated and completed.</value></data>
   <data name="CardDelegationTitle" xml:space="preserve"><value>Delegation settings</value></data>

@@ -101,6 +101,55 @@
             .filter((t) => t.length > 0);
     };
 
+    /* ── Checklist items on the create form ───────────────────────────────────────────────────────────────
+     *
+     * The steps of THIS task. Everything behind them already shipped — the entities, the add/tick commands, the
+     * projection, and the completion gate that refuses to close a task with an open BLOCKING item — and there
+     * was no screen anywhere that could write one. So a checklist could stop a task from closing and no user
+     * could create the thing doing the stopping.
+     */
+
+    /*
+     * THE THREE LEVELS, in the engine's own spelling (ChecklistItemRequirement), because they cross the wire.
+     * A lowercase or localized value here would be a 400 before the handler runs — the defect this module has
+     * already shipped twice with enums.
+     *
+     * Ordered weakest-first: the level control CYCLES through this array, so a reader who keeps pressing walks
+     * from the harmless end toward the strict one rather than starting at the strict one.
+     */
+    const CHECKLIST_LEVELS = ['Optional', 'Required', 'Blocking'];
+
+    /*
+     * DEFAULT: Optional.
+     *
+     * A Blocking default manufactures tasks that cannot be closed by people who never chose that — the author
+     * types three lines, and weeks later someone else cannot finish the work and has no idea why. Optional is
+     * the level that is wrong in the least damaging direction: a missed expectation is visible and fixable, a
+     * task nobody can close is neither. Blocking stays ONE press away and says so on the row.
+     */
+    const CHECKLIST_DEFAULT_LEVEL = 'Optional';
+
+    const nextChecklistLevel = (level) => {
+        const index = CHECKLIST_LEVELS.indexOf(level);
+        return CHECKLIST_LEVELS[(index < 0 ? 0 : index + 1) % CHECKLIST_LEVELS.length];
+    };
+
+    /**
+     * Normalizes whatever the draft holds into rows the payload can trust.
+     *
+     * A restored draft is JSON from another session and may carry anything, so an unknown level collapses to the
+     * default rather than travelling to the server to be rejected there.
+     */
+    const normalizeChecklistItems = (items) => (Array.isArray(items) ? items : [])
+        .map((item) => ({
+            text: String((item && item.text) || '').trim(),
+            requirement: CHECKLIST_LEVELS.includes(item && item.requirement)
+                ? item.requirement
+                : CHECKLIST_DEFAULT_LEVEL,
+            evidenceRequired: !!(item && item.evidenceRequired)
+        }))
+        .filter((item) => item.text.length > 0);
+
     const parseNumberOrNull = (value) => {
         const text = trimOrNull(value);
         if (text === null) { return null; }
@@ -167,6 +216,15 @@
                 : parseNumberOrNull(draft.reminderLeadDays),
             delegationAllowed: !!draft.delegationAllowed,
             fieldValues: Array.isArray(draft.fieldValues) ? draft.fieldValues : [],
+            /*
+             * The checklist travels WITH the task, not in a follow-up call — which is what removes the question
+             * "the task was created and the checklist was not, now what?" rather than answering it.
+             *
+             * No sort field: the ARRAY's order IS the order, and the server reads it that way. A payload that
+             * carries its own sort key can contradict its own list, and then two readers disagree about what
+             * "first" means.
+             */
+            checklistItems: normalizeChecklistItems(draft.checklistItems),
             watchers: toWatcherRequests(draft.watchers)
         };
     };
@@ -1327,6 +1385,187 @@
         return nodes.length;
     };
 
+    /* ── The checklist editor ─────────────────────────────────────────────────────────────────────────────
+     *
+     * Built as DOM NODES, never as an HTML string, for the same reason the picker rows are: an item's text is
+     * whatever a person typed, and string-building is how typed text becomes markup.
+     *
+     * The list element is the single source of truth for order and content — `readChecklistItems` reads the DOM
+     * back. A parallel JS array would be a second copy of the same fact, and the two would disagree the first
+     * time a row moved.
+     */
+
+    /**
+     * One row: move controls, the text, its level, an evidence toggle and a remove.
+     *
+     * @param {object} item  {text, requirement, evidenceRequired}
+     * @param {Function} t   translator (key) => string
+     * @returns {HTMLLIElement}
+     */
+    const checklistRowNode = (item, t) => {
+        const row = document.createElement('li');
+        row.className = 'task-checklist-row';
+        row.dataset.taskChecklistRow = '';
+        row.dataset.requirement = item.requirement;
+        row.dataset.evidence = item.evidenceRequired ? '1' : '';
+
+        /*
+         * THE GRIP — the mouse path, and only the mouse path.
+         *
+         * `aria-hidden` with no tab stop on purpose: it is not a second control, it is a surface to grab. The
+         * buttons beside it do the same job for a keyboard, and announcing a handle that Enter cannot operate
+         * would promise an interaction that does not exist.
+         */
+        const grip = document.createElement('span');
+        grip.className = 'task-checklist-grip';
+        grip.dataset.taskChecklistGrip = '';
+        grip.setAttribute('aria-hidden', 'true');
+        const gripIcon = document.createElement('i');
+        gripIcon.className = 'bx bx-grid-vertical';
+        grip.appendChild(gripIcon);
+        row.appendChild(grip);
+
+        /*
+         * MOVE, as two buttons — kept even now that rows can be dragged.
+         *
+         * NOT a fallback. WCAG 2.2 §2.5.7 requires a single-pointer alternative to every dragging movement, and
+         * these are it; they are also the whole keyboard story, because Sortable has none. Removing them the day
+         * drag arrived would have traded an accessible interaction for an inaccessible one and called it an
+         * upgrade.
+         */
+        const move = document.createElement('span');
+        move.className = 'task-checklist-move';
+        // The labels are resolved HERE, as literal t('…') calls, rather than by passing a key through the loop:
+        // the l10n guard reads this file for literals, and a key it cannot see is a translation nothing checks.
+        [['up', 'bx-chevron-up', t('checklistMoveUp')], ['down', 'bx-chevron-down', t('checklistMoveDown')]]
+            .forEach(([direction, glyph, label]) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'task-checklist-btn';
+                button.dataset.taskChecklistMove = direction;
+                button.title = label;
+                button.setAttribute('aria-label', label);
+                const icon = document.createElement('i');
+                icon.className = 'bx ' + glyph;
+                button.appendChild(icon);
+                move.appendChild(button);
+            });
+        row.appendChild(move);
+
+        const text = document.createElement('span');
+        text.className = 'task-checklist-text';
+        // textContent, not innerHTML — this is the line the author typed.
+        text.textContent = item.text;
+        row.appendChild(text);
+
+        /*
+         * THE LEVEL, as a chip that cycles. Three states on one control rather than a select, because the row
+         * has to stay one line and the three are read far more often than they are changed.
+         *
+         * The label always NAMES the current level. A chip that showed only the strict state would leave
+         * "Optional" as a blank, and a blank is read as "not set" rather than as a deliberate choice.
+         */
+        const level = document.createElement('button');
+        level.type = 'button';
+        level.className = 'task-checklist-level';
+        level.dataset.taskChecklistLevel = '';
+        /*
+         * Three literal lookups rather than `t('checklistLevel' + requirement)`. The l10n guard scans this file
+         * for `t('…')` calls and checks every one against the serialized bridge payload; a key assembled from a
+         * variable is invisible to it, so a missing translation would reach a user instead of a test.
+         */
+        level.textContent = item.requirement === 'Blocking' ? t('checklistLevelBlocking')
+            : item.requirement === 'Required' ? t('checklistLevelRequired')
+                : t('checklistLevelOptional');
+        level.title = t('checklistLevelHint');
+        row.appendChild(level);
+
+        /*
+         * EVIDENCE. The model has carried `EvidenceRequired` since Phase 1 and no screen ever set it; the
+         * evidence itself belongs to MOD-0031, so this records the REQUIREMENT and nothing more.
+         */
+        const evidence = document.createElement('button');
+        evidence.type = 'button';
+        evidence.className = 'task-checklist-btn task-checklist-evidence';
+        evidence.dataset.taskChecklistEvidence = '';
+        evidence.setAttribute('aria-pressed', item.evidenceRequired ? 'true' : 'false');
+        evidence.title = t('checklistEvidenceToggle');
+        evidence.setAttribute('aria-label', t('checklistEvidenceToggle'));
+        const clip = document.createElement('i');
+        clip.className = 'bx bx-paperclip';
+        evidence.appendChild(clip);
+        row.appendChild(evidence);
+
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'task-checklist-btn task-checklist-remove';
+        remove.dataset.taskChecklistRemove = '';
+        remove.title = t('checklistRemove');
+        remove.setAttribute('aria-label', t('checklistRemove'));
+        const cross = document.createElement('i');
+        cross.className = 'bx bx-x';
+        remove.appendChild(cross);
+        row.appendChild(remove);
+
+        return row;
+    };
+
+    /**
+     * Puts every row's move controls into the state its POSITION justifies.
+     *
+     * <p>Separate from rendering, and called after every reorder, because reordering must NOT rebuild the rows:
+     * a rebuild detaches the node under the pointer and strands the second press (the defect a live click found
+     * on the level chip). So the DOM moves, and this re-derives what the move controls should say about it.</p>
+     *
+     * <p>Three states, all read off the list rather than remembered:</p>
+     * <ul>
+     *   <li><b>One row</b> — no grip and no arrows at all. There is nowhere to move it, and a control that can
+     *       only ever refuse is worse than no control; dragging a single-row list is equally meaningless.</li>
+     *   <li><b>First row</b> — up disabled. <b>Last row</b> — down disabled.</li>
+     *   <li>Anything in between — both live.</li>
+     * </ul>
+     *
+     * <p>They were all permanently enabled before this: a one-item list offered two arrows that could do
+     * nothing, and the top row's ↑ and the bottom row's ↓ were live and inert. Measured on the live form.</p>
+     */
+    const applyChecklistPositions = (listEl) => {
+        if (!listEl) { return; }
+        const rows = [...listEl.querySelectorAll('[data-task-checklist-row]')];
+        const solitary = rows.length < 2;
+
+        rows.forEach((row, index) => {
+            // Hidden, not merely disabled, when there is only one row: a disabled arrow still says "this list
+            // can be reordered", which is a promise a one-item list cannot keep.
+            row.querySelector('[data-task-checklist-grip]')?.classList.toggle('d-none', solitary);
+            row.querySelector('.task-checklist-move')?.classList.toggle('d-none', solitary);
+
+            const up = row.querySelector('[data-task-checklist-move="up"]');
+            const down = row.querySelector('[data-task-checklist-move="down"]');
+            if (up) { up.disabled = index === 0; }
+            if (down) { down.disabled = index === rows.length - 1; }
+        });
+    };
+
+    /** Replaces the list's contents with these items, in this order. */
+    const renderChecklistItems = (listEl, items, t) => {
+        if (!listEl) { return 0; }
+        listEl.replaceChildren();
+        const rows = normalizeChecklistItems(items);
+        rows.forEach((item) => listEl.appendChild(checklistRowNode(item, t)));
+        applyChecklistPositions(listEl);
+        return rows.length;
+    };
+
+    /** Reads the list back — the DOM's order IS the order that travels. */
+    const readChecklistItems = (listEl) => {
+        if (!listEl) { return []; }
+        return Array.from(listEl.querySelectorAll('[data-task-checklist-row]')).map((row) => ({
+            text: row.querySelector('.task-checklist-text')?.textContent || '',
+            requirement: row.dataset.requirement || CHECKLIST_DEFAULT_LEVEL,
+            evidenceRequired: row.dataset.evidence === '1'
+        }));
+    };
+
     global.TaskForm = {
         DRAFT_STORAGE_KEY,
         TARGET,
@@ -1360,6 +1599,17 @@
         positionOptionNode,
         positionSelectionNode,
         pickerRowTemplate,
+        // The checklist a new task is born with. Levels in the ENGINE's spelling, because they cross the wire.
+        CHECKLIST_LEVELS,
+        CHECKLIST_DEFAULT_LEVEL,
+        nextChecklistLevel,
+        normalizeChecklistItems,
+        checklistRowNode,
+        renderChecklistItems,
+        // Re-derives the move controls from where each row now sits. Called after every reorder, because a
+        // reorder must move nodes rather than rebuild them.
+        applyChecklistPositions,
+        readChecklistItems,
         // Phase 5 — configurable fields.
         customFieldControlKind,
         customFieldLabel,

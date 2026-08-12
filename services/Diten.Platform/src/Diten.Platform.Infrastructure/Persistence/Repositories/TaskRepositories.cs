@@ -13,9 +13,17 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 
 public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRepository
 {
-    public TaskItemRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+    private readonly ITaskTransitionRepository _transitions;
+    private readonly ITenantContext _tenantContext;
+
+    public TaskItemRepository(
+        IPlatformDbContext dbContext,
+        ITenantContext tenantContext,
+        ITaskTransitionRepository transitions)
         : base(dbContext.Database, tenantContext, "task_items")
     {
+        _transitions = transitions;
+        _tenantContext = tenantContext;
     }
 
     public async Task<IReadOnlyList<TaskItem>> GetAllForTenantAsync(CancellationToken ct = default)
@@ -89,6 +97,44 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
         return await Collection.Find(filter).SortBy(x => x.DueAt).ToListAsync(ct);
     }
 
+    /// <summary>
+    /// A new task, with the <see cref="TaskTransitionKind.Created"/> entry that opens its history.
+    ///
+    /// <para>The entry is what makes "this task has no history" ANSWERABLE rather than ambiguous. Every task
+    /// written from WC-1 onwards opens its log with one, so a feed with no `created` in it is a task that predates
+    /// the log — and the screen can say so instead of presenting a hole as a complete story. Nothing is
+    /// backfilled: the moments before the log existed were never recorded, and inventing them is the exact defect
+    /// the projection refused to ship.</para>
+    /// </summary>
+    public override async Task<TaskItem> CreateAsync(TaskItem task, CancellationToken ct = default)
+    {
+        var created = await base.CreateAsync(task, ct);
+
+        var intent = task.ReadDeclaredIntent();
+        await RecordAsync(
+            task.Id,
+            intent?.Kind ?? TaskTransitionKind.Created,
+            from: task.Lifecycle,
+            to: task.Lifecycle,
+            intent,
+            ct);
+
+        return created;
+    }
+
+    /*
+     * The conditional write, and the ONLY place a lifecycle event is decided.
+     *
+     * FindOneAndReplace rather than ReplaceOne, for the PRE-IMAGE: the previous document comes back in the same
+     * round trip, so "did this task actually move, and from what" is answered by comparing two real documents
+     * rather than by trusting the caller. A null answer means the version filter did not match — the write was
+     * refused, so nothing moved and nothing is recorded. That ordering is the point: a handler that declares a
+     * transition and then loses a concurrency race writes NO history, because the history follows the commit.
+     *
+     * A handler that forgets to declare still gets its transition recorded, as Unknown. Refusing to record what
+     * could not be named would restore the silent hole this log exists to close; the coverage test is what makes
+     * Unknown loud.
+     */
     public async Task<bool> UpdateAsync(TaskItem task, int expectedVersion, CancellationToken ct = default)
     {
         task.Version = expectedVersion + 1;
@@ -97,9 +143,124 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
             ExecutionFilter,
             Builders<TaskItem>.Filter.Eq(x => x.Id, task.Id),
             Builders<TaskItem>.Filter.Eq(x => x.Version, expectedVersion));
-        var result = await Collection.ReplaceOneAsync(filter, task, new ReplaceOptions(), ct);
-        return result.IsAcknowledged && result.ModifiedCount == 1;
+
+        var previous = await Collection.FindOneAndReplaceAsync(
+            filter,
+            task,
+            new FindOneAndReplaceOptions<TaskItem> { ReturnDocument = ReturnDocument.Before },
+            ct);
+
+        if (previous is null)
+        {
+            return false;
+        }
+
+        await RecordIfMovedAsync(previous, task, ct);
+        return true;
     }
+
+    /// <summary>
+    /// Records an entry when the write moved the task, and stays silent when it did not.
+    ///
+    /// <para>THREE fields count as movement: the lifecycle, the holder, and the acceptance mark. The third is
+    /// there because BL-042 gave acceptance its own field — accepting a PLANNED task changes neither of the other
+    /// two, so a diff that watched only lifecycle and assignee would drop accept from the history of exactly the
+    /// tasks whose acceptance was worth recording.</para>
+    ///
+    /// <para>An edit that changes a title, a due date or a checklist moves none of the three and records nothing.
+    /// This is a LIFECYCLE log, not a field-level audit trail; conflating the two would bury the six entries that
+    /// tell the task's story under sixty that do not.</para>
+    /// </summary>
+    private async Task RecordIfMovedAsync(TaskItem previous, TaskItem current, CancellationToken ct)
+    {
+        var moved = previous.Lifecycle != current.Lifecycle
+                    || previous.AssigneeUserId != current.AssigneeUserId
+                    || previous.AcceptedByUserId != current.AcceptedByUserId;
+
+        var intent = current.ReadDeclaredIntent();
+        if (!moved && intent is null)
+        {
+            return;
+        }
+
+        await RecordAsync(
+            current.Id,
+            intent?.Kind ?? TaskTransitionKind.Unknown,
+            from: previous.Lifecycle,
+            to: current.Lifecycle,
+            intent,
+            ct);
+    }
+
+    private Task RecordAsync(
+        Guid taskItemId,
+        TaskTransitionKind kind,
+        TaskLifecycle from,
+        TaskLifecycle to,
+        TaskTransitionIntent? intent,
+        CancellationToken ct)
+        => _transitions.CreateAsync(new TaskTransition
+        {
+            TenantId = _tenantContext.TenantId,
+            TaskItemId = taskItemId,
+            Kind = kind,
+            FromLifecycle = from,
+            ToLifecycle = to,
+            ActorUserId = intent?.ActorUserId,
+            Reason = intent?.Reason,
+            ReasonCode = intent?.ReasonCode
+        }, ct);
+}
+
+/// <summary>
+/// WC-1 — the lifecycle event log. Its own collection (see <see cref="TaskTransition"/> for why it is not an
+/// array on the task).
+/// </summary>
+public sealed class TaskTransitionRepository : TenantRepository<TaskTransition>, ITaskTransitionRepository
+{
+    public TaskTransitionRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, "task_transitions")
+    {
+    }
+
+    public async Task<IReadOnlyList<TaskTransition>> ListByTaskIdAsync(
+        Guid taskItemId,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<TaskTransition>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskTransition>.Filter.Eq(x => x.TaskItemId, taskItemId));
+        return Order(await Collection.Find(filter).ToListAsync(ct));
+    }
+
+    public async Task<IReadOnlyList<TaskTransition>> ListByTaskIdsAsync(
+        IReadOnlyCollection<Guid> taskItemIds,
+        CancellationToken ct = default)
+    {
+        if (taskItemIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<TaskTransition>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskTransition>.Filter.In(x => x.TaskItemId, taskItemIds));
+        return Order(await Collection.Find(filter).ToListAsync(ct));
+    }
+
+    /*
+     * Sorted IN MEMORY for the same reason TaskCommentRepository.Order is (BL-030): CreatedAt is a DateTimeOffset,
+     * which this driver stores as a BSON ARRAY [ticks, offsetMinutes], and a server-side sort with the Id
+     * tie-break below fails at runtime with "cannot sort with keys that are parallel arrays".
+     *
+     * Newest first and STABLE, matching the comment feed key for key — the two lists are merged into one stream,
+     * and two halves ordered by different rules interleave wrongly wherever their timestamps meet.
+     */
+    private static IReadOnlyList<TaskTransition> Order(IEnumerable<TaskTransition> transitions)
+        => transitions
+            .OrderByDescending(transition => transition.CreatedAt)
+            .ThenByDescending(transition => transition.Id)
+            .ToList();
 }
 
 public sealed class TaskAssignmentRepository : TenantRepository<TaskAssignment>, ITaskAssignmentRepository

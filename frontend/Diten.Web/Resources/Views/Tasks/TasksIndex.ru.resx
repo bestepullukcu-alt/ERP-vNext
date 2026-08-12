@@ -130,6 +130,20 @@
   <data name="CardApprovalTitle" xml:space="preserve"><value>Согласующий руководитель</value></data>
   <data name="CardApprovalDescription" xml:space="preserve"><value>Выберите руководителя, который согласует задачу до начала работы. Запрос на согласование отправляется ему сразу после создания задачи.</value></data>
   <data name="CardWatchersTitle" xml:space="preserve"><value>Наблюдатели</value></data>
+  <data name="CardChecklistTitle" xml:space="preserve"><value>Контрольный список</value></data>
+  <data name="CardChecklistDescription" xml:space="preserve"><value>Шаги этой задачи. Пункты отмечаются после создания задачи; блокирующий пункт не даёт её закрыть.</value></data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Введите пункт и нажмите Enter</value></data>
+  <data name="ChecklistAddButton" xml:space="preserve"><value>Добавить</value></data>
+  <data name="ChecklistAddHint" xml:space="preserve"><value>Нажмите на метку, чтобы изменить уровень. Списка шаблонов пока нет.</value></data>
+  <data name="ChecklistLevelOptional" xml:space="preserve"><value>Необязательно</value></data>
+  <data name="ChecklistLevelRequired" xml:space="preserve"><value>Обязательно</value></data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve"><value>Блокирующий</value></data>
+  <data name="ChecklistLevelHint" xml:space="preserve"><value>Изменить уровень: Необязательно → Обязательно → Блокирующий</value></data>
+  <data name="ChecklistEvidenceToggle" xml:space="preserve"><value>Требовать подтверждение</value></data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Требуется подтверждающий документ. Привязка документа заработает после подключения модуля документов.</value></data>
+  <data name="ChecklistRemove" xml:space="preserve"><value>Удалить пункт</value></data>
+  <data name="ChecklistMoveUp" xml:space="preserve"><value>Вверх</value></data>
+  <data name="ChecklistMoveDown" xml:space="preserve"><value>Вниз</value></data>
   <data name="CardEmailTitle" xml:space="preserve"><value>Уведомления по электронной почте</value></data>
   <data name="CardEmailDescription" xml:space="preserve"><value>Когда включено, участникам приходит письмо при назначении, изменении и завершении задачи.</value></data>
   <data name="CardDelegationTitle" xml:space="preserve"><value>Настройки передачи</value></data>

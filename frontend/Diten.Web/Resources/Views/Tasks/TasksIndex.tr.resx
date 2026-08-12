@@ -130,6 +130,20 @@
   <data name="CardApprovalTitle" xml:space="preserve"><value>Onay yöneticisi</value></data>
   <data name="CardApprovalDescription" xml:space="preserve"><value>Bu göreve başlamadan önce onay verecek yöneticiyi seçin. Görev oluşturulduktan sonra yöneticiye onay talebi gönderilir.</value></data>
   <data name="CardWatchersTitle" xml:space="preserve"><value>İzleyiciler</value></data>
+  <data name="CardChecklistTitle" xml:space="preserve"><value>Kontrol listesi</value></data>
+  <data name="CardChecklistDescription" xml:space="preserve"><value>Bu görevin adımları. Maddeler görev açıldıktan sonra işaretlenir; engelleyici bir madde tamamlanmadan görev kapanmaz.</value></data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Madde yaz ve Enter'a bas</value></data>
+  <data name="ChecklistAddButton" xml:space="preserve"><value>Ekle</value></data>
+  <data name="ChecklistAddHint" xml:space="preserve"><value>Seviyeyi değiştirmek için etikete tıklayın. Şablon listesi henüz yok.</value></data>
+  <data name="ChecklistLevelOptional" xml:space="preserve"><value>İsteğe bağlı</value></data>
+  <data name="ChecklistLevelRequired" xml:space="preserve"><value>Zorunlu</value></data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve"><value>Engelleyici</value></data>
+  <data name="ChecklistLevelHint" xml:space="preserve"><value>Seviyeyi değiştir: İsteğe bağlı → Zorunlu → Engelleyici</value></data>
+  <data name="ChecklistEvidenceToggle" xml:space="preserve"><value>Kanıt gereksin</value></data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Kanıt belgesi gerekiyor. Belge bağlantısı doküman modülü bağlandığında etkinleşecek.</value></data>
+  <data name="ChecklistRemove" xml:space="preserve"><value>Maddeyi kaldır</value></data>
+  <data name="ChecklistMoveUp" xml:space="preserve"><value>Yukarı taşı</value></data>
+  <data name="ChecklistMoveDown" xml:space="preserve"><value>Aşağı taşı</value></data>
   <data name="CardEmailTitle" xml:space="preserve"><value>E-posta bildirimleri</value></data>
   <data name="CardEmailDescription" xml:space="preserve"><value>Açıkken görev atandıkça, güncellendikçe ve tamamlandıkça ilgili kişilere e-posta gönderilir.</value></data>
   <data name="CardDelegationTitle" xml:space="preserve"><value>Devir ayarları</value></data>

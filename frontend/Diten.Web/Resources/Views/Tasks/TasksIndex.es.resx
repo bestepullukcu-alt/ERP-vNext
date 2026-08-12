@@ -130,6 +130,20 @@
   <data name="CardApprovalTitle" xml:space="preserve"><value>Responsable de aprobación</value></data>
   <data name="CardApprovalDescription" xml:space="preserve"><value>Elija al responsable que aprobará esta tarea antes de comenzar. Se le enviará una solicitud de aprobación en cuanto se cree la tarea.</value></data>
   <data name="CardWatchersTitle" xml:space="preserve"><value>Observadores</value></data>
+  <data name="CardChecklistTitle" xml:space="preserve"><value>Lista de control</value></data>
+  <data name="CardChecklistDescription" xml:space="preserve"><value>Los pasos de esta tarea. Los elementos se marcan después de crear la tarea; un elemento bloqueante impide cerrarla.</value></data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Escriba un elemento y pulse Intro</value></data>
+  <data name="ChecklistAddButton" xml:space="preserve"><value>Añadir</value></data>
+  <data name="ChecklistAddHint" xml:space="preserve"><value>Haga clic en la etiqueta para cambiar el nivel. Todavía no hay lista de plantillas.</value></data>
+  <data name="ChecklistLevelOptional" xml:space="preserve"><value>Opcional</value></data>
+  <data name="ChecklistLevelRequired" xml:space="preserve"><value>Obligatorio</value></data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve"><value>Bloqueante</value></data>
+  <data name="ChecklistLevelHint" xml:space="preserve"><value>Cambiar el nivel: Opcional → Obligatorio → Bloqueante</value></data>
+  <data name="ChecklistEvidenceToggle" xml:space="preserve"><value>Exigir evidencia</value></data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Se requiere evidencia. El enlace a un documento se activará cuando se conecte el módulo documental.</value></data>
+  <data name="ChecklistRemove" xml:space="preserve"><value>Quitar elemento</value></data>
+  <data name="ChecklistMoveUp" xml:space="preserve"><value>Subir</value></data>
+  <data name="ChecklistMoveDown" xml:space="preserve"><value>Bajar</value></data>
   <data name="CardEmailTitle" xml:space="preserve"><value>Notificaciones por correo</value></data>
   <data name="CardEmailDescription" xml:space="preserve"><value>Cuando está activo, las personas implicadas reciben un correo al asignarse, actualizarse y completarse la tarea.</value></data>
   <data name="CardDelegationTitle" xml:space="preserve"><value>Ajustes de delegación</value></data>

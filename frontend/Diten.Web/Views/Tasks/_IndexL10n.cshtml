@@ -68,6 +68,17 @@
         SectionGovernance = Localizer["SectionGovernance"].Value,
         SectionCustomFields = Localizer["SectionCustomFields"].Value,
 
+        @* The checklist a new task is born with. Only the strings the JS builds live here — the card's own
+           heading and hint are rendered by _Form.cshtml through the Localizer directly. *@
+        ChecklistLevelOptional = Localizer["ChecklistLevelOptional"].Value,
+        ChecklistLevelRequired = Localizer["ChecklistLevelRequired"].Value,
+        ChecklistLevelBlocking = Localizer["ChecklistLevelBlocking"].Value,
+        ChecklistLevelHint = Localizer["ChecklistLevelHint"].Value,
+        ChecklistEvidenceToggle = Localizer["ChecklistEvidenceToggle"].Value,
+        ChecklistRemove = Localizer["ChecklistRemove"].Value,
+        ChecklistMoveUp = Localizer["ChecklistMoveUp"].Value,
+        ChecklistMoveDown = Localizer["ChecklistMoveDown"].Value,
+
         // Phase 5 — the configurable fields the form renders from the tenant's own definitions. The field LABELS
         // are tenant content and come from the definition itself; only the control's own furniture is translated
         // here (a picker's placeholder, and the two words a yes/no field offers).

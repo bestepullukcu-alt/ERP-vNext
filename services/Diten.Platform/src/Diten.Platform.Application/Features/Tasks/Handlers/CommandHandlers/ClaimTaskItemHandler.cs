@@ -88,6 +88,9 @@ public sealed class ClaimTaskItemHandler : IRequestHandler<ClaimTaskItemCommand,
 
         task.AssigneeUserId = actorId;
         task.UpdatedBy = _currentUser.ActorName;
+        // WC-1. Declared BEFORE the conditional write, and recorded only if that write wins: the loser of a claim
+        // race must leave no trace in the history, or two people would appear to have taken the same task.
+        task.Declare(TaskTransitionKind.Claimed, actorId);
 
         var updated = await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct);
         if (!updated)

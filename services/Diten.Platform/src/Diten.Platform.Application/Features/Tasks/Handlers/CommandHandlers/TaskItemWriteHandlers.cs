@@ -220,6 +220,9 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             if (task.Lifecycle == TaskLifecycle.PendingReview)
             {
                 task.Lifecycle = TaskLifecycle.InProgress;
+                // WC-1. Its own kind rather than Resumed: the holder did not pick this back up, the requirement
+                // was withdrawn from under them, and reading "resumed" would name the wrong person's decision.
+                task.Declare(TaskTransitionKind.ReviewCancelled, _currentUser.UserId);
             }
 
             if (!await _tasks.UpdateAsync(task, task.Version, ct))

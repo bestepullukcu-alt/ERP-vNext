@@ -187,7 +187,7 @@ public sealed class TaskPoolIdentityTests
             new FakeChecklistRunRepository(),
             new FakeTaskApprovalService(),
             new FakeTaskDependencyRepository(),
-            new FakeTaskCommentRepository(),
+            new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(),
             new FakePositionRepository(positions ?? DefaultPositions()),
             new FakeOrganizationUnitRepository(units ?? [Unit()]),
             SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());

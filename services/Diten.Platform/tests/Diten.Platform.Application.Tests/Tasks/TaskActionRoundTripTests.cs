@@ -207,7 +207,7 @@ public sealed class TaskActionRoundTripTests
             new TaskLifecycleService(),
             new TaskAssignmentResolver(),
             new FakeUserDisplayNameResolver(),
-            new FakeChecklistRunRepository(), new FakeTaskApprovalService(), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
+            new FakeChecklistRunRepository(), new FakeTaskApprovalService(), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
 
     /// <summary>An actor holding everything the provider declares, so permissions never mask a placement bug.</summary>
     private static WorkItemActor FullyPermittedActor()

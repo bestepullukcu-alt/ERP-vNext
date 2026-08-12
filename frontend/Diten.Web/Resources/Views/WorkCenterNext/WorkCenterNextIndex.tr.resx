@@ -1445,6 +1445,33 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>Henüz kontrol listesi maddesi yok.</value>
   </data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve">
+    <value>Madde yaz ve Enter'a bas</value>
+  </data>
+  <data name="ChecklistLevelOptional" xml:space="preserve">
+    <value>İsteğe bağlı</value>
+  </data>
+  <data name="ChecklistLevelRequired" xml:space="preserve">
+    <value>Zorunlu</value>
+  </data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve">
+    <value>Engelleyici</value>
+  </data>
+  <data name="ChecklistRequiredOpen" xml:space="preserve">
+    <value>{0} zorunlu madde açık</value>
+  </data>
+  <data name="ConfirmRequiredOpen" xml:space="preserve">
+    <value>{0} zorunlu madde işaretlenmedi. Görev yine de kapatılacak.</value>
+  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve">
+    <value>Kanıt belgesi gerekiyor. Belge bağlantısı doküman modülü bağlandığında etkinleşecek.</value>
+  </data>
+  <data name="ChecklistLevelHint" xml:space="preserve">
+    <value>Seviyeyi değiştir: İsteğe bağlı → Zorunlu → Engelleyici</value>
+  </data>
+  <data name="ToastChecklistItemAdded" xml:space="preserve">
+    <value>Madde eklendi</value>
+  </data>
   <data name="GuidancePendingAcceptance" xml:space="preserve">
     <value>Bu görev kabulünü bekliyor. Kabul edin, ya da size ait değilse başkasına atayın.</value>
   </data>
@@ -1627,6 +1654,66 @@
   </data>
   <data name="ActivityEmpty" xml:space="preserve">
     <value>Henüz etkinlik kaydı yok.</value>
+  </data>
+  <data name="AuditEventCreated" xml:space="preserve">
+    <value>Görev oluşturuldu</value>
+  </data>
+  <data name="AuditEventAccepted" xml:space="preserve">
+    <value>Görev kabul edildi</value>
+  </data>
+  <data name="AuditEventPlanned" xml:space="preserve">
+    <value>Görev planlandı</value>
+  </data>
+  <data name="AuditEventStarted" xml:space="preserve">
+    <value>Çalışmaya başlandı</value>
+  </data>
+  <data name="AuditEventResumed" xml:space="preserve">
+    <value>Çalışmaya devam edildi</value>
+  </data>
+  <data name="AuditEventWaiting" xml:space="preserve">
+    <value>Beklemeye alındı</value>
+  </data>
+  <data name="AuditEventSubmittedForReview" xml:space="preserve">
+    <value>İncelemeye gönderildi</value>
+  </data>
+  <data name="AuditEventReviewCancelled" xml:space="preserve">
+    <value>İnceleme gereği kaldırıldı</value>
+  </data>
+  <data name="AuditEventCompleted" xml:space="preserve">
+    <value>Tamamlandı</value>
+  </data>
+  <data name="AuditEventCancelled" xml:space="preserve">
+    <value>İptal edildi</value>
+  </data>
+  <data name="AuditEventClaimed" xml:space="preserve">
+    <value>Havuzdan üstlenildi</value>
+  </data>
+  <data name="AuditEventReleased" xml:space="preserve">
+    <value>Havuza bırakıldı</value>
+  </data>
+  <data name="AuditEventReassigned" xml:space="preserve">
+    <value>Başkasına atandı</value>
+  </data>
+  <data name="AuditEventReturned" xml:space="preserve">
+    <value>Talep edene geri gönderildi</value>
+  </data>
+  <data name="AuditEventUnknown" xml:space="preserve">
+    <value>Görev güncellendi</value>
+  </data>
+  <data name="ActivityFilterLabel" xml:space="preserve">
+    <value>Etkinlik filtresi</value>
+  </data>
+  <data name="ActivityFilterAll" xml:space="preserve">
+    <value>Tümü</value>
+  </data>
+  <data name="ActivityFilterCommentsOnly" xml:space="preserve">
+    <value>Yalnız yorumlar</value>
+  </data>
+  <data name="ActivityNoComments" xml:space="preserve">
+    <value>Bu görevde henüz yorum yok.</value>
+  </data>
+  <data name="ActivityHistoryStartsHere" xml:space="preserve">
+    <value>Bu görevin, kayıt tutulmaya başlanmadan önceki adımları kayıtlı değil.</value>
   </data>
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>Henüz alt görev yok.</value>

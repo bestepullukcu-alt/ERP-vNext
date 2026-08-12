@@ -32,6 +32,60 @@ public sealed class TaskAssignment : TenantScopedEntity
 }
 
 /// <summary>
+/// WC-1 — the LIFECYCLE EVENT LOG: one immutable record per act that moved a task.
+///
+/// <para><b>Why it had to exist.</b> The work-item projection published only <c>kind:"comment"</c>, and its own
+/// comment said why: with no event log, a timeline derived from the four timestamps a task carries
+/// (created/started/completed/cancelled) would silently omit accept, plan, claim, release and inquire — a partial
+/// history read as a complete one. The answer was never to derive better; it was to record.</para>
+///
+/// <para><b>Its own collection, not an array on <see cref="TaskItem"/>.</b> Three reasons, all of which this
+/// module has already paid for once: <c>UpdateTaskItemRequest</c> is a FULL REPLACE, so an embedded array is one
+/// forgetful writer away from deletion (the reason <see cref="TaskComment"/> is separate); an embedded list would
+/// make every task read carry its whole history, and the list projection reads a page of tasks at a time; and
+/// BL-030 — a <c>DateTimeOffset</c> inside a document array is stored as <c>[ticks, offsetMinutes]</c>, so an
+/// embedded log could not be ordered at all.</para>
+///
+/// <para><b>Immutable, like a comment.</b> No edit, no delete, no endpoint for either. What happened is not
+/// something a later writer gets to revise.</para>
+///
+/// <para><b>No <c>OccurredAt</c> of its own</b> — the base entity's <c>CreatedAt</c> IS the moment, and reusing it
+/// is load-bearing rather than frugal: this log is merged with <see cref="TaskComment"/> into ONE time-ordered
+/// feed, and two records sorted on two different clocks interleave wrongly at the seams. <see cref="TaskAssignment"/>
+/// keeps its own <c>OccurredAt</c> and is not merged into anything.</para>
+///
+/// <para><b>The actor is an ID, not a snapshotted name</b> — the opposite of <see cref="TaskComment"/>, and
+/// deliberately. A comment is a QUOTATION: who said it then must not change when a person is renamed. An event is
+/// a fact about an identity, so it names the person as they are called today, resolved on read through the same
+/// batched directory lookup the projection already runs for assignees.</para>
+/// </summary>
+public sealed class TaskTransition : TenantScopedEntity
+{
+    public required Guid TaskItemId { get; set; }
+    public required TaskTransitionKind Kind { get; set; }
+
+    /// <summary>The lifecycle BEFORE the act. Equal to <see cref="ToLifecycle"/> for an act that changed only
+    /// ownership (claim, release, accept-while-planned) — those are transitions too, and dropping them would put
+    /// exactly the holes back that this log exists to close.</summary>
+    public required TaskLifecycle FromLifecycle { get; set; }
+
+    /// <summary>The lifecycle AFTER the act.</summary>
+    public required TaskLifecycle ToLifecycle { get; set; }
+
+    /// <summary>Who performed it. Null only when no user context stood behind the write (a background sweep).</summary>
+    public Guid? ActorUserId { get; set; }
+
+    /// <summary>Machine-readable classification when the act carried one (closure reason, handover reason).</summary>
+    public string? ReasonCode { get; set; }
+
+    /// <summary>The reason in the actor's OWN WORDS, when the act required one (wait, return, reassign).
+    /// Text, never a resource key.</summary>
+    public string? Reason { get; set; }
+
+    public DateTimeOffset? DeletedAt { get; set; }
+}
+
+/// <summary>
 /// A typed dependency between TWO MOD-0024 tasks. MOD-0024 may manage these because it is their source
 /// (pack §12 Y3); the Task Center still renders dependencies read-only and hosts no editor.
 /// </summary>

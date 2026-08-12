@@ -100,21 +100,25 @@ describe("the two-column grid is the shape it claims to be", () => {
     expect(columns.map((c) => c.className.trim())).toEqual(["col-12 col-lg-8", "col-12 col-lg-4"]);
   });
 
-  test("four cards on the left, five on the right — and they are DIRECT children of their column", () => {
+  test("five cards on the left, five on the right — and they are DIRECT children of their column", () => {
     /*
      * "Direct children" is the half that matters. A section that slipped one level deeper still renders, still
      * counts, and sits inside the card above it.
+     *
+     * The left column gained the CHECKLIST card: the steps of the task belong with the task's own content, not
+     * beside the governance decisions on the right. (It is create-only — form-page.js removes it on edit, where
+     * the checklist is a separate document with its own endpoints.)
      */
     const row = parse().querySelector("form#taskForm > .row.g-4");
     const [left, right] = Array.from(row.children);
 
-    expect(Array.from(left.children).filter((n) => n.tagName === "SECTION")).toHaveLength(4);
+    expect(Array.from(left.children).filter((n) => n.tagName === "SECTION")).toHaveLength(5);
     expect(Array.from(right.children).filter((n) => n.tagName === "SECTION")).toHaveLength(5);
   });
 
   test("every card is a <section class=card> — the shape the golden reference uses", () => {
     const sections = Array.from(parse().querySelectorAll("form#taskForm section"));
-    expect(sections).toHaveLength(9);
+    expect(sections).toHaveLength(10);
     sections.forEach((section) => {
       expect(section.classList.contains("card"), `a section is not a card: ${section.className}`).toBe(true);
       expect(section.querySelector(":scope > .card-body"), "a card has no direct .card-body").toBeTruthy();

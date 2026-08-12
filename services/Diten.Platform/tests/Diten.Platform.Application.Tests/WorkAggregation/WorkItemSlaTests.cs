@@ -217,7 +217,7 @@ public sealed class WorkItemSlaTests
             new FakeChecklistRunRepository(),
             new FakeTaskApprovalService(),
             new FakeTaskDependencyRepository(),
-            new FakeTaskCommentRepository(),
+            new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(),
             new FakePositionRepository(),
             new FakeOrganizationUnitRepository(),
             sla,

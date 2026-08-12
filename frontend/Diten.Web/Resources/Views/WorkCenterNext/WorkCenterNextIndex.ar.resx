@@ -1445,6 +1445,33 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>لا توجد عناصر في قائمة التحقق بعد.</value>
   </data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve">
+    <value>اكتب بندًا واضغط Enter</value>
+  </data>
+  <data name="ChecklistLevelOptional" xml:space="preserve">
+    <value>اختياري</value>
+  </data>
+  <data name="ChecklistLevelRequired" xml:space="preserve">
+    <value>إلزامي</value>
+  </data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve">
+    <value>مانع</value>
+  </data>
+  <data name="ChecklistRequiredOpen" xml:space="preserve">
+    <value>{0} بند إلزامي ما زال مفتوحًا</value>
+  </data>
+  <data name="ConfirmRequiredOpen" xml:space="preserve">
+    <value>{0} بند إلزامي غير مُعلَّم. ستُغلق المهمة على أي حال.</value>
+  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve">
+    <value>يلزم مستند إثبات. سيصبح ربط المستند فعّالًا عند توصيل وحدة المستندات.</value>
+  </data>
+  <data name="ChecklistLevelHint" xml:space="preserve">
+    <value>تغيير المستوى: اختياري ← إلزامي ← مانع</value>
+  </data>
+  <data name="ToastChecklistItemAdded" xml:space="preserve">
+    <value>أُضيف البند</value>
+  </data>
   <data name="GuidancePendingAcceptance" xml:space="preserve">
     <value>تنتظر هذه المهمة قبولك. تولَّها، أو أعد إسنادها إن لم تكن لك.</value>
   </data>
@@ -1627,6 +1654,66 @@
   </data>
   <data name="ActivityEmpty" xml:space="preserve">
     <value>لا يوجد نشاط مسجَّل بعد.</value>
+  </data>
+  <data name="AuditEventCreated" xml:space="preserve">
+    <value>أُنشئت المهمة</value>
+  </data>
+  <data name="AuditEventAccepted" xml:space="preserve">
+    <value>قُبلت المهمة</value>
+  </data>
+  <data name="AuditEventPlanned" xml:space="preserve">
+    <value>خُطِّطت المهمة</value>
+  </data>
+  <data name="AuditEventStarted" xml:space="preserve">
+    <value>بدأ العمل</value>
+  </data>
+  <data name="AuditEventResumed" xml:space="preserve">
+    <value>استُؤنف العمل</value>
+  </data>
+  <data name="AuditEventWaiting" xml:space="preserve">
+    <value>وُضعت قيد الانتظار</value>
+  </data>
+  <data name="AuditEventSubmittedForReview" xml:space="preserve">
+    <value>أُرسلت للمراجعة</value>
+  </data>
+  <data name="AuditEventReviewCancelled" xml:space="preserve">
+    <value>أُلغي شرط المراجعة</value>
+  </data>
+  <data name="AuditEventCompleted" xml:space="preserve">
+    <value>اكتملت</value>
+  </data>
+  <data name="AuditEventCancelled" xml:space="preserve">
+    <value>أُلغيت</value>
+  </data>
+  <data name="AuditEventClaimed" xml:space="preserve">
+    <value>أُخذت من المجمّع</value>
+  </data>
+  <data name="AuditEventReleased" xml:space="preserve">
+    <value>أُعيدت إلى المجمّع</value>
+  </data>
+  <data name="AuditEventReassigned" xml:space="preserve">
+    <value>أُعيد إسنادها</value>
+  </data>
+  <data name="AuditEventReturned" xml:space="preserve">
+    <value>أُعيدت إلى طالبها</value>
+  </data>
+  <data name="AuditEventUnknown" xml:space="preserve">
+    <value>حُدِّثت المهمة</value>
+  </data>
+  <data name="ActivityFilterLabel" xml:space="preserve">
+    <value>تصفية النشاط</value>
+  </data>
+  <data name="ActivityFilterAll" xml:space="preserve">
+    <value>الكل</value>
+  </data>
+  <data name="ActivityFilterCommentsOnly" xml:space="preserve">
+    <value>التعليقات فقط</value>
+  </data>
+  <data name="ActivityNoComments" xml:space="preserve">
+    <value>لا توجد تعليقات على هذه المهمة بعد.</value>
+  </data>
+  <data name="ActivityHistoryStartsHere" xml:space="preserve">
+    <value>الخطوات التي مرّت بها هذه المهمة قبل بدء التسجيل غير مسجّلة.</value>
   </data>
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>لا توجد مهام فرعية بعد.</value>

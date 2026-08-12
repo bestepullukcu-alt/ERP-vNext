@@ -444,10 +444,17 @@ public sealed record WorkItemPoolDto(
     WorkItemLabelDto? Label);
 
 /// <summary>
-/// One entry in the activity feed. Today MOD-0024 emits only <c>kind: "comment"</c>: there is no lifecycle event
-/// log to draw from, and deriving a timeline from the four timestamps a task happens to carry
-/// (created/started/completed/cancelled) would silently omit accept, plan, claim, release and inquire. A partial
-/// history is worse than none, because it is read as complete.
+/// One entry in the activity feed. MOD-0024 emits BOTH contract kinds: <c>comment</c> for what a person wrote,
+/// <c>event</c> for what happened to the task.
+///
+/// <para><b>What changed, and what did not (WC-1).</b> This comment used to say there was no lifecycle event log
+/// to draw from, and that deriving a timeline from the four timestamps a task carries would silently omit accept,
+/// plan, claim, release and inquire — a partial history read as a complete one. The objection was never answered
+/// by deriving more cleverly; it was answered by RECORDING. <c>TaskTransition</c> is now written on every task
+/// write that moves the task, decided from the document's pre-image rather than from the writer's memory, so the
+/// events published here are the ones that actually happened. <b>Nothing is derived from the timestamps, then or
+/// now</b> — and a task written before that log existed still has no history, which the screen states outright
+/// instead of filling in.</para>
 ///
 /// <para><c>At</c> is ABSOLUTE, and there is deliberately no "3 days ago" field. A relative count computed on the
 /// server is already stale by the time it is rendered, and stays wrong for as long as the tab is open — the same
@@ -456,12 +463,51 @@ public sealed record WorkItemPoolDto(
 public sealed record WorkItemActivityEntryDto(
     string Id,
     string Kind,
-    /// <summary>The comment text — what a person typed, so never a resource key.</summary>
-    string Text,
-    /// <summary>Author's name as recorded when it was written, or null when it could not be resolved.</summary>
+    /// <summary>
+    /// The comment text — what a person typed, so never a resource key.
+    ///
+    /// <para>Optional because an EVENT has no text of its own: its sentence is built client-side from
+    /// <see cref="Event"/>, in the reader's language. The executable contract already required text for
+    /// <c>comment</c> only (ACTIVITY_COMMENT_TEXT_REQUIRED), so an event carrying none was always the intended
+    /// shape. Sending an event's sentence from here instead would ship one server-side language to seven.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? Text,
+    /// <summary>
+    /// For a comment: the author's name as recorded when it was written. For an event: who performed it, resolved
+    /// as they are named TODAY. The difference is deliberate and lives on <c>TaskTransition</c> — a comment is a
+    /// quotation, an event is a fact about an identity.
+    ///
+    /// <para>Null when the person could not be resolved. Never a GUID: an id is not a person.</para>
+    /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     string? Actor,
-    DateTimeOffset At);
+    DateTimeOffset At,
+    /// <summary>Present on <c>kind: "event"</c> only, absent on a comment.</summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemActivityEventDto? Event = null);
+
+/// <summary>
+/// What happened, as CODES rather than as a sentence (WC-1).
+///
+/// <para><c>Code</c> is the transition's stable name (<c>accepted</c>, <c>planned</c>, <c>released</c>…); the
+/// client maps it to a localized line. A sentence composed here would be composed in one language, and this
+/// product ships seven — the same rule every other label on this contract follows.</para>
+///
+/// <para><c>From</c> and <c>To</c> are the lifecycle either side of the act, in the engine's own spelling (the
+/// contract's TASK_LIFECYCLES). They travel even though today's row renders only the act itself: they are the
+/// substance of a transition, and a record that says an act occurred without saying between what is the partial
+/// history this whole feature exists to stop shipping.</para>
+///
+/// <para><c>Reason</c> is the actor's own words when the act required them — a wait, a return, a reassignment.
+/// TEXT, never a resource key, and absent rather than empty when none was given.</para>
+/// </summary>
+public sealed record WorkItemActivityEventDto(
+    string Code,
+    string From,
+    string To,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? Reason = null);
 
 /// <summary>
 /// One typed dependency edge. <c>State</c> is the OTHER task's state in the subtask vocabulary

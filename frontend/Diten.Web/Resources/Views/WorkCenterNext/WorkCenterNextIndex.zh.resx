@@ -1445,6 +1445,33 @@
   <data name="ChecklistEmpty" xml:space="preserve">
     <value>暂无清单项。</value>
   </data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve">
+    <value>输入条目后按 Enter</value>
+  </data>
+  <data name="ChecklistLevelOptional" xml:space="preserve">
+    <value>可选</value>
+  </data>
+  <data name="ChecklistLevelRequired" xml:space="preserve">
+    <value>必填</value>
+  </data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve">
+    <value>阻断</value>
+  </data>
+  <data name="ChecklistRequiredOpen" xml:space="preserve">
+    <value>尚有 {0} 个必填条目未完成</value>
+  </data>
+  <data name="ConfirmRequiredOpen" xml:space="preserve">
+    <value>有 {0} 个必填条目未勾选。任务仍将关闭。</value>
+  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve">
+    <value>需要证明文件。文档模块接入后即可关联文档。</value>
+  </data>
+  <data name="ChecklistLevelHint" xml:space="preserve">
+    <value>更改级别：可选 → 必填 → 阻断</value>
+  </data>
+  <data name="ToastChecklistItemAdded" xml:space="preserve">
+    <value>已添加条目</value>
+  </data>
   <data name="GuidancePendingAcceptance" xml:space="preserve">
     <value>该任务正在等待你接受。接手它，或者如果不属于你，请重新分配。</value>
   </data>
@@ -1627,6 +1654,66 @@
   </data>
   <data name="ActivityEmpty" xml:space="preserve">
     <value>尚无活动记录。</value>
+  </data>
+  <data name="AuditEventCreated" xml:space="preserve">
+    <value>任务已创建</value>
+  </data>
+  <data name="AuditEventAccepted" xml:space="preserve">
+    <value>任务已接受</value>
+  </data>
+  <data name="AuditEventPlanned" xml:space="preserve">
+    <value>任务已计划</value>
+  </data>
+  <data name="AuditEventStarted" xml:space="preserve">
+    <value>工作已开始</value>
+  </data>
+  <data name="AuditEventResumed" xml:space="preserve">
+    <value>工作已恢复</value>
+  </data>
+  <data name="AuditEventWaiting" xml:space="preserve">
+    <value>已置为等待</value>
+  </data>
+  <data name="AuditEventSubmittedForReview" xml:space="preserve">
+    <value>已提交评审</value>
+  </data>
+  <data name="AuditEventReviewCancelled" xml:space="preserve">
+    <value>评审要求已取消</value>
+  </data>
+  <data name="AuditEventCompleted" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="AuditEventCancelled" xml:space="preserve">
+    <value>已取消</value>
+  </data>
+  <data name="AuditEventClaimed" xml:space="preserve">
+    <value>已从任务池领取</value>
+  </data>
+  <data name="AuditEventReleased" xml:space="preserve">
+    <value>已退回任务池</value>
+  </data>
+  <data name="AuditEventReassigned" xml:space="preserve">
+    <value>已改派</value>
+  </data>
+  <data name="AuditEventReturned" xml:space="preserve">
+    <value>已退回给请求人</value>
+  </data>
+  <data name="AuditEventUnknown" xml:space="preserve">
+    <value>任务已更新</value>
+  </data>
+  <data name="ActivityFilterLabel" xml:space="preserve">
+    <value>活动筛选</value>
+  </data>
+  <data name="ActivityFilterAll" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="ActivityFilterCommentsOnly" xml:space="preserve">
+    <value>仅评论</value>
+  </data>
+  <data name="ActivityNoComments" xml:space="preserve">
+    <value>此任务暂无评论。</value>
+  </data>
+  <data name="ActivityHistoryStartsHere" xml:space="preserve">
+    <value>本任务在开始记录之前经历的步骤未被记录。</value>
   </data>
   <data name="SubtasksEmpty" xml:space="preserve">
     <value>暂无子任务。</value>

@@ -32,6 +32,11 @@
     <script src="~/assets/js/Tasks/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-tags.js" asp-append-version="true"></script>
+    @* Checklist row dragging. The LOCAL vendor copy, deliberately — _Layout.cshtml pulls Sortable from a CDN,
+       which breaks silently on an air-gapped install and is a supply-chain surface besides (raised as its own
+       backlog item). Create only: the checklist card is removed on the edit page, so Edit would be loading a
+       library with nothing to bind. *@
+    <script src="~/assets/vendor/libs/sortablejs/sortable.js"></script>
     <script src="~/assets/js/Tasks/form.js" asp-append-version="true"></script>
     <script src="~/assets/js/Tasks/form-page.js" asp-append-version="true"></script>
 }

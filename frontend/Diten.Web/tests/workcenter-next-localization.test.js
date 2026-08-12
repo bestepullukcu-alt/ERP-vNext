@@ -151,4 +151,61 @@ describe("WorkCenterNext localization resources", () => {
 
     expect(fn).not.toContain("global.open");
   });
+
+  /*
+   * WC-1 — a sentence for every transition the engine can record, in all seven languages.
+   *
+   * DERIVED from the contract's vocabulary rather than from a list typed here, so a transition added to
+   * MOD-0024 and mirrored into ACTIVITY_EVENT_CODES fails this test until its seven strings exist. A missing
+   * one would not fail loudly on screen: t() answers with the key, so the row would read "AuditEventDelegated"
+   * to a user, which is the failure mode this gate exists for.
+   */
+  it("names every transition the engine can record, in all seven languages", () => {
+    const contract = fs.readFileSync(
+      path.resolve(__dirname, "../wwwroot/assets/js/WorkCenterNext/fixture-contract.js"), "utf8");
+    const declared = /const ACTIVITY_EVENT_CODES = \[([\s\S]*?)\]/.exec(contract);
+    expect(declared).not.toBeNull();
+
+    const codes = [...declared[1].matchAll(/'([a-zA-Z]+)'/g)].map((match) => match[1]);
+    expect(codes.length).toBeGreaterThan(10);
+
+    const valueOf = (locale, key) => {
+      const xml = fs.readFileSync(path.join(resourceRoot, `WorkCenterNextIndex.${locale}.resx`), "utf8");
+      const match = new RegExp(`name="${key}"[^>]*>\\s*<value>([\\s\\S]*?)</value>`).exec(xml);
+      return match ? match[1].trim() : null;
+    };
+
+    codes.forEach((code) => {
+      const key = "AuditEvent" + code.charAt(0).toUpperCase() + code.slice(1);
+      locales.forEach((locale) => {
+        expect(valueOf(locale, key), `${key} is missing in ${locale}`).toBeTruthy();
+      });
+      // Not English left in place — the gap this project has repeatedly shipped.
+      expect(valueOf("tr", key)).not.toBe(valueOf("en", key));
+      expect(valueOf("ru", key)).not.toBe(valueOf("en", key));
+    });
+  });
+
+  it("ships the activity filter and the history-gap notice in all seven languages", () => {
+    const valueOf = (locale, key) => {
+      const xml = fs.readFileSync(path.join(resourceRoot, `WorkCenterNextIndex.${locale}.resx`), "utf8");
+      const match = new RegExp(`name="${key}"[^>]*>\\s*<value>([\\s\\S]*?)</value>`).exec(xml);
+      return match ? match[1].trim() : null;
+    };
+
+    ["ActivityFilterLabel", "ActivityFilterAll", "ActivityFilterCommentsOnly",
+      "ActivityNoComments", "ActivityHistoryStartsHere",
+      // The two signals that give the "Required" level a visible consequence, and the paperclip that has to
+      // say what it is while nothing can attach a document yet.
+      "ChecklistRequiredOpen", "ConfirmRequiredOpen", "ChecklistEvidenceHint"].forEach((key) => {
+      locales.forEach((locale) => expect(valueOf(locale, key), `${key} in ${locale}`).toBeTruthy());
+      expect(valueOf("tr", key)).not.toBe(valueOf("en", key));
+    });
+
+    // "No activity at all" and "no COMMENTS under this filter" are different facts, and sharing one string
+    // would tell a reader their task has no history when it has twelve entries they just filtered out.
+    locales.forEach((locale) => {
+      expect(valueOf(locale, "ActivityNoComments")).not.toBe(valueOf(locale, "ActivityEmpty"));
+    });
+  });
 });

@@ -48,7 +48,7 @@
 
             <section class="card mb-4">
                 <div class="card-body p-4">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionBasics"]</h6>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-info-circle dt-card-icon" aria-hidden="true"></i>@Localizer["SectionBasics"]</h6>
                     <div class="row g-3">
                         <div class="col-md-8">
                             <label class="form-label fw-medium" for="taskTitle">
@@ -86,7 +86,7 @@
 
             <section class="card mb-4">
                 <div class="card-body p-4">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionAssignment"]</h6>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-user-pin dt-card-icon" aria-hidden="true"></i>@Localizer["SectionAssignment"]</h6>
                     <div class="row g-3">
                         <div class="col-md-6">
                                 <label class="form-label fw-medium" for="taskAssignmentTarget">
@@ -156,7 +156,7 @@
 
             <section class="card mb-4">
                 <div class="card-body p-4">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionPlanning"]</h6>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-calendar-event dt-card-icon" aria-hidden="true"></i>@Localizer["SectionPlanning"]</h6>
                     <div class="row g-3">
                         <div class="col-md-6">
                                 <label class="form-label fw-medium" for="taskDueAt">
@@ -238,12 +238,81 @@
                 </div>
             </section>
 
+            @* THE CHECKLIST — the steps of THIS task, and deliberately not its subtasks.
+
+               A checklist item is a step of this piece of work; a subtask is a separate task with its own
+               assignee, its own dates and its own lifecycle. Putting them in one card would teach the reader
+               they are the same thing, and the two behave differently at exactly the moment it matters: an open
+               BLOCKING item refuses `complete`, and an open subtask refuses it for a different reason with a
+               different fix. Subtasks are deliberately absent from the create form altogether (owner's call) —
+               a subtask needs a due date and an assignee, and there is no parent yet to inherit either from.
+
+               ALWAYS VISIBLE, never hidden-until-used, unlike the configurable-fields card below it. That card
+               hides because its content is tenant configuration the author cannot create from here; this one is
+               the only place the capability can be discovered, and a feature nobody can find is the state this
+               round exists to end. The empty state is the input's own placeholder rather than a sentence — a
+               card that says "there is nothing here" above a box for putting something there is noise. *@
+            @* CREATE ONLY — hidden on the edit page by form-page.js.
+
+               An edit's payload carries no checklist: the run is a separate document with its own version and
+               its own add/tick endpoints, and someone may be ticking it while this form is open. Rendering the
+               editor here would offer a wholesale rewrite of that list, which is the FULL-REPLACE hazard
+               TaskComment's own comment describes — pointed at work in progress. After creation, items are
+               added on the task's detail page, where the add is a single targeted write. *@
+            <section class="card mb-4" id="taskChecklistCard">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-1">
+                        <i class="bx bx-list-check"></i>@Localizer["CardChecklistTitle"]
+                        <span class="wcn-count-inline d-none" data-task-checklist-count></span>
+                    </h6>
+                    <p class="card-section-desc mb-4">@Localizer["CardChecklistDescription"]</p>
+
+                    @* Same 38px control the rest of the form uses (.diten-field, icon inside), so the row does
+                       not read as a different kind of input. Enter commits — the button is the discoverable
+                       half for anyone who does not know that. *@
+                    <div class="d-flex gap-2 align-items-start mb-2">
+                        <div class="diten-field flex-grow-1">
+                            <i class="bx bx-list-plus diten-field-icon" aria-hidden="true"></i>
+                            <input type="text" class="form-control" id="taskChecklistInput"
+                                   placeholder="@Localizer["ChecklistAddPlaceholder"]"
+                                   autocomplete="off" aria-describedby="taskChecklistHint" />
+                        </div>
+                        <button type="button" class="btn btn-label-primary" data-task-checklist-add>
+                            @Localizer["ChecklistAddButton"]
+                        </button>
+                    </div>
+                    @* NO "from a template" button. ChecklistTemplate exists in the model and
+                       IChecklistTemplateRepository.ListActiveAsync has ZERO callers — no query, no endpoint, no
+                       management screen — so the button would open a list that cannot be fetched. This project
+                       has removed that exact dead control more than once. Tracked as its own backlog item. *@
+                    <div class="form-text mb-3" id="taskChecklistHint">@Localizer["ChecklistAddHint"]</div>
+
+                    <ul class="task-checklist" id="taskChecklistItems"></ul>
+
+                    @* THE PAPERCLIP'S PROMISE, said out loud.
+
+                       `EvidenceRequired` has been on the model since Phase 1 and nothing enforces it: there is
+                       no task↔document link at all yet (pack §12 Y4 keeps attachments out of MOD-0024, and the
+                       document module is live but unconnected). The flag is still STORED, so nothing a user
+                       records is lost — but a control that quietly promises "this cannot be ticked without
+                       evidence" and then lets it be ticked is worse than no control. So it says what it is and
+                       when it will start biting. Shown only once something on the list carries the flag. *@
+                    @* An ALERT, not body text — the same shape the completion gate and the history gap use.
+                       It reports a condition the reader did not create and cannot yet act on, and body text
+                       makes such a sentence read as description. Wording and condition are unchanged. *@
+                    <div class="alert alert-secondary dt-inline-alert mt-2 d-none" role="note"
+                         data-task-checklist-evidence-hint>
+                        <i class="bx bx-paperclip"></i><span>@Localizer["ChecklistEvidenceHint"]</span>
+                    </div>
+                </div>
+            </section>
+
             @* Configurable fields get a card of their own because their CONTENT is tenant-owned: the count, the
                labels and the sections all change per tenant, so mixing them into a fixed card would make that
                card's shape unpredictable. Hidden until at least one definition renders. *@
             <section class="card mb-4 d-none" id="taskCustomFields" data-task-field="customFields">
                 <div class="card-body p-4">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionCustomFields"]</h6>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-extension dt-card-icon" aria-hidden="true"></i>@Localizer["SectionCustomFields"]</h6>
                     <div class="row g-3" id="taskCustomFieldsRow"></div>
                 </div>
             </section>

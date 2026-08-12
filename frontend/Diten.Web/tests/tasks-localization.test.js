@@ -228,6 +228,41 @@ describe("MOD-0024 task localization", () => {
     expect(suspicious.map(([k]) => k)).toEqual([]);
   });
 
+  it("ships every checklist string the create form uses, in all seven languages", () => {
+    /*
+     * The card is rendered half by Razor (@Localizer[...]) and half by JS (through the bridge), so neither the
+     * bridge scan above nor a markup scan alone covers it. A missing key is silent on both sides: the Localizer
+     * echoes the key and t() echoes the key, so an untranslated row would read "ChecklistLevelBlocking" to a
+     * user rather than failing anywhere.
+     */
+    const keys = [
+      "CardChecklistTitle", "CardChecklistDescription",
+      "ChecklistAddPlaceholder", "ChecklistAddButton", "ChecklistAddHint",
+      "ChecklistLevelOptional", "ChecklistLevelRequired", "ChecklistLevelBlocking",
+      "ChecklistLevelHint", "ChecklistEvidenceToggle", "ChecklistRemove",
+      "ChecklistMoveUp", "ChecklistMoveDown",
+      // The paperclip has to say what it is and when it will bite — there is no task↔document link yet.
+      "ChecklistEvidenceHint"
+    ];
+
+    keys.forEach((key) => {
+      LOCALES.forEach((locale) => {
+        expect(byLocale[locale][key], `${key} is missing in ${locale}`).toBeTruthy();
+      });
+      // Not English left in place, in the two languages that share no vocabulary with it.
+      expect(byLocale.tr[key], `${key} is untranslated in tr`).not.toBe(byLocale.en[key]);
+      expect(byLocale.ru[key], `${key} is untranslated in ru`).not.toBe(byLocale.en[key]);
+    });
+
+    // The three levels must not share a string: they are the whole reason there are three, and only one of
+    // them stops a task from closing.
+    LOCALES.forEach((locale) => {
+      const levels = ["ChecklistLevelOptional", "ChecklistLevelRequired", "ChecklistLevelBlocking"]
+        .map((key) => byLocale[locale][key]);
+      expect(new Set(levels).size, `${locale} reuses one word for two levels`).toBe(3);
+    });
+  });
+
   it("keeps every language's non-cognate values distinct from English", () => {
     // Cognates are legitimate (French "Description"/"Actions"); a whole file matching English is not.
     LOCALES.filter((l) => l !== "en").forEach((locale) => {

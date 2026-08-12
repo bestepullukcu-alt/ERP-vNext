@@ -51,6 +51,81 @@ public enum TaskAssignmentTarget
     PositionPool = 2
 }
 
+/// <summary>
+/// Every act that moves a task — the vocabulary of the lifecycle event log (WC-1).
+///
+/// <para><b>Why this exists next to <see cref="TaskAssignmentEventType"/> rather than inside it.</b> That enum
+/// answers "who HELD this task", and its seven values are the ownership story alone: it has no word for planned,
+/// started, waiting, submitted or completed, and widening it would make one collection answer two questions —
+/// which is the shape that produced BL-042 and BL-051 on this very module. This one answers "what HAPPENED", and
+/// the two are recorded side by side.</para>
+///
+/// <para><b>Complete by construction, not by care.</b> The repository — not the handler — decides that a
+/// transition happened: <c>TaskItemRepository.UpdateAsync</c> replaces the document with its PRE-IMAGE in hand and
+/// compares lifecycle, holder and acceptance mark. A write that moved any of them records an entry whether or not
+/// the writer remembered to declare one. A handler that forgets therefore does not lose history; it produces
+/// <see cref="Unknown"/>, which is what turns a test red.</para>
+///
+/// <para>That is deliberately NOT "derive the history from state", the thing the projection refused to do. The
+/// diff decides only THAT something moved and between which two states — facts the two documents actually carry.
+/// WHICH act it was, and why, is declared by the handler through <c>TaskItem.Declare(...)</c>, because a return
+/// and a reassignment to the requester leave identical diffs and no amount of looking could tell them apart.</para>
+///
+/// <para>Persisted; append only, never renumber.</para>
+/// </summary>
+public enum TaskTransitionKind
+{
+    /// <summary>The task came into existence. The first entry in every log written from WC-1 onwards.</summary>
+    Created = 0,
+
+    /// <summary>The assignee took the work on — the Inbox acceptance gate closed (BL-042).</summary>
+    Accepted = 1,
+
+    /// <summary>A personal plan date was set or moved.</summary>
+    Planned = 2,
+
+    /// <summary>Work began.</summary>
+    Started = 3,
+
+    /// <summary>Work resumed from <see cref="TaskLifecycle.Waiting"/>. Distinct from <see cref="Started"/>
+    /// because "picked this back up" and "began this" are different sentences to whoever reads the history.</summary>
+    Resumed = 4,
+
+    /// <summary>The holder parked the task, saying what it waits for.</summary>
+    Waiting = 5,
+
+    /// <summary>Finished work was handed to a reviewer (the MOD-0023 instance carries the decision, not this).</summary>
+    SubmittedForReview = 6,
+
+    /// <summary>The review requirement was withdrawn, so the task left PendingReview rather than waiting on nobody.</summary>
+    ReviewCancelled = 7,
+
+    Completed = 8,
+    Cancelled = 9,
+
+    /// <summary>A pooled task was taken out of its queue.</summary>
+    Claimed = 10,
+
+    /// <summary>A claimed pool task went back to its queue.</summary>
+    Released = 11,
+
+    /// <summary>The task moved to another person.</summary>
+    Reassigned = 12,
+
+    /// <summary>Assigned work was handed back to whoever asked for it.</summary>
+    Returned = 13,
+
+    /// <summary>
+    /// A task MOVED and nobody said why — the diff saw it, the writer declared nothing.
+    ///
+    /// <para>Never written on purpose, and never dead code either: it is what a new transition produces on the day
+    /// someone adds one without declaring its kind, and <c>TaskTransitionCoverageTests</c> fails on it. The
+    /// alternative — refusing to record what could not be named — would put the silent hole back that this whole
+    /// log exists to close, so an unnamed record is kept and made loud rather than dropped and made invisible.</para>
+    /// </summary>
+    Unknown = 14
+}
+
 /// <summary>Assignment/ownership history event kinds (append-only audit of who held the task).</summary>
 public enum TaskAssignmentEventType
 {

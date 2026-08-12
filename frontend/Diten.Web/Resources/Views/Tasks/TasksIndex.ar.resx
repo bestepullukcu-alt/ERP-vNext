@@ -130,6 +130,20 @@
   <data name="CardApprovalTitle" xml:space="preserve"><value>مدير الاعتماد</value></data>
   <data name="CardApprovalDescription" xml:space="preserve"><value>اختر المدير الذي يعتمد هذه المهمة قبل بدء العمل. يُرسل إليه طلب اعتماد فور إنشاء المهمة.</value></data>
   <data name="CardWatchersTitle" xml:space="preserve"><value>المتابعون</value></data>
+  <data name="CardChecklistTitle" xml:space="preserve"><value>قائمة التحقق</value></data>
+  <data name="CardChecklistDescription" xml:space="preserve"><value>خطوات هذه المهمة. تُعلَّم البنود بعد إنشاء المهمة؛ والبند المانع يمنع إغلاقها.</value></data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>اكتب بندًا واضغط Enter</value></data>
+  <data name="ChecklistAddButton" xml:space="preserve"><value>إضافة</value></data>
+  <data name="ChecklistAddHint" xml:space="preserve"><value>انقر على الوسم لتغيير المستوى. لا توجد قائمة قوالب بعد.</value></data>
+  <data name="ChecklistLevelOptional" xml:space="preserve"><value>اختياري</value></data>
+  <data name="ChecklistLevelRequired" xml:space="preserve"><value>إلزامي</value></data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve"><value>مانع</value></data>
+  <data name="ChecklistLevelHint" xml:space="preserve"><value>تغيير المستوى: اختياري ← إلزامي ← مانع</value></data>
+  <data name="ChecklistEvidenceToggle" xml:space="preserve"><value>يتطلب إثباتًا</value></data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>يلزم مستند إثبات. سيصبح ربط المستند فعّالًا عند توصيل وحدة المستندات.</value></data>
+  <data name="ChecklistRemove" xml:space="preserve"><value>إزالة البند</value></data>
+  <data name="ChecklistMoveUp" xml:space="preserve"><value>تحريك لأعلى</value></data>
+  <data name="ChecklistMoveDown" xml:space="preserve"><value>تحريك لأسفل</value></data>
   <data name="CardEmailTitle" xml:space="preserve"><value>إشعارات البريد الإلكتروني</value></data>
   <data name="CardEmailDescription" xml:space="preserve"><value>عند التفعيل، يتلقى المعنيون رسالة بريد عند إسناد المهمة وتحديثها وإكمالها.</value></data>
   <data name="CardDelegationTitle" xml:space="preserve"><value>إعدادات التفويض</value></data>

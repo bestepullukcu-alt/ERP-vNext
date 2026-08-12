@@ -155,7 +155,10 @@ const ICON_MAP = {
   taskReviewer: "bx-user-voice",
   taskApprovalManager: "bx-user",
   taskWatchers: "bx-group",
-  taskReminderLeadDays: "bx-bell"
+  taskReminderLeadDays: "bx-bell",
+  // The checklist's add box. `bx-list-plus`, not the card heading's `bx-list-check`: the heading names the
+  // list, this one names the act of adding to it — the same distinction the three fields above draw.
+  taskChecklistInput: "bx-list-plus"
 };
 
 describe("an icon marks the fields where typing is not the whole story", () => {

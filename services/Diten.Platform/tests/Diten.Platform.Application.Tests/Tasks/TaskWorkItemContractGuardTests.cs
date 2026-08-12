@@ -133,14 +133,16 @@ public sealed class TaskWorkItemContractGuardTests
 
     [Theory]
     [InlineData("dependencies")]
-    [InlineData("checklist")]
     [InlineData("businessContext")]
     public async Task Without_the_data_NEITHER_half_appears(string capability)
     {
         /*
-         * The other direction — "half is never right" cuts both ways. `subtasks` is deliberately absent from this
-         * list: it follows the task's POSITION, not its data, so a childless parent still gets both halves. That
-         * asymmetry is asserted in TaskWorkItemProviderTests; repeating it here would only re-state it.
+         * The other direction — "half is never right" cuts both ways. `subtasks` and `checklist` are deliberately
+         * absent from this list: they follow what the task CAN HOLD rather than what it holds, because the shell
+         * can add a first entry to either, so both halves ship while empty. (`checklist` joined `subtasks` when
+         * the create form and the detail page grew add rows — before that, an empty container was an offer
+         * nothing could keep.) The asymmetry is asserted in TaskWorkItemProviderTests and
+         * TaskChecklistSubtaskTests; repeating it here would only re-state it.
          */
         var element = JsonDocument.Parse(
             JsonSerializer.Serialize(await ProjectBareItemAsync(), WebOptions)).RootElement;
@@ -336,7 +338,7 @@ public sealed class TaskWorkItemContractGuardTests
             checklists ?? new FakeChecklistRunRepository(),
             new FakeTaskApprovalService(),
             dependencies ?? new FakeTaskDependencyRepository(),
-            comments ?? new FakeTaskCommentRepository(),
+            comments ?? new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(),
             new FakePositionRepository(),
             new FakeOrganizationUnitRepository(),
             SlaForTests.Real(),
