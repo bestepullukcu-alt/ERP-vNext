@@ -157,12 +157,28 @@
         Array.from(scope.querySelectorAll(selector))
             .filter((node) => !node.__tagify)
             .forEach((node) => {
-                const tagify = new global.Tagify(node, Object.assign({}, settings.tagify, {
-                    // THE CONTRACT. Applied last so a caller cannot replace it by accident: three payload
-                    // builders split this value on commas, and losing it changes what the API receives on all
-                    // three screens at once, silently.
-                    originalInputValueFormat: (values) => values.map((v) => v.value).join(',')
-                }));
+                /*
+                 * TWO OPTIONS, AND THEY ARE OPPOSITE KINDS — which is why the order below is deliberate.
+                 *
+                 * The PLACEHOLDER is a DEFAULT and goes FIRST, so a caller can override it: the tenant-security
+                 * screens take IP ranges and country codes, where "type a tag and press Enter" is the wrong
+                 * instruction. (Tagify itself gives the element's own `placeholder` attribute precedence over
+                 * both, which is the same precedence one step further out.)
+                 *
+                 * `originalInputValueFormat` is a CONTRACT and goes LAST, so a caller CANNOT override it: three
+                 * payload builders split the underlying input on commas.
+                 *
+                 * The placeholder is why this block changed at all: the sentence was translated into seven
+                 * languages, published through the bridge and given an English fallback — and then never handed
+                 * to the library, so the one control on the form whose behaviour is not self-evident was also
+                 * the only one that said nothing.
+                 */
+                const tagify = new global.Tagify(node, Object.assign(
+                    { placeholder: t('TagsPlaceholder') },
+                    settings.tagify,
+                    {
+                        originalInputValueFormat: (values) => values.map((v) => v.value).join(',')
+                    }));
 
                 node.__tagify = tagify;
 

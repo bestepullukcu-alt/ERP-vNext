@@ -38,7 +38,25 @@ const installTagifyDouble = () => {
       input,
       options,
       value: [],
-      DOM: { scope: (() => { const s = global.document.createElement("tags"); input.parentNode.insertBefore(s, input); return s; })() },
+      DOM: (() => {
+        const scope = global.document.createElement("tags");
+        input.parentNode.insertBefore(scope, input);
+        /*
+         * THE EDITOR, and it is the point of the placeholder tests below. The real library builds a
+         * contenteditable `.tagify__input` and stamps `data-placeholder` on it, resolving the text exactly
+         * this way (tagify.js: `a.placeholder = t.getAttribute("placeholder") || a.placeholder || ""`) —
+         * the element's own attribute WINS, the option is the fallback. The double must resolve it the same
+         * way or it would answer a question the browser does not ask.
+         */
+        const editor = global.document.createElement("span");
+        editor.className = "tagify__input";
+        editor.setAttribute("contenteditable", "true");
+        editor.setAttribute(
+          "data-placeholder",
+          input.getAttribute("placeholder") || options.placeholder || "");
+        scope.appendChild(editor);
+        return { scope, input: editor };
+      })(),
       on(event, handler) { (listeners[event] ||= []).push(handler); return api; },
       emit(event) { (listeners[event] || []).forEach((h) => h({ detail: {} })); },
       addTags(values) {
@@ -363,6 +381,104 @@ describe("nothing constructs Tagify directly any more", () => {
 
   test("only the shared component knows the library exists", () => {
     expect(COMPONENT()).toMatch(/new\s+(global\.)?Tagify\s*\(/);
+  });
+});
+
+// ── the placeholder ─────────────────────────────────────────────────────────
+
+describe("the box SAYS what to do in it", () => {
+  /*
+   * MEASURED LIVE on /Tasks/Create: the editor's `data-placeholder` was "" — a zero-width nothing — while
+   * every part of the delivery chain was in place. SharedResource carried "Etiket yazıp Enter'a basın" in all
+   * seven languages, the bridge published it, the component even had an English fallback for it. It was simply
+   * never handed to the library: `new Tagify(node, { originalInputValueFormat })` and nothing else.
+   *
+   * So the whole form had exactly one control that told the user nothing, and it was the one control whose
+   * behaviour is not obvious — a tag box does nothing until Enter is pressed.
+   */
+  const withBridge = (payload) => {
+    const node = document.createElement("script");
+    node.id = "tags-l10n";
+    node.type = "application/json";
+    node.textContent = JSON.stringify(payload);
+    document.body.appendChild(node);
+  };
+
+  test("the placeholder REACHES the library — it is in the options Tagify is constructed with", () => {
+    const instances = installTagifyDouble();
+    const input = host();
+    withBridge({ TagsPlaceholder: "Etiket yazıp Enter'a basın" });
+
+    load().enhance(document, { selector: "#taskTags" });
+
+    expect(instances[0].options.placeholder).toBe("Etiket yazıp Enter'a basın");
+  });
+
+  test("the EDITOR carries it — not empty, and equal to the bridge's text", () => {
+    // The live measurement, restated as a test: this is the attribute that was "".
+    const instances = installTagifyDouble();
+    host();
+    withBridge({ TagsPlaceholder: "Etiket yazıp Enter'a basın" });
+
+    load().enhance(document, { selector: "#taskTags" });
+
+    const editor = instances[0].DOM.input;
+    expect(editor.getAttribute("data-placeholder")).not.toBe("");
+    expect(editor.getAttribute("data-placeholder")).toBe("Etiket yazıp Enter'a basın");
+  });
+
+  test("no bridge on the page ⇒ the English fallback, never an empty box", () => {
+    const instances = installTagifyDouble();
+    host();
+
+    load().enhance(document, { selector: "#taskTags" });
+
+    expect(instances[0].options.placeholder).toBe("Type a tag and press Enter");
+    expect(instances[0].DOM.input.getAttribute("data-placeholder")).toBe("Type a tag and press Enter");
+  });
+
+  test("a CALLER may still say something more specific — an IP box is not a tag box", () => {
+    /*
+     * The shared sentence is a default, not a decree: the tenant-security screens take IP ranges, where
+     * "type a tag" would be the wrong instruction. A caller's own text wins.
+     */
+    const instances = installTagifyDouble();
+    host("allowedIps");
+    withBridge({ TagsPlaceholder: "Etiket yazıp Enter'a basın" });
+
+    load().enhance(document, { selector: "#allowedIps", tagify: { placeholder: "10.0.0.0/24" } });
+
+    expect(instances[0].options.placeholder).toBe("10.0.0.0/24");
+  });
+
+  test("THE CONTRACT SURVIVES: originalInputValueFormat is still applied LAST", () => {
+    /*
+     * ⚠ The reason this test exists next to the placeholder ones. The fix adds a second option to the same
+     * Object.assign, and a caller-supplied `originalInputValueFormat` must STILL be overridden — three payload
+     * builders split the underlying input on commas. Placeholder is a default (caller wins); the value format
+     * is a contract (caller loses).
+     */
+    const instances = installTagifyDouble();
+    host();
+
+    load().enhance(document, {
+      selector: "#taskTags",
+      tagify: { originalInputValueFormat: () => "SABOTAGE" }
+    });
+
+    const format = instances[0].options.originalInputValueFormat;
+    expect(format([{ value: "a" }, { value: "b" }])).toBe("a,b");
+  });
+
+  test("all three screens get it, because all three go through the one component", () => {
+    // Stated as a claim rather than three copies of the same assertion: the screens do not construct Tagify.
+    ["wwwroot/assets/js/Tasks/form.js",
+     "wwwroot/assets/js/Platform/Tenants/security.js",
+     "wwwroot/assets/js/Governance/TenantSecuritySettings/index.js"].forEach((file) => {
+      const source = fs.readFileSync(web(...file.split("/")), "utf8");
+      expect(source, `${file} constructs Tagify itself`).not.toMatch(/new\s+(window\.|global\.)?Tagify\s*\(/);
+      expect(source, `${file} does not use the shared component`).toMatch(/DitenTags\.enhance/);
+    });
   });
 });
 
