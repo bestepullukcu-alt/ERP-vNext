@@ -4861,6 +4861,68 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 }
 
 /* ==========================================================================
+   DitenField — a leading icon inside a form control
+   --------------------------------------------------------------------------
+   THE RULE, and it is about information rather than decoration: an icon here
+   says "something other than typing happens in this box". So it marks the two
+   date fields (they open a calendar) and the tag field (Enter turns text into a
+   chip), and nothing else. Title, description, estimate and the tenant's own
+   text fields are plain typing; an icon on every field would say nothing about
+   any of them.
+
+   select2 controls are deliberately untouched — select2 renders its own
+   container, so those are a template change with their own decision.
+   ========================================================================== */
+.diten-field {
+    position: relative;
+}
+
+/* Quiet by design: the icon is a hint, and it must not compete with the value
+   the user typed. Placed on the INLINE start so Arabic moves it to the right
+   with no second rule. */
+.diten-field-icon {
+    position: absolute;
+    inset-inline-start: 0.9375rem;   /* the theme inset — same line the text starts on */
+    /* Centred on the CONTROL's own height, not on the wrapper's. The chip strip renders INSIDE .diten-field, so
+       a 50% offset drifts downward the moment the first tag appears — measured at 19px below the box's middle,
+       which reads as an icon sitting under the field rather than in it. 38px is the pinned control height. */
+    inset-block-start: calc(38px / 2);
+    transform: translateY(-50%);
+    color: var(--bs-secondary-color);
+    font-size: 1rem;
+    line-height: 1;
+    z-index: 2;
+    cursor: pointer;
+}
+
+/* Room for the icon, measured from the SAME theme inset the icon sits at:
+   inset + glyph + gap. Both control kinds, because the tag box is a <tags>
+   element and not a .form-control.
+
+   The :focus-within variant is listed SEPARATELY and deliberately: the tag box's
+   own focus rule sets `padding-inline` (to hold the geometry against tagify.css)
+   and ties this selector's specificity, so without a more specific focus entry
+   here the icon room collapsed the instant the user clicked in — measured as the
+   text jumping from 72px to 48px. */
+.diten-field .form-control,
+.diten-field tags.diten-tags,
+.diten-field tags.diten-tags:focus-within,
+.diten-field tags.diten-tags.tagify--focus {
+    padding-inline-start: calc(0.9375rem + 1rem + 0.5rem);
+}
+
+/* Nothing here on purpose: the icon pushes the TEXT inward, not the chips. See .diten-tags-strip — the chips
+   belong to the box's edge, and an icon-width inset is exactly what made them look indented. */
+
+/* The tag icon opens nothing, so it must not intercept the click that focuses
+   the editor. The calendar icon DOES open something and keeps its pointer
+   events — a dead icon is a dead button's sibling. */
+.diten-tags-icon {
+    pointer-events: none;
+    cursor: text;
+}
+
+/* ==========================================================================
    DitenTags — the ONE tag input (assets/js/shared/diten-tags.js)
    --------------------------------------------------------------------------
    LAYOUT "C": the box stays EMPTY and the chips flow BELOW it.
@@ -4885,14 +4947,29 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
     align-items: center;
     inline-size: 100%;
     padding-block: 0;
-    padding-inline: 0.75rem;
+    /* THE THEME'S OWN INSET — core.css `.form-control` uses `padding: .543rem .9375rem`, and this is that
+       second value, so the text starts on the same line as every neighbouring control's. The previous round
+       matched the box HEIGHT and left this at 0.75rem, which — plus Tagify's own 8px editor padding — put the
+       text 5px left of the field beside it.
+       (No closing brace anywhere in this comment, on purpose: the guard test parses a rule body by scanning to
+       the first closing brace, and one written in prose truncates what it reads.) */
+    padding-inline: 0.9375rem;
     border: 1px solid var(--bs-border-color);
     border-radius: var(--bs-border-radius);
-    background-color: var(--bs-body-bg);
+    /* THE THEME'S OWN BACKGROUND (core.css `.form-control` uses transparent). Painting --bs-body-bg made this
+       the only filled box on the form, and a filled box among outlined ones reads as disabled — it was
+       reported as exactly that. */
+    background-color: transparent;
     --tags-border-color: transparent;   /* the border above is ours; Tagify must not draw a second one */
 }
 
-.diten-tags:focus-within {
+/* The vendor's focus rule (`.tagify.tagify--focus { padding: 0; border-width: 2px }`) collapses the inset and
+   thickens the border, which would slide the text sideways the moment the user clicks in. Same specificity
+   trick, same reason: keep the geometry still and change only the colour. */
+tags.diten-tags:focus-within,
+tags.diten-tags.tagify--focus {
+    padding-inline: 0.9375rem;
+    border-width: 1px;
     border-color: var(--bs-primary);
 }
 
@@ -4903,9 +4980,16 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
     display: none;
 }
 
-.diten-tags .tagify__input {
+/* ELEMENT-QUALIFIED on purpose. tagify.css ships its OWN alignment compensation —
+   `.tagify__input:first-child { padding-inline-start: calc(.9375rem - 2px - 5px) }` (= 8px), written for the
+   library's default box (2px box padding + 5px editor margin) so its text lands on the theme inset. This layout
+   changes both premises, so that 8px stops compensating and starts ADDING. `.diten-tags .tagify__input` ties
+   its specificity (0,2,0) and tagify.css loads later, so it won; `tags.diten-tags` is (0,2,1) and wins cleanly
+   without !important. */
+tags.diten-tags .tagify__input {
     margin: 0;
     padding: 0;
+    padding-inline: 0;
     min-inline-size: 0;
     flex: 1 1 auto;
     line-height: 34px;
@@ -4926,6 +5010,11 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 
 /* ── the strip, below the box ─────────────────────────────────────────────── */
 .diten-tags-strip {
+    /* NO inset, and that is the corrected decision. The previous round lined the chips up with the field's
+       TEXT; measured afterwards, the chips sat 40px in (the icon's width) and read as an indented, separate
+       thing. The strip is OUTSIDE the box — a sibling block of the same width — so "aligned with the box" means
+       aligned with its EDGE, which is simply the absence of a padding here. Text alignment belongs to the
+       editor, which lives inside the box and after the icon; the two are deliberately different. */
     display: flex;
     flex-wrap: wrap;
     align-items: center;

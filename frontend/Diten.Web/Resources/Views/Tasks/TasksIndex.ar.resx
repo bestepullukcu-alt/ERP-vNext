@@ -26,6 +26,7 @@
   <data name="FieldDueAt" xml:space="preserve"><value>تاريخ الاستحقاق</value></data>
   <data name="FieldStartAt" xml:space="preserve"><value>تاريخ البدء</value></data>
   <data name="FieldEstimateHours" xml:space="preserve"><value>التقدير (ساعات)</value></data>
+  <data name="FieldEstimateHoursPlaceholder" xml:space="preserve"><value>مثال: 8</value></data>
   <data name="FieldRemainingHours" xml:space="preserve"><value>المتبقي (ساعات)</value></data>
   <data name="FieldSpentHours" xml:space="preserve"><value>المستغرق (ساعات)</value></data>
   <data name="SpentHoursReadOnlyHint" xml:space="preserve"><value>يُسجَّل أثناء تنفيذ العمل — وهو دائمًا صفر في مهمة جديدة.</value></data>

@@ -26,6 +26,7 @@
   <data name="FieldDueAt" xml:space="preserve"><value>截止日期</value></data>
   <data name="FieldStartAt" xml:space="preserve"><value>开始日期</value></data>
   <data name="FieldEstimateHours" xml:space="preserve"><value>预计（小时）</value></data>
+  <data name="FieldEstimateHoursPlaceholder" xml:space="preserve"><value>例如 8</value></data>
   <data name="FieldRemainingHours" xml:space="preserve"><value>剩余（小时）</value></data>
   <data name="FieldSpentHours" xml:space="preserve"><value>已用（小时）</value></data>
   <data name="SpentHoursReadOnlyHint" xml:space="preserve"><value>在执行过程中记录——新任务始终为零。</value></data>

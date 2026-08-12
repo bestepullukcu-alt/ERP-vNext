@@ -144,7 +144,16 @@
                             <label class="form-label fw-medium" for="taskDueAt">
                                 @Localizer["FieldDueAt"] <span class="text-danger">*</span>
                             </label>
-                            <input type="text" class="form-control flatpickr-date" id="taskDueAt" name="dueAt" placeholder="YYYY-MM-DD" required />
+                            @* LEADING ICON — information, not decoration: it says "this box opens a calendar".
+                               Only the fields where typing is not the whole story get one (the two dates and the
+                               tags); title, description and the estimate are plain typing and get none, because
+                               an icon on every field says nothing about any of them.
+                               aria-hidden: the label already names the field, so announcing the glyph would just
+                               repeat it. Clicking it OPENS the picker — a dead icon is a dead button's sibling. *@
+                            <div class="diten-field">
+                                <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" class="form-control flatpickr-date" id="taskDueAt" name="dueAt" placeholder="YYYY-MM-DD" required />
+                            </div>
                         </div>
                         @* PLANNING IS THE DOER'S, THE DEADLINE IS THE REQUESTER'S.
                            The due date above is a commitment the requester owns ("when I need it by") and is
@@ -157,7 +166,10 @@
                            is "Kendim". *@
                         <div class="col-md-6" data-task-field="startAt">
                             <label class="form-label fw-medium" for="taskStartAt">@Localizer["FieldStartAt"]</label>
-                            <input type="text" class="form-control flatpickr-date" id="taskStartAt" name="startAt" placeholder="YYYY-MM-DD" />
+                            <div class="diten-field">
+                                <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" class="form-control flatpickr-date" id="taskStartAt" name="startAt" placeholder="YYYY-MM-DD" />
+                            </div>
                         </div>
                         @* NOT here: the planned date. It is the PLAN TRANSITION's output — PlanTaskItemCommand
                            moves the task to Planned and requires the date — so writing it at create produced a
@@ -166,12 +178,25 @@
                            it; an EDIT carries the stored value through rather than clearing it. *@
                         <div class="col-md-6" data-task-field="estimateHours">
                             <label class="form-label fw-medium" for="taskEstimateHours">@Localizer["FieldEstimateHours"]</label>
-                            <input type="number" min="0" step="0.25" class="form-control" id="taskEstimateHours"
-                                   name="estimateHours" />
+                            @* A clock, and an example. A bare number box with no unit and no shape leaves the
+                               user choosing between 8, 8.5 and "1 gün" — the icon says the field is about time
+                               and the placeholder says what a value looks like. *@
+                            <div class="diten-field">
+                                <i class="bx bx-time-five diten-field-icon" aria-hidden="true"></i>
+                                <input type="number" min="0" step="0.25" class="form-control" id="taskEstimateHours"
+                                       name="estimateHours"
+                                       placeholder="@Localizer["FieldEstimateHoursPlaceholder"]" />
+                            </div>
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-medium" for="taskTags">@Localizer["FieldTags"]</label>
-                            <input type="text" class="form-control" id="taskTags" name="tags" autocomplete="off" />
+                            @* The tag icon says "Enter turns what you type into a chip". It opens nothing, so
+                               `.diten-tags-icon` switches its pointer events off — otherwise it would eat the
+                               click meant to focus the editor underneath it. *@
+                            <div class="diten-field">
+                                <i class="bx bx-purchase-tag-alt diten-field-icon diten-tags-icon" aria-hidden="true"></i>
+                                <input type="text" class="form-control" id="taskTags" name="tags" autocomplete="off" />
+                            </div>
                         </div>
 
                         @* Effort actuals are execution-only: a new task is always zero, so the field is read-only

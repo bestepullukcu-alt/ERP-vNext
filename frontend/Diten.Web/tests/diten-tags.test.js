@@ -99,7 +99,7 @@ describe('layout "C" — the box stays 36px however many tags there are', () => 
      * and matching the NEIGHBOUR is what the requirement is actually about.
      */
     const css = CSS();
-    const box = /\.diten-tags\s*\{([^}]*)\}/.exec(css);
+    const box = /^\.diten-tags\s*\{([^}]*)\}/m.exec(css);
 
     expect(box, "there is no .diten-tags rule at all").toBeTruthy();
     expect(box[1], "the height is not pinned").toMatch(/block-size:\s*38px/);
@@ -455,7 +455,7 @@ describe("FG-003", () => {
      * one accented control on the form.
      */
     const css = CSS();
-    const chip = /\.diten-tags-chip\s*\{([^}]*)\}/.exec(css);
+    const chip = /^\.diten-tags-chip\s*\{([^}]*)\}/m.exec(css);
     expect(chip, "there is no chip rule").toBeTruthy();
     expect(chip[1], "the chip uses the primary accent").not.toMatch(/--bs-primary\b/);
     expect(chip[1], "the chip has no surface token").toMatch(/var\(--bs-/);
@@ -463,14 +463,14 @@ describe("FG-003", () => {
 
   test("the remove control meets the 24px touch target", () => {
     const css = CSS();
-    const remove = /\.diten-tags-remove\s*\{([^}]*)\}/.exec(css);
+    const remove = /^\.diten-tags-remove\s*\{([^}]*)\}/m.exec(css);
     expect(remove, "there is no remove-button rule").toBeTruthy();
     expect(remove[1]).toMatch(/(min-)?(inline|block)-size:\s*(2[4-9]|[3-9]\d)px/);
   });
 
   test("the strip is written in logical properties, so RTL needs no second rule", () => {
     const css = CSS();
-    const strip = /\.diten-tags-strip\s*\{([^}]*)\}/.exec(css);
+    const strip = /^\.diten-tags-strip\s*\{([^}]*)\}/m.exec(css);
     expect(strip, "there is no strip rule").toBeTruthy();
     expect(strip[1], "physical margins break under RTL").not.toMatch(/margin-(left|right)\s*:/);
   });

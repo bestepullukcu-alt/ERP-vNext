@@ -26,6 +26,7 @@
   <data name="FieldDueAt" xml:space="preserve"><value>Fecha de vencimiento</value></data>
   <data name="FieldStartAt" xml:space="preserve"><value>Fecha de inicio</value></data>
   <data name="FieldEstimateHours" xml:space="preserve"><value>Estimación (horas)</value></data>
+  <data name="FieldEstimateHoursPlaceholder" xml:space="preserve"><value>p. ej. 8</value></data>
   <data name="FieldRemainingHours" xml:space="preserve"><value>Restante (horas)</value></data>
   <data name="FieldSpentHours" xml:space="preserve"><value>Dedicado (horas)</value></data>
   <data name="SpentHoursReadOnlyHint" xml:space="preserve"><value>Se registra durante la ejecución: siempre es cero en una tarea nueva.</value></data>

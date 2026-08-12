@@ -26,6 +26,7 @@
   <data name="FieldDueAt" xml:space="preserve"><value>Bitiş tarihi</value></data>
   <data name="FieldStartAt" xml:space="preserve"><value>Başlangıç tarihi</value></data>
   <data name="FieldEstimateHours" xml:space="preserve"><value>Tahmin (saat)</value></data>
+  <data name="FieldEstimateHoursPlaceholder" xml:space="preserve"><value>örn. 8</value></data>
   <data name="FieldRemainingHours" xml:space="preserve"><value>Kalan (saat)</value></data>
   <data name="FieldSpentHours" xml:space="preserve"><value>Harcanan (saat)</value></data>
   <data name="SpentHoursReadOnlyHint" xml:space="preserve"><value>İş yapılırken kaydedilir — yeni görevde her zaman sıfırdır.</value></data>

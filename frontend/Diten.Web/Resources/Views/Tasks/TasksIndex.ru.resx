@@ -26,6 +26,7 @@
   <data name="FieldDueAt" xml:space="preserve"><value>Срок</value></data>
   <data name="FieldStartAt" xml:space="preserve"><value>Дата начала</value></data>
   <data name="FieldEstimateHours" xml:space="preserve"><value>Оценка (часы)</value></data>
+  <data name="FieldEstimateHoursPlaceholder" xml:space="preserve"><value>напр. 8</value></data>
   <data name="FieldRemainingHours" xml:space="preserve"><value>Осталось (часы)</value></data>
   <data name="FieldSpentHours" xml:space="preserve"><value>Затрачено (часы)</value></data>
   <data name="SpentHoursReadOnlyHint" xml:space="preserve"><value>Фиксируется в процессе работы — у новой задачи всегда ноль.</value></data>

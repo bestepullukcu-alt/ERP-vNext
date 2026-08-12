@@ -1061,6 +1061,20 @@
 
         nodes.forEach((node) => {
             node.flatpickr({ monthSelectorType: 'static', dateFormat: 'Y-m-d', allowInput: true });
+
+            /*
+             * THE LEADING ICON IS A CONTROL, NOT A PICTURE.
+             *
+             * It sits ON TOP of the field's inline start, so a user aiming at "the calendar" hits the glyph and
+             * not the input. Left unbound that is a dead icon — the same defect as a dead button, which this
+             * project shipped once and had reported as breakage. `allowInput: true` means the input itself does
+             * not open on focus either, so without this the icon would be the one obvious affordance that does
+             * nothing.
+             */
+            const icon = node.parentElement?.querySelector('.diten-field-icon');
+            if (icon) {
+                icon.addEventListener('click', () => node._flatpickr?.open());
+            }
         });
 
         return nodes.length;
