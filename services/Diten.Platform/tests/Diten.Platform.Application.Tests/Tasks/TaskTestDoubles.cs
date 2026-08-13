@@ -55,6 +55,47 @@ internal sealed class FakeDataScopeResolver(params EntitlementDataScope[] scopes
         => Task.FromResult<IReadOnlyList<EntitlementDataScope>>(scopes.ToList());
 }
 
+/// <summary>
+/// BL-024 Phase 2 — the caller's permissions, as a test states them.
+///
+/// <para>Every constructor is NAMED. There is deliberately no parameterless default and no implicit
+/// "permit-all", because the one mistake that would matter here is a test that silently grants everything and
+/// therefore proves nothing about the restriction it claims to cover. A test that does not care about field
+/// authorization says <see cref="TaskActors.PermitAll"/> out loud.</para>
+/// </summary>
+internal sealed class FakeActorPermissions : IActorPermissionContext
+{
+    private readonly HashSet<string> _granted;
+
+    internal FakeActorPermissions(bool isPlatformActor, params string[] granted)
+    {
+        IsPlatformActor = isPlatformActor;
+        _granted = new HashSet<string>(granted, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public bool IsPlatformActor { get; }
+
+    // Mirrors ClaimsActorPermissionContext exactly: a blank key is not a check, a platform actor passes
+    // everything, and anything else must be held. A double that is kinder than production proves nothing.
+    public bool Has(string? permissionKey)
+        => string.IsNullOrWhiteSpace(permissionKey) || IsPlatformActor || _granted.Contains(permissionKey);
+}
+
+internal static class TaskActors
+{
+    /// <summary>An ordinary tenant user who holds nothing beyond what is unrestricted.</summary>
+    internal static FakeActorPermissions None() => new(isPlatformActor: false);
+
+    /// <summary>An ordinary tenant user holding exactly these keys.</summary>
+    internal static FakeActorPermissions Holding(params string[] keys) => new(isPlatformActor: false, keys);
+
+    /// <summary>
+    /// Passes every permission — the platform actor, and the honest way for a test that is about something else
+    /// to say "field authorization is not what I am measuring here".
+    /// </summary>
+    internal static FakeActorPermissions PermitAll() => new(isPlatformActor: true);
+}
+
 internal sealed class FakeTenantContext(Guid tenantId) : ITenantContext
 {
     public Guid TenantId { get; private set; } = tenantId;
@@ -667,28 +708,37 @@ internal sealed class FakeTaskFieldDefinitionRepository : ITaskFieldDefinitionRe
     /// expected-version write must not have changed the stored state — the recurrence double learned this the
     /// hard way, twice.
     /// </summary>
-    private static TaskFieldDefinition Detach(TaskFieldDefinition d) => new()
+    /*
+     * BY REFLECTION, and the reason is a defect this double actually caused.
+     *
+     * It was a hand-written property list, and BL-024's `ViewPermission` / `EditPermission` were added to the
+     * entity without it — so every definition handed to the code under test came back UNRESTRICTED, and four
+     * field-authorization tests failed while the production code was correct. A double that quietly drops a
+     * security field is worse than no double: it reports "not protected" for a system that is.
+     *
+     * This is the same cure CloneFieldValue already carries for exactly the same reason (it once dropped
+     * Classification). A property added to TaskFieldDefinition tomorrow now travels here without anyone
+     * remembering this method exists.
+     */
+    private static TaskFieldDefinition Detach(TaskFieldDefinition source)
     {
-        Id = d.Id,
-        TenantId = d.TenantId,
-        Code = d.Code,
-        LabelResourceKey = d.LabelResourceKey,
-        LabelText = d.LabelText,
-        ValueType = d.ValueType,
-        Section = d.Section,
-        Importance = d.Importance,
-        IsRequired = d.IsRequired,
-        SortOrder = d.SortOrder,
-        OptionsSourceKind = d.OptionsSourceKind,
-        OptionsSourceKey = d.OptionsSourceKey,
-        AppliesToModuleCode = d.AppliesToModuleCode,
-        Classification = d.Classification,
-        DefaultAccessState = d.DefaultAccessState,
-        IsActive = d.IsActive,
-        DeletedAt = d.DeletedAt,
-        Version = d.Version,
-        CreatedAt = d.CreatedAt
-    };
+        var clone = new TaskFieldDefinition
+        {
+            TenantId = source.TenantId,
+            Code = source.Code,
+            ValueType = source.ValueType,
+            Section = source.Section
+        };
+
+        foreach (var property in typeof(TaskFieldDefinition)
+                     .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+                     .Where(p => p is { CanRead: true, CanWrite: true }))
+        {
+            property.SetValue(clone, property.GetValue(source));
+        }
+
+        return clone;
+    }
 }
 
 /// <summary>
@@ -1455,7 +1505,7 @@ internal static class TaskWorkItemProviderHarness
             new FakeChecklistRunRepository(),
             new FakeTaskApprovalService(),
             new FakeTaskDependencyRepository(),
-            new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(),
+            new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(), TaskActors.PermitAll(),
             new FakePositionRepository(positions),
             new FakeOrganizationUnitRepository(units),
             SlaForTests.Real(),

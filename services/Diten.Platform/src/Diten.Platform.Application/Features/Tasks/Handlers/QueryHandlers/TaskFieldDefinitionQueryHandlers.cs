@@ -92,14 +92,19 @@ public sealed class GetTaskFieldDefinitionOptionsHandler
     private readonly ITenantContext _tenantContext;
     private readonly IConfiguration _configuration;
 
+    /// <summary>BL-024 Phase 2 — who is asking for this field's option list.</summary>
+    private readonly IActorPermissionContext _actor;
+
     public GetTaskFieldDefinitionOptionsHandler(
         ITaskFieldDefinitionRepository definitions,
         IPlatformLookupProvider lookups,
         IBusinessReferenceDataConsumerQueryService referenceData,
         ITaskRecordSourceRegistry recordSources,
         ITenantContext tenantContext,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IActorPermissionContext actor)
     {
+        _actor = actor;
         _definitions = definitions;
         _lookups = lookups;
         _referenceData = referenceData;
@@ -121,6 +126,26 @@ public sealed class GetTaskFieldDefinitionOptionsHandler
             return Fail(
                 $"Unknown task field definition '{request.Code}'.", 404,
                 TaskReasonCodes.FieldDefinitionUnknown, request.CorrelationId);
+        }
+
+        /*
+         * BL-024 Phase 2 — A HIDDEN FIELD'S PICKER IS HIDDEN TOO.
+         *
+         * This route and the `records` route beside it sit on `platform.tasks.read`, deliberately: filling a
+         * field you were asked to fill is an ordinary task read. But that reasoning only holds for a field the
+         * caller may SEE. Redacting a value while leaving its selector open is redaction in name only — the list
+         * the field was hidden to protect stays fully enumerable, one route over. BL-024's own note raised this,
+         * and it is the reason the endpoint is in scope rather than a later tidy-up.
+         *
+         * 403, not 404. The definition's EXISTENCE is not the secret: the catalogue is readable through
+         * `GET field-definitions`, so pretending it is missing would be a lie the caller can disprove in one
+         * request, and lies in error codes are how people learn to distrust the error codes that matter.
+         */
+        if (!TaskFieldAccessRules.CanReadOptions(definition, _actor))
+        {
+            return Fail(
+                $"You are not permitted to read the options of field '{definition.Code}'.", 403,
+                TaskReasonCodes.FieldAccessDenied, request.CorrelationId);
         }
 
         if (definition.OptionsSourceKind == TaskFieldOptionsSourceKind.None

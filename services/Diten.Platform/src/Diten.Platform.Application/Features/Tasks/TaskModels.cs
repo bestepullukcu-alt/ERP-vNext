@@ -70,6 +70,15 @@ public static class TaskReasonCodes
     public const string ConcurrencyConflict = "TASK_CONCURRENCY_CONFLICT";
     public const string SpentHoursNotSettable = "SPENT_HOURS_NOT_SETTABLE";
     public const string FieldDefinitionUnknown = "TASK_FIELD_DEFINITION_UNKNOWN";
+
+    /// <summary>
+    /// BL-024 Phase 2 — the caller may not see or write this configurable field.
+    ///
+    /// <para>Its OWN code, separate from the generic validation failure: this is a refusal of AUTHORITY, not a
+    /// malformed payload. A client told "validation failed" will helpfully retry with a corrected value forever;
+    /// a client told this knows the value is not theirs to send and stops.</para>
+    /// </summary>
+    public const string FieldAccessDenied = "TASK_FIELD_ACCESS_DENIED";
     public const string FieldValueInvalid = "TASK_FIELD_VALUE_INVALID";
     public const string FieldLimitExceeded = "TASK_FIELD_LIMIT_EXCEEDED";
     public const string ChecklistIncomplete = "CHECKLIST_INCOMPLETE";
@@ -388,7 +397,21 @@ public sealed record UpdateTaskItemRequest(
 
 public sealed record TaskWatcherRequest(Guid UserId, TaskWatcherRole Role, Guid? PositionId);
 
-public sealed record TaskFieldValueDto(string DefinitionCode, TaskFieldValueType ValueType, string? Value);
+/// <param name="Redacted">
+/// BL-024 Phase 2 — the caller may not see this field, so <paramref name="Value"/> was withheld ON THE SERVER.
+///
+/// <para>A separate flag rather than "null means hidden", because null already means something: a field that
+/// exists and is empty. Without the distinction the form cannot tell a value it may clear from a value it must
+/// not touch — and on an edit, which is a FULL REPLACE, guessing wrong deletes somebody else's data.</para>
+///
+/// <para>Trailing and defaulted, so every request payload written before this field stays valid. On the way IN
+/// it is ignored: what a client claims about redaction decides nothing.</para>
+/// </param>
+public sealed record TaskFieldValueDto(
+    string DefinitionCode,
+    TaskFieldValueType ValueType,
+    string? Value,
+    bool Redacted = false);
 
 public sealed record BulkDeleteTaskItemRequest(IReadOnlyList<Guid> Ids);
 
@@ -643,12 +666,27 @@ public sealed record CreateTaskFieldDefinitionRequest(
     string? OptionsSourceKey,
     string? AppliesToModuleCode,
     /// <summary>
-    /// STORED, never evaluated. Field-level authorization is BL-024; carrying the metadata now keeps that work
-    /// additive, and deciding anything with it today would be half an access-control system.
+    /// STORED, never evaluated — a LABEL for how sensitive the field is, not a rule. The rule is the two
+    /// permission keys below. (It is still load-bearing in one place: a value whose definition has since been
+    /// purged is judged by the classification copied onto it, so a once-classified value cannot become readable
+    /// by losing its definition.)
     /// </summary>
     TaskFieldClassification Classification,
     TaskFieldAccessState DefaultAccessState,
-    bool IsActive = true);
+    bool IsActive = true,
+    /// <summary>
+    /// BL-024 Phase 2 — the permission a caller must hold to SEE this field's values. Null: unrestricted.
+    ///
+    /// <para>A permission KEY, not a role: role identity does not reach this service (Platform receives role
+    /// names, never ids) and MOD-0018's grant table has no room for a field. Naming a key means MOD-0018 keeps
+    /// deciding who holds it and nothing here duplicates that.</para>
+    ///
+    /// <para>Trailing and optional, so every payload written before this stays valid and every existing
+    /// definition stays unrestricted.</para>
+    /// </summary>
+    string? ViewPermission = null,
+    /// <summary>BL-024 Phase 2 — the permission required to WRITE it. Null: anyone who can edit the task.</summary>
+    string? EditPermission = null);
 
 /// <summary>
 /// Full replace — except <c>Code</c>, which is absent on purpose. Every <c>TaskFieldValue</c> already stored
@@ -668,7 +706,11 @@ public sealed record UpdateTaskFieldDefinitionRequest(
     TaskFieldClassification Classification,
     TaskFieldAccessState DefaultAccessState,
     bool IsActive,
-    int ExpectedVersion);
+    int ExpectedVersion,
+    /// <summary>BL-024 Phase 2 — see the create request. Trailing and optional; an edit that omits them clears
+    /// the restriction, which is the same full-replace semantics every other field on this request has.</summary>
+    string? ViewPermission = null,
+    string? EditPermission = null);
 
 /// <summary>
 /// Retire several definitions at once.

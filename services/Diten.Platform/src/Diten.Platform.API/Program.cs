@@ -52,6 +52,17 @@ builder.Host.UseSerilog((context, services, loggerConfiguration) =>
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
+
+/*
+ * BL-024 Phase 2 — "does the caller hold permission P", answered from the request's claims.
+ *
+ * Registered HERE and not in Infrastructure because the implementation calls PermissionClaimEvaluator, which
+ * lives in this project and owns the canonical + legacy-alias matching the [HasPermission] filter uses.
+ * Answering the question anywhere else would mean a second, slightly-different matcher, and field authorization
+ * would then disagree with the endpoint guarding the same controller.
+ */
+builder.Services.AddScoped<Diten.Platform.Application.Contracts.IActorPermissionContext,
+    Diten.Platform.API.Security.ClaimsActorPermissionContext>();
 builder.Services.AddDitenObservability(
     builder.Configuration,
     builder.Environment,

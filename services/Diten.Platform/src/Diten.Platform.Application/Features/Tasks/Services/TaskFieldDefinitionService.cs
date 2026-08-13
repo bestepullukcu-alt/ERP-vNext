@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Domain.Repositories;
@@ -27,10 +28,20 @@ public interface ITaskFieldDefinitionService
     /// to ask: refusing there would not collect the missing value, it would silently stop the recurrence and
     /// consume the period anyway. Those paths are named at their call sites.</para>
     /// </param>
+    /// <param name="existing">
+    /// BL-024 Phase 2 — the values ALREADY STORED on the task, for an update. Null for a create.
+    ///
+    /// <para><b>Why an update must supply this.</b> Redaction and full-replace are individually fine and lethal
+    /// together: the payload replaces <c>task.FieldValues</c> wholesale, and a caller who may not see a field
+    /// never received its value, so an ordinary "change the title" round-trip would post the field back MISSING
+    /// and delete it. Nobody would see an error. The stored values are handed in so a field the caller may not
+    /// write is CARRIED THROUGH untouched instead of being read out of a payload that could not contain it.</para>
+    /// </param>
     Task<TaskFieldValidationResult> ValidateAndMaterializeAsync(
         IReadOnlyList<TaskFieldValueDto>? values,
         CancellationToken ct = default,
-        bool enforceRequired = true);
+        bool enforceRequired = true,
+        IReadOnlyList<TaskFieldValue>? existing = null);
 }
 
 public sealed record TaskFieldValidationResult(
@@ -44,20 +55,48 @@ public sealed class TaskFieldDefinitionService : ITaskFieldDefinitionService
     private readonly ITaskFieldDefinitionRepository _definitions;
     private readonly ITaskRecordSourceRegistry _recordSources;
 
+    /// <summary>BL-024 Phase 2 — who is writing. Required, never defaulted: a fail-open default on a security
+    /// decision compiles everywhere and leaks silently.</summary>
+    private readonly IActorPermissionContext _actor;
+
     public TaskFieldDefinitionService(
         ITaskFieldDefinitionRepository definitions,
-        ITaskRecordSourceRegistry recordSources)
+        ITaskRecordSourceRegistry recordSources,
+        IActorPermissionContext actor)
     {
         _definitions = definitions;
         _recordSources = recordSources;
+        _actor = actor;
     }
 
     public async Task<TaskFieldValidationResult> ValidateAndMaterializeAsync(
         IReadOnlyList<TaskFieldValueDto>? values,
         CancellationToken ct = default,
-        bool enforceRequired = true)
+        bool enforceRequired = true,
+        IReadOnlyList<TaskFieldValue>? existing = null)
     {
         var active = await _definitions.ListActiveAsync(ct);
+
+        /*
+         * BL-024 Phase 2 — values the caller MAY NOT WRITE are carried through from the stored task.
+         *
+         * Resolved from ListAllAsync, not `active`: a value written under a since-retired definition must still
+         * be preserved, or retiring a definition would quietly delete its data on the next edit.
+         *
+         * This is the half that has no attacker in it and does the most damage — an ordinary edit by an ordinary
+         * user, silently dropping a field they were never shown.
+         */
+        var allDefinitions = (existing is { Count: > 0 })
+            ? (await _definitions.ListAllAsync(ct)).ToDictionary(d => d.Code, StringComparer.OrdinalIgnoreCase)
+            : new Dictionary<string, TaskFieldDefinition>(StringComparer.OrdinalIgnoreCase);
+
+        var preserved = (existing ?? [])
+            .Where(value => !TaskFieldAccessRules.CanEdit(
+                allDefinitions.GetValueOrDefault(value.DefinitionCode), _actor))
+            .ToList();
+        var preservedCodes = preserved
+            .Select(value => value.DefinitionCode)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         if (values is null || values.Count == 0)
         {
@@ -67,12 +106,24 @@ public sealed class TaskFieldDefinitionService : ITaskFieldDefinitionService
              * client — stored a task with the required field simply absent. Requiredness was only ever checked
              * for a field that had been SUPPLIED, so omitting it was the way around it.
              */
+            /*
+             * A PRESERVED field counts as supplied here too — the same rule the partial-payload check below
+             * applies, and it has to be stated twice because these are two different early exits.
+             *
+             * Missing it made a required RESTRICTED field refuse every edit by exactly the people the
+             * restriction was aimed at: they cannot see the value, so they cannot send it, so their save is
+             * rejected for omitting it. The task becomes unsavable and nothing on screen connects that to a
+             * permission. Found by the test below, not by review.
+             */
             var missingEntirely = enforceRequired
-                ? active.FirstOrDefault(definition => definition.IsRequired)
+                ? active.FirstOrDefault(definition =>
+                    definition.IsRequired && !preservedCodes.Contains(definition.Code))
                 : null;
 
+            // Preserved values survive an empty payload too — "the caller sent no fields" must not mean
+            // "delete the ones they could not see".
             return missingEntirely is null
-                ? new TaskFieldValidationResult(true, [], null, null)
+                ? new TaskFieldValidationResult(true, preserved, null, null)
                 : Invalid(TaskReasonCodes.FieldValueInvalid, $"Field '{missingEntirely.Code}' is required.");
         }
 
@@ -100,6 +151,24 @@ public sealed class TaskFieldDefinitionService : ITaskFieldDefinitionService
             if (!seen.Add(definition.Code))
             {
                 return Invalid(TaskReasonCodes.FieldValueInvalid, $"Duplicate value for '{definition.Code}'.");
+            }
+
+            /*
+             * BL-024 Phase 2 — A FIELD THE CALLER MAY NOT WRITE IS REFUSED, not ignored.
+             *
+             * Ignoring it would answer 204 to somebody who just tried to set a value they have no authority
+             * over, and they would have every reason to believe it took. A refusal is the only honest answer,
+             * and it is the one that shows up in a log.
+             *
+             * ⚠ READ ACCESS IS NOT WRITE ACCESS. This is a separate check with its own key, deliberately not
+             * derived from whether the value came back redacted: an approver who may READ a salary band is not
+             * thereby allowed to change it.
+             */
+            if (!TaskFieldAccessRules.CanEdit(definition, _actor))
+            {
+                return Invalid(
+                    TaskReasonCodes.FieldAccessDenied,
+                    $"You are not permitted to write field '{definition.Code}'.");
             }
 
             if (supplied.ValueType != definition.ValueType)
@@ -144,7 +213,13 @@ public sealed class TaskFieldDefinitionService : ITaskFieldDefinitionService
         // agreement. Checked after the loop so a supplied-but-empty value reports first, with its own message.
         if (enforceRequired)
         {
-            var omitted = active.FirstOrDefault(definition => definition.IsRequired && !seen.Contains(definition.Code));
+            // A PRESERVED field counts as supplied. It is required, it is still on the task, and the caller was
+            // never able to send it — refusing their edit for omitting a value they may not see would make the
+            // task uneditable by exactly the people the restriction was aimed at.
+            var omitted = active.FirstOrDefault(definition =>
+                definition.IsRequired
+                && !seen.Contains(definition.Code)
+                && !preservedCodes.Contains(definition.Code));
             if (omitted is not null)
             {
                 return Invalid(TaskReasonCodes.FieldValueInvalid, $"Field '{omitted.Code}' is required.");
@@ -192,7 +267,16 @@ public sealed class TaskFieldDefinitionService : ITaskFieldDefinitionService
             return recordCheck;
         }
 
-        return new TaskFieldValidationResult(true, materialized, null, null);
+        /*
+         * The preserved values join the result LAST, so the payload's own values are validated on their own
+         * terms and the untouchable ones simply come along. Their order relative to each other is kept; a
+         * checklist of field values has no meaningful order anyway (the SECTION and SortOrder on the definition
+         * decide how they render).
+         *
+         * They are appended rather than merged by code because nothing can collide: a preserved value is by
+         * definition one the caller may not write, and any attempt to write one was already refused above.
+         */
+        return new TaskFieldValidationResult(true, [.. materialized, .. preserved], null, null);
     }
 
     private static bool IsRecordBacked(TaskFieldDefinition definition) =>

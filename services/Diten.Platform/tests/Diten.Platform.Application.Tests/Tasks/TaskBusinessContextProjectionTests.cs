@@ -309,7 +309,7 @@ public sealed class TaskBusinessContextProjectionTests
             new FakeTaskApprovalService(),
             new FakeTaskDependencyRepository(),
             new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(),
-            new FakePositionRepository(),
+            TaskActors.PermitAll(), new FakePositionRepository(),
             new FakeOrganizationUnitRepository(),
             SlaForTests.Real(),
             definitions);

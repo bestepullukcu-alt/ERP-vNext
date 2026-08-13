@@ -427,7 +427,7 @@ public sealed class TaskChecklistSubtaskTests
                 LegalEntityId = Guid.NewGuid()
             }),
             new FakePositionAssignmentRepository(),
-            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None),
+            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
             new TaskLifecycleService(), new FakeTaskApprovalService(), templates, runs, new TaskChecklistService(),
             new FakeTaskNotificationService(),
             new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant),
@@ -458,7 +458,7 @@ public sealed class TaskChecklistSubtaskTests
         FakeTaskApprovalService? approvals = null)
         => new(tasks, new FakePositionAssignmentRepository(), new TaskLifecycleService(),
             new TaskAssignmentResolver(), new FakeUserDisplayNameResolver(), runs,
-            approvals ?? new FakeTaskApprovalService(), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
+            approvals ?? new FakeTaskApprovalService(), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(), TaskActors.PermitAll(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
 
     private static Task<Application.Common.Response<Application.Common.NoContent>> Transition(
         FakeTaskItemRepository tasks,
@@ -491,7 +491,7 @@ public sealed class TaskChecklistSubtaskTests
                 LegalEntityId = Guid.NewGuid()
             }),
             new FakePositionAssignmentRepository(),
-            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None),
+            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
             new TaskLifecycleService(),
             new FakeTaskApprovalService(),
             new FakeChecklistTemplateRepository(),

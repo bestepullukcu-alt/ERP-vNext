@@ -533,7 +533,7 @@ public sealed class TaskHandoverTests
             new TaskAssignmentResolver(),
             new FakeUserDisplayNameResolver(),
             new FakeChecklistRunRepository(),
-            new FakeTaskApprovalService(), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
+            new FakeTaskApprovalService(), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(), TaskActors.PermitAll(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
 
     private static WorkItemActor Actor(Guid userId) => new(userId, IsPlatformActor: true, new HashSet<string>());
 

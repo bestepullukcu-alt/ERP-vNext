@@ -26,7 +26,7 @@ public sealed class TaskWorkItemProviderWireContractTests
             new TaskLifecycleService(),
             new TaskAssignmentResolver(),
             new FakeUserDisplayNameResolver(),
-            new FakeChecklistRunRepository(), new FakeTaskApprovalService(), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
+            new FakeChecklistRunRepository(), new FakeTaskApprovalService(), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(), TaskActors.PermitAll(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
 
         var items = await provider.GetWorkItemsAsync(
             new WorkItemActor(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>()));
@@ -150,7 +150,7 @@ public sealed class TaskWorkItemProviderWireContractTests
             new TaskLifecycleService(),
             new TaskAssignmentResolver(),
             new FakeUserDisplayNameResolver(),
-            new FakeChecklistRunRepository(), new FakeTaskApprovalService(), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
+            new FakeChecklistRunRepository(), new FakeTaskApprovalService(), new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(), TaskActors.PermitAll(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
 
         var items = await provider.GetWorkItemsAsync(
             new WorkItemActor(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>()));

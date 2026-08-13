@@ -343,7 +343,7 @@ public sealed class CreateWithChecklistTests
                 new FakePositionRepository(ActivePosition()),
                 new FakeOrganizationUnitRepository(LiveUnit()),
                 new FakePositionAssignmentRepository(Holder(TaskTestData.Me)),
-                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None),
+                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
                 new TaskLifecycleService(),
                 new FakeTaskApprovalService(),
                 templates ?? new FakeChecklistTemplateRepository(),

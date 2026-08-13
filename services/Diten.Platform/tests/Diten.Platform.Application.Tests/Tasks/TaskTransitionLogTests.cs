@@ -644,7 +644,7 @@ public sealed class TaskTransitionLogTests
                 new FakePositionRepository(ActivePosition()),
                 new FakeOrganizationUnitRepository(LiveUnit()),
                 new FakePositionAssignmentRepository(Holder(TaskTestData.Me)),
-                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None),
+                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
                 new TaskLifecycleService(),
                 new FakeTaskApprovalService(),
                 new FakeChecklistTemplateRepository(),
@@ -660,7 +660,7 @@ public sealed class TaskTransitionLogTests
         => new(
             tasks,
             new FakeOrganizationUnitRepository(LiveUnit()),
-            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None),
+            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
             new FakeCurrentUserContext(TaskTestData.Me),
             new FakeTaskApprovalService(),
             new FakeTaskReviewService(),
@@ -702,7 +702,7 @@ public sealed class TaskTransitionLogTests
             new FakeTaskDependencyRepository(),
             comments,
             // The store's OWN log — the entries the handlers under test actually wrote.
-            tasks.Transitions,
+            tasks.Transitions, TaskActors.PermitAll(),
             new FakePositionRepository(),
             new FakeOrganizationUnitRepository(),
             SlaForTests.Real(),

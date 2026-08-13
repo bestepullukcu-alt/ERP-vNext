@@ -98,6 +98,9 @@ public sealed class CreateTaskFieldDefinitionHandler
             // Stored, never evaluated — field-level authorization is BL-024 (see the request's own note).
             Classification = request.Classification,
             DefaultAccessState = request.DefaultAccessState,
+            // BL-024 Phase 2 — the two permission keys that make the metadata above actually decide something.
+            ViewPermission = Trimmed(request.ViewPermission),
+            EditPermission = Trimmed(request.EditPermission),
             IsActive = request.IsActive,
             CreatedBy = _currentUser.ActorName
         };
@@ -182,6 +185,8 @@ public sealed class UpdateTaskFieldDefinitionHandler
         definition.AppliesToModuleCode = Trimmed(request.AppliesToModuleCode);
         definition.Classification = request.Classification;
         definition.DefaultAccessState = request.DefaultAccessState;
+        definition.ViewPermission = Trimmed(request.ViewPermission);
+        definition.EditPermission = Trimmed(request.EditPermission);
         definition.IsActive = request.IsActive;
         definition.UpdatedBy = _currentUser.ActorName;
 

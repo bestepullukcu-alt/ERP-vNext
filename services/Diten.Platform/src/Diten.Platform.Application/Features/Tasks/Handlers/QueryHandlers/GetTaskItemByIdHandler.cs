@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tasks.Queries;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Domain.Repositories;
@@ -14,18 +15,26 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
     private readonly ITaskLifecycleService _lifecycle;
     private readonly ITaskApprovalService _approvals;
 
+    /// <summary>BL-024 Phase 2 — the catalogue that says which fields are restricted, and who is asking.</summary>
+    private readonly ITaskFieldDefinitionRepository _fieldDefinitions;
+    private readonly IActorPermissionContext _actor;
+
     public GetTaskItemByIdHandler(
         ITaskItemRepository tasks,
         ITaskWatcherRepository watchers,
         ITaskDependencyRepository dependencies,
         ITaskLifecycleService lifecycle,
-        ITaskApprovalService approvals)
+        ITaskApprovalService approvals,
+        ITaskFieldDefinitionRepository fieldDefinitions,
+        IActorPermissionContext actor)
     {
         _tasks = tasks;
         _watchers = watchers;
         _dependencies = dependencies;
         _lifecycle = lifecycle;
         _approvals = approvals;
+        _fieldDefinitions = fieldDefinitions;
+        _actor = actor;
     }
 
     public async Task<Response<TaskItemDetailDto>> Handle(GetTaskItemByIdQuery request, CancellationToken ct)
@@ -62,10 +71,21 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
         var (approvalOutstanding, approvalRejected) = TaskApprovalView.Resolve(task, approvalStates);
         var (reviewOutstanding, reviewRejected) = TaskReviewView.Resolve(task, approvalStates);
 
+        /*
+         * BL-024 Phase 2 — the catalogue, read only when this task actually carries values.
+         *
+         * ListAllAsync rather than ListActiveAsync: a RETIRED definition still governs the values written under
+         * it. Reading only the active ones would make retiring a definition a way to unhide every value it ever
+         * protected, which is a deactivation turning into a disclosure.
+         */
+        var definitions = task.FieldValues.Count == 0
+            ? null
+            : (await _fieldDefinitions.ListAllAsync(ct)).ToDictionary(d => d.Code, StringComparer.OrdinalIgnoreCase);
+
         return Response<TaskItemDetailDto>.Success(
             TaskItemMapper.ToDetail(
                 task, _lifecycle, approvalOutstanding, approvalRejected, watchers, dependencies,
-                reviewOutstanding, reviewRejected),
+                _actor, definitions, reviewOutstanding, reviewRejected),
             correlationId: request.CorrelationId);
     }
 }

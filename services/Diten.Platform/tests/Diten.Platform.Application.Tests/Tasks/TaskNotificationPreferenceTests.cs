@@ -689,7 +689,7 @@ public sealed class TaskNotificationPreferenceTests
                 Code = "HQ",
                 LegalEntityId = Guid.NewGuid()
             }),
-            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None),
+            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
             new FakeCurrentUserContext(TaskTestData.Me),
             new FakeTaskApprovalService(),
             new FakeTaskReviewService(),

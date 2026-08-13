@@ -218,7 +218,7 @@ public sealed class TaskModuleRecordFieldTests
     {
         var service = new TaskFieldDefinitionService(
             new FakeTaskFieldDefinitionRepository(RecordDefinition("delivery.department", DepartmentSource)),
-            TaskRecordSourceDoubles.With(Departments()));
+            TaskRecordSourceDoubles.With(Departments()), TaskActors.PermitAll());
 
         var result = await service.ValidateAndMaterializeAsync(
             [new TaskFieldValueDto("delivery.department", TaskFieldValueType.Reference, UnitA)]);
@@ -237,7 +237,7 @@ public sealed class TaskModuleRecordFieldTests
          */
         var service = new TaskFieldDefinitionService(
             new FakeTaskFieldDefinitionRepository(RecordDefinition("delivery.department", DepartmentSource)),
-            TaskRecordSourceDoubles.With(Departments()));
+            TaskRecordSourceDoubles.With(Departments()), TaskActors.PermitAll());
 
         var result = await service.ValidateAndMaterializeAsync(
             [new TaskFieldValueDto(
@@ -259,7 +259,7 @@ public sealed class TaskModuleRecordFieldTests
             new FakeTaskFieldDefinitionRepository(
                 RecordDefinition("delivery.department", DepartmentSource),
                 RecordDefinition("delivery.supplier", SupplierSource)),
-            TaskRecordSourceDoubles.With(Departments(), Suppliers()));
+            TaskRecordSourceDoubles.With(Departments(), Suppliers()), TaskActors.PermitAll());
 
         var result = await service.ValidateAndMaterializeAsync([
             new TaskFieldValueDto("delivery.department", TaskFieldValueType.Reference, UnitA),
@@ -410,7 +410,8 @@ public sealed class TaskModuleRecordFieldTests
             new Mock<IBusinessReferenceDataConsumerQueryService>(MockBehavior.Strict).Object,
             TaskRecordSourceDoubles.With(departments ?? Departments(), Suppliers()),
             new FakeTenantContext(TaskTestData.Tenant),
-            new ConfigurationBuilder().Build());
+            new ConfigurationBuilder().Build(),
+            TaskActors.PermitAll());
 
         return (handler, definitions);
     }

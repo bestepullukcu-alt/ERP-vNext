@@ -91,6 +91,18 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// only narrow a scope, while an absent history would publish a feed that looks complete and is not.
     /// </summary>
     private readonly ITaskTransitionRepository _transitions;
+
+    /*
+     * BL-024 Phase 2 — the caller's permissions, for FIELD-level questions.
+     *
+     * ⚠ NOT `WorkItemActor.GrantedPermissions`, and the difference is a trap worth naming. That set is built by
+     * the controller from `RequiredActionPermissions()` — a FIXED, compile-time list of the action keys the
+     * providers declare. A field's permission key is DATA a tenant administrator typed onto a definition, so it
+     * is never in that set, and `actor.Has(fieldKey)` would answer FALSE for somebody who genuinely holds it.
+     * That failure is silent and it points the wrong way: fields would vanish for the very people entitled to
+     * them, and no error would say so.
+     */
+    private readonly IActorPermissionContext _permissions;
     private readonly IPositionRepository _positions;
     private readonly IOrganizationUnitRepository _organizationUnits;
 
@@ -105,6 +117,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         ITaskDependencyRepository dependencies,
         ITaskCommentRepository comments,
         ITaskTransitionRepository transitions,
+        IActorPermissionContext permissions,
         IPositionRepository positions,
         IOrganizationUnitRepository organizationUnits,
         IWorkItemSlaCalculator sla,
@@ -124,6 +137,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         _dependencies = dependencies;
         _comments = comments;
         _transitions = transitions;
+        _permissions = permissions;
         _tasks = tasks;
         _seats = seats;
         _lifecycle = lifecycle;
@@ -418,7 +432,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // A subtask cannot have subtasks. A parent always gets the container, even empty, because the shell
         // offers "add a subtask" there — declared-and-empty is a state the contract models; a half is not.
         var subtasks = task.ParentTaskItemId is null ? ToSubtasks(children, actor, displayNames) : null;
-        var businessContext = ToBusinessContext(task, fieldDefinitions);
+        var businessContext = ToBusinessContext(task, fieldDefinitions, _permissions);
         var blockers = ResolveBlockers(task, edges ?? [], edgeTasks, children);
 
         var (built, primaryActionCode, overflowActionCodes) = terminal
@@ -771,7 +785,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// </summary>
     private static WorkItemBusinessContextDto? ToBusinessContext(
         TaskItem task,
-        IReadOnlyDictionary<string, TaskFieldDefinition>? definitions)
+        IReadOnlyDictionary<string, TaskFieldDefinition>? definitions,
+        // BL-024 Phase 2 — who is asking. Threaded rather than resolved here: the provider already receives the
+        // actor for action enablement, and a second source of "who" would be a second answer.
+        IActorPermissionContext actor)
     {
         if (task.FieldValues.Count == 0)
         {
@@ -803,7 +820,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 group
                     .OrderBy(pair => pair.Definition?.SortOrder ?? int.MaxValue)
                     .ThenBy(pair => pair.Value.DefinitionCode, StringComparer.OrdinalIgnoreCase)
-                    .Select(pair => ToBusinessField(pair.Value, pair.Definition))
+                    .Select(pair => ToBusinessField(pair.Value, pair.Definition, actor))
                     .ToList())
             )
             .ToList();
@@ -811,16 +828,35 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         return new WorkItemBusinessContextDto(grouped);
     }
 
-    private static WorkItemBusinessFieldDto ToBusinessField(TaskFieldValue value, TaskFieldDefinition? definition)
-        => new(
+    private static WorkItemBusinessFieldDto ToBusinessField(
+        TaskFieldValue value,
+        TaskFieldDefinition? definition,
+        IActorPermissionContext actor)
+    {
+        /*
+         * BL-024 Phase 2 — the SECOND read path, and the reason the decision is a shared rule rather than a line
+         * of code in the mapper.
+         *
+         * The Tasks detail response and this projection are two different DTOs built by two different files, and
+         * a field hidden in one and shown in the other is not half-fixed — it is not fixed. Both ask
+         * TaskFieldAccessRules the same question.
+         *
+         * The contract enforces the outcome too: REDACTED_VALUE_MUST_BE_OMITTED fails any fixture that ships
+         * `redacted: true` alongside a value, so a regression here is caught by the browser's own validator and
+         * not only by a server test.
+         */
+        var visible = TaskFieldAccessRules.CanView(value, definition, actor);
+
+        return new WorkItemBusinessFieldDto(
             ResolveFieldLabel(definition),
             // The CONTRACT's spelling, not the enum's. The two vocabularies were declared to match value-for-value
             // on purpose; shipping PascalCase here is the shape that has cost this module twice.
             value.ValueType.ToString().ToLowerInvariant(),
-            // A redacted value is OMITTED, never sent and hidden — the contract rejects a redacted field that
-            // still carries its value.
-            value.Redacted ? null : value.Value,
-            definition?.Importance == TaskFieldImportance.Primary ? "primary" : "secondary");
+            // OMITTED, never sent-and-hidden: the contract rejects a redacted field that still carries its value.
+            visible ? value.Value : null,
+            definition?.Importance == TaskFieldImportance.Primary ? "primary" : "secondary",
+            Redacted: !visible);
+    }
 
     /// <summary>
     /// The label, from whichever source the definition has — and NEITHER is a fallback for the other.

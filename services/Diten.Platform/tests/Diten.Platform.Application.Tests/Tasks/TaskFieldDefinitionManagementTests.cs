@@ -519,7 +519,7 @@ public sealed class TaskFieldDefinitionManagementTests
             var tenant = new FakeTenantContext(TaskTestData.Tenant);
             Definitions = new FakeTaskFieldDefinitionRepository();
             var user = new FakeCurrentUserContext(TaskTestData.Me);
-            Validator = new TaskFieldDefinitionService(Definitions, TaskRecordSourceDoubles.None);
+            Validator = new TaskFieldDefinitionService(Definitions, TaskRecordSourceDoubles.None, TaskActors.PermitAll());
 
             var correlation = new CorrelationContext();
             correlation.SetCorrelationId("corr");

@@ -70,7 +70,20 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             task.OrganizationUnitId = unitId;
         }
 
-        var fields = await _fieldDefinitions.ValidateAndMaterializeAsync(request.FieldValues, ct);
+        /*
+         * BL-024 Phase 2 — the STORED values are handed in, and this argument is the whole fix.
+         *
+         * ⚠ FOUND LIVE, NOT BY A TEST. The service grew the `existing` parameter and its unit tests passed by
+         * calling it directly; this caller was never updated, so the parameter defaulted to null and preservation
+         * never ran. On the live system an ordinary title edit by a user who could not see a restricted field
+         * DELETED that field — 204, no error, no trace. The unit test proved the service; only the round trip
+         * proved the system.
+         *
+         * `task.FieldValues` is the pre-edit state (the entity was read above and nothing has touched the values
+         * yet), which is exactly what a value the caller may not write has to be carried through from.
+         */
+        var fields = await _fieldDefinitions.ValidateAndMaterializeAsync(
+            request.FieldValues, ct, enforceRequired: true, existing: task.FieldValues);
         if (!fields.IsValid)
         {
             return Response<NoContent>.Fail(

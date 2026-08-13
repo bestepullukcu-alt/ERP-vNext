@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Domain.Entities.Tasks;
 
@@ -39,6 +40,16 @@ public static class TaskItemMapper
         bool approvalRejected,
         IReadOnlyList<TaskWatcher> watchers,
         IReadOnlyList<TaskDependency> dependencies,
+        /// <summary>
+        /// BL-024 Phase 2 — who is asking, and the catalogue their question is answered against.
+        ///
+        /// <para>REQUIRED, with no default. A default would have to be "permit everything", and a fail-open
+        /// default on a security decision is the one mistake that is invisible in review: every existing caller
+        /// would keep compiling and keep leaking. Making it required means the compiler names every read path
+        /// that has to answer the question.</para>
+        /// </summary>
+        IActorPermissionContext actor,
+        IReadOnlyDictionary<string, TaskFieldDefinition>? definitions,
         bool reviewOutstanding = false,
         bool reviewRejected = false) => new(
         task.Id,
@@ -69,9 +80,24 @@ public static class TaskItemMapper
         task.ReminderLeadDays,
         task.DelegationAllowed,
         task.ProcessInstanceId,
-        // A redacted value is OMITTED from the payload — never sent and hidden with CSS (BL-024-ready).
+        /*
+         * BL-024 Phase 2 — the value a caller may not see NEVER LEAVES THE SERVER.
+         *
+         * `Redacted` was inert before this: the mapper honoured the flag and nothing ever set it, so the
+         * mechanism worked and no field was ever hidden. The decision now comes from TaskFieldAccessRules, one
+         * place, consulted here and by the Work Center projection and the write validator and the options
+         * endpoint — four call sites, one rule.
+         *
+         * The value is replaced with null rather than the row being dropped: the field's PRESENCE is not a
+         * secret (the catalogue is readable), only its content is, and dropping the row would make a hidden
+         * field indistinguishable from a field that does not exist. `redacted: true` says which.
+         */
         task.FieldValues
-            .Select(v => new TaskFieldValueDto(v.DefinitionCode, v.ValueType, v.Redacted ? null : v.Value))
+            .Select(v =>
+            {
+                var visible = TaskFieldAccessRules.CanView(v, definitions?.GetValueOrDefault(v.DefinitionCode), actor);
+                return new TaskFieldValueDto(v.DefinitionCode, v.ValueType, visible ? v.Value : null, !visible);
+            })
             .ToList(),
         watchers.Select(w => new TaskWatcherDto(w.Id, w.UserId, w.Role.ToString(), w.PositionId)).ToList(),
         dependencies

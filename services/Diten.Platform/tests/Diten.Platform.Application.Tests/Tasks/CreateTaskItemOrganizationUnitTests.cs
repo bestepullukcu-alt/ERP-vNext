@@ -264,7 +264,7 @@ public sealed class CreateTaskItemOrganizationUnitTests
             new FakePositionRepository(positions.ToArray()),
             new FakeOrganizationUnitRepository(units.ToArray()),
             new FakePositionAssignmentRepository(positionAssignments.ToArray()),
-            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None),
+            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
             new TaskLifecycleService(),
             new FakeTaskApprovalService(),
             new FakeChecklistTemplateRepository(),

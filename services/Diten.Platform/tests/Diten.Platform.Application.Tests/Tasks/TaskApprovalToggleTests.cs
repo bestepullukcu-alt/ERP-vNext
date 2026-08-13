@@ -170,7 +170,7 @@ public sealed class TaskApprovalToggleTests
                 Code = "HQ",
                 LegalEntityId = Guid.NewGuid()
             }),
-            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None),
+            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
             new FakeCurrentUserContext(TaskTestData.Me),
             approvals,
             new FakeTaskReviewService(),

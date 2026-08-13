@@ -255,7 +255,7 @@ public sealed class TaskReviewProjectionTests
             states,
             new FakeTaskDependencyRepository(),
             new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(),
-            new FakePositionRepository(),
+            TaskActors.PermitAll(), new FakePositionRepository(),
             new FakeOrganizationUnitRepository(),
             SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
 

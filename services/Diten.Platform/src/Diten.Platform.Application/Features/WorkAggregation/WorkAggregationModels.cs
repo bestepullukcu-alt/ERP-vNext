@@ -424,7 +424,19 @@ public sealed record WorkItemBusinessFieldDto(
     WorkItemLabelDto Label,
     string ValueType,
     string? Value,
-    string Importance);
+    string Importance,
+    /// <summary>
+    /// BL-024 Phase 2 — the reader may not see this value, so it was withheld ON THE SERVER.
+    ///
+    /// <para>The executable contract has validated this since it was written — <c>REDACTED_VALUE_MUST_BE_OMITTED</c>
+    /// fails any item that ships <c>redacted: true</c> next to a value — and nothing could ever set it, because
+    /// the DTO had no such field. The rule was enforceable and unreachable at the same time.</para>
+    ///
+    /// <para>The field's LABEL still travels. What is secret is the content, not the existence: the catalogue is
+    /// readable, so hiding the row would buy nothing and would make a withheld value indistinguishable from a
+    /// field the task does not have.</para>
+    /// </summary>
+    bool Redacted = false);
 
 /// <summary>
 /// The queue a pooled item waits in (WC-3 / BL-031).

@@ -308,7 +308,7 @@ public sealed class TaskNotificationDispatchPointsTests
                         LegalEntityId = Guid.NewGuid()
                     }),
                     new FakePositionAssignmentRepository(),
-                    new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None),
+                    new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
                     new TaskLifecycleService(),
                     new FakeTaskApprovalService(),
                     new FakeChecklistTemplateRepository(),

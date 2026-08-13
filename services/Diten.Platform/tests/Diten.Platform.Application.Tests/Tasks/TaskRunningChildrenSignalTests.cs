@@ -126,7 +126,7 @@ public sealed class TaskRunningChildrenSignalTests
             new FakeChecklistRunRepository(),
             new FakeTaskApprovalService(),
             new FakeTaskDependencyRepository(),
-            new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(),
+            new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(), TaskActors.PermitAll(),
             new FakePositionRepository(),
             new FakeOrganizationUnitRepository(),
             SlaForTests.Real(),

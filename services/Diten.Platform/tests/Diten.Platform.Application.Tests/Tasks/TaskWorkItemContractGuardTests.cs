@@ -339,7 +339,7 @@ public sealed class TaskWorkItemContractGuardTests
             new FakeTaskApprovalService(),
             dependencies ?? new FakeTaskDependencyRepository(),
             comments ?? new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(),
-            new FakePositionRepository(),
+            TaskActors.PermitAll(), new FakePositionRepository(),
             new FakeOrganizationUnitRepository(),
             SlaForTests.Real(),
             fieldDefinitions ?? new FakeTaskFieldDefinitionRepository());

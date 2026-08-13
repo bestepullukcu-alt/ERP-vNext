@@ -202,6 +202,35 @@ public sealed class TaskFieldDefinition : TenantScopedEntity
     public TaskFieldClassification Classification { get; set; } = TaskFieldClassification.Normal;
     public TaskFieldAccessState DefaultAccessState { get; set; } = TaskFieldAccessState.Visible;
 
+    /*
+     * ── BL-024 Phase 2 — WHO MAY SEE, AND WHO MAY WRITE ──────────────────────────────────────────────────
+     *
+     * A PERMISSION KEY, not a role and not a user list. Roles, grants and the catalogue belong to MOD-0018;
+     * naming a role here would be a second place that decides who is who, and this codebase has already paid
+     * for that twice (the seat directory, the active-window rule). The definition names a REQUIREMENT and
+     * MOD-0018 answers who meets it.
+     *
+     * NULL means unrestricted, which is what every definition written before this field existed carries — so
+     * turning the feature on changes nothing until somebody deliberately restricts something. The opposite
+     * default would have hidden every existing field on deploy.
+     */
+
+    /// <summary>
+    /// Permission required to SEE this field's value. Null: anyone who can read the task can read the field.
+    /// </summary>
+    public string? ViewPermission { get; set; }
+
+    /// <summary>
+    /// Permission required to WRITE this field. Null: anyone who can edit the task can write it.
+    ///
+    /// <para><b>Read access is a FLOOR for write access, but not a substitute for it.</b> They are separate
+    /// questions with separate keys — an approver who may read a salary band is not thereby allowed to change
+    /// it — and each is tested on its own. What the floor rules out is the incoherent case: writing a value you
+    /// are not allowed to see is a covert channel, and it also makes the full-replace edit hazard unanswerable
+    /// (the client never received the value, so it cannot send it back).</para>
+    /// </summary>
+    public string? EditPermission { get; set; }
+
     public bool IsActive { get; set; } = true;
     public DateTimeOffset? DeletedAt { get; set; }
 }
