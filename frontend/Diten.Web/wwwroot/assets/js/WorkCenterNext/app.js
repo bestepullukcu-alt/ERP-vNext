@@ -1766,23 +1766,47 @@
         }
         const done = items.filter((c) => c.done).length;
         const ro = isTerminal(item);
-        const rows = items.map((c) =>
-            `<li class="wcn-check${c.done ? ' done' : ''}">
-                <button type="button" class="wcn-check-box" data-wcn-check-item="${item.id}:${c.id}"${ro ? ' disabled' : ''} aria-pressed="${c.done}">
-                    <i class="bx ${c.done ? 'bxs-check-square' : 'bx-square'}"></i>
-                </button>
-                <span class="wcn-check-text">${esc(c.text)}</span>
-                ${/*
-                   * The paperclip says this item was marked as NEEDING EVIDENCE. It is a statement, not a
-                   * control: nothing here can attach anything yet, and the hint below the list says exactly
-                   * that. A flag stored and never shown is the defect this round is closing; a flag shown as a
-                   * button that does nothing would be the same defect wearing a nicer shirt.
-                   */''}
-                ${c.evidenceRequired
-                    ? `<i class="bx bx-paperclip wcn-check-evidence" title="${esc(t('ChecklistEvidenceHint'))}"
-                          aria-label="${esc(t('ChecklistEvidenceHint'))}"></i>`
-                    : ''}
-            </li>`).join('');
+        /*
+         * THE ROW IS NO LONGER DRAWN HERE.
+         *
+         * It was: a `<li class="wcn-check">` with a tick box, the text, and a paperclip that was a MARK rather
+         * than a control — while the create form drew the same item with a level chip, an evidence toggle, move
+         * buttons and a remove. Same object, two components, two vocabularies, and a widening gap between what
+         * you could decide before the task existed and what you could decide once you were doing it.
+         *
+         * `DitenCheckItem` draws it once. This page asks for WORKING mode, which adds the tick box the create
+         * form has no use for, and gets everything else identical by construction rather than by discipline.
+         * `.outerHTML` because this file builds strings — the component builds nodes so that the one field
+         * carrying typed text is set with `textContent` and cannot become markup.
+         */
+        const rows = items.map((c, index) => global.DitenCheckItem.row(
+            {
+                id: `${item.id}:${c.id}`,
+                text: c.text,
+                requirement: c.requirement,
+                evidenceRequired: c.evidenceRequired,
+                done: c.done,
+                // A template item's words belong to every task made from that template; the server refuses to
+                // reword one, and the row says so rather than letting someone find out on reload.
+                templateOwned: !!c.templateOwned
+            },
+            {
+                mode: 'working',
+                // A closed task's checklist is history. The server refuses these writes too — this is the
+                // courtesy, not the guard.
+                readOnly: ro,
+                labels: {
+                    optional: t('ChecklistLevelOptional'),
+                    required: t('ChecklistLevelRequired'),
+                    blocking: t('ChecklistLevelBlocking'),
+                    levelHint: t('ChecklistLevelHint'),
+                    moveUp: t('ChecklistMoveUp'),
+                    moveDown: t('ChecklistMoveDown'),
+                    evidenceToggle: t('ChecklistEvidenceToggle'),
+                    remove: t('ChecklistRemove'),
+                    toggle: t('ChecklistLabel')
+                }
+            }).outerHTML).join('');
         // The reason completion is unavailable must be READABLE on the page — a disabled button with only a
         // tooltip leaves a keyboard or touch user with no explanation at all.
         const blocked = items.some((c) => c.blocking && !c.done);
@@ -4027,6 +4051,10 @@
                 ? detailHtml(item)
                 : `<section class="card backbone-preview-section"><div class="wcn-detail-empty"><i class="bx bx-error-circle"></i><p>${esc(t('DetailItemNotFound'))}</p><a class="btn btn-label-secondary" href="${esc(listReturnUrl())}">${esc(t('DetailBackToList'))}</a></div></section>`;
             setupTimerTick();
+            // Which arrow may act is derived from POSITION, after the list exists — the same rule, from the same
+            // function, that the create form uses. A first row's ↑ and a last row's ↓ are disabled, and a
+            // one-item list shows none at all: a control that can only ever refuse is worse than no control.
+            root.querySelectorAll('.wcn-checks').forEach((list) => global.DitenCheckItem.applyMoveState(list));
             restoreFocus(snap);
             return;
         }
@@ -4436,6 +4464,75 @@
         });
         await afterPhase2Write(result, 'ToastChecklistItemAdded');
     };
+
+    /*
+     * ── The three writes the detail page never had ───────────────────────────────────────────────────────────
+     *
+     * `Requirement`, `EvidenceRequired` and the item's own text were stored from the moment a task was born and
+     * then frozen: the create form could set all three, and the task itself could change none of them. So the
+     * checklist was a decision made once, before any of the work that would teach you what it should say.
+     *
+     * Each one sends `expectedVersion` from the projected run. That is not ceremony — a write issued without it
+     * earlier in this module reported success and changed nothing, which is indistinguishable from working right
+     * up until the reload.
+     */
+
+    /** The projected checklist item behind a row, so a PUT can send the fields it is not changing. */
+    const checklistItemOf = (taskId, code) =>
+        (itemById(taskId)?.checklist?.items || []).find((c) => c.id === code) || null;
+
+    const checklistWrite = async (taskId, run, toast) => {
+        const item = itemById(taskId);
+        if (!isRealTaskItem(item)) {
+            console.warn(`[WorkCenterNext] Checklist write ignored for non-engine item ${taskId} `
+                + `(provider="${item?.source?.providerCode || 'unknown'}") — no backend owns it.`);
+            return;
+        }
+        await afterPhase2Write(await run(item), toast);
+    };
+
+    /*
+     * The PUT is a REPLACE of the item's editable face, not a patch, so every call sends all three fields —
+     * "clear the evidence flag" and "don't mention the evidence flag" must not be the same request.
+     *
+     * `labelText` is sent as null for a template-owned item. The server refuses to reword one (its own reason
+     * code, CHECKLIST_ITEM_TEMPLATE_OWNED), and sending the current text back would be asking for that refusal
+     * on every level change.
+     */
+    const updateChecklistItem = (taskId, code, changes) => checklistWrite(taskId, (item) => {
+        const current = checklistItemOf(taskId, code);
+        return global.TasksApi.updateChecklistItem(taskId, code, {
+            labelText: current?.templateOwned ? null : (changes.labelText ?? current?.text ?? ''),
+            requirement: changes.requirement ?? current?.requirement ?? 'Optional',
+            evidenceRequired: changes.evidenceRequired ?? !!current?.evidenceRequired,
+            expectedVersion: Number(item.checklist?.version ?? 0)
+        });
+    }, 'ToastChecklistUpdated');
+
+    const removeChecklistItem = (taskId, code) => checklistWrite(taskId, (item) =>
+        global.TasksApi.removeChecklistItem(taskId, code, {
+            expectedVersion: Number(item.checklist?.version ?? 0)
+        }), 'ToastChecklistUpdated');
+
+    /*
+     * Reordering sends the WHOLE order in one call. Per-item position writes were the alternative and they lose
+     * two ways: N requests for one move, and — because each lands independently — two people reordering at once
+     * interleave into an order neither of them chose.
+     *
+     * The order is computed from the PROJECTION, not read back out of the DOM: the DOM is a picture of the
+     * projection, and deriving the payload from the picture is how a rendering bug becomes a stored fact.
+     */
+    const moveChecklistItem = (taskId, code, direction) => checklistWrite(taskId, (item) => {
+        const codes = (item.checklist?.items || []).map((c) => c.id);
+        const from = codes.indexOf(code);
+        const to = direction === 'up' ? from - 1 : from + 1;
+        if (from < 0 || to < 0 || to >= codes.length) { return Promise.resolve({ ok: true, status: 204 }); }
+        codes.splice(to, 0, codes.splice(from, 1)[0]);
+        return global.TasksApi.reorderChecklist(taskId, {
+            itemCodes: codes,
+            expectedVersion: Number(item.checklist?.version ?? 0)
+        });
+    }, 'ToastChecklistUpdated');
 
     const completeSubtask = async (subtaskId) => {
         // The subtask is its own row in state when it is also assigned to me, and then it carries its own
@@ -5573,10 +5670,50 @@
         // ── Depth-block interactions (Faz 2) ──────────────────────────────────
         // All three go to the ENGINE and then re-read the projection. Nothing is applied optimistically: the
         // server decides, and the refreshed projection is the only source of the new state.
-        const checkItemEl = event.target.closest('[data-wcn-check-item]');
-        if (checkItemEl) {
-            const [taskId, itemCode] = checkItemEl.getAttribute('data-wcn-check-item').split(':');
-            toggleChecklistItem(taskId, itemCode, checkItemEl.getAttribute('aria-pressed') !== 'true');
+        /*
+         * The checklist row's controls, all five of them, on the SHARED attributes the create form also uses.
+         * The row is one component now (assets/js/shared/diten-checkitem.js); a second vocabulary here would put
+         * the two screens straight back on the divergent path this round exists to end.
+         *
+         * `id` is `taskId:itemCode` because a detail page can show a parent's list and a subtask panel at once,
+         * and an item code alone would not say which task's list a click landed in.
+         */
+        const checkToggleEl = event.target.closest('[data-diten-check-toggle]');
+        if (checkToggleEl) {
+            const [taskId, itemCode] = checkToggleEl.getAttribute('data-diten-check-toggle').split(':');
+            toggleChecklistItem(taskId, itemCode, checkToggleEl.getAttribute('aria-pressed') !== 'true');
+            return;
+        }
+        const checkLevelRowEl = event.target.closest('[data-diten-check-level]');
+        if (checkLevelRowEl && checkLevelRowEl.getAttribute('data-diten-check-level').includes(':')) {
+            const [taskId, itemCode] = checkLevelRowEl.getAttribute('data-diten-check-level').split(':');
+            const current = checklistItemOf(taskId, itemCode);
+            // Weakest-first, so a reader who keeps pressing walks TOWARD the strict end rather than starting
+            // there. Same order and same three values the create form cycles through.
+            const order = ['Optional', 'Required', 'Blocking'];
+            const now = current?.requirement || 'Optional';
+            await updateChecklistItem(taskId, itemCode,
+                { requirement: order[(order.indexOf(now) + 1) % order.length] });
+            return;
+        }
+        const checkEvidenceEl = event.target.closest('[data-diten-check-evidence]');
+        if (checkEvidenceEl && checkEvidenceEl.getAttribute('data-diten-check-evidence').includes(':')) {
+            const [taskId, itemCode] = checkEvidenceEl.getAttribute('data-diten-check-evidence').split(':');
+            await updateChecklistItem(taskId, itemCode,
+                { evidenceRequired: checkEvidenceEl.getAttribute('aria-pressed') !== 'true' });
+            return;
+        }
+        const checkRemoveEl = event.target.closest('[data-diten-check-remove]');
+        if (checkRemoveEl && checkRemoveEl.getAttribute('data-diten-check-remove').includes(':')) {
+            const [taskId, itemCode] = checkRemoveEl.getAttribute('data-diten-check-remove').split(':');
+            await removeChecklistItem(taskId, itemCode);
+            return;
+        }
+        const checkMoveEl = event.target.closest('[data-diten-check-move]');
+        if (checkMoveEl && checkMoveEl.closest('.wcn-checks')) {
+            const rowEl = checkMoveEl.closest('[data-diten-check-row]');
+            const [taskId, itemCode] = rowEl.getAttribute('data-diten-check-row').split(':');
+            await moveChecklistItem(taskId, itemCode, checkMoveEl.getAttribute('data-diten-check-move'));
             return;
         }
         // Opening a subtask's own detail. Checked BEFORE the toggle so the two never compete for the same click;

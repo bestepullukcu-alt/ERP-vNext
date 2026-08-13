@@ -126,6 +126,26 @@ public sealed record AddChecklistItemCommand(
     AddChecklistItemRequest Request,
     string CorrelationId) : IRequest<Response<NoContent>>;
 
+/// <summary>Edit one checklist item's editable face — its text, its level and its evidence flag.</summary>
+public sealed record UpdateChecklistItemCommand(
+    Guid TaskItemId,
+    string ItemCode,
+    UpdateChecklistItemRequest Request,
+    string CorrelationId) : IRequest<Response<NoContent>>;
+
+/// <summary>Remove one checklist item from a task's live list.</summary>
+public sealed record RemoveChecklistItemCommand(
+    Guid TaskItemId,
+    string ItemCode,
+    RemoveChecklistItemRequest Request,
+    string CorrelationId) : IRequest<Response<NoContent>>;
+
+/// <summary>Write the whole checklist order in a single conditional write.</summary>
+public sealed record ReorderChecklistCommand(
+    Guid TaskItemId,
+    ReorderChecklistRequest Request,
+    string CorrelationId) : IRequest<Response<NoContent>>;
+
 /// <summary>Create a task from a reusable template, instantiating its checklist too (pack §12 E5).</summary>
 public sealed record CreateTaskItemFromTemplateCommand(
     CreateTaskFromTemplateRequest Request,

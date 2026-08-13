@@ -83,6 +83,16 @@ public static class TaskReasonCodes
     public const string FieldLimitExceeded = "TASK_FIELD_LIMIT_EXCEEDED";
     public const string ChecklistIncomplete = "CHECKLIST_INCOMPLETE";
 
+    /// <summary>
+    /// A template-owned checklist item was asked to change its own text, or to leave the list.
+    ///
+    /// <para>Its OWN code rather than a validation failure, for the same reason as
+    /// <see cref="FieldAccessDenied"/>: nothing about the payload is malformed, so a client told "validation
+    /// failed" will keep correcting and resending text that was never going to be accepted. This says the item
+    /// is not the caller's to word — the template decides that, for every task instantiated from it.</para>
+    /// </summary>
+    public const string ChecklistItemTemplateOwned = "CHECKLIST_ITEM_TEMPLATE_OWNED";
+
     /// <summary>Entering Waiting without saying what is being waited for.</summary>
     public const string WaitingReasonRequired = "TASK_WAITING_REASON_REQUIRED";
 
@@ -455,6 +465,39 @@ public sealed record AddChecklistItemRequest(
     string Text,
     ChecklistItemRequirement Requirement,
     int ExpectedVersion);
+
+/// <summary>
+/// Edit one checklist item in place. All three fields are sent every time — this is a replace of the item's
+/// editable face, not a patch, so "clear the evidence flag" and "don't mention the evidence flag" cannot be
+/// confused with one another.
+///
+/// <para><paramref name="LabelText"/> is REFUSED for a template-owned item (one carrying a resource key). The
+/// template's words belong to every task made from it; letting one task reword its copy would leave the same
+/// item saying different things on different tasks, in a list whose whole purpose is that they say the same
+/// thing. <see cref="ChecklistItemRequirement"/> and evidence are NOT refused: those say how strictly THIS task
+/// is being run, which is exactly the kind of judgement the person holding the task is there to make.</para>
+/// </summary>
+public sealed record UpdateChecklistItemRequest(
+    string? LabelText,
+    ChecklistItemRequirement Requirement,
+    bool EvidenceRequired,
+    int ExpectedVersion);
+
+/// <summary>Remove one checklist item. ExpectedVersion guards the RUN, like every other checklist write.</summary>
+public sealed record RemoveChecklistItemRequest(int ExpectedVersion);
+
+/// <summary>
+/// Reorder the WHOLE list in one call.
+///
+/// <para>Per-item position writes were the alternative and they are worse in two separate ways: N requests for
+/// one drag, and — because each lands independently — two people reordering at once interleave into an order
+/// neither of them chose. One call writes one order, and the expected-version check makes the second person's
+/// drag a clean 409 they can redo against what they can now see.</para>
+///
+/// <para><paramref name="ItemCodes"/> must name every item in the run exactly once. A partial list is rejected
+/// rather than applied to the part it covers: half a reorder is not a smaller reorder, it is a different one.</para>
+/// </summary>
+public sealed record ReorderChecklistRequest(IReadOnlyList<string> ItemCodes, int ExpectedVersion);
 
 /// <summary>
 /// Add a typed dependency edge. Both ends are MOD-0024 tasks — a dependency on another module's object is

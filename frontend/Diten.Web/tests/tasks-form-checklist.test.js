@@ -59,6 +59,9 @@ describe("the checklist editor builds rows and reads them back", () => {
   beforeEach(() => {
     document.body.innerHTML = '<ul id="list"></ul>';
     delete global.TaskForm;
+    // The row component, loaded exactly as every page that draws a row loads it. form.js delegates to it, so a
+    // harness without it is testing a form that could not run.
+    loadScript("wwwroot/assets/js/shared/diten-checkitem.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
     TaskForm = global.TaskForm;
   });
@@ -107,7 +110,7 @@ describe("the checklist editor builds rows and reads them back", () => {
     // There is no parallel array to keep in step, which is the whole reason the list is the single source of
     // truth: two copies of one fact disagree the first time a row moves.
     render([{ text: "bir" }, { text: "iki" }]);
-    const rows = list().querySelectorAll("[data-task-checklist-row]");
+    const rows = list().querySelectorAll("[data-diten-check-row]");
     list().insertBefore(rows[1], rows[0]);
 
     expect(TaskForm.readChecklistItems(list()).map((i) => i.text)).toEqual(["iki", "bir"]);
@@ -116,7 +119,7 @@ describe("the checklist editor builds rows and reads them back", () => {
   it("an item's text is TEXT — markup in it can never become markup", () => {
     render([{ text: "<img src=x onerror=alert(1)>" }]);
 
-    const row = list().querySelector(".task-checklist-text");
+    const row = list().querySelector(".diten-checkitem-text");
     expect(row.querySelector("img")).toBeNull();
     expect(row.textContent).toBe("<img src=x onerror=alert(1)>");
   });
@@ -138,7 +141,7 @@ describe("the checklist editor builds rows and reads them back", () => {
     // rather than as a deliberate choice.
     render([{ text: "a", requirement: "Optional" }, { text: "b", requirement: "Blocking" }]);
 
-    const chips = [...list().querySelectorAll("[data-task-checklist-level]")].map((c) => c.textContent);
+    const chips = [...list().querySelectorAll("[data-diten-check-level]")].map((c) => c.textContent);
     expect(chips).toEqual(["checklistLevelOptional", "checklistLevelBlocking"]);
   });
 
@@ -155,14 +158,14 @@ describe("the checklist editor builds rows and reads them back", () => {
      * to the same markup can fake.
      */
     render([{ text: "a", requirement: "Optional" }]);
-    const row = list().querySelector("[data-task-checklist-row]");
-    const chip = row.querySelector("[data-task-checklist-level]");
+    const row = list().querySelector("[data-diten-check-row]");
+    const chip = row.querySelector("[data-diten-check-level]");
 
     // What the page's handler does on a level press.
     row.dataset.requirement = TaskForm.nextChecklistLevel(row.dataset.requirement);
 
-    expect(list().querySelector("[data-task-checklist-row]")).toBe(row);
-    expect(row.querySelector("[data-task-checklist-level]")).toBe(chip);
+    expect(list().querySelector("[data-diten-check-row]")).toBe(row);
+    expect(row.querySelector("[data-diten-check-level]")).toBe(chip);
     expect(row.isConnected).toBe(true);
   });
 
@@ -170,7 +173,7 @@ describe("the checklist editor builds rows and reads them back", () => {
     // Visible either way: a control that appears only once it is ON cannot be discovered before it is used.
     render([{ text: "a", evidenceRequired: true }, { text: "b" }]);
 
-    const toggles = [...list().querySelectorAll("[data-task-checklist-evidence]")];
+    const toggles = [...list().querySelectorAll("[data-diten-check-evidence]")];
     expect(toggles).toHaveLength(2);
     expect(toggles.map((el) => el.getAttribute("aria-pressed"))).toEqual(["true", "false"]);
   });
@@ -244,17 +247,17 @@ describe("a row can be dragged without losing the way to move it by keyboard", (
     TaskForm.renderChecklistItems(document.getElementById("list"), [{ text: "bir" }, { text: "iki" }], t);
   });
 
-  const row = () => document.querySelector("[data-task-checklist-row]");
+  const row = () => document.querySelector("[data-diten-check-row]");
 
   it("gives every row a grip AND both move buttons", () => {
-    expect(row().querySelector("[data-task-checklist-grip]")).not.toBeNull();
-    expect(row().querySelectorAll("[data-task-checklist-move]")).toHaveLength(2);
+    expect(row().querySelector("[data-diten-check-grip]")).not.toBeNull();
+    expect(row().querySelectorAll("[data-diten-check-move]")).toHaveLength(2);
   });
 
   it("keeps the move controls as real focusable buttons — the keyboard path", () => {
     // <button> is the whole accessibility story here: Tab reaches it, Enter and Space fire it, with no extra
     // code. A div with a click handler would look identical and be unreachable.
-    [...row().querySelectorAll("[data-task-checklist-move]")].forEach((el) => {
+    [...row().querySelectorAll("[data-diten-check-move]")].forEach((el) => {
       expect(el.tagName).toBe("BUTTON");
       expect(el.getAttribute("aria-label")).toBeTruthy();
     });
@@ -263,7 +266,7 @@ describe("a row can be dragged without losing the way to move it by keyboard", (
   it("does not announce the grip, which Enter cannot operate", () => {
     // It is a surface to grab, not a second control. Announcing a handle no key can work would promise an
     // interaction that does not exist.
-    const grip = row().querySelector("[data-task-checklist-grip]");
+    const grip = row().querySelector("[data-diten-check-grip]");
     expect(grip.tagName).not.toBe("BUTTON");
     expect(grip.getAttribute("aria-hidden")).toBe("true");
     expect(grip.hasAttribute("tabindex")).toBe(false);
@@ -321,14 +324,14 @@ describe("a move control is live only where it has somewhere to go", () => {
 
   /** What each row's arrows SHOULD be, read off its position — never off a remembered index. */
   const expectedStates = () => {
-    const rows = [...list().querySelectorAll("[data-task-checklist-row]")];
+    const rows = [...list().querySelectorAll("[data-diten-check-row]")];
     return rows.map((_, index) => ({ up: index === 0, down: index === rows.length - 1 }));
   };
 
   const actualStates = () =>
-    [...list().querySelectorAll("[data-task-checklist-row]")].map((row) => ({
-      up: row.querySelector('[data-task-checklist-move="up"]').disabled,
-      down: row.querySelector('[data-task-checklist-move="down"]').disabled
+    [...list().querySelectorAll("[data-diten-check-row]")].map((row) => ({
+      up: row.querySelector('[data-diten-check-move="up"]').disabled,
+      down: row.querySelector('[data-diten-check-move="down"]').disabled
     }));
 
   it.each([2, 3, 5])("disables exactly the arrows with nowhere to go (%i rows)", (n) => {
@@ -342,19 +345,19 @@ describe("a move control is live only where it has somewhere to go", () => {
      * cannot do — and dragging a single row is equally meaningless, so the grip goes with them.
      */
     render(1);
-    const row = list().querySelector("[data-task-checklist-row]");
+    const row = list().querySelector("[data-diten-check-row]");
 
-    expect(row.querySelector(".task-checklist-move").classList.contains("d-none")).toBe(true);
-    expect(row.querySelector("[data-task-checklist-grip]").classList.contains("d-none")).toBe(true);
+    expect(row.querySelector(".diten-checkitem-move").classList.contains("d-none")).toBe(true);
+    expect(row.querySelector("[data-diten-check-grip]").classList.contains("d-none")).toBe(true);
   });
 
   it("brings them back as soon as a second row exists", () => {
     // Non-vacuity for the rule above: hiding them permanently would pass that test and break the card.
     render(2);
 
-    [...list().querySelectorAll("[data-task-checklist-row]")].forEach((row) => {
-      expect(row.querySelector(".task-checklist-move").classList.contains("d-none")).toBe(false);
-      expect(row.querySelector("[data-task-checklist-grip]").classList.contains("d-none")).toBe(false);
+    [...list().querySelectorAll("[data-diten-check-row]")].forEach((row) => {
+      expect(row.querySelector(".diten-checkitem-move").classList.contains("d-none")).toBe(false);
+      expect(row.querySelector("[data-diten-check-grip]").classList.contains("d-none")).toBe(false);
     });
   });
 
@@ -365,7 +368,7 @@ describe("a move control is live only where it has somewhere to go", () => {
      * would keep a live ↑ that can no longer do anything.
      */
     render(3);
-    const rows = [...list().querySelectorAll("[data-task-checklist-row]")];
+    const rows = [...list().querySelectorAll("[data-diten-check-row]")];
     const last = rows[2];
 
     // What the page's move handler does: physically relocate the node, then re-derive.
@@ -374,20 +377,20 @@ describe("a move control is live only where it has somewhere to go", () => {
 
     expect(actualStates()).toEqual(expectedStates());
     // …and it is the SAME element, not a rebuilt one.
-    expect(list().querySelector("[data-task-checklist-row]")).toBe(last);
+    expect(list().querySelector("[data-diten-check-row]")).toBe(last);
   });
 
   it("re-derives them after a removal too", () => {
     // Removing down to a single row has to withdraw the controls, and removing the last row has to move the
     // disabled ↓ up to whoever is last now.
     render(3);
-    [...list().querySelectorAll("[data-task-checklist-row]")][2].remove();
+    [...list().querySelectorAll("[data-diten-check-row]")][2].remove();
     TaskForm.applyChecklistPositions(list());
     expect(actualStates()).toEqual(expectedStates());
 
-    [...list().querySelectorAll("[data-task-checklist-row]")][1].remove();
+    [...list().querySelectorAll("[data-diten-check-row]")][1].remove();
     TaskForm.applyChecklistPositions(list());
-    expect(list().querySelector(".task-checklist-move").classList.contains("d-none")).toBe(true);
+    expect(list().querySelector(".diten-checkitem-move").classList.contains("d-none")).toBe(true);
   });
 });
 

@@ -796,9 +796,28 @@ internal sealed class FakeChecklistRunRepository(params ChecklistRun[] seed) : I
         return Task.FromResult(run);
     }
 
+    /*
+     * Reads hand back a DETACHED CLONE, and writes store one.
+     *
+     * This used to return the stored instance itself. A handler that mutated what it read and then never
+     * committed — or committed against a stale version and was refused — still left the store holding its
+     * changes, so the assertion "the item was removed" passed for a handler that had done nothing but forget to
+     * save. That is the shape of double that hides the very defect it is aimed at, and this file has produced it
+     * before. Mongo returns a fresh document per read; so does this.
+     *
+     * The clone is by SERIALISATION, never a hand-written field list: a hand-written one silently drops whatever
+     * field is added next, and tests then fail against correct production code — which has happened twice here.
+     */
+    private static ChecklistRun Clone(ChecklistRun run)
+        => System.Text.Json.JsonSerializer.Deserialize<ChecklistRun>(
+            System.Text.Json.JsonSerializer.Serialize(run))!;
+
     public Task<ChecklistRun?> GetByTaskIdAsync(Guid taskItemId, CancellationToken ct = default)
-        => Task.FromResult(_runs.FirstOrDefault(
-            x => x.TaskItemId == taskItemId && x.TenantId == TaskTestData.Tenant && !x.IsDeleted));
+    {
+        var stored = _runs.FirstOrDefault(
+            x => x.TaskItemId == taskItemId && x.TenantId == TaskTestData.Tenant && !x.IsDeleted);
+        return Task.FromResult(stored is null ? null : Clone(stored));
+    }
 
     public Task<IReadOnlyList<ChecklistRun>> ListByTaskIdsAsync(
         IReadOnlyCollection<Guid> taskItemIds,
@@ -821,9 +840,11 @@ internal sealed class FakeChecklistRunRepository(params ChecklistRun[] seed) : I
             return Task.FromResult(false);
         }
 
-        stored.Version = expectedVersion + 1;
-        stored.Items = run.Items;
-        stored.Status = run.Status;
+        // Replace the stored document wholesale with a clone of what was written, rather than copying the two
+        // fields this file happens to know about today.
+        var replacement = Clone(run);
+        replacement.Version = expectedVersion + 1;
+        _runs[_runs.IndexOf(stored)] = replacement;
         return Task.FromResult(true);
     }
 }

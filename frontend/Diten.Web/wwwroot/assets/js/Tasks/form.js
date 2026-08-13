@@ -1402,113 +1402,29 @@
      * @param {Function} t   translator (key) => string
      * @returns {HTMLLIElement}
      */
-    const checklistRowNode = (item, t) => {
-        const row = document.createElement('li');
-        row.className = 'task-checklist-row';
-        row.dataset.taskChecklistRow = '';
-        row.dataset.requirement = item.requirement;
-        row.dataset.evidence = item.evidenceRequired ? '1' : '';
-
-        /*
-         * THE GRIP — the mouse path, and only the mouse path.
-         *
-         * `aria-hidden` with no tab stop on purpose: it is not a second control, it is a surface to grab. The
-         * buttons beside it do the same job for a keyboard, and announcing a handle that Enter cannot operate
-         * would promise an interaction that does not exist.
-         */
-        const grip = document.createElement('span');
-        grip.className = 'task-checklist-grip';
-        grip.dataset.taskChecklistGrip = '';
-        grip.setAttribute('aria-hidden', 'true');
-        const gripIcon = document.createElement('i');
-        gripIcon.className = 'bx bx-grid-vertical';
-        grip.appendChild(gripIcon);
-        row.appendChild(grip);
-
-        /*
-         * MOVE, as two buttons — kept even now that rows can be dragged.
-         *
-         * NOT a fallback. WCAG 2.2 §2.5.7 requires a single-pointer alternative to every dragging movement, and
-         * these are it; they are also the whole keyboard story, because Sortable has none. Removing them the day
-         * drag arrived would have traded an accessible interaction for an inaccessible one and called it an
-         * upgrade.
-         */
-        const move = document.createElement('span');
-        move.className = 'task-checklist-move';
-        // The labels are resolved HERE, as literal t('…') calls, rather than by passing a key through the loop:
-        // the l10n guard reads this file for literals, and a key it cannot see is a translation nothing checks.
-        [['up', 'bx-chevron-up', t('checklistMoveUp')], ['down', 'bx-chevron-down', t('checklistMoveDown')]]
-            .forEach(([direction, glyph, label]) => {
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'task-checklist-btn';
-                button.dataset.taskChecklistMove = direction;
-                button.title = label;
-                button.setAttribute('aria-label', label);
-                const icon = document.createElement('i');
-                icon.className = 'bx ' + glyph;
-                button.appendChild(icon);
-                move.appendChild(button);
-            });
-        row.appendChild(move);
-
-        const text = document.createElement('span');
-        text.className = 'task-checklist-text';
-        // textContent, not innerHTML — this is the line the author typed.
-        text.textContent = item.text;
-        row.appendChild(text);
-
-        /*
-         * THE LEVEL, as a chip that cycles. Three states on one control rather than a select, because the row
-         * has to stay one line and the three are read far more often than they are changed.
-         *
-         * The label always NAMES the current level. A chip that showed only the strict state would leave
-         * "Optional" as a blank, and a blank is read as "not set" rather than as a deliberate choice.
-         */
-        const level = document.createElement('button');
-        level.type = 'button';
-        level.className = 'task-checklist-level';
-        level.dataset.taskChecklistLevel = '';
-        /*
-         * Three literal lookups rather than `t('checklistLevel' + requirement)`. The l10n guard scans this file
-         * for `t('…')` calls and checks every one against the serialized bridge payload; a key assembled from a
-         * variable is invisible to it, so a missing translation would reach a user instead of a test.
-         */
-        level.textContent = item.requirement === 'Blocking' ? t('checklistLevelBlocking')
-            : item.requirement === 'Required' ? t('checklistLevelRequired')
-                : t('checklistLevelOptional');
-        level.title = t('checklistLevelHint');
-        row.appendChild(level);
-
-        /*
-         * EVIDENCE. The model has carried `EvidenceRequired` since Phase 1 and no screen ever set it; the
-         * evidence itself belongs to MOD-0031, so this records the REQUIREMENT and nothing more.
-         */
-        const evidence = document.createElement('button');
-        evidence.type = 'button';
-        evidence.className = 'task-checklist-btn task-checklist-evidence';
-        evidence.dataset.taskChecklistEvidence = '';
-        evidence.setAttribute('aria-pressed', item.evidenceRequired ? 'true' : 'false');
-        evidence.title = t('checklistEvidenceToggle');
-        evidence.setAttribute('aria-label', t('checklistEvidenceToggle'));
-        const clip = document.createElement('i');
-        clip.className = 'bx bx-paperclip';
-        evidence.appendChild(clip);
-        row.appendChild(evidence);
-
-        const remove = document.createElement('button');
-        remove.type = 'button';
-        remove.className = 'task-checklist-btn task-checklist-remove';
-        remove.dataset.taskChecklistRemove = '';
-        remove.title = t('checklistRemove');
-        remove.setAttribute('aria-label', t('checklistRemove'));
-        const cross = document.createElement('i');
-        cross.className = 'bx bx-x';
-        remove.appendChild(cross);
-        row.appendChild(remove);
-
-        return row;
-    };
+    const checklistRowNode = (item, t) => global.DitenCheckItem.row(
+        {
+            text: item.text,
+            requirement: item.requirement,
+            evidenceRequired: item.evidenceRequired
+        },
+        {
+            // AUTHORING: no tick box, because there is no task yet to have made progress on.
+            mode: 'authoring',
+            labels: {
+                // Literal `t('…')` calls, resolved here rather than inside the shared component. The l10n guard
+                // scans THIS file for literals and checks each against the bridge payload; a key assembled from
+                // a variable, or read from a file the guard does not scan, is a translation nothing checks.
+                optional: t('checklistLevelOptional'),
+                required: t('checklistLevelRequired'),
+                blocking: t('checklistLevelBlocking'),
+                levelHint: t('checklistLevelHint'),
+                moveUp: t('checklistMoveUp'),
+                moveDown: t('checklistMoveDown'),
+                evidenceToggle: t('checklistEvidenceToggle'),
+                remove: t('checklistRemove')
+            }
+        });
 
     /**
      * Puts every row's move controls into the state its POSITION justifies.
@@ -1528,23 +1444,9 @@
      * <p>They were all permanently enabled before this: a one-item list offered two arrows that could do
      * nothing, and the top row's ↑ and the bottom row's ↓ were live and inert. Measured on the live form.</p>
      */
-    const applyChecklistPositions = (listEl) => {
-        if (!listEl) { return; }
-        const rows = [...listEl.querySelectorAll('[data-task-checklist-row]')];
-        const solitary = rows.length < 2;
-
-        rows.forEach((row, index) => {
-            // Hidden, not merely disabled, when there is only one row: a disabled arrow still says "this list
-            // can be reordered", which is a promise a one-item list cannot keep.
-            row.querySelector('[data-task-checklist-grip]')?.classList.toggle('d-none', solitary);
-            row.querySelector('.task-checklist-move')?.classList.toggle('d-none', solitary);
-
-            const up = row.querySelector('[data-task-checklist-move="up"]');
-            const down = row.querySelector('[data-task-checklist-move="down"]');
-            if (up) { up.disabled = index === 0; }
-            if (down) { down.disabled = index === rows.length - 1; }
-        });
-    };
+    // Delegates to the shared component: the rule about which arrow may act is the same rule on both screens,
+    // and this used to be the only copy of it.
+    const applyChecklistPositions = (listEl) => global.DitenCheckItem.applyMoveState(listEl);
 
     /** Replaces the list's contents with these items, in this order. */
     const renderChecklistItems = (listEl, items, t) => {
@@ -1559,8 +1461,8 @@
     /** Reads the list back — the DOM's order IS the order that travels. */
     const readChecklistItems = (listEl) => {
         if (!listEl) { return []; }
-        return Array.from(listEl.querySelectorAll('[data-task-checklist-row]')).map((row) => ({
-            text: row.querySelector('.task-checklist-text')?.textContent || '',
+        return Array.from(listEl.querySelectorAll('[data-diten-check-row]')).map((row) => ({
+            text: row.querySelector('.diten-checkitem-text')?.textContent || '',
             requirement: row.dataset.requirement || CHECKLIST_DEFAULT_LEVEL,
             evidenceRequired: row.dataset.evidence === '1'
         }));

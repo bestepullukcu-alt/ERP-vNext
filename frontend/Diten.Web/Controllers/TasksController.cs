@@ -226,6 +226,21 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiAddChecklistItem(Guid id)
         => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/{id}/checklist/items", readBody: true);
 
+    /// <summary>Edit one checklist item — its text, its level, its evidence flag.</summary>
+    [HttpPut("api/{id:guid}/checklist/items/{code}")]
+    public Task<IActionResult> UpdateChecklistItem(Guid id, string code)
+        => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/tasks/{id}/checklist/items/{code}", readBody: true);
+
+    /// <summary>Remove one checklist item.</summary>
+    [HttpDelete("api/{id:guid}/checklist/items/{code}")]
+    public Task<IActionResult> RemoveChecklistItem(Guid id, string code)
+        => ProxyAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/v1/tasks/{id}/checklist/items/{code}", readBody: true);
+
+    /// <summary>Write the whole checklist order in one call.</summary>
+    [HttpPut("api/{id:guid}/checklist/order")]
+    public Task<IActionResult> ReorderChecklist(Guid id)
+        => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/tasks/{id}/checklist/order", readBody: true);
+
     /// <summary>Create a task from a template; its checklist is instantiated server-side.</summary>
     [HttpPost("api/from-template")]
     public Task<IActionResult> ApiCreateFromTemplate()

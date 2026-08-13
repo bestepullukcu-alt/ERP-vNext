@@ -22,6 +22,9 @@ const SCRIPT_ROOT = "wwwroot/assets/js/WorkCenterNext/";
  * it, which would make every "this thing is absent" assertion pass for the wrong reason.
  */
 const loadModules = () => {
+  // The shared checklist row, loaded exactly as Views/WorkCenterNext/*.cshtml loads it. app.js delegates every
+  // checklist row to it, so a harness without it boots an app that could not render one.
+  loadScript("wwwroot/assets/js/shared/diten-checkitem.js");
   loadScript(SCRIPT_ROOT + "fixture-contract.js");
   loadScript(SCRIPT_ROOT + "task-detail-resolver.js");
   loadScript(SCRIPT_ROOT + "trigger-response-resolver.js");

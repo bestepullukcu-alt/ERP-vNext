@@ -250,6 +250,42 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// Edit one checklist item's text, level and evidence flag. UPDATE for the same reason as ticking: this is
+    /// progress on the work, not the act of finishing it.
+    /// </summary>
+    [HttpPut("{id:guid}/checklist/items/{code}")]
+    [HasPermission(TaskPermissions.Update)]
+    public async Task<IActionResult> UpdateChecklistItem(
+        Guid id, string code, [FromBody] UpdateChecklistItemRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new UpdateChecklistItemCommand(id, code, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>Remove one checklist item.</summary>
+    [HttpDelete("{id:guid}/checklist/items/{code}")]
+    [HasPermission(TaskPermissions.Update)]
+    public async Task<IActionResult> RemoveChecklistItem(
+        Guid id, string code, [FromBody] RemoveChecklistItemRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new RemoveChecklistItemCommand(id, code, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// Write the whole checklist order at once. One call rather than one per item — see
+    /// <see cref="ReorderChecklistRequest"/> for why per-item writes lose races that this cannot.
+    /// </summary>
+    [HttpPut("{id:guid}/checklist/order")]
+    [HasPermission(TaskPermissions.Update)]
+    public async Task<IActionResult> ReorderChecklist(
+        Guid id, [FromBody] ReorderChecklistRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new ReorderChecklistCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     // ── Comments (BL-034 item 7) ─────────────────────────────────────────────
 
     /// <summary>

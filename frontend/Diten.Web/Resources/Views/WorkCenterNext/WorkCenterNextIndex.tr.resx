@@ -1817,4 +1817,16 @@
   <data name="ReferenceCopyFailed" xml:space="preserve">
     <value>Referans kopyalanamadı</value>
   </data>
+  <data name="ChecklistMoveUp" xml:space="preserve">
+    <value>Yukarı taşı</value>
+  </data>
+  <data name="ChecklistMoveDown" xml:space="preserve">
+    <value>Aşağı taşı</value>
+  </data>
+  <data name="ChecklistEvidenceToggle" xml:space="preserve">
+    <value>Kanıt gereksin</value>
+  </data>
+  <data name="ChecklistRemove" xml:space="preserve">
+    <value>Maddeyi kaldır</value>
+  </data>
 </root>

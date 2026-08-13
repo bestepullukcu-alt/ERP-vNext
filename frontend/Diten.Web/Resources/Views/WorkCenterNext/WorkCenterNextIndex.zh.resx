@@ -1817,4 +1817,16 @@
   <data name="ReferenceCopyFailed" xml:space="preserve">
     <value>无法复制引用</value>
   </data>
+  <data name="ChecklistMoveUp" xml:space="preserve">
+    <value>上移</value>
+  </data>
+  <data name="ChecklistMoveDown" xml:space="preserve">
+    <value>下移</value>
+  </data>
+  <data name="ChecklistEvidenceToggle" xml:space="preserve">
+    <value>需要证据</value>
+  </data>
+  <data name="ChecklistRemove" xml:space="preserve">
+    <value>移除条目</value>
+  </data>
 </root>

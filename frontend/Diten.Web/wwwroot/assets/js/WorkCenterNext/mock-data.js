@@ -448,7 +448,18 @@
             items: (item.checklist.items || []).map((entry) => ({
                 ...entry,
                 text: resolveLabel(entry.label) || entry.text || '',
-                done: entry.completed === true || entry.done === true
+                done: entry.completed === true || entry.done === true,
+                /*
+                 * The level arrives as TWO booleans and the screen needs ONE name. Derived here, beside `text`
+                 * and `done`, rather than at each of the four places that ask: the write path has to send a
+                 * level back, and a second derivation is how the chip and the request start disagreeing.
+                 *
+                 * `blocking` wins — an item that stops completion is not merely expected.
+                 */
+                requirement: entry.blocking ? 'Blocking' : (entry.required ? 'Required' : 'Optional'),
+                // A template item's words are the template's; the server refuses to reword one. The projection
+                // says so through the label's KIND, which is the only place that fact is carried.
+                templateOwned: entry.label?.kind === 'resource' || !!entry.label?.key
             }))
         } : null;
         item.subtasks = item.subtasks || null;

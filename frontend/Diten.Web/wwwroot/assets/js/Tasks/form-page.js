@@ -101,7 +101,7 @@
      */
     const refreshChecklistCount = () => {
         const list = checklistList();
-        const rows = list ? [...list.querySelectorAll('[data-task-checklist-row]')] : [];
+        const rows = list ? [...list.querySelectorAll('[data-diten-check-row]')] : [];
 
         const badge = document.querySelector('[data-task-checklist-count]');
         if (badge) {
@@ -111,7 +111,7 @@
 
         // Said once, under the list, and only when something actually carries the flag — see _Form.cshtml for
         // why the paperclip has to explain itself rather than imply an enforcement that does not exist.
-        const hint = document.querySelector('[data-task-checklist-evidence-hint]');
+        const hint = document.querySelector('[data-diten-check-evidence-hint]');
         if (hint) {
             hint.classList.toggle('d-none', !rows.some((row) => row.dataset.evidence === '1'));
         }
@@ -203,9 +203,9 @@
                 fallbackTolerance: 3,
                 // The grip is the ONLY drag surface. Dragging from anywhere on the row would swallow the clicks
                 // meant for the level chip, the paperclip and the remove — three controls on a 38px line.
-                handle: '[data-task-checklist-grip]',
-                draggable: '[data-task-checklist-row]',
-                ghostClass: 'task-checklist-ghost',
+                handle: '[data-diten-check-grip]',
+                draggable: '[data-diten-check-row]',
+                ghostClass: 'diten-checkitem-ghost',
                 // Sortable MOVES the existing node, exactly as insertBefore does, so the DOM stays the single
                 // source of truth and readChecklistItems needs no telling. Only the count/hint readout is
                 // re-derived — and nothing is re-rendered, so the row under the pointer survives the drop.
@@ -227,10 +227,10 @@
         });
 
         list.addEventListener('click', (event) => {
-            const row = event.target.closest('[data-task-checklist-row]');
+            const row = event.target.closest('[data-diten-check-row]');
             if (!row) { return; }
 
-            if (event.target.closest('[data-task-checklist-remove]')) {
+            if (event.target.closest('[data-diten-check-remove]')) {
                 // The row goes; the others stay exactly as they are. Only the count needs saying again.
                 row.remove();
                 refreshChecklistCount();
@@ -246,7 +246,7 @@
              * level chip twice left it one step short, and pressing evidence right after a level change did not
              * register at all. Nothing about the LIST changes here, so nothing about the list should be rebuilt.
              */
-            const levelButton = event.target.closest('[data-task-checklist-level]');
+            const levelButton = event.target.closest('[data-diten-check-level]');
             if (levelButton) {
                 const next = global.TaskForm.nextChecklistLevel(row.dataset.requirement);
                 row.dataset.requirement = next;
@@ -257,7 +257,7 @@
                 return;
             }
 
-            const evidenceButton = event.target.closest('[data-task-checklist-evidence]');
+            const evidenceButton = event.target.closest('[data-diten-check-evidence]');
             if (evidenceButton) {
                 const on = row.dataset.evidence !== '1';
                 row.dataset.evidence = on ? '1' : '';
@@ -268,7 +268,7 @@
                 return;
             }
 
-            const move = event.target.closest('[data-task-checklist-move]');
+            const move = event.target.closest('[data-diten-check-move]');
             if (move) {
                 /*
                  * Reordering the DOM IS reordering the data — the list is the single source of truth, so there
@@ -278,7 +278,7 @@
                  * survives and a second press keeps working. Re-rendering here would replace it and strand the
                  * user after one step — the same defect the two toggles above had.
                  */
-                const direction = move.getAttribute('data-task-checklist-move');
+                const direction = move.getAttribute('data-diten-check-move');
                 const sibling = direction === 'up' ? row.previousElementSibling : row.nextElementSibling;
                 if (sibling) {
                     direction === 'up' ? list.insertBefore(row, sibling) : list.insertBefore(sibling, row);

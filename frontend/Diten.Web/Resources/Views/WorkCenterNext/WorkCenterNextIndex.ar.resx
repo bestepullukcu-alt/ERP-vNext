@@ -1817,4 +1817,16 @@
   <data name="ReferenceCopyFailed" xml:space="preserve">
     <value>تعذّر نسخ المرجع</value>
   </data>
+  <data name="ChecklistMoveUp" xml:space="preserve">
+    <value>تحريك لأعلى</value>
+  </data>
+  <data name="ChecklistMoveDown" xml:space="preserve">
+    <value>تحريك لأسفل</value>
+  </data>
+  <data name="ChecklistEvidenceToggle" xml:space="preserve">
+    <value>يتطلب إثباتًا</value>
+  </data>
+  <data name="ChecklistRemove" xml:space="preserve">
+    <value>إزالة البند</value>
+  </data>
 </root>

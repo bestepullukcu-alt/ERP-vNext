@@ -244,6 +244,13 @@
         setChecklistItemState: (taskId, payload) =>
             request('POST', `/${taskId}/checklist/items/state`, payload),
         addChecklistItem: (taskId, payload) => request('POST', `/${taskId}/checklist/items`, payload),
+        updateChecklistItem: (taskId, code, payload) =>
+            request('PUT', `/${taskId}/checklist/items/${encodeURIComponent(code)}`, payload),
+        removeChecklistItem: (taskId, code, payload) =>
+            request('DELETE', `/${taskId}/checklist/items/${encodeURIComponent(code)}`, payload),
+        // The WHOLE order in one call. Per-item position writes were the alternative: N requests for one drag,
+        // and two people reordering at once interleave into an order neither of them chose.
+        reorderChecklist: (taskId, payload) => request('PUT', `/${taskId}/checklist/order`, payload),
         // Comments are POST-only, deliberately: they are immutable, so there is no update or delete to call.
         addComment: (taskId, payload) => request('POST', `/${taskId}/comments`, payload),
         createFromTemplate: (payload) => request('POST', '/from-template', payload)

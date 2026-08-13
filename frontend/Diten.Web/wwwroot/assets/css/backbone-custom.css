@@ -6283,7 +6283,13 @@ tags.diten-tags .tagify__input {
    The steps of a task, written before the task exists. One line per item, and it must stay one line: the row is
    read far more often than it is edited, so the controls are quiet until the eye looks for them. */
 .task-checklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .375rem; }
-.task-checklist-row {
+/* ── DitenCheckItem — the shared checklist row ─────────────────────────────
+   ONE definition for both screens. These rules were `.task-checklist-*` and belonged to the create form alone,
+   while the detail page drew the same row again under `.wcn-check*` with a different, thinner set. The block is
+   RENAMED rather than copied: a copy is how the two drifted apart in the first place, and every colour, radius
+   and size below is the value the create form already shipped, not a fresh choice.
+   Component: assets/js/shared/diten-checkitem.js */
+.diten-checkitem {
     display: flex;
     align-items: center;
     gap: .5rem;
@@ -6293,7 +6299,7 @@ tags.diten-tags .tagify__input {
     background: var(--bs-body-bg);
 }
 /* The drag surface. `grab` is the whole affordance — the icon alone does not say "you may pull this". */
-.task-checklist-grip {
+.diten-checkitem-grip {
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
@@ -6302,24 +6308,24 @@ tags.diten-tags .tagify__input {
     cursor: grab;
     font-size: 1rem;
 }
-.task-checklist-grip:active { cursor: grabbing; }
-.task-checklist-row:hover .task-checklist-grip { opacity: .9; }
+.diten-checkitem-grip:active { cursor: grabbing; }
+.diten-checkitem:hover .diten-checkitem-grip { opacity: .9; }
 /* While a row is being dragged. Faint rather than hidden: the reader has to see WHERE it currently sits. */
-.task-checklist-ghost { opacity: .35; }
+.diten-checkitem-ghost { opacity: .35; }
 
 /* The two move controls, stacked into the height of one row so reordering costs no vertical space. They stay
    beside the grip permanently — WCAG 2.2 §2.5.7 wants a single-pointer alternative to every drag, and these
    are also the only keyboard path (Sortable has none). */
-.task-checklist-move { display: inline-flex; flex-direction: column; flex: 0 0 auto; }
-.task-checklist-move .task-checklist-btn { block-size: .9375rem; font-size: .75rem; }
-.task-checklist-text {
+.diten-checkitem-move { display: inline-flex; flex-direction: column; flex: 0 0 auto; }
+.diten-checkitem-move .diten-checkitem-btn { block-size: .9375rem; font-size: .75rem; }
+.diten-checkitem-text {
     flex: 1 1 auto;
     min-width: 0;
     font-size: .8125rem;
     color: var(--bs-body-color);
     overflow-wrap: anywhere;
 }
-.task-checklist-btn {
+.diten-checkitem-btn {
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
@@ -6331,14 +6337,14 @@ tags.diten-tags .tagify__input {
     line-height: 1;
     cursor: pointer;
 }
-.task-checklist-btn:hover { color: var(--bs-primary); }
-.task-checklist-remove:hover { color: var(--bs-danger); }
+.diten-checkitem-btn:hover { color: var(--bs-primary); }
+.diten-checkitem-remove:hover { color: var(--bs-danger); }
 /* Pressed = the item needs evidence. The paperclip stays visible either way, so the control is discoverable
    before it is used — an icon that appears only once it is on cannot be found. */
-.task-checklist-evidence[aria-pressed="true"] { color: var(--bs-primary); }
+.diten-checkitem-evidence[aria-pressed="true"] { color: var(--bs-primary); }
 /* The level, as a chip that names its own state — never a blank for "Optional", which reads as "not set"
    rather than as a choice. Only the two strict levels take colour. */
-.task-checklist-level {
+.diten-checkitem-level {
     flex: 0 0 auto;
     border: 1px solid var(--bs-border-color);
     background: transparent;
@@ -6350,17 +6356,42 @@ tags.diten-tags .tagify__input {
     white-space: nowrap;
     cursor: pointer;
 }
-.task-checklist-row[data-requirement="Required"] .task-checklist-level {
+.diten-checkitem[data-requirement="Required"] .diten-checkitem-level {
     border-color: var(--bs-warning);
     color: var(--bs-warning);
     font-weight: 600;
 }
-.task-checklist-row[data-requirement="Blocking"] .task-checklist-level {
+.diten-checkitem[data-requirement="Blocking"] .diten-checkitem-level {
     border-color: var(--bs-danger);
     background: color-mix(in sRGB, var(--bs-danger) 12%, var(--bs-body-bg));
     color: var(--bs-danger);
     font-weight: 600;
 }
+
+
+/* ── Working mode (the task detail page) ───────────────────────────────────
+   Everything above is shared. Only the tick box and what a completed row looks like are new, because the create
+   form has nothing to tick: there is no task yet to have made progress on. */
+.diten-checkitem-box {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    padding: 0;
+    font-size: 1.125rem;
+    line-height: 1;
+    cursor: pointer;
+}
+.diten-checkitem-box[aria-pressed="true"] { color: var(--bs-success); }
+/* A done row recedes; it does not disappear. The list is also a record of what was covered. */
+.diten-checkitem.done .diten-checkitem-text { color: var(--bs-secondary-color); text-decoration: line-through; }
+/* A closed task, or a template item's text. Not hidden — a control that vanishes takes its own explanation with
+   it, and the reader is left wondering whether the capability ever existed. */
+.diten-checkitem-btn:disabled, .diten-checkitem-level:disabled { opacity: .4; cursor: not-allowed; }
+.diten-checkitem[data-template-owned="1"] .diten-checkitem-text { cursor: default; }
 
 /* THE FILTER — chips, never tabs. A tab claims two lists with two owners; this is one story told two ways. */
 .wcn-audit-filter { display: flex; flex-wrap: wrap; gap: .375rem; margin-block-end: .75rem; }

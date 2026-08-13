@@ -1817,4 +1817,16 @@
   <data name="ReferenceCopyFailed" xml:space="preserve">
     <value>No se pudo copiar la referencia</value>
   </data>
+  <data name="ChecklistMoveUp" xml:space="preserve">
+    <value>Subir</value>
+  </data>
+  <data name="ChecklistMoveDown" xml:space="preserve">
+    <value>Bajar</value>
+  </data>
+  <data name="ChecklistEvidenceToggle" xml:space="preserve">
+    <value>Exigir evidencia</value>
+  </data>
+  <data name="ChecklistRemove" xml:space="preserve">
+    <value>Quitar elemento</value>
+  </data>
 </root>

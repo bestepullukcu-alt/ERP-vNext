@@ -314,7 +314,11 @@ describe("the paperclip says what it is and when it will bite", () => {
       ])
     });
 
-    expect(app().querySelectorAll(".wcn-check-evidence")).toHaveLength(1);
+    // The paperclip is on EVERY row now, pressed only where the flag is set — a control that appears only once
+    // it is already on cannot be found by anyone looking for it. So the count is rows, and the assertion that
+    // matters is which one is pressed.
+    expect(app().querySelectorAll(".diten-checkitem-evidence")).toHaveLength(2);
+    expect(app().querySelectorAll('.diten-checkitem-evidence[aria-pressed="true"]')).toHaveLength(1);
     const hint = app().querySelector(".wcn-check-evidence-hint");
     expect(hint).not.toBeNull();
     expect(hint.textContent).toContain("ChecklistEvidenceHint");
@@ -323,17 +327,35 @@ describe("the paperclip says what it is and when it will bite", () => {
   it("stays quiet when nothing on the list asks for evidence", async () => {
     await boot({ checklist: checklistOf([{ text: "Serbest not", level: "Optional" }]) });
 
-    expect(app().querySelector(".wcn-check-evidence")).toBeNull();
+    // The control is there — it is how the flag gets SET — but nothing is pressed and the explanatory notice,
+    // which describes a condition that does not apply, stays away.
+    expect(app().querySelector('.diten-checkitem-evidence[aria-pressed="true"]')).toBeNull();
     expect(app().querySelector(".wcn-check-evidence-hint")).toBeNull();
   });
 
-  it("is a statement, not a control — it takes no tab stop and no click", async () => {
-    // The mark must not look like a way to attach something, because there is nothing to attach to yet.
+  it("IS a control now — and still attaches nothing, which is why the sentence stays", async () => {
+    /*
+     * RE-PINNED, not deleted. This test used to assert the opposite: the paperclip was an <i>, deliberately not
+     * a button, because "a control that implies 'this cannot be ticked without evidence' and then lets it be
+     * ticked is worse than no control".
+     *
+     * What actually made that true was that the DETAIL page could not write the flag at all — so the mark
+     * described a decision made on a screen the reader could not reach, and offering a dead button would have
+     * been a lie. The write exists now (PUT {id}/checklist/items/{code}), so pressing it does the one thing it
+     * has ever claimed to do: record that this item WILL want evidence.
+     *
+     * What has NOT changed is that it attaches no file — the document link is MOD-0031, BL-080. That is exactly
+     * why the sentence underneath is asserted in the same breath: a paperclip that opens no file picker has to
+     * be explained by something, and this test fails if the button ever ships without its explanation.
+     */
     await boot({ checklist: checklistOf([{ text: "Fatura eki", level: "Required", evidence: true }]) });
 
-    const mark = app().querySelector(".wcn-check-evidence");
-    expect(mark.tagName).toBe("I");
-    expect(mark.closest("button")).toBeNull();
+    const control = app().querySelector(".diten-checkitem-evidence");
+    expect(control.tagName).toBe("BUTTON");
+    expect(control.getAttribute("aria-pressed")).toBe("true");
+    expect(control.getAttribute("data-diten-check-evidence")).toContain(":");
+    // The explanation, still under the list, still saying attaching is not possible yet.
+    expect(app().querySelector(".wcn-check-evidence-hint")).not.toBeNull();
   });
 });
 

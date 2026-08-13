@@ -2874,3 +2874,34 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - **Yapılacak:** ICU MessageFormat / `.resx` çoğul desteği kararı — bu tek dize için değil, sayı içeren TÜM
   dizeler için tek seferde. Anahtar adı yeniden adlandırması ancak o göç sırasında anlamlı olur.
 - **Gelecek regresyon riski: 🟡** — çoğullaştırma altyapısı gelirse sayı içeren her dize yeniden yazılır.
+
+### BL-092 — 🟡 Kontrol listesi yazmalarının HİÇBİRİ task_transitions'a düşmüyor
+- **Ölçüm (2026-08-13):** geçmiş günlüğü `TaskItemRepository.UpdateAsync` içinde bir GÖREVİ diff'leyerek yazılıyor.
+  Kontrol listesi yazmalarının tamamı `ChecklistRunRepository` üzerinden **RUN**'a gidiyor, yani bugün ne "ekle"
+  ne "işaretle" bir geçiş kaydı üretiyor — bu turda eklenen üç fiil de üretmiyor.
+- **Neden bu turda yapılmadı:** brief "bugün ne yapılıyorsa aynısını yap, ayrışma olmasın" dedi ve ölçüm bunu
+  destekledi. Yeni üç fiilin günlüğe düşüp eski ikisinin düşmemesi, akışı YENİ bir biçimde yalancı yapardı:
+  okuyan kişi "madde silindi" satırını görüp geri kalanına dokunulmadığı sonucunu çıkarırdı.
+- **Yapılacak:** kontrol listesi için tek bir geçiş yazımı — beş fiil birden, ayrı ayrı değil. Karar noktası:
+  her tik bir satır mı (gürültü), yoksa yalnız yapı değişiklikleri (ekle/sil/sırala/seviye) mi?
+- **Gelecek regresyon riski: 🟡** — akışın "tam" olduğu iddiası bugün de doğru değil; eklendiğinde geçmişin
+  yeniden yorumlanması gerekir.
+
+### BL-093 — 🟠 `AddChecklistItem` kapalı görevi reddetmiyor (mevcut uç, bu turun kapsamı dışı)
+- **Ölçüm (2026-08-13):** `SetChecklistItemStateHandler` kapalı görevde 409 döndürüyor (ChecklistHandlers.cs:61).
+  `AddChecklistItemHandler` bu denetimi **hiç yapmıyor** — Done/Cancelled bir göreve yeni madde eklenebiliyor.
+  Bu turda eklenen üç fiilin üçü de reddediyor (canlı doğrulandı: iptal edilmiş görevde `TASK_INVALID_STATE`).
+- **Sonuç:** aynı kartın beş fiilinden dördü kapalı görevi reddediyor, biri kabul ediyor.
+- **Neden yapılmadı:** brief üç YENİ fiili istedi; var olan bir ucun davranışını değiştirmek istenmedi ve
+  kapsamı kendiliğinden genişletmedim. Düzeltme tek satır: `ChecklistWriteGuards.ResolveAsync` çağrısı.
+- **Gelecek regresyon riski: 🟠** — bugün ön yüz kapalı görevde ekleme kutusunu gizliyor, yani kusur yalnız
+  API seviyesinde erişilebilir; ön yüz kilidi güvenlik değildir.
+
+### BL-094 — 🟢 Detay sayfasında sürükle-bırak yok; sıralama yalnız ok düğmeleriyle
+- **Ölçüm (2026-08-13):** create formunda Sortable var, detay sayfasında yok. Paylaşılan bileşen her iki kipte de
+  taşı düğmelerini çiziyor, yani detayda sıralama ÇALIŞIYOR (canlı: yukarı taşı → 204 → yeniden yüklemede korundu).
+- **Neden bu turda yapılmadı:** brief "sürükle gelirse taşı düğmeleri zorunlu" dedi; tersi zorunlu değil. Düğmeler
+  WCAG 2.2 §2.5.7 karşılığı olarak zaten tek başına yeterli; sürükleme bir kolaylık.
+- **Yapılacak (istenirse):** `.wcn-checks` üzerine Sortable, `handle: '[data-diten-check-grip]'` — ve grip
+  çalışma kipinde de çizilmeli (bugün yalnız yazma kipinde).
+- **Gelecek regresyon riski: 🟢 eklemeli.**
