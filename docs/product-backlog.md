@@ -2832,3 +2832,25 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - **Yapılacak (D7 ile birlikte değerlendirilmeli):** sekme değişiminde `history.replaceState(null,'','#etkinlik')`
   / hash temizleme — üç satır, ama "paylaşılan bağlantı ne göstermeli" kararı sahibin.
 - **Gelecek regresyon riski: 🟢 eklemeli.**
+
+### BL-088 — 🟡 `renderSplit` / `.wcn-split-detail` ölü kod; ad çakışmasının kaynağı burası
+- **Ölçüm (2026-08-13):** `renderSplit` (app.js:1342) **hiçbir yerden çağrılmıyor** — grep ile tek eşleşme
+  tanımın kendisi. Görünüm düğmeleri yalnız `list` ve `table` üretiyor (canlı ölçüm: `data-wcn-view=list`,
+  `data-wcn-view=table`). Yani `splitCard`, `.wcn-split-detail` ve ona bağlı CSS bloğu çalışmayan koddur.
+- **Neden önemli:** bu tur kaybedilen zamanın tamamı buradan çıktı. `.wcn-detail-tabs` adı **bu ölü bileşene**
+  aitti ve `position: sticky` + kenarlık + yarıçap + `backdrop-filter` + `margin-block-start: 1rem` taşıyordu.
+  Detay şeridine aynı adı verince şerit bunların hepsini giydi: iki kılpayı çizgi ve rayla 16px hizasızlık.
+  Kusur hiçbir zaman detay sayfasının dosyasında değildi. **Çalışmayan kod da isim alanını işgal eder.**
+- **Yapılacak:** ya split görünümü gerçekten bağlanır ya `renderSplit`/`splitCard`/`.wcn-split-detail` kaldırılır.
+  Karar sahibin: split görünümü ürün planında mı, değil mi?
+- **Gelecek regresyon riski: 🟢 eklemeli** — bugün hiçbir şey çizmiyor; silinmesi ekranı değiştirmez.
+
+### BL-089 — 🟢 Kart yüzeyi CSS değişkenleriyle okunamıyor (`--bs-card-bg` boş dönüyor)
+- **Ölçüm (2026-08-13):** `getComputedStyle(root).getPropertyValue('--bs-card-bg' | '--bs-card-border-radius' |
+  '--bs-card-box-shadow')` **üçü de boş dize** döndürüyor; değerler yalnız `.card` kuralının içinde yaşıyor.
+- **Sonuç:** "var olan kart yüzeyini kullan" demek pratikte "`.card` sınıfını kullan" demek — bir bileşen yüzeyi
+  değişkenle **alıntılayamıyor**, sınıfı giymek zorunda. Bu turda doğru sonuca çıktı (şerit `card` + `card-body p-3`,
+  liste sayfasının kendi şeridiyle aynı iki satır), ama sınıf giyilemeyen bir yerde tek yol elle renk yazmak olur —
+  FG-003'ün korumadığı, ikinci bir kart tonunun doğduğu yer tam burasıdır.
+- **Yapılacak:** Sneat kart değişkenlerini `:root`'a köprüle (`--dt-card-bg: …` vb.), tek kaynak kalsın.
+- **Gelecek regresyon riski: 🟢 eklemeli.**

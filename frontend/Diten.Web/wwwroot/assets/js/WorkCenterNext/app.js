@@ -2994,13 +2994,26 @@
         </li>`;
 
         const content = [
-            `<ul class="nav nav-pills gap-2 flex-wrap mb-0 wcn-tabs wcn-detail-tabs" role="tablist">
+            /*
+             * ⚠ RENAMED from `wcn-detail-tabs`, which was ALREADY TAKEN.
+             *
+             * That class belongs to the list page's split-detail side pane (`.wcn-split-detail`) and carries
+             * `position: sticky`, a border, a radius, a backdrop-filter and `margin-block-start: 1rem`. Naming
+             * this strip the same thing silently inherited all of it — the stray hairlines above and below, the
+             * 4px padding nobody wrote, and the 16px that pushed the strip out of line with the rail. None of it
+             * was in this file; it came from a component with the same name.
+             *
+             * The strip sits in a plain `.card`, so its surface IS the page's card surface — same background,
+             * same radius, same shadow, no new value defined anywhere.
+             */
+            `<div class="card wcn-detail-tabcard"><div class="card-body p-3">
+            <ul class="nav nav-pills gap-2 flex-wrap mb-0 wcn-tabs wcn-detail-tabstrip" role="tablist">
                 ${detailTab('general', 'bx-detail', 'DetailTabGeneral')}
                 ${detailTab('activity', 'bx-message-square-detail', 'DetailTabActivity',
                     hasCap(item, 'activity')
                         ? `<span class="badge bg-label-secondary wcn-audit-count ms-1">${item.activity.length}</span>`
                         : '')}
-            </ul>`,
+            </ul></div></div>`,
             // Both panels stay in the DOM and one is hidden by CLASS (FG-003 — no inline style). Keeping both
             // mounted is what makes a half-typed comment survive a tab switch.
             `<div class="wcn-detail-panel${onActivity ? ' d-none' : ''}" role="tabpanel"

@@ -312,7 +312,7 @@ describe("the activity card matches the cards beside it", () => {
      */
     await boot({ activity: many(2, 1) });
 
-    const badge = app().querySelector(".wcn-detail-tabs .wcn-audit-count");
+    const badge = app().querySelector(".wcn-detail-tabstrip .wcn-audit-count");
     expect(badge.tagName).toBe("SPAN");
     expect(badge.classList.contains("badge")).toBe(true);
     expect(badge.classList.contains("bg-label-secondary")).toBe(true);
@@ -398,7 +398,7 @@ describe("the detail page splits the work from its record", () => {
     // side never changes.
     await boot(withRail({ activity: [comment("bir", 1)] }));
 
-    const strip = app().querySelector(".wcn-detail-tabs");
+    const strip = app().querySelector(".wcn-detail-tabstrip");
     expect(strip.closest(".wcn-detail-content")).not.toBeNull();
     expect(strip.getAttribute("role")).toBe("tablist");
   });
@@ -423,7 +423,7 @@ describe("the detail page splits the work from its record", () => {
      */
     await boot(withRail({ activity: [comment("a", 1)] }));
 
-    const badge = app().querySelector(".wcn-detail-tabs .wcn-audit-count");
+    const badge = app().querySelector(".wcn-detail-tabstrip .wcn-audit-count");
     expect(badge.classList.contains("bg-label-secondary")).toBe(true);
     ["bg-danger", "rounded-pill", "position-absolute", "translate-middle"]
       .forEach((cls) => expect(badge.classList.contains(cls)).toBe(false));

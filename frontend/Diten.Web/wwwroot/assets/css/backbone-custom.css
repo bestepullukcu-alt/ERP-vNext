@@ -5179,16 +5179,27 @@ tags.diten-tags .tagify__input {
    only tints and the border never flickers (padding already matches, no resize). */
 .wcn-tabs .nav-item .nav-link:not(.active):hover { border-block-end: 1px solid var(--bs-border-color); }
 /* Count = notification badge pinned to the top-right corner, not inline. */
-/* The DETAIL page's strip — the list page's `.wcn-tabs` skeleton, governing only the content column.
-   It inherits every rule above; all it adds is the gap to the first card, and the reminder that its width is
-   the COLUMN's (it lives inside `.wcn-detail-content`) rather than the page's. A page-wide strip would claim
-   the rail, which it does not govern. */
-.wcn-detail-tabs { margin-block-end: 1rem; }
-/* The count here is CONTENT VOLUME, not a summons: grey, in the flow, no absolute positioning. The list page's
+/* ── The DETAIL page's tab strip ───────────────────────────────────────────
+   `.wcn-detail-tabstrip`, NOT `.wcn-detail-tabs` — that name already belongs to the split-detail side pane and
+   brought sticky positioning, a border, a radius, a backdrop-filter and a 1rem top margin with it. The strip
+   wore all of that by accident; the rename is the fix, not a border override.
+
+   The SURFACE is `.card` + `.card-body p-3` — the SAME two lines the list page's own strip is built from
+   (`wcn-tabcard`, app.js:840). Background, radius, shadow and padding are therefore the page's existing card
+   values, not numbers picked by eye; the only thing declared here is the gap to the first card, and it is the
+   column's own 1.5rem rather than the list page's `mb-3`, because this strip lives in that column's rhythm. */
+.wcn-detail-tabcard { margin-block-end: 1.5rem; }
+/* The count is CONTENT VOLUME, not a summons: grey, in the flow, no absolute positioning. The list page's
    `.wcn-tab-count` is a red corner pill meaning "N things want you" — this number only ever grows, so a red that
    never goes out would stop being seen, and take the real red with it. */
-.wcn-detail-tabs .wcn-audit-count { font-size: .6875rem; font-weight: 600; }
-/* Both panels stay mounted; one is hidden by class so a half-typed comment survives a tab switch. */
+.wcn-detail-tabstrip .wcn-audit-count { font-size: .6875rem; font-weight: 600; }
+
+/* ── Card rhythm inside a panel ────────────────────────────────────────────
+   RESTORES the pre-tabs value. The original rule was `.wcn-detail-content > .wcn-detail-card { margin-block-end:
+   1.5rem }` — a DIRECT-child selector, and wrapping the cards in `.wcn-detail-panel` put a node between them and
+   it. The cards fell to 0px apart and the three read as one. Same 1.5rem, matched to the column it left, not a
+   fresh value chosen by eye. Applies to the activity panel too: one card today, two tomorrow. */
+.wcn-detail-panel > .wcn-detail-card { margin-block-end: 1.5rem; }
 .wcn-detail-panel > .wcn-detail-card:last-child { margin-block-end: 0; }
 
 .wcn-tabs .wcn-tab-count { font-size: .625rem; font-weight: 600; padding-inline: .35rem; line-height: 1.1; box-shadow: 0 0 0 1.5px var(--bs-card-bg); }
@@ -5708,7 +5719,10 @@ tags.diten-tags .tagify__input {
     gap: .5rem; padding: 4rem 1.5rem; text-align: center; color: var(--bs-secondary-color);
 }
 .wcn-detail-empty i { font-size: 2.5rem; color: var(--bs-border-color); }
-.wcn-detail-head { border-block-end: 1px solid var(--bs-border-color); padding-block-end: 1rem; }
+/* No bottom border. The head is a white card on a grey ground and already says where it ends; the rule was
+   added when ONE column sat beneath it, and now two columns of different heights do — so it read as a loose
+   1320px ruler drawn over both, the rail included. The padding stays: that is the gap to the row below. */
+.wcn-detail-head { padding-block-end: 1rem; }
 .wcn-detail-source { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; margin-block-end: .5rem; }
 .wcn-detail-title { margin: 0 0 .625rem; font-size: 1.0625rem; font-weight: 600; color: var(--bs-heading-color); }
 .wcn-detail-chips { display: flex; flex-wrap: wrap; gap: .375rem; }

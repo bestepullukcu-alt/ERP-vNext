@@ -96,13 +96,28 @@ describe("the page is three regions", () => {
 
     // The strip exists, and it is inside the content column.
     expect(body).toMatch(/role="tablist"/);
-    expect(body).toMatch(/wcn-detail-tabs/);
+    expect(body).toMatch(/wcn-detail-tabstrip/);
+    /*
+     * And it is NOT called `wcn-detail-tabs`. That name is taken: the split-detail side pane owns it, with a
+     * sticky position, a border, a radius, a backdrop-filter and a 1rem top margin attached. Wearing the name
+     * dressed this strip in all of it — two stray hairlines and a 16px drop out of line with the rail — from a
+     * file nobody would think to open. A name is a claim on every rule already written for it.
+     */
+    expect(body).not.toMatch(/wcn-detail-tabs["'\s]/);
 
     // …and the two regions that must never be tabbed are composed outside any panel.
     expect(body).toMatch(/wcn-detail-head">\$\{commandCard\}/);
     expect(body).toMatch(/wcn-detail-rail">\$\{rail\}/);
     const panelArray = body.slice(body.indexOf("const content = ["), body.indexOf("const rail = ["));
     expect(panelArray).toContain("data-wcn-detail-panel");
+
+    /*
+     * The strip's SURFACE is borrowed, not authored: `.card` + `.card-body p-3`, the same two lines the list
+     * page's own strip is built from. Background, radius, shadow and padding therefore follow the page — in
+     * both themes, for free — and no colour, shadow or radius is declared anywhere for this component. A
+     * hand-rolled surface is how two cards on one screen end up almost the same.
+     */
+    expect(body).toMatch(/class="card wcn-detail-tabcard"><div class="card-body p-3"/);
     expect(panelArray).not.toContain("${rail}");
     expect(panelArray).not.toContain("${commandCard}");
   });
