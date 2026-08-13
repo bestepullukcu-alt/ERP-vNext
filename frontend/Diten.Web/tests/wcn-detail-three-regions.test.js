@@ -41,12 +41,21 @@ const fn = (name, source) => {
   return text.slice(start, next < 0 ? text.length : next);
 };
 
-/** detailHtml's own body — the composition, as opposed to the individual renderers. */
+/**
+ * detailHtml's own body — the composition, as opposed to the individual renderers.
+ *
+ * COMMENTS ARE STRIPPED. These guards assert what the page RENDERS, and the region names they look for
+ * (`wcn-detail-head`, `role="tablist"`) are exactly the words the surrounding comments use to explain the
+ * rules — so a prose explanation of "the rail must never go inside a tab" used to fail the test enforcing it.
+ * The same `stripComments` discipline the localization suite already applies, for the same reason.
+ */
 const detailHtml = () => {
   const text = APP();
   const start = text.indexOf("const detailHtml = (item)");
   const end = text.indexOf("const subtaskPanel = ()", start);
-  return text.slice(start, end);
+  return text.slice(start, end)
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:])\/\/.*$/gm, "$1");
 };
 
 // ── 1. three regions, in order, and no tabs ─────────────────────────────────
@@ -73,9 +82,29 @@ describe("the page is three regions", () => {
     expect(body).toMatch(/<div class="col-12 col-lg-4 wcn-detail-rail">/);
   });
 
-  test("NO TABS — the decision, pinned", () => {
+  test("TABS, but only over the content column — the decision, re-pinned", () => {
+    /*
+     * ⚠ THIS PIN WAS REVERSED (owner decision). It used to read "NO TABS", and that was the right rule for what
+     * it was actually protecting: nothing the reader needs may hide behind a label.
+     *
+     * The detail page now has two — Genel / Etkinlik — over the CONTENT column alone. What the original pin
+     * defended is defended more precisely here: the head (lifecycle) and the rail (available actions, status,
+     * note) are composed OUTSIDE the panels, so no gate can ever sit behind a tab. A blanket "no tablist
+     * anywhere" would now fail for a strip that breaks none of the rules it was written to enforce.
+     */
     const body = detailHtml();
-    expect(body).not.toMatch(/nav-tabs|data-bs-toggle="tab"|role="tablist"/);
+
+    // The strip exists, and it is inside the content column.
+    expect(body).toMatch(/role="tablist"/);
+    expect(body).toMatch(/wcn-detail-tabs/);
+
+    // …and the two regions that must never be tabbed are composed outside any panel.
+    expect(body).toMatch(/wcn-detail-head">\$\{commandCard\}/);
+    expect(body).toMatch(/wcn-detail-rail">\$\{rail\}/);
+    const panelArray = body.slice(body.indexOf("const content = ["), body.indexOf("const rail = ["));
+    expect(panelArray).toContain("data-wcn-detail-panel");
+    expect(panelArray).not.toContain("${rail}");
+    expect(panelArray).not.toContain("${commandCard}");
   });
 
   test("the lifecycle strip lives in the HEAD, not among the content cards", () => {
@@ -110,11 +139,18 @@ describe("the page is three regions", () => {
 
 describe("the summary card answers 'what is this?' before 'what can you do?'", () => {
   test("it is the FIRST card in the content column", () => {
+    /*
+     * The cards moved from `content` into `generalPanel` when the column gained tabs — `content` now holds the
+     * strip and the two panels. The CLAIM is unchanged: summary comes before the rest of the work, and the
+     * activity record comes after all of it.
+     */
     const body = detailHtml();
-    const content = body.slice(body.indexOf("const content = ["));
-    expect(content.indexOf("renderSummary(item)")).toBeGreaterThan(-1);
-    expect(content.indexOf("renderSummary(item)")).toBeLessThan(content.indexOf("renderSubtasks(item)"));
-    expect(content.indexOf("renderSummary(item)")).toBeLessThan(content.indexOf("activitySection"));
+    const general = body.slice(body.indexOf("const generalPanel = ["), body.indexOf("const activityPanel ="));
+    expect(general.indexOf("renderSummary(item)")).toBeGreaterThan(-1);
+    expect(general.indexOf("renderSummary(item)")).toBeLessThan(general.indexOf("renderSubtasks(item)"));
+
+    // The record follows the work: the activity panel is composed after the general one.
+    expect(body.indexOf("const generalPanel = [")).toBeLessThan(body.indexOf("const activityPanel ="));
   });
 
   test("it carries the seven facts the reader came for", () => {

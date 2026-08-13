@@ -2806,3 +2806,29 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   verisi uğruna kiracı verisini kirletmek olur. Eşiği düşürmek de ürün kararını teste feda etmek olurdu.
 - **Yapılacak (isteğe bağlı):** dev sandbox'ta 12+ geçişli bir tohum görev; o zaman kural canlı da ölçülür.
 - **Gelecek regresyon riski: 🟢** — kural birim testinde kilitli, yalnız canlı kanıt eksik.
+
+### BL-086 — 🟢 Kaynak tarayan testler YORUMLARI da tarıyor (kuralı açıklayan metin kuralı düşürüyor)
+- **Ölçüm (2026-08-13, sekme turu):** `wcn-detail-three-regions.test.js` ve
+  `workcenter-next-detail-page.test.js` app.js'i **ham metin** olarak tarıyor. Bu turda **üç** test, yazdığım
+  **yorumlar** yüzünden kırmızı oldu — kodu değil:
+  (a) `NO TABS` kilidi, "rail asla sekmenin içine girmez" diye açıklayan yorumdaki `role="tablist"` kelimesine
+  takıldı · (b) bölge sırası testi, yorumda geçen `.wcn-detail-head`/`.wcn-detail-content` adlarına takıldı ·
+  (c) `ago:` kilidi, "a few rounds ago:" cümlesine takıldı.
+- **Bu turda ne yapıldı:** `detailHtml()` yardımcısına **yorum ayıklama** eklendi (l10n paketinde zaten var olan
+  `stripComments` disiplini) — bu, testi zayıflatmaz, ölçtüğünü iddia ettiği şeyi ölçmesini sağlar. `ago:` kilidi
+  ise **dokunulmadı**; onun yerine kendi cümlemi yeniden yazdım: kilit kasten kaba ve nesir uğruna gevşetilmemeli.
+- **Kalan iş:** aynı ham-metin taraması `workcenter-next-detail-page.test.js` ve `tasks-form-checklist.test.js`
+  içinde de var. Bugün kırmızı değiller, ama bir sonraki iyi yorum onları da düşürebilir.
+- **Gelecek regresyon riski: 🟡 yanlış alarm.** Kırmızı olduğunda kod doğrudur ve okuyucu testin haklı olduğunu
+  varsayıp iyi bir açıklamayı siler. Ortak bir `sourceOf(name, {stripComments:true})` yardımcısı doğru cevap.
+
+### BL-087 — 🟢 Detay sekmesi seçimi URL'de tutulmuyor (yalnız #etkinlik ile açılış var)
+- **Ölçüm (2026-08-13):** `#etkinlik` ile açılış **çalışıyor** (canlı doğrulandı: hash → Etkinlik sekmesi seçili,
+  panel görünür). Ama sekme değiştirmek URL'i **güncellemiyor**: kullanıcı Etkinlik'e geçip bağlantıyı kopyalarsa
+  karşı taraf Genel'de açar. Liste sayfası kendi durumunu `syncUrl`/`replaceState` ile yansıtıyor; detay sayfası
+  yansıtmıyor.
+- **Neden bu turda yapılmadı:** brief **kalıcılık istemiyorum** dedi ve URL yazımı kalıcılığın bir biçimi;
+  ayrıca `#etkinlik`'in bugünkü tek tüketicisi D7'de gelecek yorum bildirimi. Kapsamı kendiliğinden genişletmedim.
+- **Yapılacak (D7 ile birlikte değerlendirilmeli):** sekme değişiminde `history.replaceState(null,'','#etkinlik')`
+  / hash temizleme — üç satır, ama "paylaşılan bağlantı ne göstermeli" kararı sahibin.
+- **Gelecek regresyon riski: 🟢 eklemeli.**

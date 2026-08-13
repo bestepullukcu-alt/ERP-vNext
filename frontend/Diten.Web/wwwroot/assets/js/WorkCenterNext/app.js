@@ -117,6 +117,16 @@
          */
         activityFilter: 'all',
         /*
+         * Which half of the detail page's CONTENT column is showing — 'general' | 'activity'.
+         *
+         * NOT persisted, by instruction and on merit: a task always opens on what it IS. Restoring a tab would
+         * mean the same link shows two different first screens depending on who followed it last.
+         *
+         * `#etkinlik` in the URL opens straight onto the record — three lines now so the comment notification
+         * (D7) can deep-link into it later without this being reopened.
+         */
+        detailTab: (global.location && global.location.hash === '#etkinlik') ? 'activity' : 'general',
+        /*
          * The level the NEXT checklist item will be added at. Optional by default, for the reason the create
          * form gives at length: a Blocking default manufactures tasks nobody can close and nobody chose that.
          *
@@ -2861,12 +2871,13 @@
                        * task. (Same rule the subtasks badge already follows, which was checked: it reads the
                        * unfiltered list, and that card has no filter at all.)
                        */''}
-                    ${cardHead('bx-message-square-detail', 'ActivityLabel',
-                        `<span class="badge bg-label-secondary wcn-audit-count">${item.activity.length}</span>`)}
+                    ${/*
+                       * The count MOVED to the tab (it is not duplicated). Its whole value was "know without
+                       * opening"; a tab does that better than a card heading can, and repeating it to someone
+                       * who has already clicked through is noise.
+                       */''}
+                    ${cardHead('bx-message-square-detail', 'ActivityLabel')}
                     ${composer}
-                    ${/* D1 — BELOW the composer, ABOVE the list: it qualifies what follows, not the box for
-                          adding to it. Writing a comment is unaffected by how far the record reaches back. */''}
-                    ${historyGap}
                     ${activityFilter}
                     ${visibleActivity.length
                         ? (activityCapped
@@ -2877,6 +2888,16 @@
                             // "Nothing was recorded yet" and "the record does not reach back this far" are
                             // different sentences, and printing both would contradict itself.
                             : historyGap ? '' : `<p class="wcn-block-hint">${esc(t('ActivityEmpty'))}</p>`)}
+                    ${/*
+                       * THE NOTICE GOES LAST — after the list AND after "show all", outside the scroll cap.
+                       *
+                       * It is a FOOTNOTE about what the record does not reach, so it belongs behind the record.
+                       * The reason it could not simply sit at the bottom before is that the bottom was inside a
+                       * 320px scrolling box, where a reader could finish reading without ever meeting it. Out
+                       * here it is both always visible and in the right place. (`cappedList` emits the cap and
+                       * the button together, so anything after this interpolation is outside both.)
+                       */''}
+                    ${historyGap}
                 </div>`;
 
         // Command card — identity, status, actions and personal overlay. Everything
@@ -2913,7 +2934,21 @@
          * cards, the one control the page exists for sat wherever its card happened to land. On a narrow screen
          * the columns stack and the action rail follows the content, so it is never the only thing visible.
          */
-        const content = [
+        /*
+         * ── THE WORK ITSELF vs THE RECORD OF THE WORK ────────────────────────────────────────────────────────
+         *
+         * Two tabs over the CONTENT COLUMN ONLY. `.wcn-detail-head` (the lifecycle bar) and `.wcn-detail-rail`
+         * (available actions, status, personal note, source record) are deliberately OUTSIDE and stay put.
+         *
+         * ⚠ THE RAIL MUST NEVER GO INSIDE A TAB. "Available actions" are GATES — the things this person may do
+         * right now. A tab that hides a gate means changing tab removes what you can do, and the reader has no
+         * reason to suspect a control lives behind a label that says "Activity". Non-negotiable.
+         *
+         * ⚠ THIS IS A DIFFERENT AXIS FROM THE LIST PAGE. There, a tab means OWNERSHIP (whose work is this) and a
+         * segment means state. Here it means the work itself vs its record. A third tab added later belongs on
+         * THIS axis; borrowing the list page's meanings would make one word mean two things in one product.
+         */
+        const generalPanel = [
             // FIRST, always: "what is this?" is the question a detail page owes its reader before "what can you
             // do about it?" — which is what the page used to open with.
             card(renderSummary(item)),
@@ -2926,8 +2961,52 @@
             card(renderAttachments(item)),
             card(renderEvidence(item)),
             card(renderCompliance(item)),
-            card(renderRelated(item)),
-            card(activitySection)
+            card(renderRelated(item))
+        ].join('');
+
+        const activityPanel = card(activitySection);
+        const onActivity = state.detailTab === 'activity';
+
+        /*
+         * The strip is the LIST PAGE'S skeleton, class for class: `nav nav-pills gap-2 flex-wrap wcn-tabs` with
+         * `nav-item[role=presentation]` wrappers and `nav-link border shadow-none wc-tab-compact` tabs. Measured
+         * and copied rather than restyled — two screens of one product are written in one hand.
+         *
+         * It sits INSIDE `.wcn-detail-content`, so it is as wide as the column it governs (649px at 1024) and
+         * not as wide as the page. A full-width strip would claim the rail too, and the reader would rightly ask
+         * why the right-hand side never changes.
+         *
+         * The COUNT badge is deliberately NOT the list page's: that one is
+         * `rounded-pill bg-danger position-absolute…`, a red call to action meaning "N things want you". This
+         * number only means "N things happened", it never decreases, and a permanent red would go unseen within
+         * days — taking the list page's real red down with it. Grey, in the flow, `bg-label-secondary`.
+         *
+         * "Genel" carries no badge: there is nothing to count. An invented number for symmetry would be a lie
+         * with good posture.
+         */
+        const detailTab = (key, icon, labelKey, badge) => `<li class="nav-item" role="presentation">
+            <button type="button" role="tab"
+                class="nav-link border shadow-none wc-tab-compact d-inline-flex align-items-center${
+                    (state.detailTab === key) ? ' active' : ''}"
+                aria-selected="${state.detailTab === key}" data-wcn-detail-tab="${key}">
+                <i class="bx ${icon} wc-tab-icon me-md-1" aria-hidden="true"></i><span>${esc(t(labelKey))}</span>${badge || ''}
+            </button>
+        </li>`;
+
+        const content = [
+            `<ul class="nav nav-pills gap-2 flex-wrap mb-0 wcn-tabs wcn-detail-tabs" role="tablist">
+                ${detailTab('general', 'bx-detail', 'DetailTabGeneral')}
+                ${detailTab('activity', 'bx-message-square-detail', 'DetailTabActivity',
+                    hasCap(item, 'activity')
+                        ? `<span class="badge bg-label-secondary wcn-audit-count ms-1">${item.activity.length}</span>`
+                        : '')}
+            </ul>`,
+            // Both panels stay in the DOM and one is hidden by CLASS (FG-003 — no inline style). Keeping both
+            // mounted is what makes a half-typed comment survive a tab switch.
+            `<div class="wcn-detail-panel${onActivity ? ' d-none' : ''}" role="tabpanel"
+                data-wcn-detail-panel="general">${generalPanel}</div>`,
+            `<div class="wcn-detail-panel${onActivity ? '' : ' d-none'}" role="tabpanel"
+                data-wcn-detail-panel="activity">${activityPanel}</div>`
         ].filter(Boolean).join('');
 
         /*
@@ -5248,9 +5327,18 @@
         }
         if (isTyping(event.target) || event.metaKey || event.ctrlKey || event.altKey) { return; }
         const key = event.key.toLowerCase();
-        const activeTab = event.target.closest && event.target.closest('[role="tab"][data-wcn-tab]');
+        /*
+         * Arrow / Home / End across a tab strip.
+         *
+         * Widened from `[data-wcn-tab]` (the list page's ownership strip) to ANY `[role=tab]`, and scoped to the
+         * strip the focused tab actually lives in. Two reasons: the detail page's new strip gets the same
+         * keyboard behaviour for free rather than a second copy of it, and the old global query would have
+         * walked between two strips as if they were one list the moment a page carried both.
+         */
+        const activeTab = event.target.closest && event.target.closest('[role="tab"]');
         if (activeTab && (key === 'arrowleft' || key === 'arrowright' || key === 'home' || key === 'end')) {
-            const tabs = Array.from(document.querySelectorAll('#wcnApp [role="tab"][data-wcn-tab]'));
+            const strip = activeTab.closest('[role="tablist"]') || document.getElementById('wcnApp');
+            const tabs = Array.from(strip.querySelectorAll('[role="tab"]'));
             let index = tabs.indexOf(activeTab);
             index = key === 'home' ? 0 : key === 'end' ? tabs.length - 1
                 : (index + (key === 'arrowright' ? 1 : -1) + tabs.length) % tabs.length;
@@ -5506,6 +5594,36 @@
         if (showAllEl) {
             const key = showAllEl.getAttribute('data-wcn-showall');
             if (key) { state.expandedLists[key] = !state.expandedLists[key]; render(); }
+            return;
+        }
+        const detailTabEl = event.target.closest('[data-wcn-detail-tab]');
+        if (detailTabEl) {
+            /*
+             * Its OWN attribute, not `data-wcn-tab`. That one is the list page's ownership strip and carries a
+             * click handler of its own; sharing the attribute would make a detail tab try to switch the inbox.
+             */
+            /*
+             * ⚠ NO render() HERE, and that is the whole point.
+             *
+             * Switching tab changes NOTHING about the data — only which panel is visible. Re-rendering to flip a
+             * class rebuilds every node in the column, and a rebuilt <input> is an empty one: measured live, a
+             * half-typed comment vanished the moment the reader glanced at "Genel" and came back. (Focus restore
+             * does not save it either — that only rescues the field that HAS focus, and focus is on the tab.)
+             *
+             * The checklist toggles taught this same lesson in an earlier round: do not rebuild the world to
+             * change how it looks. Both panels stay mounted; only `d-none` and the tab's own state move.
+             */
+            state.detailTab = detailTabEl.getAttribute('data-wcn-detail-tab');
+
+            document.querySelectorAll('[data-wcn-detail-panel]').forEach((panel) => {
+                panel.classList.toggle('d-none',
+                    panel.getAttribute('data-wcn-detail-panel') !== state.detailTab);
+            });
+            document.querySelectorAll('[data-wcn-detail-tab]').forEach((tab) => {
+                const selected = tab.getAttribute('data-wcn-detail-tab') === state.detailTab;
+                tab.classList.toggle('active', selected);
+                tab.setAttribute('aria-selected', selected ? 'true' : 'false');
+            });
             return;
         }
         const checkLevelEl = event.target.closest('[data-wcn-check-level]');

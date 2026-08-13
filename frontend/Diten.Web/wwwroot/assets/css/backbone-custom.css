@@ -5179,6 +5179,18 @@ tags.diten-tags .tagify__input {
    only tints and the border never flickers (padding already matches, no resize). */
 .wcn-tabs .nav-item .nav-link:not(.active):hover { border-block-end: 1px solid var(--bs-border-color); }
 /* Count = notification badge pinned to the top-right corner, not inline. */
+/* The DETAIL page's strip — the list page's `.wcn-tabs` skeleton, governing only the content column.
+   It inherits every rule above; all it adds is the gap to the first card, and the reminder that its width is
+   the COLUMN's (it lives inside `.wcn-detail-content`) rather than the page's. A page-wide strip would claim
+   the rail, which it does not govern. */
+.wcn-detail-tabs { margin-block-end: 1rem; }
+/* The count here is CONTENT VOLUME, not a summons: grey, in the flow, no absolute positioning. The list page's
+   `.wcn-tab-count` is a red corner pill meaning "N things want you" — this number only ever grows, so a red that
+   never goes out would stop being seen, and take the real red with it. */
+.wcn-detail-tabs .wcn-audit-count { font-size: .6875rem; font-weight: 600; }
+/* Both panels stay mounted; one is hidden by class so a half-typed comment survives a tab switch. */
+.wcn-detail-panel > .wcn-detail-card:last-child { margin-block-end: 0; }
+
 .wcn-tabs .wcn-tab-count { font-size: .625rem; font-weight: 600; padding-inline: .35rem; line-height: 1.1; box-shadow: 0 0 0 1.5px var(--bs-card-bg); }
 
 /* Status segments (in-tab) ------------------------------------------------- */

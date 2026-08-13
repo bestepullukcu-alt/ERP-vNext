@@ -248,21 +248,27 @@ describe("the activity card matches the cards beside it", () => {
     expect(gap.querySelector("i.bx-info-circle")).not.toBeNull();
   });
 
-  it("D1 — it sits BELOW the composer and ABOVE the list", async () => {
+  it("D1 — it sits AFTER the list and after 'show all', outside the scroll cap", async () => {
     /*
-     * Order is the point, not presence. It used to sit at the FOOT, under a 320px scroll cap, where a reader
-     * could finish the list without ever meeting the sentence that qualifies it. Asserted by document position
-     * so it cannot pass on a coincidence of markup.
+     * ⚠ THIS ASSERTION IS THE REVERSE OF WHAT IT SAID LAST ROUND, deliberately and on the owner's call.
+     *
+     * Both placements answered a real objection. Above the list it is read before what it qualifies, but it
+     * interrupts the composer and the record it annotates. At the end it is a footnote where footnotes belong —
+     * and the reason the end failed BEFORE (the bottom was inside a 320px scrolling box a reader could finish
+     * without meeting it) is gone, because it now sits outside the cap entirely.
+     *
+     * Asserted by document position rather than markup order, so it cannot pass on a coincidence.
      */
     await boot({ activity: [event("completed", 1)] });
 
-    const composer = app().querySelector(".wcn-composer");
     const gap = app().querySelector(".wcn-audit-gap");
     const list = app().querySelector(".wcn-audit");
+    const section = list.closest(".wcn-detail-section");
 
-    // Node.DOCUMENT_POSITION_FOLLOWING === 4
-    expect(composer.compareDocumentPosition(gap) & 4).toBeTruthy();
-    expect(gap.compareDocumentPosition(list) & 4).toBeTruthy();
+    // Node.DOCUMENT_POSITION_FOLLOWING === 4 — the notice FOLLOWS the list now.
+    expect(list.compareDocumentPosition(gap) & 4).toBeTruthy();
+    expect(section.lastElementChild).toBe(gap);
+    expect(gap.closest(".wcn-scrollcap")).toBeNull();
   });
 
   it("D2 — the comment box uses the create form's field wrapper and glyph", async () => {
@@ -294,17 +300,25 @@ describe("the activity card matches the cards beside it", () => {
     expect(btn.classList.contains("btn-sm")).toBe(false);
   });
 
-  it("D5 — the count badge copies the subtasks card exactly", async () => {
+  it("D5 — the badge keeps the subtasks card's SHAPE but has moved to the tab", async () => {
+    /*
+     * ⚠ THE BADGE MOVED, and this assertion moved with it. Last round it went into the card heading, mirroring
+     * the subtasks card beside it. This round it went onto the Etkinlik tab and was REMOVED from the heading:
+     * its value was always "know without opening", which a tab does better than a heading, and repeating it to
+     * somebody who has already clicked through is noise.
+     *
+     * The SHAPE is still the subtasks card's — `badge bg-label-secondary` — because it still means the same
+     * kind of thing (how much is in here); only its place changed.
+     */
     await boot({ activity: many(2, 1) });
 
-    const badge = app().querySelector(".wcn-audit-count");
+    const badge = app().querySelector(".wcn-detail-tabs .wcn-audit-count");
     expect(badge.tagName).toBe("SPAN");
-    // The same two classes the subtasks badge uses. Two cards side by side must not carry two badge styles.
     expect(badge.classList.contains("badge")).toBe(true);
     expect(badge.classList.contains("bg-label-secondary")).toBe(true);
     expect(badge.textContent).toBe("3");
-    // …and it lives in the heading, not beside the list.
-    expect(badge.closest("h6")).not.toBeNull();
+    // Moved, not duplicated.
+    expect(app().querySelector(".wcn-detail-card .wcn-audit-count")).toBeNull();
   });
 
   it("D5 — the badge shows the TOTAL and does not move when the filter is applied", async () => {
@@ -333,5 +347,130 @@ describe("the activity card matches the cards beside it", () => {
 
     expect(app().querySelectorAll(".wcn-audit-event")).toHaveLength(1);
     expect(app().querySelectorAll(".wcn-audit-comment")).toHaveLength(1);
+  });
+});
+
+/*
+ * Genel / Etkinlik — tabs over the CONTENT column only.
+ *
+ * Real app.js, real DOM, network stubbed at the same seam as every other test here. The rules locked below are
+ * the ones a later edit would break silently.
+ */
+describe("the detail page splits the work from its record", () => {
+  const withRail = (overrides) => Object.assign({
+    actions: [{
+      code: "complete",
+      label: { kind: "resource", key: "WorkAggregation_Action_Complete" },
+      semanticType: "complete", enabled: true, source: "provider",
+      disabledReasonCode: null, disabledReason: null, requiresConfirmation: false,
+      requiresReason: false, requiresEvidence: false, supportsBulk: false, riskLevel: "normal"
+    }]
+  }, overrides);
+
+  it("keeps BOTH panels mounted and hides one by class", async () => {
+    // Mounted-and-hidden, not unmounted: that is what lets a half-typed comment survive a switch.
+    await boot(withRail({ activity: [comment("bir", 1)] }));
+
+    const general = app().querySelector('[data-wcn-detail-panel="general"]');
+    const activity = app().querySelector('[data-wcn-detail-panel="activity"]');
+    expect(general.classList.contains("d-none")).toBe(false);
+    expect(activity.classList.contains("d-none")).toBe(true);
+  });
+
+  it("⚠ NEVER puts the action rail or the lifecycle bar inside a panel", async () => {
+    /*
+     * THE RULE THAT CANNOT BEND. "Available actions" are GATES — what this person may do right now. A tab that
+     * hid a gate would mean changing tab removes what you can do, with nothing on screen to suggest a control
+     * lives behind a label reading "Activity".
+     */
+    await boot(withRail({ activity: [comment("bir", 1)] }));
+
+    expect(app().querySelector(".wcn-detail-rail").closest("[data-wcn-detail-panel]")).toBeNull();
+    expect(app().querySelector(".wcn-detail-head").closest("[data-wcn-detail-panel]")).toBeNull();
+    // The actions themselves, not merely their container.
+    app().querySelectorAll("[data-wcn-action]").forEach((btn) => {
+      expect(btn.closest("[data-wcn-detail-panel]")).toBeNull();
+    });
+  });
+
+  it("scopes the strip to the content column, not the page", async () => {
+    // A page-wide strip would claim the rail it does not govern, and the reader would ask why the right-hand
+    // side never changes.
+    await boot(withRail({ activity: [comment("bir", 1)] }));
+
+    const strip = app().querySelector(".wcn-detail-tabs");
+    expect(strip.closest(".wcn-detail-content")).not.toBeNull();
+    expect(strip.getAttribute("role")).toBe("tablist");
+  });
+
+  it("reuses the list page's tab skeleton class for class", async () => {
+    // Two screens of one product are written in one hand; a bespoke tab style here would be a second dialect.
+    await boot(withRail({ activity: [] }));
+
+    const tab = app().querySelector('[data-wcn-detail-tab="general"]');
+    ["nav-link", "border", "shadow-none", "wc-tab-compact", "d-inline-flex", "align-items-center"]
+      .forEach((cls) => expect(tab.classList.contains(cls)).toBe(true));
+    expect(tab.getAttribute("role")).toBe("tab");
+    expect(tab.querySelector("i.bx-detail")).not.toBeNull();
+    expect(app().querySelector('[data-wcn-detail-tab="activity"] i.bx-message-square-detail')).not.toBeNull();
+  });
+
+  it("keeps the count grey and in the flow, NOT the list page's red corner pill", async () => {
+    /*
+     * The list page's badge is `rounded-pill bg-danger position-absolute…` and means "N things want you". This
+     * number only ever grows and asks for nothing; a permanent red would stop being seen within days, and take
+     * the list page's real red down with it.
+     */
+    await boot(withRail({ activity: [comment("a", 1)] }));
+
+    const badge = app().querySelector(".wcn-detail-tabs .wcn-audit-count");
+    expect(badge.classList.contains("bg-label-secondary")).toBe(true);
+    ["bg-danger", "rounded-pill", "position-absolute", "translate-middle"]
+      .forEach((cls) => expect(badge.classList.contains(cls)).toBe(false));
+  });
+
+  it("gives 'Genel' no badge — there is nothing to count", async () => {
+    // Symmetry is not worth an invented number.
+    await boot(withRail({ activity: [comment("a", 1)] }));
+
+    expect(app().querySelector('[data-wcn-detail-tab="general"] .badge')).toBeNull();
+  });
+
+  it("switching tab does NOT rebuild the panels", async () => {
+    /*
+     * MEASURED LIVE FIRST, and it was wrong: the original implementation called render() on switch, and a
+     * half-typed comment vanished — a rebuilt <input> is an empty one, and focus restore only rescues the field
+     * that HAS focus (focus is on the tab). Asserted by node IDENTITY, which re-rendering to identical markup
+     * cannot fake.
+     */
+    await boot(withRail({ activity: [comment("a", 1)] }));
+
+    const panelBefore = app().querySelector('[data-wcn-detail-panel="general"]');
+    const inputBefore = app().querySelector("[data-wcn-comment-input]");
+    inputBefore.value = "yarim kalmis metin";
+
+    app().querySelector('[data-wcn-detail-tab="activity"]').click();
+    await tick();
+    app().querySelector('[data-wcn-detail-tab="general"]').click();
+    await tick();
+
+    expect(app().querySelector('[data-wcn-detail-panel="general"]')).toBe(panelBefore);
+    expect(app().querySelector("[data-wcn-comment-input]")).toBe(inputBefore);
+    expect(app().querySelector("[data-wcn-comment-input]").value).toBe("yarim kalmis metin");
+  });
+
+  it("moves `active` and aria-selected together", async () => {
+    await boot(withRail({ activity: [comment("a", 1)] }));
+
+    app().querySelector('[data-wcn-detail-tab="activity"]').click();
+    await tick();
+
+    const general = app().querySelector('[data-wcn-detail-tab="general"]');
+    const activity = app().querySelector('[data-wcn-detail-tab="activity"]');
+    expect(activity.classList.contains("active")).toBe(true);
+    expect(activity.getAttribute("aria-selected")).toBe("true");
+    expect(general.classList.contains("active")).toBe(false);
+    expect(general.getAttribute("aria-selected")).toBe("false");
+    expect(app().querySelector('[data-wcn-detail-panel="activity"]').classList.contains("d-none")).toBe(false);
   });
 });

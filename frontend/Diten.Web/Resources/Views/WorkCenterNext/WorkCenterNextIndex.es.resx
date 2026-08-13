@@ -872,6 +872,12 @@
   <data name="ActivityLabel" xml:space="preserve">
     <value>Actividad y comentarios</value>
   </data>
+  <data name="DetailTabGeneral" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="DetailTabActivity" xml:space="preserve">
+    <value>Actividad</value>
+  </data>
   <data name="CommentPlaceholder" xml:space="preserve">
     <value>Escribe un comentario…</value>
   </data>
