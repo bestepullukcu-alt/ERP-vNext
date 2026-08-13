@@ -6074,8 +6074,57 @@ tags.diten-tags .tagify__input {
 @keyframes wcn-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 
 /* Audit trail -------------------------------------------------------------- */
+/* ── D4 — THE TIMELINE ─────────────────────────────────────────────────────
+   The entries are a sequence in time and were rendering as unrelated rows: `border-left: 0`, `position: static`,
+   no marker of any kind. A dot per row and a hairline between the dots says "these happened in this order".
+
+   PURELY CSS. app.js emits no dot element and none was added: `::before` is the dot, `::after` is the segment of
+   line BELOW it. Building it that way is what crops the ends for free — a line that only ever hangs downward
+   from its own dot can never appear above the first one, and `:last-child` simply has no `::after`, so none
+   appears below the last. No `:first-child` special case is needed, which is one rule fewer to get wrong.
+
+   The row gap is .75rem and the line has to bridge it, hence `calc(100% + .75rem)`. */
 .wcn-audit { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .75rem; }
-.wcn-audit-item { display: flex; gap: .625rem; align-items: flex-start; }
+.wcn-audit-item {
+    display: flex;
+    gap: .625rem;
+    align-items: flex-start;
+    position: relative;
+    padding-inline-start: 1.125rem;
+}
+.wcn-audit-item::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: .5rem;
+    inline-size: .5rem;
+    block-size: .5rem;
+    border-radius: 50%;
+    /* COMMENT = solid. Somebody spoke; it is the substantive entry, so it carries the weight. */
+    background: var(--bs-primary);
+    z-index: 1;
+}
+/* EVENT = hollow ring, same hue. The distinction the feed already draws in its markup (`.wcn-audit-event` vs
+   `.wcn-audit-comment`) said in the marker too: a state change is context for the conversation, not a turn in
+   it, so it reads lighter without becoming a different colour and implying a different meaning. */
+.wcn-audit-event::before {
+    background: var(--bs-body-bg);
+    box-shadow: inset 0 0 0 1.5px var(--bs-primary);
+    opacity: .75;
+}
+.wcn-audit-item::after {
+    content: "";
+    position: absolute;
+    /* Centred under the dot: dot starts at .5rem and is .5rem tall, so its centre is .75rem down. */
+    inset-inline-start: .1875rem;
+    inset-block-start: .75rem;
+    inline-size: .125rem;
+    block-size: calc(100% + .75rem - .25rem);
+    background: var(--bs-border-color);
+}
+/* The crop. Nothing below the last dot — the sequence has ended, and a line trailing into empty space would
+   promise an entry that is not there. */
+.wcn-audit-item:last-child::after { content: none; }
 .wcn-audit-dot {
     inline-size: .5rem; block-size: .5rem; border-radius: 50%; margin-block-start: .3125rem; flex: 0 0 auto;
     background: color-mix(in sRGB, var(--bs-primary) 55%, var(--bs-border-color));
@@ -6113,14 +6162,12 @@ tags.diten-tags .tagify__input {
 /* The actor's own words, when the act carried a reason — the half a code cannot hold. */
 .wcn-audit-reason { display: block; font-size: .6875rem; color: var(--bs-secondary-color); opacity: .85; }
 
-/* Where the recorded history runs out on a task older than the log. Deliberately the quietest thing in the
-   card: it explains an absence, and an absence must not shout louder than the entries above it. */
-.wcn-audit-gap {
-    margin-block: .625rem 0;
-    font-size: .6875rem;
-    color: var(--bs-secondary-color);
-    opacity: .8;
-}
+/* D1 — where the recorded history runs out on a task older than the log.
+   It now wears the shared in-card alert shell (`alert alert-secondary dt-inline-alert`), which already carries
+   the trimmed padding, so all that is left here is the space below it before the list starts. The old rule set
+   font-size .6875rem and opacity .8, which is what made a 15px grey line vanish into the feed it was warning
+   about. */
+.wcn-audit-gap { margin-block-end: .75rem; }
 
 /* WC-1 item 12 — the "Required" level's visible consequence. Deliberately NOT styled like the blocking notice
    above it: blocking says the task cannot close, this says it can and something is still owed. Same quiet hint
@@ -6318,8 +6365,14 @@ tags.diten-tags .tagify__input {
 .wcn-attach-size { font-size: .6875rem; color: var(--bs-secondary-color); }
 .wcn-note { display: flex; flex-direction: column; gap: .5rem; align-items: flex-end; }
 .wcn-note textarea { inline-size: 100%; }
-.wcn-composer { display: flex; gap: .5rem; margin-block-end: .875rem; }
-.wcn-composer input { flex: 1; }
+/* D2/D3 — the comment composer, brought onto the create form's field pattern.
+   `.diten-field` (defined above, shared) supplies the 38px control and the inset glyph; only the flex sizing
+   is stated here, because that is the one thing this row needs and that wrapper does not know about. */
+.wcn-composer { display: flex; gap: .5rem; margin-block-end: .875rem; align-items: stretch; }
+.wcn-composer-field { flex: 1 1 auto; min-inline-size: 0; }
+/* The button matches the input's height rather than Bootstrap's default, so the two read as one row. `btn-sm`
+   was what made them 30px; the size now comes from the field beside it. */
+.wcn-composer-post { flex: 0 0 auto; display: inline-flex; align-items: center; gap: .375rem; }
 
 /* Table — real DataTables v2 + shared Sneat/Golden Reference defaults. */
 .wcn-main:has(.wcn-datatable-card) { padding: 0; border: 0; background: transparent; }

@@ -218,3 +218,120 @@ describe("a task older than the log says so instead of showing a hole", () => {
    * Development showcase instead; said plainly here rather than left as a hole in the file.
    */
 });
+
+/*
+ * D1–D5 — the activity card brought up to the maturity of the cards beside it.
+ *
+ * ⚠ WHAT THESE TESTS CAN AND CANNOT SEE. They boot the REAL app.js against jsdom and assert the DOM it actually
+ * produced — no double stands in for the module under test. But jsdom applies no external stylesheet, so the
+ * ::before/::after geometry D4 is made of (dot size, line height, the crop) is simply not observable here, and a
+ * test that claimed to check it would be checking nothing. D4's geometry was measured on the running page in
+ * both themes and both widths instead; what is asserted below is the part that lives in the markup.
+ */
+describe("the activity card matches the cards beside it", () => {
+  const many = (events, comments) => [
+    ...Array.from({ length: events }, (_, i) => event("planned", i)),
+    ...Array.from({ length: comments }, (_, i) => comment(`yorum ${i}`, 100 + i))
+  ];
+
+  it("D1 — the history-gap notice is an alert, not a paragraph", async () => {
+    // It was an 11px grey <p>, 15px tall, and it disappeared into the list it exists to qualify. The shell is
+    // the surface's existing neutral in-card alert; no new tone was invented.
+    await boot({ activity: [event("completed", 1)] });
+
+    const gap = app().querySelector(".wcn-audit-gap");
+    expect(gap.tagName).toBe("DIV");
+    expect(gap.classList.contains("alert")).toBe(true);
+    expect(gap.classList.contains("alert-secondary")).toBe(true);
+    expect(gap.classList.contains("dt-inline-alert")).toBe(true);
+    expect(gap.getAttribute("role")).toBe("note");
+    expect(gap.querySelector("i.bx-info-circle")).not.toBeNull();
+  });
+
+  it("D1 — it sits BELOW the composer and ABOVE the list", async () => {
+    /*
+     * Order is the point, not presence. It used to sit at the FOOT, under a 320px scroll cap, where a reader
+     * could finish the list without ever meeting the sentence that qualifies it. Asserted by document position
+     * so it cannot pass on a coincidence of markup.
+     */
+    await boot({ activity: [event("completed", 1)] });
+
+    const composer = app().querySelector(".wcn-composer");
+    const gap = app().querySelector(".wcn-audit-gap");
+    const list = app().querySelector(".wcn-audit");
+
+    // Node.DOCUMENT_POSITION_FOLLOWING === 4
+    expect(composer.compareDocumentPosition(gap) & 4).toBeTruthy();
+    expect(gap.compareDocumentPosition(list) & 4).toBeTruthy();
+  });
+
+  it("D2 — the comment box uses the create form's field wrapper and glyph", async () => {
+    /*
+     * Every field on the create form is 38px inside `.diten-field` with an inset icon; this box was a 30px
+     * `form-control-sm` with nothing. The wrapper is REUSED from the shared stylesheet rather than redeclared —
+     * a second wrapper class here would have been the fork this round closes.
+     */
+    await boot({ activity: [] });
+
+    const input = app().querySelector("[data-wcn-comment-input]");
+    expect(input.tagName).toBe("INPUT");                       // still an input: Enter keeps its meaning
+    expect(input.classList.contains("form-control")).toBe(true);
+    expect(input.classList.contains("form-control-sm")).toBe(false);
+
+    const wrapper = input.parentElement;
+    expect(wrapper.classList.contains("diten-field")).toBe(true);
+    expect(wrapper.querySelector("i.bx-message-rounded")).not.toBeNull();
+  });
+
+  it("D3 — the send button carries an icon, like every other action on the page", async () => {
+    // Measured first: all five `data-wcn-action` buttons carry one. Adding it here is consistency; adding it
+    // where the others had none would have been a fresh inconsistency.
+    await boot({ activity: [] });
+
+    const btn = app().querySelector("[data-wcn-comment-post]");
+    expect(btn.querySelector("i.bx-send")).not.toBeNull();
+    // `btn-sm` was what pinned it to 30px; the row's height now comes from the field beside it.
+    expect(btn.classList.contains("btn-sm")).toBe(false);
+  });
+
+  it("D5 — the count badge copies the subtasks card exactly", async () => {
+    await boot({ activity: many(2, 1) });
+
+    const badge = app().querySelector(".wcn-audit-count");
+    expect(badge.tagName).toBe("SPAN");
+    // The same two classes the subtasks badge uses. Two cards side by side must not carry two badge styles.
+    expect(badge.classList.contains("badge")).toBe(true);
+    expect(badge.classList.contains("bg-label-secondary")).toBe(true);
+    expect(badge.textContent).toBe("3");
+    // …and it lives in the heading, not beside the list.
+    expect(badge.closest("h6")).not.toBeNull();
+  });
+
+  it("D5 — the badge shows the TOTAL and does not move when the filter is applied", async () => {
+    /*
+     * THE CASE THE LIVE PAGE COULD NOT PROVE. The comments-only chip needs 12+ events to appear, and neither
+     * real task has that many (8 and 6), so the invariance could only be measured here. The badge names the
+     * CARD; a number that dropped on filtering would be reporting the view instead of the task.
+     */
+    await boot({ activity: many(12, 2) });
+
+    expect(app().querySelector(".wcn-audit-count").textContent).toBe("14");
+
+    app().querySelector('[data-wcn-activity-filter="comments"]').click();
+    await tick();
+
+    // Only two rows are rendered now — and the badge still says fourteen.
+    expect(app().querySelectorAll(".wcn-audit-item")).toHaveLength(2);
+    expect(app().querySelector(".wcn-audit-count").textContent).toBe("14");
+  });
+
+  it("D4 — the two kinds keep the distinct classes the dot styling hangs off", async () => {
+    // The geometry is CSS and unobservable in jsdom (see the note above); what IS assertable is that the two
+    // hooks the stylesheet distinguishes are still emitted, so a rename here fails loudly rather than silently
+    // flattening the timeline into one marker.
+    await boot({ activity: [event("planned", 1), comment("bir yorum", 2)] });
+
+    expect(app().querySelectorAll(".wcn-audit-event")).toHaveLength(1);
+    expect(app().querySelectorAll(".wcn-audit-comment")).toHaveLength(1);
+  });
+});

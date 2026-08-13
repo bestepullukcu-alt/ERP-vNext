@@ -2336,9 +2336,32 @@
     // Comment composer — single stream: what I write also goes to the source.
     const renderComposer = (item) => {
         if (!hasCap(item, 'activity') || isTerminal(item)) { return ''; }
+        /*
+         * D2/D3 — the composer speaks the form's language now.
+         *
+         * It was a 30px `form-control-sm` with no icon beside a 30px bare button, while every one of the create
+         * form's sixteen fields is 38px inside a `.diten-field` wrapper with a glyph. One product, two input
+         * dialects.
+         *
+         * `.diten-field` is REUSED, not re-declared: it already lives in the shared stylesheet
+         * (backbone-custom.css) — it had simply never been used on this surface. A second wrapper class here
+         * would have been the fork this round exists to close.
+         *
+         * The glyph is `bx-message-rounded`, not the description field's `bx-align-left`: on the create form a
+         * field icon names what the field MEANS, not which widget it is, and "long text block" is the wrong
+         * sentence for a single-line comment box. (Owner's call, recorded.)
+         *
+         * Still an <input>, deliberately. Making it a textarea would change what Enter does — a behaviour
+         * change wearing a styling change's clothes.
+         */
         return `<div class="wcn-composer">
-            <input type="text" class="form-control form-control-sm" data-wcn-comment-input placeholder="${esc(t('CommentPlaceholder'))}">
-            <button type="button" class="btn btn-sm btn-primary" data-wcn-comment-post="${item.id}">${esc(t('CommentPost'))}</button>
+            <div class="diten-field wcn-composer-field">
+                <i class="bx bx-message-rounded diten-field-icon" aria-hidden="true"></i>
+                <input type="text" class="form-control" data-wcn-comment-input placeholder="${esc(t('CommentPlaceholder'))}">
+            </div>
+            <button type="button" class="btn btn-primary wcn-composer-post" data-wcn-comment-post="${item.id}">
+                <i class="bx bx-send" aria-hidden="true"></i><span>${esc(t('CommentPost'))}</span>
+            </button>
         </div>`;
     };
 
@@ -2795,7 +2818,23 @@
          */
         const historyGap = (item.provenance === 'api'
             && !item.activity.some((entry) => entry.event && entry.event.code === 'created'))
-            ? `<p class="wcn-audit-gap">${esc(t('ActivityHistoryStartsHere'))}</p>`
+            /*
+             * D1 — an ALERT, not a paragraph, and it moved to the TOP of the feed.
+             *
+             * This sentence is the only thing stopping a reader from concluding "nothing ever happened to this
+             * task" from a short list. As an 11px grey <p> at 15px tall it disappeared INTO the list it was
+             * warning about. It now carries the surface's existing neutral in-card alert shell
+             * (`alert-secondary` + `dt-inline-alert`) — the measured idiom, not a new tone, and `dt-inline-alert`
+             * already trims Bootstrap's page-banner padding, so nothing extra is needed to keep the card dense.
+             *
+             * ⚠ IT USED TO SIT AT THE FOOT, and that was a deliberate choice I am reversing on the owner's call:
+             * the argument was "put it where the history runs out". The counter-argument wins — a warning that
+             * qualifies a list has to be read BEFORE the list, and at the foot it sat below a 320px scroll cap
+             * where a reader might never reach it at all.
+             */
+            ? `<div class="alert alert-secondary dt-inline-alert wcn-audit-gap" role="note">
+                <i class="bx bx-info-circle" aria-hidden="true"></i><span>${esc(t('ActivityHistoryStartsHere'))}</span>
+            </div>`
             : '';
 
         const activityCapped = hasCap(item, 'activity') && visibleActivity.length > ACTIVITY_VISIBLE_LIMIT;
@@ -2810,8 +2849,24 @@
                     <span class="wcn-empty-text">${esc(t('ActivityEmpty'))}</span>
                 </div>`
                 : `<div class="wcn-detail-section">
-                    ${cardHead('bx-message-square-detail', 'ActivityLabel')}
+                    ${/*
+                       * D5 — the count, in the SAME shape the subtasks card beside it uses: a
+                       * `badge bg-label-secondary` inside the heading. Measured and copied rather than invented,
+                       * because the two cards sit side by side and a second badge style would read as a second
+                       * kind of thing.
+                       *
+                       * ⚠ ALWAYS THE UNFILTERED TOTAL — `item.activity`, never `visibleActivity`. The badge is
+                       * in the HEADING, and a heading names the card, not the current view of it. A number that
+                       * dropped when "comments only" was pressed would be reporting the filter rather than the
+                       * task. (Same rule the subtasks badge already follows, which was checked: it reads the
+                       * unfiltered list, and that card has no filter at all.)
+                       */''}
+                    ${cardHead('bx-message-square-detail', 'ActivityLabel',
+                        `<span class="badge bg-label-secondary wcn-audit-count">${item.activity.length}</span>`)}
                     ${composer}
+                    ${/* D1 — BELOW the composer, ABOVE the list: it qualifies what follows, not the box for
+                          adding to it. Writing a comment is unaffected by how far the record reaches back. */''}
+                    ${historyGap}
                     ${activityFilter}
                     ${visibleActivity.length
                         ? (activityCapped
@@ -2822,7 +2877,6 @@
                             // "Nothing was recorded yet" and "the record does not reach back this far" are
                             // different sentences, and printing both would contradict itself.
                             : historyGap ? '' : `<p class="wcn-block-hint">${esc(t('ActivityEmpty'))}</p>`)}
-                    ${historyGap}
                 </div>`;
 
         // Command card — identity, status, actions and personal overlay. Everything
