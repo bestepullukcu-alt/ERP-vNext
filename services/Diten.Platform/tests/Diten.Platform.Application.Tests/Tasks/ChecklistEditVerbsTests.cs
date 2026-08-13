@@ -42,7 +42,7 @@ public sealed class ChecklistEditVerbsTests
     }
 
     [Fact]
-    public async Task A_template_items_TEXT_is_refused_with_its_own_reason_code()
+    public async Task A_template_item_is_refused_with_its_OWN_reason_code_not_the_generic_one()
     {
         var task = InProgressTask();
         var run = TemplateRun(task.Id);
@@ -53,20 +53,32 @@ public sealed class ChecklistEditVerbsTests
 
         Assert.False(result.IsSuccessful);
         Assert.Equal(409, result.StatusCode);
-        // Not VALIDATION_FAILED: nothing is wrong with the payload, so a client told that would keep correcting
-        // and resending text that was never going to be accepted.
+        /*
+         * Not VALIDATION_FAILED: nothing is wrong with the payload, so a client told that would keep correcting
+         * and resending something that was never going to be accepted.
+         *
+         * And not NOT_AUTHOR either, though that would also be true — a template row has no author. The specific
+         * code is checked first on purpose: "this comes from the process" sends the reader somewhere useful,
+         * where "somebody else added this" sends them looking for a colleague who does not exist.
+         */
         Assert.Equal(TaskReasonCodes.ChecklistItemTemplateOwned, result.ReasonCode);
         Assert.Equal("WorkAggregation_Check_Sample", (await runs.GetByTaskIdAsync(task.Id))!.Items[0].LabelResourceKey);
     }
 
     [Fact]
-    public async Task A_template_item_may_still_be_levelled_and_flagged_for_evidence()
+    public async Task A_template_item_may_NOT_be_levelled_or_flagged_either_reversing_the_earlier_decision()
     {
         /*
-         * The line falls between the two on purpose. A template's WORDS belong to every task made from it —
-         * letting one task reword its copy leaves the same step saying different things on different tasks, in a
-         * list whose entire value is that it says the same thing. But how strictly THIS task is run is a
-         * judgement about this task, and the person holding it is the one placed to make it.
+         * RE-PINNED, not deleted — this test used to assert the opposite, and the reasoning it carried was:
+         * "a template's WORDS belong to every task made from it, but how strictly THIS task is run is a
+         * judgement about this task, and the person holding it is placed to make it."
+         *
+         * That reasoning fails in the only case that matters. The item most worth re-levelling is the BLOCKING
+         * one standing between the holder and "done", and Blocking → Optional releases the gate exactly as
+         * completely as deleting the row. Protecting the words and not the level protected nothing.
+         *
+         * The full rule is in A_template_item_is_now_protected_in_full_reversing_last_rounds_decision; this one
+         * stays because the sentence it used to defend is worth seeing struck through.
          */
         var task = InProgressTask();
         var run = TemplateRun(task.Id);
@@ -75,11 +87,12 @@ public sealed class ChecklistEditVerbsTests
         var result = await Update(task, runs, "t0",
             new UpdateChecklistItemRequest(null, ChecklistItemRequirement.Blocking, true, run.Version));
 
-        Assert.True(result.IsSuccessful);
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal(TaskReasonCodes.ChecklistItemTemplateOwned, result.ReasonCode);
         var stored = Assert.Single((await runs.GetByTaskIdAsync(task.Id))!.Items);
-        Assert.Equal(ChecklistItemRequirement.Blocking, stored.Requirement);
-        Assert.True(stored.EvidenceRequired);
-        Assert.Equal("WorkAggregation_Check_Sample", stored.LabelResourceKey);
+        Assert.Equal(ChecklistItemRequirement.Optional, stored.Requirement);
+        Assert.False(stored.EvidenceRequired);
     }
 
     [Fact]
@@ -122,22 +135,24 @@ public sealed class ChecklistEditVerbsTests
     }
 
     [Fact]
-    public async Task A_template_item_MAY_be_removed_even_though_it_may_not_be_reworded()
+    public async Task A_template_item_may_NOT_be_removed_reversing_the_earlier_decision()
     {
-        // Whether a step applies to this task is a judgement about this task. Rewording is different: it leaves
-        // the item in the list still claiming to be the template's step while saying something else.
+        /*
+         * RE-PINNED. The struck reasoning was "whether a step applies to THIS task is a judgement about this
+         * task" — which, followed honestly, hands the holder the key to every gate on their own task. A step the
+         * process defined is not the handler's to withdraw; that is also where the larger systems draw it.
+         */
         var task = InProgressTask();
         var run = TemplateRun(task.Id);
         var runs = new FakeChecklistRunRepository(run);
 
-        var result = await new RemoveChecklistItemHandler(
-                new FakeTaskItemRepository(task), runs, new TaskChecklistService(),
-                new FakeCurrentUserContext(TaskTestData.Me))
-            .Handle(new RemoveChecklistItemCommand(
-                task.Id, "t0", new RemoveChecklistItemRequest(run.Version), "corr"), CancellationToken.None);
+        var result = await Remove(task, runs, "t0", run.Version);
 
-        Assert.True(result.IsSuccessful);
-        Assert.Empty((await runs.GetByTaskIdAsync(task.Id))!.Items);
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        // The specific code, not the generic one — a template row has no author to name.
+        Assert.Equal(TaskReasonCodes.ChecklistItemTemplateOwned, result.ReasonCode);
+        Assert.Single((await runs.GetByTaskIdAsync(task.Id))!.Items);
     }
 
     // ── PUT order: the whole list, one write ──────────────────────────────────
@@ -292,6 +307,223 @@ public sealed class ChecklistEditVerbsTests
         _ = before;
     }
 
+    // ── Ownership: who may lift a gate ────────────────────────────────────────
+
+    /*
+     * THE HOLE THIS CLOSES.
+     *
+     * The delete endpoint checked the task, the run, the item, the lifecycle and the version — and never asked
+     * whose step it was. So a BLOCKING item could be removed by the exact person it was blocking, and the level
+     * that made it blocking could be dropped to Optional by the same person, which is the identical escape
+     * through a quieter door. A gate anyone can lift is decoration.
+     *
+     * The rule is OWNERSHIP, not severity. A threshold ("Blocking is protected, Expected is not") only relocates
+     * the argument to where the line sits and leaves the escape open on one side of it.
+     */
+
+    [Fact]
+    public async Task Somebody_elses_BLOCKING_item_cannot_be_removed_by_the_person_it_blocks()
+    {
+        var task = InProgressTask();
+        var run = ItemAddedBy(task.Id, TaskTestData.Rival, ChecklistItemRequirement.Blocking);
+        var runs = new FakeChecklistRunRepository(run);
+
+        var result = await Remove(task, runs, "owned", run.Version);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal(TaskReasonCodes.ChecklistItemNotAuthor, result.ReasonCode);
+        Assert.Single((await runs.GetByTaskIdAsync(task.Id))!.Items);
+    }
+
+    [Fact]
+    public async Task Somebody_elses_item_cannot_be_DOWNGRADED_out_of_the_way_either()
+    {
+        // Blocking → Optional releases the gate as completely as deleting the row. A rule that protected only
+        // the delete would have moved the escape, not closed it.
+        var task = InProgressTask();
+        var run = ItemAddedBy(task.Id, TaskTestData.Rival, ChecklistItemRequirement.Blocking);
+        var runs = new FakeChecklistRunRepository(run);
+
+        var result = await Update(task, runs, "owned",
+            new UpdateChecklistItemRequest(null, ChecklistItemRequirement.Optional, false, run.Version));
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal(TaskReasonCodes.ChecklistItemNotAuthor, result.ReasonCode);
+        var stored = Assert.Single((await runs.GetByTaskIdAsync(task.Id))!.Items);
+        Assert.Equal(ChecklistItemRequirement.Blocking, stored.Requirement);
+    }
+
+    [Fact]
+    public async Task Your_OWN_item_stays_yours_to_change_and_to_remove()
+    {
+        var task = InProgressTask();
+        var runs = new FakeChecklistRunRepository(ItemAddedBy(task.Id, TaskTestData.Me));
+
+        var edited = await Update(task, runs, "owned",
+            new UpdateChecklistItemRequest("reworded", ChecklistItemRequirement.Blocking, true, 1));
+        Assert.True(edited.IsSuccessful);
+
+        var removed = await Remove(task, runs, "owned", 2);
+        Assert.True(removed.IsSuccessful);
+        Assert.Empty((await runs.GetByTaskIdAsync(task.Id))!.Items);
+    }
+
+    [Fact]
+    public async Task TICKING_somebody_elses_item_stays_open_to_everyone_because_that_is_the_work()
+    {
+        // The one verb deliberately left outside the rule. A checklist you may not tick is not a checklist.
+        var task = InProgressTask();
+        var run = ItemAddedBy(task.Id, TaskTestData.Rival, ChecklistItemRequirement.Blocking);
+        var runs = new FakeChecklistRunRepository(run);
+
+        var result = await new SetChecklistItemStateHandler(
+                new FakeTaskItemRepository(task), runs, new TaskChecklistService(),
+                new FakeCurrentUserContext(TaskTestData.Me))
+            .Handle(new SetChecklistItemStateCommand(
+                task.Id, new SetChecklistItemStateRequest("owned", true, run.Version), "corr"),
+                CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.True(Assert.Single((await runs.GetByTaskIdAsync(task.Id))!.Items).Completed);
+    }
+
+    [Fact]
+    public async Task An_item_with_NO_recorded_author_is_treated_as_somebody_elses()
+    {
+        /*
+         * Two kinds of row arrive with a null author: written before the field existed, and instantiated from a
+         * TEMPLATE (which has no author, because the template is the author). Both answer the same way, and the
+         * asymmetry is the argument — refusing an edit that should have been allowed produces a complaint;
+         * allowing a deletion that should have been refused removes a gate silently, and nobody finds out until
+         * the thing it existed to prevent has happened.
+         */
+        var task = InProgressTask();
+        var run = ItemAddedBy(task.Id, addedBy: null, ChecklistItemRequirement.Blocking);
+        var runs = new FakeChecklistRunRepository(run);
+
+        var removed = await Remove(task, runs, "owned", run.Version);
+        var levelled = await Update(task, runs, "owned",
+            new UpdateChecklistItemRequest(null, ChecklistItemRequirement.Optional, false, run.Version));
+
+        foreach (var result in new[] { removed, levelled })
+        {
+            Assert.False(result.IsSuccessful);
+            Assert.Equal(TaskReasonCodes.ChecklistItemNotAuthor, result.ReasonCode);
+        }
+
+        Assert.Single((await runs.GetByTaskIdAsync(task.Id))!.Items);
+    }
+
+    [Fact]
+    public async Task A_TEMPLATE_item_is_now_protected_in_full_reversing_last_rounds_decision()
+    {
+        /*
+         * RE-PINNED. A round ago a template item's level and evidence flag were deliberately left open, on the
+         * reasoning that "how strictly THIS task is run is the holder's judgement", and its removal was allowed
+         * outright. That reasoning fails in the one case that matters: the item most worth removing is the
+         * blocking one standing between the holder and "done".
+         */
+        var task = InProgressTask();
+        var run = new ChecklistRun { TenantId = TaskTestData.Tenant, TaskItemId = task.Id, Version = 1 };
+        run.Items.Add(new ChecklistRunItem
+        {
+            Code = "t0", LabelResourceKey = "WorkAggregation_Check_Sample",
+            Requirement = ChecklistItemRequirement.Blocking, SortOrder = 0
+        });
+        var runs = new FakeChecklistRunRepository(run);
+
+        var levelled = await Update(task, runs, "t0",
+            new UpdateChecklistItemRequest(null, ChecklistItemRequirement.Optional, false, run.Version));
+        var flagged = await Update(task, runs, "t0",
+            new UpdateChecklistItemRequest(null, ChecklistItemRequirement.Blocking, true, run.Version));
+        var removed = await Remove(task, runs, "t0", run.Version);
+
+        foreach (var result in new[] { levelled, flagged, removed })
+        {
+            Assert.False(result.IsSuccessful);
+            Assert.Equal(TaskReasonCodes.ChecklistItemTemplateOwned, result.ReasonCode);
+        }
+
+        var stored = Assert.Single((await runs.GetByTaskIdAsync(task.Id))!.Items);
+        Assert.Equal(ChecklistItemRequirement.Blocking, stored.Requirement);
+        Assert.False(stored.EvidenceRequired);
+    }
+
+    [Fact]
+    public async Task Adding_an_item_records_WHO_added_it_which_is_what_makes_the_rule_writable()
+    {
+        var task = InProgressTask();
+        var runs = new FakeChecklistRunRepository();
+
+        var result = await new AddChecklistItemHandler(
+                new FakeTaskItemRepository(task), runs, new TaskChecklistService(),
+                new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant))
+            .Handle(new AddChecklistItemCommand(
+                task.Id, new AddChecklistItemRequest("mine", ChecklistItemRequirement.Blocking, 0), "corr"),
+                CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        var stored = Assert.Single(Assert.Single(runs.Runs).Items);
+        // Nothing had to be plumbed for this: the identity was already injected to fill CreatedBy. The rule was
+        // unwritable purely because this one line was never written.
+        Assert.Equal(TaskTestData.Me, stored.AddedByUserId);
+        Assert.NotEqual(default, stored.AddedAt);
+    }
+
+    [Theory]
+    [InlineData(TaskLifecycle.Done)]
+    [InlineData(TaskLifecycle.Cancelled)]
+    public async Task BL_093_a_closed_task_can_no_longer_GROW_new_checklist_items(TaskLifecycle lifecycle)
+    {
+        // Four of this card's five verbs refused a closed task and this one accepted, so a finished task could
+        // still grow new steps.
+        var task = InProgressTask();
+        task.Lifecycle = lifecycle;
+        var runs = new FakeChecklistRunRepository();
+
+        var result = await new AddChecklistItemHandler(
+                new FakeTaskItemRepository(task), runs, new TaskChecklistService(),
+                new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant))
+            .Handle(new AddChecklistItemCommand(
+                task.Id, new AddChecklistItemRequest("late", ChecklistItemRequirement.Optional, 0), "corr"),
+                CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal(TaskReasonCodes.InvalidState, result.ReasonCode);
+        Assert.Empty(runs.Runs);
+    }
+
+    [Fact]
+    public async Task Every_writable_member_of_a_checklist_item_survives_a_round_trip_through_the_double()
+    {
+        /*
+         * The double in this file has dropped a newly added field TWICE, failing tests against correct
+         * production code. It clones by SERIALISATION now rather than by a hand-written member list, and this
+         * asserts that property-by-property so the next field added to ChecklistRunItem — like AddedByUserId in
+         * this round — travels without anyone remembering the double exists.
+         */
+        var task = InProgressTask();
+        var run = new ChecklistRun { TenantId = TaskTestData.Tenant, TaskItemId = task.Id, Version = 1 };
+        run.Items.Add(new ChecklistRunItem
+        {
+            Code = "full", LabelText = "text", Requirement = ChecklistItemRequirement.Blocking,
+            SortOrder = 3, EvidenceRequired = true, Completed = true,
+            CompletedByUserId = TaskTestData.Me, CompletedAt = DateTimeOffset.UtcNow,
+            AddedByUserId = TaskTestData.Rival, AddedAt = DateTimeOffset.UtcNow.AddDays(-1)
+        });
+        var runs = new FakeChecklistRunRepository(run);
+
+        var stored = Assert.Single((await runs.GetByTaskIdAsync(task.Id))!.Items);
+        var original = run.Items[0];
+        foreach (var property in typeof(ChecklistRunItem).GetProperties().Where(p => p.CanWrite))
+        {
+            Assert.Equal(property.GetValue(original), property.GetValue(stored));
+        }
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static Task<Application.Common.Response<Application.Common.NoContent>> Update(
@@ -308,10 +540,36 @@ public sealed class ChecklistEditVerbsTests
             .Handle(new ReorderChecklistCommand(
                 task.Id, new ReorderChecklistRequest(codes, expectedVersion), "corr"), CancellationToken.None);
 
+    private static Task<Application.Common.Response<Application.Common.NoContent>> Remove(
+        TaskItem task, FakeChecklistRunRepository runs, string code, int expectedVersion)
+        => new RemoveChecklistItemHandler(
+                new FakeTaskItemRepository(task), runs, new TaskChecklistService(),
+                new FakeCurrentUserContext(TaskTestData.Me))
+            .Handle(new RemoveChecklistItemCommand(
+                task.Id, code, new RemoveChecklistItemRequest(expectedVersion), "corr"), CancellationToken.None);
+
+    /// <summary>One item, attributed to whoever is named — or to nobody, which is the legacy/template case.</summary>
+    private static ChecklistRun ItemAddedBy(
+        Guid taskId, Guid? addedBy, ChecklistItemRequirement requirement = ChecklistItemRequirement.Optional)
+    {
+        var run = new ChecklistRun { TenantId = TaskTestData.Tenant, TaskItemId = taskId, Version = 1 };
+        run.Items.Add(new ChecklistRunItem
+        {
+            Code = "owned", LabelText = "theirs", Requirement = requirement, SortOrder = 0,
+            AddedByUserId = addedBy
+        });
+        return run;
+    }
+
     private static ChecklistRun AdHocRun(Guid taskId, string text)
     {
         var run = new ChecklistRun { TenantId = TaskTestData.Tenant, TaskItemId = taskId, Version = 1 };
-        run.Items.Add(new ChecklistRunItem { Code = "a0", LabelText = text, SortOrder = 0 });
+        // Attributed to Me: these cases are about what an author may do to their OWN row. An unattributed row
+        // is somebody else's by design, which is a different test (An_item_with_NO_recorded_author_…).
+        run.Items.Add(new ChecklistRunItem
+        {
+            Code = "a0", LabelText = text, SortOrder = 0, AddedByUserId = TaskTestData.Me
+        });
         return run;
     }
 
@@ -331,7 +589,10 @@ public sealed class ChecklistEditVerbsTests
         var texts = new[] { "first", "second", "third" };
         for (var i = 0; i < texts.Length; i++)
         {
-            run.Items.Add(new ChecklistRunItem { Code = $"a{i}", LabelText = texts[i], SortOrder = i });
+            run.Items.Add(new ChecklistRunItem
+            {
+                Code = $"a{i}", LabelText = texts[i], SortOrder = i, AddedByUserId = TaskTestData.Me
+            });
         }
 
         return run;

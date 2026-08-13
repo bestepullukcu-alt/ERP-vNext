@@ -54,7 +54,7 @@ const boot = (overrides) => bootSurface({
 
 const tick = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
-const input = () => app().querySelector("[data-wcn-check-input]");
+const input = () => app().querySelector("[data-diten-check-input]");
 
 describe("a task with an empty checklist can still grow one", () => {
   it("offers the add row when the list is empty", async () => {
@@ -84,9 +84,23 @@ describe("a task with an empty checklist can still grow one", () => {
     // A third add pattern in one product is how a product starts reading as three.
     await boot();
 
-    const row = app().querySelector(".wcn-subtask-add");
+    /*
+     * RE-POINTED. This used to assert the add row wore `.wcn-subtask-add` / `.wcn-search-inline` — the subtask
+     * card's shape — so that a third add pattern would not appear in one product.
+     *
+     * The rule held and then went one better: the row is now the SAME COMPONENT the create form uses, so there
+     * are not two shapes to keep in step, there is one. What that component owes this screen is asserted here:
+     * the field, the level chip, the button and the hint, all four, because each screen previously had only
+     * some of them.
+     */
+    const row = app().querySelector(".diten-checkitem-add");
     expect(row).not.toBeNull();
-    expect(row.querySelector(".wcn-search-inline")).not.toBeNull();
+    expect(row.querySelector(".diten-field")).not.toBeNull();
+    expect(row.querySelector("[data-diten-check-draftlevel]")).not.toBeNull();
+    // The button, which this screen did not have: Enter was the only way in, and the only thing that said so
+    // was a placeholder that disappears the moment you start typing.
+    expect(row.querySelector("[data-diten-check-add]")).not.toBeNull();
+    expect(row.querySelector(".diten-checkitem-addhint")).not.toBeNull();
   });
 
   it("hides the add row on a closed task, whose checklist is history", async () => {
@@ -109,7 +123,7 @@ describe("the level is part of the add, not an afterthought", () => {
     // chose that.
     await boot();
 
-    const chip = app().querySelector("[data-wcn-check-level]");
+    const chip = app().querySelector("[data-diten-check-draftlevel]");
     expect(chip.getAttribute("data-level")).toBe("Optional");
     expect(chip.textContent).toContain("ChecklistLevelOptional");
   });
@@ -117,17 +131,17 @@ describe("the level is part of the add, not an afterthought", () => {
   it("cycles weakest-first and sticks between adds", async () => {
     await boot();
 
-    app().querySelector("[data-wcn-check-level]").click();
+    app().querySelector("[data-diten-check-draftlevel]").click();
     await tick();
-    expect(app().querySelector("[data-wcn-check-level]").getAttribute("data-level")).toBe("Required");
+    expect(app().querySelector("[data-diten-check-draftlevel]").getAttribute("data-level")).toBe("Required");
 
-    app().querySelector("[data-wcn-check-level]").click();
+    app().querySelector("[data-diten-check-draftlevel]").click();
     await tick();
-    expect(app().querySelector("[data-wcn-check-level]").getAttribute("data-level")).toBe("Blocking");
+    expect(app().querySelector("[data-diten-check-draftlevel]").getAttribute("data-level")).toBe("Blocking");
 
-    app().querySelector("[data-wcn-check-level]").click();
+    app().querySelector("[data-diten-check-draftlevel]").click();
     await tick();
-    expect(app().querySelector("[data-wcn-check-level]").getAttribute("data-level")).toBe("Optional");
+    expect(app().querySelector("[data-diten-check-draftlevel]").getAttribute("data-level")).toBe("Optional");
   });
 });
 
@@ -175,9 +189,9 @@ describe("the add writes what the row says", () => {
   it("carries the chosen level", async () => {
     const { checklistAdds } = await boot();
 
-    app().querySelector("[data-wcn-check-level]").click();
+    app().querySelector("[data-diten-check-draftlevel]").click();
     await tick();
-    app().querySelector("[data-wcn-check-level]").click();
+    app().querySelector("[data-diten-check-draftlevel]").click();
     await tick();
     await press("Fatura eki yüklendi");
 

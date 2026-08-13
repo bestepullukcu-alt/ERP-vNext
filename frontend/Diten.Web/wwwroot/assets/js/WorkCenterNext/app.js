@@ -1720,19 +1720,27 @@
      *
      * Absent on a closed task — its checklist is history, and the server refuses the write too.
      */
-    const checklistAddRow = (item) => `<div class="wcn-subtask-add">
-            <div class="wcn-search wcn-search-inline">
-                <i class="bx bx-list-plus" aria-hidden="true"></i>
-                <input type="text" class="form-control shadow-none" data-wcn-check-input
-                       data-wcn-check-add="${item.id}"
-                       placeholder="${esc(t('ChecklistAddPlaceholder'))}"
-                       aria-label="${esc(t('ChecklistAddPlaceholder'))}">
-            </div>
-            <button type="button" class="wcn-chip-filter wcn-check-level" data-wcn-check-level
-                    title="${esc(t('ChecklistLevelHint'))}"
-                    data-level="${esc(state.checklistDraftLevel)}">${
-                        esc(t('ChecklistLevel' + state.checklistDraftLevel))}</button>
-        </div>`;
+    /*
+     * The add row, from the SAME component that draws the item rows.
+     *
+     * This screen used to have an icon, an input and a level chip, and no button and no hint — so Enter was the
+     * only way to commit, and the only thing that said so was the placeholder, which disappears the moment you
+     * start typing. Enter still works; the button is the half of the pair that can be seen.
+     */
+    const checklistAddRow = (item) => global.DitenCheckItem.addRow({
+        id: item.id,
+        // Kept across consecutive adds, so somebody entering three blocking steps chooses the level once.
+        level: state.checklistDraftLevel,
+        labels: {
+            optional: t('ChecklistLevelOptional'),
+            required: t('ChecklistLevelRequired'),
+            blocking: t('ChecklistLevelBlocking'),
+            levelHint: t('ChecklistLevelHint'),
+            addPlaceholder: t('ChecklistAddPlaceholder'),
+            addButton: t('ChecklistAddButton'),
+            addHint: t('ChecklistAddHint')
+        }
+    }).outerHTML;
 
     /*
      * OPEN "REQUIRED" ITEMS — the ones that must be done and do NOT stop the task.
@@ -1788,7 +1796,9 @@
                 done: c.done,
                 // A template item's words belong to every task made from that template; the server refuses to
                 // reword one, and the row says so rather than letting someone find out on reload.
-                templateOwned: !!c.templateOwned
+                templateOwned: !!c.templateOwned,
+                // Somebody else's step — or the process's. Its controls are not drawn; see the component.
+                editable: c.editable !== false
             },
             {
                 mode: 'working',
@@ -1850,8 +1860,16 @@
             <ul class="wcn-checks">${rows}</ul>
             ${notice}
             ${requiredNotice}
-            ${evidenceHint}
             ${canAdd ? checklistAddRow(item) : ''}
+            ${/*
+               * THE PAPERCLIP'S PROMISE, said LAST.
+               *
+               * It sat above the add row, which put a sentence about what the paperclip will mean between the
+               * list and the box for adding to the list — cutting the card's one continuous action in half. It
+               * explains a control that lives on the rows AND on the add row, so under both is where it reads
+               * as a footnote rather than as an interruption.
+               */''}
+            ${evidenceHint}
         </div>`;
     };
 
@@ -3798,7 +3816,7 @@
          * by marker attribute rather than id: ids do not survive an innerHTML swap intact, and a positional
          * selector would restore focus to the wrong box on a page that has several.
          */
-        const marker = ['data-wcn-subtask-input', 'data-wcn-check-input', 'data-wcn-note-input', 'data-wcn-comment-input']
+        const marker = ['data-wcn-subtask-input', 'data-diten-check-input', 'data-wcn-note-input', 'data-wcn-comment-input']
             .find((attribute) => el.hasAttribute && el.hasAttribute(attribute));
         if (marker) { return { kind: 'text', marker, caret: el.selectionStart, value: el.value }; }
         const row = el.closest && el.closest('[data-wcn-row]');
@@ -4391,6 +4409,24 @@
      * carries its OWN version (the run is a separate document from the task), so a tick is an expected-version
      * write against the checklist, not against the task.
      */
+    /*
+     * EMPTIES A REPEATED-ENTRY BOX after its contents have actually been written.
+     *
+     * `restoreFocus` puts a half-typed value back after a repaint, which is right for a repaint somebody else
+     * caused — you do not lose a sentence because a timer ticked. It cannot tell that apart from a repaint the
+     * WRITE itself caused: the re-rendered box is empty either way, and `!node.value` reads that emptiness as
+     * "nothing to protect" and restores. So a comment posted with Enter went to the server, appeared in the
+     * feed, and left its own text sitting in the box for the next sentence to be typed on top of.
+     *
+     * Only the caller knows a write succeeded and which box it consumed, so the caller says so — AFTER the
+     * render, because that is when the restored value is there to clear. The button path never showed this: the
+     * focus snapshot is a button then, not a text field, so nothing was restored to begin with.
+     */
+    const consumeEntryBox = (marker) => {
+        const box = document.querySelector(`#wcnApp [${marker}]`);
+        if (box) { box.value = ''; }
+    };
+
     const afterPhase2Write = async (result, successKey, successArg) => {
         if (result.ok) {
             await loadWorkItems();
@@ -4462,7 +4498,9 @@
             requirement: state.checklistDraftLevel,
             expectedVersion: Number(item.checklist?.version ?? 0)
         });
-        await afterPhase2Write(result, 'ToastChecklistItemAdded');
+        if (await afterPhase2Write(result, 'ToastChecklistItemAdded')) {
+            consumeEntryBox('data-diten-check-input');
+        }
     };
 
     /*
@@ -4579,7 +4617,9 @@
         // A DIFFERENT key from the fixture branch above: this comment really was posted to the engine, and
         // 'ToastCommentPosted' says "(mock)" in all seven languages — correct for the local-only path, a lie
         // here.
-        await afterPhase2Write(result, 'ToastCommentPostedReal');
+        if (await afterPhase2Write(result, 'ToastCommentPostedReal')) {
+            consumeEntryBox('data-wcn-comment-input');
+        }
     };
 
     const addSubtask = async (parentId, title) => {
@@ -4639,7 +4679,10 @@
             ? (typeof result.data === 'string' ? result.data : (result.data && result.data.id))
             : null;
         state.flashSubtaskId = newId ? String(newId) : null;
-        await afterPhase2Write(result, 'ToastSubtaskAdded', text);
+        if (await afterPhase2Write(result, 'ToastSubtaskAdded', text)) {
+            // The third repeated-entry box on this page, with the same restore behind it.
+            consumeEntryBox('data-wcn-subtask-input');
+        }
         if (state.flashSubtaskId) {
             const flashed = state.flashSubtaskId;
             /*
@@ -5413,7 +5456,9 @@
         if (node) { node.scrollIntoView({ block: 'nearest' }); if (typeof node.focus === 'function') { node.focus(); } }
     };
 
-    const onKeydown = (event) => {
+    // ASYNC: posting a comment on Enter is awaited, so a failed post cannot swallow its own rejection and look
+    // like a key that was never wired — the exact shape the subtask writer shipped broken in.
+    const onKeydown = async (event) => {
         /*
          * ENTER ADDS THE SUBTASK — before the typing guard, because this fires INSIDE a text field.
          *
@@ -5430,9 +5475,24 @@
         }
         // The checklist's add row, on the same terms as the subtask row above it: the task id rides on the
         // input, Enter commits, and the call is awaited through the same path the level chip does not touch.
-        if (event.key === 'Enter' && event.target.matches && event.target.matches('[data-wcn-check-input]')) {
+        /*
+         * THE COMMENT BOX takes Enter too — the one repeated-entry field on this page that never did.
+         *
+         * The subtask row and the checklist row both commit on Enter; this one only had its button, so the same
+         * key did nothing in the box directly beneath them. It is an <input> and not a textarea precisely so
+         * that Enter can mean "post" without ambiguity, and then nothing was listening for it.
+         *
+         * The post button stays: a visible control and a key are the pair, not alternatives.
+         */
+        if (event.key === 'Enter' && event.target.matches && event.target.matches('[data-wcn-comment-input]')) {
             event.preventDefault();
-            const taskId = event.target.getAttribute('data-wcn-check-add');
+            const post = document.querySelector('#wcnApp [data-wcn-comment-post]');
+            if (post) { await postComment(post.getAttribute('data-wcn-comment-post'), event.target.value); }
+            return;
+        }
+        if (event.key === 'Enter' && event.target.matches && event.target.matches('[data-diten-check-input]')) {
+            event.preventDefault();
+            const taskId = event.target.getAttribute('data-diten-check-input');
             const text = event.target.value;
             if (taskId) { addChecklistItem(taskId, text); }
             return;
@@ -5678,6 +5738,16 @@
          * `id` is `taskId:itemCode` because a detail page can show a parent's list and a subtask panel at once,
          * and an item code alone would not say which task's list a click landed in.
          */
+        const checkAddEl = event.target.closest('[data-diten-check-add]');
+        if (checkAddEl) {
+            // The button and Enter are the same call. It exists because the instruction for Enter lived in the
+            // placeholder, which disappears the moment somebody starts typing — and on a touch keyboard Enter
+            // is not always to hand.
+            const taskId = checkAddEl.getAttribute('data-diten-check-add');
+            const input = document.querySelector(`[data-diten-check-input="${taskId}"]`);
+            if (input) { await addChecklistItem(taskId, input.value); }
+            return;
+        }
         const checkToggleEl = event.target.closest('[data-diten-check-toggle]');
         if (checkToggleEl) {
             const [taskId, itemCode] = checkToggleEl.getAttribute('data-diten-check-toggle').split(':');
@@ -5783,7 +5853,7 @@
             });
             return;
         }
-        const checkLevelEl = event.target.closest('[data-wcn-check-level]');
+        const checkLevelEl = event.target.closest('[data-diten-check-draftlevel]');
         if (checkLevelEl) {
             // Weakest-first, so a reader who keeps pressing walks toward the strict end rather than starting
             // there. Same order and same three values the create form cycles through.

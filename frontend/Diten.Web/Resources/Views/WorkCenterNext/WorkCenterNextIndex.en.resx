@@ -1829,4 +1829,10 @@
   <data name="ChecklistRemove" xml:space="preserve">
     <value>Remove item</value>
   </data>
+  <data name="ChecklistAddButton" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="ChecklistAddHint" xml:space="preserve">
+    <value>Click the label to change the level. There is no template list yet.</value>
+  </data>
 </root>

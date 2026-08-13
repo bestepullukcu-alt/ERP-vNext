@@ -79,6 +79,22 @@
         const labels = options.labels;
         const working = options.mode === 'working';
         const ro = !!options.readOnly;
+        /*
+         * MAY THIS READER CHANGE THIS ROW — reword it, re-level it, re-flag it, remove it?
+         *
+         * Not `disabled`: the controls are NOT DRAWN. A greyed-out delete on somebody else's blocking step still
+         * says "this is yours to remove, just not now", which is the opposite of true, and it invites the reader
+         * to go looking for the permission that would enable it. Absence says the right thing without a word.
+         *
+         * The tick survives, because ticking is the work and the work is everyone's.
+         *
+         * The SERVER decides this, and sends it as a decided answer; the endpoints refuse independently and
+         * would refuse just as firmly if this said true for everything. What is here is honesty, not security —
+         * the two have to be kept clearly apart, because the day they are confused is the day someone deletes
+         * one of them believing the other is doing the job. Defaulted true so an authoring list, where every row
+         * is yours by construction, needs to say nothing.
+         */
+        const mine = item.editable !== false;
 
         const el = document.createElement('li');
         el.className = ROOT + (working && item.done ? ' done' : '');
@@ -184,10 +200,11 @@
         // as "arrange these", working reads as "tick these off", so what comes first differs.
         if (working) {
             el.appendChild(text);
-            el.appendChild(level);
-            el.appendChild(evidence);
+            // Only what this reader may actually act on. Move stays either way: reordering writes the whole
+            // list's order, not one item's meaning, and it takes nothing away from anybody.
+            if (mine) { el.appendChild(level); el.appendChild(evidence); }
             el.appendChild(move);
-            el.appendChild(remove);
+            if (mine) { el.appendChild(remove); }
         } else {
             el.appendChild(move);
             el.appendChild(text);
@@ -239,5 +256,81 @@
         });
     };
 
-    global.DitenCheckItem = { row, applyMoveState, ROOT };
+    /**
+     * THE ADD ROW — the way a new step gets onto the list, also drawn once for both screens.
+     *
+     * <p>Each screen had a different half of it right, and each was missing the other's half:</p>
+     * <ul>
+     *   <li><b>create</b> — icon, input, an "Add" BUTTON and a hint line under it. No level chip, so the level
+     *       could only be set on the row AFTER adding it: one extra click per item, every item.</li>
+     *   <li><b>detail</b> — icon, input and a level CHIP. No button and no hint, so the only way to commit was
+     *       Enter, and the only place that said so was the placeholder — which disappears the moment you start
+     *       typing, and on a touch keyboard Enter is not always to hand.</li>
+     * </ul>
+     *
+     * <p>The union takes both. The button is an ADDITION to Enter, never a replacement: Enter keeps working for
+     * everyone who already knows it, and the button is there for everyone who does not.</p>
+     *
+     * <p>The chip's level PERSISTS across consecutive adds — somebody entering three blocking steps chooses
+     * once, not three times. The caller owns that state (each screen already had somewhere to keep it) and
+     * passes the current value in.</p>
+     *
+     * @param {object} options {id, level, labels, idAttr}
+     * @returns {HTMLDivElement}
+     */
+    const addRow = (options) => {
+        const labels = options.labels;
+        const wrap = document.createElement('div');
+        wrap.className = ROOT + '-add';
+
+        const line = document.createElement('div');
+        line.className = ROOT + '-addline';
+
+        // The same 38px field the rest of both forms uses, icon inside, so the row does not read as a different
+        // kind of input from everything around it.
+        const field = document.createElement('div');
+        field.className = 'diten-field flex-grow-1';
+        const icon = document.createElement('i');
+        icon.className = 'bx bx-list-plus diten-field-icon';
+        icon.setAttribute('aria-hidden', 'true');
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'form-control';
+        input.autocomplete = 'off';
+        input.placeholder = labels.addPlaceholder;
+        input.setAttribute('aria-label', labels.addPlaceholder);
+        input.setAttribute('data-diten-check-input', options.id === undefined ? '' : String(options.id));
+        field.appendChild(icon);
+        field.appendChild(input);
+
+        const level = document.createElement('button');
+        level.type = 'button';
+        level.className = ROOT + '-level';
+        level.setAttribute('data-diten-check-draftlevel', options.id === undefined ? '' : String(options.id));
+        level.setAttribute('data-level', options.level || 'Optional');
+        level.textContent = levelLabel(options.level, labels);
+        level.title = labels.levelHint;
+
+        const add = document.createElement('button');
+        add.type = 'button';
+        add.className = 'btn btn-label-primary';
+        add.setAttribute('data-diten-check-add', options.id === undefined ? '' : String(options.id));
+        add.textContent = labels.addButton;
+
+        line.appendChild(field);
+        line.appendChild(level);
+        line.appendChild(add);
+        wrap.appendChild(line);
+
+        // The hint UNDER the row, not inside the placeholder. A placeholder is gone exactly when the person is
+        // in the middle of the thing it was explaining.
+        const hint = document.createElement('div');
+        hint.className = 'form-text ' + ROOT + '-addhint';
+        hint.textContent = labels.addHint;
+        wrap.appendChild(hint);
+
+        return wrap;
+    };
+
+    global.DitenCheckItem = { row, addRow, applyMoveState, ROOT };
 }(window));

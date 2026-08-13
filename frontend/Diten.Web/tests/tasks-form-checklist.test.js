@@ -14,18 +14,30 @@ const FORM = fs.readFileSync(
   path.resolve(__dirname, "..", "Views", "Tasks", "_Form.cshtml"), "utf8");
 
 describe("the create form has a checklist card at all", () => {
-  it("draws the card, its input and its list", () => {
+  it("draws the card, a mount point for its add row, and its list", () => {
     expect(FORM).toContain('id="taskChecklistCard"');
-    expect(FORM).toContain('id="taskChecklistInput"');
     expect(FORM).toContain('id="taskChecklistItems"');
+    /*
+     * A MOUNT POINT, where `id="taskChecklistInput"` used to be spelled out.
+     *
+     * The add row is one component now, shared with the task detail page: this form had the "Add" button and
+     * the hint line but no level chip, so a level could only be set on the row after adding it — one extra
+     * click per item; the detail page had the chip but neither button nor hint, so Enter was the only way to
+     * commit and the only thing saying so was a placeholder that vanishes as you type. Each was missing the
+     * other's half, and the halves could only be joined by having one of them.
+     */
+    expect(FORM).toContain('id="taskChecklistAddRow"');
+    expect(FORM).not.toContain('id="taskChecklistInput"');
   });
 
   it("uses the form's own 38px field shape, not a bespoke one", () => {
     // .diten-field with the icon INSIDE — the same control every other field on this form uses. A box that
-    // looked different here would read as belonging to a different screen.
-    const card = FORM.slice(FORM.indexOf('id="taskChecklistCard"'), FORM.indexOf('id="taskCustomFields"'));
-    expect(card).toContain("diten-field");
-    expect(card).toContain("diten-field-icon");
+    // looked different here would read as belonging to a different screen. Asserted against the component that
+    // builds it, since that is where the markup lives now.
+    const component = fs.readFileSync(
+      path.resolve(__dirname, "..", "wwwroot/assets/js/shared/diten-checkitem.js"), "utf8");
+    expect(component).toContain("diten-field");
+    expect(component).toContain("diten-field-icon");
   });
 
   it("draws NO template button, because nothing can list templates", () => {

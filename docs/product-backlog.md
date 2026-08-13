@@ -2887,13 +2887,15 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - **Gelecek regresyon riski: 🟡** — akışın "tam" olduğu iddiası bugün de doğru değil; eklendiğinde geçmişin
   yeniden yorumlanması gerekir.
 
-### BL-093 — 🟠 `AddChecklistItem` kapalı görevi reddetmiyor (mevcut uç, bu turun kapsamı dışı)
+### BL-093 — ✅ KAPANDI (2026-08-13) — `AddChecklistItem` kapalı görevi reddetmiyor
 - **Ölçüm (2026-08-13):** `SetChecklistItemStateHandler` kapalı görevde 409 döndürüyor (ChecklistHandlers.cs:61).
   `AddChecklistItemHandler` bu denetimi **hiç yapmıyor** — Done/Cancelled bir göreve yeni madde eklenebiliyor.
   Bu turda eklenen üç fiilin üçü de reddediyor (canlı doğrulandı: iptal edilmiş görevde `TASK_INVALID_STATE`).
 - **Sonuç:** aynı kartın beş fiilinden dördü kapalı görevi reddediyor, biri kabul ediyor.
-- **Neden yapılmadı:** brief üç YENİ fiili istedi; var olan bir ucun davranışını değiştirmek istenmedi ve
-  kapsamı kendiliğinden genişletmedim. Düzeltme tek satır: `ChecklistWriteGuards.ResolveAsync` çağrısı.
+- **Kapanış (2026-08-13):** `AddChecklistItemHandler` artık Done/Cancelled görevde 409 `TASK_INVALID_STATE`
+  dönüyor. `ChecklistWriteGuards.ResolveAsync` ile DEĞİL, elle: bu fiil meşru olarak henüz RUN YOKKEN çalışıyor
+  (ilk maddeyi ekleyen o), resolver'ın "bu görevin kontrol listesi yok" 404'ü diğer dördü için doğru, bunun için
+  yanlış olurdu. İki test: `BL_093_a_closed_task_can_no_longer_GROW_new_checklist_items` (Done + Cancelled).
 - **Gelecek regresyon riski: 🟠** — bugün ön yüz kapalı görevde ekleme kutusunu gizliyor, yani kusur yalnız
   API seviyesinde erişilebilir; ön yüz kilidi güvenlik değildir.
 
@@ -2905,3 +2907,30 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - **Yapılacak (istenirse):** `.wcn-checks` üzerine Sortable, `handle: '[data-diten-check-grip]'` — ve grip
   çalışma kipinde de çizilmeli (bugün yalnız yazma kipinde).
 - **Gelecek regresyon riski: 🟢 eklemeli.**
+
+
+### BL-095 — 🟠 Sıralama ucu sahiplik sormuyor; sıra da bir anlam taşıyabilir
+- **Ölçüm (2026-08-13):** `ReorderChecklistCommand` görev/run/kapalı/sürüm denetimlerinden geçiyor ama
+  `RefuseNotYours` çağırmıyor — bilinçli: sıralama TÜM listeyi bir kerede yazıyor, tek maddenin anlamını
+  değiştirmiyor ve kimseden bir şey almıyor. Ön yüzde de taşı düğmeleri başkasının satırında ÇİZİLİYOR.
+- **Açık soru:** bir kontrol listesinde sıra bazen prosedürdür ("önce izolasyon, sonra ölçüm"). Şablondan gelen
+  bir listede sırayı işleyicinin değiştirebilmesi, seviyeyi değiştirebilmesinden farklı mı? Bu turun tablosu
+  sıralamayı kapsamıyordu; kendiliğinden genişletmedim.
+- **Yapılacak (karar sahibin):** ya sıralama da yazarlık/şablon kuralına girer (o zaman karışık listede sıralama
+  kısmen kilitlenir ve bu kendi başına bir UX sorusu), ya da bugünkü hâli açıkça "sıra serbesttir" olarak yazılır.
+- **Gelecek regresyon riski: 🟡** — sonradan kilitlenirse bugün sıralayabilen kullanıcılar sıralayamaz olur.
+
+### BL-096 — 🟡 Sahiplik alanı için geriye dönük veri göçü YOK; tüm eski maddeler "başkasının" oldu
+- **Ölçüm (2026-08-13, canlı):** mevcut veride **28 kontrol listesi maddesi** var (8 görevde) ve **28'inin
+  tamamında** `AddedByUserId` null — yani hepsi artık düzenlenemez/silinemez. Yeni eklenen maddeler doğru
+  şekilde düzenlenebilir çıkıyor (canlı doğrulandı).
+- **Karar (brief'in talimatı):** null = "talep edenin", yani başkasının. Yanlışlıkla silmeye izin vermenin
+  bedeli, yanlışlıkla reddetmenin bedelinden büyük. Uygulama: alan doldurulmadı, **kural null'ı reddediyor** —
+  veriye dokunan bir göç yazılmadı, çünkü hangi kullanıcının eklediği bilgisi hiçbir yerde saklı değil ve
+  uydurmak, korumanın kendisini yalanlamak olurdu.
+- **Sonuç, açıkça:** bugünkü demo/test verisindeki hiçbir kontrol listesi maddesi düzenlenemiyor. Gerçek bir
+  kiracıda aynı şey olacak.
+- **Yapılacak (istenirse):** göç seçenekleri — (a) hepsini görevin `CreatedByUserId`'sine ata (talep eden
+  gerçekten çoğu zaman ekleyendir), (b) olduğu gibi bırak, kullanıcılar yeni madde ekleyerek ilerlesin.
+  (a) tek satırlık bir betik ama bir VARSAYIMI veriye yazar; kararı sahibin.
+- **Gelecek regresyon riski: 🟢** — (a) seçilirse yalnız izin genişler, daralmaz.

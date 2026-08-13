@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const { bootSurface, app } = require("./wcn-boot");
 
 /*
@@ -356,6 +358,27 @@ describe("the activity card matches the cards beside it", () => {
  * Real app.js, real DOM, network stubbed at the same seam as every other test here. The rules locked below are
  * the ones a later edit would break silently.
  */
+describe("every repeated-entry box on this page takes Enter", () => {
+  /*
+   * The comment box was the one that did not.
+   *
+   * The subtask row and the checklist row both commit on Enter; the composer sat directly beneath them with
+   * only its button, so the same key did nothing in the box next door. It is an <input> rather than a textarea
+   * precisely so Enter can mean "post" without ambiguity — and then nothing was listening for it.
+   *
+   * Read from the source rather than dispatched, because the post path is awaited through the network stub and
+   * what is being pinned here is that the KEY IS BOUND AT ALL, which is what was missing.
+   */
+  it("binds Enter on the comment input, beside its button rather than instead of it", () => {
+    const app = fs.readFileSync(
+      path.resolve(__dirname, "..", "wwwroot/assets/js/WorkCenterNext/app.js"), "utf8");
+    const code = app.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+    expect(code).toMatch(/event\.key === 'Enter'[\s\S]{0,120}data-wcn-comment-input/);
+    // The button stays: a visible control and a key are the pair, not alternatives.
+    expect(code).toContain("data-wcn-comment-post");
+  });
+});
+
 describe("the detail page splits the work from its record", () => {
   const withRail = (overrides) => Object.assign({
     actions: [{

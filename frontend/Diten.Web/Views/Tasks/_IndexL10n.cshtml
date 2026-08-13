@@ -68,8 +68,13 @@
         SectionGovernance = Localizer["SectionGovernance"].Value,
         SectionCustomFields = Localizer["SectionCustomFields"].Value,
 
-        @* The checklist a new task is born with. Only the strings the JS builds live here — the card's own
-           heading and hint are rendered by _Form.cshtml through the Localizer directly. *@
+        @* The checklist a new task is born with. The card's own heading and description stay in _Form.cshtml;
+           everything the JS builds lives here — and that now includes the ADD ROW's three strings, which moved
+           out of the view when the row itself did (one component draws it for this screen and the task detail
+           page both, so its labels have to reach JS on both). *@
+        ChecklistAddPlaceholder = Localizer["ChecklistAddPlaceholder"].Value,
+        ChecklistAddButton = Localizer["ChecklistAddButton"].Value,
+        ChecklistAddHint = Localizer["ChecklistAddHint"].Value,
         ChecklistLevelOptional = Localizer["ChecklistLevelOptional"].Value,
         ChecklistLevelRequired = Localizer["ChecklistLevelRequired"].Value,
         ChecklistLevelBlocking = Localizer["ChecklistLevelBlocking"].Value,

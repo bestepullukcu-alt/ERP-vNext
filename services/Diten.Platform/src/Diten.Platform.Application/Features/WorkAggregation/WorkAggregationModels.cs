@@ -583,7 +583,17 @@ public sealed record WorkItemChecklistItemDto(
     /// <summary>Blocking items are the ONLY ones that gate completion; `required` alone does not.</summary>
     bool Blocking,
     /// <summary>MOD-0031 owns evidence itself; this is the flag only (pack §12 E1).</summary>
-    bool EvidenceRequired);
+    bool EvidenceRequired,
+    /// <summary>
+    /// May the CALLER change this item — reword it, re-level it, re-flag it, remove it? Ticking is not covered:
+    /// doing the work is everyone's.
+    ///
+    /// <para>Sent as a DECIDED ANSWER rather than an author id the client would compare for itself. Two reasons.
+    /// The rule then exists once, on the side that enforces it, instead of twice with a chance to disagree — and
+    /// nothing has to publish who wrote which line to every reader of the list. Defaulted true so that a
+    /// provider which has no concept of authorship keeps behaving as it did.</para>
+    /// </summary>
+    bool Editable = true);
 
 /// <summary>
 /// Subtasks. <c>mode: "full"</c> because MOD-0024 IS their source and may create/complete them here; a consumer

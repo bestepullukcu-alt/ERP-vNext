@@ -1829,4 +1829,10 @@
   <data name="ChecklistRemove" xml:space="preserve">
     <value>移除条目</value>
   </data>
+  <data name="ChecklistAddButton" xml:space="preserve">
+    <value>添加</value>
+  </data>
+  <data name="ChecklistAddHint" xml:space="preserve">
+    <value>点击标签可更改级别。目前还没有模板列表。</value>
+  </data>
 </root>

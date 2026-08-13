@@ -191,3 +191,48 @@ describe("neither screen keeps a private copy of the row", () => {
     expect(app).toContain("const order = ['Optional', 'Required', 'Blocking'];");
   });
 });
+
+describe("the add row takes both ways in, and keeps its level between adds", () => {
+  let DitenCheckItem;
+  const LABELS_ADD = { ...LABELS, addPlaceholder: "Type an item", addButton: "Add", addHint: "hint" };
+  beforeEach(() => { DitenCheckItem = load(); });
+
+  it("offers an icon, an input, a level chip, a button AND a hint — the union of the two old rows", () => {
+    /*
+     * Each screen had half of this and was missing the other half. The create form had the button and the hint
+     * but no chip, so a level could only be set on the row AFTER adding it: one extra click per item. The task
+     * detail page had the chip but neither button nor hint, so Enter was the only way to commit — and the only
+     * thing that said so was the placeholder, which disappears the moment you start typing, on a keyboard where
+     * Enter is not always to hand.
+     */
+    const el = DitenCheckItem.addRow({ id: "new", level: "Optional", labels: LABELS_ADD });
+    expect(el.querySelector(".bx-list-plus")).not.toBeNull();
+    expect(el.querySelector("[data-diten-check-input]")).not.toBeNull();
+    expect(el.querySelector("[data-diten-check-draftlevel]")).not.toBeNull();
+    expect(el.querySelector("[data-diten-check-add]").textContent).toBe("Add");
+    expect(el.querySelector(".diten-checkitem-addhint").textContent).toBe("hint");
+  });
+
+  it("names the chosen level on the chip so the next add is predictable", () => {
+    // Somebody entering three blocking steps chooses once, not three times — the caller keeps the value and
+    // passes it back in, and the chip has to show which one is armed.
+    const el = DitenCheckItem.addRow({ id: "new", level: "Blocking", labels: LABELS_ADD });
+    const chip = el.querySelector("[data-diten-check-draftlevel]");
+    expect(chip.textContent).toBe("Blocking");
+    expect(chip.getAttribute("data-level")).toBe("Blocking");
+  });
+
+  it("keeps ENTER working on the create form after the chip is used", () => {
+    /*
+     * REGRESSION, found by pressing Enter on the live form and not by any test here.
+     *
+     * The add row is redrawn when the level chip changes, which replaces the input node. Enter had been bound
+     * to that node directly, so it worked until the first chip click and then silently stopped — with the
+     * button still working, so nothing looked broken. Both handlers are delegated at the CARD now, which is the
+     * only part that survives the redraw.
+     */
+    const page = read("wwwroot/assets/js/Tasks/form-page.js");
+    expect(page).toMatch(/el\('taskChecklistCard'\)\?\.addEventListener\('keydown'/);
+    expect(page).not.toMatch(/input\.addEventListener\('keydown'/);
+  });
+});

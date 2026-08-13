@@ -1829,4 +1829,10 @@
   <data name="ChecklistRemove" xml:space="preserve">
     <value>Maddeyi kaldır</value>
   </data>
+  <data name="ChecklistAddButton" xml:space="preserve">
+    <value>Ekle</value>
+  </data>
+  <data name="ChecklistAddHint" xml:space="preserve">
+    <value>Seviyeyi değiştirmek için etikete tıklayın. Şablon listesi henüz yok.</value>
+  </data>
 </root>

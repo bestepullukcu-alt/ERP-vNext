@@ -156,9 +156,13 @@ const ICON_MAP = {
   taskApprovalManager: "bx-user",
   taskWatchers: "bx-group",
   taskReminderLeadDays: "bx-bell",
-  // The checklist's add box. `bx-list-plus`, not the card heading's `bx-list-check`: the heading names the
-  // list, this one names the act of adding to it — the same distinction the three fields above draw.
-  taskChecklistInput: "bx-list-plus"
+  /*
+   * The checklist's add box is NOT listed here any more — not because the rule lapsed, but because the markup
+   * left this file. The row is drawn by assets/js/shared/diten-checkitem.js now, once for the create form and
+   * the task detail page both, so a guard that reads _Form.cshtml would pass by finding nothing.
+   *
+   * The rule follows the markup: see "the shared add row keeps the form's field shape" below.
+   */
 };
 
 describe("an icon marks the fields where typing is not the whole story", () => {
@@ -483,5 +487,22 @@ describe("clicking the calendar icon opens the calendar", () => {
     expect(rule, "the tag icon has no rule of its own").toBeTruthy();
     expect(rule[1], "the tag icon steals the click that should focus the editor")
       .toMatch(/pointer-events:\s*none/);
+  });
+});
+
+describe("the shared add row keeps the form's field shape", () => {
+  /*
+   * MOVED, not dropped. `taskChecklistInput` used to sit in the map above and be checked against
+   * _Form.cshtml's markup; the add row is now built in JS and shared with the task detail page, so the same
+   * rule is asserted against the component that builds it.
+   *
+   * `bx-list-plus`, not the card heading's `bx-list-check`: the heading names the list, this one names the act
+   * of adding to it — the same distinction the reviewer/approver/watcher fields draw against their headings.
+   */
+  it("wraps the input in a .diten-field carrying bx-list-plus", () => {
+    const component = fs.readFileSync(
+      path.resolve(__dirname, "..", "wwwroot/assets/js/shared/diten-checkitem.js"), "utf8");
+    expect(component).toContain("'diten-field flex-grow-1'");
+    expect(component).toContain("'bx bx-list-plus diten-field-icon'");
   });
 });

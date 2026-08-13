@@ -5188,12 +5188,11 @@ tags.diten-tags .tagify__input {
    (`wcn-tabcard`, app.js:840). Background, radius, shadow and padding are therefore the page's existing card
    values, not numbers picked by eye; the only thing declared here is the gap to the first card, and it is the
    column's own 1.5rem rather than the list page's `mb-3`, because this strip lives in that column's rhythm. */
-/* 8px, and it is the SMALLEST gap in this column on purpose. The strip is part of the panel it governs, not a
-   neighbour of it; at 1.5rem it sat exactly as far from its own panel as two unrelated cards sit from each
-   other, and read as a third, separate thing. Distance is the only thing telling the reader what belongs to
-   what, and it was saying the wrong thing. Applies to both panels — the strip is composed above them, not
-   inside either. */
-.wcn-detail-tabcard { margin-block-end: .5rem; }
+/* The same 16px as everything else on the page. It was 8px for one round, on the argument that the strip is
+   part of the panel it governs and should sit closer to it than two unrelated cards sit to each other. Seen on
+   the screen, the graded rhythm read as uneven rather than as meaningful — three different gaps register as
+   three mistakes long before they register as three meanings. One value, and it is the create form's. */
+.wcn-detail-tabcard { margin-block-end: 1rem; }
 /* The count is CONTENT VOLUME, not a summons: grey, in the flow, no absolute positioning. The list page's
    `.wcn-tab-count` is a red corner pill meaning "N things want you" — this number only ever grows, so a red that
    never goes out would stop being seen, and take the real red with it. */
@@ -5204,7 +5203,7 @@ tags.diten-tags .tagify__input {
    1.5rem }` — a DIRECT-child selector, and wrapping the cards in `.wcn-detail-panel` put a node between them and
    it. The cards fell to 0px apart and the three read as one. Same 1.5rem, matched to the column it left, not a
    fresh value chosen by eye. Applies to the activity panel too: one card today, two tomorrow. */
-.wcn-detail-panel > .wcn-detail-card { margin-block-end: 1.5rem; }
+.wcn-detail-panel > .wcn-detail-card { margin-block-end: 1rem; }
 .wcn-detail-panel > .wcn-detail-card:last-child { margin-block-end: 0; }
 
 /* Below the `lg` breakpoint the rail stops being a column and becomes the tail of one long sequence — so the
@@ -5214,7 +5213,7 @@ tags.diten-tags .tagify__input {
    collapses was the tightest on the screen. Scoped to the stacked case only — above 992px the rail begins on
    the same line as the tab strip, and this must not move it. */
 @media screen and (max-width: 991.98px) {
-    .wcn-detail-content { margin-block-end: .5rem; }
+    .wcn-detail-content { margin-block-end: 0; }
 }
 
 .wcn-tabs .wcn-tab-count { font-size: .625rem; font-weight: 600; padding-inline: .35rem; line-height: 1.1; box-shadow: 0 0 0 1.5px var(--bs-card-bg); }
@@ -5737,14 +5736,17 @@ tags.diten-tags .tagify__input {
 /* No bottom border. The head is a white card on a grey ground and already says where it ends; the rule was
    added when ONE column sat beneath it, and now two columns of different heights do — so it read as a loose
    1320px ruler drawn over both, the rail included. The padding stays: that is the gap to the row below. */
-/* The strongest break on the page — above it one full-width block ends, below it the page becomes two columns —
-   so it carries the largest gap: 2rem, against 1.5rem between cards and .5rem between a strip and its panel.
-   Written as a MARGIN, not the padding it used to be: the column is transparent, so the two were the same
-   number of pixels, but only one of them says "space after me" in a way the next reader can measure. The value
-   is unchanged in what it draws (16px padding + 16px row gutter = the same 32px); what changed is that it is
-   now legible as one decision instead of two coincidences. It pushes BOTH columns, so the content strip and
-   the rail's first card still begin on the same line. */
-.wcn-detail-head { margin-block-end: 1rem; }
+/* ── ONE RHYTHM, 16px, everywhere ──────────────────────────────────────────
+   This page used to run three different gaps on purpose — 2rem under the head, 1.5rem between cards, .5rem
+   between the tab strip and its panel — on the reasoning that distance should say what belongs to what.
+   Measured against the create form, which uses ONE gap between all five of its cards, the graded version reads
+   as uneven rather than as meaningful: the eye registers three different spacings long before it works out
+   what each is supposed to mean, and the strip ends up too close to its panel while unrelated cards sit too
+   far apart. Uniform wins, and the value is the create form's, not a new one.
+
+   The head's own margin goes to ZERO: the row gutter below it is already 16px, so anything here is added on
+   top of a gap that is already the right size. */
+.wcn-detail-head { margin-block-end: 0; }
 .wcn-detail-source { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; margin-block-end: .5rem; }
 .wcn-detail-title { margin: 0 0 .625rem; font-size: 1.0625rem; font-weight: 600; color: var(--bs-heading-color); }
 .wcn-detail-chips { display: flex; flex-wrap: wrap; gap: .375rem; }
@@ -6215,7 +6217,11 @@ tags.diten-tags .tagify__input {
    the trimmed padding, so all that is left here is the space below it before the list starts. The old rule set
    font-size .6875rem and opacity .8, which is what made a 15px grey line vanish into the feed it was warning
    about. */
-.wcn-audit-gap { margin-block-end: .75rem; }
+/* The gap notice sits at the very bottom of the feed, and for one round it sat FLUSH against the "show all"
+   control directly above it — 0px, measured — so the button and the sentence ran together into one block and
+   the notice read as part of the control rather than as a footnote about the list. It only had a margin on the
+   side facing nothing. Both sides now, and the value is the one the composer above already uses. */
+.wcn-audit-gap { margin-block: 1rem .75rem; }
 
 /* WC-1 item 12 — the "Required" level's visible consequence. Deliberately NOT styled like the blocking notice
    above it: blocking says the task cannot close, this says it can and something is still owed. Same quiet hint
@@ -6349,7 +6355,10 @@ tags.diten-tags .tagify__input {
     border: 1px solid var(--bs-border-color);
     background: transparent;
     color: var(--bs-secondary-color);
-    border-radius: 1rem;
+    /* The FORM's radius, not a pill. Measured: the input, the Add button and the card all render at 6px, and a
+       16px pill beside them read as borrowed from another screen. It is a control that opens a cycle, so it
+       should look like the button next to it rather than like a status badge. */
+    border-radius: var(--bs-border-radius);
     padding: .0625rem .5rem;
     font-size: .6875rem;
     line-height: 1.4;
@@ -6368,6 +6377,37 @@ tags.diten-tags .tagify__input {
     font-weight: 600;
 }
 
+
+/* ── The add row, shared by both screens ───────────────────────────────────
+   Icon · input · level chip · Add button, with the hint UNDERNEATH rather than inside the placeholder — a
+   placeholder is gone exactly when the person is in the middle of the thing it was explaining. */
+.diten-checkitem-addline { display: flex; gap: .5rem; align-items: flex-start; }
+.diten-checkitem-addline .diten-field { min-inline-size: 0; }
+/* The chip matches the row chips above it, so the level you pick before adding and the level you see after are
+   plainly the same control. Sized to the 38px field beside it rather than to a row's inline chip. */
+.diten-checkitem-addline .diten-checkitem-level { align-self: stretch; padding-inline: .75rem; }
+.diten-checkitem-addhint { margin-block-start: .5rem; }
+/* The add row is a NEW thing, not the next row of the list — it was rendered hard against the last item, so the
+   box and the final check ran together into one shape. The same .5rem that separates the list's own rows. */
+.diten-checkitem-add { margin-block-start: .5rem; }
+/* The evidence notice now follows the add row (it explains a control on both), so it needs the gap the row
+   above no longer provides. */
+.wcn-check-evidence-hint { margin-block-start: 1rem; }
+/* The add chip takes its colour from its OWN level, because it has no row around it to read `data-requirement`
+   from. Same two colours the row chips use, so the level you arm before adding and the level you see afterwards
+   are visibly the same decision — and, as there, only the two strict levels are coloured: Optional is the
+   ordinary case and colouring it would spend the signal. */
+.diten-checkitem-level[data-level="Required"] {
+    border-color: var(--bs-warning);
+    color: var(--bs-warning);
+    font-weight: 600;
+}
+.diten-checkitem-level[data-level="Blocking"] {
+    border-color: var(--bs-danger);
+    background: color-mix(in sRGB, var(--bs-danger) 12%, var(--bs-body-bg));
+    color: var(--bs-danger);
+    font-weight: 600;
+}
 
 /* ── Working mode (the task detail page) ───────────────────────────────────
    Everything above is shared. Only the tick box and what a completed row looks like are new, because the create
@@ -6869,7 +6909,7 @@ tags.diten-tags .tagify__input {
    The rail stacks under the content on narrow screens (col-12 → col-lg-4), so the actions are never the only
    thing on screen and never above the work they act on. */
 .wcn-detail-content > .wcn-detail-card,
-.wcn-detail-rail > .wcn-detail-card { margin-block-end: 1.5rem; }
+.wcn-detail-rail > .wcn-detail-card { margin-block-end: 1rem; }
 .wcn-detail-content > .wcn-detail-card:last-child,
 .wcn-detail-rail > .wcn-detail-card:last-child { margin-block-end: 0; }
 

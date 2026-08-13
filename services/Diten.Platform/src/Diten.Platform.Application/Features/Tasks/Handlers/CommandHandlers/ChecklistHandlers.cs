@@ -123,6 +123,21 @@ public sealed class AddChecklistItemHandler : IRequestHandler<AddChecklistItemCo
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
         }
 
+        /*
+         * BL-093 — a closed task's checklist is history here too.
+         *
+         * Four of this card's five verbs refused a Done or Cancelled task and this one accepted, so a finished
+         * task could still grow new steps. Not written through ChecklistWriteGuards.ResolveAsync like the others,
+         * because this verb legitimately runs when there is NO run yet — the resolver's "this task has no
+         * checklist" 404 is correct for the other four and wrong for the one that creates it.
+         */
+        if (task.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
+        {
+            return Response<NoContent>.Fail(
+                "A closed task's checklist cannot be changed.",
+                409, TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
         var run = await _runs.GetByTaskIdAsync(command.TaskItemId, ct);
         if (run is null)
         {
@@ -153,7 +168,7 @@ public sealed class AddChecklistItemHandler : IRequestHandler<AddChecklistItemCo
         return Response<NoContent>.Success(204, command.CorrelationId);
     }
 
-    private static ChecklistRunItem NewItem(string text, ChecklistItemRequirement requirement, int sortOrder)
+    private ChecklistRunItem NewItem(string text, ChecklistItemRequirement requirement, int sortOrder)
         => new()
         {
             // A stable per-run code; the text itself is not an identifier.
@@ -162,7 +177,15 @@ public sealed class AddChecklistItemHandler : IRequestHandler<AddChecklistItemCo
             LabelText = text,
             Requirement = requirement,
             SortOrder = sortOrder,
-            Completed = false
+            Completed = false,
+            /*
+             * WHO PUT IT THERE, stamped at the only moment it is knowable for free. Nothing had to be plumbed
+             * for this: the identity was already injected here to fill CreatedBy. The rule that needs it —
+             * only the author may re-level or remove a step — was unwritable purely because nobody wrote this
+             * one line at the time.
+             */
+            AddedByUserId = _currentUser.UserId,
+            AddedAt = DateTimeOffset.UtcNow
         };
 }
 
@@ -219,25 +242,28 @@ public sealed class UpdateChecklistItemHandler : IRequestHandler<UpdateChecklist
         if (found.Failure is not null) { return found.Failure; }
         var (run, item) = (found.Run!, found.Item!);
 
+        /*
+         * WHOSE STEP IS THIS — asked before anything else, because the answer decides all three fields at once.
+         *
+         * A round ago the level and the evidence flag were deliberately left open on a template item, on the
+         * reasoning that "how strictly THIS task is run is the holder's judgement". That reasoning was wrong in
+         * the one case that matters: dropping Blocking → Optional releases the gate just as completely as
+         * deleting the item, so a rule that protects the words and not the level protects nothing. Reversed.
+         */
+        var refusal = ChecklistWriteGuards.RefuseNotYours(item, _currentUser.UserId, command.CorrelationId);
+        if (refusal is not null) { return refusal; }
+
+        // Anything reaching here is the caller's OWN ad-hoc item — template rows were turned away above — so the
+        // text is theirs to change, and the only thing left to refuse is erasing it: a blank row is
+        // unidentifiable, and so unfixable by the next reader.
         var text = command.Request.LabelText?.Trim();
-
-        // A template item's words are the template's. Refused LOUDLY rather than ignored: silently keeping the
-        // old text would tell the caller their edit was saved, and they would find out otherwise on reload.
-        if (item.LabelResourceKey is not null && !string.IsNullOrWhiteSpace(text))
-        {
-            return Response<NoContent>.Fail(
-                "This item's text comes from a template and cannot be reworded here.",
-                409, TaskReasonCodes.ChecklistItemTemplateOwned, command.CorrelationId);
-        }
-
-        // An ad-hoc item with its text erased would render as an empty row nobody can identify or fix.
-        if (item.LabelResourceKey is null && string.IsNullOrWhiteSpace(text))
+        if (string.IsNullOrWhiteSpace(text))
         {
             return Response<NoContent>.Fail(
                 "Checklist item text is required.", 400, TaskReasonCodes.ValidationFailed, command.CorrelationId);
         }
 
-        if (item.LabelResourceKey is null) { item.LabelText = text; }
+        item.LabelText = text;
         item.Requirement = command.Request.Requirement;
         item.EvidenceRequired = command.Request.EvidenceRequired;
 
@@ -252,12 +278,12 @@ public sealed class UpdateChecklistItemHandler : IRequestHandler<UpdateChecklist
 }
 
 /// <summary>
-/// Remove one item.
+/// Remove one item — YOUR item.
 ///
-/// <para>A template item CAN be removed, where its text cannot be rewritten — and the two are not in tension.
-/// The template says what a job of this kind usually involves; whether a step applies to THIS task is a
-/// judgement about this task, and the person holding it is the one placed to make it. Rewording is different:
-/// it leaves the item in the list still claiming to be the template's step while saying something else.</para>
+/// <para>This used to say a template item could be removed even though its text could not be rewritten, on the
+/// reasoning that whether a step applies to this task is the holder's judgement. REVERSED, and the reversal is
+/// the point of this round: the item most worth removing is the blocking one standing between the holder and
+/// "done", so "the holder decides which steps apply" hands them the key to every gate on their own task.</para>
 /// </summary>
 public sealed class RemoveChecklistItemHandler : IRequestHandler<RemoveChecklistItemCommand, Response<NoContent>>
 {
@@ -284,6 +310,12 @@ public sealed class RemoveChecklistItemHandler : IRequestHandler<RemoveChecklist
             _tasks, _runs, command.TaskItemId, command.ItemCode, command.CorrelationId, ct);
         if (found.Failure is not null) { return found.Failure; }
         var (run, item) = (found.Run!, found.Item!);
+
+        // The gate cannot be lifted by the person it is holding. Same rule as the edit, and for a sharper
+        // reason: removing the last open blocking item unblocks the run outright — this handler's own status
+        // recomputation below says so.
+        var refusal = ChecklistWriteGuards.RefuseNotYours(item, _currentUser.UserId, command.CorrelationId);
+        if (refusal is not null) { return refusal; }
 
         run.Items.Remove(item);
 
@@ -407,6 +439,42 @@ internal static class ChecklistWriteGuards
         }
 
         return new(null, run, item);
+    }
+
+    /// <summary>
+    /// May this caller CHANGE this item — reword it, re-level it, re-flag it, remove it?
+    ///
+    /// <para>Only its author. Ticking is deliberately not routed through here: doing the work is everyone's, and
+    /// a checklist you may not tick is not a checklist.</para>
+    ///
+    /// <para>A null author is SOMEBODY ELSE'S. Two kinds of item arrive that way — rows written before the field
+    /// existed, and rows instantiated from a template, which has no author because the template is the author —
+    /// and the safe answer is the same for both. The asymmetry is the whole argument: refusing an edit that
+    /// should have been allowed produces a complaint, and allowing a deletion that should have been refused
+    /// removes a gate silently, discovered only after whatever the gate existed to prevent has happened.</para>
+    /// </summary>
+    internal static Response<NoContent>? RefuseNotYours(
+        ChecklistRunItem item, Guid? callerUserId, string correlationId)
+    {
+        /*
+         * TWO codes for two genuinely different sentences, and the SPECIFIC one is checked first.
+         *
+         * A template item never has an author, so an author-only check would answer "somebody else added this"
+         * for every template step — true in effect, and useless to the reader, who wants to know that the step
+         * comes from the process rather than from a colleague they could go and ask.
+         */
+        if (item.LabelResourceKey is { Length: > 0 })
+        {
+            return Response<NoContent>.Fail(
+                "This item comes from a template and cannot be changed on a single task.",
+                409, TaskReasonCodes.ChecklistItemTemplateOwned, correlationId);
+        }
+
+        return item.AddedByUserId is not null && item.AddedByUserId == callerUserId
+            ? null
+            : Response<NoContent>.Fail(
+                "This checklist item was added by someone else and cannot be changed here.",
+                409, TaskReasonCodes.ChecklistItemNotAuthor, correlationId);
     }
 
     /// <summary>The conditional write and its 409. Never an unconditional save.</summary>

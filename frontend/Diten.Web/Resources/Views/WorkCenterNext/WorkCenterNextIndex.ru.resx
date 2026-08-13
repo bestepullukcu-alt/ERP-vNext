@@ -1829,4 +1829,10 @@
   <data name="ChecklistRemove" xml:space="preserve">
     <value>Удалить пункт</value>
   </data>
+  <data name="ChecklistAddButton" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="ChecklistAddHint" xml:space="preserve">
+    <value>Нажмите на метку, чтобы изменить уровень. Списка шаблонов пока нет.</value>
+  </data>
 </root>

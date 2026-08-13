@@ -134,9 +134,45 @@
         refreshChecklistCount();
     };
 
-    /** Commits whatever is in the input as a new row, at the DEFAULT level. */
+    /*
+     * THE DRAFT LEVEL — the chip's state, kept between adds.
+     *
+     * Somebody entering three blocking steps chooses once, not three times. The detail page has kept this since
+     * its own chip shipped (`state.checklistDraftLevel`); the create form had no chip at all, so every item was
+     * added at the default and then re-levelled on its row — one extra click per item, forever.
+     */
+    let checklistDraftLevel = global.TaskForm.CHECKLIST_DEFAULT_LEVEL;
+
+    const addRowLabels = () => ({
+        // Literal `t('…')` calls: the l10n guard scans this file for them and checks each against the bridge
+        // payload, so a key assembled from a variable would be a translation nothing verifies.
+        optional: t('checklistLevelOptional'),
+        required: t('checklistLevelRequired'),
+        blocking: t('checklistLevelBlocking'),
+        levelHint: t('checklistLevelHint'),
+        addPlaceholder: t('checklistAddPlaceholder'),
+        addButton: t('checklistAddButton'),
+        addHint: t('checklistAddHint')
+    });
+
+    /** Draws the add row from the shared component — the same one the task detail page uses. */
+    const renderChecklistAddRow = () => {
+        const host = el('taskChecklistAddRow');
+        if (!host) { return; }
+        // Whatever was half-typed survives a re-render of the row; the chip is redrawn, not the whole card.
+        const typed = host.querySelector('[data-diten-check-input]')?.value || '';
+        host.replaceChildren(global.DitenCheckItem.addRow({
+            id: 'new', level: checklistDraftLevel, labels: addRowLabels()
+        }));
+        const input = host.querySelector('[data-diten-check-input]');
+        if (input) { input.value = typed; }
+    };
+
+    const checklistInput = () => document.querySelector('[data-diten-check-input="new"]');
+
+    /** Commits whatever is in the input as a new row, at the CHIP's level. */
     const addChecklistItem = () => {
-        const input = el('taskChecklistInput');
+        const input = checklistInput();
         const text = (input?.value || '').trim();
         // Silence on empty: an "enter something" toast for pressing Enter in an empty box is noise, and the
         // placeholder already says what the box is for.
@@ -144,7 +180,7 @@
 
         renderChecklist([
             ...global.TaskForm.readChecklistItems(checklistList()),
-            { text, requirement: global.TaskForm.CHECKLIST_DEFAULT_LEVEL, evidenceRequired: false }
+            { text, requirement: checklistDraftLevel, evidenceRequired: false }
         ]);
         input.value = '';
         // Focus stays in the box: the author is usually typing a LIST, not one line.
@@ -171,7 +207,8 @@
         }
 
         const list = checklistList();
-        const input = el('taskChecklistInput');
+        renderChecklistAddRow();
+        const input = checklistInput();
         if (!list || !input) { return; }
 
         /*
@@ -213,10 +250,33 @@
             });
         }
 
-        document.querySelector('[data-task-checklist-add]')?.addEventListener('click', addChecklistItem);
+        /*
+         * The add row is delegated at the CARD, not bound to the button: the row is redrawn whenever the level
+         * chip changes, and a handler attached to the old button would go with it.
+         */
+        el('taskChecklistCard')?.addEventListener('click', (event) => {
+            if (event.target.closest('[data-diten-check-add]')) { addChecklistItem(); return; }
+            const chip = event.target.closest('[data-diten-check-draftlevel]');
+            if (chip) {
+                // Weakest-first, so a reader who keeps pressing walks toward the strict end rather than
+                // starting there. Same order and same three values the detail page cycles through.
+                const order = ['Optional', 'Required', 'Blocking'];
+                checklistDraftLevel = order[(order.indexOf(checklistDraftLevel) + 1) % order.length];
+                renderChecklistAddRow();
+                checklistInput()?.focus();
+            }
+        });
 
-        input.addEventListener('keydown', (event) => {
-            if (event.key !== 'Enter') { return; }
+        /*
+         * DELEGATED at the card, not bound to the input node.
+         *
+         * The add row is redrawn whenever the level chip changes, which replaces the input — and a listener
+         * attached to the old node goes with it. Bound directly, Enter worked until the first time somebody
+         * touched the chip and then silently stopped, with the button still working so nothing looked broken.
+         * Found by pressing Enter on the live form after a chip click; no test had noticed.
+         */
+        el('taskChecklistCard')?.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter' || !event.target.closest('[data-diten-check-input]')) { return; }
             /*
              * Enter here adds an ITEM; it must not submit the form. The save is bound to the form's submit
              * precisely so Enter saves from any text field — which is right everywhere except in a box whose

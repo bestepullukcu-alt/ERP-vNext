@@ -120,21 +120,25 @@ describe("the page is three regions", () => {
     expect(body).toMatch(/class="card wcn-detail-tabcard"><div class="card-body p-3"/);
 
     /*
-     * Vertical rhythm, pinned as an ORDER rather than three numbers: the strip sits closer to the panel it
-     * governs than two unrelated cards sit to each other, and the head — where a full-width block ends and the
-     * page becomes two columns — is further from what follows than anything else. It shipped inverted: the
-     * strip 24px from its own panel, the head the tightest gap on the page. Distance is the only thing telling
-     * a reader what belongs to what, and it was saying the opposite of the truth.
+     * Vertical rhythm: ONE gap, everywhere.
+     *
+     * RE-PINNED. This used to assert an ORDER — strip closest to its own panel, head furthest from what follows
+     * — on the reasoning that distance is what tells a reader which things belong together. It shipped as
+     * .5rem / 1.5rem / 2rem and was rejected on sight: three different spacings register as three mistakes long
+     * before they register as three meanings, and the graded version left the strip crowding its panel while
+     * unrelated cards drifted apart.
+     *
+     * The value is the CREATE FORM's, measured, not a fresh choice: five cards there, 16px between every pair.
+     * The head contributes nothing of its own because the row gutter beneath it is already that 16px.
      */
     const css = fs.readFileSync(
       path.resolve(__dirname, "..", "wwwroot/assets/css/backbone-custom.css"), "utf8");
+    // `0` is written unitless, so the unit is optional in the match — a bare 0 is still a measurement.
     const rem = (re) => parseFloat(css.match(re)[1]);
-    const strip = rem(/\.wcn-detail-tabcard \{ margin-block-end: ([\d.]+)rem; \}/);
-    const cards = rem(/\.wcn-detail-panel > \.wcn-detail-card \{ margin-block-end: ([\d.]+)rem; \}/);
-    const head  = rem(/\.wcn-detail-head \{ margin-block-end: ([\d.]+)rem; \}/) + 1; // + the 1rem row gutter
-    expect(strip).toBeLessThan(cards);
-    expect(head).toBeGreaterThan(cards);
-    expect([strip, cards, head]).toEqual([0.5, 1.5, 2]);
+    const strip = rem(/\.wcn-detail-tabcard \{ margin-block-end: ([\d.]+)(?:rem)?; \}/);
+    const cards = rem(/\.wcn-detail-panel > \.wcn-detail-card \{ margin-block-end: ([\d.]+)(?:rem)?; \}/);
+    const head  = rem(/\.wcn-detail-head \{ margin-block-end: ([\d.]+)(?:rem)?; \}/) + 1; // + the row gutter
+    expect([strip, cards, head]).toEqual([1, 1, 1]);
     expect(panelArray).not.toContain("${rail}");
     expect(panelArray).not.toContain("${commandCard}");
   });

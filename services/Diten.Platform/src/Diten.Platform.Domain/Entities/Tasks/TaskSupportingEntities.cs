@@ -299,6 +299,27 @@ public sealed class ChecklistRunItem
     public bool Completed { get; set; }
     public Guid? CompletedByUserId { get; set; }
     public DateTimeOffset? CompletedAt { get; set; }
+
+    /*
+     * WHO PUT THIS STEP ON THE LIST — and therefore who may take it off.
+     *
+     * Without this field the rule cannot be written at all, which is exactly how the hole opened: a delete
+     * endpoint shipped that checked the task, the run, the item, the lifecycle and the version, and never asked
+     * whose step it was. A BLOCKING item could then be removed by the very person it was blocking, and one
+     * level down — Blocking → Optional — is the same escape through a different door. A gate anyone can lift is
+     * decoration.
+     *
+     * OWNERSHIP, not a severity threshold. A threshold ("Blocking is protected, Expected is not") only moves the
+     * argument to where the line sits, and leaves the escape open on either side of it. This is also how the
+     * larger systems draw it: a step defined by the process owner is not the handler's to withdraw.
+     *
+     * NULL means one of two things, and both are answered the same way: an item written before this field
+     * existed, or an item instantiated from a TEMPLATE (which has no author — the template is the author). Both
+     * are treated as SOMEBODY ELSE'S. Wrongly refusing an edit costs a conversation; wrongly allowing a deletion
+     * costs the gate, silently, and nobody finds out until the thing the gate existed to prevent has happened.
+     */
+    public Guid? AddedByUserId { get; set; }
+    public DateTimeOffset AddedAt { get; set; } = DateTimeOffset.UtcNow;
 }
 
 /// <summary>Reusable task shape, optionally carrying a checklist (Phase 2 — pack §12 E5).</summary>

@@ -93,6 +93,17 @@ public static class TaskReasonCodes
     /// </summary>
     public const string ChecklistItemTemplateOwned = "CHECKLIST_ITEM_TEMPLATE_OWNED";
 
+    /// <summary>
+    /// Somebody else put this step on the list, so it is not this caller's to reword, re-level, re-flag or
+    /// remove. Ticking it stays open to everyone — that is the work.
+    ///
+    /// <para>Its OWN code, for the same reason as <see cref="FieldAccessDenied"/> and
+    /// <see cref="ChecklistItemTemplateOwned"/>: nothing about the payload is wrong, so a client told
+    /// "validation failed" will keep correcting and resending a request that was never going to be accepted.
+    /// This says the item is not yours, which is a different answer and a final one.</para>
+    /// </summary>
+    public const string ChecklistItemNotAuthor = "CHECKLIST_ITEM_NOT_AUTHOR";
+
     /// <summary>Entering Waiting without saying what is being waited for.</summary>
     public const string WaitingReasonRequired = "TASK_WAITING_REASON_REQUIRED";
 

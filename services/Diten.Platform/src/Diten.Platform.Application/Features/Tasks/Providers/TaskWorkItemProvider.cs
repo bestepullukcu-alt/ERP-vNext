@@ -428,7 +428,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          *
          * Declared-and-empty is a state the contract models (CAPABILITY_CONTAINER_REQUIRED); a half is not.
          */
-        var checklistBlock = checklist is null ? EmptyChecklist : ToChecklist(checklist);
+        var checklistBlock = checklist is null ? EmptyChecklist : ToChecklist(checklist, actor);
         // A subtask cannot have subtasks. A parent always gets the container, even empty, because the shell
         // offers "add a subtask" there — declared-and-empty is a state the contract models; a half is not.
         var subtasks = task.ParentTaskItemId is null ? ToSubtasks(children, actor, displayNames) : null;
@@ -698,7 +698,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// </summary>
     private static readonly WorkItemChecklistDto EmptyChecklist = new([], Version: 0);
 
-    private static WorkItemChecklistDto ToChecklist(ChecklistRun run)
+    private static WorkItemChecklistDto ToChecklist(ChecklistRun run, WorkItemActor actor)
         => new(run.Items
             .OrderBy(item => item.SortOrder)
             .Select(item => new WorkItemChecklistItemDto(
@@ -709,7 +709,17 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 Completed: item.Completed,
                 Required: item.Requirement != ChecklistItemRequirement.Optional,
                 Blocking: item.Requirement == ChecklistItemRequirement.Blocking,
-                EvidenceRequired: item.EvidenceRequired))
+                EvidenceRequired: item.EvidenceRequired,
+                /*
+                 * The SAME test the write handlers apply, evaluated once here so the screen can be honest about
+                 * what it offers. A null author — a row older than the field, or one instantiated from a template
+                 * — is somebody else's, and reads as not editable.
+                 *
+                 * This is a courtesy, not the guard. The endpoints refuse independently and would refuse just as
+                 * firmly if this line said true for everything; drawing a control that the server will reject is
+                 * simply a worse way to tell someone the answer.
+                 */
+                Editable: item.AddedByUserId is not null && item.AddedByUserId == actor.UserId))
             .ToList(),
             Version: run.Version);
 

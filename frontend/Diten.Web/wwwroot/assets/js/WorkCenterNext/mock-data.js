@@ -459,7 +459,16 @@
                 requirement: entry.blocking ? 'Blocking' : (entry.required ? 'Required' : 'Optional'),
                 // A template item's words are the template's; the server refuses to reword one. The projection
                 // says so through the label's KIND, which is the only place that fact is carried.
-                templateOwned: entry.label?.kind === 'resource' || !!entry.label?.key
+                templateOwned: entry.label?.kind === 'resource' || !!entry.label?.key,
+                /*
+                 * The SERVER'S answer to "may this reader change this row", carried through unchanged.
+                 *
+                 * Not re-derived here from an author id, and the projection deliberately does not send one: the
+                 * rule then exists once, on the side that enforces it, rather than twice with a chance to
+                 * disagree. Defaulted true so a provider that has no concept of authorship keeps behaving as it
+                 * did — a missing field must not silently take controls away.
+                 */
+                editable: entry.editable !== false
             }))
         } : null;
         item.subtasks = item.subtasks || null;

@@ -1829,4 +1829,10 @@
   <data name="ChecklistRemove" xml:space="preserve">
     <value>إزالة البند</value>
   </data>
+  <data name="ChecklistAddButton" xml:space="preserve">
+    <value>إضافة</value>
+  </data>
+  <data name="ChecklistAddHint" xml:space="preserve">
+    <value>انقر على الوسم لتغيير المستوى. لا توجد قائمة قوالب بعد.</value>
+  </data>
 </root>
