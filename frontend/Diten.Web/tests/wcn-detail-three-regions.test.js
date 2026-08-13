@@ -118,6 +118,23 @@ describe("the page is three regions", () => {
      * hand-rolled surface is how two cards on one screen end up almost the same.
      */
     expect(body).toMatch(/class="card wcn-detail-tabcard"><div class="card-body p-3"/);
+
+    /*
+     * Vertical rhythm, pinned as an ORDER rather than three numbers: the strip sits closer to the panel it
+     * governs than two unrelated cards sit to each other, and the head — where a full-width block ends and the
+     * page becomes two columns — is further from what follows than anything else. It shipped inverted: the
+     * strip 24px from its own panel, the head the tightest gap on the page. Distance is the only thing telling
+     * a reader what belongs to what, and it was saying the opposite of the truth.
+     */
+    const css = fs.readFileSync(
+      path.resolve(__dirname, "..", "wwwroot/assets/css/backbone-custom.css"), "utf8");
+    const rem = (re) => parseFloat(css.match(re)[1]);
+    const strip = rem(/\.wcn-detail-tabcard \{ margin-block-end: ([\d.]+)rem; \}/);
+    const cards = rem(/\.wcn-detail-panel > \.wcn-detail-card \{ margin-block-end: ([\d.]+)rem; \}/);
+    const head  = rem(/\.wcn-detail-head \{ margin-block-end: ([\d.]+)rem; \}/) + 1; // + the 1rem row gutter
+    expect(strip).toBeLessThan(cards);
+    expect(head).toBeGreaterThan(cards);
+    expect([strip, cards, head]).toEqual([0.5, 1.5, 2]);
     expect(panelArray).not.toContain("${rail}");
     expect(panelArray).not.toContain("${commandCard}");
   });

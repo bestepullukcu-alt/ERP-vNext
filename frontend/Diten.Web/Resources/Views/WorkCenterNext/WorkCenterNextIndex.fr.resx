@@ -1458,13 +1458,13 @@
     <value>Facultatif</value>
   </data>
   <data name="ChecklistLevelRequired" xml:space="preserve">
-    <value>Obligatoire</value>
+    <value>Attendu</value>
   </data>
   <data name="ChecklistLevelBlocking" xml:space="preserve">
     <value>Bloquant</value>
   </data>
   <data name="ChecklistRequiredOpen" xml:space="preserve">
-    <value>{0} élément(s) obligatoire(s) encore ouvert(s)</value>
+    <value>{0} élément(s) attendu(s) encore ouvert(s)</value>
   </data>
   <data name="ConfirmRequiredOpen" xml:space="preserve">
     <value>{0} élément(s) obligatoire(s) ne sont pas cochés. La tâche sera clôturée quand même.</value>
@@ -1473,7 +1473,7 @@
     <value>Une preuve est requise. Le lien vers un document sera actif une fois le module documentaire raccordé.</value>
   </data>
   <data name="ChecklistLevelHint" xml:space="preserve">
-    <value>Changer le niveau : Facultatif → Obligatoire → Bloquant</value>
+    <value>Changer le niveau : Facultatif → Attendu → Bloquant</value>
   </data>
   <data name="ToastChecklistItemAdded" xml:space="preserve">
     <value>Élément ajouté</value>

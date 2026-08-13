@@ -1798,6 +1798,13 @@
          *
          * Quiet by construction: it states a count and nothing more. It must NOT look like the blocking notice,
          * because the whole point of the level is that the task can still close.
+         *
+         * That defence used to be STYLE only, and style was the wrong layer: the sentence above this one says
+         * the list does not block completion, while this one said "4 REQUIRED items open", and "required" means
+         * mandatory in ordinary speech — in every one of the seven languages we ship. The reader believed the
+         * word and not the disclaimer sitting directly above it. The word is now EXPECTED / Beklenen, which is
+         * what the level has always done: ask on completion, never stop it. The key name, the `required` wire
+         * value and the enum are UNCHANGED — this was never a contract problem, only a vocabulary one.
          */
         const openRequired = openRequiredItems(item);
         const requiredNotice = openRequired.length

@@ -136,9 +136,9 @@
   <data name="ChecklistAddButton" xml:space="preserve"><value>添加</value></data>
   <data name="ChecklistAddHint" xml:space="preserve"><value>点击标签可更改级别。目前还没有模板列表。</value></data>
   <data name="ChecklistLevelOptional" xml:space="preserve"><value>可选</value></data>
-  <data name="ChecklistLevelRequired" xml:space="preserve"><value>必填</value></data>
+  <data name="ChecklistLevelRequired" xml:space="preserve"><value>应完成</value></data>
   <data name="ChecklistLevelBlocking" xml:space="preserve"><value>阻断</value></data>
-  <data name="ChecklistLevelHint" xml:space="preserve"><value>更改级别：可选 → 必填 → 阻断</value></data>
+  <data name="ChecklistLevelHint" xml:space="preserve"><value>更改级别：可选 → 应完成 → 阻断</value></data>
   <data name="ChecklistEvidenceToggle" xml:space="preserve"><value>需要证据</value></data>
   <data name="ChecklistEvidenceHint" xml:space="preserve"><value>需要证明文件。文档模块接入后即可关联文档。</value></data>
   <data name="ChecklistRemove" xml:space="preserve"><value>移除条目</value></data>

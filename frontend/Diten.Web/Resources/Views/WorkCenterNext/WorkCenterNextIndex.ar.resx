@@ -1458,13 +1458,13 @@
     <value>اختياري</value>
   </data>
   <data name="ChecklistLevelRequired" xml:space="preserve">
-    <value>إلزامي</value>
+    <value>متوقَّع</value>
   </data>
   <data name="ChecklistLevelBlocking" xml:space="preserve">
     <value>مانع</value>
   </data>
   <data name="ChecklistRequiredOpen" xml:space="preserve">
-    <value>{0} بند إلزامي ما زال مفتوحًا</value>
+    <value>{0} بند متوقَّع ما زال مفتوحًا</value>
   </data>
   <data name="ConfirmRequiredOpen" xml:space="preserve">
     <value>{0} بند إلزامي غير مُعلَّم. ستُغلق المهمة على أي حال.</value>
@@ -1473,7 +1473,7 @@
     <value>يلزم مستند إثبات. سيصبح ربط المستند فعّالًا عند توصيل وحدة المستندات.</value>
   </data>
   <data name="ChecklistLevelHint" xml:space="preserve">
-    <value>تغيير المستوى: اختياري ← إلزامي ← مانع</value>
+    <value>تغيير المستوى: اختياري ← متوقَّع ← مانع</value>
   </data>
   <data name="ToastChecklistItemAdded" xml:space="preserve">
     <value>أُضيف البند</value>

@@ -136,9 +136,9 @@
   <data name="ChecklistAddButton" xml:space="preserve"><value>Ajouter</value></data>
   <data name="ChecklistAddHint" xml:space="preserve"><value>Cliquez sur l'étiquette pour changer de niveau. Il n'y a pas encore de liste de modèles.</value></data>
   <data name="ChecklistLevelOptional" xml:space="preserve"><value>Facultatif</value></data>
-  <data name="ChecklistLevelRequired" xml:space="preserve"><value>Obligatoire</value></data>
+  <data name="ChecklistLevelRequired" xml:space="preserve"><value>Attendu</value></data>
   <data name="ChecklistLevelBlocking" xml:space="preserve"><value>Bloquant</value></data>
-  <data name="ChecklistLevelHint" xml:space="preserve"><value>Changer le niveau : Facultatif → Obligatoire → Bloquant</value></data>
+  <data name="ChecklistLevelHint" xml:space="preserve"><value>Changer le niveau : Facultatif → Attendu → Bloquant</value></data>
   <data name="ChecklistEvidenceToggle" xml:space="preserve"><value>Exiger une preuve</value></data>
   <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Une preuve est requise. Le lien vers un document sera actif une fois le module documentaire raccordé.</value></data>
   <data name="ChecklistRemove" xml:space="preserve"><value>Supprimer l'élément</value></data>

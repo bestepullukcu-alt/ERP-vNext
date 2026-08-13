@@ -1458,13 +1458,13 @@
     <value>可选</value>
   </data>
   <data name="ChecklistLevelRequired" xml:space="preserve">
-    <value>必填</value>
+    <value>应完成</value>
   </data>
   <data name="ChecklistLevelBlocking" xml:space="preserve">
     <value>阻断</value>
   </data>
   <data name="ChecklistRequiredOpen" xml:space="preserve">
-    <value>尚有 {0} 个必填条目未完成</value>
+    <value>尚有 {0} 个应完成条目未勾选</value>
   </data>
   <data name="ConfirmRequiredOpen" xml:space="preserve">
     <value>有 {0} 个必填条目未勾选。任务仍将关闭。</value>
@@ -1473,7 +1473,7 @@
     <value>需要证明文件。文档模块接入后即可关联文档。</value>
   </data>
   <data name="ChecklistLevelHint" xml:space="preserve">
-    <value>更改级别：可选 → 必填 → 阻断</value>
+    <value>更改级别：可选 → 应完成 → 阻断</value>
   </data>
   <data name="ToastChecklistItemAdded" xml:space="preserve">
     <value>已添加条目</value>

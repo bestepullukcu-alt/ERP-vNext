@@ -1458,13 +1458,13 @@
     <value>Opcional</value>
   </data>
   <data name="ChecklistLevelRequired" xml:space="preserve">
-    <value>Obligatorio</value>
+    <value>Esperado</value>
   </data>
   <data name="ChecklistLevelBlocking" xml:space="preserve">
     <value>Bloqueante</value>
   </data>
   <data name="ChecklistRequiredOpen" xml:space="preserve">
-    <value>{0} elemento(s) obligatorio(s) sin cerrar</value>
+    <value>{0} elemento(s) esperado(s) sin cerrar</value>
   </data>
   <data name="ConfirmRequiredOpen" xml:space="preserve">
     <value>{0} elemento(s) obligatorio(s) sin marcar. La tarea se cerrará de todos modos.</value>
@@ -1473,7 +1473,7 @@
     <value>Se requiere evidencia. El enlace a un documento se activará cuando se conecte el módulo documental.</value>
   </data>
   <data name="ChecklistLevelHint" xml:space="preserve">
-    <value>Cambiar el nivel: Opcional → Obligatorio → Bloqueante</value>
+    <value>Cambiar el nivel: Opcional → Esperado → Bloqueante</value>
   </data>
   <data name="ToastChecklistItemAdded" xml:space="preserve">
     <value>Elemento añadido</value>

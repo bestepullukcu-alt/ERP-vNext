@@ -1458,13 +1458,13 @@
     <value>İsteğe bağlı</value>
   </data>
   <data name="ChecklistLevelRequired" xml:space="preserve">
-    <value>Zorunlu</value>
+    <value>Beklenen</value>
   </data>
   <data name="ChecklistLevelBlocking" xml:space="preserve">
     <value>Engelleyici</value>
   </data>
   <data name="ChecklistRequiredOpen" xml:space="preserve">
-    <value>{0} zorunlu madde açık</value>
+    <value>{0} beklenen madde açık</value>
   </data>
   <data name="ConfirmRequiredOpen" xml:space="preserve">
     <value>{0} zorunlu madde işaretlenmedi. Görev yine de kapatılacak.</value>
@@ -1473,7 +1473,7 @@
     <value>Kanıt belgesi gerekiyor. Belge bağlantısı doküman modülü bağlandığında etkinleşecek.</value>
   </data>
   <data name="ChecklistLevelHint" xml:space="preserve">
-    <value>Seviyeyi değiştir: İsteğe bağlı → Zorunlu → Engelleyici</value>
+    <value>Seviyeyi değiştir: İsteğe bağlı → Beklenen → Engelleyici</value>
   </data>
   <data name="ToastChecklistItemAdded" xml:space="preserve">
     <value>Madde eklendi</value>

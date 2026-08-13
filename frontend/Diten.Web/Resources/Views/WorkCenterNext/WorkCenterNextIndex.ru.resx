@@ -1458,13 +1458,13 @@
     <value>Необязательно</value>
   </data>
   <data name="ChecklistLevelRequired" xml:space="preserve">
-    <value>Обязательно</value>
+    <value>Ожидается</value>
   </data>
   <data name="ChecklistLevelBlocking" xml:space="preserve">
     <value>Блокирующий</value>
   </data>
   <data name="ChecklistRequiredOpen" xml:space="preserve">
-    <value>Открытых обязательных пунктов: {0}</value>
+    <value>Открытых ожидаемых пунктов: {0}</value>
   </data>
   <data name="ConfirmRequiredOpen" xml:space="preserve">
     <value>Не отмечено обязательных пунктов: {0}. Задача всё равно будет закрыта.</value>
@@ -1473,7 +1473,7 @@
     <value>Требуется подтверждающий документ. Привязка документа заработает после подключения модуля документов.</value>
   </data>
   <data name="ChecklistLevelHint" xml:space="preserve">
-    <value>Изменить уровень: Необязательно → Обязательно → Блокирующий</value>
+    <value>Изменить уровень: Необязательно → Ожидается → Блокирующий</value>
   </data>
   <data name="ToastChecklistItemAdded" xml:space="preserve">
     <value>Пункт добавлен</value>

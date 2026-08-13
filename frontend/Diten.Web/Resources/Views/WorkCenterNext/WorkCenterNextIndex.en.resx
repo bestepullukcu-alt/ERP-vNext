@@ -1458,13 +1458,13 @@
     <value>Optional</value>
   </data>
   <data name="ChecklistLevelRequired" xml:space="preserve">
-    <value>Required</value>
+    <value>Expected</value>
   </data>
   <data name="ChecklistLevelBlocking" xml:space="preserve">
     <value>Blocking</value>
   </data>
   <data name="ChecklistRequiredOpen" xml:space="preserve">
-    <value>{0} required item(s) still open</value>
+    <value>{0} expected item(s) still open</value>
   </data>
   <data name="ConfirmRequiredOpen" xml:space="preserve">
     <value>{0} required item(s) are unticked. The task will be closed anyway.</value>
@@ -1473,7 +1473,7 @@
     <value>Evidence is required. Attaching a document becomes possible once the document module is connected.</value>
   </data>
   <data name="ChecklistLevelHint" xml:space="preserve">
-    <value>Change the level: Optional → Required → Blocking</value>
+    <value>Change the level: Optional → Expected → Blocking</value>
   </data>
   <data name="ToastChecklistItemAdded" xml:space="preserve">
     <value>Item added</value>

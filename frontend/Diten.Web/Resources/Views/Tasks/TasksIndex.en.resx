@@ -136,9 +136,9 @@
   <data name="ChecklistAddButton" xml:space="preserve"><value>Add</value></data>
   <data name="ChecklistAddHint" xml:space="preserve"><value>Click the label to change the level. There is no template list yet.</value></data>
   <data name="ChecklistLevelOptional" xml:space="preserve"><value>Optional</value></data>
-  <data name="ChecklistLevelRequired" xml:space="preserve"><value>Required</value></data>
+  <data name="ChecklistLevelRequired" xml:space="preserve"><value>Expected</value></data>
   <data name="ChecklistLevelBlocking" xml:space="preserve"><value>Blocking</value></data>
-  <data name="ChecklistLevelHint" xml:space="preserve"><value>Change the level: Optional → Required → Blocking</value></data>
+  <data name="ChecklistLevelHint" xml:space="preserve"><value>Change the level: Optional → Expected → Blocking</value></data>
   <data name="ChecklistEvidenceToggle" xml:space="preserve"><value>Require evidence</value></data>
   <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Evidence is required. Attaching a document becomes possible once the document module is connected.</value></data>
   <data name="ChecklistRemove" xml:space="preserve"><value>Remove item</value></data>

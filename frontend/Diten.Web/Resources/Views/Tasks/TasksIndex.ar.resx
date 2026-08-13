@@ -136,9 +136,9 @@
   <data name="ChecklistAddButton" xml:space="preserve"><value>إضافة</value></data>
   <data name="ChecklistAddHint" xml:space="preserve"><value>انقر على الوسم لتغيير المستوى. لا توجد قائمة قوالب بعد.</value></data>
   <data name="ChecklistLevelOptional" xml:space="preserve"><value>اختياري</value></data>
-  <data name="ChecklistLevelRequired" xml:space="preserve"><value>إلزامي</value></data>
+  <data name="ChecklistLevelRequired" xml:space="preserve"><value>متوقَّع</value></data>
   <data name="ChecklistLevelBlocking" xml:space="preserve"><value>مانع</value></data>
-  <data name="ChecklistLevelHint" xml:space="preserve"><value>تغيير المستوى: اختياري ← إلزامي ← مانع</value></data>
+  <data name="ChecklistLevelHint" xml:space="preserve"><value>تغيير المستوى: اختياري ← متوقَّع ← مانع</value></data>
   <data name="ChecklistEvidenceToggle" xml:space="preserve"><value>يتطلب إثباتًا</value></data>
   <data name="ChecklistEvidenceHint" xml:space="preserve"><value>يلزم مستند إثبات. سيصبح ربط المستند فعّالًا عند توصيل وحدة المستندات.</value></data>
   <data name="ChecklistRemove" xml:space="preserve"><value>إزالة البند</value></data>

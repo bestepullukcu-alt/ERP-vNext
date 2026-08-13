@@ -5188,7 +5188,12 @@ tags.diten-tags .tagify__input {
    (`wcn-tabcard`, app.js:840). Background, radius, shadow and padding are therefore the page's existing card
    values, not numbers picked by eye; the only thing declared here is the gap to the first card, and it is the
    column's own 1.5rem rather than the list page's `mb-3`, because this strip lives in that column's rhythm. */
-.wcn-detail-tabcard { margin-block-end: 1.5rem; }
+/* 8px, and it is the SMALLEST gap in this column on purpose. The strip is part of the panel it governs, not a
+   neighbour of it; at 1.5rem it sat exactly as far from its own panel as two unrelated cards sit from each
+   other, and read as a third, separate thing. Distance is the only thing telling the reader what belongs to
+   what, and it was saying the wrong thing. Applies to both panels — the strip is composed above them, not
+   inside either. */
+.wcn-detail-tabcard { margin-block-end: .5rem; }
 /* The count is CONTENT VOLUME, not a summons: grey, in the flow, no absolute positioning. The list page's
    `.wcn-tab-count` is a red corner pill meaning "N things want you" — this number only ever grows, so a red that
    never goes out would stop being seen, and take the real red with it. */
@@ -5201,6 +5206,16 @@ tags.diten-tags .tagify__input {
    fresh value chosen by eye. Applies to the activity panel too: one card today, two tomorrow. */
 .wcn-detail-panel > .wcn-detail-card { margin-block-end: 1.5rem; }
 .wcn-detail-panel > .wcn-detail-card:last-child { margin-block-end: 0; }
+
+/* Below the `lg` breakpoint the rail stops being a column and becomes the tail of one long sequence — so the
+   seam between the last content card and the first rail card is now a card-to-card gap and must measure like
+   one. It was 16px: the bare row gutter, left over from a two-column layout where the two never met. Every
+   other card on the page sits 24px from its neighbour, so the one joint the reader crosses when the layout
+   collapses was the tightest on the screen. Scoped to the stacked case only — above 992px the rail begins on
+   the same line as the tab strip, and this must not move it. */
+@media screen and (max-width: 991.98px) {
+    .wcn-detail-content { margin-block-end: .5rem; }
+}
 
 .wcn-tabs .wcn-tab-count { font-size: .625rem; font-weight: 600; padding-inline: .35rem; line-height: 1.1; box-shadow: 0 0 0 1.5px var(--bs-card-bg); }
 
@@ -5722,7 +5737,14 @@ tags.diten-tags .tagify__input {
 /* No bottom border. The head is a white card on a grey ground and already says where it ends; the rule was
    added when ONE column sat beneath it, and now two columns of different heights do — so it read as a loose
    1320px ruler drawn over both, the rail included. The padding stays: that is the gap to the row below. */
-.wcn-detail-head { padding-block-end: 1rem; }
+/* The strongest break on the page — above it one full-width block ends, below it the page becomes two columns —
+   so it carries the largest gap: 2rem, against 1.5rem between cards and .5rem between a strip and its panel.
+   Written as a MARGIN, not the padding it used to be: the column is transparent, so the two were the same
+   number of pixels, but only one of them says "space after me" in a way the next reader can measure. The value
+   is unchanged in what it draws (16px padding + 16px row gutter = the same 32px); what changed is that it is
+   now legible as one decision instead of two coincidences. It pushes BOTH columns, so the content strip and
+   the rail's first card still begin on the same line. */
+.wcn-detail-head { margin-block-end: 1rem; }
 .wcn-detail-source { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; margin-block-end: .5rem; }
 .wcn-detail-title { margin: 0 0 .625rem; font-size: 1.0625rem; font-weight: 600; color: var(--bs-heading-color); }
 .wcn-detail-chips { display: flex; flex-wrap: wrap; gap: .375rem; }
@@ -6362,8 +6384,13 @@ tags.diten-tags .tagify__input {
 
 /* Capability depth blocks (Faz 2) ------------------------------------------ */
 .wcn-count-inline { font-weight: 600; color: var(--bs-primary); margin-inline-start: .25rem; }
-.wcn-progress { display: block; inline-size: 100%; block-size: .375rem; border: 0; border-radius: 1rem; background: var(--bs-border-color); overflow: hidden; margin-block-end: .625rem; appearance: none; }
-.wcn-progress::-webkit-progress-bar { background: var(--bs-border-color); border-radius: 1rem; }
+/* The track is an OUTLINE, not a fill. Painted solid in `--bs-border-color` it was the same grey, the same
+   height and the same full width as every divider on the page, so 0/4 read as a rule someone had drawn under
+   the heading — a line, not a distance still to travel. Hollow with a boundary, it reads as a road: empty at
+   zero, and the same road once the first item is ticked. Hiding it at zero was the other option and it is
+   worse — the card would jump the moment the first box is checked. Same variable, used as an edge. */
+.wcn-progress { display: block; inline-size: 100%; block-size: .375rem; border: 1px solid var(--bs-border-color); box-sizing: border-box; border-radius: 1rem; background: transparent; overflow: hidden; margin-block-end: .625rem; appearance: none; }
+.wcn-progress::-webkit-progress-bar { background: transparent; border-radius: 1rem; }
 .wcn-progress::-webkit-progress-value { background: var(--bs-success); border-radius: 1rem; }
 .wcn-progress::-moz-progress-bar { background: var(--bs-success); border-radius: 1rem; }
 .wcn-checks, .wcn-subtasks, .wcn-deps, .wcn-attachments { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .375rem; }
