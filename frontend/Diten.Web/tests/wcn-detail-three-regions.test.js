@@ -2344,3 +2344,90 @@ describe("work that cannot be finished here leads with a way to finish it", () =
       .toContain('name="TechnicalDetailsLabel"');
   });
 });
+
+describe("a panel that is open is never re-rendered underneath itself", () => {
+  /*
+   * ── THE DEFECT, AND WHY IT HID ────────────────────────────────────────────────────────────────────────────
+   *
+   * MEASURED with a MutationObserver over two real clicks:
+   *     t=83014  node #2 created — showPanel bound a Bootstrap Offcanvas to it and called .show()
+   *     t=83077  node #3 created — 63ms later, exactly the round-trip of the people lookup
+   *     final    node #3, no instance, no `show` class
+   *
+   * `openSubtaskCreatePanel` ran `render() → showPanel() → await lookup → render()`. That second render replaced
+   * the very node the instance was bound to, mid-animation. The instance survived on a detached node; the node
+   * on screen had none and could never be shown again. It LOOKED like it worked once because the opening
+   * animation was visible for those 63 ms.
+   *
+   * Its sibling `openSubtaskPanel` never re-rendered after its await — which is why one panel worked and the
+   * other did not, and is the comparison that found this.
+   *
+   * ── AND THE WORSE HALF, found by measuring the SAVE paths ─────────────────────────────────────────────────
+   *
+   * Both panels also re-rendered to show a busy button and on failure. With the node replaced,
+   * `hidden.bs.offcanvas` never fires, so Bootstrap never releases `body { overflow: hidden }`. Measured live
+   * after a failed create: panel invisible, no instance, backdrop gone — and THE PAGE WOULD NOT SCROLL.
+   *
+   * These tests assert the SHAPE, because jsdom runs no Bootstrap and no animation; the open/close/open proof is
+   * live and reported with the round.
+   */
+  const APP = () => read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+  const fnBody = (name, end) => {
+    const src = APP();
+    const start = src.indexOf(`const ${name} =`);
+    return src.slice(start, src.indexOf(`const ${end} =`, start));
+  };
+
+  it("never renders again once the create panel is open — the lookup patches the select in place", () => {
+    /*
+     * MUTATION TARGET. Restoring the trailing `render()` puts the second render back and the panel stops
+     * reopening.
+     *
+     * ⚠ AND NOT BY AWAITING FIRST, which was the obvious fix and the wrong one: it made the panel wait on the
+     * people service, so a slow or failing lookup left the reader with a button that did nothing. Found by three
+     * existing tests going red — they open the panel with no lookup stubbed, which is exactly the hanging-service
+     * case. The panel opens immediately; the options are written into the live `<select>` afterwards.
+     */
+    /* Comments STRIPPED: this function EXPLAINS at length that it no longer calls render(), and a guard that
+       reads prose cannot tell a call from a sentence about one. Third time this trap has fired in this session. */
+    const body = fnBody("openSubtaskCreatePanel", "fillAssigneeSelect").replace(/\/\*[\s\S]*?\*\//g, "");
+    const showAt = body.indexOf("showPanel(");
+    const awaitAt = body.indexOf("await global.TasksApi.assignablePeople()");
+    expect(showAt, "the panel is never shown").toBeGreaterThan(-1);
+    expect(showAt, "the panel now waits on the lookup before opening").toBeLessThan(awaitAt);
+    expect(body.slice(showAt), "a render still runs while the panel is open").not.toContain("render()");
+    expect(body, "the lookup does not land in the select").toContain("fillAssigneeSelect()");
+  });
+
+  it("shows a panel's busy state on the BUTTON, never through render()", () => {
+    // A render while an offcanvas is open detaches its node, and Bootstrap then never releases the body lock.
+    ["saveNewSubtask", "saveSubtaskPanel"].forEach((name) => {
+      const body = fnBody(name, name === "saveNewSubtask" ? "cancelSubtask" : "openSubtaskCreatePanel");
+      expect(body, `${name} still renders while its panel is open`).not.toMatch(/^\s*render\(\);/m);
+      expect(body, `${name} does not set its busy state in place`).toContain("setPanelBusy(");
+    });
+  });
+
+  it("closes through Bootstrap, so the body lock is released by whoever applied it", () => {
+    /*
+     * On success both panels used to clear state and re-render, removing the node while it was still shown —
+     * `hidden.bs.offcanvas` never fired and `body { overflow: hidden }` stayed. `hidePanel` calls `hide()` and
+     * lets showPanel's own `hidden` listener do the clearing and the single render.
+     */
+    ["saveNewSubtask", "saveSubtaskPanel"].forEach((name) => {
+      const body = fnBody(name, name === "saveNewSubtask" ? "cancelSubtask" : "openSubtaskCreatePanel");
+      expect(body, `${name} does not close through Bootstrap`).toContain("hidePanel(");
+    });
+    const helper = fnBody("hidePanel", "showPanel");
+    expect(helper, "hidePanel does not call hide()").toContain(".hide()");
+  });
+
+  it("keeps the failed save's typed values, instead of wiping them with a render", () => {
+    // The reader has something to fix; re-rendering would clear the form they are being asked to correct.
+    const body = fnBody("saveNewSubtask", "cancelSubtask");
+    const failAt = body.indexOf("if (!result.ok)");
+    const tail = body.slice(failAt, body.indexOf("return;", failAt));
+    expect(tail, "the failure path re-renders the open panel").not.toContain("render()");
+    expect(tail, "the failure path does not restore the button").toContain("setPanelBusy(");
+  });
+});

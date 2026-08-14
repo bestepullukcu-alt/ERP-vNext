@@ -830,6 +830,17 @@ describe("the contract declares the shapes that kept drifting", () => {
  * reason the detailed panel exists.
  */
 describe("creating a subtask in detail", () => {
+  /*
+   * ⚠ TWO TICKS, NOT ONE — and the reason is the defect this round fixed.
+   *
+   * The panel used to be drawn immediately and then RE-RENDERED once the assignable-people lookup returned.
+   * That second render replaced the node the Bootstrap Offcanvas instance was bound to, so the panel could be
+   * opened exactly once per page load and never again (measured live: node #2 at t=83014 with an instance,
+   * node #3 at t=83077 without one).
+   *
+   * The lookup is awaited BEFORE the panel is drawn now, so there is exactly one render — and the node appears
+   * a microtask later than it used to. Waiting for the promise chain is what this extra tick is.
+   */
   const openCreate = async () => {
     app().querySelector("[data-wcn-subtask-add-detailed]").click();
     await new Promise((resolve) => setTimeout(resolve, 0));

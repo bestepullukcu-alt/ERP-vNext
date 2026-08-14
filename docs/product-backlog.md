@@ -3424,3 +3424,45 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   (`{` ve `}` sayısı, yorumlar soyulduktan sonra).
 - **Yapılacak (istenirse):** bu kontrolü bir teste bağla — `backbone-custom.css` ayraçları dengeli olmalı.
 - **Gelecek regresyon riski: 🟢** — düzeltildi ve canlı doğrulandı.
+
+### BL-129 — ✅ KAPANDI (2026-08-14) — [ALT GÖREV PANELLERİ] Açık bir panelin altından render çekiliyordu
+- **Belirti:** "Detaylı görev ekle" ilk tıklamada açıyor, sonra hiçbir tıklamada açmıyor — sayfa yenilense bile.
+- **TEŞHİS — iki panelin karşılaştırması sebebi verdi.** Aynı sayfada iki panel var, biri çalışıyordu:
+  | | çalışan (hızlı düzenleme) | çalışmayan (detaylı oluşturma) |
+  |---|---|---|
+  | açılış sırası | `render() → show() → await` | `render() → show() → await → **render()**` |
+  | await sonrası render | **yok** | **var** ← fark burada |
+- **ÖLÇÜM (MutationObserver, iki gerçek tıklama):**
+  - `t=83014` düğüm #2 oluştu — `showPanel` Offcanvas örneğini **buna** bağladı, `.show()` çağırdı
+  - `t=83077` düğüm #3 oluştu — **+63ms**, tam olarak `assignablePeople` gidiş-dönüşü
+  - son durum: düğüm #3, örnek **yok**, `show` **yok**
+  İkinci `render()` `#wcnApp` altını değiştiriyor; Bootstrap örneği artık belgede olmayan düğüme bağlı kalıyor.
+  "İlk tıklamada çalışıyor" görüntüsü, açılış animasyonunun silinmeden önceki o 63 ms'si.
+- **DAHA KÖTÜ YARISI — kayıt yollarını ölçünce çıktı:** iki panel de meşgul durumu ve hata dalında `render()`
+  çağırıyordu. Düğüm değişince `hidden.bs.offcanvas` hiç ateşlenmiyor, dolayısıyla Bootstrap
+  **`body { overflow: hidden }`'ı geri almıyor**. Canlı ölçüldü: başarısız oluşturmadan sonra panel görünmez,
+  örnek yok, backdrop gitmiş — **ve sayfa kaydırılamıyor.** Kullanıcı sıkışıyor.
+- **DÜZELTME (üç parça):**
+  1. Panel **hemen** açılıyor; arama sonucu `render()` yerine **canlı `<select>`'e yazılıyor** (`fillAssigneeSelect`).
+  2. Meşgul durumu **düğmeye yerinde** uygulanıyor (`setPanelBusy`), render ile değil.
+  3. Kapanış **Bootstrap'in `hide()`'ı üzerinden** (`hidePanel`); `hidden` olayı state'i temizliyor ve TEK
+     render'ı o yapıyor — body kilidini uygulayan kütüphane geri alıyor.
+- **⚠ İLK DÜZELTMEM YANLIŞTI ve testler yakaladı:** aramayı panelden ÖNCE await etmiştim. O zaman yavaş/hatalı
+  bir kişi servisi paneli hiç açtırmıyor — üç mevcut test kırmızıya döndü (arama stub'lanmamış, yani tam da
+  "servis yanıt vermiyor" vakası). Panelin açılışı hiçbir uzak çağrıya bağlanmamalı.
+- **CANLI DOĞRULAMA:** AÇ → KAPAT → TEKRAR AÇ → TEKRAR KAPAT → ÜÇÜNCÜ AÇ, üç kez (yenilemeden önce, arada yazma
+  işlemi yaptıktan sonra, ve sayfa yenilendikten sonra). Her açılışta örnek var, backdrop 1, atanan listesi
+  5 seçenekli; her kapanışta backdrop 0 ve body serbest.
+- **Enter kanıtı tamamlandı** (geçen turun borcu): `#wcnNewSubtaskTitle`'a yazıp gerçek `Enter` → alt görev
+  oluştu (19→20), listede göründü, panel temiz kapandı, bildirim: "'CT son kanit Enter' alt görevi eklendi."
+- **Gelecek regresyon riski: 🟢** — üç kural da testle kilitli.
+
+### BL-130 — 🟡 [ALT GÖREV PANELİ] Detaylı panelde son tarih zorunlu ama işaretli değil
+- **Ölçüm:** panelde başlık dışında hiçbir alan yıldızlı değil, ama son tarih boş bırakılınca oluşturma
+  **başarısız** oluyor ve bildirim yalnız "İşlem sırasında bir hata oluştu." diyor. Gerçek sebep API'de:
+  `VALIDATION_REQUEST_DUE_AT_NOT_NULL` ("A due date is required.").
+- **İki kusur birden:** (a) zorunlu alan UI'da işaretsiz — orchestrator kuralı "Backend Validator'daki zorunlu
+  alanlara UI label'larında kırmızı yıldız" ihlali; (b) sunucunun anlaşılır reason_code'u generic bir mesajla
+  maskeleniyor.
+- **Yapılacak:** son tarihe `*` ve `required`; `failureMessage` bu reason_code'u kendi diline çevirsin.
+- **Gelecek regresyon riski: 🟢** — bugün de başarısız oluyor, yalnız sebebi görünmüyor.

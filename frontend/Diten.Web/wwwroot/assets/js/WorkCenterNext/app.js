@@ -3793,8 +3793,11 @@
         const title = String(draft.title || '').trim();
         if (!title) { toast(t('SubtaskTitleRequired'), 'error'); return; }
 
+        /* In place — a render here would replace the open panel's node and strand the body lock. Same defect
+           class as the create panel's; this one merely hid better, because the quick-edit path had no second
+           render on open and so LOOKED healthy until its save was measured. */
         state.subtaskPanelSaving = true;
-        render();
+        setPanelBusy('[data-wcn-subtask-save]', true, t('ActionSubmitting'));
 
         // Every other field is carried over from the record just read: a partial payload against a full-replace
         // endpoint silently erases whatever the panel did not show.
@@ -3807,14 +3810,17 @@
         state.subtaskPanelSaving = false;
 
         if (!result.ok) {
+            // Stays open with the typed values: the reader has something to fix.
+            setPanelBusy('[data-wcn-subtask-save]', false);
             toast(global.TasksApi.failureMessage(result), 'error');
-            render();
             return;
         }
 
-        state.subtaskPanelId = null;
-        state.subtaskPanelRecord = null;
         toast(t('SubtaskSaved'));
+        hidePanel('wcnSubtaskPanel', () => {
+            state.subtaskPanelId = null;
+            state.subtaskPanelRecord = null;
+        });
         await loadWorkItems();
     };
 
@@ -3886,6 +3892,27 @@
         </div>`;
     };
 
+    /*
+     * ⚠ THE LOOKUP IS AWAITED BEFORE THE PANEL IS DRAWN, AND THAT ORDER IS THE WHOLE FIX.
+     *
+     * MEASURED, with a MutationObserver over two real clicks:
+     *   t=83014  node #2 created — `showPanel` bound a Bootstrap Offcanvas to it and called `.show()`
+     *   t=83077  node #3 created — 63ms later, the round-trip of the people lookup
+     *   final    node #3, no instance, no `show` class
+     *
+     * The old order was `render() → showPanel() → await lookup → render()`. That second render replaced the very
+     * node the Offcanvas instance was bound to, mid-animation. The instance survived, attached to a node no
+     * longer in the document; the node on screen had no instance at all and could never be shown. The panel
+     * appeared to "work once" only because the opening animation was visible for those 63ms before the swap —
+     * which is exactly how it was measured as working, and then never again.
+     *
+     * Its sibling `openSubtaskPanel` does NOT re-render after its await (it only assigns state), which is why
+     * one panel worked and the other did not. Same shape now: ONE render, and it happens when there is nothing
+     * left to load.
+     *
+     * The cost is that the panel opens ~60ms later. The benefit is that it opens COMPLETE — the old order drew
+     * an assignee select with no options and then repainted it, which is a flicker nobody asked for.
+     */
     const openSubtaskCreatePanel = async (parentId) => {
         state.subtaskCreateParentId = parentId;
         state.subtaskCreateDraft = { priority: 'Medium' };
@@ -3895,21 +3922,40 @@
             state.subtaskCreateDraft = null;
         });
 
-        // The picker is the SAME list the server will accept — reassign validates against it, so offering anyone
-        // else here would build a form whose submit is refused.
         /*
-         * `data` IS the array now, and the hazard this comment used to warn about is gone at the source.
+         * THE LOOKUP LANDS IN THE SELECT, NOT THROUGH A RENDER — and that distinction is the whole fix.
          *
-         * It read: the lookup answers `{ people, excluded }`, so a caller reading `.data` got an object and the
-         * next render died on `people.map is not a function`. That warning could not stop the next caller —
-         * three of four callers got this wrong across three rounds, the last one shipping a reassign dialog
-         * that could never open (BL-109). The envelope is unwrapped ONCE, in `TasksApi.assignablePeople`, so
-         * there is no shape here to get wrong (BL-113).
+         * The panel opens IMMEDIATELY, as it always did: awaiting the lookup first would mean a slow or failing
+         * people service leaves the reader with a button that does nothing, which is a worse failure than an
+         * assignee list that fills a moment late.
+         *
+         * What changed is the second half. This used to end in `render()`, which rebuilt `#wcnApp` and replaced
+         * the very node the Bootstrap Offcanvas instance was bound to. Measured: node #2 at t=83014 carrying the
+         * instance, node #3 at t=83077 (the lookup's round-trip) carrying none — after which the panel could
+         * never be opened again, and `hidden.bs.offcanvas` could never fire to release `body { overflow:hidden }`.
+         *
+         * So the options are written into the live `<select>`. One node, one instance, for the panel's whole life.
          */
         const people = await global.TasksApi.assignablePeople();
         state.assignablePeople = people.ok ? people.data : [];
         if (!people.ok) { console.warn('[WorkCenterNext] Assignable people could not be read; the picker is empty.'); }
-        render();
+        fillAssigneeSelect();
+    };
+
+    /*
+     * Patches the open create panel's assignee picker in place. Silent when the panel has since been closed —
+     * a late lookup must not resurrect anything.
+     */
+    const fillAssigneeSelect = () => {
+        const select = document.getElementById('wcnNewSubtaskAssignee');
+        if (!select) { return; }
+        const chosen = select.value;
+        select.innerHTML = `<option value="">${esc(t('SubtaskAssignToMe'))}</option>`
+            + (state.assignablePeople || []).map((person) => {
+                const id = personUserId(person);
+                return `<option value="${esc(id)}">${esc(person.displayName || id)}</option>`;
+            }).join('');
+        if (chosen) { select.value = chosen; }
     };
 
     const saveNewSubtask = async (parentId) => {
@@ -3917,8 +3963,9 @@
         const title = String(draft.title || '').trim();
         if (!title) { toast(t('SubtaskTitleRequired'), 'error'); return; }
 
+        /* In place, not through render(): re-rendering here would replace the open panel's node — see setPanelBusy. */
         state.subtaskCreateSaving = true;
-        render();
+        setPanelBusy('[data-wcn-newsubtask-save]', true, t('ActionSubmitting'));
 
         const payload = global.TaskForm.buildCreatePayload({
             title,
@@ -3935,11 +3982,24 @@
 
         const result = await global.TasksApi.create(payload);
         state.subtaskCreateSaving = false;
-        if (!result.ok) { toast(global.TasksApi.failureMessage(result), 'error'); render(); return; }
+        if (!result.ok) {
+            // The panel STAYS OPEN with the typed values intact — the reader has to fix something, and a render
+            // here would both destroy their input and strand the body lock.
+            setPanelBusy('[data-wcn-newsubtask-save]', false);
+            toast(global.TasksApi.failureMessage(result), 'error');
+            return;
+        }
 
-        state.subtaskCreateParentId = null;
-        state.subtaskCreateDraft = null;
         toast(tf('ToastSubtaskAdded', title));
+        /*
+         * Close through Bootstrap FIRST. `showPanel`'s `hidden` listener clears the draft and renders once the
+         * panel is actually gone; reloading before that would replace the node underneath an open offcanvas and
+         * leave the page unscrollable.
+         */
+        hidePanel('wcnSubtaskCreatePanel', () => {
+            state.subtaskCreateParentId = null;
+            state.subtaskCreateDraft = null;
+        });
         await loadWorkItems();
     };
 
@@ -4010,6 +4070,39 @@
         console.warn('[WorkCenterNext] window.showConfirm is unavailable; the destructive action was not offered.');
         resolve(false);
     });
+
+    /*
+     * ── NEVER RE-RENDER A PANEL THAT IS OPEN ──────────────────────────────────────────────────────────────
+     *
+     * `render()` replaces `#wcnApp`'s subtree. If an offcanvas is open, its node goes with it — and Bootstrap's
+     * instance stays bound to the detached node. From that moment the panel on screen has no instance, cannot be
+     * shown or hidden, `hidden.bs.offcanvas` never fires, and **the body keeps `overflow: hidden`**: the reader
+     * is left on a page that will not scroll. Measured live, twice, in this one panel.
+     *
+     * So a panel's busy state is applied to the BUTTON, in place, and closing goes through Bootstrap's own
+     * `hide()` — whose `hidden` event is what clears the state and re-renders. One render, after the panel is
+     * gone, never during.
+     */
+    const setPanelBusy = (saveSelector, busy, busyLabel) => {
+        const btn = document.querySelector(saveSelector);
+        if (!btn) { return; }
+        btn.disabled = busy;
+        if (busy) {
+            if (!btn.dataset.wcnIdleLabel) { btn.dataset.wcnIdleLabel = btn.textContent.trim(); }
+            btn.textContent = busyLabel;
+        } else if (btn.dataset.wcnIdleLabel) {
+            btn.textContent = btn.dataset.wcnIdleLabel;
+        }
+    };
+
+    /* Closes through Bootstrap, so `hidden.bs.offcanvas` fires and the body lock is released by the library that
+       applied it. Falls back to clearing state directly only when the instance is genuinely gone. */
+    const hidePanel = (id, onMissing) => {
+        const node = document.getElementById(id);
+        const panel = node && global.bootstrap?.Offcanvas?.getInstance(node);
+        if (panel) { panel.hide(); return; }
+        if (typeof onMissing === 'function') { onMissing(); render(); }
+    };
 
     /* Shared offcanvas plumbing for both subtask panels. */
     const showPanel = (id, onHidden) => {
