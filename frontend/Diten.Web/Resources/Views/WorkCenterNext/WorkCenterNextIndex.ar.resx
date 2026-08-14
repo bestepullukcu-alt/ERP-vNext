@@ -1592,6 +1592,15 @@
   <data name="ActionsAvailable" xml:space="preserve">
     <value>الإجراءات المتاحة</value>
   </data>
+  <data name="ActionSubmitting" xml:space="preserve">
+    <value>جارٍ التنفيذ…</value>
+  </data>
+  <data name="ActionsNoneClosed" xml:space="preserve">
+    <value>أُغلقت هذه المهمة؛ لم يعد هناك ما يمكن فعله هنا.</value>
+  </data>
+  <data name="ActionsNoneNotYours" xml:space="preserve">
+    <value>لا توجد لديك إجراءات على هذه المهمة حاليًا.</value>
+  </data>
   <data name="ActionsOther" xml:space="preserve">
     <value>إجراءات أخرى</value>
   </data>

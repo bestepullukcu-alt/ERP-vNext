@@ -6096,6 +6096,14 @@ tags.diten-tags .tagify__input {
 /* A cancelled predecessor is still shown — it just no longer holds anything up. */
 .wcn-dep.is-cancelled .wcn-dep-title { text-decoration: line-through; color: var(--bs-secondary-color); }
 .wcn-confirm-body { font-size: .9375rem; color: var(--bs-body-color); line-height: 1.5; }
+/* The outcome sentence at the head of a dialog. It arrived here from the action rail, where every secondary
+   action used to carry its explanation in the card — four sentences read before the reader had chosen any of
+   them. At the top of the dialog the action opens, the same sentence is read at the moment it decides
+   something. Quiet: it explains the title above it, it does not compete with it. */
+.wcn-dialog-lead {
+    margin: 0 0 .75rem; font-size: .8125rem; line-height: 1.5;
+    color: var(--bs-secondary-color); text-align: start;
+}
 
 /* Parked notes (waiting-on / snoozed) --------------------------------------- */
 .wcn-parked {
@@ -6543,6 +6551,10 @@ tags.diten-tags .tagify__input {
    `.dropdown-item` is NOT here on purpose: Bootstrap already gives it a `:focus` background (measured
    rgba(34,48,62,.06)), so 29 of the page's controls were covered and adding a second treatment would make the
    same menu answer two ways. */
+/* The action rail's buttons carry `.btn`, whose focus ring the theme suppresses (BL-100) — but they are the
+   primary controls of the page's primary card, so they get the house ring through OUR class rather than waiting
+   for the app-wide `.btn` decision. Measured with real Tab presses: three reachable buttons, zero indicators. */
+.wcn-act-btn:focus-visible,
 .wcn-subtask-check:focus-visible,
 .wcn-subtask-title:focus-visible,
 .wcn-subtask-rowaction:focus-visible,
@@ -7043,17 +7055,44 @@ tags.diten-tags .tagify__input {
 .wcn-detail-content > .wcn-detail-card:last-child,
 .wcn-detail-rail > .wcn-detail-card:last-child { margin-block-end: 0; }
 
-/* Action rail: the primary action leads at full width; the rest are quieter and narrower. */
-.wcn-actrail { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .75rem; }
+/* ── Action rail: three tiers, told apart by STRUCTURE ─────────────────────
+   It was four stacked rows of button-plus-sentence at near-equal weight, separated only by which button was
+   `btn-primary` — 275px in which the page's whole purpose was a matter of noticing a hue. Now the primary owns
+   a full-width row and keeps its sentence; the rest are compact and wrap; destructive sits last under a rule. */
+.wcn-actrail { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .625rem; }
 .wcn-act { display: flex; flex-direction: column; gap: .25rem; }
 .wcn-act-btn { display: inline-flex; align-items: center; gap: .5rem; justify-content: flex-start; }
 .wcn-act-primary .wcn-act-btn { inline-size: 100%; padding-block: .625rem; font-size: .9375rem; font-weight: 600; }
-.wcn-act-secondary .wcn-act-btn, .wcn-act-danger .wcn-act-btn { inline-size: 100%; }
-/* What the action will do — quieter than the label it explains. */
+/* Secondary and destructive share one shape: they are peers of each other, not of the primary. Auto width so
+   several fit a line; `flex-wrap` on the row means a long label takes its own line instead of overflowing. */
+.wcn-actrail-secondary {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-wrap: wrap; gap: .375rem;
+}
+.wcn-actrail-secondary .wcn-act { flex: 0 1 auto; }
+.wcn-act-secondary .wcn-act-btn, .wcn-act-destructive .wcn-act-btn {
+    inline-size: auto; padding-block: .3125rem; padding-inline: .625rem; font-size: .8125rem;
+}
+/* The rule above the destructive tier. It separates without shouting — the colour on the button already carries
+   the warning, and a second alarm here would make the ordinary actions look safe by contrast rather than
+   ordinary. */
+.wcn-acts-destructive { margin-block-start: .25rem; padding-block-start: .625rem; border-block-start: 1px solid var(--bs-border-color); }
+/* What the PRIMARY action will do. The secondary tiers have no prose at all: their sentences moved into the
+   dialogs they open, where they are read at the moment they matter. */
 .wcn-act-outcome { font-size: .75rem; color: var(--bs-secondary-color); }
-/* Why a disabled action cannot be used. It stays in place: the reason is the point. */
-.wcn-act-reason { font-size: .75rem; color: var(--bs-warning); }
+/* Why a disabled action cannot be used. It stays in place and beside the action: the reason is about THIS
+   button, so it belongs where the button is rather than in whichever card owns the underlying cause. */
+.wcn-act-reason {
+    display: flex; align-items: flex-start; gap: .375rem; margin: 0;
+    font-size: .75rem; color: var(--bs-warning);
+}
 .wcn-act-disabled .wcn-act-btn { opacity: .65; }
+/* The card while a write is in flight. Every control goes quiet at once, so a second click cannot start a
+   second transition on work whose state the server has not settled yet. */
+.wcn-acts-locked { opacity: .75; }
+.wcn-act-none { margin: 0; }
+/* DEAD (BL-109): wrapper for the "other actions" kebab, which no longer renders — its only occupant was the
+   destructive action and that is drawn in the open now. Kept one round in case the menu returns. */
 .wcn-actrail-other { margin-block-start: 1rem; padding-block-start: 1rem; border-block-start: 1px solid var(--bs-border-color); }
 
 /* Lifecycle strip: an optional step is drawn but visibly not on the main path. */

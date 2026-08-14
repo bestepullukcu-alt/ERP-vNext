@@ -1592,6 +1592,15 @@
   <data name="ActionsAvailable" xml:space="preserve">
     <value>Available actions</value>
   </data>
+  <data name="ActionSubmitting" xml:space="preserve">
+    <value>Applying…</value>
+  </data>
+  <data name="ActionsNoneClosed" xml:space="preserve">
+    <value>This task is closed; there is nothing left to do here.</value>
+  </data>
+  <data name="ActionsNoneNotYours" xml:space="preserve">
+    <value>You hold no action on this task right now.</value>
+  </data>
   <data name="ActionsOther" xml:space="preserve">
     <value>Other actions</value>
   </data>

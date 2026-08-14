@@ -209,7 +209,14 @@ describe("a task older than the log says so instead of showing a hole", () => {
     await boot({ activity: [] });
 
     expect(app().querySelector(".wcn-audit-gap")).not.toBeNull();
-    expect(app().querySelector(".wcn-block-hint")).toBeNull();
+    /*
+     * SCOPED TO THE FEED'S OWN CARD, which is what this always meant. It read the whole page, and passed only
+     * because no other card happened to use `.wcn-block-hint` — until the actions card grew an empty state
+     * ("you hold no action on this task") that legitimately uses the same hint class. A page-wide selector for
+     * a claim about one card is a guard waiting to fire on somebody else's correct change.
+     */
+    const feed = app().querySelector(".wcn-audit-gap").closest(".wcn-detail-section");
+    expect(feed.querySelector(".wcn-block-hint"), "the feed reported an unrecorded past as an empty one").toBeNull();
   });
 
   /*

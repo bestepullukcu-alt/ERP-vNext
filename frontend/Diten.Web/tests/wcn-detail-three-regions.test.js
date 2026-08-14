@@ -394,7 +394,9 @@ describe("l10n — every new string in seven languages", () => {
 
 describe("the things this round must not break", () => {
   test("every action still reaches the rail through the same renderer", () => {
-    expect(detailHtml()).toContain("renderActionRail(item)");
+    // The call now carries the resolver's lock as a second argument — one renderer still, and the flag comes
+    // from the resolver rather than being recomputed inside it.
+    expect(detailHtml()).toContain("renderActionRail(item, surface.interactionLocked)");
   });
 
   test("the gate SENTENCES stay on the page — a blocked task still says why", () => {
@@ -1619,5 +1621,172 @@ describe("the detail tabs and their panels are one widget, not two", () => {
     await new Promise((r) => setTimeout(r, 0));
     // Set only at render time it would stay behind, and Tab would land on the tab that is no longer current.
     expect(tabindexes()).toEqual(["-1", "0"]);
+  });
+});
+
+describe("the page header spaces itself like every other detail page", () => {
+  it("sits OUTSIDE the grid row, so it collects one margin and not two", async () => {
+    /*
+     * MEASURED, live, 1440px: breadcrumb → first card was 28px on this page and 12px on `/Tasks/Create` and the
+     * Positions/OrgUnits Details pages — the Golden Reference Compact shape whose markup this header explicitly
+     * copies. The markup was copied; the PLACEMENT was not.
+     *
+     * The header was `<div class="col-12">` inside `.row.g-4`, so the card below it received the header's own
+     * `mb-3` (12px) AND the row's vertical gutter (16px). Two spacing systems stacking into a number neither of
+     * them chose — invisible in code review, obvious on screen.
+     *
+     * Asserted STRUCTURALLY because jsdom performs no layout: the pixel claim is measured in the browser and
+     * reported with the round, and this is the shape that produces it. Putting the header back into the row
+     * fails here.
+     */
+    await boot(projectionItem());
+    const page = app().querySelector(".wcn-details-page");
+    const grid = page.querySelector(".wcn-detail-grid");
+    const breadcrumb = app().querySelector(".breadcrumb");
+
+    expect(breadcrumb, "no breadcrumb on the page").not.toBeNull();
+    expect(grid.contains(breadcrumb), "the header is back inside the grid row").toBe(false);
+    // …and it is a direct child of the page, before the grid — not floated somewhere else on the page.
+    const kids = [...page.children];
+    const header = kids.find((el) => el.contains(breadcrumb));
+    expect(header, "the header is not a direct child of the page").toBeTruthy();
+    expect(kids.indexOf(header)).toBeLessThan(kids.indexOf(grid));
+  });
+
+  it("leaves the grid carrying only the three regions", async () => {
+    // The row's columns are head/content/rail. A fourth full-width column would be the header sneaking back in.
+    await boot(projectionItem());
+    const cols = [...app().querySelector(".wcn-detail-grid").children];
+    expect(cols).toHaveLength(3);
+    expect(cols[0].className).toContain("wcn-detail-head");
+    expect(cols[1].className).toContain("wcn-detail-content");
+    expect(cols[2].className).toContain("wcn-detail-rail");
+  });
+});
+
+/*
+ * ── THE ACTIONS CARD ──────────────────────────────────────────────────────────────────────────────────────
+ *
+ * It was 412px — half the rail — of four near-identical rows: a button and a sentence, four times, told apart
+ * only by which one was `btn-primary`. The page exists so somebody can ACT, and the act was a matter of noticing
+ * a hue among four explanations none of which had been chosen yet.
+ */
+describe("the actions card puts its weight where the decision is", () => {
+  const withActions = (list) => projectionItem({
+    primaryActionCode: list[0].code,
+    actions: list.map((a) => Object.assign({
+      label: { kind: "resource", key: `WorkAggregation_Action_${a.code}` },
+      semanticType: a.code, enabled: true, source: "provider",
+      disabledReasonCode: null, disabledReason: null, requiresConfirmation: false,
+      requiresReason: false, requiresEvidence: false, supportsBulk: false, riskLevel: "normal"
+    }, a))
+  });
+
+  it("separates the three tiers by STRUCTURE, not by colour", async () => {
+    /*
+     * MUTATION TARGET (tier). The primary is named by the SERVER (`primaryActionCode`); this asserts the card
+     * obeys it structurally — a full-width row of its own — rather than tinting one of four equal rows.
+     */
+    await boot(withActions([
+      { code: "accept" }, { code: "plan" }, { code: "cancel", riskLevel: "destructive" }
+    ]));
+    const card = app().querySelector(".wcn-acts");
+    expect(card, "the actions card is gone").not.toBeNull();
+    expect(card.querySelectorAll(".wcn-act-primary")).toHaveLength(1);
+    expect(card.querySelector(".wcn-act-primary span").textContent).toContain("accept");
+    expect(card.querySelectorAll(".wcn-act-secondary").length).toBeGreaterThan(0);
+  });
+
+  it("keeps the destructive action VISIBLE, never folded into a kebab", async () => {
+    /*
+     * MUTATION TARGET (destructive). "Görevi iptal et" used to live inside a "Diğer aksiyonlar" menu. Hiding a
+     * destructive act is not safety — the reader who wants it hunts, and the reader who does not is protected by
+     * the confirm dialog, not by the menu. What the menu bought was a page that could cancel a task without ever
+     * showing the word.
+     */
+    await boot(withActions([{ code: "accept" }, { code: "cancel", riskLevel: "destructive" }]));
+    const card = app().querySelector(".wcn-acts");
+    expect(card.querySelector(".wcn-actrail-menu"), "the kebab came back").toBeNull();
+    const destructive = card.querySelector(".wcn-act-destructive");
+    expect(destructive, "the destructive action is not drawn in the open").not.toBeNull();
+    expect(destructive.querySelector("button").className).toContain("btn-label-danger");
+    // Last, under its own rule — after every ordinary action.
+    const rows = [...card.querySelectorAll("li")];
+    expect(rows.indexOf(destructive.closest(".wcn-acts-row"))).toBe(rows.length - 2);
+  });
+
+  it("carries prose on the PRIMARY only — the rest moved to their dialogs", async () => {
+    // Four sentences read before choosing anything is four sentences nobody reads. They now lead the dialog
+    // each action opens, under the same resource keys.
+    await boot(withActions([{ code: "accept" }, { code: "plan" }, { code: "inquire" }]));
+    const card = app().querySelector(".wcn-acts");
+    expect(card.querySelector(".wcn-act-primary .wcn-act-outcome"), "the primary lost its sentence").not.toBeNull();
+    expect(card.querySelectorAll(".wcn-act-secondary .wcn-act-outcome"), "a secondary kept prose").toHaveLength(0);
+    // …and the helper that carries them into the dialogs still exists and still uses the same key table.
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    expect(src).toMatch(/const outcomeLead = \(action\) =>[\s\S]{0,200}ACTION_OUTCOME_KEY\[action\.code\]/);
+    expect(src, "the plan dialog lost its lead").toMatch(/outcomeLead\(action\)\}<input id="wcnPlanDate"/);
+  });
+
+  it("never draws a disabled action it cannot explain", async () => {
+    /*
+     * MUTATION TARGET (reason). A greyed button with no reason tells the reader a rule exists and refuses to
+     * name it — worse than the button being absent, because they go looking for a permission screen that will
+     * not help.
+     *
+     * ⚠ MEASURED WHILE WRITING THIS: the executable contract ALREADY refuses such an action
+     * (`DISABLED_REASON_REQUIRED`, fixture-contract.js), so one cannot be built through the validated path at
+     * all. The renderer's filter is therefore a SECOND line, not the only one — and this test says so rather
+     * than pretending to construct an impossible fixture. Both halves are asserted: the gate, and the guard.
+     */
+    const contract = read("wwwroot", "assets", "js", "WorkCenterNext", "fixture-contract.js");
+    expect(contract, "the contract stopped requiring a reason").toContain("DISABLED_REASON_REQUIRED");
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    expect(src, "the rail no longer filters unexplained disabled actions")
+      .toMatch(/if \(!a\.disabled \|\| a\.disabledReason\) \{ return true; \}/);
+
+    // And the explained one KEEPS its place, with its reason inside its own row — the reason is about THIS
+    // button, so it belongs where the button is rather than in whichever card owns the underlying cause.
+    await boot(withActions([
+      { code: "complete", enabled: false, disabledReasonCode: "CHECKLIST_INCOMPLETE",
+        disabledReason: { kind: "resource", key: "WorkAggregation_ActionDisabled_ChecklistIncomplete" } }
+    ]));
+    const blocked = app().querySelector(".wcn-acts .wcn-act-disabled");
+    expect(blocked, "the blocked action was dropped along with its reason").not.toBeNull();
+    expect(blocked.querySelector(".wcn-act-reason"), "the blocked action lost its reason").not.toBeNull();
+  });
+
+  it("locks the whole card while a write is in flight, from the resolver's flag", async () => {
+    /*
+     * MUTATION TARGET (lock). `interactionLocked` is the resolver's, consumed — not recomputed in the rail. The
+     * list rows already gate on the same submit state; a second local model here is the "two parallel models,
+     * one of them dead" shape already on record this session.
+     */
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    expect(src, "the rail no longer receives the resolver's lock")
+      .toMatch(/renderActionRail\(item, surface\.interactionLocked\)/);
+    expect(src, "the lock is recomputed locally inside the rail")
+      .not.toMatch(/renderActionRail = \(item[^)]*\) => \{[\s\S]{0,400}state\.submittingItemId/);
+    // …and it is narrowed to THIS item before the resolver sees it, so another item's submit cannot lock it.
+    expect(src).toMatch(/submittingActionCode: state\.submittingItemId === item\.id/);
+  });
+
+  it("says why when there is nothing to do", async () => {
+    // A heading over blank space reads as a page that failed to load, not as a task that is finished.
+    await boot(projectionItem({
+      normalizedStatus: "Done", taskLifecycle: "Done", executionState: "notApplicable", actions: []
+    }));
+    const none = app().querySelector(".wcn-act-none");
+    expect(none, "the empty card says nothing").not.toBeNull();
+    expect(none.textContent).toContain("ActionsNoneClosed");
+  });
+
+  it("ships the new strings in all seven languages", () => {
+    ["ActionSubmitting", "ActionsNoneClosed", "ActionsNoneNotYours"].forEach((key) => {
+      ["en", "tr", "fr", "es", "zh", "ar", "ru"].forEach((lang) => {
+        expect(read("Resources", "Views", "WorkCenterNext", `WorkCenterNextIndex.${lang}.resx`),
+          `${lang} has no ${key}`).toContain(`name="${key}"`);
+      });
+    });
   });
 });

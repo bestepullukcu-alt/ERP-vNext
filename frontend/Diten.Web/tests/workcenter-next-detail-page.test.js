@@ -1094,14 +1094,26 @@ describe("the action rail hides only what is destructive", () => {
     riskLevel: "destructive"
   });
 
-  it("puts a destructive action in the overflow menu, not on the rail", async () => {
+  it("draws a destructive action in the open, in its own tier — not folded into a menu", async () => {
+    /*
+     * ⚠ THIS ASSERTION REVERSED, deliberately, and the reasoning is worth keeping.
+     *
+     * It used to require `cancel` to live inside a "Diğer aksiyonlar" kebab and to be absent from the open
+     * rail. The intent was safety. Measured against what the menu actually bought: the reader who wants to
+     * cancel hunts for it, and the reader who does not is protected by the CONFIRM DIALOG, not by the menu —
+     * which is also where the action's warning sentence now leads. What the menu really bought was a page that
+     * could cancel a task without ever showing the word.
+     *
+     * So the destructive tier is visible, last, under a rule, in the danger colour. Still not duplicated: it
+     * appears exactly once, which is the half of the old assertion that was always right.
+     */
     await bootDetailPage(projectionItem({ actions: [action(), cancelAction] }));
 
-    const menu = app().querySelector(".wcn-actrail-menu .dropdown-menu");
-    expect(menu).not.toBeNull();
-    expect(menu.querySelector('[data-wcn-action="cancel"]')).not.toBeNull();
-    // ...and NOT also on the open rail, which would be the duplicate-action defect all over again.
-    expect(app().querySelector('.wcn-actrail [data-wcn-action="cancel"]')).toBeNull();
+    expect(app().querySelector(".wcn-actrail-menu"), "the kebab came back").toBeNull();
+    const drawn = app().querySelectorAll('.wcn-actrail [data-wcn-action="cancel"]');
+    expect(drawn, "the destructive action is not drawn exactly once").toHaveLength(1);
+    expect(drawn[0].closest(".wcn-act").className).toContain("wcn-act-destructive");
+    expect(drawn[0].className).toContain("btn-label-danger");
   });
 
   it("leaves the ordinary actions open, with the sentence that says what they do", async () => {

@@ -1592,6 +1592,15 @@
   <data name="ActionsAvailable" xml:space="preserve">
     <value>可用操作</value>
   </data>
+  <data name="ActionSubmitting" xml:space="preserve">
+    <value>正在执行…</value>
+  </data>
+  <data name="ActionsNoneClosed" xml:space="preserve">
+    <value>该任务已关闭，这里没有可执行的操作。</value>
+  </data>
+  <data name="ActionsNoneNotYours" xml:space="preserve">
+    <value>您当前对该任务没有可执行的操作。</value>
+  </data>
   <data name="ActionsOther" xml:space="preserve">
     <value>其他操作</value>
   </data>

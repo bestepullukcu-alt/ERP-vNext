@@ -3124,3 +3124,81 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - **Not:** (d) savunulabilir bir konum, çünkü çubuk **tek başına bilgi taşımıyor**; üstündeki caption durumu ve
   n/total'ı metinle veriyor, `<li>`'ler de erişilebilir ağaçta ad + durum taşıyor. Yine de karar sahibin.
 - **Gelecek regresyon riski: 🟡** — renk değişirse iki tema × üç durum yeniden ölçülmeli.
+
+### BL-108 — ✅ KAPANDI (2026-08-14) — [SAYFA BAŞLIĞI] Breadcrumb ile ilk kart arası 28px, standart 12px
+- **Sahip bildirimi:** "breadcrumb ile altındaki kartta sorun var, aralarındaki boşluk standartların dışında."
+- **Ölçüm (canlı, 1440px):**
+  - `/WorkCenterNext/Details/{id}` → breadcrumb alt **142**, kart üst **170** = **28px**
+  - `/Tasks/Create` (Golden Reference Compact deseni) → breadcrumb alt **142**, kart üst **154** = **12px**
+  - Aynı desen: `Views/Organization/Positions/Details.cshtml`, `OrganizationUnits/Details.cshtml` — başlık bloğu
+    `.row`'un **dışında**, boşluğu yalnız kendi `mb-3`'ü (bu temada 12px) veriyor.
+- **Kök sebep — kopyalanan markup, kopyalanmayan YERLEŞİM:** `app.js` başlığı
+  `<div class="col-12">${pageHeader}</div>` olarak `.row.g-4.wcn-detail-grid` **içine** koyuyordu. Böylece
+  altındaki kolon başlığın `mb-3`'ünü (12px) **artı** satırın dikey gutter'ını (16px) alıyordu. 28 = 12 + 16;
+  iki ayrı boşluk sistemi üst üste biniyor ve ortaya kimsenin seçmediği bir sayı çıkıyordu.
+  Kod incelemesinde görünmez, ekranda görünür.
+- **Düzeltme:** başlık grid'in dışına, referanstaki yere alındı. Yeni CSS **yok** — kusur yapısaldı, düzeltme de
+  yapısal. Bootstrap'in gutter'ı kendi kuralına göre sadeleşiyor (satır `-16px` ↔ ilk kolon `+16px`).
+- **Doğrulama (canlı):** açık görev, engelli görev · 1440 ve 900 · açık ve karanlık tema → **hepsinde 12px**.
+  İçerik/ray kolonları yan yana kalıyor, yatay taşma yok, rehber banner'ı başlıkla birlikte taşındı.
+- **Test:** `wcn-detail-three-regions.test.js` → "sits OUTSIDE the grid row" + "leaves the grid carrying only the
+  three regions". Yapısal olarak iddia ediliyor çünkü jsdom layout hesaplamıyor; piksel ölçümü tarayıcıda yapıldı.
+  **Mutasyon:** başlık grid'e geri konunca iki test kırmızı.
+- **Gelecek regresyon riski: 🟢** — tek yapısal satır, davranış değişmiyor.
+
+### BL-109 — ✅ KAPANDI (2026-08-14) — [MEVCUT AKSİYONLAR] "Başkasına ata" HİÇ açılamıyordu: `.data` vs `.data.people`
+- **Bulunma şekli:** bu turun Kural 2 kapısı ("cümleyi silmeden önce varış yerini AÇ, GÖR, ÖLÇ") uygulanırken.
+  Düğmeye basıldı, diyalog açılmadı, yerine "Bu görevin devredilebileceği kimse yok." bildirimi çıktı.
+- **Ölçüm (canlı):** `TasksApi.assignablePeople()` → `{ data: { people: [...4 kişi...] } }`. `app.js` ise
+  `people = (res.ok && res.data) ? res.data : []` yazıyordu; `res.data` bir NESNE, `.length` `undefined`,
+  guard "kimse yok" sonucuna varıp `return` ediyordu. **Kiracıda dört atanabilir kişi varken.**
+- **Neden bu kadar sinsi:** aksiyon çizilmiş, klavyeyle erişilebilir, tıklanabilir ve her seferinde nazikçe
+  reddediyordu. Hata yok, konsol sessiz, test yok.
+- **ÜÇÜNCÜ TEKRAR:** aynı dosyada `loadAssignablePeople` (`app.js`) bunu DOĞRU açıyor ve başında BL-057'den
+  kalma bir yorum var — quick-create offcanvas'ta yaşanan ikizini anlatıyor. Bu satır o yorumun üçüncü kardeşi.
+- **Düzeltme:** `(res.ok && Array.isArray(res.data?.people)) ? res.data.people : []` — diğer iki çağrı yeriyle
+  birebir aynı yazım.
+- **Doğrulama (canlı):** diyalog açılıyor, atanabilir kişi seçicisi **4** kayıt, neden alanı yerinde.
+- **Yapılacak (açık):** `assignablePeople` için tek bir unwrap yardımcısı; üç çağrı yeri üç ayrı yazımda kaldıkça
+  dördüncüsü de yanlış yazılacak.
+- **Gelecek regresyon riski: 🟡** — yardımcı yazılmazsa tekrar eder.
+
+### BL-110 — 🟠 [MEVCUT AKSİYONLAR] Brief'in iki varsayımı ölçümde çürüdü — cümle SİLİNMEDİ, uyarı TAŞINMADI
+- **(a) "Başkasına ata" açıklaması etiketin aynısı değil.** Brief "açıklaması etiketin aynısı, bilgi taşımıyor,
+  SİLİNİR" diyordu. Ölçüm: `OutcomeReassign` = **"Görevi, kabul edilmemiş olarak başkasına verir"** — "kabul
+  edilmemiş olarak" bilgisi etikette yok. Silinmedi; diğer ikincil cümlelerle birlikte kendi diyaloğuna taşındı
+  (BL-109 düzeltilince o diyalog gerçekten açılabilir oldu).
+- **(b) Alt görev uyarısı, engellenen aksiyonun gerekçesi DEĞİL.** Brief "'Tamamla — 14 açık alt görev
+  kapatılmalı' satırı bu karta gelir, Alt Görevler kartından KALKAR" diyordu. Ölçüm (görev
+  `049e9109-f3c9-4104-9899-22d515eb6925`):
+  - aksiyonun gerekçesi (SUNUCU, `complete.disabledReasonCode`) = `CHECKLIST_INCOMPLETE` →
+    "Tamamlanmamış zorunlu bir kontrol listesi maddesi var."
+  - Alt Görevler kartındaki cümle (İSTEMCİ, açık alt görev sayımı) = "3 açık alt görev kapatılmalı"
+  **İki farklı kaynak, iki farklı iddia.** Çiftleme değil. Alt görev cümlesi silinseydi, sunucunun hiç
+  söylemediği bir bilgi kaybolurdu.
+- **Uygulanan:** aksiyonun kendi gerekçesi düğmesinin yanında, aynı `<li>` içinde (Kural 3'ün özü). Alt görev
+  uyarısı yerinde bırakıldı.
+- **Yapılacak (karar sahibin):** sunucu alt-görev engelini de `disabledReasonCode` ile bildirsin mi? Bildirirse
+  iki cümle gerçekten tek cümle olur ve Alt Görevler kartındaki sayım kaldırılabilir.
+- **Gelecek regresyon riski: 🟢** — bugün bilgi kaybı yok.
+
+### BL-111 — 🟢 [MEVCUT AKSİYONLAR] Kebap düğmesi artık çizilmiyor; Kural 6 (aria-label) konusuz kaldı
+- **Kural 6** kebap düğmesine `aria-label` istiyordu ("ekran okuyucu 'Diğer, düğme' diyor").
+- **Ölçüm:** kebabın tek sakini yıkıcı aksiyondu; Kural 1 gereği o açığa çıkınca menü boş kaldı ve hiç
+  render edilmiyor (canlı: `.wcn-actrail-menu` yok). Başka bir "overflow" kademesi bu kartta hiç yoktu.
+- **Sonuç:** eklenecek `aria-label` taşıyacak bir düğme kalmadı. `ActionsOther` anahtarı **silinmedi**;
+  `.wcn-actrail-other` CSS'i ölü olarak işaretlendi.
+- **Yapılacak:** ileride gerçek bir overflow kademesi gelirse desen hazır — alt görev satır kebabı hem `title`
+  hem `aria-label` taşıyor, kopyalanacak yer orası.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-112 — 🟡 [MEVCUT AKSİYONLAR] Odak halkası bizim sınıfa eklendi ama tema 3px kendi rengiyle eziyor
+- **Ölçüm (gerçek Tab):** kart düğmelerinde önce **0/3** odak göstergesi vardı (BL-100'ün `.btn` boşluğu).
+  `.wcn-act-btn:focus-visible` eklendikten sonra **3/3** gösterge var.
+- **Ama uygulanan kural bizimki değil:** hesaplanan `outline` **3px** ve düğmenin kendi türünün rengi
+  (ikincil `rgb(133,146,163)`, yıkıcı `rgb(255,62,29)`), bizim kuralımızın `2px var(--bs-primary)`'si değil.
+  Yani `core.css`'teki `.btn:focus-visible` kazanıyor; bizim kuralımız yalnız `outline: 0` bastırmasını
+  kaldırmış oluyor.
+- **Sonuç bugün kabul edilebilir** — hatta tür rengi tek tip primary halkadan okunaklı. Ama **ev tokenının
+  uygulandığı sanılmamalı**; BL-100 çözülürken bu etkileşim yeniden ölçülmeli.
+- **Gelecek regresyon riski: 🟡** — BL-100 dokunulduğunda bu kart yeniden ölçülmeli.

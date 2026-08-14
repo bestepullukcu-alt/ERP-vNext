@@ -1592,6 +1592,15 @@
   <data name="ActionsAvailable" xml:space="preserve">
     <value>Доступные действия</value>
   </data>
+  <data name="ActionSubmitting" xml:space="preserve">
+    <value>Выполняется…</value>
+  </data>
+  <data name="ActionsNoneClosed" xml:space="preserve">
+    <value>Задача закрыта — здесь больше нечего делать.</value>
+  </data>
+  <data name="ActionsNoneNotYours" xml:space="preserve">
+    <value>Сейчас у вас нет доступных действий по этой задаче.</value>
+  </data>
   <data name="ActionsOther" xml:space="preserve">
     <value>Другие действия</value>
   </data>

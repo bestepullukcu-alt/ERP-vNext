@@ -1592,6 +1592,15 @@
   <data name="ActionsAvailable" xml:space="preserve">
     <value>Mevcut aksiyonlar</value>
   </data>
+  <data name="ActionSubmitting" xml:space="preserve">
+    <value>Uygulanıyor…</value>
+  </data>
+  <data name="ActionsNoneClosed" xml:space="preserve">
+    <value>Bu görev kapandı; burada yapılacak bir şey kalmadı.</value>
+  </data>
+  <data name="ActionsNoneNotYours" xml:space="preserve">
+    <value>Şu anda bu görevde uygulayabileceğiniz bir aksiyon yok.</value>
+  </data>
   <data name="ActionsOther" xml:space="preserve">
     <value>Diğer aksiyonlar</value>
   </data>

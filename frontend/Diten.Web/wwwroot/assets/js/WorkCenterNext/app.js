@@ -1530,6 +1530,8 @@
     };
 
     const reportedMissingOutcomes = new Set();
+    // Disabled actions the projection sent with no reason. Warned once each, then never drawn.
+    const reportedUnexplainedActions = new Set();
 
     const actionOutcome = (action) => {
         const key = ACTION_OUTCOME_KEY[action.code];
@@ -1545,17 +1547,66 @@
         return `<span class="wcn-act-outcome">${esc(t(key))}</span>`;
     };
 
-    const actionButton = (item, action, variant) => {
-        const disabled = action.disabled;
-        const reason = disabled && action.disabledReason
-            ? `<span class="wcn-act-reason">${esc(action.disabledReason)}</span>`
+    /*
+     * ONE ACTION, IN ONE OF THREE TIERS — and the tier is STRUCTURE, not colour.
+     *
+     * The rail used to be four rows of button-plus-sentence at nearly equal weight, distinguished only by which
+     * button was `btn-primary`. That made the page's whole purpose — "do the thing this task is asking for" —
+     * a matter of noticing a hue, and it spent 275px saying four sentences of which only the first was read.
+     *
+     *   primary     full width, its outcome sentence KEPT. The server names it (`primaryActionCode`), so the
+     *               emphasis is the projection's decision and not this file's guess.
+     *   secondary   compact, wrapping, NO prose. Their sentences moved into the dialogs each one opens, where
+     *               they are read at the moment they matter instead of before anyone has chosen.
+     *   destructive last, under a rule, in the danger colour. NOT hidden in the kebab: hiding a destructive
+     *               action is not safety, it is a surprise. The confirm dialog is where the caution belongs.
+     *
+     * `locked` comes from the resolver's `interactionLocked`, never recomputed here — see renderActionRail.
+     */
+    /*
+     * THE OUTCOME SENTENCE, AT ITS DESTINATION.
+     *
+     * Secondary actions no longer carry prose in the card — but the sentences were not deleted, they MOVED. Each
+     * one now opens the dialog its action opens, at the top, where it is read at the moment the reader is
+     * actually deciding rather than while scanning four buttons none of which they had chosen yet.
+     *
+     * Same resource keys (`OutcomePlan`, `OutcomeInquire`, `OutcomeReassign`, `OutcomeCancel`) — nothing was
+     * re-translated, so all seven languages came along unchanged.
+     */
+    const outcomeLead = (action) => {
+        const key = ACTION_OUTCOME_KEY[action.code];
+        return key ? `<p class="wcn-dialog-lead">${esc(t(key))}</p>` : '';
+    };
+
+    const actionButton = (item, action, variant, locked) => {
+        const disabled = action.disabled || locked;
+        /*
+         * A DISABLED ACTION MUST SAY WHY, OR NOT BE DRAWN AT ALL.
+         *
+         * The reason is the projection's (`disabledReason`, resolved server-side alongside `disabledReasonCode`)
+         * — measured on a blocked task: `CHECKLIST_INCOMPLETE` → `WorkAggregation_ActionDisabled_ChecklistIncomplete`.
+         * It is NOT re-derived from `gates` here; a second derivation is a second answer waiting to disagree.
+         *
+         * A greyed button with no reason leaves the reader hunting for a rule nobody stated, which is worse than
+         * the button being absent — so renderActionRail drops those instead of drawing them.
+         */
+        const reason = action.disabled && action.disabledReason
+            ? `<p class="wcn-act-reason"><i class="bx bx-lock-alt" aria-hidden="true"></i>${esc(action.disabledReason)}</p>`
             : '';
-        return `<li class="wcn-act wcn-act-${variant}${disabled ? ' wcn-act-disabled' : ''}">
-            <button type="button" class="btn btn-${variant === 'primary' ? '' : 'label-'}${action.kind} wcn-act-btn"
-                    data-wcn-action="${esc(action.key)}" data-wcn-id="${esc(item.id)}"${disabled ? ' disabled' : ''}>
-                <i class="bx ${inboxActionIcon(action)}"></i><span>${esc(actionLabel(action))}</span>
+        // The primary is the only tier that keeps its sentence in the card.
+        const outcome = variant === 'primary' ? actionOutcome(action) : '';
+        const busy = locked && state.submittingActionCode === action.code;
+        const label = busy ? t('ActionSubmitting') : actionLabel(action);
+        const kind = variant === 'primary' ? action.kind
+            : variant === 'destructive' ? 'label-danger'
+                : `label-${action.kind}`;
+        return `<li class="wcn-act wcn-act-${variant}${action.disabled ? ' wcn-act-disabled' : ''}">
+            <button type="button" class="btn btn-${kind} wcn-act-btn"
+                    data-wcn-action="${esc(action.key)}" data-wcn-id="${esc(item.id)}"${
+            disabled ? ' disabled aria-disabled="true"' : ''}${busy ? ' aria-busy="true"' : ''}>
+                <i class="bx ${busy ? 'bx-loader-alt bx-spin' : inboxActionIcon(action)}" aria-hidden="true"></i><span>${esc(label)}</span>
             </button>
-            ${actionOutcome(action)}${reason}
+            ${outcome}${reason}
         </li>`;
     };
 
@@ -1567,41 +1618,69 @@
      * the page, and promoting the next enabled action instead once made `cancel` look like the intended next
      * step. Destructive actions are separated out below, never mixed in with the ordinary ones.
      */
-    const renderActionRail = (item) => {
-        const actions = itemActions(item);
-        if (!actions.length) { return ''; }
+    const renderActionRail = (item, locked) => {
+        const all = itemActions(item);
+        /*
+         * AN ACTION WE CANNOT EXPLAIN IS NOT DRAWN.
+         *
+         * A disabled button with no reason is worse than no button: it tells the reader a rule exists and
+         * refuses to name it, so they go looking for a permission screen that will not help. The projection
+         * sends a reason with every real block; anything disabled without one is a gap on the wire, and the
+         * honest rendering of a gap is silence plus a console warning, not a dead control.
+         */
+        const actions = all.filter((a) => {
+            if (!a.disabled || a.disabledReason) { return true; }
+            if (!reportedUnexplainedActions.has(a.code)) {
+                reportedUnexplainedActions.add(a.code);
+                console.warn(
+                    `[WorkCenterNext] Action "${a.code}" is disabled with no disabledReason — it is not drawn. `
+                    + 'The projection must send a reason with every block.');
+            }
+            return false;
+        });
+
+        /*
+         * THE CARD ALWAYS SPEAKS. It used to render nothing at all when no action applied, leaving a heading
+         * over blank space — which reads as a page that failed to load rather than as a task that is finished
+         * or not yours. One sentence costs 20px and answers the question the emptiness raises.
+         */
+        if (!actions.length) {
+            return `<div class="wcn-detail-section">
+                ${cardHead('bx-bolt-circle', 'ActionsAvailable')}
+                <p class="wcn-block-hint wcn-act-none">${esc(t(isTerminal(item) ? 'ActionsNoneClosed' : 'ActionsNoneNotYours'))}</p>
+            </div>`;
+        }
 
         const primary = rowPrimaryAction(actions);
         const destructive = actions.filter((a) => a.destructive && a !== primary);
         const secondary = actions.filter((a) => a !== primary && !a.destructive);
 
-        const available = (primary ? actionButton(item, primary, 'primary') : '')
-            + secondary.map((a) => actionButton(item, a, 'secondary')).join('');
-
         /*
-         * Primary and secondary actions stay OPEN, each with its outcome line — those sentences are why the rail
-         * exists, and a kebab would hide them. Only DESTRUCTIVE actions fold into the menu: calling work off
-         * should take a deliberate second click, not sit at the same weight as accepting it.
+         * DESTRUCTIVE ACTIONS ARE VISIBLE, and the kebab is empty until something genuinely rare needs it.
+         *
+         * "Görevi iptal et" lived in a "Diğer aksiyonlar" menu. Folding a destructive act away is not a safety
+         * measure — the reader who wants it hunts for it, and the reader who does not is no safer, because the
+         * thing that actually protects them is the confirm dialog, which is where the warning sentence now
+         * lives. What the menu did buy was a page that could cancel a task without ever showing the word.
          */
-        const destructiveMenu = destructive.length
-            ? `<div class="dropdown wcn-actrail-menu">
-                <button type="button" class="btn btn-sm btn-label-secondary dropdown-toggle" data-bs-toggle="dropdown"
-                        aria-expanded="false">${esc(t('ActionsOther'))}</button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    ${destructive.map((a) => `<li><button type="button" class="dropdown-item text-danger"
-                        data-wcn-action="${esc(a.key)}" data-wcn-id="${esc(item.id)}"${a.disabled ? ' disabled' : ''}>
-                        <i class="bx ${inboxActionIcon(a)} me-1"></i>${esc(actionLabel(a))}</button></li>`).join('')}
-                </ul>
-            </div>`
-            : '';
-
-        return `${available
-            ? `<div class="wcn-detail-section">
-                ${cardHead('bx-bolt-circle', 'ActionsAvailable')}
-                <ul class="wcn-actrail">${available}</ul>
-            </div>`
+        return `<div class="wcn-detail-section wcn-acts${locked ? ' wcn-acts-locked' : ''}">
+            ${cardHead('bx-bolt-circle', 'ActionsAvailable')}
+            <ul class="wcn-actrail">
+                ${primary ? actionButton(item, primary, 'primary', locked) : ''}
+                ${secondary.length
+            ? `<li class="wcn-acts-row">
+                    <ul class="wcn-actrail-secondary">${
+                secondary.map((a) => actionButton(item, a, 'secondary', locked)).join('')}</ul>
+                  </li>`
             : ''}
-        ${destructiveMenu ? `<div class="wcn-detail-section wcn-actrail-other">${destructiveMenu}</div>` : ''}`;
+                ${destructive.length
+            ? `<li class="wcn-acts-row wcn-acts-destructive">
+                    <ul class="wcn-actrail-secondary">${
+                destructive.map((a) => actionButton(item, a, 'destructive', locked)).join('')}</ul>
+                  </li>`
+            : ''}
+            </ul>
+        </div>`;
     };
 
     /*
@@ -2835,7 +2914,13 @@
             </div>`;
         }
         const surface = global.WorkCenterNextTaskDetailResolver?.resolveTaskDetailSurface(item._fixture || item, {
-            submittingActionCode: state.submittingActionCode || null
+            /*
+             * PER-ITEM, not global. `state.submittingActionCode` alone would lock this card while a DIFFERENT
+             * item was submitting — the detail page shows one task, but the state is shared with the list.
+             * Narrowing it here keeps ONE lock model (the resolver's) instead of growing a second one in the
+             * rail, which is the "two parallel models, one of them dead" shape already on record this session.
+             */
+            submittingActionCode: state.submittingItemId === item.id ? (state.submittingActionCode || null) : null
         });
         if (!surface || surface.invalid) {
             return `<div class="wcn-detail-empty" role="alert">
@@ -3259,7 +3344,7 @@
          * are one now; the source-context card is the same data behind a <details>.
          */
         const rail = [
-            card(renderActionRail(item)),
+            card(renderActionRail(item, surface.interactionLocked)),
             card(renderStatusCard(item)),
             // Personal note sits UNDER the actions: it is something the viewer writes, not something the task says.
             card(`${renderNote(item)}${personal}`),
@@ -3292,9 +3377,25 @@
         </div>
         ${renderGuidance(item)}`;
 
+        /*
+         * THE HEADER SITS OUTSIDE THE GRID, and that placement is the whole fix for a spacing defect.
+         *
+         * MEASURED: breadcrumb → first card was 28px here and 12px on every other detail page in the product
+         * (`/Tasks/Create`, Positions/OrgUnits Details — the Golden Reference Compact shape this page's header
+         * says it copies). The markup was copied; the PLACEMENT was not.
+         *
+         * The reference puts the header block before the grid and lets its own `mb-3` be the whole gap. This
+         * page had it as `<div class="col-12">` INSIDE `.row.g-4`, so the header collected its `mb-3` (12px)
+         * AND the row's vertical gutter (16px) on the column below it — two spacing systems stacking into a
+         * number neither of them chose.
+         *
+         * Out of the row, the gutter cancels as Bootstrap intends (row `-16px` against the first column's
+         * `+16px`) and the gap is the header's margin alone. No new CSS: the defect was structural, and so is
+         * the fix.
+         */
         return `<div class="wcn-detail wcn-details-page">
+            ${pageHeader}
             <div class="row g-4 wcn-detail-grid">
-                <div class="col-12">${pageHeader}</div>
                 <div class="col-12 wcn-detail-head">${commandCard}</div>
                 <div class="col-12 col-lg-8 wcn-detail-content">${content}</div>
                 <div class="col-12 col-lg-4 wcn-detail-rail">${rail}</div>
@@ -5022,7 +5123,7 @@
         }
         global.Swal.fire({
             title: label,
-            html: '<input id="wcnPlanDate" class="form-control" autocomplete="off">',
+            html: `${outcomeLead(action)}<input id="wcnPlanDate" class="form-control" autocomplete="off">`,
             showCancelButton: true, confirmButtonText: t('PlanConfirm'), cancelButtonText: t('ReasonCancel'),
             didOpen: () => {
                 const input = document.getElementById('wcnPlanDate');
@@ -5418,7 +5519,20 @@
             let people = [];
             if (needsAssignee) {
                 const res = await global.TasksApi.assignablePeople();
-                people = (res.ok && res.data) ? res.data : [];
+                /*
+                 * `.data.people` — THE THIRD TIME THIS EXACT LINE HAS BEEN WRONG.
+                 *
+                 * The lookup answers an OBJECT, `{ people, excluded }`, since BL-057. Reading `.data` yields
+                 * that object, whose `.length` is `undefined`, so the guard below concluded "nobody can take
+                 * this" and toasted `ReassignNoAssignableUsers` — on a tenant that measured FOUR assignable
+                 * people. The dialog was unreachable everywhere, not just here: the action looked implemented,
+                 * was reachable by keyboard, and refused every time.
+                 *
+                 * `loadAssignablePeople` in this same file already unwraps it correctly and carries a comment
+                 * about the twin defect in the quick-create offcanvas. This line is that comment's third
+                 * sibling; it is written the same way as the other two now.
+                 */
+                people = (res.ok && Array.isArray(res.data?.people)) ? res.data.people : [];
                 if (!people.length) {
                     // Refusing beats opening a dialog that cannot be confirmed.
                     toast(t('ReassignNoAssignableUsers'), 'error');
@@ -5437,7 +5551,8 @@
 
             global.Swal.fire({
                 title: actionLabel(action),
-                html: assigneeField
+                html: outcomeLead(action)
+                    + assigneeField
                     + `<label class="form-label d-block text-start" for="wcnReasonText">${esc(t('ReasonLabel'))}</label>`
                     + `<textarea id="wcnReasonText" class="form-control" rows="3" `
                     + `placeholder="${esc(t('ReasonPlaceholder'))}"></textarea>`,
@@ -5490,7 +5605,13 @@
                 : '';
             global.Swal.fire({
                 title: actionLabel(action),
-                html: `<div class="wcn-confirm-body">${esc(body)}</div>${requiredWarning}`,
+                /*
+                 * The action's OUTCOME sentence leads the confirm — this is where `OutcomeCancel` ("cancels the
+                 * task entirely; open subtasks are cancelled too") landed when destructive actions came out of
+                 * the kebab and lost their card-side prose. A confirm that says only "are you sure?" asks the
+                 * reader to remember what they are sure ABOUT.
+                 */
+                html: `${outcomeLead(action)}<div class="wcn-confirm-body">${esc(body)}</div>${requiredWarning}`,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: t('ConfirmProceed'),
