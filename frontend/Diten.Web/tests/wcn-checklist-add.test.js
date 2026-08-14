@@ -397,7 +397,13 @@ describe("the detail card speaks the same visual language as the form", () => {
     await boot({ checklist: checklistOf([{ text: "Fatura eki", level: "Required" }]) });
 
     const headings = [...app().querySelectorAll("h6.text-heading")];
-    expect(headings.length).toBeGreaterThan(3);
+    /*
+     * A NON-VACUITY FLOOR, not a census. It was `> 3` and the lifecycle card's heading was one of the four —
+     * that heading is deliberately gone now (it read "YAŞAM DÖNGÜSÜ" above a strip that plainly was one, and
+     * the words moved to the list's `aria-label`), so the floor moved with it. The rule this test exists for is
+     * the loop below: whatever headings DO render, every one carries a glyph.
+     */
+    expect(headings.length, "the page rendered almost no headings — the guard would be vacuous").toBeGreaterThan(2);
 
     headings.forEach((h6) => {
       expect(h6.querySelector("i.bx"), `no icon on: ${h6.textContent.trim().slice(0, 40)}`).not.toBeNull();

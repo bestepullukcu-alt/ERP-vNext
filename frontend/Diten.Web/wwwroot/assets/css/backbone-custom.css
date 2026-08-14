@@ -5193,10 +5193,31 @@ tags.diten-tags .tagify__input {
    the screen, the graded rhythm read as uneven rather than as meaningful — three different gaps register as
    three mistakes long before they register as three meanings. One value, and it is the create form's. */
 .wcn-detail-tabcard { margin-block-end: 1rem; }
-/* The count is CONTENT VOLUME, not a summons: grey, in the flow, no absolute positioning. The list page's
+/* The count is CONTENT VOLUME, not a summons: in the flow, no absolute positioning. The list page's
    `.wcn-tab-count` is a red corner pill meaning "N things want you" — this number only ever grows, so a red that
-   never goes out would stop being seen, and take the real red with it. */
-.wcn-detail-tabstrip .wcn-audit-count { font-size: .6875rem; font-weight: 600; }
+   never goes out would stop being seen, and take the real red with it.
+
+   NO CHIP AT ALL. It was a `bg-label-secondary` badge, and measured that came to 24×20px around a glyph 7px
+   wide — SEVENTEEN pixels of padding for one digit — filled with a grey (#8592a3 on #ebeef0) that was LIGHTER
+   than the tab label it belonged to. A filled surface that draws a box and then says less than its own
+   neighbour is the hardest kind of chrome to defend: it costs width, it costs a colour decision, and it buys
+   no emphasis.
+
+   `color: inherit` is the point, not a shortcut. The number now takes the TAB's colour — muted while the tab
+   is idle, primary the moment it is active — so there is no second colour decision to keep in step with the
+   theme, and nothing here to re-tune when the tab styling changes. `opacity` alone marks it as subordinate to
+   the word beside it, which is the whole job: the label names the tab, the number qualifies it.
+
+   This is the treatment `.wcn-count-inline` already ships in the checklist card head ("3/6"). Third place a
+   count appears, third time it should not be a new invention. */
+.wcn-detail-tabstrip .wcn-audit-count {
+    background: none;
+    padding: 0;
+    color: inherit;
+    opacity: .65;
+    font-size: .6875rem;
+    font-weight: 600;
+}
 
 /* ── Card rhythm inside a panel ────────────────────────────────────────────
    RESTORES the pre-tabs value. The original rule was `.wcn-detail-content > .wcn-detail-card { margin-block-end:
@@ -5829,9 +5850,26 @@ tags.diten-tags .tagify__input {
     border-block-start: 1px solid var(--bs-border-color);
 }
 /* Command card — identity, status, actions, personal overlay. */
-.wcn-detail-command .wcn-detail-source { margin: 0 0 .5rem; }
+/* ── The identity line ─────────────────────────────────────────────────────
+   ONE row where there were two, because the two were saying different kinds of thing in the same voice.
+   Provenance ("which record is this") is filing information: constant, unactionable, true of every task from
+   that module. Signals ("what is going on with this work") are volatile and specific, and are the only part
+   that earns a coloured chip. Dressing both as chips spent the same emphasis on a module name as on a task
+   being seventeen days late.
+   Measured before: two rows of 21px plus an 8px gap = 50px. */
+.wcn-detail-idline {
+    display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; margin: 0;
+}
+/* Quiet text, not a chip. Same size as the chips beside it so the line keeps one baseline. */
+.wcn-detail-prov { font-size: .75rem; color: var(--bs-secondary-color); }
+.wcn-detail-prov-dot { font-size: .75rem; color: var(--bs-secondary-color); opacity: .55; }
+/* The hairline that keeps one row reading as two thoughts. `align-self: stretch` would grow with a wrapped
+   line, so it is pinned to the chip height instead. */
+.wcn-detail-idsep {
+    inline-size: 1px; block-size: .875rem; background: var(--bs-border-color);
+    margin-inline: .1875rem; flex: 0 0 auto;
+}
 .wcn-detail-command .wcn-detail-title { margin: 0 0 .625rem; }
-.wcn-detail-command .wcn-detail-chips { margin: 0; }
 .wcn-detail-command .wcn-detail-section { margin-block-start: 1rem; }
 .wcn-detail-command .wcn-detail-actions { margin-block-start: 1rem; padding: 0; border: 0; }
 .wcn-detail-command .wcn-personal { margin-block-start: .75rem; }
@@ -5992,6 +6030,27 @@ tags.diten-tags .tagify__input {
 .wcn-step-active .wcn-step-dot { background: var(--bs-primary); border-color: var(--bs-primary); color: #fff; box-shadow: 0 0 0 3px color-mix(in sRGB, var(--bs-primary) 22%, transparent); }
 .wcn-step-active .wcn-step-label { color: var(--bs-primary); font-weight: 600; }
 .wcn-steps-cancelled { opacity: .55; }
+/* ── What the strip cannot say by itself ───────────────────────────────────
+   The status NAME (moved here from the identity row, where "where the work stands" sat among "what this record
+   is") and, on finished work, WHEN it closed — a fact that was on the wire, normalised, used to freeze the SLA
+   count, and drawn zero times. Centred under the rail, quiet: the rail is the statement, this is its caption. */
+/* IN the strip's row, at its end — not stacked under it. Centred beneath the whole rail (the first attempt) it
+   floated: it read as a caption for the middle dot rather than as the strip's own summary, and it cost 23px of
+   the very height this round is reducing. On the row it costs nothing: the row is already 44px tall for the
+   dots, and this sits inside that. */
+.wcn-stepbar { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+.wcn-stepbar > .wcn-steps { flex: 1 1 auto; min-inline-size: 0; }
+/* The pause note is a sentence ABOUT the strip, so it takes its own line rather than competing for the row. */
+.wcn-stepbar > .wcn-step-paused { flex: 1 0 100%; }
+.wcn-stepbar-end {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: .375rem;
+    flex: 0 0 auto; font-size: .6875rem;
+}
+.wcn-stepbar-status { color: var(--bs-body-color); font-weight: 600; }
+.wcn-stepbar-closed { color: var(--bs-secondary-color); }
+/* Only the CURRENT step keeps a visible name; the other three carry theirs in the accessibility tree via
+   Bootstrap's `.visually-hidden`, which takes them out of flow — so no rule is needed here to collapse them,
+   and a `:empty` guard would be dead CSS matching nothing (the labels always have text). */
 
 /* Awaiting-review caption + lightweight timesheet --------------------------- */
 .wcn-review-note {
@@ -6015,6 +6074,14 @@ tags.diten-tags .tagify__input {
 .wcn-blocked-item { display: flex; align-items: center; gap: .375rem; flex-wrap: wrap; font-size: .75rem; }
 .wcn-blocked-why { color: var(--bs-body-color); }
 .wcn-blocked-affects { color: var(--bs-danger); font-weight: 600; }
+/* ── One line, when every blocker is a subtask ─────────────────────────────
+   Measured before: a title plus three rows, each ending "…tamamlamayı engelliyor" — the same sentence four
+   times — naming three subtasks that the Subtasks card already lists by name with their own controls. Wrapping
+   allowed (the sentence localises to seven languages, and the link must not be pushed off a narrow row), but
+   the row no longer stacks a list under itself. */
+.wcn-blocked-oneline { align-items: center; flex-wrap: wrap; }
+.wcn-blocked-oneline .wcn-blocked-title { font-weight: 600; }
+.wcn-blocked-goto { font-size: .75rem; }
 /* A cancelled predecessor is still shown — it just no longer holds anything up. */
 .wcn-dep.is-cancelled .wcn-dep-title { text-decoration: line-through; color: var(--bs-secondary-color); }
 .wcn-confirm-body { font-size: .9375rem; color: var(--bs-body-color); line-height: 1.5; }
@@ -6444,6 +6511,46 @@ tags.diten-tags .tagify__input {
    it, and the reader is left wondering whether the capability ever existed. */
 .diten-checkitem-btn:disabled, .diten-checkitem-level:disabled { opacity: .4; cursor: not-allowed; }
 .diten-checkitem[data-template-owned="1"] .diten-checkitem-text { cursor: default; }
+
+/* ── KEYBOARD FOCUS, for the controls this project draws itself ────────────
+   MEASURED with real Tab presses (not `.focus()`, which does not satisfy `:focus-visible` and is what made an
+   earlier reading of this wrong): 60 tab stops on the task detail page, and **0** of them showed any focus
+   indicator — no outline, no box-shadow. `core.css` sets `button:focus, button:focus-visible { outline: 0 }`
+   for every button on the page, and the theme's own compensation never arrives for controls that are not
+   dressed as `.btn`. A keyboard reader working a 17-row subtask list or a checklist could not see where they
+   were, at all.
+
+   The indicator is NOT invented here. `outline: 2px solid var(--bs-primary)` with a 1px offset is already this
+   file's house style for exactly this — `.wcn-row`, `.wcn-tr`, `.wcn-kcard`, `.wcn-dd-item`, `.diten-tree-row`
+   and five more use it. Outline rather than box-shadow because these controls sit inside scroll containers and
+   overflow-clipped rows where a shadow is cut off, and because outline follows border-radius in every browser
+   this app supports.
+
+   ⚠ SCOPE IS DELIBERATELY OURS. `.btn`, `.nav-link` and `.form-control` measured just as bare, but they are the
+   theme's classes and appear on every screen in the product; giving them a ring from this card's round would be
+   an app-wide visual change smuggled in through a lifecycle-card fix. Recorded as its own backlog item instead.
+   `.dropdown-item` is NOT here on purpose: Bootstrap already gives it a `:focus` background (measured
+   rgba(34,48,62,.06)), so 29 of the page's controls were covered and adding a second treatment would make the
+   same menu answer two ways. */
+.wcn-subtask-check:focus-visible,
+.wcn-subtask-title:focus-visible,
+.wcn-subtask-rowaction:focus-visible,
+.wcn-blocked-goto:focus-visible,
+.wcn-linklike:focus-visible,
+.wc-tab-compact:focus-visible,
+.diten-checkitem-box:focus-visible,
+.diten-checkitem-btn:focus-visible,
+.diten-checkitem-level:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 1px;
+    /* `core.css` wins on specificity for the shorthand it sets (`outline: 0`), so the radius is restated here
+       rather than left to the element: an outline with no radius on a pill-shaped chip draws a rectangle. */
+    border-radius: inherit;
+}
+/* The checklist tick and the row icons are round/tight; a 1px offset overlaps the neighbour at .1875rem
+   padding, so they pull the ring inward instead. */
+.diten-checkitem-box:focus-visible,
+.diten-checkitem-btn:focus-visible { outline-offset: 0; }
 
 /* THE FILTER — chips, never tabs. A tab claims two lists with two owners; this is one story told two ways. */
 .wcn-audit-filter { display: flex; flex-wrap: wrap; gap: .375rem; margin-block-end: .75rem; }

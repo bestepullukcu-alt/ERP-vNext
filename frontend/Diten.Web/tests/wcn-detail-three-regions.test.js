@@ -1306,3 +1306,259 @@ describe("'show all' releases the cap — the control, not its picture", () => {
     });
   });
 });
+
+/*
+ * ── THE LIFECYCLE CARD, rebuilt ───────────────────────────────────────────────────────────────────────────
+ *
+ * The owner's reading was "the ugliest area of the detail page", and the measurement agreed: 177px — a fifth of
+ * a 900px screen, ~290px once a task was blocked — spent on two rows of chips that looked identical while
+ * saying different kinds of thing, a 22px heading naming the strip below it, and four station labels that are
+ * the same four words on every task in the system.
+ *
+ * These tests hold the SHAPE of the rebuilt card and, more importantly, the accessibility that the visual
+ * shortening is only allowed to exist alongside. Hiding three of four labels is a VISUAL abbreviation; if the
+ * names stop reaching the accessibility tree it becomes a deletion, and the card's whole job — "where does this
+ * work stand" — reaches a screen-reader user not at all. That is the pairing these assertions defend.
+ */
+describe("the lifecycle card says where the work stands", () => {
+  const stepsOf = () => [...app().querySelectorAll(".wcn-steps li")];
+
+  it("marks the current step with aria-current, which is the only machine-readable position", async () => {
+    /*
+     * MUTATION TARGET. Before this round the position lived exclusively in a CSS class name
+     * (`wcn-step-active`) — measured: `[aria-current]` appeared 0 times on the page — so a screen reader read
+     * four station names in order and learned nothing about which one the task was at. Removing the attribute
+     * puts that hole straight back and fails here.
+     */
+    await boot(projectionItem());
+    const current = stepsOf().filter((li) => li.getAttribute("aria-current") === "step");
+    expect(current, "exactly one step must claim the position").toHaveLength(1);
+    expect(current[0].className).toContain("wcn-step-active");
+  });
+
+  it("keeps every step's NAME reachable even though only one is drawn", async () => {
+    /*
+     * The load-bearing half of the visual shortening. A sighted reader can drop Açık→Planlandı→Devam→Tamam
+     * because they saw the same four words on the previous task; a screen-reader user gets no such head start.
+     * So the labels are hidden, never removed — and the hidden ones must still be exactly three.
+     */
+    await boot(projectionItem());
+    const labels = stepsOf().map((li) => li.querySelector(".wcn-step-label"));
+    expect(labels.every((l) => l && l.textContent.trim().length > 0),
+      "a step lost its name entirely").toBe(true);
+    const visible = labels.filter((l) => !l.classList.contains("visually-hidden"));
+    expect(visible, "exactly one step shows its name").toHaveLength(1);
+  });
+
+  it("states done/current/upcoming in WORDS, not only in colour", async () => {
+    // Green-means-done is unavailable to a screen reader and to a reader who cannot separate those hues.
+    await boot(projectionItem());
+    const text = stepsOf().map((li) => li.textContent);
+    expect(text.some((s) => s.includes("StepStateDone"))).toBe(true);
+    expect(text.some((s) => s.includes("StepStateCurrent"))).toBe(true);
+    expect(text.some((s) => s.includes("StepStateUpcoming"))).toBe(true);
+  });
+
+  it("hides the dot, so its ordinal stops leaking into the step's name", async () => {
+    // Measured before: the second step announced as "2 Planlandı". The digit and the tick are decoration; the
+    // name and the state say everything they were adding.
+    await boot(projectionItem());
+    stepsOf().forEach((li) =>
+      expect(li.querySelector(".wcn-step-dot").getAttribute("aria-hidden")).toBe("true"));
+  });
+
+  it("names the strip itself, since the heading above it is gone", async () => {
+    // The 22px "YAŞAM DÖNGÜSÜ" heading restated what the strip below it plainly was. The words moved to the
+    // list's accessible name — where a screen reader meeting four bare list items genuinely needs them — and
+    // the resource key is unchanged.
+    await boot(projectionItem());
+    expect(app().querySelector(".wcn-steps").getAttribute("aria-label")).toBe("StepBarLabel");
+    expect(app().querySelector(".wcn-detail-head h6"), "the heading came back").toBeNull();
+  });
+
+  it("puts provenance and signals on ONE row, in two different voices", async () => {
+    /*
+     * They were two stacked rows of identical-looking chips. Provenance ("which record is this") is filing
+     * information: constant, unactionable, true of every task from that module. Signals ("what is going on with
+     * THIS work") are volatile and specific and are the only half that earns colour.
+     */
+    await boot(projectionItem());
+    const line = app().querySelector(".wcn-detail-idline");
+    expect(line, "the identity line is gone").not.toBeNull();
+    expect(app().querySelector(".wcn-detail-source"), "the old chip row survived").toBeNull();
+    expect(app().querySelector(".wcn-detail-chips"), "the old chip row survived").toBeNull();
+    expect(line.querySelectorAll(".wcn-detail-prov").length).toBeGreaterThan(0);
+    expect(line.querySelector(".wcn-detail-idsep"), "no rule separating the two voices").not.toBeNull();
+  });
+
+  it("moves the status OFF the identity row and onto the end of the strip", async () => {
+    // "Where the work stands" was sitting among "what this record is". The strip shows the position; this
+    // names it.
+    await boot(projectionItem());
+    expect(app().querySelector(".wcn-detail-idline .wcn-badge"), "status badge still in the id row").toBeNull();
+    expect(app().querySelector(".wcn-stepbar .wcn-stepbar-end")).not.toBeNull();
+  });
+});
+
+describe("a finished task says WHEN it finished", () => {
+  it("prints the closing date at the end of the strip", async () => {
+    /*
+     * `closedAt` has been on the wire for rounds, is normalised in the data layer and is used to freeze a
+     * finished task's SLA count — and it was drawn on this page ZERO times. A finished task showed a green rail
+     * ending at "Tamam" and never said when, which is half of the one answer the strip exists to give.
+     */
+    await boot(projectionItem({
+      // `notApplicable`, not an invented "closed": the contract's execution states are
+      // notStarted/active/paused/notApplicable, and it separately refuses a Done task that is still `active`.
+      normalizedStatus: "Done", taskLifecycle: "Done", executionState: "notApplicable",
+      closedAt: "2026-07-29T21:39:01.621239+00:00"
+    }));
+    const closed = app().querySelector(".wcn-stepbar-closed");
+    expect(closed, "no closing date on a closed task").not.toBeNull();
+    // Date-only, because that is what every other date on this page is: `toDateOnly` normalises at the
+    // projection seam and render sites print what they are given. A second date format would be a new one.
+    expect(closed.textContent).toContain("2026-07-29");
+    expect(closed.textContent, "the instant leaked through unnormalised").not.toContain("21:39");
+  });
+
+  it("adds nothing at all to an open task", async () => {
+    // The card must not grow a row for a fact that does not exist yet.
+    await boot(projectionItem());
+    expect(app().querySelector(".wcn-stepbar-closed")).toBeNull();
+  });
+});
+
+describe("the blocked notice says it once and points at the real list", () => {
+  const blocked = (n, code = "SUBTASK_BLOCKED") => projectionItem({
+    /*
+     * The contract refuses a `blockedState` that names an action the item does not carry as DISABLED with a
+     * reason — which is the right rule: "this is blocked" must be traceable to a control the reader can see is
+     * off. So the fixture ships the disabled action the blockers point at.
+     */
+    actions: [{
+      code: "complete",
+      label: { kind: "resource", key: "WorkAggregation_Action_Complete" },
+      semanticType: "complete",
+      enabled: false,
+      source: "provider",
+      disabledReasonCode: "SUBTASK_BLOCKED",
+      disabledReason: { kind: "resource", key: "WorkAggregation_ActionDisabled_SubtaskBlocked" },
+      requiresConfirmation: false,
+      requiresReason: false,
+      requiresEvidence: false,
+      supportsBulk: false,
+      riskLevel: "normal"
+    }],
+    // The subtasks the blockers ARE. The whole point of the one-liner is that this list already names them, so
+    // a fixture without it would be testing the collapse against a page that had nothing to collapse into.
+    subtasks: { mode: "full", items: Array.from({ length: n }, (_, i) => subtask(i)) },
+    blockedState: {
+      blocked: true,
+      affectedActionCodes: ["complete"],
+      blockers: Array.from({ length: n }, (_, i) => ({
+        code, taskItemId: `b${i}`, affectedActionCode: "complete",
+        label: { kind: "display", text: `Alt görev ${i}`, locale: "und" }
+      }))
+    }
+  });
+
+  it("collapses N subtask blockers to ONE sentence", async () => {
+    /*
+     * MEASURED before, on a live blocked task: a title ("3 sorun ilerlemeyi engelliyor") followed by three rows
+     * each ending "…tamamlamayı engelliyor" — the same sentence four times — naming three subtasks that the
+     * Subtasks card already listed by name with their own controls. The banner was a second, worse copy of a
+     * list the page already had.
+     */
+    await boot(blocked(3));
+    const banner = app().querySelector(".wcn-blocked");
+    expect(banner.classList.contains("wcn-blocked-oneline")).toBe(true);
+    expect(banner.querySelector(".wcn-blocked-list"), "the repeated list survived").toBeNull();
+    expect(banner.textContent).toContain("BlockedSubtaskOneLine");
+  });
+
+  it("carries a link to the subtasks card, and the card exists to receive it", async () => {
+    // A count with no route to the thing counted just relocates the question.
+    await boot(blocked(2));
+    const link = app().querySelector("[data-wcn-goto-subtasks]");
+    expect(link, "no link out of the notice").not.toBeNull();
+    expect(link.tagName, "a div cannot be reached by Tab or fired by Enter").toBe("BUTTON");
+    expect(app().querySelector("#wcn-subtasks-card"), "the link's target does not exist").not.toBeNull();
+  });
+
+  it("HAS A HANDLER — the assertion this session earned the hard way", async () => {
+    /*
+     * MUTATION TARGET. Twice in this session a control shipped with no handler at all ("Tümünü gör", in two
+     * places): it looked finished, it was reachable, it did nothing. Deleting the `data-wcn-goto-subtasks`
+     * branch from the click delegate fails here.
+     *
+     * Asserted as BEHAVIOUR, not as source text: the notice is rendered while the Activity tab is open — the
+     * case a plain `#anchor` could never handle, because the subtasks card is in the DOM but hidden — and the
+     * click must both switch the tab and reveal the card.
+     */
+    await boot(blocked(3));
+    app().querySelector('[data-wcn-detail-tab="activity"]').click();
+    await new Promise((r) => setTimeout(r, 0));
+    const panelOf = () => app().querySelector("#wcn-subtasks-card").closest("[data-wcn-detail-panel]");
+    expect(panelOf().classList.contains("d-none"), "precondition: the card starts hidden").toBe(true);
+
+    app().querySelector("[data-wcn-goto-subtasks]").click();
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(panelOf().classList.contains("d-none"), "the link did not reveal the card").toBe(false);
+    expect(app().querySelector('[data-wcn-detail-tab="general"]').classList.contains("active")).toBe(true);
+  });
+
+  it("keeps the FULL list when a blocker is not a subtask", async () => {
+    /*
+     * A dependency-typed blocker appears nowhere else on this page, so collapsing it would delete information
+     * rather than de-duplicate it — and the link would point at a card that does not contain it.
+     */
+    await boot(blocked(2, "DEPENDENCY_BLOCKED"));
+    const banner = app().querySelector(".wcn-blocked");
+    expect(banner.classList.contains("wcn-blocked-oneline")).toBe(false);
+    expect(banner.querySelector(".wcn-blocked-list")).not.toBeNull();
+    expect(app().querySelector("[data-wcn-goto-subtasks]"), "a link that would point nowhere").toBeNull();
+  });
+
+  it("stays BELOW the strip — the strip asks 'where', the notice answers 'why not'", async () => {
+    await boot(blocked(3));
+    const card = app().querySelector(".wcn-detail-command");
+    const kids = [...card.children];
+    expect(kids.indexOf(card.querySelector(".wcn-stepbar")))
+      .toBeLessThan(kids.indexOf(card.querySelector(".wcn-blocked")));
+  });
+});
+
+describe("the detail tabs and their panels are one widget, not two", () => {
+  it("wires tab → panel in both directions", async () => {
+    /*
+     * `role="tab"` and `aria-selected` were already here; they describe the STRIP. Without `aria-controls` and a
+     * matching panel `id` + `aria-labelledby`, a screen reader is told "tab, selected" and has no way to reach
+     * or name what was selected. The list page (`#wcn-main-panel`) already did this correctly — this is that
+     * pattern, not a second invention.
+     */
+    await boot(projectionItem());
+    ["general", "activity"].forEach((key) => {
+      const tab = app().querySelector(`[data-wcn-detail-tab="${key}"]`);
+      const panel = app().querySelector(`[data-wcn-detail-panel="${key}"]`);
+      expect(tab.id, key).toBe(`wcn-detail-tab-${key}`);
+      expect(tab.getAttribute("aria-controls"), key).toBe(`wcn-detail-panel-${key}`);
+      expect(panel.id, key).toBe(`wcn-detail-panel-${key}`);
+      expect(panel.getAttribute("aria-labelledby"), key).toBe(`wcn-detail-tab-${key}`);
+      expect(panel.getAttribute("tabindex"), key).toBe("0");
+    });
+  });
+
+  it("is ONE tab stop, and the stop moves with the selection", async () => {
+    // A tablist is one stop; arrows move within it. Two stops make Tab walk the strip instead of leaving it.
+    await boot(projectionItem());
+    const tabindexes = () => ["general", "activity"]
+      .map((k) => app().querySelector(`[data-wcn-detail-tab="${k}"]`).getAttribute("tabindex"));
+    expect(tabindexes()).toEqual(["0", "-1"]);
+
+    app().querySelector('[data-wcn-detail-tab="activity"]').click();
+    await new Promise((r) => setTimeout(r, 0));
+    // Set only at render time it would stay behind, and Tab would land on the tab that is no longer current.
+    expect(tabindexes()).toEqual(["-1", "0"]);
+  });
+});

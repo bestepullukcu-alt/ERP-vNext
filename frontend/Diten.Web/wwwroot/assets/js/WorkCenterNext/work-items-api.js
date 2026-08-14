@@ -60,6 +60,28 @@
          * seam rather than formatted at the render site, so the next surface to show it inherits the fix.
          */
         item.startAt = toDateOnly(dto.startAt);
+        /*
+         * `closedAt` arrives as a full instant too ("2026-07-29T21:39:01.621239+00:00", measured live) and is now
+         * READ by a reader rather than only by the SLA arithmetic that froze a finished task's day count. The
+         * lifecycle strip prints it, so it is normalised HERE with its three siblings rather than formatted at
+         * the render site — same seam, same reason: the next surface to show it inherits the fix instead of
+         * inventing a second date format.
+         */
+        /*
+         * ⚠ NORMALISED ONLY IF IT PARSES, and that guard is not defensive decoration — it was found by a test
+         * going red.
+         *
+         * `mapPayload` ADAPTS and then VALIDATES, so whatever this function writes is what the contract sees. A
+         * blanket `toDateOnly(dto.closedAt)` turns unparseable junk ("yakında") into `null`, and `null` is a
+         * perfectly legal closedAt — so the contract's own `CLOSED_AT_INVALID` rule could never fire again. The
+         * normalisation would have laundered bad wire data into silence, which is the exact failure the
+         * executable contract exists to prevent.
+         *
+         * A value that cannot be read as an instant is passed through untouched so the validator can refuse it.
+         */
+        item.closedAt = dto.closedAt && !Number.isNaN(new Date(dto.closedAt).getTime())
+            ? toDateOnly(dto.closedAt)
+            : dto.closedAt;
         item.escalated = !!(dto.escalated || (dto.escalation && dto.escalation.escalated));
         return item;
     };

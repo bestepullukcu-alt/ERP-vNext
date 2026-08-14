@@ -285,9 +285,24 @@
         .toLowerCase();
 
 
+    /*
+     * A CHIP, and the half of it that only a sighted reader was getting.
+     *
+     * `title` carries the RICHER sentence — the source chip's title is module · type · id where the visible text
+     * is just the module name — and a `title` attribute is a mouse affordance: it needs a hover, so a screen
+     * reader, a keyboard and a touch device all get the short form and never learn the long one.
+     *
+     * `role="img"` is not decoration here, it is what makes `aria-label` apply at all: on a bare <span> the
+     * implicit role is `generic`, and ARIA does not expose a label on a generic element — the attribute would be
+     * written, look right in the DOM, and be dropped by the accessibility tree. With the role, the label REPLACES
+     * the visible text for AT, which is the intent: the long sentence contains the short one.
+     *
+     * Only when a title exists. A chip that says all it has to say stays plain text, which reads better than an
+     * image role wrapped around a word.
+     */
     const chip = (kind, icon, text, title) =>
-        `<span class="wcn-chip wcn-chip-${kind}"${title ? ` title="${esc(title)}"` : ''}>` +
-        `<i class="bx ${icon}"></i><span>${esc(text)}</span></span>`;
+        `<span class="wcn-chip wcn-chip-${kind}"${title ? ` title="${esc(title)}" role="img" aria-label="${esc(title)}"` : ''}>` +
+        `<i class="bx ${icon}" aria-hidden="true"></i><span>${esc(text)}</span></span>`;
 
     /*
      * WHOSE seat the reader is in — and NOTHING when that is unknown.
@@ -1626,27 +1641,102 @@
         const activeIndex = steps.findIndex((step) => step.id === activeId);
         const allDone = item.lifecycle === 'Done';
 
+        /*
+         * ONE VISIBLE NAME, FOUR ACCESSIBLE ONES.
+         *
+         * The four station names are the SAME on every task in the system — Açık → Planlandı → Devam → Tamam —
+         * so after the second task they are furniture: 22px of label carrying a sequence the reader already
+         * knows. Only the station the work is standing at gets a visible name; the rest are dots on a rail.
+         *
+         * ⚠ THIS IS A VISUAL ABBREVIATION AND NOT AN ACCESSIBILITY ONE. Every step keeps its name in the
+         * accessibility tree via `visually-hidden`, because the reason a sighted reader can drop them — having
+         * seen the same four names on the previous task — is exactly what a screen-reader user does not get for
+         * free. Deleting the label instead of hiding it would take the strip's entire meaning from them.
+         */
+        const currentIndex = activeIndex;
         const rendered = steps.map((step, index) => {
             let cls = 'upcoming';
             if (!cancelled) {
                 if (allDone || index < activeIndex) { cls = 'done'; }
                 else if (index === activeIndex) { cls = 'active'; }
             }
+            /*
+             * `aria-current="step"` is the ONLY machine-readable statement of where the work stands. Before this,
+             * position lived exclusively in a CSS class name (`wcn-step-active`) — invisible to assistive tech —
+             * so a screen reader read four station names in order and learned nothing about which one the task
+             * was at. A cancelled task is at no step at all, so it asserts none.
+             */
+            const isCurrent = index === currentIndex && !cancelled;
+            /*
+             * The dot is DECORATION: a tick for a passed step, an ordinal for the rest. The ordinal was leaking
+             * into the accessible name — measured, the second step announced as "2 Planlandı" — and neither the
+             * digit nor the tick says anything the step's own name and state do not. Hidden as a unit rather
+             * than icon-by-icon, so a later change to what the dot contains cannot reopen the leak.
+             */
             const mark = cls === 'done' ? '<i class="bx bx-check"></i>' : (index + 1);
-            return `<li class="wcn-step wcn-step-${cls}${step.optional ? ' wcn-step-optional' : ''}">
-                <span class="wcn-step-dot">${mark}</span>
-                <span class="wcn-step-label">${esc(t(step.key))}</span>
+            /*
+             * State as WORDS, not only as colour. Green-means-done and grey-means-later are unavailable to a
+             * screen reader and to a reader who cannot separate those hues; this is the same fact in text.
+             */
+            const stateKey = cls === 'done' ? 'StepStateDone'
+                : cls === 'active' ? 'StepStateCurrent'
+                    : 'StepStateUpcoming';
+            return `<li class="wcn-step wcn-step-${cls}${step.optional ? ' wcn-step-optional' : ''}"${
+                isCurrent ? ' aria-current="step"' : ''}>
+                <span class="wcn-step-dot" aria-hidden="true">${mark}</span>
+                <span class="wcn-step-label${index === currentIndex ? '' : ' visually-hidden'}">${esc(t(step.key))}</span>
+                <span class="visually-hidden">${esc(t(stateKey))}</span>
             </li>`;
         }).join('');
+
+        /*
+         * WHAT THE STRIP CANNOT SAY BY ITSELF, said once at its end.
+         *
+         * (1) THE STATUS NAME. It used to be a badge up in the identity row, beside the module and the type —
+         * which put "where this work stands" among "what this record is". It belongs to the strip: the strip
+         * shows the position, this names it. Suppressed when it would merely repeat the current step's visible
+         * label (a finished task's step reads "Tamam" and so does its status), because printing one word twice
+         * on one line reads as a rendering fault rather than as emphasis.
+         *
+         * (2) WHEN IT CLOSED. `closedAt` has been on the wire and normalised in mock-data for rounds, is used to
+         * freeze the SLA count, and was drawn on this page ZERO times — so a finished task showed a green rail
+         * ending at "Tamam" and never said when. The strip's one job is "where is this work"; on closed work
+         * that was half an answer.
+         *
+         * The date is printed as it ARRIVES. There is no date formatter in this file to choose: dates are
+         * normalised to `YYYY-MM-DD` at the projection seam (`work-items-api.js` toDateOnly) and render sites
+         * print them through `esc()` — which is exactly how `dueAt` renders in the summary card two cards down.
+         * `closedAt` is now normalised at that same seam, so it reads identically to every other date on the page.
+         */
+        const stepStatus = esc(statusLabel(item));
+        const currentLabel = steps[currentIndex] ? esc(t(steps[currentIndex].key)) : '';
+        const closedOn = isTerminal(item) && item.closedAt
+            ? `<span class="wcn-stepbar-closed">${esc(tf('StepClosedOn', item.closedAt))}</span>`
+            : '';
+        const stepEnd = (stepStatus && stepStatus !== currentLabel) || closedOn
+            ? `<div class="wcn-stepbar-end">${
+                stepStatus && stepStatus !== currentLabel
+                    ? `<span class="wcn-stepbar-status">${stepStatus}</span>` : ''}${closedOn}</div>`
+            : '';
 
         const paused = item.lifecycle === 'Waiting'
             ? `<p class="wcn-step-paused" role="note"><i class="bx bx-pause-circle"></i>${
                 esc(item.waitingReason ? tf('StepPausedBecause', item.waitingReason) : t('StepPaused'))}</p>`
             : '';
 
-        return `<div class="wcn-detail-section">
-            ${cardHead('bx-git-branch', 'StepBarLabel')}
-            <ol class="wcn-steps${cancelled ? ' wcn-steps-cancelled' : ''}">${rendered}</ol>
+        /*
+         * NO HEADING. It read "YAŞAM DÖNGÜSÜ" in 22px above a strip of four labelled stations — a title naming
+         * what the thing below it already unmistakably is. The strip is self-describing; the heading was
+         * 22px of the card's 177px spent restating it.
+         *
+         * The name survives where it is actually needed: as the ordered list's `aria-label`, because a screen
+         * reader meeting a bare list of four items DOES need to be told what the list is. The resource key is
+         * unchanged and still in all seven languages — the words moved, they were not deleted.
+         */
+        return `<div class="wcn-detail-section wcn-stepbar">
+            <ol class="wcn-steps${cancelled ? ' wcn-steps-cancelled' : ''}"
+                aria-label="${esc(t('StepBarLabel'))}">${rendered}</ol>
+            ${stepEnd}
             ${paused}
         </div>`;
     };
@@ -2268,7 +2358,7 @@
          * denominator and says how many are DONE. The full "1 / 5" survives as the progress bar's accessible
          * name, where a screen reader needs the whole statement rather than half of it.
          */
-        return `<div class="wcn-detail-section">
+        return `<div class="wcn-detail-section" id="wcn-subtasks-card" tabindex="-1">
             <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
                 <h6 class="text-uppercase text-heading fw-semibold mb-0 d-flex align-items-center gap-2">
                     <i class="bx bx-sitemap dt-card-icon" aria-hidden="true"></i>${esc(t('SubtasksLabel'))}
@@ -2315,8 +2405,34 @@
                 ${affectsKey ? `<span class="wcn-blocked-affects">${esc(t(affectsKey))}</span>` : ''}
             </li>`;
         }).join('');
+        /*
+         * WHEN EVERY BLOCKER IS A SUBTASK, SAY IT ONCE AND POINT.
+         *
+         * MEASURED on a live blocked task: the banner printed a title ("3 sorun ilerlemeyi engelliyor") and then
+         * three rows, each ending "tamamlamayı engelliyor" — the same sentence four times — while the three
+         * subtasks it was naming were already listed, by name and with their own controls, in the Subtasks card
+         * further down the page. The banner was a second, worse copy of a list the page already had.
+         *
+         * So: one sentence, and a way to reach the real list. The link is the whole point — a count with no
+         * route to the thing counted just relocates the question.
+         *
+         * ⚠ ONLY when every blocker is a subtask. A dependency-typed blocker (FinishToStart and friends) is NOT
+         * shown anywhere else on this page, so collapsing those rows would delete information rather than
+         * de-duplicate it, and the link would point at a card that does not contain them. Mixed sets keep the
+         * full list.
+         */
+        const allSubtasks = blockers.every((b) => b.code === 'SUBTASK_BLOCKED');
+        if (allSubtasks) {
+            return `<div class="wcn-blocked wcn-blocked-oneline" role="alert">
+                <i class="bx bx-lock-alt" aria-hidden="true"></i>
+                <span class="wcn-blocked-title">${esc(tf('BlockedSubtaskOneLine', blockers.length))}</span>
+                <button type="button" class="wcn-linklike wcn-blocked-goto" data-wcn-goto-subtasks>${
+                    esc(t('BlockedGoToSubtasks'))}</button>
+            </div>`;
+        }
+
         return `<div class="wcn-blocked" role="alert">
-            <i class="bx bx-lock-alt"></i>
+            <i class="bx bx-lock-alt" aria-hidden="true"></i>
             <div class="wcn-blocked-body">
                 <span class="wcn-blocked-title">${esc(tf('BlockedBannerCount', blockers.length))}</span>
                 <ul class="wcn-blocked-list">${rows}</ul>
@@ -2957,13 +3073,36 @@
         // Command card — identity, status, actions and personal overlay. Everything
         // the viewer decides on lives here, above the read-only detail cards.
         const commandCard = `<section class="card backbone-preview-section wcn-detail-card wcn-detail-command p-4">
-            <div class="wcn-detail-source">
-                ${chip('module', 'bx-cube', item.sourceModule, sourceTitle(item))}
-                ${item.sourceModuleId ? chip('secondary', 'bx-hash', item.sourceModuleId, item.sourceModuleName) : ''}
-                ${chip('type', item.typeIcon, typeLabel(item))}
-                <span class="wcn-badge wcn-badge-${STATUS_KIND[displayStatus(item)]}">${esc(statusLabel(item))}</span>
-            </div>
-            <div class="wcn-detail-chips">
+            ${/*
+               * ONE LINE, TWO KINDS OF THING — which is why it used to be two lines that looked identical.
+               *
+               * `wcn-detail-source` and `wcn-detail-chips` were both rows of chips, same shape, same weight,
+               * stacked. But they answer different questions:
+               *
+               *   PROVENANCE  (Görevler · Görev · id) — "what record is this?" Filing information. Constant for
+               *               the life of the task, true of every task from that module, and never actionable.
+               *   SIGNALS     (17g gecikmiş · Yüksek · Sahip) — "what is going on with THIS work?" Volatile,
+               *               specific, and the reason a chip earns colour at all.
+               *
+               * Giving both the chip treatment spent the same emphasis on filing metadata as on a task being
+               * seventeen days late. Provenance is now quiet text; the signals keep the chips they earned; a
+               * hairline separates the two so the line still reads as two thoughts rather than one list.
+               *
+               * The STATUS badge has left this row entirely — it belongs to the lifecycle strip, which shows
+               * where the work stands and can now name it. See renderLifecycleStepper.
+               */''}
+            <div class="wcn-detail-idline">
+                <span class="wcn-detail-prov" title="${esc(sourceTitle(item))}"
+                      role="img" aria-label="${esc(sourceTitle(item))}">${esc(item.sourceModule)}</span>
+                <span class="wcn-detail-prov-dot" aria-hidden="true">·</span>
+                <span class="wcn-detail-prov">${esc(typeLabel(item))}</span>
+                ${item.sourceModuleId
+                    ? `<span class="wcn-detail-prov-dot" aria-hidden="true">·</span>
+                       <span class="wcn-detail-prov"${item.sourceModuleName
+                        ? ` title="${esc(item.sourceModuleName)}" role="img" aria-label="${esc(item.sourceModuleName)}"` : ''
+                    }>${esc(item.sourceModuleId)}</span>`
+                    : ''}
+                <span class="wcn-detail-idsep" aria-hidden="true"></span>
                 ${chip(SLA_KIND[item.slaState], 'bx-time-five', slaLabel(item))}
                 ${priorityChip(item)}
                 ${roleChip(item)}
@@ -3030,19 +3169,45 @@
          * not as wide as the page. A full-width strip would claim the rail too, and the reader would rightly ask
          * why the right-hand side never changes.
          *
-         * The COUNT badge is deliberately NOT the list page's: that one is
+         * The COUNT is deliberately NOT the list page's: that one is
          * `rounded-pill bg-danger position-absolute…`, a red call to action meaning "N things want you". This
          * number only means "N things happened", it never decreases, and a permanent red would go unseen within
-         * days — taking the list page's real red down with it. Grey, in the flow, `bg-label-secondary`.
+         * days — taking the list page's real red down with it.
+         *
+         * AND IT IS NO LONGER A BADGE EITHER. It was `badge bg-label-secondary`, which measured 24×20px around a
+         * 7px digit and painted it #8592a3 on #ebeef0 — a filled box whose contents were LIGHTER than the label
+         * beside them. Both classes are gone rather than overridden: every declaration they carried is now
+         * countermanded in `backbone-custom.css`, and a class list whose entries all lose is how dead styling
+         * survives a rewrite. The count is a bare span; the CSS gives it the TAB's own colour, so it dims and
+         * brightens with the tab and owns no colour of its own.
          *
          * "Genel" carries no badge: there is nothing to count. An invented number for symmetry would be a lie
          * with good posture.
          */
+        /*
+         * A TAB IS A POINTER TO A PANEL, and until now it pointed at nothing.
+         *
+         * `role="tab"` and `aria-selected` were already here, which is the half that describes the STRIP. The
+         * half that was missing describes the RELATIONSHIP: without `aria-controls` on the tab and a matching
+         * `id` + `aria-labelledby` on the panel, a screen reader is told "tab, selected" and has no way to reach
+         * or name what it selected — the two halves of the widget stay strangers.
+         *
+         * `tabindex="-1"` on the unselected tab is the other half of the ARIA tabs pattern: a tablist is ONE tab
+         * stop, and the arrow keys move within it. Leaving both tabs in the sequence makes Tab walk the strip
+         * instead of leaving it, which is the behaviour of two buttons that happen to look like tabs.
+         *
+         * ⚠ NOT INVENTED HERE. The list page already builds its panel correctly (`#wcn-main-panel`:
+         * `role` + `aria-labelledby` + `tabindex="0"`); this is that pattern brought to the detail page, so the
+         * two surfaces of the same app describe themselves the same way.
+         */
         const detailTab = (key, icon, labelKey, badge) => `<li class="nav-item" role="presentation">
-            <button type="button" role="tab"
+            <button type="button" role="tab" id="wcn-detail-tab-${key}"
                 class="nav-link border shadow-none wc-tab-compact d-inline-flex align-items-center${
                     (state.detailTab === key) ? ' active' : ''}"
-                aria-selected="${state.detailTab === key}" data-wcn-detail-tab="${key}">
+                aria-selected="${state.detailTab === key}"
+                aria-controls="wcn-detail-panel-${key}"
+                tabindex="${state.detailTab === key ? '0' : '-1'}"
+                data-wcn-detail-tab="${key}">
                 <i class="bx ${icon} wc-tab-icon me-md-1" aria-hidden="true"></i><span>${esc(t(labelKey))}</span>${badge || ''}
             </button>
         </li>`;
@@ -3065,14 +3230,16 @@
                 ${detailTab('general', 'bx-detail', 'DetailTabGeneral')}
                 ${detailTab('activity', 'bx-message-square-detail', 'DetailTabActivity',
                     hasCap(item, 'activity')
-                        ? `<span class="badge bg-label-secondary wcn-audit-count ms-1">${item.activity.length}</span>`
+                        ? `<span class="wcn-audit-count ms-1">${item.activity.length}</span>`
                         : '')}
             </ul></div></div>`,
             // Both panels stay in the DOM and one is hidden by CLASS (FG-003 — no inline style). Keeping both
             // mounted is what makes a half-typed comment survive a tab switch.
             `<div class="wcn-detail-panel${onActivity ? ' d-none' : ''}" role="tabpanel"
+                id="wcn-detail-panel-general" aria-labelledby="wcn-detail-tab-general" tabindex="0"
                 data-wcn-detail-panel="general">${generalPanel}</div>`,
             `<div class="wcn-detail-panel${onActivity ? '' : ' d-none'}" role="tabpanel"
+                id="wcn-detail-panel-activity" aria-labelledby="wcn-detail-tab-activity" tabindex="0"
                 data-wcn-detail-panel="activity">${activityPanel}</div>`
         ].filter(Boolean).join('');
 
@@ -5897,6 +6064,46 @@
             if (key) { state.expandedLists[key] = !state.expandedLists[key]; render(); }
             return;
         }
+        /*
+         * THE BLOCKED BANNER'S LINK — and the reason it is a handler and not a href.
+         *
+         * The Subtasks card lives inside the GENERAL tab. A reader looking at the banner may be on the Activity
+         * tab, where the card is in the DOM but hidden, so a plain `#wcn-subtasks-card` anchor would scroll to
+         * something invisible and appear to do nothing. Switching tab first is the difference between a link
+         * that works and a link that looks broken.
+         *
+         * ⚠ This session has twice shipped a control with NO handler at all ("Tümünü gör", in two places), which
+         * is why the link's behaviour is asserted by a test rather than trusted.
+         *
+         * Focus moves with the scroll, not just the viewport: a keyboard reader who activates a link and keeps
+         * tabbing must continue from where they were sent, otherwise the next Tab returns them to the banner.
+         * The card carries `tabindex="-1"` so it can receive that focus without becoming a tab stop of its own.
+         */
+        const gotoSubtasksEl = event.target.closest('[data-wcn-goto-subtasks]');
+        if (gotoSubtasksEl) {
+            if (state.detailTab !== 'general') {
+                state.detailTab = 'general';
+                render();
+            }
+            const card = document.getElementById('wcn-subtasks-card');
+            if (card) {
+                /*
+                 * TWO MECHANISMS, ONE OUTCOME — and deliberately not `preventScroll`.
+                 *
+                 * `scrollIntoView` gives the smooth motion that keeps a reader oriented. But focusing a
+                 * `tabindex="-1"` element ALSO scrolls it into view, by the browser's own rules, and that path
+                 * survives environments where scripted scrolling is refused — measured in this very session:
+                 * `scrollingElement.scrollTop = n` reads back unchanged under the headless pane while real
+                 * input scrolls fine. Suppressing the focus scroll would have staked the whole behaviour on the
+                 * one call that can be ignored.
+                 *
+                 * They target the same element, so the redundancy costs a no-op and buys the guarantee.
+                 */
+                card.scrollIntoView({ block: 'start', behavior: 'smooth' });
+                card.focus();
+            }
+            return;
+        }
         const detailTabEl = event.target.closest('[data-wcn-detail-tab]');
         if (detailTabEl) {
             /*
@@ -5924,6 +6131,9 @@
                 const selected = tab.getAttribute('data-wcn-detail-tab') === state.detailTab;
                 tab.classList.toggle('active', selected);
                 tab.setAttribute('aria-selected', selected ? 'true' : 'false');
+                // The roving tab stop moves WITH the selection. Set only at render time, the strip would keep
+                // its original tab stop after a switch, and Tab would land on the tab that is no longer current.
+                tab.setAttribute('tabindex', selected ? '0' : '-1');
             });
             return;
         }

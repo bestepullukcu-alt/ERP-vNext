@@ -302,25 +302,49 @@ describe("the activity card matches the cards beside it", () => {
     expect(btn.classList.contains("btn-sm")).toBe(false);
   });
 
-  it("D5 — the badge keeps the subtasks card's SHAPE but has moved to the tab", async () => {
+  it("D5 — the count sits on the tab, and carries NO chrome of its own", async () => {
     /*
-     * ⚠ THE BADGE MOVED, and this assertion moved with it. Last round it went into the card heading, mirroring
-     * the subtasks card beside it. This round it went onto the Etkinlik tab and was REMOVED from the heading:
-     * its value was always "know without opening", which a tab does better than a heading, and repeating it to
-     * somebody who has already clicked through is noise.
+     * ⚠ THE COUNT MOVED, and this assertion moved with it — twice now.
      *
-     * The SHAPE is still the subtasks card's — `badge bg-label-secondary` — because it still means the same
-     * kind of thing (how much is in here); only its place changed.
+     * First it went into the card heading, mirroring the subtasks card beside it. Then it went onto the Etkinlik
+     * tab and was REMOVED from the heading: its value was always "know without opening", which a tab does better
+     * than a heading, and repeating it to somebody who has already clicked through is noise.
+     *
+     * NOW it has also lost the `badge bg-label-secondary` shape it borrowed from the subtasks card. Measured on
+     * the live page: 24×20px around a digit 7px wide — seventeen pixels of padding for one glyph — painted
+     * #8592a3 on #ebeef0, i.e. LIGHTER than the tab label it belonged to. A filled box that says less than its
+     * own neighbour costs width and a colour decision and buys no emphasis.
+     *
+     * A bare span is the assertion now, and the CSS gives it `color: inherit`, so it takes the TAB's colour and
+     * dims or brightens with it. Re-adding either class fails here.
      */
     await boot({ activity: many(2, 1) });
 
     const badge = app().querySelector(".wcn-detail-tabstrip .wcn-audit-count");
     expect(badge.tagName).toBe("SPAN");
-    expect(badge.classList.contains("badge")).toBe(true);
-    expect(badge.classList.contains("bg-label-secondary")).toBe(true);
+    expect(badge.classList.contains("badge")).toBe(false);
+    expect(badge.classList.contains("bg-label-secondary")).toBe(false);
     expect(badge.textContent).toBe("3");
     // Moved, not duplicated.
     expect(app().querySelector(".wcn-detail-card .wcn-audit-count")).toBeNull();
+  });
+
+  it("D5b — that count owns no colour: the stylesheet hands it the tab's", async () => {
+    /*
+     * The reason the classes could be dropped without inventing a replacement. `color: inherit` is the whole
+     * mechanism: one rule, no second colour to keep in step with the theme, and the number is legible on the
+     * active tab's primary fill for free because it simply IS the tab's colour.
+     *
+     * Asserted on the stylesheet rather than on computed styles — jsdom does not load backbone-custom.css, and
+     * a computed-style assertion here would pass while proving nothing.
+     */
+    const css = fs.readFileSync(
+      path.resolve(__dirname, "..", "wwwroot", "assets", "css", "backbone-custom.css"), "utf8");
+    const rule = /\.wcn-detail-tabstrip \.wcn-audit-count \{([^}]*)\}/.exec(css);
+    expect(rule, "the count's own rule is gone").not.toBeNull();
+    expect(rule[1]).toMatch(/color:\s*inherit/);
+    expect(rule[1]).toMatch(/background:\s*none/);
+    expect(rule[1]).toMatch(/padding:\s*0/);
   });
 
   it("D5 — the badge shows the TOTAL and does not move when the filter is applied", async () => {
@@ -447,9 +471,10 @@ describe("the detail page splits the work from its record", () => {
     await boot(withRail({ activity: [comment("a", 1)] }));
 
     const badge = app().querySelector(".wcn-detail-tabstrip .wcn-audit-count");
-    expect(badge.classList.contains("bg-label-secondary")).toBe(true);
-    ["bg-danger", "rounded-pill", "position-absolute", "translate-middle"]
-      .forEach((cls) => expect(badge.classList.contains(cls)).toBe(false));
+    // It carries no fill at all now — which is a stronger version of the same guarantee, not a weaker one:
+    // there is no background here to be turned red by a later edit.
+    ["bg-danger", "bg-label-secondary", "badge", "rounded-pill", "position-absolute", "translate-middle"]
+      .forEach((cls) => expect(badge.classList.contains(cls), cls).toBe(false));
   });
 
   it("gives 'Genel' no badge — there is nothing to count", async () => {

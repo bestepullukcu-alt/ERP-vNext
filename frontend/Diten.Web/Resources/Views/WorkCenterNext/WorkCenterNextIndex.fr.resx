@@ -509,6 +509,24 @@
   <data name="StepBarLabel" xml:space="preserve">
     <value>Cycle de vie</value>
   </data>
+  <data name="StepStateDone" xml:space="preserve">
+    <value>terminée</value>
+  </data>
+  <data name="StepStateCurrent" xml:space="preserve">
+    <value>étape actuelle</value>
+  </data>
+  <data name="StepStateUpcoming" xml:space="preserve">
+    <value>à venir</value>
+  </data>
+  <data name="StepClosedOn" xml:space="preserve">
+    <value>Clôturé le {0}</value>
+  </data>
+  <data name="BlockedSubtaskOneLine" xml:space="preserve">
+    <value>Ne peut être terminé tant que des sous-tâches restent ouvertes ({0})</value>
+  </data>
+  <data name="BlockedGoToSubtasks" xml:space="preserve">
+    <value>Aller aux sous-tâches</value>
+  </data>
   <data name="StepAccepted" xml:space="preserve">
     <value>Accepté</value>
   </data>

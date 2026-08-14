@@ -509,6 +509,24 @@
   <data name="StepBarLabel" xml:space="preserve">
     <value>生命周期</value>
   </data>
+  <data name="StepStateDone" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="StepStateCurrent" xml:space="preserve">
+    <value>当前步骤</value>
+  </data>
+  <data name="StepStateUpcoming" xml:space="preserve">
+    <value>待进行</value>
+  </data>
+  <data name="StepClosedOn" xml:space="preserve">
+    <value>于 {0} 关闭</value>
+  </data>
+  <data name="BlockedSubtaskOneLine" xml:space="preserve">
+    <value>尚有 {0} 个子任务未关闭，无法完成</value>
+  </data>
+  <data name="BlockedGoToSubtasks" xml:space="preserve">
+    <value>前往子任务</value>
+  </data>
   <data name="StepAccepted" xml:space="preserve">
     <value>已接受</value>
   </data>
