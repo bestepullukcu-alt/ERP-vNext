@@ -6691,7 +6691,14 @@ tags.diten-tags .tagify__input {
    card reads as the same product rather than a third dialect. */
 .wcn-notes { list-style: none; margin: 0 0 .5rem; padding: 0; display: flex; flex-direction: column; gap: .375rem; }
 .wcn-note-row {
-    display: flex; align-items: baseline; gap: .5rem;
+    /* CENTER, not baseline — and this is the row language, not a preference.
+       MEASURED at 900px with `baseline`: the note text sat at centre 1421.8, the date at 1422.5 and the 24px
+       delete button at 1419.4, so three leaves of one row had three different middles. Baseline aligns TEXT
+       BASELINES, and this row holds three boxes of different heights (17.9 / 15.1 / 24) with two different
+       font sizes — the delete has no text at all, so its "baseline" is its bottom edge and it rode 2.4px high.
+       `.wcn-check` and `.wcn-subtask`, the two rows this one was built to match, have both used `center` all
+       along; the note row was the only one that did not. */
+    display: flex; align-items: center; gap: .5rem;
     padding: .4375rem .5rem; border-radius: .375rem;
     background: var(--bs-body-bg); border: 1px solid var(--bs-border-color);
     font-size: .8125rem;
@@ -7195,6 +7202,8 @@ tags.diten-tags .tagify__input {
     padding: .75rem 1rem;
     border-radius: var(--bs-border-radius);
     box-shadow: 0 -4px 12px rgba(var(--bs-black-rgb, 0, 0, 0), .06);
+    /* Must not clip the overflow menu, which grows UPWARD out of this element's top edge. */
+    overflow: visible;
 }
 /* `stretch`, not `center`: the two controls are different sizes by design — the primary is the card's full-size
    filled button (43px measured) and "other" is the card's small outline one (32px) — and side by side in a bar
@@ -7206,6 +7215,35 @@ tags.diten-tags .tagify__input {
 /* The stretch above reaches this WRAPPER, not the button inside it — "other" is a `.dropdown` div, so the row
    made the div 43px and left its button at 32. Measured that way before this line existed. */
 .wcn-actionbar-more { flex: 0 0 auto; }
+/* The menu opens UPWARD and must sit ABOVE the bar it grows out of.
+   MEASURED before this rule: menu z-index 1000, bar 1020 — the bar wins in a straight comparison, and the only
+   reason it did not cover the menu is that the menu is a DESCENDANT of the bar's own stacking context. That is
+   a coincidence of markup, not a rule: move the dropdown one level out and the menu disappears behind the bar
+   with no error anywhere. Stated explicitly so it survives the next refactor. */
+.wcn-actionbar-more .dropdown-menu { z-index: 1030; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   A DATE PICKER OPENED FROM INSIDE A MODAL (project rule, WC-1 2026-08-14)
+
+   MEASURED: the snooze dialog's calendar rendered at z-index 1074 while the
+   SweetAlert container it was opened from sits at 1090 — so the calendar was
+   painted UNDERNEATH the dialog. `document.elementFromPoint` at the calendar's
+   own centre returned `.swal2-container`, which means it was not merely hard to
+   see: every click on a day landed on the modal instead. The user could open the
+   picker and could not use it.
+
+   1074 is flatpickr's OWN vendor value (flatpickr.css:67), never reconciled with
+   this project's modal layer. The vendor file is not edited — the same standing
+   rule that keeps the navbar-shift fix in this stylesheet.
+
+   Scoped to a modal being open, so the ordinary in-page picker keeps the vendor
+   stacking it has always had. This is the flatpickr counterpart of the select2
+   `dropdownParent: $(document.body)` rule in frontend-js-standard.md: a popup
+   must stack above the layer it was opened from, not beneath it.
+   ──────────────────────────────────────────────────────────────────────────── */
+.swal2-shown .flatpickr-calendar.open,
+.modal-open .flatpickr-calendar.open,
+.offcanvas-backdrop ~ * .flatpickr-calendar.open { z-index: 1095; }
 .wcn-actionbar-more > .wcn-act-btn { block-size: 100%; }
 /* A disabled primary keeps its reason here too: on a narrow screen this bar may be the only part of the page
    the reader has seen, so "you cannot press this" without "because…" is worse here than in the card. */

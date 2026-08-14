@@ -3640,3 +3640,44 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   boş bir belge yazmak, 137 kaydı hiçbir şey için üretmek olurdu.
 - Aynı şey erteleme için: süresi geçmiş bir erteleme `null` olarak yansıtılıyor, kararı sunucu veriyor.
 - **Gelecek regresyon riski: 🟢.**
+
+### BL-146 — [MODAL] On ham `Swal.fire` kaldı; ortak sarmalayıcı bu şekilleri desteklemiyor
+- **ÖLÇÜM (2026-08-14).** `app.js`'te **on beş** doğrudan `Swal.fire(` vardı (brifing on diyordu; on beş ölçüldü,
+  beşi bu turda taşındı, geriye **on** kaldı — brifingin sayısı taşımadan SONRAKİ duruma denk geliyor).
+- **Taşınanlar (5):** eylem onayı · toplu eylem onayı · tetikleyici gerekçesi · toplu gerekçe · hızlı not.
+  Hepsi `window.showConfirm` üzerinden; canlı doğrulandı (`.swal-icon-circle`, `btn btn-danger … px-5`,
+  `btn btn-label-secondary … px-5` = sarmalayıcının kendi parmak izleri).
+- **⚠ `window.DitenModal` bu sayfada TANIMSIZ** — premium-modal.js WorkCenterNext görünümlerine yüklenmiyor.
+  `DitenModal.confirm` zaten `showConfirm`'e devrediyor, o yüzden doğrudan `showConfirm` aynı uygulamaya varıyor;
+  yüklenmemiş bir global üzerinden gitmek sessiz bir no-op olurdu.
+- **Taşınamayanlar (10) — sarmalayıcı yalnız TEXTAREA girdisi sunuyor:**
+  | # | diyalog | ihtiyaç duyduğu şekil |
+  |---|---|---|
+  | 1 | plan tarihi | flatpickr tarih |
+  | 2 | toplantı zamanı | flatpickr tarih+saat |
+  | 3 | süre gir | `input: number` |
+  | 4 | ertele | flatpickr tarih |
+  | 5 | "+ Yeni" menüsü | iki düğmeli menü (onay değil) |
+  | 6 | kaynakta oluştur | `input: select` |
+  | 7 | toplantı formu | 4 alanlı form |
+  | 8 | yeniden atama | select + textarea |
+  | 9 | toplu sonuç | bilgilendirme (onay değil) |
+  | 10 | toplu ilerleme | ilerleme çubuğu |
+- **KARAR CT'DE.** Seçenekler: (a) sarmalayıcıya `input` tipi + `didOpen` seamı eklemek — ortak bileşen büyür,
+  tek modülün ihtiyacıyla değil bir tasarım kararıyla; (b) bunları ham bırakmak ve kuralı "yalnız onay diyalogları
+  sarmalayıcıdan geçer" diye daraltmak; (c) diyalog dışı bir yüzeye taşımak (offcanvas form).
+  **Ajan kendi başına genişletmedi.** **Gelecek regresyon riski: 🟡** — kural bugünkü hâliyle kısmen ihlal görünüyor.
+
+### BL-147 — [MODAL] Toplu sonuç bildirimi hâlâ ham modal; `DitenModal` yüklenmediği için taşınamadı
+- Toplu işlem kısmi başarısızlığında açılan `icon: error|warning` modali bir ONAY değil, bir BİLDİRİM.
+  Ürünün bildirim seamı `DitenModal.error/warning` — ama o global bu sayfalarda yok (BL-146).
+- Seçenekler: premium-modal.js'i WorkCenterNext görünümlerine eklemek · sayfanın kendi `toast(...,'error')`'ına
+  çevirmek (davranış değişikliği, sorulmadan yapılmadı).
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-148 — [ÖLÇÜM SINIRI] Alt görev satırının hizası kural listesinden doğrulandı, DOM'dan değil
+- Kusur 4'te "satır dili üç listede aynı" iddiası için kontrol listesi satırı (`.diten-checkitem`) ve not satırı
+  (`.wcn-note-row`) **canlı DOM'da** `center` ölçüldü. Alt görev satırı (`.wcn-subtask`) test görevinde yoktu;
+  `center` değeri tarayıcının **kural listesinden** okundu.
+- Alt görevi olan bir görevde DOM ölçümü yapılmadı. Küçük ama açıkça yazılıyor.
+- **Gelecek regresyon riski: 🟢.**

@@ -134,6 +134,21 @@ Diten ERP vNext projelerinde her modülün `index.js` dosyası aşağıdaki "Mod
 15. **CRUD Surface Boundary (ZORUNLU):** Index script'i Quick View offcanvas yönetebilir; ancak Create/Edit formunu offcanvas içinde çalıştıramaz. Create/Edit akışı route tabanlı ayrı sayfalara gider (`/{ModuleName}/Create`, `/{ModuleName}/Edit/{id}`).
 16. **Add New Navigation (Compact ZORUNLU):** Compact modüllerde `DtDefaults.exportButtons()` Add New butonu route tabanlı Create sayfasına gitmelidir. `addNewAttr` için `{ href: '/{ModuleName}/Create' }` verilir ve `initComplete` içinde `.add-new` click handler'ı `event.preventDefault(); window.location.href = '/{ModuleName}/Create';` ile bağlanır. Inline `onclick` kullanılmaz.
 
+17. **Modal İçinden Açılan Popup Katmanı (ZORUNLU):** Bir modal/diyalog içinden açılan her popup (tarih seçici, dropdown, autocomplete) **açıldığı katmanın ÜSTÜNDE** yığılmalıdır. Bu, select2 için `dropdownParent: $(document.body)` kuralının aynı ailesidir; select2 kırpılmamak için body'ye kaçar, tarih seçici ise zaten body'dedir ve **z-index'te kaybeder**.
+    - **ÖLÇÜLDÜ (2026-08-14, WC-1):** flatpickr takvimi `z-index: 1074` (kendi vendor değeri, `flatpickr.css:67`) ile açılıyordu; SweetAlert container'ı `1090`. Takvim diyaloğun ALTINDA kaldı — `document.elementFromPoint` takvimin kendi merkezinde `.swal2-container` döndürdü, yani her gün tıklaması modale gitti. Açılıyordu ve kullanılamıyordu.
+    - **ÇÖZÜM `backbone-custom.css` içinde**, vendor dosyası ASLA düzenlenmez (navbar kayma düzeltmesiyle aynı duran kural):
+      ```css
+      .swal2-shown .flatpickr-calendar.open,
+      .modal-open .flatpickr-calendar.open { z-index: 1095; }
+      ```
+    - Kapsam modal açıkken sınırlıdır; sayfa içi normal seçici kendi vendor yığılmasını korur.
+    - 🚫 Vendor CSS'i düzenlemek — YASAK. 🚫 Takvimi JS ile `element.style.zIndex` ile yükseltmek — FG-003 ihlali, YASAK.
+
+18. **Ekranın Dibine Yapışan Şeritte Menü Yönü (ZORUNLU):** `position: sticky; bottom: 0` bir şeride konan her dropdown **`dropup`** ile yukarı açılır. Otomatik çevirmeye (Popper flip) güvenilmez.
+    - **ÖLÇÜLDÜ (2026-08-14, WC-1):** düğme 845→888, menü 889→1063, görüntü alanı 900 — menünün 163px'i ekranın altındaydı ve kaydırılacak yer yoktu (şerit zaten dibe yapışık). `aria-expanded` true oluyor, `.show` geliyor, ekranda hiçbir şey değişmiyordu.
+    - **Neden otomatik çevirme kurtarmadı:** `data-bs-display="static"` Bootstrap'i Popper'dan çıkarır, çeviren de Popper'dır. Açık menüde ölçülen `transform: none` bunun parmak izidir.
+    - Menü, şeridin z-index'ini **aşmalıdır** (şerit 1020 → menü ≥1030) ve şerit `overflow: visible` olmalıdır; menü şeridin üst kenarından dışarı büyür.
+
 ---
 
 ## 📄 JavaScript Master Template

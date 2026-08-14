@@ -1702,8 +1702,25 @@
                </button>`;
 
         // The siblings, folded — the bar is a shortcut, and a shortcut that lists everything is the card again.
+        /*
+         * ⚠ `dropup`, NOT a flip — and the two are different promises.
+         *
+         * MEASURED at 900×900: this menu opened DOWNWARD from a button already sitting on the bottom edge, so it
+         * rendered 889→1063 in a 900px viewport — 163px of it below the fold, with nothing to scroll to because
+         * the bar is fixed to that edge. The reader clicked, the menu opened, and the screen did not change.
+         *
+         * Why the automatic flip did not save it: `data-bs-display="static"` (written into this markup when the
+         * bar was built) switches Bootstrap OFF Popper, and Popper is the thing that flips. Measured
+         * `transform: none` on the open menu, which is the fingerprint of exactly that.
+         *
+         * The cure is DETERMINISTIC rather than clever. A bar glued to the bottom of the viewport has no case in
+         * which downward is right, so this does not ask to be flipped when there is no room — it opens upward,
+         * always, through Bootstrap's own `dropup` (`bottom: 100%` instead of `top: 100%`). Re-enabling Popper
+         * would trade one certainty for a positioning engine whose answer depends on scroll state, and the
+         * failure mode of that trade is invisible until somebody is on a short screen.
+         */
         const more = rest.length
-            ? `<div class="dropdown wcn-actionbar-more">
+            ? `<div class="dropdown dropup wcn-actionbar-more">
                 <button type="button" class="wcn-act-btn wcn-act-bare wcn-act-bare-neutral dropdown-toggle"
                         data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false"
                         aria-label="${esc(t('ActionsOther'))}"${locked ? ' disabled' : ''}>
@@ -5741,6 +5758,46 @@
         toast(t('ErrorTitle'), 'error');
     };
 
+    /*
+     * ══ THE SHARED CONFIRM, REACHED THROUGH ONE SEAM ══════════════════════════════════════════════════════════
+     *
+     * MEASURED 2026-08-14: this file held FIFTEEN direct `Swal.fire(` calls while the product has exactly one
+     * confirm implementation — `window.showConfirm` (_GlobalConfirmation.cshtml), which owns the icon circle,
+     * the button classes, the reversed button order, the width, and the `scrollbarPadding/heightAuto` pair that
+     * stops the navbar jumping when a dialog opens. Every raw call was re-deciding all of that by hand, and the
+     * ones that forgot the last pair are why that navbar rule had to be written twice.
+     *
+     * ⚠ ALSO MEASURED, and it changes what could be used: `window.DitenModal` is **undefined** on this page —
+     * premium-modal.js is not among the scripts the WorkCenterNext views load. `DitenModal.confirm` delegates to
+     * `showConfirm` anyway ("a named seam, not a second one"), so calling `showConfirm` directly reaches the same
+     * implementation. Routing through a global that is not loaded here would have been a silent no-op.
+     *
+     * WHAT THIS SEAM DOES **NOT** DO: it does not extend the shared component. `showConfirm` supports a TEXTAREA
+     * input and nothing else, so the dialogs that need a date picker, a number, a select or a multi-field form
+     * stay where they are and are reported rather than bent through a shape that does not fit — see BL-146.
+     */
+    const sharedConfirm = (options) => {
+        const confirm = global.showConfirm;
+        if (typeof confirm !== 'function') {
+            // Never silently swallow the action: a confirm that cannot be shown must not read as "cancelled".
+            console.error('[WorkCenterNext] window.showConfirm is unavailable (is _GlobalConfirmation loaded?).');
+            toast(t('ErrorTitle'), 'error');
+            return;
+        }
+        confirm(options.title, options.onConfirm, {
+            // HTML, deliberately: the outcome sentence in front of a confirm is markup the caller already built,
+            // and the wrapper renders `subtext` as HTML for exactly this.
+            subtext: options.subtext,
+            type: options.type || 'info',
+            confirmButtonText: options.confirmText,
+            cancelButtonText: t('ReasonCancel'),
+            showInput: !!options.input,
+            inputLabel: options.input && options.input.label,
+            inputPlaceholder: options.input && options.input.placeholder,
+            inputValidator: options.input && options.input.validate
+        });
+    };
+
     // Review meeting is a collaboration command, not a lifecycle transition. The
     // mock applies an explicit replacement projection after Calendar returns.
     const applyReviewMeeting = (item, whenStr, label) => {
@@ -6138,22 +6195,19 @@
     // the menu needs its own lightweight entry point. No backend — pushes to the
     // existing personal-notes layer (state.notes).
     const openQuickNote = () => {
-        if (!global.Swal) { return; }
-        global.Swal.fire({
+        sharedConfirm({
             title: t('NewNote'),
-            input: 'textarea',
-            inputPlaceholder: t('NotePlaceholder'),
-            inputAttributes: { 'aria-label': t('NewNote') },
-            showCancelButton: true, confirmButtonText: t('NewCreate'), cancelButtonText: t('ReasonCancel'),
-            preConfirm: (val) => {
-                const text = (val || '').trim();
-                if (!text) { global.Swal.showValidationMessage(t('NotePlaceholder')); return false; }
-                return text;
+            confirmText: t('NewCreate'),
+            input: {
+                placeholder: t('NotePlaceholder'),
+                validate: (val) => ((val || '').trim() ? null : t('NotePlaceholder'))
+            },
+            onConfirm: (value) => {
+                const text = String(value || '').trim();
+                if (!text) { return; }
+                state.notes.unshift({ id: `NOTE-${Date.now()}`, text, ageKey: 'TimeToday', converted: false });
+                render(); toast(t('NoteAdded'));
             }
-        }).then((res) => {
-            if (!res.isConfirmed || !res.value) { return; }
-            state.notes.unshift({ id: `NOTE-${Date.now()}`, text: res.value, ageKey: 'TimeToday', converted: false });
-            render(); toast(t('NoteAdded'));
         });
     };
 
@@ -6262,7 +6316,7 @@
             const requiredWarning = stillOpen.length
                 ? `<div class="wcn-confirm-warning">${esc(tf('ConfirmRequiredOpen', stillOpen.length))}</div>`
                 : '';
-            global.Swal.fire({
+            sharedConfirm({
                 title: actionLabel(action),
                 /*
                  * The action's OUTCOME sentence leads the confirm — this is where `OutcomeCancel` ("cancels the
@@ -6270,12 +6324,13 @@
                  * the kebab and lost their card-side prose. A confirm that says only "are you sure?" asks the
                  * reader to remember what they are sure ABOUT.
                  */
-                html: `${outcomeLead(action)}<div class="wcn-confirm-body">${esc(body)}</div>${requiredWarning}`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: t('ConfirmProceed'),
-                cancelButtonText: t('ReasonCancel')
-            }).then((res) => { if (res.isConfirmed) { applyAction(item, action); } });
+                subtext: `${outcomeLead(action)}<div class="wcn-confirm-body">${esc(body)}</div>${requiredWarning}`,
+                // The wrapper picks the icon from the TYPE rather than taking one by name, so a destructive act
+                // gets the danger circle and its red button from a single word instead of three settings.
+                type: action.destructive ? 'danger' : 'info',
+                confirmText: t('ConfirmProceed'),
+                onConfirm: () => applyAction(item, action)
+            });
             return;
         }
 
@@ -6301,22 +6356,20 @@
     const performTriggerAction = (trigger, action) => {
         if (!trigger || !action || action.enabled === false || state.submittingTriggerId === trigger.id) { return; }
         if (action.requiresReason) {
-            if (!global.Swal) { return; }
-            global.Swal.fire({
+            sharedConfirm({
                 title: data.resolveLabel(action.label),
-                input: 'textarea',
-                inputLabel: t('ReasonLabel'),
-                inputPlaceholder: t('ReasonPlaceholder'),
-                showCancelButton: true,
-                confirmButtonText: t('ReasonConfirm'),
-                cancelButtonText: t('ReasonCancel'),
-                preConfirm: (value) => {
+                confirmText: t('ReasonConfirm'),
+                // A TEXTAREA is the one input shape the shared wrapper offers, and it is the right one here.
+                input: {
+                    label: t('ReasonLabel'),
+                    placeholder: t('ReasonPlaceholder'),
+                    // The wrapper shows whatever string this returns and refuses; returning nothing accepts.
+                    validate: (value) => (String(value || '').trim() ? null : t('ReasonRequired'))
+                },
+                onConfirm: (value) => {
                     const reason = String(value || '').trim();
-                    if (!reason) { global.Swal.showValidationMessage(t('ReasonRequired')); return false; }
-                    return reason;
+                    if (reason) { executeTriggerAction(trigger, action, reason); }
                 }
-            }).then((result) => {
-                if (result.isConfirmed && result.value) { executeTriggerAction(trigger, action, result.value); }
             });
             return;
         }
@@ -6404,28 +6457,30 @@
         })) { toast(t('BulkNoCommonAction'), 'warning'); return; }
         const label = sample ? actionLabel(sample) : '';
         if (sample.reason && global.Swal) {
-            global.Swal.fire({
-                title: label, input: 'textarea', inputLabel: t('ReasonLabel'), inputPlaceholder: t('ReasonPlaceholder'),
-                showCancelButton: true, confirmButtonText: t('ReasonConfirm'), cancelButtonText: t('ReasonCancel'),
-                preConfirm: (value) => {
-                    const reason = String(value || '').trim();
-                    if (!reason) { global.Swal.showValidationMessage(t('ReasonRequired')); return false; }
-                    return reason;
+            sharedConfirm({
+                title: label,
+                confirmText: t('ReasonConfirm'),
+                input: {
+                    label: t('ReasonLabel'),
+                    placeholder: t('ReasonPlaceholder'),
+                    validate: (value) => (String(value || '').trim() ? null : t('ReasonRequired'))
+                },
+                onConfirm: (value) => {
+                    if (String(value || '').trim()) { runBulkWithProgress(selected, actionKey, label); }
                 }
-            }).then((res) => { if (res.isConfirmed && res.value) { runBulkWithProgress(selected, actionKey, label); } });
+            });
             return;
         }
         // Confirm before a high-consequence batch — approving 42 payments at once
         // is far riskier than a single click (spec v2 §6, P1 fix).
         if (sample && sample.confirm && global.Swal) {
-            global.Swal.fire({
+            sharedConfirm({
                 title: label,
-                html: `<div class="wcn-confirm-body">${esc(tf('ConfirmBulkBody', selected.length))}</div>`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: t('ConfirmProceed'),
-                cancelButtonText: t('ReasonCancel')
-            }).then((res) => { if (res.isConfirmed) { runBulkWithProgress(selected, actionKey, label); } });
+                subtext: `<div class="wcn-confirm-body">${esc(tf('ConfirmBulkBody', selected.length))}</div>`,
+                type: 'warning',
+                confirmText: t('ConfirmProceed'),
+                onConfirm: () => runBulkWithProgress(selected, actionKey, label)
+            });
             return;
         }
         runBulkWithProgress(selected, actionKey, label);

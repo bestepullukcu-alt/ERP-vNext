@@ -2602,6 +2602,131 @@ describe("the checklist is capped like its siblings", () => {
   });
 });
 
+describe("the narrow-screen menu opens where it can be seen", () => {
+  /*
+   * MUTATION TARGET (the dropup). MEASURED live at 900×900 before this fix: the button sat 845→888 and the menu
+   * rendered 889→1063 — 174px tall, 163px of it BELOW a 900px viewport, with nothing to scroll to because the
+   * bar is glued to that edge. `aria-expanded` flipped, `.show` arrived, and the screen did not change.
+   *
+   * WHY THE AUTOMATIC FLIP DID NOT SAVE IT: the toggle carries `data-bs-display="static"`, which switches
+   * Bootstrap off Popper — and Popper is the part that flips. The open menu measured `transform: none`, the
+   * fingerprint of exactly that.
+   *
+   * So the cure is stated, not negotiated: a bar pinned to the bottom edge has no case where downward is right.
+   */
+  it("carries dropup on the wrapper, so the menu grows upward always and not sometimes", async () => {
+    // A primary plus two siblings, so the bar has something to fold behind "Diğer aksiyonlar".
+    const action = (code, extra) => Object.assign({
+      code, label: { kind: "resource", key: `WorkAggregation_Action_${code}` },
+      semanticType: code, enabled: true, source: "provider",
+      disabledReasonCode: null, disabledReason: null, requiresConfirmation: false,
+      requiresReason: false, requiresEvidence: false, supportsBulk: false, riskLevel: "normal"
+    }, extra || {});
+    await boot(projectionItem({
+      primaryActionCode: "accept",
+      actions: [action("accept"), action("plan"), action("cancel", { riskLevel: "destructive" })]
+    }));
+
+    const wrapper = app().querySelector(".wcn-actionbar .wcn-actionbar-more");
+    expect(wrapper, "the narrow-screen bar has no overflow menu at all").not.toBeNull();
+    expect(wrapper.classList.contains("dropup"), "the menu still opens downward off a bottom-pinned bar").toBe(true);
+  });
+
+  /*
+   * The other half, and it is a separate failure: a menu that opens upward INTO the bar it grew from is just as
+   * unusable as one below the fold. Measured menu z-index 1000 against the bar's 1020 — the bar wins on the
+   * numbers, and the only reason it did not cover the menu is that the menu happens to be a descendant of the
+   * bar's stacking context. That is markup luck, so the rule is written down.
+   */
+  it("puts the menu above the bar it grows out of, and lets the bar not clip it", () => {
+    const menu = /^\.wcn-actionbar-more\s+\.dropdown-menu\s*\{([^}]*)\}/m.exec(CSS());
+    expect(menu, "the menu has no z-index of its own").not.toBeNull();
+    expect(Number(/z-index:\s*(\d+)/.exec(menu[1])[1]), "the menu does not clear the bar").toBeGreaterThan(1020);
+
+    // Comments stripped first: this stylesheet's own prose says the word "overflow" three times, and a guard
+    // that matches its own explanation is a guard that cannot fail (three of them did this session).
+    const bar = /^\.wcn-actionbar\s*\{([^}]*)\}/m.exec(CSS());
+    const declarations = bar[1].replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(declarations, "the bar clips the menu that grows out of its top edge").toMatch(/overflow:\s*visible/);
+  });
+});
+
+describe("a date picker opened from a modal is above that modal", () => {
+  /*
+   * MEASURED: the snooze dialog's calendar rendered at z-index 1074 (flatpickr's OWN vendor value) while the
+   * SweetAlert container it belongs to sits at 1090. `document.elementFromPoint` at the calendar's centre
+   * returned `.swal2-container` — so every click on a day landed on the dialog instead. Open, and unusable.
+   *
+   * The vendor file is not edited. This is the flatpickr counterpart of the select2 `dropdownParent` rule in
+   * frontend-js-standard.md: a popup stacks above the layer it was opened from.
+   */
+  it("raises the calendar over the dialog layer, in this stylesheet and not the vendor one", () => {
+    const rule = /\.swal2-shown\s+\.flatpickr-calendar\.open[^{]*\{([^}]*)\}/m.exec(CSS());
+    expect(rule, "nothing lifts the calendar over a modal").not.toBeNull();
+    expect(Number(/z-index:\s*(\d+)/.exec(rule[1])[1]), "the calendar still loses to the dialog").toBeGreaterThan(1090);
+  });
+});
+
+describe("the note row reads as one row", () => {
+  /*
+   * MUTATION TARGET (the alignment). MEASURED at 900px with `align-items: baseline`: the note text sat at centre
+   * 1421.8, the date at 1422.5 and the 24px delete at 1419.4 — three leaves of one row, three middles.
+   *
+   * Baseline aligns TEXT BASELINES, and this row holds boxes of three heights (17.9 / 15.1 / 24) at two font
+   * sizes; the delete button has no text at all, so its "baseline" is its bottom edge and it rode high. The two
+   * rows this one was built to match — the checklist item and the subtask — have used `center` all along. The
+   * note row was the only one that did not.
+   */
+  it("centres its leaves, the way the checklist and subtask rows already did", () => {
+    const rule = /^\.wcn-note-row\s*\{([^}]*)\}/m.exec(CSS());
+    expect(rule, "the note row lost its own rule").not.toBeNull();
+    expect(rule[1], "the note row no longer centres its leaves").toMatch(/align-items:\s*center/);
+    expect(rule[1], "baseline alignment came back").not.toMatch(/align-items:\s*baseline/);
+  });
+
+  it("uses the SAME alignment as the two rows it was built to match", () => {
+    const alignOf = (selector) => {
+      const rule = new RegExp("^" + selector + "\\s*\\{([^}]*)\\}", "m").exec(CSS());
+      return rule && /align-items:\s*([a-z-]+)/.exec(rule[1])?.[1];
+    };
+    // One row language across three lists — the thing this round standardised.
+    expect(alignOf("\\.wcn-note-row")).toBe("center");
+    expect(alignOf("\\.wcn-check, \\.wcn-subtask")).toBe("center");
+  });
+});
+
+describe("the page reaches the product's one confirm implementation", () => {
+  /*
+   * MEASURED 2026-08-14: app.js held FIFTEEN direct `Swal.fire(` calls while the product has exactly one confirm
+   * — `window.showConfirm` — which owns the icon circle, the button classes, the reversed order and the
+   * `scrollbarPadding/heightAuto` pair that keeps the navbar from jumping.
+   *
+   * ⚠ ALSO MEASURED: `window.DitenModal` is undefined on this page (premium-modal.js is not loaded here), and
+   * DitenModal.confirm delegates to showConfirm anyway. Calling showConfirm directly reaches the same
+   * implementation; routing through the absent global would have been a silent no-op.
+   */
+  it("routes confirms and reason prompts through the shared wrapper, not through Swal", () => {
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const seam = src.slice(src.indexOf("const sharedConfirm"), src.indexOf("const sharedConfirm") + 1600);
+    expect(seam, "the seam does not reach the product's confirm").toContain("global.showConfirm");
+    // A confirm that cannot be shown must not read as "cancelled".
+    expect(seam, "an unavailable wrapper fails silently").toContain("console.error");
+  });
+
+  it("keeps only the dialog shapes the shared wrapper cannot express", () => {
+    /*
+     * The wrapper offers a TEXTAREA and nothing else. Date pickers, a number, a select, multi-field forms, the
+     * "+ Yeni" menu, the bulk progress bar and the bulk result notice have no shape there — they are REPORTED
+     * (BL-146), not bent through one that does not fit, and not solved by growing a shared component to suit one
+     * module. This pins the count so a new raw dialog cannot be added quietly.
+     */
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/(^|[^:])\/\/.*$/gm, "$1");
+    expect((src.match(/Swal\.fire\(/g) || []).length).toBe(10);
+  });
+});
+
 describe("the personal note list, on the page", () => {
   /*
    * The DOM half of the same change. The block above proves the WRITE goes to the server; this proves the READ
