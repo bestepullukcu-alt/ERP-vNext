@@ -267,6 +267,8 @@
                     </h6>
                     <p class="card-section-desc mb-4">@Localizer["CardChecklistDescription"]</p>
 
+                    <ul class="task-checklist" id="taskChecklistItems"></ul>
+
                     @* THE ADD ROW IS RENDERED HERE, by assets/js/shared/diten-checkitem.js.
 
                        It used to be written out in this file, and the task detail page wrote its own beside it:
@@ -276,13 +278,21 @@
                        placeholder that vanishes as you type. Each was missing the other's half. One component
                        now draws the union, and there is no second copy left to drift.
 
+                       AND IT IS BELOW THE LIST, as it already was on the task detail page. One component was
+                       being placed in two positions, which is the same drift the component was built to end,
+                       only moved up a layer. Below is the position both take:
+
+                         · PROXIMITY — with the box under the list, the item you just typed appears directly
+                           above the box you typed it in. With the box on top, it lands at the bottom of a list
+                           that grows away from you, and on a long list it lands off-screen entirely.
+                         · CONVENTION — Jira, Asana, Notion, Microsoft To Do and Fiori all put the add box at
+                           the foot of an editable list, without exception.
+
                        NO "from a template" button, then or now. ChecklistTemplate exists in the model and
                        IChecklistTemplateRepository.ListActiveAsync has ZERO callers — no query, no endpoint, no
                        management screen — so the button would open a list that cannot be fetched. This project
                        has removed that exact dead control more than once. Tracked as its own backlog item. *@
-                    <div class="mb-3" id="taskChecklistAddRow"></div>
-
-                    <ul class="task-checklist" id="taskChecklistItems"></ul>
+                    <div id="taskChecklistAddRow"></div>
 
                     @* THE PAPERCLIP'S PROMISE, said out loud.
 
@@ -295,8 +305,16 @@
                     @* An ALERT, not body text — the same shape the completion gate and the history gap use.
                        It reports a condition the reader did not create and cannot yet act on, and body text
                        makes such a sentence read as description. Wording and condition are unchanged. *@
-                    <div class="alert alert-secondary dt-inline-alert mt-2 d-none" role="note"
-                         data-task-checklist-evidence-hint>
+                    @* The SAME spacing class the detail page uses. It was `mt-2` here and 1rem there, so one
+                       sentence sat 8px tighter on one of the two screens for no reason anybody chose. *@
+                    @* `data-diten-check-…`, which is what form-page.js has always queried. The row moved to the
+                       shared `diten-checkitem` vocabulary a round ago and this attribute was left behind as
+                       `data-task-checklist-evidence-hint` — so `refreshChecklistCount` looked for a hook nothing
+                       carried, and the sentence NEVER appeared on the create form no matter how many rows were
+                       flagged. Measured live: three rows, one flagged, `aria-pressed="true"`, `data-evidence="1"`,
+                       hint still `d-none`. Half a rename is how a control goes quiet without anything failing. *@
+                    <div class="alert alert-secondary dt-inline-alert diten-checkitem-evidencehint d-none" role="note"
+                         data-diten-check-evidence-hint>
                         <i class="bx bx-paperclip"></i><span>@Localizer["ChecklistEvidenceHint"]</span>
                     </div>
                 </div>

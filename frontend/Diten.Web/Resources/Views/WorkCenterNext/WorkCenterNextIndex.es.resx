@@ -1475,6 +1475,12 @@
   <data name="ChecklistLevelHint" xml:space="preserve">
     <value>Cambiar el nivel: Opcional → Esperado → Bloqueante</value>
   </data>
+  <data name="ChecklistLevelReadOnly" xml:space="preserve">
+    <value>Nivel: solo la persona que añadió este elemento puede cambiarlo</value>
+  </data>
+  <data name="ChecklistEvidenceMark" xml:space="preserve">
+    <value>Se requiere evidencia</value>
+  </data>
   <data name="ToastChecklistItemAdded" xml:space="preserve">
     <value>Elemento añadido</value>
   </data>

@@ -1810,6 +1810,11 @@
                     required: t('ChecklistLevelRequired'),
                     blocking: t('ChecklistLevelBlocking'),
                     levelHint: t('ChecklistLevelHint'),
+                    // The two read-only faces of the same two facts. `ChecklistLevelHint` is an instruction
+                    // ("Change the level: …") and would be a lie on a chip nobody here can change; the mark's
+                    // label is a statement rather than the button's verb, for the same reason.
+                    levelStatic: t('ChecklistLevelReadOnly'),
+                    evidenceMark: t('ChecklistEvidenceMark'),
                     moveUp: t('ChecklistMoveUp'),
                     moveDown: t('ChecklistMoveDown'),
                     evidenceToggle: t('ChecklistEvidenceToggle'),
@@ -1850,7 +1855,7 @@
         const evidenceHint = items.some((c) => c.evidenceRequired)
             // An ALERT, matching the create form and the two gates on this page. It reports a condition the
             // reader did not create and cannot yet act on; a hint line reads as description instead.
-            ? `<div class="alert alert-secondary dt-inline-alert wcn-check-evidence-hint" role="note">
+            ? `<div class="alert alert-secondary dt-inline-alert diten-checkitem-evidencehint" role="note">
                 <i class="bx bx-paperclip"></i><span>${esc(t('ChecklistEvidenceHint'))}</span></div>`
             : '';
         return `<div class="wcn-detail-section">
@@ -4073,6 +4078,9 @@
             // function, that the create form uses. A first row's ↑ and a last row's ↓ are disabled, and a
             // one-item list shows none at all: a control that can only ever refuse is worse than no control.
             root.querySelectorAll('.wcn-checks').forEach((list) => global.DitenCheckItem.applyMoveState(list));
+            // The mouse path, attached after the list exists. The arrows above are the keyboard and
+            // single-pointer path and do not depend on this succeeding.
+            bindChecklistDrag(root, item);
             restoreFocus(snap);
             return;
         }
@@ -4571,6 +4579,72 @@
             expectedVersion: Number(item.checklist?.version ?? 0)
         });
     }, 'ToastChecklistUpdated');
+
+    /*
+     * The same reorder, arrived at by DRAGGING instead of by pressing.
+     *
+     * One index instead of one step, and everything else identical — same whole-list payload, same version, same
+     * refusal path. The order is still computed from the PROJECTION; the DOM contributes only WHERE the row was
+     * dropped, which is the one fact the projection cannot know. Deriving the whole payload from the picture is
+     * how a rendering bug becomes a stored fact.
+     */
+    const dropChecklistItem = (taskId, code, newIndex) => checklistWrite(taskId, (item) => {
+        const codes = (item.checklist?.items || []).map((c) => c.id);
+        const from = codes.indexOf(code);
+        if (from < 0 || newIndex < 0 || newIndex >= codes.length || from === newIndex) {
+            // Dropped where it started, or dropped somewhere the projection does not recognise. Not an error and
+            // not a write — a no-op that still reports success, so the caller's toast logic needs no special case.
+            return Promise.resolve({ ok: true, status: 204 });
+        }
+        codes.splice(newIndex, 0, codes.splice(from, 1)[0]);
+        return global.TasksApi.reorderChecklist(taskId, {
+            itemCodes: codes,
+            expectedVersion: Number(item.checklist?.version ?? 0)
+        });
+    }, 'ToastChecklistUpdated');
+
+    /*
+     * DRAG ON THE DETAIL PAGE — the decision that was "no" in BL-094 and is "yes" now.
+     *
+     * It was declined when the two screens were two components: the arrows alone satisfy WCAG 2.2 §2.5.7, and
+     * drag was a convenience one screen could go without. They are ONE component now, and the same row being
+     * draggable on the create form and not on the detail page is a difference nobody can justify to the person
+     * using it. So the grip is drawn in both modes and both lists get Sortable.
+     *
+     * THE ARROWS ARE NOT REMOVED. They are the single-pointer alternative §2.5.7 requires and the entire keyboard
+     * path — Sortable has none — so drag is added ON TOP of them, never in place of them.
+     *
+     * Settings are copied from the create form deliberately: `forceFallback` because native HTML5 drag renders
+     * its own drag image and ignores `ghostClass`, and because it responds only to real OS input, so the gesture
+     * could never be exercised by a test; `handle` because dragging from anywhere on the row would swallow the
+     * clicks meant for the three controls sharing that 38px line.
+     *
+     * Guarded on `global.Sortable`: a host page that does not load it, or a jsdom test, must still get a working
+     * card — the arrows already reorder, so a missing library costs the mouse gesture and nothing else.
+     */
+    const bindChecklistDrag = (root, item) => {
+        if (!global.Sortable || !root || !item || isTerminal(item)) { return; }
+        root.querySelectorAll('.wcn-checks').forEach((list) => {
+            // The detail body is rebuilt on every render, so this is a fresh element each time; the flag stops a
+            // second Sortable binding to the SAME node if render is ever called twice without replacing it.
+            if (list.dataset.wcnSortable === '1') { return; }
+            list.dataset.wcnSortable = '1';
+            global.Sortable.create(list, {
+                animation: 150,
+                forceFallback: true,
+                fallbackTolerance: 3,
+                handle: '[data-diten-check-grip]',
+                draggable: '[data-diten-check-row]',
+                ghostClass: 'diten-checkitem-ghost',
+                onEnd: (event) => {
+                    const [taskId, itemCode] =
+                        (event.item.getAttribute('data-diten-check-row') || '').split(':');
+                    if (!taskId || !itemCode) { return; }
+                    dropChecklistItem(taskId, itemCode, event.newIndex);
+                }
+            });
+        });
+    };
 
     const completeSubtask = async (subtaskId) => {
         // The subtask is its own row in state when it is also assigned to me, and then it carries its own

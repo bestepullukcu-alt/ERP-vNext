@@ -1475,6 +1475,12 @@
   <data name="ChecklistLevelHint" xml:space="preserve">
     <value>更改级别：可选 → 应完成 → 阻断</value>
   </data>
+  <data name="ChecklistLevelReadOnly" xml:space="preserve">
+    <value>级别 — 只有添加此项的人才能更改</value>
+  </data>
+  <data name="ChecklistEvidenceMark" xml:space="preserve">
+    <value>此项需要证据</value>
+  </data>
   <data name="ToastChecklistItemAdded" xml:space="preserve">
     <value>已添加条目</value>
   </data>

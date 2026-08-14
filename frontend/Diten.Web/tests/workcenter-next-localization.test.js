@@ -55,6 +55,34 @@ describe("WorkCenterNext localization resources", () => {
       expect(valueOf("tr", key)).not.toBe(valueOf("en", key));
     });
   });
+  it("ships the READ-ONLY faces of the checklist row in all seven languages", () => {
+    /*
+     * A checklist row somebody else added now still states its level and its evidence flag — as a chip and a
+     * mark rather than as buttons. Both needed their own words: `ChecklistLevelHint` is an instruction ("Change
+     * the level: …") that would be a lie on a chip nobody here can change, and the paperclip button's label is
+     * a verb where the mark has to be a statement.
+     *
+     * `t()` falls back to the KEY when a string is missing, so a gap here renders literal
+     * "ChecklistLevelReadOnly" into a tooltip instead of failing. Only this gate catches that.
+     */
+    const valueOf = (locale, key) => {
+      const xml = fs.readFileSync(path.join(resourceRoot, `WorkCenterNextIndex.${locale}.resx`), "utf8");
+      const match = new RegExp(`name="${key}"[^>]*>\\s*<value>([\\s\\S]*?)</value>`).exec(xml);
+      return match ? match[1].trim() : null;
+    };
+
+    ["ChecklistLevelReadOnly", "ChecklistEvidenceMark"].forEach((key) => {
+      locales.forEach((locale) => expect(valueOf(locale, key), `${locale}/${key}`).toBeTruthy());
+      // Not English left in place under a translated file name.
+      ["tr", "ru", "zh", "ar"].forEach((locale) =>
+        expect(valueOf(locale, key), `${locale}/${key}`).not.toBe(valueOf("en", key)));
+    });
+
+    // And the read-only chip must not borrow the button's instruction: one tells you to do something you cannot.
+    locales.forEach((locale) =>
+      expect(valueOf(locale, "ChecklistLevelReadOnly")).not.toBe(valueOf(locale, "ChecklistLevelHint")));
+  });
+
   it("ships the review action and its blocked reason in all seven languages", () => {
     // Faz 3b. A projected action carries a resource KEY, and t() falls back to the key itself when it is
     // missing — so a button whose label was never translated renders as "WorkAggregation_Action_SubmitReview"

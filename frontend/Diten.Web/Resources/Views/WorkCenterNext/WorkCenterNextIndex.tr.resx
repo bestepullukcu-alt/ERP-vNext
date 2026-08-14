@@ -1475,6 +1475,12 @@
   <data name="ChecklistLevelHint" xml:space="preserve">
     <value>Seviyeyi değiştir: İsteğe bağlı → Beklenen → Engelleyici</value>
   </data>
+  <data name="ChecklistLevelReadOnly" xml:space="preserve">
+    <value>Seviye — yalnızca bu maddeyi ekleyen kişi değiştirebilir</value>
+  </data>
+  <data name="ChecklistEvidenceMark" xml:space="preserve">
+    <value>Kanıt gerekiyor</value>
+  </data>
   <data name="ToastChecklistItemAdded" xml:space="preserve">
     <value>Madde eklendi</value>
   </data>

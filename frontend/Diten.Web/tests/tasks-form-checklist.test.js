@@ -416,9 +416,29 @@ describe("the evidence notice is an alert, and every card names itself with a gl
   it("renders the evidence notice as an alert rather than body text", () => {
     // It reports a condition the reader did not create and cannot yet act on — body text makes such a sentence
     // read as description. Same shape the completion gate and the history gap already use.
-    const hint = /<div class="alert[^"]*dt-inline-alert[^"]*"[^>]*data-task-checklist-evidence-hint/.exec(CREATE_FORM);
+    const hint = /<div class="alert[^"]*dt-inline-alert[^"]*"[^>]*data-diten-check-evidence-hint/.exec(CREATE_FORM);
     expect(hint).not.toBeNull();
     expect(CREATE_FORM).toContain("ChecklistEvidenceHint");
+  });
+
+  it("hangs that notice on the hook form-page.js actually queries", () => {
+    /*
+     * THE DEFECT THIS TEST EXISTS FOR, found by flagging a row on the live form and watching nothing happen.
+     *
+     * The row moved to the shared `diten-checkitem` vocabulary a round ago; this attribute was left behind as
+     * `data-task-checklist-evidence-hint` while `refreshChecklistCount` went on querying
+     * `[data-diten-check-evidence-hint]`. So the lookup returned null, the `d-none` was never cleared, and the
+     * sentence never appeared no matter how many rows carried the flag. Nothing threw; the test above passed
+     * the whole time, because it checked the markup's shape and never that anything could FIND it.
+     *
+     * Asserting the two strings are equal is the only version of this that cannot rot: rename either side alone
+     * and this fails.
+     */
+    const PAGE = fs.readFileSync(
+      path.resolve(__dirname, "..", "wwwroot", "assets", "js", "Tasks", "form-page.js"), "utf8");
+    const queried = /querySelector\('\[(data-[a-z-]*evidence-hint)\]'\)/.exec(PAGE);
+    expect(queried, "form-page.js no longer queries an evidence-hint hook").not.toBeNull();
+    expect(CREATE_FORM).toContain(queried[1]);
   });
 
   it("gives every card heading on the form an icon", () => {

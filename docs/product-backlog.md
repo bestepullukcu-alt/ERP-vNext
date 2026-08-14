@@ -2746,6 +2746,20 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - **Yapılacak:** CDN satırını yerel yolla değiştir, navigasyon ayarları ekranında sürüklemeyi doğrula.
 - **Gelecek regresyon riski: 🟢 tek satır**, davranış değişmiyor (aynı sürüm, aynı API).
 
+- **DÜZELTME + İKİNCİ TÜKETİCİ (2026-08-14).** Bu maddenin kapsamı yukarıda **fazla geniş** yazılmıştı; canlı
+  ölçüm daralttı:
+  - `_Layout.cshtml:581`'deki CDN satırı Görev Merkezi'ne **hiç ulaşmıyor**. `Views/WorkCenterNext/Details.cshtml`,
+    `Index.cshtml` ve bütün `Views/Tasks/*` sayfaları `Layout = "_LayoutTenantShell"` kullanıyor. Canlı ölçüldü:
+    detay sayfasında `typeof window.Sortable === "undefined"` ve DOM'da tek bir `sortable` script etiketi yok.
+  - Yani CDN satırının **bilinen tek tüketicisi** hâlâ `Views/Governance/TenantNavigationSettings/Index.cshtml`.
+    "Yerel kopya kullanılmadan duruyor" ifadesi de doğru değil: `Views/Tasks/Create.cshtml` onu zaten yüklüyor.
+  - **BU TUR EKLENEN İKİNCİ VE ÜÇÜNCÜ TÜKETİCİ — ikisi de YEREL kopya, CDN değil:** BL-094 kapsamında
+    `Views/WorkCenterNext/Details.cshtml` ve `Views/WorkCenterNext/Index.cshtml`
+    `~/assets/vendor/libs/sortablejs/sortable.js` yüklüyor (canlı: 200 OK, dış host isteği yok). Bağımlılık
+    **derinleşmedi** — CDN'in tüketici sayısı artmadı, yerel kopyanınki arttı.
+  - **Kalan iş aynı ve hâlâ tek satır:** `_Layout.cshtml:581` → yerel yol; etkilenen tek ekran navigasyon
+    ayarları, orada sürükleme doğrulanacak.
+
 ### BL-082 — 🟡 Yapılandırılabilir alan BÖLÜM adı serbest metin: varyantlar sessizce ayrı grup oluyor
 - **Sahip sorusu (2026-08-13):** *"aynı alana `Regulatory` diye başka bir alan eklenirse ne olacak?"*
 - **ÖLÇÜM (CT, canlı):**
@@ -2899,14 +2913,35 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - **Gelecek regresyon riski: 🟠** — bugün ön yüz kapalı görevde ekleme kutusunu gizliyor, yani kusur yalnız
   API seviyesinde erişilebilir; ön yüz kilidi güvenlik değildir.
 
-### BL-094 — 🟢 Detay sayfasında sürükle-bırak yok; sıralama yalnız ok düğmeleriyle
-- **Ölçüm (2026-08-13):** create formunda Sortable var, detay sayfasında yok. Paylaşılan bileşen her iki kipte de
-  taşı düğmelerini çiziyor, yani detayda sıralama ÇALIŞIYOR (canlı: yukarı taşı → 204 → yeniden yüklemede korundu).
-- **Neden bu turda yapılmadı:** brief "sürükle gelirse taşı düğmeleri zorunlu" dedi; tersi zorunlu değil. Düğmeler
-  WCAG 2.2 §2.5.7 karşılığı olarak zaten tek başına yeterli; sürükleme bir kolaylık.
-- **Yapılacak (istenirse):** `.wcn-checks` üzerine Sortable, `handle: '[data-diten-check-grip]'` — ve grip
-  çalışma kipinde de çizilmeli (bugün yalnız yazma kipinde).
-- **Gelecek regresyon riski: 🟢 eklemeli.**
+### BL-094 — ✅ KAPANDI (2026-08-14) — Detay sayfasında sürükle-bırak: karar DEĞİŞTİ, yapıldı
+
+> **KARAR DEĞİŞİKLİĞİ.** Bu maddenin ilk hâli "hayır" diyordu. Silinmedi, **yeniden yazıldı** — aşağıda önce
+> eski gerekçe, sonra hangi dayanağının düştüğü, sonra ölçüm var.
+
+- **Eski karar (2026-08-13) ve gerekçesi:** create formunda Sortable vardı, detayda yoktu. "Sürükle gelirse taşı
+  düğmeleri zorunlu" deniyordu; tersi zorunlu değildi. Düğmeler WCAG 2.2 §2.5.7 karşılığı olarak tek başına
+  yeterliydi, sürükleme bir kolaylıktı — ve **iki ayrı bileşen** vardı, yani iki ekranın farklı davranması
+  savunulabilirdi.
+- **Düşen dayanak (2026-08-14):** artık **tek bileşen** var (`assets/js/shared/diten-checkitem.js`). Aynı satırın
+  bir ekranda sürüklenip diğerinde sürüklenmemesi, bileşenin bitirmek için var olduğu ayrışmanın ta kendisi.
+  Sahip kararı: al — **iki şartla**.
+- **Şart 1 — OK DÜĞMELERİ KALDI.** Sürükleme düğmelerin ÜSTÜNE eklendi, yerine değil. §2.5.7'nin istediği
+  tek-işaretçi alternatifi ve klavye yolunun tamamı onlar (Sortable'ın klavye hikâyesi yok). Canlı doğrulandı:
+  sürüklemeden SONRA `data-diten-check-move="down"` tıklandı → sıra değişti, düğme `disabled=false`, odak alıyor.
+- **Şart 2 — YIĞILMIŞ DÜZENDE ÖLÇÜLDÜ.** 900×1600, `.wcn-detail-content` = 869px (tek sütun), sayfa kaydırılmış
+  (`scrollingElement.scrollTop = 64`), `pointerType: 'touch'` pointer olayları. 1. satır griple tutulup 3. satırın
+  %75'ine bırakıldı → DOM sırası tam bırakılan yere geçti, `Kontrol listesi güncellendi.` bildirimi, ve sunucu
+  projeksiyonu yeni sırayı doğruladı. 1440×1800'de de aynısı (4. konuma bırakma) çalıştı. Kaydırma kaynaklı
+  konum kayması YOK.
+- **Ne ölçülemedi (dürüstçe):** tarayıcı panelinin gerçek dokunmatik emülasyonu (`width < 768` gerektiriyor, oysa
+  şart 900px'di) ve 64px'ten daha derin bir kaydırma — barındırılan tarayıcı paneli gizliyken gerçek girdi çağrısı
+  30 sn'de zaman aşımına uğruyor ve programatik `scrollTop` ataması reddediliyor. Kullanılan yöntem: sentetik
+  `pointerType:'touch'` olayları (Sortable `forceFallback` ile bunları gerçek girdi gibi işler — bileşenin
+  yorumunda "el dışında hiçbir şeyle sınanamaz" diye kaydedilen native DnD'den kaçınmanın sebebi tam da bu).
+- **Uygulama:** `.wcn-checks` üzerine Sortable (`bindChecklistDrag`), `handle: '[data-diten-check-grip]'`,
+  `forceFallback: true` — create formuyla birebir aynı ayarlar. Grip artık iki kipte de çiziliyor. Bırakma sırası
+  **projeksiyondan** hesaplanıyor, DOM yalnız INDEKS'i veriyor. Kapalı görevde Sortable hiç bağlanmıyor.
+- **Gelecek regresyon riski: 🟢 eklemeli** — düğmeler yerinde, kapalı görev korunuyor.
 
 
 ### BL-095 — 🟠 Sıralama ucu sahiplik sormuyor; sıra da bir anlam taşıyabilir
@@ -2934,3 +2969,36 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   gerçekten çoğu zaman ekleyendir), (b) olduğu gibi bırak, kullanıcılar yeni madde ekleyerek ilerlesin.
   (a) tek satırlık bir betik ama bir VARSAYIMI veriye yazar; kararı sahibin.
 - **Gelecek regresyon riski: 🟢** — (a) seçilirse yalnız izin genişler, daralmaz.
+
+### BL-097 — 🟠 `AddChecklistItem` gövdedeki `evidenceRequired`'ı sessizce YUTUYOR
+- **Ölçüm (2026-08-14, canlı, API katmanı):** `POST /api/v1/tasks/{id}/checklist/items` gövdesi
+  `{"text":"…","requirement":"Blocking","evidenceRequired":true,"expectedVersion":11}` → **204**. Hemen ardından
+  aynı görevin projeksiyonu: `blocking: true` **geldi**, `evidenceRequired: false` **geldi**. Yani `requirement`
+  onurlandırılıyor, `evidenceRequired` düşüyor.
+- **Aynı değer PUT ile yazılabiliyor:** `PUT …/checklist/items/{code}` gövdesi
+  `{"labelText":"…","requirement":"Blocking","evidenceRequired":true,"expectedVersion":12}` → 204 ve projeksiyon
+  `evidenceRequired: true`. Demek ki alan modelde ve güncelleme yolunda var; eksik olan yalnız EKLEME yolu.
+- **Neden bugün görünmüyor:** ön yüzün ekleme satırında ataç düğmesi yok — seviye çipi var, ataç yok. Yani hiçbir
+  ekran bu alanı ekleme sırasında göndermiyor ve kayıp fark edilmiyor. API'yi doğrudan kullanan bir tüketici
+  (veya ekleme satırına ataç eklendiği gün) sessizce veri kaybeder.
+- **Sınıf:** bu, bu modülün defalarca düzelttiği "saklanıyor ama etkisiz" kusurunun tersi — *gönderiliyor ama
+  saklanmıyor*. İkisi de aynı sebepten kötü: yazan kişi bir karar verdiğini sanıyor.
+- **Yapılacak:** `AddChecklistItemCommand`/handler'ında `EvidenceRequired`'ı taşı; ya da alan kabul edilmiyorsa
+  400 ile açıkça reddet. Sessiz yutma iki seçenekten de kötü.
+- **Gelecek regresyon riski: 🟢 eklemeli** — bugün hiçbir ekran göndermiyor, davranış değişmez.
+
+### BL-098 — 🟢 Sürüklemenin derin kaydırma ve gerçek dokunmatik emülasyonu altında ölçümü yapılamadı
+- **Bağlam:** BL-094 kapanışının 2. şartı "900px yığılmış düzen, panel kayarken, dokunmatik emülasyonuyla"ydı.
+  Karşılanan: 900px yığılmış (869px tek sütun), `scrollTop = 64`, `pointerType:'touch'` pointer olayları, iki
+  genişlik, sunucuda kalıcılık. **Karşılanamayan iki koşul:**
+  1. **Gerçek dokunmatik emülasyonu** — panelin dokunmatik kipi `width < 768` gerektiriyor, şart ise 900px'di.
+     İkisi aynı anda sağlanamıyor; sentetik `pointerType:'touch'` olaylarıyla ölçüldü.
+  2. **64px'ten derin kaydırma** — barındırılan tarayıcı paneli gizliyken gerçek tekerlek girdisi çağrı başına
+     ~34px ilerletip 30 sn'de zaman aşımına uğruyor, programatik `scrollingElement.scrollTop` ataması ise
+     reddediliyor (atama aynı tick'te geri okunduğunda eski değeri veriyor).
+- **Neden yine de alındı:** 64px bir satır yüksekliğinden (~49px) büyük, yani kaydırma kaynaklı klasik ofset
+  hatası bir satırdan fazla kayma olarak GÖRÜNÜRDÜ; görünmedi. Ok düğmeleri de yerinde durduğundan sürüklemenin
+  bozulduğu bir durumda sıralama yine de yapılabilir.
+- **Yapılacak (istenirse):** panel görünür durumdayken, gerçek dokunmatik emülasyonlu bir tarayıcıda, listeyi
+  sayfanın ~1000px derinliğine kaydırıp elle bir sürükleme; ayrıca dar (<768px) gerçek dokunmatik kipte tekrar.
+- **Gelecek regresyon riski: 🟢** — ölçüm boşluğu, kod borcu değil.

@@ -1475,6 +1475,12 @@
   <data name="ChecklistLevelHint" xml:space="preserve">
     <value>Изменить уровень: Необязательно → Ожидается → Блокирующий</value>
   </data>
+  <data name="ChecklistLevelReadOnly" xml:space="preserve">
+    <value>Уровень — изменить может только тот, кто добавил этот пункт</value>
+  </data>
+  <data name="ChecklistEvidenceMark" xml:space="preserve">
+    <value>Требуется подтверждение</value>
+  </data>
   <data name="ToastChecklistItemAdded" xml:space="preserve">
     <value>Пункт добавлен</value>
   </data>

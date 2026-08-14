@@ -28,6 +28,10 @@
     <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-tags.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-checkitem.js" asp-append-version="true"></script>
+    @* Same reason as Details.cshtml: this page renders the very same checklist card in its detail pane, from the
+       same component and the same app.js. Loading it on one of the two would make the row draggable on one
+       surface and not the other — the exact split this round exists to close. *@
+    <script src="~/assets/vendor/libs/sortablejs/sortable.js"></script>
     <script src="~/assets/js/Tasks/form.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/fixture-contract.js" asp-append-version="true"></script>

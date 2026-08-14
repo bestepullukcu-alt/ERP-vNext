@@ -6365,6 +6365,16 @@ tags.diten-tags .tagify__input {
     white-space: nowrap;
     cursor: pointer;
 }
+/* SOMEBODY ELSE'S ROW. The chip is a <span>, not a disabled <button>: the level is information and information
+   is not withheld, but changing it is the author's. So it reads EXACTLY as the button does — same border, same
+   colour, same weight, same place — and differs only in that the pointer does not promise a press.
+   NOT dimmed. Dimming would say "unavailable" about a fact that is perfectly available; the four expected items
+   the notice under the list counts have to be findable at a glance, and a greyed chip is the opposite of that. */
+.diten-checkitem-level-static { cursor: default; }
+/* Same for the paperclip: the author gets a button, everyone else gets the mark. It is drawn only when the flag
+   is on, so it always carries the "on" colour the pressed button uses — one signal, two shapes. */
+.diten-checkitem-evidence-mark { cursor: default; color: var(--bs-primary); }
+.diten-checkitem-evidence-mark:hover { color: var(--bs-primary); }
 .diten-checkitem[data-requirement="Required"] .diten-checkitem-level {
     border-color: var(--bs-warning);
     color: var(--bs-warning);
@@ -6390,9 +6400,11 @@ tags.diten-tags .tagify__input {
 /* The add row is a NEW thing, not the next row of the list — it was rendered hard against the last item, so the
    box and the final check ran together into one shape. The same .5rem that separates the list's own rows. */
 .diten-checkitem-add { margin-block-start: .5rem; }
-/* The evidence notice now follows the add row (it explains a control on both), so it needs the gap the row
-   above no longer provides. */
-.wcn-check-evidence-hint { margin-block-start: 1rem; }
+/* The evidence notice follows the add row on BOTH screens (it explains a paperclip that lives on the rows AND
+   on the add row, so under both is where it reads as a footnote rather than as an interruption), and so it
+   needs the gap the row above no longer provides. One class for the two, since the two are now one layout —
+   the create form used a `mt-2` utility here and rendered the same sentence 8px tighter than the detail page. */
+.diten-checkitem-evidencehint { margin-block-start: 1rem; }
 /* The add chip takes its colour from its OWN level, because it has no row around it to read `data-requirement`
    from. Same two colours the row chips use, so the level you arm before adding and the level you see afterwards
    are visibly the same decision — and, as there, only the two strict levels are coloured: Optional is the

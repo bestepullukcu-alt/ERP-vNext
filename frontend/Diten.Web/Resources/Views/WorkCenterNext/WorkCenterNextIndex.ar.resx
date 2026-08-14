@@ -1475,6 +1475,12 @@
   <data name="ChecklistLevelHint" xml:space="preserve">
     <value>تغيير المستوى: اختياري ← متوقَّع ← مانع</value>
   </data>
+  <data name="ChecklistLevelReadOnly" xml:space="preserve">
+    <value>المستوى — لا يمكن تغييره إلا لمن أضاف هذا البند</value>
+  </data>
+  <data name="ChecklistEvidenceMark" xml:space="preserve">
+    <value>مطلوب إثبات</value>
+  </data>
   <data name="ToastChecklistItemAdded" xml:space="preserve">
     <value>أُضيف البند</value>
   </data>

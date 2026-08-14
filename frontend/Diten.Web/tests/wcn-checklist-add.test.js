@@ -333,7 +333,7 @@ describe("the paperclip says what it is and when it will bite", () => {
     // matters is which one is pressed.
     expect(app().querySelectorAll(".diten-checkitem-evidence")).toHaveLength(2);
     expect(app().querySelectorAll('.diten-checkitem-evidence[aria-pressed="true"]')).toHaveLength(1);
-    const hint = app().querySelector(".wcn-check-evidence-hint");
+    const hint = app().querySelector(".diten-checkitem-evidencehint");
     expect(hint).not.toBeNull();
     expect(hint.textContent).toContain("ChecklistEvidenceHint");
   });
@@ -344,7 +344,7 @@ describe("the paperclip says what it is and when it will bite", () => {
     // The control is there — it is how the flag gets SET — but nothing is pressed and the explanatory notice,
     // which describes a condition that does not apply, stays away.
     expect(app().querySelector('.diten-checkitem-evidence[aria-pressed="true"]')).toBeNull();
-    expect(app().querySelector(".wcn-check-evidence-hint")).toBeNull();
+    expect(app().querySelector(".diten-checkitem-evidencehint")).toBeNull();
   });
 
   it("IS a control now — and still attaches nothing, which is why the sentence stays", async () => {
@@ -369,7 +369,7 @@ describe("the paperclip says what it is and when it will bite", () => {
     expect(control.getAttribute("aria-pressed")).toBe("true");
     expect(control.getAttribute("data-diten-check-evidence")).toContain(":");
     // The explanation, still under the list, still saying attaching is not possible yet.
-    expect(app().querySelector(".wcn-check-evidence-hint")).not.toBeNull();
+    expect(app().querySelector(".diten-checkitem-evidencehint")).not.toBeNull();
   });
 });
 
@@ -381,7 +381,7 @@ describe("the detail card speaks the same visual language as the form", () => {
   it("renders the evidence notice as an alert, not a hint line", async () => {
     await boot({ checklist: checklistOf([{ text: "Fatura eki", level: "Required", evidence: true }]) });
 
-    const notice = app().querySelector(".wcn-check-evidence-hint");
+    const notice = app().querySelector(".diten-checkitem-evidencehint");
     expect(notice).not.toBeNull();
     expect(notice.classList.contains("alert")).toBe(true);
     expect(notice.classList.contains("dt-inline-alert")).toBe(true);

@@ -29,6 +29,12 @@
     <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-tags.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-checkitem.js" asp-append-version="true"></script>
+    @* The checklist row can be DRAGGED here now, as it always could on the create form. The LOCAL copy, exactly
+       as Views/Tasks/Create.cshtml loads it — this page's layout is _LayoutTenantShell, which never carried the
+       CDN tag in _Layout.cshtml at all, so there was nothing here to reuse. Measured: `window.Sortable` was
+       undefined on this page. Loading the vendored file rather than adding a second CDN consumer keeps BL-081 a
+       single-line change about _Layout instead of a widening one. *@
+    <script src="~/assets/vendor/libs/sortablejs/sortable.js"></script>
     <script src="~/assets/js/Tasks/form.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/fixture-contract.js" asp-append-version="true"></script>

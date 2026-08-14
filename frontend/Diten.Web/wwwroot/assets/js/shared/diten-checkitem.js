@@ -115,23 +115,28 @@
                 labels.toggle, item.done ? 'bxs-check-square' : 'bx-square', item.done);
             if (ro) { box.disabled = true; }
             el.appendChild(box);
-        } else {
-            /*
-             * THE GRIP — the mouse path, and only the mouse path.
-             *
-             * `aria-hidden` with no tab stop on purpose: it is a surface to grab, not a second control.
-             * Announcing a handle that Enter cannot operate promises an interaction that does not exist. The
-             * move buttons below are what a keyboard uses.
-             */
-            const grip = document.createElement('span');
-            grip.className = ROOT + '-grip';
-            grip.setAttribute('data-diten-check-grip', '');
-            grip.setAttribute('aria-hidden', 'true');
-            const gripIcon = document.createElement('i');
-            gripIcon.className = 'bx bx-grid-vertical';
-            grip.appendChild(gripIcon);
-            el.appendChild(grip);
         }
+
+        /*
+         * THE GRIP — the mouse path, and only the mouse path. Drawn in BOTH modes now.
+         *
+         * It was authoring-only, which meant the same row could be dragged on the create form and not on the
+         * task detail page. Two components could have justified that; one cannot. Where the grip is drawn the
+         * caller may attach Sortable to the list, and where it does not the grip simply never gets a drag —
+         * the component draws the surface, the page decides whether anything grabs it.
+         *
+         * `aria-hidden` with no tab stop on purpose: it is a surface to grab, not a second control. Announcing
+         * a handle that Enter cannot operate promises an interaction that does not exist. The move buttons are
+         * what a keyboard uses, and they are never removed to make room for this.
+         */
+        const grip = document.createElement('span');
+        grip.className = ROOT + '-grip';
+        grip.setAttribute('data-diten-check-grip', '');
+        grip.setAttribute('aria-hidden', 'true');
+        const gripIcon = document.createElement('i');
+        gripIcon.className = 'bx bx-grid-vertical';
+        grip.appendChild(gripIcon);
+        if (!working) { el.appendChild(grip); }
 
         /*
          * MOVE, as two buttons.
@@ -168,28 +173,72 @@
          *
          * The chip always NAMES the current level, including Optional. Showing only the strict states would
          * leave Optional as a blank, and a blank reads as "not set" rather than as a choice someone made.
+         *
+         * ── AND THE SPLIT THIS ROW EXISTS TO KEEP ──────────────────────────────────────────────────────────
+         * The level is INFORMATION. Changing it is a PERMISSION. Those are two different things and they were
+         * briefly the same thing here: the chip was only ever a button, so the ownership guard that stopped a
+         * reader changing somebody else's level also stopped them READING it. The sentence under the list then
+         * said "4 expected items open" over rows that gave no way to tell which four — and a blocking step, the
+         * one thing that can stop the task closing, was equally silent about why.
+         *
+         * So: the author gets the BUTTON, everyone else gets the same chip as a SPAN. Same words, same colours,
+         * same place. Not a disabled button — a disabled control still offers itself, takes an explanation with
+         * it and invites a hunt for the permission that would light it up. A span is not a control at all: it
+         * cannot be clicked, cannot be tabbed to, and needs no `aria-disabled` to say so.
          */
-        const level = document.createElement('button');
-        level.type = 'button';
-        level.className = ROOT + '-level';
-        level.setAttribute('data-diten-check-level', item.id === undefined ? '' : String(item.id));
+        const levelStatic = working && !mine;
+        const level = document.createElement(levelStatic ? 'span' : 'button');
+        level.className = ROOT + '-level' + (levelStatic ? ' ' + ROOT + '-level-static' : '');
         level.textContent = levelLabel(item.requirement, labels);
-        level.title = labels.levelHint;
-        if (ro) { level.disabled = true; }
+        if (levelStatic) {
+            // No `data-diten-check-level`: both screens' click handlers key off that attribute, so its absence
+            // is what makes this inert — the chip cannot be wired up by accident later.
+            if (labels.levelStatic) { level.title = labels.levelStatic; }
+        } else {
+            level.type = 'button';
+            level.setAttribute('data-diten-check-level', item.id === undefined ? '' : String(item.id));
+            level.title = labels.levelHint;
+            if (ro) { level.disabled = true; }
+        }
 
         /*
-         * EVIDENCE — a BUTTON on both screens now, where the detail page had only a mark.
+         * EVIDENCE — a BUTTON for the author, a MARK for everyone else.
          *
-         * It still attaches nothing. It writes the flag that says this item WILL want evidence; the attachment
-         * itself belongs to MOD-0031 and is BL-080. That is why the sentence under the list stays: a paperclip
-         * that opens no file picker has to be explained by something, and a flag shown as a button that silently
-         * does nothing is the same "stored but inert" defect wearing a nicer shirt.
+         * The button writes the flag that says this item WILL want evidence; it still attaches nothing, because
+         * the attachment belongs to MOD-0031 and is BL-080. That is why the sentence under the list stays: a
+         * paperclip that opens no file picker has to be explained by something.
+         *
+         * The MARK is the older shape, brought back rather than reinvented: before the row became one component
+         * the detail page drew exactly this, an icon reporting a decision made elsewhere. As a control for a
+         * reader who cannot write it, that was wrong. As the SAME split the level chip makes — the flag is
+         * information, setting it is a permission — it is right, and it is the only way a reader can see which
+         * of the open items is going to want a document.
+         *
+         * Drawn only when the flag is ON. An off paperclip on a row you cannot write is a control offering
+         * itself and then refusing; the author's button is the only place an off state means anything.
          */
-        const evidence = button(
-            ROOT + '-btn ' + ROOT + '-evidence', 'data-diten-check-evidence',
-            item.id === undefined ? '' : String(item.id),
-            labels.evidenceToggle, 'bx-paperclip', !!item.evidenceRequired);
-        if (ro) { evidence.disabled = true; }
+        let evidence = null;
+        if (working && !mine) {
+            if (item.evidenceRequired) {
+                evidence = document.createElement('span');
+                evidence.className = ROOT + '-btn ' + ROOT + '-evidence ' + ROOT + '-evidence-mark';
+                // `role="img"` with a label, so it is ANNOUNCED as the fact it states rather than skipped as
+                // decoration — the flag is exactly the thing a screen-reader user would otherwise never learn.
+                evidence.setAttribute('role', 'img');
+                const mark = labels.evidenceMark || labels.evidenceToggle;
+                if (mark) { evidence.title = mark; evidence.setAttribute('aria-label', mark); }
+                const clip = document.createElement('i');
+                clip.className = 'bx bx-paperclip';
+                clip.setAttribute('aria-hidden', 'true');
+                evidence.appendChild(clip);
+            }
+        } else {
+            evidence = button(
+                ROOT + '-btn ' + ROOT + '-evidence', 'data-diten-check-evidence',
+                item.id === undefined ? '' : String(item.id),
+                labels.evidenceToggle, 'bx-paperclip', !!item.evidenceRequired);
+            if (ro) { evidence.disabled = true; }
+        }
 
         const remove = button(
             ROOT + '-btn ' + ROOT + '-remove', 'data-diten-check-remove',
@@ -200,9 +249,17 @@
         // as "arrange these", working reads as "tick these off", so what comes first differs.
         if (working) {
             el.appendChild(text);
-            // Only what this reader may actually act on. Move stays either way: reordering writes the whole
-            // list's order, not one item's meaning, and it takes nothing away from anybody.
-            if (mine) { el.appendChild(level); el.appendChild(evidence); }
+            /*
+             * The level and the evidence flag are here for EVERY reader — as controls if the row is yours, as
+             * a chip and a mark if it is not. What is still withheld is `remove`, and only that: removing is
+             * the one act with no informational half to show.
+             *
+             * Move stays either way too: reordering writes the whole list's order, not one item's meaning, and
+             * it takes nothing away from anybody.
+             */
+            el.appendChild(level);
+            if (evidence) { el.appendChild(evidence); }
+            el.appendChild(grip);
             el.appendChild(move);
             if (mine) { el.appendChild(remove); }
         } else {
