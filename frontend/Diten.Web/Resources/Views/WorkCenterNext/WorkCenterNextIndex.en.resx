@@ -281,6 +281,12 @@
   <data name="SummaryCardLabel" xml:space="preserve">
     <value>Summary</value>
   </data>
+  <data name="SummaryUnassigned" xml:space="preserve">
+    <value>Unassigned</value>
+  </data>
+  <data name="PersonalCardLabel" xml:space="preserve">
+    <value>Personal</value>
+  </data>
   <data name="StatusCardLabel" xml:space="preserve">
     <value>Where it stands</value>
   </data>

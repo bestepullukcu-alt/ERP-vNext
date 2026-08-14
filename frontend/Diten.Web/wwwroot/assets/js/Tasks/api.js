@@ -229,7 +229,28 @@
          * nor below the author: approval authority belongs to the PROCESS, not to the requester. Serving both
          * from one call is the mistake that silently kills intra-group approval.
          */
-        assignablePeople: () => request('GET', '/assignable-people'),
+        /*
+         * ⚠ THE ONLY PLACE THE `{ people, excluded }` SHAPE IS UNWRAPPED — and it is here, not in the callers,
+         * because it was wrong in three of the four callers over three separate rounds.
+         *
+         * The wire answers an OBJECT. Every caller wanted the array. Each unwrapped it in its own hand-written
+         * expression, and `res.data` (an object) has an `undefined` `.length`, so a caller that got it wrong
+         * did not crash — it concluded "nobody is assignable" and refused, politely, forever. The last one
+         * (BL-109) shipped a reassign dialog that could never open on a tenant with four assignable people.
+         *
+         * Handing callers a helper would not have closed it: a fifth caller writes its own line. So the SHAPE
+         * STOPS HERE. `data` is the array; nothing downstream knows there was ever an envelope.
+         *
+         * `excluded` is deliberately dropped from this return: no caller has ever read it, and a second field
+         * is how the object shape would grow back. When somebody needs "why is X missing" (BL-072), it gets its
+         * own named call rather than re-wrapping this one.
+         */
+        assignablePeople: async () => {
+            const res = await request('GET', '/assignable-people');
+            return Object.assign({}, res, {
+                data: Array.isArray(res.data?.people) ? res.data.people : []
+            });
+        },
         decisionMakers: () => request('GET', '/decision-makers'),
         /*
          * BL-023 — is this person ABOVE me? Asked so the submit button can say what it will DO before it is

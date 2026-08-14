@@ -670,8 +670,9 @@
          * Loaded before any draft is written back, so a handed-over assignee id can select its option.
          */
         const people = await global.TasksApi.assignablePeople();
-        // The lookup answers `{ people, excluded }` now — only the server can say WHY somebody is missing.
-        const assignableRows = people.ok ? people.data?.people || [] : [];
+        // `data` IS the array. The wire's `{ people, excluded }` envelope is unwrapped once, in TasksApi —
+        // four callers wrote four unwrappings and three of them were wrong at some point (BL-109/BL-113).
+        const assignableRows = people.ok ? people.data : [];
         global.TaskForm.renderPersonOptions(el('taskAssignee'), assignableRows, personLabels);
         global.TaskForm.renderPersonOptions(el('taskWatchers'), assignableRows, personLabels, { multiple: true });
 

@@ -281,6 +281,12 @@
   <data name="SummaryCardLabel" xml:space="preserve">
     <value>摘要</value>
   </data>
+  <data name="SummaryUnassigned" xml:space="preserve">
+    <value>未分配</value>
+  </data>
+  <data name="PersonalCardLabel" xml:space="preserve">
+    <value>个人</value>
+  </data>
   <data name="StatusCardLabel" xml:space="preserve">
     <value>当前状态</value>
   </data>

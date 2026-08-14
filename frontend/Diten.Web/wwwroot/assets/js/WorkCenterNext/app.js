@@ -1578,6 +1578,41 @@
         return key ? `<p class="wcn-dialog-lead">${esc(t(key))}</p>` : '';
     };
 
+    /*
+     * WHICH OF THE THREE NATURES THIS ACTION HAS — and it is only ever three.
+     *
+     * The tier is already legible from STRUCTURE (full width, top, sole sentence), so the primary's colour is
+     * free to say what the action IS rather than that it is the primary. Free, but not unlimited: three
+     * meanings take colour and everything else stays neutral, because a fourth and fifth hue turn a signal into
+     * a palette and nobody reads a palette.
+     *
+     *   advancing  → accent   (accept, start, plan — move it along)
+     *   completing → success  (complete, approve, sign off — finish it)
+     *   destructive→ danger   (cancel — end it)
+     *
+     * Anything whose `kind` is not one of those three falls NEUTRAL rather than being assigned a colour by
+     * this file's guess.
+     */
+    const ACTION_NATURE = { primary: 'accent', success: 'success', danger: 'danger' };
+
+    /*
+     * ONE ACTION, IN ONE OF THREE TIERS — tier by STRUCTURE, emphasis by FILL.
+     *
+     * ⚠ EXACTLY ONE FILLED BUTTON PER CARD. Every button used to be a Sneat `btn-label-*` (tint) variant, and
+     * in this theme a tint reads as DISABLED — measured on screen as a pale green primary with white text, two
+     * pale grey pills and a pale pink cancel. A card whose most important control looks switched off is worse
+     * than one with no emphasis at all, because the reader concludes they are not allowed to act.
+     *
+     * So the primary is the only thing with a fill, at full saturation. The others carry no fill at all — but
+     * they are still real 38px buttons with a real hit area, not bare links: they DO something, and a thing
+     * that does something must look pressable even when it is quiet.
+     *
+     * NO ICONS ON THE BUTTONS. Every one of them restated its own label — a tick on "Accept", a question mark
+     * on "Ask", a calendar on "Plan" — and the actions with no mapping fell back to `bx-right-arrow-alt`, which
+     * is what put an arrow in front of "Tamamla" and "Görevi iptal et" and made them read as links. The one
+     * icon that survives is the LOCK on a blocked action's reason, because it states the prohibition rather
+     * than repeating a word beside it.
+     */
     const actionButton = (item, action, variant, locked) => {
         const disabled = action.disabled || locked;
         /*
@@ -1586,9 +1621,6 @@
          * The reason is the projection's (`disabledReason`, resolved server-side alongside `disabledReasonCode`)
          * — measured on a blocked task: `CHECKLIST_INCOMPLETE` → `WorkAggregation_ActionDisabled_ChecklistIncomplete`.
          * It is NOT re-derived from `gates` here; a second derivation is a second answer waiting to disagree.
-         *
-         * A greyed button with no reason leaves the reader hunting for a rule nobody stated, which is worse than
-         * the button being absent — so renderActionRail drops those instead of drawing them.
          */
         const reason = action.disabled && action.disabledReason
             ? `<p class="wcn-act-reason"><i class="bx bx-lock-alt" aria-hidden="true"></i>${esc(action.disabledReason)}</p>`
@@ -1597,27 +1629,20 @@
         const outcome = variant === 'primary' ? actionOutcome(action) : '';
         const busy = locked && state.submittingActionCode === action.code;
         const label = busy ? t('ActionSubmitting') : actionLabel(action);
-        const kind = variant === 'primary' ? action.kind
-            : variant === 'destructive' ? 'label-danger'
-                : `label-${action.kind}`;
+        const nature = variant === 'destructive' ? 'danger' : (ACTION_NATURE[action.kind] || 'neutral');
+        const cls = variant === 'primary'
+            ? `wcn-act-btn wcn-act-fill wcn-act-fill-${nature}`
+            : `wcn-act-btn wcn-act-bare wcn-act-bare-${nature}`;
         return `<li class="wcn-act wcn-act-${variant}${action.disabled ? ' wcn-act-disabled' : ''}">
-            <button type="button" class="btn btn-${kind} wcn-act-btn"
+            <button type="button" class="${cls}"
                     data-wcn-action="${esc(action.key)}" data-wcn-id="${esc(item.id)}"${
             disabled ? ' disabled aria-disabled="true"' : ''}${busy ? ' aria-busy="true"' : ''}>
-                <i class="bx ${busy ? 'bx-loader-alt bx-spin' : inboxActionIcon(action)}" aria-hidden="true"></i><span>${esc(label)}</span>
+                ${busy ? '<i class="bx bx-loader-alt bx-spin" aria-hidden="true"></i>' : ''}<span>${esc(label)}</span>
             </button>
             ${outcome}${reason}
         </li>`;
     };
 
-    /*
-     * The action rail. The PRIMARY action leads it at full size — the whole point of the page is to let someone
-     * act, and burying that behind a row of equal-weight buttons makes the reader hunt for it.
-     *
-     * A disabled primary KEEPS its place, with its reason: why work cannot move is the most important thing on
-     * the page, and promoting the next enabled action instead once made `cancel` look like the intended next
-     * step. Destructive actions are separated out below, never mixed in with the ordinary ones.
-     */
     const renderActionRail = (item, locked) => {
         const all = itemActions(item);
         /*
@@ -1831,57 +1856,89 @@
     };
 
     /*
-     * WHAT IS THIS? — the card a detail page owes its reader before anything else.
+     * `summaryFact` LIVED HERE and is gone: the icon-plus-label-plus-value tile it built was the three-column
+     * grid's unit, and the grid was replaced by a definition list. It had no other caller — measured before
+     * deleting — and leaving an abandoned builder in place is an invitation to rebuild the shape it made.
      *
-     * MEASURED (2026-08-12, live): the page opened straight into "what can you do about it". The description
-     * was nowhere, and neither were the due date, the start date, the estimate or the tags — the chip said
-     * "15 gün gecikmiş" and the page never said what the deadline WAS. Four of those fields were missing from
-     * the WC-1 projection entirely and were added to it in the same round; the other three were on the wire
-     * already and simply never rendered as fields.
-     *
-     * EMPTY FIELDS ARE NOT PRINTED. A "Son tarih: —" row is a claim that the value was checked and found empty;
-     * the reader cannot tell it from a value that failed to load. summaryFact drops the row instead.
+     * Its one rule survives, restated in `renderSummary`: EMPTY FIELDS ARE NOT PRINTED. A "Son tarih: —" row is
+     * a claim that the value was checked and found empty, which the reader cannot tell from a value that failed
+     * to load.
      */
-    const summaryFact = (icon, labelKey, value) => {
-        if (value === null || value === undefined || value === '') { return ''; }
-        return `<div class="wcn-fact">
-            <i class="bx ${icon}" aria-hidden="true"></i>
-            <div class="wcn-fact-body">
-                <span class="wcn-fact-label">${esc(t(labelKey))}</span>
-                <span class="wcn-fact-value">${esc(value)}</span>
-            </div>
-        </div>`;
-    };
 
+    /*
+     * THE SUMMARY, AS A DEFINITION LIST — because that is what it is.
+     *
+     * It was a three-column grid of icon-plus-label-plus-value tiles. Two things were wrong with that and only
+     * one of them was visible: the SEVEN facts it can hold rarely all apply, so four of them left an orphan
+     * tile alone on a second row; and a grid of <div>s says nothing about the label/value relationship, so a
+     * screen reader read seven captions and seven strings and had to pair them by luck.
+     *
+     * `<dl>/<dt>/<dd>` is the markup for "these are terms and these are their definitions". It pairs them for
+     * assistive tech for free, it cannot orphan anything because it is one column, and it reads top-to-bottom
+     * the way a fact sheet is actually scanned.
+     */
     const renderSummary = (item) => {
-        // A tag strip is rendered only when there ARE tags: an empty strip is the chip-shaped version of a dash.
+        /*
+         * ONE ROW. Absent values are NOT drawn — an em dash is a claim that the field was checked and found
+         * empty, which the reader cannot tell from a value that failed to load.
+         *
+         * `tone` is the one place a value may take colour, and only from a source that already exists.
+         */
+        const row = (labelKey, value, tone) => (value === null || value === undefined || value === ''
+            ? ''
+            : `<div class="wcn-sumrow">
+                <dt class="wcn-sumkey">${esc(t(labelKey))}</dt>
+                <dd class="wcn-sumval${tone ? ' ' + tone : ''}">${esc(value)}</dd>
+            </div>`);
+
+        /*
+         * THE ONE EXCEPTION TO "no value, no row": WHO HOLDS THIS.
+         *
+         * An unassigned task is not a missing field, it is a FACT — and the one fact whose consequence is that
+         * nothing happens until somebody notices. Dropping the row would hide exactly the state that needs
+         * seeing. So the row is always drawn, and when there is nobody it says so in a word rather than with a
+         * dash, because "—" reads as "not recorded" and this is recorded: it is recorded as nobody.
+         */
+        const assignee = row('DetailAssignee', item.assignee || t('SummaryUnassigned'),
+            item.assignee ? '' : 'wcn-sumval-muted');
+
+        /*
+         * THE DUE DATE'S COLOUR, and the contradiction it settles.
+         *
+         * This value rendered grey here and RED in the Status card — the same date, two answers, on one screen.
+         * The red one was right, so the red one is what survives, and the source of the rule is unchanged:
+         * `item.slaState === 'overdue'`, the projection's own verdict, which the Status card was already using.
+         * No new lateness rule is derived here; deriving one would be a third answer.
+         */
+        const overdue = item.slaState === 'overdue' ? 'wcn-sumval-overdue' : '';
+
+        // People → time → classification → tags. A reader asks "whose is this" before "when", and "when"
+        // before "how big".
+        const rows = assignee
+            + row('DetailRequester', item.requester)
+            + row('DetailStartAt', item.startAt)
+            + row('SourceDueLabel', item.dueAt, overdue)
+            + row('DetailPriority', hasPriority(item) ? priorityLabel(item) : '')
+            + row('DetailEstimate', item.estimateHours === null || item.estimateHours === undefined
+                ? '' : tf('EstimateHoursValue', item.estimateHours));
+
+        // Tags last and full width: they are a set, not a value, and a row of chips beside a right-aligned
+        // column would wrap into the label's gutter.
         const tags = Array.isArray(item.tags) && item.tags.length
-            ? `<div class="wcn-fact wcn-fact-wide">
-                <i class="bx bx-purchase-tag-alt" aria-hidden="true"></i>
-                <div class="wcn-fact-body">
-                    <span class="wcn-fact-label">${esc(t('DetailTags'))}</span>
-                    <span class="wcn-fact-tags">${item.tags.map((tag) => `<span class="wcn-tag">${esc(tag)}</span>`).join('')}</span>
-                </div>
+            ? `<div class="wcn-sumrow wcn-sumrow-wide">
+                <dt class="wcn-sumkey">${esc(t('DetailTags'))}</dt>
+                <dd class="wcn-sumval wcn-sumval-tags">${
+                item.tags.map((tag) => `<span class="wcn-tag">${esc(tag)}</span>`).join('')}</dd>
             </div>`
             : '';
 
-        const facts = summaryFact('bx-user-check', 'DetailAssignee', item.assignee)
-            + summaryFact('bx-user', 'DetailRequester', item.requester)
-            + summaryFact('bx-calendar-exclamation', 'SourceDueLabel', item.dueAt)
-            + summaryFact('bx-calendar', 'DetailStartAt', item.startAt)
-            + summaryFact('bx-flag', 'DetailPriority', hasPriority(item) ? priorityLabel(item) : '')
-            + summaryFact('bx-time-five', 'DetailEstimate',
-                item.estimateHours === null || item.estimateHours === undefined
-                    ? '' : tf('EstimateHoursValue', item.estimateHours))
-            + tags;
-
         // Neither a description nor a single fact: the card would be a heading over nothing.
-        if (!item.summary && !facts) { return ''; }
+        if (!item.summary && !rows && !tags) { return ''; }
 
         return `<div class="wcn-detail-section">
             ${cardHead('bx-info-circle', 'SummaryCardLabel')}
             ${item.summary ? `<p class="wcn-detail-summary">${esc(item.summary)}</p>` : ''}
-            ${facts ? `<div class="wcn-facts">${facts}</div>` : ''}
+            ${rows || tags ? `<dl class="wcn-sumlist">${rows}${tags}</dl>` : ''}
         </div>`;
     };
 
@@ -2113,32 +2170,32 @@
      * REPORTING ONLY, unchanged (charter Binding A): no approve/reject control lives here. MOD-0024 has been
      * caught once growing a second approval engine; this card says why work is waiting and on whom, and stops.
      */
+    /*
+     * THE GATES CARD — and what it stopped being.
+     *
+     * It was called "Durum" and, on the task measured, its ENTIRE content was two dates: the source due date
+     * and the personal plan. A card named for status, containing no status.
+     *
+     * Worse, it disagreed with the page: the same due date rendered RED here (`slaState === 'overdue'`) and
+     * grey in the Summary card two columns away — one screen saying two things about one fact.
+     *
+     * The dates left. The due date went to the Summary, where its row already existed, and took the RED with
+     * it (the red was the correct one). The personal plan went to the Personal card, which is where the
+     * reader's own decisions live.
+     *
+     * ⚠ WHAT DID NOT LEAVE: the approval and review GATE rows. The brief's premise was that this card held
+     * nothing but dates — true of the task in front of us, and not true of the card, which renders gate state
+     * whenever a task has gates. Deleting it wholesale would have deleted those. With the dates gone it now
+     * disappears on its own for any task without gates, which is the outcome that was actually wanted.
+     */
     const renderStatusCard = (item) => {
         const gates = item.gates || {};
         const rows = gateRow('GateApproval', gates.approval) + gateRow('GateReview', gates.review);
-
-        const conflict = item.dueAt && item.plannedDate && item.plannedDate > item.dueAt;
-        // Per-cell empty text: "SLA yok" answers "is there a deadline?" and says nothing about whether the
-        // holder has planned the work. One shared placeholder made a missing plan read as "no SLA".
-        const dateCell = (labelKey, value, emptyKey, cls) => (value || emptyKey
-            ? `<div class="wcn-date-cell${cls ? ' ' + cls : ''}"><span class="wcn-date-label">${esc(t(labelKey))}</span><span class="wcn-date-value">${esc(value || t(emptyKey))}</span></div>`
-            : '');
-        const dates = (item.dueAt || item.plannedDate)
-            ? `<div class="wcn-dates">
-                ${dateCell('SourceDueLabel', item.dueAt, 'SlaNoSla', item.slaState === 'overdue' ? 'wcn-date-overdue' : '')}
-                ${dateCell('PlannedDateLabel', item.plannedDate, 'PlannedDateNone', conflict ? 'wcn-date-conflict' : '')}
-            </div>
-            ${conflict ? `<div class="wcn-date-warn" role="note"><i class="bx bx-error-circle"></i><span>${esc(t('PlanConflict'))}</span></div>` : ''}`
-            : '';
-
-        // Nothing to report is not a card. A task with no gates and no dates says nothing here rather than
-        // announcing that it has nothing to say.
-        if (!rows && !dates) { return ''; }
+        if (!rows) { return ''; }
 
         return `<div class="wcn-detail-section">
             ${cardHead('bx-pulse', 'StatusCardLabel')}
-            ${rows ? `<ul class="wcn-gates">${rows}</ul>` : ''}
-            ${dates}
+            <ul class="wcn-gates">${rows}</ul>
         </div>`;
     };
 
@@ -2591,10 +2648,34 @@
     };
 
     // Personal note — the thin overlay WorkCenter owns (only I see it).
+    /*
+     * THE PERSONAL CARD — the reader's own layer over somebody else's work.
+     *
+     * It was the note box alone, under the heading "Kişisel Not". The PERSONAL PLAN DATE joined it when the
+     * "Durum" card was dissolved, and it belongs here for the reason that card never gave it: a plan date is
+     * not the task's status, it is THIS reader's intention about the task. The source due date is the
+     * organisation's claim; the plan is mine. One of them belongs beside the description, the other beside my
+     * note, and they were sitting in one box labelled neither.
+     *
+     * `PlannedDateNone` still speaks when there is no plan — this is the one place a stated absence earns its
+     * line, because "I have not planned this yet" is a thing the holder needs to notice about themselves. The
+     * Summary drops empty rows; this card keeps this one. The keys, the wording and the conflict rule are all
+     * unchanged — they moved house, they were not rewritten.
+     */
     const renderNote = (item) => {
         if (isTerminal(item)) { return ''; }
+        const conflict = item.dueAt && item.plannedDate && item.plannedDate > item.dueAt;
+        const plan = `<div class="wcn-personal-plan${conflict ? ' wcn-personal-plan-conflict' : ''}">
+                <span class="wcn-personal-plan-label">${esc(t('PlannedDateLabel'))}</span>
+                <span class="wcn-personal-plan-value">${esc(item.plannedDate || t('PlannedDateNone'))}</span>
+            </div>
+            ${conflict
+            ? `<p class="wcn-date-warn" role="note"><i class="bx bx-error-circle" aria-hidden="true"></i>${esc(t('PlanConflict'))}</p>`
+            : ''}`;
+
         return `<div class="wcn-detail-section">
-            ${cardHead('bx-note', 'NoteLabel')}
+            ${cardHead('bx-note', 'PersonalCardLabel')}
+            ${plan}
             <div class="wcn-note">
                 <textarea class="form-control form-control-sm" data-wcn-note-input rows="2" placeholder="${esc(t('NotePlaceholder'))}">${esc(item.note || '')}</textarea>
                 <button type="button" class="btn btn-sm btn-label-secondary" data-wcn-note-save="${item.id}">${esc(t('NoteSave'))}</button>
@@ -3613,13 +3694,16 @@
         // The picker is the SAME list the server will accept — reassign validates against it, so offering anyone
         // else here would build a form whose submit is refused.
         /*
-         * `.data.people` — the lookup answers an OBJECT, `{ people, excluded }`, since BL-057. This line kept
-         * reading `.data`, so `state.assignablePeople` became an object and the next render died on
-         * `people.map is not a function` — the whole page, not just the picker. Found live while ticking a
-         * subtask checkbox. Same defect the quick-create offcanvas had after that round; this was its twin.
+         * `data` IS the array now, and the hazard this comment used to warn about is gone at the source.
+         *
+         * It read: the lookup answers `{ people, excluded }`, so a caller reading `.data` got an object and the
+         * next render died on `people.map is not a function`. That warning could not stop the next caller —
+         * three of four callers got this wrong across three rounds, the last one shipping a reassign dialog
+         * that could never open (BL-109). The envelope is unwrapped ONCE, in `TasksApi.assignablePeople`, so
+         * there is no shape here to get wrong (BL-113).
          */
         const people = await global.TasksApi.assignablePeople();
-        state.assignablePeople = (people.ok && Array.isArray(people.data?.people)) ? people.data.people : [];
+        state.assignablePeople = people.ok ? people.data : [];
         if (!people.ok) { console.warn('[WorkCenterNext] Assignable people could not be read; the picker is empty.'); }
         render();
     };
@@ -5519,20 +5603,9 @@
             let people = [];
             if (needsAssignee) {
                 const res = await global.TasksApi.assignablePeople();
-                /*
-                 * `.data.people` — THE THIRD TIME THIS EXACT LINE HAS BEEN WRONG.
-                 *
-                 * The lookup answers an OBJECT, `{ people, excluded }`, since BL-057. Reading `.data` yields
-                 * that object, whose `.length` is `undefined`, so the guard below concluded "nobody can take
-                 * this" and toasted `ReassignNoAssignableUsers` — on a tenant that measured FOUR assignable
-                 * people. The dialog was unreachable everywhere, not just here: the action looked implemented,
-                 * was reachable by keyboard, and refused every time.
-                 *
-                 * `loadAssignablePeople` in this same file already unwraps it correctly and carries a comment
-                 * about the twin defect in the quick-create offcanvas. This line is that comment's third
-                 * sibling; it is written the same way as the other two now.
-                 */
-                people = (res.ok && Array.isArray(res.data?.people)) ? res.data.people : [];
+                // `data` IS the array — unwrapped once in TasksApi (BL-113). This line was wrong for three
+                // rounds while each caller unwrapped the envelope in its own hand-written expression.
+                people = res.ok ? res.data : [];
                 if (!people.length) {
                     // Refusing beats opening a dialog that cannot be confirmed.
                     toast(t('ReassignNoAssignableUsers'), 'error');

@@ -3202,3 +3202,55 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - **Sonuç bugün kabul edilebilir** — hatta tür rengi tek tip primary halkadan okunaklı. Ama **ev tokenının
   uygulandığı sanılmamalı**; BL-100 çözülürken bu etkileşim yeniden ölçülmeli.
 - **Gelecek regresyon riski: 🟡** — BL-100 dokunulduğunda bu kart yeniden ölçülmeli.
+
+### BL-113 — ✅ KAPANDI (2026-08-14) — [API] `assignablePeople` zarfı ARTIK ÇAĞIRANLARDA AÇILMIYOR
+- **Sorun:** uç `{ people, excluded }` döndürüyordu; **dört çağıran, üç ayrı açma biçimi** yazmıştı ve üçü zaman
+  içinde yanlıştı. Yanlış olan çökmüyordu — `res.data` bir nesne, `.length` `undefined`, guard "kimse yok"
+  sonucuna varıp nazikçe reddediyordu. Son örneği (BL-109) hiç açılamayan bir devretme diyaloğuydu.
+- **Neden yardımcı yetmezdi:** yardımcı isteğe bağlıdır; beşinci çağıran yine kendi satırını yazar. **Şekil
+  API katmanında durduruldu:** `TasksApi.assignablePeople()` artık `data`'yı **dizi** olarak döndürüyor.
+- **Dokunulan çağıranlar:** `Tasks/form-page.js`, `WorkCenterNext/quick-create.js`, `WorkCenterNext/app.js` ×2 —
+  hepsi `people.ok ? people.data : []`.
+- **Uyarı yorumları güncellendi:** `quick-create.js` ve `app.js`'teki "bu satır yanlış olmuştu" notları, tehlike
+  kaynakta ortadan kalktığı için yeniden yazıldı (silinmedi — tarih kayıtta kaldı).
+- **`excluded` bilerek düşürüldü:** hiçbir çağıran okumuyordu ve ikinci alan, nesne şeklinin geri büyüme yolu.
+  BL-072 ("X neden listede yok") gerektiğinde kendi adlandırılmış çağrısını alır.
+- **Testler:** iki test **ters çevrildi** — eskiden çağıranın `.data.people`'a uzanmasını ZORUNLU kılıyorlardı,
+  yani kusuru hayatta tutan kuralı koruyorlardı. Artık çağıranın uzanmamasını ve açmanın `api.js`'te olmasını
+  şart koşuyorlar.
+- **Gelecek regresyon riski: 🟢** — şekil tek yerde.
+
+### BL-114 — ✅ KAPANDI (2026-08-14) — [DURUM KARTI] Kart dağıtıldı; iki tarih iki farklı şey söylüyordu
+- **Ölçüm:** kart 121px, içeriğinin tamamı iki tarih. Adı "Durum", içinde durum yok. **Ve bir çelişki:** aynı
+  son tarih Özet'te `rgb(167,172,178)` gri, Durum'da `rgb(255,62,29)` kırmızıydı — bir ekran, bir olgu, iki cevap.
+- **Dağıtım:** kaynak son tarih → **Özet** (kırmızıyı da götürdü; kural değişmedi, `item.slaState === 'overdue'`,
+  yani Durum kartının zaten kullandığı kaynak). Kişisel plan + plan çakışması uyarısı → **Kişisel** kartı
+  (adı "Kişisel Not" → "Kişisel").
+- **⚠ BRIEF'İN VARSAYIMI KISMEN YANLIŞTI:** kart yalnız tarih taşımıyordu — **onay/inceleme gate satırlarını da**
+  taşıyor. Tümden silinseydi onlar da silinirdi. Yalnız tarihler çıkarıldı; gate'i olmayan görevde kart artık
+  kendiliğinden görünmüyor (istenen sonuç), gate'i olan görevde duruyor.
+- **Ölçülerek işaretlenen ölü CSS:** `.wcn-dates`, `.wcn-date-cell/-label/-value/-overdue/-conflict` — başka
+  hiçbir view/partial/bundle'da kullanılmıyor. **`.wcn-date-warn` ÖLÜ DEĞİL:** plan çakışması notu Kişisel
+  kartında hâlâ kullanıyor. Silinmedi, işaretlendi.
+- **Ray:** 648px → **583px**.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-115 — 🟡 [MEVCUT AKSİYONLAR / ÖZET] Kartlar kısaldı ama İKİ KART kendi içinde büyüdü
+- **Ölçüm (1440, olağan görev):** aksiyonlar **224 → 267px**, özet **211 → 269px**, ray **648 → 583px**.
+- **Neden büyüdüler:** aksiyonlar kartında ritim tek ölçeğe oturdu (grup içi 8px, gruplar arası 16px — eskiden
+  4/10/14 karışıktı) ve ikincil düğmeler gerçek 38px dokunma alanı aldı (eskiden 30px). Özet kartında üç sütunlu
+  ızgara tek sütunlu tanım listesine dönüştü: yedi olgunun dördü artık alt alta.
+- **Net kazanç yine de var** (ray 65px kısaldı, Durum kartı gitti) ama kart başına hedef tutmadı.
+- **Karar sahibin:** (a) böyle kalsın — okunabilirlik ve dokunma hedefi yükseklikten önemli · (b) özet listesi
+  iki sütuna dönsün (yetim hücre riski geri gelir) · (c) aksiyonlarda gruplar arası boşluk 12px'e insin
+  (tek ölçek kuralı bozulur).
+- **Gelecek regresyon riski: 🟢** — yalnız boşluk değeri.
+
+### BL-116 — 🟢 [ÖZET] `summaryFact` ve olgu ızgarası CSS'i ölü kaldı
+- Tanım listesi ızgaranın yerini alınca `summaryFact` yardımcısının **hiç çağıranı kalmadı** (ölçüldü) ve
+  kaldırıldı; kuralı ("boş alan çizilmez") `renderSummary`'nin `row()`'unda yeniden ifade edildi.
+- `.wcn-facts`, `.wcn-fact-wide`, `.wcn-fact-body`, `.wcn-fact-label`, `.wcn-fact-value`, `.wcn-fact-tags`
+  **ölü olarak işaretlendi, silinmedi** (bir tur geri dönüş payı). **`.wcn-facts-grid` (iş bağlamı bölümleri) ve
+  dosyanın üst kısmındaki ayrı `.wcn-fact` bloğu farklı bileşenler — dokunulmadı.**
+- **Yapılacak:** görünüm kabul edilince blok silinsin.
+- **Gelecek regresyon riski: 🟢.**

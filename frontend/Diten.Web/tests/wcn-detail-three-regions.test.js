@@ -203,9 +203,14 @@ describe("the summary card answers 'what is this?' before 'what can you do?'", (
      * The page's standing rule: a dash claims the value was checked and found empty. The fact helper drops the
      * row instead, so a task with no start date has no start-date line at all.
      */
-    const source = fn("renderSummary") + fn("summaryFact");
+    /*
+     * The helper this used to inspect (`summaryFact`) is gone with the fact grid; the rule outlived it and now
+     * lives in `renderSummary`'s own `row()`. Asserted on BEHAVIOUR as well as source, so the next refactor
+     * cannot quietly reintroduce a dash while keeping the shape.
+     */
+    const source = fn("renderSummary");
     expect(source).not.toContain("'—'");
-    expect(fn("summaryFact"), "there is no fact helper that can drop a row").toMatch(/return\s+''/);
+    expect(source, "no row builder that can decline to print").toMatch(/\?\s*''/);
   });
 
   test("the description is printed only when there is one", () => {
@@ -229,9 +234,19 @@ describe("'where does this stand?' is ONE card", () => {
   });
 
   test("it is built FROM the two existing renderers rather than a third copy of their rules", () => {
+    /*
+     * ⚠ THE DATES LEFT THIS CARD (BL-114). It was named "Durum" and, on a real task, held nothing but two
+     * dates — a card named for status containing none. Worse, its due date rendered RED while the Summary's
+     * rendered grey: one screen, two answers about one fact.
+     *
+     * The due date moved to the Summary and took the red with it; the personal plan moved to the Personal card.
+     * The GATE rows stayed, which is why the card still exists at all — the brief's premise that it held only
+     * dates was true of that task, not of the renderer.
+     */
     const source = fn("renderStatusCard");
     expect(source).toContain("gateRow");
-    expect(source).toContain("item.dueAt");
+    expect(source, "the dates came back to the status card").not.toContain("item.dueAt");
+    expect(fn("renderSummary"), "the due date is not in the summary").toContain("SourceDueLabel");
   });
 
   test("a gate that is NOT REQUIRED prints nothing — the card was 'Gerekmiyor / Gerekmiyor'", () => {
@@ -522,7 +537,7 @@ describe("the rendered page", () => {
     expect(summary.textContent).not.toContain("—");
   });
 
-  it("merges gates and dates into ONE card in the rail", async () => {
+  it("keeps the GATES in one card — the dates no longer live there", async () => {
     await boot(projectionItem({
       gates: {
         approval: { required: true, status: "pending", decider: { id: "x", displayName: "Deniz Koç" } },
@@ -534,7 +549,9 @@ describe("the rendered page", () => {
     const withGates = [...rail.querySelectorAll(".wcn-detail-card")].filter((c) => c.querySelector(".wcn-gates"));
     expect(withGates, "the gates are not in exactly one card").toHaveLength(1);
     // …and the dates are in that SAME card, not a second one.
-    expect(withGates[0].querySelector(".wcn-dates"), "the dates are not on the status card").not.toBeNull();
+    expect(withGates[0].querySelector(".wcn-dates"), "the dates came back to the status card").toBeNull();
+    // …and the due date is in the Summary, in red, which is where the two-answers contradiction was settled.
+    expect(app().querySelector(".wcn-sumlist"), "the summary is not a definition list").not.toBeNull();
     // The gate that does not apply is not printed at all.
     expect(withGates[0].querySelectorAll(".wcn-gate")).toHaveLength(1);
   });
@@ -939,9 +956,14 @@ describe("the subtask list reads and behaves like a checklist", () => {
      * still took `.data`, so `state.assignablePeople` became an object and the NEXT render died on
      * `people.map is not a function` — taking the whole page down, not just the picker.
      */
+    /*
+     * ⚠ INVERTED (BL-113). The unwrapping moved OUT of every caller and into `TasksApi.assignablePeople`, which
+     * is the only change that could stop a fifth caller writing a fifth wrong expression. `data` is the array.
+     */
     const app_ = APP();
-    expect(app_).toMatch(/Array\.isArray\(people\.data\?\.people\)/);
-    expect(app_).not.toMatch(/state\.assignablePeople = \(people\.ok && people\.data\) \? people\.data :/);
+    expect(app_, "app.js is unwrapping the envelope again").not.toMatch(/people\.data\?\.people|res\.data\?\.people/);
+    const api = read("wwwroot", "assets", "js", "Tasks", "api.js");
+    expect(api, "TasksApi stopped unwrapping the envelope").toMatch(/Array\.isArray\(res\.data\?\.people\)/);
   });
 
   it("puts the new strings in all seven languages, with their counters", () => {
@@ -1709,7 +1731,7 @@ describe("the actions card puts its weight where the decision is", () => {
     expect(card.querySelector(".wcn-actrail-menu"), "the kebab came back").toBeNull();
     const destructive = card.querySelector(".wcn-act-destructive");
     expect(destructive, "the destructive action is not drawn in the open").not.toBeNull();
-    expect(destructive.querySelector("button").className).toContain("btn-label-danger");
+    expect(destructive.querySelector("button").className).toContain("wcn-act-bare-danger");
     // Last, under its own rule — after every ordinary action.
     const rows = [...card.querySelectorAll("li")];
     expect(rows.indexOf(destructive.closest(".wcn-acts-row"))).toBe(rows.length - 2);
@@ -1788,5 +1810,126 @@ describe("the actions card puts its weight where the decision is", () => {
           `${lang} has no ${key}`).toContain(`name="${key}"`);
       });
     });
+  });
+});
+
+describe("the rail's three cards after the Status card was dissolved", () => {
+  it("carries EXACTLY ONE filled button — the rest have no fill at all", async () => {
+    /*
+     * MUTATION TARGET (fill). Every button was a Sneat `btn-label-*` tint, and in this theme a tint reads as
+     * DISABLED — measured on screen as a pale green primary with white text beside two pale grey pills. A card
+     * whose most important control looks switched off is worse than one with no emphasis: the reader concludes
+     * they are not allowed to act.
+     *
+     * Asserted on CLASS rather than computed colour, because jsdom performs no cascade; the pixel measurement
+     * is in the round's report. Giving any secondary a fill class fails here.
+     */
+    await boot(projectionItem({
+      primaryActionCode: "accept",
+      actions: [
+        { code: "accept", semanticType: "accept", label: { kind: "resource", key: "WorkAggregation_Action_accept" },
+          enabled: true, source: "provider", disabledReasonCode: null, disabledReason: null,
+          requiresConfirmation: false, requiresReason: false, requiresEvidence: false, supportsBulk: false,
+          riskLevel: "normal" },
+        { code: "cancel", semanticType: "cancel", label: { kind: "resource", key: "WorkAggregation_Action_cancel" },
+          enabled: true, source: "provider", disabledReasonCode: null, disabledReason: null,
+          requiresConfirmation: true, requiresReason: false, requiresEvidence: false, supportsBulk: false,
+          riskLevel: "destructive" }
+      ]
+    }));
+    const btns = [...app().querySelectorAll(".wcn-acts .wcn-act-btn")];
+    expect(btns.length, "the actions card drew nothing").toBeGreaterThan(1);
+    const filled = btns.filter((b) => b.className.includes("wcn-act-fill"));
+    expect(filled, "there is not exactly one filled button").toHaveLength(1);
+    expect(filled[0].closest(".wcn-act").className).toContain("wcn-act-primary");
+    btns.filter((b) => b !== filled[0]).forEach((b) =>
+      expect(b.className, "a secondary carries a fill").toContain("wcn-act-bare"));
+  });
+
+  it("puts no icon on an action button — every one of them repeated its own label", async () => {
+    /*
+     * A tick on "Accept", a question mark on "Ask", a calendar on "Plan" — and anything unmapped fell back to
+     * `bx-right-arrow-alt`, which is what put an arrow in front of "Tamamla" and made a button read as a link.
+     * The one icon that survives is the LOCK on a blocked reason: it states the prohibition rather than
+     * repeating a word beside it.
+     */
+    await boot(projectionItem({
+      primaryActionCode: "accept",
+      actions: [{ code: "accept", semanticType: "accept",
+        label: { kind: "resource", key: "WorkAggregation_Action_accept" }, enabled: true, source: "provider",
+        disabledReasonCode: null, disabledReason: null, requiresConfirmation: false, requiresReason: false,
+        requiresEvidence: false, supportsBulk: false, riskLevel: "normal" }]
+    }));
+    app().querySelectorAll(".wcn-acts .wcn-act-btn").forEach((b) =>
+      expect(b.querySelector("i.bx-right-arrow-alt, i.bx-check, i.bx-question-mark, i.bx-calendar-plus"),
+        "an action button carries a label-repeating icon").toBeNull());
+  });
+
+  it("always states WHO holds the task, even when nobody does", async () => {
+    /*
+     * MUTATION TARGET (assignee). Every other empty row is dropped — a dash claims the field was checked and
+     * found empty, which the reader cannot tell from a value that failed to load.
+     *
+     * This row is the exception because an unassigned task is not a missing field, it is the FACT whose
+     * consequence is that nothing happens until somebody notices. Dropping it would hide exactly the state that
+     * needs seeing. Verified live on a genuinely unassigned record.
+     */
+    await boot(projectionItem({ assignee: null }));
+    const dl = app().querySelector(".wcn-sumlist");
+    const first = dl.querySelector(".wcn-sumrow");
+    expect(first.querySelector("dt").textContent).toContain("DetailAssignee");
+    const value = first.querySelector("dd");
+    expect(value.textContent.trim(), "the unassigned state was printed as a dash").not.toMatch(/^[—–-]$/);
+    expect(value.textContent).toContain("SummaryUnassigned");
+    expect(value.className, "the empty state is not marked as one").toContain("wcn-sumval-muted");
+  });
+
+  it("colours the due date RED when it is late — the contradiction the Status card left", async () => {
+    /*
+     * MUTATION TARGET (overdue). The same date rendered grey in the Summary and RED in the Status card: one
+     * screen, two answers about one fact. The red was the correct one, so the red is what survived the merge —
+     * and from the SAME source the Status card used, `slaState === 'overdue'`. No new lateness rule is derived
+     * here; deriving one would be a third answer.
+     */
+    await boot(projectionItem({ slaState: "overdue", dueAt: "2026-07-28T17:00:00+03:00" }));
+    const due = [...app().querySelectorAll(".wcn-sumlist .wcn-sumrow")]
+      .find((r) => r.querySelector("dt").textContent.includes("SourceDueLabel"));
+    expect(due, "the due date row is gone").not.toBeNull();
+    expect(due.querySelector("dd").className, "a late due date is not marked late").toContain("wcn-sumval-overdue");
+
+    await boot(projectionItem({ slaState: "on-track", dueAt: "2026-07-28T17:00:00+03:00" }));
+    const ok = [...app().querySelectorAll(".wcn-sumlist .wcn-sumrow")]
+      .find((r) => r.querySelector("dt").textContent.includes("SourceDueLabel"));
+    expect(ok.querySelector("dd").className, "an on-track date was marked late").not.toContain("wcn-sumval-overdue");
+  });
+
+  it("pairs labels and values as a definition list, not a grid of divs", async () => {
+    // A grid of <div>s makes a screen reader read seven captions and seven strings and pair them by luck.
+    await boot(projectionItem());
+    const dl = app().querySelector(".wcn-sumlist");
+    expect(dl.tagName).toBe("DL");
+    const dts = dl.querySelectorAll("dt");
+    const dds = dl.querySelectorAll("dd");
+    expect(dts.length, "no terms").toBeGreaterThan(0);
+    expect(dds.length, "terms and definitions do not pair up").toBe(dts.length);
+    expect(app().querySelector(".wcn-facts"), "the fact grid came back").toBeNull();
+  });
+
+  it("moves the personal plan to the Personal card and leaves the Status card to its gates", async () => {
+    await boot(projectionItem({ plannedDate: null }));
+    const personal = [...app().querySelectorAll(".wcn-detail-rail .card")]
+      .find((c) => c.querySelector(".wcn-personal-plan"));
+    expect(personal, "the plan did not arrive at the Personal card").not.toBeNull();
+    expect(personal.querySelector("h6").textContent).toContain("PersonalCardLabel");
+    // The plan KEEPS its empty state — "I have not planned this yet" is a thing the holder must notice.
+    expect(personal.querySelector(".wcn-personal-plan-value").textContent).toContain("PlannedDateNone");
+    expect(app().querySelector(".wcn-dates"), "the Status card kept its dates").toBeNull();
+  });
+
+  it("ships the new strings in all seven languages", () => {
+    ["SummaryUnassigned", "PersonalCardLabel"].forEach((key) =>
+      ["en", "tr", "fr", "es", "zh", "ar", "ru"].forEach((lang) =>
+        expect(read("Resources", "Views", "WorkCenterNext", `WorkCenterNextIndex.${lang}.resx`),
+          `${lang} has no ${key}`).toContain(`name="${key}"`)));
   });
 });

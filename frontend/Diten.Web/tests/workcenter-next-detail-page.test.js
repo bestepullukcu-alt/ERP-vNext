@@ -1113,7 +1113,9 @@ describe("the action rail hides only what is destructive", () => {
     const drawn = app().querySelectorAll('.wcn-actrail [data-wcn-action="cancel"]');
     expect(drawn, "the destructive action is not drawn exactly once").toHaveLength(1);
     expect(drawn[0].closest(".wcn-act").className).toContain("wcn-act-destructive");
-    expect(drawn[0].className).toContain("btn-label-danger");
+    // Bare, not tinted: in this theme a `btn-label-*` tint reads as DISABLED, which is how the card's most
+    // important control came to look switched off. Exactly one button carries a fill and it is the primary.
+    expect(drawn[0].className).toContain("wcn-act-bare-danger");
   });
 
   it("leaves the ordinary actions open, with the sentence that says what they do", async () => {

@@ -132,19 +132,29 @@ describe("WorkCenterNext localization resources", () => {
     });
   });
 
-  it("wires each date cell to its OWN empty text", () => {
-    // Having the strings is not enough — the detail pane must actually use the plan-specific one. The bug was a
-    // single shared placeholder in renderPlanDates, so this pins the call sites.
+  it("keeps each date's OWN empty text at its new address", () => {
+    /*
+     * ⚠ THE TWO DATES SPLIT UP (BL-114). They shared a card called "Durum" whose entire content they were; the
+     * source due date moved to the Summary and the personal plan to the Personal card.
+     *
+     * The rule this test exists for survived the move and is the reason it was worth writing: the two empties
+     * are NOT interchangeable. "SLA yok" answers "is there a deadline?" and says nothing about whether the
+     * holder has planned the work — one shared placeholder once made a missing plan read as "no SLA".
+     *
+     * So the pinning moved with them: the plan keeps `PlannedDateNone` where it now lives, and the due date
+     * keeps the rule that an ABSENT value prints no row at all rather than borrowing the plan's words.
+     */
     const app = fs.readFileSync(
       path.resolve(__dirname, "../wwwroot/assets/js/WorkCenterNext/app.js"), "utf8");
-    // The dates moved INTO the status card when gates and dates were merged (2026-08-12); the per-cell rule
-    // they carry is the point of this test and moved with them.
-    const fn = app.slice(app.indexOf("const renderStatusCard"), app.indexOf("const renderStatusCard") + 2400);
+    const fnAt = (name, len) => app.slice(app.indexOf(`const ${name}`), app.indexOf(`const ${name}`) + len);
 
-    expect(fn).toContain("dateCell('SourceDueLabel', item.dueAt, 'SlaNoSla'");
-    expect(fn).toContain("dateCell('PlannedDateLabel', item.plannedDate, 'PlannedDateNone'");
-    // The old shape hardcoded the fallback inside the cell helper instead of taking it per call.
-    expect(fn).not.toMatch(/value \|\| t\('SlaNoSla'\)/);
+    // The personal plan states its absence — this is the one row that keeps an empty text.
+    expect(fnAt("renderNote", 1600)).toContain("PlannedDateNone");
+    // The summary drops empty rows instead of printing a placeholder, so it must borrow neither word.
+    const summary = fnAt("renderSummary", 3600);
+    expect(summary).toContain("SourceDueLabel");
+    expect(summary, "the summary borrowed the plan's empty text").not.toContain("PlannedDateNone");
+    expect(summary, "the summary borrowed the SLA empty text").not.toContain("SlaNoSla");
   });
 
   /*

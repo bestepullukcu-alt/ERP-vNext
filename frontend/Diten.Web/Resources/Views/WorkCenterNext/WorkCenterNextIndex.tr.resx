@@ -281,6 +281,12 @@
   <data name="SummaryCardLabel" xml:space="preserve">
     <value>Özet</value>
   </data>
+  <data name="SummaryUnassigned" xml:space="preserve">
+    <value>Atanmamış</value>
+  </data>
+  <data name="PersonalCardLabel" xml:space="preserve">
+    <value>Kişisel</value>
+  </data>
   <data name="StatusCardLabel" xml:space="preserve">
     <value>Durum</value>
   </data>

@@ -281,6 +281,12 @@
   <data name="SummaryCardLabel" xml:space="preserve">
     <value>الملخص</value>
   </data>
+  <data name="SummaryUnassigned" xml:space="preserve">
+    <value>غير مُسندة</value>
+  </data>
+  <data name="PersonalCardLabel" xml:space="preserve">
+    <value>شخصي</value>
+  </data>
   <data name="StatusCardLabel" xml:space="preserve">
     <value>الحالة</value>
   </data>

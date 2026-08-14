@@ -149,13 +149,17 @@
          * People who currently hold a position, and who I may hand work to (BL-057 narrows this to my company
          * scope). An empty list is explained, not left blank.
          *
-         * `.data.people` — the lookup answers an OBJECT, `{ people, excluded }`, since BL-057. This file kept
-         * passing `.data` straight through, and an object is not an array: the picker rendered its "nobody
-         * holds a position" empty state on every load, on a tenant full of people. The full form was updated in
-         * that round and this shortcut was not.
+         * ⚠ THE HAZARD THIS COMMENT WARNED ABOUT IS GONE AT THE SOURCE (BL-113).
+         *
+         * It read: the lookup answers `{ people, excluded }`, this file passed `.data` straight through, and an
+         * object is not an array — so the picker showed its "nobody holds a position" empty state on every
+         * load, on a tenant full of people. The warning did not stop it happening again: three of four callers
+         * got the same line wrong across three rounds. `TasksApi.assignablePeople` unwraps the envelope now, so
+         * `data` is the array and there is no shape left here to mishandle.
          */
         const people = await global.TasksApi.assignablePeople();
-        const peopleRows = people.ok ? people.data?.people || [] : [];
+        // `data` IS the array — the `{ people, excluded }` envelope is unwrapped once, in TasksApi.
+        const peopleRows = people.ok ? people.data : [];
         global.TaskForm.renderPersonOptions(el('quickAssignee'), peopleRows, personLabels());
 
         /*

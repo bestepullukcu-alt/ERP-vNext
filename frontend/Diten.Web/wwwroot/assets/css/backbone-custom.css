@@ -6169,6 +6169,10 @@ tags.diten-tags .tagify__input {
 /* Approvals top band (Inbox) ----------------------------------------------- */
 
 /* Source-due vs personal-plan dates ----------------------------------------- */
+/* DEAD (BL-114): the Status card's date pair. Both dates left — the source due date to the Summary (taking its
+   red with it) and the personal plan to the Personal card. Measured before marking: `.wcn-dates` and the
+   `.wcn-date-*` family had NO other consumer in any view, partial or bundle. `.wcn-date-warn` is NOT dead — the
+   plan-conflict note still uses it, in the Personal card. */
 .wcn-dates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
 .wcn-date-cell {
     display: flex; flex-direction: column; gap: .1875rem; padding: .5rem .625rem;
@@ -6629,6 +6633,13 @@ tags.diten-tags .tagify__input {
 .wcn-attach:hover { border-color: var(--bs-primary); }
 .wcn-attach-name { flex: 1; }
 .wcn-attach-size { font-size: .6875rem; color: var(--bs-secondary-color); }
+/* The personal plan, at the head of the Personal card. Same row shape as a summary pair so the two cards read
+   as one family, but this one KEEPS its empty state: "I have not planned this yet" is a thing the holder needs
+   to notice about themselves, where an absent due date is simply absent. */
+.wcn-personal-plan { display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap; margin-block-end: .75rem; }
+.wcn-personal-plan-label { font-size: .75rem; color: var(--bs-secondary-color); }
+.wcn-personal-plan-value { font-size: .8125rem; font-weight: 500; color: var(--bs-body-color); }
+.wcn-personal-plan-conflict .wcn-personal-plan-value { color: var(--bs-warning); font-weight: 600; }
 .wcn-note { display: flex; flex-direction: column; gap: .5rem; align-items: flex-end; }
 .wcn-note textarea { inline-size: 100%; }
 /* D2/D3 — the comment composer, brought onto the create form's field pattern.
@@ -7055,40 +7066,53 @@ tags.diten-tags .tagify__input {
 .wcn-detail-content > .wcn-detail-card:last-child,
 .wcn-detail-rail > .wcn-detail-card:last-child { margin-block-end: 0; }
 
-/* ── Action rail: three tiers, told apart by STRUCTURE ─────────────────────
-   It was four stacked rows of button-plus-sentence at near-equal weight, separated only by which button was
-   `btn-primary` — 275px in which the page's whole purpose was a matter of noticing a hue. Now the primary owns
-   a full-width row and keeps its sentence; the rest are compact and wrap; destructive sits last under a rule. */
-.wcn-actrail { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .625rem; }
-.wcn-act { display: flex; flex-direction: column; gap: .25rem; }
-.wcn-act-btn { display: inline-flex; align-items: center; gap: .5rem; justify-content: flex-start; }
-.wcn-act-primary .wcn-act-btn { inline-size: 100%; padding-block: .625rem; font-size: .9375rem; font-weight: 600; }
-/* Secondary and destructive share one shape: they are peers of each other, not of the primary. Auto width so
-   several fit a line; `flex-wrap` on the row means a long label takes its own line instead of overflowing. */
-.wcn-actrail-secondary {
-    list-style: none; margin: 0; padding: 0;
-    display: flex; flex-wrap: wrap; gap: .375rem;
+/* ── Action rail: three tiers, ONE fill ────────────────────────────────────
+   Every button used to be a Sneat `btn-label-*` tint, and in this theme a tint reads as DISABLED: the card's
+   most important control looked switched off, so the reader concluded they were not allowed to act. Exactly one
+   button carries a fill now; the rest are bare — but still real 38px buttons with a real hit area, because they
+   do something and a thing that does something must look pressable even when it is quiet.
+
+   RHYTHM IS ONE SCALE: 8px inside a group, 16px between groups. It measured 4 / 10 / 14 — three values, none
+   of them chosen. */
+.wcn-actrail { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1rem; }
+.wcn-act { display: flex; flex-direction: column; gap: .5rem; }
+.wcn-act-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+    min-block-size: 2.375rem; padding-inline: .875rem;
+    border: 0; border-radius: var(--bs-border-radius);
+    font-size: .8125rem; font-weight: 600; line-height: 1.2;
+    cursor: pointer; background: transparent;
+    transition: background-color .15s ease, color .15s ease;
 }
+/* THE ONE FILLED BUTTON. Full saturation — the whole point is that it does not read as a disabled tint. */
+.wcn-act-fill { inline-size: 100%; min-block-size: 2.6875rem; font-size: .9375rem; color: #fff; }
+.wcn-act-fill-accent { background: var(--bs-primary); }
+.wcn-act-fill-success { background: var(--bs-success); }
+.wcn-act-fill-danger { background: var(--bs-danger); }
+/* Not one of the three natures: no colour is invented for it. */
+.wcn-act-fill-neutral { background: var(--bs-secondary-color); }
+.wcn-act-fill:hover:not(:disabled) { filter: brightness(.94); }
+/* BARE — no fill, no border, but a real surface that answers the pointer. */
+.wcn-act-bare { color: var(--bs-body-color); }
+.wcn-act-bare-danger { color: var(--bs-danger); }
+.wcn-act-bare:hover:not(:disabled) { background: color-mix(in sRGB, var(--bs-body-color) 8%, transparent); }
+.wcn-act-bare-danger:hover:not(:disabled) { background: color-mix(in sRGB, var(--bs-danger) 10%, transparent); }
+/* Secondary and destructive are peers of each other, not of the primary: one wrapping row, auto widths. */
+.wcn-actrail-secondary { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
 .wcn-actrail-secondary .wcn-act { flex: 0 1 auto; }
-.wcn-act-secondary .wcn-act-btn, .wcn-act-destructive .wcn-act-btn {
-    inline-size: auto; padding-block: .3125rem; padding-inline: .625rem; font-size: .8125rem;
-}
-/* The rule above the destructive tier. It separates without shouting — the colour on the button already carries
-   the warning, and a second alarm here would make the ordinary actions look safe by contrast rather than
-   ordinary. */
-.wcn-acts-destructive { margin-block-start: .25rem; padding-block-start: .625rem; border-block-start: 1px solid var(--bs-border-color); }
-/* What the PRIMARY action will do. The secondary tiers have no prose at all: their sentences moved into the
-   dialogs they open, where they are read at the moment they matter. */
+/* The rule above the destructive tier — 16px, the between-groups value. */
+.wcn-acts-destructive { margin-block-start: .5rem; padding-block-start: 1rem; border-block-start: 1px solid var(--bs-border-color); }
+/* What the PRIMARY action will do. The other tiers carry no prose: their sentences lead the dialogs they open. */
 .wcn-act-outcome { font-size: .75rem; color: var(--bs-secondary-color); }
-/* Why a disabled action cannot be used. It stays in place and beside the action: the reason is about THIS
-   button, so it belongs where the button is rather than in whichever card owns the underlying cause. */
+/* Why a disabled action cannot be used — beside the button it is about, with the one icon that survived: the
+   lock states the prohibition rather than repeating a word next to it. */
 .wcn-act-reason {
     display: flex; align-items: flex-start; gap: .375rem; margin: 0;
     font-size: .75rem; color: var(--bs-warning);
 }
-.wcn-act-disabled .wcn-act-btn { opacity: .65; }
-/* The card while a write is in flight. Every control goes quiet at once, so a second click cannot start a
-   second transition on work whose state the server has not settled yet. */
+.wcn-act-disabled .wcn-act-btn { opacity: .55; cursor: not-allowed; }
+.wcn-act-btn:disabled { cursor: not-allowed; }
+/* The card while a write is in flight: every control goes quiet at once. */
 .wcn-acts-locked { opacity: .75; }
 .wcn-act-none { margin: 0; }
 /* DEAD (BL-109): wrapper for the "other actions" kebab, which no longer renders — its only occupant was the
@@ -7241,16 +7265,51 @@ tags.diten-tags .tagify__input {
    head (what this is) · content (what it says) · rail (what you can do). No tabs: a gate behind a tab is a gate
    nobody sees, and "3 open subtasks must be closed" is exactly the sentence that would hide there. */
 
-/* The summary card's fact grid: label above value, two per line, one line each. */
+/* ── The summary card, as a definition list ────────────────────────────────
+   It was a three-column grid of icon/label/value tiles. Seven facts can appear and four typically do, so the
+   fourth sat alone on a second row with two empty cells beside it — and a grid of <div>s tells assistive tech
+   nothing about which caption belongs to which value.
+
+   `<dl>` IS the markup for terms and their definitions: it pairs them for free, cannot orphan anything because
+   it is one column, and reads top-to-bottom the way a fact sheet is scanned.
+
+   THE LABEL COLUMN IS CAPPED, and that cap is the whole layout decision. Measured: the content column is 649px
+   at 1440. A value right-aligned against that edge would sit ~500px from its own label and the eye could not
+   pair them. `minmax(0, 200px)` keeps the longest Turkish label ("Kaynak son tarih", measured 118px) inside one
+   line while starting every value at the same x — near enough to its label to read as a pair. `1fr` after it
+   means the value grows leftward-anchored, never drifting to the far edge. */
+.wcn-sumlist { margin: 0; display: flex; flex-direction: column; }
+.wcn-sumrow {
+    display: grid;
+    grid-template-columns: minmax(0, 200px) 1fr;
+    gap: .5rem 1rem;
+    padding-block: .5rem;
+    border-block-end: 1px solid var(--bs-border-color);
+}
+/* No rule under the last pair: a trailing divider draws a line to nothing. */
+.wcn-sumrow:last-child { border-block-end: 0; padding-block-end: 0; }
+.wcn-sumrow:first-child { padding-block-start: 0; }
+.wcn-sumkey { margin: 0; font-size: .75rem; font-weight: 400; color: var(--bs-secondary-color); }
+.wcn-sumval { margin: 0; font-size: .8125rem; font-weight: 500; color: var(--bs-body-color); overflow-wrap: anywhere; }
+/* An unassigned task states its emptiness in a word; the word is quieter than a real value but not a dash. */
+.wcn-sumval-muted { color: var(--bs-secondary-color); font-weight: 400; font-style: italic; }
+/* THE DUE DATE'S RED, and the contradiction it settles: this value rendered grey here and red in the Status
+   card — one screen, two answers about one date. The red was right. Same source as before: `slaState`. */
+.wcn-sumval-overdue { color: var(--bs-danger); font-weight: 600; }
+/* Tags are a set, not a value: they take the full width under their own label. */
+.wcn-sumrow-wide { grid-template-columns: minmax(0, 1fr); gap: .375rem; }
+.wcn-sumval-tags { display: flex; flex-wrap: wrap; gap: .25rem; }
+
+/* DEAD with the fact grid (BL-114). `.wcn-facts` had ONE consumer — the summary card — and `summaryFact`, the
+   builder that emitted these classes, had no callers left once the list replaced it. Measured before marking.
+   `.wcn-facts-grid` (business sections) and the OTHER `.wcn-fact` block further up are different components and
+   are untouched. Kept one round in case the grid is reverted. */
 .wcn-facts {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
     gap: .875rem 1.25rem;
 }
-
-.wcn-fact { display: flex; align-items: flex-start; gap: .5rem; min-width: 0; }
 .wcn-fact-wide { grid-column: 1 / -1; }
-.wcn-fact > i { font-size: 1rem; line-height: 1.4; color: var(--bs-secondary-color); }
 .wcn-fact-body { min-width: 0; display: flex; flex-direction: column; }
 .wcn-fact-label {
     font-size: .6875rem;

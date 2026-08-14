@@ -240,16 +240,19 @@ describe("a hidden field contributes no value", () => {
 // ── 5. the regression the BL-057 round left behind ──────────────────────────
 
 describe("the assignee picker is actually filled", () => {
-  test("the people lookup's OBJECT shape is unwrapped here too", () => {
+  test("does not unwrap the people lookup itself — TasksApi already did", () => {
     /*
-     * A LIVE REGRESSION introduced by the BL-057 round and missed by its tests. That change made
-     * `assignablePeople()` answer `{ people, excluded }` instead of a bare array, and updated the full form —
-     * but this file still passed `people.data` straight to renderPersonOptions. An object is not an array, so
-     * the quick-create assignee picker renders its "nobody holds a position" empty state on every load, on a
-     * tenant that has plenty of people.
+     * ⚠ THIS ASSERTION INVERTED (BL-113), and the history is the reason.
+     *
+     * It used to REQUIRE this file to reach for `.data.people`, because the BL-057 round changed the lookup to
+     * answer `{ people, excluded }` and this shortcut kept passing `.data` straight through — an object is not
+     * an array, so the picker showed "nobody holds a position" on a tenant full of people.
+     *
+     * Requiring each caller to unwrap is what kept the defect alive: FOUR callers, four hand-written
+     * expressions, three of them wrong at some point across three rounds — the last shipping a reassign dialog
+     * that could never open. The envelope is now unwrapped ONCE, inside `TasksApi.assignablePeople`, so a
+     * caller that reaches for `.people` here is reaching into an array and getting `undefined`.
      */
-    const source = QUICK_JS();
-    expect(source, "quick-create still treats the lookup answer as an array")
-      .toMatch(/data\?\.people|data\.people/);
+    expect(QUICK_JS(), "a caller is unwrapping the envelope again").not.toMatch(/data\?\.people|data\.people/);
   });
 });
