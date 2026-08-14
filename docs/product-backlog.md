@@ -3300,3 +3300,65 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   insin (uzun metin dar sütunda kötü sarar) · (c) etiket/değer yan yana olacak şekilde golden deseni değiştir
   (ürün genelinde etki, bu kartın kararı değil).
 - **Gelecek regresyon riski: 🟢.**
+
+### BL-121 — ✅ KAPANDI (2026-08-14) — [KURAL] Kart içi bölüm ayırıcısı: kenardan kenara, iki yanı eşit
+- **Aynı kusur iki turda iki kartta çıktı**, üçüncüsü beklenmedi; kural yazıldı ve sekiz kart tarandı.
+- **Tarama sonucu — gerçek bölüm ayırıcısı YALNIZ İKİ TANE:**
+  | kart | ayırıcı | önce | sonra |
+  |---|---|---|---|
+  | Mevcut aksiyonlar | `.wcn-acts-destructive` | 0/0 kenar ✓ · 24px üst / 16px alt ✗ | 0/0 · **16/16** |
+  | Özet | `.wcn-sumtags` | 8/8 kenar ✗ · 4px üst / 16px alt ✗ | **0/0** · **16/16** |
+  Yaşam Döngüsü · Alt Görevler · Kontrol Listesi · Etkinlik · Kişisel · Teknik kartlarında **bölüm ayırıcısı yok**
+  (taramada çıkanlar satır kenarlıkları, form kontrolleri, ilerleme çubukları ve uyarı bloklarıydı).
+- **⚠ BRIEF'İN REFERANSI KURALI İHLAL EDİYORDU:** brief aksiyon kartını "negatif kenar boşluğu kullanmadan
+  düzeltildi" diye gösteriyordu; oysa geçen turun CSS'i `margin: 1rem -1.5rem 0` kullanıyordu ve **kendi yorumu
+  bunu yapmadığını iddia ediyordu**. Negatif marj, iptal etmeye çalıştığı dolguyla kavga eder ve o dolgu
+  değiştiği an kırılır. İkisi de gerçek tekniğe geçirildi: ana blok satır-içi dolgu tutmuyor, her blok kendi
+  içini ödüyor, çizgi kendiliğinden iki kenara varıyor.
+- **Boşluk değeri kartın kendi grup ölçeğinden:** 16px (aksiyon kademelerini ayıran değerle aynı). Kartın 1.5rem'i
+  yalnız kart kenarına bakan yüzlerde kaldı.
+- **Gelecek regresyon riski: 🟢** — test hem kenarı hem eşitliği hem de negatif marj yokluğunu kilitliyor.
+
+### BL-122 — ✅ KAPANDI (2026-08-14) — [ALT GÖREVLER / KONTROL LİSTESİ] İki liste tek satır diline geçti
+- **Ölçüm (önce):** kontrol listesi satırı `bg rgb(245,245,249) · border 1px · radius 6px` (kutu);
+  alt görev satırı `bg transparent · yalnız border-top · radius 0` (ayrılmış çizgi). **İkisinde de `:hover` yok**,
+  oysa projenin idiomu `.wcn-row:hover` bir dosya ötede duruyor.
+- **Karar — alt görev satırı da KUTU oldu.** Gerekçe: ikisi de kendi denetimlerini taşıyan etkileşimli NESNE
+  (biri tik+başlık+durum+menü, diğeri tik+metin+seviye+ataç+taşı+sil). Kutu "bu bir şeydir" der, çizgi "bu bir
+  metin satırıdır" der. Ayrıca kontrol listesinin gri dolgusu beyaza dönünce kutu, satırı ayırt eden **tek** şey
+  kaldı — alt görevler çizgi olarak bırakılsaydı iki liste bu turdan sonra daha FARKLI görünecekti.
+- **Dolgu kartın kendi yüzeyi** (`--bs-card-bg`): `--bs-body-bg` beyaz kartın üstünde gri ölçülüyordu, yani her
+  satır beyaz panelin içinde gri paneldi — içerikte olmayan bir iç içelik.
+- **Tamamlanmış = devre dışı tonu** iki listede de; iptal edilmiş alt görev kendi daha derin solukluğunu korudu
+  (iptal edilmiş iş, bitmiş iş değildir).
+- **`:hover` + `:focus-within` birlikte:** ikincisi olmadan fare kullanıcısı nerede olduğunu görür, klavye
+  kullanıcısı görmez. Satır içi düğmelerin kendi hover'ı ezilmiyor (ölçüldü: düğme zemini satırdan farklı).
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-123 — 🟡 [ALT GÖREVLER / KONTROL LİSTESİ] Hover tonu ölçülebilir ama neredeyse görünmez
+- **Ölçüm (alfa bileşimiyle):**
+  | | ışık | karanlık |
+  |---|---|---|
+  | hover ↔ kart | **1.032** | **1.035** |
+  | tamamlanmış ↔ kart | 1.251 | 1.730 |
+- `rgba(var(--bs-primary-rgb), .03)` — **projenin kendi idiomu ve sahibin seçimi**, o yüzden değiştirmedim.
+  Ama 1.03:1 pratikte fark edilmiyor; satırın kutusu ve metni bilgiyi taşıdığı için WCAG ihlali değil, yalnız
+  etkisiz bir geri bildirim.
+- **Seçenekler (karar sahibin):** (a) böyle kalsın — idiom tutarlılığı · (b) `.05`–`.06`'ya çıkar (tüm projede
+  etki) · (c) yalnız bu iki listede daha güçlü bir ton (idiomdan sapma).
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-124 — 🟠 [ALT GÖREVLER] Detaylı oluşturma paneli tekrar açılmıyor — Enter canlı doğrulanamadı
+- **Ne yapıldı:** `#wcnSubtaskTitle` ve `#wcnNewSubtaskTitle` artık Enter'ı bağlıyor, düğmenin çağırdığı **aynı**
+  save yoluna gidiyor (doğrulama, meşgul bayrağı ve hata yolu tek uygulama).
+- **Canlı kanıt — hızlı düzenleme paneli ✓:** gerçek `Enter` tuşuyla panel kapandı, yeni başlık listeye düştü,
+  "Alt görev kaydedildi." bildirimi çıktı.
+- **Canlı kanıt — detaylı oluşturma paneli ✗ YAPILAMADI:** `+ Detaylı görev ekle` düğmesi ilk denemede paneli
+  açtı, sonraki denemelerin **hiçbirinde** açmadı — sayfa yenilendikten sonra bile. Ölçüm: offcanvas DOM'da,
+  `show` sınıfı yok, `visibility: hidden`, `transform: translateX(400px)`. Enter dalı bu yüzden yalnız **testle**
+  ve düğmeyle kod-özdeşliğiyle kanıtlandı, canlı tuşla değil.
+- **Yapılacak:** panelin açılma yolu (`openSubtaskCreatePanel` → Bootstrap Offcanvas örneği) neden ikinci
+  çağrıda sessiz kalıyor, ayrı bir tur olarak incelenmeli. Bu, Enter'dan bağımsız bir kusur.
+- **Not (ölçüm aracı):** tarayıcı panelinde `key: "Return"` `keydown` üretmiyor, `key: "Enter"` üretiyor; ayrıca
+  programatik `.focus()` sonrası tuş enjeksiyonu panele ulaşmıyor — önce gerçek tıklama gerekiyor.
+- **Gelecek regresyon riski: 🟡** — Enter dalı testle kilitli, panel açılışı açık.

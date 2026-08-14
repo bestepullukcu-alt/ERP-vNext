@@ -1146,12 +1146,21 @@ describe("the card's chrome", () => {
     expect(button.className).not.toContain("btn-label-secondary");
   });
 
-  it("separates the rows with a hairline, and does not double it at the ends", () => {
-    const rule = /^\.wcn-subtasks\s*>\s*li\s*\+\s*li\s*\{([^}]*)\}/m.exec(CSS());
-    expect(rule, "there is no li + li separator rule").toBeTruthy();
-    expect(rule[1]).toMatch(/border-block-start/);
-    // A rule on every li would draw a line above the first row and below the last.
-    expect(CSS()).not.toMatch(/^\.wcn-subtasks\s*>\s*li\s*\{[^}]*border-block-start/m);
+  it("gives each row its own box rather than a hairline between rows", () => {
+    /*
+     * ⚠ THIS ASSERTION REPLACED, deliberately. It used to REQUIRE the `li + li` hairline — a separator that drew
+     * a line between rows and none at the ends, which was correct for a list of bare lines.
+     *
+     * The subtask row is a BOX now, in the same language as the checklist row beside it (both are interactive
+     * objects carrying their own controls, and once the checklist's grey fill went white the box became the only
+     * thing distinguishing a row). A box needs no separator: it has four sides of its own, and the `li + li`
+     * hairline would have drawn a second line immediately under the box above it.
+     */
+    const rule = /^\.wcn-subtasks\s*>\s*li\s*\{([^}]*)\}/m.exec(CSS());
+    expect(rule, "the subtask row lost its box").toBeTruthy();
+    expect(rule[1]).toMatch(/border:\s*1px solid/);
+    expect(CSS(), "the between-rows hairline survived alongside the box")
+      .not.toMatch(/^\.wcn-subtasks\s*>\s*li\s*\+\s*li\s*\{[^}]*border-block-start/m);
   });
 
   it("makes the gate line LOOK like the block it is", async () => {
@@ -2053,5 +2062,122 @@ describe("the actions card's divider reaches the card's edges", () => {
     expect(rule, "the outlined rule is gone").not.toBeNull();
     expect(rule[1], "the quiet actions lost their border").toMatch(/border:\s*1px solid/);
     expect(rule[1], "the 32px floor was dropped").toMatch(/min-block-size:\s*2rem/);
+  });
+});
+
+describe("card section dividers reach the card's edges, with equal space each side", () => {
+  /*
+   * THE SAME DEFECT WAS FOUND TWICE, IN TWO CARDS, IN TWO ROUNDS. This is the rule that stops the third.
+   *
+   * A divider that stops short of the edge reads as a mistake rather than as a division, and unequal space
+   * either side reads as a misalignment. Both were measured: the actions card's rule ran 16px short at each end,
+   * and the summary card's tag rule ran 8px short with 4px above against 16px below.
+   */
+  const dividerCss = () => read("wwwroot", "assets", "css", "backbone-custom.css").replace(/\/\*[\s\S]*?\*\//g, "");
+
+  it("gives the padding to the BLOCKS and never uses a negative margin", () => {
+    /*
+     * MUTATION TARGET (divider). ⚠ THE FIRST FIX FOR THIS USED `margin: 1rem -1.5rem 0` while its own comment
+     * claimed it did not — a negative margin cancelling the padding it sits inside, which breaks the moment that
+     * padding changes. This asserts the honest version: the parent holds no inline padding, so a block inside is
+     * already card-width and the border reaches both edges on its own.
+     */
+    const css = dividerCss();
+    ["wcn-acts-card", "wcn-sum-card"].forEach((cardClass) => {
+      const rule = new RegExp(`\\.${cardClass} \\{([^}]*)\\}`).exec(css);
+      expect(rule, `${cardClass} does not clip its own padding`).not.toBeNull();
+      expect(rule[1]).toMatch(/padding:\s*0/);
+      expect(rule[1]).toMatch(/overflow:\s*hidden/);
+    });
+    // No negative inline margin anywhere in the two divider blocks.
+    ["wcn-acts-destructive", "wcn-sumtags"].forEach((blockClass) => {
+      const rule = new RegExp(`\\.${blockClass} \\{([^}]*)\\}`).exec(css);
+      expect(rule, `${blockClass} lost its rule`).not.toBeNull();
+      expect(rule[1], `${blockClass} uses a negative margin`).not.toMatch(/margin[^;]*-\d/);
+      expect(rule[1]).toMatch(/border-block-start:\s*1px solid/);
+    });
+  });
+
+  it("spaces the rule equally above and below, from the card's own group value", () => {
+    // Measured 24px above against 16px below on the first pass: the block above ended on the card's 1.5rem
+    // inset while the block below opened with the group's 1rem. Both are the group value now.
+    const css = dividerCss();
+    [["wcn-acts-main", "wcn-acts-destructive"], ["wcn-sum-main", "wcn-sumtags"]].forEach(([main, div]) => {
+      const above = new RegExp(`\\.${main} \\{([^}]*)\\}`).exec(css);
+      const below = new RegExp(`\\.${div} \\{([^}]*)\\}`).exec(css);
+      expect(above[1], `${main} does not end on the group value`).toMatch(/padding:\s*1\.5rem 1\.5rem 1rem/);
+      expect(below[1], `${div} does not open on the group value`).toMatch(/padding:\s*1rem 1\.5rem 1\.5rem/);
+    });
+  });
+});
+
+describe("the two lists speak one row language", () => {
+  it("draws both rows as the same box, on the card's own surface", async () => {
+    /*
+     * MUTATION TARGET (row language). Measured, two lists in one card stack speaking two dialects: the checklist
+     * row was a grey box (bg rgb(245,245,249), border, radius 6px) and the subtask row a bare separated line
+     * (transparent, border-top only, radius 0).
+     *
+     * Both are interactive OBJECTS carrying their own controls, so both are boxes; and once the checklist's grey
+     * went white the box became the ONLY thing distinguishing a row, which is why leaving subtasks as lines
+     * would have widened the gap rather than closed it.
+     */
+    const css = read("wwwroot", "assets", "css", "backbone-custom.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    const subtask = /\.wcn-subtasks > li \{([^}]*)\}/.exec(css);
+    expect(subtask, "the subtask row lost its box").not.toBeNull();
+    expect(subtask[1]).toMatch(/border:\s*1px solid/);
+    expect(subtask[1]).toMatch(/border-radius/);
+    expect(subtask[1], "a row is a panel inside a panel").toMatch(/background:\s*var\(--bs-card-bg\)/);
+    // The checklist row sits on the same surface — not the page background, which measured grey on a white card.
+    const check = /\.diten-checkitem \{([^}]*)\}/.exec(css);
+    expect(check[1]).toMatch(/background:\s*var\(--bs-card-bg\)/);
+  });
+
+  it("answers the pointer AND the keyboard on both lists", () => {
+    /*
+     * MUTATION TARGET (hover). Neither list had any hover rule, while the project's own idiom (`.wcn-row:hover`)
+     * sits one file over. `:focus-within` carries the same background — without it a mouse user sees where they
+     * are and a keyboard user does not, which is the half of every hover rule that gets forgotten.
+     */
+    const css = read("wwwroot", "assets", "css", "backbone-custom.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    const start = css.indexOf(".diten-checkitem:hover,");
+    expect(start, "the shared hover rule is gone").toBeGreaterThan(-1);
+    const block = css.slice(start, css.indexOf("}", start) + 1);
+    [".diten-checkitem:hover", ".diten-checkitem:focus-within",
+      ".wcn-subtasks > li:hover", ".wcn-subtasks > li:focus-within"].forEach((sel) =>
+      expect(block, `${sel} is not covered`).toContain(sel));
+    expect(block).toMatch(/rgba\(var\(--bs-primary-rgb\), \.03\)/);
+  });
+});
+
+describe("the two subtask panels commit on Enter, like every other box on the page", () => {
+  it("binds Enter on BOTH panel title fields, through the same save the button uses", () => {
+    /*
+     * MUTATION TARGET (Enter). MEASURED: `#wcnSubtaskTitle` and `#wcnNewSubtaskTitle` listened for `input` only
+     * and neither panel is a `<form>`, so Enter did nothing — no save, no error, no focus move. Meanwhile the
+     * subtask add row, the comment box and the checklist add row all commit on Enter. Three inputs teaching a
+     * habit and two silently refusing it is worse than none of them having it.
+     *
+     * Routed through the SAME save the button calls, so validation, the busy flag and the failure path stay one
+     * implementation rather than a keyboard copy.
+     */
+    const app = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    [["#wcnSubtaskTitle", "saveSubtaskPanel", "data-wcn-subtask-save"],
+      ["#wcnNewSubtaskTitle", "saveNewSubtask", "data-wcn-newsubtask-save"]].forEach(([id, save, attr]) => {
+      const branch = new RegExp(
+        `event\\.key === 'Enter'[^}]*matches\\('${id}'\\)[\\s\\S]{0,420}?${save}\\(`);
+      expect(app, `${id} does not commit on Enter`).toMatch(branch);
+      expect(app, `${id} does not route through the button's own save`).toContain(attr);
+    });
+  });
+
+  it("names and reaches the capped scroll region", () => {
+    // 320px of scrollable list with no tabindex, no role and no name: the keyboard could not scroll it and a
+    // screen reader stepped in without being told it had entered anything.
+    const app = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    expect(app).toMatch(/class="wcn-scrollcap"[^`]*tabindex="0"[^`]*role="region"/);
+    expect(app, "the scroll region has no name").toMatch(/aria-label="\$\{esc\(t\(key === 'subtasks'/);
+    // …and the toggle says which state it is in.
+    expect(app, "the show-all toggle does not report its state").toMatch(/data-wcn-showall="\$\{esc\(key\)\}" aria-expanded=/);
   });
 });

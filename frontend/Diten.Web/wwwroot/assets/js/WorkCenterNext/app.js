@@ -1689,6 +1689,7 @@
          * lives. What the menu did buy was a page that could cancel a task without ever showing the word.
          */
         return `<div class="wcn-detail-section wcn-acts${locked ? ' wcn-acts-locked' : ''}">
+            <div class="wcn-acts-main">
             ${cardHead('bx-bolt-circle', 'ActionsAvailable')}
             <ul class="wcn-actrail">
                 ${primary ? actionButton(item, primary, 'primary', locked) : ''}
@@ -1699,6 +1700,7 @@
                   </li>`
             : ''}
             </ul>
+            </div>
             ${destructive.length
             ? `<div class="wcn-acts-destructive">
                 <ul class="wcn-actrail-secondary">${
@@ -1967,7 +1969,7 @@
          * fact rather than a seventh value.
          */
         const tags = Array.isArray(item.tags) && item.tags.length
-            ? `<div class="col-12 wcn-sumtags">
+            ? `<div class="wcn-sumtags">
                 <div class="backbone-preview-field">
                     <i class="bx bx-purchase-tag-alt" aria-hidden="true"></i>
                     <div>
@@ -1981,9 +1983,16 @@
 
         if (!fields && !tags) { return ''; }
 
-        return `<div class="wcn-detail-section">
-            ${cardHead('bx-info-circle', 'SummaryCardLabel')}
-            <div class="row g-4">${fields}${tags}</div>
+        /*
+         * TWO BLOCKS, so the tag divider can reach the card's edges without a negative margin: the card holds no
+         * padding, `wcn-sum-main` pays for the fields' inset and `wcn-sumtags` pays for its own.
+         */
+        return `<div class="wcn-detail-section wcn-sum">
+            <div class="wcn-sum-main">
+                ${cardHead('bx-info-circle', 'SummaryCardLabel')}
+                <div class="row g-4">${fields}</div>
+            </div>
+            ${tags}
         </div>`;
     };
 
@@ -2260,9 +2269,24 @@
         const open = !!state.expandedLists[key];
         const body = open
             ? listHtml
-            : `<div class="wcn-scrollcap" data-wcn-scrollcap>${listHtml}</div>`;
+            /*
+             * A SCROLL REGION HAS TO BE REACHABLE AND ANNOUNCED.
+             *
+             * This was 320px of scrollable list with no `tabindex`, no `role` and no name: the keyboard could not
+             * scroll it (nothing inside receives arrow keys until a row is focused, and the capped rows below the
+             * fold cannot be reached to focus them), and a screen reader stepped into it without being told it had
+             * entered anything. `tabindex="0"` + `role="region"` + the card's own heading as the name is the
+             * standard shape for a scrollable box.
+             */
+            : `<div class="wcn-scrollcap" data-wcn-scrollcap tabindex="0" role="region"
+                    aria-label="${esc(t(key === 'subtasks' ? 'SubtasksLabel' : 'ChecklistLabel'))}">${listHtml}</div>`;
+        /*
+         * `aria-expanded` — this is a TOGGLE (its own label flips between "show all" and "show less"), and a
+         * toggle that does not say which state it is in leaves a screen-reader user pressing it to find out.
+         */
         return `${body}
-            <button type="button" class="btn btn-sm btn-label-secondary wcn-showall" data-wcn-showall="${esc(key)}">
+            <button type="button" class="btn btn-sm btn-label-secondary wcn-showall"
+                    data-wcn-showall="${esc(key)}" aria-expanded="${open ? 'true' : 'false'}">
                 ${esc(open ? t('ShowLess') : tf('ShowAllCount', total))}
             </button>`;
     };
@@ -3165,6 +3189,7 @@
         const card = (inner) => inner
             ? `<section class="card backbone-preview-section wcn-detail-card ${
                 inner.includes('wcn-acts') ? 'wcn-acts-card'
+                    : inner.includes('wcn-sum-main') ? 'wcn-sum-card'
                     : inner.includes('wcn-empty-line') ? 'wcn-detail-card--slim p-3' : 'p-4'}">${inner}</section>`
             : '';
         const reviewNote = (item.itemType === 'task' && item.lifecycle === 'PendingReview')
@@ -6027,6 +6052,34 @@
             return;
         }
         // Escape in the search box clears the current query (before the typing guard).
+        /*
+         * THE TWO PANEL TITLE FIELDS — the only repeated-entry inputs on this page that did NOT take Enter.
+         *
+         * MEASURED: `#wcnSubtaskTitle` (quick edit) and `#wcnNewSubtaskTitle` (detailed create) listened for
+         * `input` only, and neither panel is a `<form>`, so pressing Enter did nothing at all — no save, no
+         * error, no focus move. Meanwhile the subtask add row, the comment box and the checklist add row all
+         * commit on Enter. Three inputs teaching a habit and two silently refusing it is worse than none of them
+         * having it: the reader has already learned that Enter works here.
+         *
+         * The detailed panel is the sharper case — it is the one with a REQUIRED field, i.e. the one where the
+         * user is most likely to type and press Enter expecting a commit or a validation message.
+         *
+         * Routed through the SAME save the button uses, so validation, the busy flag and the failure path are
+         * one implementation rather than a keyboard copy of them.
+         */
+        if (event.key === 'Enter' && event.target.matches && event.target.matches('#wcnSubtaskTitle')) {
+            event.preventDefault();
+            const save = document.querySelector('[data-wcn-subtask-save]');
+            if (save && !save.disabled) { await saveSubtaskPanel(save.getAttribute('data-wcn-subtask-save')); }
+            return;
+        }
+        if (event.key === 'Enter' && event.target.matches && event.target.matches('#wcnNewSubtaskTitle')) {
+            event.preventDefault();
+            const save = document.querySelector('[data-wcn-newsubtask-save]');
+            if (save && !save.disabled) { await saveNewSubtask(save.getAttribute('data-wcn-newsubtask-save')); }
+            return;
+        }
+
         if (event.key === 'Escape' && event.target.matches && event.target.matches('[data-wcn-search]')) {
             if (state.search) { event.preventDefault(); state.search = ''; render(); }
             return;

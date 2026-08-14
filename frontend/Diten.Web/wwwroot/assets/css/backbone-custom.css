@@ -6392,7 +6392,9 @@ tags.diten-tags .tagify__input {
     padding: .375rem .5rem;
     border: 1px solid var(--bs-border-color);
     border-radius: .375rem;
-    background: var(--bs-body-bg);
+    /* The CARD's surface, not the page's. `--bs-body-bg` measured rgb(245,245,249) against a white card, which
+       made every row a grey panel inside a white panel — a nesting the content does not have. */
+    background: var(--bs-card-bg);
 }
 /* The drag surface. `grab` is the whole affordance — the icon alone does not say "you may pull this". */
 .diten-checkitem-grip {
@@ -6534,6 +6536,50 @@ tags.diten-tags .tagify__input {
    it, and the reader is left wondering whether the capability ever existed. */
 .diten-checkitem-btn:disabled, .diten-checkitem-level:disabled { opacity: .4; cursor: not-allowed; }
 .diten-checkitem[data-template-owned="1"] .diten-checkitem-text { cursor: default; }
+
+/* ── HOVER AND FOCUS, on both lists, from the project's own idiom ──────────
+   `.wcn-row:hover` already answers "the pointer is on this row" everywhere else in this app; neither of these
+   two lists had ANY hover rule, so the row under the cursor was indistinguishable from the eleven around it.
+
+   `:focus-within` carries the SAME background — without it a mouse user sees where they are and a keyboard user
+   does not, which is the half of every hover rule that gets forgotten. It fires when any control inside the row
+   takes focus, which is exactly when a keyboard reader is "on" that row.
+
+   ⚠ SPECIFICITY IS DELIBERATE. These set the ROW's background only. The buttons inside carry their own hover
+   (`.diten-checkitem-btn:hover`, `.wcn-subtask-check:hover`, `.wcn-act-bare:hover`) and are unaffected — a row
+   tint underneath a button tint reads as two layers, which is what it is. */
+.diten-checkitem:hover,
+.diten-checkitem:focus-within,
+.wcn-subtasks > li:hover,
+.wcn-subtasks > li:focus-within {
+    background: rgba(var(--bs-primary-rgb), .03);
+}
+
+/* ── DONE IS DISABLED ──────────────────────────────────────────────────────
+   Both lists said "finished" in their own way — the checklist struck the text through, the subtask list dimmed
+   the whole row to .55. One vocabulary now: a completed row recedes to the disabled tone and keeps its
+   strike-through, because the strike says WHAT happened and the tone says it is no longer actionable.
+   A CANCELLED subtask keeps its own deeper fade: called-off work is not finished work. */
+.diten-checkitem.done,
+.wcn-subtasks > li.wcn-subtask-done {
+    background: var(--bs-secondary-bg);
+    border-color: color-mix(in sRGB, var(--bs-border-color) 70%, transparent);
+}
+.wcn-subtasks > li.wcn-subtask-done .wcn-subtask-title { color: var(--bs-secondary-color); text-decoration: line-through; }
+/* Hover still answers on a completed row — it is readable history, not a dead zone. */
+.diten-checkitem.done:hover,
+.diten-checkitem.done:focus-within,
+.wcn-subtasks > li.wcn-subtask-done:hover,
+.wcn-subtasks > li.wcn-subtask-done:focus-within {
+    background: color-mix(in sRGB, rgba(var(--bs-primary-rgb), .03), var(--bs-secondary-bg));
+}
+
+/* ── The capped scroll region is a REGION ──────────────────────────────────
+   320px of scrollable list with no `tabindex`, no `role` and no name: a keyboard user could not scroll it at all
+   (nothing focusable to receive the arrow keys unless a row inside happened to be focused), and a screen reader
+   announced no boundary on entering it. `tabindex="0"` makes it scrollable from the keyboard; `role="region"`
+   plus a name makes it announced. */
+.wcn-scrollcap:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 2px; }
 
 /* ── KEYBOARD FOCUS, for the controls this project draws itself ────────────
    MEASURED with real Tab presses (not `.focus()`, which does not satisfy `:focus-visible` and is what made an
@@ -7118,10 +7164,21 @@ tags.diten-tags .tagify__input {
    card clips instead, and each block carries its own inset — so the rule between blocks spans edge to edge for
    free, which is what a divider is supposed to do. */
 .wcn-acts-card { overflow: hidden; padding: 0; }
-.wcn-acts-card > .wcn-acts { padding: 1.5rem; }
-.wcn-acts-card > .wcn-acts > .wcn-acts-destructive {
-    margin: 1rem -1.5rem 0;
-    padding: 1rem 1.5rem 0;
+/* ⚠ THE FIRST VERSION OF THIS USED `margin-inline: -1.5rem` and its own comment claimed it did not. A negative
+   margin fights the padding it is cancelling and breaks the moment that padding changes — which is exactly the
+   failure mode this technique exists to avoid, reintroduced one level down.
+
+   The honest version: the PARENT holds no inline padding at all, so a block inside it is already card-width.
+   Each block pays for its own inset. The divider is then a plain `border-block-start` that reaches both edges
+   because nothing is holding it in. */
+.wcn-acts-card > .wcn-acts { padding: 0; }
+/* EQUAL ON BOTH SIDES OF THE RULE — measured 24px above against 16px below on the first pass, because the block
+   above ended on the card's own 1.5rem inset while the block below opened with the group's 1rem. The rule's two
+   margins are now both the card's GROUP value (16px, the same one that separates the action tiers); the card's
+   1.5rem survives only where it faces the card edge. */
+.wcn-acts-card .wcn-acts-main { padding: 1.5rem 1.5rem 1rem; }
+.wcn-acts-card .wcn-acts-destructive {
+    padding: 1rem 1.5rem 1.5rem;
     border-block-start: 1px solid var(--bs-border-color);
 }
 /* What the PRIMARY action will do. The other tiers carry no prose: their sentences lead the dialogs they open. */
@@ -7303,8 +7360,17 @@ tags.diten-tags .tagify__input {
 .backbone-preview-field-overdue .backbone-preview-value { font-weight: 600; }
 /* "Nobody holds this" is a recorded fact, not a missing value — quieter than a real name, but not a dash. */
 .backbone-preview-field-muted .backbone-preview-value { color: var(--bs-secondary-color); font-style: italic; font-weight: 400; }
-/* Tags are a collection, not a value: full width, under a rule that marks them as a different KIND of fact. */
-.wcn-sumtags { margin-block-start: .25rem; padding-block-start: 1rem; border-block-start: 1px solid var(--bs-border-color); }
+/* Tags are a collection, not a value: full width, under a rule that marks them as a different KIND of fact.
+   MEASURED BROKEN: the rule ran 34→708 inside a card of 26→716 (8px short each side, from the row's gutter) and
+   its space was 4px above the line against 16px below — a quarter of it. Same technique as the actions card:
+   the card holds no padding, each block pays its own inset, and the rule reaches both edges with no negative
+   margin anywhere. The 16px is the summary card's own group value, not a new number. */
+.wcn-sum-card { overflow: hidden; padding: 0; }
+.wcn-sum-card .wcn-sum-main { padding: 1.5rem 1.5rem 1rem; }
+.wcn-sum-card .wcn-sumtags {
+    padding: 1rem 1.5rem 1.5rem;
+    border-block-start: 1px solid var(--bs-border-color);
+}
 .wcn-sumval-tags { display: flex; flex-wrap: wrap; gap: .25rem; }
 
 /* DEAD with the fact grid (BL-114). `.wcn-facts` had ONE consumer — the summary card — and `summaryFact`, the
@@ -7433,10 +7499,25 @@ tags.diten-tags .tagify__input {
 /* The add row's button matches the input it stands beside: 38px, the height every control on these forms has. */
 .wcn-subtask-add .btn { min-block-size: 2.375rem; padding-block: 0; display: inline-flex; align-items: center; }
 
-/* A hairline BETWEEN rows — `li + li`, so no line is drawn above the first or below the last. */
-.wcn-subtasks > li + li {
-    border-block-start: 1px solid color-mix(in sRGB, var(--bs-border-color) 65%, transparent);
-    padding-block-start: .375rem;
+/* ── ONE ROW LANGUAGE FOR BOTH LISTS ───────────────────────────────────────
+   MEASURED, two lists in the same card stack speaking two dialects:
+     checklist row   bg rgb(245,245,249) · border 1px · radius 6px      (a box)
+     subtask row     bg transparent      · border-top only · radius 0   (a separated line)
+   Neither had a :hover rule at all, while the project's own idiom sits one file over on `.wcn-row`.
+
+   THE SUBTASK ROW BECOMES A BOX TOO, and that is a decision rather than a tidy-up. Both rows are interactive
+   OBJECTS carrying their own controls — tick, title, status, menu on one; tick, text, level, clip, move, remove
+   on the other. A box is the affordance that says "this is a thing you act on"; a hairline says "this is a line
+   of text". And once the checklist's grey fill goes white (owner's call), the box is the ONLY thing left
+   distinguishing a row — so leaving subtasks as bare lines would have made the two lists look MORE different
+   after this round, not less.
+
+   Fill is the CARD's own surface: a row is not a panel inside a panel. */
+.wcn-subtasks > li {
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: .375rem;
+    padding: .375rem .5rem;
 }
 
 /* The gate is a block notice, in the page's existing alert pattern. Its own top margin only — the card's
