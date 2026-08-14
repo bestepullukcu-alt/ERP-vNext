@@ -7392,11 +7392,22 @@ tags.diten-tags .tagify__input {
 }
 .wcn-fact-value { font-weight: 500; overflow-wrap: anywhere; }
 .wcn-fact-tags { display: flex; flex-wrap: wrap; gap: .25rem; margin-block-start: .125rem; }
+/* THE SAME CHIP the create form draws, minus the part that only an editable chip needs. A tag written on one
+   screen and read on another must not change shape in between; this one was a borderless pill while the form's
+   was a bordered rounded rectangle, so the same word looked like two different kinds of thing.
+   The form's chip pads .25rem before its label and .125rem after, because a remove button sits in that gap.
+   Nothing is removable here, so the inset is the form's LEADING value on both sides — the distance from the
+   border to the word is what the eye compares, and it is now identical. */
 .wcn-tag {
     display: inline-flex;
-    padding: .0625rem .5rem;
-    border-radius: 1rem;
-    font-size: .75rem;
+    align-items: center;
+    padding-block: .125rem;
+    padding-inline: .25rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-sm);
+    font-size: .8125rem;
+    line-height: 1.25rem;
+    max-inline-size: 100%;
     background-color: var(--bs-secondary-bg);
     color: var(--bs-body-color);
 }
