@@ -151,7 +151,7 @@ describe("WorkCenterNext localization resources", () => {
     // The personal plan states its absence — this is the one row that keeps an empty text.
     expect(fnAt("renderNote", 1600)).toContain("PlannedDateNone");
     // The summary drops empty rows instead of printing a placeholder, so it must borrow neither word.
-    const summary = fnAt("renderSummary", 3600);
+    const summary = fnAt("renderSummary", 7000);   // the golden field pattern made this function longer
     expect(summary).toContain("SourceDueLabel");
     expect(summary, "the summary borrowed the plan's empty text").not.toContain("PlannedDateNone");
     expect(summary, "the summary borrowed the SLA empty text").not.toContain("SlaNoSla");

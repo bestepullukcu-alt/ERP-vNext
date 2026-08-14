@@ -7092,16 +7092,38 @@ tags.diten-tags .tagify__input {
 /* Not one of the three natures: no colour is invented for it. */
 .wcn-act-fill-neutral { background: var(--bs-secondary-color); }
 .wcn-act-fill:hover:not(:disabled) { filter: brightness(.94); }
-/* BARE — no fill, no border, but a real surface that answers the pointer. */
-.wcn-act-bare { color: var(--bs-body-color); }
-.wcn-act-bare-danger { color: var(--bs-danger); }
+/* OUTLINED, not filled. They gained a border: bare text beside a solid primary read as three links under a
+   button, and an action that changes state should look like a control. A border is NOT a fill — the card still
+   has exactly one filled button and that rule's test still passes untouched.
+   Height: the theme's own `btn-sm` measures 30px, which is under the 32px floor this round set (WCAG 2.5.8's
+   base is 24px; 32 clears it comfortably), so the min-height is pinned at 2rem rather than inherited. */
+.wcn-act-bare {
+    color: var(--bs-body-color);
+    border: 1px solid var(--bs-border-color);
+    min-block-size: 2rem;
+    padding-block: .25rem;
+    font-size: .8125rem;
+}
+.wcn-act-bare-danger { color: var(--bs-danger); border-color: color-mix(in sRGB, var(--bs-danger) 45%, var(--bs-border-color)); }
 .wcn-act-bare:hover:not(:disabled) { background: color-mix(in sRGB, var(--bs-body-color) 8%, transparent); }
 .wcn-act-bare-danger:hover:not(:disabled) { background: color-mix(in sRGB, var(--bs-danger) 10%, transparent); }
 /* Secondary and destructive are peers of each other, not of the primary: one wrapping row, auto widths. */
 .wcn-actrail-secondary { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
 .wcn-actrail-secondary .wcn-act { flex: 0 1 auto; }
-/* The rule above the destructive tier — 16px, the between-groups value. */
-.wcn-acts-destructive { margin-block-start: .5rem; padding-block-start: 1rem; border-block-start: 1px solid var(--bs-border-color); }
+/* ── The card's padding lives on the BLOCKS, not the card ──────────────────
+   MEASURED: the destructive rule ran 748→1053 inside a card spanning 732→1069 — 16px short at each end, because
+   the card's `p-4` pushed it inward. A rule that does not reach the edge reads as a mistake.
+
+   NOT fixed with a negative margin: that fights the padding and breaks the next time the padding changes. The
+   card clips instead, and each block carries its own inset — so the rule between blocks spans edge to edge for
+   free, which is what a divider is supposed to do. */
+.wcn-acts-card { overflow: hidden; padding: 0; }
+.wcn-acts-card > .wcn-acts { padding: 1.5rem; }
+.wcn-acts-card > .wcn-acts > .wcn-acts-destructive {
+    margin: 1rem -1.5rem 0;
+    padding: 1rem 1.5rem 0;
+    border-block-start: 1px solid var(--bs-border-color);
+}
 /* What the PRIMARY action will do. The other tiers carry no prose: their sentences lead the dialogs they open. */
 .wcn-act-outcome { font-size: .75rem; color: var(--bs-secondary-color); }
 /* Why a disabled action cannot be used — beside the button it is about, with the one icon that survived: the
@@ -7265,39 +7287,24 @@ tags.diten-tags .tagify__input {
    head (what this is) · content (what it says) · rail (what you can do). No tabs: a gate behind a tab is a gate
    nobody sees, and "3 open subtasks must be closed" is exactly the sentence that would hide there. */
 
-/* ── The summary card, as a definition list ────────────────────────────────
-   It was a three-column grid of icon/label/value tiles. Seven facts can appear and four typically do, so the
-   fourth sat alone on a second row with two empty cells beside it — and a grid of <div>s tells assistive tech
-   nothing about which caption belongs to which value.
+/* ── The summary card, in the product's field pattern ──────────────────────
+   The classes are the GOLDEN REFERENCE's (`backbone-preview-field/-label/-value`), used unchanged — this card
+   already lives inside `backbone-preview-section` and had simply never used the field pattern that section was
+   designed around. Only two modifiers are added here, and both are states the reference has no concept of.
 
-   `<dl>` IS the markup for terms and their definitions: it pairs them for free, cannot orphan anything because
-   it is one column, and reads top-to-bottom the way a fact sheet is scanned.
+   Two earlier shapes were this card's own inventions and both failed on measurement: a three-column tile grid
+   that orphaned a fourth fact on a second row, and a definition list that used a 690px card as a 350px column. */
 
-   THE LABEL COLUMN IS CAPPED, and that cap is the whole layout decision. Measured: the content column is 649px
-   at 1440. A value right-aligned against that edge would sit ~500px from its own label and the eye could not
-   pair them. `minmax(0, 200px)` keeps the longest Turkish label ("Kaynak son tarih", measured 118px) inside one
-   line while starting every value at the same x — near enough to its label to read as a pair. `1fr` after it
-   means the value grows leftward-anchored, never drifting to the far edge. */
-.wcn-sumlist { margin: 0; display: flex; flex-direction: column; }
-.wcn-sumrow {
-    display: grid;
-    grid-template-columns: minmax(0, 200px) 1fr;
-    gap: .5rem 1rem;
-    padding-block: .5rem;
-    border-block-end: 1px solid var(--bs-border-color);
-}
-/* No rule under the last pair: a trailing divider draws a line to nothing. */
-.wcn-sumrow:last-child { border-block-end: 0; padding-block-end: 0; }
-.wcn-sumrow:first-child { padding-block-start: 0; }
-.wcn-sumkey { margin: 0; font-size: .75rem; font-weight: 400; color: var(--bs-secondary-color); }
-.wcn-sumval { margin: 0; font-size: .8125rem; font-weight: 500; color: var(--bs-body-color); overflow-wrap: anywhere; }
-/* An unassigned task states its emptiness in a word; the word is quieter than a real value but not a dash. */
-.wcn-sumval-muted { color: var(--bs-secondary-color); font-weight: 400; font-style: italic; }
-/* THE DUE DATE'S RED, and the contradiction it settles: this value rendered grey here and red in the Status
-   card — one screen, two answers about one date. The red was right. Same source as before: `slaState`. */
-.wcn-sumval-overdue { color: var(--bs-danger); font-weight: 600; }
-/* Tags are a set, not a value: they take the full width under their own label. */
-.wcn-sumrow-wide { grid-template-columns: minmax(0, 1fr); gap: .375rem; }
+/* A LATE DUE DATE COLOURS THE WHOLE FIELD — icon, label and value. Colouring one of three parts reads as a
+   typo; colouring the field reads as a state. Source unchanged: `slaState === 'overdue'`. */
+.backbone-preview-field-overdue i,
+.backbone-preview-field-overdue .backbone-preview-label,
+.backbone-preview-field-overdue .backbone-preview-value { color: var(--bs-danger); }
+.backbone-preview-field-overdue .backbone-preview-value { font-weight: 600; }
+/* "Nobody holds this" is a recorded fact, not a missing value — quieter than a real name, but not a dash. */
+.backbone-preview-field-muted .backbone-preview-value { color: var(--bs-secondary-color); font-style: italic; font-weight: 400; }
+/* Tags are a collection, not a value: full width, under a rule that marks them as a different KIND of fact. */
+.wcn-sumtags { margin-block-start: .25rem; padding-block-start: 1rem; border-block-start: 1px solid var(--bs-border-color); }
 .wcn-sumval-tags { display: flex; flex-wrap: wrap; gap: .25rem; }
 
 /* DEAD with the fact grid (BL-114). `.wcn-facts` had ONE consumer — the summary card — and `summaryFact`, the

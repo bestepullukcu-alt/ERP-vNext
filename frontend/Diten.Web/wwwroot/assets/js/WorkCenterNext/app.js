@@ -1698,13 +1698,13 @@
                 secondary.map((a) => actionButton(item, a, 'secondary', locked)).join('')}</ul>
                   </li>`
             : ''}
-                ${destructive.length
-            ? `<li class="wcn-acts-row wcn-acts-destructive">
-                    <ul class="wcn-actrail-secondary">${
-                destructive.map((a) => actionButton(item, a, 'destructive', locked)).join('')}</ul>
-                  </li>`
-            : ''}
             </ul>
+            ${destructive.length
+            ? `<div class="wcn-acts-destructive">
+                <ul class="wcn-actrail-secondary">${
+                destructive.map((a) => actionButton(item, a, 'destructive', locked)).join('')}</ul>
+              </div>`
+            : ''}
         </div>`;
     };
 
@@ -1866,79 +1866,124 @@
      */
 
     /*
-     * THE SUMMARY, AS A DEFINITION LIST — because that is what it is.
+     * THE SUMMARY, IN THE PRODUCT'S OWN FIELD PATTERN.
      *
-     * It was a three-column grid of icon-plus-label-plus-value tiles. Two things were wrong with that and only
-     * one of them was visible: the SEVEN facts it can hold rarely all apply, so four of them left an orphan
-     * tile alone on a second row; and a grid of <div>s says nothing about the label/value relationship, so a
-     * screen reader read seven captions and seven strings and had to pair them by luck.
+     * Two shapes were tried and both were this card's own invention: a three-column tile grid (which orphaned a
+     * fourth fact on a second row) and a definition list (which used a 690px card as a 350px column and left the
+     * right half empty).
      *
-     * `<dl>/<dt>/<dd>` is the markup for "these are terms and these are their definitions". It pairs them for
-     * assistive tech for free, it cannot orphan anything because it is one column, and it reads top-to-bottom
-     * the way a fact sheet is actually scanned.
+     * The third shape is not an invention. `Views/DevEnablement/GoldenReferenceCompact/Details.cshtml` — the
+     * reference every Compact details page in this product is built from — reads:
+     *
+     *     <div class="col-12 col-md-6">
+     *       <div class="backbone-preview-field">
+     *         <i class="bx …"></i>
+     *         <div><div class="backbone-preview-label">…</div><div class="backbone-preview-value mt-1">…</div></div>
+     *       </div>
+     *     </div>
+     *
+     * Two columns, icon at the left, label over value. This card already sits in `backbone-preview-section`; it
+     * simply had never used the field pattern that section was designed around. No new class is written here.
+     *
+     * ONE DELIBERATE DEVIATION from the golden reference: it prints "-" for an empty value and we print NOTHING.
+     * A dash claims the field was checked and found empty, which the reader cannot tell from a value that failed
+     * to load. Recorded as a knowing divergence (BL-117) rather than a drift.
      */
     const renderSummary = (item) => {
         /*
-         * ONE ROW. Absent values are NOT drawn — an em dash is a claim that the field was checked and found
-         * empty, which the reader cannot tell from a value that failed to load.
+         * ICONS ARE THE CREATE FORM'S — measured, field by field, from `Views/Tasks/_Form.cshtml`. One field must
+         * not carry two icons across two screens: a reader who set a priority behind a flag should meet a flag
+         * when they come back to read it.
          *
-         * `tone` is the one place a value may take colour, and only from a source that already exists.
+         *   Atanan    bx-user               (taskAssignee)
+         *   Başlangıç bx-calendar           (taskStartAt)
+         *   Son tarih bx-calendar           (taskDueAt — the form uses the SAME glyph for both dates and tells
+         *                                    them apart by label; copied rather than "improved")
+         *   Öncelik   bx-flag               (taskPriority)
+         *   Tahmini   bx-time-five          (taskEstimateHours)
+         *   Etiketler bx-purchase-tag-alt   (taskTags)
+         *   Açıklama  bx-align-left         (taskDescription)
+         *
+         * `Talep eden` is the ONE field with no counterpart — the create form has no requester input, because
+         * the requester is whoever is filling it in. It cannot copy an icon, and it cannot keep `bx-user` now
+         * that the assignee has claimed it, so it takes `bx-user-pin`: the person who pinned this on you.
          */
-        const row = (labelKey, value, tone) => (value === null || value === undefined || value === ''
+        const field = (icon, labelKey, value, tone, wide) => (value === null || value === undefined || value === ''
             ? ''
-            : `<div class="wcn-sumrow">
-                <dt class="wcn-sumkey">${esc(t(labelKey))}</dt>
-                <dd class="wcn-sumval${tone ? ' ' + tone : ''}">${esc(value)}</dd>
+            : `<div class="col-12 ${wide ? '' : 'col-md-6'}">
+                <div class="backbone-preview-field${tone ? ' ' + tone : ''}">
+                    <i class="bx ${icon}" aria-hidden="true"></i>
+                    <div>
+                        <div class="backbone-preview-label">${esc(t(labelKey))}</div>
+                        <div class="backbone-preview-value mt-1">${esc(value)}</div>
+                    </div>
+                </div>
             </div>`);
 
         /*
-         * THE ONE EXCEPTION TO "no value, no row": WHO HOLDS THIS.
+         * THE ONE EXCEPTION TO "no value, no field": WHO HOLDS THIS.
          *
-         * An unassigned task is not a missing field, it is a FACT — and the one fact whose consequence is that
-         * nothing happens until somebody notices. Dropping the row would hide exactly the state that needs
-         * seeing. So the row is always drawn, and when there is nobody it says so in a word rather than with a
-         * dash, because "—" reads as "not recorded" and this is recorded: it is recorded as nobody.
+         * An unassigned task is not a missing field, it is the FACT whose consequence is that nothing happens
+         * until somebody notices. It says so in a word rather than with a dash, because "—" reads as "not
+         * recorded" and this is recorded: it is recorded as nobody.
          */
-        const assignee = row('DetailAssignee', item.assignee || t('SummaryUnassigned'),
-            item.assignee ? '' : 'wcn-sumval-muted');
+        const assignee = field('bx-user', 'DetailAssignee', item.assignee || t('SummaryUnassigned'),
+            item.assignee ? '' : 'backbone-preview-field-muted');
 
         /*
-         * THE DUE DATE'S COLOUR, and the contradiction it settles.
-         *
-         * This value rendered grey here and RED in the Status card — the same date, two answers, on one screen.
-         * The red one was right, so the red one is what survives, and the source of the rule is unchanged:
-         * `item.slaState === 'overdue'`, the projection's own verdict, which the Status card was already using.
-         * No new lateness rule is derived here; deriving one would be a third answer.
+         * THE LATE DUE DATE IS RED IN THE WHOLE FIELD — icon, label and value — not only in the number.
+         * Colouring one of three parts reads as a typo; colouring the field reads as a state. Source unchanged:
+         * `item.slaState === 'overdue'`, the projection's own verdict, which the dissolved Status card used.
          */
-        const overdue = item.slaState === 'overdue' ? 'wcn-sumval-overdue' : '';
+        const overdue = item.slaState === 'overdue' ? 'backbone-preview-field-overdue' : '';
 
-        // People → time → classification → tags. A reader asks "whose is this" before "when", and "when"
-        // before "how big".
-        const rows = assignee
-            + row('DetailRequester', item.requester)
-            + row('DetailStartAt', item.startAt)
-            + row('SourceDueLabel', item.dueAt, overdue)
-            + row('DetailPriority', hasPriority(item) ? priorityLabel(item) : '')
-            + row('DetailEstimate', item.estimateHours === null || item.estimateHours === undefined
+        /*
+         * THE DESCRIPTION IS A FIELD NOW, with its own label.
+         *
+         * MEASURED on two tasks created for the purpose: a task WITH a description projects
+         * `summary = { kind:"display", text:"…" }`; a task WITHOUT one projects `summary = null`. There is no
+         * generated fallback — the provider emits the description or nothing at all
+         * (`TaskWorkItemProvider`: `IsNullOrWhiteSpace(task.Description) ? null : Display(task.Description)`).
+         *
+         * So the sentence was never ambiguous in the data, only on screen: it rendered as an unlabelled
+         * paragraph that could be mistaken for a status line — and on seed data whose description literally
+         * reads "Kabul bekliyor.", it was. A label settles it.
+         */
+        const description = field('bx-align-left', 'DetailDescription', item.summary, '', true);
+
+        // People → time → classification. A reader asks "whose is this" before "when", and "when" before "how big".
+        const fields = description
+            + assignee
+            + field('bx-user-pin', 'DetailRequester', item.requester)
+            + field('bx-calendar', 'DetailStartAt', item.startAt)
+            + field('bx-calendar', 'SourceDueLabel', item.dueAt, overdue)
+            + field('bx-flag', 'DetailPriority', hasPriority(item) ? priorityLabel(item) : '')
+            + field('bx-time-five', 'DetailEstimate', item.estimateHours === null || item.estimateHours === undefined
                 ? '' : tf('EstimateHoursValue', item.estimateHours));
 
-        // Tags last and full width: they are a set, not a value, and a row of chips beside a right-aligned
-        // column would wrap into the label's gutter.
+        /*
+         * TAGS LAST, FULL WIDTH, UNDER A RULE. A collection of variable length cannot sit in a fixed grid cell
+         * without either clipping or stretching the row beside it; the rule marks it as a different KIND of
+         * fact rather than a seventh value.
+         */
         const tags = Array.isArray(item.tags) && item.tags.length
-            ? `<div class="wcn-sumrow wcn-sumrow-wide">
-                <dt class="wcn-sumkey">${esc(t('DetailTags'))}</dt>
-                <dd class="wcn-sumval wcn-sumval-tags">${
-                item.tags.map((tag) => `<span class="wcn-tag">${esc(tag)}</span>`).join('')}</dd>
+            ? `<div class="col-12 wcn-sumtags">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-purchase-tag-alt" aria-hidden="true"></i>
+                    <div>
+                        <div class="backbone-preview-label">${esc(t('DetailTags'))}</div>
+                        <div class="wcn-sumval-tags mt-1">${
+                item.tags.map((tag) => `<span class="wcn-tag">${esc(tag)}</span>`).join('')}</div>
+                    </div>
+                </div>
             </div>`
             : '';
 
-        // Neither a description nor a single fact: the card would be a heading over nothing.
-        if (!item.summary && !rows && !tags) { return ''; }
+        if (!fields && !tags) { return ''; }
 
         return `<div class="wcn-detail-section">
             ${cardHead('bx-info-circle', 'SummaryCardLabel')}
-            ${item.summary ? `<p class="wcn-detail-summary">${esc(item.summary)}</p>` : ''}
-            ${rows || tags ? `<dl class="wcn-sumlist">${rows}${tags}</dl>` : ''}
+            <div class="row g-4">${fields}${tags}</div>
         </div>`;
     };
 
@@ -3106,9 +3151,21 @@
          * A card that holds ONLY an empty line gets the slim padding: at p-4 the padding was twice the height of
          * the sentence inside it, so "there is nothing here" still occupied a box. Measured 73px → 57px.
          */
+        /*
+         * THE ACTIONS CARD TAKES NO PADDING OF ITS OWN — its INNER blocks do.
+         *
+         * MEASURED: the destructive tier's rule ran 748→1053 inside a card spanning 732→1069, i.e. it stopped
+         * 16px short at each end because the card's `p-4` pushed it inward. A rule that does not reach the edge
+         * reads as a mistake rather than as a division.
+         *
+         * The fix is NOT a negative margin — that fights the padding and breaks the moment the padding changes.
+         * The padding moves down a level: the card clips (`wcn-acts-card`), each block inside carries its own
+         * inset, and the rule sits between blocks where it naturally spans edge to edge.
+         */
         const card = (inner) => inner
             ? `<section class="card backbone-preview-section wcn-detail-card ${
-                inner.includes('wcn-empty-line') ? 'wcn-detail-card--slim p-3' : 'p-4'}">${inner}</section>`
+                inner.includes('wcn-acts') ? 'wcn-acts-card'
+                    : inner.includes('wcn-empty-line') ? 'wcn-detail-card--slim p-3' : 'p-4'}">${inner}</section>`
             : '';
         const reviewNote = (item.itemType === 'task' && item.lifecycle === 'PendingReview')
             ? `<div class="wcn-review-note"><i class="bx bx-hourglass"></i><span>${esc(t('AwaitingReview'))}</span></div>`
@@ -3248,6 +3305,27 @@
 
         // Command card — identity, status, actions and personal overlay. Everything
         // the viewer decides on lives here, above the read-only detail cards.
+        /*
+         * The two provenance facts, each shown only when it is not the surface's default. `sourceModuleId` keeps
+         * its own condition — it was already conditional and is genuinely per-record.
+         */
+        const showModule = (item.source?.providerCode || item.sourceProviderCode) !== 'tasks';
+        const showType = (item.source?.objectType || item.sourceType) !== 'task';
+        const provParts = [
+            showModule
+                ? `<span class="wcn-detail-prov" title="${esc(sourceTitle(item))}" role="img"
+                     aria-label="${esc(sourceTitle(item))}">${esc(item.sourceModule)}</span>` : '',
+            showType ? `<span class="wcn-detail-prov">${esc(typeLabel(item))}</span>` : '',
+            item.sourceModuleId
+                ? `<span class="wcn-detail-prov"${item.sourceModuleName
+                    ? ` title="${esc(item.sourceModuleName)}" role="img" aria-label="${esc(item.sourceModuleName)}"` : ''
+                }>${esc(item.sourceModuleId)}</span>` : ''
+        ].filter(Boolean);
+        const provenance = provParts.length
+            ? provParts.join('<span class="wcn-detail-prov-dot" aria-hidden="true">·</span>')
+              + '<span class="wcn-detail-idsep" aria-hidden="true"></span>'
+            : '';
+
         const commandCard = `<section class="card backbone-preview-section wcn-detail-card wcn-detail-command p-4">
             ${/*
                * ONE LINE, TWO KINDS OF THING — which is why it used to be two lines that looked identical.
@@ -3267,18 +3345,24 @@
                * The STATUS badge has left this row entirely — it belongs to the lifecycle strip, which shows
                * where the work stands and can now name it. See renderLifecycleStepper.
                */''}
+            ${/*
+               * PROVENANCE APPEARS ONLY WHEN IT DISTINGUISHES SOMETHING.
+               *
+               * MEASURED: every record on this surface today carries `providerCode: "tasks"` and
+               * `objectType: "task"`, so "Görevler · Görev" was printed on every task and told the reader
+               * nothing — two constants dressed as facts, taking the eye's first pass before the signals that
+               * actually vary.
+               *
+               * NOT DELETED, CONDITIONED. The Task Center aggregates other providers by design; the day MOD-0023
+               * workflow items land here, "where did this come from" becomes a real question and the field
+               * appears on its own. Deleting it would mean rebuilding it then — and rebuilding it is exactly
+               * when it gets forgotten.
+               *
+               * The separator goes with them: a hairline before a row that begins with its first chip is a rule
+               * dividing nothing.
+               */''}
             <div class="wcn-detail-idline">
-                <span class="wcn-detail-prov" title="${esc(sourceTitle(item))}"
-                      role="img" aria-label="${esc(sourceTitle(item))}">${esc(item.sourceModule)}</span>
-                <span class="wcn-detail-prov-dot" aria-hidden="true">·</span>
-                <span class="wcn-detail-prov">${esc(typeLabel(item))}</span>
-                ${item.sourceModuleId
-                    ? `<span class="wcn-detail-prov-dot" aria-hidden="true">·</span>
-                       <span class="wcn-detail-prov"${item.sourceModuleName
-                        ? ` title="${esc(item.sourceModuleName)}" role="img" aria-label="${esc(item.sourceModuleName)}"` : ''
-                    }>${esc(item.sourceModuleId)}</span>`
-                    : ''}
-                <span class="wcn-detail-idsep" aria-hidden="true"></span>
+                ${provenance}
                 ${chip(SLA_KIND[item.slaState], 'bx-time-five', slaLabel(item))}
                 ${priorityChip(item)}
                 ${roleChip(item)}

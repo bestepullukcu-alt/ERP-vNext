@@ -214,7 +214,12 @@ describe("the summary card answers 'what is this?' before 'what can you do?'", (
   });
 
   test("the description is printed only when there is one", () => {
-    expect(fn("renderSummary")).toMatch(/item\.summary\s*\?/);
+    /*
+     * The sentence is a LABELLED FIELD now, not a bare paragraph — measured on two purpose-built tasks: a task
+     * with a description projects `summary = {kind:"display", text:…}`, one without projects `summary = null`.
+     * There is no generated fallback, so the field simply does not render when there is nothing to say.
+     */
+    expect(fn("renderSummary")).toMatch(/'DetailDescription', item\.summary/);
   });
 
   test("tags render as chips, and an empty tag list is not an empty chip strip", () => {
@@ -551,7 +556,8 @@ describe("the rendered page", () => {
     // …and the dates are in that SAME card, not a second one.
     expect(withGates[0].querySelector(".wcn-dates"), "the dates came back to the status card").toBeNull();
     // …and the due date is in the Summary, in red, which is where the two-answers contradiction was settled.
-    expect(app().querySelector(".wcn-sumlist"), "the summary is not a definition list").not.toBeNull();
+    // The summary uses the product's golden field pattern now (`backbone-preview-field`), not a list of its own.
+    expect(app().querySelector(".backbone-preview-field"), "the summary lost the golden field pattern").not.toBeNull();
     // The gate that does not apply is not printed at all.
     expect(withGates[0].querySelectorAll(".wcn-gate")).toHaveLength(1);
   });
@@ -1421,8 +1427,32 @@ describe("the lifecycle card says where the work stands", () => {
     expect(line, "the identity line is gone").not.toBeNull();
     expect(app().querySelector(".wcn-detail-source"), "the old chip row survived").toBeNull();
     expect(app().querySelector(".wcn-detail-chips"), "the old chip row survived").toBeNull();
-    expect(line.querySelectorAll(".wcn-detail-prov").length).toBeGreaterThan(0);
-    expect(line.querySelector(".wcn-detail-idsep"), "no rule separating the two voices").not.toBeNull();
+    /*
+     * ⚠ PROVENANCE IS NOW CONDITIONAL (BL-118). Measured: every record on this surface carries
+     * `providerCode: "tasks"` and `objectType: "task"`, so "Görevler · Görev" printed on every task and
+     * distinguished nothing — two constants dressed as facts, taking the eye's first pass ahead of the signals
+     * that actually vary. It is not deleted: the day a second provider lands here it appears on its own.
+     *
+     * The separator goes with it. A hairline before a row that starts with its first chip divides nothing.
+     */
+    expect(line.querySelectorAll(".wcn-detail-prov"), "a default provider printed its name").toHaveLength(0);
+    expect(line.querySelector(".wcn-detail-idsep"), "a rule was drawn with nothing to separate").toBeNull();
+    // …and the signals, which DO vary, are still there.
+    expect(line.querySelectorAll(".wcn-chip").length, "the signal chips are gone").toBeGreaterThan(0);
+  });
+
+  it("SHOWS provenance the moment it distinguishes something", async () => {
+    // MUTATION TARGET (provenance). The field must reappear without being rebuilt when a second provider
+    // arrives — that is the whole reason it was conditioned rather than removed.
+    await boot(projectionItem({
+      source: {
+        providerCode: "workflow", providerContractVersion: "1.0",
+        objectType: "approval", objectId: "A-1", sourceSystem: "MOD-0023"
+      }
+    }));
+    const line = app().querySelector(".wcn-detail-idline");
+    expect(line.querySelectorAll(".wcn-detail-prov").length, "a foreign provider stayed hidden").toBeGreaterThan(0);
+    expect(line.querySelector(".wcn-detail-idsep"), "the rule did not come back with it").not.toBeNull();
   });
 
   it("moves the status OFF the identity row and into the bar's caption", async () => {
@@ -1732,9 +1762,14 @@ describe("the actions card puts its weight where the decision is", () => {
     const destructive = card.querySelector(".wcn-act-destructive");
     expect(destructive, "the destructive action is not drawn in the open").not.toBeNull();
     expect(destructive.querySelector("button").className).toContain("wcn-act-bare-danger");
-    // Last, under its own rule — after every ordinary action.
-    const rows = [...card.querySelectorAll("li")];
-    expect(rows.indexOf(destructive.closest(".wcn-acts-row"))).toBe(rows.length - 2);
+    /*
+     * Last, under a rule that reaches the card's edges. The destructive tier is its own BLOCK now (not a list
+     * row): the card's padding moved down to the blocks so the divider between them spans edge to edge without
+     * a negative margin fighting it.
+     */
+    const block = destructive.closest(".wcn-acts-destructive");
+    expect(block, "the destructive tier lost its own block").not.toBeNull();
+    expect(block.parentElement.lastElementChild, "the destructive tier is not last").toBe(block);
   });
 
   it("carries prose on the PRIMARY only — the rest moved to their dialogs", async () => {
@@ -1875,13 +1910,13 @@ describe("the rail's three cards after the Status card was dissolved", () => {
      * needs seeing. Verified live on a genuinely unassigned record.
      */
     await boot(projectionItem({ assignee: null }));
-    const dl = app().querySelector(".wcn-sumlist");
-    const first = dl.querySelector(".wcn-sumrow");
-    expect(first.querySelector("dt").textContent).toContain("DetailAssignee");
-    const value = first.querySelector("dd");
+    const field = [...app().querySelectorAll(".backbone-preview-field")]
+      .find((f) => f.querySelector(".backbone-preview-label").textContent.includes("DetailAssignee"));
+    expect(field, "the assignee field was dropped when empty").not.toBeNull();
+    const value = field.querySelector(".backbone-preview-value");
     expect(value.textContent.trim(), "the unassigned state was printed as a dash").not.toMatch(/^[—–-]$/);
     expect(value.textContent).toContain("SummaryUnassigned");
-    expect(value.className, "the empty state is not marked as one").toContain("wcn-sumval-muted");
+    expect(field.className, "the empty state is not marked as one").toContain("backbone-preview-field-muted");
   });
 
   it("colours the due date RED when it is late — the contradiction the Status card left", async () => {
@@ -1892,26 +1927,41 @@ describe("the rail's three cards after the Status card was dissolved", () => {
      * here; deriving one would be a third answer.
      */
     await boot(projectionItem({ slaState: "overdue", dueAt: "2026-07-28T17:00:00+03:00" }));
-    const due = [...app().querySelectorAll(".wcn-sumlist .wcn-sumrow")]
-      .find((r) => r.querySelector("dt").textContent.includes("SourceDueLabel"));
-    expect(due, "the due date row is gone").not.toBeNull();
-    expect(due.querySelector("dd").className, "a late due date is not marked late").toContain("wcn-sumval-overdue");
+    const due = [...app().querySelectorAll(".backbone-preview-field")]
+      .find((f) => f.querySelector(".backbone-preview-label").textContent.includes("SourceDueLabel"));
+    expect(due, "the due date field is gone").not.toBeNull();
+    /*
+     * THE WHOLE FIELD goes red — icon, label and value — not only the number. Colouring one of three parts
+     * reads as a typo; colouring the field reads as a state.
+     */
+    expect(due.className, "a late due date is not marked late").toContain("backbone-preview-field-overdue");
 
     await boot(projectionItem({ slaState: "on-track", dueAt: "2026-07-28T17:00:00+03:00" }));
-    const ok = [...app().querySelectorAll(".wcn-sumlist .wcn-sumrow")]
-      .find((r) => r.querySelector("dt").textContent.includes("SourceDueLabel"));
-    expect(ok.querySelector("dd").className, "an on-track date was marked late").not.toContain("wcn-sumval-overdue");
+    const ok = [...app().querySelectorAll(".backbone-preview-field")]
+      .find((f) => f.querySelector(".backbone-preview-label").textContent.includes("SourceDueLabel"));
+    expect(ok.className, "an on-track date was marked late").not.toContain("backbone-preview-field-overdue");
   });
 
-  it("pairs labels and values as a definition list, not a grid of divs", async () => {
-    // A grid of <div>s makes a screen reader read seven captions and seven strings and pair them by luck.
+  it("uses the product's golden field pattern rather than a shape of its own", async () => {
+    /*
+     * Two earlier shapes were this card's own inventions and both failed on measurement: a three-column tile
+     * grid that orphaned a fourth fact on a second row, and a definition list that used a 690px card as a 350px
+     * column with the right half empty.
+     *
+     * `backbone-preview-field/-label/-value` is what every Compact details page in this product is built from
+     * (`Views/DevEnablement/GoldenReferenceCompact/Details.cshtml`), and this card already sits inside
+     * `backbone-preview-section` — it had simply never used the field pattern that section was designed around.
+     */
     await boot(projectionItem());
-    const dl = app().querySelector(".wcn-sumlist");
-    expect(dl.tagName).toBe("DL");
-    const dts = dl.querySelectorAll("dt");
-    const dds = dl.querySelectorAll("dd");
-    expect(dts.length, "no terms").toBeGreaterThan(0);
-    expect(dds.length, "terms and definitions do not pair up").toBe(dts.length);
+    const fields = app().querySelectorAll(".backbone-preview-field");
+    expect(fields.length, "no golden fields").toBeGreaterThan(0);
+    fields.forEach((f) => {
+      expect(f.querySelector("i"), "a field lost its icon").not.toBeNull();
+      expect(f.querySelector(".backbone-preview-label"), "a field lost its label").not.toBeNull();
+    });
+    // Two columns, from Bootstrap's own grid — no bespoke column rule.
+    expect(app().querySelector(".backbone-preview-field").closest(".col-md-6, .col-12")).not.toBeNull();
+    expect(app().querySelector(".wcn-sumlist"), "the definition list came back").toBeNull();
     expect(app().querySelector(".wcn-facts"), "the fact grid came back").toBeNull();
   });
 
@@ -1931,5 +1981,77 @@ describe("the rail's three cards after the Status card was dissolved", () => {
       ["en", "tr", "fr", "es", "zh", "ar", "ru"].forEach((lang) =>
         expect(read("Resources", "Views", "WorkCenterNext", `WorkCenterNextIndex.${lang}.resx`),
           `${lang} has no ${key}`).toContain(`name="${key}"`)));
+  });
+});
+
+describe("the actions card's divider reaches the card's edges", () => {
+  it("takes its padding from the BLOCKS, not the card — no negative margin", async () => {
+    /*
+     * MUTATION TARGET (divider). MEASURED: the rule ran 748→1053 inside a card spanning 732→1069 — 16px short at
+     * each end, because the card's `p-4` pushed it inward. A rule that stops before the edge reads as a mistake
+     * rather than as a division.
+     *
+     * The fix is structural, not a nudge: a negative margin would fight the padding and break the next time the
+     * padding changed. The card clips and the blocks carry their own inset, so the rule between them spans edge
+     * to edge for free.
+     *
+     * Asserted on the CARD CLASS and the stylesheet because jsdom performs no layout; the pixel proof
+     * (980→1399 against a card of 980→1399) is in the round's report.
+     */
+    await boot(projectionItem({
+      primaryActionCode: "accept",
+      actions: [
+        { code: "accept", semanticType: "accept", label: { kind: "resource", key: "WorkAggregation_Action_accept" },
+          enabled: true, source: "provider", disabledReasonCode: null, disabledReason: null,
+          requiresConfirmation: false, requiresReason: false, requiresEvidence: false, supportsBulk: false,
+          riskLevel: "normal" },
+        { code: "cancel", semanticType: "cancel", label: { kind: "resource", key: "WorkAggregation_Action_cancel" },
+          enabled: true, source: "provider", disabledReasonCode: null, disabledReason: null,
+          requiresConfirmation: true, requiresReason: false, requiresEvidence: false, supportsBulk: false,
+          riskLevel: "destructive" }
+      ]
+    }));
+    const card = app().querySelector(".wcn-acts").closest(".card");
+    expect(card.className, "the actions card still carries its own padding").toContain("wcn-acts-card");
+    expect(card.className, "the card kept p-4, which insets the rule").not.toMatch(/\bp-4\b/);
+
+    const css = read("wwwroot", "assets", "css", "backbone-custom.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    const rule = /\.wcn-acts-card \{([^}]*)\}/.exec(css);
+    expect(rule, "the clipping rule is gone").not.toBeNull();
+    expect(rule[1]).toMatch(/overflow:\s*hidden/);
+    expect(rule[1]).toMatch(/padding:\s*0/);
+  });
+
+  it("outlines the quiet actions without filling them — the one-fill rule is untouched", async () => {
+    /*
+     * They were bare text beside a solid primary and read as three links under a button; an action that changes
+     * state should look like a control. A BORDER IS NOT A FILL, so the "exactly one filled button" rule from the
+     * previous round still holds — that test runs unchanged alongside this one.
+     *
+     * Height is pinned at 2rem: the theme's own `btn-sm` measures 30px, under the 32px floor this round set
+     * (WCAG 2.5.8's base is 24px; 32 clears it comfortably).
+     */
+    await boot(projectionItem({
+      primaryActionCode: "accept",
+      actions: [
+        { code: "accept", semanticType: "accept", label: { kind: "resource", key: "WorkAggregation_Action_accept" },
+          enabled: true, source: "provider", disabledReasonCode: null, disabledReason: null,
+          requiresConfirmation: false, requiresReason: false, requiresEvidence: false, supportsBulk: false,
+          riskLevel: "normal" },
+        { code: "plan", semanticType: "plan", label: { kind: "resource", key: "WorkAggregation_Action_plan" },
+          enabled: true, source: "provider", disabledReasonCode: null, disabledReason: null,
+          requiresConfirmation: false, requiresReason: false, requiresEvidence: false, supportsBulk: false,
+          riskLevel: "normal" }
+      ]
+    }));
+    const bare = [...app().querySelectorAll(".wcn-act-bare")];
+    expect(bare.length, "no outlined actions").toBeGreaterThan(0);
+    bare.forEach((b) => expect(b.className, "an outlined action gained a fill").not.toContain("wcn-act-fill"));
+
+    const css = read("wwwroot", "assets", "css", "backbone-custom.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    const rule = /\.wcn-act-bare \{([^}]*)\}/.exec(css);
+    expect(rule, "the outlined rule is gone").not.toBeNull();
+    expect(rule[1], "the quiet actions lost their border").toMatch(/border:\s*1px solid/);
+    expect(rule[1], "the 32px floor was dropped").toMatch(/min-block-size:\s*2rem/);
   });
 });

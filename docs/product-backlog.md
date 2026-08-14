@@ -3254,3 +3254,49 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   dosyanın üst kısmındaki ayrı `.wcn-fact` bloğu farklı bileşenler — dokunulmadı.**
 - **Yapılacak:** görünüm kabul edilince blok silinsin.
 - **Gelecek regresyon riski: 🟢.**
+
+### BL-117 — 🟢 [ÖZET] Golden referanstan BİLİNÇLİ SAPMA: boş alanda "-" basmıyoruz
+- **Golden referans** (`Views/DevEnablement/GoldenReferenceCompact/Details.cshtml`) boş değer için `-` basıyor:
+  `@(string.IsNullOrWhiteSpace(Model.Code) ? "-" : Model.Code)`.
+- **Özet kartı basmıyor — alanı hiç çizmiyor.** Gerekçe: tire, "alan kontrol edildi ve boş bulundu" iddiasıdır;
+  okuyucu bunu "yüklenemedi" durumundan ayırt edemez. Bu sayfada olguların çoğu isteğe bağlı (başlangıç tarihi,
+  tahmini süre, etiketler), dolayısıyla tire basmak kartın yarısını anlamsız çizgiyle doldururdu.
+- **TEK İSTİSNA — Atanan:** boşsa satır YİNE çizilir ve "Atanmamış" der. Atanansız görev eksik alan değil,
+  sonucu "kimse fark etmezse iş bekler" olan bir OLGU.
+- **Sapma bilinçli ve kayıtlı** — golden referansı takip eden bir sonraki ekran bunu drift sanmasın diye.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-118 — ✅ KAPANDI (2026-08-14) — [BAŞLIK] Kaynak izi her görevde aynıydı; silinmedi, koşullandı
+- **Ölçüm:** bu yüzeydeki her kayıt `providerCode: "tasks"` ve `objectType: "task"` taşıyor. "Görevler · Görev"
+  her görevde aynı çıkıyor, hiçbir şeyi ayırt etmiyordu — iki sabit, olgu kılığında, gözün ilk geçişini
+  gerçekten değişen sinyallerden önce alıyordu.
+- **Yapılan:** modül adı yalnız `providerCode !== 'tasks'` ise, nesne türü yalnız `objectType !== 'task'` ise
+  çiziliyor. İkisi de gizlenince ayırıcı hairline de gizleniyor (bölecek bir şey yokken çizgi çizmek).
+- **Neden silinmedi:** merkez tasarım gereği başka sağlayıcılardan da iş topluyor. MOD-0023 iş akışı kalemleri
+  geldiği gün "bu nereden geldi" gerçek bir soru olur ve alan kendiliğinden görünür. Silinseydi o gün yeniden
+  yazılması gerekirdi — ve yeniden yazılması gereken şey tam olarak unutulan şeydir.
+- **Test:** iki test — varsayılan sağlayıcıda gizli, yabancı sağlayıcıda görünür (`providerCode: "workflow"`).
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-119 — 🟠 [VERİ] Seed görevlerinin açıklaması durum cümlesi gibi yazılmış
+- **Ölçüm:** `98d1f94e` görevinin `description` alanı **"Kabul bekliyor."**. Bu bir açıklama değil, bir durum
+  ifadesi — ve Özet kartında etiketsiz paragraf olarak çizilince sahip haklı olarak "bu metin anlaşılmıyor" dedi.
+- **Projeksiyon suçsuz:** `TaskWorkItemProvider` açıklama varsa açıklamayı, yoksa **`null`** yolluyor. Üretilmiş
+  yedek YOK (CONTROL TOWER'ın düzeltmesi de bu noktada eskimiş — kod bugün yedek üretmiyor). İki gerçek görevle
+  ölçüldü: açıklamalı → `{kind:"display", text:…}`, açıklamasız → `null`.
+- **Ön yüz tarafı çözüldü:** cümle artık "Açıklama" etiketli kendi alanı; durum cümlesiyle karışması imkânsız.
+- **Kalan iş VERİDE:** seed açıklamaları gerçek açıklamalarla değiştirilmeli, yoksa demo ekranlarında
+  "Açıklama: Kabul bekliyor." yazacak.
+- **Gelecek regresyon riski: 🟢** — yalnız seed verisi.
+
+### BL-120 — 🟡 [ÖZET] Hedef 150px tutmadı: 230px
+- **Ölçüm (1440, açıklamalı görev `b0c67d51`):** 269 → **230px**. Hedef ~150'ydi.
+- **Neden tutmadı:** (a) açıklama artık tam genişlikte kendi alanı — tek başına ~56px; (b) golden alan deseni
+  etiket ÜSTÜNDE değer ALTINDA çiziyor, yani her alan iki satır (eski `<dl>` yan yanaydı); (c) ikon sütunu
+  22px + 12px boşluk.
+- **Kazanç yine de var:** kartın sağ yarısı artık kullanılıyor (854px genişlikte iki sütun), yetim hücre yok,
+  açıklamasız görevde kart **170px**.
+- **Karar sahibin:** (a) böyle kalsın — ürün deseni tutarlılığı yükseklikten önemli · (b) açıklama tek sütuna
+  insin (uzun metin dar sütunda kötü sarar) · (c) etiket/değer yan yana olacak şekilde golden deseni değiştir
+  (ürün genelinde etki, bu kartın kararı değil).
+- **Gelecek regresyon riski: 🟢.**

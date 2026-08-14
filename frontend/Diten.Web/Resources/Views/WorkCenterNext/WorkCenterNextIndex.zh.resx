@@ -281,6 +281,9 @@
   <data name="SummaryCardLabel" xml:space="preserve">
     <value>摘要</value>
   </data>
+  <data name="DetailDescription" xml:space="preserve">
+    <value>说明</value>
+  </data>
   <data name="SummaryUnassigned" xml:space="preserve">
     <value>未分配</value>
   </data>

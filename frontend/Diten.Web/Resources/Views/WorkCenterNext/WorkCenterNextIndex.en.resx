@@ -281,6 +281,9 @@
   <data name="SummaryCardLabel" xml:space="preserve">
     <value>Summary</value>
   </data>
+  <data name="DetailDescription" xml:space="preserve">
+    <value>Description</value>
+  </data>
   <data name="SummaryUnassigned" xml:space="preserve">
     <value>Unassigned</value>
   </data>

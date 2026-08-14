@@ -1110,7 +1110,11 @@ describe("the action rail hides only what is destructive", () => {
     await bootDetailPage(projectionItem({ actions: [action(), cancelAction] }));
 
     expect(app().querySelector(".wcn-actrail-menu"), "the kebab came back").toBeNull();
-    const drawn = app().querySelectorAll('.wcn-actrail [data-wcn-action="cancel"]');
+    /*
+     * Scoped to the CARD, not the `<ul>`: the destructive tier became its own block outside the action list when
+     * the card's padding moved down to the blocks, so the rule between them could reach the card's edges.
+     */
+    const drawn = app().querySelectorAll('.wcn-acts [data-wcn-action="cancel"]');
     expect(drawn, "the destructive action is not drawn exactly once").toHaveLength(1);
     expect(drawn[0].closest(".wcn-act").className).toContain("wcn-act-destructive");
     // Bare, not tinted: in this theme a `btn-label-*` tint reads as DISABLED, which is how the card's most
