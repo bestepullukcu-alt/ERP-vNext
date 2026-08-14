@@ -7109,6 +7109,33 @@ tags.diten-tags .tagify__input {
    thing on screen and never above the work they act on. */
 .wcn-detail-content > .wcn-detail-card,
 .wcn-detail-rail > .wcn-detail-card { margin-block-end: 1rem; }
+/* ── The rail follows the reader down ──────────────────────────────────────
+   MEASURED at 1440×900: the content column runs to 1860px and the rail stops at 925px, so **936px** of the page
+   is read with an empty column beside it — and "Mevcut aksiyonlar", the one card the page exists for, is off
+   screen for the whole of it.
+
+   Three ways out were measured before choosing:
+     (a) sticky rail        rail is 660px and needs 676px of viewport; fits at 900  ← chosen
+     (b) checklist → rail   rail 1273 vs content 983: the imbalance simply inverts
+     (c) two content columns each column falls to 427px, against a subtask title that already uses 626
+
+   ⚠ ONLY where the rail is a COLUMN. Below 992 it stacks under the content, and a sticky element inside a
+   stacked block would pin to the wrong thing — the media query below is the whole guard.
+
+   ⚠ AND IT DEGRADES INSTEAD OF CLIPPING. Under a short window (measured: below 676px of viewport, i.e. a laptop
+   with browser chrome) a fixed-height sticky column would hide its own bottom cards with no way to reach them.
+   `max-block-size` + `overflow-y: auto` makes the rail scroll inside itself instead — the actions stay reachable
+   at any window height, which is the entire point of making it sticky. 80px = the 64px fixed navbar + 16px. */
+@media (min-width: 992px) {
+    .wcn-detail-rail {
+        position: sticky;
+        inset-block-start: 5rem;
+        max-block-size: calc(100vh - 6rem);
+        overflow-y: auto;
+        /* The scroll lives inside this column; without this the sticky box would push the grid taller. */
+        align-self: start;
+    }
+}
 .wcn-detail-content > .wcn-detail-card:last-child,
 .wcn-detail-rail > .wcn-detail-card:last-child { margin-block-end: 0; }
 

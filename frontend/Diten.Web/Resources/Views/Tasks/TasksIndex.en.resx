@@ -97,6 +97,7 @@
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>This task is closed, so it can no longer be commented on.</value></data>
   <data name="ErrorCommentTextInvalid" xml:space="preserve"><value>A comment cannot be empty and must be at most 2000 characters.</value></data>
   <data name="ErrorPlanDateRequired" xml:space="preserve"><value>A planned date is required to set your personal plan.</value></data>
+  <data name="ErrorDueDateRequired" xml:space="preserve"><value>A due date is required.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>The task is waiting for the approver's decision.</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>This task cannot be completed while it is in this state. Start it first.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Only the person who requested this task can cancel it. If you do not want the work, return it instead.</value></data>

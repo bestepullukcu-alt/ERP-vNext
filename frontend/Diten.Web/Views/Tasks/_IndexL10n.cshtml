@@ -158,6 +158,9 @@
         ErrorCommentTaskClosed = Localizer["ErrorCommentTaskClosed"].Value,
         ErrorCommentTextInvalid = Localizer["ErrorCommentTextInvalid"].Value,
         ErrorPlanDateRequired = Localizer["ErrorPlanDateRequired"].Value,
+        // Create with no due date — the SAME rule on the main form and the subtask panel (measured on both:
+        // 400 VALIDATION_REQUEST_DUE_AT_NOT_NULL). Unmapped, it reached the reader as "an error occurred".
+        ErrorDueDateRequired = Localizer["ErrorDueDateRequired"].Value,
         ErrorApprovalPending = Localizer["ErrorApprovalPending"].Value,
         // 409 TASK_INVALID_STATE — measured live when the subtask checkbox met a not-started child.
         ErrorTaskInvalidState = Localizer["ErrorTaskInvalidState"].Value,

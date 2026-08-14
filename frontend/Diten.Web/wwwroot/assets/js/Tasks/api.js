@@ -60,6 +60,16 @@
         TASK_COMMENT_TEXT_INVALID: 'errorCommentTextInvalid',
         // A plan write with no date at all (a 400, not a 409 — it never reaches BLOCKING_REASON_CODES).
         TASK_PLAN_DATE_REQUIRED: 'errorPlanDateRequired',
+        /*
+         * CREATE WITH NO DUE DATE. Measured on both surfaces: the main create endpoint and the subtask panel
+         * refuse identically (`400 VALIDATION_REQUEST_DUE_AT_NOT_NULL`, "A due date is required."), so the rule
+         * is the product's and not a subtask quirk — the create FORM already stars the field, the panel did not.
+         *
+         * The bridge already existed and already warned about unmapped codes in the console; this code simply
+         * had nobody map it, so the reader saw "İşlem sırasında bir hata oluştu" while the server had named the
+         * field precisely.
+         */
+        VALIDATION_REQUEST_DUE_AT_NOT_NULL: 'errorDueDateRequired',
         // Configurable fields (Phase 5). The server is the authority on these — a required field left empty, an
         // unknown definition code, a contract limit — and each refusal needs its own sentence, because "an error
         // occurred" beside a form of tenant-defined fields names nothing the user can act on.

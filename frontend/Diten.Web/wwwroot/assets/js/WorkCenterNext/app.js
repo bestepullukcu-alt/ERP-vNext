@@ -3864,7 +3864,15 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="wcnNewSubtaskDue">${esc(t('SubtaskFieldDue'))}</label>
+                    ${/*
+                       * The star is CORRECT here, and that was checked before adding it. The main create
+                       * endpoint refuses a task with no due date exactly as the subtask endpoint does
+                       * (`400 VALIDATION_REQUEST_DUE_AT_NOT_NULL`, measured on both), and `_Form.cshtml` already
+                       * marks the field. The rule is the product's; this panel was the one surface not saying so.
+                       */''}
+                    <label class="form-label" for="wcnNewSubtaskDue">
+                        ${esc(t('SubtaskFieldDue'))} <span class="text-danger">*</span>
+                    </label>
                     <input type="date" class="form-control" id="wcnNewSubtaskDue"
                            data-wcn-newsubtask-field="dueAt" value="${esc(draft.dueAt || '')}">
                 </div>
@@ -4105,6 +4113,29 @@
     };
 
     /* Shared offcanvas plumbing for both subtask panels. */
+    /*
+     * ── THE RULE THAT WAS ONLY IN TWO PEOPLE'S HEADS ──────────────────────────────────────────────────────
+     *
+     * "Never render while an offcanvas is open" was applied by hand in two places. A third panel would have had
+     * to rediscover it — which is exactly what happened last round, at the cost of a panel that opened once per
+     * page load and a body lock that left the page unscrollable.
+     *
+     * So `render()` now checks, and says so loudly. A console warning alone would not be enough (this session
+     * has already had one swallowed warning hide a defect), so a test asserts that this fires — the pair is the
+     * guard, not either half.
+     */
+    const openPanelIds = () => [...document.querySelectorAll('.offcanvas.show')].map((n) => n.id || '(unnamed)');
+
+    const warnIfPanelOpen = () => {
+        const open = openPanelIds();
+        if (!open.length) { return; }
+        global.console?.warn?.(
+            `[WorkCenterNext] render() ran while an offcanvas was open (${open.join(', ')}). `
+            + 'Replacing the panel\'s node detaches its Bootstrap instance: it can never be shown or hidden '
+            + 'again, `hidden.bs.offcanvas` never fires, and body scroll stays locked. '
+            + 'Update the panel in place (setPanelBusy / fillAssigneeSelect) or close it first (hidePanel).');
+    };
+
     const showPanel = (id, onHidden) => {
         const node = document.getElementById(id);
         if (!node || !global.bootstrap?.Offcanvas) { return; }
@@ -4796,6 +4827,7 @@
     const scroller = () => global.document.scrollingElement || global.document.documentElement;
 
     const render = () => {
+        warnIfPanelOpen();
         const box = scroller();
         const scrollTop = box ? box.scrollTop : 0;
         const scrollLeft = box ? box.scrollLeft : 0;

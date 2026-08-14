@@ -97,6 +97,7 @@
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>该任务已关闭，无法再添加评论。</value></data>
   <data name="ErrorCommentTextInvalid" xml:space="preserve"><value>评论不能为空，且最多 2000 个字符。</value></data>
   <data name="ErrorPlanDateRequired" xml:space="preserve"><value>设置个人计划需要选择一个日期。</value></data>
+  <data name="ErrorDueDateRequired" xml:space="preserve"><value>必须填写截止日期。</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>该任务正在等待审批人的决定。</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>该任务在当前状态下无法完成，请先启动它。</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>只有提出该任务的人才能取消它。如果您不想接手，请退回。</value></data>

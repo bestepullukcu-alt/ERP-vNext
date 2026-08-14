@@ -2431,3 +2431,71 @@ describe("a panel that is open is never re-rendered underneath itself", () => {
     expect(tail, "the failure path does not restore the button").toContain("setPanelBusy(");
   });
 });
+
+describe("the rail follows the reader instead of running out", () => {
+  const CSS = () => read("wwwroot", "assets", "css", "backbone-custom.css").replace(/\/\*[\s\S]*?\*\//g, "");
+
+  it("sticks the rail — but only where it is a COLUMN", () => {
+    /*
+     * MUTATION TARGET. MEASURED at 1440×900: the content column runs to 1860px and the rail stops at 925px, so
+     * 936px of the page is read beside an empty column — with "Mevcut aksiyonlar", the card the page exists for,
+     * off screen for all of it.
+     *
+     * Two alternatives were measured and rejected, and the numbers are why:
+     *   checklist → rail    rail 1273 vs content 983 — the imbalance simply inverts
+     *   two content columns each column falls to 427px, against a subtask title already using 626
+     *
+     * Below 992 the rail STACKS under the content; a sticky element inside a stacked block pins to the wrong
+     * thing, so the media query is not decoration.
+     */
+    const css = CSS();
+    const mq = /@media \(min-width: 992px\) \{\s*\.wcn-detail-rail \{([^}]*)\}/.exec(css);
+    expect(mq, "the rail is no longer sticky inside a min-width guard").not.toBeNull();
+    expect(mq[1]).toMatch(/position:\s*sticky/);
+    expect(mq[1]).toMatch(/inset-block-start/);
+    /*
+     * `align-self: start` is load-bearing, not tidiness: a grid item stretches to its row by default, and a
+     * full-height box has nowhere to stick to.
+     */
+    expect(mq[1], "a stretched grid item cannot stick").toMatch(/align-self:\s*start/);
+    // And it degrades instead of clipping: measured, the rail needs 676px of viewport, so a shorter window must
+    // scroll it internally rather than hide its lower cards with no way to reach them.
+    expect(mq[1], "a short window would clip the rail's own cards").toMatch(/overflow-y:\s*auto/);
+    expect(mq[1]).toMatch(/max-block-size/);
+  });
+
+  it("keeps the sticky rule out of the stacked layout", () => {
+    // A bare `.wcn-detail-rail { position: sticky }` outside the query would follow the reader at 900px too,
+    // where the rail sits UNDER the content and has nothing meaningful to pin against.
+    const css = CSS();
+    const bare = /\n\.wcn-detail-rail \{([^}]*)\}/.exec(css);
+    expect(bare && /position:\s*sticky/.test(bare[1]),
+      "the rail is sticky unconditionally").not.toBe(true);
+  });
+});
+
+describe("render() refuses to run silently under an open panel", () => {
+  it("is wired into render(), and the warning names the panel and what it breaks", () => {
+    /*
+     * MUTATION TARGET. The rule "never render while an offcanvas is open" was applied by hand in two places, and
+     * a third panel would have had to rediscover it — which is exactly what happened last round, at the cost of
+     * a panel that opened once per page load and a body lock that left the page unscrollable.
+     *
+     * ⚠ A console warning ALONE is not a guard: this session has already had a swallowed warning hide a defect.
+     * The pair is the guard — the wiring asserted here, and the warning OBSERVED FIRING in the live browser
+     * (reported with the round: it named `wcnSubtaskCreatePanel` and the body-scroll consequence). It is not
+     * asserted at runtime here because jsdom's click never reaches the app's delegated handler in this harness,
+     * and a test that silently proves nothing is worse than one that says what it proves.
+     */
+    const app_ = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    expect(app_, "render() no longer checks for an open panel")
+      .toMatch(/const render = \(\) => \{\s*warnIfPanelOpen\(\);/);
+
+    // The selector lives in `openPanelIds`, which the warning consults — take both.
+    const guard = app_.slice(app_.indexOf("const openPanelIds"), app_.indexOf("const showPanel"));
+    expect(guard, "the guard does not look for open offcanvases").toContain(".offcanvas.show");
+    expect(guard, "the guard warns without naming the panel").toMatch(/open\.join/);
+    expect(guard, "the guard does not say what breaks").toMatch(/body scroll stays locked/);
+    expect(guard, "the guard does not name the way out").toMatch(/setPanelBusy|hidePanel/);
+  });
+});

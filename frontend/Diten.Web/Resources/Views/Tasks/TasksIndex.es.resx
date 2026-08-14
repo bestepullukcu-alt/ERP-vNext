@@ -97,6 +97,7 @@
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>Esta tarea está cerrada, por lo que ya no admite comentarios.</value></data>
   <data name="ErrorCommentTextInvalid" xml:space="preserve"><value>Un comentario no puede estar vacío y no debe superar los 2000 caracteres.</value></data>
   <data name="ErrorPlanDateRequired" xml:space="preserve"><value>Se requiere una fecha para establecer tu plan personal.</value></data>
+  <data name="ErrorDueDateRequired" xml:space="preserve"><value>La fecha de vencimiento es obligatoria.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>La tarea está esperando la decisión de la persona que aprueba.</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>Esta tarea no se puede completar en este estado. Iníciela primero.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Solo quien solicitó esta tarea puede cancelarla. Si no quiere el trabajo, devuélvalo.</value></data>

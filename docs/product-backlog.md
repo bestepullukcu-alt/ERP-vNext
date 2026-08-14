@@ -3466,3 +3466,72 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   maskeleniyor.
 - **Yapılacak:** son tarihe `*` ve `required`; `failureMessage` bu reason_code'u kendi diline çevirsin.
 - **Gelecek regresyon riski: 🟢** — bugün de başarısız oluyor, yalnız sebebi görünmüyor.
+
+### BL-131 — ✅ KAPANDI (2026-08-14) — [KOMPOZİSYON] Ray erken bitiyordu; yapışkan hâle geldi
+- **Ölçüm (1440×900):** içerik sütunu 1860px'e kadar sürüyor, ray 925px'te bitiyor → **936px** boyunca sağda boş
+  sütun var ve sayfanın var olma sebebi olan "Mevcut aksiyonlar" kartı ekran dışında.
+  ⚠ Brief 766px demişti; geçen turun test alt görevleri (17→20) içerik sütununu uzatmış, olgu aynı, sayı büyümüş.
+- **Üç yol ölçüldü, biri seçildi:**
+  | yol | ölçüm | karar |
+  |---|---|---|
+  | (a) yapışkan ray | ray 660px, gereken görüntü alanı 676px | **seçildi** |
+  | (b) kontrol listesi raya | ray 1273 ↔ içerik 983 | dengesizlik ters dönüyor |
+  | (c) içerikte iki sütun | her sütun 427px; alt görev başlığı bugün 626px | sıkışık |
+- **Uygulama:** `@media (min-width: 992px)` içinde `position: sticky` + `inset-block-start: 5rem` (64px sabit
+  navbar + 16px) + `align-self: start` (esnemiş bir ızgara öğesinin yapışacak yeri olmaz) +
+  `max-block-size: calc(100vh - 6rem)` + `overflow-y: auto`.
+- **Kırpmak yerine bozuluyor:** 676px'ten kısa bir pencerede ray kendi içinde kayıyor; sabit yükseklikli bir
+  yapışkan sütun alt kartlarını ulaşılamaz kılardı — ki yapışkanlığın bütün amacı aksiyonların erişilebilir
+  kalması.
+- **992'nin altında kapalı** (ölçüldü: 900'de `position: static`) — yığılmış düzende ray içeriğin altındadır ve
+  yapışacak anlamlı bir şey yoktur.
+- **Doğrulama:** yapışkanlığı kıran tek şey ata zincirinde `overflow ≠ visible`'dır; **zincir temiz** ölçüldü,
+  kapsayıcı blok 1722px, rayın yapışabileceği mesafe **1062px**. Derin kaydırmalı görsel doğrulama bu ortamda
+  yapılamadı (tarayıcı paneli gizliyken gerçek tekerlek zaman aşımına uğruyor, programatik `scrollTop`
+  reddediliyor — BL-098 ile aynı sınırlama).
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-132 — 🟠 [KOMPOZİSYON] 900px'te aksiyonlar 1876px aşağıda — DOM/görsel sıra çelişkisi kararı sizde
+- **Ölçüm (900×900):** "Mevcut aksiyonlar" kartının üst kenarı sayfanın **1876. pikselinde**, yani **2.08 ekran**
+  kaydırma. Brief ~1000px tahmin etmişti; gerçek daha kötü.
+- **DOM sırası ile görsel sıra bugün AYRIŞMIYOR** (head → content → rail, ikisi de aynı).
+- **CSS `order` ile rayı yukarı almak** görsel sırayı değiştirir ama **sekme sırasını değiştirmez** — Tab hâlâ
+  head → 1596px içerik → ray diye gider. Yani gören kullanıcı aksiyonları üstte görür, klavye kullanıcısı onlara
+  ulaşmak için bütün içeriği geçer. WCAG 2.4.3 (Odak Sırası) anlamında gerçek bir ayrışma.
+- **Brief'in talimatı gereği çözümü seçmedim.** Seçenekler: (a) olduğu gibi bırak · (b) `order` uygula ve
+  ayrışmayı kabul et · (c) dar ekranda DOM sırasını değiştir (yeniden boyutlandırma dinleyicisi gerekir, sayfa
+  bugün boyut değişiminde yeniden çizilmiyor) · (d) dar ekranda aksiyonları head kartının altına taşı.
+- **Gelecek regresyon riski: —** (karar bekliyor).
+
+### BL-133 — 🟡 [KONTROL LİSTESİ] Kapak yok: 6 maddede 294px, 20 maddede ~1000px olur
+- **Ölçüm:** Alt Görevler kartı 561px = 320px kapak + **241px** kapak dışı (başlık 22, çubuk 6, ekleme satırı 38,
+  ipucu 17, "Tümünü gör" 30, engel uyarısı 44, dolgu 32, boşluklar ~52). Bu 241'in çoğu işlevsel.
+- **Kontrol Listesi 597px ve kapağı HİÇ YOK** — listesi 294px olarak sınırsız çiziliyor. `cappedList` yardımcısı
+  mevcut ve alt görevlerle etkinlik akışında kullanılıyor; kontrol listesi kullanmıyor.
+- **Sonuç:** 20 maddelik bir kontrol listesi kartı tek başına ~1300px olur ve sayfa 3+ ekrana çıkar.
+- **Yapılacak:** kontrol listesine de `cappedList('checklist', …)` — yardımcı zaten `aria-label` için
+  `ChecklistLabel`'ı biliyor.
+- **Gelecek regresyon riski: 🟢** — eklemeli.
+
+### BL-134 — ✅ KAPANDI (2026-08-14) — [ALT GÖREV PANELİ] Zorunlu son tarih işaretsizdi, hata gerçeği gizliyordu
+- **Kural önce sorgulandı, sonra yıldız kondu.** Ana görev oluşturma ucu da son tarihsiz isteği reddediyor
+  (ölçüldü: `400 VALIDATION_REQUEST_DUE_AT_NOT_NULL`, "A due date is required.") ve `_Form.cshtml` alanı zaten
+  kırmızı yıldızla işaretliyor. Kural ürünün; tutarsız olan tek yüzey alt görev paneliydi.
+- **İki düzeltme:** panelin son tarih etiketine `*`; ve `VALIDATION_REQUEST_DUE_AT_NOT_NULL` →
+  `errorDueDateRequired` eşlemesi `REASON_CODE_MESSAGE_KEYS`'e eklendi (köprü zaten vardı ve eşlenmemiş kodlar
+  için konsola uyarı bile veriyordu — kimse bu kodu eşlememişti).
+- **Köprünün ikinci ucu da bağlandı:** `_IndexL10n.cshtml`'e anahtar eklendi — **bunu iki mevcut guard testi
+  yakaladı**, ben eklemeyi unutmuştum. 7 dil.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-135 — 🟡 [ÖLÇÜM DİSİPLİNİ] İkinci kez kendi CSS eklemem stil dosyasını kırdı
+- **Bu turda:** yapışkan ray bloğunu `.wcn-detail-rail > .wcn-detail-card` satırına çıpalayarak ekledim. Oysa o
+  kural **iki seçicili**ydi:
+  `.wcn-detail-content > .wcn-detail-card,` / `.wcn-detail-rail > .wcn-detail-card { … }`
+  Blok tek kuralın iki seçicisinin **arasına** düştü → sarkan seçici + at-rule → parser bloğu attı.
+  Belirti: dosyada kural var, `getComputedStyle` `static` diyor, tarayıcının kural listesinde hiç yok.
+- **BL-128 ile aynı sınıf** (o sefer seçiciyi çiftlemiştim). İkisini de **canlı ölçüm** yakaladı; hiçbirini
+  derleme veya test yakalamadı — CSS derlenmiyor, testler jsdom'da stil uygulamıyor.
+- **Yapılacak:** CSS'e bir sözdizimi/lint kapısı (stylelint) veya en azından derleme öncesi ayraç-denge kontrolü.
+  Bugün bu dosyanın tek doğrulayıcısı gözle canlı ölçüm.
+- **Gelecek regresyon riski: 🟠** — üçüncüsü gelene kadar açık.
