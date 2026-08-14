@@ -296,6 +296,18 @@
   <data name="TechnicalDetailsLabel" xml:space="preserve">
     <value>تفاصيل تقنية</value>
   </data>
+  <data name="SourceCardLabel" xml:space="preserve">
+    <value>المصدر</value>
+  </data>
+  <data name="DetailNativeStatusInSource" xml:space="preserve">
+    <value>الحالة في المصدر</value>
+  </data>
+  <data name="ActionCompleteInSource" xml:space="preserve">
+    <value>الإكمال في {0}</value>
+  </data>
+  <data name="ActionCompleteInSourceHint" xml:space="preserve">
+    <value>لا يمكن إنهاء هذا العمل هنا؛ يكتمل في {0}</value>
+  </data>
   <data name="TechVersionValue" xml:space="preserve">
     <value>الإصدار {0}</value>
   </data>

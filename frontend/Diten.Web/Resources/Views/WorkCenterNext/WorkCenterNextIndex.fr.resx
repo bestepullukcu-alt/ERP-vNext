@@ -296,6 +296,18 @@
   <data name="TechnicalDetailsLabel" xml:space="preserve">
     <value>Détails techniques</value>
   </data>
+  <data name="SourceCardLabel" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="DetailNativeStatusInSource" xml:space="preserve">
+    <value>Statut dans la source</value>
+  </data>
+  <data name="ActionCompleteInSource" xml:space="preserve">
+    <value>Terminer dans {0}</value>
+  </data>
+  <data name="ActionCompleteInSourceHint" xml:space="preserve">
+    <value>Ce travail ne peut pas être terminé ici ; il se clôture dans {0}</value>
+  </data>
   <data name="TechVersionValue" xml:space="preserve">
     <value>Version {0}</value>
   </data>

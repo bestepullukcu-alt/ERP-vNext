@@ -160,7 +160,7 @@ describe("the page is three regions", () => {
   test("the rail carries actions, status, note and the technical block — in that order", () => {
     const body = detailHtml();
     const rail = body.slice(body.indexOf("const rail = ["), body.indexOf("].filter(Boolean).join('')", body.indexOf("const rail = [")));
-    const order = ["renderActionRail", "renderStatusCard", "renderNote", "renderTechnicalDetails"];
+    const order = ["renderActionRail", "renderStatusCard", "renderNote", "renderSourceCard"];
     let cursor = -1;
     order.forEach((name) => {
       const at = rail.indexOf(name);
@@ -272,34 +272,46 @@ describe("'where does this stand?' is ONE card", () => {
 
 // ── 4. technical details, closed ────────────────────────────────────────────
 
-describe("developer data is kept, and folded away", () => {
-  test("it is a <details> element that does NOT start open", () => {
-    const source = fn("renderTechnicalDetails");
-    expect(source, "there is no technical block").not.toBe("");
-    expect(source).toContain("<details");
-    expect(source).not.toMatch(/<details[^>]*\sopen/);
+describe("the source card replaced the folded technical block", () => {
+  /*
+   * ⚠ THIS WHOLE BLOCK REVERSED, and the reasoning is worth keeping.
+   *
+   * It used to REQUIRE the card to be a closed `<details>` holding every field "support might need". Measured
+   * against what it cost: a three-row card behind a click, titled "Teknik bilgi" — a sign saying THIS IS NOT
+   * FOR YOU to the one reader who actually needs the source record — printing "Görevler", "task" and a GUID
+   * that are identical on every task, plus a concurrency token that changes on every save and means nothing on
+   * its own.
+   *
+   * "Nothing was DELETED" was the old rule. It is still true of the RESOURCE KEYS (none were removed) and no
+   * longer true of the rows: a field kept because support "might" want it is how a card fills with noise. The
+   * fields that distinguish something come back on their own for a foreign provider.
+   */
+  it("is a plain card, not a disclosure", async () => {
+    await boot(projectionItem());
+    expect(app().querySelector("details.wcn-tech"), "the fold survived").toBeNull();
+    expect(app().querySelector(".wcn-source"), "there is no source card").not.toBeNull();
   });
 
-  test("the version reads as a sentence, not as a wire value", () => {
-    // Measured on screen: "Kaynak sürümü: version: 8".
-    // The sentence is built by technicalVersion(); the block calls it. Both halves are asserted.
-    expect(fn("technicalVersion")).toContain("TechVersionValue");
-    expect(fn("renderTechnicalDetails")).toContain("technicalVersion(item)");
-    expect(APP()).not.toMatch(/\$\{item\.concurrency\.kind\}: \$\{/);
+  it("keeps every retired resource key, marked unused rather than deleted", () => {
+    // A removed key is a broken fallback for anything still asking for it, and these may return on a
+    // diagnostics surface.
+    const tr = read("Resources", "Views", "WorkCenterNext", "WorkCenterNextIndex.tr.resx");
+    ["TechnicalDetailsLabel", "TechVersionValue", "DetailSourceVersion", "DetailActionDepth",
+      "ActionDepthInline", "ActionDepthDeeplink"].forEach((key) =>
+      expect(tr, `${key} was deleted rather than retired`).toContain(`name="${key}"`));
   });
 
-  test("the id stays copyable and says what it is", () => {
-    expect(fn("referenceField")).toContain("data-wcn-copy");
-  });
-
-  test("nothing was DELETED — support still needs every field", () => {
-    const source = fn("renderTechnicalDetails");
-    ["DetailModuleName", "DetailSourceType", "DetailActionDepth", "DetailSourceVersion", "referenceField"]
-      .forEach((field) => expect(source, `${field} was dropped from the technical block`).toContain(field));
+  it("keeps the id copyable where the id is worth copying", async () => {
+    // ⚠ FIXTURE-ONLY branch: no live record is foreign today.
+    await boot(projectionItem({
+      source: {
+        providerCode: "workflow", providerContractVersion: "1.0",
+        objectType: "approval", objectId: "REG-2026-0184"
+      }
+    }));
+    expect(app().querySelector(".wcn-source [data-wcn-copy]"), "the foreign key cannot be copied").not.toBeNull();
   });
 });
-
-// ── 5. empty states are a LINE, not a card ──────────────────────────────────
 
 describe("a new task's page is not a wall of 'there is nothing here'", () => {
   test("no subtasks ⇒ one line that also offers the action", () => {
@@ -416,7 +428,7 @@ describe("the things this round must not break", () => {
   test("every action still reaches the rail through the same renderer", () => {
     // The call now carries the resolver's lock as a second argument — one renderer still, and the flag comes
     // from the resolver rather than being recomputed inside it.
-    expect(detailHtml()).toContain("renderActionRail(item, surface.interactionLocked)");
+    expect(detailHtml()).toContain("renderActionRail(item, surface.interactionLocked, surface)");
   });
 
   test("the gate SENTENCES stay on the page — a blocked task still says why", () => {
@@ -431,7 +443,7 @@ describe("the things this round must not break", () => {
   });
 
   test("FG-003 — no inline styles are written by the new blocks", () => {
-    ["renderSummary", "renderStatusCard", "renderTechnicalDetails"].forEach((name) => {
+    ["renderSummary", "renderStatusCard", "renderSourceCard"].forEach((name) => {
       expect(fn(name), `${name} writes a style attribute`).not.toMatch(/style="/);
     });
   });
@@ -562,14 +574,17 @@ describe("the rendered page", () => {
     expect(withGates[0].querySelectorAll(".wcn-gate")).toHaveLength(1);
   });
 
-  it("folds the technical block away — present, closed, and complete", async () => {
+  it("renders the source card open, in the rail, with the other cards", async () => {
+    /*
+     * ⚠ REVERSED. It required a CLOSED `<details>` "present and complete". The fold cost a click and the
+     * completeness cost the card its readability: six fields of which four were identical on every task.
+     */
     await boot(projectionItem());
-    const tech = app().querySelector(".wcn-detail-rail details.wcn-tech");
-    expect(tech, "there is no technical block").not.toBeNull();
-    expect(tech.hasAttribute("open"), "the technical block starts open").toBe(false);
-    expect(tech.querySelector("[data-wcn-copy]"), "the id is no longer copyable").not.toBeNull();
-    // "version: 8" was the wire's spelling; the reader gets a sentence.
-    expect(tech.textContent).not.toContain("version: 8");
+    const rail = app().querySelector(".wcn-detail-rail");
+    const card = rail.querySelector(".wcn-source");
+    expect(card, "there is no source card in the rail").not.toBeNull();
+    expect(card.closest("details"), "the card is still folded").toBeNull();
+    expect(card.querySelector("h6"), "the card has no standard heading").not.toBeNull();
   });
 
   it("says 'no subtasks yet' in ONE line that still adds one", async () => {
@@ -1830,7 +1845,7 @@ describe("the actions card puts its weight where the decision is", () => {
      */
     const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
     expect(src, "the rail no longer receives the resolver's lock")
-      .toMatch(/renderActionRail\(item, surface\.interactionLocked\)/);
+      .toMatch(/renderActionRail\(item, surface\.interactionLocked, surface\)/);
     expect(src, "the lock is recomputed locally inside the rail")
       .not.toMatch(/renderActionRail = \(item[^)]*\) => \{[\s\S]{0,400}state\.submittingItemId/);
     // …and it is narrowed to THIS item before the resolver sees it, so another item's submit cannot lock it.
@@ -2179,5 +2194,153 @@ describe("the two subtask panels commit on Enter, like every other box on the pa
     expect(app, "the scroll region has no name").toMatch(/aria-label="\$\{esc\(t\(key === 'subtasks'/);
     // …and the toggle says which state it is in.
     expect(app, "the show-all toggle does not report its state").toMatch(/data-wcn-showall="\$\{esc\(key\)\}" aria-expanded=/);
+  });
+});
+
+/*
+ * ── THE SOURCE CARD ───────────────────────────────────────────────────────────────────────────────────────
+ *
+ * ⚠ ONE OF THESE TWO MODES CANNOT BE PRODUCED LIVE. Every record on this surface today carries
+ * `providerCode: "tasks"` / `objectType: "task"`, so the FOREIGN branch never executes until a second provider
+ * (MOD-0023 workflow) lands. Own-module mode is measured in the browser and reported with the round; the foreign
+ * mode is covered here, by fixture, and is explicitly NOT claimed as live-verified.
+ *
+ * That distinction matters: the fixture here COVERS an unreachable branch. It does not stand in for production
+ * code or hide a defect in it, which is the kind of fake this session has banned.
+ */
+describe("the source card shows a field only when it distinguishes something", () => {
+  const withSource = (source) => projectionItem({
+    source: Object.assign({ providerContractVersion: "1.0", objectId: "X-1" }, source)
+  });
+
+  it("hides module, id and type for our OWN module — they are the same on every task", async () => {
+    /*
+     * MUTATION TARGET (conditional fields). Measured on the live page: "Görevler", "task" and a GUID printed on
+     * every single task. The GUID is the sharpest case — the page's own URL already carries it and is clickable,
+     * and nobody pastes a GUID into a support thread when a link is at hand.
+     */
+    await boot(withSource({ providerCode: "tasks", objectType: "task" }));
+    const card = app().querySelector(".wcn-source");
+    expect(card, "the source card is gone").not.toBeNull();
+    const labels = [...card.querySelectorAll(".wcn-source-key")].map((k) => k.textContent);
+    expect(labels.join(" "), "the module name printed on our own work").not.toContain("DetailModuleName");
+    expect(labels.join(" "), "the object type printed on our own work").not.toContain("DetailSourceType");
+    expect(card.querySelector(".wcn-reference-id"), "the GUID printed on our own work").toBeNull();
+    // The source's own status word stays — it is the one field that differs per task.
+    expect(labels.join(" ")).toContain("DetailNativeStatusInSource");
+  });
+
+  it("SHOWS them, with a copy button, for a foreign provider", async () => {
+    /*
+     * ⚠ FIXTURE-ONLY — this branch cannot be reached live today (see the block comment above).
+     *
+     * On a foreign provider the id is that system's searchable key ("REG-2026-0184"), not our GUID, and it is
+     * the single most useful thing on the card — so it comes back and keeps the copy control.
+     */
+    await boot(withSource({ providerCode: "workflow", objectType: "approval", objectId: "REG-2026-0184" }));
+    const card = app().querySelector(".wcn-source");
+    const labels = [...card.querySelectorAll(".wcn-source-key")].map((k) => k.textContent).join(" ");
+    expect(labels).toContain("DetailModuleName");
+    expect(labels).toContain("DetailSourceType");
+    const id = card.querySelector(".wcn-reference-id");
+    expect(id, "a foreign record hid its own key").not.toBeNull();
+    expect(id.textContent).toContain("REG-2026-0184");
+    expect(card.querySelector("[data-wcn-copy]"), "the key cannot be copied").not.toBeNull();
+  });
+
+  it("is not folded away, and is not called 'technical'", async () => {
+    // A three-row card behind a disclosure costs a click and saves nothing; and "Teknik bilgi" is a sign saying
+    // THIS IS NOT FOR YOU to the one reader who needs the source record.
+    await boot(projectionItem());
+    expect(app().querySelector("details.wcn-tech"), "the card is still folded").toBeNull();
+    const head = app().querySelector(".wcn-source h6");
+    expect(head, "the card lost its standard heading").not.toBeNull();
+    expect(head.textContent).toContain("SourceCardLabel");
+    expect(head.querySelector("i.bx"), "the heading lost its glyph").not.toBeNull();
+  });
+
+  it("drops the version token and the action-depth row", () => {
+    /*
+     * The concurrency token is a write-safety mechanism: it changes on every save, means nothing on its own, and
+     * was the clearest case of a field present because it EXISTED. "İşlem derinliği" read "Burada tamamlanır" on
+     * essentially every task — the information is in the other case, and that case is an ACTION, not a fact.
+     */
+    const app_ = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const fn = app_.slice(app_.indexOf("const renderSourceCard"), app_.indexOf("const sourceRow"));
+    expect(fn, "the version row came back").not.toContain("DetailSourceVersion");
+    expect(fn, "the action-depth row came back").not.toContain("DetailActionDepth");
+  });
+});
+
+describe("work that cannot be finished here leads with a way to finish it", () => {
+  const deeplinkItem = () => projectionItem({
+    actionDepth: "deeplink",
+    primaryActionCode: "inquire",
+    actions: [
+      { code: "inquire", semanticType: "inquire", label: { kind: "resource", key: "WorkAggregation_Action_inquire" },
+        enabled: true, source: "provider", disabledReasonCode: null, disabledReason: null,
+        requiresConfirmation: false, requiresReason: true, requiresEvidence: false, supportsBulk: false,
+        riskLevel: "normal" },
+      { code: "reassign", semanticType: "reassign", label: { kind: "resource", key: "WorkAggregation_Action_reassign" },
+        enabled: true, source: "provider", disabledReasonCode: null, disabledReason: null,
+        requiresConfirmation: false, requiresReason: true, requiresEvidence: false, supportsBulk: false,
+        riskLevel: "normal" }
+    ],
+    source: {
+      providerCode: "workflow", providerContractVersion: "1.0", objectType: "approval",
+      objectId: "REG-1", sourceSystem: "MOD-0023", deepLink: "/Workflow/Approvals/REG-1"
+    }
+  });
+
+  it("makes the primary a link into the owning module, keeping exactly one filled control", async () => {
+    /*
+     * MUTATION TARGET (deeplink primary). ⚠ FIXTURE-ONLY: `actionDepth` has exactly two values — measured,
+     * `ACTION_DEPTHS = ['inline', 'deeplink']` — and no live record is `deeplink` today.
+     *
+     * The old "İşlem derinliği" row stated this as a fact in a technical card nobody opened. It is not a fact,
+     * it is the answer to "why is there no Complete button?", and it belongs where the buttons are.
+     */
+    await boot(deeplinkItem());
+    const card = app().querySelector(".wcn-acts");
+    expect(card, "the actions card is gone").not.toBeNull();
+    const primary = card.querySelector(".wcn-act-primary .wcn-act-fill");
+    expect(primary, "no leading control").not.toBeNull();
+    expect(primary.tagName, "the lead is not a link").toBe("A");
+    expect(primary.getAttribute("href")).toBe("/Workflow/Approvals/REG-1");
+    expect(primary.textContent).toContain("ActionCompleteInSource");
+    expect(primary.querySelector("i.bx-link-external"), "no external-link glyph").not.toBeNull();
+    // The sentence that says why, under the control it explains.
+    expect(card.querySelector(".wcn-act-primary .wcn-act-outcome").textContent)
+      .toContain("ActionCompleteInSourceHint");
+    // …and the one-fill rule still holds.
+    const filled = [...card.querySelectorAll(".wcn-act-fill")];
+    expect(filled, "more than one filled control").toHaveLength(1);
+  });
+
+  it("keeps the engine actions that still apply, as secondaries", async () => {
+    // Asking and reassigning are OUR engine's, not the owning module's — they still work here.
+    await boot(deeplinkItem());
+    const secondaries = app().querySelectorAll(".wcn-acts .wcn-act-secondary");
+    expect(secondaries.length, "the engine actions were dropped with the completion").toBeGreaterThan(0);
+  });
+
+  it("stands the source card's open button down, so one destination has one control", async () => {
+    await boot(deeplinkItem());
+    expect(app().querySelector(".wcn-source .wcn-opensource"),
+      "two controls for one destination").toBeNull();
+    // …and it is there in the ordinary case.
+    await boot(projectionItem());
+    expect(app().querySelector(".wcn-source .wcn-opensource")).not.toBeNull();
+  });
+
+  it("ships the new strings in all seven languages", () => {
+    ["SourceCardLabel", "DetailNativeStatusInSource",
+      "ActionCompleteInSource", "ActionCompleteInSourceHint"].forEach((key) =>
+      ["en", "tr", "fr", "es", "zh", "ar", "ru"].forEach((lang) =>
+        expect(read("Resources", "Views", "WorkCenterNext", `WorkCenterNextIndex.${lang}.resx`),
+          `${lang} has no ${key}`).toContain(`name="${key}"`)));
+    // The retired label is KEPT, not deleted — a removed key is a broken fallback for anything still asking.
+    expect(read("Resources", "Views", "WorkCenterNext", "WorkCenterNextIndex.tr.resx"))
+      .toContain('name="TechnicalDetailsLabel"');
   });
 });

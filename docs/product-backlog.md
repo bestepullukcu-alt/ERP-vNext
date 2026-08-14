@@ -3362,3 +3362,65 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - **Not (ölçüm aracı):** tarayıcı panelinde `key: "Return"` `keydown` üretmiyor, `key: "Enter"` üretiyor; ayrıca
   programatik `.focus()` sonrası tuş enjeksiyonu panele ulaşmıyor — önce gerçek tıklama gerekiyor.
 - **Gelecek regresyon riski: 🟡** — Enter dalı testle kilitli, panel açılışı açık.
+
+### BL-125 — ✅ KAPANDI (2026-08-14) — [TEKNİK BİLGİ → KAYNAK] Kart yeniden adlandırıldı, açıldı, koşullandı
+- **Ölçüm (önce):** kart `<details>` içinde, açıkken **277px**, altı alan + iki düğme. (Brief 331px demişti;
+  aradaki iki turun ayırıcı ve satır değişiklikleri sayıyı düşürmüş — güncel taban 277.)
+- **Ad:** "Teknik bilgi" → **"Kaynak"**. Teknik alanlar çıkınca içinde teknik bir şey kalmıyor; kalan şey
+  "bu iş nereden geldi". Ayrıca eski başlık kapıya "burası sana göre değil" yazıyordu.
+- **Kat kaldırıldı:** üç satırlık kart bir tık maliyeti ekliyordu. Başlık artık diğer kartlarla aynı yapıda
+  (`cardHead` + ikon).
+- **Tek sütun tanım listesi:** özet kartının iki sütunlu golden ızgarası 337px'lik rayda her değeri sardırıyordu.
+- **İki kip — alan ancak ayırt ettiğinde görünür** (head kartındaki kaynak izine uygulanan kuralın aynısı):
+  | alan | kendi modülümüz | yabancı sağlayıcı |
+  |---|---|---|
+  | Kaynaktaki durumu | görünür | görünür |
+  | Modül · nesne türü · kayıt kimliği | **gizli** | görünür (kimlik + kopyala) |
+  | Kaynak sürümü · işlem derinliği | **kaldırıldı** | kaldırıldı |
+- **Etiket:** "Kaynak durumu" → **"Kaynaktaki durumu"**. Sayfa aynı görev için iki kelime söylüyordu — head'de
+  "Beklemede" (bizim `normalizedStatus`), burada "Planlandı" (kaynağın kendi kelimesi) — ve hangisinin kimin
+  kelimesi olduğu yazmıyordu.
+- **Sonuç:** kart **277 → 131px**, ray **806 → 660px**. Kendi modülümüz kipinde tek alan kalıyor.
+- **Ölü işaretlendi, silinmedi:** `.wcn-tech*` CSS bloğu; `TechnicalDetailsLabel`, `TechVersionValue`,
+  `DetailSourceVersion`, `DetailActionDepth`, `ActionDepthInline/Deeplink` anahtarları 7 dilde duruyor.
+  `referenceField`, `previewField`, `technicalVersion` yardımcıları çağıransız kaldığı için kaldırıldı (ölçüldü).
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-126 — ✅ KAPANDI (2026-08-14) — [MEVCUT AKSİYONLAR] "Nerede tamamlanır" teknik alan değil, aksiyon oldu
+- **Ölçüm:** `actionDepth` **tam olarak iki değer** alıyor — `ACTION_DEPTHS = ['inline', 'deeplink']`
+  (`fixture-contract.js:13`). Yani "inline dışındaki her değer" tek bir değer demek; tahmin edilecek üçüncü
+  vaka yok. Eski "İşlem derinliği" satırı neredeyse her görevde "Burada tamamlanır" yazıyordu.
+- **Yapılan:** `deeplink` durumunda birincil (dolu) denetim **"{Modül}'de tamamla"** bağlantısına dönüşüyor,
+  dış-bağlantı ikonuyla; altında "Bu iş burada tamamlanamaz; {Modül} modülünde bitirilir". Motorumuzun hâlâ
+  geçerli aksiyonları (Bilgi bekle, Başkasına ata) ikincil kalıyor. **"Kartta tam olarak bir dolu düğme" kuralı
+  korunuyor** — bu birincilin yerine geçiyor, yanına değil.
+- **Kaynak kartındaki "Kaynak kaydını aç" düğmesi bu durumda çekiliyor** — aynı hedefe iki denetim, bu sayfanın
+  sürekli temizlediği çiftlemedir.
+- **⚠ BİR TUZAK ÖLÇÜLDÜ:** ilk yazımda koşul `item.actionDepth === 'deeplink'` idi ve **hiç çalışmadı** —
+  sunum katmanı o alanı taşımıyor. Doğrusu resolver'ın çözdüğü `surface.surfaceMode === 'deeplink'`; tek model
+  tüketiliyor, ikincisi türetilmiyor.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-127 — 🟡 [KAYNAK] Yabancı sağlayıcı kipi CANLI DOĞRULANMADI
+- **Bugün sistemdeki her kayıt** `providerCode: "tasks"` / `objectType: "task"` / `actionDepth: "inline"`.
+  Dolayısıyla **yabancı sağlayıcı kipi ve deeplink kipi canlıda üretilemez**; o dallar ikinci sağlayıcı
+  (MOD-0023 iş akışı) gelene kadar hiç çalışmaz.
+- **Kapsama:** her iki dal da fikstürle test edildi (`wcn-detail-three-regions.test.js`). Bu fikstürler
+  **ulaşılamayan bir dalı kapsıyor**; üretim kodunun yerine geçip kusurunu gizlemiyorlar.
+- **Canlı ölçülemeyen davranışlar:** yabancı kipte modül/tür/kimlik alanlarının görünmesi · **kopyala düğmesinin
+  gerçekten kopyalaması** (düğme artık yalnız yabancı kipte çiziliyor, yani tam da üretilemeyen dalda) ·
+  deeplink birincilinin gerçek tıklamayla hedefe gitmesi.
+- **İkinci sağlayıcı geldiğinde ölçülecek** — bu madde o zaman kapanır.
+- **Gelecek regresyon riski: 🟡.**
+
+### BL-128 — 🟢 [ÖLÇÜM DİSİPLİNİ] Kendi eklediğim CSS yorumu stil dosyasını kırdı, canlı ölçüm yakaladı
+- **Ne oldu:** ölü `.wcn-tech` bloğunu işaretlerken seçiciyi çiftledim —
+  `.wcn-tech > .wcn-tech-summary {.wcn-tech > .wcn-tech-summary {` — bu parse hatası **dosyanın geri kalanını
+  öldürdü** (`.wcn-subtask-body` dahil, yani alt görev satırı tek sütuna çöktü).
+- **Nasıl yakalandı:** ekran görüntüsünde alt görev başlığı ile metası yan yana göründü; hesaplanan
+  `flex-direction` `column` yerine `row` çıktı; hiçbir stylesheet kuralı `.wcn-subtask-body` ile eşleşmiyordu.
+  **Testler bunu yakalamadı** — jsdom CSS yüklemiyor.
+- **Ders:** CSS'te blok ekleyen betikler için ayraç dengesi kontrolü ucuz ve etkili
+  (`{` ve `}` sayısı, yorumlar soyulduktan sonra).
+- **Yapılacak (istenirse):** bu kontrolü bir teste bağla — `backbone-custom.css` ayraçları dengeli olmalı.
+- **Gelecek regresyon riski: 🟢** — düzeltildi ve canlı doğrulandı.

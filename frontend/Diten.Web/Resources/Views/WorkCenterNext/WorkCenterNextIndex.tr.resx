@@ -296,6 +296,18 @@
   <data name="TechnicalDetailsLabel" xml:space="preserve">
     <value>Teknik bilgi</value>
   </data>
+  <data name="SourceCardLabel" xml:space="preserve">
+    <value>Kaynak</value>
+  </data>
+  <data name="DetailNativeStatusInSource" xml:space="preserve">
+    <value>Kaynaktaki durumu</value>
+  </data>
+  <data name="ActionCompleteInSource" xml:space="preserve">
+    <value>{0}'de tamamla</value>
+  </data>
+  <data name="ActionCompleteInSourceHint" xml:space="preserve">
+    <value>Bu iş burada tamamlanamaz; {0} modülünde bitirilir</value>
+  </data>
   <data name="TechVersionValue" xml:space="preserve">
     <value>{0}. sürüm</value>
   </data>

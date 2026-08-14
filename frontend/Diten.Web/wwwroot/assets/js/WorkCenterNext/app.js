@@ -1399,44 +1399,13 @@
      * shortened form the eye can skip, with the full value on the clipboard button and in the title. Anyone who
      * needs it gets it in one click; nobody else has to read past it.
      */
-    const referenceField = (item) => {
-        const id = item.sourceId;
-        if (id === null || id === undefined || id === '') { return ''; }
-
-        const full = String(id);
-        // Long opaque ids get an ellipsis; a short business key is left whole, because that one IS readable.
-        const shown = full.length > 13 ? `${full.slice(0, 8)}…${full.slice(-4)}` : full;
-
-        return `<div class="col-12 col-md-6">
-            <div class="backbone-preview-field">
-                <i class="bx bx-hash"></i>
-                <div>
-                    <div class="backbone-preview-label">${esc(t('DetailSourceId'))}</div>
-                    <div class="backbone-preview-value mt-1 d-flex align-items-center gap-2">
-                        <code class="wcn-reference-id" title="${esc(full)}">${esc(shown)}</code>
-                        <button type="button" class="btn btn-xs btn-icon btn-label-secondary wcn-copyref"
-                                data-wcn-copy="${esc(full)}"
-                                title="${esc(t('CopyReference'))}" aria-label="${esc(t('CopyReference'))}">
-                            <i class="bx bx-copy"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-    };
-
-    const previewField = (icon, labelKey, value, col) => {
-        if (value === null || value === undefined || value === '') { return ''; }
-        return `<div class="col-12 ${col || 'col-md-6'}">
-            <div class="backbone-preview-field">
-                <i class="bx ${icon}"></i>
-                <div>
-                    <div class="backbone-preview-label">${esc(t(labelKey))}</div>
-                    <div class="backbone-preview-value mt-1">${esc(value)}</div>
-                </div>
-            </div>
-        </div>`;
-    };
+    /*
+     * `referenceField` and `previewField` LIVED HERE and are gone with the technical card. Both built the
+     * two-column golden tile the "Teknik bilgi" card used; the Kaynak card that replaced it is a one-column
+     * definition list, because the rail is 337px and that grid wrapped every value in it. Measured before
+     * deleting: neither had another caller. Their rules survive in `sourceRow` — an empty value prints no row,
+     * and a long opaque id gets an ellipsis while a short business key is left whole.
+     */
 
     /*
      * CALLED-OFF WORK NEVER COUNTS — written once, here.
@@ -1643,7 +1612,7 @@
         </li>`;
     };
 
-    const renderActionRail = (item, locked) => {
+    const renderActionRail = (item, locked, surface) => {
         const all = itemActions(item);
         /*
          * AN ACTION WE CANNOT EXPLAIN IS NOT DRAWN.
@@ -1673,6 +1642,61 @@
             return `<div class="wcn-detail-section">
                 ${cardHead('bx-bolt-circle', 'ActionsAvailable')}
                 <p class="wcn-block-hint wcn-act-none">${esc(t(isTerminal(item) ? 'ActionsNoneClosed' : 'ActionsNoneNotYours'))}</p>
+            </div>`;
+        }
+
+        /*
+         * ── WORK THAT CANNOT BE FINISHED HERE ─────────────────────────────────────────────────────────────
+         *
+         * The old "İşlem derinliği" row printed "Burada tamamlanır" on essentially every task — a field whose
+         * value is the same everywhere carries no information. The information is in the OTHER case, and it is
+         * not a technical detail at all: it is the answer to "why is there no Complete button?".
+         *
+         * `actionDepth` has exactly TWO values — measured, `ACTION_DEPTHS = ['inline', 'deeplink']` in
+         * fixture-contract.js — so there is no third case to guess at. On `deeplink` the engine actions that
+         * still apply here (ask, reassign) stay, and the LEAD becomes a link into the owning module.
+         *
+         * It is still exactly one filled button: this replaces the primary rather than joining it, so the card's
+         * one-fill rule is untouched.
+         *
+         * The contract guarantees the destination — `DEEPLINK_REQUIRED` refuses a deeplink item with no
+         * `source.deepLink` — so this cannot render a button that goes nowhere.
+         */
+        /*
+         * THE RESOLVER DECIDES THIS, not this file. `surfaceMode === 'deeplink'` is the resolved answer to
+         * "can this be finished here", derived once in task-detail-resolver.js from `actionDepth`. Re-deriving
+         * it from `item.actionDepth` looked equivalent and was not: the presentation mapper does not carry that
+         * field through, so the local test read `undefined` and the branch never fired. One model, consumed.
+         */
+        const depthLink = surface?.surfaceMode === 'deeplink'
+            ? (item.source?.deepLink || item.deepLink || item.sourceDeepLink)
+            : null;
+        if (depthLink) {
+            const moduleName = item.sourceModuleName || item.sourceModule || '';
+            const rest = actions.filter((a) => !a.destructive);
+            const destructiveOnly = actions.filter((a) => a.destructive);
+            return `<div class="wcn-detail-section wcn-acts${locked ? ' wcn-acts-locked' : ''}">
+                <div class="wcn-acts-main">
+                ${cardHead('bx-bolt-circle', 'ActionsAvailable')}
+                <ul class="wcn-actrail">
+                    <li class="wcn-act wcn-act-primary">
+                        <a class="wcn-act-btn wcn-act-fill wcn-act-fill-accent" href="${esc(depthLink)}"
+                           data-wcn-depth-link="${esc(item.id)}">
+                            <i class="bx bx-link-external" aria-hidden="true"></i><span>${
+                esc(tf('ActionCompleteInSource', moduleName))}</span>
+                        </a>
+                        <p class="wcn-act-outcome">${esc(tf('ActionCompleteInSourceHint', moduleName))}</p>
+                    </li>
+                    ${rest.length
+                ? `<li class="wcn-acts-row"><ul class="wcn-actrail-secondary">${
+                    rest.map((a) => actionButton(item, a, 'secondary', locked)).join('')}</ul></li>`
+                : ''}
+                </ul>
+                </div>
+                ${destructiveOnly.length
+                ? `<div class="wcn-acts-destructive"><ul class="wcn-actrail-secondary">${
+                    destructiveOnly.map((a) => actionButton(item, a, 'destructive', locked)).join('')}</ul></div>`
+                : ''}
             </div>`;
         }
 
@@ -3026,35 +3050,106 @@
      * A <details> element rather than a JS toggle: the open/closed state is the browser's to keep, it works
      * without script, and it is keyboard-reachable and announced for free.
      */
-    const technicalVersion = (item) => {
-        // "version: 8" is the wire's own spelling of the concurrency token. A number in a sentence is what a
-        // person reads; the KIND stays in the title attribute for whoever actually needs to know it.
-        const concurrency = item.concurrency;
-        if (!concurrency || concurrency.token === null || concurrency.token === undefined) { return ''; }
-        const numeric = /^\d+$/.test(String(concurrency.token));
-        return numeric ? tf('TechVersionValue', concurrency.token) : String(concurrency.token);
+    /*
+     * `technicalVersion` LIVED HERE and is gone with the "Kaynak sürümü" row it fed. The concurrency token is a
+     * write-safety mechanism, not something a reader acts on: it changes on every save, means nothing on its
+     * own, and was the clearest example of a field that was in the card because it EXISTED rather than because
+     * anyone needed it. `TechVersionValue` stays in all seven resx files, unused, in case a diagnostics surface
+     * ever wants it.
+     */
+
+
+    /*
+     * ── WHERE THIS WORK CAME FROM ─────────────────────────────────────────────────────────────────────────
+     *
+     * Was "Teknik bilgi", folded inside a `<details>`, holding six fields and two buttons. Three things were
+     * wrong with that and only one of them was visual:
+     *
+     * THE NAME. Once the genuinely technical fields go (version token, action depth), nothing technical is left
+     * — what remains is "which record is this and where does it live". And "Teknik bilgi" is a sign on a door
+     * saying THIS IS NOT FOR YOU: a reader who needs the source record stops before opening it.
+     *
+     * THE FOLD. A three-row card behind a disclosure costs a click and saves nothing. `<details>` earns its
+     * keep over long or rarely-wanted content; this is neither.
+     *
+     * THE COLUMNS. It used the summary card's two-column golden grid inside a 337px rail, so every value wrapped
+     * or truncated. One column, label and value on one line, is what fits.
+     *
+     * ── AND THE PART THAT IS NOT COSMETIC: A FIELD APPEARS ONLY WHEN IT DISTINGUISHES SOMETHING ─────────────
+     *
+     * The same rule already applied to the head card's provenance. Measured: every record on this surface today
+     * carries `providerCode: "tasks"` and `objectType: "task"`, so "Görevler" and "task" were printed on every
+     * task and told the reader nothing.
+     *
+     * THE RECORD ID is the sharper case. On our own work it is a GUID the page's own URL already carries and
+     * which is clickable — nobody pastes a GUID into a support thread, they paste the link. On a FOREIGN
+     * provider the same field is that system's searchable key ("REG-2026-0184"), and there it is the single
+     * most useful thing on the card. Same field, opposite value, decided by whose record it is.
+     */
+    const renderSourceCard = (item) => {
+        const foreign = (item.source?.providerCode || item.sourceProviderCode) !== 'tasks';
+        const foreignType = (item.source?.objectType || item.sourceType) !== 'task';
+
+        /*
+         * "Kaynaktaki durumu", not "Kaynak durumu" — a one-word fix for a real ambiguity. The head says
+         * "Beklemede" (our normalizedStatus) and this says "Planlandı" (the source's own word). Both are true,
+         * they are different axes, and nothing on the page said which word belonged to whom.
+         */
+        const rows = sourceRow('bx-flag', 'DetailNativeStatusInSource', item.nativeStatusText)
+            + (foreign ? sourceReferenceRow(item) : '')
+            + (foreign ? sourceRow('bx-cube', 'DetailModuleName', item.sourceModuleName || item.sourceModule) : '')
+            + (foreignType ? sourceRow('bx-category', 'DetailSourceType', item.sourceObjectType || item.sourceType) : '');
+
+        /*
+         * THE OPEN-SOURCE BUTTON, unless the actions card has already taken it.
+         *
+         * When the work cannot be finished here (`actionDepth === 'deeplink'`) the actions card leads with
+         * "{Module}'de tamamla", which goes to the same place. Two controls for one destination is the
+         * duplication this page keeps removing — so here it stands down.
+         */
+        const openButton = item.actionDepth === 'deeplink' ? '' : `
+            <button type="button" class="btn btn-sm btn-label-primary wcn-opensource" data-wcn-open="${esc(item.id)}"
+                    aria-label="${esc(tf('OpenSourceAria', item.sourceModuleName || item.sourceModule, item.sourceId))}">
+                <i class="bx bx-link-external" aria-hidden="true"></i><span>${esc(t('DetailOpenSource'))}</span>
+            </button>`;
+
+        if (!rows && !openButton) { return ''; }
+
+        return `<div class="wcn-detail-section wcn-source">
+            ${cardHead('bx-git-repo-forked', 'SourceCardLabel')}
+            ${rows ? `<dl class="wcn-source-list">${rows}</dl>` : ''}
+            ${openButton}
+        </div>`;
     };
 
-    const renderTechnicalDetails = (item) => `<details class="wcn-tech">
-            <summary class="wcn-tech-summary">
-                <i class="bx bx-code-alt" aria-hidden="true"></i>
-                <span>${esc(t('TechnicalDetailsLabel'))}</span>
-            </summary>
-            <div class="row g-4 wcn-tech-body">
-                ${previewField('bx-flag', 'DetailNativeStatus', item.nativeStatusText)}
-                ${referenceField(item)}
-                ${previewField('bx-cube', 'DetailModuleName', item.sourceModuleName || item.sourceModule)}
-                ${previewField('bx-purchase-tag-alt', 'DetailModuleId', item.sourceModuleId)}
-                ${previewField('bx-category', 'DetailSourceType', item.sourceObjectType || item.sourceType)}
-                ${previewField('bx-link-external', 'DetailActionDepth',
-                    t(item.actionDepth === 'deeplink' ? 'ActionDepthDeeplink' : 'ActionDepthInline'))}
-                ${previewField('bx-git-branch', 'DetailSourceVersion', technicalVersion(item))}
-                ${previewField('bx-cog', 'DetailLifecycleOwner', item.lifecycleOwner?.providerCode)}
-            </div>
-            <button type="button" class="btn btn-sm btn-label-primary wcn-opensource" data-wcn-open="${item.id}" aria-label="${esc(tf('OpenSourceAria', item.sourceModuleName || item.sourceModule, item.sourceId))}">
-                <i class="bx bx-link-external"></i><span>${esc(t('DetailOpenSource'))}</span>
-            </button>
-        </details>`;
+    /* One label/value pair, on one line. A definition list because that is what these are, and because the rail
+       is 337px wide — the summary card's two-column grid wraps every value in here. */
+    const sourceRow = (icon, labelKey, value) => (value === null || value === undefined || value === ''
+        ? ''
+        : `<div class="wcn-source-row">
+            <dt class="wcn-source-key"><i class="bx ${icon}" aria-hidden="true"></i>${esc(t(labelKey))}</dt>
+            <dd class="wcn-source-val">${esc(value)}</dd>
+        </div>`);
+
+    /* The id keeps its copy button: this is the one value a reader takes somewhere else, and it is only drawn
+       for a foreign provider, where it is that system's searchable key rather than our own GUID. */
+    const sourceReferenceRow = (item) => {
+        const id = item.sourceId;
+        if (id === null || id === undefined || id === '') { return ''; }
+        const full = String(id);
+        const shown = full.length > 13 ? `${full.slice(0, 8)}…${full.slice(-4)}` : full;
+        return `<div class="wcn-source-row">
+            <dt class="wcn-source-key"><i class="bx bx-hash" aria-hidden="true"></i>${esc(t('DetailSourceId'))}</dt>
+            <dd class="wcn-source-val wcn-source-val-id">
+                <code class="wcn-reference-id" title="${esc(full)}">${esc(shown)}</code>
+                <button type="button" class="btn btn-xs btn-icon btn-label-secondary wcn-copyref"
+                        data-wcn-copy="${esc(full)}"
+                        title="${esc(t('CopyReference'))}" aria-label="${esc(t('CopyReference'))}">
+                    <i class="bx bx-copy" aria-hidden="true"></i>
+                </button>
+            </dd>
+        </div>`;
+    };
 
     const detailHtml = (item) => {
         if (!item) {
@@ -3534,12 +3629,12 @@
          * are one now; the source-context card is the same data behind a <details>.
          */
         const rail = [
-            card(renderActionRail(item, surface.interactionLocked)),
+            card(renderActionRail(item, surface.interactionLocked, surface)),
             card(renderStatusCard(item)),
             // Personal note sits UNDER the actions: it is something the viewer writes, not something the task says.
             card(`${renderNote(item)}${personal}`),
             card(`${renderDelegation(item)}${renderApprovalChain(item)}`),
-            card(renderTechnicalDetails(item))
+            card(renderSourceCard(item))
         ].filter(Boolean).join('');
 
         /*
