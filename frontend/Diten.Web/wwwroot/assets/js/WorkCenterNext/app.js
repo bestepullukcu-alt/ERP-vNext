@@ -1668,56 +1668,66 @@
              */
             const isCurrent = index === currentIndex && !cancelled;
             /*
-             * The dot is DECORATION: a tick for a passed step, an ordinal for the rest. The ordinal was leaking
-             * into the accessible name — measured, the second step announced as "2 Planlandı" — and neither the
-             * digit nor the tick says anything the step's own name and state do not. Hidden as a unit rather
-             * than icon-by-icon, so a later change to what the dot contains cannot reopen the leak.
-             */
-            const mark = cls === 'done' ? '<i class="bx bx-check"></i>' : (index + 1);
-            /*
-             * State as WORDS, not only as colour. Green-means-done and grey-means-later are unavailable to a
-             * screen reader and to a reader who cannot separate those hues; this is the same fact in text.
+             * NO DOT ANY MORE. The station was a 24px circle holding a tick or an ordinal, joined by a 2px
+             * connector — and the ordinal was leaking into the accessible name (measured: the second step
+             * announced as "2 Planlandı"). The <li> IS the mark now: a segment of the bar, coloured by state.
+             * Nothing decorative is left inside it to leak, which is a stronger guarantee than hiding one.
+             *
+             * State as WORDS, not only as colour — and this is now the ONLY carrier of the distinction, since
+             * the bar says done/current/upcoming purely in hue. Green-means-done is unavailable to a screen
+             * reader and to a reader who cannot separate those hues.
              */
             const stateKey = cls === 'done' ? 'StepStateDone'
                 : cls === 'active' ? 'StepStateCurrent'
                     : 'StepStateUpcoming';
+            /*
+             * The step's NAME stays in the tree for all four, exactly as before. The visual shortening went one
+             * step further — no station name is drawn at all now, the caption above carries the human-readable
+             * statement — but the accessibility tree is unchanged: name + state, four times, one aria-current.
+             */
             return `<li class="wcn-step wcn-step-${cls}${step.optional ? ' wcn-step-optional' : ''}"${
                 isCurrent ? ' aria-current="step"' : ''}>
-                <span class="wcn-step-dot" aria-hidden="true">${mark}</span>
-                <span class="wcn-step-label${index === currentIndex ? '' : ' visually-hidden'}">${esc(t(step.key))}</span>
+                <span class="wcn-step-label visually-hidden">${esc(t(step.key))}</span>
                 <span class="visually-hidden">${esc(t(stateKey))}</span>
             </li>`;
         }).join('');
 
         /*
-         * WHAT THE STRIP CANNOT SAY BY ITSELF, said once at its end.
+         * THE CAPTION — everything the bar cannot say in colour, said once ABOVE it.
          *
-         * (1) THE STATUS NAME. It used to be a badge up in the identity row, beside the module and the type —
-         * which put "where this work stands" among "what this record is". It belongs to the strip: the strip
-         * shows the position, this names it. Suppressed when it would merely repeat the current step's visible
-         * label (a finished task's step reads "Tamam" and so does its status), because printing one word twice
-         * on one line reads as a rendering fault rather than as emphasis.
+         * The bar carries POSITION and nothing else: four segments, three colours. That is enough to glance at
+         * and useless to read, so the sentence that names the position sits on top of it, where it is read
+         * first and the bar becomes its illustration. (It used to sit at the END of the old rail, which worked
+         * while the rail had station labels of its own; with the labels gone it would have been a stray word
+         * floating to the right of a graphic.)
          *
-         * (2) WHEN IT CLOSED. `closedAt` has been on the wire and normalised in mock-data for rounds, is used to
-         * freeze the SLA count, and was drawn on this page ZERO times — so a finished task showed a green rail
-         * ending at "Tamam" and never said when. The strip's one job is "where is this work"; on closed work
-         * that was half an answer.
+         * (1) THE STATUS NAME. Formerly a badge in the identity row — "where this work stands" filed among
+         * "what this record is". No longer suppressed as a duplicate: with no station names drawn, there is
+         * nothing on screen for it to repeat.
          *
-         * The date is printed as it ARRIVES. There is no date formatter in this file to choose: dates are
-         * normalised to `YYYY-MM-DD` at the projection seam (`work-items-api.js` toDateOnly) and render sites
-         * print them through `esc()` — which is exactly how `dueAt` renders in the summary card two cards down.
-         * `closedAt` is now normalised at that same seam, so it reads identically to every other date on the page.
+         * (2) HOW FAR ALONG, as n/total. The bar shows this by construction; the caption says it, because
+         * counting filled segments is a task and reading a number is not. NOT shown on a cancelled task — its
+         * position marker sits at the first step by convention, and "1/4" would state a progress that called-off
+         * work never made.
+         *
+         * (3) WHEN IT CLOSED. `closedAt` has been on the wire, normalised, and used to freeze the SLA count for
+         * rounds, and was drawn on this page ZERO times. The date is printed as it ARRIVES: there is no date
+         * formatter in this file to choose, because dates are normalised to `YYYY-MM-DD` at the projection seam
+         * (`work-items-api.js` toDateOnly) and render sites print them through `esc()` — the same way `dueAt`
+         * renders two cards down.
          */
-        const stepStatus = esc(statusLabel(item));
-        const currentLabel = steps[currentIndex] ? esc(t(steps[currentIndex].key)) : '';
         const closedOn = isTerminal(item) && item.closedAt
             ? `<span class="wcn-stepbar-closed">${esc(tf('StepClosedOn', item.closedAt))}</span>`
             : '';
-        const stepEnd = (stepStatus && stepStatus !== currentLabel) || closedOn
-            ? `<div class="wcn-stepbar-end">${
-                stepStatus && stepStatus !== currentLabel
-                    ? `<span class="wcn-stepbar-status">${stepStatus}</span>` : ''}${closedOn}</div>`
-            : '';
+        // Punctuation, not language — `aria-hidden` for the same reason the identity line's separator is:
+        // a screen reader gains nothing from "em dash" between two facts it already reads as two.
+        const captionSep = '<span class="wcn-stepbar-sep" aria-hidden="true">—</span>';
+        const progress = cancelled || currentIndex < 0
+            ? ''
+            : `${captionSep}<span class="wcn-stepbar-count">${currentIndex + 1}/${steps.length}</span>`;
+        const stepCaption = `<div class="wcn-stepbar-caption">
+            <span class="wcn-stepbar-status">${esc(statusLabel(item))}</span>${progress}${
+            closedOn ? captionSep + closedOn : ''}</div>`;
 
         const paused = item.lifecycle === 'Waiting'
             ? `<p class="wcn-step-paused" role="note"><i class="bx bx-pause-circle"></i>${
@@ -1734,9 +1744,9 @@
          * unchanged and still in all seven languages — the words moved, they were not deleted.
          */
         return `<div class="wcn-detail-section wcn-stepbar">
+            ${stepCaption}
             <ol class="wcn-steps${cancelled ? ' wcn-steps-cancelled' : ''}"
                 aria-label="${esc(t('StepBarLabel'))}">${rendered}</ol>
-            ${stepEnd}
             ${paused}
         </div>`;
     };

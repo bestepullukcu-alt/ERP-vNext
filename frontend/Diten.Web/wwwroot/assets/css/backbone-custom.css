@@ -6006,17 +6006,44 @@ tags.diten-tags .tagify__input {
 .wcn-delegation-card { border-inline-start-color: var(--bs-info); background: color-mix(in sRGB, var(--bs-info) 8%, var(--bs-card-bg)); }
 .wcn-delegation-card > i { color: var(--bs-info); }
 
-/* Task lifecycle step-bar (Accept → Plan → Progress → Review → Done) --------- */
-.wcn-steps { list-style: none; display: flex; margin: 0; padding: 0; gap: 0; }
+/* ── Task lifecycle progress bar ───────────────────────────────────────────
+   FOUR SEGMENTS, not four stations. The rail was 24px dots joined by connectors with a label under the current
+   one: 44px of card height to say "you are at step 3 of 4". The bar says the same thing in 4px and hands the
+   sentence to a caption above it, where it can be READ rather than decoded.
+
+   THE <ol>/<li> STRUCTURE IS UNCHANGED, and that is the point of doing it in CSS. Each <li> is a segment; each
+   still carries its step name and its state as text for assistive tech. The accessibility tree is byte-for-byte
+   what it was — only the paint changed. */
+.wcn-steps { list-style: none; display: flex; margin: 0; padding: 0; gap: .25rem; }
 .wcn-step {
-    flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: .3125rem;
-    position: relative; text-align: center; min-width: 0;
+    /* Equal segments regardless of how many steps this task's route has (approval and review are conditional),
+       so the bar always fills its row and a five-step task does not read as a wider four-step one. */
+    flex: 1 1 0; min-inline-size: 0;
+    block-size: .25rem; border-radius: .125rem;
+    /* NOT `cursor: pointer`, and no handler anywhere: a segment is a readout, not a control. This session has
+       already produced three defects of the "looks pressable, is not" class. */
+    background: var(--bs-border-color);
 }
-.wcn-step::before {
-    content: ''; position: absolute; inset-block-start: .6875rem; inset-inline-start: -50%;
-    inline-size: 100%; block-size: 2px; background: var(--bs-border-color); z-index: 0;
+.wcn-step-done { background: var(--bs-success); }
+.wcn-step-active { background: var(--bs-primary); }
+/* An optional step that has not been reached is drawn fainter, keeping the one distinction the dashed dot used
+   to make: it is on the route but nobody is required to stop there. */
+.wcn-step-optional.wcn-step-upcoming { opacity: .5; }
+.wcn-steps-cancelled { opacity: .55; }
+/* The caption. It is read first and the bar illustrates it, so it carries the weight and the bar carries none. */
+.wcn-stepbar-caption {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: .375rem; font-size: .6875rem;
 }
-.wcn-step:first-child::before { display: none; }
+.wcn-stepbar-status { color: var(--bs-body-color); font-weight: 600; }
+.wcn-stepbar-count, .wcn-stepbar-closed { color: var(--bs-secondary-color); }
+.wcn-stepbar-sep { color: var(--bs-secondary-color); opacity: .55; }
+
+/* ── DEAD, kept rather than deleted (see BL-106) ───────────────────────────
+   These drew the dot-and-connector rail that the bar above replaces. MEASURED before marking them: `wcn-step-dot`
+   and `wcn-step-label` appear in NO other view, partial or bundle — the only markup that ever carried them is
+   `renderLifecycleStepper`, and it no longer emits a dot at all. `.wcn-step-label` still matches an element, but
+   that element is `visually-hidden`, so every declaration here is overridden and none of it paints.
+   Left in place for one round in case the bar is reverted; delete with BL-106 once it is accepted. */
 .wcn-step-dot {
     position: relative; z-index: 1; inline-size: 1.5rem; block-size: 1.5rem; border-radius: 50%;
     display: inline-flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 600;
@@ -6025,32 +6052,16 @@ tags.diten-tags .tagify__input {
 }
 .wcn-step-label { font-size: .6875rem; color: var(--bs-secondary-color); overflow: hidden; text-overflow: ellipsis; max-inline-size: 100%; }
 .wcn-step-done .wcn-step-dot { background: var(--bs-success); border-color: var(--bs-success); color: #fff; }
-.wcn-step-done::before { background: var(--bs-success); }
 .wcn-step-done .wcn-step-label { color: var(--bs-body-color); }
 .wcn-step-active .wcn-step-dot { background: var(--bs-primary); border-color: var(--bs-primary); color: #fff; box-shadow: 0 0 0 3px color-mix(in sRGB, var(--bs-primary) 22%, transparent); }
 .wcn-step-active .wcn-step-label { color: var(--bs-primary); font-weight: 600; }
-.wcn-steps-cancelled { opacity: .55; }
-/* ── What the strip cannot say by itself ───────────────────────────────────
-   The status NAME (moved here from the identity row, where "where the work stands" sat among "what this record
-   is") and, on finished work, WHEN it closed — a fact that was on the wire, normalised, used to freeze the SLA
-   count, and drawn zero times. Centred under the rail, quiet: the rail is the statement, this is its caption. */
-/* IN the strip's row, at its end — not stacked under it. Centred beneath the whole rail (the first attempt) it
-   floated: it read as a caption for the middle dot rather than as the strip's own summary, and it cost 23px of
-   the very height this round is reducing. On the row it costs nothing: the row is already 44px tall for the
-   dots, and this sits inside that. */
-.wcn-stepbar { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
-.wcn-stepbar > .wcn-steps { flex: 1 1 auto; min-inline-size: 0; }
-/* The pause note is a sentence ABOUT the strip, so it takes its own line rather than competing for the row. */
-.wcn-stepbar > .wcn-step-paused { flex: 1 0 100%; }
-.wcn-stepbar-end {
-    display: flex; flex-wrap: wrap; align-items: baseline; gap: .375rem;
-    flex: 0 0 auto; font-size: .6875rem;
-}
-.wcn-stepbar-status { color: var(--bs-body-color); font-weight: 600; }
-.wcn-stepbar-closed { color: var(--bs-secondary-color); }
-/* Only the CURRENT step keeps a visible name; the other three carry theirs in the accessibility tree via
-   Bootstrap's `.visually-hidden`, which takes them out of flow — so no rule is needed here to collapse them,
-   and a `:empty` guard would be dead CSS matching nothing (the labels always have text). */
+/* A COLUMN now: caption, then bar, then any pause note. It was a row while the strip had station dots and a
+   label of its own and the status had to sit beside them; the bar has no text, so the sentence goes on top
+   where it reads first and the bar illustrates it. The caption's own colours are declared with the bar above,
+   next to the segments they caption — they were duplicated here and the copy is gone. */
+.wcn-stepbar { display: flex; flex-direction: column; gap: .375rem; }
+/* No step draws a visible name any more — all four carry theirs via Bootstrap's `.visually-hidden`, which takes
+   them out of flow, so nothing here has to collapse them. */
 
 /* Awaiting-review caption + lightweight timesheet --------------------------- */
 .wcn-review-note {
@@ -7046,6 +7057,8 @@ tags.diten-tags .tagify__input {
 .wcn-actrail-other { margin-block-start: 1rem; padding-block-start: 1rem; border-block-start: 1px solid var(--bs-border-color); }
 
 /* Lifecycle strip: an optional step is drawn but visibly not on the main path. */
+/* DEAD with the dot rail (BL-106): the dashed circle that marked an optional station. The distinction survives
+   as `.wcn-step-optional.wcn-step-upcoming { opacity: .5 }` on the segment itself, declared with the bar. */
 .wcn-step-optional .wcn-step-dot { border-style: dashed; opacity: .7; }
 .wcn-step-optional .wcn-step-label { opacity: .7; }
 /* Waiting is a pause ON the current step, not a step of its own. */

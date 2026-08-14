@@ -1336,18 +1336,22 @@ describe("the lifecycle card says where the work stands", () => {
     expect(current[0].className).toContain("wcn-step-active");
   });
 
-  it("keeps every step's NAME reachable even though only one is drawn", async () => {
+  it("keeps every step's NAME reachable even though NONE is drawn", async () => {
     /*
-     * The load-bearing half of the visual shortening. A sighted reader can drop Açık→Planlandı→Devam→Tamam
-     * because they saw the same four words on the previous task; a screen-reader user gets no such head start.
-     * So the labels are hidden, never removed — and the hidden ones must still be exactly three.
+     * The load-bearing half of the visual shortening, and it got stricter when the rail became a bar: the
+     * station names are not drawn AT ALL now — the caption above carries the readable sentence — so all four
+     * names exist only in the accessibility tree. A sighted reader can drop Açık→Planlandı→Devam→Tamam because
+     * they saw the same four words on the previous task; a screen-reader user gets no such head start.
+     *
+     * Hidden, never removed. If a later "cleanup" deletes the label spans because nothing paints them, this is
+     * the assertion that stops the bar from becoming four coloured rectangles that say nothing.
      */
     await boot(projectionItem());
     const labels = stepsOf().map((li) => li.querySelector(".wcn-step-label"));
     expect(labels.every((l) => l && l.textContent.trim().length > 0),
       "a step lost its name entirely").toBe(true);
-    const visible = labels.filter((l) => !l.classList.contains("visually-hidden"));
-    expect(visible, "exactly one step shows its name").toHaveLength(1);
+    expect(labels.every((l) => l.classList.contains("visually-hidden")),
+      "the bar drew a station name").toBe(true);
   });
 
   it("states done/current/upcoming in WORDS, not only in colour", async () => {
@@ -1359,12 +1363,18 @@ describe("the lifecycle card says where the work stands", () => {
     expect(text.some((s) => s.includes("StepStateUpcoming"))).toBe(true);
   });
 
-  it("hides the dot, so its ordinal stops leaking into the step's name", async () => {
-    // Measured before: the second step announced as "2 Planlandı". The digit and the tick are decoration; the
-    // name and the state say everything they were adding.
+  it("keeps decoration OUT of the step's accessible name entirely", async () => {
+    /*
+     * Measured two rounds ago: the second step announced as "2 Planlandı" — the dot's ordinal was part of the
+     * name. That was fixed by hiding the dot; the bar removes the dot outright, so there is no decoration left
+     * inside an <li> to leak. This asserts the OUTCOME rather than the old mechanism, which is why it survived
+     * the change of visual: whatever a segment comes to contain, its name stays name + state.
+     */
     await boot(projectionItem());
-    stepsOf().forEach((li) =>
-      expect(li.querySelector(".wcn-step-dot").getAttribute("aria-hidden")).toBe("true"));
+    stepsOf().forEach((li) => {
+      expect(li.querySelector(".wcn-step-dot"), "the dot came back without a hidden marker").toBeNull();
+      expect(li.textContent, "a digit reached the accessible name").not.toMatch(/\d/);
+    });
   });
 
   it("names the strip itself, since the heading above it is gone", async () => {
@@ -1391,12 +1401,61 @@ describe("the lifecycle card says where the work stands", () => {
     expect(line.querySelector(".wcn-detail-idsep"), "no rule separating the two voices").not.toBeNull();
   });
 
-  it("moves the status OFF the identity row and onto the end of the strip", async () => {
-    // "Where the work stands" was sitting among "what this record is". The strip shows the position; this
-    // names it.
+  it("moves the status OFF the identity row and into the bar's caption", async () => {
+    /*
+     * "Where the work stands" was sitting among "what this record is". It belongs to the bar — which shows the
+     * position and cannot name it, because the bar has no text at all.
+     *
+     * The caption sits ABOVE the segments, not beside them: it was at the end of the old rail while that rail
+     * still had station labels, and with the labels gone it would have been a stray word floating next to a
+     * graphic.
+     */
     await boot(projectionItem());
     expect(app().querySelector(".wcn-detail-idline .wcn-badge"), "status badge still in the id row").toBeNull();
-    expect(app().querySelector(".wcn-stepbar .wcn-stepbar-end")).not.toBeNull();
+    const bar = app().querySelector(".wcn-stepbar");
+    const caption = bar.querySelector(".wcn-stepbar-caption");
+    expect(caption, "the bar has no caption").not.toBeNull();
+    expect(caption.querySelector(".wcn-stepbar-status")).not.toBeNull();
+    const kids = [...bar.children];
+    expect(kids.indexOf(caption), "the caption is not above the bar")
+      .toBeLessThan(kids.indexOf(bar.querySelector(".wcn-steps")));
+  });
+
+  it("counts the position in the caption, and refuses to on cancelled work", async () => {
+    /*
+     * The bar shows progress by construction; counting filled segments is a task and reading "3/4" is not.
+     *
+     * A cancelled task is the exception: its position marker sits at the first step by convention, so a count
+     * would state a progress that called-off work never made.
+     */
+    await boot(projectionItem());
+    expect(app().querySelector(".wcn-stepbar-count").textContent).toMatch(/^\d+\/\d+$/);
+
+    await boot(projectionItem({
+      normalizedStatus: "Cancelled", taskLifecycle: "Cancelled", executionState: "notApplicable"
+    }));
+    expect(app().querySelector(".wcn-stepbar-count"), "a cancelled task claimed progress").toBeNull();
+    expect(app().querySelector(".wcn-stepbar-status"), "…and lost its status name too").not.toBeNull();
+  });
+
+  it("draws segments that are readouts, not controls", async () => {
+    // Three defects of the "looks pressable, is not" class came out of this session already.
+    await boot(projectionItem());
+    stepsOf().forEach((li) => {
+      expect(li.tagName).toBe("LI");
+      expect(li.getAttribute("onclick")).toBeNull();
+      expect(li.getAttribute("role"), "a segment claimed an interactive role").toBeNull();
+      expect(li.matches('a[href],button,[tabindex]:not([tabindex="-1"])')).toBe(false);
+    });
+    /*
+     * Comments STRIPPED before matching. The rule explains in prose why it does not set `cursor: pointer`, and
+     * a guard that reads prose cannot tell a declaration from a sentence about one — the same trap that made a
+     * CDN check fail earlier in this session.
+     */
+    const css = read("wwwroot", "assets", "css", "backbone-custom.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    const rule = /\.wcn-step \{([^}]*)\}/.exec(css);
+    expect(rule, "the segment rule is gone").not.toBeNull();
+    expect(rule[1], "a segment offers a pointer it cannot honour").not.toMatch(/cursor:\s*pointer/);
   });
 });
 
