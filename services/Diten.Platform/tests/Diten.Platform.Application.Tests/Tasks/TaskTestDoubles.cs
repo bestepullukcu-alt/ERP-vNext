@@ -553,7 +553,57 @@ internal sealed class FakeTaskWatcherRepository : ITaskWatcherRepository
     public Task<IReadOnlyList<TaskWatcher>> ListByUserIdAsync(Guid userId, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<TaskWatcher>>(_watchers.Where(x => x.UserId == userId).ToList());
 
+    public Task<IReadOnlyList<TaskWatcher>> ListByTaskIdsAsync(
+        IReadOnlyCollection<Guid> taskItemIds,
+        CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<TaskWatcher>>(
+            _watchers.Where(x => taskItemIds.Contains(x.TaskItemId)).ToList());
+
     public Task DeleteAsync(Guid id, CancellationToken ct = default) => Task.CompletedTask;
+}
+
+/// <summary>
+/// In-memory personal overlays, keyed by (task, user) exactly as the unique index is.
+///
+/// <para><b>It CLONES through the serializer</b>, the same cure <c>FakeChecklistRunRepository</c> carries and for
+/// the same reason: a double that hands out its own stored instance lets a handler mutate storage without
+/// writing, so a bug that forgets to save passes. A hand-copied clone is worse still — it silently drops every
+/// field added after it was written, which is how two doubles in this suite have already hidden a defect.</para>
+/// </summary>
+internal sealed class FakeTaskPersonalOverlayRepository : ITaskPersonalOverlayRepository
+{
+    private readonly List<TaskPersonalOverlay> _overlays = [];
+
+    public FakeTaskPersonalOverlayRepository(params TaskPersonalOverlay[] seed) => _overlays.AddRange(seed);
+
+    public IReadOnlyList<TaskPersonalOverlay> Overlays => _overlays;
+
+    public Task<TaskPersonalOverlay?> GetAsync(Guid taskItemId, Guid userId, CancellationToken ct = default)
+    {
+        var stored = _overlays.FirstOrDefault(x => x.TaskItemId == taskItemId && x.UserId == userId);
+        return Task.FromResult(stored is null ? null : Clone(stored));
+    }
+
+    public Task<IReadOnlyList<TaskPersonalOverlay>> ListForUserAsync(
+        IReadOnlyCollection<Guid> taskItemIds,
+        Guid userId,
+        CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<TaskPersonalOverlay>>(
+            _overlays
+                .Where(x => x.UserId == userId && taskItemIds.Contains(x.TaskItemId))
+                .Select(Clone)
+                .ToList());
+
+    public Task UpsertAsync(TaskPersonalOverlay overlay, CancellationToken ct = default)
+    {
+        _overlays.RemoveAll(x => x.TaskItemId == overlay.TaskItemId && x.UserId == overlay.UserId);
+        _overlays.Add(Clone(overlay));
+        return Task.CompletedTask;
+    }
+
+    private static TaskPersonalOverlay Clone(TaskPersonalOverlay overlay)
+        => System.Text.Json.JsonSerializer.Deserialize<TaskPersonalOverlay>(
+            System.Text.Json.JsonSerializer.Serialize(overlay))!;
 }
 
 /// <summary>
@@ -1344,8 +1394,25 @@ internal sealed class DirectMediator : IMediator
     private readonly TransitionTaskItemHandler? _transition;
     private readonly AddTaskCommentHandler? _comment;
     private readonly PlanTaskItemHandler? _plan;
+    private readonly AddTaskPersonalNoteHandler? _addNote;
+    private readonly DeleteTaskPersonalNoteHandler? _deleteNote;
+    private readonly SetTaskSnoozeHandler? _snooze;
 
     public DirectMediator(TransitionTaskItemHandler handler) => _transition = handler;
+
+    /// <summary>
+    /// The personal overlay's three writes together, because one FIXTURE drives all three: a test that adds two
+    /// notes, deletes one and then snoozes is the only way to prove the three share ONE document.
+    /// </summary>
+    public DirectMediator(
+        AddTaskPersonalNoteHandler addNote,
+        DeleteTaskPersonalNoteHandler deleteNote,
+        SetTaskSnoozeHandler snooze)
+    {
+        _addNote = addNote;
+        _deleteNote = deleteNote;
+        _snooze = snooze;
+    }
 
     public DirectMediator(AddTaskCommentHandler handler) => _comment = handler;
 
@@ -1360,6 +1427,12 @@ internal sealed class DirectMediator : IMediator
                 => (Task<TResponse>)(object)_comment.Handle(command, ct),
             PlanTaskItemCommand command when _plan is not null
                 => (Task<TResponse>)(object)_plan.Handle(command, ct),
+            AddTaskPersonalNoteCommand command when _addNote is not null
+                => (Task<TResponse>)(object)_addNote.Handle(command, ct),
+            DeleteTaskPersonalNoteCommand command when _deleteNote is not null
+                => (Task<TResponse>)(object)_deleteNote.Handle(command, ct),
+            SetTaskSnoozeCommand command when _snooze is not null
+                => (Task<TResponse>)(object)_snooze.Handle(command, ct),
             _ => throw new InvalidOperationException($"Unexpected request {request.GetType().Name}.")
         };
 
@@ -1526,7 +1599,7 @@ internal static class TaskWorkItemProviderHarness
             new FakeChecklistRunRepository(),
             new FakeTaskApprovalService(),
             new FakeTaskDependencyRepository(),
-            new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(), TaskActors.PermitAll(),
+            new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(), new FakeTaskPersonalOverlayRepository(), new FakeTaskWatcherRepository(), TaskActors.PermitAll(),
             new FakePositionRepository(positions),
             new FakeOrganizationUnitRepository(units),
             SlaForTests.Real(),

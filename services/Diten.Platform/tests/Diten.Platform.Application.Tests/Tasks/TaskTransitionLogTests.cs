@@ -702,7 +702,7 @@ public sealed class TaskTransitionLogTests
             new FakeTaskDependencyRepository(),
             comments,
             // The store's OWN log — the entries the handlers under test actually wrote.
-            tasks.Transitions, TaskActors.PermitAll(),
+            tasks.Transitions, new FakeTaskPersonalOverlayRepository(), new FakeTaskWatcherRepository(), TaskActors.PermitAll(),
             new FakePositionRepository(),
             new FakeOrganizationUnitRepository(),
             SlaForTests.Real(),

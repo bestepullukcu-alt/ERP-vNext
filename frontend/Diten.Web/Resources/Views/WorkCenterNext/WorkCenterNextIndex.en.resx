@@ -747,10 +747,10 @@
     <value>{0} · unpinned</value>
   </data>
   <data name="ToastSnoozed" xml:space="preserve">
-    <value>{0} · snoozed until {1} (mock)</value>
+    <value>{0} · snoozed until {1}</value>
   </data>
   <data name="ToastUnsnoozed" xml:space="preserve">
-    <value>{0} · unsnoozed (mock)</value>
+    <value>{0} · unsnoozed</value>
   </data>
   <data name="BulkResultTitle" xml:space="preserve">
     <value>Bulk action result</value>
@@ -902,11 +902,14 @@
   <data name="NotePlaceholder" xml:space="preserve">
     <value>A note only you can see…</value>
   </data>
+  <!-- DEAD (WC-1, 2026-08-14): the personal note became a LIST with an add row, so "Save" no longer
+       names a control on any surface. Kept rather than deleted — a removed key is invisible to the
+       next reader, who cannot tell it was retired from it never having existed. -->
   <data name="NoteSave" xml:space="preserve">
     <value>Save</value>
   </data>
   <data name="ToastNoteSaved" xml:space="preserve">
-    <value>Personal note saved (mock)</value>
+    <value>Personal note saved</value>
   </data>
   <data name="ActivityLabel" xml:space="preserve">
     <value>Activity &amp; Comments</value>
@@ -1888,5 +1891,17 @@
   </data>
   <data name="ChecklistAddHint" xml:space="preserve">
     <value>Click the label to change the level. There is no template list yet.</value>
+  </data>
+  <data name="NoteAddButton" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="NoteAddHint" xml:space="preserve">
+    <value>Enter adds it too. Only you see these notes.</value>
+  </data>
+  <data name="NoteRemove" xml:space="preserve">
+    <value>Delete note</value>
+  </data>
+  <data name="ToastNoteRemoved" xml:space="preserve">
+    <value>Personal note deleted</value>
   </data>
 </root>

@@ -58,6 +58,14 @@
         // Commenting on a closed task, and a comment that is empty or over the length limit.
         TASK_COMMENT_TASK_CLOSED: 'errorCommentTaskClosed',
         TASK_COMMENT_TEXT_INVALID: 'errorCommentTextInvalid',
+        /*
+         * WC-1 — the personal overlay's three refusals. Mapped the moment the codes were written, not after a
+         * user read "İşlem sırasında bir hata oluştu": an unmapped code IS that sentence, and this map has now
+         * been the missing half twice.
+         */
+        TASK_PERSONAL_NOTE_TEXT_INVALID: 'errorNoteTextInvalid',
+        TASK_PERSONAL_NOTE_NOT_FOUND: 'errorNoteNotFound',
+        TASK_SNOOZE_DATE_INVALID: 'errorSnoozeDateInvalid',
         // A plan write with no date at all (a 400, not a 409 — it never reaches BLOCKING_REASON_CODES).
         TASK_PLAN_DATE_REQUIRED: 'errorPlanDateRequired',
         /*
@@ -284,6 +292,19 @@
         reorderChecklist: (taskId, payload) => request('PUT', `/${taskId}/checklist/order`, payload),
         // Comments are POST-only, deliberately: they are immutable, so there is no update or delete to call.
         addComment: (taskId, payload) => request('POST', `/${taskId}/comments`, payload),
+
+        // ── The personal overlay (WC-1) ──────────────────────────────────────
+        //
+        // No expectedVersion on any of the three: this document has exactly ONE writer, so there is no race to
+        // lose, and refusing a private note on a stale token would invent a conflict nobody else could cause.
+        //
+        // There is no UPDATE, by decision: delete-then-write is the same act with one fewer endpoint.
+        addPersonalNote: (taskId, payload) => request('POST', `/${taskId}/personal/notes`, payload),
+        deletePersonalNote: (taskId, noteId) =>
+            request('DELETE', `/${taskId}/personal/notes/${encodeURIComponent(noteId)}`),
+        // ONE call for both directions — a null date wakes the task. Two endpoints would be two ways to write one
+        // nullable field, and the second one written is always the one that forgets a rule.
+        setSnooze: (taskId, payload) => request('PUT', `/${taskId}/personal/snooze`, payload),
         createFromTemplate: (payload) => request('POST', '/from-template', payload)
     };
 })(typeof window !== 'undefined' ? window : globalThis);

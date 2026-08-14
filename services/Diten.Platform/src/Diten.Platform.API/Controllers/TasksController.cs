@@ -303,6 +303,47 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    // ── The personal overlay (WC-1) ──────────────────────────────────────────
+    //
+    // All three are guarded by READ, not Update, and the reason is the same for each: a private note or a snooze
+    // changes MY VIEW of the work, never the work. Requiring Update would stop the reader who may look at a task
+    // but not move it from leaving themselves a reminder about it — the very reader who most needs one.
+    //
+    // Whose overlay is never a parameter. The caller's identity comes from ICurrentUserContext inside the
+    // handlers, so there is no request shape in which one user can read or write another's notes.
+
+    /// <summary>Add one private note to a task. The note is visible to its author and to nobody else.</summary>
+    [HttpPost("{id:guid}/personal/notes")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> AddPersonalNote(
+        Guid id, [FromBody] AddTaskPersonalNoteRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new AddTaskPersonalNoteCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>Delete one of the caller's own notes. Anyone else's id answers 404 — see the command for why.</summary>
+    [HttpDelete("{id:guid}/personal/notes/{noteId:guid}")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> DeletePersonalNote(Guid id, Guid noteId, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new DeleteTaskPersonalNoteCommand(id, noteId, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// Park this task in the caller's own inbox until a date, or wake it now by sending a null date. The task
+    /// itself does not move: no lifecycle, no status, no waiting context.
+    /// </summary>
+    [HttpPut("{id:guid}/personal/snooze")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> SetSnooze(
+        Guid id, [FromBody] SetTaskSnoozeRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new SetTaskSnoozeCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     // ── Dependencies (BL-028, pack §12 Y3) ───────────────────────────────────
 
     /// <summary>

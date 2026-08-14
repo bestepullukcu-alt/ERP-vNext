@@ -308,7 +308,7 @@ public sealed class TaskBusinessContextProjectionTests
             new FakeChecklistRunRepository(),
             new FakeTaskApprovalService(),
             new FakeTaskDependencyRepository(),
-            new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(),
+            new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(), new FakeTaskPersonalOverlayRepository(), new FakeTaskWatcherRepository(),
             TaskActors.PermitAll(), new FakePositionRepository(),
             new FakeOrganizationUnitRepository(),
             SlaForTests.Real(),

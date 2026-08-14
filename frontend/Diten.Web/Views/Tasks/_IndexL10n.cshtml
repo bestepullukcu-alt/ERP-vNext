@@ -158,6 +158,12 @@
         ErrorCommentTaskClosed = Localizer["ErrorCommentTaskClosed"].Value,
         ErrorCommentTextInvalid = Localizer["ErrorCommentTextInvalid"].Value,
         ErrorPlanDateRequired = Localizer["ErrorPlanDateRequired"].Value,
+        // WC-1 — the personal overlay's three refusals. This bridge does NOT auto-enumerate its resx (unlike
+        // _L10n.cshtml, which does), so a code mapped in api.js without a line here reaches the reader as the
+        // generic "an error occurred" — twice already the missing half of exactly this pair.
+        ErrorNoteTextInvalid = Localizer["ErrorNoteTextInvalid"].Value,
+        ErrorNoteNotFound = Localizer["ErrorNoteNotFound"].Value,
+        ErrorSnoozeDateInvalid = Localizer["ErrorSnoozeDateInvalid"].Value,
         // Create with no due date — the SAME rule on the main form and the subtask panel (measured on both:
         // 400 VALIDATION_REQUEST_DUE_AT_NOT_NULL). Unmapped, it reached the reader as "an error occurred".
         ErrorDueDateRequired = Localizer["ErrorDueDateRequired"].Value,

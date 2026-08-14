@@ -169,4 +169,13 @@
   <data name="ReminderLead14" xml:space="preserve"><value>2 weeks before</value></data>
   <data name="FieldReviewTypeLabel" xml:space="preserve"><value>Review type</value></data>
   <data name="FieldDescriptionPlaceholder" xml:space="preserve"><value>What needs doing, and anything the assignee should know before starting.</value></data>
+  <data name="ErrorNoteTextInvalid" xml:space="preserve">
+    <value>A note cannot be empty and cannot exceed 2000 characters.</value>
+  </data>
+  <data name="ErrorNoteNotFound" xml:space="preserve">
+    <value>Note not found.</value>
+  </data>
+  <data name="ErrorSnoozeDateInvalid" xml:space="preserve">
+    <value>The snooze date must be in the future.</value>
+  </data>
 </root>

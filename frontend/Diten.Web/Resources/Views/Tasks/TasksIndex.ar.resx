@@ -169,4 +169,13 @@
   <data name="ReminderLead14" xml:space="preserve"><value>قبل أسبوعين</value></data>
   <data name="FieldReviewTypeLabel" xml:space="preserve"><value>نوع المراجعة</value></data>
   <data name="FieldDescriptionPlaceholder" xml:space="preserve"><value>ما المطلوب إنجازه، وما ينبغي أن يعرفه المكلَّف قبل البدء.</value></data>
+  <data name="ErrorNoteTextInvalid" xml:space="preserve">
+    <value>لا يمكن أن تكون الملاحظة فارغة ولا أن تتجاوز 2000 حرف.</value>
+  </data>
+  <data name="ErrorNoteNotFound" xml:space="preserve">
+    <value>الملاحظة غير موجودة.</value>
+  </data>
+  <data name="ErrorSnoozeDateInvalid" xml:space="preserve">
+    <value>يجب أن يكون تاريخ التأجيل في المستقبل.</value>
+  </data>
 </root>

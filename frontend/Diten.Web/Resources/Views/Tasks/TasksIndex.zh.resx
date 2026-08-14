@@ -169,4 +169,13 @@
   <data name="ReminderLead14" xml:space="preserve"><value>提前 2 周</value></data>
   <data name="FieldReviewTypeLabel" xml:space="preserve"><value>审阅类型</value></data>
   <data name="FieldDescriptionPlaceholder" xml:space="preserve"><value>需要完成什么，以及负责人开始前需要了解的信息。</value></data>
+  <data name="ErrorNoteTextInvalid" xml:space="preserve">
+    <value>笔记不能为空，且不得超过 2000 个字符。</value>
+  </data>
+  <data name="ErrorNoteNotFound" xml:space="preserve">
+    <value>未找到笔记。</value>
+  </data>
+  <data name="ErrorSnoozeDateInvalid" xml:space="preserve">
+    <value>延后日期必须是将来的日期。</value>
+  </data>
 </root>

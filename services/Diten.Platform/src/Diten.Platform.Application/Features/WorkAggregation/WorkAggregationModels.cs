@@ -222,8 +222,24 @@ public sealed record WorkItemEscalationDto(bool Escalated, int Level, DateTimeOf
 
 // The canonical, source-agnostic work-item projection. Field-by-field conformant to fixture-contract.js
 // (validateWorkItem). Approval items carry notApplicable lifecycle/execution/timer, an empty capability set,
-// and — when actionable — the effective approval actions. Personal overlay (pin/snooze/note) is intentionally
-// absent: it is owned by the frontend WorkCenter layer, not this backend projection.
+// and — when actionable — the effective approval actions.
+//
+// PERSONAL OVERLAY — THE DECISION THAT CHANGED, AND WHY (2026-08-14).
+//
+// This comment used to read: "Personal overlay (pin/snooze/note) is intentionally absent: it is owned by the
+// frontend WorkCenter layer, not this backend projection." That was a real decision and it was never wrong on its
+// own terms. What made it a defect is that the OTHER half never happened: the frontend layer it handed ownership
+// to wrote to nowhere at all. A note lived in a JavaScript object until the next reload, a snooze with it — and
+// the screen said "Not kaydedildi" over the top. Half a decision, whose visible shape was a save confirmation for
+// a save that did not occur.
+//
+// So `personal` is now projected (snooze + note list, per reader), and the ownership line moved rather than
+// vanished: the SHELL still decides what a personal layer is FOR — what it looks like, when it is offered, what
+// pinning means — and the engine now stores it, because storing is not a presentation concern and there was
+// nowhere else for it to go.
+//
+// PIN is deliberately still absent. Unlike a note and a snooze it has no behaviour behind it yet on either side;
+// projecting a field nothing writes and nothing reads would recreate exactly the half this change closes.
 public sealed record WorkItemProjectionDto(
     string FixtureKind,
     string Id,
@@ -400,7 +416,113 @@ public sealed record WorkItemProjectionDto(
     /// everywhere else.
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    IReadOnlyList<string>? Tags = null);
+    IReadOnlyList<string>? Tags = null,
+    /// <summary>
+    /// THE READER'S OWN LAYER over this work: their private notes and their own snooze. See
+    /// <see cref="WorkItemPersonalDto"/> — and see the note above the record for why this field's ABSENCE used to
+    /// be a documented decision and is no longer one.
+    ///
+    /// <para>Per-VIEWER content on a per-item projection, which is the one thing in here that is not a fact about
+    /// the task. That is safe only because the projection is already built for one actor (<c>WorkItemActor</c>)
+    /// and never cached across readers; the repository ANDs the user id into the read, so the wrong reader's
+    /// overlay cannot be assembled even by mistake.</para>
+    ///
+    /// <para>Omitted entirely when this reader has neither snoozed the task nor written a note on it — the
+    /// overwhelming majority of items. An empty container on every row would put a personal layer on the wire for
+    /// work nobody has laid one over.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemPersonalDto? Personal = null,
+    /// <summary>
+    /// WHO ELSE IS WATCHING. Visibility only — a watcher never gains an action (pack §12 K3), so this is
+    /// reported, never acted on.
+    ///
+    /// <para>Collected by the create form since Phase 1 and never projected: the form could name watchers and no
+    /// surface could name them back, which is the same store-it-and-never-show-it shape the plan date was in
+    /// before f8d10259. Omitted when there are none rather than emitted empty.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemWatcherDto>? Watchers = null,
+    /// <summary>
+    /// Whether this task MAY be handed to someone else. A policy flag only — eligibility remains MOD-0018's
+    /// decision (pack §12 Y5), so nothing here should be read as "this delegation would succeed".
+    ///
+    /// <para>Nullable, and null means "this provider does not express delegation policy" rather than "no". A
+    /// non-nullable bool would have every provider that has never heard of delegation assert that it is
+    /// forbidden.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    bool? DelegationAllowed = null,
+    /// <summary>
+    /// WHAT THIS TASK EMAILS ABOUT. See <see cref="WorkItemNotificationsDto"/> for why the event list is
+    /// nullable INSIDE a non-null container.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemNotificationsDto? Notifications = null,
+    /// <summary>
+    /// How many days BEFORE the deadline the due-soon reminder is sent; null when no reminder was asked for.
+    ///
+    /// <para>A COUNT OF DAYS, never a computed instant — the engine stores it that way on purpose (BL-030) so the
+    /// reminder survives the due date moving, and a projected instant would freeze on the wire the way the banned
+    /// <c>ago</c> field did.</para>
+    ///
+    /// <para>Kept OUT of <see cref="Notifications"/> deliberately: a reminder fires on a schedule while the
+    /// notification preferences answer "which events", and folding a fifth thing into a container named for the
+    /// other four is how a field ends up somewhere nobody looks for it.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    int? ReminderLeadDays = null);
+
+/// <summary>
+/// WC-1 — the personal overlay, projected. Private to ONE reader: the server filters it, the client does not hide
+/// it. Another person's note is not sent and then concealed; it is never read.
+/// </summary>
+public sealed record WorkItemPersonalDto(
+    /// <summary>
+    /// When this reader's own snooze runs out, or null. It never appears in <c>normalizedStatus</c>,
+    /// <c>taskLifecycle</c> or <c>waitingContext</c> — the contract rejects exactly that
+    /// (<c>SNOOZE_MUST_NOT_CREATE_WAITING</c>), because a requester must not be able to tell that the holder
+    /// parked their request.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    DateTimeOffset? SnoozedUntil,
+    /// <summary>
+    /// This reader's notes, OLDEST FIRST — the order they were written, which is the order they read as a train
+    /// of thought. Always present when the container is (declared-and-empty is a state; a half is not).
+    /// </summary>
+    IReadOnlyList<WorkItemPersonalNoteDto> Notes);
+
+/// <summary>
+/// One private note. <c>Text</c> is a plain string rather than a <see cref="WorkItemLabelDto"/>: a label carries
+/// the resource-vs-display distinction, and a note has no second possibility — a person wrote it, in their own
+/// words, and there is nothing here that could ever be a resource key.
+/// </summary>
+public sealed record WorkItemPersonalNoteDto(string Id, string Text, DateTimeOffset CreatedAt);
+
+/// <summary>
+/// One watcher. The person shape is reused from <see cref="WorkItemPersonDto"/> so a watcher renders with the
+/// same name resolution (and the same "Me" rule) as an assignee — a second person shape here would be a second
+/// place for a display name to go missing.
+/// </summary>
+public sealed record WorkItemWatcherDto(
+    WorkItemPersonDto Person,
+    /// <summary>The engine's own <c>TaskWatcherRole</c> spelling — Watcher | Consultant | Informed.</summary>
+    string Role);
+
+/// <summary>
+/// The task's email notification preferences.
+///
+/// <para><c>Events</c> is NULLABLE inside a non-null container, and the distinction is the whole point: null
+/// means nobody ever chose, and every dispatchable event is sent; an EMPTY list means the owner chose none.
+/// Collapsing the two would either silence a task nobody configured or claim a choice nobody made. The entity
+/// carries the same nullable for the same reason — see <c>TaskItem.NotifyOnEvents</c>.</para>
+///
+/// <para><c>EmailEnabled</c> is the master switch: false means nothing is sent whatever <c>Events</c> lists.</para>
+/// </summary>
+public sealed record WorkItemNotificationsDto(
+    bool EmailEnabled,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<string>? Events);
 
 /// <summary>The configurable-field container. Sections cap at six — the contract's LIMITS.maxSections.</summary>
 public sealed record WorkItemBusinessContextDto(IReadOnlyList<WorkItemBusinessSectionDto> Sections);

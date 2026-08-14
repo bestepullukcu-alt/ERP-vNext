@@ -268,6 +268,38 @@ public static class TaskReasonCodes
     /// plan and is accepted (see the handler for why).
     /// </summary>
     public const string PlanDateRequired = "TASK_PLAN_DATE_REQUIRED";
+
+    /// <summary>Empty, whitespace-only, or longer than <see cref="TaskPersonalNoteLimits.MaxTextLength"/>.</summary>
+    public const string PersonalNoteTextInvalid = "TASK_PERSONAL_NOTE_TEXT_INVALID";
+
+    /// <summary>
+    /// The note id names nothing in THIS reader's overlay. Deliberately the same answer whether the note belongs
+    /// to somebody else or does not exist at all: distinguishing them would confirm that another person's note
+    /// exists, which is precisely what the read rule refuses to tell.
+    /// </summary>
+    public const string PersonalNoteNotFound = "TASK_PERSONAL_NOTE_NOT_FOUND";
+
+    /// <summary>
+    /// The snooze date is in the past (or absent when one was required). A snooze until yesterday hides nothing
+    /// and would leave the reader believing they had parked the work.
+    /// </summary>
+    public const string SnoozeDateInvalid = "TASK_SNOOZE_DATE_INVALID";
+}
+
+/// <summary>
+/// Shared between the handler and its tests, so the limit cannot be asserted at a value nobody enforces — the
+/// same arrangement <see cref="TaskCommentLimits"/> has, and the same ceiling.
+/// </summary>
+public static class TaskPersonalNoteLimits
+{
+    public const int MaxTextLength = 2000;
+
+    /// <summary>
+    /// How many notes one reader may keep on one task. A cap exists because the list is EMBEDDED in the overlay
+    /// document and every projection read carries the whole of it; without one, a single reader could make their
+    /// own detail page slow and nobody else would ever see why.
+    /// </summary>
+    public const int MaxNotesPerTask = 50;
 }
 
 /// <summary>
@@ -521,6 +553,21 @@ public sealed record AddTaskDependencyRequest(Guid DependsOnTaskItemId, TaskDepe
 /// (WC-4) and a mention nobody is told about is a promise the system does not keep.
 /// </summary>
 public sealed record AddTaskCommentRequest(string Text);
+
+// ── The personal overlay (WC-1) ──────────────────────────────────────────────
+
+/// <summary>Add one private note to a task. The author is the caller — it is never sent by the client.</summary>
+public sealed record AddTaskPersonalNoteRequest(string Text);
+
+/// <summary>
+/// Park a task in the reader's own inbox until <paramref name="SnoozedUntil"/>, or wake it now by sending null.
+///
+/// <para>ONE endpoint for both directions rather than a snooze and an unsnooze: the state is a nullable date, so
+/// two endpoints would be two ways to write one field, and the second one written is always the one that forgets
+/// a rule. There is no expected version — see <c>ITaskPersonalOverlayRepository.UpsertAsync</c> for why a
+/// document with a single writer has no race to lose.</para>
+/// </summary>
+public sealed record SetTaskSnoozeRequest(DateTimeOffset? SnoozedUntil);
 
 /// <summary>Create from a template; the template supplies the shape and (optionally) the checklist.</summary>
 public sealed record CreateTaskFromTemplateRequest(

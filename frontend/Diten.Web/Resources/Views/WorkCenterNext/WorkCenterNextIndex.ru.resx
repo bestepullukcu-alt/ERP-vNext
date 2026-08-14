@@ -747,10 +747,10 @@
     <value>{0} · откреплено</value>
   </data>
   <data name="ToastSnoozed" xml:space="preserve">
-    <value>{0} · отложено до {1} (макет)</value>
+    <value>{0} · отложено до {1}</value>
   </data>
   <data name="ToastUnsnoozed" xml:space="preserve">
-    <value>{0} · возвращено (макет)</value>
+    <value>{0} · возвращено</value>
   </data>
   <data name="BulkResultTitle" xml:space="preserve">
     <value>Результат массового действия</value>
@@ -902,11 +902,14 @@
   <data name="NotePlaceholder" xml:space="preserve">
     <value>Заметка, видимая только вам…</value>
   </data>
+  <!-- DEAD (WC-1, 2026-08-14): the personal note became a LIST with an add row, so "Save" no longer
+       names a control on any surface. Kept rather than deleted — a removed key is invisible to the
+       next reader, who cannot tell it was retired from it never having existed. -->
   <data name="NoteSave" xml:space="preserve">
     <value>Сохранить</value>
   </data>
   <data name="ToastNoteSaved" xml:space="preserve">
-    <value>Личная заметка сохранена (макет)</value>
+    <value>Личная заметка сохранена</value>
   </data>
   <data name="ActivityLabel" xml:space="preserve">
     <value>Активность и комментарии</value>
@@ -1888,5 +1891,17 @@
   </data>
   <data name="ChecklistAddHint" xml:space="preserve">
     <value>Нажмите на метку, чтобы изменить уровень. Списка шаблонов пока нет.</value>
+  </data>
+  <data name="NoteAddButton" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="NoteAddHint" xml:space="preserve">
+    <value>Enter тоже добавляет. Эти заметки видите только вы.</value>
+  </data>
+  <data name="NoteRemove" xml:space="preserve">
+    <value>Удалить заметку</value>
+  </data>
+  <data name="ToastNoteRemoved" xml:space="preserve">
+    <value>Личная заметка удалена</value>
   </data>
 </root>

@@ -169,4 +169,13 @@
   <data name="ReminderLead14" xml:space="preserve"><value>2 hafta önce</value></data>
   <data name="FieldReviewTypeLabel" xml:space="preserve"><value>İnceleme türü</value></data>
   <data name="FieldDescriptionPlaceholder" xml:space="preserve"><value>Ne yapılacak ve görevi üstlenenin başlamadan önce bilmesi gerekenler.</value></data>
+  <data name="ErrorNoteTextInvalid" xml:space="preserve">
+    <value>Not boş olamaz ve 2000 karakteri aşamaz.</value>
+  </data>
+  <data name="ErrorNoteNotFound" xml:space="preserve">
+    <value>Not bulunamadı.</value>
+  </data>
+  <data name="ErrorSnoozeDateInvalid" xml:space="preserve">
+    <value>Erteleme tarihi gelecekte olmalı.</value>
+  </data>
 </root>

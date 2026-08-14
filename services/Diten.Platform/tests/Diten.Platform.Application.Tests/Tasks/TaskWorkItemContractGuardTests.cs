@@ -338,7 +338,7 @@ public sealed class TaskWorkItemContractGuardTests
             checklists ?? new FakeChecklistRunRepository(),
             new FakeTaskApprovalService(),
             dependencies ?? new FakeTaskDependencyRepository(),
-            comments ?? new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(),
+            comments ?? new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(), new FakeTaskPersonalOverlayRepository(), new FakeTaskWatcherRepository(),
             TaskActors.PermitAll(), new FakePositionRepository(),
             new FakeOrganizationUnitRepository(),
             SlaForTests.Real(),

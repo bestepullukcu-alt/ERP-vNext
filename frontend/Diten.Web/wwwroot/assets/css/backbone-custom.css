@@ -6686,8 +6686,33 @@ tags.diten-tags .tagify__input {
 .wcn-personal-plan-label { font-size: .75rem; color: var(--bs-secondary-color); }
 .wcn-personal-plan-value { font-size: .8125rem; font-weight: 500; color: var(--bs-body-color); }
 .wcn-personal-plan-conflict .wcn-personal-plan-value { color: var(--bs-warning); font-weight: 600; }
-.wcn-note { display: flex; flex-direction: column; gap: .5rem; align-items: flex-end; }
-.wcn-note textarea { inline-size: 100%; }
+/* WC-1 — the personal NOTE LIST. It replaced a textarea and a Save button whose save was never real; the row
+   language and the add row are the ones this round standardised on the checklist and the subtask list, so the
+   card reads as the same product rather than a third dialect. */
+.wcn-notes { list-style: none; margin: 0 0 .5rem; padding: 0; display: flex; flex-direction: column; gap: .375rem; }
+.wcn-note-row {
+    display: flex; align-items: baseline; gap: .5rem;
+    padding: .4375rem .5rem; border-radius: .375rem;
+    background: var(--bs-body-bg); border: 1px solid var(--bs-border-color);
+    font-size: .8125rem;
+}
+/* `anywhere`, because a note is one uninterrupted sentence a person typed and a URL in it must wrap rather than
+   push the whole rail wide — the same rule the comment feed already carries. */
+.wcn-note-text { flex: 1 1 auto; min-inline-size: 0; overflow-wrap: anywhere; }
+.wcn-note-when { flex: 0 0 auto; font-size: .6875rem; color: var(--bs-secondary-color); white-space: nowrap; }
+/* 24px, which is the floor WCAG 2.5.8 puts under a target — the delete is the smallest control in this card and
+   the one most easily missed by a thumb. */
+.wcn-note-remove {
+    flex: 0 0 auto; inline-size: 1.5rem; block-size: 1.5rem;
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0; border: 0; border-radius: .25rem;
+    background: transparent; color: var(--bs-secondary-color); cursor: pointer;
+}
+.wcn-note-remove:hover, .wcn-note-remove:focus-visible { background: var(--bs-secondary-bg); color: var(--bs-danger); }
+.wcn-note-add { display: flex; align-items: center; gap: .5rem; margin-block-start: .5rem; }
+.wcn-note-add .wcn-search { flex: 1 1 auto; min-inline-size: 0; }
+.wcn-note-add .wcn-search .form-control { inline-size: 100%; min-inline-size: 0; padding-inline-end: .75rem; }
+.wcn-note-hint { margin-block: .375rem 0; }
 /* D2/D3 — the comment composer, brought onto the create form's field pattern.
    `.diten-field` (defined above, shared) supplies the 38px control and the inset glyph; only the flex sizing
    is stated here, because that is the one thing this row needs and that wrapper does not know about. */

@@ -384,3 +384,76 @@ public sealed class TaskRecurrenceRule : TenantScopedEntity
     public bool IsActive { get; set; } = true;
     public DateTimeOffset? DeletedAt { get; set; }
 }
+
+/// <summary>
+/// WC-1 — THE PERSONAL OVERLAY: what ONE reader has laid over somebody else's work. One document per
+/// (tenant, task, user).
+///
+/// <para><b>Why it exists.</b> The projection's own note said the personal overlay was "owned by the frontend
+/// WorkCenter layer, not this backend projection". Measured 2026-08-14, that frontend layer wrote to NOWHERE:
+/// a note lived in a JavaScript object until the next reload and a snooze with it, while the screen said "Not
+/// kaydedildi". The decision was half-made — one side declined to store it and the other never picked it up —
+/// and the visible shape of that half was a save confirmation for a save that did not happen.</para>
+///
+/// <para><b>Why one document and not three.</b> A note and a snooze are the same KIND of thing: private to one
+/// reader, invisible to everyone else, worthless to the task itself. Splitting them across collections would
+/// mean solving authorization, deletion and tenant clean-up once per collection — and the third solution is
+/// always the one that forgets a rule.</para>
+///
+/// <para><b>Why the PLAN DATE is not in here.</b> It looks personal and is not: <see cref="TaskItem.PlannedDate"/>
+/// sits on the shared task row, moves the shared lifecycle to <c>Planned</c> and is read back by everyone who can
+/// read the task. Moving it here would change WHAT IT MEANS, not merely where it lives — a re-plan would stop
+/// being visible to the requester. It stays where it is, and its "Kişisel" label on screen is the thing that is
+/// wrong, not its storage.</para>
+///
+/// <para><b>The notes are EMBEDDED</b> rather than a collection of their own, and this is the opposite call from
+/// <see cref="TaskComment"/> on purpose. A comment is shared, immutable and unbounded, so an embedded array would
+/// make every task read carry the whole conversation. A personal note list belongs to exactly one reader, is
+/// never read by anyone else and is deleted by its author — the whole list is always fetched together and never
+/// alone.</para>
+/// </summary>
+public sealed class TaskPersonalOverlay : TenantScopedEntity
+{
+    public required Guid TaskItemId { get; set; }
+
+    /// <summary>WHOSE overlay. Every read filters on this — it is not a display rule.</summary>
+    public required Guid UserId { get; set; }
+
+    /// <summary>
+    /// Hide this task from the reader's own inbox until this date. NEVER changes the task's lifecycle,
+    /// normalized status or waiting context — the contract states that outright
+    /// (<c>SNOOZE_MUST_NOT_CREATE_WAITING</c>), and the requester must not be able to tell that the holder
+    /// snoozed anything.
+    /// </summary>
+    public DateTimeOffset? SnoozedUntil { get; set; }
+
+    /// <summary>The reader's own notes, oldest first. Empty is the normal state.</summary>
+    public List<TaskPersonalNote> Notes { get; set; } = [];
+
+    public DateTimeOffset? DeletedAt { get; set; }
+}
+
+/// <summary>
+/// One personal note. Embedded in <see cref="TaskPersonalOverlay"/>; see that type for why.
+///
+/// <para><b>No edit, by decision.</b> Add and delete only — a note is a sentence to oneself, and delete-then-write
+/// is the same act with one less endpoint, one less concurrency question and one less audit story.</para>
+/// </summary>
+public sealed class TaskPersonalNote
+{
+    /// <summary>Stable id, so a delete names a note rather than an index into a list that may have moved.</summary>
+    public Guid Id { get; set; } = Guid.NewGuid();
+
+    /// <summary>The text the reader typed. Never a resource key — a person wrote it.</summary>
+    public required string Text { get; set; }
+
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    /// <summary>
+    /// Who wrote it. Today this is always the overlay's own <see cref="TaskPersonalOverlay.UserId"/> — it is
+    /// recorded anyway because a note that cannot say who wrote it cannot survive the overlay ever being shared
+    /// (delegation, a handover, an export), and a note with no author is the one thing that cannot be repaired
+    /// afterwards.
+    /// </summary>
+    public Guid AuthorUserId { get; set; }
+}

@@ -114,7 +114,44 @@ public interface ITaskWatcherRepository
     Task<TaskWatcher> CreateAsync(TaskWatcher watcher, CancellationToken ct = default);
     Task<IReadOnlyList<TaskWatcher>> ListByTaskIdAsync(Guid taskItemId, CancellationToken ct = default);
     Task<IReadOnlyList<TaskWatcher>> ListByUserIdAsync(Guid userId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Watchers for a whole page of tasks in ONE read — the projection renders many tasks at once, and a
+    /// per-task read here would be an N+1 across the surface.
+    /// </summary>
+    Task<IReadOnlyList<TaskWatcher>> ListByTaskIdsAsync(
+        IReadOnlyCollection<Guid> taskItemIds,
+        CancellationToken ct = default);
     Task DeleteAsync(Guid id, CancellationToken ct = default);
+}
+
+/// <summary>
+/// WC-1 — the personal overlay (note list + snooze) for ONE reader over ONE task.
+///
+/// <para>Every method takes the user id explicitly and every implementation ANDs it into the filter. That is the
+/// authorization: "only the author sees their notes" is a READ rule enforced here, not a rendering rule the
+/// client is trusted to apply. A repository that returned another user's overlay would make the projection leak
+/// it regardless of what the screen chose to draw.</para>
+/// </summary>
+public interface ITaskPersonalOverlayRepository
+{
+    Task<TaskPersonalOverlay?> GetAsync(Guid taskItemId, Guid userId, CancellationToken ct = default);
+
+    /// <summary>
+    /// One reader's overlays for a whole page of tasks, in ONE read — the same N+1 rule every other container in
+    /// the projection follows.
+    /// </summary>
+    Task<IReadOnlyList<TaskPersonalOverlay>> ListForUserAsync(
+        IReadOnlyCollection<Guid> taskItemIds,
+        Guid userId,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Create-or-replace for (task, user). Not an expected-version write, and deliberately so: this document has
+    /// exactly one writer, so there is no race to lose — and making a private note refuse on a stale token would
+    /// invent a conflict nobody else could have caused.
+    /// </summary>
+    Task UpsertAsync(TaskPersonalOverlay overlay, CancellationToken ct = default);
 }
 
 public interface ITaskFieldDefinitionRepository

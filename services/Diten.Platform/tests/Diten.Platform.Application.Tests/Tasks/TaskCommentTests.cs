@@ -380,7 +380,7 @@ public sealed class TaskCommentTests
                 new FakeTaskDependencyRepository(),
                 // The task store's OWN log, not a fresh one: this harness drives real handlers, and the point is
                 // to project the history those handlers actually wrote (WC-1).
-                Comments, _tasks.Transitions, TaskActors.PermitAll(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
+                Comments, _tasks.Transitions, new FakeTaskPersonalOverlayRepository(), new FakeTaskWatcherRepository(), TaskActors.PermitAll(), new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(), new FakeTaskFieldDefinitionRepository());
 
             var actor = new WorkItemActor(TaskTestData.Me, IsPlatformActor: false, new HashSet<string>(
                 new[] { TaskPermissions.Update, TaskPermissions.Complete, TaskPermissions.Cancel },

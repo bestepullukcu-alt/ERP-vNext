@@ -2879,14 +2879,70 @@
             ? `<p class="wcn-date-warn" role="note"><i class="bx bx-error-circle" aria-hidden="true"></i>${esc(t('PlanConflict'))}</p>`
             : ''}`;
 
+        /*
+         * ── FROM ONE BOX TO A LIST (WC-1) ────────────────────────────────────────────────────────────────────
+         *
+         * It was a textarea and a "Kaydet" button, and the button was a lie: `it.note = input.value` and a toast
+         * saying "Not kaydedildi". Nothing left the browser and the next reload took the sentence away. Now every
+         * note is a stored record with its own instant, and the toast fires only after the server has answered.
+         *
+         * A LIST rather than one field, by owner decision, and the shape follows from what a note IS: a thought
+         * about a moment. One box means the second thought overwrites the first, so the box either stays empty or
+         * grows into a wall of text nobody dares edit. Each note keeps WHEN it was written for the same reason
+         * the activity feed does — "muhasebeye sordum" means something different today than it did in June.
+         *
+         * NO EDIT, by decision: delete and write again. That is one endpoint, one concurrency question and one
+         * audit story fewer, and on a private note the difference costs nothing.
+         */
+        const notes = Array.isArray(item.notes) ? item.notes : [];
+        const rows = notes.map((note) => `<li class="wcn-note-row">
+                <span class="wcn-note-text">${esc(note.text)}</span>
+                <span class="wcn-note-when">${esc(noteWhen(note, item))}</span>
+                <button type="button" class="wcn-note-remove" data-wcn-note-remove="${esc(note.id)}"
+                        data-wcn-note-task="${item.id}"
+                        aria-label="${esc(t('NoteRemove'))}" title="${esc(t('NoteRemove'))}">
+                    <i class="bx bx-trash" aria-hidden="true"></i>
+                </button>
+            </li>`).join('');
+
+        /*
+         * The add row speaks the grammar this round standardised on the checklist and the subtask list: an inset
+         * glyph in a 38px box, Enter commits, a button that says the same thing for whoever cannot see the
+         * placeholder, and one hint line beneath. A fourth input dialect on one page is how a product starts
+         * reading as four.
+         */
+        const addRow = `<div class="wcn-note-add">
+                <div class="wcn-search wcn-search-inline">
+                    <i class="bx bx-plus" aria-hidden="true"></i>
+                    <input type="text" class="form-control shadow-none" data-wcn-note-input
+                           data-wcn-note-add="${item.id}"
+                           placeholder="${esc(t('NotePlaceholder'))}"
+                           aria-label="${esc(t('NotePlaceholder'))}">
+                </div>
+                <button type="button" class="btn btn-outline-primary"
+                        data-wcn-note-save="${item.id}">${esc(t('NoteAddButton'))}</button>
+            </div>
+            <p class="wcn-block-hint wcn-note-hint">${esc(t('NoteAddHint'))}</p>`;
+
         return `<div class="wcn-detail-section">
             ${cardHead('bx-note', 'PersonalCardLabel')}
             ${plan}
-            <div class="wcn-note">
-                <textarea class="form-control form-control-sm" data-wcn-note-input rows="2" placeholder="${esc(t('NotePlaceholder'))}">${esc(item.note || '')}</textarea>
-                <button type="button" class="btn btn-sm btn-label-secondary" data-wcn-note-save="${item.id}">${esc(t('NoteSave'))}</button>
-            </div>
+            ${rows ? `<ul class="wcn-notes">${rows}</ul>` : ''}
+            ${addRow}
         </div>`;
+    };
+
+    /*
+     * WHEN a note was written, in the page's OWN time language — the same `agoLabel` the activity feed uses, from
+     * the same absolute instant. Never a count the server computed: a frozen "2 days ago" is the `ago` field this
+     * project already banned once.
+     *
+     * A note with no timestamp says nothing rather than inventing "today" — that only happens to a note written
+     * by a client that predates the field, and a wrong date is worse than no date.
+     */
+    const noteWhen = (note, item) => {
+        const at = note.createdAt ? Date.parse(note.createdAt) : NaN;
+        return Number.isNaN(at) ? '' : agoLabel(at, item.provenance);
     };
 
     // Comment composer — single stream: what I write also goes to the source.
@@ -5240,11 +5296,14 @@
         if (box) { box.value = ''; }
     };
 
-    const afterPhase2Write = async (result, successKey, successArg) => {
+    const afterPhase2Write = async (result, successKey, ...successArgs) => {
         if (result.ok) {
             await loadWorkItems();
             render();
-            toast(successArg ? tf(successKey, successArg) : t(successKey));
+            // VARIADIC because one message needs two facts: "{title} · {date} tarihine ertelendi". Passing only
+            // the first would have printed the placeholder for the second, which is the raw-key failure wearing a
+            // different hat.
+            toast(successArgs.length ? tf(successKey, ...successArgs) : t(successKey));
             return true;
         }
 
@@ -5764,11 +5823,80 @@
         });
     };
 
+    /*
+     * ── THE PERSONAL OVERLAY'S THREE WRITES (WC-1) ───────────────────────────────────────────────────────────
+     *
+     * All three were browser-only until 2026-08-14: a note was one assignment to a JavaScript object, a snooze
+     * was another, and both said "kaydedildi" over the top. They now go to `/personal/*` on MOD-0024 and nothing
+     * is applied optimistically — the server decides and the re-read projection is the only new state, exactly
+     * like every transition on this page.
+     *
+     * A FIXTURE item still takes the browser-side path: no backend owns it, so posting would 404 and refusing
+     * outright would break the showcase. The branch is explicit and warns, the same shape the checklist and
+     * subtask writers use.
+     */
+    const addPersonalNote = async (taskId, text) => {
+        const trimmed = String(text || '').trim();
+        // Silence on empty — the placeholder already says what the box is for, and a toast for pressing Enter in
+        // an empty field is noise. Same rule as the subtask and checklist add rows.
+        if (!trimmed) { return; }
+
+        const item = itemById(taskId);
+        if (!isRealTaskItem(item)) {
+            // The showcase keeps working, and it keeps working HONESTLY: the note is added to the fixture's own
+            // list with a real instant, so it renders exactly as a stored one does.
+            if (item) {
+                item.notes = (item.notes || []).concat([{
+                    id: `local-${item.notes ? item.notes.length : 0}-${trimmed.length}`,
+                    text: trimmed,
+                    createdAt: new Date(data.referenceDate(item.provenance)).toISOString()
+                }]);
+                render();
+                toast(t('ToastNoteSaved'));
+            }
+            return;
+        }
+
+        const result = await global.TasksApi.addPersonalNote(taskId, { text: trimmed });
+        // THE TOAST IS INSIDE the success branch. It used to fire unconditionally on a write that never happened
+        // — that lie is the whole reason this round exists, and putting the message anywhere else brings it back.
+        if (await afterPhase2Write(result, 'ToastNoteSaved')) {
+            consumeEntryBox('data-wcn-note-input');
+        }
+    };
+
+    const removePersonalNote = async (taskId, noteId) => {
+        const item = itemById(taskId);
+        if (!isRealTaskItem(item)) {
+            if (item) {
+                item.notes = (item.notes || []).filter((note) => String(note.id) !== String(noteId));
+                render();
+                toast(t('ToastNoteRemoved'));
+            }
+            return;
+        }
+
+        // No confirmation dialog, by decision: a private note is low-cost to lose and cheap to write again, and a
+        // "are you sure" on every one of them would train the reader to dismiss dialogs that matter.
+        await afterPhase2Write(await global.TasksApi.deletePersonalNote(taskId, noteId), 'ToastNoteRemoved');
+    };
+
     // Snooze is a personal filter signal. It never changes the canonical
-    // lifecycle, normalized status, tab or lifecycle segment.
-    const toggleSnooze = (item) => {
+    // lifecycle, normalized status, tab or lifecycle segment — the executable contract says so outright
+    // (SNOOZE_MUST_NOT_CREATE_WAITING) and the server honours it: the write touches the reader's own overlay
+    // document and never the task.
+    const toggleSnooze = async (item) => {
         if (!item) { return; }
+        const real = isRealTaskItem(item);
+
         if (item.snoozedUntil && item.snoozedUntil > data.todayIso) {
+            if (real) {
+                await afterPhase2Write(
+                    await global.TasksApi.setSnooze(item.id, { snoozedUntil: null }),
+                    'ToastUnsnoozed',
+                    item.title);
+                return;
+            }
             item.snoozedUntil = null;
             item.personal.snoozedUntil = null;
             item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: t('Unsnooze'), atMs: data.referenceDate(item.provenance) });
@@ -5776,7 +5904,22 @@
             toast(tf('ToastUnsnoozed', item.title));
             return;
         }
-        const apply = (dateStr) => {
+        const apply = async (dateStr) => {
+            if (real) {
+                /*
+                 * The picker yields a DAY ("2026-08-20"); the server stores an instant. Sent as the END of that
+                 * day in the reader's own zone, because "ertele: 20 Ağustos" means "leave me alone until the 20th
+                 * is over" — sending midnight would wake the task at the start of the day the reader picked, and
+                 * a same-day snooze would be refused as already past.
+                 */
+                const until = new Date(`${dateStr}T23:59:59`);
+                await afterPhase2Write(
+                    await global.TasksApi.setSnooze(item.id, { snoozedUntil: until.toISOString() }),
+                    'ToastSnoozed',
+                    item.title,
+                    dateStr);
+                return;
+            }
             item.snoozedUntil = dateStr;
             item.personal.snoozedUntil = dateStr;
             item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: t('Snooze'), atMs: data.referenceDate(item.provenance) });
@@ -5786,7 +5929,7 @@
             render();
             toast(tf('ToastSnoozed', item.title, dateStr));
         };
-        if (!global.Swal) { apply(data.todayIso); return; }
+        if (!global.Swal) { await apply(data.todayIso); return; }
         global.Swal.fire({
             title: t('Snooze'),
             html: '<input id="wcnSnoozeDate" class="form-control" autocomplete="off">',
@@ -5801,7 +5944,7 @@
                 if (!v || v <= data.todayIso) { global.Swal.showValidationMessage(t('SnoozeFuture')); return false; }
                 return v;
             }
-        }).then((res) => { if (res.isConfirmed && res.value) { apply(res.value); } });
+        }).then(async (res) => { if (res.isConfirmed && res.value) { await apply(res.value); } });
     };
 
     // ── "+ Yeni" — WorkCenter owns only self-tasks; module items are created in
@@ -6385,6 +6528,18 @@
             if (taskId) { addChecklistItem(taskId, text); }
             return;
         }
+        /*
+         * ENTER ADDS THE PERSONAL NOTE, on the same terms as the two rows above: the task id rides on the input,
+         * so the key and the button can never point at different tasks, and the call is AWAITED.
+         *
+         * The hint line under the box is what says so — the placeholder disappears the moment you start typing,
+         * and a key nobody documented is a key nobody presses.
+         */
+        if (event.key === 'Enter' && event.target.matches && event.target.matches('[data-wcn-note-add]')) {
+            event.preventDefault();
+            await addPersonalNote(event.target.getAttribute('data-wcn-note-add'), event.target.value);
+            return;
+        }
         // Escape in the search box clears the current query (before the typing guard).
         /*
          * THE TWO PANEL TITLE FIELDS — the only repeated-entry inputs on this page that did NOT take Enter.
@@ -6639,7 +6794,9 @@
         const snoozeEl = event.target.closest('[data-wcn-snooze]');
         if (snoozeEl) {
             event.stopPropagation();
-            toggleSnooze(itemById(snoozeEl.getAttribute('data-wcn-snooze')));
+            // AWAITED now that the write is real: an un-awaited rejection here would make a failed snooze look
+            // like a button nobody wired.
+            await toggleSnooze(itemById(snoozeEl.getAttribute('data-wcn-snooze')));
             return;
         }
 
@@ -6863,20 +7020,17 @@
         }
         const noteSaveEl = event.target.closest('[data-wcn-note-save]');
         if (noteSaveEl) {
-            const it = itemById(noteSaveEl.getAttribute('data-wcn-note-save'));
             const inp = document.querySelector('#wcnApp [data-wcn-note-input]');
-            /*
-             * NO render(). The textarea already holds what was typed and nothing else on the page shows the
-             * note, so the redraw repainted the entire detail page to change nothing visible — and a full redraw
-             * is what detaches an open panel's Bootstrap instance (BL-129).
-             *
-             * ⚠ MEASURED, and it corrects the report that sent me here: with a panel open the offcanvas backdrop
-             * covers the viewport (900×900; `elementFromPoint` at the page centre returns the backdrop) and
-             * Bootstrap traps focus inside the panel, so a real reader cannot reach this button at all while a
-             * panel is open. Last round's warning fired because a TEST clicked it programmatically. The render
-             * is removed because it was pointless, not because a user could trip it.
-             */
-            if (it && inp) { it.note = inp.value.trim() || null; toast(t('ToastNoteSaved')); }
+            // AWAITED, like every other write on this page: an un-awaited promise swallows its own rejection, and
+            // a failed write then looks exactly like a button that was never wired.
+            await addPersonalNote(noteSaveEl.getAttribute('data-wcn-note-save'), inp && inp.value);
+            return;
+        }
+        const noteRemoveEl = event.target.closest('[data-wcn-note-remove]');
+        if (noteRemoveEl) {
+            await removePersonalNote(
+                noteRemoveEl.getAttribute('data-wcn-note-task'),
+                noteRemoveEl.getAttribute('data-wcn-note-remove'));
             return;
         }
         const commentEl = event.target.closest('[data-wcn-comment-post]');

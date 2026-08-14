@@ -83,6 +83,22 @@
             ? toDateOnly(dto.closedAt)
             : dto.closedAt;
         item.escalated = !!(dto.escalated || (dto.escalation && dto.escalation.escalated));
+        /*
+         * WC-1 — the personal overlay's snooze, normalised at the SAME seam as dueAt/plannedDate/startAt and for
+         * the identical reason those three are: it is a full instant on the wire and a DATE everywhere it is
+         * read. The chip prints it ("22.08.2026 tarihine ertelendi") and the shell compares it against
+         * `todayIso`, which is a date-only string — an un-normalised instant would render as
+         * "2026-08-22T23:59:59+00:00" in the chip, exactly as `startAt` once did in the summary card.
+         *
+         * The NOTES are passed through untouched: their `createdAt` is read by `agoLabel`, which needs the
+         * instant, not the day. Flattening them here would freeze the same information the banned `ago` field
+         * froze.
+         */
+        if (dto.personal) {
+            item.personal = Object.assign({}, dto.personal, {
+                snoozedUntil: toDateOnly(dto.personal.snoozedUntil)
+            });
+        }
         return item;
     };
 

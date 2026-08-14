@@ -2602,21 +2602,117 @@ describe("the checklist is capped like its siblings", () => {
   });
 });
 
-describe("saving a personal note does not repaint the page", () => {
-  it("updates state and toasts, with no render()", () => {
-    /*
-     * MUTATION TARGET (note render). The redraw repainted the whole detail page to change nothing visible — the
-     * textarea already held the value and nothing else on the page shows the note — and a full redraw is what
-     * detaches an open panel's Bootstrap instance (BL-129).
-     *
-     * ⚠ The report that sent me here said a user could trip this with a panel open. MEASURED otherwise: the
-     * offcanvas backdrop covers the viewport (900×900) and Bootstrap traps focus in the panel, so this button is
-     * unreachable while a panel is open. The render is removed because it was pointless.
-     */
+describe("the personal note list, on the page", () => {
+  /*
+   * The DOM half of the same change. The block above proves the WRITE goes to the server; this proves the READ
+   * comes back — a stored note that no card draws is the plan date's own defect (f8d10259) repeated.
+   */
+  const withNotes = (notes, extra) => projectionItem(Object.assign({
+    personal: { snoozedUntil: null, notes }
+  }, extra || {}));
+
+  it("draws one row per stored note, with its text", async () => {
+    await boot(withNotes([
+      { id: "n1", text: "muhasebeye sordum", createdAt: "2026-08-10T09:00:00+00:00" },
+      { id: "n2", text: "cuma tekrar bak", createdAt: "2026-08-12T09:00:00+00:00" }
+    ]));
+
+    const rows = app().querySelectorAll(".wcn-note-row");
+    expect(rows.length, "the stored notes did not reach the page").toBe(2);
+    expect(rows[0].querySelector(".wcn-note-text").textContent).toBe("muhasebeye sordum");
+    expect(rows[1].querySelector(".wcn-note-text").textContent).toBe("cuma tekrar bak");
+  });
+
+  it("gives every row a delete that names the note AND its task", async () => {
+    await boot(withNotes([{ id: "n1", text: "tek not", createdAt: "2026-08-10T09:00:00+00:00" }]));
+
+    const remove = app().querySelector("[data-wcn-note-remove]");
+    expect(remove, "there is no way to delete a note").not.toBeNull();
+    expect(remove.getAttribute("data-wcn-note-remove")).toBe("n1");
+    // BOTH ids on the control: the handler must never have to guess which task the row belonged to.
+    expect(remove.getAttribute("data-wcn-note-task")).toBe(TASK_ID);
+    expect(remove.getAttribute("aria-label"), "the icon-only delete is unnamed").toBeTruthy();
+  });
+
+  it("says WHEN each note was written, from the instant and never from a stored count", async () => {
+    await boot(withNotes([{ id: "n1", text: "not", createdAt: "2026-08-10T09:00:00+00:00" }]));
+
+    expect(app().querySelector(".wcn-note-when").textContent.trim(), "the row has no time at all").not.toBe("");
+    // The absolute instant is what travels; the words are derived at render. A note carrying a pre-computed
+    // "2 days ago" is the `ago` field this project banned.
     const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
-    const branch = src.slice(src.indexOf("const noteSaveEl"), src.indexOf("const commentEl"));
-    expect(branch, "note saving still repaints the page").not.toMatch(/;\s*render\(\);/);
-    expect(branch, "the note is no longer stored").toContain("it.note =");
-    expect(branch, "the reader is no longer told it saved").toContain("ToastNoteSaved");
+    const helper = src.slice(src.indexOf("const noteWhen"), src.indexOf("const noteWhen") + 400);
+    expect(helper, "the time is not derived from the stored instant").toContain("agoLabel");
+  });
+
+  it("shows the add row even when there is not a single note", async () => {
+    await boot(projectionItem());
+
+    // No "there is nothing here" sentence above an empty box: the add row IS the empty state, the same rule the
+    // checklist card follows.
+    expect(app().querySelectorAll(".wcn-note-row").length).toBe(0);
+    expect(app().querySelector("[data-wcn-note-add]"), "the note cannot be added at all").not.toBeNull();
+  });
+
+  it("carries the task id on the input, so Enter and the button cannot disagree", async () => {
+    await boot(projectionItem());
+
+    expect(app().querySelector("[data-wcn-note-add]").getAttribute("data-wcn-note-add")).toBe(TASK_ID);
+    expect(app().querySelector("[data-wcn-note-save]").getAttribute("data-wcn-note-save")).toBe(TASK_ID);
+  });
+
+  it("says out loud that Enter also adds — the placeholder disappears as you type", async () => {
+    await boot(projectionItem());
+
+    expect(app().querySelector(".wcn-note-hint"), "the add row has no hint line").not.toBeNull();
+  });
+
+  it("has no textarea and no lone Save button left", async () => {
+    await boot(withNotes([{ id: "n1", text: "not", createdAt: "2026-08-10T09:00:00+00:00" }]));
+
+    // The old shape, gone: one box whose second sentence overwrote the first, under a button that saved nothing.
+    expect(app().querySelector(".wcn-note textarea")).toBeNull();
+  });
+});
+
+describe("the personal note is written to the server, not to a variable", () => {
+  /*
+   * WHAT THIS REPLACED. Until 2026-08-14 this block asserted `it.note =` — that the note was stored in a
+   * JavaScript object — and that a toast fired beside it. Both were true, and together they were the defect: the
+   * assignment was the whole of the save, and the toast said "Not kaydedildi" about it. The guard was pinning the
+   * lie in place. It is REWRITTEN rather than deleted, so the next reader can see which behaviour was retired.
+   */
+  it("posts through TasksApi and never assigns the note in place", () => {
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const fn = src.slice(src.indexOf("const addPersonalNote"), src.indexOf("const removePersonalNote"));
+    expect(fn, "the note write does not reach the API").toContain("TasksApi.addPersonalNote");
+    expect(fn, "the note is still assigned in place for a real task").not.toMatch(/it\.note\s*=/);
+  });
+
+  /*
+   * MUTATION TARGET (the toast). The confirmation must sit INSIDE the success path. `afterPhase2Write` is what
+   * owns that rule — it toasts the success key only when `result.ok`, and every other message it emits is an
+   * error — so the assertion is that the note write goes through it rather than toasting on its own.
+   */
+  it("says 'saved' only through the writer that checks the answer first", () => {
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const fn = src.slice(src.indexOf("const addPersonalNote"), src.indexOf("const removePersonalNote"));
+    const real = fn.slice(fn.indexOf("TasksApi.addPersonalNote"));
+    expect(real, "the toast escaped the success check").not.toMatch(/(?<!\/\/[^\n]*)\btoast\(/);
+    expect(fn, "the write no longer reports through afterPhase2Write").toContain(
+      "afterPhase2Write(result, 'ToastNoteSaved')"
+    );
+  });
+
+  /*
+   * MUTATION TARGET (the snooze). It was `item.snoozedUntil = dateStr` and nothing else — a park that lasted
+   * until the next reload. A real task's snooze now goes to `/personal/snooze`.
+   */
+  it("sends the snooze to the server for a real task", () => {
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const fn = src.slice(src.indexOf("const toggleSnooze"), src.indexOf("const openNew"));
+    expect(fn, "the snooze never reaches the API").toContain("TasksApi.setSnooze");
+    // Both directions through the same call — clearing is a null date, not a second endpoint.
+    expect(fn, "waking the task does not go to the server").toContain("snoozedUntil: null");
   });
 });

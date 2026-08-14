@@ -92,6 +92,16 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// </summary>
     private readonly ITaskTransitionRepository _transitions;
 
+    /// <summary>
+    /// WC-1 — the READER'S OWN overlay (notes + snooze). Read for <c>actor.UserId</c> and nobody else: this is the
+    /// one container here whose contents differ per viewer, so the user id is part of the query rather than a
+    /// filter applied afterwards. There is no code path in this class that can assemble another person's overlay.
+    /// </summary>
+    private readonly ITaskPersonalOverlayRepository _personalOverlays;
+
+    /// <summary>Who is watching each task. Visibility only — a watcher never earns an action (pack §12 K3).</summary>
+    private readonly ITaskWatcherRepository _watchers;
+
     /*
      * BL-024 Phase 2 — the caller's permissions, for FIELD-level questions.
      *
@@ -117,6 +127,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         ITaskDependencyRepository dependencies,
         ITaskCommentRepository comments,
         ITaskTransitionRepository transitions,
+        ITaskPersonalOverlayRepository personalOverlays,
+        ITaskWatcherRepository watchers,
         IActorPermissionContext permissions,
         IPositionRepository positions,
         IOrganizationUnitRepository organizationUnits,
@@ -137,6 +149,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         _dependencies = dependencies;
         _comments = comments;
         _transitions = transitions;
+        _personalOverlays = personalOverlays;
+        _watchers = watchers;
         _permissions = permissions;
         _tasks = tasks;
         _seats = seats;
@@ -247,6 +261,15 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             .GroupBy(transition => transition.TaskItemId)
             .ToDictionary(group => group.Key, group => (IReadOnlyList<TaskTransition>)group.ToList());
 
+        /*
+         * Watchers for the whole page, in one read — and read HERE, before the display-name batch, for the same
+         * reason the transitions are: a watcher the screen cannot name is a row that says somebody is watching
+         * without saying who. Resolving those ids afterwards would be a second directory round-trip per page.
+         */
+        var watchersByTask = (await _watchers.ListByTaskIdsAsync(taskIds, ct))
+            .GroupBy(watcher => watcher.TaskItemId)
+            .ToDictionary(group => group.Key, group => (IReadOnlyList<TaskWatcher>)group.ToList());
+
         // ONE batched resolve for the whole page — never one call per task, and cached between requests. It runs
         // after the children are known so subtask holders ride the SAME batch; resolving them per row would be an
         // N+1 across the page. Best effort: if AuthService is down this comes back empty and names are omitted.
@@ -257,6 +280,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // Whoever performed each recorded act. A history that says "the task was released" without saying by
             // whom answers half the question it was asked.
             .Concat(transitionsByTask.SelectMany(pair => pair.Value).Select(transition => transition.ActorUserId))
+            // Whoever is watching. Same batch, same reason — a named watcher or none at all.
+            .Concat(watchersByTask.SelectMany(pair => pair.Value).Select(watcher => (Guid?)watcher.UserId))
             .Where(id => id is not null && id != Guid.Empty)
             .Select(id => id!.Value)
             .Distinct()
@@ -298,6 +323,17 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          * every pooled row on the surface.
          */
         var poolLabels = await ResolvePoolLabelsAsync(tasks, ct);
+
+        /*
+         * WC-1 — THIS reader's overlays for the whole page, in one read. The actor's user id is the second half of
+         * the query, not a filter applied to the result: a batch read that fetched every overlay and then kept the
+         * matching ones would put other people's private notes in this process's memory, one refactor away from
+         * the wire.
+         */
+        var personalByTask = (await _personalOverlays.ListForUserAsync(taskIds, actor.UserId, ct))
+            .GroupBy(overlay => overlay.TaskItemId)
+            .ToDictionary(group => group.Key, group => group.First());
+
 
         /*
          * The field catalogue, ONE read for the page — including retired definitions.
@@ -346,7 +382,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     commentsByTask.GetValueOrDefault(t.Id, []),
                     transitionsByTask.GetValueOrDefault(t.Id, []),
                     poolLabels,
-                    fieldDefinitions);
+                    fieldDefinitions,
+                    personalByTask.GetValueOrDefault(t.Id),
+                    watchersByTask.GetValueOrDefault(t.Id, []));
             })
             .ToList();
     }
@@ -375,7 +413,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         IReadOnlyList<TaskComment>? comments = null,
         IReadOnlyList<TaskTransition>? transitions = null,
         IReadOnlyDictionary<Guid, string>? poolLabels = null,
-        IReadOnlyDictionary<string, TaskFieldDefinition>? fieldDefinitions = null)
+        IReadOnlyDictionary<string, TaskFieldDefinition>? fieldDefinitions = null,
+        TaskPersonalOverlay? personal = null,
+        IReadOnlyList<TaskWatcher>? watchers = null)
     {
         var assignment = _assignmentResolver.Resolve(task);
         var normalized = _lifecycle.ToNormalizedStatus(
@@ -586,7 +626,69 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 : WorkItemLabelDto.Display(task.Description),
             StartAt: task.StartAt,
             EstimateHours: task.EstimateHours,
-            Tags: task.Tags is { Count: > 0 } ? task.Tags.ToList() : null);
+            Tags: task.Tags is { Count: > 0 } ? task.Tags.ToList() : null,
+            /*
+             * WC-1 — the reader's own layer, or nothing at all.
+             *
+             * `ToPersonal` returns null when this reader has neither snoozed the task nor written a note, which is
+             * most rows: an empty container on every item would put a personal layer on the wire for work nobody
+             * has laid one over, and the screen would have to tell "no notes" apart from "no overlay" for no gain.
+             */
+            Personal: ToPersonal(personal),
+            /*
+             * ── The four settings the create form collected and no surface ever showed ──────────────────────
+             *
+             * Measured 2026-08-14: watchers, delegation policy, notification preferences and the reminder lead
+             * were all written at creation and none of them reached the Task Center. `delegationAllowed` did not
+             * appear anywhere in the client at all. They are projected here and NOT placed on any screen in the
+             * same change — where each belongs is a design decision, and this round has already paid for the
+             * habit of inventing a card for a field that arrived without one.
+             */
+            Watchers: watchers is { Count: > 0 }
+                ? watchers
+                    .Select(w => new WorkItemWatcherDto(
+                        // Person(...) can return null only for a null id; a watcher always has one.
+                        Person(w.UserId, actor, displayNames)!,
+                        w.Role.ToString()))
+                    .ToList()
+                : null,
+            // Straight through as a real bool: this task DOES express a delegation policy, so it says which one.
+            // The DTO's nullable is for providers that have no such concept — not for this one.
+            DelegationAllowed: task.DelegationAllowed,
+            Notifications: new WorkItemNotificationsDto(
+                task.EmailNotificationsEnabled,
+                // NULL and EMPTY are different answers here — "nobody chose, so everything is sent" versus "the
+                // owner chose nothing". Normalising either into the other would silence a task or invent a choice.
+                task.NotifyOnEvents is null ? null : task.NotifyOnEvents.ToList()),
+            ReminderLeadDays: task.ReminderLeadDays);
+    }
+
+    /// <summary>
+    /// The reader's own overlay, or null when they have laid none over this task.
+    ///
+    /// <para>A PAST snooze is projected as no snooze at all: an expired park is over, and sending the stale date
+    /// would have every client re-derive "is this still snoozed?" — the kind of decision the server is here to
+    /// make. The notes still travel, so an overlay whose only content was an expired snooze collapses to null and
+    /// the task carries no personal layer, which is exactly true.</para>
+    /// </summary>
+    private static WorkItemPersonalDto? ToPersonal(TaskPersonalOverlay? overlay)
+    {
+        if (overlay is null)
+        {
+            return null;
+        }
+
+        var snoozedUntil = overlay.SnoozedUntil > DateTimeOffset.UtcNow ? overlay.SnoozedUntil : null;
+        var notes = overlay.Notes
+            // Oldest first — the order they were written, which is the order they read in.
+            .OrderBy(note => note.CreatedAt)
+            .ThenBy(note => note.Id)
+            .Select(note => new WorkItemPersonalNoteDto(note.Id.ToString(), note.Text, note.CreatedAt))
+            .ToList();
+
+        return snoozedUntil is null && notes.Count == 0
+            ? null
+            : new WorkItemPersonalDto(snoozedUntil, notes);
     }
 
     /// <summary>

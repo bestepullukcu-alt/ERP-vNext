@@ -179,6 +179,32 @@ public sealed record AddTaskCommentCommand(
     AddTaskCommentRequest Request,
     string CorrelationId) : IRequest<Response<Guid>>;
 
+// ── The personal overlay (WC-1) ──────────────────────────────────────────────
+
+/// <summary>
+/// Add one private note. There is no update command, by decision: delete-then-write is the same act with one
+/// fewer endpoint and one fewer concurrency question (see <c>TaskPersonalNote</c>).
+/// </summary>
+public sealed record AddTaskPersonalNoteCommand(
+    Guid TaskItemId,
+    AddTaskPersonalNoteRequest Request,
+    string CorrelationId) : IRequest<Response<Guid>>;
+
+/// <summary>
+/// Delete one of the CALLER'S OWN notes. A note id belonging to anybody else answers 404 — the same answer a
+/// nonexistent id gets, because a distinct "not yours" would confirm that somebody else's note exists.
+/// </summary>
+public sealed record DeleteTaskPersonalNoteCommand(
+    Guid TaskItemId,
+    Guid NoteId,
+    string CorrelationId) : IRequest<Response<NoContent>>;
+
+/// <summary>Set or clear the caller's own snooze. Never touches the task's lifecycle — that is the contract.</summary>
+public sealed record SetTaskSnoozeCommand(
+    Guid TaskItemId,
+    SetTaskSnoozeRequest Request,
+    string CorrelationId) : IRequest<Response<NoContent>>;
+
 // ── Phase 5: configurable field definitions ──────────────────────────────────
 
 public sealed record CreateTaskFieldDefinitionCommand(

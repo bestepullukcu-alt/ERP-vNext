@@ -169,4 +169,13 @@
   <data name="ReminderLead14" xml:space="preserve"><value>За 2 недели</value></data>
   <data name="FieldReviewTypeLabel" xml:space="preserve"><value>Тип проверки</value></data>
   <data name="FieldDescriptionPlaceholder" xml:space="preserve"><value>Что нужно сделать и что исполнителю важно знать до начала работы.</value></data>
+  <data name="ErrorNoteTextInvalid" xml:space="preserve">
+    <value>Заметка не может быть пустой и длиннее 2000 символов.</value>
+  </data>
+  <data name="ErrorNoteNotFound" xml:space="preserve">
+    <value>Заметка не найдена.</value>
+  </data>
+  <data name="ErrorSnoozeDateInvalid" xml:space="preserve">
+    <value>Дата отсрочки должна быть в будущем.</value>
+  </data>
 </root>

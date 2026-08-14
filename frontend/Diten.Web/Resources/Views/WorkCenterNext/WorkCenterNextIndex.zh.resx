@@ -747,10 +747,10 @@
     <value>{0} · 已取消置顶</value>
   </data>
   <data name="ToastSnoozed" xml:space="preserve">
-    <value>{0} · 已延后至 {1}（模拟）</value>
+    <value>{0} · 已延后至 {1}</value>
   </data>
   <data name="ToastUnsnoozed" xml:space="preserve">
-    <value>{0} · 已取消延后（模拟）</value>
+    <value>{0} · 已取消延后</value>
   </data>
   <data name="BulkResultTitle" xml:space="preserve">
     <value>批量操作结果</value>
@@ -902,11 +902,14 @@
   <data name="NotePlaceholder" xml:space="preserve">
     <value>仅您可见的笔记…</value>
   </data>
+  <!-- DEAD (WC-1, 2026-08-14): the personal note became a LIST with an add row, so "Save" no longer
+       names a control on any surface. Kept rather than deleted — a removed key is invisible to the
+       next reader, who cannot tell it was retired from it never having existed. -->
   <data name="NoteSave" xml:space="preserve">
     <value>保存</value>
   </data>
   <data name="ToastNoteSaved" xml:space="preserve">
-    <value>个人笔记已保存（模拟）</value>
+    <value>个人笔记已保存</value>
   </data>
   <data name="ActivityLabel" xml:space="preserve">
     <value>活动与评论</value>
@@ -1888,5 +1891,17 @@
   </data>
   <data name="ChecklistAddHint" xml:space="preserve">
     <value>点击标签可更改级别。目前还没有模板列表。</value>
+  </data>
+  <data name="NoteAddButton" xml:space="preserve">
+    <value>添加</value>
+  </data>
+  <data name="NoteAddHint" xml:space="preserve">
+    <value>按 Enter 也可添加。这些笔记仅您可见。</value>
+  </data>
+  <data name="NoteRemove" xml:space="preserve">
+    <value>删除笔记</value>
+  </data>
+  <data name="ToastNoteRemoved" xml:space="preserve">
+    <value>个人笔记已删除</value>
   </data>
 </root>

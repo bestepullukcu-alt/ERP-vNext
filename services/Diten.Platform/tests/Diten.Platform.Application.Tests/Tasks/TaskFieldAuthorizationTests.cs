@@ -440,7 +440,7 @@ public sealed class TaskFieldAuthorizationTests
             new FakeTaskApprovalService(),
             new FakeTaskDependencyRepository(),
             new FakeTaskCommentRepository(),
-            new FakeTaskTransitionRepository(),
+            new FakeTaskTransitionRepository(), new FakeTaskPersonalOverlayRepository(), new FakeTaskWatcherRepository(),
             actor,
             new FakePositionRepository(),
             new FakeOrganizationUnitRepository(),

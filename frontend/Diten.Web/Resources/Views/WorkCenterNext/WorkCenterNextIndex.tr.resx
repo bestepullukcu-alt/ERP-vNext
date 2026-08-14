@@ -747,10 +747,10 @@
     <value>{0} · sabitleme kaldırıldı</value>
   </data>
   <data name="ToastSnoozed" xml:space="preserve">
-    <value>{0} · {1} tarihine ertelendi (mock)</value>
+    <value>{0} · {1} tarihine ertelendi</value>
   </data>
   <data name="ToastUnsnoozed" xml:space="preserve">
-    <value>{0} · erteleme kaldırıldı (mock)</value>
+    <value>{0} · erteleme kaldırıldı</value>
   </data>
   <data name="BulkResultTitle" xml:space="preserve">
     <value>Toplu işlem sonucu</value>
@@ -902,11 +902,14 @@
   <data name="NotePlaceholder" xml:space="preserve">
     <value>Sadece senin göreceğin bir not…</value>
   </data>
+  <!-- DEAD (WC-1, 2026-08-14): the personal note became a LIST with an add row, so "Save" no longer
+       names a control on any surface. Kept rather than deleted — a removed key is invisible to the
+       next reader, who cannot tell it was retired from it never having existed. -->
   <data name="NoteSave" xml:space="preserve">
     <value>Kaydet</value>
   </data>
   <data name="ToastNoteSaved" xml:space="preserve">
-    <value>Kişisel not kaydedildi (mock)</value>
+    <value>Kişisel not kaydedildi</value>
   </data>
   <data name="ActivityLabel" xml:space="preserve">
     <value>Etkinlik &amp; Yorum</value>
@@ -1888,5 +1891,17 @@
   </data>
   <data name="ChecklistAddHint" xml:space="preserve">
     <value>Seviyeyi değiştirmek için etikete tıklayın. Şablon listesi henüz yok.</value>
+  </data>
+  <data name="NoteAddButton" xml:space="preserve">
+    <value>Ekle</value>
+  </data>
+  <data name="NoteAddHint" xml:space="preserve">
+    <value>Enter da ekler. Notları yalnız sen görürsün.</value>
+  </data>
+  <data name="NoteRemove" xml:space="preserve">
+    <value>Notu sil</value>
+  </data>
+  <data name="ToastNoteRemoved" xml:space="preserve">
+    <value>Kişisel not silindi</value>
   </data>
 </root>

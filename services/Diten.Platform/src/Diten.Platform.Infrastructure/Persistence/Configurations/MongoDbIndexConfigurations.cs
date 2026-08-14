@@ -738,6 +738,30 @@ public static class MongoDbIndexConfigurations
                 new CreateIndexOptions { Name = "ix_task_watchers_tenant_user" })
         });
 
+        /*
+         * WC-1 — the personal overlay. UNIQUE on (tenant, task, user), because the pair IS the document: a second
+         * overlay for the same reader and task would split one person's notes across two records, and whichever
+         * one a read happened to find first would look like the note list had lost entries.
+         */
+        var taskPersonalOverlayCollection =
+            database.GetCollection<TaskPersonalOverlay>("task_personal_overlays");
+        await taskPersonalOverlayCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<TaskPersonalOverlay>(
+                Builders<TaskPersonalOverlay>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.TaskItemId)
+                    .Ascending(x => x.UserId),
+                new CreateIndexOptions { Unique = true, Name = "ux_task_personal_overlays_tenant_task_user" }),
+            // Backs the projection's page read: one reader's overlays across the tasks currently on screen.
+            new CreateIndexModel<TaskPersonalOverlay>(
+                Builders<TaskPersonalOverlay>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.UserId)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_task_personal_overlays_tenant_user" })
+        });
+
         await taskFieldDefinitionCollection.Indexes.CreateManyAsync(new[]
         {
             new CreateIndexModel<TaskFieldDefinition>(

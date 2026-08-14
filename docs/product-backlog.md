@@ -3594,3 +3594,49 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - Render yine de kaldırıldı, çünkü zaten gereksizdi. Erteleme ve plan yazmaları render çağırmaya devam ediyor;
   ikisi de gerçekten görünür değişiklik üretiyor ve ikisi de panel açıkken erişilemez.
 - **Gelecek regresyon riski: 🟢.**
+
+### BL-141 — [KİŞİSEL KATMAN] "Kişisel plan tarihi" aslında kişisel değil; ekrandaki etiket yanlış
+- **ÖLÇÜM (2026-08-14).** İş 0 "plan tarihi nerede saklanıyor, not ve erteleme de oraya gitsin" diye soruyordu.
+  Ölçüldü: `PlannedDate` **`TaskItem` üzerinde** — paylaşılan görev kaydında, `TaskWorkItemProvider.cs:551`'de
+  üst düzey bir alan olarak yansıtılıyor ve `plan` eylemi paylaşılan yaşam döngüsünü Open→Planned oynatıyor.
+  Görevi okuyabilen **herkes** görüyor.
+- Yani üç şey değil **iki** kişisel şey var. Not ve erteleme (kişi başına, gizli) tek bir yere — yeni
+  `task_personal_overlays` belgesine — gitti. Plan tarihi yerinde kaldı: oraya taşımak **nerede durduğunu değil
+  ne anlama geldiğini** değiştirirdi (talep eden yeniden planlamayı artık göremezdi).
+- **Kusur depoda değil, ekranda:** Kişisel kartı plan tarihini "Kişisel" başlığı altında gösteriyor. Etiket
+  düzeltilmeli ya da satır Özet'e taşınmalı. **Bu tur yapılmadı — yer kararı CT'nin.**
+- **Gelecek regresyon riski: 🟡** — birisi tutarlılık adına plan tarihini overlay'e taşımaya kalkarsa sessizce
+  bir görünürlük kaybı üretir. `WorkAggregationModels.cs`'teki yorum bunu artık açıkça yazıyor.
+
+### BL-142 — [KİŞİSEL KATMAN] Dört ayar projeksiyonda; ekranda yeri kararlaştırılmadı
+- Projeksiyona giren şekiller (canlı ölçüldü, 2026-08-14):
+  `watchers: [{ person: {id, displayName, isCurrentUser}, role: "Watcher|Consultant|Informed" }]` · yoksa alan yok
+  `delegationAllowed: true|false` · `notifications: { emailEnabled: bool, events?: string[] }` (events **yoksa**
+  = "hiç seçilmedi, hepsi gönderilir"; **boş dizi** = "hiçbiri seçilmedi") · `reminderLeadDays: 3` · yoksa alan yok.
+- Canlı doğrulama, seed edilip geri alınan bir görevle: dördü de tel üstünde göründü, izleyici adıyla birlikte.
+- **Ekrana konmadı, bilerek.** Hangi kartta duracakları tasarım kararı. Öneri (CT'ye): izleyiciler ve devir
+  izni Özet'e; bildirim tercihleri + hatırlatma günü tek bir "Bildirimler" satırına.
+- **Gelecek regresyon riski: 🟢** — hepsi opsiyonel ve null'da atlanıyor.
+
+### BL-143 — [KİŞİSEL KATMAN] Erteleme gelen kutusu süzmesi hâlâ istemcide
+- **ÖLÇÜLDÜ:** `segmentFor` ve liste süzgeci `item.snoozedUntil`'ı tarayıcıda okuyor. Artık sunucudan geliyor,
+  ama **kararı** hâlâ istemci veriyor: sayfalama sunucuda olsaydı ertelenmiş işler sayıya dahil olurdu.
+- Bugün zararsız (sayfalama istemcide). Sunucu tarafı sayfalama geldiği gün süzme de sunucuya taşınmalı, yoksa
+  "3 iş" yazan bir sekme 2 satır gösterir.
+- **Bu turda uygulanmadı, karar kaydedildi.** **Gelecek regresyon riski: 🟡.**
+
+### BL-144 — [KİŞİSEL KATMAN] Kişisel not düzenlenemiyor (karar), ve sabitleme (pin) hâlâ hiçbir yere yazmıyor
+- Not için **düzenleme yok**, karar: sil + yeniden yaz. Bir uç, bir eşzamanlılık sorusu, bir denetim hikâyesi az.
+- **Pin bilerek dışarıda bırakıldı:** ne ön yüzde ne arkada bir davranışı var. Hiçbir şeyin yazmadığı ve hiçbir
+  şeyin okumadığı bir alanı yansıtmak, bu turun kapattığı yarımın aynısını yeniden üretirdi.
+  `WorkAggregationModels.cs`'teki yorum bunu da yazıyor.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-145 — [GÖÇ] 137 görevin 136'sında overlay belgesi yok; geri doldurma yapılmadı
+- **ÖLÇÜM (2026-08-14, dev):** `task_items` = 137, `task_personal_overlays` = 1 (bu turda canlı testte yazılan).
+  Yani **mevcut her görev** overlay'siz.
+- Davranış ölçüldü: overlay yoksa `personal` alanı **hiç gönderilmiyor** (boş kap değil), istemci `item.notes`'u
+  boş diziye normalleştiriyor, kart yalnız ekleme satırını çiziyor. Geri doldurma **gerekmiyor ve yapılmadı** —
+  boş bir belge yazmak, 137 kaydı hiçbir şey için üretmek olurdu.
+- Aynı şey erteleme için: süresi geçmiş bir erteleme `null` olarak yansıtılıyor, kararı sunucu veriyor.
+- **Gelecek regresyon riski: 🟢.**

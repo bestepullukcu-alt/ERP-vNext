@@ -255,6 +255,30 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiAddComment(Guid id)
         => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/{id}/comments", readBody: true);
 
+    // ── The personal overlay (WC-1) ──────────────────────────────────────────
+    //
+    // Their own resource under a task, so they are NOT transition codes and not in TaskTransitionRoutes. Listed
+    // here explicitly for the reason that list exists: a route that lives on Platform and not here answers 404
+    // before the request ever leaves Diten.Web, which is how `inquire` shipped unreachable.
+
+    /// <summary>Add one private note. Visible to its author and to nobody else — the server filters it.</summary>
+    [HttpPost("api/{id:guid}/personal/notes")]
+    public Task<IActionResult> ApiAddPersonalNote(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/{id}/personal/notes", readBody: true);
+
+    /// <summary>Delete one of the caller's own notes.</summary>
+    [HttpDelete("api/{id:guid}/personal/notes/{noteId:guid}")]
+    public Task<IActionResult> ApiDeletePersonalNote(Guid id, Guid noteId)
+        => ProxyAsync(
+            HttpMethod.Delete,
+            $"{_gatewayUrl}/api/v1/tasks/{id}/personal/notes/{noteId}",
+            readBody: false);
+
+    /// <summary>Set or clear the caller's own snooze. Never moves the task.</summary>
+    [HttpPut("api/{id:guid}/personal/snooze")]
+    public Task<IActionResult> ApiSetSnooze(Guid id)
+        => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/tasks/{id}/personal/snooze", readBody: true);
+
     // ── Dependencies (BL-028) ────────────────────────────────────────────────
     //
     // Not transitions, so they are NOT in TaskTransitionRoutes: these are their own resource under a task

@@ -396,7 +396,16 @@
         // the wire and rendered as nothing at all.
         item.waitingOn = item.waitingContext?.waitingOn?.displayName || null;
         item.waitingReason = resolveLabel(item.waitingContext?.reason) || null;
-        item.note = item.personal?.note || null;
+        /*
+         * WC-1 — the personal NOTES, a list now and stored on the server. `personal.notes` is what the projection
+         * emits (id · text · createdAt), and the array is normalised here so every reader downstream can map over
+         * it without asking whether the container arrived: a task nobody has written on carries no `personal` at
+         * all, deliberately, so an unguarded `.notes.map` would throw on the ordinary case.
+         *
+         * The single `personal.note` string this replaced was never on the wire — nothing wrote it and no fixture
+         * declared it. It read a field that only the browser's own unsaved assignment ever set.
+         */
+        item.notes = Array.isArray(item.personal?.notes) ? item.personal.notes : [];
         /*
          * WC-2. The state comes from the PROJECTION for real work and is never re-derived here; a real item whose
          * provider said nothing reads `no-sla`, which is the honest answer — "this provider does not track

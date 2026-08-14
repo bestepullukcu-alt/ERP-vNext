@@ -747,10 +747,10 @@
     <value>{0} · détaché</value>
   </data>
   <data name="ToastSnoozed" xml:space="preserve">
-    <value>{0} · reporté jusqu'au {1} (mock)</value>
+    <value>{0} · reporté jusqu'au {1}</value>
   </data>
   <data name="ToastUnsnoozed" xml:space="preserve">
-    <value>{0} · report annulé (mock)</value>
+    <value>{0} · report annulé</value>
   </data>
   <data name="BulkResultTitle" xml:space="preserve">
     <value>Résultat de l'action groupée</value>
@@ -902,11 +902,14 @@
   <data name="NotePlaceholder" xml:space="preserve">
     <value>Une note visible par vous seul…</value>
   </data>
+  <!-- DEAD (WC-1, 2026-08-14): the personal note became a LIST with an add row, so "Save" no longer
+       names a control on any surface. Kept rather than deleted — a removed key is invisible to the
+       next reader, who cannot tell it was retired from it never having existed. -->
   <data name="NoteSave" xml:space="preserve">
     <value>Enregistrer</value>
   </data>
   <data name="ToastNoteSaved" xml:space="preserve">
-    <value>Note personnelle enregistrée (mock)</value>
+    <value>Note personnelle enregistrée</value>
   </data>
   <data name="ActivityLabel" xml:space="preserve">
     <value>Activité et commentaires</value>
@@ -1888,5 +1891,17 @@
   </data>
   <data name="ChecklistAddHint" xml:space="preserve">
     <value>Cliquez sur l'étiquette pour changer de niveau. Il n'y a pas encore de liste de modèles.</value>
+  </data>
+  <data name="NoteAddButton" xml:space="preserve">
+    <value>Ajouter</value>
+  </data>
+  <data name="NoteAddHint" xml:space="preserve">
+    <value>Entrée l'ajoute aussi. Vous seul voyez ces notes.</value>
+  </data>
+  <data name="NoteRemove" xml:space="preserve">
+    <value>Supprimer la note</value>
+  </data>
+  <data name="ToastNoteRemoved" xml:space="preserve">
+    <value>Note personnelle supprimée</value>
   </data>
 </root>

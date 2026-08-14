@@ -379,6 +379,21 @@ public sealed class TaskWatcherRepository : TenantRepository<TaskWatcher>, ITask
         return await Collection.Find(filter).ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<TaskWatcher>> ListByTaskIdsAsync(
+        IReadOnlyCollection<Guid> taskItemIds,
+        CancellationToken ct = default)
+    {
+        if (taskItemIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<TaskWatcher>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskWatcher>.Filter.In(x => x.TaskItemId, taskItemIds));
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
+
     public async Task<IReadOnlyList<TaskWatcher>> ListByUserIdAsync(Guid userId, CancellationToken ct = default)
     {
         var filter = Builders<TaskWatcher>.Filter.And(
@@ -550,5 +565,68 @@ public sealed class TaskRecurrenceRuleRepository
             Builders<TaskRecurrenceRule>.Filter.Eq(x => x.Version, expectedVersion));
         var result = await Collection.ReplaceOneAsync(filter, rule, new ReplaceOptions(), ct);
         return result.IsAcknowledged && result.ModifiedCount == 1;
+    }
+}
+
+/// <summary>
+/// WC-1 — one reader's private overlay per task. The user id is ANDed into every filter here, so "only the
+/// author sees their notes" holds even if a caller forgets to ask for it.
+/// </summary>
+public sealed class TaskPersonalOverlayRepository
+    : TenantRepository<TaskPersonalOverlay>, ITaskPersonalOverlayRepository
+{
+    public TaskPersonalOverlayRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, "task_personal_overlays")
+    {
+    }
+
+    public async Task<TaskPersonalOverlay?> GetAsync(
+        Guid taskItemId,
+        Guid userId,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<TaskPersonalOverlay>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskPersonalOverlay>.Filter.Eq(x => x.TaskItemId, taskItemId),
+            Builders<TaskPersonalOverlay>.Filter.Eq(x => x.UserId, userId));
+        return await Collection.Find(filter).FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<TaskPersonalOverlay>> ListForUserAsync(
+        IReadOnlyCollection<Guid> taskItemIds,
+        Guid userId,
+        CancellationToken ct = default)
+    {
+        if (taskItemIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<TaskPersonalOverlay>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskPersonalOverlay>.Filter.In(x => x.TaskItemId, taskItemIds),
+            Builders<TaskPersonalOverlay>.Filter.Eq(x => x.UserId, userId));
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
+
+    public async Task UpsertAsync(TaskPersonalOverlay overlay, CancellationToken ct = default)
+    {
+        overlay.UpdatedAt = DateTimeOffset.UtcNow;
+
+        /*
+         * The tenant is NOT re-stamped here — TenantId is init-only, so it is set where the document is built and
+         * cannot drift afterwards. The filter below still pins the tenant, so an overlay carrying somebody else's
+         * tenant id would match nothing and insert nothing rather than overwrite across the boundary.
+         *
+         * Matched on (tenant, task, user) rather than on the document id: the caller may have built a brand-new
+         * overlay for a reader who has never written one, and matching on its freshly generated id would insert a
+         * SECOND overlay for the same pair every time. The pair is the natural key — the unique index in
+         * MongoDbIndexConfigurations says so too.
+         */
+        var filter = Builders<TaskPersonalOverlay>.Filter.And(
+            Builders<TaskPersonalOverlay>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
+            Builders<TaskPersonalOverlay>.Filter.Eq(x => x.TaskItemId, overlay.TaskItemId),
+            Builders<TaskPersonalOverlay>.Filter.Eq(x => x.UserId, overlay.UserId));
+        await Collection.ReplaceOneAsync(filter, overlay, new ReplaceOptions { IsUpsert = true }, ct);
     }
 }
