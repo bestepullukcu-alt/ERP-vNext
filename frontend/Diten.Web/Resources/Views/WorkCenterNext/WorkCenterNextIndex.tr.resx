@@ -728,11 +728,16 @@
   <data name="SourceDueLabel" xml:space="preserve">
     <value>Kaynak son tarih</value>
   </data>
+  <!-- DEAD (WC-1, 2026-08-14): the planned date left the Personal card for the Summary (BL-141) — it is a
+       SHARED field on TaskItem, not a private one, so "Kişisel plan" was a false statement about who can
+       see it. `DetailPlannedDate` replaces it. `PlannedDateNone` went with it: the Summary prints a row
+       only for a fact that exists, and "Planla" is already offered as an action on exactly those tasks.
+       Kept rather than deleted — a removed key is invisible to the next reader. -->
   <data name="PlannedDateLabel" xml:space="preserve">
     <value>Kişisel plan</value>
   </data>
   <data name="PlanConflict" xml:space="preserve">
-    <value>Kişisel planınız kaynak son tarihinden sonra — gecikme riski.</value>
+    <value>Planlanan tarih kaynak son tarihinden sonra — gecikme riski.</value>
   </data>
   <data name="ConfirmBodyOnBehalf" xml:space="preserve">
     <value>Bu işlemi {1} adına “{0}” için uygulamak üzeresiniz. Onaylıyor musunuz?</value>
@@ -1896,12 +1901,24 @@
     <value>Ekle</value>
   </data>
   <data name="NoteAddHint" xml:space="preserve">
-    <value>Enter da ekler. Notları yalnız sen görürsün.</value>
+    <value>Bu notları yalnız sen görürsün.</value>
   </data>
   <data name="NoteRemove" xml:space="preserve">
     <value>Notu sil</value>
   </data>
   <data name="ToastNoteRemoved" xml:space="preserve">
     <value>Kişisel not silindi</value>
+  </data>
+  <data name="DetailPlannedDate" xml:space="preserve">
+    <value>Planlanan tarih</value>
+  </data>
+  <data name="SnoozedLabel" xml:space="preserve">
+    <value>Ertelendi</value>
+  </data>
+  <data name="SnoozeClear" xml:space="preserve">
+    <value>Kaldır</value>
+  </data>
+  <data name="NoteWrittenAt" xml:space="preserve">
+    <value>{0} tarihinde yazıldı</value>
   </data>
 </root>

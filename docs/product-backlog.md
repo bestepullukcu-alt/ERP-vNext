@@ -3706,3 +3706,33 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - **Kimde:** Görev Merkezi'nde değil. Bu kalem bir **kayıt**, bir iş emri değil — kapıyı uygulayacak taraf
   kendi planına almalı.
 - **Gelecek regresyon riski: 🔴 foundation.** Kapı konmadan silme yapılırsa geri dönüşü yok.
+
+### BL-152 — ✅ KAPANDI (2026-08-14) — [BL-148 kapanışı] Alt görev satırı bu kez DOM'da ölçüldü
+- BL-148 "alt görev satırının hizası yalnız kural listesinden doğrulandı" diyordu. Bu turda alt görevi OLAN bir
+  göreve (049e9109, 5 alt görev) not eklenip **üç satır aynı sayfada** ölçüldü:
+  | | zemin | kenarlık | yarıçap | dolgu | hiza |
+  |---|---|---|---|---|---|
+  | not | rgb(255,255,255) | 1px solid rgb(228,230,232) | 6px | 6px 8px | center |
+  | kontrol listesi | aynı | aynı | aynı | aynı | aynı |
+  | alt görev | aynı | aynı | aynı | aynı | aynı |
+- Hover: üçü de `rgba(var(--bs-primary-rgb), .03)`, tarayıcının kural listesinden okundu.
+- **⚠ BU TURDA BULUNAN GERÇEK SAPMA:** not satırı `--bs-body-bg` + `.4375rem` dolgu taşıyordu; diğer ikisi
+  `--bs-card-bg` + `.375rem`. Yani "satır dili aynı" iddiası geçen tur DOĞRU DEĞİLDİ — yalnız `align-items`
+  ölçülmüştü. `--bs-body-bg` tam da kontrol listesi kuralının kendi yorumunda uyardığı hata (beyaz kartın
+  içinde gri panel). Düzeltildi ve dört özelliği birden karşılaştıran bir test yazıldı.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-153 — [ÖLÇÜM SINIRI] Kişisel kart 900px'te ekran görüntüsüyle doğrulanamadı (dördüncü kez)
+- 900px'te Kişisel kart sayfa-y **2180**'de başlıyor (2.4 ekran aşağıda) ve bu ortam oraya kaydıramıyor
+  (`scrollY` 0'da kalıyor; BL-098). Bu turda dördüncü kez.
+- **Ne ÖLÇÜLDÜ:** kartın tüm hesaplanmış stilleri, satır hizası, satır dili karşılaştırması, kontrol sayıları —
+  `getComputedStyle` ve `getBoundingClientRect` kaydırmadan bağımsız çalışıyor. **Ne ÖLÇÜLEMEDİ:** kartın 900px'te
+  nasıl GÖRÜNDÜĞÜ (ekran görüntüsü).
+- **Gelecek regresyon riski: 🟢** — ölçüm boşluğu, kod boşluğu değil.
+
+### BL-154 — [ARTIK] `Unsnooze` ve `PersonalActionsLabel` anahtarlarının durumu
+- Erteleme satırı gelince `Unsnooze` ("Ertelemeyi kaldır") artık hiçbir yerde çizilmiyor; yerini satırdaki
+  `SnoozeClear` ("Kaldır") aldı. **Silinmedi** — liste yüzeyinde hâlâ kullanılıyor olabilir, ölçülmedi.
+- `PersonalActionsLabel` yalnız ertelenmemiş durumdaki grup etiketinde kaldı.
+- **Yapılacak:** liste yüzeyinde `Unsnooze` kullanımı var mı ölç; yoksa ölü işaretle. Bu turda ölçülmedi.
+- **Gelecek regresyon riski: 🟢.**

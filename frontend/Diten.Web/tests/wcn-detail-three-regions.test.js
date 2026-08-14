@@ -499,6 +499,17 @@ const boot = (item) => bootSurface({
   }
 });
 
+const withPlanAction = (plannedDate) => projectionItem({
+  plannedDate,
+  primaryActionCode: "plan",
+  actions: [{
+    code: "plan", label: { kind: "resource", key: "WorkAggregation_Action_plan" },
+    semanticType: "plan", enabled: true, source: "provider",
+    disabledReasonCode: null, disabledReason: null, requiresConfirmation: false,
+    requiresReason: false, requiresEvidence: false, supportsBulk: false, riskLevel: "normal"
+  }]
+});
+
 const subtask = (n) => ({
   id: `s${n}`, title: `Alt görev ${n}`, status: "not-started", canCancel: false
 });
@@ -1989,15 +2000,79 @@ describe("the rail's three cards after the Status card was dissolved", () => {
     expect(app().querySelector(".wcn-facts"), "the fact grid came back").toBeNull();
   });
 
-  it("moves the personal plan to the Personal card and leaves the Status card to its gates", async () => {
-    await boot(projectionItem({ plannedDate: null }));
+  /*
+   * MUTATION TARGET (where the plan lives). THIS TEST USED TO ASSERT THE OPPOSITE, and the assertion was the
+   * defect: it pinned the plan date INSIDE the Personal card, under a heading that says "Kişisel".
+   *
+   * The date is not personal. Measured on `TaskItem` (TaskItem.cs:132) — the shared task row — projected as a
+   * top-level field (TaskWorkItemProvider.cs:551), read back by the requester, and a plan write moves the SHARED
+   * lifecycle to `Planned`. A shared field under a private heading is a false statement about who can see it, so
+   * it moved to the Summary with the task's other shared dates (BL-141, owner decision).
+   */
+  it("keeps the shared plan date OUT of the Personal card", async () => {
+    await boot(projectionItem({ plannedDate: "2026-08-20" }));
+
     const personal = [...app().querySelectorAll(".wcn-detail-rail .card")]
-      .find((c) => c.querySelector(".wcn-personal-plan"));
-    expect(personal, "the plan did not arrive at the Personal card").not.toBeNull();
-    expect(personal.querySelector("h6").textContent).toContain("PersonalCardLabel");
-    // The plan KEEPS its empty state — "I have not planned this yet" is a thing the holder must notice.
-    expect(personal.querySelector(".wcn-personal-plan-value").textContent).toContain("PlannedDateNone");
+      .find((c) => c.querySelector("h6")?.textContent.includes("PersonalCardLabel"));
+    expect(personal, "there is no Personal card at all").not.toBeNull();
+    expect(personal.querySelector(".wcn-personal-plan"), "the plan is still in the private card").toBeNull();
+    expect(personal.textContent, "the plan's value is still in the private card").not.toContain("2026-08-20");
     expect(app().querySelector(".wcn-dates"), "the Status card kept its dates").toBeNull();
+  });
+
+  it("shows the plan date in the Summary, beside the task's other shared dates", async () => {
+    await boot(projectionItem({ plannedDate: "2026-08-20" }));
+
+    const field = app().querySelector(".wcn-sumfield-plan");
+    expect(field, "the plan never arrived in the Summary").not.toBeNull();
+    expect(field.closest(".wcn-sum"), "the plan field is not inside the Summary card").not.toBeNull();
+    expect(field.querySelector(".backbone-preview-label").textContent).toContain("DetailPlannedDate");
+    expect(field.querySelector(".backbone-preview-value").textContent).toContain("2026-08-20");
+    // The golden field pattern, like its five siblings — icon plus labelled value, not a bespoke row.
+    expect(field.querySelector("i"), "the plan field lost its icon").not.toBeNull();
+  });
+
+  /*
+   * ⚠ TWO ENTRANCES TO ONE JOB IS FINE; TWO MECHANISMS IS NOT.
+   *
+   * The Summary row opens the plan editor by carrying the SAME `data-wcn-action="plan"` the action button
+   * carries, so the page's single action handler routes both. This asserts there is no second picker, no second
+   * submit path — the attribute IS the proof, because a bespoke editor would not need it.
+   */
+  it("opens the plan editor through the SAME action the button uses, not a second editor", async () => {
+    await boot(withPlanAction("2026-08-20"));
+
+    const field = app().querySelector(".wcn-sumfield-plan");
+    expect(field.getAttribute("data-wcn-action"), "the plan row invented its own editor").toBe("plan");
+    expect(field.getAttribute("data-wcn-id")).toBe(TASK_ID);
+    // Announced and reachable as a control, not as decorative text.
+    expect(field.getAttribute("role")).toBe("button");
+    expect(field.getAttribute("tabindex")).toBe("0");
+
+    // …and the keyboard reaches the same handler. A role="button" that ignores Enter is worse than plain text.
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const branch = src.slice(src.indexOf('[data-wcn-action][role="button"]'));
+    expect(branch.slice(0, 400), "the plan row is a button the keyboard cannot press").toContain("performAction");
+  });
+
+  it("states the date without offering a control when the projection offers no plan action", async () => {
+    // Somebody else's task, or a closed one: the fact is still worth reading, the button would only be refused.
+    await boot(projectionItem({ plannedDate: "2026-08-20", actions: [] }));
+
+    const field = app().querySelector(".wcn-sumfield-plan");
+    expect(field, "the date vanished along with the action").not.toBeNull();
+    expect(field.getAttribute("role"), "an unavailable action is still offered as a button").toBeNull();
+  });
+
+  /*
+   * NO ROW WHEN THERE IS NO PLAN — the Summary's own rule (a row is printed for a fact that exists), and the
+   * honest one here: `plan` is already offered as an action. Measured live on a task with no plan, "Planla"
+   * appears in the actions card AND in the narrow-screen bar; a third invitation would be a third copy.
+   */
+  it("prints no plan row at all when nobody has planned yet", async () => {
+    await boot(projectionItem({ plannedDate: null }));
+
+    expect(app().querySelector(".wcn-sumfield-plan"), "an empty plan row was printed").toBeNull();
   });
 
   it("ships the new strings in all seven languages", () => {
@@ -2723,7 +2798,197 @@ describe("the page reaches the product's one confirm implementation", () => {
     const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js")
       .replace(/\/\*[\s\S]*?\*\//g, "")
       .replace(/(^|[^:])\/\/.*$/gm, "$1");
-    expect((src.match(/Swal\.fire\(/g) || []).length).toBe(10);
+    // 10 before BL-147; the bulk RESULT notice became a toast, so nine raw dialogs remain.
+    expect((src.match(/Swal\.fire\(/g) || []).length).toBe(9);
+  });
+});
+
+describe("the Personal card carries only what nobody else can see", () => {
+  const withNotes = (notes, extra) => projectionItem(Object.assign({
+    personal: { snoozedUntil: null, notes }
+  }, extra || {}));
+  const note = (id, text) => ({ id, text, createdAt: "2026-08-10T09:00:00+00:00" });
+
+  /*
+   * (a) THE SNOOZE IS A ROW ONCE IT IS SET. A snooze that is ON is a FACT about this reader's inbox — "hidden
+   * from me until the 22nd" — and a button reading "Ertelemeyi kaldır" states that only by implication, in the
+   * negative, in a verb. The row says the date; the trailing control undoes it.
+   */
+  it("states the snooze as a row with its date, and a control that clears it", async () => {
+    await boot(withNotes([], { personal: { snoozedUntil: "2099-01-05", notes: [] } }));
+
+    const row = app().querySelector(".wcn-snooze-row");
+    expect(row, "a snoozed task shows no snooze row").not.toBeNull();
+    expect(row.textContent, "the row does not say it is snoozed").toContain("SnoozedLabel");
+    expect(row.textContent, "the row does not say until when").toContain("2099-01-05");
+    const clear = row.querySelector("[data-wcn-snooze]");
+    expect(clear, "there is no way to clear it").not.toBeNull();
+    expect(clear.textContent).toContain("SnoozeClear");
+  });
+
+  it("offers the plain Ertele action when nothing is snoozed — no row for a fact that is not true", async () => {
+    await boot(withNotes([]));
+
+    expect(app().querySelector(".wcn-snooze-row"), "an un-snoozed task claims to be snoozed").toBeNull();
+    const button = app().querySelector(".wcn-personal-btn[data-wcn-snooze]");
+    expect(button, "the offer to snooze disappeared").not.toBeNull();
+    expect(button.textContent).toContain("Snooze");
+  });
+
+  /*
+   * (b) RELATIVE ON SCREEN, ABSOLUTE IN title AND aria-label. "3 gün önce" is the right answer to glance at and
+   * the wrong one to act on — and a screen-reader user has no hover to fall back on.
+   */
+  it("says when a note was written twice: relative to read, absolute to act on", async () => {
+    await boot(withNotes([note("n1", "muhasebeye sordum")]));
+
+    const when = app().querySelector(".wcn-note-when");
+    expect(when.textContent.trim(), "the row has no relative time").not.toBe("");
+    expect(when.getAttribute("title"), "no absolute date on hover").toBeTruthy();
+    expect(when.getAttribute("aria-label"), "a screen reader gets only the relative words").toContain("NoteWrittenAt");
+  });
+
+  /*
+   * MUTATION TARGET (no confirmation). Owner decision: a private note is cheap to lose and cheap to write again,
+   * and an "are you sure" on every one of them trains the reader to dismiss dialogs — including the ones that
+   * ask something.
+   */
+  it("deletes a note without asking, and without a confirm dialog anywhere in the path", () => {
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const fn = src.slice(src.indexOf("const removePersonalNote"), src.indexOf("// Snooze is a personal filter"));
+    const code = fn.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+    expect(code, "note deletion grew a confirmation step").not.toMatch(/sharedConfirm|showConfirm|Swal/);
+    expect(code, "the delete no longer reaches the API").toContain("deletePersonalNote");
+  });
+
+  /* (c) The hint is the PRIVACY sentence, and it is NOT the placeholder — a placeholder disappears the moment
+     you start typing, which is exactly when "only you see this" needs to be readable. */
+  it("keeps the privacy sentence on screen while the reader types", async () => {
+    await boot(withNotes([]));
+
+    const hint = app().querySelector(".wcn-note-hint");
+    expect(hint, "the add row has no hint line").not.toBeNull();
+    expect(hint.textContent).toContain("NoteAddHint");
+    // …and it is not merely the placeholder repeated, which would vanish on the first keystroke.
+    expect(app().querySelector("[data-wcn-note-add]").getAttribute("placeholder"))
+      .not.toBe(hint.textContent.trim());
+  });
+
+  it("ships the privacy sentence itself in all seven languages, with no Enter instruction left in it", () => {
+    ["en", "tr", "fr", "es", "zh", "ar", "ru"].forEach((lang) => {
+      const resx = read("Resources", "Views", "WorkCenterNext", `WorkCenterNextIndex.${lang}.resx`);
+      const value = new RegExp(
+        '<data name="NoteAddHint"[^>]*>\\s*<value>([\\s\\S]*?)</value>').exec(resx)[1];
+      expect(value.trim().length, `${lang} has an empty hint`).toBeGreaterThan(0);
+      expect(value, `${lang} still instructs about Enter in the privacy line`).not.toMatch(/Enter/);
+    });
+  });
+
+  /* (d) The add row IS the empty state — no "there is nothing here" line above a box for putting something there. */
+  it("says nothing about emptiness when there are no notes", async () => {
+    await boot(withNotes([]));
+
+    expect(app().querySelectorAll(".wcn-note-row:not(.wcn-snooze-row)").length).toBe(0);
+    expect(app().querySelector("[data-wcn-note-add]"), "a note cannot be added at all").not.toBeNull();
+  });
+
+  /* (e) The count, in the head, in the checklist head's own idiom — and only when there is something to count. */
+  it("counts the notes in the card head, and only when there are any", async () => {
+    await boot(withNotes([note("n1", "bir"), note("n2", "iki")]));
+    const head = [...app().querySelectorAll(".wcn-detail-rail h6")]
+      .find((h) => h.textContent.includes("PersonalCardLabel"));
+    expect(head.querySelector(".wcn-count-inline").textContent).toBe("2");
+
+    await boot(withNotes([]));
+    const empty = [...app().querySelectorAll(".wcn-detail-rail h6")]
+      .find((h) => h.textContent.includes("PersonalCardLabel"));
+    expect(empty.querySelector(".wcn-count-inline"), "a zero badge labels an absence").toBeNull();
+  });
+});
+
+describe("three lists, one row language", () => {
+  /*
+   * MEASURED, and it was a real drift: the note row carried `background: var(--bs-body-bg)` and
+   * `padding: .4375rem .5rem` while the checklist item and the subtask row both carry `var(--bs-card-bg)` and
+   * `.375rem .5rem` — and the note row had NO hover rule at all. The body colour is the exact mistake the
+   * checklist rule warns about in its own comment: it measures rgb(245,245,249) against a white card, making
+   * every row a grey panel inside a white panel.
+   */
+  const declarationsOf = (selector) => {
+    const rule = new RegExp("^" + selector + "\\s*\\{([^}]*)\\}", "m").exec(CSS());
+    return rule && rule[1].replace(/\/\*[\s\S]*?\*\//g, "");
+  };
+  const valueOf = (selector, property) => {
+    const body = declarationsOf(selector);
+    const hit = new RegExp(property + ":\\s*([^;]+);").exec(body || "");
+    return hit && hit[1].trim();
+  };
+
+  it("gives the note row the same surface, border, radius and padding as its two siblings", () => {
+    ["background", "border", "border-radius", "padding"].forEach((property) => {
+      expect(valueOf("\\.wcn-note-row", property), `the note row's ${property} drifted`)
+        .toBe(valueOf("\\.diten-checkitem", property));
+    });
+    // The subtask row states the same four in its own rule.
+    ["background", "border", "border-radius", "padding"].forEach((property) => {
+      expect(valueOf("\\.wcn-subtasks > li", property), `the subtask row's ${property} drifted`)
+        .toBe(valueOf("\\.wcn-note-row", property));
+    });
+  });
+
+  it("gives all three the same hover AND focus-within tint", () => {
+    // The two older lists share one rule; the note row has its own with the same value.
+    expect(CSS()).toMatch(/\.diten-checkitem:hover,[\s\S]{0,200}?\.wcn-subtasks > li:focus-within \{\s*background: rgba\(var\(--bs-primary-rgb\), \.03\);/);
+    const note = /\.wcn-note-row:hover,\s*\.wcn-note-row:focus-within \{([^}]*)\}/.exec(CSS());
+    expect(note, "the note row has no hover at all — a mouse user cannot see which row they are on").not.toBeNull();
+    expect(note[1]).toMatch(/rgba\(var\(--bs-primary-rgb\), \.03\)/);
+  });
+
+  it("centres all three", () => {
+    expect(valueOf("\\.wcn-note-row", "align-items")).toBe("center");
+    expect(valueOf("\\.diten-checkitem", "align-items")).toBe("center");
+    expect(valueOf("\\.wcn-check, \\.wcn-subtask", "align-items")).toBe("center");
+  });
+});
+
+describe("the three small ones", () => {
+  /*
+   * (a) `data-bs-display="static"` switches Bootstrap off Popper. `dropup` already makes THIS menu's direction
+   * deterministic, so the attribute bought nothing — and left in place it would drop the next dropdown added to
+   * this page into the same below-the-fold trap, silently.
+   */
+  it("no longer turns Popper off for the whole page", () => {
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js")
+      .replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+    expect(src, "a dropdown still disables Popper").not.toContain('data-bs-display="static"');
+  });
+
+  /*
+   * (b) MUTATION TARGET (bulk result). BEHAVIOUR CHANGE: the partial-failure REPORT is a toast, not a modal.
+   * A modal is for a decision and this asks for none — its one button exists to make it go away. The failed rows
+   * stay selected and flagged on the surface behind it, which is the durable record; the modal was never where
+   * the recovery happened.
+   */
+  it("reports a partial bulk failure as a toast, not as a dialog to dismiss", () => {
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const fn = src.slice(src.indexOf("const runBulk = "), src.indexOf("const runBulkWithProgress"));
+    const code = fn.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+    expect(code, "the bulk result still stops the reader with a dialog").not.toMatch(/Swal\.fire/);
+    expect(code, "the result is not reported at all").toContain("toast(tf('BulkResult'");
+    // Total failure and partial failure still read differently.
+    expect(code).toContain("'error'");
+    expect(code).toContain("'warning'");
+  });
+
+  /*
+   * (c) BL-138. "Only where the bar exists" was the COMMENT, not the rule: the media query alone applied 80px of
+   * dead space to every narrow detail page, including the ones that draw no bar (a closed task offers no
+   * actions, so renderActionBar returns an empty string).
+   */
+  it("reserves room under the bar only on pages that actually have one", () => {
+    const rule = /@media \(max-width: 991\.98px\) \{\s*(\.wcn-details-page[^{]*)\{[^}]*padding-block-end/.exec(CSS());
+    expect(rule, "the narrow-screen bottom padding rule vanished").not.toBeNull();
+    expect(rule[1], "the padding still applies to pages with no bar").toContain(":has(.wcn-actionbar)");
   });
 });
 

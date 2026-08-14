@@ -148,8 +148,21 @@ describe("WorkCenterNext localization resources", () => {
       path.resolve(__dirname, "../wwwroot/assets/js/WorkCenterNext/app.js"), "utf8");
     const fnAt = (name, len) => app.slice(app.indexOf(`const ${name}`), app.indexOf(`const ${name}`) + len);
 
-    // The personal plan states its absence — this is the one row that keeps an empty text.
-    expect(fnAt("renderNote", 1600)).toContain("PlannedDateNone");
+    /*
+     * ⚠ THE PLAN MOVED AGAIN (BL-141, 2026-08-14) — and this time it LOST its empty text on purpose.
+     *
+     * It went to the Summary because it is not personal: measured on `TaskItem`, the shared task row, read back
+     * by the requester. The Summary's rule is that a row is printed for a fact that exists, and "Planla" is
+     * already offered as an action on exactly the tasks that can be planned — measured live, twice on screen at
+     * 900px (the actions card and the narrow-screen bar). A third invitation would be a third copy of one
+     * button, so `PlannedDateNone` is retired rather than relocated.
+     *
+     * The RULE this test was written for is untouched and is asserted below: the two empties were never
+     * interchangeable, so the due date must still not borrow the plan's words.
+     */
+    expect(fnAt("renderNote", 4000), "the retired empty text came back").not.toContain("PlannedDateNone");
+    expect(fnAt("renderSummary", 7000), "the plan's empty text reappeared in the Summary")
+      .not.toContain("PlannedDateNone");
     // The summary drops empty rows instead of printing a placeholder, so it must borrow neither word.
     const summary = fnAt("renderSummary", 7000);   // the golden field pattern made this function longer
     expect(summary).toContain("SourceDueLabel");

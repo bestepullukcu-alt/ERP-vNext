@@ -1709,9 +1709,13 @@
          * rendered 889→1063 in a 900px viewport — 163px of it below the fold, with nothing to scroll to because
          * the bar is fixed to that edge. The reader clicked, the menu opened, and the screen did not change.
          *
-         * Why the automatic flip did not save it: `data-bs-display="static"` (written into this markup when the
-         * bar was built) switches Bootstrap OFF Popper, and Popper is the thing that flips. Measured
+         * Why the automatic flip did not save it: `data-bs-display="static"` — written into this markup when the
+         * bar was built — switches Bootstrap OFF Popper, and Popper is the thing that flips. Measured
          * `transform: none` on the open menu, which is the fingerprint of exactly that.
+         *
+         * ⚠ THAT ATTRIBUTE IS GONE NOW, deliberately: `dropup` already makes the direction deterministic, so the
+         * attribute bought nothing here — and left in place it would drop the NEXT dropdown added to this page
+         * into the same trap, silently. Popper positions again; `dropup` is what decides the direction.
          *
          * The cure is DETERMINISTIC rather than clever. A bar glued to the bottom of the viewport has no case in
          * which downward is right, so this does not ask to be flipped when there is no room — it opens upward,
@@ -1722,7 +1726,7 @@
         const more = rest.length
             ? `<div class="dropdown dropup wcn-actionbar-more">
                 <button type="button" class="wcn-act-btn wcn-act-bare wcn-act-bare-neutral dropdown-toggle"
-                        data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false"
+                        data-bs-toggle="dropdown" aria-expanded="false"
                         aria-label="${esc(t('ActionsOther'))}"${locked ? ' disabled' : ''}>
                     <span>${esc(t('ActionsOther'))}</span>
                 </button>
@@ -2090,12 +2094,53 @@
          */
         const description = field('bx-align-left', 'DetailDescription', item.summary, '', true);
 
+        /*
+         * ── THE PLANNED DATE, MOVED HERE FROM THE PERSONAL CARD (BL-141, owner decision) ─────────────────────
+         *
+         * It sat under a heading that said "Kişisel" and it is not personal: measured on `TaskItem` (the shared
+         * task row), projected as a top-level field, read back by the requester, and a plan write moves the
+         * shared lifecycle to `Planned`. So it belongs beside the other shared dates.
+         *
+         * IT IS CLICKABLE, and it opens the SAME editor "Planla" opens — because it carries the SAME
+         * `data-wcn-action="plan"` the action button carries, and the page's one action handler routes it. Two
+         * entrances to one job is fine; two MECHANISMS for one job is what drifts. Nothing new was written here:
+         * no second picker, no second submit path, no second validation.
+         *
+         * NOT clickable when the projection does not offer `plan` (a task somebody else holds, a closed one) —
+         * the row then states the date and nothing more, rather than offering a control the server would refuse.
+         *
+         * ⚠ NO ROW WHEN THERE IS NO PLAN. That is the Summary's own rule (a row is printed for a fact that
+         * exists), and it is also the honest one here: `plan` is ALREADY offered as an action — measured live on
+         * a task with no plan at all, "Planla" appears in the actions card AND in the narrow-screen bar. A third
+         * invitation to the same job would be a third copy of one button, not a discovery aid.
+         */
+        const planAction = actionByKey(item, 'plan');
+        const planClickable = !!planAction && !planAction.disabled && !isTerminal(item);
+        const plannedConflict = item.dueAt && item.plannedDate && item.plannedDate > item.dueAt;
+        const planned = !item.plannedDate ? '' : `<div class="col-12 col-md-6">
+                <div class="backbone-preview-field wcn-sumfield-plan${
+            plannedConflict ? ' backbone-preview-field-overdue' : ''}"${
+            planClickable
+                ? ` role="button" tabindex="0" data-wcn-action="plan" data-wcn-id="${esc(item.id)}"` : ''}>
+                    <i class="bx bx-calendar-check" aria-hidden="true"></i>
+                    <div>
+                        <div class="backbone-preview-label">${esc(t('DetailPlannedDate'))}</div>
+                        <div class="backbone-preview-value mt-1">${esc(item.plannedDate)}</div>
+                        ${plannedConflict
+                ? `<p class="wcn-date-warn mb-0" role="note"><i class="bx bx-error-circle" aria-hidden="true"></i>${
+                    esc(t('PlanConflict'))}</p>`
+                : ''}
+                    </div>
+                </div>
+            </div>`;
+
         // People → time → classification. A reader asks "whose is this" before "when", and "when" before "how big".
         const fields = description
             + assignee
             + field('bx-user-pin', 'DetailRequester', item.requester)
             + field('bx-calendar', 'DetailStartAt', item.startAt)
             + field('bx-calendar', 'SourceDueLabel', item.dueAt, overdue)
+            + planned
             + field('bx-flag', 'DetailPriority', hasPriority(item) ? priorityLabel(item) : '')
             + field('bx-time-five', 'DetailEstimate', item.estimateHours === null || item.estimateHours === undefined
                 ? '' : tf('EstimateHoursValue', item.estimateHours));
@@ -2885,48 +2930,85 @@
      * Summary drops empty rows; this card keeps this one. The keys, the wording and the conflict rule are all
      * unchanged — they moved house, they were not rewritten.
      */
+    /*
+     * ── THE PERSONAL CARD, AS THE OWNER DECIDED IT (2026-08-14) ──────────────────────────────────────────────
+     *
+     * It now carries ONLY what nobody else can see: this reader's snooze and this reader's notes.
+     *
+     * ⚠ THE PLAN DATE LEFT THIS CARD, and that is a correction rather than a rearrangement. It was measured on
+     * `TaskItem` (TaskItem.cs:132) and projected as a top-level field (TaskWorkItemProvider.cs:551) — the shared
+     * task row, which the requester reads back and whose lifecycle a plan write moves to `Planned`. A shared
+     * field under a heading that says "Kişisel" is not a layout problem, it is a false statement about who can
+     * see it. It is a field of the Summary now, where the rest of the task's shared facts live.
+     */
     const renderNote = (item) => {
         if (isTerminal(item)) { return ''; }
-        const conflict = item.dueAt && item.plannedDate && item.plannedDate > item.dueAt;
-        const plan = `<div class="wcn-personal-plan${conflict ? ' wcn-personal-plan-conflict' : ''}">
-                <span class="wcn-personal-plan-label">${esc(t('PlannedDateLabel'))}</span>
-                <span class="wcn-personal-plan-value">${esc(item.plannedDate || t('PlannedDateNone'))}</span>
-            </div>
-            ${conflict
-            ? `<p class="wcn-date-warn" role="note"><i class="bx bx-error-circle" aria-hidden="true"></i>${esc(t('PlanConflict'))}</p>`
-            : ''}`;
 
         /*
-         * ── FROM ONE BOX TO A LIST (WC-1) ────────────────────────────────────────────────────────────────────
+         * (a) THE SNOOZE, as a ROW rather than a button, once it is actually set.
          *
-         * It was a textarea and a "Kaydet" button, and the button was a lie: `it.note = input.value` and a toast
-         * saying "Not kaydedildi". Nothing left the browser and the next reload took the sentence away. Now every
-         * note is a stored record with its own instant, and the toast fires only after the server has answered.
+         * A snooze that is ON is a FACT about this reader's inbox — "this is hidden from me until the 22nd" —
+         * and a button labelled "Ertelemeyi kaldır" states that fact only by implication, in the negative, in a
+         * verb. The row says the date; the trailing control undoes it. Not snoozed, there is no fact to state,
+         * so what remains is the offer: the button, exactly as before.
+         */
+        const snoozed = item.snoozedUntil && item.snoozedUntil > data.todayIso;
+        const snooze = snoozed
+            ? `<div class="wcn-note-row wcn-snooze-row">
+                    <i class="bx bx-moon wcn-snooze-icon" aria-hidden="true"></i>
+                    <span class="wcn-snooze-label">${esc(t('SnoozedLabel'))}</span>
+                    <span class="wcn-note-text wcn-snooze-date">${esc(item.snoozedUntil)}</span>
+                    <button type="button" class="btn btn-sm btn-label-secondary wcn-snooze-clear"
+                            data-wcn-snooze="${item.id}">${esc(t('SnoozeClear'))}</button>
+                </div>`
+            : `<div class="wcn-personal" role="group" aria-label="${esc(t('PersonalActionsLabel'))}">
+                    <button type="button" class="wcn-personal-btn" data-wcn-snooze="${item.id}">
+                        <i class="bx bx-moon" aria-hidden="true"></i><span>${esc(t('Snooze'))}</span>
+                    </button>
+                </div>`;
+
+        /*
+         * (b) THE NOTES.
          *
-         * A LIST rather than one field, by owner decision, and the shape follows from what a note IS: a thought
-         * about a moment. One box means the second thought overwrites the first, so the box either stays empty or
-         * grows into a wall of text nobody dares edit. Each note keeps WHEN it was written for the same reason
-         * the activity feed does — "muhasebeye sordum" means something different today than it did in June.
+         * A LIST rather than one box, by owner decision, and the shape follows from what a note IS: a thought
+         * about a moment. One box means the second thought overwrites the first, so the box either stays empty
+         * or grows into a wall of text nobody dares edit.
          *
-         * NO EDIT, by decision: delete and write again. That is one endpoint, one concurrency question and one
-         * audit story fewer, and on a private note the difference costs nothing.
+         * WHEN it was written is RELATIVE on screen ("dün", "3 gün önce") and ABSOLUTE in `title` and
+         * `aria-label`. Relative is what a reader actually wants from their own note; absolute is what they need
+         * the moment the relative answer stops being precise enough, and a screen-reader user has no hover to
+         * fall back on. Both are derived from the stored instant at render — never a count the server froze.
+         *
+         * NO EDIT and NO DELETE CONFIRMATION, both by decision: a private note is cheap to lose and cheap to
+         * write again, and an "are you sure" on every one of them trains the reader to dismiss dialogs.
          */
         const notes = Array.isArray(item.notes) ? item.notes : [];
-        const rows = notes.map((note) => `<li class="wcn-note-row">
+        const rows = notes.map((note) => {
+            const absolute = noteWhenAbsolute(note);
+            const when = noteWhen(note, item);
+            return `<li class="wcn-note-row">
                 <span class="wcn-note-text">${esc(note.text)}</span>
-                <span class="wcn-note-when">${esc(noteWhen(note, item))}</span>
+                <span class="wcn-note-when"${absolute ? ` title="${esc(absolute)}"` : ''}${
+                absolute ? ` aria-label="${esc(tf('NoteWrittenAt', absolute))}"` : ''}>${esc(when)}</span>
                 <button type="button" class="wcn-note-remove" data-wcn-note-remove="${esc(note.id)}"
                         data-wcn-note-task="${item.id}"
                         aria-label="${esc(t('NoteRemove'))}" title="${esc(t('NoteRemove'))}">
                     <i class="bx bx-trash" aria-hidden="true"></i>
                 </button>
-            </li>`).join('');
+            </li>`;
+        }).join('');
 
         /*
-         * The add row speaks the grammar this round standardised on the checklist and the subtask list: an inset
-         * glyph in a 38px box, Enter commits, a button that says the same thing for whoever cannot see the
-         * placeholder, and one hint line beneath. A fourth input dialect on one page is how a product starts
-         * reading as four.
+         * (c) THE ADD ROW, in the grammar this round standardised on the checklist and the subtask list: an
+         * inset glyph in a 38px box, Enter commits, a button that says the same thing for whoever cannot see the
+         * placeholder, and one hint line beneath.
+         *
+         * THE HINT IS THE PRIVACY SENTENCE, not the Enter affordance, and it is NOT the placeholder. A
+         * placeholder disappears the moment you start typing — which is the exact moment "only you will see
+         * this" needs to be readable. Enter keeps working and the button says so visibly.
+         *
+         * (d) It is also the EMPTY STATE. No "there is nothing here" line above a box for putting something
+         * there: the add row IS the invitation, the same rule the checklist card follows.
          */
         const addRow = `<div class="wcn-note-add">
                 <div class="wcn-search wcn-search-inline">
@@ -2941,9 +3023,15 @@
             </div>
             <p class="wcn-block-hint wcn-note-hint">${esc(t('NoteAddHint'))}</p>`;
 
+        // (e) The count, in the card head, in the idiom the checklist head already uses — and only when there is
+        // something to count. A "0" badge is a label for an absence the empty state already states better.
+        const count = notes.length
+            ? `<span class="wcn-count-inline">${esc(String(notes.length))}</span>`
+            : '';
+
         return `<div class="wcn-detail-section">
-            ${cardHead('bx-note', 'PersonalCardLabel')}
-            ${plan}
+            ${cardHead('bx-note', 'PersonalCardLabel', count)}
+            ${snooze}
             ${rows ? `<ul class="wcn-notes">${rows}</ul>` : ''}
             ${addRow}
         </div>`;
@@ -2960,6 +3048,24 @@
     const noteWhen = (note, item) => {
         const at = note.createdAt ? Date.parse(note.createdAt) : NaN;
         return Number.isNaN(at) ? '' : agoLabel(at, item.provenance);
+    };
+
+    /*
+     * The same instant, spelled out. This is what `title` and `aria-label` carry beside the relative words:
+     * "3 gün önce" is the right answer to glance at and the wrong one to act on, and a screen-reader user has no
+     * hover to reach for. Formatted in the READER'S locale rather than a fixed pattern — the page already does
+     * this for the calendar's month names, from the same `CurrentLanguage`.
+     */
+    const noteWhenAbsolute = (note) => {
+        const at = note.createdAt ? new Date(note.createdAt) : null;
+        if (!at || Number.isNaN(at.getTime())) { return ''; }
+        try {
+            return new Intl.DateTimeFormat(global.CurrentLanguage || undefined,
+                { dateStyle: 'long', timeStyle: 'short' }).format(at);
+        } catch (error) {
+            // A bad locale must not take the row down with it — the relative words are still on screen.
+            return at.toISOString().slice(0, 16).replace('T', ' ');
+        }
     };
 
     // Comment composer — single stream: what I write also goes to the source.
@@ -3390,19 +3496,14 @@
         const notices = surface.notices.map((notice) =>
             `<div class="wcn-parked wcn-parked-info" role="note"><i class="bx bx-info-circle"></i><span>${esc(t(notice.labelKey))}</span></div>`
         ).join('');
-        // Personal actions (pin / snooze) — the thin overlay WorkCenter owns.
-        const isSnoozed = item.snoozedUntil && item.snoozedUntil > data.todayIso;
         /*
-         * The personal overlay (snooze) is NOT a task action: it changes what the viewer sees, not what the task
-         * is. It lives in the rail beneath the personal note — one place, with the other personal thing — rather
-         * than beside the engine actions where it would read as another transition.
+         * ⚠ THE SNOOZE CONTROL USED TO BE BUILT HERE and appended after the Personal card's body. It is drawn
+         * inside `renderNote` now, because the card has TWO faces of it — an offer while nothing is snoozed, a
+         * row stating the date once something is — and only the function that knows the notes can choose.
+         *
+         * FOUND BY A TEST, not by reading: leaving this block in place rendered the button twice, and the guard
+         * that counts snooze controls in the rail went from 1 to 2 the moment the row was added.
          */
-        const personal = (item.lifecycle === 'Done' || item.lifecycle === 'Cancelled') ? '' :
-            `<div class="wcn-personal" role="group" aria-label="${esc(t('PersonalActionsLabel'))}">
-                <button type="button" class="wcn-personal-btn${isSnoozed ? ' active' : ''}" data-wcn-snooze="${item.id}">
-                    <i class="bx bx-moon"></i><span>${esc(t(isSnoozed ? 'Unsnooze' : 'Snooze'))}</span>
-                </button>
-            </div>`;
         /*
          * TWO KINDS, TWO SHAPES — because a sentence somebody wrote and a state that changed are not the same
          * kind of thing, and reading them at the same weight makes the conversation disappear into the log.
@@ -3818,7 +3919,7 @@
             card(renderActionRail(item, surface.interactionLocked, surface)),
             card(renderStatusCard(item)),
             // Personal note sits UNDER the actions: it is something the viewer writes, not something the task says.
-            card(`${renderNote(item)}${personal}`),
+            card(renderNote(item)),
             card(`${renderDelegation(item)}${renderApprovalChain(item)}`),
             card(renderSourceCard(item))
         ].filter(Boolean).join('');
@@ -6410,13 +6511,21 @@
         state.bulkFailedIds = new Set(failed.map((i) => i.id));
         failed.forEach((i) => state.tableSelected.add(i.id));
         render();
-        if (failed.length && global.Swal) {
-            global.Swal.fire({
-                icon: failed.length === selected.length ? 'error' : 'warning',
-                title: t('BulkResultTitle'),
-                html: `<div class="wcn-confirm-body">${esc(tf('BulkResult', selected.length, ok, failed.length))}</div>`,
-                confirmButtonText: t('ReasonConfirm')
-            });
+        /*
+         * BEHAVIOUR CHANGE (BL-147): the partial-failure REPORT is a toast, not a modal.
+         *
+         * A modal is for a decision, and this asks for none — it says what happened and offers one button whose
+         * only job is to make it go away. Stopping the reader to dismiss a sentence is how a product teaches
+         * people to close dialogs without reading them, and the dialogs that DO ask something are the ones that
+         * then get closed unread.
+         *
+         * Nothing is lost by the move: the failed rows stay selected and flagged on the surface behind it (see
+         * `bulkFailedIds` above), which is the durable record — the modal was never where the recovery happened.
+         * The tone still separates total failure from partial.
+         */
+        if (failed.length) {
+            toast(tf('BulkResult', selected.length, ok, failed.length),
+                failed.length === selected.length ? 'error' : 'warning');
         } else {
             toast(tf('ToastBulk', ok));
         }
@@ -6590,6 +6699,21 @@
          * The hint line under the box is what says so — the placeholder disappears the moment you start typing,
          * and a key nobody documented is a key nobody presses.
          */
+        /*
+         * THE SUMMARY'S PLAN ROW IS A `role="button"`, so it owes the keyboard what a real button gets for free:
+         * Enter AND Space. Without this it is reachable by Tab, announced as a button, and does nothing when
+         * pressed — which is worse than not being focusable at all.
+         *
+         * It routes through the SAME `performAction` the click path uses; there is one mechanism, and this is
+         * the second way to reach it, not a second copy of it.
+         */
+        const fieldButton = event.target.closest && event.target.closest('[data-wcn-action][role="button"]');
+        if (fieldButton && (event.key === 'Enter' || event.key === ' ')) {
+            event.preventDefault();
+            performAction(itemById(fieldButton.getAttribute('data-wcn-id')),
+                fieldButton.getAttribute('data-wcn-action'));
+            return;
+        }
         if (event.key === 'Enter' && event.target.matches && event.target.matches('[data-wcn-note-add]')) {
             event.preventDefault();
             await addPersonalNote(event.target.getAttribute('data-wcn-note-add'), event.target.value);

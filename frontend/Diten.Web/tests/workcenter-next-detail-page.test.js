@@ -635,12 +635,21 @@ describe("every action is rendered exactly once", () => {
     expect(app().querySelector(".wcn-detail-rail [data-wcn-action]")).not.toBeNull();
   });
 
-  // Snooze changes what the viewer sees, not what the task is, so it sits with the personal note — in ONE place.
+  /*
+   * Snooze changes what the viewer sees, not what the task is, so it sits with the personal note — in ONE card.
+   *
+   * ⚠ "One place" is the CARD, not one control. The snooze now has two FACES in that card and never both at
+   * once: an offer ("Ertele") while nothing is snoozed, and a row stating the date with a control that clears it
+   * once something is. Counting controls would have this test fail the day the second face was drawn, which is
+   * not what it was written to protect — so it asserts what it meant: exactly one snooze control, in the rail.
+   */
   it("keeps the personal overlay in one place too", async () => {
     await bootDetailPage(projectionItem());
 
-    expect(app().querySelectorAll("[data-wcn-snooze]")).toHaveLength(1);
-    expect(app().querySelector(".wcn-detail-rail [data-wcn-snooze]")).not.toBeNull();
+    expect(app().querySelectorAll(".wcn-detail-rail [data-wcn-snooze]")).toHaveLength(1);
+    expect(app().querySelectorAll("[data-wcn-snooze]").length,
+      "a snooze control escaped the rail").toBe(
+      app().querySelectorAll(".wcn-detail-rail [data-wcn-snooze]").length);
   });
 });
 

@@ -6695,13 +6695,51 @@ tags.diten-tags .tagify__input {
        MEASURED at 900px with `baseline`: the note text sat at centre 1421.8, the date at 1422.5 and the 24px
        delete button at 1419.4, so three leaves of one row had three different middles. Baseline aligns TEXT
        BASELINES, and this row holds three boxes of different heights (17.9 / 15.1 / 24) with two different
-       font sizes — the delete has no text at all, so its "baseline" is its bottom edge and it rode 2.4px high.
-       `.wcn-check` and `.wcn-subtask`, the two rows this one was built to match, have both used `center` all
-       along; the note row was the only one that did not. */
+       font sizes — the delete has no text at all, so its "baseline" is its bottom edge and it rode 2.4px high. */
     display: flex; align-items: center; gap: .5rem;
-    padding: .4375rem .5rem; border-radius: .375rem;
-    background: var(--bs-body-bg); border: 1px solid var(--bs-border-color);
-    font-size: .8125rem;
+    /* ⚠ THE REST OF THIS RULE IS COPIED FROM `.diten-checkitem`, VALUE FOR VALUE, and that is the point.
+       MEASURED: this row had `background: var(--bs-body-bg)` and `padding: .4375rem .5rem` while the checklist
+       item and the subtask row both carry `var(--bs-card-bg)` and `.375rem .5rem`. The body colour is the exact
+       mistake the checklist rule warns about in its own comment — it measured rgb(245,245,249) against a white
+       card, which makes every row a grey panel inside a white panel, a nesting the content does not have. Three
+       lists, one row language, so the numbers are the same numbers. */
+    padding: .375rem .5rem;
+    border-radius: .375rem;
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+}
+/* Hover AND focus-within, from the same block that gave the other two lists theirs: a mouse user sees where they
+   are and a keyboard user must too. This row had neither. */
+.wcn-note-row:hover,
+.wcn-note-row:focus-within { background: rgba(var(--bs-primary-rgb), .03); }
+
+/* ── THE SNOOZE, AS A ROW ──────────────────────────────────────────────────
+   Same row language as a note, because it is the same KIND of thing: a private fact about this reader's inbox.
+   Only the leading glyph and the trailing control differ. */
+.wcn-snooze-row { margin-block-end: .5rem; }
+.wcn-snooze-icon { flex: 0 0 auto; font-size: 1rem; color: var(--bs-secondary-color); }
+.wcn-snooze-label { flex: 0 0 auto; font-size: .75rem; color: var(--bs-secondary-color); }
+/* The date is the value, so it carries the row's weight — the label beside it is the quiet half. */
+.wcn-snooze-date { font-weight: 500; }
+.wcn-snooze-clear { flex: 0 0 auto; }
+
+/* ── THE SUMMARY'S PLAN FIELD, WHEN IT IS A CONTROL ────────────────────────
+   It is a `role="button"` inside the golden field pattern, so it has to LOOK operable — a field announced as a
+   button and painted as text is a control nobody finds. The affordance is the lightest one this page already
+   uses for a row (`.wcn-row:hover`'s primary tint), not a second button style.
+   Read-only when the projection offers no `plan` action; then the attribute is absent and none of this applies. */
+.wcn-sumfield-plan[role="button"] {
+    cursor: pointer;
+    border-radius: .375rem;
+    /* Negative inset so the tint reaches past the text without moving the field off the grid it shares with its
+       five siblings. Padding-only would shift the label; this keeps every field's first line on one baseline. */
+    margin: -.25rem -.5rem;
+    padding: .25rem .5rem;
+}
+.wcn-sumfield-plan[role="button"]:hover { background: rgba(var(--bs-primary-rgb), .04); }
+.wcn-sumfield-plan[role="button"]:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 1px;
 }
 /* `anywhere`, because a note is one uninterrupted sentence a person typed and a URL in it must wrap rather than
    push the whole rail wide — the same rule the comment feed already carries. */
@@ -7252,9 +7290,14 @@ tags.diten-tags .tagify__input {
     font-size: .75rem; color: var(--bs-warning);
 }
 .wcn-actionbar-locked { opacity: .75; }
-/* Room under the last card so the bar never covers its final row. Only where the bar exists. */
+/* Room under the last card so the bar never covers its final row.
+   ⚠ BL-138 — "only where the bar exists" was the COMMENT, not the rule. The media query alone applied 80px of
+   dead space to EVERY narrow-screen detail page, including the ones that draw no bar at all: a closed task, or
+   one the reader does not hold, offers no actions, so `renderActionBar` returns an empty string and the padding
+   was reserving room for nothing. `:has()` makes the sentence true (measured supported in this browser), and the
+   condition now lives where the claim is rather than one line above it. */
 @media (max-width: 991.98px) {
-    .wcn-details-page { padding-block-end: 5rem; }
+    .wcn-details-page:has(.wcn-actionbar) { padding-block-end: 5rem; }
 }
 
 /* ── Action rail: three tiers, ONE fill ────────────────────────────────────
