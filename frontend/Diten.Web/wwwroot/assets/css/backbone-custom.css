@@ -6415,6 +6415,15 @@ tags.diten-tags .tagify__input {
    beside the grip permanently — WCAG 2.2 §2.5.7 wants a single-pointer alternative to every drag, and these
    are also the only keyboard path (Sortable has none). */
 .diten-checkitem-move { display: inline-flex; flex-direction: column; flex: 0 0 auto; }
+/* ── WITHDRAWN, BUT STILL THERE ────────────────────────────────────────────
+   A one-item list offers no reordering, so its grip and its arrows are taken away — but the SPACE they occupy is
+   not, or the row changes height with the number of items in it.
+   MEASURED before this rule: one item rendered a 33.39px row and six rendered 44px, in the same list, on the
+   same page. Adding a second item made every row grow by 10.61px.
+   `visibility: hidden` withdraws exactly as much as `d-none` did — invisible, unclickable, unfocusable, out of
+   the accessibility tree — and gives up only the collapse. The taller shape wins because it is the one every
+   list that CAN be reordered already shows. */
+.diten-checkitem-withdrawn { visibility: hidden; }
 .diten-checkitem-move .diten-checkitem-btn { block-size: .9375rem; font-size: .75rem; }
 .diten-checkitem-text {
     flex: 1 1 auto;
@@ -7425,7 +7434,11 @@ tags.diten-tags .tagify__input {
 .wcn-subtask-cancel:hover { color: var(--bs-danger); }
 
 /* Guidance banner: what the task needs from the viewer right now, directly under the title. */
-.wcn-guidance { margin-block: .75rem 0; }
+/* 1rem, not .75rem — MEASURED after the guidance moved under the stepper (2026-08-14): it sat 12px below the
+   strip while `.wcn-blocked`, its new neighbour under the same strip, sits 16px below it. Two notices in one
+   card, two rhythms. The guidance is the one that moved, so the guidance is the one that adapts; nothing about
+   the block notices changed. */
+.wcn-guidance { margin-block: 1rem 0; }
 .wcn-guidance i { font-size: 1.125rem; line-height: 1.45; }
 /* Destructive actions live behind their own menu, apart from the explained actions above. */
 .wcn-actrail-menu .dropdown-toggle { inline-size: 100%; }

@@ -146,7 +146,17 @@ describe("WorkCenterNext localization resources", () => {
      */
     const app = fs.readFileSync(
       path.resolve(__dirname, "../wwwroot/assets/js/WorkCenterNext/app.js"), "utf8");
-    const fnAt = (name, len) => app.slice(app.indexOf(`const ${name}`), app.indexOf(`const ${name}`) + len);
+    /*
+     * Sliced to the NEXT top-level declaration, not to a magic character count. The count version broke twice
+     * as `renderSummary` grew (the plan field, then the parent field pushed `SourceDueLabel` past 7000 chars)
+     * — and it broke by reporting the function does not contain a key it plainly contains, which is the worst
+     * way for a guard to fail: it accuses the code of the defect the test itself has.
+     */
+    const fnAt = (name) => {
+      const start = app.indexOf(`const ${name}`);
+      const next = app.indexOf("\n    const ", start + 1);
+      return app.slice(start, next === -1 ? app.length : next);
+    };
 
     /*
      * ⚠ THE PLAN MOVED AGAIN (BL-141, 2026-08-14) — and this time it LOST its empty text on purpose.
@@ -160,11 +170,11 @@ describe("WorkCenterNext localization resources", () => {
      * The RULE this test was written for is untouched and is asserted below: the two empties were never
      * interchangeable, so the due date must still not borrow the plan's words.
      */
-    expect(fnAt("renderNote", 4000), "the retired empty text came back").not.toContain("PlannedDateNone");
-    expect(fnAt("renderSummary", 7000), "the plan's empty text reappeared in the Summary")
+    expect(fnAt("renderNote"), "the retired empty text came back").not.toContain("PlannedDateNone");
+    expect(fnAt("renderSummary"), "the plan's empty text reappeared in the Summary")
       .not.toContain("PlannedDateNone");
     // The summary drops empty rows instead of printing a placeholder, so it must borrow neither word.
-    const summary = fnAt("renderSummary", 7000);   // the golden field pattern made this function longer
+    const summary = fnAt("renderSummary");
     expect(summary).toContain("SourceDueLabel");
     expect(summary, "the summary borrowed the plan's empty text").not.toContain("PlannedDateNone");
     expect(summary, "the summary borrowed the SLA empty text").not.toContain("SlaNoSla");

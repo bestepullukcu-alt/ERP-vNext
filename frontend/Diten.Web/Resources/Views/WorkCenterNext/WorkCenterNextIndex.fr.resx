@@ -1804,6 +1804,11 @@
   <data name="SubtaskTitleRequired" xml:space="preserve">
     <value>Saisissez un titre pour la sous-tâche.</value>
   </data>
+  <!-- DEAD (2026-08-14): the parent-task notice became a Summary FIELD, whose label is `DetailParentTask`
+       and whose value is the parent's own title as a link. "{0} görevinin alt görevi" wrapped the title in
+       a sentence, which a labelled field does not need. Kept rather than deleted — a removed key is
+       invisible to the next reader. `SubtaskOfUnnamed` is still live: it is the honest fallback when the
+       reader cannot see the parent. -->
   <data name="SubtaskOfNamed" xml:space="preserve">
     <value>Sous-tâche de « {0} »</value>
   </data>
@@ -1920,5 +1925,8 @@
   </data>
   <data name="NoteWrittenAt" xml:space="preserve">
     <value>Écrit le {0}</value>
+  </data>
+  <data name="DetailParentTask" xml:space="preserve">
+    <value>Tâche parente</value>
   </data>
 </root>

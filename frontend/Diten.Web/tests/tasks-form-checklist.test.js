@@ -351,16 +351,22 @@ describe("a move control is live only where it has somewhere to go", () => {
     expect(actualStates()).toEqual(expectedStates());
   });
 
-  it("hides the move controls entirely when there is only one row", () => {
+  it("withdraws the move controls when there is only one row, keeping their space", () => {
     /*
-     * Hidden, not disabled. A greyed arrow still says "this list can be reordered", which a one-item list
+     * Withdrawn, not disabled. A greyed arrow still says "this list can be reordered", which a one-item list
      * cannot do — and dragging a single row is equally meaningless, so the grip goes with them.
+     *
+     * ⚠ NOT `d-none`, which is what this test used to pin. `display: none` also takes the control out of
+     * LAYOUT: measured live, one item rendered a 33.39px row and six rendered 44px in the same list, so the row
+     * height moved as items were added. `visibility: hidden` withdraws as much and collapses nothing.
      */
     render(1);
     const row = list().querySelector("[data-diten-check-row]");
 
-    expect(row.querySelector(".diten-checkitem-move").classList.contains("d-none")).toBe(true);
-    expect(row.querySelector("[data-diten-check-grip]").classList.contains("d-none")).toBe(true);
+    expect(row.querySelector(".diten-checkitem-move").classList.contains("diten-checkitem-withdrawn")).toBe(true);
+    expect(row.querySelector("[data-diten-check-grip]").classList.contains("diten-checkitem-withdrawn")).toBe(true);
+    expect(row.querySelector(".diten-checkitem-move").classList.contains("d-none"),
+      "the row collapses with the control again").toBe(false);
   });
 
   it("brings them back as soon as a second row exists", () => {
@@ -368,8 +374,8 @@ describe("a move control is live only where it has somewhere to go", () => {
     render(2);
 
     [...list().querySelectorAll("[data-diten-check-row]")].forEach((row) => {
-      expect(row.querySelector(".diten-checkitem-move").classList.contains("d-none")).toBe(false);
-      expect(row.querySelector("[data-diten-check-grip]").classList.contains("d-none")).toBe(false);
+      expect(row.querySelector(".diten-checkitem-move").classList.contains("diten-checkitem-withdrawn")).toBe(false);
+      expect(row.querySelector("[data-diten-check-grip]").classList.contains("diten-checkitem-withdrawn")).toBe(false);
     });
   });
 
@@ -402,7 +408,7 @@ describe("a move control is live only where it has somewhere to go", () => {
 
     [...list().querySelectorAll("[data-diten-check-row]")][1].remove();
     TaskForm.applyChecklistPositions(list());
-    expect(list().querySelector(".diten-checkitem-move").classList.contains("d-none")).toBe(true);
+    expect(list().querySelector(".diten-checkitem-move").classList.contains("diten-checkitem-withdrawn")).toBe(true);
   });
 });
 

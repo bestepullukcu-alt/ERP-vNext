@@ -251,10 +251,20 @@ describe("a move control is live only where it has somewhere to go", () => {
     expect(first.matches(":disabled")).toBe(true);
   });
 
-  it("hides the controls entirely on a one-row list", () => {
-    // A disabled arrow still says "this list can be reordered", which a one-item list cannot keep.
+  it("withdraws the controls on a one-row list — without collapsing the row", () => {
+    /*
+     * A disabled arrow still says "this list can be reordered", which a one-item list cannot keep, so the
+     * controls are withdrawn. That decision is unchanged.
+     *
+     * ⚠ WHAT CHANGED IS *HOW*, and this test used to pin the wrong half. It asserted `d-none`, and
+     * `display: none` takes the control out of LAYOUT as well as out of sight — measured live, the same list
+     * rendered a 33.39px row with one item and a 44px row with six. `visibility: hidden` withdraws exactly as
+     * much (invisible, unclickable, unfocusable, out of the accessibility tree) and keeps the box.
+     */
     const ul = listOf(1);
-    expect(ul.querySelector(".diten-checkitem-move").classList.contains("d-none")).toBe(true);
+    const move = ul.querySelector(".diten-checkitem-move");
+    expect(move.classList.contains("diten-checkitem-withdrawn")).toBe(true);
+    expect(move.classList.contains("d-none"), "the row collapses with the control again").toBe(false);
   });
 
   it("keeps a CLOSED task's arrows disabled even after positions are re-derived", () => {

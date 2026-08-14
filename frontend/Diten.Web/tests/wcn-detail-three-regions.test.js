@@ -2803,6 +2803,207 @@ describe("the page reaches the product's one confirm implementation", () => {
   });
 });
 
+describe("the guidance answers the strip, so it comes after it", () => {
+  /*
+   * MUTATION TARGET (placement). MEASURED before the move: the guidance rendered at y=154 while the lifecycle
+   * strip began at y=255 — a hundred pixels ABOVE the thing it is about, and outside the head card entirely
+   * (`closest('.wcn-detail-head')` was null), because it was interpolated into the page-header block that sits
+   * outside the grid.
+   *
+   * "Bu görev kabulünü bekliyor" is the ANSWER to the question the strip asks ("Beklemede · 1/4"). Printing the
+   * answer above the question makes the reader hold a sentence they cannot place, then meet the state it was
+   * about afterwards.
+   */
+  it("renders inside the head card, below the lifecycle strip", async () => {
+    await boot(projectionItem({ admissionState: "pendingAcceptance" }));
+
+    const guidance = app().querySelector(".wcn-guidance");
+    expect(guidance, "the guidance disappeared").not.toBeNull();
+    const head = app().querySelector(".wcn-detail-head");
+    expect(head.contains(guidance), "the guidance is outside the head card").toBe(true);
+
+    // Document order IS the visual order inside one card; jsdom lays nothing out, so this is the honest check.
+    const strip = app().querySelector(".wcn-stepbar");
+    expect(strip, "there is no lifecycle strip to answer").not.toBeNull();
+    expect(strip.compareDocumentPosition(guidance) & Node.DOCUMENT_POSITION_FOLLOWING,
+      "the answer is still printed before the question").toBeTruthy();
+  });
+
+  /*
+   * ORDER AGAINST THE BLOCK NOTICE — guidance FIRST, blockers AFTER, and the reason is not aesthetic: the
+   * guidance says what to do NEXT, a blocker says why something cannot be done YET. A reader who meets the
+   * obstacle first has nothing to attach it to.
+   *
+   * ⚠ MEASURED LIVE AND NOT FOUND: across the whole live surface, 20 tasks are pendingAcceptance and 4 are
+   * blocked or waiting — and the two sets do not intersect, so the pair never appears on a real task today. The
+   * order is pinned HERE, where a fixture can hold both, rather than left to the day the two first meet.
+   */
+  it("puts the guidance before the block notice when a task carries both", async () => {
+    // The contract requires every blocked code to name an action the reader can SEE disabled, so the fixture
+    // carries that action too — a blocker pointing at nothing would have the item dropped, not rendered.
+    await boot(projectionItem({
+      admissionState: "pendingAcceptance",
+      primaryActionCode: "complete",
+      actions: [{
+        code: "complete", label: { kind: "resource", key: "WorkAggregation_Action_complete" },
+        semanticType: "complete", enabled: false, source: "provider",
+        disabledReasonCode: "SUBTASK_BLOCKED",
+        // A LABEL, not a bare string — the contract's `isLabel` is what makes a reason translatable.
+        disabledReason: { kind: "display", text: "3 alt görev kapanmadan tamamlanamaz", locale: "und" },
+        requiresConfirmation: false, requiresReason: false, requiresEvidence: false,
+        supportsBulk: false, riskLevel: "normal"
+      }],
+      blockedState: { blocked: true, affectedActionCodes: ["complete"],
+        blockers: [{ code: "SUBTASK_BLOCKED", affectedActionCode: "complete",
+          label: { kind: "resource", key: "WorkAggregation_ActionDisabled_SubtaskOpen" } }] }
+    }));
+
+    const guidance = app().querySelector(".wcn-guidance");
+    const blocked = app().querySelector(".wcn-blocked");
+    expect(guidance, "no guidance on a pending task").not.toBeNull();
+    expect(blocked, "no block notice on a blocked task").not.toBeNull();
+    expect(guidance.compareDocumentPosition(blocked) & Node.DOCUMENT_POSITION_FOLLOWING,
+      "the obstacle is read before the instruction").toBeTruthy();
+  });
+
+  it("shares one rhythm with the notices beside it", () => {
+    // MEASURED live: guidance 12px below the strip, `.wcn-blocked` 16px below it — one card, two gaps. The
+    // guidance is the one that moved, so the guidance is the one that adapts.
+    const rule = /^\.wcn-guidance \{([^}]*)\}/m.exec(CSS());
+    expect(rule[1]).toMatch(/margin-block:\s*1rem 0/);
+  });
+});
+
+describe("whose subtask this is, as a fact rather than a card", () => {
+  /*
+   * MUTATION TARGET (the parent row). MEASURED: a card with NO heading, 73px tall, whose entire content was one
+   * sentence naming the parent. A card groups facts; this was one fact wearing a container — and the fact
+   * belongs where the task's other facts are.
+   */
+  it("puts the parent task in the Summary, with the golden field pattern", async () => {
+    await boot(projectionItem({ parentTaskItemId: "98d1f94e-1848-4539-8a99-774e72651b8a" }));
+
+    const field = [...app().querySelectorAll(".wcn-sum .backbone-preview-field")]
+      .find((f) => f.textContent.includes("DetailParentTask"));
+    expect(field, "the parent never arrived in the Summary").not.toBeNull();
+    expect(field.querySelector("i"), "the parent field lost its icon").not.toBeNull();
+    expect(field.querySelector(".backbone-preview-label").textContent).toContain("DetailParentTask");
+  });
+
+  it("no longer draws a headless card for it", async () => {
+    await boot(projectionItem({ parentTaskItemId: "98d1f94e-1848-4539-8a99-774e72651b8a" }));
+
+    const headless = [...app().querySelectorAll(".wcn-detail-card")]
+      .filter((c) => !c.querySelector("h6") && c.querySelector("a[href*='Details']"));
+    expect(headless.length, "the one-line card came back").toBe(0);
+  });
+
+  /*
+   * THE LINK MUST NOT BE DEAD. It pointed at `?id=…` — a query string this page's route does not read, so a
+   * click reloaded the SAME task. Measured live before the move; measured live again after, with a real click
+   * that landed on the parent's own detail page.
+   */
+  it("links to the parent's real detail route, not a query string nobody parses", async () => {
+    await boot(projectionItem({ parentTaskItemId: "98d1f94e-1848-4539-8a99-774e72651b8a" }));
+
+    const link = [...app().querySelectorAll(".wcn-sum a")]
+      .find((a) => a.getAttribute("href")?.includes("98d1f94e"));
+    expect(link, "the parent is named but not reachable").not.toBeNull();
+    expect(link.getAttribute("href")).toBe("/WorkCenterNext/Details/98d1f94e-1848-4539-8a99-774e72651b8a");
+    expect(link.getAttribute("href"), "the dead query-string link came back").not.toMatch(/^\?id=/);
+  });
+
+  it("draws no parent row on a task that has no parent", async () => {
+    await boot(projectionItem({ parentTaskItemId: null }));
+
+    expect([...app().querySelectorAll(".backbone-preview-label")]
+      .some((l) => l.textContent.includes("DetailParentTask")), "a parentless task claims a parent").toBe(false);
+  });
+
+  it("uses a glyph no other surface has taken", () => {
+    // The old notice's `bx-subdirectory-right` is spoken for — the Positions tree draws its descendants with it.
+    // Right branches DOWN to a child; left comes BACK to a parent, which is the direction this row points.
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    expect(src).toContain("bx-subdirectory-left");
+  });
+
+  it("ships the label in all seven languages", () => {
+    ["en", "tr", "fr", "es", "zh", "ar", "ru"].forEach((lang) =>
+      expect(read("Resources", "Views", "WorkCenterNext", `WorkCenterNextIndex.${lang}.resx`),
+        `${lang} has no DetailParentTask`).toContain('name="DetailParentTask"'));
+  });
+});
+
+describe("the grip is drawn in both modes — the reported contradiction is not one", () => {
+  /*
+   * REPORTED: `diten-checkitem.js` comments "Drawn in BOTH modes now" while the code reads
+   * `if (!working) { el.appendChild(grip); }` — so is the comment stale or the code wrong?
+   *
+   * NEITHER. MEASURED: the grip is appended TWICE in the source, once per ordering branch. Authoring appends it
+   * early (line ~139, the `if (!working)` guard), because that mode reads as "arrange these" and the handle
+   * leads; working appends it late, inside the `if (working)` block, after the text and the level chip, because
+   * that mode reads as "tick these off". The `if (!working)` line does not mean "authoring only" — it means
+   * "here, in the authoring order". Read in isolation it looks like the opposite.
+   *
+   * Confirmed in the live DOM on the detail page (working mode): the row's children are box, text, level, GRIP,
+   * move — the handle is present, and `bindChecklistDrag`'s `handle: '[data-diten-check-grip]'` therefore
+   * matches something. Comment and code agree; the two lines simply cannot be read one at a time.
+   */
+  it("appends the grip in each ordering branch, so both surfaces can be dragged", () => {
+    const src = read("wwwroot", "assets", "js", "shared", "diten-checkitem.js");
+    const appends = src.match(/appendChild\(grip\)/g) || [];
+    expect(appends.length, "the grip is appended in only one branch — one surface lost its drag").toBe(2);
+  });
+
+  it("draws the grip the detail page's Sortable is told to grab", async () => {
+    // The contract couples capability and container BOTH ways, so the fixture declares every container it names.
+    await boot(projectionItem({
+      workItemCapabilities: ["planning", "execution", "checklist", "subtasks"],
+      checklist: { version: 1, items: [
+        { id: "c1", text: "tek madde", requirement: "Optional", done: false, evidenceRequired: false }
+      ] }
+    }));
+
+    const handle = app().querySelector("[data-diten-check-grip]");
+    expect(handle, "the drag handle is missing on the working surface").not.toBeNull();
+    // …and it is the exact selector the page binds Sortable to. A handle nobody draws is a dead binding.
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    expect(src).toContain("handle: '[data-diten-check-grip]'");
+  });
+});
+
+describe("a checklist row is the same height whatever the list holds", () => {
+  /*
+   * MUTATION TARGET (reserved space). MEASURED: one item rendered a 33.39px row and six rendered 44px, in the
+   * same list on the same page — adding a second item made every row grow by 10.61px. The cause was `d-none` on
+   * the reorder controls, and `display: none` takes a control out of LAYOUT as well as out of sight.
+   *
+   * The controls STAY withdrawn on a one-item list — reordering one item is meaningless and a disabled arrow
+   * still promises reordering. What changed is only how: `visibility: hidden` withdraws exactly as much
+   * (invisible, unclickable, unfocusable, out of the accessibility tree) and keeps the box.
+   */
+  it("withdraws the reorder controls without collapsing their space", () => {
+    const src = read("wwwroot", "assets", "js", "shared", "diten-checkitem.js");
+    const fn = src.slice(src.indexOf("const applyMoveState"), src.indexOf("const applyMoveState") + 2200);
+    const code = fn.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+    expect(code, "the controls collapse the row again").not.toContain("'d-none'");
+    expect(code, "nothing withdraws them at all").toContain("-withdrawn");
+
+    const rule = /^\.diten-checkitem-withdrawn \{([^}]*)\}/m.exec(CSS());
+    expect(rule, "the withdrawn class has no rule").not.toBeNull();
+    expect(rule[1], "the class hides the box instead of just its paint").toMatch(/visibility:\s*hidden/);
+    expect(rule[1], "display:none came back through the CSS").not.toMatch(/display:\s*none/);
+  });
+
+  it("keeps the controls out of the tab order on a one-item list", () => {
+    // `visibility: hidden` already removes them; the buttons are ALSO disabled by position. Both, deliberately —
+    // this is the half of "hidden" that a class swap is most likely to drop.
+    const src = read("wwwroot", "assets", "js", "shared", "diten-checkitem.js");
+    const fn = src.slice(src.indexOf("const applyMoveState"), src.indexOf("const applyMoveState") + 2200);
+    expect(fn).toMatch(/btn\.disabled = single \|\| atEnd/);
+  });
+});
+
 describe("the Personal card carries only what nobody else can see", () => {
   const withNotes = (notes, extra) => projectionItem(Object.assign({
     personal: { snoozedUntil: null, notes }

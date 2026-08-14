@@ -297,11 +297,23 @@
         const rows = [...list.querySelectorAll('[data-diten-check-row]')];
         const single = rows.length < 2;
         rows.forEach((el, index) => {
-            // HIDDEN, not merely disabled, when there is only one row: a disabled arrow still says "this list can
-            // be reordered", which is a promise a one-item list cannot keep. The whole control goes, not each
-            // button — leaving the empty container behind keeps its gap in the row.
-            el.querySelector('[data-diten-check-grip]')?.classList.toggle('d-none', single);
-            el.querySelector('.' + ROOT + '-move')?.classList.toggle('d-none', single);
+            /*
+             * WITHDRAWN, not merely disabled, when there is only one row: a disabled arrow still says "this list
+             * can be reordered", which is a promise a one-item list cannot keep. That decision stands.
+             *
+             * ⚠ WHAT CHANGED IS *HOW* (2026-08-14, measured). It used to be `d-none`, and `display: none` takes
+             * the control out of LAYOUT as well as out of sight — so the same list rendered a 33.39px row with
+             * one item and a 44px row with six. One list, two row heights, and the height moved as items were
+             * added and removed. This rule's own previous comment even claimed the opposite ("leaving the empty
+             * container behind keeps its gap in the row"), which is what `display: none` does not do.
+             *
+             * `visibility: hidden` keeps the box and gives up everything else: the control is invisible, cannot
+             * be clicked, cannot be focused, and is out of the accessibility tree — the same withdrawal `d-none`
+             * performed, minus the collapse. The TALLER shape wins, because that is the one the reader sees on
+             * every list that can actually be reordered.
+             */
+            el.querySelector('[data-diten-check-grip]')?.classList.toggle(ROOT + '-withdrawn', single);
+            el.querySelector('.' + ROOT + '-move')?.classList.toggle(ROOT + '-withdrawn', single);
 
             el.querySelectorAll('[data-diten-check-move]').forEach((btn) => {
                 const direction = btn.getAttribute('data-diten-check-move');

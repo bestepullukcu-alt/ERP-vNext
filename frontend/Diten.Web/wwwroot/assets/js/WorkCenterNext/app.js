@@ -2114,6 +2114,40 @@
          * a task with no plan at all, "Planla" appears in the actions card AND in the narrow-screen bar. A third
          * invitation to the same job would be a third copy of one button, not a discovery aid.
          */
+        /*
+         * ── WHOSE SUBTASK THIS IS — moved out of a card of its own (2026-08-14) ──────────────────────────────
+         *
+         * MEASURED: it was a card with NO heading, 73px tall, whose entire content was one sentence — "'Q3 nakit
+         * akış projeksiyonunu onayla' görevinin alt görevi". A card is a container for a group of facts; this was
+         * one fact wearing a container. And it is a fact ABOUT THE TASK, which is what the Summary is for.
+         *
+         * THE LINK IS THE POINT, and it was broken: the old markup pointed at `?id=…`, a query string this page
+         * does not read — the detail route is `/WorkCenterNext/Details/{id}`, so clicking it reloaded the SAME
+         * task with a query nobody parses. Measured live before the move. It goes to the real route now.
+         *
+         * The glyph is `bx-subdirectory-left`: the mirror of the `bx-subdirectory-right` the old notice used, and
+         * grep-proven unused anywhere in the product (`bx-subdirectory-right` itself is taken — the Positions
+         * tree draws its descendants with it). Right branches DOWN to a child; left comes BACK to a parent, which
+         * is the direction this row actually points.
+         */
+        const parentTask = !item.parentTaskItemId ? '' : (() => {
+            const parent = itemById(item.parentTaskItemId);
+            // The parent's title when this reader can see it; its own honest fallback when they cannot. Never a
+            // GUID — an id is not a name, and the row is here to say WHICH task.
+            const label = parent ? parent.title : t('SubtaskOfUnnamed');
+            return `<div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-subdirectory-left" aria-hidden="true"></i>
+                    <div>
+                        <div class="backbone-preview-label">${esc(t('DetailParentTask'))}</div>
+                        <div class="backbone-preview-value mt-1">
+                            <a href="/WorkCenterNext/Details/${esc(item.parentTaskItemId)}">${esc(label)}</a>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        })();
+
         const planAction = actionByKey(item, 'plan');
         const planClickable = !!planAction && !planAction.disabled && !isTerminal(item);
         const plannedConflict = item.dueAt && item.plannedDate && item.plannedDate > item.dueAt;
@@ -2142,6 +2176,7 @@
             + field('bx-calendar', 'SourceDueLabel', item.dueAt, overdue)
             + planned
             + field('bx-flag', 'DetailPriority', hasPriority(item) ? priorityLabel(item) : '')
+            + parentTask
             + field('bx-time-five', 'DetailEstimate', item.estimateHours === null || item.estimateHours === undefined
                 ? '' : tf('EstimateHoursValue', item.estimateHours));
 
@@ -2538,19 +2573,11 @@
         cancelled: 'SubtaskStatusCancelled'
     };
     /*
-     * A subtask appears as its OWN row in İşlerim (it is assigned to someone and has its own lifecycle), so that
-     * row has to say what it belongs to — otherwise it reads as unexplained standalone work. The parent title is
-     * resolved from state when the parent is also visible to this user; otherwise the link alone is shown.
+     * ⚠ `renderParentContext` IS GONE (2026-08-14). It drew a card with no heading whose whole content was one
+     * sentence naming the parent task — one fact in a container built for a group of them — and its link pointed
+     * at `?id=…`, which this page's route does not read. The fact now lives in the Summary as a field, with a
+     * link to the real detail route. See `parentTask` in `renderSummary`.
      */
-    const renderParentContext = (item) => {
-        if (!item.parentTaskItemId) { return ''; }
-        const parent = itemById(item.parentTaskItemId);
-        const label = parent ? tf('SubtaskOfNamed', parent.title) : t('SubtaskOfUnnamed');
-        return `<div class="wcn-detail-section">
-            <p class="wcn-block-hint" role="note"><i class="bx bx-subdirectory-right"></i>
-                <a href="?id=${esc(item.parentTaskItemId)}">${esc(label)}</a></p>
-        </div>`;
-    };
 
     /*
      * THE ADD ROW — one helper, used by the list AND by the empty line, so the two cannot drift into two
@@ -3775,6 +3802,24 @@
                 ${roleChip(item)}
             </div>
             ${renderLifecycleStepper(item)}
+            ${/*
+               * ── THE GUIDANCE MOVED HERE, UNDER THE STEPPER (2026-08-14) ─────────────────────────────────────
+               *
+               * MEASURED: it rendered at y=154 while the stepper began at y=255 — a hundred pixels ABOVE the
+               * thing it is about, outside the head card entirely (`closest('.wcn-detail-head')` was null),
+               * because it was interpolated into the page header block that sits outside the grid.
+               *
+               * "Bu görev kabulünü bekliyor" is the ANSWER to a question the strip asks ("Beklemede · 1/4").
+               * Printing the answer above the question makes the reader hold a sentence they cannot place yet,
+               * and then meet the state it referred to afterwards.
+               *
+               * ⚠ ORDER AGAINST THE BLOCK NOTICE, decided and measured: GUIDANCE FIRST, BLOCKERS AFTER. The
+               * guidance says what to do NEXT; a blocker says why something cannot be done YET. A reader who
+               * meets the obstacle first has nothing to attach it to — "this is blocked" is only meaningful once
+               * you know what you were going to do. The blockers keep their existing position and their
+               * existing spacing; nothing about them moved.
+               */''}
+            ${renderGuidance(item)}
             ${reviewNote}
             ${sysBanner}${blockedBanner}${notices}${waitingNote}${snoozeNote}
         </section>`;
@@ -3813,7 +3858,6 @@
             // do about it?" — which is what the page used to open with.
             card(renderSummary(item)),
             card(renderBusinessContext(item)),
-            card(renderParentContext(item)),
             card(renderSubtasks(item)),
             card(renderDependencies(item)),
             card(renderChecklist(item)),
@@ -3946,8 +3990,7 @@
                     </ol>
                 </nav>
             </div>
-        </div>
-        ${renderGuidance(item)}`;
+        </div>`;
 
         /*
          * THE HEADER SITS OUTSIDE THE GRID, and that placement is the whole fix for a spacing defect.

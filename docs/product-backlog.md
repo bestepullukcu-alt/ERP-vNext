@@ -3736,3 +3736,46 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - `PersonalActionsLabel` yalnız ertelenmemiş durumdaki grup etiketinde kaldı.
 - **Yapılacak:** liste yüzeyinde `Unsnooze` kullanımı var mı ölç; yoksa ölü işaretle. Bu turda ölçülmedi.
 - **Gelecek regresyon riski: 🟢.**
+
+### BL-155 — ⚠ ÇELİŞKİ DÜZELTİLDİ — Bildirilen "grip çelişkisi" bir çelişki değildi
+- **Bildirim:** `diten-checkitem.js:121` yorumu "Drawn in BOTH modes now" diyor ama `:139` kodu
+  `if (!working) { el.appendChild(grip); }` — yorum mu bayat, kod mu yanlış?
+- **ÖLÇÜM: İKİSİ DE DOĞRU.** Grip kaynakta **iki kez** ekleniyor. `:139` yazma kipinin sırası için erken ekliyor
+  ("bunları düzenle" — tutamak önde); `:262` çalışma kipinin `if (working)` bloğu içinde geç ekliyor (metin ve
+  seviye çipinden sonra, "bunları işaretle" sırası). `if (!working)` "yalnız yazma kipinde" demek değil, "burada,
+  yazma kipinin sırasında" demek. Tek başına okunduğunda tersi görünüyor.
+- **Canlı doğrulama (çalışma kipi, detay sayfası):** satırın çocukları `box · text · level · GRIP · move` —
+  tutamak var, dolayısıyla `bindChecklistDrag`'in `handle: '[data-diten-check-grip]'` seçicisi bir şey buluyor.
+- **Kod değiştirilmedi.** İki satırın tek tek okunamayacağını sabitleyen iki test eklendi.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-156 — [ÖLÇÜM] Yönlendirme ve engel uyarısı canlı veride hiç yan yana gelmiyor
+- Sıra kararı verildi ve gerekçelendirildi: **yönlendirme önce, engel sonra.** Yönlendirme SIRADAKİ işi söyler;
+  engel bir şeyin HENÜZ yapılamadığını söyler — engeli önce okuyan okuyucunun onu bağlayacağı bir şey yoktur.
+- **⚠ CANLI ÖLÇÜLEMEDİ:** yüzeydeki 20 görev `pendingAcceptance`, 4 görev engelli/bekleyen, **kesişim sıfır**.
+  İkisi bugün gerçek bir görevde asla birlikte çıkmıyor. Sıra, ikisini birden taşıyabilen bir fixture ile testte
+  sabitlendi; canlı boşluk ölçümü yapılamadı.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-157 — [BRİFİNG DÜZELTMESİ] Ölçüm görevinin kontrol listesi boş, tek maddeli olan başka görev
+- Brifing 46f6a43a'yı "alt görev, tek maddeli kontrol listesi" diye veriyordu. **Ölçüm: 0 madde.**
+  Tek maddeli olan **d77e97d6** (o da bir alt görev). 98d1f94e'de 6 madde var.
+- Kusur 3 ölçümü d77e97d6 (1) ↔ 98d1f94e (6) üzerinden yapıldı.
+- **Gelecek regresyon riski: 🟢** — veri seçimi hatası, kod değil.
+
+### BL-158 — [ÖLÇÜM] Alt görev satırında sıralama denetimi YOK, aynı desen orada geçerli değil
+- "Kardeşini bırakma" kuralı gereği ölçüldü: alt görev satırının çocukları `wcn-subtask-check · wcn-subtask-body ·
+  wcn-subtask-status · dropdown` — **taşı düğmesi ya da tutamak yok.** Alt görevler sıralanamıyor, dolayısıyla
+  madde sayısına bağlı yükseklik değişimi orada oluşamaz.
+- Düzeltme yalnız kontrol listesine uygulandı, çünkü desen yalnız orada var. Ölçülüp yazıldı.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-159 — [TEST] "cancelling a subtask" testi tam süit altında kararsız (flaky)
+- `wcn-detail-three-regions.test.js :: calls the cancel transition once the user confirms` bir tam süit
+  koşusunda düştü ("reached no endpoint at all"), hemen ardından dosya tek başına 208/208 geçti ve ikinci tam
+  süit koşusunda da geçti.
+- Sebep: test sahte `showConfirm`'ü `setTimeout(…, 5)` ile çözüp `setTimeout(…, 30)` bekliyor. Tam süit yükü
+  altında 25ms'lik pay yetmiyor. **Bu turdaki değişikliklerle ilgisi yok** — zamanlamaya duyarlı bir bekleme.
+- **Yapılacak:** sabit beklemeyi bir koşul beklemesiyle değiştir (çağrı gelene kadar yokla). Bu turda
+  yapılmadı; testin kendi konusu bu turun konusu değil.
+- **Gelecek regresyon riski: 🟡** — yalancı kırmızı, gerçek bir kusuru gizlemez ama güveni aşındırır.
