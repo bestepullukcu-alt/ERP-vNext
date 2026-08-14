@@ -223,12 +223,16 @@ public sealed class AddTenantModuleEntitlementCommandHandlerTests
         var eventBus = new Mock<IEventBus>();
         var currentUser = new Mock<ICurrentUserContext>();
         currentUser.SetupGet(x => x.UserId).Returns(currentUserId);
+        var dependencies = PhysicalHandlerTestDependencies.Create(repository, quotaService, eventBus.Object);
 
         var handler = new AddTenantModuleEntitlementCommandHandler(
             repository.Object,
             moduleRepository.Object,
             quotaService.Object,
-            eventBus.Object,
+            dependencies.Executor,
+            dependencies.Versions,
+            dependencies.Events,
+            dependencies.Audit,
             currentUser.Object);
 
         return new TestFixture(handler, repository, moduleRepository, quotaService, eventBus);

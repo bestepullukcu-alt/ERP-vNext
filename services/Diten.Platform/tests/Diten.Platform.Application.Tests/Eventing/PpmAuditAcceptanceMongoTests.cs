@@ -2,10 +2,12 @@ using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Infrastructure.Eventing;
 using Diten.Platform.Infrastructure.Persistence.Configurations;
+using Diten.Platform.Infrastructure.Persistence;
 using Diten.Platform.Infrastructure.Persistence.Models;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
 using Diten.Platform.Infrastructure.Services.Audit;
 using Diten.Platform.Infrastructure.Persistence.Settings;
+using Diten.Platform.Application.Tests.Persistence;
 using Diten.Platform.API.Observability;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -18,8 +20,13 @@ using LegacyEventTransportMessage = Diten.Platform.Application.Contracts.Eventin
 
 namespace Diten.Platform.Application.Tests.Eventing;
 
-public sealed class PpmAuditAcceptanceMongoTests
+[Collection(DisposableMongoReplicaSetCollection.Name)]
+public sealed class PpmAuditAcceptanceMongoTests : IClassFixture<PpmAuditAcceptanceMongoFixture>
 {
+    private readonly PpmAuditAcceptanceMongoFixture _fixture;
+
+    public PpmAuditAcceptanceMongoTests(PpmAuditAcceptanceMongoFixture fixture) => _fixture = fixture;
+
     private const string StandaloneConnection =
         "mongodb://localhost:27019/?directConnection=true&serverSelectionTimeoutMS=5000";
 
@@ -59,7 +66,7 @@ public sealed class PpmAuditAcceptanceMongoTests
                 .CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
             var tenantContext = new TenantContext();
             var processor = new AuditOutboxProcessor(
-                new AuditOutboxRepository(database),
+                new AuditOutboxRepository(new PlatformDbContext(client, database)),
                 new AuditEventRepository(database, tenantContext),
                 tenantContext,
                 new AuditOutboxPayloadMapper(),
@@ -310,45 +317,7 @@ public sealed class PpmAuditAcceptanceMongoTests
         }
     }
 
-    private static async Task<string> EnsureReplicaSetInitializedAsync()
-    {
-        var direct = new MongoClient("mongodb://localhost:27018/?directConnection=true&serverSelectionTimeoutMS=5000");
-        var admin = direct.GetDatabase("admin");
-        var hello = await admin.RunCommandAsync<BsonDocument>(new BsonDocument("hello", 1));
-        if (!hello.Contains("setName"))
-        {
-            try
-            {
-                await admin.RunCommandAsync<BsonDocument>(new BsonDocument
-                {
-                    ["replSetInitiate"] = new BsonDocument
-                    {
-                        ["_id"] = "ppm-audit-rs",
-                        ["members"] = new BsonArray
-                        {
-                            new BsonDocument { ["_id"] = 0, ["host"] = "localhost:27018" }
-                        }
-                    }
-                });
-            }
-            catch (MongoCommandException exception) when (exception.CodeName == "AlreadyInitialized")
-            {
-            }
-        }
-
-        for (var attempt = 0; attempt < 50; attempt++)
-        {
-            hello = await admin.RunCommandAsync<BsonDocument>(new BsonDocument("hello", 1));
-            if (hello.TryGetValue("isWritablePrimary", out var primary) && primary.ToBoolean())
-            {
-                var setName = hello["setName"].AsString;
-                return $"mongodb://localhost:27018/?replicaSet={Uri.EscapeDataString(setName)}&serverSelectionTimeoutMS=5000";
-            }
-            await Task.Delay(100);
-        }
-
-        throw new InvalidOperationException("Mongo replica set did not become writable primary.");
-    }
+    private Task<string> EnsureReplicaSetInitializedAsync() => Task.FromResult(_fixture.ConnectionString);
 
     private static EventTransportMessage Message(string mutation) =>
         new(
@@ -375,4 +344,17 @@ public sealed class PpmAuditAcceptanceMongoTests
             DateTimeOffset.Parse("2026-07-30T10:20:30.0000000Z"),
             $"{{\"actorId\":\"22222222-2222-2222-2222-222222222222\",\"auditIntentId\":\"11111111-1111-1111-1111-111111111111\",\"entityId\":\"44444444-4444-4444-4444-444444444444\",\"entityType\":\"Project\",\"mutation\":\"{mutation}\",\"occurredAtUtc\":\"2026-07-30T10:20:30.0000000Z\"}}");
 #pragma warning restore CS0618
+}
+
+public sealed class PpmAuditAcceptanceMongoFixture : IAsyncLifetime
+{
+    private DisposableMongoReplicaSet? _mongo;
+    public string ConnectionString => _mongo?.ConnectionString
+        ?? throw new InvalidOperationException("Disposable Mongo fixture has not started.");
+
+    public async Task InitializeAsync() => _mongo = await DisposableMongoReplicaSet.StartAsync();
+    public async Task DisposeAsync()
+    {
+        if (_mongo is not null) await _mongo.DisposeAsync();
+    }
 }

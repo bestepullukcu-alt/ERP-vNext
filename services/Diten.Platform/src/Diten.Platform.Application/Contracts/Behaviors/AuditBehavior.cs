@@ -1,6 +1,7 @@
 using System.Reflection;
 using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Domain.Enums;
+using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -29,6 +30,17 @@ public sealed class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
         RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
+        if (request is ITransactionOwnedAuditCommand)
+        {
+            if (!IsAuthorizedTransactionOwnedAuditCommand(typeof(TRequest)))
+            {
+                throw new InvalidOperationException(
+                    $"Transaction-owned audit is not authorized for {typeof(TRequest).Name}.");
+            }
+
+            return await next();
+        }
+
         var auditPlan = BuildAuditPlan(request);
         if (!auditPlan.ShouldAudit)
         {
@@ -65,6 +77,13 @@ public sealed class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
         EnforceAppendResult(appendResult, auditPlan.Metadata!, auditPlan.RequestTypeName);
         return response;
     }
+
+    private static bool IsAuthorizedTransactionOwnedAuditCommand(Type requestType) =>
+        requestType == typeof(AddTenantModuleEntitlementCommand)
+        || requestType == typeof(EnableTenantModuleEntitlementCommand)
+        || requestType == typeof(DisableTenantModuleEntitlementCommand)
+        || requestType == typeof(UpdateTenantModuleEntitlementExpiryCommand)
+        || requestType == typeof(RemoveTenantManualModuleOverrideCommand);
 
     private AuditPlan BuildAuditPlan(TRequest request)
     {

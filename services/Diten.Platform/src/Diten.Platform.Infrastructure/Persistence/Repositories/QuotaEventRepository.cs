@@ -8,9 +8,20 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 
 public sealed class QuotaEventRepository : TenantRepository<QuotaEvent>, IQuotaEventRepository
 {
+    private readonly IPlatformDbContext _dbContext;
     public QuotaEventRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
         : base(dbContext.Database, tenantContext, "quota_events")
     {
+        _dbContext = dbContext;
+    }
+
+    public async Task<QuotaEvent> CreateAsync(IPlatformTransactionSession session, QuotaEvent quotaEvent, CancellationToken ct = default)
+    {
+        await Collection.InsertOneAsync(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            quotaEvent,
+            cancellationToken: ct);
+        return quotaEvent;
     }
 
     public override async Task<QuotaEvent> CreateAsync(QuotaEvent quotaEvent, CancellationToken ct = default)
@@ -20,6 +31,12 @@ public sealed class QuotaEventRepository : TenantRepository<QuotaEvent>, IQuotaE
     }
 
     public async Task<bool> ExistsAsync(Guid tenantId, string quotaKey, string source, string? operationId, string? sourceReference, bool isRejected, CancellationToken ct = default)
+        => await ExistsCoreAsync(null, tenantId, quotaKey, source, operationId, sourceReference, isRejected, ct);
+
+    public Task<bool> ExistsAsync(IPlatformTransactionSession session, Guid tenantId, string quotaKey, string source, string? operationId, string? sourceReference, bool isRejected, CancellationToken ct = default) =>
+        ExistsCoreAsync(PlatformMongoTransactionSession.Require(session, _dbContext), tenantId, quotaKey, source, operationId, sourceReference, isRejected, ct);
+
+    private async Task<bool> ExistsCoreAsync(IClientSessionHandle? session, Guid tenantId, string quotaKey, string source, string? operationId, string? sourceReference, bool isRejected, CancellationToken ct)
     {
         var filters = new List<FilterDefinition<QuotaEvent>>
         {
@@ -40,6 +57,9 @@ public sealed class QuotaEventRepository : TenantRepository<QuotaEvent>, IQuotaE
             filters.Add(Builders<QuotaEvent>.Filter.Eq(x => x.SourceReference, sourceReference));
         }
 
-        return await Collection.Find(Builders<QuotaEvent>.Filter.And(filters)).AnyAsync(ct);
+        var filter = Builders<QuotaEvent>.Filter.And(filters);
+        return session is null
+            ? await Collection.Find(filter).AnyAsync(ct)
+            : await Collection.Find(session, filter).AnyAsync(ct);
     }
 }

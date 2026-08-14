@@ -1,6 +1,8 @@
 using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Contracts.Eventing;
+using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Features.Quotas;
 using Diten.Platform.Application.Features.Quotas.Services;
 using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands;
@@ -16,20 +18,29 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
     private readonly ITenantModuleEntitlementRepository _repository;
     private readonly IModuleCatalogRepository _moduleRepository;
     private readonly IQuotaService _quotaService;
-    private readonly IEventBus _eventBus;
+    private readonly IPlatformTransactionExecutor _transactions;
+    private readonly IEntitlementStateVersionRepository _versions;
+    private readonly ITransactionalIntegrationEventWriter _events;
+    private readonly ITransactionalAuditOutboxWriter _audit;
     private readonly ICurrentUserContext _currentUser;
 
     public DisableTenantModuleEntitlementCommandHandler(
         ITenantModuleEntitlementRepository repository,
         IModuleCatalogRepository moduleRepository,
         IQuotaService quotaService,
-        IEventBus eventBus,
+        IPlatformTransactionExecutor transactions,
+        IEntitlementStateVersionRepository versions,
+        ITransactionalIntegrationEventWriter events,
+        ITransactionalAuditOutboxWriter audit,
         ICurrentUserContext currentUser)
     {
         _repository = repository;
         _moduleRepository = moduleRepository;
         _quotaService = quotaService;
-        _eventBus = eventBus;
+        _transactions = transactions;
+        _versions = versions;
+        _events = events;
+        _audit = audit;
         _currentUser = currentUser;
     }
 
@@ -65,21 +76,28 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
                 }
 
                 var wasEnabled = entitlement.IsEnabled;
+                if (!wasEnabled && string.Equals(entitlement.Reason, request.Request.Reason, StringComparison.Ordinal))
+                {
+                    return Response<NoContent>.Success(204);
+                }
                 entitlement.IsEnabled = false;
                 entitlement.Reason = request.Request.Reason;
-                await _repository.UpdateAsync(entitlement, request.Request.RowVersion, ct);
-                if (wasEnabled)
+                var auditIntentId = Guid.NewGuid();
+                await _transactions.ExecuteAsync(async (session, transactionCt) =>
                 {
-                    // entitlement.RowVersion is the POST-update version here (UpdateAsync minted a fresh one), so the
-                    // release key is distinct per disable event and a re-disable in a later cycle releases cleanly.
-                    var release = await ReleaseModuleQuotaAsync(request.TenantId, entitlement.Id, entitlement.RowVersion, moduleCode, request.Request.Reason, ct);
-                    if (!release.IsSuccessful)
+                    await _repository.UpdateAsync(session, entitlement, request.Request.RowVersion, transactionCt);
+                    if (wasEnabled)
                     {
-                        return Response<NoContent>.Fail(release.Errors, release.StatusCode);
+                        var release = await ReleaseModuleQuotaAsync(session, request.TenantId, entitlement.Id, entitlement.RowVersion, moduleCode, request.Request.Reason, transactionCt);
+                        if (!release.IsSuccessful) throw new PhysicalEntitlementMutationRejectedException(release.Errors, release.StatusCode);
                     }
-
-                    await PublishDisabledAsync(request.TenantId, entitlement.ModuleCode, ct);
-                }
+                    await _versions.IncrementPhysicalEntitlementVersionAsync(session, request.TenantId, entitlement.ModuleCode, transactionCt);
+                    await EnqueueDisabledAsync(session, request.TenantId, entitlement.ModuleCode, transactionCt);
+                    await PhysicalEntitlementAuditIntent.EnqueueAsync(_audit, session, request.TenantId, Guid.NewGuid(),
+                        auditIntentId, nameof(DisableTenantModuleEntitlementCommand), AuditOperation.Deactivate,
+                        entitlement.Id, entitlement.ModuleCode, transactionCt);
+                    return true;
+                }, ct);
                 return Response<NoContent>.Success(204);
             }
 
@@ -87,25 +105,48 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
             if (existingOverride is not null)
             {
                 var wasEnabled = existingOverride.IsEnabled;
+                if (!wasEnabled && string.Equals(existingOverride.Reason, request.Request.Reason, StringComparison.Ordinal))
+                {
+                    return Response<NoContent>.Success(204);
+                }
                 existingOverride.IsEnabled = false;
                 existingOverride.Reason = request.Request.Reason;
-                await _repository.UpdateAsync(existingOverride, request.Request.RowVersion, ct);
-                if (wasEnabled)
+                var auditIntentId = Guid.NewGuid();
+                await _transactions.ExecuteAsync(async (session, transactionCt) =>
                 {
-                    var release = await ReleaseModuleQuotaAsync(request.TenantId, existingOverride.Id, existingOverride.RowVersion, moduleCode, request.Request.Reason, ct);
-                    if (!release.IsSuccessful)
+                    await _repository.UpdateAsync(session, existingOverride, request.Request.RowVersion, transactionCt);
+                    if (wasEnabled)
                     {
-                        return Response<NoContent>.Fail(release.Errors, release.StatusCode);
+                        var release = await ReleaseModuleQuotaAsync(session, request.TenantId, existingOverride.Id, existingOverride.RowVersion, moduleCode, request.Request.Reason, transactionCt);
+                        if (!release.IsSuccessful) throw new PhysicalEntitlementMutationRejectedException(release.Errors, release.StatusCode);
                     }
-
-                    await PublishDisabledAsync(request.TenantId, existingOverride.ModuleCode, ct);
-                }
+                    await _versions.IncrementPhysicalEntitlementVersionAsync(session, request.TenantId, existingOverride.ModuleCode, transactionCt);
+                    await EnqueueDisabledAsync(session, request.TenantId, existingOverride.ModuleCode, transactionCt);
+                    await PhysicalEntitlementAuditIntent.EnqueueAsync(_audit, session, request.TenantId, Guid.NewGuid(),
+                        auditIntentId, nameof(DisableTenantModuleEntitlementCommand), AuditOperation.Deactivate,
+                        existingOverride.Id, existingOverride.ModuleCode, transactionCt);
+                    return true;
+                }, ct);
                 return Response<NoContent>.Success(204);
             }
 
-            await _repository.CreateAsync(TenantModuleEntitlementCommandSupport.CreateManualOverride(request.TenantId, moduleCode, false, request.Request.Reason), ct);
-            await PublishDisabledAsync(request.TenantId, moduleCode, ct);
+            var newOverride = TenantModuleEntitlementCommandSupport.CreateManualOverride(request.TenantId, moduleCode, false, request.Request.Reason);
+            var newAuditIntentId = Guid.NewGuid();
+            await _transactions.ExecuteAsync(async (session, transactionCt) =>
+            {
+                await _repository.CreateAsync(session, newOverride, transactionCt);
+                await _versions.IncrementPhysicalEntitlementVersionAsync(session, request.TenantId, moduleCode, transactionCt);
+                await EnqueueDisabledAsync(session, request.TenantId, moduleCode, transactionCt);
+                await PhysicalEntitlementAuditIntent.EnqueueAsync(_audit, session, request.TenantId, Guid.NewGuid(),
+                    newAuditIntentId, nameof(DisableTenantModuleEntitlementCommand), AuditOperation.Deactivate,
+                    newOverride.Id, moduleCode, transactionCt);
+                return true;
+            }, ct);
             return Response<NoContent>.Success(204);
+        }
+        catch (PhysicalEntitlementMutationRejectedException exception)
+        {
+            return Response<NoContent>.Fail(exception.Errors, exception.StatusCode);
         }
         catch (TenantModuleEntitlementConcurrencyException)
         {
@@ -113,8 +154,8 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
         }
     }
 
-    private Task<Response<QuotaMutationDto>> ReleaseModuleQuotaAsync(Guid tenantId, Guid entitlementId, byte[] rowVersion, string moduleCode, string? reason, CancellationToken ct) =>
-        _quotaService.ReleaseAsync(new ReleaseQuotaRequest(
+    private Task<Response<QuotaMutationDto>> ReleaseModuleQuotaAsync(IPlatformTransactionSession session, Guid tenantId, Guid entitlementId, byte[] rowVersion, string moduleCode, string? reason, CancellationToken ct) =>
+        _quotaService.ReleaseEntitlementAsync(session, new ReleaseQuotaRequest(
             tenantId,
             QuotaKeys.ModulesMax,
             1,
@@ -128,14 +169,15 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
             null,
             Guid.NewGuid().ToString()), ct);
 
-    private async Task PublishDisabledAsync(Guid tenantId, string moduleCode, CancellationToken ct)
+    private async Task EnqueueDisabledAsync(IPlatformTransactionSession session, Guid tenantId, string moduleCode, CancellationToken ct)
     {
         var eventId = Guid.NewGuid();
         var correlationId = Guid.NewGuid();
         var occurredAtUtc = DateTimeOffset.UtcNow;
         var actorId = _currentUser.UserId == Guid.Empty ? null : (Guid?)_currentUser.UserId;
 
-        await _eventBus.PublishAsync(
+        await _events.EnqueueAsync(
+            session,
             new TenantEntitlementDisabledV1(
                 eventId,
                 occurredAtUtc,

@@ -6,9 +6,11 @@ public sealed class PlatformDbContext : IPlatformDbContext
 {
     public PlatformDbContext(IMongoClient mongoClient, IMongoDatabase database)
     {
-        Database = database;
+        Client = mongoClient ?? throw new ArgumentNullException(nameof(mongoClient));
+        Database = database ?? throw new ArgumentNullException(nameof(database));
     }
 
+    public IMongoClient Client { get; }
     public IMongoDatabase Database { get; }
 
     public IMongoCollection<TDocument> GetCollection<TDocument>(string collectionName)

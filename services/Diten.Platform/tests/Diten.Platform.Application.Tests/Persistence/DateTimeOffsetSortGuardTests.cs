@@ -125,7 +125,8 @@ public sealed class DateTimeOffsetSortGuardTests
         while (directory is not null)
         {
             var candidate = Path.Combine(directory.FullName, "services");
-            if (Directory.Exists(candidate) && Directory.Exists(Path.Combine(directory.FullName, ".git")))
+            var gitMarker = Path.Combine(directory.FullName, ".git");
+            if (Directory.Exists(candidate) && (Directory.Exists(gitMarker) || File.Exists(gitMarker)))
             {
                 return candidate;
             }
