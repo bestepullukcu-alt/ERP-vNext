@@ -602,12 +602,28 @@ describe("every action is rendered exactly once", () => {
       primaryActionCode: "start"
     }));
 
-    const codes = codesIn(app());
-    const duplicated = codes.filter((code, index) => codes.indexOf(code) !== index);
-    expect(duplicated).toEqual([]);
+    /*
+     * ⚠ SCOPED TO EACH SURFACE, not to the page. The rule this guards is real and unchanged: within one surface,
+     * an action must appear once — the defect it was written for was the command card keeping its own action row
+     * after the rail was built, so every action rendered twice IN THE SAME PLACE and the two copies could
+     * disagree the moment one was changed.
+     *
+     * The narrow-screen action bar is a SECOND SURFACE, and it repeats the card deliberately: below 992 the card
+     * begins at the page's 1876th pixel, so the bar is a shortcut to the same actions. They cannot disagree,
+     * because both read `actionTiers(item)` — asserted separately, and that assertion is what replaced the
+     * page-wide uniqueness this one used to provide.
+     */
+    const surfaces = [app().querySelector(".wcn-acts"), app().querySelector(".wcn-actionbar")].filter(Boolean);
+    expect(surfaces.length, "no action surface rendered").toBeGreaterThan(0);
+    surfaces.forEach((surface) => {
+      const codes = codesIn(surface);
+      const duplicated = codes.filter((code, index) => codes.indexOf(code) !== index);
+      expect(duplicated, `an action is drawn twice inside ${surface.className}`).toEqual([]);
+    });
     // Non-vacuity: the assertion above is meaningless if nothing rendered.
-    expect(codes).toContain("start");
-    expect(codes).toContain("cancel");
+    const all = codesIn(app());
+    expect(all).toContain("start");
+    expect(all).toContain("cancel");
   });
 
   it("keeps every action inside the rail, none in the command card", async () => {

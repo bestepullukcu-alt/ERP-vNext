@@ -1612,16 +1612,20 @@
         </li>`;
     };
 
-    const renderActionRail = (item, locked, surface) => {
+    /*
+     * ── ONE SOURCE FOR "WHAT CAN BE DONE" ─────────────────────────────────────────────────────────────────
+     *
+     * The card and the narrow-screen bar are two VIEWS of one answer. Computing the set twice — even from the
+     * same `itemActions` — is how the two drift: a filter added on one side, a tier renamed on the other, and
+     * a button appears in the bar that the card refuses. This session has produced that shape repeatedly (two
+     * chip vocabularies, two lock models, three unwrappings of one envelope), so the set is derived HERE and
+     * both surfaces read the result.
+     *
+     * The unexplained-disabled filter lives here too, so a block the projection could not justify is invisible
+     * to BOTH surfaces rather than to whichever one remembered to filter.
+     */
+    const actionTiers = (item) => {
         const all = itemActions(item);
-        /*
-         * AN ACTION WE CANNOT EXPLAIN IS NOT DRAWN.
-         *
-         * A disabled button with no reason is worse than no button: it tells the reader a rule exists and
-         * refuses to name it, so they go looking for a permission screen that will not help. The projection
-         * sends a reason with every real block; anything disabled without one is a gap on the wire, and the
-         * honest rendering of a gap is silence plus a console warning, not a dead control.
-         */
         const actions = all.filter((a) => {
             if (!a.disabled || a.disabledReason) { return true; }
             if (!reportedUnexplainedActions.has(a.code)) {
@@ -1632,6 +1636,101 @@
             }
             return false;
         });
+        const primary = rowPrimaryAction(actions);
+        return {
+            actions,
+            primary,
+            destructive: actions.filter((a) => a.destructive && a !== primary),
+            secondary: actions.filter((a) => a !== primary && !a.destructive)
+        };
+    };
+
+    /*
+     * ── THE NARROW-SCREEN ACTION BAR ──────────────────────────────────────────────────────────────────────
+     *
+     * MEASURED at 900px: "Mevcut aksiyonlar" began at the page's 1876th pixel of 2597 — 2.08 screens of
+     * scrolling to learn what you may do. At ≥992 the rail is sticky and the actions are always on screen, so
+     * this exists for exactly one range and is drawn for exactly one range.
+     *
+     * ⚠ IT DOES NOT REPLACE THE CARD. The card stays where it is, at every width, with its sentences and its
+     * tiers; this is a shortcut to the primary, not a second home for the actions.
+     *
+     * ⚠ WHY NOT IN THE PAGE HEADER (owner's decision, recorded because it will be asked again): a create form's
+     * "Save" is a page-level constant. This page's primary is not — its identity changes with the task (Accept /
+     * Complete / Complete in Mevzuat), it can be disabled with a reason, and it has four siblings. An action
+     * with siblings belongs beside its siblings.
+     *
+     * MECHANISM, NOT INVENTION: `.sticky-bottom` is Bootstrap's own utility, already used in this product
+     * (`GoalCreate.cshtml`'s readiness panel). Its `z-index: 1020` sits below the offcanvas layer (1045) and its
+     * backdrop (1040), so an open panel covers the bar rather than the other way round — measured, not assumed.
+     *
+     * `d-lg-none` is what makes ≥992 draw nothing: `display: none` removes it from the layout, the accessibility
+     * tree and the tab order alike. One render output, no width branch in JS, no resize listener — a
+     * width-dependent render means redrawing on resize, and redrawing on this page has already dropped a panel.
+     */
+    const renderActionBar = (item, locked, surface) => {
+        const { actions, primary, secondary, destructive } = actionTiers(item);
+        // Nothing to do — a closed task, or one that is not yours — draws no bar at all.
+        if (!actions.length || !primary) { return ''; }
+
+        const rest = secondary.concat(destructive);
+        const busy = locked && state.submittingActionCode === primary.code;
+        const label = busy ? t('ActionSubmitting') : actionLabel(primary);
+        const nature = ACTION_NATURE[primary.kind] || 'neutral';
+        const disabled = primary.disabled || locked;
+        /*
+         * A disabled primary keeps its REASON here too. The bar is the only part of the page a narrow-screen
+         * reader may see without scrolling, so "you cannot press this" without "because…" would be worse here
+         * than in the card.
+         */
+        const reason = primary.disabled && primary.disabledReason
+            ? `<p class="wcn-actionbar-reason"><i class="bx bx-lock-alt" aria-hidden="true"></i>${esc(primary.disabledReason)}</p>`
+            : '';
+
+        const depthLink = surface?.surfaceMode === 'deeplink'
+            ? (item.source?.deepLink || item.deepLink || item.sourceDeepLink)
+            : null;
+        const lead = depthLink
+            ? `<a class="wcn-act-btn wcn-act-fill wcn-act-fill-accent wcn-actionbar-lead" href="${esc(depthLink)}">
+                <i class="bx bx-link-external" aria-hidden="true"></i><span>${
+                esc(tf('ActionCompleteInSource', item.sourceModuleName || item.sourceModule || ''))}</span>
+               </a>`
+            : `<button type="button" class="wcn-act-btn wcn-act-fill wcn-act-fill-${nature} wcn-actionbar-lead"
+                    data-wcn-action="${esc(primary.key)}" data-wcn-id="${esc(item.id)}"${
+            disabled ? ' disabled aria-disabled="true"' : ''}${busy ? ' aria-busy="true"' : ''}>
+                ${busy ? '<i class="bx bx-loader-alt bx-spin" aria-hidden="true"></i>' : ''}<span>${esc(label)}</span>
+               </button>`;
+
+        // The siblings, folded — the bar is a shortcut, and a shortcut that lists everything is the card again.
+        const more = rest.length
+            ? `<div class="dropdown wcn-actionbar-more">
+                <button type="button" class="wcn-act-btn wcn-act-bare wcn-act-bare-neutral dropdown-toggle"
+                        data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false"
+                        aria-label="${esc(t('ActionsOther'))}"${locked ? ' disabled' : ''}>
+                    <span>${esc(t('ActionsOther'))}</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    ${rest.map((a) => `<li><button type="button" class="dropdown-item${
+                a.destructive ? ' text-danger' : ''}" data-wcn-action="${esc(a.key)}"
+                        data-wcn-id="${esc(item.id)}"${a.disabled || locked ? ' disabled' : ''}>${
+                esc(actionLabel(a))}</button></li>`).join('')}
+                </ul>
+               </div>`
+            : '';
+
+        return `<div class="wcn-actionbar sticky-bottom d-lg-none${locked ? ' wcn-actionbar-locked' : ''}"
+                     role="region" aria-label="${esc(t('ActionsAvailable'))}">
+            ${reason}
+            <div class="wcn-actionbar-row">${lead}${more}</div>
+        </div>`;
+    };
+
+    const renderActionRail = (item, locked, surface) => {
+        /*
+         * The set comes from `actionTiers` — the SAME call the narrow-screen bar makes. See its comment for why
+         * the derivation is not repeated here.
+         */
+        const { actions, primary, destructive, secondary } = actionTiers(item);
 
         /*
          * THE CARD ALWAYS SPEAKS. It used to render nothing at all when no action applied, leaving a heading
@@ -1700,9 +1799,6 @@
             </div>`;
         }
 
-        const primary = rowPrimaryAction(actions);
-        const destructive = actions.filter((a) => a.destructive && a !== primary);
-        const secondary = actions.filter((a) => a !== primary && !a.destructive);
 
         /*
          * DESTRUCTIVE ACTIONS ARE VISIBLE, and the kebab is empty until something genuinely rare needs it.
@@ -2176,7 +2272,18 @@
             ${cardHead('bx-list-check', 'ChecklistLabel', `<span class="wcn-count-inline">${done}/${items.length}</span>`)}
             <p class="wcn-block-hint">${esc(t(items.some((c) => c.blocking) ? 'ChecklistBlocksCompletion' : 'ChecklistDoesNotBlock'))}</p>
             <progress class="wcn-progress" value="${done}" max="${items.length}" aria-label="${esc(t('ChecklistLabel'))}"></progress>
-            <ul class="wcn-checks">${rows}</ul>
+            ${/*
+               * CAPPED, like its two siblings. MEASURED: 6 items render 294px un-capped, so a 20-item checklist
+               * would be ~1000px of one card — the unbounded growth the cap exists for.
+               *
+               * THRESHOLD: the same `cappedList` helper and the same 320px scroll box the subtask list and the
+               * activity feed use. A checklist row (38px) and a subtask row (38px) are the same height, so the
+               * cap shows the same number of rows on both — which is the point of reusing it rather than
+               * choosing a third number. `aria-expanded` and the region label come with the helper.
+               */''}
+            ${items.length > CHECKLIST_CAP
+            ? cappedList('checklist', `<ul class="wcn-checks">${rows}</ul>`, items.length)
+            : `<ul class="wcn-checks">${rows}</ul>`}
             ${notice}
             ${requiredNotice}
             ${canAdd ? checklistAddRow(item) : ''}
@@ -2289,6 +2396,12 @@
      * disappears — hiding it would strand an opened list with no way back — and the expansion goes through the
      * ordinary render, so it inherits this round's scroll and focus preservation.
      */
+    /*
+     * When a checklist earns a cap. Below this the card simply shows everything, which is the ordinary case and
+     * costs nothing; above it the list would grow without bound inside a card that has four other blocks.
+     */
+    const CHECKLIST_CAP = 8;
+
     const cappedList = (key, listHtml, total) => {
         const open = !!state.expandedLists[key];
         const body = open
@@ -3685,6 +3798,7 @@
                 <div class="col-12 col-lg-8 wcn-detail-content">${content}</div>
                 <div class="col-12 col-lg-4 wcn-detail-rail">${rail}</div>
             </div>
+            ${renderActionBar(item, surface.interactionLocked, surface)}
             ${subtaskPanel()}
             ${subtaskCreatePanel()}
         </div>`;
@@ -6751,7 +6865,18 @@
         if (noteSaveEl) {
             const it = itemById(noteSaveEl.getAttribute('data-wcn-note-save'));
             const inp = document.querySelector('#wcnApp [data-wcn-note-input]');
-            if (it && inp) { it.note = inp.value.trim() || null; render(); toast(t('ToastNoteSaved')); }
+            /*
+             * NO render(). The textarea already holds what was typed and nothing else on the page shows the
+             * note, so the redraw repainted the entire detail page to change nothing visible — and a full redraw
+             * is what detaches an open panel's Bootstrap instance (BL-129).
+             *
+             * ⚠ MEASURED, and it corrects the report that sent me here: with a panel open the offcanvas backdrop
+             * covers the viewport (900×900; `elementFromPoint` at the page centre returns the backdrop) and
+             * Bootstrap traps focus inside the panel, so a real reader cannot reach this button at all while a
+             * panel is open. Last round's warning fired because a TEST clicked it programmatically. The render
+             * is removed because it was pointless, not because a user could trip it.
+             */
+            if (it && inp) { it.note = inp.value.trim() || null; toast(t('ToastNoteSaved')); }
             return;
         }
         const commentEl = event.target.closest('[data-wcn-comment-post]');

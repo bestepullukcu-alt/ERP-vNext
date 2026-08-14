@@ -2499,3 +2499,124 @@ describe("render() refuses to run silently under an open panel", () => {
     expect(guard, "the guard does not name the way out").toMatch(/setPanelBusy|hidePanel/);
   });
 });
+
+describe("the narrow-screen action bar", () => {
+  const withActions = () => projectionItem({
+    primaryActionCode: "accept",
+    actions: [
+      { code: "accept", semanticType: "accept", label: { kind: "resource", key: "WorkAggregation_Action_accept" },
+        enabled: true, source: "provider", disabledReasonCode: null, disabledReason: null,
+        requiresConfirmation: false, requiresReason: false, requiresEvidence: false, supportsBulk: false,
+        riskLevel: "normal" },
+      { code: "plan", semanticType: "plan", label: { kind: "resource", key: "WorkAggregation_Action_plan" },
+        enabled: true, source: "provider", disabledReasonCode: null, disabledReason: null,
+        requiresConfirmation: false, requiresReason: false, requiresEvidence: false, supportsBulk: false,
+        riskLevel: "normal" }
+    ]
+  });
+
+  it("is drawn ONLY below 992 — the wide layout is untouched", async () => {
+    /*
+     * MUTATION TARGET (breakpoint). MEASURED at 900px: "Mevcut aksiyonlar" began at the page's 1876th pixel of
+     * 2597 — 2.08 screens of scrolling to learn what you may do. At >=992 the rail is sticky and the actions
+     * never leave the screen, so a bar there would be a second copy of a control already in view.
+     *
+     * `d-lg-none` is the whole mechanism: `display: none` takes it out of layout, the accessibility tree and the
+     * tab order together. One render output, no width branch in JS, no resize listener.
+     */
+    await boot(withActions());
+    const bar = app().querySelector(".wcn-actionbar");
+    expect(bar, "there is no action bar").not.toBeNull();
+    expect(bar.className, "the bar is not hidden on wide screens").toContain("d-lg-none");
+    // Bootstrap's own sticky utility, not a positioning scheme invented here.
+    expect(bar.className).toContain("sticky-bottom");
+  });
+
+  it("reads its actions from the SAME derivation as the card", async () => {
+    /*
+     * MUTATION TARGET (single source). Two views of one answer; deriving the set twice is how they drift, and
+     * this session has produced that shape repeatedly (two chip vocabularies, two lock models, three unwrappings
+     * of one envelope). Live measurement on a real task: card and bar both offered accept/cancel/inquire/plan/
+     * reassign.
+     */
+    await boot(withActions());
+    const codes = (root) => [...root.querySelectorAll("[data-wcn-action]")]
+      .map((b) => b.getAttribute("data-wcn-action")).sort();
+    const card = codes(app().querySelector(".wcn-acts"));
+    const bar = codes(app().querySelector(".wcn-actionbar"));
+    expect(card.length, "the card offers nothing").toBeGreaterThan(0);
+    expect([...new Set(bar)].sort(), "the bar and the card disagree about what can be done").toEqual(card);
+
+    // …and the derivation itself is one function, not two copies of a filter.
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    expect(src).toMatch(/const actionTiers = \(item\) => \{/);
+    const bar_ = src.slice(src.indexOf("const renderActionBar"), src.indexOf("const renderActionRail"));
+    expect(bar_, "the bar derives its own set").toContain("actionTiers(item)");
+    const rail = src.slice(src.indexOf("const renderActionRail"), src.indexOf("const renderLifecycleStepper"));
+    expect(rail, "the card derives its own set").toContain("actionTiers(item)");
+  });
+
+  it("draws no bar when there is nothing to do", async () => {
+    await boot(projectionItem({
+      normalizedStatus: "Done", taskLifecycle: "Done", executionState: "notApplicable", actions: []
+    }));
+    expect(app().querySelector(".wcn-actionbar"), "a closed task got an action bar").toBeNull();
+  });
+
+  it("announces itself, and keeps a blocked primary's reason", async () => {
+    await boot(projectionItem({
+      primaryActionCode: "complete",
+      actions: [{ code: "complete", semanticType: "complete",
+        label: { kind: "resource", key: "WorkAggregation_Action_complete" },
+        enabled: false, source: "provider", disabledReasonCode: "CHECKLIST_INCOMPLETE",
+        disabledReason: { kind: "resource", key: "WorkAggregation_ActionDisabled_ChecklistIncomplete" },
+        requiresConfirmation: false, requiresReason: false, requiresEvidence: false, supportsBulk: false,
+        riskLevel: "normal" }]
+    }));
+    const bar = app().querySelector(".wcn-actionbar");
+    expect(bar.getAttribute("role")).toBe("region");
+    expect(bar.getAttribute("aria-label")).toBeTruthy();
+    expect(bar.querySelector(".wcn-actionbar-lead").disabled, "a blocked primary is pressable in the bar").toBe(true);
+    // On a narrow screen the bar may be the only part of the page the reader has seen; "you cannot press this"
+    // without "because…" is worse here than in the card.
+    expect(bar.querySelector(".wcn-actionbar-reason"), "the bar hides the reason").not.toBeNull();
+  });
+});
+
+describe("the checklist is capped like its siblings", () => {
+  it("uses the shared helper past its threshold, not a cap of its own", () => {
+    /*
+     * MEASURED: 6 items render 294px UN-capped, so a 20-item checklist would be ~1000px of one card. The subtask
+     * list and the activity feed have used `cappedList` all along; the checklist simply never did.
+     *
+     * Same helper, same 320px box: a checklist row and a subtask row are both 38px, so the cap shows the same
+     * number of rows on both — which is why reusing it beats choosing a third number. `aria-expanded` and the
+     * region label arrive with the helper.
+     */
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const fn = src.slice(src.indexOf("const renderChecklist"), src.indexOf("const renderDependencies"));
+    expect(fn, "the checklist still renders unbounded").toContain("cappedList('checklist'");
+    expect(fn, "the threshold is not named").toContain("CHECKLIST_CAP");
+    const helper = src.slice(src.indexOf("const cappedList"), src.indexOf("const cappedList") + 1400);
+    expect(helper, "the shared cap lost its expanded state").toContain("aria-expanded");
+  });
+});
+
+describe("saving a personal note does not repaint the page", () => {
+  it("updates state and toasts, with no render()", () => {
+    /*
+     * MUTATION TARGET (note render). The redraw repainted the whole detail page to change nothing visible — the
+     * textarea already held the value and nothing else on the page shows the note — and a full redraw is what
+     * detaches an open panel's Bootstrap instance (BL-129).
+     *
+     * ⚠ The report that sent me here said a user could trip this with a panel open. MEASURED otherwise: the
+     * offcanvas backdrop covers the viewport (900×900) and Bootstrap traps focus in the panel, so this button is
+     * unreachable while a panel is open. The render is removed because it was pointless.
+     */
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const branch = src.slice(src.indexOf("const noteSaveEl"), src.indexOf("const commentEl"));
+    expect(branch, "note saving still repaints the page").not.toMatch(/;\s*render\(\);/);
+    expect(branch, "the note is no longer stored").toContain("it.note =");
+    expect(branch, "the reader is no longer told it saved").toContain("ToastNoteSaved");
+  });
+});

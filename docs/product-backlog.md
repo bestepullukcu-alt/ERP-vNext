@@ -3535,3 +3535,62 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - **Yapılacak:** CSS'e bir sözdizimi/lint kapısı (stylelint) veya en azından derleme öncesi ayraç-denge kontrolü.
   Bugün bu dosyanın tek doğrulayıcısı gözle canlı ölçüm.
 - **Gelecek regresyon riski: 🟠** — üçüncüsü gelene kadar açık.
+
+### BL-136 — ✅ KAPANDI (2026-08-14) — [DAR EKRAN] Yapışkan aksiyon şeridi (<992px)
+- **Ölçüm:** 900px'te "Mevcut aksiyonlar" kartının üstü sayfanın **1876. pikselinde** (sayfa 2597) → 2.08 ekran
+  kaydırma. ≥992'de ray yapışkan ve aksiyonlar hep görünür, orada sorun yok.
+- **İŞ 0 — desen taraması:** projede **alta yapışan aksiyon çubuğu deseni YOK**. Konumlandırma mekanizması var:
+  Bootstrap'in kendi `.sticky-bottom` yardımcısı (`position:sticky; bottom:0; z-index:1020`), üründe bir yerde
+  kullanılıyor (`GoldCreate.cshtml` → `goal-readiness-panel`, bir hazırlık paneli).
+  **Mekanizma yeniden kullanıldı, kompozisyon YENİ — projeye yeni bir desen eklendi.**
+- **Kapsam:** yalnız `<992px` (`d-lg-none`: `display:none` öğeyi yerleşimden, erişilebilirlik ağacından ve sekme
+  sırasından birlikte çıkarır). **Tek render çıktısı**, genişlik dalı yok, resize dinleyicisi yok.
+- **Geniş ekran birebir aynı** (ölçüldü, 1440 ve 1200, iki tema): şerit `display:none`, ray sticky, aksiyon kartı
+  263/303px, içerik 870/710, ray 435/355, sayfa 1921px, ayırıcı 0/0, tek dolu düğme, kart ritmi 16px.
+- **TEK KAYNAK:** `actionTiers(item)` çıkarıldı; hem kart hem şerit ondan okuyor. Canlı: ikisi de
+  `accept · cancel · inquire · plan · reassign`. Açıklanamayan devre dışı aksiyonun filtresi de oraya taşındı,
+  yani iki yüzeyden birine değil ikisine birden uygulanıyor.
+- **z-index doğrulandı:** şerit 1020 < backdrop 1089 < offcanvas 1090 → açık panel şeridi örtüyor, tersi değil.
+- **Kilit doğrulandı** (canlı): uçuşta şerit `wcn-actionbar-locked`, birincil "Uygulanıyor…" + `aria-busy`,
+  "Diğer aksiyonlar" da devre dışı; sonra geri dönüyor.
+- **Dört durum (900px):** olağan `98d1f94e` · kilit `98d1f94e` · engellenen `049e9109` (birincil "Tamamla"
+  devre dışı + gerekçesi şeritte okunabilir) · kapanmış `ad7f9af3` (şerit YOK).
+- **⚠ İlk denemem negatif kenar boşluğu kullandı ve yatay kaydırma yarattı** (şerit −8→893, viewport 900).
+  Kaldırıldı; şerit içerikle hizalı. Bu, BL-121'de zaten yasakladığımız desendi.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-137 — 🟠 [DAR EKRAN] Şerit klavye kullanıcısına kısayol SAĞLAMIYOR
+- **Ölçüm (900px):** şeridin düğmeleri sekme sırasında **139/149** — yani en sonda, çünkü şerit DOM'da en son.
+  Görsel olarak ekranın altında sabit duruyor ama Tab ile oraya varmak için sayfanın tamamı geçiliyor.
+- **Sonuç:** şerit fare/dokunmatik kullanıcı için kısayol, klavye kullanıcısı için değil. Aksiyon kartı da
+  900px'te içerikten sonra geldiği için klavye kullanıcısı her hâlükârda uzakta.
+- **Neden `order`/DOM taşıma yapılmadı:** sahip kararı bu turda aksiyon kartının yerini değiştirmemekti; DOM'da
+  şeridi öne almak da görsel/sekme ayrışması yaratırdı (BL-132'nin aynısı).
+- **Seçenekler:** (a) şeride `accesskey` · (b) sayfa başına "aksiyonlara atla" bağlantısı · (c) BL-132'nin
+  kararıyla birlikte çözülsün.
+- **Gelecek regresyon riski: —** (karar bekliyor).
+
+### BL-138 — 🟢 [DAR EKRAN] Şerit yokken de 80px alt dolgu uygulanıyor
+- **Ölçüm:** kapanmış görevde (`ad7f9af3`) şerit çizilmiyor ama `.wcn-details-page` yine `padding-block-end: 80px`
+  alıyor → sayfanın altında 80px ölü boşluk.
+- **Sebep:** dolgu medya sorgusuyla genişliğe bağlı, şeridin varlığına değil.
+- **Yapılacak:** dolguyu şeridin varlığına bağla (şerit çizilirken sayfaya bir sınıf, ya da `:has()`).
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-139 — ✅ KAPANDI (2026-08-14) — [KONTROL LİSTESİ] Kapak eklendi (BL-133 kapanışı)
+- 8 maddenin üstünde `cappedList('checklist', …)` — alt görev listesi ve etkinlik akışıyla **aynı yardımcı**,
+  aynı 320px kutu. Eşik gerekçesi: kontrol listesi satırı ve alt görev satırı ikisi de 38px, yani aynı kapak
+  ikisinde aynı sayıda satır gösteriyor; üçüncü bir sayı seçmek yerine mevcut olanı kullandım.
+- `aria-expanded` ve bölge etiketi yardımcıdan geliyor (diğer ikisinde zaten vardı).
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-140 — ✅ KAPANDI (2026-08-14) — [KİŞİSEL NOT] Gereksiz tam sayfa yeniden çizimi kaldırıldı
+- Not kaydetme `render()` çağırıyordu; oysa metin kutusu yazılanı zaten tutuyor ve sayfada notu gösteren başka
+  yer yok — yani tüm detay sayfası hiçbir görünür değişiklik için yeniden çiziliyordu.
+- **⚠ RAPORUN VARSAYIMI ÖLÇÜMDE ÇÜRÜDÜ:** "panel açıkken not kaydetmek paneli düşürüyor" deniyordu. Ölçüm: panel
+  açıkken offcanvas backdrop'u tüm görüntü alanını kaplıyor (900×900; sayfa ortasında `elementFromPoint`
+  backdrop döndürüyor) ve Bootstrap odağı panelin içinde hapsediyor — **gerçek bir okuyucu o düğmeye
+  ulaşamıyor.** Geçen turun uyarısı programatik bir tıklamadan ateşlemişti.
+- Render yine de kaldırıldı, çünkü zaten gereksizdi. Erteleme ve plan yazmaları render çağırmaya devam ediyor;
+  ikisi de gerçekten görünür değişiklik üretiyor ve ikisi de panel açıkken erişilemez.
+- **Gelecek regresyon riski: 🟢.**

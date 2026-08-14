@@ -7129,8 +7129,12 @@ tags.diten-tags .tagify__input {
 @media (min-width: 992px) {
     .wcn-detail-rail {
         position: sticky;
-        inset-block-start: 5rem;
-        max-block-size: calc(100vh - 6rem);
+        /* 6rem, not 5. The navbar is 64px tall but its BOX ends at 80px, so a 5rem offset parked the first card
+           flush against it — measured 0px of air once the rail stuck, against 16px at rest. The card rhythm is
+           16px everywhere else on this page, so the offset is the navbar's own bottom plus that same 16px, and
+           the gap now reads the same scrolled as it does at the top. */
+        inset-block-start: 6rem;
+        max-block-size: calc(100vh - 7rem);
         overflow-y: auto;
         /* The scroll lives inside this column; without this the sticky box would push the grid taller. */
         align-self: start;
@@ -7138,6 +7142,57 @@ tags.diten-tags .tagify__input {
 }
 .wcn-detail-content > .wcn-detail-card:last-child,
 .wcn-detail-rail > .wcn-detail-card:last-child { margin-block-end: 0; }
+
+/* ── The narrow-screen action bar ──────────────────────────────────────────
+   MEASURED at 900px: "Mevcut aksiyonlar" began at the page's 1876th pixel of 2597 — 2.08 screens of scrolling
+   to learn what you may do. At >=992 the rail is sticky and the actions never leave the screen, so this bar is
+   drawn for exactly one range and hidden with `d-lg-none` for the other.
+
+   `.sticky-bottom` is BOOTSTRAP'S OWN utility (already used in this product by GoalCreate's readiness panel),
+   not a positioning scheme invented here: `position: sticky; bottom: 0; z-index: 1020`. That z-index is why an
+   open offcanvas (1045) and its backdrop (1040) cover the bar instead of the bar floating over them.
+
+   The card is NOT replaced — it stays at every width. This is a shortcut to the primary action. */
+.wcn-actionbar {
+    /* The card surface, not a translucent overlay: content scrolls UNDER this, and a semi-transparent bar makes
+       the row behind it read as part of the bar.
+       ⚠ NOT `--bs-card-bg`, which MEASURED as empty here and left the bar transparent — the page's grey showed
+       through and the rows behind it read as part of the bar, which is the exact failure the line above warns
+       about. That variable is declared ON `.card` and resolves to nothing anywhere else (the gap recorded as
+       BL-089). `--bs-paper-bg` carries the same value, is readable everywhere, and follows the theme: measured
+       #fff in light and #2b2c40 in dark, which is what `.card` itself computes in each. */
+    background: var(--bs-paper-bg);
+    border-block-start: 1px solid var(--bs-border-color);
+    /* ⚠ NO NEGATIVE MARGIN. The first cut used `margin-inline: -1.5rem` to reach the viewport edges and
+       MEASURED as an overflow: the bar ran from -8px to 893px in a 900px viewport and gave the whole page a
+       horizontal scrollbar. It also repeats the exact pattern this session already banned for card dividers
+       (BL-121). The bar aligns with the content instead — same edges as the cards it belongs to. */
+    padding: .75rem 1rem;
+    border-radius: var(--bs-border-radius);
+    box-shadow: 0 -4px 12px rgba(var(--bs-black-rgb, 0, 0, 0), .06);
+}
+/* `stretch`, not `center`: the two controls are different sizes by design — the primary is the card's full-size
+   filled button (43px measured) and "other" is the card's small outline one (32px) — and side by side in a bar
+   that eleven-pixel difference reads as a mistake. Stretching makes the shorter one take the row's height, which
+   the primary sets, so they align without a hard-coded number that would drift the day either size changes. */
+.wcn-actionbar-row { display: flex; align-items: stretch; gap: .5rem; }
+/* The primary takes the room; "other" takes what it needs. */
+.wcn-actionbar-lead { flex: 1 1 auto; justify-content: center; }
+/* The stretch above reaches this WRAPPER, not the button inside it — "other" is a `.dropdown` div, so the row
+   made the div 43px and left its button at 32. Measured that way before this line existed. */
+.wcn-actionbar-more { flex: 0 0 auto; }
+.wcn-actionbar-more > .wcn-act-btn { block-size: 100%; }
+/* A disabled primary keeps its reason here too: on a narrow screen this bar may be the only part of the page
+   the reader has seen, so "you cannot press this" without "because…" is worse here than in the card. */
+.wcn-actionbar-reason {
+    display: flex; align-items: flex-start; gap: .375rem; margin: 0 0 .5rem;
+    font-size: .75rem; color: var(--bs-warning);
+}
+.wcn-actionbar-locked { opacity: .75; }
+/* Room under the last card so the bar never covers its final row. Only where the bar exists. */
+@media (max-width: 991.98px) {
+    .wcn-details-page { padding-block-end: 5rem; }
+}
 
 /* ── Action rail: three tiers, ONE fill ────────────────────────────────────
    Every button used to be a Sneat `btn-label-*` tint, and in this theme a tint reads as DISABLED: the card's
