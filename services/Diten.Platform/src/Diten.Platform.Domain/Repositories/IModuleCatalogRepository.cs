@@ -16,6 +16,16 @@ public interface IModuleCatalogRepository
     Task<IReadOnlyDictionary<ModuleCatalogStatus, long>> GetStatsAsync(CancellationToken ct = default);
 }
 
+public interface ITransactionalModuleCatalogRepository : IModuleCatalogRepository
+{
+    Task<ModuleCatalogItem> CreateAsync(IPlatformTransactionSession session, ModuleCatalogItem item, CancellationToken ct = default);
+    Task<ModuleCatalogItem?> GetByIdAsync(IPlatformTransactionSession session, Guid id, CancellationToken ct = default);
+    Task<ModuleCatalogItem?> GetByCodeAsync(IPlatformTransactionSession session, string moduleCode, CancellationToken ct = default);
+    Task<bool> ExistsByCodeAsync(IPlatformTransactionSession session, string moduleCode, Guid? excludeId = null, CancellationToken ct = default);
+    Task UpdateAsync(IPlatformTransactionSession session, ModuleCatalogItem item, CancellationToken ct = default);
+    Task DeleteAsync(IPlatformTransactionSession session, Guid id, CancellationToken ct = default);
+}
+
 public sealed record ModuleCatalogQuery(
     string? Search,
     string? Domain,

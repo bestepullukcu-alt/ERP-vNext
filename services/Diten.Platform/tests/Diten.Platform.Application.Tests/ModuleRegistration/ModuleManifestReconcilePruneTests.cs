@@ -5,6 +5,7 @@ using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
+using static Diten.Platform.Application.Tests.GlobalApplicability.GlobalApplicabilityTestDependencies;
 
 namespace Diten.Platform.Application.Tests.ModuleRegistration;
 
@@ -13,7 +14,8 @@ namespace Diten.Platform.Application.Tests.ModuleRegistration;
 public sealed class ModuleManifestReconcilePruneTests
 {
     private static RegisterModuleManifestCommandHandler Handler(FakePages pages, FakeActions actions, FakeCatalog catalog) =>
-        new(catalog, pages, actions, new NoopPermissionSync(), new PassthroughTaxonomyResolver(), new FakeDomains(), NullLogger<RegisterModuleManifestCommandHandler>.Instance);
+        new(Module(catalog), pages, actions, new NoopPermissionSync(), new PassthroughTaxonomyResolver(), new FakeDomains(),
+            NullLogger<RegisterModuleManifestCommandHandler>.Instance, Coordinator, State);
 
     // These tests assert page/action prune STATE, not domain auto-registration — a no-op lookup suffices.
     private sealed class FakeDomains : IModuleDomainRepository

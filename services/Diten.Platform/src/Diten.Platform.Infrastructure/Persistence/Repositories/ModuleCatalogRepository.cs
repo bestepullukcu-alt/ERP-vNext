@@ -8,22 +8,50 @@ using MongoDB.Driver;
 
 namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 
-public sealed class ModuleCatalogRepository : GlobalRepository<ModuleCatalogItem>, IModuleCatalogRepository
+public sealed class ModuleCatalogRepository : GlobalRepository<ModuleCatalogItem>, ITransactionalModuleCatalogRepository
 {
+    private readonly IPlatformDbContext _dbContext;
+
     public ModuleCatalogRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
         : base(dbContext.Database, tenantContext, "platform_module_catalog")
     {
+        _dbContext = dbContext;
     }
 
+    public async Task<ModuleCatalogItem> CreateAsync(IPlatformTransactionSession session, ModuleCatalogItem item, CancellationToken ct = default)
+    {
+        await Collection.InsertOneAsync(PlatformMongoTransactionSession.Require(session, _dbContext), item, cancellationToken: ct);
+        return item;
+    }
+
+    public async Task<ModuleCatalogItem?> GetByIdAsync(IPlatformTransactionSession session, Guid id, CancellationToken ct = default) =>
+        await Collection.Find(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            Builders<ModuleCatalogItem>.Filter.Eq(x => x.Id, id)).FirstOrDefaultAsync(ct);
+
+    public Task<ModuleCatalogItem?> GetByCodeAsync(IPlatformTransactionSession session, string moduleCode, CancellationToken ct = default) =>
+        GetByCodeCoreAsync(PlatformMongoTransactionSession.Require(session, _dbContext), moduleCode, ct);
+
     public async Task<ModuleCatalogItem?> GetByCodeAsync(string moduleCode, CancellationToken ct = default)
+        => await GetByCodeCoreAsync(null, moduleCode, ct);
+
+    private async Task<ModuleCatalogItem?> GetByCodeCoreAsync(IClientSessionHandle? session, string moduleCode, CancellationToken ct)
     {
         var filter = Builders<ModuleCatalogItem>.Filter.And(
             ExecutionFilter,
             Builders<ModuleCatalogItem>.Filter.Eq(x => x.ModuleCode, moduleCode));
-        return await Collection.Find(filter).FirstOrDefaultAsync(ct);
+        return session is null
+            ? await Collection.Find(filter).FirstOrDefaultAsync(ct)
+            : await Collection.Find(session, filter).FirstOrDefaultAsync(ct);
     }
 
+    public Task<bool> ExistsByCodeAsync(IPlatformTransactionSession session, string moduleCode, Guid? excludeId = null, CancellationToken ct = default) =>
+        ExistsByCodeCoreAsync(PlatformMongoTransactionSession.Require(session, _dbContext), moduleCode, excludeId, ct);
+
     public async Task<bool> ExistsByCodeAsync(string moduleCode, Guid? excludeId = null, CancellationToken ct = default)
+        => await ExistsByCodeCoreAsync(null, moduleCode, excludeId, ct);
+
+    private async Task<bool> ExistsByCodeCoreAsync(IClientSessionHandle? session, string moduleCode, Guid? excludeId, CancellationToken ct)
     {
         var filters = new List<FilterDefinition<ModuleCatalogItem>>
         {
@@ -36,17 +64,57 @@ public sealed class ModuleCatalogRepository : GlobalRepository<ModuleCatalogItem
             filters.Add(Builders<ModuleCatalogItem>.Filter.Ne(x => x.Id, excludeId.Value));
         }
 
-        return await Collection.Find(Builders<ModuleCatalogItem>.Filter.And(filters)).AnyAsync(ct);
+        var filter = Builders<ModuleCatalogItem>.Filter.And(filters);
+        return session is null
+            ? await Collection.Find(filter).AnyAsync(ct)
+            : await Collection.Find(session, filter).AnyAsync(ct);
     }
 
-    public async Task UpdateAsync(ModuleCatalogItem item, CancellationToken ct = default)
+    public Task UpdateAsync(IPlatformTransactionSession session, ModuleCatalogItem item, CancellationToken ct = default) =>
+        UpdateCoreAsync(PlatformMongoTransactionSession.Require(session, _dbContext), item, ct);
+
+    [Obsolete("Authoritative module-catalog mutations require an explicit Platform transaction session.")]
+    public Task UpdateAsync(ModuleCatalogItem item, CancellationToken ct = default) =>
+        throw new PlatformTransactionUnavailableException(
+            "Sessionless module-catalog mutation is disabled until the caller supplies the Platform transaction session.");
+
+    private async Task UpdateCoreAsync(IClientSessionHandle? session, ModuleCatalogItem item, CancellationToken ct)
     {
         item.UpdatedAt = DateTimeOffset.UtcNow;
-        var filter = Builders<ModuleCatalogItem>.Filter.And(
-            ExecutionFilter,
-            Builders<ModuleCatalogItem>.Filter.Eq(x => x.Id, item.Id));
-        await Collection.ReplaceOneAsync(filter, item, cancellationToken: ct);
+        // Session-owned updates deliberately address a soft-deleted document as well so an
+        // explicit reactivation can restore it atomically with projection/version/outboxes.
+        var filter = Builders<ModuleCatalogItem>.Filter.Eq(x => x.Id, item.Id);
+        if (session is null)
+        {
+            await Collection.ReplaceOneAsync(filter, item, cancellationToken: ct);
+        }
+        else
+        {
+            await Collection.ReplaceOneAsync(session, filter, item, cancellationToken: ct);
+        }
     }
+
+    public async Task DeleteAsync(IPlatformTransactionSession session, Guid id, CancellationToken ct = default)
+    {
+        var update = Builders<ModuleCatalogItem>.Update
+            .Set(x => x.IsDeleted, true)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow);
+        await Collection.UpdateOneAsync(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            Builders<ModuleCatalogItem>.Filter.And(ExecutionFilter, Builders<ModuleCatalogItem>.Filter.Eq(x => x.Id, id)),
+            update,
+            cancellationToken: ct);
+    }
+
+    [Obsolete("Authoritative module-catalog mutations require an explicit Platform transaction session.")]
+    public override Task<ModuleCatalogItem> CreateAsync(ModuleCatalogItem item, CancellationToken ct = default) =>
+        throw new PlatformTransactionUnavailableException(
+            "Sessionless module-catalog mutation is disabled until the caller supplies the Platform transaction session.");
+
+    [Obsolete("Authoritative module-catalog mutations require an explicit Platform transaction session.")]
+    public override Task DeleteAsync(Guid id, CancellationToken ct = default) =>
+        throw new PlatformTransactionUnavailableException(
+            "Sessionless module-catalog mutation is disabled until the caller supplies the Platform transaction session.");
 
     public async Task<(IReadOnlyList<ModuleCatalogItem> Items, long TotalCount)> QueryAsync(ModuleCatalogQuery query, CancellationToken ct = default)
     {
