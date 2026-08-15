@@ -2,16 +2,24 @@ using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.ModuleCatalog.Commands;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
+using Diten.Platform.Application.Features.GlobalApplicability;
+using Diten.Platform.Domain.Enums;
 
 namespace Diten.Platform.Application.Features.ModuleCatalog.Handlers.CommandHandlers;
 
 public sealed class BulkDeleteModuleCatalogItemsCommandHandler : IRequestHandler<BulkDeleteModuleCatalogItemsCommand, Response<NoContent>>
 {
-    private readonly IModuleCatalogRepository _repository;
+    private readonly ITransactionalModuleCatalogRepository _repository;
+    private readonly IGlobalApplicabilityTransactionCoordinator _transaction;
+    private readonly IGlobalApplicabilityStateRepository _state;
 
-    public BulkDeleteModuleCatalogItemsCommandHandler(IModuleCatalogRepository repository)
+    public BulkDeleteModuleCatalogItemsCommandHandler(ITransactionalModuleCatalogRepository repository,
+        IGlobalApplicabilityTransactionCoordinator transaction,
+        IGlobalApplicabilityStateRepository state)
     {
         _repository = repository;
+        _transaction = transaction;
+        _state = state;
     }
 
     public async Task<Response<NoContent>> Handle(BulkDeleteModuleCatalogItemsCommand request, CancellationToken ct)
@@ -21,25 +29,32 @@ public sealed class BulkDeleteModuleCatalogItemsCommandHandler : IRequestHandler
             return Response<NoContent>.Fail("At least one module catalog item id is required.", 400);
         }
 
-        foreach (var id in request.Ids.Distinct())
+        var ids = request.Ids.Distinct().ToArray();
+        return await _transaction.ExecuteBatchAsync<Response<NoContent>>(async (session, transactionCt) =>
         {
-            var item = await _repository.GetByIdAsync(id, ct);
-            if (item is null)
+            var items = new List<Domain.Entities.ModuleCatalogItem>(ids.Length);
+            foreach (var id in ids)
             {
-                return Response<NoContent>.Fail("Module catalog item not found.", 404);
+                var item = await _repository.GetByIdAsync(session, id, transactionCt);
+                if (item is null)
+                    return new(Response<NoContent>.Fail("Module catalog item not found.", 404), []);
+                if (item.IsCoreModule)
+                    return new(Response<NoContent>.Fail("Core modules cannot be deleted.", 400), []);
+                items.Add(item);
             }
 
-            if (item.IsCoreModule)
+            var changes = new List<GlobalApplicabilityBatchItem>(items.Count);
+            foreach (var item in items)
             {
-                return Response<NoContent>.Fail("Core modules cannot be deleted.", 400);
+                await _repository.DeleteAsync(session, item.Id, transactionCt);
+                item.IsDeleted = true;
+                changes.Add(new(
+                    new(nameof(BulkDeleteModuleCatalogItemsCommand), AuditOperation.Delete,
+                        "ModuleCatalogItem", item.Id),
+                    (s, version, token) => _state.UpsertModuleCatalogAsync(s, item, version, token)));
             }
-        }
 
-        foreach (var id in request.Ids.Distinct())
-        {
-            await _repository.DeleteAsync(id, ct);
-        }
-
-        return Response<NoContent>.Success(204);
+            return new(Response<NoContent>.Success(204), changes);
+        }, ct);
     }
 }

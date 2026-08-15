@@ -11,6 +11,7 @@ using Diten.Platform.Domain.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
+using static Diten.Platform.Application.Tests.GlobalApplicability.GlobalApplicabilityTestDependencies;
 
 namespace Diten.Platform.Application.Tests.ModuleCatalog;
 
@@ -25,7 +26,7 @@ public sealed class ModuleCatalogActivateGateTests
         var repo = new FakeModuleCatalogRepository(item);
         // NotApplicable = no workflow attached to this object → gate allows → existing behaviour unchanged.
         var gate = new WorkflowTransitionGate(new GateMediator(WorkflowTransitionGateDecision.NotApplicable, WorkflowTransitionGateStatus.NoWorkflow), NullLogger<WorkflowTransitionGate>.Instance);
-        var handler = new ActivateModuleCatalogItemCommandHandler(repo, gate);
+        var handler = new ActivateModuleCatalogItemCommandHandler(Module(repo), gate, Coordinator, State);
 
         var response = await handler.Handle(new ActivateModuleCatalogItemCommand(item.Id), CancellationToken.None);
 
@@ -41,7 +42,7 @@ public sealed class ModuleCatalogActivateGateTests
         var item = Draft();
         var repo = new FakeModuleCatalogRepository(item);
         var gate = new WorkflowTransitionGate(new GateMediator(WorkflowTransitionGateDecision.Blocked, WorkflowTransitionGateStatus.PendingApproval, blockingReason: WorkflowReasonCodes.WorkflowPendingApproval), NullLogger<WorkflowTransitionGate>.Instance);
-        var handler = new ActivateModuleCatalogItemCommandHandler(repo, gate);
+        var handler = new ActivateModuleCatalogItemCommandHandler(Module(repo), gate, Coordinator, State);
 
         await Assert.ThrowsAsync<WorkflowTransitionBlockedException>(
             () => handler.Handle(new ActivateModuleCatalogItemCommand(item.Id), CancellationToken.None));

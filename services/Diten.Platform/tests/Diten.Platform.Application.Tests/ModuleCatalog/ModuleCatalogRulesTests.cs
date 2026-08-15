@@ -6,6 +6,7 @@ using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using Xunit;
+using static Diten.Platform.Application.Tests.GlobalApplicability.GlobalApplicabilityTestDependencies;
 
 namespace Diten.Platform.Application.Tests.ModuleCatalog;
 
@@ -76,7 +77,7 @@ public sealed class ModuleCatalogRulesTests
     {
         var repository = new InMemoryModuleCatalogRepository();
         await repository.CreateAsync(new ModuleCatalogItem { ModuleCode = "MODULE-CATALOG", ModuleName = "Existing", DisplayName = "Existing", Domain = "Platform", Service = "Diten.Platform" });
-        var handler = new CreateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
+        var handler = new CreateModuleCatalogItemCommandHandler(Module(repository), PassthroughTaxonomyResolver.Instance, Coordinator, State);
 
         var response = await handler.Handle(new CreateModuleCatalogItemCommand(new CreateModuleCatalogItemRequest(
             "module__catalog",
@@ -102,7 +103,7 @@ public sealed class ModuleCatalogRulesTests
         var repository = new InMemoryModuleCatalogRepository();
         var existing = await repository.CreateAsync(new ModuleCatalogItem { ModuleCode = "MODULE-CATALOG", ModuleName = "Existing", DisplayName = "Existing", Domain = "Platform", Service = "Diten.Platform" });
         await repository.DeleteAsync(existing.Id);
-        var handler = new CreateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
+        var handler = new CreateModuleCatalogItemCommandHandler(Module(repository), PassthroughTaxonomyResolver.Instance, Coordinator, State);
 
         var response = await handler.Handle(new CreateModuleCatalogItemCommand(new CreateModuleCatalogItemRequest(
             "module__catalog",
@@ -148,7 +149,7 @@ public sealed class ModuleCatalogRulesTests
             Service = "Diten.Platform",
             IsCoreModule = true
         });
-        var handler = new DeleteModuleCatalogItemCommandHandler(repository);
+        var handler = new DeleteModuleCatalogItemCommandHandler(Module(repository), Coordinator, State);
 
         var response = await handler.Handle(new DeleteModuleCatalogItemCommand(item.Id), CancellationToken.None);
 
@@ -169,7 +170,7 @@ public sealed class ModuleCatalogRulesTests
             Domain = "Platform",
             Service = "Diten.Platform"
         });
-        var handler = new UpdateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
+        var handler = new UpdateModuleCatalogItemCommandHandler(Module(repository), PassthroughTaxonomyResolver.Instance, Coordinator, State);
 
         var response = await handler.Handle(new UpdateModuleCatalogItemCommand(item.Id, new UpdateModuleCatalogItemRequest(
             "CHANGED-CODE",
@@ -220,7 +221,7 @@ public sealed class ModuleCatalogRulesTests
     {
         var repository = new InMemoryModuleCatalogRepository();
         var item = await repository.CreateAsync(Item("LE", from));
-        var handler = new UpdateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
+        var handler = new UpdateModuleCatalogItemCommandHandler(Module(repository), PassthroughTaxonomyResolver.Instance, Coordinator, State);
 
         var response = await handler.Handle(UpdateStatus(item, to), CancellationToken.None);
 
@@ -240,7 +241,7 @@ public sealed class ModuleCatalogRulesTests
     {
         var repository = new InMemoryModuleCatalogRepository();
         var item = await repository.CreateAsync(Item("LE", from));
-        var handler = new UpdateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
+        var handler = new UpdateModuleCatalogItemCommandHandler(Module(repository), PassthroughTaxonomyResolver.Instance, Coordinator, State);
 
         var response = await handler.Handle(UpdateStatus(item, to), CancellationToken.None);
 
@@ -255,7 +256,7 @@ public sealed class ModuleCatalogRulesTests
     {
         var repository = new InMemoryModuleCatalogRepository();
         await repository.CreateAsync(new ModuleCatalogItem { ModuleCode = "WORKFLOW", ModuleName = "Workflow", DisplayName = "Workflow", Domain = "P", Service = "S", Origin = ModuleCatalogOrigin.SelfRegistered });
-        var handler = new CreateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
+        var handler = new CreateModuleCatalogItemCommandHandler(Module(repository), PassthroughTaxonomyResolver.Instance, Coordinator, State);
 
         var response = await handler.Handle(new CreateModuleCatalogItemCommand(new CreateModuleCatalogItemRequest(
             "workflow", "Workflow", "Workflow", null, "P", "S", "Draft", "1.0.0", false, true, null)), CancellationToken.None);
@@ -269,7 +270,7 @@ public sealed class ModuleCatalogRulesTests
     public async Task Create_handler_sets_manual_origin()
     {
         var repository = new InMemoryModuleCatalogRepository();
-        var handler = new CreateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
+        var handler = new CreateModuleCatalogItemCommandHandler(Module(repository), PassthroughTaxonomyResolver.Instance, Coordinator, State);
 
         var response = await handler.Handle(new CreateModuleCatalogItemCommand(new CreateModuleCatalogItemRequest(
             "newmod", "New", "New", null, "P", "S", "Beta", "1.0.0", false, true, null)), CancellationToken.None);
@@ -285,7 +286,7 @@ public sealed class ModuleCatalogRulesTests
     {
         var repository = new InMemoryModuleCatalogRepository();
         var item = await repository.CreateAsync(new ModuleCatalogItem { ModuleCode = "WORKFLOW", ModuleName = "Workflow", DisplayName = "Workflow", Domain = "P", Service = "S", Status = ModuleCatalogStatus.Active, ModuleVersion = "1.0.0", Origin = ModuleCatalogOrigin.SelfRegistered });
-        var handler = new UpdateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
+        var handler = new UpdateModuleCatalogItemCommandHandler(Module(repository), PassthroughTaxonomyResolver.Instance, Coordinator, State);
 
         // SOFT-only change (Domain) → allowed.
         var soft = await handler.Handle(UpdateStatus(item, "Active", domain: "Finance"), CancellationToken.None);
@@ -305,7 +306,7 @@ public sealed class ModuleCatalogRulesTests
     {
         var repository = new InMemoryModuleCatalogRepository();
         var item = await repository.CreateAsync(new ModuleCatalogItem { ModuleCode = "WORKFLOW", ModuleName = "Workflow", DisplayName = "Workflow", Domain = "P", Service = "S", Origin = ModuleCatalogOrigin.SelfRegistered });
-        var handler = new DeleteModuleCatalogItemCommandHandler(repository);
+        var handler = new DeleteModuleCatalogItemCommandHandler(Module(repository), Coordinator, State);
 
         var response = await handler.Handle(new DeleteModuleCatalogItemCommand(item.Id), CancellationToken.None);
 
@@ -326,7 +327,7 @@ public sealed class ModuleCatalogRulesTests
             Domain = "P", Service = "S", ModuleVersion = "1.0.0", Status = ModuleCatalogStatus.Active,
             Origin = ModuleCatalogOrigin.SelfRegistered, IsBaseline = true
         });
-        var handler = new DeactivateModuleCatalogItemCommandHandler(repository);
+        var handler = new DeactivateModuleCatalogItemCommandHandler(Module(repository), Coordinator, State);
 
         var response = await handler.Handle(new DeactivateModuleCatalogItemCommand(item.Id), CancellationToken.None);
 
@@ -341,7 +342,7 @@ public sealed class ModuleCatalogRulesTests
     {
         var repository = new InMemoryModuleCatalogRepository();
         var item = await repository.CreateAsync(Item("REGULAR", ModuleCatalogStatus.Active));
-        var handler = new DeactivateModuleCatalogItemCommandHandler(repository);
+        var handler = new DeactivateModuleCatalogItemCommandHandler(Module(repository), Coordinator, State);
 
         var response = await handler.Handle(new DeactivateModuleCatalogItemCommand(item.Id), CancellationToken.None);
 
@@ -360,7 +361,7 @@ public sealed class ModuleCatalogRulesTests
             Domain = "P", Service = "S", ModuleVersion = "1.0.0", Status = ModuleCatalogStatus.Active,
             Origin = ModuleCatalogOrigin.SelfRegistered, IsBaseline = true
         });
-        var handler = new UpdateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
+        var handler = new UpdateModuleCatalogItemCommandHandler(Module(repository), PassthroughTaxonomyResolver.Instance, Coordinator, State);
 
         var response = await handler.Handle(UpdateStatus(item, "Inactive"), CancellationToken.None);
 

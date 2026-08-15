@@ -2,6 +2,8 @@ using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.SubscriptionPlans.Commands;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
+using Diten.Platform.Application.Features.GlobalApplicability;
+using Diten.Platform.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -9,32 +11,23 @@ namespace Diten.Platform.Application.Features.SubscriptionPlans.Handlers.Command
 
 public sealed class CreateSubscriptionPlanCommandHandler : IRequestHandler<CreateSubscriptionPlanCommand, Response<Guid>>
 {
-    private readonly ISubscriptionPlanRepository _repository;
+    private readonly ITransactionalSubscriptionPlanRepository _repository;
     private readonly ILogger<CreateSubscriptionPlanCommandHandler> _logger;
+    private readonly IGlobalApplicabilityTransactionCoordinator _transaction;
+    private readonly IGlobalApplicabilityStateRepository _state;
 
-    public CreateSubscriptionPlanCommandHandler(ISubscriptionPlanRepository repository, ILogger<CreateSubscriptionPlanCommandHandler> logger)
+    public CreateSubscriptionPlanCommandHandler(ITransactionalSubscriptionPlanRepository repository, ILogger<CreateSubscriptionPlanCommandHandler> logger,
+        IGlobalApplicabilityTransactionCoordinator transaction, IGlobalApplicabilityStateRepository state)
     {
         _repository = repository;
         _logger = logger;
+        _transaction = transaction;
+        _state = state;
     }
 
     public async Task<Response<Guid>> Handle(CreateSubscriptionPlanCommand request, CancellationToken ct)
     {
         var normalizedCode = SubscriptionPlanCodeNormalizer.Normalize(request.Request.Code);
-        if (await _repository.ExistsByCodeAsync(normalizedCode, ct: ct))
-        {
-            return Response<Guid>.Fail("Code already exists.", 409);
-        }
-
-        if (request.Request.IsDefault && request.Request.IsActive)
-        {
-            var existingDefault = await _repository.GetActiveDefaultAsync(excludeId: null, ct);
-            if (existingDefault is not null)
-            {
-                return Response<Guid>.Fail("Only one active default plan is allowed.", 409);
-            }
-        }
-
         var plan = new SubscriptionPlan
         {
             Code = normalizedCode,
@@ -53,9 +46,21 @@ public sealed class CreateSubscriptionPlanCommandHandler : IRequestHandler<Creat
             IncludedModuleKeys = request.Request.IncludedModuleKeys?.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim().ToUpperInvariant()).Distinct(StringComparer.OrdinalIgnoreCase).ToList() ?? []
         };
 
-        await _repository.CreateAsync(plan, ct);
+        var result = await _transaction.ExecuteAsync(
+            new(nameof(CreateSubscriptionPlanCommand), AuditOperation.Create, "SubscriptionPlan", plan.Id),
+            async (session, transactionCt) =>
+            {
+                if (await _repository.ExistsByCodeAsync(session, normalizedCode, ct: transactionCt))
+                    return new GlobalApplicabilityMutation<Response<Guid>>(Response<Guid>.Fail("Code already exists.", 409), false);
+                if (plan.IsDefault && plan.IsActive
+                    && await _repository.GetActiveDefaultAsync(session, excludeId: null, transactionCt) is not null)
+                    return new GlobalApplicabilityMutation<Response<Guid>>(Response<Guid>.Fail("Only one active default plan is allowed.", 409), false);
+                await _repository.CreateAsync(session, plan, transactionCt);
+                return new GlobalApplicabilityMutation<Response<Guid>>(Response<Guid>.Success(plan.Id, 201), true,
+                    (s, version, token) => _state.UpsertSubscriptionPlanAsync(s, plan, version, token));
+            }, ct);
 
-        _logger.LogInformation("AUDIT SubscriptionPlanCreated PlanId={PlanId} Code={Code}", plan.Id, plan.Code);
-        return Response<Guid>.Success(plan.Id, 201);
+        _logger.LogInformation("SubscriptionPlan create completed PlanId={PlanId} Code={Code}", plan.Id, plan.Code);
+        return result;
     }
 }

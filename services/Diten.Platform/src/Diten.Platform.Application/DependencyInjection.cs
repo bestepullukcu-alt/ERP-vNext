@@ -8,6 +8,7 @@ using Diten.Platform.Application.Features.Audit;
 using Diten.Platform.Application.Features.Audit.Services;
 using Diten.Platform.Application.Features.BusinessReferenceData.Services;
 using Diten.Platform.Application.Features.DocumentManagementInstantiation.Services;
+using Diten.Platform.Application.Features.GlobalApplicability;
 using Diten.Platform.Application.Features.Lookups.Services;
 using Diten.Platform.Application.Features.Notifications.BackgroundJobs;
 using Diten.Platform.Application.Features.Notifications.Eventing;
@@ -159,6 +160,7 @@ public static class DependencyInjection
         services.AddScoped<IAuditRetentionPolicyResolver, AuditRetentionPolicyResolver>();
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<IAuditMetaAuditWriter, AuditMetaAuditWriter>();
+        services.AddScoped<IGlobalApplicabilityTransactionCoordinator, GlobalApplicabilityTransactionCoordinator>();
         services.AddScoped<IJobExecutionLogWriter, JobExecutionLogWriter>();
         services.AddScoped<SchedulerSmokeTestJob>();
         services.AddScoped<DeferredPlatformJobHandler>();

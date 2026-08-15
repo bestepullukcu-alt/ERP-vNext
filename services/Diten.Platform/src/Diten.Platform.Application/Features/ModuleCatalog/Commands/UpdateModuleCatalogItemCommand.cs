@@ -6,7 +6,7 @@ using MediatR;
 namespace Diten.Platform.Application.Features.ModuleCatalog.Commands;
 
 public sealed record UpdateModuleCatalogItemCommand(Guid Id, UpdateModuleCatalogItemRequest Request)
-    : IRequest<Response<NoContent>>, IAuditableCommand, IAuditMetadataProvider
+    : IRequest<Response<NoContent>>, IAuditableCommand, IAuditMetadataProvider, ITransactionOwnedAuditCommand
 {
     public AuditRequestMetadata GetAuditMetadata() => new(
         Category: AuditCategory.ModuleCatalog, Operation: AuditOperation.Update, EntityType: "ModuleCatalogItem",
