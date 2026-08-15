@@ -178,4 +178,10 @@
   <data name="ErrorSnoozeDateInvalid" xml:space="preserve">
     <value>La date de report doit être future.</value>
   </data>
+  <data name="ErrorCommentNotAuthor" xml:space="preserve">
+    <value>Seul l'auteur peut modifier ou retirer un commentaire.</value>
+  </data>
+  <data name="ErrorCommentWithdrawn" xml:space="preserve">
+    <value>Ce commentaire a déjà été retiré.</value>
+  </data>
 </root>

@@ -32,7 +32,10 @@ public sealed class TaskNotificationTemplateTests
         "platform.tasks.claimed",
         "platform.tasks.duesoon",
         "platform.tasks.completed",
-        "platform.tasks.approvalrequested"
+        "platform.tasks.approvalrequested",
+        // Somebody said something on the task (2026-08-14). Its seven languages are asserted by the same loop as
+        // the other five — a sixth event added without its templates is an email that silently never arrives.
+        "platform.tasks.commented"
     ];
 
     [Fact]

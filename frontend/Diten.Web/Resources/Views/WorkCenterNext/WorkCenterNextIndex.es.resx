@@ -1929,4 +1929,31 @@
   <data name="DetailParentTask" xml:space="preserve">
     <value>Tarea principal</value>
   </data>
+  <data name="CommentEdited" xml:space="preserve">
+    <value>editado</value>
+  </data>
+  <data name="CommentWithdrawn" xml:space="preserve">
+    <value>Este comentario fue retirado por su autor.</value>
+  </data>
+  <data name="CommentEdit" xml:space="preserve">
+    <value>Editar comentario</value>
+  </data>
+  <data name="CommentEditSave" xml:space="preserve">
+    <value>Guardar</value>
+  </data>
+  <data name="CommentEditLabel" xml:space="preserve">
+    <value>Comentario</value>
+  </data>
+  <data name="CommentWithdraw" xml:space="preserve">
+    <value>Retirar comentario</value>
+  </data>
+  <data name="CommentWithdrawConfirm" xml:space="preserve">
+    <value>El texto se elimina; en su lugar queda una marca que indica el retiro.</value>
+  </data>
+  <data name="ToastCommentEdited" xml:space="preserve">
+    <value>Comentario editado</value>
+  </data>
+  <data name="ToastCommentWithdrawn" xml:space="preserve">
+    <value>Comentario retirado</value>
+  </data>
 </root>

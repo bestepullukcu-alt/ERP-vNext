@@ -106,9 +106,28 @@ public sealed class TaskDependency : TenantScopedEntity
 /// list would make every task read carry the whole conversation, and <c>UpdateTaskItemRequest</c> is a FULL
 /// REPLACE — a writer that forgot to round-trip the array would delete the history. That has happened here before.
 ///
-/// <para><b>Immutable by design.</b> There is no edit and no delete, and no endpoint for either. ServiceNow work
-/// notes and SAP workflow notes behave the same way: once somebody has acted on what a comment said, removing it
-/// rewrites the past. If retraction is ever needed it arrives as a "withdrawn" MARK, never as a deletion.</para>
+/// <para><b>EDITABLE AND RETRACTABLE — WITH A TRAIL (2026-08-14, owner decision).</b> This type used to say:
+/// "Immutable by design. There is no edit and no delete… If retraction is ever needed it arrives as a 'withdrawn'
+/// MARK, never as a deletion." That reasoning was never wrong — changing a sentence somebody has already replied
+/// to can make their reply nonsense, and in an ERP that is rewriting history.</para>
+///
+/// <para>What changed is that the compromise was found, and it is the one the old text itself gestured at: THE
+/// TRAIL. What immutability protected was "nothing disappears or changes silently" — and an edit that says it was
+/// edited, and a deletion that leaves a marker where the comment stood, do not break that. So:</para>
+/// <list type="bullet">
+///   <item><description><b>Edit</b> — the text changes and <see cref="EditedAt"/> is stamped. The screen says
+///   "edited" beside it, so a reader can tell a sentence has moved since they last read it.</description></item>
+///   <item><description><b>Delete</b> — a TOMBSTONE, never a removal. <see cref="DeletedAt"/> is stamped and
+///   <see cref="Text"/> is CLEARED, so the words are genuinely gone while the fact that somebody spoke here, and
+///   then withdrew it, remains in the feed. A row that vanished entirely would renumber a conversation other
+///   people quoted.</description></item>
+///   <item><description><b>Only the author.</b> Not a manager, not an administrator — nobody asked for that
+///   exception in the decision that opened this, and an authority to edit other people's words is far easier to
+///   grant than to take back.</description></item>
+/// </list>
+///
+/// <para>The row is still never hard-deleted, and the author snapshot is still never re-resolved. Those two were
+/// the load-bearing halves of the old decision and they are untouched.</para>
 ///
 /// <para>The author's display name is COPIED at write time rather than resolved on read. A comment is a record of
 /// what was said and by whom at that moment; re-resolving would silently rename the speaker when a person is
@@ -125,6 +144,25 @@ public sealed class TaskComment : TenantScopedEntity
 
     /// <summary>Snapshot of the author's name, or null when it could not be resolved (never a GUID).</summary>
     public string? AuthorDisplayName { get; set; }
+
+    /// <summary>
+    /// When the author last rewrote this comment; null while it still says what it originally said.
+    ///
+    /// <para>The INSTANT, not a flag. "Edited" alone cannot answer "before or after I read it?", which is the
+    /// only question the mark exists to settle — and it is the same absolute-instant rule the whole feed follows,
+    /// so the words on screen are derived late in the reader's own language.</para>
+    /// </summary>
+    public DateTimeOffset? EditedAt { get; set; }
+
+    /// <summary>
+    /// When the author withdrew this comment. The row SURVIVES: <see cref="Text"/> is cleared and this is
+    /// stamped, so the feed keeps a marker saying somebody spoke here and took it back.
+    ///
+    /// <para>Deliberately NOT the inherited soft-delete flag. `IsDeleted` takes the row out of every read through
+    /// the repository's execution filter, which is exactly what a tombstone must not do — the marker has to keep
+    /// arriving. Two different meanings, two different fields.</para>
+    /// </summary>
+    public DateTimeOffset? WithdrawnAt { get; set; }
 }
 
 /// <summary>

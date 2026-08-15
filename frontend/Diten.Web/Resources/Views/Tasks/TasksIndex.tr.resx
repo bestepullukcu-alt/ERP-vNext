@@ -178,4 +178,10 @@
   <data name="ErrorSnoozeDateInvalid" xml:space="preserve">
     <value>Erteleme tarihi gelecekte olmalı.</value>
   </data>
+  <data name="ErrorCommentNotAuthor" xml:space="preserve">
+    <value>Yalnız yazarı bir yorumu düzenleyebilir veya kaldırabilir.</value>
+  </data>
+  <data name="ErrorCommentWithdrawn" xml:space="preserve">
+    <value>Bu yorum zaten kaldırılmış.</value>
+  </data>
 </root>

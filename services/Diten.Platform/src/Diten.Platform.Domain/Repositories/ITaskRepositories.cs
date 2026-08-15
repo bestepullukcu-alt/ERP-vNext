@@ -107,6 +107,21 @@ public interface ITaskCommentRepository
     Task<IReadOnlyList<TaskComment>> ListByTaskIdsAsync(
         IReadOnlyCollection<Guid> taskItemIds,
         CancellationToken ct = default);
+
+    /// <summary>Satisfied by the base repository — declared so a handler can read a comment before rewriting it.</summary>
+    Task<TaskComment?> GetByIdAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>
+    /// Rewrite one comment in place — an edit, or the withdrawal that clears its text and stamps a tombstone.
+    ///
+    /// <para>There is still NO delete on this interface, and that is the half of the old immutability decision
+    /// that survives intact: a withdrawn comment keeps its row so the feed keeps a marker where somebody spoke.
+    /// A hard delete would renumber a conversation other people quoted.</para>
+    ///
+    /// <para>No expected version: a comment has exactly one writer — its author — so there is no race to lose,
+    /// and refusing an author's own correction on a stale token would invent a conflict nobody could cause.</para>
+    /// </summary>
+    Task UpdateAsync(TaskComment comment, CancellationToken ct = default);
 }
 
 public interface ITaskWatcherRepository

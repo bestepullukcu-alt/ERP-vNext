@@ -260,20 +260,51 @@ public sealed class TaskCommentTests
         Assert.Contains("api/{id:guid}/comments", proxy, StringComparison.Ordinal);
     }
 
+    /*
+     * ⚠ THIS TEST USED TO ASSERT THE OPPOSITE, and its comment read: "A comment is immutable, and that is a
+     * decision rather than an omission… If retraction is ever needed it arrives as a 'withdrawn' MARK. This
+     * guards the decision against being quietly undone."
+     *
+     * The decision was not quietly undone — it was completed (owner, 2026-08-14). The MARK the old text was
+     * waiting for is exactly what shipped: an edit stamps `editedAt` and the feed shows it, and a withdrawal is a
+     * TOMBSTONE that clears the words and keeps the row. What immutability protected — nothing changes or
+     * disappears silently — is intact.
+     *
+     * So the guard is REWRITTEN rather than deleted: the endpoints must exist, and the properties that made them
+     * acceptable must hold. `TaskCommentTrailTests` proves the behaviour; this proves the surface.
+     */
     [Fact]
-    public void There_is_no_edit_or_delete_endpoint_for_a_comment()
+    public void The_comment_endpoints_exist_and_keep_the_trail_the_old_decision_asked_for()
     {
-        /*
-         * A comment is immutable, and that is a decision rather than an omission: once someone has acted on what
-         * a comment said, removing it rewrites the past. If retraction is ever needed it arrives as a "withdrawn"
-         * MARK. This guards the decision against being quietly undone.
-         */
         var controller = File.ReadAllText(Path.Combine(
             RepositoryRoot(),
             "services/Diten.Platform/src/Diten.Platform.Api/Controllers/TasksController.cs"));
 
-        Assert.DoesNotContain("HttpPut(\"{id:guid}/comments", controller, StringComparison.Ordinal);
-        Assert.DoesNotContain("HttpDelete(\"{id:guid}/comments", controller, StringComparison.Ordinal);
+        Assert.Contains("HttpPut(\"{id:guid}/comments/{commentId:guid}", controller, StringComparison.Ordinal);
+        Assert.Contains("HttpDelete(\"{id:guid}/comments/{commentId:guid}", controller, StringComparison.Ordinal);
+
+        // The decision that changed is RECORDED where it was written, not silently replaced.
+        Assert.Contains("IMMUTABILITY DECISION", controller, StringComparison.Ordinal);
+
+        // Still no hard delete: withdrawal is a tombstone, so the repository seam has no Delete for a comment.
+        var seam = File.ReadAllText(Path.Combine(
+            RepositoryRoot(),
+            "services/Diten.Platform/src/Diten.Platform.Domain/Repositories/ITaskRepositories.cs"));
+        var commentSeam = seam[seam.IndexOf("interface ITaskCommentRepository", StringComparison.Ordinal)..];
+        commentSeam = commentSeam[..commentSeam.IndexOf("interface ITaskWatcherRepository", StringComparison.Ordinal)];
+        Assert.DoesNotContain("DeleteAsync", commentSeam, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_proxy_forwards_the_edit_and_withdraw_routes_too()
+    {
+        // Same reason the route above is checked as TEXT: a route Platform exposes and Diten.Web does not
+        // answers 404 inside the web tier while Platform's suite stays green. That is how `inquire` shipped.
+        var proxy = File.ReadAllText(Path.Combine(
+            RepositoryRoot(), "frontend/Diten.Web/Controllers/TasksController.cs"));
+
+        Assert.Contains("HttpPut(\"api/{id:guid}/comments/{commentId:guid}", proxy, StringComparison.Ordinal);
+        Assert.Contains("HttpDelete(\"api/{id:guid}/comments/{commentId:guid}", proxy, StringComparison.Ordinal);
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────
@@ -334,7 +365,10 @@ public sealed class TaskCommentTests
                 Comments,
                 new FakeCurrentUserContext(TaskTestData.Me),
                 _names,
-                new FakeTenantContext(TaskTestData.Tenant));
+                new FakeTenantContext(TaskTestData.Tenant),
+                Watchers,
+                Notifications,
+                Microsoft.Extensions.Logging.Abstractions.NullLogger<AddTaskCommentHandler>.Instance);
 
             var correlation = new CorrelationContext();
             correlation.SetCorrelationId("corr");
@@ -347,6 +381,10 @@ public sealed class TaskCommentTests
         public TaskItem Task { get; }
 
         public FakeTaskCommentRepository Comments { get; } = new();
+
+        public FakeTaskWatcherRepository Watchers { get; } = new();
+
+        public FakeTaskNotificationService Notifications { get; } = new();
 
         public Task<IActionResult> PostAsync(string text)
             => _controller.AddComment(Task.Id, new AddTaskCommentRequest(text), CancellationToken.None);

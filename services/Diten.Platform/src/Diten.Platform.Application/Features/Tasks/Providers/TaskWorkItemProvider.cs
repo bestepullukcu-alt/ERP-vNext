@@ -434,7 +434,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // actions may be offered — and the contract requires every blocked action to be present and disabled,
         // never hidden. A hidden button teaches the reader nothing about why the work will not move.
         var dependencies = ToDependencies(task, edges ?? [], edgeTasks);
-        var activity = ToActivity(comments ?? [], transitions ?? [], displayNames);
+        var activity = ToActivity(comments ?? [], transitions ?? [], displayNames, actor.UserId);
 
         /*
          * THE FOUR CONDITIONAL CONTAINERS, DECIDED ONCE.
@@ -1136,16 +1136,27 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private static IReadOnlyList<WorkItemActivityEntryDto> ToActivity(
         IReadOnlyList<TaskComment> comments,
         IReadOnlyList<TaskTransition> transitions,
-        IReadOnlyDictionary<Guid, string> displayNames)
+        IReadOnlyDictionary<Guid, string> displayNames,
+        Guid actorUserId)
         => comments
             .Select(comment => new WorkItemActivityEntryDto(
                 Id: comment.Id.ToString(),
                 Kind: "comment",
+                // A WITHDRAWN comment carries no text, and the entity carries none either — the words were
+                // cleared at rest, not merely withheld here. What survives is the row, so the feed keeps a
+                // marker where somebody spoke and took it back.
                 Text: comment.Text,
                 // Null rather than a GUID when the name was never resolved: the client has a label for "name
                 // unavailable" and an id is not a person.
                 Actor: string.IsNullOrWhiteSpace(comment.AuthorDisplayName) ? null : comment.AuthorDisplayName,
-                At: comment.CreatedAt))
+                At: comment.CreatedAt,
+                Event: null,
+                EditedAt: comment.EditedAt,
+                WithdrawnAt: comment.WithdrawnAt,
+                // The AUTHORITY, decided here and only here. The client has the author's NAME and nothing else,
+                // so two people sharing a name would otherwise be handed each other's controls — and the handler
+                // would then refuse a button the screen had offered.
+                Editable: comment.AuthorUserId == actorUserId && comment.WithdrawnAt is null))
             .Concat(transitions.Select(transition => new WorkItemActivityEntryDto(
                 Id: transition.Id.ToString(),
                 Kind: "event",

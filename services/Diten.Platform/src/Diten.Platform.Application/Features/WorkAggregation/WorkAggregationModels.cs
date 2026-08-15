@@ -619,7 +619,36 @@ public sealed record WorkItemActivityEntryDto(
     DateTimeOffset At,
     /// <summary>Present on <c>kind: "event"</c> only, absent on a comment.</summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    WorkItemActivityEventDto? Event = null);
+    WorkItemActivityEventDto? Event = null,
+    /// <summary>
+    /// When the author last rewrote this comment — THE TRAIL that made editing acceptable at all (2026-08-14).
+    ///
+    /// <para>Comments were immutable, and the property that protected was "nothing changes silently". An edit
+    /// that says WHEN it happened keeps that property: a reader can tell whether the sentence moved before or
+    /// after they last read it, which a bare "edited" flag cannot answer.</para>
+    ///
+    /// <para>An INSTANT, like every other time on this feed, never a pre-computed phrase — the client derives
+    /// the words late, in its own language.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    DateTimeOffset? EditedAt = null,
+    /// <summary>
+    /// When the author withdrew this comment. The entry SURVIVES with no <see cref="Text"/>: the words are gone
+    /// and the marker stays, so the feed still says somebody spoke here and took it back.
+    ///
+    /// <para>This is why the contract's <c>ACTIVITY_COMMENT_TEXT_REQUIRED</c> now exempts a withdrawn entry —
+    /// a tombstone with text would not be a tombstone.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    DateTimeOffset? WithdrawnAt = null,
+    /// <summary>
+    /// May THIS reader rewrite or withdraw this entry? The server decides; the client only draws.
+    ///
+    /// <para>False for everybody but the author, for an event, and for an already-withdrawn comment. Sent rather
+    /// than derived client-side because the client has only the author's NAME — two people with one name would
+    /// otherwise be handed each other's controls, and the handler would then refuse a button the screen offered.</para>
+    /// </summary>
+    bool Editable = false);
 
 /// <summary>
 /// What happened, as CODES rather than as a sentence (WC-1).

@@ -78,6 +78,13 @@ public static class NotificationTemplateSeed
             TaskCompleted("zh"),
             TaskCompleted("ar"),
             TaskCompleted("ru"),
+            TaskCommented("en"),
+            TaskCommented("tr"),
+            TaskCommented("fr"),
+            TaskCommented("es"),
+            TaskCommented("zh"),
+            TaskCommented("ar"),
+            TaskCommented("ru"),
             TaskApprovalRequested("en"),
             TaskApprovalRequested("tr"),
             TaskApprovalRequested("fr"),
@@ -222,6 +229,35 @@ public static class NotificationTemplateSeed
         };
 
         return Create("platform.tasks.completed", locale, subject, html, text, ["TaskTitle", "TaskId"]);
+    }
+
+    /// <summary>
+    /// <c>platform.tasks.commented</c> in seven languages.
+    ///
+    /// <para>Sent for a NEW comment only. An edit and a withdrawal deliberately send nothing (owner decision
+    /// 2026-08-14): a typo correction does not earn anybody's inbox, and a retraction that emailed everyone would
+    /// shout louder than the sentence it takes back.</para>
+    ///
+    /// <para>The body carries the task, NOT the comment text. Two reasons, and the second is the load-bearing
+    /// one: a comment can be withdrawn, and an email is unrecallable — quoting the sentence would put a copy of
+    /// it beyond the reach of the retraction the author is entitled to make. It also keeps the template's
+    /// variables identical to its five siblings, which is what lets the manifest declare one variable set.</para>
+    /// </summary>
+    private static NotificationTemplate TaskCommented(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("New comment on a task: {{TaskTitle}}", "<p>Somebody commented on a task you are involved in.</p><p><strong>Task:</strong> {{TaskTitle}}</p><p>Reference: {{TaskId}}</p>", "Somebody commented on a task you are involved in. Task: {{TaskTitle}} — Reference: {{TaskId}}"),
+            "tr" => ("Bir göreve yeni yorum: {{TaskTitle}}", "<p>İlgili olduğunuz bir göreve yorum yazıldı.</p><p><strong>Görev:</strong> {{TaskTitle}}</p><p>Referans: {{TaskId}}</p>", "İlgili olduğunuz bir göreve yorum yazıldı. Görev: {{TaskTitle}} — Referans: {{TaskId}}"),
+            "fr" => ("Nouveau commentaire sur une tâche : {{TaskTitle}}", "<p>Quelqu\u0027un a commenté une tâche qui vous concerne.</p><p><strong>Tâche:</strong> {{TaskTitle}}</p><p>Référence: {{TaskId}}</p>", "Quelqu\u0027un a commenté une tâche qui vous concerne. Tâche: {{TaskTitle}} — Référence: {{TaskId}}"),
+            "es" => ("Nuevo comentario en una tarea: {{TaskTitle}}", "<p>Alguien comentó en una tarea en la que usted participa.</p><p><strong>Tarea:</strong> {{TaskTitle}}</p><p>Referencia: {{TaskId}}</p>", "Alguien comentó en una tarea en la que usted participa. Tarea: {{TaskTitle}} — Referencia: {{TaskId}}"),
+            "zh" => ("任务有新评论：{{TaskTitle}}", "<p>有人在您参与的任务上发表了评论。</p><p><strong>任务:</strong> {{TaskTitle}}</p><p>编号: {{TaskId}}</p>", "有人在您参与的任务上发表了评论。 任务: {{TaskTitle}} — 编号: {{TaskId}}"),
+            "ar" => ("تعليق جديد على مهمة: {{TaskTitle}}", "<p>علّق أحدهم على مهمة تخصك.</p><p><strong>المهمة:</strong> {{TaskTitle}}</p><p>المرجع: {{TaskId}}</p>", "علّق أحدهم على مهمة تخصك. المهمة: {{TaskTitle}} — المرجع: {{TaskId}}"),
+            "ru" => ("Новый комментарий к задаче: {{TaskTitle}}", "<p>Кто-то оставил комментарий к задаче, которая вас касается.</p><p><strong>Задача:</strong> {{TaskTitle}}</p><p>Ссылка: {{TaskId}}</p>", "Кто-то оставил комментарий к задаче, которая вас касается. Задача: {{TaskTitle}} — Ссылка: {{TaskId}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported task template locale.")
+        };
+
+        return Create("platform.tasks.commented", locale, subject, html, text, ["TaskTitle", "TaskId"]);
     }
 
     /// <summary>

@@ -30,6 +30,13 @@ internal static class TaskTestData
     /// assignee" collapse into each other and an authority rule can pass by coincidence.
     /// </summary>
     internal static readonly Guid Other = Guid.Parse("ffffffff-ffff-ffff-ffff-ffffffffffff");
+
+    /// <summary>
+    /// A FOURTH person, who only WATCHES. Needed because the comment audience is four sources — holder,
+    /// requester, watchers, previous speakers — and with three identities two of them collapse, letting a
+    /// missing source pass by coincidence.
+    /// </summary>
+    internal static readonly Guid Watcher = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
 }
 
 internal sealed class FakeCurrentUserContext(Guid userId) : ICurrentUserContext
@@ -677,6 +684,29 @@ internal sealed class FakeTaskCommentRepository : ITaskCommentRepository
         IReadOnlyCollection<Guid> taskItemIds,
         CancellationToken ct = default)
         => Task.FromResult(Order(_comments.Where(c => taskItemIds.Contains(c.TaskItemId))));
+
+    public Task<TaskComment?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => Task.FromResult(_comments.FirstOrDefault(c => c.Id == id));
+
+    /*
+     * REPLACES the stored instance, exactly as the real repository does.
+     *
+     * ⚠ It deliberately does NOT hand back the caller's object: the handler mutates the entity it loaded, and a
+     * double that shared that instance would make a handler which FORGETS to call UpdateAsync pass anyway. This
+     * one only reflects what was actually written — and it clones through the serializer rather than by hand,
+     * because a hand-copied clone silently drops every field added after it was written. Two doubles in this
+     * suite have already hidden a defect exactly that way.
+     */
+    public Task UpdateAsync(TaskComment comment, CancellationToken ct = default)
+    {
+        var index = _comments.FindIndex(c => c.Id == comment.Id);
+        if (index >= 0) { _comments[index] = Clone(comment); }
+        return Task.CompletedTask;
+    }
+
+    private static TaskComment Clone(TaskComment comment)
+        => System.Text.Json.JsonSerializer.Deserialize<TaskComment>(
+            System.Text.Json.JsonSerializer.Serialize(comment))!;
 
     private static IReadOnlyList<TaskComment> Order(IEnumerable<TaskComment> comments)
         => comments.OrderByDescending(c => c.CreatedAt).ThenByDescending(c => c.Id).ToList();
@@ -1397,6 +1427,8 @@ internal sealed class DirectMediator : IMediator
     private readonly AddTaskPersonalNoteHandler? _addNote;
     private readonly DeleteTaskPersonalNoteHandler? _deleteNote;
     private readonly SetTaskSnoozeHandler? _snooze;
+    private readonly UpdateTaskCommentHandler? _updateComment;
+    private readonly WithdrawTaskCommentHandler? _withdrawComment;
 
     public DirectMediator(TransitionTaskItemHandler handler) => _transition = handler;
 
@@ -1404,6 +1436,17 @@ internal sealed class DirectMediator : IMediator
     /// The personal overlay's three writes together, because one FIXTURE drives all three: a test that adds two
     /// notes, deletes one and then snoozes is the only way to prove the three share ONE document.
     /// </summary>
+    /// <summary>The comment trio — post, edit, withdraw — because one fixture drives all three.</summary>
+    public DirectMediator(
+        AddTaskCommentHandler comment,
+        UpdateTaskCommentHandler updateComment,
+        WithdrawTaskCommentHandler withdrawComment)
+    {
+        _comment = comment;
+        _updateComment = updateComment;
+        _withdrawComment = withdrawComment;
+    }
+
     public DirectMediator(
         AddTaskPersonalNoteHandler addNote,
         DeleteTaskPersonalNoteHandler deleteNote,
@@ -1433,6 +1476,10 @@ internal sealed class DirectMediator : IMediator
                 => (Task<TResponse>)(object)_deleteNote.Handle(command, ct),
             SetTaskSnoozeCommand command when _snooze is not null
                 => (Task<TResponse>)(object)_snooze.Handle(command, ct),
+            UpdateTaskCommentCommand command when _updateComment is not null
+                => (Task<TResponse>)(object)_updateComment.Handle(command, ct),
+            WithdrawTaskCommentCommand command when _withdrawComment is not null
+                => (Task<TResponse>)(object)_withdrawComment.Handle(command, ct),
             _ => throw new InvalidOperationException($"Unexpected request {request.GetType().Name}.")
         };
 

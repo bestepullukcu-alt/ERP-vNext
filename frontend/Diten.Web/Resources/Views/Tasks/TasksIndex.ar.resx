@@ -178,4 +178,10 @@
   <data name="ErrorSnoozeDateInvalid" xml:space="preserve">
     <value>يجب أن يكون تاريخ التأجيل في المستقبل.</value>
   </data>
+  <data name="ErrorCommentNotAuthor" xml:space="preserve">
+    <value>لا يجوز إلا للكاتب تعديل التعليق أو سحبه.</value>
+  </data>
+  <data name="ErrorCommentWithdrawn" xml:space="preserve">
+    <value>سُحب هذا التعليق بالفعل.</value>
+  </data>
 </root>

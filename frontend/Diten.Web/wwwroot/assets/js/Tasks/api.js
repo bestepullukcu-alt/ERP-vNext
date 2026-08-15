@@ -58,6 +58,11 @@
         // Commenting on a closed task, and a comment that is empty or over the length limit.
         TASK_COMMENT_TASK_CLOSED: 'errorCommentTaskClosed',
         TASK_COMMENT_TEXT_INVALID: 'errorCommentTextInvalid',
+        // Somebody else's comment, and a comment already withdrawn. Mapped the moment the codes were written:
+        // an unmapped code reaches the reader as the generic "an error occurred", which this map has been the
+        // missing half of twice already.
+        TASK_COMMENT_NOT_AUTHOR: 'errorCommentNotAuthor',
+        TASK_COMMENT_WITHDRAWN: 'errorCommentWithdrawn',
         /*
          * WC-1 — the personal overlay's three refusals. Mapped the moment the codes were written, not after a
          * user read "İşlem sırasında bir hata oluştu": an unmapped code IS that sentence, and this map has now
@@ -292,6 +297,16 @@
         reorderChecklist: (taskId, payload) => request('PUT', `/${taskId}/checklist/order`, payload),
         // Comments are POST-only, deliberately: they are immutable, so there is no update or delete to call.
         addComment: (taskId, payload) => request('POST', `/${taskId}/comments`, payload),
+        /*
+         * ⚠ THIS LINE USED TO SAY: "Comments are POST-only, deliberately: they are immutable, so there is no
+         * update or delete to call." That decision is not gone, it is COMPLETED — the compromise it was waiting
+         * for is the trail. An edit stamps `editedAt` and the feed shows it; a withdrawal is a TOMBSTONE that
+         * clears the words and keeps the row. Only the author may call either; the server decides that.
+         */
+        updateComment: (taskId, commentId, payload) =>
+            request('PUT', `/${taskId}/comments/${encodeURIComponent(commentId)}`, payload),
+        withdrawComment: (taskId, commentId) =>
+            request('DELETE', `/${taskId}/comments/${encodeURIComponent(commentId)}`),
 
         // ── The personal overlay (WC-1) ──────────────────────────────────────
         //

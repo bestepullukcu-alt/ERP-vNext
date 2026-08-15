@@ -288,11 +288,29 @@ public sealed class TasksController : CustomBaseController
 
     // ── Comments (BL-034 item 7) ─────────────────────────────────────────────
 
+    /*
+     * ══ COMMENTS: THE IMMUTABILITY DECISION, AND WHAT REPLACED IT (2026-08-14, owner) ═════════════════════════
+     *
+     * This block used to read: "There is deliberately no PUT and no DELETE. A comment is immutable — see
+     * TaskComment." It is recorded here rather than deleted, because the reasoning behind it was never wrong:
+     * changing a sentence somebody has already replied to can turn their reply into nonsense, and in an ERP that
+     * is rewriting history.
+     *
+     * What changed is that the compromise was found — THE TRAIL. Immutability was protecting exactly one property:
+     * nothing disappears or changes silently. An edit that SAYS it was edited, and a withdrawal that leaves a
+     * marker where the comment stood, both leave that property standing.
+     *
+     * So a PUT and a DELETE exist now, and three rules hold the old decision's line:
+     *   · ONLY THE AUTHOR — no manager exception and no administrator override. Nobody asked for one, and an
+     *     authority over other people's words is far easier to grant than to take back.
+     *   · DELETE IS A TOMBSTONE — the text is cleared, the row survives, the feed keeps saying somebody spoke
+     *     here and withdrew it. There is still no hard delete of a comment anywhere in this module.
+     *   · NEITHER SENDS EMAIL — only a NEW comment notifies. A typo correction does not earn anybody's inbox.
+     */
+
     /// <summary>
     /// Post a comment. Guarded by READ, not Update: commenting is not a change to the work, and the person asking
     /// "why is this still waiting?" is usually not the one holding it.
-    ///
-    /// <para>There is deliberately no PUT and no DELETE. A comment is immutable — see <c>TaskComment</c>.</para>
     /// </summary>
     [HttpPost("{id:guid}/comments")]
     [HasPermission(TaskPermissions.Read)]
@@ -300,6 +318,33 @@ public sealed class TasksController : CustomBaseController
         Guid id, [FromBody] AddTaskCommentRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new AddTaskCommentCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// Rewrite one's OWN comment. READ-guarded like posting one, for the same reason: this is not a change to the
+    /// work. The AUTHOR check is the real gate and it lives in the handler, where it cannot be bypassed by a
+    /// caller who happens to hold a stronger permission.
+    /// </summary>
+    [HttpPut("{id:guid}/comments/{commentId:guid}")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> UpdateComment(
+        Guid id, Guid commentId, [FromBody] UpdateTaskCommentRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(
+            new UpdateTaskCommentCommand(id, commentId, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// Withdraw one's OWN comment. A TOMBSTONE — the text is cleared and the row stays, so the feed keeps a
+    /// marker where somebody spoke and took it back.
+    /// </summary>
+    [HttpDelete("{id:guid}/comments/{commentId:guid}")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> WithdrawComment(Guid id, Guid commentId, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new WithdrawTaskCommentCommand(id, commentId, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 

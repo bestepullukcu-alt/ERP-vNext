@@ -6424,6 +6424,32 @@ tags.diten-tags .tagify__input {
    the accessibility tree — and gives up only the collapse. The taller shape wins because it is the one every
    list that CAN be reordered already shows. */
 .diten-checkitem-withdrawn { visibility: hidden; }
+
+/* ── A COMMENT THAT WAS EDITED, AND ONE THAT WAS WITHDRAWN ─────────────────
+   Comments were immutable; what opened them is the TRAIL, and the trail has to be legible without shouting.
+   The "edited" mark is the quietest thing on the row — it qualifies a sentence, it is not news — and the
+   tombstone is italic and muted because it is a statement ABOUT a comment rather than a comment. */
+.wcn-audit-edited {
+    margin-inline-start: .375rem;
+    font-size: .6875rem;
+    color: var(--bs-secondary-color);
+}
+.wcn-audit-withdrawn { font-style: italic; color: var(--bs-secondary-color); }
+/* The controls follow the same rule the row controls elsewhere on this page follow: present for whoever may use
+   them, quiet until the row is under the pointer or holds focus. `:focus-within` is the half that keyboard users
+   need and that a hover-only rule always forgets. */
+.wcn-audit-controls { display: inline-flex; gap: .125rem; flex: 0 0 auto; opacity: 0; transition: opacity .12s; }
+.wcn-audit-item:hover .wcn-audit-controls,
+.wcn-audit-item:focus-within .wcn-audit-controls { opacity: 1; }
+@media (hover: none) { .wcn-audit-controls { opacity: 1; } }
+/* 24px — the floor WCAG 2.5.8 puts under a target, the same size the personal note's delete carries. */
+.wcn-audit-ctl {
+    inline-size: 1.5rem; block-size: 1.5rem;
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0; border: 0; border-radius: .25rem;
+    background: transparent; color: var(--bs-secondary-color); cursor: pointer;
+}
+.wcn-audit-ctl:hover, .wcn-audit-ctl:focus-visible { background: var(--bs-secondary-bg); color: var(--bs-primary); }
 .diten-checkitem-move .diten-checkitem-btn { block-size: .9375rem; font-size: .75rem; }
 .diten-checkitem-text {
     flex: 1 1 auto;

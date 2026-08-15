@@ -178,4 +178,10 @@
   <data name="ErrorSnoozeDateInvalid" xml:space="preserve">
     <value>延后日期必须是将来的日期。</value>
   </data>
+  <data name="ErrorCommentNotAuthor" xml:space="preserve">
+    <value>只有作者才能编辑或撤回评论。</value>
+  </data>
+  <data name="ErrorCommentWithdrawn" xml:space="preserve">
+    <value>该评论已被撤回。</value>
+  </data>
 </root>

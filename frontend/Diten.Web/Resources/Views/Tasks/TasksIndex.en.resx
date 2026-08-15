@@ -178,4 +178,10 @@
   <data name="ErrorSnoozeDateInvalid" xml:space="preserve">
     <value>The snooze date must be in the future.</value>
   </data>
+  <data name="ErrorCommentNotAuthor" xml:space="preserve">
+    <value>Only the author may edit or withdraw a comment.</value>
+  </data>
+  <data name="ErrorCommentWithdrawn" xml:space="preserve">
+    <value>This comment has already been withdrawn.</value>
+  </data>
 </root>

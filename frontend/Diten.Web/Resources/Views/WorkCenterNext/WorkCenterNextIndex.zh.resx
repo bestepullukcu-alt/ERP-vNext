@@ -1929,4 +1929,31 @@
   <data name="DetailParentTask" xml:space="preserve">
     <value>父任务</value>
   </data>
+  <data name="CommentEdited" xml:space="preserve">
+    <value>已编辑</value>
+  </data>
+  <data name="CommentWithdrawn" xml:space="preserve">
+    <value>此评论已被作者撤回。</value>
+  </data>
+  <data name="CommentEdit" xml:space="preserve">
+    <value>编辑评论</value>
+  </data>
+  <data name="CommentEditSave" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="CommentEditLabel" xml:space="preserve">
+    <value>评论</value>
+  </data>
+  <data name="CommentWithdraw" xml:space="preserve">
+    <value>撤回评论</value>
+  </data>
+  <data name="CommentWithdrawConfirm" xml:space="preserve">
+    <value>文字将被删除；原处保留一条说明已撤回的标记。</value>
+  </data>
+  <data name="ToastCommentEdited" xml:space="preserve">
+    <value>评论已编辑</value>
+  </data>
+  <data name="ToastCommentWithdrawn" xml:space="preserve">
+    <value>评论已撤回</value>
+  </data>
 </root>

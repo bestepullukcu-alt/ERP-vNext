@@ -348,6 +348,16 @@ public sealed class TaskCommentRepository : TenantRepository<TaskComment>, ITask
         return Order(await Collection.Find(filter).ToListAsync(ct));
     }
 
+    public async Task UpdateAsync(TaskComment comment, CancellationToken ct = default)
+    {
+        comment.UpdatedAt = DateTimeOffset.UtcNow;
+        // The tenant filter still applies: another tenant's comment matches nothing and is not overwritten.
+        var filter = Builders<TaskComment>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskComment>.Filter.Eq(x => x.Id, comment.Id));
+        await Collection.ReplaceOneAsync(filter, comment, new ReplaceOptions(), ct);
+    }
+
     /*
      * Sorted IN MEMORY, deliberately (BL-030). CreatedAt is a DateTimeOffset, which this driver stores as a BSON
      * ARRAY [ticks, offsetMinutes]; a server-side sort that touches a second date key fails at runtime with

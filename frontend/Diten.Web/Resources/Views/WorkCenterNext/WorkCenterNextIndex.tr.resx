@@ -1929,4 +1929,31 @@
   <data name="DetailParentTask" xml:space="preserve">
     <value>Üst görev</value>
   </data>
+  <data name="CommentEdited" xml:space="preserve">
+    <value>düzenlendi</value>
+  </data>
+  <data name="CommentWithdrawn" xml:space="preserve">
+    <value>Bu yorum yazarı tarafından kaldırıldı.</value>
+  </data>
+  <data name="CommentEdit" xml:space="preserve">
+    <value>Yorumu düzenle</value>
+  </data>
+  <data name="CommentEditSave" xml:space="preserve">
+    <value>Kaydet</value>
+  </data>
+  <data name="CommentEditLabel" xml:space="preserve">
+    <value>Yorum</value>
+  </data>
+  <data name="CommentWithdraw" xml:space="preserve">
+    <value>Yorumu kaldır</value>
+  </data>
+  <data name="CommentWithdrawConfirm" xml:space="preserve">
+    <value>Metin silinir; yerinde kaldırıldığını söyleyen bir iz kalır.</value>
+  </data>
+  <data name="ToastCommentEdited" xml:space="preserve">
+    <value>Yorum düzenlendi</value>
+  </data>
+  <data name="ToastCommentWithdrawn" xml:space="preserve">
+    <value>Yorum kaldırıldı</value>
+  </data>
 </root>

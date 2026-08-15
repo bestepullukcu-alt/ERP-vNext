@@ -360,7 +360,20 @@
             if (!ACTIVITY_KINDS.includes(entry.kind)) { push(errors, fixture, 'ACTIVITY_KIND_INVALID', `${path}.kind`); }
             if (!entry.at) { push(errors, fixture, 'ACTIVITY_TIMESTAMP_REQUIRED', `${path}.at`); }
             if (entry.ago !== undefined) { push(errors, fixture, 'ACTIVITY_RELATIVE_TIME_FORBIDDEN', `${path}.ago`); }
-            if (entry.kind === 'comment' && !String(entry.text || '').trim()) {
+            /*
+             * A comment says something — EXCEPT a withdrawn one, which is the point of a tombstone (2026-08-14).
+             *
+             * Comments used to be immutable; the compromise that opened editing and withdrawal was the TRAIL, and
+             * a withdrawal's trail is a row with its text GONE and `withdrawnAt` set. The words are cleared at
+             * rest, not merely withheld, so requiring text here would reject exactly the shape the feature
+             * produces — and a rejected item is DROPPED whole, taking the task's title and actions with it.
+             *
+             * An entry claiming both is still an error: a tombstone that still carries its sentence is not one.
+             */
+            if (entry.kind === 'comment' && entry.withdrawnAt && String(entry.text || '').trim()) {
+                push(errors, fixture, 'ACTIVITY_WITHDRAWN_TEXT_FORBIDDEN', `${path}.text`);
+            }
+            if (entry.kind === 'comment' && !entry.withdrawnAt && !String(entry.text || '').trim()) {
                 push(errors, fixture, 'ACTIVITY_COMMENT_TEXT_REQUIRED', `${path}.text`);
             }
         });

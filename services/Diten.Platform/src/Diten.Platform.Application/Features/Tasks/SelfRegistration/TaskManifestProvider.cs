@@ -272,6 +272,37 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                     LinkPolicy: "TargetPage",
                     Status: "Active"),
 
+                /*
+                 * Somebody said something on the task (2026-08-14). Declared HERE rather than through a second
+                 * notification path: the module already owns a dispatcher, a policy and a recipient resolver, and
+                 * a parallel road would need its own copy of the master switch, the per-event preference and the
+                 * actor exclusion.
+                 *
+                 * Variables match its five siblings exactly, and the comment TEXT is deliberately not among them
+                 * — see NotificationTemplateSeed for why quoting a retractable sentence into an unrecallable
+                 * email is the one thing this event must not do.
+                 */
+                new ModuleManifestNotificationEvent(
+                    EventCode: TaskNotificationEvents.Commented,
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.tasks.commented",
+                    DisplayNameKey: "NotificationEvent_TaskCommented",
+                    FallbackDisplayName: "Task commented",
+                    Description: "Sent when somebody comments on a task. Edits and withdrawals send nothing.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("TaskTitle"),
+                        new ModuleManifestNotificationVariable("TaskId")
+                    ],
+                    OptionalVariables: null,
+                    TargetPageCode: PageTaskDetail,
+                    RequiredPermissionKey: TaskPermissions.Read,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "TargetPage",
+                    Status: "Active"),
+
                 // Declared now, dispatched in Phase 3 when the MOD-0023 handoff lands.
                 new ModuleManifestNotificationEvent(
                     EventCode: TaskNotificationEvents.ApprovalRequested,

@@ -179,6 +179,25 @@ public sealed record AddTaskCommentCommand(
     AddTaskCommentRequest Request,
     string CorrelationId) : IRequest<Response<Guid>>;
 
+/// <summary>
+/// Rewrite one's OWN comment. The text changes and an <c>editedAt</c> stamp goes with it, so the feed says the
+/// sentence has moved since it was first read.
+/// </summary>
+public sealed record UpdateTaskCommentCommand(
+    Guid TaskItemId,
+    Guid CommentId,
+    UpdateTaskCommentRequest Request,
+    string CorrelationId) : IRequest<Response<NoContent>>;
+
+/// <summary>
+/// Withdraw one's OWN comment. A TOMBSTONE, not a removal: the text is cleared and the row stays, so the feed
+/// keeps a marker where somebody spoke and then took it back.
+/// </summary>
+public sealed record WithdrawTaskCommentCommand(
+    Guid TaskItemId,
+    Guid CommentId,
+    string CorrelationId) : IRequest<Response<NoContent>>;
+
 // ── The personal overlay (WC-1) ──────────────────────────────────────────────
 
 /// <summary>

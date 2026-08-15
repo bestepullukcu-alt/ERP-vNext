@@ -1929,4 +1929,31 @@
   <data name="DetailParentTask" xml:space="preserve">
     <value>المهمة الأصل</value>
   </data>
+  <data name="CommentEdited" xml:space="preserve">
+    <value>مُعدّل</value>
+  </data>
+  <data name="CommentWithdrawn" xml:space="preserve">
+    <value>سحب الكاتب هذا التعليق.</value>
+  </data>
+  <data name="CommentEdit" xml:space="preserve">
+    <value>تعديل التعليق</value>
+  </data>
+  <data name="CommentEditSave" xml:space="preserve">
+    <value>حفظ</value>
+  </data>
+  <data name="CommentEditLabel" xml:space="preserve">
+    <value>التعليق</value>
+  </data>
+  <data name="CommentWithdraw" xml:space="preserve">
+    <value>سحب التعليق</value>
+  </data>
+  <data name="CommentWithdrawConfirm" xml:space="preserve">
+    <value>يُحذف النص؛ وتبقى مكانه علامة تفيد بأنه سُحب.</value>
+  </data>
+  <data name="ToastCommentEdited" xml:space="preserve">
+    <value>عُدّل التعليق</value>
+  </data>
+  <data name="ToastCommentWithdrawn" xml:space="preserve">
+    <value>سُحب التعليق</value>
+  </data>
 </root>

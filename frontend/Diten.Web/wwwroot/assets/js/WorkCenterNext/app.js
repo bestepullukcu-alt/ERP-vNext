@@ -3083,14 +3083,25 @@
      * hover to reach for. Formatted in the READER'S locale rather than a fixed pattern — the page already does
      * this for the calendar's month names, from the same `CurrentLanguage`.
      */
-    const noteWhenAbsolute = (note) => {
-        const at = note.createdAt ? new Date(note.createdAt) : null;
-        if (!at || Number.isNaN(at.getTime())) { return ''; }
+    const noteWhenAbsolute = (note) => absoluteInstant(note.createdAt);
+
+    /*
+     * ONE absolute formatter for the whole surface. It began as the personal note's own helper and is shared now
+     * that the comment feed needs the same thing for its "edited" mark — two formatters would be two date
+     * dialects on one page, which is the drift this round keeps closing everywhere else.
+     *
+     * Takes whatever the wire or the clock hands over (an ISO string or a millisecond stamp) and answers '' for
+     * anything it cannot read: a wrong date is worse than no date, and the relative words are still on screen.
+     */
+    const absoluteInstant = (value) => {
+        if (value === null || value === undefined || value === '') { return ''; }
+        const at = new Date(value);
+        if (Number.isNaN(at.getTime())) { return ''; }
         try {
             return new Intl.DateTimeFormat(global.CurrentLanguage || undefined,
                 { dateStyle: 'long', timeStyle: 'short' }).format(at);
         } catch (error) {
-            // A bad locale must not take the row down with it — the relative words are still on screen.
+            // A bad locale must not take the row down with it.
             return at.toISOString().slice(0, 16).replace('T', ' ');
         }
     };
@@ -3550,13 +3561,53 @@
         const auditRows = visibleActivity.map((entry) => {
             if (entry.kind === 'comment') {
                 const author = entry.actor || t('CommentAuthorUnknown');
-                return `<li class="wcn-audit-item wcn-audit-comment">
+                /*
+                 * ── A COMMENT CAN NOW BE REWRITTEN AND WITHDRAWN — AND SAYS SO ──────────────────────────────
+                 *
+                 * Comments were immutable, deliberately: changing a sentence somebody has already replied to can
+                 * make their reply nonsense. What made editing acceptable is THE TRAIL, and this is where the
+                 * trail is read.
+                 *
+                 *   withdrawn → the words are gone (the server cleared them at rest, they are not merely hidden
+                 *               here) and a TOMBSTONE stands in their place. The row survives, so the feed still
+                 *               says somebody spoke here and took it back.
+                 *   edited    → the sentence, plus a mark carrying WHEN. "Edited" alone cannot answer "before or
+                 *               after I read it", which is the only question the mark exists to settle.
+                 *
+                 * The controls are drawn from `entry.editable`, which the SERVER decides. Comparing the author's
+                 * NAME here would hand two people who share one name each other's buttons — and the handler
+                 * would then refuse a control the screen had offered.
+                 */
+                const withdrawn = !!entry.withdrawnAt;
+                const editedMark = entry.editedAtMs
+                    ? `<span class="wcn-audit-edited" title="${esc(absoluteInstant(entry.editedAtMs))}">${
+                        esc(t('CommentEdited'))}</span>`
+                    : '';
+                const body = withdrawn
+                    ? `<span class="wcn-audit-text wcn-audit-withdrawn">${esc(t('CommentWithdrawn'))}</span>`
+                    : `<span class="wcn-audit-text">${esc(entry.text)}</span>${editedMark}`;
+                const controls = entry.editable
+                    ? `<span class="wcn-audit-controls">
+                        <button type="button" class="wcn-audit-ctl" data-wcn-comment-edit="${esc(entry.id)}"
+                                data-wcn-comment-task="${item.id}"
+                                aria-label="${esc(t('CommentEdit'))}" title="${esc(t('CommentEdit'))}">
+                            <i class="bx bx-pencil" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="wcn-audit-ctl" data-wcn-comment-withdraw="${esc(entry.id)}"
+                                data-wcn-comment-task="${item.id}"
+                                aria-label="${esc(t('CommentWithdraw'))}" title="${esc(t('CommentWithdraw'))}">
+                            <i class="bx bx-trash" aria-hidden="true"></i>
+                        </button>
+                    </span>`
+                    : '';
+                return `<li class="wcn-audit-item wcn-audit-comment${withdrawn ? ' wcn-audit-item-withdrawn' : ''}">
                     <span class="diten-opt-avatar wcn-audit-avatar" aria-hidden="true">${esc(personInitials(author))}</span>
                     <div class="wcn-audit-body">
                         <span class="wcn-audit-author">${esc(author)}</span>
-                        <span class="wcn-audit-text">${esc(entry.text)}</span>
+                        ${body}
                         ${entry.atMs ? `<span class="wcn-audit-meta">${esc(agoLabel(entry.atMs, item.provenance))}</span>` : ''}
                     </div>
+                    ${controls}
                 </li>`;
             }
 
@@ -5452,6 +5503,84 @@
      * render, because that is when the restored value is there to clear. The button path never showed this: the
      * focus snapshot is a button then, not a text field, so nothing was restored to begin with.
      */
+    /*
+     * ── EDITING AND WITHDRAWING A COMMENT (2026-08-14) ───────────────────────────────────────────────────────
+     *
+     * Comments were immutable and both endpoints refused to exist. What opened them is the TRAIL: an edit that
+     * says it was edited, and a withdrawal that leaves a marker where the sentence stood.
+     *
+     * Neither is applied optimistically and neither is decided here. The server owns the author rule; this only
+     * offers the control the projection said was offerable (`entry.editable`) and reports whatever comes back.
+     */
+    const editComment = async (taskId, commentId) => {
+        const item = itemById(taskId);
+        const entry = (item?.activity || []).find((candidate) => String(candidate.id) === String(commentId));
+        if (!item || !entry) { return; }
+
+        if (!isRealTaskItem(item)) {
+            console.warn(`[WorkCenterNext] Comment edit ignored for non-engine item ${taskId} `
+                + `(provider="${item.source?.providerCode || 'unknown'}") — no backend owns it.`);
+            return;
+        }
+
+        // The shared confirm's TEXTAREA, seeded with what the comment says now — an edit box that starts empty
+        // asks the author to retype a sentence they only wanted to fix.
+        sharedConfirm({
+            title: t('CommentEdit'),
+            confirmText: t('CommentEditSave'),
+            input: {
+                label: t('CommentEditLabel'),
+                placeholder: entry.text || '',
+                value: entry.text || '',
+                validate: (value) => (String(value || '').trim() ? null : t('ErrorCommentTextInvalid'))
+            },
+            onConfirm: async (value) => {
+                const text = String(value || '').trim();
+                if (!text || text === entry.text) { return; }
+                await afterPhase2Write(
+                    await global.TasksApi.updateComment(taskId, commentId, { text }), 'ToastCommentEdited');
+            }
+        });
+    };
+
+    const withdrawComment = async (taskId, commentId) => {
+        const item = itemById(taskId);
+        if (!isRealTaskItem(item)) {
+            console.warn(`[WorkCenterNext] Comment withdrawal ignored for non-engine item ${taskId} `
+                + `(provider="${item?.source?.providerCode || 'unknown'}") — no backend owns it.`);
+            return;
+        }
+
+        /*
+         * THIS ONE ASKS, and the personal note deliberately does not. The difference is who else is affected: a
+         * private note has one reader, while a withdrawn comment leaves a visible gap in a conversation other
+         * people have already read and may have answered. That is worth one question.
+         */
+        sharedConfirm({
+            title: t('CommentWithdraw'),
+            subtext: `<div class="wcn-confirm-body">${esc(t('CommentWithdrawConfirm'))}</div>`,
+            type: 'danger',
+            confirmText: t('CommentWithdraw'),
+            onConfirm: async () => {
+                await afterPhase2Write(
+                    await global.TasksApi.withdrawComment(taskId, commentId), 'ToastCommentWithdrawn');
+            }
+        });
+    };
+
+    /*
+     * The tab, written into the address so the link says what the reader is looking at (BL-087).
+     *
+     * Guarded on `replaceState` existing: a host without the History API keeps a working page and loses only the
+     * shareable address, which is the same rule every other optional capability on this surface follows.
+     */
+    const writeDetailTabToAddress = () => {
+        if (!global.history || typeof global.history.replaceState !== 'function') { return; }
+        const url = global.location.pathname + global.location.search
+            + (state.detailTab === 'activity' ? '#etkinlik' : '');
+        global.history.replaceState(null, '', url);
+    };
+
     const consumeEntryBox = (marker) => {
         const box = document.querySelector(`#wcnApp [${marker}]`);
         if (box) { box.value = ''; }
@@ -5938,7 +6067,24 @@
             showInput: !!options.input,
             inputLabel: options.input && options.input.label,
             inputPlaceholder: options.input && options.input.placeholder,
-            inputValidator: options.input && options.input.validate
+            inputValidator: options.input && options.input.validate,
+            /*
+             * SEEDING THE BOX, through the wrapper's OWN `didOpen` seam.
+             *
+             * ⚠ The shared confirm has no `inputValue` option, and it is NOT being given one: it is a shared
+             * component and does not grow to suit one module (standing rule, owner). `didOpen` already exists on
+             * it for exactly this kind of need, so the value is written to the textarea the wrapper created,
+             * after it created it. Nothing about the component changes.
+             *
+             * An edit box that opened EMPTY would ask the author to retype a sentence they only wanted to fix —
+             * which is how an "edit" quietly becomes a rewrite.
+             */
+            didOpen: options.input && options.input.value !== undefined
+                ? (popup) => {
+                    const box = popup && popup.querySelector('textarea');
+                    if (box) { box.value = options.input.value; box.select(); }
+                }
+                : undefined
         });
     };
 
@@ -7189,6 +7335,22 @@
                 // its original tab stop after a switch, and Tab would land on the tab that is no longer current.
                 tab.setAttribute('tabindex', selected ? '0' : '-1');
             });
+
+            /*
+             * ── BL-087: THE CHOICE GOES INTO THE ADDRESS ────────────────────────────────────────────────────
+             *
+             * `#etkinlik` already worked on the way IN and not on the way OUT, so a reader sitting on Etkinlik
+             * who copied the link sent the other person to Genel. The address is the thing people share; it has
+             * to say what they are looking at.
+             *
+             * `replaceState`, NOT `pushState`, and that is a decision rather than a detail: on a two-tab page
+             * the Back button's job is to return to the LIST, not to walk backwards through tab clicks. A push
+             * per click would bury the way out under however many times somebody glanced at the other tab.
+             *
+             * NO PERSISTENCE — no storage, no cookie, nothing remembered. The address is visible and erasable;
+             * hidden memory that reopens a page differently for two people following one link is not.
+             */
+            writeDetailTabToAddress();
             return;
         }
         const checkLevelEl = event.target.closest('[data-diten-check-draftlevel]');
@@ -7253,6 +7415,20 @@
             await removePersonalNote(
                 noteRemoveEl.getAttribute('data-wcn-note-task'),
                 noteRemoveEl.getAttribute('data-wcn-note-remove'));
+            return;
+        }
+        const commentEditEl = event.target.closest('[data-wcn-comment-edit]');
+        if (commentEditEl) {
+            await editComment(
+                commentEditEl.getAttribute('data-wcn-comment-task'),
+                commentEditEl.getAttribute('data-wcn-comment-edit'));
+            return;
+        }
+        const commentWithdrawEl = event.target.closest('[data-wcn-comment-withdraw]');
+        if (commentWithdrawEl) {
+            await withdrawComment(
+                commentWithdrawEl.getAttribute('data-wcn-comment-task'),
+                commentWithdrawEl.getAttribute('data-wcn-comment-withdraw'));
             return;
         }
         const commentEl = event.target.closest('[data-wcn-comment-post]');

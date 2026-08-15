@@ -262,6 +262,16 @@ public static class TaskReasonCodes
     public const string CommentTextInvalid = "TASK_COMMENT_TEXT_INVALID";
 
     /// <summary>
+    /// Somebody else's comment. The author is the only person who may rewrite or withdraw their own words —
+    /// there is deliberately no administrator override (owner decision 2026-08-14): an authority over other
+    /// people's sentences is much easier to grant than to withdraw.
+    /// </summary>
+    public const string CommentNotAuthor = "TASK_COMMENT_NOT_AUTHOR";
+
+    /// <summary>Already withdrawn. A tombstone has no text to rewrite and nothing left to take back.</summary>
+    public const string CommentWithdrawn = "TASK_COMMENT_WITHDRAWN";
+
+    /// <summary>
     /// No planned date was supplied — including a JSON body that omits the field, which deserializes
     /// <see cref="PlanTaskItemRequest.PlannedDate"/> to its zero value rather than throwing. Deliberately the
     /// ONLY thing this endpoint refuses: a date in the past, or one after the source due date, is a real personal
@@ -326,6 +336,17 @@ public static class TaskNotificationEvents
     public const string DueSoon = "platform.tasks.duesoon";
     public const string Completed = "platform.tasks.completed";
     public const string ApprovalRequested = "platform.tasks.approvalrequested";
+
+    /// <summary>
+    /// Somebody said something on the task. ADDED to the existing list rather than opened as a parallel path:
+    /// the module already owns a dispatcher, a policy and a recipient resolver, and a second notification road
+    /// would need its own copy of the master switch, the per-event preference and the actor exclusion.
+    ///
+    /// <para>NEW comments only. An edit and a withdrawal deliberately send nothing — a typo correction does not
+    /// earn anybody's inbox, and a retraction that emailed everyone would shout louder than the sentence it
+    /// takes back.</para>
+    /// </summary>
+    public const string Commented = "platform.tasks.commented";
 }
 
 /// <summary>Contract limits, mirrored from fixture-contract.js LIMITS. The contract is the authority.</summary>
@@ -553,6 +574,12 @@ public sealed record AddTaskDependencyRequest(Guid DependsOnTaskItemId, TaskDepe
 /// (WC-4) and a mention nobody is told about is a promise the system does not keep.
 /// </summary>
 public sealed record AddTaskCommentRequest(string Text);
+
+/// <summary>
+/// Rewrite one's OWN comment. Text only: the author, the task and the original instant are all facts about what
+/// happened and none of them is being edited — what changes is the sentence, and the fact that it changed.
+/// </summary>
+public sealed record UpdateTaskCommentRequest(string Text);
 
 // ── The personal overlay (WC-1) ──────────────────────────────────────────────
 

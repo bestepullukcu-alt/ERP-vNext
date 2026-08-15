@@ -255,6 +255,16 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiAddComment(Guid id)
         => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/{id}/comments", readBody: true);
 
+    /// <summary>Rewrite one's own comment. The AUTHOR check is the engine's; this only carries the call.</summary>
+    [HttpPut("api/{id:guid}/comments/{commentId:guid}")]
+    public Task<IActionResult> ApiUpdateComment(Guid id, Guid commentId)
+        => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/tasks/{id}/comments/{commentId}", readBody: true);
+
+    /// <summary>Withdraw one's own comment — a tombstone on the engine's side, never a removal.</summary>
+    [HttpDelete("api/{id:guid}/comments/{commentId:guid}")]
+    public Task<IActionResult> ApiWithdrawComment(Guid id, Guid commentId)
+        => ProxyAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/v1/tasks/{id}/comments/{commentId}", readBody: false);
+
     // ── The personal overlay (WC-1) ──────────────────────────────────────────
     //
     // Their own resource under a task, so they are NOT transition codes and not in TaskTransitionRoutes. Listed

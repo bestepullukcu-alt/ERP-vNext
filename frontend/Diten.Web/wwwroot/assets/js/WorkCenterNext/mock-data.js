@@ -511,8 +511,13 @@
          * Parsed once here (fixtures write "2026-07-24 09:10", not ISO) and left as a timestamp.
          */
         item.activity = (item.activity || []).map((entry) => {
-            const parsed = entry.at ? new Date(String(entry.at).replace(' ', 'T')) : null;
-            return { ...entry, atMs: (parsed && !isNaN(parsed)) ? parsed.getTime() : null };
+            const stamp = (value) => {
+                const parsed = value ? new Date(String(value).replace(' ', 'T')) : null;
+                return (parsed && !isNaN(parsed)) ? parsed.getTime() : null;
+            };
+            // `editedAt` gets the SAME treatment as `at`, and for the same reason: it is an absolute instant on
+            // the wire and the words beside it ("edited", plus the date on hover) are derived where they render.
+            return { ...entry, atMs: stamp(entry.at), editedAtMs: stamp(entry.editedAt) };
         });
         item.stages = item.processStages || null;
         item.timesheet = item.workItemCapabilities.includes('timeTracking')

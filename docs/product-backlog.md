@@ -3779,3 +3779,45 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - **Yapılacak:** sabit beklemeyi bir koşul beklemesiyle değiştir (çağrı gelene kadar yokla). Bu turda
   yapılmadı; testin kendi konusu bu turun konusu değil.
 - **Gelecek regresyon riski: 🟡** — yalancı kırmızı, gerçek bir kusuru gizlemez ama güveni aşındırır.
+
+### BL-160 — ⛔ YAPILAMADI — İki uyarı YAPISAL OLARAK bir arada olamıyor (İş 4b'nin cevabı)
+- İstenen: hem `pendingAcceptance` hem engelli bir görev tohumla, iki uyarının sırasını canlıda göster.
+- **TOHUMLANDI (9bf6194e, açık alt görevle) VE OLMADI.** Sebep veri değil, mekanizma:
+  1. `guidanceFor` yalnız şu hâllerde konuşur: pendingAcceptance · pendingClaim · onay/inceleme bekleyen · Waiting.
+  2. Bir engelleyici ancak **etkilediği eylem SUNULUYORSA** hayatta kalır
+     (`TaskWorkItemProvider`: `effectiveBlockers = blockers.Where(b => offered.Contains(...))`).
+  3. Alt görev/bağımlılık engelleyicileri `complete`'i etkiler.
+  4. `complete` yalnız **admitted + InProgress** iken sunulur — yani `guidanceFor`'un sustuğu tam da o hâl.
+- **Canlı zincir ölçüldü:** pendingAcceptance → aksiyonlar `accept,plan,inquire,reassign,cancel`, `blocked:false`.
+  Accept+inquire → Waiting → `start,reassign,cancel`, hâlâ `blocked:false`. Start → InProgress → `complete,…`,
+  `blocked:true, blockers:[SUBTASK_BLOCKED]`, ve **yönlendirme yok**.
+- Sıra yine de kararlaştırıldı ve testte sabitlendi (yönlendirme önce, engel sonra); ikisi bir gün buluşursa
+  doğru sırada duracak. **Ekran görüntüsü alınamadı çünkü gösterilecek durum yok.**
+- **Tohumlanan görevler TEMİZLENMEDİ** (sahip bakarak test ediyor): 9bf6194e (üst, InProgress+engelli) ve
+  b1cc3ede (alt görev, kabul bekliyor).
+- **Gelecek regresyon riski: 🟢** — bulgu, kusur değil.
+
+### BL-161 — [BİLDİRİM] Alıcının dili değil, KİRACININ dili gönderiliyor
+- Brifing "bildirim ALICININ dilinde gitmeli, bu modülde dil seçimi çözülmüş, aynısını kullan" diyordu.
+  **ÖLÇÜM: çözülmüş olan şey kiracı dili.** `TaskNotificationService` `Locale: null` geçiyor ve
+  `INotificationLocaleResolver` kiracının yapılandırılmış dilini döndürüyor — çünkü **AuthService'in User
+  varlığında dil alanı yok** (servisin kendi yorumu bunu uzun uzun yazıyor).
+- Canlı kanıt: yorum bildirimi `Locale = en` ile gitti (kiracı dili), alıcı `agent@diten.com`.
+- Yorum şablonu yine de **yedi dilde** tohumlandı; eksik olan alıcı başına dil, şablon değil.
+- **Yapılacak (bu turda YAPILMADI):** User'a dil alanı + dil grubuna göre gönderim. Bu MOD-0018 işi.
+- **Gelecek regresyon riski: 🟡** — çok dilli bir kiracıda herkes aynı dili alıyor.
+
+### BL-162 — [BİLDİRİM] Çözülemeyen alıcı sessizce düşüyor (loglanıyor ama kimseye söylenmiyor)
+- Canlı ölçüm: `task.notification.recipients_unresolved Count=1` — adaylardan biri AuthService'te
+  çözülemedi ve **bildirilmedi**. Log var, ekranda iz yok.
+- Bugün doğru davranış (yazma başarısız olmamalı), ama "izleyici ekledim, haber gitmedi" durumunu kimse göremiyor.
+- **Öneri:** çözülemeyen alıcı sayısını görev detayında sessiz bir satır olarak göster, ya da yönetici için bir
+  rapor. Karar CT'de.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-163 — ✅ KAPANDI (2026-08-14) — BL-159 kararsız test: saat değil KOŞUL bekleniyor
+- `setTimeout(30)` yerine `until(() => calls.length > 0)` — koşul gerçekleşir gerçekleşmez dönüyor, 2sn tavanı var.
+- Üç ardışık koşuda 208/208. Süre **artırılmadı**; sabit bekleme yalnız bir yerde kaldı ve orada doğru:
+  "hiçbir şey olmadı" iddiasının bekleyecek bir koşulu yok, ve hatası yalnız yanlış-YEŞİL üretebilir, yanlış-kırmızı
+  değil — yani BL-159'un gürültüsünü yaratamaz. Gerekçe testin içine yazıldı.
+- **Gelecek regresyon riski: 🟢.**

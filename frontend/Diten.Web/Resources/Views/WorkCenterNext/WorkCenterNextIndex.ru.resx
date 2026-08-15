@@ -1929,4 +1929,31 @@
   <data name="DetailParentTask" xml:space="preserve">
     <value>Родительская задача</value>
   </data>
+  <data name="CommentEdited" xml:space="preserve">
+    <value>изменено</value>
+  </data>
+  <data name="CommentWithdrawn" xml:space="preserve">
+    <value>Этот комментарий отозван автором.</value>
+  </data>
+  <data name="CommentEdit" xml:space="preserve">
+    <value>Изменить комментарий</value>
+  </data>
+  <data name="CommentEditSave" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="CommentEditLabel" xml:space="preserve">
+    <value>Комментарий</value>
+  </data>
+  <data name="CommentWithdraw" xml:space="preserve">
+    <value>Отозвать комментарий</value>
+  </data>
+  <data name="CommentWithdrawConfirm" xml:space="preserve">
+    <value>Текст удаляется; на его месте остаётся отметка об отзыве.</value>
+  </data>
+  <data name="ToastCommentEdited" xml:space="preserve">
+    <value>Комментарий изменён</value>
+  </data>
+  <data name="ToastCommentWithdrawn" xml:space="preserve">
+    <value>Комментарий отозван</value>
+  </data>
 </root>

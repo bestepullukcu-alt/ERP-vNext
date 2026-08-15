@@ -157,6 +157,11 @@
         ErrorSubtaskBlocked = Localizer["ErrorSubtaskBlocked"].Value,
         ErrorCommentTaskClosed = Localizer["ErrorCommentTaskClosed"].Value,
         ErrorCommentTextInvalid = Localizer["ErrorCommentTextInvalid"].Value,
+        // Comments became editable and withdrawable (2026-08-14); these are their two refusals. This bridge does
+        // NOT auto-enumerate its resx, so a code mapped in api.js without a line here reaches the reader as the
+        // generic "an error occurred".
+        ErrorCommentNotAuthor = Localizer["ErrorCommentNotAuthor"].Value,
+        ErrorCommentWithdrawn = Localizer["ErrorCommentWithdrawn"].Value,
         ErrorPlanDateRequired = Localizer["ErrorPlanDateRequired"].Value,
         // WC-1 — the personal overlay's three refusals. This bridge does NOT auto-enumerate its resx (unlike
         // _L10n.cshtml, which does), so a code mapped in api.js without a line here reaches the reader as the

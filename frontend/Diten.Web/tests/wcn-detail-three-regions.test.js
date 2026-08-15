@@ -510,6 +510,23 @@ const withPlanAction = (plannedDate) => projectionItem({
   }]
 });
 
+/*
+ * Wait for a CONDITION, with a ceiling — never for a fixed number of milliseconds (BL-159).
+ *
+ * A sleep encodes a guess about how fast the machine is. Under full-suite load that guess is wrong often enough
+ * to produce a red run that means nothing, and the usual repair — a bigger number — is a deferral, not a fix.
+ * This returns the instant the thing being waited for is true, and fails loudly if it never becomes true.
+ */
+const until = async (predicate, { timeout = 2000, step = 5 } = {}) => {
+  const deadline = Date.now() + timeout;
+  while (Date.now() < deadline) {
+    if (predicate()) { return; }
+    await new Promise((r) => setTimeout(r, step));
+  }
+  // One last look, so a predicate that flipped inside the final gap is not reported as a timeout.
+  if (!predicate()) { throw new Error(`until(): condition never became true within ${timeout}ms`); }
+};
+
 const subtask = (n) => ({
   id: `s${n}`, title: `Alt görev ${n}`, status: "not-started", canCancel: false
 });
@@ -1047,7 +1064,18 @@ describe("cancelling a subtask actually cancels it", () => {
     global.TasksApi.transition = (id, code) => { calls.push({ id, code }); return Promise.resolve({ ok: true, status: 204 }); };
 
     app().querySelector("[data-wcn-subtask-cancel]").click();
-    await new Promise((r) => setTimeout(r, 30));
+    /*
+     * ⚠ BL-159 — WAIT FOR THE CONDITION, NOT THE CLOCK.
+     *
+     * This was `setTimeout(30)`, and it failed in roughly one full-suite run in three: the stubbed confirm
+     * resolves on a 5ms timer and the write is two awaits behind it, so 25ms of slack is enough on an idle
+     * machine and not enough under load. Raising the number would only move the threshold — the next slower run
+     * fails again, and by then nobody remembers why the number is what it is.
+     *
+     * `until` polls for the thing the test is actually about (the call arrived), so it returns as soon as it is
+     * true and gives up only after a ceiling no realistic scheduler reaches.
+     */
+    await until(() => calls.length > 0);
 
     expect(calls.length, "the confirmed cancel reached no endpoint at all").toBeGreaterThan(0);
     calls.forEach((call) => {
@@ -1063,6 +1091,12 @@ describe("cancelling a subtask actually cancels it", () => {
     global.TasksApi.transition = (id, code) => { calls.push({ id, code }); return Promise.resolve({ ok: true, status: 204 }); };
 
     app().querySelector("[data-wcn-subtask-cancel]").click();
+    /*
+     * A FIXED WAIT IS CORRECT HERE, unlike its neighbour above, and the difference is the direction of the
+     * assertion: this one proves nothing happened. A condition-wait has nothing to wait FOR — it would return
+     * immediately and prove only that the call had not arrived YET. Its failure mode is also the safe one: too
+     * short makes a false pass, never a false red, so it cannot produce the noisy failure BL-159 was about.
+     */
     await new Promise((r) => setTimeout(r, 30));
 
     expect(calls).toHaveLength(0);
@@ -1075,7 +1109,9 @@ describe("cancelling a subtask actually cancels it", () => {
     global.TasksApi.failureMessage = () => "Bu görev bu durumdayken iptal edilemez";
 
     app().querySelector("[data-wcn-subtask-cancel]").click();
-    await new Promise((r) => setTimeout(r, 30));
+    // Wait for the REFUSAL to have been processed — the write settled and the surface re-read — rather than for
+    // a number of milliseconds (BL-159).
+    await until(() => !!app().querySelector(".wcn-subtask"));
 
     // The row must not pretend: nothing is marked cancelled on the client's say-so.
     expect(app().querySelector(".wcn-subtask").className).not.toContain("wcn-subtask-cancelled");
@@ -2800,6 +2836,155 @@ describe("the page reaches the product's one confirm implementation", () => {
       .replace(/(^|[^:])\/\/.*$/gm, "$1");
     // 10 before BL-147; the bulk RESULT notice became a toast, so nine raw dialogs remain.
     expect((src.match(/Swal\.fire\(/g) || []).length).toBe(9);
+  });
+});
+
+describe("a comment can be rewritten and withdrawn, and says so", () => {
+  /*
+   * ⚠ THIS REVERSES A WRITTEN DECISION. Comments were immutable, deliberately: changing a sentence somebody has
+   * already replied to can make their reply nonsense. What opened them is the TRAIL — an edit that says it was
+   * edited and a withdrawal that leaves a marker keep the property immutability protected, which was "nothing
+   * changes or disappears silently".
+   */
+  const comment = (extra) => Object.assign({
+    id: "c1", kind: "comment", text: "muhasebeye sordum", actor: "Diten Admin",
+    at: "2026-08-10T09:00:00+00:00"
+  }, extra || {});
+  const withFeed = (entries) => projectionItem({
+    workItemCapabilities: ["planning", "execution", "subtasks", "activity"],
+    subtasks: { mode: "full", items: [] },
+    activity: entries
+  });
+
+  it("offers edit and withdraw on a comment the SERVER says is mine", async () => {
+    await boot(withFeed([comment({ editable: true })]));
+
+    const row = app().querySelector(".wcn-audit-comment");
+    expect(row.querySelector("[data-wcn-comment-edit]"), "no way to edit my own comment").not.toBeNull();
+    expect(row.querySelector("[data-wcn-comment-withdraw]"), "no way to withdraw my own comment").not.toBeNull();
+    expect(row.querySelector("[data-wcn-comment-edit]").getAttribute("data-wcn-comment-task")).toBe(TASK_ID);
+  });
+
+  /*
+   * MUTATION TARGET (authority). The flag is the SERVER's answer. Comparing the author's NAME here would hand
+   * two people who share a name each other's buttons — and the handler would then refuse a control the screen
+   * had offered.
+   */
+  it("offers nothing on somebody else's comment", async () => {
+    await boot(withFeed([comment({ editable: false })]));
+
+    const row = app().querySelector(".wcn-audit-comment");
+    expect(row.querySelector("[data-wcn-comment-edit]"), "somebody else's comment is editable").toBeNull();
+    expect(row.querySelector("[data-wcn-comment-withdraw]")).toBeNull();
+  });
+
+  it("marks an edited comment, and carries the instant on the mark", async () => {
+    await boot(withFeed([comment({ editable: true, editedAt: "2026-08-11T10:00:00+00:00" })]));
+
+    const mark = app().querySelector(".wcn-audit-edited");
+    expect(mark, "an edited comment says nothing about it").not.toBeNull();
+    expect(mark.textContent).toContain("CommentEdited");
+    // "Edited" alone cannot answer "before or after I read it" — the instant is what settles that.
+    expect(mark.getAttribute("title"), "the mark carries no date").toBeTruthy();
+  });
+
+  it("leaves an unedited comment unmarked", async () => {
+    await boot(withFeed([comment({ editable: true })]));
+
+    expect(app().querySelector(".wcn-audit-edited"), "an untouched comment claims to be edited").toBeNull();
+  });
+
+  /*
+   * MUTATION TARGET (tombstone). A withdrawal must leave the ROW: a comment that vanished would renumber a
+   * conversation other people quoted, and "somebody spoke here and took it back" is itself information.
+   */
+  it("keeps the row and shows a tombstone when a comment is withdrawn", async () => {
+    await boot(withFeed([comment({ text: undefined, withdrawnAt: "2026-08-11T10:00:00+00:00" })]));
+
+    const row = app().querySelector(".wcn-audit-comment");
+    expect(row, "the withdrawn row vanished from the feed").not.toBeNull();
+    expect(row.className).toContain("wcn-audit-item-withdrawn");
+    expect(row.querySelector(".wcn-audit-withdrawn").textContent).toContain("CommentWithdrawn");
+    // The author and the instant stay: the marker says WHO spoke here and WHEN.
+    expect(row.querySelector(".wcn-audit-author").textContent).toContain("Diten Admin");
+  });
+
+  it("offers no controls on a withdrawn comment", async () => {
+    await boot(withFeed([comment({ text: undefined, withdrawnAt: "2026-08-11T10:00:00+00:00", editable: false })]));
+
+    expect(app().querySelector("[data-wcn-comment-withdraw]"), "a tombstone can be withdrawn again").toBeNull();
+  });
+
+  it("routes both writes through TasksApi, and applies nothing optimistically", () => {
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const edit = src.slice(src.indexOf("const editComment"), src.indexOf("const withdrawComment"));
+    const withdraw = src.slice(src.indexOf("const withdrawComment"), src.indexOf("const consumeEntryBox"));
+    expect(edit).toContain("TasksApi.updateComment");
+    expect(withdraw).toContain("TasksApi.withdrawComment");
+    // Both report through the shared writer, so the toast fires only after the server has answered.
+    expect(edit).toContain("afterPhase2Write");
+    expect(withdraw).toContain("afterPhase2Write");
+  });
+
+  it("asks before withdrawing — through the product's one confirm", () => {
+    // The personal note deliberately asks nothing; this one does, because a withdrawn comment leaves a visible
+    // gap in a conversation other people have already read.
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const withdraw = src.slice(src.indexOf("const withdrawComment"), src.indexOf("const consumeEntryBox"));
+    expect(withdraw).toContain("sharedConfirm");
+  });
+
+  it("seeds the edit box with the sentence being fixed, without growing the shared confirm", () => {
+    /*
+     * The shared wrapper has no `inputValue`, and it is NOT being given one — a shared component does not grow
+     * to suit one module (standing rule). Its existing `didOpen` seam carries the value instead.
+     */
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const seam = src.slice(src.indexOf("const sharedConfirm"), src.indexOf("const sharedConfirm") + 3000);
+    expect(seam).toContain("didOpen");
+    const shared = read("Views", "Shared", "_GlobalConfirmation.cshtml");
+    expect(shared, "the shared confirm grew an option for one module").not.toContain("inputValue");
+  });
+
+  it("ships the trail's words in all seven languages", () => {
+    ["CommentEdited", "CommentWithdrawn", "CommentEdit", "CommentWithdraw", "CommentWithdrawConfirm"]
+      .forEach((key) => ["en", "tr", "fr", "es", "zh", "ar", "ru"].forEach((lang) =>
+        expect(read("Resources", "Views", "WorkCenterNext", `WorkCenterNextIndex.${lang}.resx`),
+          `${lang} has no ${key}`).toContain(`name="${key}"`)));
+  });
+});
+
+describe("the tab the reader is on goes into the address", () => {
+  /*
+   * BL-087. `#etkinlik` worked on the way IN and not on the way OUT, so somebody sitting on Etkinlik who copied
+   * the link sent the other person to Genel. The address is what people share; it has to say what they see.
+   */
+  it("writes the tab with replaceState, never pushState", () => {
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const fn = src.slice(src.indexOf("const writeDetailTabToAddress"),
+      src.indexOf("const writeDetailTabToAddress") + 900);
+    expect(fn, "the tab never reaches the address").toContain("replaceState");
+    /*
+     * On a two-tab page the Back button's job is to return to the LIST. A push per click would bury that exit
+     * under however many times somebody glanced at the other tab.
+     */
+    expect(fn, "tab clicks are being pushed into history").not.toContain("pushState");
+  });
+
+  it("keeps nothing — no storage, no cookie", () => {
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const fn = src.slice(src.indexOf("const writeDetailTabToAddress"),
+      src.indexOf("const writeDetailTabToAddress") + 900);
+    // The address is visible and erasable; hidden memory that opens one link two ways for two people is not.
+    expect(fn).not.toMatch(/localStorage|sessionStorage|document\.cookie/);
+  });
+
+  it("clears the fragment again when the reader returns to Genel", () => {
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const fn = src.slice(src.indexOf("const writeDetailTabToAddress"),
+      src.indexOf("const writeDetailTabToAddress") + 900);
+    // A stale `#etkinlik` on a link copied from Genel would be the same defect pointing the other way.
+    expect(fn).toMatch(/'activity' \? '#etkinlik' : ''/);
   });
 });
 

@@ -1929,4 +1929,31 @@
   <data name="DetailParentTask" xml:space="preserve">
     <value>Parent task</value>
   </data>
+  <data name="CommentEdited" xml:space="preserve">
+    <value>edited</value>
+  </data>
+  <data name="CommentWithdrawn" xml:space="preserve">
+    <value>This comment was withdrawn by its author.</value>
+  </data>
+  <data name="CommentEdit" xml:space="preserve">
+    <value>Edit comment</value>
+  </data>
+  <data name="CommentEditSave" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="CommentEditLabel" xml:space="preserve">
+    <value>Comment</value>
+  </data>
+  <data name="CommentWithdraw" xml:space="preserve">
+    <value>Withdraw comment</value>
+  </data>
+  <data name="CommentWithdrawConfirm" xml:space="preserve">
+    <value>The text is removed; a marker saying it was withdrawn stays in its place.</value>
+  </data>
+  <data name="ToastCommentEdited" xml:space="preserve">
+    <value>Comment edited</value>
+  </data>
+  <data name="ToastCommentWithdrawn" xml:space="preserve">
+    <value>Comment withdrawn</value>
+  </data>
 </root>
