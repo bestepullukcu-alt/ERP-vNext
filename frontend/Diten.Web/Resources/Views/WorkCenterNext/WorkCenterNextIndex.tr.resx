@@ -1956,4 +1956,13 @@
   <data name="ToastCommentWithdrawn" xml:space="preserve">
     <value>Yorum kaldırıldı</value>
   </data>
+  <data name="WaitingOnWithReason" xml:space="preserve">
+    <value>{0} bekleniyor — {1}</value>
+  </data>
+  <data name="WaitingOnLabel" xml:space="preserve">
+    <value>Kim bekleniyor? (isteğe bağlı)</value>
+  </data>
+  <data name="WaitingOnNobody" xml:space="preserve">
+    <value>Belirli bir kişi değil</value>
+  </data>
 </root>

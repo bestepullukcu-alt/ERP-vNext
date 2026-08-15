@@ -201,7 +201,12 @@ public sealed class TaskWaitingAndCancelAuthorityTests
 
     private static Task<Response<NoContent>> Inquire(FakeTaskItemRepository repository, TaskItem task, string reason)
         => new InquireTaskItemHandler(
-                repository, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me))
+                repository, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
+                        // The waiting-on person is validated against the SAME eligibility rule the
+                        // assignment picker uses; these tests never name one, so empty directories are
+                        // the honest arrangement.
+                        new FakePositionAssignmentRepository(), new FakePositionRepository(),
+                        new FakeOrganizationUnitRepository())
             .Handle(
                 new InquireTaskItemCommand(task.Id, new InquireTaskItemRequest(task.Version, reason), "corr-inquire"),
                 CancellationToken.None);

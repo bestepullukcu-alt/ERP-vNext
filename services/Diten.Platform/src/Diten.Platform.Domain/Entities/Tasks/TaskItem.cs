@@ -261,10 +261,42 @@ public sealed class TaskItem : TenantScopedEntity
     /// <summary>
     /// What the holder is waiting for, in their own words, while <see cref="Lifecycle"/> is
     /// <see cref="TaskLifecycle.Waiting"/>. Required to enter Waiting: "this is blocked" without saying on what
-    /// is not information anyone can act on. Cleared when the task resumes, so a stale reason never outlives the
-    /// wait. Stored as TEXT, never a resource key — it is content a person typed.
+    /// is not information anyone can act on. Stored as TEXT, never a resource key — it is content a person typed.
+    ///
+    /// <para><b>Cleared when the task leaves Waiting</b> (see <c>ClearWaiting</c>). ⚠ That sentence was in this
+    /// comment before it was in the code: MEASURED 2026-08-15, nothing anywhere set this back to null, so a
+    /// resumed task kept its old reason forever. It was invisible rather than harmless — the projection only
+    /// reads it while the lifecycle IS Waiting — so parking a task a second time briefly showed the sentence
+    /// from the first wait, and the field could never be trusted by anything else.</para>
     /// </summary>
     public string? WaitingReason { get; set; }
+
+    /// <summary>
+    /// WHO the holder is waiting on, when it is somebody in this tenant. Optional, and its absence is a real
+    /// answer rather than a missing one: a wait on a supplier, a customer or an authority has nobody here to
+    /// name, and <see cref="WaitingReason"/> already says what is being waited for.
+    ///
+    /// <para>An ID, never a name. The name is resolved at PROJECTION time from the same batched directory read
+    /// the assignee and the requester use, so a person who is renamed is named correctly next time the task is
+    /// read — the opposite rule from a comment's author snapshot, and for the opposite reason: a comment records
+    /// what was said and by whom AT THAT MOMENT, while this records who we are waiting on RIGHT NOW.</para>
+    ///
+    /// <para>Cleared with <see cref="WaitingReason"/>, in the same place and for the same reason.</para>
+    /// </summary>
+    public Guid? WaitingOnUserId { get; set; }
+
+    /// <summary>
+    /// Drops the whole waiting story — the reason AND the person — as one act.
+    ///
+    /// <para>ONE method rather than two assignments at each call site, because there are three ways out of
+    /// Waiting (resume, complete, cancel) and the half that gets forgotten is always the second field. The
+    /// lifecycle move stays the caller's; this only makes sure the two fields cannot part company.</para>
+    /// </summary>
+    public void ClearWaiting()
+    {
+        WaitingReason = null;
+        WaitingOnUserId = null;
+    }
 
     // ── Closure ──────────────────────────────────────────────────────────────
     public DateTimeOffset? CompletedAt { get; set; }

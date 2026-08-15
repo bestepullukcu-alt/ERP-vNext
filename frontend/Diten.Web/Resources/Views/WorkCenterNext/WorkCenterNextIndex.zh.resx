@@ -1956,4 +1956,13 @@
   <data name="ToastCommentWithdrawn" xml:space="preserve">
     <value>评论已撤回</value>
   </data>
+  <data name="WaitingOnWithReason" xml:space="preserve">
+    <value>等待 {0} — {1}</value>
+  </data>
+  <data name="WaitingOnLabel" xml:space="preserve">
+    <value>在等谁？（可选）</value>
+  </data>
+  <data name="WaitingOnNobody" xml:space="preserve">
+    <value>没有特定的人</value>
+  </data>
 </root>

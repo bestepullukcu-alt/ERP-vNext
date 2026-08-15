@@ -184,4 +184,7 @@
   <data name="ErrorCommentWithdrawn" xml:space="preserve">
     <value>该评论已被撤回。</value>
   </data>
+  <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
+    <value>此处无法指定该人员。</value>
+  </data>
 </root>

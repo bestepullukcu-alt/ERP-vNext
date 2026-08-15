@@ -1107,9 +1107,14 @@
         // The row chip's tooltip comes from the FIRST blocker's own sentence — `reasonKey` was never a declared
         // field, so this used to fall through to a generic line on every blocked row.
         isBlocked(item) ? chip('danger', 'bx-lock-alt', t('BlockedLabel'), blockedTooltip(item)) : '',
-        // Same two facts as the detail note: the person if we know one, otherwise the holder's own sentence.
-        item.waitingOn ? chip('warning', 'bx-time-five', tf('WaitingOn', item.waitingOn))
-            : item.waitingReason ? chip('warning', 'bx-time-five', item.waitingReason) : '',
+        /*
+         * The SAME sentence the detail note shows — one composer, three surfaces (BL: "birini düzeltip kardeşini
+         * bırakmak" three times this session). The chip clips at its own max width and carries the full sentence
+         * as its tooltip, so a long reason is readable without widening the row.
+         */
+        waitingSentence(item)
+            ? chip('warning', 'bx-time-five', waitingSentence(item), waitingSentence(item))
+            : '',
         // Why the leading action cannot be used, ON the row rather than only in the button's tooltip. A blocked
         // item whose reason needs a hover reads as simply broken.
         blockedPrimaryReason(item) ? chip('secondary', 'bx-lock-alt', blockedPrimaryReason(item)) : '',
@@ -1434,6 +1439,26 @@
      * The page can already show a dozen true facts without answering "so what do I do?". Keyed by state, and an
      * unmapped state prints NO banner — a guidance box that guesses is worse than none.
      */
+    /*
+     * ── THE WAITING SENTENCE, WRITTEN ONCE ──────────────────────────────────────────────────────────────────
+     *
+     * Three surfaces say this — the detail note, the list row's chip and the lifecycle strip — and until now
+     * each composed it itself. Two of them also carried the SAME defect: when a person was known they printed
+     * "waiting on X" and DROPPED the reason entirely, so naming somebody cost the reader the sentence that says
+     * what is actually being waited for.
+     *
+     * Both facts are now shown together when both exist, and every language gets the WHOLE sentence rather than
+     * fragments joined in JavaScript: `WaitingOnWithReason` carries both slots so a language that puts the
+     * person last can do so. Never `person + ' — ' + reason` here.
+     */
+    const waitingSentence = (item) => {
+        const person = item.waitingOn;
+        const reason = item.waitingReason;
+        if (person && reason) { return tf('WaitingOnWithReason', person, reason); }
+        if (person) { return tf('WaitingOn', person); }
+        return reason || '';
+    };
+
     const guidanceFor = (item) => {
         if (item.admissionState === 'pendingAcceptance') { return { kind: 'primary', key: 'GuidancePendingAcceptance' }; }
         if (item.admissionState === 'pendingClaim') { return { kind: 'primary', key: 'GuidancePendingClaim' }; }
@@ -1441,8 +1466,8 @@
         if (item.gates?.review?.status === 'pending') { return { kind: 'warning', key: 'GuidanceReviewPending' }; }
         if (item.lifecycle === 'Waiting') {
             // The holder's own sentence when they gave one — nothing here is invented on their behalf.
-            return item.waitingReason
-                ? { kind: 'warning', text: tf('GuidanceWaitingBecause', item.waitingReason) }
+            return waitingSentence(item)
+                ? { kind: 'warning', text: tf('GuidanceWaitingBecause', waitingSentence(item)) }
                 : { kind: 'warning', key: 'GuidanceWaiting' };
         }
         return null;
@@ -1978,7 +2003,7 @@
 
         const paused = item.lifecycle === 'Waiting'
             ? `<p class="wcn-step-paused" role="note"><i class="bx bx-pause-circle"></i>${
-                esc(item.waitingReason ? tf('StepPausedBecause', item.waitingReason) : t('StepPaused'))}</p>`
+                esc(waitingSentence(item) ? tf('StepPausedBecause', waitingSentence(item)) : t('StepPaused'))}</p>`
             : '';
 
         /*
@@ -3519,13 +3544,19 @@
             ? `<div class="wcn-sysstate wcn-sysstate-${sys.kind}" role="alert"><i class="bx ${sys.icon}"></i><span>${esc(t(sys.key))}</span>${sysAction}</div>`
             : '';
         /*
-         * Parked waiting. Two independent facts, and either can be absent: WHO we are waiting on (rendered as
-         * "waiting on X") and WHY, which the holder typed as a whole sentence and is therefore shown as written —
-         * wrapping "Muhasebeden banka ekstresi bekleniyor" in "waiting on {0}" would read as nonsense.
+         * Parked waiting. Two independent facts and either can be absent — see `waitingSentence`, which is the
+         * one place all three surfaces get this from. ⚠ It used to print the person INSTEAD of the reason when
+         * both were known, so naming somebody cost the reader the sentence saying what was being waited for.
          */
-        const waitingText = item.waitingOn ? tf('WaitingOn', item.waitingOn) : item.waitingReason;
+        const waitingText = waitingSentence(item);
+        /*
+         * Its OWN class beside the shared one. The generic `wcn-parked-info` is also worn by the resolver's
+         * notices, which sit in the same block — so "the waiting note" had no selector of its own, and the first
+         * `.wcn-parked-info` on the page is usually a notice rather than this. Same paint, addressable.
+         */
         const waitingNote = waitingText
-            ? `<div class="wcn-parked wcn-parked-info" role="note"><i class="bx bx-time-five"></i><span>${esc(waitingText)}</span></div>`
+            ? `<div class="wcn-parked wcn-parked-info wcn-parked-waiting" role="note">`
+              + `<i class="bx bx-time-five"></i><span>${esc(waitingText)}</span></div>`
             : '';
         // Snoozed (personal park) note.
         const snoozeNote = (item.snoozedUntil && item.snoozedUntil > data.todayIso)
@@ -5416,7 +5447,14 @@
      */
     const TRANSITION_BODIES = {
         // The three that were broken: a REQUIRED reason, named `reason` because that is what the DTO calls it.
-        inquire: ({ expectedVersion, reason }) => ({ expectedVersion, reason }),
+        /*
+         * `waitingOnUserId` is OPTIONAL and undefined when nobody was named — deliberately undefined rather
+         * than null, so `JSON.stringify` omits the key entirely and the request is byte-identical to the one
+         * this client sent before the field existed. A wait on a supplier or a customer has nobody here to
+         * name, and the reason sentence already says what is being waited for.
+         */
+        inquire: ({ expectedVersion, reason, waitingOnUserId }) =>
+            ({ expectedVersion, reason, waitingOnUserId: waitingOnUserId || undefined }),
         return: ({ expectedVersion, reason }) => ({ expectedVersion, reason }),
         // Plus the person being handed the work — see the picker in the reason dialog.
         reassign: ({ expectedVersion, reason, assigneeUserId }) => ({ expectedVersion, assigneeUserId, reason }),
@@ -5432,10 +5470,23 @@
     /** Actions that must also name the person receiving the work. */
     const ASSIGNEE_REQUIRED_ACTIONS = ['reassign'];
 
+    /*
+     * Actions that may ALSO name a person, without requiring one.
+     *
+     * `inquire` is the first: "waiting on Ayşe" is far more actionable than "waiting", and the projection has
+     * carried a `waitingOn` slot since WC-1 with nothing to put in it. Kept as a DECLARED list beside its
+     * required sibling rather than an `if (action.code === 'inquire')`, because that is how the required one
+     * grew a second copy last time.
+     *
+     * ⚠ OPTIONAL IS THE POINT. A wait is often on somebody this system has never heard of — a supplier, a
+     * customer, an authority — and forcing a selection there would make the honest answer unreachable.
+     */
+    const WAITING_ON_ACTIONS = ['inquire'];
+
     const buildTransitionBody = (actionCode, parts) =>
         (TRANSITION_BODIES[actionCode] || TRANSITION_BODIES.__default)(parts);
 
-    const submitRealTransition = async (item, action, reason, assigneeUserId) => {
+    const submitRealTransition = async (item, action, reason, assigneeUserId, waitingOnUserId) => {
         const label = actionLabel(action);
         state.submittingItemId = item.id;
         state.submittingActionCode = action.code;
@@ -5447,7 +5498,7 @@
         const result = await global.TasksApi.transition(
             item.id,
             action.code,
-            buildTransitionBody(action.code, { expectedVersion, reason, assigneeUserId }));
+            buildTransitionBody(action.code, { expectedVersion, reason, assigneeUserId, waitingOnUserId }));
 
         state.submittingItemId = null;
         state.submittingActionCode = null;
@@ -5925,8 +5976,11 @@
         }
     };
 
-    const applyAction = (item, action, reason, assigneeUserId) => {
-        if (isRealTaskItem(item)) { submitRealTransition(item, action, reason, assigneeUserId); return; }
+    const applyAction = (item, action, reason, assigneeUserId, waitingOnUserId) => {
+        if (isRealTaskItem(item)) {
+            submitRealTransition(item, action, reason, assigneeUserId, waitingOnUserId);
+            return;
+        }
 
         // Everything below only ever simulates. Real items from other providers still land here (their engines
         // are not wired yet) — say so rather than letting a fake transition look real.
@@ -6530,13 +6584,20 @@
              * refused, which is the shape of defect this ticket exists to close.
              */
             const needsAssignee = ASSIGNEE_REQUIRED_ACTIONS.includes(action.code);
+            /*
+             * `inquire` may ALSO name a person, and must not require one — see WAITING_ON_ACTIONS. One fetch
+             * serves both: the picker's list is the same list either way, because the server validates both
+             * against the SAME eligibility rule (TaskAssigneeEligibility). Offering anyone else would build a
+             * dialog whose confirm is refused, which is the defect shape this dialog already exists to close.
+             */
+            const offersWaitingOn = WAITING_ON_ACTIONS.includes(action.code);
             let people = [];
-            if (needsAssignee) {
+            if (needsAssignee || offersWaitingOn) {
                 const res = await global.TasksApi.assignablePeople();
                 // `data` IS the array — unwrapped once in TasksApi (BL-113). This line was wrong for three
                 // rounds while each caller unwrapped the envelope in its own hand-written expression.
                 people = res.ok ? res.data : [];
-                if (!people.length) {
+                if (!people.length && needsAssignee) {
                     // Refusing beats opening a dialog that cannot be confirmed.
                     toast(t('ReassignNoAssignableUsers'), 'error');
                     return;
@@ -6551,11 +6612,23 @@
                   + `<select id="wcnReassignAssignee" class="form-select mb-3">`
                   + `<option value="">${esc(t('ReassignAssigneePlaceholder'))}</option>${options}</select>`
                 : '';
+            /*
+             * The optional picker. Its empty option is not a placeholder to be replaced — it is a REAL CHOICE
+             * ("nobody in particular"), so it says so in words rather than showing a greyed prompt that reads as
+             * "you have not chosen yet". An empty list simply draws no field: nobody to name is not an error
+             * here, unlike the required case above.
+             */
+            const waitingOnField = offersWaitingOn && people.length
+                ? `<label class="form-label d-block text-start" for="wcnWaitingOn">${esc(t('WaitingOnLabel'))}</label>`
+                  + `<select id="wcnWaitingOn" class="form-select mb-3">`
+                  + `<option value="">${esc(t('WaitingOnNobody'))}</option>${options}</select>`
+                : '';
 
             global.Swal.fire({
                 title: actionLabel(action),
                 html: outcomeLead(action)
                     + assigneeField
+                    + waitingOnField
                     + `<label class="form-label d-block text-start" for="wcnReasonText">${esc(t('ReasonLabel'))}</label>`
                     + `<textarea id="wcnReasonText" class="form-control" rows="3" `
                     + `placeholder="${esc(t('ReasonPlaceholder'))}"></textarea>`,
@@ -6566,7 +6639,11 @@
                     const reason = String(document.getElementById('wcnReasonText')?.value || '').trim();
                     if (!reason) { global.Swal.showValidationMessage(t('ReasonRequired')); return false; }
 
-                    if (!needsAssignee) { return { reason }; }
+                    if (!needsAssignee) {
+                        // Empty is a real answer here, so it is passed through untouched and NOT validated.
+                        const waitingOnUserId = String(document.getElementById('wcnWaitingOn')?.value || '').trim();
+                        return { reason, waitingOnUserId };
+                    }
 
                     const assigneeUserId = String(document.getElementById('wcnReassignAssignee')?.value || '').trim();
                     // Cannot be confirmed without a person: the server requires it and a silent 400 helps nobody.
@@ -6575,7 +6652,7 @@
                 }
             }).then((res) => {
                 if (res.isConfirmed && res.value) {
-                    applyAction(item, action, res.value.reason, res.value.assigneeUserId);
+                    applyAction(item, action, res.value.reason, res.value.assigneeUserId, res.value.waitingOnUserId);
                 }
             });
             return;

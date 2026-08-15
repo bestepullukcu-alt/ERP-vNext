@@ -100,9 +100,9 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
         {
             return new TaskWaitingContext(
                 TaskWaitingTypes.Approval,
-                // The manager is only a CANDIDATE hint (MOD-0023/MOD-0018 resolve real authority), and an id is
-                // not an identity the client can render, so it is not passed off as one.
-                WaitingOn: null,
+                // The manager is only a CANDIDATE hint (MOD-0023/MOD-0018 resolve real authority), so it is not
+                // passed off as the person being waited on.
+                WaitingOnUserId: null,
                 Reason: null,
                 task.CreatedAt,
                 ExpectedUntil: null);
@@ -113,12 +113,21 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
             // Only while a reviewer is actually holding it. A refused or released review is no longer a wait, and
             // the contract forbids a waitingContext on an item that does not read as Waiting.
             TaskLifecycle.PendingReview when reviewOutstanding && !reviewRejected => new TaskWaitingContext(
-                TaskWaitingTypes.Review, WaitingOn: null, Reason: null,
+                TaskWaitingTypes.Review, WaitingOnUserId: null, Reason: null,
                 task.UpdatedAt ?? task.CreatedAt, ExpectedUntil: null),
-            // WaitingReason is what the holder typed when they parked it (InquireTaskItemHandler makes it
-            // mandatory). It is the REASON, not the thing being waited on.
+            /*
+             * WaitingReason is what the holder typed when they parked it (InquireTaskItemHandler makes it
+             * mandatory) — the REASON. WaitingOnUserId is WHO, and it is optional: a wait on a supplier or a
+             * customer has nobody here to name.
+             *
+             * The id travels; the NAME is not resolved here. This service has no directory and must not grow
+             * one — the provider already runs one batched read for the whole page, and resolving per task would
+             * be an N+1 across the surface.
+             */
             TaskLifecycle.Waiting => new TaskWaitingContext(
-                TaskWaitingTypes.ExternalInformation, WaitingOn: null, Reason: task.WaitingReason,
+                TaskWaitingTypes.ExternalInformation,
+                WaitingOnUserId: task.WaitingOnUserId,
+                Reason: task.WaitingReason,
                 task.UpdatedAt ?? task.CreatedAt, ExpectedUntil: null),
             _ => null
         };

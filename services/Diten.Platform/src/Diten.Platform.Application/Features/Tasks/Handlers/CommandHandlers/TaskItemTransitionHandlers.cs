@@ -427,6 +427,29 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
 
         var previousLifecycle = task.Lifecycle;
         task.Lifecycle = command.Target;
+        /*
+         * ⚠ LEAVING WAITING DROPS THE WAITING STORY — and this line is a DEFECT FIX, not a new rule.
+         *
+         * Two comments already claimed it happened. `TaskItem.WaitingReason` said "Cleared when the task
+         * resumes, so a stale reason never outlives the wait", and the inquire handler said the reason is copied
+         * into history "because WaitingReason is CLEARED when the task resumes". MEASURED 2026-08-15: NOTHING in
+         * the codebase ever set it back to null. A task parked in March and resumed in April still carried
+         * March's sentence.
+         *
+         * It was invisible rather than harmless: `ResolveWaitingContext` only reads the field while the
+         * lifecycle IS Waiting, so the stale value was hidden — until the task was parked a second time, when
+         * the old sentence surfaced in the window before the new one was written, and nothing else could ever
+         * trust the field.
+         *
+         * Here rather than per-branch: EVERY way out of Waiting passes through this handler (resume → InProgress,
+         * complete → Done, cancel → Cancelled), and a per-branch clear is exactly the shape where the third
+         * branch gets forgotten.
+         */
+        if (previousLifecycle == TaskLifecycle.Waiting && command.Target != TaskLifecycle.Waiting)
+        {
+            task.ClearWaiting();
+        }
+
         task.UpdatedBy = _currentUser.ActorName;
         task.Declare(
             KindFor(previousLifecycle, command.Target),
@@ -818,15 +841,24 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
     private readonly ITaskItemRepository _tasks;
     private readonly ITaskLifecycleService _lifecycle;
     private readonly ICurrentUserContext _currentUser;
+    private readonly ITaskSeatDirectory _seats;
+    private readonly IPositionRepository _positions;
+    private readonly IOrganizationUnitRepository _organizationUnits;
 
     public InquireTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        ITaskSeatDirectory seats,
+        IPositionRepository positions,
+        IOrganizationUnitRepository organizationUnits)
     {
         _tasks = tasks;
         _lifecycle = lifecycle;
         _currentUser = currentUser;
+        _seats = seats;
+        _positions = positions;
+        _organizationUnits = organizationUnits;
     }
 
     public async Task<Response<NoContent>> Handle(InquireTaskItemCommand command, CancellationToken ct)
@@ -862,11 +894,47 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
                 409, reasonCode ?? TaskReasonCodes.InvalidState, command.CorrelationId);
         }
 
+        /*
+         * WHO, when there is a who — validated before it is stored.
+         *
+         * The person must be somebody this tenant can actually assign work to. That is not pedantry: an
+         * unvalidated id would let a caller park a task "waiting on" an identity from another tenant, and the
+         * projection would then resolve and PRINT that person's name to everyone who can read the task.
+         *
+         * The SAME resolver the assignment picker uses, so "who may be named" has one answer. An id nobody can
+         * assign to is refused with the assignment code rather than silently dropped — a dropped selection is a
+         * screen that shows nobody after the user chose somebody.
+         */
+        if (command.Request.WaitingOnUserId is { } waitingOn)
+        {
+            if (waitingOn == Guid.Empty)
+            {
+                return Response<NoContent>.Fail(
+                    "The person being waited on is not valid.",
+                    400, TaskReasonCodes.AssigneeInvalid, command.CorrelationId);
+            }
+
+            var assignable = TaskAssigneeEligibility.ResolveAssignableUserIds(
+                await _seats.ActiveAsync(ct),
+                await _positions.GetAllAsync(ct),
+                await _organizationUnits.GetAllAsync(ct));
+
+            if (!assignable.Contains(waitingOn))
+            {
+                return Response<NoContent>.Fail(
+                    "That person cannot be named here.",
+                    400, TaskReasonCodes.AssigneeNotAssignable, command.CorrelationId);
+            }
+        }
+
         task.Lifecycle = TaskLifecycle.Waiting;
         task.WaitingReason = reason;
+        // Null when nobody was named — and that ASSIGNMENT matters, not just the store: parking a task a second
+        // time without naming anybody must not inherit the person from the first wait.
+        task.WaitingOnUserId = command.Request.WaitingOnUserId;
         task.UpdatedBy = _currentUser.ActorName;
-        // The reason travels into the history because WaitingReason is CLEARED when the task resumes: without a
-        // copy here, "what was this blocked on in March" would have no answer anywhere.
+        // The reason travels into the history because the waiting story is CLEARED when the task leaves Waiting:
+        // without a copy here, "what was this blocked on in March" would have no answer anywhere.
         task.Declare(TaskTransitionKind.Waiting, _currentUser.UserId, reason);
 
         if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))

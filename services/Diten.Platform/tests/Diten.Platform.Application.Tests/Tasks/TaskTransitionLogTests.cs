@@ -168,7 +168,12 @@ public sealed class TaskTransitionLogTests
         var repository = new FakeTaskItemRepository(task);
 
         await new InquireTaskItemHandler(
-                repository, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me))
+                repository, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
+                        // The waiting-on person is validated against the SAME eligibility rule the
+                        // assignment picker uses; these tests never name one, so empty directories are
+                        // the honest arrangement.
+                        new FakePositionAssignmentRepository(), new FakePositionRepository(),
+                        new FakeOrganizationUnitRepository())
             .Handle(
                 new InquireTaskItemCommand(
                     task.Id,
@@ -462,7 +467,12 @@ public sealed class TaskTransitionLogTests
                 var task = AssignedTask(TaskLifecycle.InProgress);
                 var repository = new FakeTaskItemRepository(task);
                 await new InquireTaskItemHandler(
-                        repository, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me))
+                        repository, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
+                        // The waiting-on person is validated against the SAME eligibility rule the
+                        // assignment picker uses; these tests never name one, so empty directories are
+                        // the honest arrangement.
+                        new FakePositionAssignmentRepository(), new FakePositionRepository(),
+                        new FakeOrganizationUnitRepository())
                     .Handle(
                         new InquireTaskItemCommand(
                             task.Id, new InquireTaskItemRequest(task.Version, "Blocked on procurement"), "corr"),

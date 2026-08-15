@@ -494,7 +494,16 @@ const boot = (item) => bootSurface({
   items: [item],
   wcn: {
     t: (key) => key,
-    tf: (key, ...args) => args.reduce((text, value, i) => text.split(`{${i}}`).join(String(value)), `${key}:{0}`),
+    /*
+     * ⚠ THE SEED CARRIES A SLOT PER ARGUMENT, not just `{0}`.
+     *
+     * It used to be `` `${key}:{0}` ``, so a two-argument message silently lost its SECOND value — and the very
+     * defect this harness exists to catch (a sentence that drops one of its two facts) would have passed. Found
+     * by `WaitingOnWithReason`, whose whole point is that the person and the reason both survive.
+     */
+    tf: (key, ...args) => args.reduce(
+      (text, value, i) => text.split(`{${i}}`).join(String(value)),
+      `${key}:` + args.map((_, i) => `{${i}}`).join(" ")),
     tn: (key) => key
   }
 });
@@ -2836,6 +2845,124 @@ describe("the page reaches the product's one confirm implementation", () => {
       .replace(/(^|[^:])\/\/.*$/gm, "$1");
     // 10 before BL-147; the bulk RESULT notice became a toast, so nine raw dialogs remain.
     expect((src.match(/Swal\.fire\(/g) || []).length).toBe(9);
+  });
+});
+
+describe("a parked task says WHO it waits on, not only why", () => {
+  /*
+   * The projection has carried a `waitingOn` slot since WC-1 with a hard null in it, and the comment beside it
+   * said why: "stays null until something can resolve a real identity to put there." The holder names the person
+   * when they park the task now, so the slot has something to carry.
+   */
+  const parked = (waitingContext) => projectionItem({
+    normalizedStatus: "Waiting", taskLifecycle: "Waiting", waitingContext
+  });
+  const person = { id: "ffffffff-ffff-ffff-ffff-ffffffffffff", displayName: "Ayşe Yılmaz" };
+  const reason = { kind: "display", text: "Muhasebeden ekstre bekleniyor.", locale: "und" };
+
+  /*
+   * MUTATION TARGET (both facts). ⚠ THE OLD CODE PRINTED THE PERSON *INSTEAD OF* THE REASON. Naming somebody
+   * therefore COST the reader the sentence saying what was actually being waited for — on two surfaces.
+   */
+  it("shows the person AND the reason when both are known", async () => {
+    await boot(parked({ type: "externalInformation", waitingOn: person, reason,
+      since: "2026-08-10T09:00:00+00:00" }));
+
+    const note = app().querySelector(".wcn-parked-waiting");
+    expect(note, "the waiting note disappeared").not.toBeNull();
+    expect(note.textContent).toContain("WaitingOnWithReason");
+    expect(note.textContent, "the person is missing").toContain("Ayşe Yılmaz");
+    expect(note.textContent, "the reason was dropped for the person").toContain("Muhasebeden ekstre bekleniyor.");
+  });
+
+  it("shows the reason alone when nobody was named — the case that must not change", async () => {
+    await boot(parked({ type: "externalInformation", waitingOn: null, reason,
+      since: "2026-08-10T09:00:00+00:00" }));
+
+    const note = app().querySelector(".wcn-parked-waiting");
+    expect(note.textContent).toContain("Muhasebeden ekstre bekleniyor.");
+    expect(note.textContent, "a person appeared out of nowhere").not.toContain("WaitingOnWithReason");
+  });
+
+  it("composes the sentence in ONE place, for every surface", () => {
+    /*
+     * Three surfaces say this — the detail note, the list chip and the lifecycle strip — and each used to
+     * compose it itself, which is how two of them ended up with the same drop-the-reason defect.
+     */
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const composer = src.slice(src.indexOf("const waitingSentence"), src.indexOf("const guidanceFor"));
+    expect(composer).toContain("WaitingOnWithReason");
+    // …and nobody else builds it. `waitingOn` may still be READ (to decide whether to show a chip at all).
+    const others = src.replace(composer, "");
+    expect(others, "a second surface composes the waiting sentence itself").not.toContain("tf('WaitingOn',");
+  });
+
+  it("builds a WHOLE sentence per language, never fragments joined in JS", () => {
+    /*
+     * "{person} bekleniyor — {reason}" puts the person first in Turkish and after a verb in Russian. A language
+     * that wants a different order can only have it if it owns the whole pattern.
+     */
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const composer = src.slice(src.indexOf("const waitingSentence"), src.indexOf("const guidanceFor"));
+    expect(composer, "the sentence is being assembled from pieces").not.toMatch(/\+\s*['"] — ['"]/);
+
+    ["en", "tr", "fr", "es", "zh", "ar", "ru"].forEach((lang) => {
+      const resx = read("Resources", "Views", "WorkCenterNext", `WorkCenterNextIndex.${lang}.resx`);
+      const value = new RegExp(
+        '<data name="WaitingOnWithReason"[^>]*>\\s*<value>([\\s\\S]*?)</value>').exec(resx);
+      expect(value, `${lang} has no WaitingOnWithReason`).not.toBeNull();
+      // Both slots present, so no language is silently dropping one of the two facts.
+      expect(value[1], `${lang} lost a slot`).toContain("{0}");
+      expect(value[1], `${lang} lost a slot`).toContain("{1}");
+    });
+  });
+
+  it("ships the picker's own words in all seven languages", () => {
+    ["WaitingOnLabel", "WaitingOnNobody"].forEach((key) =>
+      ["en", "tr", "fr", "es", "zh", "ar", "ru"].forEach((lang) =>
+        expect(read("Resources", "Views", "WorkCenterNext", `WorkCenterNextIndex.${lang}.resx`),
+          `${lang} has no ${key}`).toContain(`name="${key}"`)));
+  });
+});
+
+describe("the person picker on the waiting dialog", () => {
+  /*
+   * MUTATION TARGET (optional). A wait is often on somebody this system has never heard of — a supplier, a
+   * customer, an authority — and forcing a selection would make the honest answer unreachable.
+   */
+  it("offers the picker for inquire, and never demands it", () => {
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    // Declared as a LIST beside its required sibling, not as an `if (code === 'inquire')`.
+    expect(src).toMatch(/const WAITING_ON_ACTIONS = \['inquire'\]/);
+    expect(src, "inquire drifted into the REQUIRED list").not.toMatch(
+      /ASSIGNEE_REQUIRED_ACTIONS = \[[^\]]*inquire/);
+
+    // The optional branch returns whatever was chosen — including nothing — without validating it.
+    const dialog = src.slice(src.indexOf("const offersWaitingOn"), src.indexOf("const offersWaitingOn") + 4000);
+    expect(dialog).toContain("wcnWaitingOn");
+    const optionalBranch = dialog.slice(dialog.indexOf("if (!needsAssignee)"));
+    expect(optionalBranch.slice(0, 400), "an empty choice is being refused")
+      .not.toContain("showValidationMessage");
+  });
+
+  it("takes its people from the ONE seam, unwrapped once", () => {
+    // `TasksApi.assignablePeople()` returns the array directly (BL-113). This envelope was opened three
+    // different ways in one session, and the fourth broke silently.
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const dialog = src.slice(src.indexOf("const offersWaitingOn"), src.indexOf("const offersWaitingOn") + 1200);
+    expect(dialog).toContain("TasksApi.assignablePeople()");
+    expect(dialog, "the envelope is being unwrapped by hand again").not.toMatch(/data\?\.people|data\.people/);
+  });
+
+  it("sends the person only when one was chosen", () => {
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const body = src.slice(src.indexOf("inquire: ({ expectedVersion"), src.indexOf("return: ({"));
+    expect(body).toContain("waitingOnUserId");
+    /*
+     * `undefined`, not null: JSON.stringify OMITS an undefined key, so a request with nobody named is
+     * byte-identical to the one this client sent before the field existed.
+     */
+    expect(body).toContain("waitingOnUserId || undefined");
   });
 });
 

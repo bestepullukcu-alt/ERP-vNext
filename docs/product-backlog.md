@@ -3821,3 +3821,47 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   "hiçbir şey olmadı" iddiasının bekleyecek bir koşulu yok, ve hatası yalnız yanlış-YEŞİL üretebilir, yanlış-kırmızı
   değil — yani BL-159'un gürültüsünü yaratamaz. Gerekçe testin içine yazıldı.
 - **Gelecek regresyon riski: 🟢.**
+
+### BL-164 — ⚠ BULUNAN KUSUR — "bekleme sona erince temizlenir" iki yorumda yazıyordu, kodda YOKTU
+- `TaskItem.WaitingReason` özeti: "Cleared when the task resumes, so a stale reason never outlives the wait."
+  `InquireTaskItemHandler`: gerekçe geçmişe kopyalanıyor "because WaitingReason is CLEARED when the task resumes".
+- **ÖLÇÜM (2026-08-15): kod tabanında hiçbir yer bu alanı null'a döndürmüyordu.** Mart'ta beklemeye alınıp
+  Nisan'da devam eden bir görev Mart'ın cümlesini süresiz taşıyordu.
+- Zararsız değil, GÖRÜNMEZdi: `ResolveWaitingContext` alanı yalnız yaşam döngüsü Waiting iken okuyor, o yüzden
+  bayat değer saklı kalıyordu — ta ki görev ikinci kez beklemeye alınana kadar; o an eski cümle, yenisi
+  yazılmadan önceki pencerede yüzeye çıkıyordu. Ve alana başka hiçbir şey güvenemiyordu.
+- **Düzeltildi:** `TaskItem.ClearWaiting()` (gerekçe + kişi birlikte), `TransitionTaskItemHandler` içinde
+  Waiting'den çıkan HER geçişte çağrılıyor. Dal başına değil tek yerde, çünkü Waiting'den üç çıkış var ve
+  unutulan hep üçüncüsü olur. İki yorum da gerçeğe göre yeniden yazıldı.
+- Canlı doğrulandı: devam ettikten sonra `WaitingReason = None`, `WaitingOnUserId = None` (Mongo'dan okundu).
+- **Gelecek regresyon riski: 🟢** — mutasyon testi (temizlemeyi kaldır) iki testi kırmızıya çeviriyor.
+
+### BL-165 — ⚠ BULUNAN KUSUR — Kişi bilindiğinde GEREKÇE düşüyordu (iki yüzeyde)
+- Eski kod: `item.waitingOn ? tf('WaitingOn', item.waitingOn) : item.waitingReason` — yani birini seçmek,
+  okuyucuya neyin beklendiğini söyleyen cümleyi KAYBETTİRİYORDU. Detay notunda ve liste çipinde aynı hata.
+- Bugüne kadar görünmüyordu çünkü `waitingOn` her zaman null'dı; bu tur onu doldurunca kusur canlanacaktı.
+- **Düzeltildi:** tek bir `waitingSentence(item)` — üç yüzey (detay notu · liste çipi · yaşam döngüsü şeridi)
+  aynı yerden alıyor. İkisi birden varsa `WaitingOnWithReason` ile ikisi de gösteriliyor.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-166 — [TEST ALTYAPISI] Fixture `tf` yalnız `{0}`'ı dolduruyordu — iki yuvalı mesajlar sessizce yarım kalıyordu
+- `wcn-detail-three-regions` fixture'ındaki `tf` tohumu `` `${key}:{0}` `` idi; iki argümanlı bir mesajın
+  İKİNCİ değeri hiçbir zaman görünmüyordu. Yani "iki olgudan birini düşüren cümle" kusuru — bu turun tam da
+  test ettiği şey — testte geçerdi.
+- `WaitingOnWithReason` yakaladı. Tohum artık argüman sayısı kadar yuva üretiyor.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-167 — [TEST ALTYAPISI] Geçiş sözleşmesi guard'ı "her builder tek satır" kuralını gizlice dayatıyordu
+- `task-transition-contract.test.js` her eylemin girdisini TEK SATIR olarak okuyordu; `inquire` ikinci
+  parametresini alıp satır kaydırınca guard "builder bir nesne döndürmüyor" diye düştü — kodun değil, biçimin
+  hatası. Ayrıca sonraki girdiyi açıklayan `//` yorumu da eşleşmeyi bozuyordu.
+- Guard artık girdiyi bir sonraki anahtara kadar okuyor ve önce yorumları soyuyor. Bu oturumda dördüncü kez bir
+  guard kendi prozasına takıldı.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-168 — [TEST] `creating a subtask in detail` testi tam süit altında zaman aşımına uğrayabiliyor
+- Bir tam süit koşusunda 5000ms vitest zaman aşımı; dosya tek başına 117/117, ikinci tam koşuda da geçti.
+  BL-159/BL-163 ile aynı sınıf: yük altında yetmeyen bekleme. **Bu turun değişiklikleriyle ilgisi ölçülmedi
+  ama yol farklı** (alt görev paneli, `inquire` diyaloğu değil).
+- **Yapılacak:** aynı `until(...)` desenine çevir. Bu turda yapılmadı.
+- **Gelecek regresyon riski: 🟡** — yalancı kırmızı.

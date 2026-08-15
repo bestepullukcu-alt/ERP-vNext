@@ -66,7 +66,12 @@ public interface ITaskLifecycleService
 /// </summary>
 public sealed record TaskWaitingContext(
     string Type,
-    string? WaitingOn,
+    /// <summary>
+    /// WHO is being waited on, as an ID. The NAME is resolved by the projection from its own batched directory
+    /// read — this service has no directory, and giving it one would mean a lookup per task rather than one per
+    /// page.
+    /// </summary>
+    Guid? WaitingOnUserId,
     string? Reason,
     DateTimeOffset? Since,
     DateTimeOffset? ExpectedUntil);

@@ -282,6 +282,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             .Concat(transitionsByTask.SelectMany(pair => pair.Value).Select(transition => transition.ActorUserId))
             // Whoever is watching. Same batch, same reason — a named watcher or none at all.
             .Concat(watchersByTask.SelectMany(pair => pair.Value).Select(watcher => (Guid?)watcher.UserId))
+            // Whoever a parked task is waiting on. In the SAME batch for the same reason: a wait that says
+            // "waiting on somebody" without saying who answers half the question it was asked.
+            .Concat(tasks.Select(t => t.WaitingOnUserId))
             .Where(id => id is not null && id != Guid.Empty)
             .Select(id => id!.Value)
             .Distinct()
@@ -549,11 +552,22 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             Concurrency: new WorkItemConcurrencyDto("version", task.Version.ToString()),
             WaitingContext: waiting is null
                 ? null
-                // The reason is the user's own sentence, so it crosses as a DISPLAY label; waitingOn stays null
-                // until something can resolve a real identity to put there.
+                /*
+                 * The reason is the user's own sentence, so it crosses as a DISPLAY label.
+                 *
+                 * ⚠ `waitingOn` USED TO BE HARD-NULL, and the comment here said why: "stays null until something
+                 * can resolve a real identity to put there." That something now exists — the holder names the
+                 * person when they park the task, and `Person(...)` resolves the name from the SAME batched
+                 * directory read the assignee and the requester use.
+                 *
+                 * `Person` is reused rather than reimplemented, which is what keeps the module's rule intact: a
+                 * name that cannot be resolved comes back as a person with a null displayName, NEVER as a GUID.
+                 * An id is not a person, and printing one is the failure this projection has refused twice
+                 * before (the fabricated pool label, the raw resource key).
+                 */
                 : new WorkItemWaitingContextDto(
                     waiting.Type,
-                    WaitingOn: null,
+                    WaitingOn: Person(waiting.WaitingOnUserId, actor, displayNames),
                     Reason: waiting.Reason is null ? null : WorkItemLabelDto.Display(waiting.Reason),
                     waiting.Since,
                     waiting.ExpectedUntil),

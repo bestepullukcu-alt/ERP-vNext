@@ -504,7 +504,15 @@ public sealed record PlanTaskItemRequest(int ExpectedVersion, DateTimeOffset Pla
 /// Park a task in Waiting. <paramref name="Reason"/> is REQUIRED and is the user's own words, so it is stored as
 /// text and never routed through a resource key.
 /// </summary>
-public sealed record InquireTaskItemRequest(int ExpectedVersion, string Reason);
+/// <summary>
+/// Park the task, saying what it is waiting for and — optionally — WHO.
+///
+/// <para><paramref name="WaitingOnUserId"/> is OPTIONAL and TRAILING, both deliberately. Optional because a wait
+/// is often on somebody this system has never heard of (a supplier, a customer, an authority), and there is
+/// nobody to select; <paramref name="Reason"/> already carries that. Trailing with a default so every existing
+/// caller — and the client that has not learned about it yet — compiles and behaves exactly as before.</para>
+/// </summary>
+public sealed record InquireTaskItemRequest(int ExpectedVersion, string Reason, Guid? WaitingOnUserId = null);
 
 /// <summary>
 /// Hand assigned work BACK to whoever asked for it. <paramref name="Reason"/> is required: a refusal the

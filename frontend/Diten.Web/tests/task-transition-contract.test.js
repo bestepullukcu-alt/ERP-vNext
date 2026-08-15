@@ -42,13 +42,29 @@ const clientFields = (actionCode) => {
   expect(start, "TRANSITION_BODIES is not declared in app.js").toBeGreaterThan(-1);
   const map = source.slice(start, source.indexOf("};", start));
 
-  const line = new RegExp(`(?:^|\\n)\\s*${actionCode}:[^\\n]*`).exec(map);
-  expect(line, `${actionCode} has no entry in TRANSITION_BODIES`).toBeTruthy();
+  /*
+   * ⚠ THE ENTRY, NOT THE LINE. This used to read one line per action, which quietly made "a builder must fit on
+   * one line" a rule of this codebase — and it broke the moment `inquire` grew a second parameter and wrapped.
+   * The formatting of the map is not what this guard is for.
+   *
+   * Read from the action's key to the start of the NEXT key (or the end of the map), so a builder may span as
+   * many lines as it needs.
+   */
+  const keyAt = new RegExp(`(?:^|\\n)\\s*${actionCode}:`).exec(map);
+  expect(keyAt, `${actionCode} has no entry in TRANSITION_BODIES`).toBeTruthy();
+  const rest = map.slice(keyAt.index + keyAt[0].length);
+  const nextKey = /\n\s*(?:[A-Za-z_$][\w$]*|__default):/.exec(rest);
+  const entry = (nextKey ? rest.slice(0, nextKey.index) : rest)
+    // Comments stripped FIRST: a `//` line explaining the NEXT entry sits after this one's literal, and the
+    // end-anchored match below would otherwise never reach the literal at all.
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:])\/\/.*$/gm, "$1")
+    .trim();
 
   // The object literal the builder returns: `({ expectedVersion, assigneeUserId, reason })`
   // Anchored at the END so it takes the RETURNED literal, not the parameter destructure, and tolerant of the
   // trailing comma every entry in the map carries.
-  const body = /\(\{([^}]*)\}\),?\s*$/.exec(line[0].trim());
+  const body = /\(\{([^}]*)\}\),?\s*$/.exec(entry);
   expect(body, `${actionCode}'s builder does not return an object literal`).toBeTruthy();
   return body[1].split(",").map((part) => part.trim().split(":")[0].trim()).filter(Boolean);
 };

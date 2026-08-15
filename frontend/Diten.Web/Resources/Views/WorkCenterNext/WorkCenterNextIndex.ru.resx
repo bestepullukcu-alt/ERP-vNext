@@ -1956,4 +1956,13 @@
   <data name="ToastCommentWithdrawn" xml:space="preserve">
     <value>Комментарий отозван</value>
   </data>
+  <data name="WaitingOnWithReason" xml:space="preserve">
+    <value>Ожидание: {0} — {1}</value>
+  </data>
+  <data name="WaitingOnLabel" xml:space="preserve">
+    <value>Кого ожидаем? (необязательно)</value>
+  </data>
+  <data name="WaitingOnNobody" xml:space="preserve">
+    <value>Никого конкретно</value>
+  </data>
 </root>

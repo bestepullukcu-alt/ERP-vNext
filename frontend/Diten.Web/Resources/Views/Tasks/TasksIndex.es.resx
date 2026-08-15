@@ -184,4 +184,7 @@
   <data name="ErrorCommentWithdrawn" xml:space="preserve">
     <value>Este comentario ya fue retirado.</value>
   </data>
+  <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
+    <value>Esa persona no puede indicarse aquí.</value>
+  </data>
 </root>

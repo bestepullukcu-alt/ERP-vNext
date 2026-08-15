@@ -63,6 +63,9 @@
         // missing half of twice already.
         TASK_COMMENT_NOT_AUTHOR: 'errorCommentNotAuthor',
         TASK_COMMENT_WITHDRAWN: 'errorCommentWithdrawn',
+        // Naming somebody the tenant cannot assign work to — the SAME eligibility rule the assignment picker
+        // uses, so the refusal is the picker's own answer rather than a second opinion.
+        TASK_ASSIGNEE_NOT_ASSIGNABLE: 'errorWaitingOnNotAssignable',
         /*
          * WC-1 — the personal overlay's three refusals. Mapped the moment the codes were written, not after a
          * user read "İşlem sırasında bir hata oluştu": an unmapped code IS that sentence, and this map has now
