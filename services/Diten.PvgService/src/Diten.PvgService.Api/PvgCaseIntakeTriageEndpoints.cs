@@ -91,7 +91,7 @@ public static class PvgCaseIntakeTriageEndpoints
         PvgIntakeStatus? status = null,
         CancellationToken cancellationToken = default)
     {
-        var context = PvgCaseIntakeRequestContext.From(httpContext, requireActor: false, requireCorrelation: false);
+        var context = PvgCaseIntakeRequestContext.From(httpContext);
         if (!context.IsValid)
         {
             return ToHttpResult(PvgCaseIntakeApiResponse.Blocked(context.ReasonCode));
@@ -115,7 +115,7 @@ public static class PvgCaseIntakeTriageEndpoints
             return Results.NotFound();
         }
 
-        var context = PvgCaseIntakeRequestContext.From(httpContext, requireActor: false, requireCorrelation: false);
+        var context = PvgCaseIntakeRequestContext.From(httpContext);
         if (!context.IsValid)
         {
             return ToHttpResult(PvgCaseIntakeApiResponse.Blocked(context.ReasonCode));

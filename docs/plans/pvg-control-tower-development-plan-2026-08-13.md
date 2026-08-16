@@ -50,6 +50,7 @@ Measured implementation baseline:
 | MOD-0230 API host shell (`PVG-0230-BE-01`) | 100% | API build passed; 5 host guardrail tests passed |
 | MOD-0230 persistence boundary (`PVG-0230-BE-02`) | 100% | RegPvBase 37 passed; API guardrails 5 passed |
 | MOD-0230 CQRS/controller endpoints (`PVG-0230-BE-03`) | 100% | API route/context tests 9 passed; lane report total 127 passed |
+| MOD-0230 read-context hardening (`PVG-0230-BE-04`) | 100% | `VER-PVG-0230-READ-CONTEXT-01` PASS; API tests 22/22; prior full local PVG suite 140/140 |
 | MOD-0230 failure-path verification (`PVG-0230-VER-01`) | 100% | E2 passed; E4-ready gaps recorded |
 | MOD-0230 Gateway route (`PVG-0230-GW-01`) | 100% | Superseded by GW-02 narrowing after live route-scope gap |
 | MOD-0230 Gateway verification (`PVG-0230-GW-VER-01`) | 100% | Correctly failed old broad route and produced GW-02 follow-up |
@@ -121,6 +122,7 @@ Parallelism:
 | 1 | `PVG-0230-BE-01` | B | MOD-0230 | Create API host shell for local/dev/CI only: API project, Program, health, DI, config refusal for production-like unauthorized mode | Current class libraries | E2 achieved | Done |
 | 2 | `PVG-0230-BE-02` | B | MOD-0230 | Add persistence boundary: entity/repository/index tests, tenant isolation, no client `TenantId`, no delete/bulk/archive/export | BE-01 | E2 achieved; E4-ready | Done |
 | 3 | `PVG-0230-BE-03` | B | MOD-0230 | Add CQRS/controller route set: create/update/list/detail/triage/route only, response envelope, RBAC/guardrails/audit intents | BE-02 | E2 achieved | Done |
+| 3.1 | `PVG-0230-BE-04` | B | MOD-0230 | Harden list/detail read endpoints to require tenant, actor, and correlation context before service invocation, matching create/update/triage/route | BE-03 | E2 achieved; E4-ready improvement | Done |
 | 4 | `PVG-0230-VER-01` | C | MOD-0230 | Failure-path and leak-scan verification: missing policy, workflow denial, evidence pending, tenant mismatch, unsafe text absence | BE-03 | E2 achieved; E4-ready gaps | Done |
 | 5 | `PVG-0230-GW-01` | B | MOD-0230 | Add one Gateway route family: upstream `/api/pv-case-intake-triage`, downstream `/api/v1/pv-case-intake-triage` | BE-03 | E2 achieved; live gap found | Done with corrective follow-up |
 | 6 | `PVG-0230-GW-VER-01` | C | MOD-0230 | Independently verify Gateway route family and forbidden Gateway route absence | GW-01 | E2 achieved; E3 route-scope gap | Done with gap |
@@ -286,6 +288,38 @@ Evidence:
 - `git diff --check` passed.
 - Evidence level achieved: **E2**.
 - E3 was not claimed because no local host process was started.
+
+## 5.3.1 Completed WP: `PVG-0230-BE-04`
+
+Goal: harden MOD-0230 list/detail read-context behavior so read endpoints require the same server-resolved tenant,
+actor, and correlation context as create, update, triage, and route.
+
+Scope:
+
+- Require tenant context for MOD-0230 list/detail read endpoints.
+- Require actor context for MOD-0230 list/detail read endpoints.
+- Require valid correlation context for MOD-0230 list/detail read endpoints.
+- Keep create, update, triage, and route behavior aligned with the same fail-closed context rule.
+
+Result:
+
+- `VER-PVG-0230-READ-CONTEXT-01` passed.
+- All six MOD-0230 business endpoints now fail closed on missing actor or correlation context before service
+  invocation.
+- No Gateway, frontend, appsettings, launchSettings, seed, job, migration, collection, Mongo, DbContext, repository,
+  AI, MedDRA data, or downstream MOD-0231/0232/0234 runtime exposure was introduced.
+- Operational runtime remains **NO-GO**.
+- `PVG-0230-AUTH-PROXY-01` remains blocked until a valid tenant-shell session is provided or seeded local development
+  login use is explicitly approved for verification only.
+
+Evidence:
+
+- API tests passed: `22/22`.
+- Prior full local PVG suite after implementation passed: `140/140`.
+- `git diff --check` passed.
+- Evidence level achieved: **E2**.
+- E4-ready improvement: all six business endpoints now fail closed on missing actor/correlation before service
+  invocation.
 
 ## 5.4 Completed WP: `PVG-0230-VER-01`
 

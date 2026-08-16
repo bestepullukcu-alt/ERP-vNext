@@ -194,6 +194,42 @@ public sealed class PvgServiceApiHostTests
         Assert.Equal(StatusCodes.Status409Conflict, await StatusCodeOfAsync(missingCorrelationResult));
     }
 
+    [Fact]
+    public async Task Case_intake_read_endpoints_fail_closed_before_service_when_actor_or_correlation_is_missing()
+    {
+        var missingActorListResult = await PvgCaseIntakeTriageEndpoints.ListDraftsAsync(
+            NewContextWithTenant(),
+            service: null!,
+            cancellationToken: CancellationToken.None);
+
+        var missingActorDetailResult = await PvgCaseIntakeTriageEndpoints.GetDraftByIdAsync(
+            "draft-reference",
+            NewContextWithTenant(),
+            service: null!,
+            CancellationToken.None);
+
+        Assert.Equal(StatusCodes.Status409Conflict, await StatusCodeOfAsync(missingActorListResult));
+        Assert.Equal(StatusCodes.Status409Conflict, await StatusCodeOfAsync(missingActorDetailResult));
+
+        var missingCorrelationContext = NewContextWithTenant();
+        missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
+        missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+
+        var missingCorrelationListResult = await PvgCaseIntakeTriageEndpoints.ListDraftsAsync(
+            missingCorrelationContext,
+            service: null!,
+            cancellationToken: CancellationToken.None);
+
+        var missingCorrelationDetailResult = await PvgCaseIntakeTriageEndpoints.GetDraftByIdAsync(
+            "draft-reference",
+            missingCorrelationContext,
+            service: null!,
+            CancellationToken.None);
+
+        Assert.Equal(StatusCodes.Status409Conflict, await StatusCodeOfAsync(missingCorrelationListResult));
+        Assert.Equal(StatusCodes.Status409Conflict, await StatusCodeOfAsync(missingCorrelationDetailResult));
+    }
+
     [Theory]
     [InlineData("export")]
     [InlineData("archive")]
