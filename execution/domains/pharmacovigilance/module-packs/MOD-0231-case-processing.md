@@ -206,32 +206,53 @@ They remain downstream DCP-004 / MOD-0234-facing gates unless explicitly added t
 
 ### MOD-0230 Handoff Fields Consumed by MOD-0231
 
-MOD-0231 consumes the approved MOD-0230 handoff contract as an upstream reference. It must not re-own intake
-records, intake artifacts, triage state, or routing decisions.
+MOD-0231 consumes MOD-0230 handoff evidence as an upstream reference. It must not re-own intake records, intake
+artifacts, triage state, or routing decisions.
+
+Current implemented build/test evidence is **`MOD0230HandoffReference v0.1`**. This v0.1 shape is not the future
+owner-approved operational handoff contract. It exists only to support local/dev/CI build-test handoff and downstream
+fail-closed proof.
+
+| `MOD0230HandoffReference v0.1` field | MOD-0231 build/test use | Operational status |
+|---|---|---|
+| `IntakeDraftId` | Upstream intake draft reference | Build/test evidence only; v1 approval required for runtime |
+| `IntakeNumber` | Trace/display reference | Build/test evidence only; canonical identity remains server-owned |
+| `ReceivedAtUtc` | Lifecycle baseline context | Build/test evidence only; workflow/SLA policy still blocked |
+| `TriageOutcomeCode` | Triage outcome reference | Build/test evidence only; MOD-0023 transition/routing approval still blocked |
+| `RouteTargetQueueCode` | Initial queue reference | Build/test evidence only; MOD-0023 queue/assignment authority still blocked |
+| `EvidenceLinkReferenceIds` | Evidence reference IDs | Build/test evidence only; MOD-0031 completeness and evidence-pack approval still blocked |
+
+`TenantId` and correlation / trace context are external server context. They must be resolved by the server-side
+tenant and TRACE-BUNDLE / Blueprint MOD-0040 infrastructure and must not be supplied as authoritative fields in a
+client handoff payload.
+
+The table below remains the planned **v1 operational handoff** consumption list. Fields that are not present in
+`MOD0230HandoffReference v0.1` are not produced by BE-01 or BE-02 and must continue to block operational MOD-0231
+runtime until owner-approved v1 evidence exists.
 
 | MOD-0230 field / output | MOD-0231 Signal Minimum Scope use | Status |
 |---|---|---|
-| Safety Case Intake ID | Required upstream same-tenant intake reference | BLOCKED until MOD-0230 handoff contract approved |
-| TenantId | Server-resolved tenant isolation only; never client-supplied | BLOCKED by tenant/security gate |
-| System-generated case/intake number | Trace/display reference | OPEN / TRACE-BUNDLE dependent |
-| IntakeChannel | Source context | BLOCKED until MOD-0230 option-set contract approved |
-| SourceType | Source context | BLOCKED until MOD-0230 option-set contract approved |
-| SourceReference | External source trace, masked/redacted | BLOCKED by MOD-0019 and TRACE-BUNDLE |
-| ReceivedAtUtc | Lifecycle/SLA baseline | BLOCKED by workflow/SLA policy |
-| ReporterType | Case context | BLOCKED until MOD-0230 option-set contract approved |
-| ReporterContactSummary | Restricted PII context, masked | BLOCKED by MOD-0019 |
-| PatientSubjectCode | Restricted PHI subject reference | BLOCKED by MOD-0019 |
-| EventOnsetDate | Event timeline | BLOCKED by MOD-0019 and date policy |
-| AdverseEventNarrative | Restricted PHI assessment input | BLOCKED by MOD-0019 / MOD-0021 |
-| SuspectProductText | Product assessment input | BLOCKED by product/reference policy |
-| Seriousness | Initial seriousness baseline | BLOCKED until MOD-0230 seriousness contract approved |
-| IntakePriority | Initial priority baseline | BLOCKED by workflow/SLA policy |
-| TriageOutcome | Required handoff gate | BLOCKED by MOD-0023 |
-| TriageReason | Restricted triage rationale | BLOCKED by MOD-0019 / MOD-0021 |
-| RouteTargetQueue | Initial processing queue | BLOCKED by MOD-0023 |
-| EvidenceLinkReferences | Evidence boundary; MOD-0031 owns link/query/evidence pack | BLOCKED by MOD-0031 |
-| Correlation ID / trace bundle | Audit and trace continuity | BLOCKED by Blueprint MOD-0040 / TRACE-BUNDLE |
-| Workflow instance ID | Lifecycle continuity if approved by MOD-0023 | BLOCKED by MOD-0023 |
+| Safety Case Intake ID | Required upstream same-tenant intake reference | v0.1 maps only to `IntakeDraftId`; owner-approved v1 operational handoff remains BLOCKED |
+| TenantId | Server-resolved tenant isolation only; never client-supplied | External server context; not a v0.1 or v1 client handoff field |
+| System-generated case/intake number | Trace/display reference | v0.1 maps only to `IntakeNumber`; TRACE-BUNDLE/canonical identity approval still required |
+| IntakeChannel | Source context | Not in BE-01/BE-02 v0.1; BLOCKED until MOD-0230 option-set contract approved |
+| SourceType | Source context | Not in BE-01/BE-02 v0.1; BLOCKED until MOD-0230 option-set contract approved |
+| SourceReference | External source trace, masked/redacted | Not in BE-01/BE-02 v0.1; BLOCKED by MOD-0019 and TRACE-BUNDLE |
+| ReceivedAtUtc | Lifecycle/SLA baseline | Present in v0.1 for build/test only; workflow/SLA policy still blocked |
+| ReporterType | Case context | Not in BE-01/BE-02 v0.1; BLOCKED until MOD-0230 option-set contract approved |
+| ReporterContactSummary | Restricted PII context, masked | Not in BE-01/BE-02 v0.1; BLOCKED by MOD-0019 |
+| PatientSubjectCode | Restricted PHI subject reference | Not in BE-01/BE-02 v0.1; BLOCKED by MOD-0019 |
+| EventOnsetDate | Event timeline | Not in BE-01/BE-02 v0.1; BLOCKED by MOD-0019 and date policy |
+| AdverseEventNarrative | Restricted PHI assessment input | Not in BE-01/BE-02 v0.1; BLOCKED by MOD-0019 / MOD-0021 |
+| SuspectProductText | Product assessment input | Not in BE-01/BE-02 v0.1; BLOCKED by product/reference policy |
+| Seriousness | Initial seriousness baseline | Not in BE-01/BE-02 v0.1; BLOCKED until MOD-0230 seriousness contract approved |
+| IntakePriority | Initial priority baseline | Not in BE-01/BE-02 v0.1; BLOCKED by workflow/SLA policy |
+| TriageOutcome | Required handoff gate | v0.1 maps only to `TriageOutcomeCode`; MOD-0023 approval still blocked |
+| TriageReason | Restricted triage rationale | Not in BE-01/BE-02 v0.1; BLOCKED by MOD-0019 / MOD-0021 |
+| RouteTargetQueue | Initial processing queue | v0.1 maps only to `RouteTargetQueueCode`; MOD-0023 queue/assignment approval still blocked |
+| EvidenceLinkReferences | Evidence boundary; MOD-0031 owns link/query/evidence pack | v0.1 carries reference IDs only; MOD-0031 completeness/evidence-pack approval still blocked |
+| Correlation ID / trace bundle | Audit and trace continuity | External server context; not a client-supplied handoff field; BLOCKED by Blueprint MOD-0040 / TRACE-BUNDLE |
+| Workflow instance ID | Lifecycle continuity if approved by MOD-0023 | Not in BE-01/BE-02 v0.1; BLOCKED by MOD-0023 |
 
 Missing MOD-0230 handoff contract must block MOD-0231 create, process, assessment, and signal handoff. No assumed
 Safety Case master state may be created from incomplete or cross-tenant intake data.
@@ -508,7 +529,8 @@ Acceptance criteria for this build/test gate pack:
 - [x] Shell resolved for build/test planning as `tenant`.
 - [x] Entity base recorded for build/test planning as `EntityBase` for a future dedicated PVG service boundary.
 - [x] Service boundary recorded as `Diten.PvgService` for non-operational build/test class-library work only.
-- [x] MOD-0230 handoff fields consumed by MOD-0231 are recorded.
+- [x] MOD-0230 handoff fields consumed by MOD-0231 are recorded, including v0.1 build/test shape versus future
+      v1 operational handoff blocker.
 - [x] Minimum lifecycle states before MOD-0234 consumption are recorded.
 - [x] Actor roles and permission matrix are recorded.
 - [x] Delete and bulk-delete are explicitly excluded.
@@ -610,7 +632,8 @@ Future operational implementation test expectations must include:
 - Signal Minimum Scope field model reconciled 2026-08-04 with 16 user-entered create/edit fields and compact
   Golden Reference. Detailed validation, masking, audit, workflow, evidence, and test rules remain blockers.
 - MOD-0230 handoff and minimum MOD-0234 consumption lifecycle states were recorded 2026-08-04 as planning
-  decisions. They do not resolve MOD-0230, MOD-0023, MOD-0031, MOD-0021, MOD-0019, or TRACE-BUNDLE blockers.
+  decisions. `MOD0230HandoffReference v0.1` is recorded as build/test evidence only; it does not resolve the
+  future v1 operational handoff, MOD-0023, MOD-0031, MOD-0021, MOD-0019, or TRACE-BUNDLE blockers.
 - Delete and bulk-delete policy reconciled 2026-08-04: delete and bulk-delete are excluded. Archive/void remains
   blocked until retention/legal-hold approval.
 - MOD-0230 is a hard upstream dependency. MOD-0231 must not redefine intake records, intake artifacts, triage state,

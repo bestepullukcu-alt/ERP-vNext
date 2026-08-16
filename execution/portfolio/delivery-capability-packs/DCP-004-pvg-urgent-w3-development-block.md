@@ -386,6 +386,17 @@ Runtime may be requested later only for MOD-0230 first, backend-only, local/dev/
 MOD-0232, and MOD-0234 operational runtime remain blocked until MOD-0230 handoff evidence and their own downstream
 gates are approved.
 
+Current handoff evidence is limited to **`MOD0230HandoffReference v0.1` for build/test only**. The implemented
+shape carries `IntakeDraftId`, `IntakeNumber`, `ReceivedAtUtc`, `TriageOutcomeCode`, `RouteTargetQueueCode`, and
+`EvidenceLinkReferenceIds`. It is not the future owner-approved v1 operational handoff. `TenantId` and correlation /
+trace context remain external server context, not authoritative client-supplied handoff fields. Source context,
+restricted PHI/PII fields, seriousness / priority detail, workflow instance metadata, evidence completeness, and
+other operational handoff fields are not produced by BE-01 or BE-02 and remain blocked until v1 approval.
+
+BE-01 downstream DI registration for MOD-0231 / MOD-0232 / MOD-0234 application services is composition-only for
+local/dev/CI health-host wiring. It does not expose downstream endpoints, authorize downstream runtime, create
+downstream data, or satisfy downstream operational gates.
+
 Required MOD-0230 runtime approval inputs:
 
 - explicit MOD-0230 runtime authorization by the user / PVG system owner / Enterprise Architecture

@@ -287,6 +287,10 @@ contract unless the owner explicitly approves the named artifact/version and sup
 - All three REG-PV-BASE consumption ports must be registered deny-by-default. A non-production adapter must throw
   at startup when `ASPNETCORE_ENVIRONMENT=Production`. Detailed conformance material remains a pending support
   package and is not normative until committed.
+- BE-01 downstream service registrations for MOD-0231 / MOD-0232 / MOD-0234 application services are
+  **composition-only** host wiring for local/dev/CI health-host construction. They do not map endpoints, expose
+  routes, authorize downstream runtime, create downstream data, or relax the separate MOD-0231 / MOD-0232 /
+  MOD-0234 operational gates.
 - Archive, void, export, delete, and bulk-delete surfaces must not exist in slice 1.
 - The service boundary is a dedicated `Diten.PvgService` with a hybrid partner-aware integration
   posture. The service is expected to own the Diten-controlled intake contract, tenant workflow boundary, audit /
@@ -609,6 +613,43 @@ authorize production use.
 Current decision: **NO-GO for PVG operational runtime**. The only future runtime path that may be requested first is
 MOD-0230 backend-only, local/dev/CI, fail-closed runtime. MOD-0231, MOD-0232, and MOD-0234 operational runtime remain
 blocked until MOD-0230 runtime handoff evidence and their own downstream gates are approved.
+
+### Current Handoff Evidence - `MOD0230HandoffReference v0.1` Build/Test
+
+The current implemented handoff shape is **`MOD0230HandoffReference v0.1` for build/test only**. It is a narrow,
+non-operational reference used to prove local class-library handoff shape and downstream fail-closed behavior. It is
+not the future owner-approved operational handoff contract.
+
+Implemented v0.1 fields:
+
+| Field | Status | Notes |
+|---|---|---|
+| `IntakeDraftId` | Implemented in v0.1 | Local build/test intake draft reference only. |
+| `IntakeNumber` | Implemented in v0.1 | Trace/display reference; not a client authority for canonical identity. |
+| `ReceivedAtUtc` | Implemented in v0.1 | Timestamp handoff context only. |
+| `TriageOutcomeCode` | Implemented in v0.1 | Triage outcome code reference only; workflow owner approval still required for operational routing. |
+| `RouteTargetQueueCode` | Implemented in v0.1 | Queue code reference only; MOD-0023 queue/assignment authority still required. |
+| `EvidenceLinkReferenceIds` | Implemented in v0.1 | Evidence link references only; MOD-0031 evidence completeness remains blocked. |
+
+External server context, not client-supplied handoff fields:
+
+- `TenantId` is server-resolved from tenant context. It must not be supplied by client payload, query string, or
+  handoff message body as authoritative data.
+- Correlation / trace context is server-resolved from Blueprint MOD-0040 / TRACE-BUNDLE behavior, including the
+  approved correlation header path. It is not a client-owned handoff business field.
+
+Future `MOD0230HandoffReference v1` operational handoff remains blocked until owner approval. The following planned
+operational fields are **not produced by BE-01 or BE-02** and must not be treated as available downstream:
+
+- intake/source context such as `IntakeChannel`, `SourceType`, `SourceReference`, and `ReporterType`
+- restricted PHI/PII context such as `ReporterContactSummary`, `PatientSubjectCode`, `EventOnsetDate`,
+  `AdverseEventNarrative`, and `SuspectProductText`
+- regulated safety context such as `Seriousness`, `IntakePriority`, `TriageReason`, and workflow lifecycle metadata
+- workflow instance / assignment metadata beyond the v0.1 `RouteTargetQueueCode` reference
+- evidence completeness status or evidence-pack content beyond v0.1 reference IDs
+
+Downstream modules may consume v0.1 only as build/test evidence. They must continue to block operational runtime
+until the v1 owner-approved handoff contract, masking, workflow, evidence, audit, tenant, and trace proofs are closed.
 
 ### Required Approval Gates
 

@@ -1,5 +1,6 @@
 using Diten.PvgService.Application.RegPvBase;
 using Diten.PvgService.Domain.RegPvBase;
+using Diten.PvgService.Infrastructure.RegPvBase;
 using Xunit;
 
 namespace Diten.PvgService.RegPvBase.Tests;
@@ -333,7 +334,12 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         IPvgWorkflowTransitionGate workflowGate,
         IPvgEvidenceLinkPort evidencePort,
         IPvgPermissionGate? permissionGate = null) =>
-        new(fieldPolicy, workflowGate, evidencePort, permissionGate ?? new RecordingPermissionGate([]));
+        new(
+            fieldPolicy,
+            workflowGate,
+            evidencePort,
+            permissionGate ?? new RecordingPermissionGate([]),
+            new InMemoryPvgIntakeDraftRepository());
 
     private static PvgServerTenantContext TenantContext() => new("tenant-secret-123");
 

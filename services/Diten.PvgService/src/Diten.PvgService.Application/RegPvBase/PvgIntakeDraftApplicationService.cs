@@ -19,18 +19,20 @@ public sealed class PvgIntakeDraftApplicationService
     private readonly IPvgWorkflowTransitionGate _workflowTransitionGate;
     private readonly IPvgEvidenceLinkPort _evidenceLinkPort;
     private readonly IPvgPermissionGate _permissionGate;
-    private readonly Dictionary<string, SafetyCaseIntake> _drafts = new(StringComparer.Ordinal);
+    private readonly IPvgIntakeDraftStore _draftStore;
 
     public PvgIntakeDraftApplicationService(
         IPvgFieldSecurityPolicy fieldSecurityPolicy,
         IPvgWorkflowTransitionGate workflowTransitionGate,
         IPvgEvidenceLinkPort evidenceLinkPort,
-        IPvgPermissionGate permissionGate)
+        IPvgPermissionGate permissionGate,
+        IPvgIntakeDraftStore draftStore)
     {
         _fieldSecurityPolicy = fieldSecurityPolicy;
         _workflowTransitionGate = workflowTransitionGate;
         _evidenceLinkPort = evidenceLinkPort;
         _permissionGate = permissionGate;
+        _draftStore = draftStore;
     }
 
     public async ValueTask<PvgIntakeDraftMutationResult> CreateDraftAsync(
@@ -81,25 +83,10 @@ public sealed class PvgIntakeDraftApplicationService
             }
         }
 
-        var draftId = NewDraftId();
-        _drafts[draftId] = new SafetyCaseIntake(
-            command.TenantContext.TenantId,
-            PvgIntakeStatus.IntakeCreated,
-            Required(command.Draft.IntakeChannel),
-            Required(command.Draft.SourceType),
-            command.Draft.ReceivedAtUtc!.Value,
-            Required(command.Draft.ReporterType),
-            Required(command.Draft.AdverseEventNarrative),
-            Required(command.Draft.Seriousness),
-            Required(command.Draft.IntakePriority))
-        {
-            SourceReference = command.Draft.SourceReference,
-            ReporterContactSummary = command.Draft.ReporterContactSummary,
-            PatientSubjectCode = command.Draft.PatientSubjectCode,
-            EventOnsetDate = command.Draft.EventOnsetDate,
-            SuspectProductText = command.Draft.SuspectProductText,
-            EvidenceLinkReferences = command.Draft.EvidenceLinkReferences ?? []
-        };
+        var draftId = await _draftStore.AddAsync(
+            Scope(command.TenantContext),
+            BuildIntake(command.TenantContext.TenantId, PvgIntakeStatus.IntakeCreated, command.Draft),
+            cancellationToken);
 
         return new PvgIntakeDraftMutationResult(
             Succeeded(PvgIntakeOperation.Create, PvgIntakeStatus.IntakeCreated),
@@ -129,7 +116,7 @@ public sealed class PvgIntakeDraftApplicationService
             return new PvgIntakeDraftMutationResult(guardrailDecision, null, null);
         }
 
-        if (!TryGetDraft(command.TenantContext, command.IntakeDraftId, out _))
+        if (!await TryGetDraftAsync(command.TenantContext, command.IntakeDraftId, cancellationToken))
         {
             return BlockedMutation(PvgApplicationReasonCodes.IntakeDraftNotFound);
         }
@@ -160,26 +147,16 @@ public sealed class PvgIntakeDraftApplicationService
             }
         }
 
-        var updated = new SafetyCaseIntake(
-            command.TenantContext.TenantId,
-            PvgIntakeStatus.IntakeUpdated,
-            Required(command.Draft.IntakeChannel),
-            Required(command.Draft.SourceType),
-            command.Draft.ReceivedAtUtc!.Value,
-            Required(command.Draft.ReporterType),
-            Required(command.Draft.AdverseEventNarrative),
-            Required(command.Draft.Seriousness),
-            Required(command.Draft.IntakePriority))
+        var updated = BuildIntake(command.TenantContext.TenantId, PvgIntakeStatus.IntakeUpdated, command.Draft);
+        var replaced = await _draftStore.ReplaceAsync(
+            Scope(command.TenantContext),
+            command.IntakeDraftId,
+            updated,
+            cancellationToken);
+        if (!replaced)
         {
-            SourceReference = command.Draft.SourceReference,
-            ReporterContactSummary = command.Draft.ReporterContactSummary,
-            PatientSubjectCode = command.Draft.PatientSubjectCode,
-            EventOnsetDate = command.Draft.EventOnsetDate,
-            SuspectProductText = command.Draft.SuspectProductText,
-            EvidenceLinkReferences = command.Draft.EvidenceLinkReferences ?? []
-        };
-
-        _drafts[command.IntakeDraftId] = updated;
+            return BlockedMutation(PvgApplicationReasonCodes.IntakeDraftNotFound);
+        }
 
         return new PvgIntakeDraftMutationResult(
             Succeeded(PvgIntakeOperation.Update, PvgIntakeStatus.IntakeUpdated),
@@ -209,7 +186,8 @@ public sealed class PvgIntakeDraftApplicationService
             return new PvgIntakeDraftMutationResult(guardrailDecision, null, null);
         }
 
-        if (!TryGetDraft(command.TenantContext, command.IntakeDraftId, out var draft))
+        var draft = await GetDraftAsync(command.TenantContext, command.IntakeDraftId, cancellationToken);
+        if (draft is null)
         {
             return BlockedMutation(PvgApplicationReasonCodes.IntakeDraftNotFound);
         }
@@ -240,6 +218,15 @@ public sealed class PvgIntakeDraftApplicationService
         }
 
         draft.MarkTriaged(command.Draft.TriageOutcome!.Value, command.Draft.TriageReason);
+        var triageReplaced = await _draftStore.ReplaceAsync(
+            Scope(command.TenantContext),
+            command.IntakeDraftId,
+            draft,
+            cancellationToken);
+        if (!triageReplaced)
+        {
+            return BlockedMutation(PvgApplicationReasonCodes.IntakeDraftNotFound);
+        }
 
         return new PvgIntakeDraftMutationResult(
             Succeeded(PvgIntakeOperation.Triage, PvgIntakeStatus.Triaged),
@@ -269,7 +256,8 @@ public sealed class PvgIntakeDraftApplicationService
             return new PvgIntakeDraftMutationResult(guardrailDecision, null, null);
         }
 
-        if (!TryGetDraft(command.TenantContext, command.IntakeDraftId, out var draft))
+        var draft = await GetDraftAsync(command.TenantContext, command.IntakeDraftId, cancellationToken);
+        if (draft is null)
         {
             return BlockedMutation(PvgApplicationReasonCodes.IntakeDraftNotFound);
         }
@@ -312,6 +300,15 @@ public sealed class PvgIntakeDraftApplicationService
         }
 
         draft.MarkRoutePending(Required(command.Draft.RouteTargetQueue));
+        var routeReplaced = await _draftStore.ReplaceAsync(
+            Scope(command.TenantContext),
+            command.IntakeDraftId,
+            draft,
+            cancellationToken);
+        if (!routeReplaced)
+        {
+            return BlockedMutation(PvgApplicationReasonCodes.IntakeDraftNotFound);
+        }
 
         return new PvgIntakeDraftMutationResult(
             Succeeded(PvgIntakeOperation.Route, PvgIntakeStatus.RoutePending),
@@ -341,14 +338,18 @@ public sealed class PvgIntakeDraftApplicationService
             return new PvgIntakeDraftQueryResult(fieldDecision, []);
         }
 
-        if (!TryGetDraft(query.TenantContext, query.IntakeDraftId, out var draft))
+        var persisted = await _draftStore.FindByIdAsync(
+            Scope(query.TenantContext),
+            query.IntakeDraftId,
+            cancellationToken);
+        if (persisted is null)
         {
             return BlockedQuery(PvgApplicationReasonCodes.IntakeDraftNotFound);
         }
 
         return new PvgIntakeDraftQueryResult(
-            Succeeded(PvgIntakeOperation.GetById, draft.Status),
-            [new PvgIntakeDraftSummary(query.IntakeDraftId, draft.Status)]);
+            Succeeded(PvgIntakeOperation.GetById, persisted.Intake.Status),
+            [new PvgIntakeDraftSummary(persisted.IntakeDraftId, persisted.Intake.Status)]);
     }
 
     public async ValueTask<PvgIntakeDraftQueryResult> ListDraftsAsync(
@@ -373,12 +374,11 @@ public sealed class PvgIntakeDraftApplicationService
             return new PvgIntakeDraftQueryResult(fieldDecision, []);
         }
 
-        var items = _drafts
-            .Where(pair => pair.Value.TenantId == query.TenantContext.TenantId)
-            .Where(pair => query.Status is null || pair.Value.Status == query.Status)
-            .Skip(Math.Max(0, query.PageNumber - 1) * Math.Max(1, query.PageSize))
-            .Take(Math.Max(1, query.PageSize))
-            .Select(pair => new PvgIntakeDraftSummary(pair.Key, pair.Value.Status))
+        var persistedItems = await _draftStore.ListAsync(
+            new PvgPersistenceListScope(Scope(query.TenantContext), query.PageNumber, query.PageSize, query.Status),
+            cancellationToken);
+        var items = persistedItems
+            .Select(item => new PvgIntakeDraftSummary(item.IntakeDraftId, item.Intake.Status))
             .ToArray();
 
         return new PvgIntakeDraftQueryResult(
@@ -451,17 +451,19 @@ public sealed class PvgIntakeDraftApplicationService
             : PvgApplicationResult.Blocked(decision.ReasonCode);
     }
 
-    private bool TryGetDraft(PvgServerTenantContext tenantContext, string intakeDraftId, out SafetyCaseIntake draft)
-    {
-        if (_drafts.TryGetValue(intakeDraftId, out var candidate) &&
-            candidate.TenantId == tenantContext.TenantId)
-        {
-            draft = candidate;
-            return true;
-        }
+    private async ValueTask<bool> TryGetDraftAsync(
+        PvgServerTenantContext tenantContext,
+        string intakeDraftId,
+        CancellationToken cancellationToken) =>
+        await _draftStore.FindByIdAsync(Scope(tenantContext), intakeDraftId, cancellationToken) is not null;
 
-        draft = null!;
-        return false;
+    private async ValueTask<SafetyCaseIntake?> GetDraftAsync(
+        PvgServerTenantContext tenantContext,
+        string intakeDraftId,
+        CancellationToken cancellationToken)
+    {
+        var persisted = await _draftStore.FindByIdAsync(Scope(tenantContext), intakeDraftId, cancellationToken);
+        return persisted?.Intake;
     }
 
     private static PvgValidationResult ValidateTenantContext(PvgServerTenantContext? tenantContext)
@@ -544,7 +546,54 @@ public sealed class PvgIntakeDraftApplicationService
     private static bool HasEvidenceReferences(IReadOnlyCollection<string>? evidenceLinkReferences) =>
         evidenceLinkReferences is not null && evidenceLinkReferences.Any(reference => !string.IsNullOrWhiteSpace(reference));
 
-    private static string NewDraftId() => $"pvg-draft-{Guid.NewGuid():N}";
+    private static PvgPersistenceTenantScope Scope(PvgServerTenantContext tenantContext) =>
+        new(tenantContext.TenantId);
 
     private static string Required(string? value) => value!.Trim();
+
+    private static SafetyCaseIntake BuildIntake(
+        string tenantId,
+        PvgIntakeStatus status,
+        PvgCreateIntakeDraftRequest draft) =>
+        new(
+            tenantId,
+            status,
+            Required(draft.IntakeChannel),
+            Required(draft.SourceType),
+            draft.ReceivedAtUtc!.Value,
+            Required(draft.ReporterType),
+            Required(draft.AdverseEventNarrative),
+            Required(draft.Seriousness),
+            Required(draft.IntakePriority))
+        {
+            SourceReference = draft.SourceReference,
+            ReporterContactSummary = draft.ReporterContactSummary,
+            PatientSubjectCode = draft.PatientSubjectCode,
+            EventOnsetDate = draft.EventOnsetDate,
+            SuspectProductText = draft.SuspectProductText,
+            EvidenceLinkReferences = draft.EvidenceLinkReferences ?? []
+        };
+
+    private static SafetyCaseIntake BuildIntake(
+        string tenantId,
+        PvgIntakeStatus status,
+        PvgUpdateIntakeDraftRequest draft) =>
+        new(
+            tenantId,
+            status,
+            Required(draft.IntakeChannel),
+            Required(draft.SourceType),
+            draft.ReceivedAtUtc!.Value,
+            Required(draft.ReporterType),
+            Required(draft.AdverseEventNarrative),
+            Required(draft.Seriousness),
+            Required(draft.IntakePriority))
+        {
+            SourceReference = draft.SourceReference,
+            ReporterContactSummary = draft.ReporterContactSummary,
+            PatientSubjectCode = draft.PatientSubjectCode,
+            EventOnsetDate = draft.EventOnsetDate,
+            SuspectProductText = draft.SuspectProductText,
+            EvidenceLinkReferences = draft.EvidenceLinkReferences ?? []
+        };
 }

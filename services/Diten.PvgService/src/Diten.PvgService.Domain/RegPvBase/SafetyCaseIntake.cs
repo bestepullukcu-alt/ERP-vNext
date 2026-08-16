@@ -11,7 +11,10 @@ public sealed class SafetyCaseIntake
         string reporterType,
         string adverseEventNarrative,
         string seriousness,
-        string intakePriority)
+        string intakePriority,
+        PvgTriageOutcome? triageOutcome = null,
+        string? triageReason = null,
+        string? routeTargetQueue = null)
     {
         TenantId = tenantId;
         Status = status;
@@ -22,6 +25,9 @@ public sealed class SafetyCaseIntake
         AdverseEventNarrative = adverseEventNarrative;
         Seriousness = seriousness;
         IntakePriority = intakePriority;
+        TriageOutcome = triageOutcome;
+        TriageReason = triageReason;
+        RouteTargetQueue = routeTargetQueue;
     }
 
     public string TenantId { get; }
