@@ -21,6 +21,11 @@ const pvgUiFiles = [
 ];
 
 const allPvgUiSource = () => pvgUiFiles.map(read).join("\n");
+const indexViewSource = () => read("Views/Pharmacovigilance/CaseIntakeTriage/Index.cshtml");
+const detailViewSource = () => read("Views/Pharmacovigilance/CaseIntakeTriage/Details.cshtml");
+const indexJsSource = () => read("wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/index.js");
+const detailJsSource = () => read("wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/details.js");
+const formJsSource = () => read("wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js");
 const browserJsSource = () => [
   "wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/index.js",
   "wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js",
@@ -73,5 +78,50 @@ describe("PVG case intake triage UI static guardrails", () => {
     expect(source).toContain("setCommandDisabled");
     expect(source).toContain("NoRecords");
     expect(source).toContain("ErrorOccurred");
+  });
+
+  it("declares accessible alert and status regions for list and detail surfaces", () => {
+    const indexView = indexViewSource();
+    const detailView = detailViewSource();
+
+    expect(indexView).toMatch(/id="pvg-list-alert"[^>]*role="alert"/);
+    expect(indexView).toMatch(/id="pvg-list-status"[^>]*aria-live="polite"/);
+    expect(detailView).toMatch(/id="pvg-detail-alert"[^>]*role="alert"/);
+    expect(detailView).toMatch(/id="pvg-detail-status"[^>]*aria-live="polite"/);
+    expect(detailView).toMatch(/id="pvgDetailStatus"[^>]*aria-live="polite"/);
+  });
+
+  it("keeps list loading hooks wired for success and error paths", () => {
+    const source = indexJsSource();
+
+    expect(source).toMatch(/preXhr\.dt[\s\S]*showLoading\(\)[\s\S]*setListStatus\(t\('Loading'\)\)/);
+    expect(source).toMatch(/xhr\.dt[\s\S]*hideLoading\(\)/);
+    expect(source).toMatch(/initComplete[\s\S]*hideLoading\(\)/);
+    expect(source).toMatch(/showAlert\(message\)[\s\S]*hideLoading\(\)/);
+    expect(source).toContain("setListStatus(items.length ? '' : t('NoRecords'))");
+  });
+
+  it("keeps detail commands disabled until detail load succeeds", () => {
+    const source = detailJsSource();
+
+    expect(source).toMatch(/setCommandDisabled\(true\);[\s\S]*loadDetail\(\)/);
+    expect(source).toMatch(/!response\.ok \|\| isBlocked\(body\) \|\| !item[\s\S]*setCommandDisabled\(true\)/);
+    expect(source).toMatch(/catch \(error\)[\s\S]*setCommandDisabled\(true\)/);
+    expect(source).toMatch(/setDetailStatus\(''\);[\s\S]*setCommandDisabled\(false\)/);
+    expect(detailViewSource()).toMatch(/<form id="pvg-triage-form" data-pvg-command-form>/);
+    expect(detailViewSource()).toMatch(/<form id="pvg-route-form" data-pvg-command-form>/);
+  });
+
+  it("keeps command and form submit controls disabled during in-flight submissions", () => {
+    const details = detailJsSource();
+    const form = formJsSource();
+
+    expect(details).toMatch(/try \{[\s\S]*setCommandDisabled\(true\);[\s\S]*fetch\(url/);
+    expect(details).toMatch(/finally \{[\s\S]*setCommandDisabled\(false\)/);
+    expect(details).toMatch(/querySelectorAll\('button, input, select, textarea'\)/);
+    expect(form).toMatch(/setSubmitting\(true\);[\s\S]*postForm\(url, new FormData\(form\)\)/);
+    expect(form).toMatch(/postForm\(url, new FormData\(form\)\);[\s\S]*setSubmitting\(false\)/);
+    expect(form).toMatch(/submitButton\.disabled = isSubmitting/);
+    expect(form).toMatch(/aria-busy/);
   });
 });
