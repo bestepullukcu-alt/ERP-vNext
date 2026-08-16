@@ -30,6 +30,7 @@
 </div>
 
 <div id="pvg-detail-alert" class="alert alert-danger d-none" role="alert"></div>
+<div id="pvg-detail-status" class="visually-hidden" aria-live="polite">@Localizer["Loading"]</div>
 
 <div class="row g-4" data-intake-draft-id="@intakeDraftId" id="pvg-case-intake-detail">
     <div class="col-12 col-xl-4">
@@ -40,7 +41,7 @@
                     <dt class="col-5">@Localizer["IntakeDraftId"]</dt>
                     <dd class="col-7 text-break" id="pvgDetailId">@intakeDraftId</dd>
                     <dt class="col-5">@Localizer["Status"]</dt>
-                    <dd class="col-7" id="pvgDetailStatus">@Localizer["Loading"]</dd>
+                    <dd class="col-7" id="pvgDetailStatus" aria-live="polite">@Localizer["Loading"]</dd>
                 </dl>
             </div>
         </section>
@@ -50,7 +51,7 @@
         <section class="card h-100">
             <div class="card-body p-4">
                 <h6 class="mb-3">@Localizer["SubjectEventSection"]</h6>
-                <form id="pvg-triage-form">
+                <form id="pvg-triage-form" data-pvg-command-form>
                     @Html.AntiForgeryToken()
                     <div class="mb-3">
                         <label class="form-label" for="TriageOutcome">@Localizer["TriageOutcome"] <span class="text-danger">*</span></label>
@@ -81,7 +82,7 @@
         <section class="card h-100">
             <div class="card-body p-4">
                 <h6 class="mb-3">@Localizer["WorkflowSection"]</h6>
-                <form id="pvg-route-form">
+                <form id="pvg-route-form" data-pvg-command-form>
                     @Html.AntiForgeryToken()
                     <div class="mb-3">
                         <label class="form-label" for="RouteTargetQueue">@Localizer["RouteTargetQueue"] <span class="text-danger">*</span></label>

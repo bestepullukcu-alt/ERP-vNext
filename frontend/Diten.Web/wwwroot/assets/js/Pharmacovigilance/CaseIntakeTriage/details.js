@@ -9,6 +9,8 @@
     const endpoint = '/Pharmacovigilance/CaseIntakeTriage/api';
     const intakeDraftId = host.dataset.intakeDraftId || '';
     const alertEl = document.getElementById('pvg-detail-alert');
+    const statusEl = document.getElementById('pvg-detail-status');
+    const commandForms = Array.from(document.querySelectorAll('[data-pvg-command-form]'));
     const ajaxHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
     const safeProxyUrl = path => {
         if (typeof path !== 'string' || !path.startsWith(`${endpoint}/`) || path.includes('://') || path.startsWith('//')) {
@@ -18,6 +20,8 @@
         return path;
     };
 
+    setCommandDisabled(true);
+    setDetailStatus(t('Loading'));
     loadDetail();
     bindCommand('pvg-triage-form', safeProxyUrl(`${endpoint}/triage/${encodeURIComponent(intakeDraftId)}`), t('Triaged'));
     bindCommand('pvg-route-form', safeProxyUrl(`${endpoint}/route/${encodeURIComponent(intakeDraftId)}`), t('Routed'));
@@ -32,11 +36,15 @@
             const item = firstItem(body);
             if (!response.ok || isBlocked(body) || !item) {
                 showAlert(safeMessage(body, response.status));
+                setCommandDisabled(true);
                 return;
             }
             document.getElementById('pvgDetailStatus').textContent = item.status || item.Status || '';
+            setDetailStatus('');
+            setCommandDisabled(false);
         } catch (error) {
             showAlert(error?.message === 'Invalid same-origin PVG proxy endpoint.' ? t('InvalidProxyEndpoint') : t('ErrorOccurred'));
+            setCommandDisabled(true);
         }
     }
 
@@ -53,6 +61,8 @@
             }
 
             try {
+                setCommandDisabled(true);
+                setDetailStatus(t('Loading'));
                 const response = await fetch(url, {
                     method: 'POST',
                     body: new FormData(form),
@@ -65,9 +75,12 @@
                     return;
                 }
                 document.getElementById('pvgDetailStatus').textContent = successText;
+                setDetailStatus(successText);
                 hideAlert();
             } catch (error) {
                 showAlert(t('ErrorOccurred'));
+            } finally {
+                setCommandDisabled(false);
             }
         });
     }
@@ -121,9 +134,23 @@
         if (!alertEl) return;
         alertEl.textContent = message;
         alertEl.classList.remove('d-none');
+        setDetailStatus(message || t('ErrorOccurred'));
     }
 
     function hideAlert() {
         alertEl?.classList.add('d-none');
+    }
+
+    function setDetailStatus(message) {
+        if (!statusEl) return;
+        statusEl.textContent = message || '';
+    }
+
+    function setCommandDisabled(disabled) {
+        commandForms.forEach(form => {
+            form.querySelectorAll('button, input, select, textarea').forEach(control => {
+                control.disabled = disabled;
+            });
+        });
     }
 })();

@@ -8,6 +8,8 @@
     const t = key => L[key] || key;
     const endpoint = '/Pharmacovigilance/CaseIntakeTriage/api';
     const alertEl = document.getElementById('pvg-list-alert');
+    const statusEl = document.getElementById('pvg-list-status');
+    const skeletonEl = document.getElementById('skeleton-loader');
     const filterCollapseId = 'inlineFilterCollapse';
     const valueOf = (row, key) => row?.[key] ?? row?.[key.charAt(0).toUpperCase() + key.slice(1)] ?? '';
     const itemsOf = json => {
@@ -48,14 +50,18 @@
             dataSrc: json => {
                 if (isControlledFailure(json)) {
                     showAlert(safeMessage(json));
+                    setListStatus(alertEl?.textContent || t('ControlledBlock'));
                     return [];
                 }
 
                 hideAlert();
-                return itemsOf(json);
+                const items = itemsOf(json);
+                setListStatus(items.length ? '' : t('NoRecords'));
+                return items;
             },
             error: xhr => {
                 showAlert(safeMessage(tryParseJson(xhr?.responseText), xhr?.status));
+                setListStatus(alertEl?.textContent || t('ErrorOccurred'));
             },
             headers: getAuthHeaders()
         },
@@ -102,11 +108,20 @@
             processing: t('Loading')
         },
         initComplete: () => {
-            document.getElementById('skeleton-loader')?.classList.add('d-none');
+            hideLoading();
         }
     });
 
     const dt = new DataTable(tableEl, config);
+
+    tableEl.addEventListener('preXhr.dt', () => {
+        showLoading();
+        setListStatus(t('Loading'));
+    });
+
+    tableEl.addEventListener('xhr.dt', () => {
+        hideLoading();
+    });
 
     document.getElementById('pvgApplyFilter')?.addEventListener('click', () => {
         dt.ajax.url(buildListUrl()).load();
@@ -174,9 +189,23 @@
         if (!alertEl) return;
         alertEl.textContent = message || t('ErrorOccurred');
         alertEl.classList.remove('d-none');
+        hideLoading();
     }
 
     function hideAlert() {
         alertEl?.classList.add('d-none');
+    }
+
+    function showLoading() {
+        skeletonEl?.classList.remove('d-none');
+    }
+
+    function hideLoading() {
+        skeletonEl?.classList.add('d-none');
+    }
+
+    function setListStatus(message) {
+        if (!statusEl) return;
+        statusEl.textContent = message || '';
     }
 })();

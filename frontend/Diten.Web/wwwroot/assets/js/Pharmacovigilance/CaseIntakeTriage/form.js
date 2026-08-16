@@ -7,6 +7,7 @@
     const L = window.PvgCaseIntakeTriageL10n || {};
     const t = key => L[key] || key;
     const alertEl = document.getElementById('pvg-form-alert');
+    const submitButton = form.querySelector('button[type="submit"]');
     const endpoint = '/Pharmacovigilance/CaseIntakeTriage/api';
     const ajaxHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
     const safeProxyUrl = path => {
@@ -29,7 +30,9 @@
         const mode = form.dataset.mode || 'create';
         const id = encodeURIComponent(form.dataset.intakeDraftId || '');
         const url = mode === 'edit' ? safeProxyUrl(`${endpoint}/update/${id}`) : safeProxyUrl(`${endpoint}/create`);
+        setSubmitting(true);
         const result = await postForm(url, new FormData(form));
+        setSubmitting(false);
         if (!result.ok) {
             showAlert(result.message);
             return;
@@ -103,5 +106,11 @@
         if (!alertEl) return;
         alertEl.textContent = message;
         alertEl.classList.remove('d-none');
+    }
+
+    function setSubmitting(isSubmitting) {
+        if (!submitButton) return;
+        submitButton.disabled = isSubmitting;
+        submitButton.setAttribute('aria-busy', isSubmitting ? 'true' : 'false');
     }
 })();
