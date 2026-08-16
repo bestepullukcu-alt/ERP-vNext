@@ -98,7 +98,13 @@ public static class PvgCaseIntakeTriageEndpoints
         }
 
         var result = await service.ListDraftsAsync(
-            new GetIntakeDraftListQuery(context.TenantContext!, pageNumber, pageSize, status),
+            new GetIntakeDraftListQuery(
+                context.TenantContext!,
+                context.ActorContext!,
+                context.CorrelationContext!,
+                pageNumber,
+                pageSize,
+                status),
             cancellationToken);
 
         return ToHttpResult(PvgCaseIntakeApiResponse.From(result));
@@ -122,7 +128,11 @@ public static class PvgCaseIntakeTriageEndpoints
         }
 
         var result = await service.GetDraftByIdAsync(
-            new GetIntakeDraftByIdQuery(context.TenantContext!, intakeDraftId),
+            new GetIntakeDraftByIdQuery(
+                context.TenantContext!,
+                context.ActorContext!,
+                context.CorrelationContext!,
+                intakeDraftId),
             cancellationToken);
 
         return ToHttpResult(PvgCaseIntakeApiResponse.From(result));

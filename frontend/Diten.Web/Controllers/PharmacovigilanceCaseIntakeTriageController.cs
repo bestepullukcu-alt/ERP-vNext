@@ -99,7 +99,7 @@ public sealed class PharmacovigilanceCaseIntakeTriageController : Controller
     private async Task<IActionResult> ProxyGetAsync(string path, CancellationToken ct)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, $"{_gatewayUrl}{path}");
-        if (!AddAuthHeaders(request, requireActor: false))
+        if (!AddAuthHeaders(request, requireActor: true))
         {
             return UnauthorizedJson();
         }

@@ -7,6 +7,7 @@
     const L = window.PvgCaseIntakeTriageL10n || {};
     const t = key => L[key] || key;
     const endpoint = '/Pharmacovigilance/CaseIntakeTriage/api';
+    const alertEl = document.getElementById('pvg-list-alert');
     const filterCollapseId = 'inlineFilterCollapse';
     const valueOf = (row, key) => row?.[key] ?? row?.[key.charAt(0).toUpperCase() + key.slice(1)] ?? '';
     const itemsOf = json => {
@@ -14,6 +15,13 @@
         return Array.isArray(source) ? source : [];
     };
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
+    const safeProxyUrl = path => {
+        if (typeof path !== 'string' || !path.startsWith(`${endpoint}/`) || path.includes('://') || path.startsWith('//')) {
+            throw new Error('Invalid same-origin PVG proxy endpoint.');
+        }
+
+        return path;
+    };
 
     const buildListUrl = () => {
         const params = new URLSearchParams();
@@ -21,7 +29,7 @@
         if (status) params.set('status', status);
         params.set('pageNumber', '1');
         params.set('pageSize', '100');
-        return `${endpoint}/list?${params.toString()}`;
+        return safeProxyUrl(`${endpoint}/list?${params.toString()}`);
     };
 
     const filterBtn = {
@@ -37,8 +45,18 @@
     const config = window.DtDefaults.create({
         ajax: {
             url: buildListUrl(),
-            dataSrc: json => itemsOf(json),
-            error: () => [],
+            dataSrc: json => {
+                if (isControlledFailure(json)) {
+                    showAlert(safeMessage(json));
+                    return [];
+                }
+
+                hideAlert();
+                return itemsOf(json);
+            },
+            error: xhr => {
+                showAlert(safeMessage(tryParseJson(xhr?.responseText), xhr?.status));
+            },
             headers: getAuthHeaders()
         },
         columns: [
@@ -114,5 +132,51 @@
             '"': '&quot;',
             "'": '&#39;'
         }[char]));
+    }
+
+    function isControlledFailure(body) {
+        const outcome = body?.outcome || body?.Outcome || '';
+        const statusCode = Number(body?.statusCode || body?.StatusCode || 0);
+        return ['Blocked', 'Invalid'].includes(outcome) || [401, 403, 409].includes(statusCode);
+    }
+
+    function safeMessage(body, statusCode) {
+        const status = Number(statusCode || body?.statusCode || body?.StatusCode || 0);
+        if (status === 401) return t('SessionExpired');
+        if (status === 403) return t('NotAuthorized');
+
+        const reason = safeCode(body?.reasonCode || body?.ReasonCode || body?.reason_code || '');
+        const validation = body?.validationReasonCodes || body?.ValidationReasonCodes || [];
+        const codes = Array.isArray(validation)
+            ? validation.map(safeCode).filter(Boolean).join(', ')
+            : reason;
+
+        if (status === 409 || reason || codes) {
+            return `${t('ControlledBlock')}: ${codes || reason || t('ReasonCode')}`;
+        }
+
+        return t('ErrorOccurred');
+    }
+
+    function safeCode(value) {
+        return String(value || '').replace(/[^A-Za-z0-9._-]/g, '').slice(0, 96);
+    }
+
+    function tryParseJson(value) {
+        try {
+            return JSON.parse(value || '{}');
+        } catch (error) {
+            return {};
+        }
+    }
+
+    function showAlert(message) {
+        if (!alertEl) return;
+        alertEl.textContent = message || t('ErrorOccurred');
+        alertEl.classList.remove('d-none');
+    }
+
+    function hideAlert() {
+        alertEl?.classList.add('d-none');
     }
 })();

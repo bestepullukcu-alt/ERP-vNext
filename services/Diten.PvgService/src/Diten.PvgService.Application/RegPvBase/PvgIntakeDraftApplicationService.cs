@@ -6,6 +6,7 @@ public sealed class PvgIntakeDraftApplicationService
 {
     private const string CreatePermission = "pvg.mod0230.intake.create";
     private const string UpdatePermission = "pvg.mod0230.intake.update";
+    private const string ReadPermission = "pvg.mod0230.intake.read";
     private const string TriagePermission = "pvg.mod0230.intake.triage";
     private const string RoutePermission = "pvg.mod0230.intake.route";
 
@@ -45,7 +46,7 @@ public sealed class PvgIntakeDraftApplicationService
             return InvalidMutation(validation);
         }
 
-        var guardrailDecision = await EnsureMutationGuardrailsAsync(
+        var guardrailDecision = await EnsureContextPermissionGuardrailsAsync(
             command.TenantContext,
             command.ActorContext,
             command.CorrelationContext,
@@ -104,7 +105,7 @@ public sealed class PvgIntakeDraftApplicationService
             return InvalidMutation(validation);
         }
 
-        var guardrailDecision = await EnsureMutationGuardrailsAsync(
+        var guardrailDecision = await EnsureContextPermissionGuardrailsAsync(
             command.TenantContext,
             command.ActorContext,
             command.CorrelationContext,
@@ -174,7 +175,7 @@ public sealed class PvgIntakeDraftApplicationService
             return InvalidMutation(validation);
         }
 
-        var guardrailDecision = await EnsureMutationGuardrailsAsync(
+        var guardrailDecision = await EnsureContextPermissionGuardrailsAsync(
             command.TenantContext,
             command.ActorContext,
             command.CorrelationContext,
@@ -244,7 +245,7 @@ public sealed class PvgIntakeDraftApplicationService
             return InvalidMutation(validation);
         }
 
-        var guardrailDecision = await EnsureMutationGuardrailsAsync(
+        var guardrailDecision = await EnsureContextPermissionGuardrailsAsync(
             command.TenantContext,
             command.ActorContext,
             command.CorrelationContext,
@@ -326,11 +327,23 @@ public sealed class PvgIntakeDraftApplicationService
             return InvalidQuery(tenantValidation);
         }
 
+        var guardrailDecision = await EnsureContextPermissionGuardrailsAsync(
+            query.TenantContext,
+            query.ActorContext,
+            query.CorrelationContext,
+            PvgIntakeOperation.GetById,
+            ReadPermission,
+            cancellationToken);
+        if (guardrailDecision is not null)
+        {
+            return new PvgIntakeDraftQueryResult(guardrailDecision, []);
+        }
+
         var fieldDecision = await EnsureFieldSecurityAsync(
             PvgIntakeOperation.GetById,
             "detail",
             query.TenantContext.TenantId,
-            null,
+            query.ActorContext.ActorId,
             FieldSecurityControlledFields,
             cancellationToken);
         if (fieldDecision is not null)
@@ -362,11 +375,23 @@ public sealed class PvgIntakeDraftApplicationService
             return InvalidQuery(tenantValidation);
         }
 
+        var guardrailDecision = await EnsureContextPermissionGuardrailsAsync(
+            query.TenantContext,
+            query.ActorContext,
+            query.CorrelationContext,
+            PvgIntakeOperation.GetList,
+            ReadPermission,
+            cancellationToken);
+        if (guardrailDecision is not null)
+        {
+            return new PvgIntakeDraftQueryResult(guardrailDecision, []);
+        }
+
         var fieldDecision = await EnsureFieldSecurityAsync(
             PvgIntakeOperation.GetList,
             "list",
             query.TenantContext.TenantId,
-            null,
+            query.ActorContext.ActorId,
             FieldSecurityControlledFields,
             cancellationToken);
         if (fieldDecision is not null)
@@ -488,7 +513,7 @@ public sealed class PvgIntakeDraftApplicationService
     private static PvgApplicationResult Succeeded(PvgIntakeOperation operation, PvgIntakeStatus? status) =>
         PvgApplicationResult.Succeeded(new PvgApplicationSuccessMetadata(operation, status, DateTimeOffset.UtcNow));
 
-    private async ValueTask<PvgApplicationResult?> EnsureMutationGuardrailsAsync(
+    private async ValueTask<PvgApplicationResult?> EnsureContextPermissionGuardrailsAsync(
         PvgServerTenantContext tenantContext,
         PvgActorContext? actorContext,
         PvgCorrelationContext? correlationContext,

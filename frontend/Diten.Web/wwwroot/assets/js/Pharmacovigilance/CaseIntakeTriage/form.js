@@ -8,6 +8,14 @@
     const t = key => L[key] || key;
     const alertEl = document.getElementById('pvg-form-alert');
     const endpoint = '/Pharmacovigilance/CaseIntakeTriage/api';
+    const ajaxHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
+    const safeProxyUrl = path => {
+        if (typeof path !== 'string' || !path.startsWith(`${endpoint}/`) || path.includes('://') || path.startsWith('//')) {
+            throw new Error('Invalid same-origin PVG proxy endpoint.');
+        }
+
+        return path;
+    };
 
     form.addEventListener('submit', async event => {
         event.preventDefault();
@@ -20,7 +28,7 @@
 
         const mode = form.dataset.mode || 'create';
         const id = encodeURIComponent(form.dataset.intakeDraftId || '');
-        const url = mode === 'edit' ? `${endpoint}/update/${id}` : `${endpoint}/create`;
+        const url = mode === 'edit' ? safeProxyUrl(`${endpoint}/update/${id}`) : safeProxyUrl(`${endpoint}/create`);
         const result = await postForm(url, new FormData(form));
         if (!result.ok) {
             showAlert(result.message);
@@ -38,16 +46,16 @@
             const response = await fetch(url, {
                 method: 'POST',
                 body: formData,
-                headers: antiForgeryHeader(form),
+                headers: { ...ajaxHeaders(), ...antiForgeryHeader(form) },
                 credentials: 'same-origin'
             });
             const body = await responseJson(response);
             if (!response.ok || isBlocked(body)) {
-                return { ok: false, message: safeMessage(body) };
+                return { ok: false, message: safeMessage(body, response.status) };
             }
             return { ok: true, body };
         } catch (error) {
-            return { ok: false, message: t('ErrorOccurred') };
+            return { ok: false, message: error?.message === 'Invalid same-origin PVG proxy endpoint.' ? t('InvalidProxyEndpoint') : t('ErrorOccurred') };
         }
     }
 
@@ -66,14 +74,29 @@
 
     function isBlocked(body) {
         const outcome = body?.outcome || body?.Outcome || '';
-        return ['Blocked', 'Invalid'].includes(outcome);
+        const statusCode = Number(body?.statusCode || body?.StatusCode || 0);
+        return ['Blocked', 'Invalid'].includes(outcome) || [401, 403, 409].includes(statusCode);
     }
 
-    function safeMessage(body) {
-        const reason = body?.reasonCode || body?.ReasonCode || body?.reason_code || '';
+    function safeMessage(body, statusCode) {
+        const status = Number(statusCode || body?.statusCode || body?.StatusCode || 0);
+        if (status === 401) return t('SessionExpired');
+        if (status === 403) return t('NotAuthorized');
+
+        const reason = safeCode(body?.reasonCode || body?.ReasonCode || body?.reason_code || '');
         const validation = body?.validationReasonCodes || body?.ValidationReasonCodes || [];
-        const codes = Array.isArray(validation) && validation.length ? validation.join(', ') : reason;
-        return codes ? `${t('Blocked')}: ${codes}` : t('ErrorOccurred');
+        const codes = Array.isArray(validation) && validation.length
+            ? validation.map(safeCode).filter(Boolean).join(', ')
+            : reason;
+        if (status === 409) {
+            return `${t('ControlledBlock')}: ${codes || reason || t('ReasonCode')}`;
+        }
+
+        return codes ? `${t('ControlledBlock')}: ${codes}` : t('ErrorOccurred');
+    }
+
+    function safeCode(value) {
+        return String(value || '').replace(/[^A-Za-z0-9._-]/g, '').slice(0, 96);
     }
 
     function showAlert(message) {

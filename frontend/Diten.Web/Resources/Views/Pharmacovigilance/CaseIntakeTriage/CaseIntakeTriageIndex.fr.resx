@@ -29,6 +29,11 @@
   <data name="Loading" xml:space="preserve"><value>Loading</value></data>
   <data name="NoRecords" xml:space="preserve"><value>No intake drafts found.</value></data>
   <data name="Blocked" xml:space="preserve"><value>Blocked</value></data>
+  <data name="ControlledBlock" xml:space="preserve"><value>Request blocked by PVG guardrails.</value></data>
+  <data name="SessionExpired" xml:space="preserve"><value>Your session expired. Sign in again and retry.</value></data>
+  <data name="NotAuthorized" xml:space="preserve"><value>You are not authorized to perform this action.</value></data>
+  <data name="Forbidden" xml:space="preserve"><value>This operation is not available.</value></data>
+  <data name="InvalidProxyEndpoint" xml:space="preserve"><value>The PVG proxy endpoint is not allowed.</value></data>
   <data name="ReasonCode" xml:space="preserve"><value>Reason code</value></data>
   <data name="Saved" xml:space="preserve"><value>Saved</value></data>
   <data name="Updated" xml:space="preserve"><value>Updated</value></data>

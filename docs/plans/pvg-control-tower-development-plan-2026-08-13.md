@@ -36,7 +36,7 @@ Measured implementation baseline:
 | MOD-0230 persistence boundary | Source present; RegPvBase tests passed: 37; API host guardrail tests passed: 5 |
 | MOD-0230 business API route family | Source present; API route/context tests passed: 9 |
 | MOD-0230 Gateway route family | Source present; Gateway Ocelot tests passed; live smoke found route-scope broadness |
-| MOD-0230 tenant UI | Source present; frontend build passed; static regulated-scope scans passed; browser/runtime smoke not yet claimed |
+| MOD-0230 tenant UI | Source present; frontend build passed; static regulated-scope scans passed; controlled-response hardening verified; browser/runtime smoke remains unauthenticated |
 
 ## 1.1 Status Dashboard
 
@@ -51,6 +51,7 @@ Measured implementation baseline:
 | MOD-0230 persistence boundary (`PVG-0230-BE-02`) | 100% | RegPvBase 37 passed; API guardrails 5 passed |
 | MOD-0230 CQRS/controller endpoints (`PVG-0230-BE-03`) | 100% | API route/context tests 9 passed; lane report total 127 passed |
 | MOD-0230 read-context hardening (`PVG-0230-BE-04`) | 100% | `VER-PVG-0230-READ-CONTEXT-01` PASS; API tests 22/22; prior full local PVG suite 140/140 |
+| MOD-0230 read permission/context hardening (`DEV-PVG-0230-BE-05`) | 100% | `VER-PVG-0230-BE05-UI02-01` PASS; API tests 23/23; RegPvBase tests 38/38 |
 | MOD-0230 failure-path verification (`PVG-0230-VER-01`) | 100% | E2 passed; E4-ready gaps recorded |
 | MOD-0230 Gateway route (`PVG-0230-GW-01`) | 100% | Superseded by GW-02 narrowing after live route-scope gap |
 | MOD-0230 Gateway verification (`PVG-0230-GW-VER-01`) | 100% | Correctly failed old broad route and produced GW-02 follow-up |
@@ -66,6 +67,7 @@ Measured implementation baseline:
 | MOD-0230 UI smoke (`PVG-0230-UI-SMOKE-01`) | 65% | Runtime path partially passed; list page failed HTTP 500 before UI-FIX-01 |
 | MOD-0230 UI list partial fix (`PVG-0230-UI-FIX-01`) | 100% | Absolute partial paths applied; frontend build passed |
 | MOD-0230 UI smoke retry (`PVG-0230-UI-SMOKE-02`) | 100% | E3 MVC proxy path passed; E4-ready forbidden-surface absence with shared-shell caveat |
+| MOD-0230 UI controlled-response hardening (`DEV-PVG-0230-UI-02`) | 100% | `VER-PVG-0230-BE05-UI02-01` PASS; Web build passed with existing `NU1900` warning |
 | MOD-0231/0232/0234 downstream drift inspection (`INS-PVG-DOWNSTREAM-02`) | 100% | No downstream runtime drift; composition-only DI watch item recorded |
 | MOD-0230 staging scope manifest (`VER-PVG-STAGING-SCOPE-02`) | 100% | Exact source-only staging list prepared; no staging performed; `.claude/settings.local.json` excluded |
 | MOD-0230 local integration smoke (`PVG-0230-INT-01`) | 100% | E5 local/dev PASS-with-gap; authenticated MVC proxy traversal still unproven |
@@ -101,6 +103,9 @@ Overall PVG operational readiness: **0% / NO-GO**.
 | `INT-PVG-0230-UI-SMOKE-01` | INT | Browser/local UI smoke through MVC proxy -> Gateway -> PVG API | Attempted; failed list page |
 | `DEV-PVG-0230-UI-FIX-01` | DEV | Fix Case Intake/Triage list-page partial path resolution | Done |
 | `INT-PVG-0230-UI-SMOKE-02` | INT | Retry browser/local UI smoke after UI-FIX-01 | Done with caveats |
+| `DEV-PVG-0230-BE-05` | DEV | Backend read permission/context hardening for list/detail | Done; verified with UI-02 |
+| `DEV-PVG-0230-UI-02` | DEV | Tenant UI/proxy controlled-response hardening for `401`/`403`/`409` and same-origin guardrails | Done; verified with BE-05 |
+| `VER-PVG-0230-BE05-UI02-01` | VER | Combined BE-05 + UI-02 source/build/test verification | Done; PASS |
 | `VER-PVG-STAGING-SCOPE-02` | VER | Source-only staging manifest before staging | Done; no staging performed |
 | `INS-PVG-DOWNSTREAM-02` | INS | MOD-0231/MOD-0232/MOD-0234 contract drift and blockers | Done; composition-only DI watch |
 | `INT-PVG-0230-SMOKE-01` | INT | End-to-end local runtime smoke after API/Gateway/UI | Done with auth gap |
@@ -143,6 +148,9 @@ Parallelism:
 | 21 | `PVG-0230-AUTH-PROXY-01` | INT | MOD-0230 | Prove authenticated MVC proxy traversal with valid tenant-shell auth cookie/token | Valid local tenant auth context | E3/E4-ready targeted | Pending |
 | 22 | `PVG-DOWNSTREAM-WATCH-01` | C | MOD-0231/0232/0234 | Reconfirm downstream modules remain non-operational after GW-03/RUN-01 | GW-03, RUN-01 | E1/E2 achieved | Done |
 | 23 | `PVG-0230-DOC-01` | C/DOC | MOD-0230/0231 | Record `MOD0230HandoffReference v0.1 build/test`, future v1 operational decision, and downstream DI composition-only note | BE-01, BE-02, downstream inspection | E1 | Done locally |
+| 24 | `DEV-PVG-0230-BE-05` | B | MOD-0230 | Backend read permission/context hardening: list/detail carry tenant + actor + correlation and use `pvg.mod0230.intake.read` before field policy/store access | BE-04 | E2 achieved | Done |
+| 25 | `DEV-PVG-0230-UI-02` | A | MOD-0230 | Tenant UI/proxy controlled-response hardening for safe `401`/`403`/`409` display, same-origin proxy guardrails, and l10n completeness | UI-SMOKE-02, BE-05 | E2 achieved | Done |
+| 26 | `VER-PVG-0230-BE05-UI02-01` | C | MOD-0230 | Combined read-only verification of BE-05 + UI-02 scope and forbidden-surface absence | BE-05, UI-02 | E2 achieved | Done |
 
 ## 5. Completed WP: `PVG-0230-BE-01`
 
@@ -934,6 +942,80 @@ Result:
   remains composition/build-test wiring only because no downstream endpoint or route is mapped.
 - Relationship to MOD-0230 remains handoff compatibility and downstream contract shaping only, not runtime
   authorization.
+
+## 5.20 Completed WP: `DEV-PVG-0230-BE-05`
+
+Goal: harden MOD-0230 backend read permission and context behavior for list/detail reads.
+
+Scope:
+
+- MOD-0230 backend read permission/context hardening only.
+- List/detail query contracts and application service guardrail behavior.
+- Focused API and RegPvBase test coverage.
+
+Result:
+
+- Read list/detail queries now carry tenant, actor, and correlation context into the application layer.
+- Read list/detail use `pvg.mod0230.intake.read`.
+- Read permission guardrails run before field policy or store access.
+- Missing actor/correlation and denied read permission fail closed with safe reason codes and no data.
+- No Gateway, appsettings, launchSettings, seed, job, migration, collection, Mongo, DbContext, repository,
+  menu/module catalog, AI, MedDRA data, delete, bulk-delete, archive, void, export, or MOD-0231/0232/0234 runtime
+  exposure was introduced.
+
+Evidence:
+
+- `VER-PVG-0230-BE05-UI02-01` verdict: **PASS**.
+- `git diff --check` passed.
+- API tests passed: `23/23`.
+- RegPvBase tests passed: `38/38`.
+- Evidence level achieved: **E2 source/build/test evidence**.
+- No live runtime/browser smoke was run for this verification package.
+
+Control Tower status:
+
+- BE-05 is complete for local/dev build-test hardening.
+- Operational runtime remains **NO-GO**.
+
+## 5.21 Completed WP: `DEV-PVG-0230-UI-02`
+
+Goal: harden MOD-0230 tenant UI/proxy controlled-response behavior and same-origin browser guardrails.
+
+Scope:
+
+- MOD-0230 tenant UI/proxy controlled-response hardening only.
+- Safe display behavior for controlled `401`, `403`, and `409` responses.
+- Same-origin proxy guardrails in list/form/detail scripts.
+- Case Intake/Triage l10n completeness for new controlled-response keys.
+
+Result:
+
+- MVC proxy reads require actor context.
+- Browser JavaScript calls only same-origin `/Pharmacovigilance/CaseIntakeTriage/api/...`.
+- UI handles `401`, `403`, and `409` with safe controlled-response alerts.
+- Displayed reason/validation codes are sanitized.
+- Same-origin proxy URL guardrails exist in list, form, and detail scripts.
+- New l10n keys exist in all seven Case Intake/Triage resource files.
+- No browser JavaScript service-port `5011`, Gateway-port `5000`, `window.API`, `document.cookie`, or browser-created
+  Authorization header behavior was introduced.
+- No Gateway, appsettings, launchSettings, seed, job, migration, collection, Mongo, DbContext, repository,
+  menu/module catalog, AI, MedDRA data, delete, bulk-delete, archive, void, export, or MOD-0231/0232/0234 runtime
+  exposure was introduced.
+
+Evidence:
+
+- `VER-PVG-0230-BE05-UI02-01` verdict: **PASS**.
+- `git diff --check` passed.
+- Web build passed with an existing `NU1900` warning from restricted NuGet vulnerability metadata access.
+- Evidence level achieved: **E2 source/build/test evidence**.
+- No live runtime/browser smoke was run for this verification package.
+
+Control Tower status:
+
+- UI-02 is complete for local/dev build-test hardening.
+- Operational runtime remains **NO-GO**.
+- `PVG-0230-AUTH-PROXY-01` remains blocked until a valid tenant-shell session is available or explicit seeded local
+  development login approval is granted for verification only.
 
 ## 6. Verification Commands
 

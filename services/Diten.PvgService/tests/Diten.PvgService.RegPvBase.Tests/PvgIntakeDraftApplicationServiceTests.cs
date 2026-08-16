@@ -158,7 +158,7 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         Assert.Contains(callLog, entry => entry == "evidence:Create");
 
         var listed = await service.ListDraftsAsync(
-            new GetIntakeDraftListQuery(new PvgServerTenantContext("tenant-secret-123"), 1, 10, null));
+            ReadListQuery());
 
         Assert.True(listed.Result.IsSuccess);
         Assert.Single(listed.Items);
@@ -196,7 +196,7 @@ public sealed class PvgIntakeDraftApplicationServiceTests
 
         fieldPolicy.Decision = AllowedDecision();
         var fetched = await service.GetDraftByIdAsync(
-            new GetIntakeDraftByIdQuery(new PvgServerTenantContext("tenant-secret-123"), created.IntakeDraftId!));
+            ReadByIdQuery(created.IntakeDraftId!));
 
         Assert.Single(fetched.Items);
         Assert.Equal(PvgIntakeStatus.IntakeCreated, fetched.Items[0].Status);
@@ -235,7 +235,7 @@ public sealed class PvgIntakeDraftApplicationServiceTests
 
         workflowGate.Decision = AllowedDecision();
         var fetched = await service.GetDraftByIdAsync(
-            new GetIntakeDraftByIdQuery(new PvgServerTenantContext("tenant-secret-123"), created.IntakeDraftId!));
+            ReadByIdQuery(created.IntakeDraftId!));
 
         Assert.Single(fetched.Items);
         Assert.Equal(PvgIntakeStatus.IntakeCreated, fetched.Items[0].Status);
@@ -273,7 +273,7 @@ public sealed class PvgIntakeDraftApplicationServiceTests
 
         evidencePort.Decision = AllowedDecision();
         var fetched = await service.GetDraftByIdAsync(
-            new GetIntakeDraftByIdQuery(new PvgServerTenantContext("tenant-secret-123"), created.IntakeDraftId!));
+            ReadByIdQuery(created.IntakeDraftId!));
 
         Assert.Single(fetched.Items);
         Assert.Equal(PvgIntakeStatus.IntakeCreated, fetched.Items[0].Status);
@@ -295,9 +295,9 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         fieldPolicy.Decision = PvgPortDecision.FieldSecurityDenied();
 
         var fetched = await service.GetDraftByIdAsync(
-            new GetIntakeDraftByIdQuery(new PvgServerTenantContext("tenant-secret-123"), created.IntakeDraftId!));
+            ReadByIdQuery(created.IntakeDraftId!));
         var listed = await service.ListDraftsAsync(
-            new GetIntakeDraftListQuery(new PvgServerTenantContext("tenant-secret-123"), 1, 10, null));
+            ReadListQuery());
 
         Assert.False(fetched.Result.IsSuccess);
         Assert.False(listed.Result.IsSuccess);
@@ -307,6 +307,53 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         Assert.Equal(PvgSafeReasonCodes.FieldSecurityPolicyUnavailable, listed.Result.ReasonCode);
         AssertSafe(fetched);
         AssertSafe(listed);
+    }
+
+    [Fact]
+    public async Task Read_queries_require_actor_correlation_and_permission_before_field_policy_or_store_access()
+    {
+        var callLog = new List<string>();
+        var permissionGate = new RecordingPermissionGate(callLog);
+        var service = NewService(
+            new RecordingFieldSecurityPolicy(callLog),
+            new RecordingWorkflowTransitionGate(callLog),
+            new RecordingEvidenceLinkPort(callLog),
+            permissionGate);
+
+        var missingActor = await service.ListDraftsAsync(
+            new GetIntakeDraftListQuery(TenantContext(), null!, CorrelationContext(), 1, 10, null));
+        Assert.False(missingActor.Result.IsSuccess);
+        Assert.Equal(PvgPermissionReasonCodes.ActorContextRequired, missingActor.Result.ReasonCode);
+        Assert.Empty(callLog);
+        Assert.Empty(missingActor.Items);
+
+        var missingCorrelation = await service.GetDraftByIdAsync(
+            new GetIntakeDraftByIdQuery(TenantContext(), ActorContext(), null!, "draft-reference"));
+        Assert.False(missingCorrelation.Result.IsSuccess);
+        Assert.Equal(PvgPermissionReasonCodes.CorrelationContextRequired, missingCorrelation.Result.ReasonCode);
+        Assert.Empty(callLog);
+        Assert.Empty(missingCorrelation.Items);
+
+        permissionGate.Decision = PvgPermissionDecision.Denied(PvgPermissionReasonCodes.PermissionDenied);
+        var deniedList = await service.ListDraftsAsync(ReadListQuery());
+        var deniedDetail = await service.GetDraftByIdAsync(ReadByIdQuery("draft-reference"));
+
+        Assert.False(deniedList.Result.IsSuccess);
+        Assert.False(deniedDetail.Result.IsSuccess);
+        Assert.Equal(PvgPermissionReasonCodes.PermissionDenied, deniedList.Result.ReasonCode);
+        Assert.Equal(PvgPermissionReasonCodes.PermissionDenied, deniedDetail.Result.ReasonCode);
+        Assert.Equal(
+            [
+                "permission:GetList:pvg.mod0230.intake.read",
+                "permission:GetById:pvg.mod0230.intake.read"
+            ],
+            callLog);
+        Assert.Empty(deniedList.Items);
+        Assert.Empty(deniedDetail.Items);
+        AssertSafe(missingActor);
+        AssertSafe(missingCorrelation);
+        AssertSafe(deniedList);
+        AssertSafe(deniedDetail);
     }
 
     [Fact]
@@ -349,6 +396,12 @@ public sealed class PvgIntakeDraftApplicationServiceTests
 
     private static CreateIntakeDraftCommand CreateCommand(PvgCreateIntakeDraftRequest request) =>
         new(TenantContext(), ActorContext(), CorrelationContext(), request);
+
+    private static GetIntakeDraftByIdQuery ReadByIdQuery(string intakeDraftId) =>
+        new(TenantContext(), ActorContext(), CorrelationContext(), intakeDraftId);
+
+    private static GetIntakeDraftListQuery ReadListQuery() =>
+        new(TenantContext(), ActorContext(), CorrelationContext(), 1, 10, null);
 
     private static PvgCreateIntakeDraftRequest ValidCreateRequest() =>
         new(

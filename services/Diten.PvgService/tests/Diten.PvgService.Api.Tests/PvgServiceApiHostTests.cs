@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using System.Text.Json;
 using Xunit;
 
 namespace Diten.PvgService.Api.Tests;
@@ -230,6 +231,82 @@ public sealed class PvgServiceApiHostTests
         Assert.Equal(StatusCodes.Status409Conflict, await StatusCodeOfAsync(missingCorrelationDetailResult));
     }
 
+    [Fact]
+    public async Task Case_intake_business_endpoints_return_consistent_reason_codes_before_service_when_context_is_missing()
+    {
+        var createRequest = new PvgCaseIntakeCreateRequest(
+            "channel",
+            "source",
+            null,
+            DateTimeOffset.UtcNow,
+            "reporter",
+            null,
+            null,
+            null,
+            "narrative",
+            null,
+            "serious",
+            "priority",
+            null);
+        var endpoints = new (string Name, Func<DefaultHttpContext, ValueTask<IResult>> Invoke)[]
+        {
+            ("create", context => PvgCaseIntakeTriageEndpoints.CreateDraftAsync(
+                createRequest,
+                context,
+                service: null!,
+                CancellationToken.None)),
+            ("update", context => PvgCaseIntakeTriageEndpoints.UpdateDraftAsync(
+                "draft-reference",
+                EmptyUpdateRequest(),
+                context,
+                service: null!,
+                CancellationToken.None)),
+            ("list", context => PvgCaseIntakeTriageEndpoints.ListDraftsAsync(
+                context,
+                service: null!,
+                cancellationToken: CancellationToken.None)),
+            ("detail", context => PvgCaseIntakeTriageEndpoints.GetDraftByIdAsync(
+                "draft-reference",
+                context,
+                service: null!,
+                CancellationToken.None)),
+            ("triage", context => PvgCaseIntakeTriageEndpoints.TriageDraftAsync(
+                "draft-reference",
+                new PvgCaseIntakeTriageRequest(null, null, null),
+                context,
+                service: null!,
+                CancellationToken.None)),
+            ("route", context => PvgCaseIntakeTriageEndpoints.RouteDraftAsync(
+                "draft-reference",
+                new PvgCaseIntakeRouteRequest(null),
+                context,
+                service: null!,
+                CancellationToken.None))
+        };
+
+        foreach (var endpoint in endpoints)
+        {
+            var missingActor = await ResponseOfAsync(await endpoint.Invoke(NewContextWithTenant()));
+            Assert.Equal(StatusCodes.Status409Conflict, missingActor.StatusCode);
+            Assert.Equal(nameof(PvgApplicationOutcome.Blocked), missingActor.Body.Outcome);
+            Assert.Equal(PvgPermissionReasonCodes.ActorContextRequired, missingActor.Body.ReasonCode);
+            Assert.Empty(missingActor.Body.ValidationReasonCodes);
+            Assert.Null(missingActor.Body.IntakeDraftId);
+            Assert.Empty(missingActor.Body.Items);
+
+            var missingCorrelationContext = NewContextWithTenant();
+            missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
+            missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+            var missingCorrelation = await ResponseOfAsync(await endpoint.Invoke(missingCorrelationContext));
+            Assert.Equal(StatusCodes.Status409Conflict, missingCorrelation.StatusCode);
+            Assert.Equal(nameof(PvgApplicationOutcome.Blocked), missingCorrelation.Body.Outcome);
+            Assert.Equal(PvgPermissionReasonCodes.CorrelationContextRequired, missingCorrelation.Body.ReasonCode);
+            Assert.Empty(missingCorrelation.Body.ValidationReasonCodes);
+            Assert.Null(missingCorrelation.Body.IntakeDraftId);
+            Assert.Empty(missingCorrelation.Body.Items);
+        }
+    }
+
     [Theory]
     [InlineData("export")]
     [InlineData("archive")]
@@ -390,6 +467,23 @@ public sealed class PvgServiceApiHostTests
         responseContext.Response.Body = new MemoryStream();
         await result.ExecuteAsync(responseContext);
         return responseContext.Response.StatusCode;
+    }
+
+    private static async Task<(int StatusCode, PvgCaseIntakeApiResponse Body)> ResponseOfAsync(IResult result)
+    {
+        var responseContext = new DefaultHttpContext();
+        responseContext.RequestServices = new ServiceCollection()
+            .AddLogging()
+            .BuildServiceProvider();
+        responseContext.Response.Body = new MemoryStream();
+        await result.ExecuteAsync(responseContext);
+        responseContext.Response.Body.Position = 0;
+        var body = await JsonSerializer.DeserializeAsync<PvgCaseIntakeApiResponse>(
+            responseContext.Response.Body,
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
+
+        Assert.NotNull(body);
+        return (responseContext.Response.StatusCode, body);
     }
 
     private sealed class TestHostEnvironment(string environmentName) : IHostEnvironment
