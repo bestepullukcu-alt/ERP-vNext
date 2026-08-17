@@ -32,6 +32,36 @@ const browserJsSource = () => [
   "wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/details.js",
   "wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/index.l10n.js"
 ].map(read).join("\n");
+const indexL10nSource = () => read("Views/Pharmacovigilance/CaseIntakeTriage/_IndexL10n.cshtml");
+const pvgResourceCultures = ["en", "fr", "es", "zh", "ar", "ru", "tr"];
+const pvgResourceDirectory = "Resources/Views/Pharmacovigilance/CaseIntakeTriage";
+const pvgResourceFile = culture => `${pvgResourceDirectory}/CaseIntakeTriageIndex.${culture}.resx`;
+const safeUiStateKeys = [
+  "ControlledBlock",
+  "SessionExpired",
+  "NotAuthorized",
+  "Forbidden",
+  "InvalidProxyEndpoint",
+  "ReasonCode",
+  "Loading",
+  "NoRecords"
+];
+const resourceKeys = culture => new Set(
+  [...read(pvgResourceFile(culture)).matchAll(/<data name="([^"]+)"/g)].map(match => match[1])
+);
+const l10nBridgeKeys = () => new Set(
+  [...indexL10nSource().matchAll(/^\s*([A-Za-z][A-Za-z0-9_]*)\s*=/gm)].map(match => match[1])
+);
+const sharedL10nBridgeKeys = () => new Set(
+  [...indexL10nSource().matchAll(/^\s*([A-Za-z][A-Za-z0-9_]*)\s*=\s*SharedLocalizer\[/gm)].map(match => match[1])
+);
+const browserL10nReferences = () => new Set(
+  [...[
+    indexJsSource(),
+    formJsSource(),
+    detailJsSource()
+  ].join("\n").matchAll(/\bt\(['"`]([A-Za-z][A-Za-z0-9_]*)['"`]\)/g)].map(match => match[1])
+);
 
 describe("PVG case intake triage UI static guardrails", () => {
   it("uses the same-origin MVC proxy instead of direct Gateway or service calls", () => {
@@ -123,5 +153,51 @@ describe("PVG case intake triage UI static guardrails", () => {
     expect(form).toMatch(/postForm\(url, new FormData\(form\)\);[\s\S]*setSubmitting\(false\)/);
     expect(form).toMatch(/submitButton\.disabled = isSubmitting/);
     expect(form).toMatch(/aria-busy/);
+  });
+
+  it("keeps all seven Case Intake/Triage resource files present", () => {
+    for (const culture of pvgResourceCultures) {
+      expect(fs.existsSync(path.join(root, pvgResourceFile(culture)))).toBe(true);
+    }
+  });
+
+  it("keeps safe UI state keys in every Case Intake/Triage resource file", () => {
+    for (const culture of pvgResourceCultures) {
+      const keys = resourceKeys(culture);
+
+      for (const key of safeUiStateKeys) {
+        expect(keys.has(key)).toBe(true);
+      }
+    }
+  });
+
+  it("exposes safe UI state keys through the Case Intake/Triage localization bridge", () => {
+    const source = indexL10nSource();
+    const browserBridge = read("wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/index.l10n.js");
+    const bridgeKeys = l10nBridgeKeys();
+
+    expect(browserBridge).toContain("window.PvgCaseIntakeTriageL10n");
+    for (const key of safeUiStateKeys) {
+      expect(bridgeKeys.has(key)).toBe(true);
+      expect(source).toMatch(new RegExp(`\\b${key}\\s*=\\s*Localizer\\["${key}"\\]\\.Value`));
+    }
+  });
+
+  it("keeps browser localization references backed by PVG resources or shared localizer keys", () => {
+    const bridgeKeys = l10nBridgeKeys();
+    const sharedKeys = sharedL10nBridgeKeys();
+    const references = browserL10nReferences();
+
+    for (const key of references) {
+      expect(bridgeKeys.has(key)).toBe(true);
+
+      if (sharedKeys.has(key)) {
+        continue;
+      }
+
+      for (const culture of pvgResourceCultures) {
+        expect(resourceKeys(culture).has(key)).toBe(true);
+      }
+    }
   });
 });
