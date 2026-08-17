@@ -1,0 +1,523 @@
+@model Diten.Web.Models.ModuleCatalog.ModuleCatalogDetailViewModel
+@using Diten.Web.Views.Platform.ModuleCatalog
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ModuleCatalogIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["DetailsTitle"].Value;
+    Layout = "_LayoutPlatformAdmin";
+    var statusClass = Model.Status switch
+    {
+        "Active" => "bg-label-success",
+        "Inactive" => "bg-label-warning",
+        "Deprecated" => "bg-label-danger",
+        _ => "bg-label-secondary"
+    };
+    var statusText = Model.Status switch
+    {
+        "Draft" => Localizer["StatusDraft"].Value,
+        "Active" => Localizer["StatusActive"].Value,
+        "Inactive" => Localizer["StatusInactive"].Value,
+        "Deprecated" => Localizer["StatusDeprecated"].Value,
+        _ => Model.Status
+    };
+}
+
+<div class="module-catalog-details">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0">@Localizer["DetailsTitle"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/Platform/ModuleCatalog">@Localizer["ModuleCatalogTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@Localizer["DetailsTitle"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/Platform/ModuleCatalog" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+            <a href="/Platform/ModuleCatalog/Edit/@Model.Id" class="btn btn-primary">@Localizer["Edit"]</a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header p-3">
+            <div class="nav-align-top">
+                <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap" role="tablist">
+                    <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                        <button type="button"
+                                class="nav-link active small border shadow-none wc-tab-compact"
+                                id="module-general-tab-button"
+                                data-bs-toggle="tab"
+                                data-bs-target="#module-general-tab"
+                                role="tab"
+                                aria-controls="module-general-tab"
+                                aria-selected="true">
+                            <span class="d-none d-sm-inline-flex align-items-center">
+                                <i class="bx bx-info-circle me-1 wc-tab-icon"></i>@Localizer["GeneralTab"]
+                            </span>
+                            <i class="bx bx-info-circle d-sm-none wc-tab-icon"></i>
+                        </button>
+                    </li>
+                    <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                        <button type="button"
+                                class="nav-link small border shadow-none wc-tab-compact"
+                                id="module-pages-tab-button"
+                                data-bs-toggle="tab"
+                                data-bs-target="#module-pages-tab"
+                                role="tab"
+                                aria-controls="module-pages-tab"
+                                aria-selected="false">
+                            <span class="d-none d-sm-inline-flex align-items-center">
+                                <i class="bx bx-window-open me-1 wc-tab-icon"></i>@Localizer["PagesTab"]
+                            </span>
+                            <i class="bx bx-window-open d-sm-none wc-tab-icon"></i>
+                        </button>
+                    </li>
+                    <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                        <button type="button"
+                                class="nav-link small border shadow-none wc-tab-compact"
+                                id="module-assignments-tab-button"
+                                data-bs-toggle="tab"
+                                data-bs-target="#module-assignments-tab"
+                                role="tab"
+                                aria-controls="module-assignments-tab"
+                                aria-selected="false">
+                            <span class="d-none d-sm-inline-flex align-items-center">
+                                <i class="bx bx-buildings me-1 wc-tab-icon"></i>@Localizer["AssignmentsTab"]
+                            </span>
+                            <i class="bx bx-buildings d-sm-none wc-tab-icon"></i>
+                        </button>
+                    </li>
+                    <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                        <button type="button"
+                                class="nav-link small border shadow-none wc-tab-compact"
+                                id="module-permissions-tab-button"
+                                data-bs-toggle="tab"
+                                data-bs-target="#module-permissions-tab"
+                                role="tab"
+                                aria-controls="module-permissions-tab"
+                                aria-selected="false">
+                            <span class="d-none d-sm-inline-flex align-items-center">
+                                <i class="bx bx-lock-alt me-1 wc-tab-icon"></i>@Localizer["PermissionsTab"]
+                            </span>
+                            <i class="bx bx-lock-alt d-sm-none wc-tab-icon"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content p-0 bg-transparent shadow-none">
+        <div class="tab-pane fade show active" id="module-general-tab" role="tabpanel">
+    <div class="row g-4">
+    <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+            <div class="row g-4">
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-purchase-tag-alt"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["ModuleCode"]</div>
+                            <div class="backbone-preview-value mt-1"><code>@Model.ModuleCode</code></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-git-branch"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Version"]</div>
+                            <div class="backbone-preview-value mt-1">@Model.ModuleVersion</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-extension"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["ModuleName"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.ModuleName) ? "-" : Model.ModuleName)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-file"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["DisplayName"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.DisplayName) ? "-" : Model.DisplayName)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-3">@SharedLocalizer["Description"]</h6>
+            <div class="backbone-preview-description">@(string.IsNullOrWhiteSpace(Model.Description) ? "-" : Model.Description)</div>
+        </section>
+    </div>
+
+    <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ClassificationSection"]</h6>
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-layer"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Domain"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.Domain) ? "-" : Model.Domain)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-server"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Service"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.Service) ? "-" : Model.Service)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-sort"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["SortOrder"]</div>
+                            <div class="backbone-preview-value mt-1">@Model.SortOrder</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@SharedLocalizer["Status"]</h6>
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-check-shield"></i>
+                        <div>
+                            <div class="backbone-preview-label">@SharedLocalizer["Status"]</div>
+                            <div class="mt-1">
+                                <span class="badge @statusClass">@statusText</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-building-house"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Assignable"]</div>
+                            <div class="backbone-preview-value mt-1">@(Model.IsTenantAssignable ? Localizer["Yes"] : Localizer["No"])</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-cube-alt"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Core"]</div>
+                            <div class="backbone-preview-value mt-1">@(Model.IsCoreModule ? Localizer["Yes"] : Localizer["No"])</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    </div>
+        </div>
+
+        <div class="tab-pane fade" id="module-pages-tab" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between gap-3 p-3 pb-0">
+                    <div>
+                        <h6 class="mb-0">@Localizer["PagesTitle"]</h6>
+                        <small class="text-muted">@Localizer["PagesDescription"]</small>
+                    </div>
+                </div>
+                <div id="module-pages-skeleton-loader" class="backbone-skeleton p-4">
+                    <div class="shimmer skeleton-row skeleton-row-lg"></div>
+                    <div class="shimmer skeleton-row"></div>
+                    <div class="shimmer skeleton-row"></div>
+                    <div class="shimmer skeleton-row"></div>
+                    <div class="shimmer skeleton-row skeleton-row-last"></div>
+                </div>
+                <div class="card-datatable table-responsive">
+                    <table id="dt-module-pages"
+                           data-dt-standard="v2"
+                           data-module-code="@Model.ModuleCode"
+                           class="datatables-module-pages table border-top">
+                        <thead>
+                            <tr>
+                                <th>@Localizer["PageCode"]</th>
+                                <th class="all">@Localizer["DisplayName"]</th>
+                                <th>@Localizer["RoutePath"]</th>
+                <th>@Localizer["PageType"]</th>
+                <th>@SharedLocalizer["Status"]</th>
+                <th class="cell-fit text-end">@Localizer["SortOrder"]</th>
+                <th class="cell-fit text-center">@Localizer["Navigation"]</th>
+                <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="module-assignments-tab" role="tabpanel">
+            <div id="module-assignments-root" data-module-code="@Model.ModuleCode">
+                <div id="module-assignments-loading" class="card p-4">
+                    <div class="d-flex align-items-center gap-2 text-muted">
+                        <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+                        <span>@SharedLocalizer["Loading"]</span>
+                    </div>
+                </div>
+
+                <div id="module-assignments-error" class="alert alert-danger d-none" role="alert">
+                    <div class="d-flex align-items-center justify-content-between gap-3">
+                        <span>@Localizer["AssignmentsErrorState"]</span>
+                        <button type="button" class="btn btn-sm btn-label-danger" id="module-assignments-retry">@Localizer["Retry"]</button>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4" id="module-assignments-summary">
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <section class="card h-100">
+                            <div class="card-body d-flex align-items-center gap-3 p-3">
+                                <div class="avatar">
+                                    <span class="avatar-initial rounded bg-label-primary"><i class="bx bx-package"></i></span>
+                                </div>
+                                <div class="min-w-0">
+                                    <small class="text-muted d-block text-truncate">@Localizer["AssignmentPlansCount"]</small>
+                                    <h5 class="mb-0" id="module-assignment-plan-count">-</h5>
+                                    <p class="mb-0 small text-body-secondary text-truncate" id="module-assignment-plan-detail">-</p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <section class="card h-100">
+                            <div class="card-body d-flex align-items-center gap-3 p-3">
+                                <div class="avatar">
+                                    <span class="avatar-initial rounded bg-label-info"><i class="bx bx-buildings"></i></span>
+                                </div>
+                                <div class="min-w-0">
+                                    <small class="text-muted d-block text-truncate">@Localizer["AssignmentTenantsCount"]</small>
+                                    <h5 class="mb-0" id="module-assignment-tenant-count">-</h5>
+                                    <p class="mb-0 small text-body-secondary text-truncate" id="module-assignment-tenant-detail">-</p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <section class="card h-100">
+                            <div class="card-body d-flex align-items-center gap-3 p-3">
+                                <div class="avatar">
+                                    <span class="avatar-initial rounded bg-label-success"><i class="bx bx-check-shield"></i></span>
+                                </div>
+                                <div class="min-w-0">
+                                    <small class="text-muted d-block text-truncate">@Localizer["AssignmentEnabledTenantsCount"]</small>
+                                    <h5 class="mb-0" id="module-assignment-enabled-count">-</h5>
+                                    <p class="mb-0 small text-body-secondary text-truncate" id="module-assignment-enabled-detail">-</p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <section class="card h-100">
+                            <div class="card-body d-flex align-items-center gap-3 p-3">
+                                <div class="avatar">
+                                    <span class="avatar-initial rounded bg-label-warning"><i class="bx bx-edit-alt"></i></span>
+                                </div>
+                                <div class="min-w-0">
+                                    <small class="text-muted d-block text-truncate">@Localizer["AssignmentManualOverrideCount"]</small>
+                                    <h5 class="mb-0" id="module-assignment-manual-count">-</h5>
+                                    <p class="mb-0 small text-body-secondary text-truncate" id="module-assignment-manual-detail">-</p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <section class="card backbone-preview-section mb-4">
+                    <div class="card-header p-3 border-bottom">
+                        <div>
+                            <h6 class="mb-0">@Localizer["SubscriptionAssignmentsTitle"]</h6>
+                            <small class="text-muted">@Localizer["SubscriptionAssignmentsDescription"]</small>
+                        </div>
+                        <div class="dt-filter-host mt-3">
+                            <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                                <div class="filter-chip filter-search">
+                                    <input type="search" class="form-control form-control-sm" id="module-plan-search" placeholder="@SharedLocalizer["Search"]" autocomplete="off" />
+                                </div>
+                                <div class="filter-chip filter-status">
+                                    <select class="form-select form-select-sm select2" id="module-plan-status-filter" aria-label="@SharedLocalizer["Status"]" data-placeholder="@Localizer["AllStatuses"]">
+                                        <option value="">@Localizer["AllStatuses"]</option>
+                                        <option value="Active">@Localizer["StatusActive"]</option>
+                                        <option value="Inactive">@Localizer["StatusInactive"]</option>
+                                        <option value="Included">@Localizer["EntitlementIncluded"]</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="module-plans-empty" class="text-muted small d-none p-4">@Localizer["NoSubscriptionAssignments"]</div>
+                    <div class="list-group list-group-flush" id="module-assignment-plans-list" aria-label="@Localizer["SubscriptionAssignmentsTitle"]">
+                    </div>
+                </section>
+
+                <section class="card backbone-preview-section">
+                    <div class="card-header p-3 border-bottom">
+                        <div>
+                            <h6 class="mb-0">@Localizer["TenantAssignmentsTitle"]</h6>
+                            <small class="text-muted">@Localizer["TenantAssignmentsDescription"]</small>
+                        </div>
+                        <div class="dt-filter-host mt-3">
+                            <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                                <div class="filter-chip filter-search">
+                                    <input type="search" class="form-control form-control-sm" id="module-tenant-search" placeholder="@SharedLocalizer["Search"]" autocomplete="off" />
+                                </div>
+                                <div class="filter-chip filter-source">
+                                    <select class="form-select form-select-sm select2" id="module-tenant-source-filter" aria-label="@Localizer["AssignmentSource"]" data-placeholder="@Localizer["AllSources"]">
+                                        <option value="">@Localizer["AllSources"]</option>
+                                        <option value="Plan">@Localizer["AssignmentSourcePlan"]</option>
+                                        <option value="Manual">@Localizer["AssignmentSourceManual"]</option>
+                                        <option value="Trial">@Localizer["AssignmentSourceTrial"]</option>
+                                        <option value="Override">@Localizer["AssignmentSourceOverride"]</option>
+                                        <option value="System">@Localizer["AssignmentSourceSystem"]</option>
+                                    </select>
+                                </div>
+                                <div class="filter-chip filter-status">
+                                    <select class="form-select form-select-sm select2" id="module-tenant-status-filter" aria-label="@Localizer["AssignmentStatus"]" data-placeholder="@Localizer["AllStatuses"]">
+                                        <option value="">@Localizer["AllStatuses"]</option>
+                                        <option value="Enabled">@Localizer["AssignmentStatusEnabled"]</option>
+                                        <option value="Disabled">@Localizer["AssignmentStatusDisabled"]</option>
+                                        <option value="Suspended">@Localizer["AssignmentStatusSuspended"]</option>
+                                        <option value="Pending">@Localizer["AssignmentStatusPending"]</option>
+                                        <option value="Expired">@Localizer["AssignmentStatusExpired"]</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="module-tenants-degraded" class="alert alert-warning d-none mx-3" role="alert">@Localizer["TenantAssignmentsDegraded"]</div>
+                    <div id="module-tenants-empty" class="text-muted small d-none p-4">@Localizer["NoTenantAssignments"]</div>
+                    <div class="list-group list-group-flush" id="module-assignment-tenants-list" aria-label="@Localizer["TenantAssignmentsTitle"]">
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="module-permissions-tab" role="tabpanel">
+            <section class="card backbone-preview-section p-4">
+                <div class="fw-semibold text-heading mb-2">@Localizer["PermissionsTab"]</div>
+                <div class="text-muted">@Localizer["PermissionsPlaceholder"]</div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="modulePageOffcanvas" aria-labelledby="modulePageOffcanvasTitle">
+    <div class="offcanvas-header py-6">
+        <div class="d-flex align-items-center gap-2">
+            <h5 class="offcanvas-title mb-0" id="modulePageOffcanvasTitle">@Localizer["AddPage"]</h5>
+            <div id="modulePageRequiredTrackerHost"></div>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top">
+        <form id="modulePageForm"
+              class="pt-0"
+              data-required-tracker-target="#modulePageRequiredTrackerHost"
+              data-required-tracker-wrapper-class="d-flex align-items-center"
+              data-required-tracker-badge-class="badge bg-label-danger px-2 py-1 d-inline-flex align-items-center"
+              novalidate>
+            <input type="hidden" id="modulePageId" />
+            <input type="hidden" id="modulePageModuleCode" value="@Model.ModuleCode" />
+            <div class="row g-4">
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="modulePagePageCode">@Localizer["PageCode"]</label>
+                    <input type="text" class="form-control" id="modulePagePageCode" maxlength="100" autocomplete="off" readonly disabled />
+                    <div class="form-text" id="modulePageCodePreview">@Localizer["FinalCodePreview"]: <code>-</code></div>
+                    <div class="invalid-feedback">@Localizer["InvalidPageCodeGenerated"]</div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="modulePageDisplayName">@Localizer["DisplayName"] <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="modulePageDisplayName" required maxlength="200" autocomplete="off" />
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="modulePageRoutePath">@Localizer["RoutePath"] <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="modulePageRoutePath" required maxlength="300" placeholder="/PPM/Projects" autocomplete="off" />
+                    <div class="form-text">@Localizer["RoutePathHelpText"]</div>
+                    <div class="invalid-feedback">@Localizer["InvalidRouteFormat"]</div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="modulePageRequiredPermission">@Localizer["RequiredPermission"]</label>
+                    <input type="text" class="form-control" id="modulePageRequiredPermission" maxlength="200" placeholder="ppm.projects.view" autocomplete="off" />
+                    <div class="form-text">@Localizer["PermissionHelpText"]</div>
+                    <div class="invalid-feedback">@Localizer["InvalidPermissionFormat"]</div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="modulePageParentPageCode">@Localizer["ParentPageCode"]</label>
+                    <input type="text" class="form-control" id="modulePageParentPageCode" maxlength="100" autocomplete="off" />
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="modulePagePageType">@Localizer["PageType"] <span class="text-danger">*</span></label>
+                    <select class="form-select" id="modulePagePageType" required>
+                        <option value="List">@Localizer["PageTypeList"]</option>
+                        <option value="Details">@Localizer["PageTypeDetails"]</option>
+                        <option value="Create">@Localizer["PageTypeCreate"]</option>
+                        <option value="Edit">@Localizer["PageTypeEdit"]</option>
+                        <option value="Report">@Localizer["PageTypeReport"]</option>
+                        <option value="Wizard">@Localizer["PageTypeWizard"]</option>
+                        <option value="Dashboard">@Localizer["PageTypeDashboard"]</option>
+                        <option value="Custom">@Localizer["PageTypeCustom"]</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="modulePageStatus">@SharedLocalizer["Status"] <span class="text-danger">*</span></label>
+                    <select class="form-select" id="modulePageStatus" required>
+                        <option value="Draft">@Localizer["StatusDraft"]</option>
+                        <option value="Active">@Localizer["StatusActive"]</option>
+                        <option value="Inactive">@Localizer["StatusInactive"]</option>
+                        <option value="Deprecated">@Localizer["StatusDeprecated"]</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="modulePageSortOrder">@Localizer["SortOrder"]</label>
+                    <input type="number" class="form-control" id="modulePageSortOrder" min="0" value="0" />
+                </div>
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="modulePageIsNavigationVisible" checked />
+                        <label class="form-check-label" for="modulePageIsNavigationVisible">@Localizer["NavigationVisible"]</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium" for="modulePageDescription">@SharedLocalizer["Description"]</label>
+                    <textarea class="form-control" id="modulePageDescription" rows="4"></textarea>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="submit" form="modulePageForm" class="btn btn-primary" id="btnSaveModulePage">@SharedLocalizer["Save"]</button>
+    </div>
+</div>
+
+<partial name="~/Views/Platform/ModuleCatalog/_IndexL10n.cshtml" />
+
+@section Scripts {
+    <script src="~/assets/js/Platform/ModuleCatalog/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ModuleCatalog/module-pages.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ModuleCatalog/module-assignments.js" asp-append-version="true"></script>
+}

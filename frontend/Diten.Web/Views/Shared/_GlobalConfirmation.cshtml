@@ -1,0 +1,191 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<!-- MOD-0013: Premium SweetAlert2 Styling (Native & Bootstrap 5 Classes) -->
+<style>
+    /* Sadece özel ikon bileşeni için gerekli CSS (Layout ve boşluklar SweetAlert parametreleriyle yönetilmektedir) */
+    /* Sadece özel ikon bileşeni için gerekli CSS */
+    .swal-icon-circle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(255, 76, 81, 0.12);
+        border: 2px solid rgba(255, 76, 81, 0.25);
+        margin: 0 auto !important;
+        /* Force center */
+    }
+
+    .swal-icon-circle i {
+        font-size: 2.5rem;
+        color: #ff4c51;
+    }
+
+    .swal2-title {
+        width: 100%;
+        text-align: center;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    /* Force Icon Centering */
+    .swal2-icon {
+        display: flex !important;
+        justify-content: center !important;
+        width: 100% !important;
+        border: none !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+    }
+</style>
+
+<script>
+    // SweetAlert2: navbar shift fix. The default scrollbarPadding adds padding-right to <body>
+    // when the modal opens, which shifts the Sneat layout-navbar to the right. Disable it
+    // (and heightAuto) globally so every Swal.fire across the app inherits the fix.
+    (function () {
+        if (typeof window.Swal === 'undefined' || window.Swal.__navbarFixApplied) return;
+        var originalFire = window.Swal.fire.bind(window.Swal);
+        window.Swal.fire = function () {
+            var args = Array.prototype.slice.call(arguments);
+            if (args.length > 0 && typeof args[0] === 'object' && args[0] !== null && !Array.isArray(args[0])) {
+                if (args[0].scrollbarPadding === undefined) args[0].scrollbarPadding = false;
+                if (args[0].heightAuto === undefined) args[0].heightAuto = false;
+            }
+            return originalFire.apply(window.Swal, args);
+        };
+        window.Swal.__navbarFixApplied = true;
+    })();
+
+    /**
+     * MOD-0013: Platform Standards - Global Confirmation System
+     * window.showConfirm(keyOrTitle, callback, entityNameOrOptions)
+     */
+    window.showConfirm = function (keyOrTitle, callback, entityNameOrOptions) {
+        const confirmations = {
+            'DeleteConfirmationTitle': @Json.Serialize(SharedLocalizer["DeleteConfirmationTitle"].Value),
+            'DeleteConfirmationSubText': @Json.Serialize(SharedLocalizer["DeleteConfirmationSubText"].Value),
+            'DeleteConfirmationYesBtn': @Json.Serialize(SharedLocalizer["DeleteConfirmationYesBtn"].Value),
+            'DeleteConfirmationCancelBtn': @Json.Serialize(SharedLocalizer["Cancel"].Value),
+            'AreYouSure': @Json.Serialize(SharedLocalizer["AreYouSure"].Value),
+            'ConfirmAction': @Json.Serialize(SharedLocalizer["ConfirmAction"].Value),
+            'Apply': @Json.Serialize(SharedLocalizer["Apply"].Value)
+        };
+
+        const options = typeof entityNameOrOptions === 'object' && entityNameOrOptions !== null
+            ? entityNameOrOptions
+            : { entityName: entityNameOrOptions };
+
+        const normalizedKey = typeof keyOrTitle === 'string' ? keyOrTitle.toLowerCase() : '';
+        const isDeleteAction = normalizedKey.includes('delete') || normalizedKey.includes('sil') || options.type === 'danger';
+
+        const title = confirmations[keyOrTitle + 'Title'] || confirmations[keyOrTitle] || keyOrTitle || confirmations['AreYouSure'];
+        const subtext = confirmations[keyOrTitle + 'SubText'] || options.subtext || confirmations['ConfirmAction'];
+        const yesBtn = confirmations[keyOrTitle + 'YesBtn'] || options.confirmButtonText || (isDeleteAction ? confirmations['DeleteConfirmationYesBtn'] : confirmations['Apply']);
+        const noBtn = options.cancelButtonText || confirmations['DeleteConfirmationCancelBtn'];
+
+        // Build HTML for description with entity name badge
+        let htmlContent = `<div class="mb-2 text-muted-500">${subtext}</div>`;
+        if (options.entityName) {
+            htmlContent += `<div class="badge bg-label-primary fs-6 mt-1 py-2 px-3 fw-medium">${options.entityName}</div>`;
+        }
+
+        var type = options.type || (isDeleteAction ? 'delete' : 'info');
+        var confirmBtnClass = 'btn-primary';
+        var iconHtml = '<div class="swal-icon-circle bg-label-primary border-primary border-opacity-25"><i class="bx bx-help-circle text-primary"></i></div>';
+
+        if (type === 'delete') {
+            confirmBtnClass = 'btn-danger';
+            iconHtml = '<div class="swal-icon-circle"><i class="bx bx-trash"></i></div>';
+        } else if (type === 'danger' || type === 'error') {
+            confirmBtnClass = 'btn-danger';
+            iconHtml = '<div class="swal-icon-circle bg-label-danger border-danger border-opacity-25"><i class="bx bx-error-circle text-danger"></i></div>';
+        } else if (type === 'success') {
+            confirmBtnClass = 'btn-success';
+            iconHtml = '<div class="swal-icon-circle bg-label-success border-success border-opacity-25"><i class="bx bx-check-circle text-success"></i></div>';
+        } else if (type === 'warning') {
+            confirmBtnClass = 'btn-warning';
+            iconHtml = '<div class="swal-icon-circle bg-label-warning border-warning border-opacity-25"><i class="bx bx-warning text-warning"></i></div>';
+        }
+
+        try {
+            if (typeof Swal !== 'undefined') {
+                var swalConfig = {
+                    title: title,
+                    html: htmlContent,
+                    iconHtml: iconHtml,
+                    showCancelButton: true,
+                    confirmButtonText: yesBtn,
+                    cancelButtonText: noBtn,
+                    width: options.width || '400px',
+                    padding: '2.5rem 1.5rem 2rem',
+                    customClass: {
+                        popup: 'rounded-4 shadow-lg',
+                        title: 'fs-4 fw-bold text-heading mt-4 mb-2 d-block w-100 text-center',
+                        htmlContainer: 'mb-1 d-block w-100 text-center',
+                        actions: 'd-flex justify-content-center mt-4 w-100 gap-2',
+                        confirmButton: 'btn ' + confirmBtnClass + ' waves-effect waves-light px-5',
+                        cancelButton: 'btn btn-label-secondary waves-effect px-5',
+                        icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100'
+                    },
+                    buttonsStyling: false,
+                    reverseButtons: true
+                };
+
+                // Add textarea support if requested
+                if (options.showInput) {
+                    swalConfig.input = 'textarea';
+                    if (options.inputLabel) {
+                        swalConfig.inputLabel = options.inputLabel;
+                    }
+                    swalConfig.inputPlaceholder = options.inputPlaceholder || '';
+                    swalConfig.inputAttributes = Object.assign({
+                        'rows': 3,
+                        'class': 'form-control mt-3 px-3 py-2 rounded-3 border-light-subtle shadow-none'
+                    }, options.inputAttributes || {});
+                    swalConfig.preConfirm = (value) => {
+                        if (options.inputRequired && !value) {
+                            Swal.showValidationMessage(options.inputValidationMessage || 'Value is required');
+                            return false;
+                        }
+                        if (typeof options.inputValidator === 'function') {
+                            var validationMessage = options.inputValidator(value);
+                            if (validationMessage) {
+                                Swal.showValidationMessage(validationMessage);
+                                return false;
+                            }
+                        }
+                        return value;
+                    };
+                }
+
+                if (typeof options.didOpen === 'function') {
+                    swalConfig.didOpen = function (popup) {
+                        options.didOpen(popup, Swal);
+                    };
+                }
+
+                Swal.fire(swalConfig).then(function (result) {
+                    if (result.isConfirmed && typeof callback === 'function') {
+                        callback(result.value); // Pass the input value back
+                    } else if (!result.isConfirmed && typeof options.onCancel === 'function') {
+                        options.onCancel();
+                    }
+                });
+                return;
+            }
+
+            // Fallback: Native browser confirm
+            if (confirm(title + '\n\n' + subtext)) {
+                if (typeof callback === 'function') { callback(); }
+            }
+        } catch (err) {
+            console.error('[MOD-0013 showConfirm] CRITICAL ERROR:', err);
+            if (typeof callback === 'function') { callback(); }
+        }
+    };
+</script>

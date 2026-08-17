@@ -1,0 +1,119 @@
+@model Diten.Web.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "KPI Catalog";
+}
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="small text-muted mb-2">Filters</div>
+        <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+            <input id="kpi-search" class="form-control form-control-sm w-auto" placeholder="Search KPI" />
+            <select id="kpi-filter-category" class="form-select form-select-sm w-auto"><option value="">KPI Category</option></select>
+            <select id="kpi-filter-type" class="form-select form-select-sm w-auto"><option value="">KPI Type</option></select>
+            <select id="kpi-filter-owner" class="form-select form-select-sm w-auto"><option value="">Owner</option></select>
+            <select id="kpi-filter-status" class="form-select form-select-sm w-auto"><option value="">Status</option></select>
+            <select id="kpi-filter-unit" class="form-select form-select-sm w-auto"><option value="">Unit of Measure</option></select>
+            <select id="kpi-filter-agg" class="form-select form-select-sm w-auto"><option value="">Aggregation Method</option></select>
+            <select id="kpi-filter-frequency" class="form-select form-select-sm w-auto"><option value="">Reporting Frequency</option></select>
+            <button id="kpi-apply-filters" class="btn btn-sm btn-outline-secondary">Apply</button>
+            <button id="kpi-reset-filters" class="btn btn-sm btn-outline-secondary">Reset</button>
+            <button id="kpi-columns-btn" class="btn btn-sm btn-outline-secondary">Columns</button>
+        </div>
+
+        <div class="small text-muted mb-2">Pages</div>
+        <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+            <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/kpis/ownership">Metric Ownership</a>
+            <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/kpis/scorecard">Scorecard Dashboard</a>
+            <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/kpis/scorecard-packs">Scorecard Packs</a>
+            <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/kpis/governance">KPI Governance</a>
+            <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/kpis/library">KPI Library Catalog</a>
+            <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/kpis/threshold-models">Threshold Models</a>
+        </div>
+
+        <div class="small text-muted mb-2">Actions</div>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <a class="btn btn-sm btn-outline-primary" href="/management-governance/enterprise-strategy-business-performance/kpis/library">Create from KPI Library</a>
+            <button id="kpi-create" class="btn btn-sm btn-primary esbp-create-btn">Create</button>
+            <input id="kpi-import-file" type="file" class="d-none" accept=".csv,.tsv,.xlsx,.xls" />
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Data Actions</button>
+                <ul class="dropdown-menu shadow-sm border rounded-3">
+                    <li><button type="button" class="dropdown-item" id="kpi-import-page">Import current file</button></li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li><button type="button" class="dropdown-item" id="kpi-export-csv">Export CSV</button></li>
+                    <li><button type="button" class="dropdown-item" id="kpi-export-xlsx">Export Excel</button></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row g-2">
+            <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">Total KPIs</div><div class="h5 mb-0" id="kpi-kpi-total">0</div></div></div>
+            <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">Active</div><div class="h5 mb-0" id="kpi-kpi-active">0</div></div></div>
+            <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">Archived</div><div class="h5 mb-0" id="kpi-kpi-archived">0</div></div></div>
+            <div class="col-6 col-md-3"><div class="border rounded p-2"><div class="small text-muted">Missing Owner</div><div class="h5 mb-0" id="kpi-kpi-missing-owner">0</div></div></div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table" id="kpi-table">
+            <thead><tr id="kpi-header-row"></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade es-modal" id="kpiEditorModal" tabindex="-1" aria-hidden="true" data-bs-keyboard="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title" id="kpi-modal-title">Create KPI</h5>
+                    <p class="small text-muted mb-0">Strategic metric definition and scorecard metadata.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                @{ ViewData["Id"] = "kpi-form-error"; }
+                @await Html.PartialAsync("Components/Forms/_ValidationSummary")
+                <div class="row g-2">
+                    <div class="col-12 col-md-6"><label class="form-label es-required" for="kpi-id">KPI ID</label><input id="kpi-id" class="form-control" required /></div>
+                    <div class="col-12 col-md-6"><label class="form-label es-required" for="kpi-name">KPI Name</label><input id="kpi-name" class="form-control" required /></div>
+                    <div class="col-12 col-md-6"><label class="form-label es-required" for="kpi-category">KPI Category</label><select id="kpi-category" class="form-select"><option value="">Select category</option></select></div>
+                    <div class="col-12 col-md-6"><label class="form-label es-required" for="kpi-type">KPI Type</label><select id="kpi-type" class="form-select"><option value="">Select type</option></select></div>
+                    <div class="col-12"><label class="form-label" for="kpi-description">Description</label><textarea id="kpi-description" rows="2" class="form-control"></textarea></div>
+                    <div class="col-12 col-md-6"><label class="form-label es-required" for="kpi-owner">Owner</label><select id="kpi-owner" class="form-select"><option value="">Select owner</option></select></div>
+                    <div class="col-12 col-md-6"><label class="form-label" for="kpi-backup-owner">Backup Owner / Steward</label><select id="kpi-backup-owner" class="form-select"><option value="">Select backup owner</option></select></div>
+                    <div class="col-12 col-md-4"><label class="form-label es-required" for="kpi-unit">Unit of Measure</label><select id="kpi-unit" class="form-select"><option value="">Select unit</option></select></div>
+                    <div class="col-12 col-md-4"><label class="form-label es-required" for="kpi-agg">Aggregation Method</label><select id="kpi-agg" class="form-select"><option value="">Select method</option></select></div>
+                    <div class="col-12 col-md-4"><label class="form-label" for="kpi-frequency">Reporting Frequency</label><select id="kpi-frequency" class="form-select"><option value="">Select frequency</option></select></div>
+                    <div class="col-12 col-md-4"><label class="form-label" for="kpi-threshold">Threshold Model</label><select id="kpi-threshold" class="form-select"><option value="">Select threshold model</option></select></div>
+                    <div class="col-12 col-md-4"><label class="form-label" for="kpi-baseline">Baseline Value</label><input id="kpi-baseline" type="number" class="form-control" /></div>
+                    <div class="col-12 col-md-4"><label class="form-label" for="kpi-target">Target Value</label><input id="kpi-target" type="number" class="form-control" /></div>
+                    <div class="col-12 col-md-4"><label class="form-label" for="kpi-status">Status</label><select id="kpi-status" class="form-select"><option value="">Select status</option></select></div>
+                    <div class="col-12 col-md-4"><label class="form-label" for="kpi-scope-mode">Scope</label><select id="kpi-scope-mode" class="form-select"><option value="">Select scope</option></select></div>
+                    <div class="col-12 col-md-4"><label class="form-label" for="kpi-company-id">Company</label><input id="kpi-company-id" class="form-control" list="kpi-company-list" /></div>
+                    <div class="col-12 col-md-4"><label class="form-label" for="kpi-source-type">Source / Derived From</label><select id="kpi-source-type" class="form-select"><option>Derived</option><option>Source</option></select></div>
+                    <div class="col-12 col-md-6"><label class="form-label" for="kpi-decision-ref">Decision Ref</label><input id="kpi-decision-ref" class="form-control" /></div>
+                    <div class="col-12 col-md-6"><label class="form-label" for="kpi-evidence-ref">Evidence Ref</label><input id="kpi-evidence-ref" class="form-control" /></div>
+                    <div class="col-12"><label class="form-label" for="kpi-notes">Notes</label><textarea id="kpi-notes" rows="2" class="form-control"></textarea></div>
+                    <input id="kpi-version" type="hidden" />
+                </div>
+                <datalist id="kpi-company-list"></datalist>
+            </div>
+            @{ ViewData["SaveId"] = "kpi-save"; ViewData["SaveLabel"] = "Create KPI"; }
+            @await Html.PartialAsync("Components/Forms/_StickyModalFooter")
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/kpi-catalog.js" asp-append-version="true"></script>
+}

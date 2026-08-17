@@ -1,0 +1,25 @@
+@{
+    var prefix = (ViewData["Prefix"]?.ToString() ?? "metric");
+    var title = (ViewData["Title"]?.ToString() ?? "Metrics");
+}
+<div class="card mb-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>@title</strong>
+        <button id="@($"{prefix}-add-metric")" type="button" class="btn btn-sm btn-outline-secondary">Add Metric</button>
+    </div>
+    <div class="card-body">
+        <div class="es-field-help mb-2">Metric Name is required for each row. Baseline/Target/Unit and aggregation should align to KPI governance rules.</div>
+        <div class="es-compact-table">
+            <div class="es-compact-table-header">
+                <div>Metric Name <span class="text-danger">*</span></div>
+                <div>Type</div>
+                <div>Baseline</div>
+                <div>Target</div>
+                <div>Unit</div>
+                <div>Aggregation</div>
+                <div></div>
+            </div>
+            <div id="@($"{prefix}-metrics-editor")"></div>
+        </div>
+    </div>
+</div>

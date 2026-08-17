@@ -1,0 +1,68 @@
+@model Diten.Web.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Objective Alignment";
+}
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+
+<div class="alert alert-info">
+    ES&amp;BP keeps the strategy-side alignment and traceability view here. Initiative and Project record management stays in Delivery &amp; Execution Management.
+</div>
+
+<div class="card mb-3">
+    <div class="card-body d-flex flex-wrap gap-2 align-items-center">
+        <input id="objective-alignment-pick" class="form-control form-control-sm w-auto" placeholder="Select objective (ID or name)" list="objective-alignment-list" />
+        <datalist id="objective-alignment-list"></datalist>
+        <button id="objective-alignment-load" class="btn btn-sm btn-outline-secondary">Load</button>
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/objectives">Objectives List</a>
+        <a class="btn btn-sm btn-primary ms-auto" id="objective-alignment-open-initiatives" href="/management-governance/delivery-execution/initiatives">Open Aligned Initiatives in Delivery</a>
+        <a class="btn btn-sm btn-outline-primary" id="objective-alignment-create-initiative" href="/management-governance/delivery-execution/initiatives/new">Create Initiative in Delivery</a>
+        <a class="btn btn-sm btn-primary" href="/management-governance/delivery-execution/projects">Open Aligned Projects in Delivery</a>
+        <a class="btn btn-sm btn-outline-secondary" href="/management-governance/enterprise-strategy-business-performance/connections">Add Alignment Row</a>
+    </div>
+</div>
+
+<div id="objective-alignment-state" class="small text-muted mb-2">Loading objective alignment...</div>
+
+<div class="row g-3">
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div class="card-header"><strong>Parent Goal Summary</strong></div>
+            <div class="card-body" id="objective-alignment-goal"></div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div class="card-header"><strong>Objective Summary</strong></div>
+            <div class="card-body" id="objective-alignment-objective"></div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><strong>Coverage Indicators</strong></div>
+            <div class="card-body" id="objective-alignment-coverage"></div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-6">
+        <div class="card h-100">
+            <div class="card-header"><strong>Aligned Initiatives</strong></div>
+            <div class="card-body" id="objective-alignment-initiatives"></div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-6">
+        <div class="card h-100">
+            <div class="card-header"><strong>Aligned Projects</strong></div>
+            <div class="card-body" id="objective-alignment-projects"></div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><strong>Related Strategy Alignment Register Rows</strong></div>
+            <div class="card-body" id="objective-alignment-register"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/objective-alignment.js" asp-append-version="true"></script>
+}

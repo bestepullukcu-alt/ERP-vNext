@@ -1,0 +1,48 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.MdmService.Api", "src\Diten.MdmService.Api\Diten.MdmService.Api.csproj", "{51A32B7D-1B64-43F8-A620-1AF2B77B78C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.MdmService.Application", "src\Diten.MdmService.Application\Diten.MdmService.Application.csproj", "{8F87ED4A-31F4-40C5-8F22-0B32A87DC833}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.MdmService.Domain", "src\Diten.MdmService.Domain\Diten.MdmService.Domain.csproj", "{DC651E7A-F16C-45B5-B34A-17919851B04C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.MdmService.Persistence", "src\Diten.MdmService.Persistence\Diten.MdmService.Persistence.csproj", "{556E7A27-083C-44C1-96C2-9F5F54D41E3D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.MdmService.Infrastructure", "src\Diten.MdmService.Infrastructure\Diten.MdmService.Infrastructure.csproj", "{4B2894D7-AD22-47FD-8991-B2F79D1195F0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.MdmService.Application.Tests", "tests\Diten.MdmService.Application.Tests\Diten.MdmService.Application.Tests.csproj", "{C98C5B65-6243-49A5-B635-A5FA1AF3C2B3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{51A32B7D-1B64-43F8-A620-1AF2B77B78C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51A32B7D-1B64-43F8-A620-1AF2B77B78C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51A32B7D-1B64-43F8-A620-1AF2B77B78C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51A32B7D-1B64-43F8-A620-1AF2B77B78C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F87ED4A-31F4-40C5-8F22-0B32A87DC833}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F87ED4A-31F4-40C5-8F22-0B32A87DC833}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F87ED4A-31F4-40C5-8F22-0B32A87DC833}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F87ED4A-31F4-40C5-8F22-0B32A87DC833}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC651E7A-F16C-45B5-B34A-17919851B04C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC651E7A-F16C-45B5-B34A-17919851B04C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC651E7A-F16C-45B5-B34A-17919851B04C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC651E7A-F16C-45B5-B34A-17919851B04C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{556E7A27-083C-44C1-96C2-9F5F54D41E3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{556E7A27-083C-44C1-96C2-9F5F54D41E3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{556E7A27-083C-44C1-96C2-9F5F54D41E3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{556E7A27-083C-44C1-96C2-9F5F54D41E3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B2894D7-AD22-47FD-8991-B2F79D1195F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B2894D7-AD22-47FD-8991-B2F79D1195F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B2894D7-AD22-47FD-8991-B2F79D1195F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B2894D7-AD22-47FD-8991-B2F79D1195F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C98C5B65-6243-49A5-B635-A5FA1AF3C2B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C98C5B65-6243-49A5-B635-A5FA1AF3C2B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C98C5B65-6243-49A5-B635-A5FA1AF3C2B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C98C5B65-6243-49A5-B635-A5FA1AF3C2B3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

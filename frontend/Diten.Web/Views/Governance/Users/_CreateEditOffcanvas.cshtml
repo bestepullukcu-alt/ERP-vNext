@@ -1,0 +1,69 @@
+@model Diten.Web.Models.Governance.UserEditViewModel
+@using Diten.Web.Views.Governance.Users
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<UsersIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header py-6">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">-</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top">
+        <div id="formUserAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formUser" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="userItemId" name="Id" value="" />
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="userEmail" class="form-label fw-medium">
+                        @Localizer["Email"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="email" id="userEmail" name="Email" class="form-control" maxlength="256" placeholder="@Localizer["EmailPlaceholder"]" required />
+                    <div class="form-text d-none" id="userEmailHelp">@Localizer["EmailImmutableHint"]</div>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12" id="userPasswordRow">
+                    <label for="userPassword" class="form-label fw-medium">
+                        @Localizer["Password"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="password" id="userPassword" name="Password" class="form-control" autocomplete="new-password" />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12 col-sm-6">
+                    <label for="userFirstName" class="form-label fw-medium">
+                        @Localizer["FirstName"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="userFirstName" name="FirstName" class="form-control" maxlength="128" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12 col-sm-6">
+                    <label for="userLastName" class="form-label fw-medium">
+                        @Localizer["LastName"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="userLastName" name="LastName" class="form-control" maxlength="128" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12 d-none" id="userActiveRow">
+                    <div class="form-check form-switch">
+                        <input type="hidden" name="IsActive" value="false" />
+                        <input type="checkbox" id="userIsActive" name="IsActive" class="form-check-input" role="switch" value="true" />
+                        <label for="userIsActive" class="form-check-label ms-2">@SharedLocalizer["Active"]</label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" id="btnSaveUser" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>

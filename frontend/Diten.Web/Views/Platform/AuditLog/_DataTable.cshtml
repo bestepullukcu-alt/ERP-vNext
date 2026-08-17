@@ -1,0 +1,32 @@
+@using Diten.Web.Views.Platform.AuditLog
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AuditLogIndex> Localizer
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+    <div class="card-datatable table-responsive">
+        <table id="dt-auditlog" data-dt-standard="v2" class="datatables-audit-log table border-top align-middle">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>@Localizer["AuditLog.Table.OccurredAt"]</th>
+                    <th>@Localizer["AuditLog.Table.Actor"]</th>
+                    <th>@Localizer["AuditLog.Table.Tenant"]</th>
+                    <th>@Localizer["AuditLog.Table.Category"]</th>
+                    <th>@Localizer["AuditLog.Table.Operation"]</th>
+                    <th>@Localizer["AuditLog.Table.EntityType"]</th>
+                    <th>@Localizer["AuditLog.Table.EntityId"]</th>
+                    <th>@Localizer["AuditLog.Table.Outcome"]</th>
+                    <th>@Localizer["AuditLog.Table.SourceModule"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["AuditLog.Table.Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

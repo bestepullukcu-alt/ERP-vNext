@@ -1,0 +1,67 @@
+.mg-card {
+  border-radius: 14px;
+  border: 1px solid var(--bs-border-color);
+  box-shadow: 0 6px 18px rgba(17, 24, 39, 0.04);
+}
+
+.mg-top-nav {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--bs-secondary-color);
+  text-decoration: none;
+  padding: 0.35rem 0.55rem;
+  border-radius: 8px;
+}
+
+.mg-top-nav.active,
+.mg-top-nav:hover {
+  color: var(--bs-primary);
+  background: var(--bs-primary-bg-subtle);
+}
+
+.mg-empty {
+  border: 1px dashed var(--bs-border-color);
+  border-radius: 10px;
+  padding: 1rem;
+  color: var(--bs-secondary-color);
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.mg-module-card {
+  min-height: 260px;
+}
+
+.mg-chart-placeholder {
+  min-height: 180px;
+  border-radius: 12px;
+  border: 1px dashed var(--bs-border-color);
+  display: grid;
+  place-items: center;
+  color: var(--bs-secondary-color);
+  font-size: 0.9rem;
+}
+
+.mg-kanban-col {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 12px;
+  padding: 0.75rem;
+  background: var(--bs-body-bg);
+  min-height: 260px;
+}
+
+.mg-kanban-item {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 10px;
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.mg-tile {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 10px;
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  background: var(--bs-body-bg);
+}

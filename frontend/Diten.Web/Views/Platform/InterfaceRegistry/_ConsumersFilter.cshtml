@@ -1,0 +1,33 @@
+@using Diten.Web.Views.Platform.InterfaceRegistry
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<InterfaceRegistryDetails> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost">
+    <div class="collapse" id="consumerFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="consumerFilterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip">
+                        <input type="text" id="filterConsumerModule" class="form-control form-control-sm" placeholder="@Localizer["Module"]">
+                    </div>
+                    <div class="filter-chip">
+                        <input type="text" id="filterConsumerService" class="form-control form-control-sm" placeholder="@Localizer["Service"]">
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterConsumerRequired" class="form-select form-select-sm select2" data-placeholder="@Localizer["Required"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="true">@Localizer["Required"]</option>
+                            <option value="false">@Localizer["Optional"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" id="btnConsumerFilterApply" class="btn btn-sm btn-primary">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" id="btnConsumerFilterReset" class="btn btn-sm btn-label-danger">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

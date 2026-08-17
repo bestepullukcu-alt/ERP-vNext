@@ -1,0 +1,464 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:schema id="root">
+    <xs:element name="root" ns1:IsDataSet="true">
+      <xs:complexType>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element name="metadata">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" />
+              <xs:attribute name="type" type="xsd:string" />
+              <xs:attribute name="mimetype" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="assembly">
+            <xs:complexType>
+              <xs:attribute name="alias" type="xsd:string" />
+              <xs:attribute name="name" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="data">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+                <xs:element name="comment" type="xsd:string" minOccurs="0" ns1:Ordinal="2" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" ns1:Ordinal="1" />
+              <xs:attribute name="type" type="xsd:string" ns1:Ordinal="3" />
+              <xs:attribute name="mimetype" type="xsd:string" ns1:Ordinal="4" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="resheader">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" use="required" />
+            </xs:complexType>
+          </xs:element>
+        </xs:choice>
+      </xs:complexType>
+    </xs:element>
+  </xs:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Save" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Titre</value>
+  </data>
+  <data name="TaxNumber" xml:space="preserve">
+    <value>Numéro fiscal</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>Succès</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Erreur</value>
+  </data>
+  <data name="RecordCreated" xml:space="preserve">
+    <value>L'enregistrement a été créé avec succès.</value>
+  </data>
+  <data name="RecordDeleted" xml:space="preserve">
+    <value>L'enregistrement a été supprimé avec succès.</value>
+  </data>
+  <data name="RecordSaved" xml:space="preserve">
+    <value>Les modifications ont été enregistrées avec succès.</value>
+  </data>
+  <data name="ErrorOccurred" xml:space="preserve">
+    <value>Une erreur s'est produite lors du traitement de votre demande.</value>
+  </data>
+  <data name="AreYouSure" xml:space="preserve">
+    <value>Êtes-vous sûr ?</value>
+  </data>
+  <data name="DeleteConfirmationTitle" xml:space="preserve">
+    <value>Êtes-vous sûr ?</value>
+  </data>
+  <data name="DeleteConfirmationSubText" xml:space="preserve">
+    <value>Cette action est irréversible !</value>
+  </data>
+  <data name="DeleteConfirmationYesBtn" xml:space="preserve">
+    <value>Oui, supprimer</value>
+  </data>
+  <data name="ConfirmAction" xml:space="preserve">
+    <value>Voulez-vous vraiment continuer ?</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>Accès refusé.</value>
+  </data>
+  <data name="ValidationFailed" xml:space="preserve">
+    <value>Veuillez remplir les champs obligatoires.</value>
+  </data>
+  <data name="SearchFilter" xml:space="preserve">
+    <value>Recherche et filtre</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Statut</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>Actif</value>
+  </data>
+  <data name="Passive" xml:space="preserve">
+    <value>Inactif</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Inconnu</value>
+  </data>
+  <data name="ViewDetails" xml:space="preserve">
+    <value>Voir les détails</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Rechercher..</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>Exporter</value>
+  </data>
+  <data name="Print" xml:space="preserve">
+    <value>Imprimer</value>
+  </data>
+  <data name="Import" xml:space="preserve">
+    <value>Importer</value>
+  </data>
+  <data name="Filter" xml:space="preserve">
+    <value>Filtrer</value>
+  </data>
+  <data name="Reset" xml:space="preserve">
+    <value>Réinitialiser</value>
+  </data>
+  <data name="ComingSoon" xml:space="preserve">
+    <value>Cette fonctionnalité sera bientôt ajoutée.</value>
+  </data>
+  <data name="MDM" xml:space="preserve">
+    <value>MDM</value>
+  </data>
+  <data name="Saving" xml:space="preserve">
+    <value>Enregistrement...</value>
+  </data>
+  <data name="FailedToLoadData" xml:space="preserve">
+    <value>Échec du chargement des données. Veuillez réessayer plus tard.</value>
+  </data>
+  <data name="GatewayError" xml:space="preserve">
+    <value>Une erreur s'est produite lors de la communication avec le serveur.</value>
+  </data>
+  <data name="Light" xml:space="preserve">
+    <value>Clair</value>
+  </data>
+  <data name="Dark" xml:space="preserve">
+    <value>Sombre</value>
+  </data>
+  <data name="Admin" xml:space="preserve">
+    <value>Administrateur</value>
+  </data>
+  <data name="MyProfile" xml:space="preserve">
+    <value>Mon profil</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Paramètres</value>
+  </data>
+  <data name="LogOut" xml:space="preserve">
+    <value>Se déconnecter</value>
+  </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Appliquer</value>
+  </data>
+  <data name="PDF" xml:space="preserve">
+    <value>PDF</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copier</value>
+  </data>
+  <data name="DtNoRecords" xml:space="preserve">
+    <value>Aucun enregistrement correspondant trouvé</value>
+  </data>
+  <data name="DtInfo" xml:space="preserve">
+    <value>Affichage de _START_ à _END_ sur _TOTAL_ entrées</value>
+  </data>
+  <data name="DtInfoEmpty" xml:space="preserve">
+    <value>Affichage de 0 à 0 sur 0 entrée</value>
+  </data>
+  <data name="DtInfoFiltered" xml:space="preserve">
+    <value>(filtré à partir de _MAX_ entrées au total)</value>
+  </data>
+  <data name="DtZeroRecords" xml:space="preserve">
+    <value>Aucun enregistrement correspondant trouvé</value>
+  </data>
+  <data name="DtEmptyTable" xml:space="preserve">
+    <value>Aucune donnée disponible dans le tableau</value>
+  </data>
+  <data name="ShowAll" xml:space="preserve">
+    <value>Tout afficher</value>
+  </data>
+  <data name="ColumnVisibility" xml:space="preserve">
+    <value>Visibilité des colonnes</value>
+  </data>
+  <data name="BulkDelete" xml:space="preserve">
+    <value>Suppression en masse</value>
+  </data>
+  <data name="BulkDeleteConfirm" xml:space="preserve">
+    <value>Voulez-vous vraiment supprimer les {0} enregistrements sélectionnés ?</value>
+  </data>
+  <data name="BulkDeleteSuccess" xml:space="preserve">
+    <value>{0} enregistrements supprimés avec succès</value>
+  </data>
+  <data name="ClearSelection" xml:space="preserve">
+    <value>Effacer la sélection</value>
+  </data>
+  <data name="SelectedCount" xml:space="preserve">
+    <value>enregistrements sélectionnés</value>
+  </data>
+  <data name="RequiredProgress" xml:space="preserve">
+    <value>Obligatoire : {{0}} / {{1}}</value>
+  </data>
+  <data name="Update" xml:space="preserve">
+    <value>Mettre à jour</value>
+  </data>
+  <data name="RecordUpdated" xml:space="preserve">
+    <value>L'enregistrement a été mis à jour avec succès.</value>
+  </data>
+  <data name="InvalidEmail" xml:space="preserve">
+    <value>Adresse e-mail non valide</value>
+  </data>
+  <data name="InvalidUrl" xml:space="preserve">
+    <value>Format d'URL non valide</value>
+  </data>
+  <data name="InvalidPhone" xml:space="preserve">
+    <value>Numéro de téléphone non valide</value>
+  </data>
+  <data name="NumericOnly" xml:space="preserve">
+    <value>Seuls les chiffres sont autorisés</value>
+  </data>
+  <data name="FieldRequired" xml:space="preserve">
+    <value>Ce champ est obligatoire</value>
+  </data>
+  <data name="InvalidFiscalYear" xml:space="preserve">
+    <value>Format non valide (ex. : 01-01)</value>
+  </data>
+  <data name="ValidationErrors" xml:space="preserve">
+    <value>Erreurs : {0}</value>
+  </data>
+  <data name="RequiredStatus" xml:space="preserve">
+    <value>Obligatoire : {0} / {1}</value>
+  </data>
+  <data name="SelectPlaceholder" xml:space="preserve">
+    <value>Sélectionner...</value>
+  </data>
+  <data name="Overview" xml:space="preserve">
+    <value>Vue d'ensemble</value>
+  </data>
+  <data name="SubRecords" xml:space="preserve">
+    <value>Sous-enregistrements</value>
+  </data>
+  <data name="Details" xml:space="preserve">
+    <value>Détails</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Retour à la liste</value>
+  </data>
+  <data name="EditRecord" xml:space="preserve">
+    <value>Modifier l'enregistrement</value>
+  </data>
+  <data name="NoRecordsFound" xml:space="preserve">
+    <value>Aucun sous-enregistrement pour le moment.</value>
+  </data>
+  <data name="About" xml:space="preserve">
+    <value>À propos</value>
+  </data>
+  <data name="Address" xml:space="preserve">
+    <value>Adresse</value>
+  </data>
+  <data name="EmailAddress" xml:space="preserve">
+    <value>Adresse e-mail</value>
+  </data>
+  <data name="PhoneNumber" xml:space="preserve">
+    <value>Numéro de téléphone</value>
+  </data>
+  <data name="Website" xml:space="preserve">
+    <value>Site web</value>
+  </data>
+  <data name="Sector" xml:space="preserve">
+    <value>Secteur</value>
+  </data>
+  <data name="ContactPerson" xml:space="preserve">
+    <value>Personne de contact</value>
+  </data>
+  <data name="PrimaryCurrency" xml:space="preserve">
+    <value>Devise principale</value>
+  </data>
+  <data name="DefaultTimeZone" xml:space="preserve">
+    <value>Fuseau horaire par défaut</value>
+  </data>
+  <data name="BasicInfo" xml:space="preserve">
+    <value>Informations de base</value>
+  </data>
+  <data name="Login.Title" xml:space="preserve">
+    <value>Connexion</value>
+  </data>
+  <data name="Login.Email" xml:space="preserve">
+    <value>E-mail</value>
+  </data>
+  <data name="Login.Password" xml:space="preserve">
+    <value>Mot de passe</value>
+  </data>
+  <data name="Login.RememberMe" xml:space="preserve">
+    <value>Se souvenir de moi</value>
+  </data>
+  <data name="Login.Submit" xml:space="preserve">
+    <value>Se connecter</value>
+  </data>
+  <data name="Login.ErrorTitle" xml:space="preserve">
+    <value>Erreur</value>
+  </data>
+  <data name="Login.ErrorRequired" xml:space="preserve">
+    <value>L'e-mail et le mot de passe sont obligatoires</value>
+  </data>
+  <data name="Login.Error" xml:space="preserve">
+    <value>E-mail ou mot de passe non valide</value>
+  </data>
+  <data name="Login.Loading" xml:space="preserve">
+    <value>Connexion en cours...</value>
+  </data>
+  <data name="Login.Subtitle" xml:space="preserve">
+    <value>Veuillez vous connecter à votre compte</value>
+  </data>
+  <data name="Sandbox" xml:space="preserve">
+    <value>Bac à sable</value>
+  </data>
+  <data name="SaveView" xml:space="preserve">
+    <value>Enregistrer La Vue</value>
+  </data>
+  <data name="Platform" xml:space="preserve">
+    <value>Plateforme</value>
+  </data>
+  <data name="WorkCenterMenu" xml:space="preserve">
+    <value>Centre de travail</value>
+  </data>
+  <data name="ItemMaster" xml:space="preserve">
+    <value>Référentiel des articles</value>
+  </data>
+  <data name="CompositionManagement" xml:space="preserve">
+    <value>Gestion des compositions</value>
+  </data>
+  <data name="CategoryManagement" xml:space="preserve">
+    <value>Gestion des catégories</value>
+  </data>
+  <data name="VariantManagement" xml:space="preserve">
+    <value>Gestion des variantes</value>
+  </data>
+  <data name="Attributes" xml:space="preserve">
+    <value>Attributs</value>
+  </data>
+  <data name="Variants" xml:space="preserve">
+    <value>Variantes</value>
+  </data>
+  <data name="ColumnOrder" xml:space="preserve">
+    <value>Ordre des colonnes</value>
+  </data>
+  <data name="SKUManagement" xml:space="preserve">
+    <value>Gestion des SKU</value>
+  </data>
+  <data name="ProductMaster" xml:space="preserve">
+    <value>Référentiel des produits</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Descriptif</value>
+  </data>
+  <data name="DescriptionPlaceholder" xml:space="preserve">
+    <value>Saisissez une description...</value>
+  </data>
+  <data name="LevelPrefix" xml:space="preserve">
+    <value>Niveau</value>
+  </data>
+  <data name="NotAvailable" xml:space="preserve">
+    <value>Non disponible</value>
+  </data>
+  <data name="Workspace" xml:space="preserve">
+    <value>Espace de travail</value>
+  </data>
+  <data name="PlatformAdministration" xml:space="preserve">
+    <value>Administration de la plateforme</value>
+  </data>
+  <data name="DeveloperSandbox" xml:space="preserve">
+    <value>Bac à sable développeur</value>
+  </data>
+  <data name="GoldenSlim" xml:space="preserve">
+    <value>Golden Slim</value>
+  </data>
+  <data name="GoldenCompact" xml:space="preserve">
+    <value>Golden Compact</value>
+  </data>
+  <data name="ToggleTheme" xml:space="preserve">
+    <value>Changer de thème</value>
+  </data>
+  <data name="SystemTheme" xml:space="preserve">
+    <value>Système</value>
+  </data>
+  <data name="Notification" xml:space="preserve">
+    <value>Notification</value>
+  </data>
+  <data name="NewNotifications" xml:space="preserve">
+    <value>{0} nouveau</value>
+  </data>
+  <data name="MarkAllAsRead" xml:space="preserve">
+    <value>Tout marquer comme lu</value>
+  </data>
+  <data name="ViewAllNotifications" xml:space="preserve">
+    <value>Voir toutes les notifications</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>Utilisateur</value>
+  </data>
+  <data name="SubscriptionPlans" xml:space="preserve">
+    <value>Plans d'abonnement</value>
+  </data>
+  <data name="Login.ForgotPassword" xml:space="preserve"><value>Forgot Password?</value></data>
+  <data name="Login.EmailRequired" xml:space="preserve"><value>Email is required.</value></data>
+  <data name="ForgotPassword.Title" xml:space="preserve"><value>Forgot Password?</value></data>
+  <data name="ForgotPassword.Subtitle" xml:space="preserve"><value>Enter your email and we will send reset instructions.</value></data>
+  <data name="ForgotPassword.Submit" xml:space="preserve"><value>Send reset link</value></data>
+  <data name="ForgotPassword.SentTitle" xml:space="preserve"><value>Check your email</value></data>
+  <data name="ForgotPassword.SentMessage" xml:space="preserve"><value>If the email exists, reset instructions have been sent.</value></data>
+  <data name="ResetPassword.Title" xml:space="preserve"><value>Reset Password</value></data>
+  <data name="ResetPassword.Subtitle" xml:space="preserve"><value>Your new password must be different from previously used passwords.</value></data>
+  <data name="ChangePassword.Title" xml:space="preserve"><value>Change Password</value></data>
+  <data name="ChangePassword.Subtitle" xml:space="preserve"><value>You must change your temporary password before continuing.</value></data>
+  <data name="CurrentPassword" xml:space="preserve"><value>Current Password</value></data>
+  <data name="NewPassword" xml:space="preserve"><value>New Password</value></data>
+  <data name="ConfirmPassword" xml:space="preserve"><value>Confirm Password</value></data>
+  <data name="SetNewPassword" xml:space="preserve"><value>Set new password</value></data>
+  <data name="BackToLogin" xml:space="preserve"><value>Back to login</value></data>
+  <data name="ResetPassword.Required" xml:space="preserve"><value>All password fields are required.</value></data>
+  <data name="ResetPassword.Mismatch" xml:space="preserve"><value>Passwords do not match.</value></data>
+  <data name="ResetPassword.SuccessTitle" xml:space="preserve"><value>Password updated</value></data>
+  <data name="ResetPassword.SuccessMessage" xml:space="preserve"><value>Your password has been updated.</value></data>
+  <data name="AccessGovernance" xml:space="preserve"><value>Access Governance</value></data>
+  <data name="UsersMenu" xml:space="preserve"><value>Users</value></data>
+  <data name="RolesMenu" xml:space="preserve"><value>Roles</value></data>
+  <data name="PermissionsMenu" xml:space="preserve"><value>Permissions</value></data>
+  <data name="RolePermissionAssignmentMenu" xml:space="preserve"><value>Role Permissions</value></data>
+  <data name="UserRoleAssignmentMenu" xml:space="preserve"><value>User Roles</value></data>
+  <data name="SelfAccessMenu" xml:space="preserve"><value>My Access</value></data>
+  <data name="ReferenceDataMenu" xml:space="preserve"><value>Données de référence</value></data>
+</root>
+

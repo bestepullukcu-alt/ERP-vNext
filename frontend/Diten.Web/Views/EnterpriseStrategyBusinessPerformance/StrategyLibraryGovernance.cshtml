@@ -1,0 +1,46 @@
+@model Diten.Web.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Library Governance";
+}
+
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+<div class="card mb-3">
+    <div class="card-body d-flex flex-wrap gap-2 align-items-center">
+        <input id="library-gov-item-id" class="form-control form-control-sm w-auto" style="min-width:280px;" placeholder="Template or blueprint ID" />
+        <button id="library-gov-load" class="btn btn-sm btn-outline-secondary">Load</button>
+        <button id="library-gov-submit-review" class="btn btn-sm btn-outline-secondary">Submit Review</button>
+        <button id="library-gov-approve" class="btn btn-sm btn-outline-secondary">Approve</button>
+        <button id="library-gov-publish" class="btn btn-sm btn-outline-primary">Publish</button>
+        <button id="library-gov-retire" class="btn btn-sm btn-outline-danger">Retire</button>
+        <a class="btn btn-sm btn-primary ms-auto" href="/management-governance/enterprise-strategy-business-performance/library/catalog">Open Catalog</a>
+    </div>
+</div>
+<div class="card mb-3">
+    <div class="card-body">
+        <h6>Current Item</h6>
+        <pre id="library-gov-current" class="small mb-0" style="white-space:pre-wrap;">No item loaded.</pre>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body">
+        <h6>Version History</h6>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle" id="library-gov-versions-table">
+                <thead>
+                    <tr>
+                        <th>Version</th>
+                        <th>Status</th>
+                        <th>Summary</th>
+                        <th>Changed By</th>
+                        <th>Changed At</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-library-governance.js" asp-append-version="true"></script>
+}

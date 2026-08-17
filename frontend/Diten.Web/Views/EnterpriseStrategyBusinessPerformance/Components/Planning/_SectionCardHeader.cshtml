@@ -1,0 +1,38 @@
+@{
+    var number = (ViewData["SectionNumber"]?.ToString() ?? string.Empty);
+    var title = (ViewData["SectionTitle"]?.ToString() ?? string.Empty);
+    var subtitle = (ViewData["SectionSubtitle"]?.ToString() ?? string.Empty);
+    var statusId = (ViewData["SectionStatusId"]?.ToString() ?? string.Empty);
+    var statusText = (ViewData["SectionStatusText"]?.ToString() ?? string.Empty);
+    var statusClass = (ViewData["SectionStatusClass"]?.ToString() ?? "is-info");
+}
+<div class="es-workspace-section-header">
+    <div>
+        <h6 class="es-workspace-section-title">
+            @if (!string.IsNullOrWhiteSpace(number))
+            {
+                <span class="es-section-index">@number.</span>
+            }
+            @title
+            @if (ViewData["ShowSoonBadge"] != null && (bool)ViewData["ShowSoonBadge"])
+            {
+                <span class="es-soon-badge">Soon</span>
+            }
+        </h6>
+        @if (!string.IsNullOrWhiteSpace(subtitle))
+        {
+            <p class="es-workspace-section-subtitle">@subtitle</p>
+        }
+    </div>
+    @if (!string.IsNullOrWhiteSpace(statusText))
+    {
+        if (string.IsNullOrWhiteSpace(statusId))
+        {
+            <span class="es-status-pill @statusClass">@statusText</span>
+        }
+        else
+        {
+            <span id="@statusId" class="es-status-pill @statusClass">@statusText</span>
+        }
+    }
+</div>

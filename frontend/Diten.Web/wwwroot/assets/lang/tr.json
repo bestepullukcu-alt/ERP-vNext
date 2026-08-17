@@ -1,0 +1,32 @@
+{
+  "name": "İsim",
+  "country": "Ülke",
+  "type": "Tür",
+  "action": "İşlem",
+  "Company": "Şirket",
+  "AddCompany": "Şirket Ekle",
+  "SearchCompany": "Şirket Ara",
+  "CompanyName": "Şirket Adı",
+  "Abbrevation": "Kısaltma",
+  "Address": "Adres",
+  "Phone": "Telefon",
+  "Email": "E-posta",
+  "Website": "Web Sitesi",
+  "Add": "Ekle",
+  "Cancel": "İptal",
+  "EditCompany": "Şirketi Düzenle",
+  "Update": "Güncelle",
+  "DataTable": {
+    "sInfo": "_TOTAL_ kayıttan _START_ ile _END_ arası gösteriliyor",
+    "sInfoEmpty": "Gösterilecek kayıt yok",
+    "sInfoFiltered": "(_MAX_ kayıttan filtrelendi)",
+    "sLengthMenu": "_MENU_ kayıt göster",
+    "sSearch": "Ara",
+    "Role": "Rol",
+    "Description": "Açıklama",
+    "Active": "Aktif",
+    "AddRole": "Rol Ekle",
+    "PackagingForm": "Ambalaj Formu"
+  }
+
+}

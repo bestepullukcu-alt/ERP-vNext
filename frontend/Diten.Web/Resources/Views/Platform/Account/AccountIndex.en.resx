@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="AccessSummary" xml:space="preserve"><value>Access Summary</value></data>
+  <data name="AccountDescription" xml:space="preserve"><value>Update the editable account details for the signed-in Platform actor.</value></data>
+  <data name="AccountSummary" xml:space="preserve"><value>Account Summary</value></data>
+  <data name="AccountTitle" xml:space="preserve"><value>Account</value></data>
+  <data name="ActorType" xml:space="preserve"><value>Actor Type</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Created</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="Email" xml:space="preserve"><value>Email</value></data>
+  <data name="InvitationStatus" xml:space="preserve"><value>Invitation Status</value></data>
+  <data name="InvitedAt" xml:space="preserve"><value>Invited</value></data>
+  <data name="LastLoginAt" xml:space="preserve"><value>Last Login</value></data>
+  <data name="Loading" xml:space="preserve"><value>Loading...</value></data>
+  <data name="ManageAccount" xml:space="preserve"><value>Manage Account</value></data>
+  <data name="NotAvailable" xml:space="preserve"><value>Not available</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>View and manage your current Platform account.</value></data>
+  <data name="ProfileDescription" xml:space="preserve"><value>Review your account identity, access, and activity dates.</value></data>
+  <data name="ProfileSaved" xml:space="preserve"><value>Profile saved.</value></data>
+  <data name="ProfileTitle" xml:space="preserve"><value>My Profile</value></data>
+  <data name="Roles" xml:space="preserve"><value>Roles</value></data>
+  <data name="SettingsDescription" xml:space="preserve"><value>Manage the approved self-service fields for your account.</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>Account Settings</value></data>
+  <data name="Status" xml:space="preserve"><value>Status</value></data>
+  <data name="UnableToLoad" xml:space="preserve"><value>Account profile could not be loaded.</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Updated</value></data>
+  <data name="UserName" xml:space="preserve"><value>Username</value></data>
+</root>

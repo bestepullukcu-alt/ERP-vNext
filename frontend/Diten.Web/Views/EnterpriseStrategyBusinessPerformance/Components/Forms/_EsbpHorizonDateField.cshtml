@@ -1,0 +1,19 @@
+@{
+    var fieldId = ViewData["FieldId"] as string ?? "";
+    var label = ViewData["Label"] as string ?? "Date";
+    var required = ViewData["Required"] as bool? ?? false;
+    var colClass = ViewData["ColClass"] as string ?? "col-12 col-md-6";
+}
+<div class="@colClass form-control-validation esbp-horizon-field">
+    <label for="@fieldId" class="form-label @(required ? "es-required" : "")">@label</label>
+    <div class="input-group input-group-merge flex-nowrap esbp-horizon-input-group">
+        <input type="text"
+               id="@fieldId"
+               class="form-control esbp-horizon-date"
+               placeholder="dd/mm/yyyy"
+               autocomplete="off"
+               data-esbp-horizon="1"
+               @(required ? "required" : "") />
+        <span class="input-group-text esbp-horizon-calendar-btn" role="button" tabindex="0" title="Open calendar" aria-label="Open calendar"><i class="icon-base bx bx-calendar"></i></span>
+    </div>
+</div>

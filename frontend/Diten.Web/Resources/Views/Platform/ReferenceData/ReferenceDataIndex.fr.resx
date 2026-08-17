@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="PageTitle" xml:space="preserve"><value>Données de référence métier</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gérez les ensembles, versions, valeurs, mappages, utilisation et publication des données de référence métier régies.</value></data>
+  <data name="SetCode" xml:space="preserve"><value>Code de l'ensemble</value></data>
+  <data name="SetName" xml:space="preserve"><value>Nom de l'ensemble</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Type de portée</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Version" xml:space="preserve"><value>Version</value></data>
+  <data name="Governance" xml:space="preserve"><value>Gouvernance</value></data>
+  <data name="Validation" xml:space="preserve"><value>Validation</value></data>
+  <data name="ImportTitle" xml:space="preserve"><value>Aperçu de l'importation</value></data>
+  <data name="ImportDescription" xml:space="preserve"><value>Prévisualisez et validez les importations de données de référence.</value></data>
+  <data name="UsageTitle" xml:space="preserve"><value>Dépendances d'utilisation</value></data>
+  <data name="UsageDescription" xml:space="preserve"><value>Enregistrez et examinez les consommateurs d'un ensemble de données de référence.</value></data>
+  <data name="UsageSetLabel" xml:space="preserve"><value>Ensemble</value></data>
+  <data name="UsageConsumerModuleLabel" xml:space="preserve"><value>Module consommateur</value></data>
+  <data name="UsageConsumerNameLabel" xml:space="preserve"><value>Nom du consommateur</value></data>
+  <data name="UsageResolutionLabel" xml:space="preserve"><value>Résolution</value></data>
+  <data name="UsageVersionPinLabel" xml:space="preserve"><value>Version épinglée</value></data>
+  <data name="UsageAsOfLabel" xml:space="preserve"><value>À la date du</value></data>
+  <data name="UsageCriticalityLabel" xml:space="preserve"><value>Criticité</value></data>
+  <data name="UsageConsumerModuleDefault" xml:space="preserve"><value>ERP</value></data>
+  <data name="UsageConsumerNameDefault" xml:space="preserve"><value>Consommateur</value></data>
+  <data name="UsageResolutionLatest" xml:space="preserve"><value>Dernière version</value></data>
+  <data name="UsageResolutionPinned" xml:space="preserve"><value>Épinglée</value></data>
+  <data name="UsageResolutionAsOf" xml:space="preserve"><value>À la date du</value></data>
+  <data name="UsageCriticalityHigh" xml:space="preserve"><value>Élevée</value></data>
+  <data name="UsageCriticalityMedium" xml:space="preserve"><value>Moyenne</value></data>
+  <data name="UsageCriticalityLow" xml:space="preserve"><value>Faible</value></data>
+  <data name="UsageVersionPinRequired" xml:space="preserve"><value>La version épinglée est obligatoire.</value></data>
+  <data name="UsageAsOfRequired" xml:space="preserve"><value>La date de référence est obligatoire.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Aucun ensemble de données de référence trouvé.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Impossible de charger les données de référence.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Chargement...</value></data>
+  <data name="AddSet" xml:space="preserve"><value>Ajouter un ensemble</value></data>
+  <data name="CreateDraft" xml:space="preserve"><value>Créer un brouillon</value></data>
+  <data name="Open" xml:space="preserve"><value>Ouvrir</value></data>
+  <data name="Publish" xml:space="preserve"><value>Publier</value></data>
+  <data name="Validate" xml:space="preserve"><value>Valider</value></data>
+  <data name="AddValue" xml:space="preserve"><value>Ajouter une valeur</value></data>
+  <data name="ValueGridTitle" xml:space="preserve"><value>Valeurs</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Ordre de tri</value></data>
+  <data name="TechnicalJsonView" xml:space="preserve"><value>Vue JSON technique</value></data>
+  <data name="ValidationBlockers" xml:space="preserve"><value>Blocages de validation</value></data>
+  <data name="DraftEditable" xml:space="preserve"><value>Brouillon modifiable</value></data>
+  <data name="ReadOnlyPublished" xml:space="preserve"><value>Publié en lecture seule</value></data>
+  <data name="Immutable" xml:space="preserve"><value>Immuable</value></data>
+  <data name="ImportPreview" xml:space="preserve"><value>Aperçu de l'importation</value></data>
+  <data name="CommitImport" xml:space="preserve"><value>Valider l'importation</value></data>
+  <data name="SelectFile" xml:space="preserve"><value>Sélectionner un fichier</value></data>
+  <data name="HierarchyTitle" xml:space="preserve"><value>Hiérarchie</value></data>
+  <data name="HierarchyDescription" xml:space="preserve"><value>Examinez les relations hiérarchiques de l'ensemble sélectionné.</value></data>
+  <data name="ValueCodeColumn" xml:space="preserve"><value>Code de valeur</value></data>
+  <data name="ParentColumn" xml:space="preserve"><value>Parent</value></data>
+  <data name="DraftHierarchyPreview" xml:space="preserve"><value>Aperçu de la hiérarchie du brouillon</value></data>
+  <data name="CollapsePreview" xml:space="preserve"><value>Réduire l'aperçu</value></data>
+  <data name="ExpandPreview" xml:space="preserve"><value>Développer l'aperçu</value></data>
+  <data name="NoParentOption" xml:space="preserve"><value>(Aucun parent)</value></data>
+  <data name="ClearParent" xml:space="preserve"><value>Effacer le parent</value></data>
+  <data name="ClearParentConfirm" xml:space="preserve"><value>Effacer l'affectation parent de cette valeur ?</value></data>
+  <data name="AttributesTitle" xml:space="preserve"><value>Attributs</value></data>
+  <data name="AttributesDescription" xml:space="preserve"><value>Gérez les définitions d'attributs pour les versions brouillon.</value></data>
+  <data name="MappingsTitle" xml:space="preserve"><value>Mappages</value></data>
+  <data name="MappingsDescription" xml:space="preserve"><value>Gérer les mappages externes pour les valeurs.</value></data>
+  <data name="SetDetailTitle" xml:space="preserve"><value>Espace de travail de l'ensemble</value></data>
+  <data name="SetDetailDescription" xml:space="preserve"><value>Consultez les métadonnées de l'ensemble et les versions disponibles.</value></data>
+  <data name="VersionDetailTitle" xml:space="preserve"><value>Détail de la version</value></data>
+  <data name="VersionDetailDescription" xml:space="preserve"><value>Consultez les valeurs, attributs, mappages et résultats de validation.</value></data>
+  <data name="PublishReviewTitle" xml:space="preserve"><value>Révision de publication</value></data>
+  <data name="PublishReviewDescription" xml:space="preserve"><value>Validez la préparation, l'approbation, les preuves et les décisions de publication.</value></data>
+  <data name="Apply" xml:space="preserve"><value>Appliquer</value></data>
+  <data name="Reset" xml:space="preserve"><value>Réinitialiser</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Tout afficher</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Annuler</value></data>
+  <data name="Save" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="Submit" xml:space="preserve"><value>Soumettre</value></data>
+  <data name="Approve" xml:space="preserve"><value>Approuver</value></data>
+  <data name="Refresh" xml:space="preserve"><value>Actualiser</value></data>
+  <data name="SaveHierarchy" xml:space="preserve"><value>Enregistrer la hiérarchie</value></data>
+  <data name="HierarchySaved" xml:space="preserve"><value>Les affectations hiérarchiques ont été enregistrées.</value></data>
+  <data name="HierarchyUnsavedWarning" xml:space="preserve"><value>Vous avez des modifications de hiérarchie non enregistrées. Cliquez sur Enregistrer la hiérarchie pour les appliquer.</value></data>
+  <data name="SaveDefinitions" xml:space="preserve"><value>Enregistrer les définitions</value></data>
+  <data name="SaveValueAttributes" xml:space="preserve"><value>Enregistrer les attributs de valeur</value></data>
+  <data name="Search" xml:space="preserve"><value>Rechercher</value></data>
+  <data name="Status" xml:space="preserve"><value>Statut</value></data>
+  <data name="NoRecords" xml:space="preserve"><value>Aucun enregistrement</value></data>
+  <data name="Details" xml:space="preserve"><value>Détails</value></data>
+  <data name="EditRecord" xml:space="preserve"><value>Modifier</value></data>
+  <data name="Active" xml:space="preserve"><value>Actif</value></data>
+  <data name="Passive" xml:space="preserve"><value>Passif</value></data>
+  <data name="RecordSaved" xml:space="preserve"><value>Enregistrement sauvegardé.</value></data>
+  <data name="Close" xml:space="preserve"><value>Fermer</value></data>
+  <data name="GovernanceNotConfigured" xml:space="preserve"><value>Non configuré</value></data>
+  <data name="GovernanceDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="GovernanceSubmitted" xml:space="preserve"><value>Soumis</value></data>
+  <data name="GovernanceInReview" xml:space="preserve"><value>En révision</value></data>
+  <data name="GovernanceApproved" xml:space="preserve"><value>Approuvé</value></data>
+  <data name="GovernanceRejected" xml:space="preserve"><value>Rejeté</value></data>
+  <data name="SetCodePlaceholder" xml:space="preserve"><value>ex. COUNTRY_CODES</value></data>
+  <data name="SetCodeHint" xml:space="preserve"><value>Identifiant unique et stable en MAJUSCULES. Utilisez uniquement des lettres, des chiffres et des traits de soulignement — ex. COUNTRY_CODES, PAYMENT_TERMS.</value></data>
+  <data name="SetCodeInvalid" xml:space="preserve"><value>Le code de l'ensemble est obligatoire et ne peut contenir que des lettres majuscules, des chiffres et des traits de soulignement.</value></data>
+  <data name="SetNamePlaceholder" xml:space="preserve"><value>ex. Codes pays</value></data>
+  <data name="SetNameHint" xml:space="preserve"><value>Nom d'affichage lisible utilisé dans toute l'application — ex. Codes pays.</value></data>
+  <data name="SetNameRequired" xml:space="preserve"><value>Le nom de l'ensemble est obligatoire.</value></data>
+  <data name="NoDraftTitle" xml:space="preserve"><value>Aucune version brouillon modifiable</value></data>
+  <data name="NoDraftDescription" xml:space="preserve"><value>Les attributs ne peuvent être modifiés que sur une version brouillon.</value></data>
+  <data name="NoDraftHierarchyDescription" xml:space="preserve"><value>La hiérarchie ne peut être modifiée que sur une version brouillon.</value></data>
+  <data name="NoDraftMappingsDescription" xml:space="preserve"><value>Les mappages ne peuvent être modifiés que sur une version brouillon.</value></data>
+  <data name="NoDraftHintFromPublished" xml:space="preserve"><value>Vous pouvez créer un nouveau brouillon à partir de la version publiée.</value></data>
+  <data name="NoDraftHintNoVersions" xml:space="preserve"><value>Cet ensemble n'a encore aucune version. Créez le premier brouillon.</value></data>
+  <data name="NoDraftRetired" xml:space="preserve"><value>Cet ensemble est retiré ; aucun nouveau brouillon ne peut être créé.</value></data>
+  <data name="NoDraftNoPermission" xml:space="preserve"><value>Vous n'avez pas l'autorisation de créer un brouillon. Veuillez contacter votre administrateur.</value></data>
+  <data name="OpenSetWorkspace" xml:space="preserve"><value>Ouvrir l'espace de l'ensemble</value></data>
+  <data name="BackToSets" xml:space="preserve"><value>Retour aux ensembles</value></data>
+  <data name="DraftCreated" xml:space="preserve"><value>Version brouillon créée.</value></data>
+  <data name="DraftAlreadyExists" xml:space="preserve"><value>Un brouillon actif existe déjà pour cet ensemble. Veuillez actualiser.</value></data>
+  <data name="CreateDraftFailed" xml:space="preserve"><value>Impossible de créer la version brouillon.</value></data>
+  <data name="SetNotFoundTitle" xml:space="preserve"><value>Ensemble introuvable</value></data>
+  <data name="SetNotFoundDescription" xml:space="preserve"><value>L'ensemble de données de référence demandé est introuvable :</value></data>
+  <data name="AttributeDefinitionsTitle" xml:space="preserve"><value>Définitions d'attributs</value></data>
+  <data name="ValueAttributesTitle" xml:space="preserve"><value>Attributs de valeur</value></data>
+  <data name="AddDefinition" xml:space="preserve"><value>Ajouter une définition</value></data>
+  <data name="AttributeCodeColumn" xml:space="preserve"><value>Code d'attribut</value></data>
+  <data name="DisplayNameColumn" xml:space="preserve"><value>Nom d'affichage</value></data>
+  <data name="DataTypeColumn" xml:space="preserve"><value>Type de données</value></data>
+  <data name="RequiredColumn" xml:space="preserve"><value>Obligatoire</value></data>
+  <data name="ActionColumn" xml:space="preserve"><value>Action</value></data>
+  <data name="RemoveAction" xml:space="preserve"><value>Supprimer</value></data>
+  <data name="ValueColumn" xml:space="preserve"><value>Valeur</value></data>
+  <data name="DefinitionsCardHint" xml:space="preserve"><value>Définissez les champs supplémentaires que les valeurs de cet ensemble auront.</value></data>
+  <data name="ValueAttributesCardHint" xml:space="preserve"><value>Renseignez les données de chaque valeur pour les champs définis ci-dessus.</value></data>
+  <data name="StepDefineFields" xml:space="preserve"><value>1. Définir les champs</value></data>
+  <data name="StepFillValues" xml:space="preserve"><value>2. Renseigner les valeurs</value></data>
+  <data name="UnsavedChanges" xml:space="preserve"><value>Modifications non enregistrées</value></data>
+  <data name="NoDefinitionsYet" xml:space="preserve"><value>Aucune définition d'attribut pour le moment. Ajoutez le premier champ avec Ajouter une définition.</value></data>
+  <data name="NoValuesYet" xml:space="preserve"><value>Ce brouillon n'a pas encore de valeurs. Ajoutez d'abord des valeurs dans le Draft Wizard.</value></data>
+  <data name="OpenDraftWizard" xml:space="preserve"><value>Ouvrir le Draft Wizard</value></data>
+  <data name="WorkspaceLoaded" xml:space="preserve"><value>Espace de travail des attributs (brouillon) chargé.</value></data>
+  <data name="DefinitionsSaved" xml:space="preserve"><value>Définitions d'attributs enregistrées.</value></data>
+  <data name="ValueAttributesSaved" xml:space="preserve"><value>Attributs de valeur enregistrés.</value></data>
+  <data name="AttributeCodeRequired" xml:space="preserve"><value>Le code d'attribut est obligatoire.</value></data>
+  <data name="DisplayNameRequired" xml:space="preserve"><value>Le nom d'affichage est obligatoire.</value></data>
+  <data name="DuplicateAttributeCode" xml:space="preserve"><value>Code d'attribut en double :</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>Échec de l'enregistrement.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Impossible de charger l'espace de travail des attributs.</value></data>
+  <data name="SaveAndContinue" xml:space="preserve"><value>Enregistrer et continuer</value></data>
+  <data name="PreviousStep" xml:space="preserve"><value>Précédent</value></data>
+  <data name="StepDefineSubtitle" xml:space="preserve"><value>Schéma / champs</value></data>
+  <data name="StepFillSubtitle" xml:space="preserve"><value>Données / cellules</value></data>
+  <data name="NoValuesTitle" xml:space="preserve"><value>Aucune valeur pour le moment</value></data>
+  <data name="NoDefinitionsTitle" xml:space="preserve"><value>Aucune définition d'attribut</value></data>
+  <data name="SaveMappings" xml:space="preserve"><value>Enregistrer les mappages</value></data>
+  <data name="DraftMappingsTab" xml:space="preserve"><value>Mappages brouillon</value></data>
+  <data name="PublishedSnapshotTab" xml:space="preserve"><value>Instantané publié</value></data>
+  <data name="DraftMappingAuthoringTitle" xml:space="preserve"><value>Création de mappage brouillon</value></data>
+  <data name="AddMapping" xml:space="preserve"><value>Ajouter un mappage</value></data>
+  <data name="PublishedMappingSnapshotTitle" xml:space="preserve"><value>Instantané de mappage publié</value></data>
+  <data name="MappingKeyColumn" xml:space="preserve"><value>Clé</value></data>
+  <data name="MappingSourceColumn" xml:space="preserve"><value>Source</value></data>
+  <data name="MappingTargetColumn" xml:space="preserve"><value>Cible</value></data>
+  <data name="MappingLabelColumn" xml:space="preserve"><value>Étiquette</value></data>
+  <data name="NoDraftReason" xml:space="preserve"><value>Une version brouillon active est requise.</value></data>
+  <data name="SelectSourceValue" xml:space="preserve"><value>Sélectionner la valeur source</value></data>
+  <data name="MappingKeyRequired" xml:space="preserve"><value>La clé de mappage est obligatoire.</value></data>
+  <data name="MappingSourceRequired" xml:space="preserve"><value>La valeur source est obligatoire.</value></data>
+  <data name="MappingTargetRequired" xml:space="preserve"><value>Le code cible est obligatoire.</value></data>
+  <data name="MappingSourceNotPresent" xml:space="preserve"><value>La valeur source {0} n'est pas présente dans les valeurs brouillon.</value></data>
+  <data name="DuplicateMappingKeySource" xml:space="preserve"><value>Mappage en double pour la clé/source : {0} / {1}</value></data>
+  <data name="MappingsSaved" xml:space="preserve"><value>Mappages brouillon enregistrés avec succès.</value></data>
+  <data name="MappingsWorkspaceLoaded" xml:space="preserve"><value>Espace de travail des mappages brouillon chargé.</value></data>
+  <data name="SaveMappingsFailed" xml:space="preserve"><value>Échec de l'enregistrement des mappages.</value></data>
+  <data name="UsageConsumerEndpointLabel" xml:space="preserve"><value>Point de terminaison consommateur</value></data>
+  <data name="UsageScopeTypeLabel" xml:space="preserve"><value>Type de portée</value></data>
+  <data name="UsageScopeKeyLabel" xml:space="preserve"><value>Clé de portée</value></data>
+  <data name="UsageNotesLabel" xml:space="preserve"><value>Notes</value></data>
+  <data name="UsageCriticalityCritical" xml:space="preserve"><value>Critique</value></data>
+  <data name="UsageScopeColumn" xml:space="preserve"><value>Portée</value></data>
+  <data name="UsageLastResolvedColumn" xml:space="preserve"><value>Dernière résolution</value></data>
+  <data name="UsageImpactTotal" xml:space="preserve"><value>Total</value></data>
+  <data name="UsageImpactCritical" xml:space="preserve"><value>Critique</value></data>
+  <data name="UsageAddNew" xml:space="preserve"><value>Enregistrer l'utilisation</value></data>
+  <data name="UsageFormTitleCreate" xml:space="preserve"><value>Enregistrer une dépendance d'utilisation</value></data>
+  <data name="UsageFormTitleEdit" xml:space="preserve"><value>Modifier la dépendance d'utilisation</value></data>
+  <data name="UsageSectionConsumer" xml:space="preserve"><value>Consommateur</value></data>
+  <data name="UsageSectionResolution" xml:space="preserve"><value>Résolution et criticité</value></data>
+  <data name="UsageEmptyState" xml:space="preserve"><value>Aucun enregistrement d'utilisation pour cet ensemble.</value></data>
+  <data name="OpenDraft" xml:space="preserve"><value>Ouvrir le brouillon</value></data>
+  <data name="OpenPublished" xml:space="preserve"><value>Ouvrir la version publiée</value></data>
+  <data name="CreateDraftFromPublished" xml:space="preserve"><value>Créer un brouillon depuis la version publiée</value></data>
+  <data name="ImportToDraft" xml:space="preserve"><value>Importer dans le brouillon</value></data>
+  <data name="PublishedFirstGuidanceTitle" xml:space="preserve"><value>Les valeurs publiées sont disponibles lorsque le brouillon actif est vide.</value></data>
+  <data name="PublishedFirstGuidanceDescription" xml:space="preserve"><value>Ouvrez la version publiée pour l'inspection ou créez les valeurs du brouillon avec l'assistant.</value></data>
+  <data name="SetIdentitySection" xml:space="preserve"><value>Identité</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="StatusRetired" xml:space="preserve"><value>Retiré</value></data>
+  <data name="StewardshipWorkspace" xml:space="preserve"><value>Espace de gestion</value></data>
+  <data name="DraftVersion" xml:space="preserve"><value>Version brouillon</value></data>
+  <data name="PublishedVersion" xml:space="preserve"><value>Version publiée</value></data>
+  <data name="RowVersion" xml:space="preserve"><value>Version de ligne</value></data>
+  <data name="Updated" xml:space="preserve"><value>Mis à jour</value></data>
+  <data name="ValidateDraft" xml:space="preserve"><value>Valider le brouillon</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>Soumettre pour approbation</value></data>
+  <data name="PublishReadiness" xml:space="preserve"><value>Vérifier la préparation à la publication</value></data>
+  <data name="VersionEditor" xml:space="preserve"><value>Éditeur de version</value></data>
+  <data name="VersionEditorDescription" xml:space="preserve"><value>Gérez les valeurs, attributs et l'ordre du brouillon.</value></data>
+  <data name="LifecycleSummary" xml:space="preserve"><value>Résumé du cycle de vie</value></data>
+  <data name="SetLabel" xml:space="preserve"><value>Ensemble</value></data>
+  <data name="SubmittedLabel" xml:space="preserve"><value>Soumis</value></data>
+  <data name="PublishedLabel" xml:space="preserve"><value>Publié</value></data>
+  <data name="EvidenceLabel" xml:space="preserve"><value>Preuve</value></data>
+  <data name="PublishReadinessTitle" xml:space="preserve"><value>État de préparation à la publication</value></data>
+  <data name="ChecksTitle" xml:space="preserve"><value>Contrôles</value></data>
+  <data name="GovernanceActions" xml:space="preserve"><value>Actions de gouvernance</value></data>
+  <data name="CanonicalEvidenceLink" xml:space="preserve"><value>Lien de preuve canonique</value></data>
+  <data name="SelectCanonicalEvidence" xml:space="preserve"><value>Sélectionner une preuve canonique</value></data>
+  <data name="EvidenceRefPlaceholder" xml:space="preserve"><value>Note de l'opérateur uniquement ; pas une preuve de préparation</value></data>
+  <data name="PublishMode" xml:space="preserve"><value>Mode de publication</value></data>
+  <data name="PublishModeImmediate" xml:space="preserve"><value>Immédiat</value></data>
+  <data name="PublishModeFutureDated" xml:space="preserve"><value>Daté ultérieurement</value></data>
+  <data name="PublishAtUtc" xml:space="preserve"><value>Publier le (UTC)</value></data>
+  <data name="PublishOverride" xml:space="preserve"><value>Dérogation de publication</value></data>
+  <data name="OverrideReasonPlaceholder" xml:space="preserve"><value>Motif de dérogation (requis si activé)</value></data>
+  <data name="ApprovalDecision" xml:space="preserve"><value>Décision d'approbation</value></data>
+  <data name="RejectDecision" xml:space="preserve"><value>Rejeter</value></data>
+  <data name="RejectionReasonPlaceholder" xml:space="preserve"><value>Motif de rejet (requis pour rejeter)</value></data>
+  <data name="VersionHistory" xml:space="preserve"><value>Historique des versions</value></data>
+  <data name="ApprovalColumn" xml:space="preserve"><value>Approbation</value></data>
+  <data name="NoVersionHistory" xml:space="preserve"><value>Aucun historique de version disponible pour cet ensemble.</value></data>
+  <data name="DependencyImpact" xml:space="preserve"><value>Impact des dépendances</value></data>
+  <data name="Select" xml:space="preserve"><value>Sélectionner</value></data>
+  <data name="OpenSelectedSetTitle" xml:space="preserve"><value>Ouvrir {0}</value></data>
+  <data name="SelectSetContextEmpty" xml:space="preserve"><value>Sélectionnez une ligne d'ensemble de données de référence pour ouvrir la Hiérarchie, les Attributs, les Mappages ou l'Utilisation de cet ensemble.</value></data>
+  <data name="SelectSetContextFirst" xml:space="preserve"><value>Sélectionnez une ligne d'ensemble de données de référence avant d'ouvrir cet espace de travail.</value></data>
+  <data name="SelectSetContextSelected" xml:space="preserve"><value>Ensemble sélectionné : {0}</value></data>
+  <data name="DraftWizardTitle" xml:space="preserve"><value>Assistant de brouillon</value></data>
+  <data name="DraftWizardDescription" xml:space="preserve"><value>Créez une version de données de référence en brouillon, étape par étape.</value></data>
+  <data name="DraftStrategyTitle" xml:space="preserve"><value>Stratégie de brouillon</value></data>
+  <data name="DraftStrategySubtitle" xml:space="preserve"><value>Choisissez un point de départ</value></data>
+  <data name="SetBasicsTitle" xml:space="preserve"><value>Informations de l'ensemble</value></data>
+  <data name="SetBasicsSubtitle" xml:space="preserve"><value>Vérifiez les détails de l'ensemble</value></data>
+  <data name="ReferenceValuesTitle" xml:space="preserve"><value>Valeurs de référence</value></data>
+  <data name="ReferenceValuesSubtitle" xml:space="preserve"><value>Ajouter et modifier des valeurs</value></data>
+  <data name="OptionalEnrichmentTitle" xml:space="preserve"><value>Enrichissement facultatif</value></data>
+  <data name="OptionalEnrichmentSubtitle" xml:space="preserve"><value>Hiérarchie, attributs, mappages</value></data>
+  <data name="ReviewValidateTitle" xml:space="preserve"><value>Réviser et valider</value></data>
+  <data name="ReviewValidateSubtitle" xml:space="preserve"><value>Vérifier l'état de préparation</value></data>
+  <data name="SubmitPublishTitle" xml:space="preserve"><value>Soumettre et publier</value></data>
+  <data name="SubmitPublishSubtitle" xml:space="preserve"><value>Finaliser le brouillon</value></data>
+  <data name="StrategyEmptyTitle" xml:space="preserve"><value>Commencer à vide</value></data>
+  <data name="StrategyEmptyHint" xml:space="preserve"><value>Commencez avec un brouillon vide et ajoutez les valeurs manuellement.</value></data>
+  <data name="StrategyCopyTitle" xml:space="preserve"><value>Copier depuis la version publiée</value></data>
+  <data name="StrategyCopyHint" xml:space="preserve"><value>Partez des valeurs de la version publiée actuelle.</value></data>
+  <data name="StrategyImportTitle" xml:space="preserve"><value>Importer depuis un fichier</value></data>
+  <data name="StrategyImportHint" xml:space="preserve"><value>Remplissez le brouillon en important un fichier externe.</value></data>
+  <data name="StrategyResumeTitle" xml:space="preserve"><value>Reprendre le brouillon</value></data>
+  <data name="StrategyResumeHint" xml:space="preserve"><value>Continuez à travailler sur la version brouillon existante.</value></data>
+  <data name="StartWizard" xml:space="preserve"><value>Démarrer l'assistant</value></data>
+  <data name="SourceVersion" xml:space="preserve"><value>Version source</value></data>
+  <data name="NextStep" xml:space="preserve"><value>Suivant</value></data>
+  <data name="AddFirstValue" xml:space="preserve"><value>Ajouter une valeur</value></data>
+  <data name="SaveDraftValues" xml:space="preserve"><value>Enregistrer les valeurs du brouillon</value></data>
+  <data name="DraftNoValuesTitle" xml:space="preserve"><value>Aucune valeur pour le moment</value></data>
+  <data name="DraftNoValuesHint" xml:space="preserve"><value>Ajoutez la première valeur à ce brouillon avec Ajouter une valeur.</value></data>
+  <data name="CodeColumn" xml:space="preserve"><value>Code</value></data>
+  <data name="ActiveColumn" xml:space="preserve"><value>Actif</value></data>
+  <data name="SortColumn" xml:space="preserve"><value>Tri</value></data>
+  <data name="ValuesCountLabel" xml:space="preserve"><value>Valeurs</value></data>
+  <data name="DuplicateCodesLabel" xml:space="preserve"><value>Codes en double</value></data>
+  <data name="RequiredFieldFailuresLabel" xml:space="preserve"><value>Échecs de champs obligatoires</value></data>
+  <data name="RunValidation" xml:space="preserve"><value>Lancer la validation</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Enregistrer le brouillon</value></data>
+  <data name="VersioningSection" xml:space="preserve"><value>Gestion des versions</value></data>
+  <data name="DraftNotEditable" xml:space="preserve"><value>Ce brouillon n'est plus modifiable car il a été soumis. Créez un nouveau brouillon pour modifier les valeurs.</value></data>
+  <data name="ValueCodeLabelRequired" xml:space="preserve"><value>Ajoutez au moins une valeur, avec un code et un nom d'affichage pour chacune.</value></data>
+  <data name="NoUnsavedChanges" xml:space="preserve"><value>Aucune modification non enregistrée.</value></data>
+  <data name="RunValidationFirst" xml:space="preserve"><value>Lancez d'abord la validation sans bloqueurs.</value></data>
+  <data name="SaveValuesFirst" xml:space="preserve"><value>Enregistrez d'abord les valeurs du brouillon.</value></data>
+  <data name="AddValueFirst" xml:space="preserve"><value>Ajoutez d'abord au moins une valeur.</value></data>
+  <data name="DownloadCsvTemplate" xml:space="preserve"><value>Télécharger le modèle CSV</value></data>
+  <data name="ImportTemplateTitle" xml:space="preserve"><value>Importer des valeurs depuis un fichier</value></data>
+  <data name="ImportTemplateHint" xml:space="preserve"><value>Téléchargez un modèle, remplissez vos valeurs, puis importez le fichier dans le brouillon.</value></data>
+  <data name="DownloadJsonTemplate" xml:space="preserve"><value>Télécharger le modèle JSON</value></data>
+  <data name="DownloadTemplate" xml:space="preserve"><value>Télécharger le modèle</value></data>
+</root>

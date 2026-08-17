@@ -1,0 +1,167 @@
+<section class="es-workspace-section" id="strategy-period-sec-identity">
+    @await Html.PartialAsync(
+        "~/Views/EnterpriseStrategyBusinessPerformance/Components/Planning/_SectionCardHeader.cshtml",
+        viewData: new ViewDataDictionary(ViewData)
+        {
+            ["SectionNumber"] = "1",
+            ["SectionTitle"] = "Period Identity *",
+            ["SectionSubtitle"] = "Parent cycle, naming, and ownership metadata.",
+            ["SectionStatusId"] = "strategy-period-sec-identity-state",
+            ["SectionStatusText"] = "Blocked",
+            ["SectionStatusClass"] = "is-blocked"
+        })
+    <div class="row g-2">
+        <div class="col-12 form-control-validation">
+            <label class="form-label es-required" for="strategy-period-cycle">Parent Planning Cycle</label>
+            <select id="strategy-period-cycle" class="form-select"><option value="">Select</option></select>
+        </div>
+        <div class="col-12 col-md-6 form-control-validation">
+            <label class="form-label es-required" for="strategy-period-name">Name</label>
+            <input id="strategy-period-name" class="form-control" />
+        </div>
+        <div class="col-12 col-md-6 form-control-validation">
+            <label class="form-label" for="strategy-period-code">Code <span class="es-field-tag tag-system">System-managed</span></label>
+            <input id="strategy-period-code" class="form-control" readonly />
+        </div>
+        <div class="col-12 col-md-6 form-control-validation">
+            <label class="form-label" for="strategy-period-status">Status / Lifecycle State</label>
+            <input id="strategy-period-status" class="form-control" value="Draft" readonly />
+            <div class="small text-muted">Create starts in Draft and can be activated when the scoped period is ready.</div>
+        </div>
+    </div>
+</section>
+
+<section class="es-workspace-section" id="strategy-period-sec-scope">
+    @await Html.PartialAsync(
+        "~/Views/EnterpriseStrategyBusinessPerformance/Components/Planning/_SectionCardHeader.cshtml",
+        viewData: new ViewDataDictionary(ViewData)
+        {
+            ["SectionNumber"] = "2",
+            ["SectionTitle"] = "Scope *",
+            ["SectionSubtitle"] = "Company, BU/function, region, and default-for-scope controls.",
+            ["SectionStatusId"] = "strategy-period-sec-scope-state",
+            ["SectionStatusText"] = "Blocked",
+            ["SectionStatusClass"] = "is-blocked"
+        })
+    <div class="row g-2">
+        <div class="col-12 col-md-4 form-control-validation">
+            <label class="form-label es-required" for="strategy-period-company">Company</label>
+            <select id="strategy-period-company" class="form-select">
+                <option value="">Select company</option>
+            </select>
+        </div>
+        <div class="col-12 col-md-4 form-control-validation">
+            <label class="form-label" for="strategy-period-bu">Business Unit / Function <span class="es-field-tag tag-optional">Optional</span></label>
+            <select id="strategy-period-bu" class="form-select">
+                <option value="">Select business unit</option>
+            </select>
+        </div>
+        <div class="col-12 col-md-4 form-control-validation">
+            <label class="form-label" for="strategy-period-region">Region / Geography <span class="es-field-tag tag-optional">Optional</span></label>
+            <select id="strategy-period-region" class="form-select">
+                <option value="">Select region</option>
+            </select>
+        </div>
+        <div class="col-12 form-control-validation">
+            <div class="form-check mb-1">
+                <input class="form-check-input" type="checkbox" id="strategy-period-default" />
+                <label class="form-check-label" for="strategy-period-default">Is Default for Scope</label>
+            </div>
+            <div class="small text-muted">Only one active default should exist per scope combination.</div>
+        </div>
+        <div class="col-12 form-control-validation">
+            <label class="form-label" for="strategy-period-scope-summary">Derived Scope Summary <span class="es-field-tag tag-derived">Derived</span></label>
+            <input id="strategy-period-scope-summary" class="form-control" readonly />
+        </div>
+    </div>
+</section>
+
+<section class="es-workspace-section" id="strategy-period-sec-ownership">
+    @await Html.PartialAsync(
+        "~/Views/EnterpriseStrategyBusinessPerformance/Components/Planning/_SectionCardHeader.cshtml",
+        viewData: new ViewDataDictionary(ViewData)
+        {
+            ["SectionNumber"] = "3",
+            ["SectionTitle"] = "Ownership & Accountability *",
+            ["SectionSubtitle"] = "Ownership is scope-filtered. Company / org context must be valid before position and incumbent resolution.",
+            ["SectionStatusId"] = "strategy-period-sec-ownership-state",
+            ["SectionStatusText"] = "Blocked",
+            ["SectionStatusClass"] = "is-blocked"
+        })
+    <div class="row g-2">
+        <div class="col-12 col-md-4 form-control-validation">
+            <label class="form-label es-required" for="strategy-period-owner-company">Owner Company / Org</label>
+            <select id="strategy-period-owner-company" class="form-select">
+                <option value="">Select owner company / org</option>
+            </select>
+            <div id="strategy-period-owner-company-help" class="small text-muted">Scope defines or narrows the valid owner company / org context.</div>
+        </div>
+        <div class="col-12 col-md-4 form-control-validation">
+            <label class="form-label es-required" for="strategy-period-owner-position">Owner Position</label>
+            <select id="strategy-period-owner-position" class="form-select" disabled>
+                <option value="">Select owner company / org first</option>
+            </select>
+            <div id="strategy-period-owner-position-help" class="small text-muted">Owner Position is filtered by selected owner company / org.</div>
+        </div>
+        <div class="col-12 col-md-4 form-control-validation">
+            <label class="form-label" for="strategy-period-current-owner-person-display">Current Owner Person</label>
+            <input id="strategy-period-current-owner-person-display" class="form-control" readonly placeholder="Auto-filled from selected position" />
+            <input id="strategy-period-current-owner-person" type="hidden" />
+            <div id="strategy-period-current-owner-person-help" class="small text-muted">Current Owner Person is resolved automatically from the active incumbent.</div>
+        </div>
+        <div class="col-12 form-control-validation">
+            <label class="form-label" for="strategy-period-accountability-summary">Accountability Summary</label>
+            <input id="strategy-period-accountability-summary" class="form-control" readonly value="-" />
+        </div>
+    </div>
+</section>
+
+<section class="es-workspace-section" id="strategy-period-sec-timing">
+    @await Html.PartialAsync(
+        "~/Views/EnterpriseStrategyBusinessPerformance/Components/Planning/_SectionCardHeader.cshtml",
+        viewData: new ViewDataDictionary(ViewData)
+        {
+            ["SectionNumber"] = "4",
+            ["SectionTitle"] = "Timing & Review *",
+            ["SectionSubtitle"] = "Date range must fit parent cycle horizon and keep Start/End consistency.",
+            ["SectionStatusId"] = "strategy-period-sec-timing-state",
+            ["SectionStatusText"] = "Blocked",
+            ["SectionStatusClass"] = "is-blocked"
+        })
+    <div class="row g-2">
+        <div class="col-12 col-md-4 form-control-validation">
+            <label class="form-label es-required" for="strategy-period-review">Review Cadence</label>
+            <select id="strategy-period-review" class="form-select"><option value="">Select</option></select>
+        </div>
+        <div class="col-12 col-md-4 form-control-validation">
+            <label class="form-label es-required" for="strategy-period-start">Start Date</label>
+            <input id="strategy-period-start" type="date" class="form-control" />
+        </div>
+        <div class="col-12 col-md-4 form-control-validation">
+            <label class="form-label es-required" for="strategy-period-end">End Date</label>
+            <input id="strategy-period-end" type="date" class="form-control" />
+        </div>
+        <div class="col-12">
+            <div id="strategy-period-parent-horizon-hint" class="small text-muted">Parent cycle horizon constraints are validated automatically.</div>
+        </div>
+    </div>
+</section>
+
+<section class="es-workspace-section" id="strategy-period-sec-notes">
+    @await Html.PartialAsync(
+        "~/Views/EnterpriseStrategyBusinessPerformance/Components/Planning/_SectionCardHeader.cshtml",
+        viewData: new ViewDataDictionary(ViewData)
+        {
+            ["SectionNumber"] = "5",
+            ["SectionTitle"] = "Notes",
+            ["SectionSubtitle"] = "Context notes for operating teams and governance reviewers.",
+            ["SectionStatusText"] = "Optional",
+            ["SectionStatusClass"] = "is-info"
+        })
+    <div class="row g-2">
+        <div class="col-12 form-control-validation">
+            <label class="form-label" for="strategy-period-notes">Notes <span class="es-field-tag tag-optional">Optional</span></label>
+            <textarea id="strategy-period-notes" class="form-control" rows="2"></textarea>
+        </div>
+    </div>
+</section>

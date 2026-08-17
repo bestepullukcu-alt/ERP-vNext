@@ -1,0 +1,70 @@
+@using Diten.Web.Views.Platform.ModuleCatalog
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ModuleCatalogIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["ModuleCatalogTitle"].Value;
+    Layout = "_LayoutPlatformAdmin";
+}
+
+<partial name="_Filter" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ModuleCatalogTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-primary"><i class="bx bx-grid-alt"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["TotalModules"]</small>
+                    <h5 id="kpi-total" class="mb-0">0</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-success"><i class="bx bx-check-shield"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["ActiveModules"]</small>
+                    <h5 id="kpi-active" class="mb-0">0</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-info"><i class="bx bx-extension"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["BetaModules"]</small>
+                    <h5 id="kpi-beta" class="mb-0">0</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-warning"><i class="bx bx-show"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["PreviewModules"]</small>
+                    <h5 id="kpi-preview" class="mb-0">0</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<partial name="_DataTable.cshtml" />
+
+@section Scripts {
+    <partial name="_IndexL10n" />
+    <script src="~/assets/js/Platform/ModuleCatalog/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ModuleCatalog/index.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,33 @@
+@using Diten.Web.Views.Platform.InterfaceRegistry
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<InterfaceRegistryDetails> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="card backbone-preview-section p-4 overflow-hidden">
+    <div class="mb-4 d-flex align-items-center justify-content-between">
+        <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["Consumers"]</h6>
+        <span class="badge bg-label-primary rounded-pill" id="consumerCount">0</span>
+    </div>
+
+    <div id="consumer-skeleton-loader" class="p-0" style="display: none;">
+        <div class="shimmer skeleton-row" style="width: 100%; height: 32px; margin-bottom: 2rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px;"></div>
+    </div>
+
+    <div class="card-datatable table-responsive mx-n4 mb-n4">
+        <table id="dt-consumers" data-dt-standard="v2" class="datatables-consumers table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="cell-fit"><input type="checkbox" class="dt-checkboxes-select-all form-check-input"></th>
+                    <th>@Localizer["Module"]</th>
+                    <th>@Localizer["Service"]</th>
+                    <th>@Localizer["Version"]</th>
+                    <th>@Localizer["Required"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,21 @@
+@using Diten.Web.Views.Platform.SelfAccess
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SelfAccessIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="selfaccess-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Yes = Localizer["Yes"].Value,
+        No = Localizer["No"].Value,
+        EnterKeyPrompt = Localizer["EnterKeyPrompt"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        ValidationFailed = SharedLocalizer["ValidationFailed"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        MatchCanonical = Localizer["MatchCanonical"].Value,
+        MatchLegacyAlias = Localizer["MatchLegacyAlias"].Value,
+        MatchMissing = Localizer["MatchMissing"].Value,
+        MatchBypassPlatformAdmin = Localizer["MatchBypassPlatformAdmin"].Value,
+        MatchBypassPartnerAdmin = Localizer["MatchBypassPartnerAdmin"].Value
+    })
+</script>

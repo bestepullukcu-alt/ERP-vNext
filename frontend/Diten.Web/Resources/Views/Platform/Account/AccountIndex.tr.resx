@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="AccessSummary" xml:space="preserve"><value>Erisim Ozeti</value></data>
+  <data name="AccountDescription" xml:space="preserve"><value>Oturum acmis Platform aktoru icin duzenlenebilir hesap detaylarini guncelleyin.</value></data>
+  <data name="AccountSummary" xml:space="preserve"><value>Hesap Ozeti</value></data>
+  <data name="AccountTitle" xml:space="preserve"><value>Hesap</value></data>
+  <data name="ActorType" xml:space="preserve"><value>Aktor Tipi</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Olusturulma</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Gorunen Ad</value></data>
+  <data name="Email" xml:space="preserve"><value>E-posta</value></data>
+  <data name="InvitationStatus" xml:space="preserve"><value>Davet Durumu</value></data>
+  <data name="InvitedAt" xml:space="preserve"><value>Davet Tarihi</value></data>
+  <data name="LastLoginAt" xml:space="preserve"><value>Son Giris</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yukleniyor...</value></data>
+  <data name="ManageAccount" xml:space="preserve"><value>Hesabi Yonet</value></data>
+  <data name="NotAvailable" xml:space="preserve"><value>Yok</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Mevcut Platform hesabinizi goruntuleyin ve yonetin.</value></data>
+  <data name="ProfileDescription" xml:space="preserve"><value>Hesap kimliginizi, erisiminizi ve aktivite tarihlerinizi inceleyin.</value></data>
+  <data name="ProfileSaved" xml:space="preserve"><value>Profil kaydedildi.</value></data>
+  <data name="ProfileTitle" xml:space="preserve"><value>Profilim</value></data>
+  <data name="Roles" xml:space="preserve"><value>Roller</value></data>
+  <data name="SettingsDescription" xml:space="preserve"><value>Hesabiniz icin onayli self-service alanlari yonetin.</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>Hesap Ayarlari</value></data>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="UnableToLoad" xml:space="preserve"><value>Hesap profili yuklenemedi.</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Guncellenme</value></data>
+  <data name="UserName" xml:space="preserve"><value>Kullanici Adi</value></data>
+</root>

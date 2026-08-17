@@ -1,0 +1,32 @@
+{
+  "name": "Имя",
+  "country": "Страна",
+  "type": "Тип",
+  "action": "Действие",
+  "Company": "Компания",
+  "AddCompany": "Добавить компанию",
+  "SearchCompany": "Поиск компании",
+  "CompanyName": "Название компании",
+  "Abbrevation": "Сокращение",
+  "Address": "Адрес",
+  "Phone": "Телефон",
+  "Email": "Электронная почта",
+  "Website": "Веб-сайт",
+  "Add": "Добавить",
+  "Cancel": "Отмена",
+  "EditCompany": "Редактировать компанию",
+  "Update": "Обновить",
+  "DataTable": {
+    "sInfo": "Показаны с _START_ по _END_ из _TOTAL_ записей",
+    "sInfoEmpty": "Нет записей для отображения",
+    "sInfoFiltered": "(отфильтровано из _MAX_ записей)",
+    "sLengthMenu": "_MENU_ записей на странице",
+    "sSearch": "Поиск:",
+    "Role": "Роль",
+    "Description": "Описание",
+    "Active": "Активный",
+    "AddRole": "Добавить роль",
+    "PackagingForm": "Форма упаковки"
+
+  }
+}

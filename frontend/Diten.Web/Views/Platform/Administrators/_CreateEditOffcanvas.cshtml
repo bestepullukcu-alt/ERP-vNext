@@ -1,0 +1,152 @@
+@model Diten.Web.Models.PlatformAdministrators.PlatformAdministratorEditViewModel
+@using Diten.Web.Views.Platform.Administrators
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AdministratorsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header py-6 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+            <h5 id="offcanvasCreateEditLabel" class="offcanvas-title mb-0">-</h5>
+            <div id="administratorRequiredTrackerHost"></div>
+        </div>
+        <button type="button" class="btn-close text-reset m-0" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top">
+        <div id="formAdministratorsAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formAdministrators"
+              class="pt-0"
+              data-required-tracker-target="#administratorRequiredTrackerHost"
+              data-required-tracker-wrapper-class="d-flex align-items-center"
+              data-required-tracker-badge-class="badge bg-label-danger px-2 py-1 d-inline-flex align-items-center"
+              novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="administratorId" name="Id" value="" />
+            <input type="hidden" id="administratorVersion" name="Version" value="0" />
+            <input type="hidden" id="administratorStatus" name="Status" value="Active" />
+
+            <div class="row g-4">
+                <!-- Status and Invitation Badge (shown only in Edit mode) -->
+                <div id="administratorEditStatusSection" class="col-12 d-none">
+                    <div class="card bg-transparent border p-3 shadow-none">
+                        <div class="d-flex flex-column gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fw-medium text-heading">@SharedLocalizer["Status"]:</span>
+                                <span id="administratorEditStatusBadge" class="badge bg-label-secondary">-</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fw-medium text-heading">@Localizer["InvitationStatus"]:</span>
+                                <span id="administratorEditInvitationBadge" class="badge bg-label-secondary">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label for="administratorEmail" class="form-label fw-medium">
+                        @Localizer["Email"] <span class="text-danger">*</span>
+                    </label>
+                    <div class="input-group">
+                        <input type="email" id="administratorEmail" name="Email" class="form-control" maxlength="256" placeholder="@Localizer["EmailPlaceholder"]" required />
+                        <button type="button" class="btn btn-outline-secondary d-none" id="btnUnlockEmail" data-bs-toggle="tooltip" title="@Localizer["EmailUnlockTooltip"]">
+                            <i class="bx bx-lock-alt"></i>
+                        </button>
+                    </div>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="administratorUserName" class="form-label fw-medium">
+                        @Localizer["UserName"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="administratorUserName" name="UserName" class="form-control" maxlength="64" autocomplete="username" placeholder="@Localizer["UserNamePlaceholder"]" required />
+                    <div class="form-text">@Localizer["UserNameHelp"]</div>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="administratorDisplayName" class="form-label fw-medium">
+                        @Localizer["DisplayName"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="administratorDisplayName" name="DisplayName" class="form-control" maxlength="200" placeholder="@Localizer["DisplayNamePlaceholder"]" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="administratorActorType" class="form-label fw-medium">
+                        @Localizer["ActorType"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="administratorActorType" name="ActorType" class="form-select select2-offcanvas" required>
+                        <option value="PlatformAdmin">@Localizer["PlatformAdmin"]</option>
+                        <option value="PartnerAdmin">@Localizer["PartnerAdmin"]</option>
+                    </select>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12 js-partner-scope d-none">
+                    <label for="administratorPartnerId" class="form-label fw-medium">
+                        @Localizer["PartnerId"] <span class="text-danger js-partner-asterisk">*</span>
+                    </label>
+                    <input type="text" id="administratorPartnerId" name="PartnerId" class="form-control" placeholder="@Localizer["PartnerIdPlaceholder"]" />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12 js-partner-scope d-none">
+                    <label for="administratorAllowedTenantIds" class="form-label fw-medium">
+                        @Localizer["AllowedTenantIds"] <span class="text-danger js-partner-asterisk">*</span>
+                    </label>
+                    <textarea id="administratorAllowedTenantIds" name="AllowedTenantIdsRaw" class="form-control" rows="3" placeholder="@Localizer["AllowedTenantIdsPlaceholder"]"></textarea>
+                    <div class="form-text">@Localizer["AllowedTenantIdsHelp"]</div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-medium mb-2">
+                        @Localizer["Roles"] <span class="text-danger">*</span>
+                    </label>
+                    <div class="d-flex flex-column gap-2 mt-1" id="administratorRolesGroup">
+                        <div class="form-check">
+                             <input class="form-check-input" type="checkbox" name="Roles" id="roleSuperAdmin" value="SuperAdmin">
+                             <label class="form-check-label" for="roleSuperAdmin">@Localizer["RoleSuperAdmin"]</label>
+                        </div>
+                        <div class="form-check">
+                             <input class="form-check-input" type="checkbox" name="Roles" id="roleBillingAdmin" value="BillingAdmin">
+                             <label class="form-check-label" for="roleBillingAdmin">@Localizer["RoleBillingAdmin"]</label>
+                        </div>
+                        <div class="form-check">
+                             <input class="form-check-input" type="checkbox" name="Roles" id="roleSupportAdmin" value="SupportAdmin">
+                             <label class="form-check-label" for="roleSupportAdmin">@Localizer["RoleSupportAdmin"]</label>
+                        </div>
+                        <div class="form-check">
+                             <input class="form-check-input" type="checkbox" name="Roles" id="roleReadOnly" value="ReadOnly" checked>
+                             <label class="form-check-label" for="roleReadOnly">@Localizer["RoleReadOnly"]</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 js-password-management d-none">
+                    <label class="form-label fw-medium mb-2">@Localizer["PasswordManagement"]</label>
+                    
+                    <div id="wrapperResendInvite" class="d-none">
+                        <button type="button" id="btnResendInvite" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-2">
+                            <i class="bx bx-paper-plane fs-4"></i>
+                            @Localizer["ResendInvitation"]
+                        </button>
+                        <div class="form-text text-muted mt-1">@Localizer["ResendInvitationHelp"]</div>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+            @SharedLocalizer["Cancel"]
+        </button>
+        <button type="button" id="btnSaveAdministrator" class="btn btn-primary">
+            @SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>

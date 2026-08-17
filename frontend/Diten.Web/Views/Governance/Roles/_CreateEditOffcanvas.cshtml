@@ -1,0 +1,50 @@
+@model Diten.Web.Models.Governance.RoleEditViewModel
+@using Diten.Web.Views.Governance.Roles
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<RolesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header py-6">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">-</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top">
+        <div id="formRoleAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formRole" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="roleItemId" name="Id" value="" />
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="roleName" class="form-label fw-medium">
+                        @Localizer["Name"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="roleName" name="Name" class="form-control" maxlength="64" placeholder="@Localizer["NamePlaceholder"]" required />
+                    <div class="form-text" id="roleNameHelp">@Localizer["NameImmutableHint"]</div>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="roleDisplayName" class="form-label fw-medium">
+                        @Localizer["DisplayName"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="roleDisplayName" name="DisplayName" class="form-control" maxlength="128" placeholder="@Localizer["DisplayNamePlaceholder"]" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="roleDescription" class="form-label fw-medium">@SharedLocalizer["Description"]</label>
+                    <textarea id="roleDescription" name="Description" class="form-control" rows="4" placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" id="btnSaveRole" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>

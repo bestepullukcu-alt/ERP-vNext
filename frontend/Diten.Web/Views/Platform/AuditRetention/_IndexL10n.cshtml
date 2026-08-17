@@ -1,0 +1,62 @@
+@using System.Text.Json
+@using Diten.Web.Views.Platform.AuditRetention
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AuditRetentionIndex> Localizer
+@{
+    var payload = new
+    {
+        AuditRetentionTitle = Localizer["AuditRetention.Title"].Value,
+        PageDescription = Localizer["PageDescription"].Value,
+        AuditRetentionCategory = Localizer["AuditRetention.Category"].Value,
+        AuditRetentionPlanTier = Localizer["AuditRetention.PlanTier"].Value,
+        AuditRetentionDefaultRetentionDays = Localizer["AuditRetention.DefaultRetentionDays"].Value,
+        AuditRetentionDefaultRetention = Localizer["AuditRetention.DefaultRetention"].Value,
+        AuditRetentionMinimumRetentionDays = Localizer["AuditRetention.MinimumRetentionDays"].Value,
+        AuditRetentionMaximumRetentionDays = Localizer["AuditRetention.MaximumRetentionDays"].Value,
+        AuditRetentionMaxRetention = Localizer["AuditRetention.MaxRetention"].Value,
+        AuditRetentionHotStorageDays = Localizer["AuditRetention.HotStorageDays"].Value,
+        AuditRetentionHotStorage = Localizer["AuditRetention.HotStorage"].Value,
+        AuditRetentionAllowTenantOverride = Localizer["AuditRetention.AllowTenantOverride"].Value,
+        AuditRetentionTenantOverride = Localizer["AuditRetention.TenantOverride"].Value,
+        AuditRetentionFloorError = Localizer["AuditRetention.FloorError"].Value,
+        AuditRetentionCeilingError = Localizer["AuditRetention.CeilingError"].Value,
+        AuditRetentionZeroError = Localizer["AuditRetention.ZeroError"].Value,
+        AuditRetentionSaveSuccess = Localizer["AuditRetention.SaveSuccess"].Value,
+        AuditRetentionSaveError = Localizer["AuditRetention.SaveError"].Value,
+        AuditRetentionLoadError = Localizer["AuditRetention.LoadError"].Value,
+        AuditRetentionLoadRequired = Localizer["AuditRetention.LoadRequired"].Value,
+        AuditRetentionExistingPolicyRequired = Localizer["AuditRetention.ExistingPolicyRequired"].Value,
+        AuditRetentionLoadedPolicyMismatch = Localizer["AuditRetention.LoadedPolicyMismatch"].Value,
+        AuditRetentionNoPolicies = Localizer["AuditRetention.NoPolicies"].Value,
+        AuditRetentionLoadedPolicy = Localizer["AuditRetention.LoadedPolicy"].Value,
+        AuditRetentionPolicyId = Localizer["AuditRetention.PolicyId"].Value,
+        AuditRetentionPolicyStatus = Localizer["AuditRetention.PolicyStatus"].Value,
+        AuditRetentionActive = Localizer["AuditRetention.Active"].Value,
+        AuditRetentionInactive = Localizer["AuditRetention.Inactive"].Value,
+        AuditRetentionRequired = Localizer["AuditRetention.Required"].Value,
+        AuditRetentionHotStorageError = Localizer["AuditRetention.HotStorageError"].Value,
+        AuditRetentionSave = Localizer["AuditRetention.Save"].Value,
+        AuditRetentionReset = Localizer["AuditRetention.Reset"].Value,
+        AuditRetentionCancel = Localizer["AuditRetention.Cancel"].Value,
+        AuditRetentionEdit = Localizer["AuditRetention.Edit"].Value,
+        AuditRetentionEditPolicy = Localizer["AuditRetention.EditPolicy"].Value,
+        AuditRetentionEditPolicyDescription = Localizer["AuditRetention.EditPolicyDescription"].Value,
+        AuditRetentionActions = Localizer["AuditRetention.Actions"].Value,
+        AuditRetentionRefresh = Localizer["AuditRetention.Refresh"].Value,
+        AuditRetentionYes = Localizer["AuditRetention.Yes"].Value,
+        AuditRetentionNo = Localizer["AuditRetention.No"].Value,
+        AuditRetentionDaysShort = Localizer["AuditRetention.DaysShort"].Value,
+        AuditRetentionUnauthorized = Localizer["AuditRetention.Unauthorized"].Value,
+        AuditRetentionLoginRequired = Localizer["AuditRetention.LoginRequired"].Value,
+        AuditRetentionForbidden = Localizer["AuditRetention.Forbidden"].Value,
+        ColumnVisibility = Localizer["ColumnVisibility"].Value,
+        ShowAll = Localizer["ShowAll"].Value,
+        Search = Localizer["Search"].Value,
+        CommonErrorOccurred = Localizer["Common.ErrorOccurred"].Value,
+        CommonOk = Localizer["Common.Ok"].Value,
+        CommonUnknown = Localizer["Common.Unknown"].Value
+    };
+}
+<script id="audit-retention-l10n" type="application/json">
+@Html.Raw(JsonSerializer.Serialize(payload))
+</script>

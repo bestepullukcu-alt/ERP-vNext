@@ -1,0 +1,32 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = SharedLocalizer["ESignatures"].Value;
+    Layout = "_LayoutPlatformAdmin";
+    var tenantId = ViewData["TenantId"] as Guid?;
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@SharedLocalizer["ESignatures"]</h5>
+    <p class="mb-0 text-muted">@SharedLocalizer["ESignatures_Description"]</p>
+</div>
+
+<div class="card">
+    <div class="card-datatable table-responsive">
+        <table id="esignatures-table" class="datatables-standard table border-top" data-dt-standard="v2" data-tenant-id="@tenantId">
+            <thead>
+                <tr>
+                    <th>@SharedLocalizer["EnvelopeNumber"]</th>
+                    <th>@SharedLocalizer["SubjectType"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th>@SharedLocalizer["CreatedAt"]</th>
+                    <th>@SharedLocalizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/platform/e-signatures/index.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,24 @@
+@using Diten.Web.Views.Governance.Users
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<UsersIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["UsersTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["UsersTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/Governance/Users/_Filter.cshtml" />
+<partial name="~/Views/Governance/Users/_DataTable.cshtml" />
+<partial name="~/Views/Governance/Users/_DetailsQuickView.cshtml" />
+<partial name="~/Views/Governance/Users/_CreateEditOffcanvas.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Governance/Users/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Governance/Users/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Governance/Users/index.js" asp-append-version="true"></script>
+}

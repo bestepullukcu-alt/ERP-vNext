@@ -1,0 +1,11 @@
+@model string
+@{
+    var cls = Model switch
+    {
+        "Critical" => "bg-danger-subtle text-danger",
+        "High" => "bg-warning-subtle text-warning-emphasis",
+        "Medium" => "bg-info-subtle text-info-emphasis",
+        _ => "bg-success-subtle text-success"
+    };
+}
+<span class="badge rounded-pill @cls">@Model Risk</span>

@@ -1,0 +1,6 @@
+@model (string Status, string Health, string SourceSystem)
+<div class="d-flex gap-1 flex-wrap">
+    <span class="badge bg-label-info">@Model.Status</span>
+    <span class="badge bg-label-success">@Model.Health</span>
+    <span class="badge bg-label-dark">@Model.SourceSystem</span>
+</div>

@@ -1,0 +1,26 @@
+@using Diten.Web.Views.Governance.Roles
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<RolesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["RolesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["RolesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/Governance/Roles/_Filter.cshtml" />
+<partial name="~/Views/Governance/Roles/_DataTable.cshtml" />
+<partial name="~/Views/Governance/Roles/_DetailsQuickView.cshtml" />
+<partial name="~/Views/Governance/Roles/_CreateEditOffcanvas.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Governance/Roles/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Governance/Roles/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Governance/Roles/index.js" asp-append-version="true"></script>
+}

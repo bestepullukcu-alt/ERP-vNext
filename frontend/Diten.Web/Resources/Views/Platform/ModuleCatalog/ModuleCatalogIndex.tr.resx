@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="ModuleCatalogTitle" xml:space="preserve"><value>Modül Kataloğu</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Platform ERP modül katalog kayıtlarını ve tenant atanabilirliğini yönetin.</value></data>
+  <data name="AddNewModuleCatalog" xml:space="preserve"><value>Modül Ekle</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Modül Oluştur</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Modül Düzenle</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Modül Detayları</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Sınıflandırma</value></data>
+  <data name="ModuleCode" xml:space="preserve"><value>Modül Kodu</value></data>
+  <data name="ModuleName" xml:space="preserve"><value>Modül Adı</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Görünen Ad</value></data>
+  <data name="Domain" xml:space="preserve"><value>Domain</value></data>
+  <data name="Service" xml:space="preserve"><value>Servis</value></data>
+  <data name="Version" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="Assignable" xml:space="preserve"><value>Tenant'a Atanabilir</value></data>
+  <data name="Core" xml:space="preserve"><value>Çekirdek Modül</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Sıralama</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="Deleted" xml:space="preserve"><value>Silindi</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="Activate" xml:space="preserve"><value>Etkinleştir</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Pasifleştir</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="StatusDeprecated" xml:space="preserve"><value>Kullanımdan Kalkan</value></data>
+  <data name="TotalModules" xml:space="preserve"><value>Toplam Modül</value></data>
+  <data name="ActiveModules" xml:space="preserve"><value>Aktif Modüller</value></data>
+  <data name="BetaModules" xml:space="preserve"><value>Beta Modüller</value></data>
+  <data name="PreviewModules" xml:space="preserve"><value>Önizleme Modülleri</value></data>
+  <data name="HelpTextCoreModule" xml:space="preserve"><value>Sistem seviyesinde modül. Silinemez.</value></data>
+  <data name="HelpTextTenantAssignable" xml:space="preserve"><value>Gelecekteki atama akışlarında tenant'lara atanabilir.</value></data>
+  <data name="InvalidVersionFormat" xml:space="preserve"><value>Sürüm 1.0.0 formatında olmalıdır.</value></data>
+  <data name="InvalidModuleCode" xml:space="preserve"><value>2-80 karakter; büyük harf, rakam ve tek tire kullanın.</value></data>
+  <data name="RequiredField" xml:space="preserve"><value>Bu alan zorunludur.</value></data>
+  <data name="CoreModuleCannotBeDeleted" xml:space="preserve"><value>Çekirdek modül silinemez.</value></data>
+  <data name="FinalCodePreview" xml:space="preserve"><value>Son Kod</value></data>
+  <data name="GeneralTab" xml:space="preserve"><value>Genel</value></data>
+  <data name="PagesTab" xml:space="preserve"><value>Sayfalar</value></data>
+  <data name="AssignmentsTab" xml:space="preserve"><value>Atamalar</value></data>
+  <data name="PermissionsTab" xml:space="preserve"><value>İzinler</value></data>
+  <data name="PagesTitle" xml:space="preserve"><value>Modül Sayfaları</value></data>
+  <data name="PagesDescription" xml:space="preserve"><value>Bu modüle ait sayfa, ekran ve rota tanımlarını yönetin.</value></data>
+  <data name="AssignmentsPlaceholder" xml:space="preserve"><value>Atamalar ayrı bir onaylı module pack ile yönetilecektir.</value></data>
+  <data name="PermissionsPlaceholder" xml:space="preserve"><value>İzin kayıt detayları ayrı bir onaylı module pack ile yönetilecektir.</value></data>
+  <data name="AddPage" xml:space="preserve"><value>Sayfa Ekle</value></data>
+  <data name="EditPage" xml:space="preserve"><value>Sayfa Düzenle</value></data>
+  <data name="PageCode" xml:space="preserve"><value>Sayfa Kodu</value></data>
+  <data name="RoutePath" xml:space="preserve"><value>Rota Yolu</value></data>
+  <data name="RequiredPermission" xml:space="preserve"><value>Gerekli İzin</value></data>
+  <data name="PageType" xml:space="preserve"><value>Sayfa Tipi</value></data>
+  <data name="PageTypeList" xml:space="preserve"><value>Liste</value></data>
+  <data name="PageTypeDetails" xml:space="preserve"><value>Detay</value></data>
+  <data name="PageTypeCreate" xml:space="preserve"><value>Oluştur</value></data>
+  <data name="PageTypeEdit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="PageTypeReport" xml:space="preserve"><value>Rapor</value></data>
+  <data name="PageTypeWizard" xml:space="preserve"><value>Sihirbaz</value></data>
+  <data name="PageTypeDashboard" xml:space="preserve"><value>Pano</value></data>
+  <data name="PageTypeCustom" xml:space="preserve"><value>Özel</value></data>
+  <data name="InvalidPageCodeGenerated" xml:space="preserve"><value>Sayfa kodu otomatik oluşturulamadı.</value></data>
+  <data name="InvalidRoutePath" xml:space="preserve"><value>Rota /PPM/Projects formatında olmalıdır.</value></data>
+  <data name="InvalidRouteFormat" xml:space="preserve"><value>Rota /PPM/Projects formatında olmalıdır.</value></data>
+  <data name="InvalidPermissionFormat" xml:space="preserve"><value>İzin anahtarı ppm.projects.view formatında olmalıdır.</value></data>
+  <data name="RoutePathHelpText" xml:space="preserve"><value>Örnek: /PPM/Projects</value></data>
+  <data name="PermissionHelpText" xml:space="preserve"><value>Kullanım örneği: ppm.projects.view</value></data>
+  <data name="ModulePagesSearchPlaceholder" xml:space="preserve"><value>Sayfa kodu veya rota ara</value></data>
+  <data name="ModulePagesDtInfo" xml:space="preserve"><value>_START_–_END_ / _TOTAL_ kayıt gösteriliyor</value></data>
+  <data name="ModulePagesDtInfoEmpty" xml:space="preserve"><value>0 / 0 kayıt gösteriliyor</value></data>
+  <data name="ModulePagesDtInfoFiltered" xml:space="preserve"><value></value></data>
+  <data name="PageSaved" xml:space="preserve"><value>Sayfa tanımı kaydedildi.</value></data>
+  <data name="Navigation" xml:space="preserve"><value>Navigasyon</value></data>
+  <data name="ParentPageCode" xml:space="preserve"><value>Üst Sayfa Kodu</value></data>
+  <data name="NavigationVisible" xml:space="preserve"><value>Navigasyonda görünür</value></data>
+  <data name="PageDetailsTitle" xml:space="preserve"><value>Sayfa Detayı</value></data>
+  <data name="ActionsTab" xml:space="preserve"><value>Aksiyonlar</value></data>
+  <data name="ActionsDescription" xml:space="preserve"><value>Sayfa aksiyon izinlerini yönetin.</value></data>
+  <data name="AddAction" xml:space="preserve"><value>Aksiyon Ekle</value></data>
+  <data name="ActionCode" xml:space="preserve"><value>Aksiyon Kodu</value></data>
+  <data name="PermissionKey" xml:space="preserve"><value>İzin Anahtarı</value></data>
+  <data name="ActionType" xml:space="preserve"><value>Aksiyon Tipi</value></data>
+  <data name="ActionTypeView" xml:space="preserve"><value>Görüntüleme</value></data>
+  <data name="ActionTypeToolbar" xml:space="preserve"><value>Araç Çubuğu</value></data>
+  <data name="ActionTypeRowAction" xml:space="preserve"><value>Satır Aksiyonu</value></data>
+  <data name="ActionTypeFormAction" xml:space="preserve"><value>Form Aksiyonu</value></data>
+  <data name="ActionTypeBulkAction" xml:space="preserve"><value>Toplu Aksiyon</value></data>
+  <data name="ActionTypeSystem" xml:space="preserve"><value>Sistem</value></data>
+  <data name="ActionTypeCustom" xml:space="preserve"><value>Özel</value></data>
+  <data name="ActionBehavior" xml:space="preserve"><value>Aksiyon Davranışı</value></data>
+  <data name="EditAction" xml:space="preserve"><value>Aksiyon Düzenle</value></data>
+  <data name="ActionSaved" xml:space="preserve"><value>Aksiyon kaydedildi.</value></data>
+  <data name="NoPageActions" xml:space="preserve"><value>Henüz sayfa aksiyonu tanımlanmamış.</value></data>
+  <data name="ToolbarAction" xml:space="preserve"><value>Araç çubuğu aksiyonu</value></data>
+  <data name="RowAction" xml:space="preserve"><value>Satır aksiyonu</value></data>
+  <data name="DangerousAction" xml:space="preserve"><value>Riskli aksiyon</value></data>
+  <data name="SubscriptionAssignmentsTitle" xml:space="preserve"><value>Plan Entitlementları</value></data>
+  <data name="SubscriptionAssignmentsDescription" xml:space="preserve"><value>Bu modülü abonelik entitlement kapsamına alan planlar.</value></data>
+  <data name="NoSubscriptionAssignments" xml:space="preserve"><value>Bu modül herhangi bir abonelik planına dahil değil.</value></data>
+  <data name="PlanCode" xml:space="preserve"><value>Plan Kodu</value></data>
+  <data name="PlanName" xml:space="preserve"><value>Plan Adı</value></data>
+  <data name="Default" xml:space="preserve"><value>Varsayılan</value></data>
+  <data name="Trial" xml:space="preserve"><value>Deneme</value></data>
+  <data name="AssignmentsErrorState" xml:space="preserve"><value>Assignment verisi yüklenemedi.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Tekrar Dene</value></data>
+  <data name="AssignmentPlansCount" xml:space="preserve"><value>Planlara Dahil</value></data>
+  <data name="AssignmentTenantsCount" xml:space="preserve"><value>Tenant Atamaları</value></data>
+  <data name="AssignmentEnabledTenantsCount" xml:space="preserve"><value>Aktif Tenantlar</value></data>
+  <data name="AssignmentManualOverrideCount" xml:space="preserve"><value>Manuel Override</value></data>
+  <data name="AllStatuses" xml:space="preserve"><value>Tüm durumlar</value></data>
+  <data name="EntitlementIncluded" xml:space="preserve"><value>Dahil</value></data>
+  <data name="PlanStatus" xml:space="preserve"><value>Plan Durumu</value></data>
+  <data name="EntitlementStatus" xml:space="preserve"><value>Entitlement Durumu</value></data>
+  <data name="IncludedByDefault" xml:space="preserve"><value>Varsayılan Dahil</value></data>
+  <data name="EffectiveDates" xml:space="preserve"><value>Geçerlilik Tarihleri</value></data>
+  <data name="LastUpdated" xml:space="preserve"><value>Son Güncelleme</value></data>
+  <data name="TenantAssignmentsTitle" xml:space="preserve"><value>Tenant Atamaları</value></data>
+  <data name="TenantAssignmentsDescription" xml:space="preserve"><value>Bu modülün atanmış olduğu tenantlar.</value></data>
+  <data name="TenantAssignmentsDegraded" xml:space="preserve"><value>Tenant assignment verisi şu anda geçici olarak alınamıyor.</value></data>
+  <data name="NoTenantAssignments" xml:space="preserve"><value>Bu modül henüz herhangi bir tenant'a atanmamış.</value></data>
+  <data name="AssignmentSource" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="AssignmentStatus" xml:space="preserve"><value>Assignment Durumu</value></data>
+  <data name="AllSources" xml:space="preserve"><value>Tüm kaynaklar</value></data>
+  <data name="AssignmentSourcePlan" xml:space="preserve"><value>Plan</value></data>
+  <data name="AssignmentSourceManual" xml:space="preserve"><value>Manuel</value></data>
+  <data name="AssignmentSourceTrial" xml:space="preserve"><value>Deneme</value></data>
+  <data name="AssignmentSourceOverride" xml:space="preserve"><value>Override</value></data>
+  <data name="AssignmentSourceSystem" xml:space="preserve"><value>Sistem</value></data>
+  <data name="AssignmentStatusEnabled" xml:space="preserve"><value>Aktif</value></data>
+  <data name="AssignmentStatusDisabled" xml:space="preserve"><value>Pasif</value></data>
+  <data name="AssignmentStatusSuspended" xml:space="preserve"><value>Askıda</value></data>
+  <data name="AssignmentStatusPending" xml:space="preserve"><value>Beklemede</value></data>
+  <data name="AssignmentStatusExpired" xml:space="preserve"><value>Süresi Doldu</value></data>
+  <data name="TenantName" xml:space="preserve"><value>Tenant Adı</value></data>
+  <data name="TenantCode" xml:space="preserve"><value>Tenant Kodu</value></data>
+  <data name="TenantStatus" xml:space="preserve"><value>Tenant Durumu</value></data>
+  <data name="SourcePlan" xml:space="preserve"><value>Kaynak Plan</value></data>
+  <data name="AssignedBy" xml:space="preserve"><value>Atayan</value></data>
+  <data name="PlanUnitSingular" xml:space="preserve"><value>plan</value></data>
+  <data name="PlanUnitPlural" xml:space="preserve"><value>plan</value></data>
+  <data name="AssignedTenantUnitSingular" xml:space="preserve"><value>atanmış tenant</value></data>
+  <data name="AssignedTenantUnitPlural" xml:space="preserve"><value>atanmış tenant</value></data>
+  <data name="EnabledTenantUnitSingular" xml:space="preserve"><value>aktif tenant</value></data>
+  <data name="EnabledTenantUnitPlural" xml:space="preserve"><value>aktif tenant</value></data>
+  <data name="OverrideUnitSingular" xml:space="preserve"><value>override</value></data>
+  <data name="OverrideUnitPlural" xml:space="preserve"><value>override</value></data>
+  <data name="DataUnavailable" xml:space="preserve"><value>Veri alınamıyor</value></data>
+  <data name="PlanEntitlementTenantReach" xml:space="preserve"><value>{0} tenant bu modülü alacak</value></data>
+  <data name="PlanEntitlementActiveDescription" xml:space="preserve"><value>Abonelik planı entitlement'ı bu modülü sağlar</value></data>
+  <data name="PlanEntitlementInactiveDescription" xml:space="preserve"><value>Modül dahil ancak şu anda pasif</value></data>
+  <data name="PlanEntitlementSource" xml:space="preserve"><value>Abonelik Planı</value></data>
+  <data name="IncludedSince" xml:space="preserve"><value>Dahil edilme tarihi</value></data>
+  <data name="FromSubscriptionPlans" xml:space="preserve"><value>Abonelik Planlarından</value></data>
+  <data name="ManualOverrides" xml:space="preserve"><value>Manuel Override</value></data>
+  <data name="BlockedSuspended" xml:space="preserve"><value>Bloke / Askıda</value></data>
+  <data name="ManualAssignment" xml:space="preserve"><value>Manuel Atama</value></data>
+  <data name="ManualDisabled" xml:space="preserve"><value>Manuel Pasif</value></data>
+  <data name="TenantSuspended" xml:space="preserve"><value>Tenant Askıda</value></data>
+  <data name="DegradedCount" xml:space="preserve"><value>Alınamıyor</value></data>
+</root>

@@ -1,0 +1,174 @@
+{
+  "navigation": {
+    "Platform Operations": [
+      {
+        "name": "Tenants",
+        "icon": "bx-buildings",
+        "url": "/Platform/Tenants",
+        "group": "Platform Operations",
+        "keywords": ["tenant", "tenants", "companies", "customers", "registry", "lifecycle"]
+      },
+      {
+        "name": "Add Tenant",
+        "icon": "bx-plus-circle",
+        "url": "/Platform/Tenants/Create",
+        "group": "Platform Operations",
+        "keywords": ["create tenant", "new tenant", "register tenant", "onboarding"]
+      },
+      {
+        "name": "Tenant Login Security",
+        "icon": "bx-shield-quarter",
+        "url": "/Platform/TenantSecurity",
+        "group": "Platform Operations",
+        "keywords": ["tenant security", "login settings", "authentication policy", "tenant login"]
+      }
+    ],
+    "Commercial": [
+      {
+        "name": "Subscription Plans",
+        "icon": "bx-package",
+        "url": "/Platform/SubscriptionPlans",
+        "group": "Commercial",
+        "keywords": ["plans", "subscription", "pricing", "billing cycle", "included modules"]
+      },
+      {
+        "name": "Add Subscription Plan",
+        "icon": "bx-plus-circle",
+        "url": "/Platform/SubscriptionPlans/Create",
+        "group": "Commercial",
+        "keywords": ["create plan", "new plan", "subscription plan", "commercial"]
+      },
+      {
+        "name": "Subscription Features",
+        "icon": "bx-purchase-tag-alt",
+        "url": "/Platform/SubscriptionFeatures",
+        "group": "Commercial",
+        "keywords": ["features", "feature catalog", "plan mappings", "subscription feature"]
+      }
+    ],
+    "Catalog": [
+      {
+        "name": "Module Catalog",
+        "icon": "bx-grid-alt",
+        "url": "/Platform/ModuleCatalog",
+        "group": "Catalog",
+        "keywords": ["modules", "catalog", "pages", "assignments", "module registry"]
+      },
+      {
+        "name": "Add Module",
+        "icon": "bx-plus-circle",
+        "url": "/Platform/ModuleCatalog/Create",
+        "group": "Catalog",
+        "keywords": ["create module", "new module", "module catalog", "register module"]
+      },
+      {
+        "name": "Interface Registry",
+        "icon": "bx-git-branch",
+        "url": "/Platform/InterfaceRegistry",
+        "group": "Catalog",
+        "keywords": ["interfaces", "registry", "contracts", "discovery", "api catalog"]
+      }
+    ],
+    "Security & Audit": [
+      {
+        "name": "Platform Administrators",
+        "icon": "bx-user-check",
+        "url": "/Platform/Administrators",
+        "group": "Security & Audit",
+        "keywords": ["administrators", "platform admins", "partner admins", "roles", "invite"]
+      },
+      {
+        "name": "Audit Log",
+        "icon": "bx-search-alt",
+        "url": "/Platform/AuditLog",
+        "group": "Security & Audit",
+        "keywords": ["audit", "events", "activity", "export", "redaction"]
+      },
+      {
+        "name": "Audit Retention",
+        "icon": "bx-time-five",
+        "url": "/Platform/AuditRetention",
+        "group": "Security & Audit",
+        "keywords": ["audit retention", "retention policy", "compliance", "retention"]
+      }
+    ],
+    "Account": [
+      {
+        "name": "Profile",
+        "icon": "bx-user-circle",
+        "url": "/Platform/Account/Profile",
+        "group": "Account",
+        "keywords": ["profile", "account", "my profile", "user profile"]
+      },
+      {
+        "name": "Settings",
+        "icon": "bx-cog",
+        "url": "/Platform/Account/Settings",
+        "group": "Account",
+        "keywords": ["settings", "preferences", "account settings", "profile settings"]
+      }
+    ]
+  },
+  "suggestions": {
+    "Common Tasks": [
+      {
+        "name": "Tenants",
+        "icon": "bx-buildings",
+        "url": "/Platform/Tenants",
+        "group": "Common Tasks",
+        "keywords": ["tenant", "registry", "lifecycle"]
+      },
+      {
+        "name": "Module Catalog",
+        "icon": "bx-grid-alt",
+        "url": "/Platform/ModuleCatalog",
+        "group": "Common Tasks",
+        "keywords": ["module", "catalog", "assignments"]
+      },
+      {
+        "name": "Subscription Plans",
+        "icon": "bx-package",
+        "url": "/Platform/SubscriptionPlans",
+        "group": "Common Tasks",
+        "keywords": ["subscription", "plans", "commercial"]
+      },
+      {
+        "name": "Platform Administrators",
+        "icon": "bx-user-check",
+        "url": "/Platform/Administrators",
+        "group": "Common Tasks",
+        "keywords": ["admins", "roles", "invite"]
+      }
+    ],
+    "Audit & Account": [
+      {
+        "name": "Audit Log",
+        "icon": "bx-search-alt",
+        "url": "/Platform/AuditLog",
+        "group": "Audit & Account",
+        "keywords": ["audit", "events", "export"]
+      },
+      {
+        "name": "Audit Retention",
+        "icon": "bx-time-five",
+        "url": "/Platform/AuditRetention",
+        "group": "Audit & Account",
+        "keywords": ["retention", "compliance", "policy"]
+      },
+      {
+        "name": "Profile",
+        "icon": "bx-user-circle",
+        "url": "/Platform/Account/Profile",
+        "group": "Audit & Account",
+        "keywords": ["profile", "account"]
+      },
+      {
+        "name": "Settings",
+        "icon": "bx-cog",
+        "url": "/Platform/Account/Settings",
+        "group": "Audit & Account",
+        "keywords": ["settings", "preferences"]
+      }
+    ]
+  }
+}

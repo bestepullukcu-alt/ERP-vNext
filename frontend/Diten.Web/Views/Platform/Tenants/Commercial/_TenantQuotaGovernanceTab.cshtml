@@ -1,0 +1,31 @@
+@using Diten.Web.Views.Platform.Tenants
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TenantsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="card" id="tenantQuotaGovernance" data-quota-governance="true">
+    <div class="card-header d-flex align-items-start justify-content-between gap-3">
+        <div>
+            <h6 class="mb-0">@Localizer["tenant.commercial.quota.title"]</h6>
+            <small class="text-muted">@Localizer["tenant.commercial.quota.description"]</small>
+        </div>
+        <span class="badge bg-label-secondary" id="tenantQuotaLoadedAt"></span>
+    </div>
+    <div class="card-body">
+        <div id="tenantQuotaLoading" class="text-center py-5">
+            <span class="spinner-border spinner-border-sm me-2"></span>@Localizer["tenant.commercial.quota.loading"]
+        </div>
+
+        <div id="tenantQuotaEmpty" class="text-center text-muted py-5 d-none">
+            <i class="icon-base bx bx-info-circle fs-1 mb-3"></i>
+            <div>@Localizer["tenant.commercial.quota.empty"]</div>
+        </div>
+
+        <div id="tenantQuotaError" class="alert alert-danger d-none" role="alert"></div>
+        <div id="tenantQuotaUnauthorized" class="alert alert-warning d-none" role="alert">
+            @Localizer["tenant.commercial.quota.unauthorized"]
+        </div>
+
+        <div id="tenantQuotaRows" class="row g-3 d-none"></div>
+    </div>
+</div>

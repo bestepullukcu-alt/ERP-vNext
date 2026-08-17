@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="BillingTitle" xml:space="preserve"><value>Gestión de facturación</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gestiona facturas, emisión, saldos de pago e historial financiero.</value></data>
+  <data name="AddNewBilling" xml:space="preserve"><value>Agregar factura</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Crear factura</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar factura borrador</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Detalles de factura</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identidad</value></data>
+  <data name="LineSection" xml:space="preserve"><value>Línea de factura</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>Notas</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Ciclo de vida</value></data>
+  <data name="TotalsSection" xml:space="preserve"><value>Totales</value></data>
+  <data name="InvoiceNumber" xml:space="preserve"><value>Número de factura</value></data>
+  <data name="CustomerReference" xml:space="preserve"><value>Referencia de cliente</value></data>
+  <data name="Plan" xml:space="preserve"><value>Plan</value></data>
+  <data name="Currency" xml:space="preserve"><value>Moneda</value></data>
+  <data name="GrandTotal" xml:space="preserve"><value>Total general</value></data>
+  <data name="PaidAmount" xml:space="preserve"><value>Importe pagado</value></data>
+  <data name="BalanceDue" xml:space="preserve"><value>Saldo pendiente</value></data>
+  <data name="DueDate" xml:space="preserve"><value>Fecha de vencimiento</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="LineDescription" xml:space="preserve"><value>Descripción de línea</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Cantidad</value></data>
+  <data name="UnitPrice" xml:space="preserve"><value>Precio unitario</value></data>
+  <data name="DiscountAmount" xml:space="preserve"><value>Descuento</value></data>
+  <data name="TaxAmount" xml:space="preserve"><value>Impuesto</value></data>
+  <data name="LineTotal" xml:space="preserve"><value>Total de línea</value></data>
+  <data name="SubTotal" xml:space="preserve"><value>Subtotal</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notas</value></data>
+  <data name="IssuedAt" xml:space="preserve"><value>Emitida el</value></data>
+  <data name="Issue" xml:space="preserve"><value>Emitir</value></data>
+  <data name="CancelInvoice" xml:space="preserve"><value>Cancelar factura</value></data>
+  <data name="Details" xml:space="preserve"><value>Detalles</value></data>
+  <data name="Edit" xml:space="preserve"><value>Editar</value></data>
+  <data name="SelectPlan" xml:space="preserve"><value>Seleccionar plan</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Seleccionar todo</value></data>
+  <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="DraftMutationNotice" xml:space="preserve"><value>Solo las facturas borrador se pueden editar. Las facturas emitidas son inmutables.</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="StatusIssued" xml:space="preserve"><value>Emitida</value></data>
+  <data name="StatusPartiallyPaid" xml:space="preserve"><value>Parcialmente pagada</value></data>
+  <data name="StatusPaid" xml:space="preserve"><value>Pagada</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>Cancelada</value></data>
+</root>

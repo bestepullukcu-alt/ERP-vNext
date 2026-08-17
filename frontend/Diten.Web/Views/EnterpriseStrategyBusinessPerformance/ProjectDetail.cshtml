@@ -1,0 +1,122 @@
+@model Diten.Web.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Project Detail";
+    var projectId = (ViewData["ProjectId"]?.ToString() ?? string.Empty);
+}
+
+@await Html.PartialAsync("~/Views/EnterpriseStrategyBusinessPerformance/Components/_SubdomainShell.cshtml", Model)
+<div class="row g-3">
+    <div class="col-12 col-xl-9">
+        <div class="card project-detail-hero mb-3">
+            <div class="card-body d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-start">
+                <div>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                        <h4 class="mb-0" id="project-detail-title">Project @projectId</h4>
+                        <span id="project-detail-status" class="badge text-bg-secondary">Loading</span>
+                    </div>
+                    <div class="text-muted mb-2" id="project-detail-subtitle">Anchored Delivery Project</div>
+                    <div class="d-flex flex-wrap gap-2 align-items-center project-detail-meta" id="project-detail-meta"></div>
+                    <div class="small text-muted mt-2">Project Code / ID: <span id="project-detail-code">@projectId</span></div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a class="btn btn-outline-secondary" href="/management-governance/delivery-execution/projects">Back</a>
+                </div>
+            </div>
+        </div>
+
+        <div id="project-detail-error" class="d-none"></div>
+
+        <ul class="nav nav-pills project-detail-tabs mb-3">
+            <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#project-overview-pane" type="button">Overview</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#project-planning-pane" type="button">Planning</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#project-budget-pane" type="button">Budget</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#project-risks-pane" type="button">Risks / Dependencies</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#project-evidence-pane" type="button">Evidence / Documents</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#project-audit-pane" type="button">Audit Trail</button></li>
+        </ul>
+
+        <div class="tab-content">
+            <div id="project-overview-pane" class="tab-pane fade show active">
+                <div id="project-detail-overview"></div>
+            </div>
+            <div id="project-planning-pane" class="tab-pane fade">
+                <div id="project-detail-planning"></div>
+            </div>
+            <div id="project-budget-pane" class="tab-pane fade">
+                <div id="project-detail-budget"></div>
+            </div>
+            <div id="project-risks-pane" class="tab-pane fade">
+                <div id="project-detail-risks"></div>
+            </div>
+            <div id="project-evidence-pane" class="tab-pane fade">
+                <div id="project-detail-evidence"></div>
+            </div>
+            <div id="project-audit-pane" class="tab-pane fade">
+                <div id="project-detail-audit"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-3">
+        @await Html.PartialAsync("~/Views/EnterpriseStrategyBusinessPerformance/Components/_GovernanceSidePanel.cshtml")
+    </div>
+</div>
+
+<style>
+    .project-detail-hero {
+        background: linear-gradient(140deg, rgba(28, 44, 74, 0.94), rgba(12, 20, 35, 0.96));
+        color: #eef4ff;
+        border: 1px solid rgba(120, 142, 186, 0.2);
+    }
+    .project-detail-hero .text-muted { color: #c3d0ea !important; }
+    .project-detail-meta { color: #dce5f8; }
+    .project-detail-tabs .nav-link {
+        border: 1px solid rgba(120, 142, 186, 0.16);
+        background: rgba(11, 18, 33, 0.04);
+        color: inherit;
+    }
+    .project-detail-tabs .nav-link.active {
+        background: rgba(59, 110, 198, 0.12);
+        color: #174c95;
+    }
+    .project-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: .9rem;
+    }
+    .project-detail-item {
+        border-radius: .9rem;
+        padding: .9rem 1rem;
+        background: rgba(23, 37, 63, 0.04);
+        border: 1px solid rgba(120, 142, 186, 0.12);
+    }
+    .project-detail-label {
+        font-size: .78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: #5f6f89;
+        margin-bottom: .3rem;
+    }
+    .project-detail-value {
+        color: #1a2434;
+        line-height: 1.45;
+        word-break: break-word;
+    }
+    .project-section-stack { display: grid; gap: 1rem; }
+    @@media (prefers-color-scheme: dark) {
+        .project-detail-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(160, 176, 210, 0.12);
+        }
+        .project-detail-value { color: #e5ecfa; }
+        .project-detail-label { color: #a7b5d0; }
+        .project-detail-tabs .nav-link { color: #d7e3f6; background: rgba(255, 255, 255, 0.02); }
+        .project-detail-tabs .nav-link.active { color: #ffffff; background: rgba(88, 138, 227, 0.24); }
+    }
+</style>
+
+@section Scripts {
+    <script>window.projectDetailId = "@projectId";</script>
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js"></script>
+    <script src="~/assets/js/pages/enterprise-strategy/project-detail.js"></script>
+}

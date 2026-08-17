@@ -1,0 +1,52 @@
+@using Diten.Web.Views.Platform.AuditLog
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AuditLogIndex> Localizer
+
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-2 gap-md-3">
+                    <div class="filter-chip filter-from dt-date-filter">
+                        <input id="filterFromUtc" type="datetime-local" class="form-control form-control-sm" placeholder="@Localizer["AuditLog.Filter.From"]" aria-label="@Localizer["AuditLog.Filter.From"]" title="@Localizer["AuditLog.Filter.From"]" />
+                        <span class="dt-date-filter-label">@Localizer["AuditLog.Filter.From"]</span>
+                    </div>
+
+                    <div class="filter-chip filter-to dt-date-filter">
+                        <input id="filterToUtc" type="datetime-local" class="form-control form-control-sm" placeholder="@Localizer["AuditLog.Filter.To"]" aria-label="@Localizer["AuditLog.Filter.To"]" title="@Localizer["AuditLog.Filter.To"]" />
+                        <span class="dt-date-filter-label">@Localizer["AuditLog.Filter.To"]</span>
+                    </div>
+
+                    <div class="filter-chip filter-tenant">
+                        <select id="filterTenant" class="form-select form-select-sm select2" data-placeholder="@Localizer["AuditLog.Filter.TenantPlaceholder"]" aria-label="@Localizer["AuditLog.Filter.Tenant"]" disabled>
+                            <option value="">@Localizer["AuditLog.Filter.TenantPlaceholder"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-category">
+                        <select id="filterCategory" class="form-select form-select-sm select2" data-placeholder="@Localizer["AuditLog.Filter.Category"]" data-lookup-url="/Platform/AuditLog/api/lookups/categories">
+                            <option value="">@Localizer["Common.ShowAll"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-operation">
+                        <select id="filterOperation" class="form-select form-select-sm select2" data-placeholder="@Localizer["AuditLog.Filter.Operation"]" data-lookup-url="/Platform/AuditLog/api/lookups/operations">
+                            <option value="">@Localizer["Common.ShowAll"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-outcome">
+                        <select id="filterOutcome" class="form-select form-select-sm select2" data-placeholder="@Localizer["AuditLog.Filter.Outcome"]" data-lookup-url="/Platform/AuditLog/api/lookups/outcomes">
+                            <option value="">@Localizer["Common.ShowAll"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-actions ms-auto d-flex gap-2 gap-md-3">
+                        <button type="button" id="btnFilterApply" class="btn btn-sm btn-primary">@Localizer["AuditLog.Filter.Apply"]</button>
+                        <button type="reset" id="btnFilterReset" class="btn btn-sm btn-label-danger">@Localizer["AuditLog.Filter.Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

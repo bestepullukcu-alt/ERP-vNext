@@ -1,0 +1,77 @@
+@using Diten.Web.Views.Platform.Tenants
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TenantsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="card">
+    <div class="card-header d-flex align-items-center justify-content-between gap-3">
+        <div>
+            <h6 class="mb-0">@Localizer["ModuleEntitlements"]</h6>
+            <small class="text-muted">@Localizer["ModuleEntitlementsDescription"]</small>
+        </div>
+        <button type="button" id="btnAddModuleEntitlement" class="btn btn-primary btn-sm">
+            <i class="icon-base bx bx-plus me-1"></i>@Localizer["AddModuleEntitlement"]
+        </button>
+    </div>
+    <div id="moduleEntitlementFilterHost">
+        <div class="collapse" id="moduleEntitlementFilterCollapse">
+            <div class="pt-0 pb-3 px-3">
+                <form class="m-0" id="moduleEntitlementFilterForm" data-no-tracker>
+                    <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                        <div class="filter-chip filter-source">
+                            <select id="moduleEntitlementFilterSource" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Source"]">
+                                <option value="Plan">@Localizer["SourcePlan"]</option>
+                                <option value="ManualOverride">@Localizer["SourceManualOverride"]</option>
+                                <option value="Addon">@Localizer["SourceAddon"]</option>
+                                <option value="Trial">@Localizer["SourceTrial"]</option>
+                                <option value="System">@Localizer["SourceSystem"]</option>
+                            </select>
+                        </div>
+                        <div class="filter-chip filter-effective-access">
+                            <select id="moduleEntitlementFilterAccess" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["EffectiveAccess"]">
+                                <option value="Active">@Localizer["AccessActive"]</option>
+                                <option value="NoAccess">@Localizer["AccessNoAccess"]</option>
+                                <option value="Expired">@Localizer["AccessExpired"]</option>
+                                <option value="BlockedByOverride">@Localizer["AccessBlockedByOverride"]</option>
+                                <option value="EnabledByOverride">@Localizer["AccessEnabledByOverride"]</option>
+                                <option value="SystemLocked">@Localizer["AccessSystemLocked"]</option>
+                            </select>
+                        </div>
+                        <div class="ms-auto d-flex gap-3">
+                            <button type="button" class="btn btn-sm btn-primary" id="btnModuleEntitlementFilterApply">
+                                @SharedLocalizer["Apply"]
+                            </button>
+                            <button type="reset" class="btn btn-sm btn-label-danger" id="btnModuleEntitlementFilterReset">
+                                @SharedLocalizer["Reset"]
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card-datatable table-responsive">
+        <table id="dtModuleEntitlements" data-dt-standard="v2" class="datatables-module-entitlements table border-top w-100">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="cell-fit">
+                        <input type="checkbox" class="dt-checkboxes-select-all form-check-input">
+                    </th>
+                    <th>@Localizer["ModuleCode"]</th>
+                    <th>@Localizer["ModuleName"]</th>
+                    <th>@Localizer["Source"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th>@Localizer["Enabled"]</th>
+                    <th>@Localizer["ExpiryDate"]</th>
+                    <th>@Localizer["EffectiveAccess"]</th>
+                    <th>@Localizer["Reason"]</th>
+                    <th>@Localizer["LastUpdated"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<partial name="Commercial/_AddModuleEntitlementOffcanvas" />

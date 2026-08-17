@@ -1,0 +1,184 @@
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = "Demand & Ideas";
+    @* Same as Capture: empty = browser uses same-origin /api/v1 (API hosted in WebUI). *@
+    var apiBase = Configuration["ApiSettings:PublicApiUrl"]?.TrimEnd('/') ?? "";
+}
+<div class="demand-ideas-list w-100" data-testid="demand-ideas-list" data-api-base="@apiBase">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 demand-page-toolbar">
+        <div>
+            <h1 class="h3 mb-1">Demand &amp; Ideas</h1>
+            <p class="text-muted mb-0 small">Ideas &amp; demand requests — open a row in <strong>Capture</strong> to edit or submit.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <button type="button" class="btn btn-outline-secondary" id="demand-export-btn"><i class="bx bx-download me-1"></i>Export</button>
+            <a href="@Url.Action("Capture")" class="btn btn-primary"><i class="bx bx-plus me-1"></i>Demand &amp; Ideas Capture</a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border rounded-3 mb-3">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-lg">
+                    <label class="form-label visually-hidden" for="demand-search-q">Search</label>
+                    <input type="search" class="form-control" id="demand-search-q" placeholder="Search ideas by title, ID, or owner..." autocomplete="off" />
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <label class="form-label text-uppercase small text-muted" for="demand-quick-status">Status</label>
+                    <select class="form-select form-select-sm" id="demand-quick-status">
+                        <option value="">All Status</option>
+                        <option value="Draft">Draft</option>
+                        <option value="Submitted">Submitted</option>
+                        <option value="Under Review">Under Review</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Transferred">Transferred</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <label class="form-label text-uppercase small text-muted" for="demand-quick-priority">Priority</label>
+                    <select class="form-select form-select-sm" id="demand-quick-priority">
+                        <option value="">All Priority</option>
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                        <option value="Critical">Critical</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 col-lg-auto">
+                    <button type="button" class="btn btn-outline-primary btn-sm w-100" id="demand-more-filters-btn" data-bs-toggle="modal" data-bs-target="#demand-more-filters-modal">
+                        <i class="bx bx-filter-alt me-1"></i>More Filters <span class="badge bg-label-primary text-primary ms-1" id="demand-more-filters-count">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border rounded-3 mb-3 bg-body-secondary bg-opacity-50">
+        <div class="card-body py-2 px-3">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div class="d-flex flex-wrap align-items-center gap-2 flex-grow-1 min-w-0" id="demand-filter-chips"></div>
+                <div class="d-flex align-items-center gap-3 flex-shrink-0">
+                    <span class="small fw-medium text-body-secondary text-nowrap" id="demand-result-count"></span>
+                    <button type="button" class="btn btn-link btn-sm text-primary px-0" id="demand-clear-filters">Clear all</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border rounded-3 overflow-hidden">
+        <div class="table-responsive" style="min-height:200px">
+            <table class="table table-hover table-striped align-middle mb-0" id="demand-ideas-table">
+                <thead class="text-uppercase small text-muted table-light border-bottom">
+                    <tr>
+                        <th class="text-nowrap demand-sortable" data-sort-key="id" role="button"><span class="demand-sort-label">ID</span> <i class="bx bx-sort-alt-2 demand-sort-icon ms-1 text-muted"></i></th>
+                        <th class="demand-sortable" data-sort-key="title" role="button"><span class="demand-sort-label">Idea Title</span> <i class="bx bx-sort-alt-2 demand-sort-icon ms-1 text-muted"></i></th>
+                        <th>Request Type</th>
+                        <th class="demand-sortable" data-sort-key="priority" role="button"><span class="demand-sort-label">Priority</span> <i class="bx bx-sort-alt-2 demand-sort-icon ms-1 text-muted"></i></th>
+                        <th class="demand-sortable" data-sort-key="status" role="button"><span class="demand-sort-label">Status</span> <i class="bx bx-sort-alt-2 demand-sort-icon ms-1 text-muted"></i></th>
+                        <th class="demand-sortable" data-sort-key="owner" role="button"><span class="demand-sort-label">Owner</span> <i class="bx bx-sort-alt-2 demand-sort-icon ms-1 text-muted"></i></th>
+                        <th class="demand-sortable" data-sort-key="sponsor" role="button"><span class="demand-sort-label">Sponsor</span> <i class="bx bx-sort-alt-2 demand-sort-icon ms-1 text-muted"></i></th>
+                        <th>Business Unit</th>
+                        <th class="text-nowrap demand-sortable" data-sort-key="submitted" role="button"><span class="demand-sort-label">Submission date</span> <i class="bx bx-sort-alt-2 demand-sort-icon ms-1 text-muted"></i></th>
+                        <th class="text-nowrap demand-sortable" data-sort-key="due" role="button"><span class="demand-sort-label">Review due</span> <i class="bx bx-sort-alt-2 demand-sort-icon ms-1 text-muted"></i></th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="demand-table-body"></tbody>
+            </table>
+        </div>
+        <div class="card-footer d-flex flex-wrap align-items-center justify-content-between gap-2 bg-transparent border-top" id="demand-pagination"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="demand-more-filters-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">More Filters</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="demand-more-filters-form">
+                    <div class="accordion accordion-flush" id="demand-filter-accordion">
+                        <div class="accordion-item border rounded-3 mb-2">
+                            <h2 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#flt-a">Lifecycle</button></h2>
+                            <div id="flt-a" class="accordion-collapse collapse show" data-bs-parent="#demand-filter-accordion">
+                                <div class="accordion-body row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-muted">Status (multi)</label>
+                                        <select class="form-select" name="statuses" multiple size="4">
+                                            @foreach (var s in new[] { "Draft", "Submitted", "Under Review", "Approved", "Rejected", "Transferred" }) { <option value="@s">@s</option> }
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3"><label class="form-label small text-muted">Submitted from</label><input type="text" class="form-control demand-fp" name="submittedFrom" /></div>
+                                    <div class="col-md-3"><label class="form-label small text-muted">Submitted to</label><input type="text" class="form-control demand-fp" name="submittedTo" /></div>
+                                    <div class="col-md-3"><label class="form-label small text-muted">Review due from</label><input type="text" class="form-control demand-fp" name="reviewDueFrom" /></div>
+                                    <div class="col-md-3"><label class="form-label small text-muted">Review due to</label><input type="text" class="form-control demand-fp" name="reviewDueTo" /></div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small text-muted">Transferred</label>
+                                        <select class="form-select" name="transferred"><option value="">Any</option><option value="yes">Yes</option><option value="no">No</option></select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small text-muted">Has reviewer</label>
+                                        <select class="form-select" name="hasReviewerAssigned"><option value="">Any</option><option value="yes">Yes</option><option value="no">No</option></select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border rounded-3 mb-2">
+                            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flt-b">Classification</button></h2>
+                            <div id="flt-b" class="accordion-collapse collapse" data-bs-parent="#demand-filter-accordion">
+                                <div class="accordion-body row g-3">
+                                    <div class="col-md-4"><label class="form-label small text-muted">Request type</label><select class="form-select" name="requestTypes" multiple size="3">@foreach (var x in new[] { "Program", "Enhancement", "Compliance", "New Capability", "Platform" }) { <option value="@x">@x</option> }</select></div>
+                                    <div class="col-md-4"><label class="form-label small text-muted">Category</label><select class="form-select" name="categories" multiple size="3">@foreach (var x in new[] { "Program", "Enhancement", "Compliance", "New Capability", "Platform" }) { <option value="@x">@x</option> }</select></div>
+                                    <div class="col-md-4"><label class="form-label small text-muted">Business unit</label><select class="form-select" name="businessUnits" multiple size="4">@foreach (var x in new[] { "IT", "HR", "Risk", "Operations", "Engineering", "Security", "Sales", "Finance", "Corporate" }) { <option value="@x">@x</option> }</select></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border rounded-3 mb-2">
+                            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flt-c">Ownership</button></h2>
+                            <div id="flt-c" class="accordion-collapse collapse" data-bs-parent="#demand-filter-accordion">
+                                <div class="accordion-body row g-3">
+                                    <div class="col-md-4"><label class="form-label small text-muted">Owner</label><select class="form-select" name="owners" multiple size="3">@foreach (var x in new[] { "A. Chen", "J. Smith", "R. Kumar", "T. Nguyen" }) { <option value="@x">@x</option> }</select></div>
+                                    <div class="col-md-4"><label class="form-label small text-muted">Sponsor</label><select class="form-select" name="sponsors" multiple size="3">@foreach (var x in new[] { "M. Torres", "L. Park", "S. Blake" }) { <option value="@x">@x</option> }</select></div>
+                                    <div class="col-md-4"><label class="form-label small text-muted">Requestor</label><select class="form-select" name="requestors" multiple size="3">@foreach (var x in new[] { "A. Chen", "J. Smith", "R. Kumar", "T. Nguyen" }) { <option value="@x">@x</option> }</select></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border rounded-3 mb-2">
+                            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flt-d">More</button></h2>
+                            <div id="flt-d" class="accordion-collapse collapse" data-bs-parent="#demand-filter-accordion">
+                                <div class="accordion-body row g-3">
+                                    <div class="col-md-4"><label class="form-label small text-muted">Tags</label><select class="form-select" name="tags" multiple size="4">@foreach (var t in new[] { "cost", "cloud", "hr", "compliance", "security", "billing", "legacy" }) { <option value="@t">@t</option> }</select></div>
+                                    <div class="col-md-4"><label class="form-label small text-muted">Due from</label><input class="form-control demand-fp" name="dueFrom" /></div>
+                                    <div class="col-md-4"><label class="form-label small text-muted">Due to</label><input class="form-control demand-fp" name="dueTo" /></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="demand-apply-filters">Apply Filters</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/pages/demand-ideas-list.css" asp-append-version="true" />
+    <style>
+        #demand-ideas-table thead .demand-sortable { user-select: none; cursor: pointer; }
+        #demand-ideas-table thead .demand-sortable:hover { background-color: var(--bs-tertiary-bg); }
+    </style>
+}
+
+@section Scripts {
+    <script src="~/assets/js/pages/demand-ideas/demandIdeaStatusBadges.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/demand-ideas/demandIdeaFilters.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/demand-ideas/demandIdeaRowActions.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/demand-ideas/demandIdeaTable.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/demand-ideas/demandIdeasList.js" asp-append-version="true"></script>
+}

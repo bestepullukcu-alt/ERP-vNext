@@ -1,0 +1,119 @@
+.decomp-redesign-page .decomp-panel-scroll {
+  max-height: 70vh;
+  overflow: auto;
+}
+
+.decomp-redesign-page .decomp-work-area {
+  min-height: 64vh;
+}
+
+.decomp-view-pane {
+  min-height: 56vh;
+}
+
+.decomp-drawflow-host {
+  min-height: 56vh;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.decomp-map-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+  gap: 0.5rem;
+}
+
+.decomp-map-card {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.5rem;
+  background: var(--bs-body-bg);
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.decomp-map-card.active,
+.decomp-tree-row.active,
+.decomp-outline-row.active {
+  border-color: var(--bs-primary);
+  background: rgba(var(--bs-primary-rgb), 0.06);
+}
+
+.decomp-map-meta,
+.decomp-tree-meta {
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.decomp-tree-row {
+  border: 1px solid transparent;
+  border-radius: 0.4rem;
+  padding: 0.3rem 0.45rem;
+  margin-bottom: 0.2rem;
+  cursor: pointer;
+}
+
+.decomp-tree-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.8fr) 0.8fr 1fr 0.9fr 0.9fr 0.7fr 1.3fr;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.tree-exp-sp {
+  display: inline-block;
+  width: 1.2rem;
+}
+
+.decomp-tree-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.decomp-outline-table th,
+.decomp-outline-table td {
+  white-space: nowrap;
+  font-size: 0.85rem;
+  vertical-align: middle;
+}
+
+.drawflow-node .decomp-df-card {
+  font-size: 11px;
+  min-width: 130px;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 8px;
+  background: var(--bs-body-bg);
+  padding: 6px;
+}
+
+.decomp-df-code {
+  color: var(--bs-secondary-color);
+  font-size: 10px;
+}
+
+.decomp-df-title {
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.decomp-df-meta {
+  color: var(--bs-secondary-color);
+  font-size: 10px;
+}
+
+.decomp-inspector-panel {
+  min-height: 7rem;
+}
+
+#decomp-active-filter-chips .badge {
+  font-size: 0.7rem;
+}
+
+@media (max-width: 1200px) {
+  .decomp-tree-grid {
+    grid-template-columns: 1fr;
+  }
+}

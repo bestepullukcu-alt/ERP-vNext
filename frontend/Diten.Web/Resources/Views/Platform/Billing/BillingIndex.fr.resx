@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="BillingTitle" xml:space="preserve"><value>Gestion de la facturation</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gérer les factures, le cycle d’émission, les soldes de paiement et l’historique financier.</value></data>
+  <data name="AddNewBilling" xml:space="preserve"><value>Ajouter une facture</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Créer une facture</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Modifier la facture brouillon</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Détails de la facture</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identité</value></data>
+  <data name="LineSection" xml:space="preserve"><value>Ligne de facture</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>Notes</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Cycle de vie</value></data>
+  <data name="TotalsSection" xml:space="preserve"><value>Totaux</value></data>
+  <data name="InvoiceNumber" xml:space="preserve"><value>Numéro de facture</value></data>
+  <data name="CustomerReference" xml:space="preserve"><value>Référence client</value></data>
+  <data name="Plan" xml:space="preserve"><value>Plan</value></data>
+  <data name="Currency" xml:space="preserve"><value>Devise</value></data>
+  <data name="GrandTotal" xml:space="preserve"><value>Total général</value></data>
+  <data name="PaidAmount" xml:space="preserve"><value>Montant payé</value></data>
+  <data name="BalanceDue" xml:space="preserve"><value>Solde dû</value></data>
+  <data name="DueDate" xml:space="preserve"><value>Date d’échéance</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="LineDescription" xml:space="preserve"><value>Description de ligne</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Quantité</value></data>
+  <data name="UnitPrice" xml:space="preserve"><value>Prix unitaire</value></data>
+  <data name="DiscountAmount" xml:space="preserve"><value>Remise</value></data>
+  <data name="TaxAmount" xml:space="preserve"><value>Taxe</value></data>
+  <data name="LineTotal" xml:space="preserve"><value>Total de ligne</value></data>
+  <data name="SubTotal" xml:space="preserve"><value>Sous-total</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notes</value></data>
+  <data name="IssuedAt" xml:space="preserve"><value>Émise le</value></data>
+  <data name="Issue" xml:space="preserve"><value>Émettre</value></data>
+  <data name="CancelInvoice" xml:space="preserve"><value>Annuler la facture</value></data>
+  <data name="Details" xml:space="preserve"><value>Détails</value></data>
+  <data name="Edit" xml:space="preserve"><value>Modifier</value></data>
+  <data name="SelectPlan" xml:space="preserve"><value>Sélectionner un plan</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Tout sélectionner</value></data>
+  <data name="Yes" xml:space="preserve"><value>Oui</value></data>
+  <data name="No" xml:space="preserve"><value>Non</value></data>
+  <data name="DraftMutationNotice" xml:space="preserve"><value>Seules les factures brouillon peuvent être modifiées. Les factures émises sont immuables.</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="StatusIssued" xml:space="preserve"><value>Émise</value></data>
+  <data name="StatusPartiallyPaid" xml:space="preserve"><value>Partiellement payée</value></data>
+  <data name="StatusPaid" xml:space="preserve"><value>Payée</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>Annulée</value></data>
+</root>

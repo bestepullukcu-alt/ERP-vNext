@@ -1,0 +1,32 @@
+<details id="goal-sec-planning" class="es-goal-section" open>
+  <summary><span>3. Planning &amp; Horizon *</span><span id="goal-sec-planning-state" class="es-goal-section-state state-empty">Empty</span></summary>
+  <div class="goal-step-helper-banner mb-3 mt-2">
+    <span class="badge bg-label-info">Parent Planning Container</span>
+    <span>Strategy Period sets the allowed horizon. Dates may narrow inside the period, but they cannot extend beyond it.</span>
+  </div>
+  <div class="row g-2 mt-1">
+    <div class="col-12 form-control-validation">
+      <label for="goal-strategy-period" class="form-label es-required">Strategy Period</label>
+      <select id="goal-strategy-period" class="form-select" data-placeholder="Select strategy period (Active only)" required>
+        <option value="">Select strategy period (Active only)...</option>
+      </select>
+      <div id="goal-strategy-period-helper" class="form-text">Select an Active Strategy Period to set Goal planning dates. Draft and Archived periods are shown for reference only.</div>
+    </div>
+    <div class="col-12">
+      <div id="goal-allowed-horizon-summary" class="small text-muted">Allowed horizon: ---. You may narrow, but not extend.</div>
+    </div>
+    <div class="col-12 col-md-6 form-control-validation">
+      <label for="goal-planning-start-year" class="form-label es-required">Start Date</label>
+      <input id="goal-planning-start-year" type="date" class="form-control" required />
+    </div>
+    <div class="col-12 col-md-6 form-control-validation">
+      <label for="goal-planning-end-year" class="form-label es-required">End Date</label>
+      <input id="goal-planning-end-year" type="date" class="form-control" required />
+    </div>
+    <div class="col-12 form-control-validation">
+      <label for="goal-planning-scope-preview" class="form-label">Related Entity Scope Summary <span class="es-field-tag tag-derived">Derived</span></label>
+      <input id="goal-planning-scope-preview" class="form-control" readonly value="Company applicability will define the strategic scope summary." />
+      <div class="form-text">Applicability selections in the next step will update this governance preview automatically.</div>
+    </div>
+  </div>
+</details>

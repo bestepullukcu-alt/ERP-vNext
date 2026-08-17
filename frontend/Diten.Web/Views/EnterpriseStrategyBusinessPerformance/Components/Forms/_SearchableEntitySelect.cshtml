@@ -1,0 +1,12 @@
+@{
+    var label = (ViewData["Label"]?.ToString() ?? string.Empty);
+    var id = (ViewData["Id"]?.ToString() ?? string.Empty);
+    var listId = (ViewData["ListId"]?.ToString() ?? $"{id}-list");
+    var placeholder = (ViewData["Placeholder"]?.ToString() ?? string.Empty);
+    var required = (ViewData["Required"]?.ToString() ?? "false");
+}
+<div class="mb-3">
+    <label for="@id" class="form-label">@label @if (required == "true") { <span class="text-danger">*</span> }</label>
+    <input id="@id" class="form-control" list="@listId" placeholder="@placeholder" @(required == "true" ? "required" : null) />
+    <datalist id="@listId"></datalist>
+</div>

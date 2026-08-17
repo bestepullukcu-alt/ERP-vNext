@@ -1,0 +1,150 @@
+@model Diten.Web.Models.ManagementGovernance.ManagementGovernancePageViewModel
+@{
+    ViewData["Title"] = Model.CurrentSubdomain?.Name ?? "Subdomain";
+    var subdomain = Model.CurrentSubdomain;
+    var subdomainChildren = subdomain?.SidebarChildren ?? Array.Empty<Diten.Web.Models.ManagementGovernance.SidebarNavChild>();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/pages/management-governance.css" />
+}
+
+@if (subdomain == null)
+{
+    <div class="container-xxl flex-grow-1 container-p-y">
+        <div class="alert alert-warning">Subdomain not found.</div>
+    </div>
+}
+else
+{
+    var subdomainActivity = Model.RecentActivity
+        .Where(x => x.Route.Contains(subdomain.Slug, StringComparison.OrdinalIgnoreCase))
+        .ToList();
+    if (!subdomainActivity.Any())
+    {
+        subdomainActivity = Model.RecentActivity.Take(6).ToList();
+    }
+
+    <partial name="Components/_DomainHeader" model="Model" />
+
+    <section class="card mg-card mb-3">
+        <div class="card-body">
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <partial name="Components/_StatusBadge" model="subdomain.Status" />
+                <partial name="Components/_RiskBadge" model="subdomain.RiskLevel" />
+                <span class="text-muted small">Owner: @subdomain.Owner</span>
+                <span class="text-muted small">Pending: @subdomain.PendingItemsCount</span>
+            </div>
+            <p class="text-muted mb-0 mt-2">@subdomain.Description</p>
+        </div>
+    </section>
+
+    <div class="row g-3">
+        @foreach (var kpi in subdomain.Kpis)
+        {
+            <div class="col-12 col-md-4">
+                <partial name="Components/_KPIStatCard" model="kpi" />
+            </div>
+        }
+    </div>
+
+    <div class="row g-3 mt-1">
+        <div class="col-12 col-xl-8">
+            <section class="card mg-card">
+                <div class="card-header"><h2 class="h6 mb-0">Modules</h2></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        @foreach (var module in subdomain.Modules)
+                        {
+                            <div class="col-12 col-md-6">
+                                <partial name="Components/_ModuleCard" model="module" />
+                            </div>
+                        }
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div class="col-12 col-xl-4">
+            <partial name="Components/_WorkQueueWidget" model="Model.WorkQueue.Where(x => x.SubdomainSlug == subdomain.Slug).ToList()" />
+        </div>
+    </div>
+
+    <div class="row g-3 mt-1">
+        @if (subdomainChildren.Any())
+        {
+            <div class="col-12">
+                <section class="card mg-card">
+                    <div class="card-header"><h2 class="h6 mb-0">Subdomain Workspaces</h2></div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            @foreach (var child in subdomainChildren)
+                            {
+                                <div class="col-12 col-md-6 col-xl-4">
+                                    <article class="card mg-card h-100">
+                                        <div class="card-body d-flex flex-column gap-2">
+                                            <h3 class="h6 mb-0">@child.Label</h3>
+                                            <p class="small text-muted mb-0">Workspace route nested under this subdomain hierarchy.</p>
+                                            <div class="mt-auto">
+                                                <a class="btn btn-sm btn-primary" href="@child.Route">Open</a>
+                                            </div>
+                                        </div>
+                                    </article>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </section>
+            </div>
+        }
+    </div>
+
+    <div class="row g-3 mt-1">
+        <div class="col-12 col-xl-6">
+            <section class="card mg-card h-100">
+                <div class="card-header"><h2 class="h6 mb-0">Alerts & Issues</h2></div>
+                <div class="card-body">
+                    @foreach (var signal in Model.RiskSignals.Where(x => x.SubdomainSlug == subdomain.Slug).Take(4))
+                    {
+                        <div class="mb-2">
+                            <partial name="Components/_AlertSummaryCard" model="signal" />
+                        </div>
+                    }
+                </div>
+            </section>
+        </div>
+        <div class="col-12 col-xl-6">
+            <partial name="Components/_DependencyList" model="subdomain.Modules.ToList()" />
+        </div>
+    </div>
+
+    <div class="row g-3 mt-1">
+        <div class="col-12 col-xl-6">
+            <partial name="Components/_ActivityFeed" model="subdomainActivity" />
+        </div>
+        <div class="col-12 col-xl-6">
+            <section class="card mg-card h-100">
+                <div class="card-header"><h2 class="h6 mb-0">Upcoming Reviews / Cadence</h2></div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                    @foreach (var cycle in Model.ReviewCycles.Where(x => x.SubdomainSlug == subdomain.Slug))
+                    {
+                        <li class="mb-2">
+                            <div class="fw-semibold small">@cycle.Name</div>
+                            <div class="small text-muted">@cycle.DueAtUtc.ToString("dd MMM yyyy")</div>
+                        </li>
+                    }
+                    </ul>
+                    <hr />
+                    <h3 class="h6">Reports / Insights</h3>
+                    <p class="small text-muted mb-2">Roll-up analytics only. Detailed transactions stay in module workspaces.</p>
+                    <a class="btn btn-sm btn-outline-primary" href="/management-governance/reports">Open Reports Shell</a>
+                </div>
+            </section>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="~/assets/js/pages/management-governance/mg-data-adapter.js"></script>
+    <script src="~/assets/js/pages/management-governance/mg-page.js"></script>
+}

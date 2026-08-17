@@ -1,0 +1,55 @@
+/**
+ * Demand & Ideas list — aligned with Capture (IC-YYYY-NNNN, governance table)
+ */
+.demand-ideas-list {
+  --di-border: rgba(67, 89, 113, 0.12);
+}
+
+.demand-ideas-list .demand-page-toolbar h1 {
+  letter-spacing: -0.02em;
+}
+
+.demand-ideas-list .demand-id-link {
+  color: var(--bs-primary);
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.demand-ideas-list .demand-id-link:hover {
+  text-decoration: underline;
+  color: var(--bs-primary);
+}
+
+#demand-ideas-table thead th {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--bs-secondary-color);
+  border-bottom-width: 1px;
+}
+
+#demand-ideas-table tbody td {
+  vertical-align: middle;
+  font-size: 0.875rem;
+}
+
+#demand-ideas-table .demand-idea-title {
+  font-weight: 600;
+  color: var(--bs-heading-color);
+  line-height: 1.35;
+}
+
+#demand-ideas-table .demand-idea-sub {
+  font-size: 0.8125rem;
+  margin-top: 0.15rem;
+}
+
+#demand-ideas-table .badge {
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 0.35em 0.65em;
+}
+
+.demand-ideas-list .card.shadow-sm {
+  box-shadow: 0 0.125rem 0.375rem rgba(67, 89, 113, 0.08) !important;
+}

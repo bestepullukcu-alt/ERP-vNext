@@ -1,0 +1,48 @@
+@using Diten.Web.Views.WorkCenter
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkCenterIndex> Localizer
+
+<div class="mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center row-gap-3 mb-3">
+        <div class="d-flex flex-column justify-content-center">
+            <h5 class="mb-0 task-header-title">
+                <span id="taskTitle">-</span>
+            </h5>
+            <nav aria-label="breadcrumb" class="text-muted task-breadcrumb">
+                <ol class="breadcrumb mb-0 py-0">
+                    <li class="breadcrumb-item">
+                        <a href="#" id="taskBackBtn">Work Center</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <span id="taskBreadcrumbContext">-</span>
+                    </li>
+                    <li class="breadcrumb-item active text-primary">
+                        <span id="taskBreadcrumbItem">-</span>
+                    </li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+            <span class="badge bg-label-danger d-none" id="taskOverdueBadge">Overdue</span>
+            <span class="badge bg-label-secondary" id="taskStatusBadge">-</span>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body py-3 px-3">
+            <div class="d-flex flex-wrap align-items-center gap-3 small text-muted">
+                <span class="d-flex align-items-center gap-1">
+                    <i class="bx bx-user icon-base"></i>
+                    <span id="taskAssignee">-</span>
+                </span>
+                <span class="d-flex align-items-center gap-1">
+                    <i class="bx bx-user-check icon-base"></i>
+                    <span id="taskCreatedBy">-</span>
+                </span>
+                <span class="d-flex align-items-center gap-1">
+                    <i class="bx bx-calendar icon-base"></i>
+                    <span id="taskDueDate">-</span>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>

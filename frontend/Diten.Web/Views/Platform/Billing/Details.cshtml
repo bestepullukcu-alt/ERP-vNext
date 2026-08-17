@@ -1,0 +1,107 @@
+@model Diten.Web.Models.Billing.BillingInvoiceDetailViewModel
+@using Diten.Web.Views.Platform.Billing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<BillingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["DetailsTitle"].Value;
+    Layout = "_LayoutPlatformAdmin";
+    var statusClass = Model.Status switch
+    {
+        "Issued" => "bg-label-info",
+        "PartiallyPaid" => "bg-label-warning",
+        "Paid" => "bg-label-success",
+        "Cancelled" => "bg-label-danger",
+        _ => "bg-label-secondary"
+    };
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["DetailsTitle"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/Platform/Billing">@Localizer["BillingTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@Localizer["DetailsTitle"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/Platform/Billing" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        @if (Model.Status == "Draft")
+        {
+            <a href="/Platform/Billing/Edit/@Model.Id" class="btn btn-primary">@Localizer["Edit"]</a>
+        }
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+        <section class="backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+            <div class="row g-4">
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field"><i class="bx bx-receipt"></i><div><div class="backbone-preview-label">@Localizer["InvoiceNumber"]</div><div class="backbone-preview-value mt-1">@(Model.InvoiceNumber ?? "-")</div></div></div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field"><i class="bx bx-user"></i><div><div class="backbone-preview-label">@Localizer["CustomerReference"]</div><div class="backbone-preview-value mt-1">@Model.CustomerReference</div></div></div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field"><i class="bx bx-package"></i><div><div class="backbone-preview-label">@Localizer["Plan"]</div><div class="backbone-preview-value mt-1">@Model.BillingPlanNameSnapshot v@Model.BillingPlanVersion</div></div></div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field"><i class="bx bx-calendar"></i><div><div class="backbone-preview-label">@Localizer["DueDate"]</div><div class="backbone-preview-value mt-1">@(Model.DueDate?.ToString("yyyy-MM-dd") ?? "-")</div></div></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LineSection"]</h6>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>@Localizer["LineDescription"]</th>
+                            <th>@Localizer["Quantity"]</th>
+                            <th>@Localizer["UnitPrice"]</th>
+                            <th>@Localizer["TaxAmount"]</th>
+                            <th>@Localizer["LineTotal"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var line in Model.Lines)
+                    {
+                        <tr>
+                            <td>@line.Description</td>
+                            <td>@line.Quantity</td>
+                            <td>@line.UnitPrice.ToString("N2") @line.Currency</td>
+                            <td>@((line.TaxAmount ?? 0).ToString("N2")) @line.Currency</td>
+                            <td>@line.LineTotal.ToString("N2") @line.Currency</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+        <section class="backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["NotesSection"]</h6>
+            <div class="backbone-preview-description">@(string.IsNullOrWhiteSpace(Model.Notes) ? "-" : Model.Notes)</div>
+        </section>
+
+        <section class="backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LifecycleSection"]</h6>
+            <div class="backbone-preview-field mb-3"><i class="bx bx-check-shield"></i><div><div class="backbone-preview-label">@SharedLocalizer["Status"]</div><div class="mt-1"><span class="badge @statusClass">@Model.Status</span></div></div></div>
+            <div class="backbone-preview-field mb-4"><i class="bx bx-time"></i><div><div class="backbone-preview-label">@Localizer["IssuedAt"]</div><div class="backbone-preview-value mt-1">@(Model.IssuedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</div></div></div>
+            <div class="d-flex justify-content-between mb-2"><span>@Localizer["SubTotal"]</span><strong>@Model.SubTotal.ToString("N2") @Model.Currency</strong></div>
+            <div class="d-flex justify-content-between mb-2"><span>@Localizer["DiscountAmount"]</span><strong>@Model.DiscountTotal.ToString("N2") @Model.Currency</strong></div>
+            <div class="d-flex justify-content-between mb-2"><span>@Localizer["TaxAmount"]</span><strong>@Model.TaxTotal.ToString("N2") @Model.Currency</strong></div>
+            <div class="d-flex justify-content-between border-top pt-3 mb-2"><span>@Localizer["GrandTotal"]</span><strong>@Model.GrandTotal.ToString("N2") @Model.Currency</strong></div>
+            <div class="d-flex justify-content-between mb-2"><span>@Localizer["PaidAmount"]</span><strong>@Model.PaidAmount.ToString("N2") @Model.Currency</strong></div>
+            <div class="d-flex justify-content-between"><span>@Localizer["BalanceDue"]</span><strong>@Model.BalanceDue.ToString("N2") @Model.Currency</strong></div>
+        </section>
+
+    </div>
+</div>

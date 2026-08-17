@@ -1,0 +1,85 @@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="planningCycleEditorOffcanvas" aria-labelledby="planningCycleEditorOffcanvasLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="planningCycleEditorOffcanvasLabel" class="offcanvas-title">Create Planning Cycle</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body mx-0 flex-grow-0 p-6 h-100">
+        <div class="alert alert-label-primary mb-4 py-2 border-0 border-start border-3 border-primary rounded-0 rounded-end">
+            <small class="text-muted d-block">
+                <i class="icon-base bx bx-info-circle me-1"></i> Fields marked with <span class="text-danger fw-bold">*</span> are required to define a planning cycle.
+            </small>
+        </div>
+        <form class="add-new-cycle pt-0" id="planningCycleForm" onsubmit="return false">
+            <div id="planning-cycle-form-error" class="alert alert-danger d-none mb-3 es-validation-summary" role="alert" aria-live="assertive"></div>
+
+            <div class="mb-4 form-control-validation">
+                <label class="form-label es-required" for="planning-cycle-name">Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="planning-cycle-name" placeholder="Annual Strategy 2026" name="name" />
+            </div>
+
+            <div class="mb-4 form-control-validation">
+                <label class="form-label" for="planning-cycle-code">Code <span class="es-field-tag tag-system small">System-managed</span></label>
+                <input type="text" class="form-control" id="planning-cycle-code" name="code" readonly />
+            </div>
+
+            <div class="mb-4 form-control-validation">
+                <label class="form-label es-required" for="planning-cycle-type">Planning Cycle Type <span class="text-danger">*</span></label>
+                <select id="planning-cycle-type" class="form-select" name="type">
+                    <option value="">Select</option>
+                </select>
+            </div>
+
+            <div class="mb-4 form-control-validation">
+                <label class="form-label es-required" for="planning-cycle-owner-company">Owner Company / Org <span class="text-danger">*</span></label>
+                <select id="planning-cycle-owner-company" class="form-select" name="ownerCompanyId">
+                    <option value="">Select owner company / org</option>
+                </select>
+            </div>
+
+            <div class="mb-4 form-control-validation">
+                <label class="form-label es-required" for="planning-cycle-owner-position">Owner Position <span class="text-danger">*</span></label>
+                <select id="planning-cycle-owner-position" class="form-select" name="ownerPositionId" disabled>
+                    <option value="">Select owner company / org first</option>
+                </select>
+            </div>
+
+            <div class="mb-4 form-control-validation">
+                <label class="form-label" for="planning-cycle-current-owner-person">Current Owner Person</label>
+                <select id="planning-cycle-current-owner-person" class="select2 form-select" 
+                        name="currentOwnerPersonId" data-placeholder="Select Person">
+                    <option></option>
+                </select>
+            </div>
+
+            <div class="mb-4 form-control-validation">
+                <label class="form-label es-required" for="planning-cycle-effective-from">Effective From <span class="text-danger">*</span></label>
+                <input id="planning-cycle-effective-from" type="date" class="form-control" name="effectiveFrom" />
+            </div>
+
+            <div class="mb-4 form-control-validation">
+                <label class="form-label es-required" for="planning-cycle-effective-to">Effective To <span class="text-danger">*</span></label>
+                <input id="planning-cycle-effective-to" type="date" class="form-control" name="effectiveTo" />
+            </div>
+
+            <div class="mb-6 form-control-validation">
+                <label class="form-label" for="planning-cycle-description">Description</label>
+                <textarea id="planning-cycle-description" class="form-control" rows="3" name="description"></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label d-block mb-1" for="planning-cycle-status-display">Lifecycle Status</label>
+                <div id="planning-cycle-status-container" class="d-flex gap-2 status-selector mt-1">
+                    <span class="badge rounded-pill cursor-pointer status-pill px-3 py-2" data-status="Draft">Draft</span>
+                    <span class="badge rounded-pill cursor-pointer status-pill px-3 py-2" data-status="Active">Active</span>
+                    <span class="badge rounded-pill cursor-pointer status-pill px-3 py-2" data-status="Archived">Archived</span>
+                </div>
+                <input type="hidden" id="planning-cycle-status" name="status" value="Draft" />
+            </div>
+
+            <div class="pt-4">
+                <button type="submit" id="planning-cycle-save" class="btn btn-primary me-3">Submit</button>
+                <button type="reset" class="btn btn-label-danger" data-bs-dismiss="offcanvas">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>

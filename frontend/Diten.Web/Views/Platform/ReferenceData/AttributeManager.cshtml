@@ -1,0 +1,127 @@
+@using Diten.Web.Views.Platform.ReferenceData
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ReferenceDataIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["AttributesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var setCode = ViewData["SetCode"]?.ToString() ?? string.Empty;
+    string AccessFlag(string key) => ((bool?)ViewData[key] ?? false).ToString().ToLowerInvariant();
+}
+<div id="rd-attributes-page" data-set-code="@setCode" data-testid="rd-attributes-page" data-rd-permissions="true"
+     data-can-update-version="@AccessFlag("RdCanUpdateVersion")"
+     data-can-create-version="@AccessFlag("RdCanCreateVersion")">
+    <div class="mb-3 d-flex justify-content-between align-items-start gap-2 flex-wrap">
+        <div>
+            <h5 class="mb-0">@Localizer["AttributesTitle"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="/Platform/ReferenceData">@Localizer["PageTitle"]</a></li>
+                    <li class="breadcrumb-item" id="rd-attrs-crumb-set">@setCode</li>
+                    <li class="breadcrumb-item active text-primary">@Localizer["AttributesTitle"]</li>
+                </ol>
+            </nav>
+            <p class="mb-0 text-muted">@Localizer["AttributesDescription"]</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-label-secondary btn-sm" id="rd-attrs-refresh">@Localizer["Refresh"]</button>
+            <a class="btn btn-label-secondary btn-sm" href="/Platform/ReferenceData">@Localizer["BackToSets"]</a>
+        </div>
+    </div>
+
+    <div id="rd-attributes-status" class="alert alert-info d-none mb-3"></div>
+    <div id="rd-attributes-empty" class="d-none"></div>
+    <div id="rd-attributes-error" class="alert alert-danger d-none" role="alert"></div>
+
+    <div id="rd-attributes-card">
+        <div id="rd-attrs-stepper" class="bs-stepper vertical mt-2">
+                <div class="bs-stepper-header border-end">
+                    <div class="step active" data-target="#rd-step-definitions">
+                        <button type="button" class="step-trigger" aria-selected="true">
+                            <span class="bs-stepper-circle">1</span>
+                            <span class="bs-stepper-label">
+                                <span class="bs-stepper-title">@Localizer["AttributeDefinitionsTitle"]</span>
+                                <span class="bs-stepper-subtitle">@Localizer["StepDefineSubtitle"]</span>
+                            </span>
+                        </button>
+                    </div>
+                    <div class="line"></div>
+                    <div class="step" data-target="#rd-step-values">
+                        <button type="button" class="step-trigger" aria-selected="false">
+                            <span class="bs-stepper-circle">2</span>
+                            <span class="bs-stepper-label">
+                                <span class="bs-stepper-title">@Localizer["ValueAttributesTitle"]</span>
+                                <span class="bs-stepper-subtitle">@Localizer["StepFillSubtitle"]</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bs-stepper-content">
+                    <form onsubmit="return false">
+                        <div id="rd-step-definitions" class="content active dstepper-block">
+                            <div class="content-header mb-3 d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                                <div>
+                                    <h6 class="mb-0">
+                                        @Localizer["AttributeDefinitionsTitle"]
+                                        <span class="badge bg-label-warning d-none ms-1" id="rd-defs-dirty">@Localizer["UnsavedChanges"]</span>
+                                    </h6>
+                                    <small class="text-muted">@Localizer["DefinitionsCardHint"]</small>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-label-primary" id="rd-attrs-add-def"><i class="bx bx-plus me-1"></i>@Localizer["AddDefinition"]</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table mb-0" data-testid="rd-attribute-definitions-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 220px;">@Localizer["AttributeCodeColumn"]</th>
+                                            <th>@Localizer["DisplayNameColumn"]</th>
+                                            <th style="width: 170px;">@Localizer["DataTypeColumn"]</th>
+                                            <th style="width: 120px;">@Localizer["RequiredColumn"]</th>
+                                            <th style="width: 100px;">@Localizer["ActionColumn"]</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rd-attribute-definitions-body"></tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-end mt-4">
+                                <button type="button" class="btn btn-primary" id="rd-attrs-save-defs" disabled>
+                                    <span class="align-middle me-1">@Localizer["SaveAndContinue"]</span><i class="bx bx-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="rd-step-values" class="content">
+                            <div class="content-header mb-3">
+                                <h6 class="mb-0">
+                                    @Localizer["ValueAttributesTitle"]
+                                    <span class="badge bg-label-warning d-none ms-1" id="rd-values-dirty">@Localizer["UnsavedChanges"]</span>
+                                </h6>
+                                <small class="text-muted">@Localizer["ValueAttributesCardHint"]</small>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table mb-0" data-testid="rd-value-attributes-table">
+                                    <thead id="rd-value-attributes-head"></thead>
+                                    <tbody id="rd-value-attributes-body"></tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-label-secondary" id="rd-attrs-prev"><i class="bx bx-chevron-left me-1"></i>@Localizer["PreviousStep"]</button>
+                                <button type="button" class="btn btn-primary" id="rd-attrs-save-values" disabled>@Localizer["SaveValueAttributes"]</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/bs-stepper/bs-stepper.css" asp-append-version="true" />
+}
+@section Scripts {
+    <partial name="_IndexL10n" />
+    <script src="~/assets/js/Platform/ReferenceData/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/reference-data.api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/reference-data.permissions.js" asp-append-version="true"></script>
+    <script src="~/assets/vendor/libs/bs-stepper/bs-stepper.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/ReferenceData/attributes.js" asp-append-version="true"></script>
+}

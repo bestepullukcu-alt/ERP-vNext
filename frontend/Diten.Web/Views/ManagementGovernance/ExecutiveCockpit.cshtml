@@ -1,0 +1,91 @@
+@model Diten.Web.Models.ManagementGovernance.ManagementGovernancePageViewModel
+@{
+    ViewData["Title"] = "Executive Cockpit";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/pages/management-governance.css" />
+}
+
+<partial name="Components/_DomainHeader" model="Model" />
+
+<div class="row g-3">
+    @foreach (var kpi in Model.Domain.Kpis)
+    {
+        <div class="col-12 col-md-6 col-xl-3">
+            <partial name="Components/_KPIStatCard" model="kpi" />
+        </div>
+    }
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-12 col-xl-4">
+        <section class="card mg-card h-100">
+            <div class="card-header"><h2 class="h6 mb-0">Strategy Progress</h2></div>
+            <div class="card-body">
+                <div class="mg-chart-placeholder">Trend placeholder (strategy)</div>
+            </div>
+        </section>
+    </div>
+    <div class="col-12 col-xl-4">
+        <section class="card mg-card h-100">
+            <div class="card-header"><h2 class="h6 mb-0">Portfolio Health</h2></div>
+            <div class="card-body">
+                <div class="mg-chart-placeholder">Trend placeholder (portfolio)</div>
+            </div>
+        </section>
+    </div>
+    <div class="col-12 col-xl-4">
+        <section class="card mg-card h-100">
+            <div class="card-header"><h2 class="h6 mb-0">Delivery Health</h2></div>
+            <div class="card-body">
+                <div class="mg-chart-placeholder">Trend placeholder (delivery)</div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-12 col-xl-6">
+        <section class="card mg-card h-100">
+            <div class="card-header"><h2 class="h6 mb-0">Risk/Compliance Highlights</h2></div>
+            <div class="card-body">
+                <div class="row g-3">
+                    @foreach (var signal in Model.RiskSignals.Take(4))
+                    {
+                        <div class="col-12">
+                            <partial name="Components/_AlertSummaryCard" model="signal" />
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+    </div>
+    <div class="col-12 col-xl-6">
+        <partial name="Components/_DependencyList" model="Model.Subdomains.SelectMany(x => x.Modules).ToList()" />
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-12 col-xl-6">
+        <partial name="Components/_CadenceWidget" model="Model.GovernanceEvents" />
+    </div>
+    <div class="col-12 col-xl-6">
+        <section class="card mg-card h-100">
+            <div class="card-header"><h2 class="h6 mb-0">Action Aging & Variance Tiles</h2></div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-6"><div class="mg-tile">Overdue actions: @Model.WorkQueue.Count(x => x.DueAtUtc < DateTime.UtcNow)</div></div>
+                    <div class="col-6"><div class="mg-tile">High risk: @Model.RiskSignals.Count(x => x.Severity == "High")</div></div>
+                    <div class="col-6"><div class="mg-tile">Evidence gaps: @Model.WorkQueue.Count(x => x.RequiresEvidence)</div></div>
+                    <div class="col-6"><div class="mg-tile">Open escalations: @Model.WorkQueue.Count(x => x.IsEscalated)</div></div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/pages/management-governance/mg-data-adapter.js"></script>
+    <script src="~/assets/js/pages/management-governance/mg-page.js"></script>
+}

@@ -1,0 +1,8 @@
+@using Diten.Web.Views.WorkCenter
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkCenterIndex> Localizer
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["WorkCenterTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["WorkCenterDescription"]</p>
+</div>

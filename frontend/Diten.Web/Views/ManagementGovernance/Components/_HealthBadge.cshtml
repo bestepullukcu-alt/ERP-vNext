@@ -1,0 +1,10 @@
+@model string
+@{
+    var cls = Model switch
+    {
+        "High" => "bg-danger-subtle text-danger",
+        "Medium" => "bg-warning-subtle text-warning-emphasis",
+        _ => "bg-success-subtle text-success"
+    };
+}
+<span class="badge @cls">Health: @Model</span>

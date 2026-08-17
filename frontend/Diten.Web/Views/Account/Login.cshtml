@@ -1,0 +1,153 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    Layout = null;
+    ViewData["Title"] = SharedLocalizer["Login.Title"];
+    var authMode = (ViewBag.AuthMode as string ?? "tenant").ToLowerInvariant();
+    var defaultRedirect = (ViewBag.PostLoginDefault as string) ?? "/WorkCenter";
+}
+
+<!DOCTYPE html>
+<html lang="en" class="light-style customizer-hide" dir="ltr" data-theme="theme-default" data-bs-theme="light" data-assets-path="@Url.Content("~/assets/")" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>@ViewData["Title"] - Di10</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="~/assets/img/favicon/favicon.ico" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="~/assets/vendor/fonts/iconify-icons.css" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="~/assets/vendor/css/core.css" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="~/assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="~/assets/css/demo.css" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="~/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/sweetalert2/sweetalert2.css" />
+
+    <!-- Page CSS -->
+    <link rel="stylesheet" href="~/assets/vendor/css/pages/page-auth.css" />
+
+    <!-- Helpers -->
+    <script src="~/assets/vendor/js/helpers.js"></script>
+    <script src="~/assets/js/config.js"></script>
+
+    <script>
+        window.ApiBaseUrl = window.location.protocol + "//" + window.location.hostname + ":5000";
+        window.AuthMode = "@authMode";
+        window.PostLoginDefault = "@defaultRedirect";
+        window.L10n = {
+            LoginErrorTitle: "@SharedLocalizer["Login.ErrorTitle"]",
+            LoginErrorRequired: "@SharedLocalizer["Login.ErrorRequired"]",
+            LoginError: "@SharedLocalizer["Login.Error"]",
+            TenantLoginMissingTenant: "Tenant login link is missing tenant information. Please use the invitation link again.",
+            LoginSubmit: "@SharedLocalizer["Login.Submit"]",
+            LoginLoading: "@SharedLocalizer["Login.Loading"]",
+            MfaRequired: "Verification code is required.",
+            MfaVerify: "Verify",
+            MfaVerifying: "Verifying...",
+            MfaChallengeRequired: "Verification challenge is required.",
+            MfaResending: "Sending...",
+            MfaResentTitle: "Code sent",
+            MfaResentMessage: "A new verification code has been sent."
+        };
+    </script>
+</head>
+
+<body>
+    <!-- Content -->
+    <div class="container-xxl">
+        <div class="authentication-wrapper authentication-basic container-p-y">
+            <div class="authentication-inner">
+                <!-- Register Card -->
+                <div class="card">
+                    <div class="card-body">
+                        <!-- Logo -->
+                        <div class="app-brand justify-content-center" style="height: 60px !important; min-height: 60px !important; margin-bottom: 25px;">
+                            <a href="/" class="app-brand-link gap-2" style="height: 60px !important;">
+                                <span class="app-brand-logo demo">
+                                    <img src="~/assets/img/branding/platform-logo-light.png" alt="Di10 Enterprise Solutions" style="height:60px;width:auto;" />
+                                </span>
+                            </a>
+                        </div>
+                        <!-- /Logo -->
+                        <h4 class="mb-2">@SharedLocalizer["Login.Title"] 👋</h4>
+                        <p class="mb-4">@SharedLocalizer["Login.Subtitle"]</p>
+
+                        <form id="loginForm" class="mb-6">
+                            <div class="mb-6">
+                                <label for="email" class="form-label">@SharedLocalizer[authMode == "platform" ? "Login.EmailOrUsername" : "Login.Email"]</label>
+                                <input type="text" class="form-control" id="email" name="email" placeholder="@(authMode == "platform" ? "username or email@example.com" : "email@example.com")" autofocus />
+                            </div>
+                            <div class="mb-6">
+                                <div class="d-flex justify-content-between">
+                                    <label class="form-label" for="password">@SharedLocalizer["Login.Password"]</label>
+                                </div>
+                                <div class="input-group input-group-merge form-password-toggle">
+                                    <input type="password" id="password" class="form-control" name="password" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password" />
+                                    <span class="input-group-text cursor-pointer" id="togglePassword"><i class="bx bx-hide"></i></span>
+                                </div>
+                            </div>
+                            <div class="mb-6">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="form-check mb-0">
+                                        <input class="form-check-input" type="checkbox" id="remember-me" />
+                                        <label class="form-check-label" for="remember-me"> @SharedLocalizer["Login.RememberMe"] </label>
+                                    </div>
+                                    <a href="@(authMode == "platform" ? "/platform/forgot-password" : "#")">
+                                        <span>@SharedLocalizer["Login.ForgotPassword"]</span>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="mb-6">
+                                <button class="btn btn-primary d-grid w-100" type="submit">@SharedLocalizer["Login.Submit"]</button>
+                            </div>
+                        </form>
+                        <form id="mfaForm" class="mb-3 d-none">
+                            <div class="text-center mb-4">
+                                <h4 class="mb-2">Two-step Verification</h4>
+                                <p class="mb-0">Enter the verification code sent to <span id="mfaDestination" class="fw-medium"></span></p>
+                            </div>
+                            <input type="hidden" id="mfaChallengeId" />
+                            <div class="mb-3">
+                                <label for="mfaCode" class="form-label">Verification Code</label>
+                                <input type="text" class="form-control text-center fs-4" id="mfaCode" name="mfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" />
+                            </div>
+                            <div class="mb-3">
+                                <button class="btn btn-primary d-grid w-100" type="submit">@SharedLocalizer["Login.Submit"]</button>
+                            </div>
+                            <div class="text-center">
+                                <button class="btn btn-link p-0" type="button" id="resendMfaCode">Resend code</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!-- Register Card -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Core JS -->
+    <script src="~/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="~/assets/vendor/libs/popper/popper.js"></script>
+    <script src="~/assets/vendor/js/bootstrap.js"></script>
+    <script src="~/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="~/assets/vendor/js/menu.js"></script>
+    <script src="~/assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
+
+    <!-- Main JS -->
+    <script src="~/assets/js/main.js"></script>
+
+    <!-- Page JS -->
+    <script src="~/assets/js/Account/login.js"></script>
+</body>
+</html>

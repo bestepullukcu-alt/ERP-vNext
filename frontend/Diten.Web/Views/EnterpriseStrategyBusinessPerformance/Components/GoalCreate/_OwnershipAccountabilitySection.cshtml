@@ -1,0 +1,33 @@
+<details id="goal-sec-ownership" class="es-goal-section" open>
+  <summary><span>2. Ownership &amp; Accountability *</span><span id="goal-sec-ownership-state" class="es-goal-section-state state-empty">Empty</span></summary>
+  <div class="goal-step-helper-banner mb-3 mt-2">
+    <span class="badge bg-label-primary">Governance-First Ownership</span>
+    <span>Accountability is anchored by owner company or org, then owner position, then the current incumbent person.</span>
+  </div>
+  <div class="row g-2 mt-1">
+    <div class="col-12 col-md-4 form-control-validation">
+      <label for="goal-owner-company" class="form-label es-required">Owner Company / Org</label>
+      <select id="goal-owner-company" class="form-select" required>
+        <option value="">Select owner company / org...</option>
+      </select>
+      <div class="form-text">Selecting the owner company or org filters the valid accountable positions.</div>
+    </div>
+    <div class="col-12 col-md-4 form-control-validation">
+      <label for="goal-owner-role" class="form-label es-required">Owner Position</label>
+      <select id="goal-owner-role" class="form-select" required>
+        <option value="">Select position...</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-4 form-control-validation">
+      <label for="goal-owner-person-display" class="form-label">Current Owner Person</label>
+      <input id="goal-owner-person-display" class="form-control bg-light" readonly tabindex="-1" placeholder="Auto-filled from selected position" />
+      <input id="goal-owner-person" type="hidden" />
+      <div id="goal-owner-person-hint" class="form-text">Current Owner Person resolves automatically from the active incumbent when one exists.</div>
+    </div>
+    <div class="col-12 col-md-6 form-control-validation">
+      <label for="goal-owner-accountable-display" class="form-label">Accountable Ownership Summary <span class="es-field-tag tag-derived">Derived</span></label>
+      <input id="goal-owner-accountable-display" class="form-control" readonly value="-" />
+      <div class="form-text">Displays Company / Org → Position → Current Owner Person.</div>
+    </div>
+  </div>
+</details>

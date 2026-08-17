@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 .antigravity/scripts/verify_datatable_page.py . --area DevEnablement --module GoldenReferenceSlim --reference slim)",
+      "Bash(python3 .antigravity/scripts/verify_datatable_page.py . --area DevEnablement --module GoldenReferenceCompact --reference compact)",
+      "Bash(git -C /Users/alitufanoglu/ERP-vNext log --oneline -10 -- frontend/Diten.Web/Views/Platform/ModuleCatalog/ frontend/Diten.Web/wwwroot/assets/js/Platform/ModuleCatalog/)",
+      "Bash(git -C /Users/alitufanoglu/ERP-vNext diff HEAD gateway/Diten.ApiGateway/ocelot.json)",
+      "Bash(git -C /Users/alitufanoglu/ERP-vNext diff gateway/Diten.ApiGateway/ocelot.json frontend/Diten.Web/Views/Platform/ModuleCatalog/_IndexL10n.cshtml)",
+      "Bash(dotnet build *)",
+      "Bash(grep -E \"\\\\.\\(cs\\)$\")",
+      "Bash(xargs ls *)",
+      "Bash(git mv *)",
+      "Bash(git rm *)",
+      "Bash(dotnet test *)",
+      "Bash(xargs du -sh)",
+      "Bash(awk -F: '{print $1}')",
+      "Bash(grep -E \"\\\\.DS_Store$\")",
+      "Bash(git check-ignore *)",
+      "Bash(awk -F/ 'NF>=4 {print $1\"/\"$2\"/\"$3\"/\"$4}')",
+      "Bash(awk -F/ '{n=NF; gsub\\(\"/[^/]*$\",\"\",$0\\); print}')",
+      "Bash(awk -F/ '{ *)",
+      "Bash(awk -F/ 'NF==6 {print $5\"/\"$6}')",
+      "Bash(xargs basename -a)",
+      "Bash(git -C /Users/alitufanoglu/ERP-vNext log future/permission --oneline -20)",
+      "Bash(git -C /Users/alitufanoglu/ERP-vNext diff main..future/permission --stat)",
+      "Bash(git -C /Users/alitufanoglu/ERP-vNext diff main..future/permission -- services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/ --stat)"
+    ]
+  }
+}

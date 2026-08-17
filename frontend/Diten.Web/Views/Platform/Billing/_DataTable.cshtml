@@ -1,0 +1,35 @@
+@using Diten.Web.Views.Platform.Billing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<BillingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="card">
+    <div id="skeleton-loader" class="p-4" style="display: none;">
+        <div class="shimmer skeleton-row" style="width: 100%; height: 32px; margin-bottom: 2rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px; margin-bottom: 1rem;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px;"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-billing" data-dt-standard="v2" class="datatables-billing table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="d-none"><input type="checkbox" class="dt-checkboxes-select-all form-check-input" aria-label="@Localizer["SelectAll"]"></th>
+                    <th>@Localizer["InvoiceNumber"]</th>
+                    <th class="all">@Localizer["CustomerReference"]</th>
+                    <th>@Localizer["Plan"]</th>
+                    <th>@Localizer["Currency"]</th>
+                    <th>@Localizer["GrandTotal"]</th>
+                    <th>@Localizer["PaidAmount"]</th>
+                    <th>@Localizer["BalanceDue"]</th>
+                    <th>@Localizer["DueDate"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

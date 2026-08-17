@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tenant.activated.v1",
+  "title": "tenant.activated.v1",
+  "type": "object",
+  "required": [
+    "event_id",
+    "event_name",
+    "event_version",
+    "tenant_id",
+    "correlation_id",
+    "causation_id",
+    "occurred_at",
+    "producer",
+    "actor",
+    "payload"
+  ],
+  "properties": {
+    "event_id": { "type": "string", "format": "uuid" },
+    "event_name": { "const": "tenant.activated" },
+    "event_version": { "const": 1 },
+    "tenant_id": { "type": "string", "format": "uuid" },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "causation_id": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "producer": { "type": "string", "minLength": 1 },
+    "actor": {
+      "type": "object",
+      "required": ["user_id", "actor_type"],
+      "properties": {
+        "user_id": { "type": "string", "minLength": 1 },
+        "actor_type": { "type": "string", "enum": ["tenant_user", "platform_admin", "system"] }
+      },
+      "additionalProperties": false
+    },
+    "payload": {
+      "type": "object",
+      "required": ["tier"],
+      "properties": {
+        "tier": { "type": "string", "enum": ["basic", "standard", "enterprise"] }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

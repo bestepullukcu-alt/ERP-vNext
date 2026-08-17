@@ -1,0 +1,31 @@
+@using Diten.Web.Views.Governance.Permissions
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PermissionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="permissions-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Details = SharedLocalizer["Details"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        Description = SharedLocalizer["Description"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        Key = Localizer["Key"].Value,
+        Module = Localizer["Module"].Value,
+        Resource = Localizer["Resource"].Value,
+        Action = Localizer["Action"].Value
+    })
+</script>

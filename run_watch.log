@@ -1,0 +1,9 @@
+=========================================
+🚀 Servisler WATCH modunda başlatılıyor...
+=========================================
+
+[36m[AUTH    ][0m ./run_watch.sh: line 8: dotnet: command not found
+[36m[PLATFORM][0m ./run_watch.sh: line 8: dotnet: command not found
+[36m[DEVEN   ][0m ./run_watch.sh: line 8: dotnet: command not found
+[36m[GATEWAY ][0m ./run_watch.sh: line 8: dotnet: command not found
+[36m[FRONTEND][0m ./run_watch.sh: line 8: dotnet: command not found

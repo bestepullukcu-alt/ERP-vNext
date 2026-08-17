@@ -1,0 +1,24 @@
+@using Diten.Web.Views.Governance.RoleAssignments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<RoleAssignmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="roleassignments-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Assign = Localizer["Assign"].Value,
+        Remove = SharedLocalizer["Delete"].Value,
+        BadgeBaseline = Localizer["BadgeBaseline"].Value,
+        BadgeModule = Localizer["BadgeModule"].Value,
+        BadgeManual = Localizer["BadgeManual"].Value,
+        LockedHint = Localizer["LockedHint"].Value,
+        SelectRolePrompt = Localizer["SelectRolePrompt"].Value,
+        NoPermissions = Localizer["NoPermissions"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        RecordCreated = SharedLocalizer["RecordCreated"].Value,
+        RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Delete = SharedLocalizer["Delete"].Value
+    })
+</script>

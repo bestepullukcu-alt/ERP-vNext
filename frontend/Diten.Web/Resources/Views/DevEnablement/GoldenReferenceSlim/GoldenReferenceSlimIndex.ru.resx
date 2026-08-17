@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="GoldenReferenceSlimTitle" xml:space="preserve"><value>Золотой Справочник Slim</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Страница справочного списка (создание/редактирование в боковой панели) для модулей с количеством полей до 8.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Добавить Новый Элемент</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Редактировать Элемент</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Добавить Новый Элемент</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Редактировать Элемент</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>например GRS-001</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>например Основной Справочник</value></data>
+  <data name="ReferenceTypeStandard" xml:space="preserve"><value>Стандартный</value></data>
+  <data name="ReferenceTypeCustom" xml:space="preserve"><value>Пользовательский</value></data>
+  <data name="ReferenceTypePro" xml:space="preserve"><value>Профессиональный</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый Просмотр</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="Name" xml:space="preserve"><value>Название</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>Общая Информация</value></data>
+  <data name="ReferenceType" xml:space="preserve"><value>Тип Справочника</value></data>
+  <data name="Priority" xml:space="preserve"><value>Приоритет</value></data>
+  <data name="Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="SystemInformation" xml:space="preserve"><value>Системная Информация</value></data>
+  <data name="LevelPrefix" xml:space="preserve"><value>Уровень</value></data>
+  <data name="NotAvailable" xml:space="preserve"><value>Недоступно</value></data>
+  <data name="IdLabel" xml:space="preserve"><value>Идентификатор</value></data>
+</root>

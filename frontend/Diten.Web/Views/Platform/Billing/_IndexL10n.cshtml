@@ -1,0 +1,85 @@
+@using Diten.Web.Views.Platform.Billing
+@using Microsoft.AspNetCore.Mvc.Localization
+@using System.Text.Json
+@inject IHtmlLocalizer<BillingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var Active = SharedLocalizer["Active"].Value;
+    var Passive = SharedLocalizer["Passive"].Value;
+    var Unknown = SharedLocalizer["Unknown"].Value;
+    var Actions = Localizer["Actions"].Value;
+    var Edit = Localizer["Edit"].Value;
+    var ViewDetails = Localizer["Details"].Value;
+    var QuickView = Localizer["Details"].Value;
+    var BulkDelete = SharedLocalizer["BulkDelete"].Value;
+    var BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value;
+    var AreYouSure = SharedLocalizer["AreYouSure"].Value;
+    var Cancel = SharedLocalizer["Cancel"].Value;
+    var Search = SharedLocalizer["Search"].Value;
+    var Export = SharedLocalizer["Export"].Value;
+    var Import = SharedLocalizer["Import"].Value;
+    var Filter = SharedLocalizer["Filter"].Value;
+    var Apply = SharedLocalizer["Apply"].Value;
+    var Reset = SharedLocalizer["Reset"].Value;
+    var ShowAll = SharedLocalizer["ShowAll"].Value;
+    var SaveView = SharedLocalizer["SaveView"].Value;
+    var ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value;
+    var Status = SharedLocalizer["Status"].Value;
+    var payload = new Dictionary<string, string>
+    {
+        ["billingTitle"] = Localizer["BillingTitle"].Value,
+        ["Active"] = Active,
+        ["Passive"] = Passive,
+        ["Unknown"] = Unknown,
+        ["addNewBilling"] = Localizer["AddNewBilling"].Value,
+        ["invoiceNumber"] = Localizer["InvoiceNumber"].Value,
+        ["customerReference"] = Localizer["CustomerReference"].Value,
+        ["plan"] = Localizer["Plan"].Value,
+        ["currency"] = Localizer["Currency"].Value,
+        ["grandTotal"] = Localizer["GrandTotal"].Value,
+        ["paidAmount"] = Localizer["PaidAmount"].Value,
+        ["balanceDue"] = Localizer["BalanceDue"].Value,
+        ["dueDate"] = Localizer["DueDate"].Value,
+        ["statusDraft"] = Localizer["StatusDraft"].Value,
+        ["statusIssued"] = Localizer["StatusIssued"].Value,
+        ["statusPartiallyPaid"] = Localizer["StatusPartiallyPaid"].Value,
+        ["statusPaid"] = Localizer["StatusPaid"].Value,
+        ["statusCancelled"] = Localizer["StatusCancelled"].Value,
+        ["issue"] = Localizer["Issue"].Value,
+        ["cancelInvoice"] = Localizer["CancelInvoice"].Value,
+        ["details"] = Localizer["Details"].Value,
+        ["ViewDetails"] = ViewDetails,
+        ["QuickView"] = QuickView,
+        ["edit"] = Localizer["Edit"].Value,
+        ["Edit"] = Edit,
+        ["actions"] = Localizer["Actions"].Value,
+        ["Actions"] = Actions,
+        ["filter"] = SharedLocalizer["Filter"].Value,
+        ["Filter"] = Filter,
+        ["saveView"] = SharedLocalizer["SaveView"].Value,
+        ["SaveView"] = SaveView,
+        ["import"] = SharedLocalizer["Import"].Value,
+        ["Import"] = Import,
+        ["Export"] = Export,
+        ["Search"] = Search,
+        ["Apply"] = Apply,
+        ["Reset"] = Reset,
+        ["ShowAll"] = ShowAll,
+        ["ColumnVisibility"] = ColumnVisibility,
+        ["Status"] = Status,
+        ["BulkDelete"] = BulkDelete,
+        ["BulkDeleteConfirm"] = BulkDeleteConfirm,
+        ["comingSoon"] = SharedLocalizer["ComingSoon"].Value,
+        ["recordSaved"] = SharedLocalizer["RecordSaved"].Value,
+        ["recordUpdated"] = SharedLocalizer["RecordUpdated"].Value,
+        ["errorOccurred"] = SharedLocalizer["ErrorOccurred"].Value,
+        ["areYouSure"] = SharedLocalizer["AreYouSure"].Value,
+        ["AreYouSure"] = AreYouSure,
+        ["Cancel"] = Cancel,
+        ["delete"] = SharedLocalizer["Delete"].Value,
+        ["reset"] = SharedLocalizer["Reset"].Value,
+        ["yes"] = Localizer["Yes"].Value,
+        ["no"] = Localizer["No"].Value
+    };
+}
+<script type="application/json" id="billing-l10n">@Html.Raw(JsonSerializer.Serialize(payload))</script>

@@ -1,0 +1,63 @@
+@using Diten.Web.Views.Platform.ReferenceData
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ReferenceDataIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="usage-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Actions = Localizer["Actions"].Value,
+        Delete = SharedLocalizer["Delete"].Value,
+        Edit = SharedLocalizer["EditRecord"].Value,
+        QuickView = SharedLocalizer["ViewDetails"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Details = SharedLocalizer["Details"].Value,
+        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+        BulkDeleteSuccess = SharedLocalizer["BulkDeleteSuccess"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        ComingSoon = SharedLocalizer["ComingSoon"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = Localizer["Apply"].Value,
+        Reset = Localizer["Reset"].Value,
+        ShowAll = Localizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        RecordCreated = SharedLocalizer["RecordCreated"].Value,
+        RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
+        RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        AddNew = Localizer["UsageAddNew"].Value,
+        UsageConsumerModuleLabel = Localizer["UsageConsumerModuleLabel"].Value,
+        UsageConsumerNameLabel = Localizer["UsageConsumerNameLabel"].Value,
+        UsageResolutionLabel = Localizer["UsageResolutionLabel"].Value,
+        UsageScopeColumn = Localizer["UsageScopeColumn"].Value,
+        UsageCriticalityLabel = Localizer["UsageCriticalityLabel"].Value,
+        UsageLastResolvedColumn = Localizer["UsageLastResolvedColumn"].Value,
+        UsageResolutionLatest = Localizer["UsageResolutionLatest"].Value,
+        UsageResolutionPinned = Localizer["UsageResolutionPinned"].Value,
+        UsageResolutionAsOf = Localizer["UsageResolutionAsOf"].Value,
+        UsageCriticalityCritical = Localizer["UsageCriticalityCritical"].Value,
+        UsageCriticalityHigh = Localizer["UsageCriticalityHigh"].Value,
+        UsageCriticalityMedium = Localizer["UsageCriticalityMedium"].Value,
+        UsageCriticalityLow = Localizer["UsageCriticalityLow"].Value,
+        UsageImpactTotal = Localizer["UsageImpactTotal"].Value,
+        UsageImpactCritical = Localizer["UsageImpactCritical"].Value,
+        UsageEmptyState = Localizer["UsageEmptyState"].Value,
+        UsageVersionPinRequired = Localizer["UsageVersionPinRequired"].Value,
+        UsageAsOfRequired = Localizer["UsageAsOfRequired"].Value,
+        UsageFormTitleCreate = Localizer["UsageFormTitleCreate"].Value,
+        UsageFormTitleEdit = Localizer["UsageFormTitleEdit"].Value
+    })
+</script>

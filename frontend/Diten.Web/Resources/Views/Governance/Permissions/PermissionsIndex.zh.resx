@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PermissionsTitle" xml:space="preserve"><value>Permission Catalog</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Browse the canonical permission keys available to roles.</value></data>
+  <data name="Key" xml:space="preserve"><value>Key</value></data>
+  <data name="Module" xml:space="preserve"><value>Module</value></data>
+  <data name="Resource" xml:space="preserve"><value>Resource</value></data>
+  <data name="Action" xml:space="preserve"><value>Action</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="QuickView" xml:space="preserve"><value>View</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>General Information</value></data>
+</root>

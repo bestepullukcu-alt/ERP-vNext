@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="BillingTitle" xml:space="preserve"><value>إدارة الفوترة</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>إدارة الفواتير ودورة الإصدار وأرصدة الدفع والسجل المالي.</value></data>
+  <data name="AddNewBilling" xml:space="preserve"><value>إضافة فاتورة</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>إنشاء فاتورة</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل فاتورة مسودة</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>تفاصيل الفاتورة</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>الهوية</value></data>
+  <data name="LineSection" xml:space="preserve"><value>بند الفاتورة</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>ملاحظات</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>دورة الحياة</value></data>
+  <data name="TotalsSection" xml:space="preserve"><value>الإجماليات</value></data>
+  <data name="InvoiceNumber" xml:space="preserve"><value>رقم الفاتورة</value></data>
+  <data name="CustomerReference" xml:space="preserve"><value>مرجع العميل</value></data>
+  <data name="Plan" xml:space="preserve"><value>الخطة</value></data>
+  <data name="Currency" xml:space="preserve"><value>العملة</value></data>
+  <data name="GrandTotal" xml:space="preserve"><value>الإجمالي الكلي</value></data>
+  <data name="PaidAmount" xml:space="preserve"><value>المبلغ المدفوع</value></data>
+  <data name="BalanceDue" xml:space="preserve"><value>الرصيد المستحق</value></data>
+  <data name="DueDate" xml:space="preserve"><value>تاريخ الاستحقاق</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="LineDescription" xml:space="preserve"><value>وصف البند</value></data>
+  <data name="Quantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="UnitPrice" xml:space="preserve"><value>سعر الوحدة</value></data>
+  <data name="DiscountAmount" xml:space="preserve"><value>الخصم</value></data>
+  <data name="TaxAmount" xml:space="preserve"><value>الضريبة</value></data>
+  <data name="LineTotal" xml:space="preserve"><value>إجمالي البند</value></data>
+  <data name="SubTotal" xml:space="preserve"><value>المجموع الفرعي</value></data>
+  <data name="Notes" xml:space="preserve"><value>ملاحظات</value></data>
+  <data name="IssuedAt" xml:space="preserve"><value>وقت الإصدار</value></data>
+  <data name="Issue" xml:space="preserve"><value>إصدار</value></data>
+  <data name="CancelInvoice" xml:space="preserve"><value>إلغاء الفاتورة</value></data>
+  <data name="Details" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="SelectPlan" xml:space="preserve"><value>اختر الخطة</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>تحديد الكل</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <data name="DraftMutationNotice" xml:space="preserve"><value>يمكن تعديل الفواتير المسودة فقط. الفواتير الصادرة غير قابلة للتغيير.</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusIssued" xml:space="preserve"><value>صادرة</value></data>
+  <data name="StatusPartiallyPaid" xml:space="preserve"><value>مدفوعة جزئياً</value></data>
+  <data name="StatusPaid" xml:space="preserve"><value>مدفوعة</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>ملغاة</value></data>
+</root>

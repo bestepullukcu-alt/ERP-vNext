@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="BillingTitle" xml:space="preserve"><value>Faturalama Yönetimi</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Faturaları, düzenleme yaşam döngüsünü, ödeme bakiyesi kontrollerini ve finansal geçmişi yönetin.</value></data>
+  <data name="AddNewBilling" xml:space="preserve"><value>Fatura Ekle</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Fatura Oluştur</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Taslak Faturayı Düzenle</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Fatura Detayları</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="LineSection" xml:space="preserve"><value>Fatura Satırı</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>Notlar</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Yaşam Döngüsü</value></data>
+  <data name="TotalsSection" xml:space="preserve"><value>Toplamlar</value></data>
+  <data name="InvoiceNumber" xml:space="preserve"><value>Fatura Numarası</value></data>
+  <data name="CustomerReference" xml:space="preserve"><value>Müşteri Referansı</value></data>
+  <data name="Plan" xml:space="preserve"><value>Plan</value></data>
+  <data name="Currency" xml:space="preserve"><value>Para Birimi</value></data>
+  <data name="GrandTotal" xml:space="preserve"><value>Genel Toplam</value></data>
+  <data name="PaidAmount" xml:space="preserve"><value>Ödenen Tutar</value></data>
+  <data name="BalanceDue" xml:space="preserve"><value>Kalan Bakiye</value></data>
+  <data name="DueDate" xml:space="preserve"><value>Vade Tarihi</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="LineDescription" xml:space="preserve"><value>Satır Açıklaması</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Miktar</value></data>
+  <data name="UnitPrice" xml:space="preserve"><value>Birim Fiyat</value></data>
+  <data name="DiscountAmount" xml:space="preserve"><value>İndirim</value></data>
+  <data name="TaxAmount" xml:space="preserve"><value>Vergi</value></data>
+  <data name="LineTotal" xml:space="preserve"><value>Satır Toplamı</value></data>
+  <data name="SubTotal" xml:space="preserve"><value>Ara Toplam</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notlar</value></data>
+  <data name="IssuedAt" xml:space="preserve"><value>Düzenlenme Zamanı</value></data>
+  <data name="Issue" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="CancelInvoice" xml:space="preserve"><value>Faturayı İptal Et</value></data>
+  <data name="Details" xml:space="preserve"><value>Detaylar</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="SelectPlan" xml:space="preserve"><value>Plan seçin</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Tümünü seç</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="DraftMutationNotice" xml:space="preserve"><value>Yalnızca taslak faturalar düzenlenebilir. Düzenlenmiş faturalar değiştirilemez.</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StatusIssued" xml:space="preserve"><value>Düzenlendi</value></data>
+  <data name="StatusPartiallyPaid" xml:space="preserve"><value>Kısmen Ödendi</value></data>
+  <data name="StatusPaid" xml:space="preserve"><value>Ödendi</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>İptal Edildi</value></data>
+</root>

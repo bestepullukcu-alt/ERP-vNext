@@ -1,0 +1,117 @@
+@model Diten.Web.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@*<link rel="stylesheet" href="~/assets/css/enterprise-strategy-forms.css" asp-append-version="true" />*@
+@{
+    var title = ViewData["Title"]?.ToString() ?? string.Empty;
+    var subtitle = ViewData["Subtitle"]?.ToString() ?? string.Empty;
+    var activeTab = ViewData["ActiveTab"]?.ToString() ?? string.Empty;
+    var breadcrumbsRaw = ViewData["Breadcrumbs"] as string[] ?? Array.Empty<string>();
+    
+    var hasTitle = !string.IsNullOrWhiteSpace(title);
+    var hasBreadcrumbs = breadcrumbsRaw.Any(b => !string.IsNullOrWhiteSpace(b));
+    var tabs = Diten.Web.Config.EnterpriseStrategyRegistry.Tabs;
+    var hasTabs = tabs.Any();
+    var hasMetricCards = false; // Metric cards will be rendered dynamically by JS
+    var renderShellCard = hasTitle || hasBreadcrumbs || hasTabs || hasMetricCards;
+    
+    var accessDenied = ViewData["AccessDenied"] as bool? ?? false;
+    var hasError = ViewData["HasError"] as bool? ?? false;
+    var errorMessage = ViewData["ErrorMessage"]?.ToString() ?? string.Empty;
+    var isLoading = ViewData["IsLoading"] as bool? ?? false;
+}
+
+@if (renderShellCard)
+{
+    <div class="esbp-shell-header mb-4">
+        @if (hasTitle)
+        {
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <h4 class="mb-0">@title</h4>
+            </div>
+        }
+
+        @if (hasBreadcrumbs)
+        {
+            <nav aria-label="breadcrumb" class="mt-1 mb-2">
+                <ol class="breadcrumb mb-0">
+                    @for (int i = 0; i < breadcrumbsRaw.Length; i++)
+                    {
+                        var crumb = breadcrumbsRaw[i];
+                        var isLast = i == breadcrumbsRaw.Length - 1;
+                        var href = "#";
+                        
+                        // Hard-coding common routes for breadcrumb functionality
+                        if (string.Equals(crumb, "Management & Governance", StringComparison.OrdinalIgnoreCase))
+                        {
+                            href = "/management-governance";
+                        }
+                        else if (string.Equals(crumb, "Enterprise Strategy & Business Performance", StringComparison.OrdinalIgnoreCase))
+                        {
+                            href = "/management-governance/enterprise-strategy-business-performance";
+                        }
+                        
+                        if (isLast)
+                        {
+                            <li class="breadcrumb-item active" aria-current="page">@crumb</li>
+                        }
+                        else
+                        {
+                            <li class="breadcrumb-item">
+                                <a href="@href">@crumb</a>
+                            </li>
+                        }
+                    }
+                </ol>
+            </nav>
+        }
+
+        @if (hasMetricCards)
+        {
+            <div class="mt-3">
+                <!-- Metric cards will be loaded via JS -->
+                <div id="metric-cards-container"></div>
+            </div>
+        }
+
+        @if (hasTabs)
+        {
+            <ul class="nav nav-pills nav-fill mt-3 mb-4">
+                @foreach (var tab in tabs)
+                {
+                    var active = string.Equals(tab.Key, activeTab, StringComparison.OrdinalIgnoreCase);
+                    <li class="nav-item">
+                        <a class="nav-link @(active ? "active" : "") d-flex align-items-center justify-content-center" href="@tab.Route">
+                            <i class="icon-base bx @tab.Icon icon-sm @(string.IsNullOrWhiteSpace(tab.Label) ? "" : "me-sm-1_5")"></i>
+                            <span class="d-none d-sm-inline">@tab.Label</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+}
+
+@if (accessDenied)
+{
+    <div class="alert alert-danger">Access denied for this workspace.</div>
+}
+else if (hasError)
+{
+    <div class="alert alert-warning">@errorMessage</div>
+}
+else if (isLoading)
+{
+    <div class="alert alert-info">Loading workspace data...</div>
+}
+
+<script src="~/assets/js/pages/enterprise-strategy/strategy-apis.js" asp-append-version="true"></script>
+<script src="~/assets/js/pages/enterprise-strategy/index.js" asp-append-version="true"></script>
+<script src="~/assets/js/pages/enterprise-strategy/ui-states.js" asp-append-version="true"></script>
+<script src="~/assets/js/pages/enterprise-strategy/permissions.js" asp-append-version="true"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="~/assets/js/pages/enterprise-strategy/workbook-io.js" asp-append-version="true"></script>
+<script src="~/assets/js/pages/enterprise-strategy/workbook-option-sources.js" asp-append-version="true"></script>
+<script src="~/assets/js/pages/enterprise-strategy/table-controls.js" asp-append-version="true"></script>
+<script src="~/assets/js/pages/enterprise-strategy/table-page-utils.js" asp-append-version="true"></script>
+<script src="~/assets/js/pages/enterprise-strategy/filter-drawer.js" asp-append-version="true"></script>
+<script src="~/assets/js/pages/enterprise-strategy/modal-form-utils.js" asp-append-version="true"></script>
+<script src="~/assets/js/pages/enterprise-strategy/row-actions-menu.js" asp-append-version="true"></script>

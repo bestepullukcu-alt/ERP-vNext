@@ -1,0 +1,24 @@
+@using Diten.Web.Views.Platform.Billing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<BillingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["BillingTitle"].Value;
+    Layout = "_LayoutPlatformAdmin";
+}
+@* Static verifier legacy marker: Layout = "_LayoutBackbone"; actual Platform admin shell follows PROD-005. *@
+
+<partial name="_Filter" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["BillingTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/Platform/Billing/_DataTable.cshtml" />
+
+@section Scripts {
+    <partial name="_IndexL10n" />
+    <script src="~/assets/js/Platform/Billing/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/Billing/index.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="PageTitle" xml:space="preserve"><value>Бизнес-справочные данные</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Управляйте наборами, версиями, значениями, сопоставлениями, использованием и публикацией управляемых бизнес-справочных данных.</value></data>
+  <data name="SetCode" xml:space="preserve"><value>Код набора</value></data>
+  <data name="SetName" xml:space="preserve"><value>Название набора</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Тип области</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Version" xml:space="preserve"><value>Версия</value></data>
+  <data name="Governance" xml:space="preserve"><value>Управление</value></data>
+  <data name="Validation" xml:space="preserve"><value>Проверка</value></data>
+  <data name="ImportTitle" xml:space="preserve"><value>Предпросмотр импорта</value></data>
+  <data name="ImportDescription" xml:space="preserve"><value>Предварительный просмотр и подтверждение импорта справочных данных.</value></data>
+  <data name="UsageTitle" xml:space="preserve"><value>Зависимости использования</value></data>
+  <data name="UsageDescription" xml:space="preserve"><value>Регистрируйте и проверяйте потребителей набора справочных данных.</value></data>
+  <data name="UsageSetLabel" xml:space="preserve"><value>Набор</value></data>
+  <data name="UsageConsumerModuleLabel" xml:space="preserve"><value>Модуль-потребитель</value></data>
+  <data name="UsageConsumerNameLabel" xml:space="preserve"><value>Имя потребителя</value></data>
+  <data name="UsageResolutionLabel" xml:space="preserve"><value>Разрешение</value></data>
+  <data name="UsageVersionPinLabel" xml:space="preserve"><value>Закрепленная версия</value></data>
+  <data name="UsageAsOfLabel" xml:space="preserve"><value>На дату</value></data>
+  <data name="UsageCriticalityLabel" xml:space="preserve"><value>Критичность</value></data>
+  <data name="UsageConsumerModuleDefault" xml:space="preserve"><value>ERP</value></data>
+  <data name="UsageConsumerNameDefault" xml:space="preserve"><value>Потребитель</value></data>
+  <data name="UsageResolutionLatest" xml:space="preserve"><value>Последняя</value></data>
+  <data name="UsageResolutionPinned" xml:space="preserve"><value>Закрепленная</value></data>
+  <data name="UsageResolutionAsOf" xml:space="preserve"><value>На дату</value></data>
+  <data name="UsageCriticalityHigh" xml:space="preserve"><value>Высокая</value></data>
+  <data name="UsageCriticalityMedium" xml:space="preserve"><value>Средняя</value></data>
+  <data name="UsageCriticalityLow" xml:space="preserve"><value>Низкая</value></data>
+  <data name="UsageVersionPinRequired" xml:space="preserve"><value>Закрепленная версия обязательна.</value></data>
+  <data name="UsageAsOfRequired" xml:space="preserve"><value>Дата "на дату" обязательна.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Наборы справочных данных не найдены.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Не удалось загрузить справочные данные.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка...</value></data>
+  <data name="AddSet" xml:space="preserve"><value>Добавить набор</value></data>
+  <data name="CreateDraft" xml:space="preserve"><value>Создать черновик</value></data>
+  <data name="Open" xml:space="preserve"><value>Открыть</value></data>
+  <data name="Publish" xml:space="preserve"><value>Опубликовать</value></data>
+  <data name="Validate" xml:space="preserve"><value>Проверить</value></data>
+  <data name="AddValue" xml:space="preserve"><value>Добавить значение</value></data>
+  <data name="ValueGridTitle" xml:space="preserve"><value>Значения</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Порядок сортировки</value></data>
+  <data name="TechnicalJsonView" xml:space="preserve"><value>Технический вид JSON</value></data>
+  <data name="ValidationBlockers" xml:space="preserve"><value>Блокировки проверки</value></data>
+  <data name="DraftEditable" xml:space="preserve"><value>Черновик редактируемый</value></data>
+  <data name="ReadOnlyPublished" xml:space="preserve"><value>Опубликовано только для чтения</value></data>
+  <data name="Immutable" xml:space="preserve"><value>Неизменяемый</value></data>
+  <data name="ImportPreview" xml:space="preserve"><value>Предпросмотр импорта</value></data>
+  <data name="CommitImport" xml:space="preserve"><value>Подтвердить импорт</value></data>
+  <data name="SelectFile" xml:space="preserve"><value>Выбрать файл</value></data>
+  <data name="HierarchyTitle" xml:space="preserve"><value>Иерархия</value></data>
+  <data name="HierarchyDescription" xml:space="preserve"><value>Просмотрите иерархические связи выбранного набора.</value></data>
+  <data name="ValueCodeColumn" xml:space="preserve"><value>Код значения</value></data>
+  <data name="ParentColumn" xml:space="preserve"><value>Родитель</value></data>
+  <data name="DraftHierarchyPreview" xml:space="preserve"><value>Предпросмотр иерархии черновика</value></data>
+  <data name="CollapsePreview" xml:space="preserve"><value>Свернуть предпросмотр</value></data>
+  <data name="ExpandPreview" xml:space="preserve"><value>Развернуть предпросмотр</value></data>
+  <data name="NoParentOption" xml:space="preserve"><value>(Без родителя)</value></data>
+  <data name="ClearParent" xml:space="preserve"><value>Очистить родителя</value></data>
+  <data name="ClearParentConfirm" xml:space="preserve"><value>Очистить назначение родителя для этого значения?</value></data>
+  <data name="AttributesTitle" xml:space="preserve"><value>Атрибуты</value></data>
+  <data name="AttributesDescription" xml:space="preserve"><value>Управление определениями атрибутов для черновых версий.</value></data>
+  <data name="MappingsTitle" xml:space="preserve"><value>Сопоставления</value></data>
+  <data name="MappingsDescription" xml:space="preserve"><value>Управление внешними сопоставлениями для значений.</value></data>
+  <data name="SetDetailTitle" xml:space="preserve"><value>Рабочая область набора</value></data>
+  <data name="SetDetailDescription" xml:space="preserve"><value>Просмотрите метаданные набора и доступные версии.</value></data>
+  <data name="VersionDetailTitle" xml:space="preserve"><value>Сведения о версии</value></data>
+  <data name="VersionDetailDescription" xml:space="preserve"><value>Просмотрите значения, атрибуты, сопоставления и результаты проверки.</value></data>
+  <data name="PublishReviewTitle" xml:space="preserve"><value>Проверка публикации</value></data>
+  <data name="PublishReviewDescription" xml:space="preserve"><value>Проверьте готовность, утверждение, доказательства и решения о публикации.</value></data>
+  <data name="Apply" xml:space="preserve"><value>Применить</value></data>
+  <data name="Reset" xml:space="preserve"><value>Сбросить</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Показать все</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="Submit" xml:space="preserve"><value>Отправить</value></data>
+  <data name="Approve" xml:space="preserve"><value>Утвердить</value></data>
+  <data name="Refresh" xml:space="preserve"><value>Обновить</value></data>
+  <data name="SaveHierarchy" xml:space="preserve"><value>Сохранить иерархию</value></data>
+  <data name="HierarchySaved" xml:space="preserve"><value>Назначения иерархии успешно сохранены.</value></data>
+  <data name="HierarchyUnsavedWarning" xml:space="preserve"><value>У вас есть несохранённые изменения иерархии. Нажмите «Сохранить иерархию», чтобы применить их.</value></data>
+  <data name="SaveDefinitions" xml:space="preserve"><value>Сохранить определения</value></data>
+  <data name="SaveValueAttributes" xml:space="preserve"><value>Сохранить атрибуты значений</value></data>
+  <data name="Search" xml:space="preserve"><value>Поиск</value></data>
+  <data name="Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="NoRecords" xml:space="preserve"><value>Нет записей</value></data>
+  <data name="Details" xml:space="preserve"><value>Подробнее</value></data>
+  <data name="EditRecord" xml:space="preserve"><value>Изменить</value></data>
+  <data name="Active" xml:space="preserve"><value>Активно</value></data>
+  <data name="Passive" xml:space="preserve"><value>Неактивно</value></data>
+  <data name="RecordSaved" xml:space="preserve"><value>Запись сохранена.</value></data>
+  <data name="Close" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="GovernanceNotConfigured" xml:space="preserve"><value>Не настроено</value></data>
+  <data name="GovernanceDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="GovernanceSubmitted" xml:space="preserve"><value>Отправлено</value></data>
+  <data name="GovernanceInReview" xml:space="preserve"><value>На рассмотрении</value></data>
+  <data name="GovernanceApproved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="GovernanceRejected" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="SetCodePlaceholder" xml:space="preserve"><value>напр. COUNTRY_CODES</value></data>
+  <data name="SetCodeHint" xml:space="preserve"><value>Уникальный стабильный идентификатор в ВЕРХНЕМ регистре. Используйте только буквы, цифры и подчёркивания — напр. COUNTRY_CODES, PAYMENT_TERMS.</value></data>
+  <data name="SetCodeInvalid" xml:space="preserve"><value>Код набора обязателен и может содержать только заглавные буквы, цифры и подчёркивания.</value></data>
+  <data name="SetNamePlaceholder" xml:space="preserve"><value>напр. Коды стран</value></data>
+  <data name="SetNameHint" xml:space="preserve"><value>Читаемое отображаемое имя, используемое во всём приложении — напр. Коды стран.</value></data>
+  <data name="SetNameRequired" xml:space="preserve"><value>Имя набора обязательно.</value></data>
+  <data name="NoDraftTitle" xml:space="preserve"><value>Нет редактируемой черновой версии</value></data>
+  <data name="NoDraftDescription" xml:space="preserve"><value>Атрибуты можно редактировать только в черновой версии.</value></data>
+  <data name="NoDraftHierarchyDescription" xml:space="preserve"><value>Иерархию можно редактировать только в черновой версии.</value></data>
+  <data name="NoDraftMappingsDescription" xml:space="preserve"><value>Сопоставления можно редактировать только в черновой версии.</value></data>
+  <data name="NoDraftHintFromPublished" xml:space="preserve"><value>Вы можете создать новый черновик из опубликованной версии.</value></data>
+  <data name="NoDraftHintNoVersions" xml:space="preserve"><value>В этом наборе пока нет версий. Создайте первый черновик.</value></data>
+  <data name="NoDraftRetired" xml:space="preserve"><value>Этот набор выведен из эксплуатации; новые черновики создавать нельзя.</value></data>
+  <data name="NoDraftNoPermission" xml:space="preserve"><value>У вас нет прав на создание черновика. Обратитесь к администратору.</value></data>
+  <data name="OpenSetWorkspace" xml:space="preserve"><value>Открыть рабочую область набора</value></data>
+  <data name="BackToSets" xml:space="preserve"><value>Назад к наборам</value></data>
+  <data name="DraftCreated" xml:space="preserve"><value>Черновая версия создана.</value></data>
+  <data name="DraftAlreadyExists" xml:space="preserve"><value>Для этого набора уже существует активный черновик. Обновите страницу.</value></data>
+  <data name="CreateDraftFailed" xml:space="preserve"><value>Не удалось создать черновую версию.</value></data>
+  <data name="SetNotFoundTitle" xml:space="preserve"><value>Набор не найден</value></data>
+  <data name="SetNotFoundDescription" xml:space="preserve"><value>Запрошенный набор справочных данных не найден:</value></data>
+  <data name="AttributeDefinitionsTitle" xml:space="preserve"><value>Определения атрибутов</value></data>
+  <data name="ValueAttributesTitle" xml:space="preserve"><value>Атрибуты значений</value></data>
+  <data name="AddDefinition" xml:space="preserve"><value>Добавить определение</value></data>
+  <data name="AttributeCodeColumn" xml:space="preserve"><value>Код атрибута</value></data>
+  <data name="DisplayNameColumn" xml:space="preserve"><value>Отображаемое имя</value></data>
+  <data name="DataTypeColumn" xml:space="preserve"><value>Тип данных</value></data>
+  <data name="RequiredColumn" xml:space="preserve"><value>Обязательно</value></data>
+  <data name="ActionColumn" xml:space="preserve"><value>Действие</value></data>
+  <data name="RemoveAction" xml:space="preserve"><value>Удалить</value></data>
+  <data name="ValueColumn" xml:space="preserve"><value>Значение</value></data>
+  <data name="DefinitionsCardHint" xml:space="preserve"><value>Определите, какие дополнительные поля будут у значений этого набора.</value></data>
+  <data name="ValueAttributesCardHint" xml:space="preserve"><value>Заполните данные каждого значения для полей, определённых выше.</value></data>
+  <data name="StepDefineFields" xml:space="preserve"><value>1. Определить поля</value></data>
+  <data name="StepFillValues" xml:space="preserve"><value>2. Заполнить значения</value></data>
+  <data name="UnsavedChanges" xml:space="preserve"><value>Несохранённые изменения</value></data>
+  <data name="NoDefinitionsYet" xml:space="preserve"><value>Определений атрибутов пока нет. Добавьте первое поле через Добавить определение.</value></data>
+  <data name="NoValuesYet" xml:space="preserve"><value>В этом черновике пока нет значений. Сначала добавьте значения в Draft Wizard.</value></data>
+  <data name="OpenDraftWizard" xml:space="preserve"><value>Открыть Draft Wizard</value></data>
+  <data name="WorkspaceLoaded" xml:space="preserve"><value>Рабочая область атрибутов черновика загружена.</value></data>
+  <data name="DefinitionsSaved" xml:space="preserve"><value>Определения атрибутов сохранены.</value></data>
+  <data name="ValueAttributesSaved" xml:space="preserve"><value>Атрибуты значений сохранены.</value></data>
+  <data name="AttributeCodeRequired" xml:space="preserve"><value>Код атрибута обязателен.</value></data>
+  <data name="DisplayNameRequired" xml:space="preserve"><value>Отображаемое имя обязательно.</value></data>
+  <data name="DuplicateAttributeCode" xml:space="preserve"><value>Повторяющийся код атрибута:</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>Не удалось сохранить.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Не удалось загрузить рабочую область атрибутов.</value></data>
+  <data name="SaveAndContinue" xml:space="preserve"><value>Сохранить и продолжить</value></data>
+  <data name="PreviousStep" xml:space="preserve"><value>Назад</value></data>
+  <data name="StepDefineSubtitle" xml:space="preserve"><value>Схема / поля</value></data>
+  <data name="StepFillSubtitle" xml:space="preserve"><value>Данные / ячейки</value></data>
+  <data name="NoValuesTitle" xml:space="preserve"><value>Значений пока нет</value></data>
+  <data name="NoDefinitionsTitle" xml:space="preserve"><value>Нет определений атрибутов</value></data>
+  <data name="SaveMappings" xml:space="preserve"><value>Сохранить сопоставления</value></data>
+  <data name="DraftMappingsTab" xml:space="preserve"><value>Черновые сопоставления</value></data>
+  <data name="PublishedSnapshotTab" xml:space="preserve"><value>Опубликованный снимок</value></data>
+  <data name="DraftMappingAuthoringTitle" xml:space="preserve"><value>Редактирование черновых сопоставлений</value></data>
+  <data name="AddMapping" xml:space="preserve"><value>Добавить сопоставление</value></data>
+  <data name="PublishedMappingSnapshotTitle" xml:space="preserve"><value>Снимок опубликованных сопоставлений</value></data>
+  <data name="MappingKeyColumn" xml:space="preserve"><value>Ключ</value></data>
+  <data name="MappingSourceColumn" xml:space="preserve"><value>Источник</value></data>
+  <data name="MappingTargetColumn" xml:space="preserve"><value>Цель</value></data>
+  <data name="MappingLabelColumn" xml:space="preserve"><value>Метка</value></data>
+  <data name="NoDraftReason" xml:space="preserve"><value>Требуется активная черновая версия.</value></data>
+  <data name="SelectSourceValue" xml:space="preserve"><value>Выберите исходное значение</value></data>
+  <data name="MappingKeyRequired" xml:space="preserve"><value>Ключ сопоставления обязателен.</value></data>
+  <data name="MappingSourceRequired" xml:space="preserve"><value>Исходное значение обязательно.</value></data>
+  <data name="MappingTargetRequired" xml:space="preserve"><value>Целевой код обязателен.</value></data>
+  <data name="MappingSourceNotPresent" xml:space="preserve"><value>Исходное значение {0} отсутствует в черновых значениях.</value></data>
+  <data name="DuplicateMappingKeySource" xml:space="preserve"><value>Дублирующееся сопоставление для ключа/источника: {0} / {1}</value></data>
+  <data name="MappingsSaved" xml:space="preserve"><value>Черновые сопоставления успешно сохранены.</value></data>
+  <data name="MappingsWorkspaceLoaded" xml:space="preserve"><value>Рабочая область черновых сопоставлений загружена.</value></data>
+  <data name="SaveMappingsFailed" xml:space="preserve"><value>Не удалось сохранить сопоставления.</value></data>
+  <data name="UsageConsumerEndpointLabel" xml:space="preserve"><value>Конечная точка потребителя</value></data>
+  <data name="UsageScopeTypeLabel" xml:space="preserve"><value>Тип области</value></data>
+  <data name="UsageScopeKeyLabel" xml:space="preserve"><value>Ключ области</value></data>
+  <data name="UsageNotesLabel" xml:space="preserve"><value>Примечания</value></data>
+  <data name="UsageCriticalityCritical" xml:space="preserve"><value>Критический</value></data>
+  <data name="UsageScopeColumn" xml:space="preserve"><value>Область</value></data>
+  <data name="UsageLastResolvedColumn" xml:space="preserve"><value>Последнее разрешение</value></data>
+  <data name="UsageImpactTotal" xml:space="preserve"><value>Всего</value></data>
+  <data name="UsageImpactCritical" xml:space="preserve"><value>Критические</value></data>
+  <data name="UsageAddNew" xml:space="preserve"><value>Зарегистрировать использование</value></data>
+  <data name="UsageFormTitleCreate" xml:space="preserve"><value>Регистрация зависимости использования</value></data>
+  <data name="UsageFormTitleEdit" xml:space="preserve"><value>Изменить зависимость использования</value></data>
+  <data name="UsageSectionConsumer" xml:space="preserve"><value>Потребитель</value></data>
+  <data name="UsageSectionResolution" xml:space="preserve"><value>Разрешение и критичность</value></data>
+  <data name="UsageEmptyState" xml:space="preserve"><value>Нет записей об использовании для этого набора.</value></data>
+  <data name="OpenDraft" xml:space="preserve"><value>Открыть черновик</value></data>
+  <data name="OpenPublished" xml:space="preserve"><value>Открыть опубликованную версию</value></data>
+  <data name="CreateDraftFromPublished" xml:space="preserve"><value>Создать черновик из опубликованной версии</value></data>
+  <data name="ImportToDraft" xml:space="preserve"><value>Импортировать в черновик</value></data>
+  <data name="PublishedFirstGuidanceTitle" xml:space="preserve"><value>Опубликованные значения доступны, пока активный черновик пуст.</value></data>
+  <data name="PublishedFirstGuidanceDescription" xml:space="preserve"><value>Откройте опубликованную версию для просмотра или создайте значения черновика через мастер.</value></data>
+  <data name="SetIdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StatusRetired" xml:space="preserve"><value>Выведен</value></data>
+  <data name="StewardshipWorkspace" xml:space="preserve"><value>Рабочая область управления</value></data>
+  <data name="DraftVersion" xml:space="preserve"><value>Черновая версия</value></data>
+  <data name="PublishedVersion" xml:space="preserve"><value>Опубликованная версия</value></data>
+  <data name="RowVersion" xml:space="preserve"><value>Версия строки</value></data>
+  <data name="Updated" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="ValidateDraft" xml:space="preserve"><value>Проверить черновик</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>Отправить на утверждение</value></data>
+  <data name="PublishReadiness" xml:space="preserve"><value>Проверить готовность к публикации</value></data>
+  <data name="VersionEditor" xml:space="preserve"><value>Редактор версии</value></data>
+  <data name="VersionEditorDescription" xml:space="preserve"><value>Управляйте значениями, атрибутами и порядком черновика.</value></data>
+  <data name="LifecycleSummary" xml:space="preserve"><value>Сводка жизненного цикла</value></data>
+  <data name="SetLabel" xml:space="preserve"><value>Набор</value></data>
+  <data name="SubmittedLabel" xml:space="preserve"><value>Отправлено</value></data>
+  <data name="PublishedLabel" xml:space="preserve"><value>Опубликовано</value></data>
+  <data name="EvidenceLabel" xml:space="preserve"><value>Подтверждение</value></data>
+  <data name="PublishReadinessTitle" xml:space="preserve"><value>Готовность к публикации</value></data>
+  <data name="ChecksTitle" xml:space="preserve"><value>Проверки</value></data>
+  <data name="GovernanceActions" xml:space="preserve"><value>Действия управления</value></data>
+  <data name="CanonicalEvidenceLink" xml:space="preserve"><value>Ссылка на каноническое подтверждение</value></data>
+  <data name="SelectCanonicalEvidence" xml:space="preserve"><value>Выберите каноническое подтверждение</value></data>
+  <data name="EvidenceRefPlaceholder" xml:space="preserve"><value>Только заметка оператора; не подтверждение готовности</value></data>
+  <data name="PublishMode" xml:space="preserve"><value>Режим публикации</value></data>
+  <data name="PublishModeImmediate" xml:space="preserve"><value>Немедленно</value></data>
+  <data name="PublishModeFutureDated" xml:space="preserve"><value>С будущей датой</value></data>
+  <data name="PublishAtUtc" xml:space="preserve"><value>Опубликовать в (UTC)</value></data>
+  <data name="PublishOverride" xml:space="preserve"><value>Переопределение публикации</value></data>
+  <data name="OverrideReasonPlaceholder" xml:space="preserve"><value>Причина переопределения (обязательно при включении)</value></data>
+  <data name="ApprovalDecision" xml:space="preserve"><value>Решение об утверждении</value></data>
+  <data name="RejectDecision" xml:space="preserve"><value>Отклонить</value></data>
+  <data name="RejectionReasonPlaceholder" xml:space="preserve"><value>Причина отклонения (обязательно для отклонения)</value></data>
+  <data name="VersionHistory" xml:space="preserve"><value>История версий</value></data>
+  <data name="ApprovalColumn" xml:space="preserve"><value>Утверждение</value></data>
+  <data name="NoVersionHistory" xml:space="preserve"><value>Для этого набора нет доступной истории версий.</value></data>
+  <data name="DependencyImpact" xml:space="preserve"><value>Влияние зависимостей</value></data>
+  <data name="Select" xml:space="preserve"><value>Выбрать</value></data>
+  <data name="OpenSelectedSetTitle" xml:space="preserve"><value>Открыть {0}</value></data>
+  <data name="SelectSetContextEmpty" xml:space="preserve"><value>Выберите строку набора справочных данных, чтобы открыть Иерархию, Атрибуты, Сопоставления или Использование для этого набора.</value></data>
+  <data name="SelectSetContextFirst" xml:space="preserve"><value>Выберите строку набора справочных данных перед открытием этого рабочего пространства.</value></data>
+  <data name="SelectSetContextSelected" xml:space="preserve"><value>Выбранный набор: {0}</value></data>
+  <data name="DraftWizardTitle" xml:space="preserve"><value>Мастер черновика</value></data>
+  <data name="DraftWizardDescription" xml:space="preserve"><value>Создавайте черновую версию справочных данных шаг за шагом.</value></data>
+  <data name="DraftStrategyTitle" xml:space="preserve"><value>Стратегия черновика</value></data>
+  <data name="DraftStrategySubtitle" xml:space="preserve"><value>Выберите отправную точку</value></data>
+  <data name="SetBasicsTitle" xml:space="preserve"><value>Основные сведения о наборе</value></data>
+  <data name="SetBasicsSubtitle" xml:space="preserve"><value>Просмотрите сведения о наборе</value></data>
+  <data name="ReferenceValuesTitle" xml:space="preserve"><value>Справочные значения</value></data>
+  <data name="ReferenceValuesSubtitle" xml:space="preserve"><value>Добавление и редактирование значений</value></data>
+  <data name="OptionalEnrichmentTitle" xml:space="preserve"><value>Необязательное обогащение</value></data>
+  <data name="OptionalEnrichmentSubtitle" xml:space="preserve"><value>Иерархия, атрибуты, сопоставления</value></data>
+  <data name="ReviewValidateTitle" xml:space="preserve"><value>Проверка и валидация</value></data>
+  <data name="ReviewValidateSubtitle" xml:space="preserve"><value>Проверьте готовность</value></data>
+  <data name="SubmitPublishTitle" xml:space="preserve"><value>Отправка и публикация</value></data>
+  <data name="SubmitPublishSubtitle" xml:space="preserve"><value>Завершите черновик</value></data>
+  <data name="StrategyEmptyTitle" xml:space="preserve"><value>Начать с пустого</value></data>
+  <data name="StrategyEmptyHint" xml:space="preserve"><value>Начните с пустого черновика и добавляйте значения вручную.</value></data>
+  <data name="StrategyCopyTitle" xml:space="preserve"><value>Копировать из опубликованной</value></data>
+  <data name="StrategyCopyHint" xml:space="preserve"><value>Начните со значений текущей опубликованной версии.</value></data>
+  <data name="StrategyImportTitle" xml:space="preserve"><value>Импорт из файла</value></data>
+  <data name="StrategyImportHint" xml:space="preserve"><value>Заполните черновик, импортировав внешний файл.</value></data>
+  <data name="StrategyResumeTitle" xml:space="preserve"><value>Продолжить черновик</value></data>
+  <data name="StrategyResumeHint" xml:space="preserve"><value>Продолжите работу над существующей черновой версией.</value></data>
+  <data name="StartWizard" xml:space="preserve"><value>Запустить мастер</value></data>
+  <data name="SourceVersion" xml:space="preserve"><value>Исходная версия</value></data>
+  <data name="NextStep" xml:space="preserve"><value>Далее</value></data>
+  <data name="AddFirstValue" xml:space="preserve"><value>Добавить значение</value></data>
+  <data name="SaveDraftValues" xml:space="preserve"><value>Сохранить значения черновика</value></data>
+  <data name="DraftNoValuesTitle" xml:space="preserve"><value>Значений пока нет</value></data>
+  <data name="DraftNoValuesHint" xml:space="preserve"><value>Добавьте первое значение в этот черновик с помощью «Добавить значение».</value></data>
+  <data name="CodeColumn" xml:space="preserve"><value>Код</value></data>
+  <data name="ActiveColumn" xml:space="preserve"><value>Активно</value></data>
+  <data name="SortColumn" xml:space="preserve"><value>Порядок</value></data>
+  <data name="ValuesCountLabel" xml:space="preserve"><value>Значения</value></data>
+  <data name="DuplicateCodesLabel" xml:space="preserve"><value>Повторяющиеся коды</value></data>
+  <data name="RequiredFieldFailuresLabel" xml:space="preserve"><value>Ошибки обязательных полей</value></data>
+  <data name="RunValidation" xml:space="preserve"><value>Запустить проверку</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Сохранить черновик</value></data>
+  <data name="VersioningSection" xml:space="preserve"><value>Версионирование</value></data>
+  <data name="DraftNotEditable" xml:space="preserve"><value>Этот черновик больше нельзя редактировать, так как он отправлен. Создайте новый черновик, чтобы изменить значения.</value></data>
+  <data name="ValueCodeLabelRequired" xml:space="preserve"><value>Добавьте хотя бы одно значение, указав код и отображаемое имя для каждого.</value></data>
+  <data name="NoUnsavedChanges" xml:space="preserve"><value>Нет несохранённых изменений.</value></data>
+  <data name="RunValidationFirst" xml:space="preserve"><value>Сначала выполните проверку без блокирующих ошибок.</value></data>
+  <data name="SaveValuesFirst" xml:space="preserve"><value>Сначала сохраните значения черновика.</value></data>
+  <data name="AddValueFirst" xml:space="preserve"><value>Сначала добавьте хотя бы одно значение.</value></data>
+  <data name="DownloadCsvTemplate" xml:space="preserve"><value>Скачать шаблон CSV</value></data>
+  <data name="ImportTemplateTitle" xml:space="preserve"><value>Импорт значений из файла</value></data>
+  <data name="ImportTemplateHint" xml:space="preserve"><value>Скачайте шаблон, заполните значения и загрузите файл для импорта в черновик.</value></data>
+  <data name="DownloadJsonTemplate" xml:space="preserve"><value>Скачать шаблон JSON</value></data>
+  <data name="DownloadTemplate" xml:space="preserve"><value>Скачать шаблон</value></data>
+</root>

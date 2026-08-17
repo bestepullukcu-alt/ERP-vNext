@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <data name="WorkCenterTitle" xml:space="preserve"><value>Poste de travail</value></data>
+  <data name="WorkCenterDescription" xml:space="preserve"><value>Utilisez la boîte de réception pour trier les éléments de travail nouvellement attribués avant qu'ils ne passent à l'exécution.</value></data>
+  <data name="ViewSwitch" xml:space="preserve"><value>Voir le basculement</value></data>
+  <data name="DataTable" xml:space="preserve"><value>Table de données</value></data>
+  <data name="List" xml:space="preserve"><value>Liste</value></data>
+  <data name="Kanban" xml:space="preserve"><value>Kanban</value></data>
+  <data name="Calendar" xml:space="preserve"><value>Calendrier</value></data>
+  <data name="Gantt" xml:space="preserve"><value>Gantt</value></data>
+  <data name="Inbox" xml:space="preserve"><value>Boîte de réception</value></data>
+  <data name="AllWork" xml:space="preserve"><value>Toutes activités</value></data>
+  <data name="InboxDescription" xml:space="preserve"><value>La boîte de réception affiche le travail entrant non accepté. L'acceptation d'un élément le supprime de cette liste.</value></data>
+  <data name="InboxEmptyTitle" xml:space="preserve"><value>La boîte de réception est vide</value></data>
+  <data name="InboxEmptyDescription" xml:space="preserve"><value>Aucun élément en attente n'est en attente de triage.</value></data>
+  <data name="SelectedRow" xml:space="preserve"><value>Rangée Sélectionnée</value></data>
+  <data name="AllWorkPlaceholderTitle" xml:space="preserve"><value>Tous les travaux ne sont pas encore prêts</value></data>
+  <data name="AllWorkPlaceholderDescription" xml:space="preserve"><value>Cet onglet est un espace réservé à l'étape actuelle du squelette.</value></data>
+  <data name="Source" xml:space="preserve"><value>Source</value></data>
+  <data name="Context" xml:space="preserve"><value>Contexte</value></data>
+  <data name="AssignedBy" xml:space="preserve"><value>Attribuée par</value></data>
+  <data name="CreatedDate" xml:space="preserve"><value>Date de Création</value></data>
+  <data name="RequiredAction" xml:space="preserve"><value>Required Action</value></data>
+  <data name="Unread" xml:space="preserve"><value>Non lu</value></data>
+  <data name="Read" xml:space="preserve"><value>&lt;bpt i="1" type="17"/&gt;Lire&lt;ept i="1"/&gt;</value></data>
+  <data name="Accept" xml:space="preserve"><value>Accepter</value></data>
+  <data name="ReturnWithReason" xml:space="preserve"><value>Retour</value></data>
+  <data name="Reassign" xml:space="preserve"><value>Réaffecter</value></data>
+  <data name="Decline" xml:space="preserve"><value>Déclinez</value></data>
+  <data name="ProposeNewTime" xml:space="preserve"><value>Proposer une nouvelle heure</value></data>
+  <data name="Snooze" xml:space="preserve"><value>Répéter</value></data>
+  <data name="OpenDetail" xml:space="preserve"><value>Ouvrir les détails</value></data>
+  <data name="NoAction" xml:space="preserve"><value>Required Action</value></data>
+  <data name="ActionAcceptSuccess" xml:space="preserve"><value>Article accepté et supprimé de la boîte de réception.</value></data>
+  <data name="ActionRejectSuccess" xml:space="preserve"><value>L'élément a été renvoyé dans la file d'attente de l'expéditeur (maquette).</value></data>
+  <data name="ActionReassignSuccess" xml:space="preserve"><value>Réattribuer le flux de travail démarré (maquette).</value></data>
+  <data name="ActionSnoozeSuccess" xml:space="preserve"><value>L'article a été mis en pause (simulacre).</value></data>
+  <data name="ActionDetailOpened" xml:space="preserve"><value>Détail de l'article ouvert.</value></data>
+  <data name="Evaluate" xml:space="preserve"><value>Évaluer</value></data>
+  <data name="MoreActions" xml:space="preserve"><value>plus d'actions</value></data>
+  <data name="InboxInfoTitle" xml:space="preserve"><value>Tâches non examinées</value></data>
+  <data name="InboxInfoHint" xml:space="preserve"><value>Les éléments doivent d'abord passer à l'étape évaluée</value></data>
+  <data name="LoadMore" xml:space="preserve"><value>Plus d'informations</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Rechercher des éléments de travail...</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtrer</value></data>
+  <data name="FilterType" xml:space="preserve"><value>Tous les types</value></data>
+  <data name="TypeFilter" xml:space="preserve"><value>Filtre du type</value></data>
+  <data name="TypeAll" xml:space="preserve"><value>Tous</value></data>
+  <data name="TypeTask" xml:space="preserve"><value>Tâche</value></data>
+  <data name="TypeIssue" xml:space="preserve"><value>Version</value></data>
+  <data name="TypeMeeting" xml:space="preserve"><value>Réunion</value></data>
+  <data name="TypeNote" xml:space="preserve"><value>Note</value></data>
+  <data name="ScopeNav" xml:space="preserve"><value>Portée</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>Tous les états</value></data>
+  <data name="ColType" xml:space="preserve"><value>Type</value></data>
+  <data name="ColTitle" xml:space="preserve"><value>Titre</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Etat</value></data>
+  <data name="ColPriority" xml:space="preserve"><value>Priorité</value></data>
+  <data name="ColRequiredAction" xml:space="preserve"><value>Required Action</value></data>
+  <data name="ColContext" xml:space="preserve"><value>Contexte</value></data>
+  <data name="ColSource" xml:space="preserve"><value>Source</value></data>
+  <data name="ColOwner" xml:space="preserve"><value>Propriétaire / cessionnaire</value></data>
+  <data name="ColDueDate" xml:space="preserve"><value>Date d'échéance</value></data>
+  <data name="ColSeverity" xml:space="preserve"><value>Gravité</value></data>
+  <data name="ColBlocker" xml:space="preserve"><value>Bloqueur </value></data>
+  <data name="ColDateTime" xml:space="preserve"><value>Date / Heure</value></data>
+  <data name="ColResponseStatus" xml:space="preserve"><value>État de la Réponse</value></data>
+  <data name="ColOrganizer" xml:space="preserve"><value>Organisateur</value></data>
+  <data name="ColLocation" xml:space="preserve"><value>Lien de l'emplacement</value></data>
+  <data name="ColReviewStatus" xml:space="preserve"><value>Statut de la revue</value></data>
+  <data name="ColNoteDate" xml:space="preserve"><value>Date de la note</value></data>
+  <data name="ColAuthor" xml:space="preserve"><value>Auteur</value></data>
+  <data name="ColConvertAction" xml:space="preserve"><value>Convertir</value></data>
+  <data name="ColLastUpdate" xml:space="preserve"><value>Dernière mise à jour</value></data>
+  <data name="ColActions" xml:space="preserve"><value>Actions</value></data>
+  <data name="AllWorkEmptyTitle" xml:space="preserve"><value>Aucun article trouvé</value></data>
+  <data name="AllWorkEmptyDescription" xml:space="preserve"><value>Aucun élément de travail ne correspond à la portée sélectionnée.</value></data>
+  <data name="TaskDetailTitle" xml:space="preserve"><value>Détail de la Tâche</value></data>
+  <data name="Back" xml:space="preserve"><value>Retour</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="Subtasks" xml:space="preserve"><value>Sous-tâches</value></data>
+  <data name="Activity" xml:space="preserve"><value>Activité</value></data>
+  <data name="WriteComment" xml:space="preserve"><value>Ajouter un commentaire...</value></data>
+  <data name="Send" xml:space="preserve"><value>Envoyer</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="TimeEntry" xml:space="preserve"><value>Durées des entrées</value></data>
+  <data name="TimeNote" xml:space="preserve"><value>Note (facultative)</value></data>
+  <data name="Log" xml:space="preserve"><value>Journal</value></data>
+  <data name="StartTimer" xml:space="preserve"><value>Démarrer la minuterie</value></data>
+  <data name="StopTimer" xml:space="preserve"><value>Minuterie d'arrêt</value></data>
+  <data name="NoTimeLogged" xml:space="preserve"><value>Pas encore d'heure enregistrée.</value></data>
+  <data name="Dependencies" xml:space="preserve"><value>Dépendances</value></data>
+  <data name="BlockedBy" xml:space="preserve"><value>Bloqué</value></data>
+  <data name="Blocks" xml:space="preserve"><value>Blocs</value></data>
+  <data name="RejectionNote" xml:space="preserve"><value>Note de rejet</value></data>
+  <data name="RejectionNotePlaceholder" xml:space="preserve"><value>Décrivez la raison du rejet...</value></data>
+  <data name="ConfirmReject" xml:space="preserve"><value>Confirmer le rejet,</value></data>
+  <data name="Reject" xml:space="preserve"><value>Rejeter</value></data>
+  <data name="RequestInfo" xml:space="preserve"><value>Demande d'informations</value></data>
+  <data name="Plan" xml:space="preserve"><value>Plan</value></data>
+  <data name="StartWork" xml:space="preserve"><value>Commencer le travail</value></data>
+  <data name="LogTime" xml:space="preserve"><value>Log Heure</value></data>
+  <data name="Complete" xml:space="preserve"><value>Terminé</value></data>
+  <data name="Block" xml:space="preserve"><value>Bloc</value></data>
+  <data name="Unblock" xml:space="preserve"><value>Débloquez</value></data>
+  <data name="Approve" xml:space="preserve"><value>Approuver</value></data>
+  <data name="RejectReview" xml:space="preserve"><value>Rejeter l'avis</value></data>
+  <data name="TimeEntryRequired" xml:space="preserve"><value>Enregistrez au moins une saisie de temps avant de terminer.</value></data>
+  <data name="CommentAdded" xml:space="preserve"><value>Commentaire ajouté.</value></data>
+  <data name="TimeLogged" xml:space="preserve"><value>Durée de session</value></data>
+</root>

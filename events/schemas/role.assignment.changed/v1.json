@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "role.assignment.changed.v1",
+  "title": "role.assignment.changed.v1",
+  "type": "object",
+  "required": [
+    "event_id",
+    "event_name",
+    "event_version",
+    "tenant_id",
+    "correlation_id",
+    "causation_id",
+    "occurred_at",
+    "producer",
+    "actor",
+    "payload"
+  ],
+  "properties": {
+    "event_id": { "type": "string", "format": "uuid" },
+    "event_name": { "const": "role.assignment.changed" },
+    "event_version": { "const": 1 },
+    "tenant_id": { "type": "string", "format": "uuid" },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "causation_id": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "producer": { "type": "string", "minLength": 1 },
+    "actor": {
+      "type": "object",
+      "required": ["user_id", "actor_type"],
+      "properties": {
+        "user_id": { "type": "string", "minLength": 1 },
+        "actor_type": { "type": "string", "enum": ["tenant_user", "platform_admin", "system"] }
+      },
+      "additionalProperties": false
+    },
+    "payload": {
+      "type": "object",
+      "required": ["user_id", "role_assignment_version"],
+      "properties": {
+        "user_id": { "type": "string", "format": "uuid" },
+        "role_assignment_version": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="GoldenReferenceSlimTitle" xml:space="preserve"><value>المرجع الذهبي المختصر</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>صفحة قائمة مرجعية (إنشاء/تعديل عبر اللوحة الجانبية) للوحدات التي تحتوي على ما يصل إلى 8 حقول.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>إضافة عنصر جديد</value></data>
+  <data name="EditItem" xml:space="preserve"><value>تعديل العنصر</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>إضافة عنصر جديد</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل العنصر</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>مثال: GRS-001</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>مثال: مرجع رئيسي</value></data>
+  <data name="ReferenceTypeStandard" xml:space="preserve"><value>قياسي</value></data>
+  <data name="ReferenceTypeCustom" xml:space="preserve"><value>مخصص</value></data>
+  <data name="ReferenceTypePro" xml:space="preserve"><value>احترافي</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Code" xml:space="preserve"><value>الرمز</value></data>
+  <data name="Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>معلومات عامة</value></data>
+  <data name="ReferenceType" xml:space="preserve"><value>نوع المرجع</value></data>
+  <data name="Priority" xml:space="preserve"><value>الأولوية</value></data>
+  <data name="Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="SystemInformation" xml:space="preserve"><value>معلومات النظام</value></data>
+  <data name="LevelPrefix" xml:space="preserve"><value>المستوى</value></data>
+  <data name="NotAvailable" xml:space="preserve"><value>غير متاح</value></data>
+  <data name="IdLabel" xml:space="preserve"><value>المعرّف</value></data>
+</root>

@@ -1,0 +1,234 @@
+@model Diten.Web.Controllers.Platform.SubscriptionPlansController.SubscriptionPlanEditViewModel
+@using Diten.Web.Views.Platform.SubscriptionPlans
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Microsoft.AspNetCore.Mvc.Rendering
+@inject IHtmlLocalizer<SubscriptionPlansIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = Model.Id.HasValue && Model.Id != Guid.Empty;
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var action = isEdit ? "Edit" : "Create";
+    var currencyOptions = ViewData["CurrencyOptions"] as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a asp-controller="SubscriptionPlans" asp-action="Index">@Localizer["SubscriptionPlansTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-controller="SubscriptionPlans" asp-action="Index" class="btn btn-label-secondary">
+            @SharedLocalizer["Cancel"]
+        </a>
+        <button type="submit" form="subscriptionPlanForm" class="btn btn-primary">
+            <i class="bx bx-save me-1"></i>@SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>
+
+<form id="subscriptionPlanForm" asp-controller="SubscriptionPlans" asp-action="@action" asp-route-id="@Model.Id" method="post"
+    class="needs-validation" novalidate data-plan-id="@Model.Id" data-plan-active="@Model.IsActive.ToString().ToLowerInvariant()">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="IncludedFeaturesText" />
+    <input type="hidden" asp-for="EntitlementMappingsJson" id="sp-entitlement-mappings-json" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@Localizer["IdentitySection"]</h5>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12 col-md-4">
+                        <label asp-for="Code" class="form-label fw-medium">@Localizer["Code"] <span class="text-danger">*</span></label>
+                        <input asp-for="Code" class="form-control" maxlength="64" placeholder="FREE, STARTER..." required />
+                        <span asp-validation-for="Code" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-8">
+                        <label asp-for="Name" class="form-label fw-medium">@Localizer["Name"] <span class="text-danger">*</span></label>
+                        <input asp-for="Name" class="form-control" maxlength="200" required />
+                        <span asp-validation-for="Name" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label fw-medium">@Localizer["Description"]</label>
+                        <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+                        <span asp-validation-for="Description" class="text-danger small mt-1"></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@Localizer["EntitlementsSection"]</h5>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12">
+                        <div id="sp-entitlements-error" class="alert alert-warning d-none" role="alert"></div>
+                        <div class="d-flex flex-column flex-xl-row align-items-xl-center gap-3 mb-3">
+                            <div class="flex-grow-1">
+                                <label for="sp-feature-search" class="form-label fw-medium">@Localizer["IncludedFeatures"]</label>
+                                <input id="sp-feature-search" class="form-control" autocomplete="off" placeholder="@Localizer["FeatureSearchPlaceholder"]" />
+                            </div>
+                            <div>
+                                <label for="sp-feature-category" class="form-label fw-medium">@Localizer["Category"]</label>
+                                <select id="sp-feature-category" class="form-select">
+                                    <option value="">@Localizer["AllCategories"]</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="sp-feature-availability" class="form-label fw-medium">@Localizer["Availability"]</label>
+                                <select id="sp-feature-availability" class="form-select">
+                                    <option value="">@Localizer["AllFeatures"]</option>
+                                    <option value="Included">@Localizer["Included"]</option>
+                                    <option value="AddOn">@Localizer["AddOn"]</option>
+                                    <option value="Preview">@Localizer["Preview"]</option>
+                                    <option value="NotAvailable">@Localizer["NotAvailable"]</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="sp-entitlements-loading" class="d-flex align-items-center gap-2 text-muted">
+                            <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+                            <span>@SharedLocalizer["Loading"]</span>
+                        </div>
+                        <div id="sp-entitlements-empty" class="text-muted small d-none">@Localizer["NoFeaturesAvailable"]</div>
+                        <div id="sp-entitlements-list" class="d-grid gap-2"></div>
+                    </div>
+                    <div class="col-12">
+                        <input type="hidden" asp-for="IncludedModuleKeysText" id="sp-included-module-keys" />
+                        <label for="subscription-plan-module-select" class="form-label fw-medium">@Localizer["Modules"]</label>
+                        <div id="sp-modules-loading" class="d-flex align-items-center gap-2 text-muted">
+                            <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+                            <span>@SharedLocalizer["Loading"]</span>
+                        </div>
+                        <div id="sp-modules-empty" class="text-muted small d-none">@Localizer["NoModulesAvailable"]</div>
+                        <select id="subscription-plan-module-select"
+                                class="select2 form-select"
+                                multiple
+                                data-placeholder="@Localizer["SelectModulesPlaceholder"]">
+                        </select>
+                        <span asp-validation-for="IncludedModuleKeysText" class="text-danger small mt-1"></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@Localizer["QuotasSection"]</h5>
+                </div>
+                <div class="card-body row g-3">
+                    <input type="hidden" asp-for="DefaultQuotasJson" id="sp-default-quotas-json" />
+                    <div class="col-12 col-md-6">
+                        <label asp-for="UsersMax" class="form-label fw-medium">@Localizer["UsersMax"]</label>
+                        <input asp-for="UsersMax" class="form-control sp-quota-input" type="number" min="0" step="1" data-quota-key="users.max" />
+                        <div class="form-text mt-1">users.max</div>
+                        <span asp-validation-for="UsersMax" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="StorageGbMax" class="form-label fw-medium">@Localizer["StorageGbMax"]</label>
+                        <input asp-for="StorageGbMax" class="form-control sp-quota-input" type="number" min="0" step="0.01" data-quota-key="storage.gb.max" />
+                        <div class="form-text mt-1">storage.gb.max</div>
+                        <span asp-validation-for="StorageGbMax" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ApiCallsPerMonth" class="form-label fw-medium">@Localizer["ApiCallsPerMonth"]</label>
+                        <input asp-for="ApiCallsPerMonth" class="form-control sp-quota-input" type="number" min="0" step="1" data-quota-key="api.calls.per.month" />
+                        <div class="form-text mt-1">api.calls.per.month</div>
+                        <span asp-validation-for="ApiCallsPerMonth" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ModulesMax" class="form-label fw-medium">@Localizer["ModulesMax"]</label>
+                        <input asp-for="ModulesMax" class="form-control sp-quota-input" type="number" min="0" step="1" data-quota-key="modules.max" />
+                        <div class="form-text mt-1">modules.max</div>
+                        <span asp-validation-for="ModulesMax" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-text">@Localizer["DefaultQuotasHelp"]</div>
+                        <span asp-validation-for="DefaultQuotasJson" class="text-danger small mt-1"></span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@Localizer["PricingSection"]</h5>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12">
+                        <label asp-for="PriceMonthly" class="form-label fw-medium">@Localizer["PriceMonthly"]</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input asp-for="PriceMonthly" class="form-control" type="number" step="0.01" min="0" />
+                        </div>
+                        <span asp-validation-for="PriceMonthly" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="PriceYearly" class="form-label fw-medium">@Localizer["PriceYearly"]</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input asp-for="PriceYearly" class="form-control" type="number" step="0.01" min="0" />
+                        </div>
+                        <span asp-validation-for="PriceYearly" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Currency" class="form-label fw-medium">@Localizer["Currency"]</label>
+                        <select asp-for="Currency" asp-items="currencyOptions" class="form-select">
+                            <option value=""></option>
+                        </select>
+                        <span asp-validation-for="Currency" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="SortOrder" class="form-label fw-medium">@Localizer["SortOrder"]</label>
+                        <input asp-for="SortOrder" class="form-control" type="number" min="0" />
+                        <span asp-validation-for="SortOrder" class="text-danger small mt-1"></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">@Localizer["StatusAndRulesSection"]</h5>
+                </div>
+                <div class="card-body row g-3">
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input asp-for="IsActive" class="form-check-input" role="switch" value="true" />
+                            <label asp-for="IsActive" class="form-check-label fw-medium">@Localizer["IsActive"]</label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input asp-for="IsDefault" class="form-check-input" role="switch" value="true" />
+                            <label asp-for="IsDefault" class="form-check-label fw-medium">@Localizer["IsDefault"]</label>
+                        </div>
+                    </div>
+                    <hr class="my-1" />
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input id="is-trial-plan" asp-for="IsTrialPlan" class="form-check-input" role="switch" value="true" />
+                            <label asp-for="IsTrialPlan" class="form-check-label fw-medium">@Localizer["IsTrialPlan"]</label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="TrialDurationDays" class="form-label fw-medium">@Localizer["TrialDurationDays"]</label>
+                        <input id="trial-duration-days" asp-for="TrialDurationDays" class="form-control" type="number" min="1" />
+                        <span asp-validation-for="TrialDurationDays" class="text-danger small mt-1"></span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

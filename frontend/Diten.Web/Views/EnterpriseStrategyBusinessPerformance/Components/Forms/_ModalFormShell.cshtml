@@ -1,0 +1,25 @@
+@{
+    var id = (ViewData["Id"]?.ToString() ?? "formModal");
+    var titleId = (ViewData["TitleId"]?.ToString() ?? $"{id}-title");
+    var title = (ViewData["Title"]?.ToString() ?? "Editor");
+    var subtitle = (ViewData["Subtitle"]?.ToString() ?? string.Empty);
+}
+<div class="modal fade es-modal" id="@id" tabindex="-1" aria-hidden="true" data-bs-keyboard="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title" id="@titleId">@title</h5>
+                    @if (!string.IsNullOrWhiteSpace(subtitle))
+                    {
+                        <p class="small text-muted mb-0">@subtitle</p>
+                    }
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-muted small">Modal form shell body placeholder.</div>
+            </div>
+        </div>
+    </div>
+</div>

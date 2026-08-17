@@ -1,0 +1,4 @@
+@{
+    var id = (ViewData["Id"]?.ToString() ?? "validation-summary");
+}
+<div id="@id" class="alert alert-danger d-none es-validation-summary" role="alert" aria-live="assertive"></div>

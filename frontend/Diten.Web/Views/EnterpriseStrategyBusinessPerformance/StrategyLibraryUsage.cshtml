@@ -1,0 +1,49 @@
+@model Diten.Web.Models.EnterpriseStrategy.EnterpriseStrategyPageViewModel
+@{
+    ViewData["Title"] = "Library Usage Analytics";
+}
+
+@await Html.PartialAsync("Components/_SubdomainShell", Model)
+<div class="row g-3 mb-3" id="library-usage-summary-cards"></div>
+<div class="card mb-3">
+    <div class="card-body">
+        <h6>Template Usage</h6>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle" id="library-usage-templates-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Usage Count</th>
+                        <th>Last Instantiated By</th>
+                        <th>Last Instantiated At</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body">
+        <h6>Blueprint Usage</h6>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle" id="library-usage-blueprints-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Usage Count</th>
+                        <th>Last Instantiated By</th>
+                        <th>Last Instantiated At</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/pages/enterprise-strategy/strategy-library-usage.js" asp-append-version="true"></script>
+}

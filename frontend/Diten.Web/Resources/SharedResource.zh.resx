@@ -1,0 +1,464 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:schema id="root">
+    <xs:element name="root" ns1:IsDataSet="true">
+      <xs:complexType>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element name="metadata">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" />
+              <xs:attribute name="type" type="xsd:string" />
+              <xs:attribute name="mimetype" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="assembly">
+            <xs:complexType>
+              <xs:attribute name="alias" type="xsd:string" />
+              <xs:attribute name="name" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="data">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+                <xs:element name="comment" type="xsd:string" minOccurs="0" ns1:Ordinal="2" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" ns1:Ordinal="1" />
+              <xs:attribute name="type" type="xsd:string" ns1:Ordinal="3" />
+              <xs:attribute name="mimetype" type="xsd:string" ns1:Ordinal="4" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="resheader">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" use="required" />
+            </xs:complexType>
+          </xs:element>
+        </xs:choice>
+      </xs:complexType>
+    </xs:element>
+  </xs:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>标题</value>
+  </data>
+  <data name="TaxNumber" xml:space="preserve">
+    <value>税号</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="RecordCreated" xml:space="preserve">
+    <value>记录已成功创建。</value>
+  </data>
+  <data name="RecordDeleted" xml:space="preserve">
+    <value>记录已成功删除。</value>
+  </data>
+  <data name="RecordSaved" xml:space="preserve">
+    <value>更改已成功保存。</value>
+  </data>
+  <data name="ErrorOccurred" xml:space="preserve">
+    <value>处理请求时发生错误。</value>
+  </data>
+  <data name="AreYouSure" xml:space="preserve">
+    <value>确定吗？</value>
+  </data>
+  <data name="DeleteConfirmationTitle" xml:space="preserve">
+    <value>确定吗？</value>
+  </data>
+  <data name="DeleteConfirmationSubText" xml:space="preserve">
+    <value>此操作无法撤销！</value>
+  </data>
+  <data name="DeleteConfirmationYesBtn" xml:space="preserve">
+    <value>是，删除</value>
+  </data>
+  <data name="ConfirmAction" xml:space="preserve">
+    <value>确定要继续吗？</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>访问被拒绝。</value>
+  </data>
+  <data name="ValidationFailed" xml:space="preserve">
+    <value>请填写必填字段。</value>
+  </data>
+  <data name="SearchFilter" xml:space="preserve">
+    <value>搜索和筛选</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>启用</value>
+  </data>
+  <data name="Passive" xml:space="preserve">
+    <value>停用</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>未知</value>
+  </data>
+  <data name="ViewDetails" xml:space="preserve">
+    <value>查看详情</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>搜索..</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>导出</value>
+  </data>
+  <data name="Print" xml:space="preserve">
+    <value>打印</value>
+  </data>
+  <data name="Import" xml:space="preserve">
+    <value>导入</value>
+  </data>
+  <data name="Filter" xml:space="preserve">
+    <value>筛选</value>
+  </data>
+  <data name="Reset" xml:space="preserve">
+    <value>重置</value>
+  </data>
+  <data name="ComingSoon" xml:space="preserve">
+    <value>此功能即将推出。</value>
+  </data>
+  <data name="MDM" xml:space="preserve">
+    <value>MDM</value>
+  </data>
+  <data name="Saving" xml:space="preserve">
+    <value>正在保存...</value>
+  </data>
+  <data name="FailedToLoadData" xml:space="preserve">
+    <value>无法加载数据。请稍后重试。</value>
+  </data>
+  <data name="GatewayError" xml:space="preserve">
+    <value>与服务器通信时发生错误。</value>
+  </data>
+  <data name="Light" xml:space="preserve">
+    <value>浅色</value>
+  </data>
+  <data name="Dark" xml:space="preserve">
+    <value>深色</value>
+  </data>
+  <data name="Admin" xml:space="preserve">
+    <value>管理员</value>
+  </data>
+  <data name="MyProfile" xml:space="preserve">
+    <value>我的资料</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="LogOut" xml:space="preserve">
+    <value>退出登录</value>
+  </data>
+  <data name="Apply" xml:space="preserve">
+    <value>应用</value>
+  </data>
+  <data name="PDF" xml:space="preserve">
+    <value>PDF</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>复制</value>
+  </data>
+  <data name="DtNoRecords" xml:space="preserve">
+    <value>未找到匹配记录</value>
+  </data>
+  <data name="DtInfo" xml:space="preserve">
+    <value>显示第 _START_ 至 _END_ 条，共 _TOTAL_ 条</value>
+  </data>
+  <data name="DtInfoEmpty" xml:space="preserve">
+    <value>显示第 0 至 0 条，共 0 条</value>
+  </data>
+  <data name="DtInfoFiltered" xml:space="preserve">
+    <value>（从 _MAX_ 条记录中过滤）</value>
+  </data>
+  <data name="DtZeroRecords" xml:space="preserve">
+    <value>未找到匹配记录</value>
+  </data>
+  <data name="DtEmptyTable" xml:space="preserve">
+    <value>表中没有可用数据</value>
+  </data>
+  <data name="ShowAll" xml:space="preserve">
+    <value>显示全部</value>
+  </data>
+  <data name="ColumnVisibility" xml:space="preserve">
+    <value>列可见性</value>
+  </data>
+  <data name="BulkDelete" xml:space="preserve">
+    <value>批量删除</value>
+  </data>
+  <data name="BulkDeleteConfirm" xml:space="preserve">
+    <value>确定要删除选中的 {0} 条记录吗？</value>
+  </data>
+  <data name="BulkDeleteSuccess" xml:space="preserve">
+    <value>已成功删除 {0} 条记录</value>
+  </data>
+  <data name="ClearSelection" xml:space="preserve">
+    <value>清除选择</value>
+  </data>
+  <data name="SelectedCount" xml:space="preserve">
+    <value>条记录已选择</value>
+  </data>
+  <data name="RequiredProgress" xml:space="preserve">
+    <value>必填：{{0}} / {{1}}</value>
+  </data>
+  <data name="Update" xml:space="preserve">
+    <value>更新</value>
+  </data>
+  <data name="RecordUpdated" xml:space="preserve">
+    <value>记录已成功更新。</value>
+  </data>
+  <data name="InvalidEmail" xml:space="preserve">
+    <value>电子邮件地址无效</value>
+  </data>
+  <data name="InvalidUrl" xml:space="preserve">
+    <value>URL 格式无效</value>
+  </data>
+  <data name="InvalidPhone" xml:space="preserve">
+    <value>电话号码无效</value>
+  </data>
+  <data name="NumericOnly" xml:space="preserve">
+    <value>只允许输入数字</value>
+  </data>
+  <data name="FieldRequired" xml:space="preserve">
+    <value>此字段为必填项</value>
+  </data>
+  <data name="InvalidFiscalYear" xml:space="preserve">
+    <value>格式无效（例如：01-01）</value>
+  </data>
+  <data name="ValidationErrors" xml:space="preserve">
+    <value>错误：{0}</value>
+  </data>
+  <data name="RequiredStatus" xml:space="preserve">
+    <value>必填：{0} / {1}</value>
+  </data>
+  <data name="SelectPlaceholder" xml:space="preserve">
+    <value>请选择...</value>
+  </data>
+  <data name="Overview" xml:space="preserve">
+    <value>概览</value>
+  </data>
+  <data name="SubRecords" xml:space="preserve">
+    <value>子记录</value>
+  </data>
+  <data name="Details" xml:space="preserve">
+    <value>详情</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>返回列表</value>
+  </data>
+  <data name="EditRecord" xml:space="preserve">
+    <value>编辑记录</value>
+  </data>
+  <data name="NoRecordsFound" xml:space="preserve">
+    <value>暂无子记录。</value>
+  </data>
+  <data name="About" xml:space="preserve">
+    <value>关于</value>
+  </data>
+  <data name="Address" xml:space="preserve">
+    <value>地址</value>
+  </data>
+  <data name="EmailAddress" xml:space="preserve">
+    <value>电子邮件地址</value>
+  </data>
+  <data name="PhoneNumber" xml:space="preserve">
+    <value>电话号码</value>
+  </data>
+  <data name="Website" xml:space="preserve">
+    <value>网站</value>
+  </data>
+  <data name="Sector" xml:space="preserve">
+    <value>行业</value>
+  </data>
+  <data name="ContactPerson" xml:space="preserve">
+    <value>联系人</value>
+  </data>
+  <data name="PrimaryCurrency" xml:space="preserve">
+    <value>主要货币</value>
+  </data>
+  <data name="DefaultTimeZone" xml:space="preserve">
+    <value>默认时区</value>
+  </data>
+  <data name="BasicInfo" xml:space="preserve">
+    <value>基本信息</value>
+  </data>
+  <data name="Login.Title" xml:space="preserve">
+    <value>登录</value>
+  </data>
+  <data name="Login.Email" xml:space="preserve">
+    <value>电子邮件</value>
+  </data>
+  <data name="Login.Password" xml:space="preserve">
+    <value>密码</value>
+  </data>
+  <data name="Login.RememberMe" xml:space="preserve">
+    <value>记住我</value>
+  </data>
+  <data name="Login.Submit" xml:space="preserve">
+    <value>登录</value>
+  </data>
+  <data name="Login.ErrorTitle" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="Login.ErrorRequired" xml:space="preserve">
+    <value>电子邮件和密码为必填项</value>
+  </data>
+  <data name="Login.Error" xml:space="preserve">
+    <value>电子邮件或密码无效</value>
+  </data>
+  <data name="Login.Loading" xml:space="preserve">
+    <value>正在登录...</value>
+  </data>
+  <data name="Login.Subtitle" xml:space="preserve">
+    <value>请登录您的账户</value>
+  </data>
+  <data name="Sandbox" xml:space="preserve">
+    <value>沙盒</value>
+  </data>
+  <data name="SaveView" xml:space="preserve">
+    <value>保存视图</value>
+  </data>
+  <data name="Platform" xml:space="preserve">
+    <value>平台</value>
+  </data>
+  <data name="WorkCenterMenu" xml:space="preserve">
+    <value>工作中心</value>
+  </data>
+  <data name="ItemMaster" xml:space="preserve">
+    <value>物料主数据</value>
+  </data>
+  <data name="CompositionManagement" xml:space="preserve">
+    <value>组合管理</value>
+  </data>
+  <data name="CategoryManagement" xml:space="preserve">
+    <value>类别管理</value>
+  </data>
+  <data name="VariantManagement" xml:space="preserve">
+    <value>变体管理</value>
+  </data>
+  <data name="Attributes" xml:space="preserve">
+    <value>属性</value>
+  </data>
+  <data name="Variants" xml:space="preserve">
+    <value>变体</value>
+  </data>
+  <data name="ColumnOrder" xml:space="preserve">
+    <value>列顺序</value>
+  </data>
+  <data name="SKUManagement" xml:space="preserve">
+    <value>SKU 管理</value>
+  </data>
+  <data name="ProductMaster" xml:space="preserve">
+    <value>产品主数据</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>描述</value>
+  </data>
+  <data name="DescriptionPlaceholder" xml:space="preserve">
+    <value>请输入描述...</value>
+  </data>
+  <data name="LevelPrefix" xml:space="preserve">
+    <value>级别</value>
+  </data>
+  <data name="NotAvailable" xml:space="preserve">
+    <value>不可用</value>
+  </data>
+  <data name="Workspace" xml:space="preserve">
+    <value>工作区</value>
+  </data>
+  <data name="PlatformAdministration" xml:space="preserve">
+    <value>平台管理</value>
+  </data>
+  <data name="DeveloperSandbox" xml:space="preserve">
+    <value>开发者沙盒</value>
+  </data>
+  <data name="GoldenSlim" xml:space="preserve">
+    <value>Golden Slim</value>
+  </data>
+  <data name="GoldenCompact" xml:space="preserve">
+    <value>Golden Compact</value>
+  </data>
+  <data name="ToggleTheme" xml:space="preserve">
+    <value>切换主题</value>
+  </data>
+  <data name="SystemTheme" xml:space="preserve">
+    <value>系统</value>
+  </data>
+  <data name="Notification" xml:space="preserve">
+    <value>通知</value>
+  </data>
+  <data name="NewNotifications" xml:space="preserve">
+    <value>{0} 个新通知</value>
+  </data>
+  <data name="MarkAllAsRead" xml:space="preserve">
+    <value>全部标记为已读</value>
+  </data>
+  <data name="ViewAllNotifications" xml:space="preserve">
+    <value>查看所有通知</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>用户</value>
+  </data>
+  <data name="SubscriptionPlans" xml:space="preserve">
+    <value>订阅计划</value>
+  </data>
+  <data name="Login.ForgotPassword" xml:space="preserve"><value>Forgot Password?</value></data>
+  <data name="Login.EmailRequired" xml:space="preserve"><value>Email is required.</value></data>
+  <data name="ForgotPassword.Title" xml:space="preserve"><value>Forgot Password?</value></data>
+  <data name="ForgotPassword.Subtitle" xml:space="preserve"><value>Enter your email and we will send reset instructions.</value></data>
+  <data name="ForgotPassword.Submit" xml:space="preserve"><value>Send reset link</value></data>
+  <data name="ForgotPassword.SentTitle" xml:space="preserve"><value>Check your email</value></data>
+  <data name="ForgotPassword.SentMessage" xml:space="preserve"><value>If the email exists, reset instructions have been sent.</value></data>
+  <data name="ResetPassword.Title" xml:space="preserve"><value>Reset Password</value></data>
+  <data name="ResetPassword.Subtitle" xml:space="preserve"><value>Your new password must be different from previously used passwords.</value></data>
+  <data name="ChangePassword.Title" xml:space="preserve"><value>Change Password</value></data>
+  <data name="ChangePassword.Subtitle" xml:space="preserve"><value>You must change your temporary password before continuing.</value></data>
+  <data name="CurrentPassword" xml:space="preserve"><value>Current Password</value></data>
+  <data name="NewPassword" xml:space="preserve"><value>New Password</value></data>
+  <data name="ConfirmPassword" xml:space="preserve"><value>Confirm Password</value></data>
+  <data name="SetNewPassword" xml:space="preserve"><value>Set new password</value></data>
+  <data name="BackToLogin" xml:space="preserve"><value>Back to login</value></data>
+  <data name="ResetPassword.Required" xml:space="preserve"><value>All password fields are required.</value></data>
+  <data name="ResetPassword.Mismatch" xml:space="preserve"><value>Passwords do not match.</value></data>
+  <data name="ResetPassword.SuccessTitle" xml:space="preserve"><value>Password updated</value></data>
+  <data name="ResetPassword.SuccessMessage" xml:space="preserve"><value>Your password has been updated.</value></data>
+  <data name="AccessGovernance" xml:space="preserve"><value>Access Governance</value></data>
+  <data name="UsersMenu" xml:space="preserve"><value>Users</value></data>
+  <data name="RolesMenu" xml:space="preserve"><value>Roles</value></data>
+  <data name="PermissionsMenu" xml:space="preserve"><value>Permissions</value></data>
+  <data name="RolePermissionAssignmentMenu" xml:space="preserve"><value>Role Permissions</value></data>
+  <data name="UserRoleAssignmentMenu" xml:space="preserve"><value>User Roles</value></data>
+  <data name="SelfAccessMenu" xml:space="preserve"><value>My Access</value></data>
+  <data name="ReferenceDataMenu" xml:space="preserve"><value>参考数据</value></data>
+</root>
+

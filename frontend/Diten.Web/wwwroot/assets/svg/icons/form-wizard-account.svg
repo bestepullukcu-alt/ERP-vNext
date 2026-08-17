@@ -1,0 +1,20 @@
+<svg id="wizardAccount" width="54" height="54" xmlns="http://www.w3.org/2000/svg">
+  <g fill-rule="nonzero">
+    <!-- Form (document) -->
+    <path d="M8 4a2 2 0 0 0-2 2v42a2 2 0 0 0 2 2h28a2 2 0 0 0 2-2V18l-12-14H8zm0 2h15v12h12v30H8V6zm17 0l10 11H25V6z"/>
+
+    <!-- Lines in form -->
+    <path d="M12 22h20v2H12v-2zm0 6h20v2H12v-2zm0 6h14v2H12v-2z"/>
+
+    <!-- Magnifying glass circle -->
+    <path d="M40 32a6 6 0 1 1-12 0 6 6 0 0 1 12 0zm-2 0a4 4 0 1 0-8 0 4 4 0 0 0 8 0z"/>
+
+    <!-- Magnifying glass handle -->
+    <path d="M41.4 37.4l4.6 4.6a1 1 0 0 1-1.4 1.4l-4.6-4.6a1 1 0 1 1 1.4-1.4z"/>
+  </g>
+</svg>
+
+
+
+
+

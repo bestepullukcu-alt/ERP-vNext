@@ -1,0 +1,20 @@
+C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Properties\launchSettings.json içindeki başlatma ayarları kullanılıyor...
+Derleniyor...
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5001
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/usage-registrations/form-options?set_code=COUNTRY_CODES
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/usage-registrations/form-options?set_code=COUNTRY_CODES
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 507.2125ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 519.0462ms - 200
+info: Diten.Web.Controllers.ReferenceDataController[0]
+      BusinessReferenceData proxy completed. method=GET path=/api/v1/reference-data/usage-registrations/form-options status=200 tenant_id=97c59330-dbc4-4665-b29c-0c26dbb5cc93 correlation_id=064c9955-78ee-4660-b8d6-26007f68ca6c elapsed_ms=523

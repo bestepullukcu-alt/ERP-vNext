@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="GoldenReferenceSlimTitle" xml:space="preserve"><value>Golden Reference Slim</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Reference list page (offcanvas create/edit) for modules with up to 8 fields.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Add New Item</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Edit Item</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Add New Item</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit Item</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>e.g. GRS-001</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>e.g. Main Reference</value></data>
+  <data name="ReferenceTypeStandard" xml:space="preserve"><value>Standard</value></data>
+  <data name="ReferenceTypeCustom" xml:space="preserve"><value>Custom</value></data>
+  <data name="ReferenceTypePro" xml:space="preserve"><value>Pro</value></data>
+  <data name="QuickView" xml:space="preserve"><value>View</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>General Information</value></data>
+  <data name="ReferenceType" xml:space="preserve"><value>Reference Type</value></data>
+  <data name="Priority" xml:space="preserve"><value>Priority</value></data>
+  <data name="Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="SystemInformation" xml:space="preserve"><value>System Information</value></data>
+  <data name="LevelPrefix" xml:space="preserve"><value>Level</value></data>
+  <data name="NotAvailable" xml:space="preserve"><value>N/A</value></data>
+  <data name="IdLabel" xml:space="preserve"><value>ID</value></data>
+</root>

@@ -1,0 +1,55 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = SharedLocalizer["ESignatureDetails"].Value;
+    Layout = "_LayoutPlatformAdmin";
+    var tenantId = ViewData["TenantId"] as Guid?;
+    var envelopeId = ViewData["EnvelopeId"] as Guid?;
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@SharedLocalizer["ESignatureDetails"]</h5>
+    <p class="mb-0 text-muted">@SharedLocalizer["ESignatureDetails_Description"]</p>
+</div>
+
+<div class="card mb-4" id="details-card" data-tenant-id="@tenantId" data-envelope-id="@envelopeId">
+    <div class="card-body">
+        <div id="details-spinner" class="d-flex justify-content-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <div id="details-content" class="d-none">
+            <div class="row mb-3">
+                <div class="col-sm-4 fw-bold">@SharedLocalizer["EnvelopeNumber"]:</div>
+                <div class="col-sm-8" id="lblEnvelopeNumber"></div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-sm-4 fw-bold">@SharedLocalizer["Status"]:</div>
+                <div class="col-sm-8" id="lblStatus"></div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-sm-4 fw-bold">@SharedLocalizer["SubjectType"]:</div>
+                <div class="col-sm-8" id="lblSubjectType"></div>
+            </div>
+            
+            <hr />
+            
+            <div class="mb-3">
+                <button type="button" class="btn btn-primary me-2" id="btnDownloadArtifact">
+                    <i class="bx bx-download me-1"></i> @SharedLocalizer["DownloadArtifact"]
+                </button>
+                <button type="button" class="btn btn-secondary me-2" id="btnAuditExport">
+                    <i class="bx bx-export me-1"></i> @SharedLocalizer["AuditExport"]
+                </button>
+                <button type="button" class="btn btn-danger" id="btnCancelEnvelope">
+                    <i class="bx bx-x-circle me-1"></i> @SharedLocalizer["CancelEnvelope"]
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/platform/e-signatures/details.js" asp-append-version="true"></script>
+}

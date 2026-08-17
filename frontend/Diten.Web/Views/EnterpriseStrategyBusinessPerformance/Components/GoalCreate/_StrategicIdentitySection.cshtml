@@ -1,0 +1,48 @@
+<details id="goal-sec-identity" class="es-goal-section" open>
+  <summary><span>1. Strategic Identity *</span><span id="goal-sec-identity-state" class="es-goal-section-state state-empty">Empty</span></summary>
+  <div class="goal-step-helper-banner mb-3 mt-2">
+    <span class="badge bg-label-info">Strategic Classification</span>
+    <span>Set the core identity, goal type, strategic pillar, and draft lifecycle posture before governance ownership is assigned.</span>
+  </div>
+  <div class="row g-2 mt-1">
+    <div class="col-12 col-md-4 form-control-validation">
+      <label for="goal-id" class="form-label">Goal ID <span class="es-field-tag tag-system">System-managed</span></label>
+      <input id="goal-id" class="form-control" readonly autocomplete="off" placeholder="Assigned on save" />
+    </div>
+    <div class="col-12 col-md-8 form-control-validation">
+      <label for="goal-name" class="form-label es-required">Goal Title</label>
+      <input id="goal-name" class="form-control" maxlength="200" required />
+    </div>
+    <div class="col-12 col-md-4 form-control-validation">
+      <label for="goal-category" class="form-label es-required">Goal Type</label>
+      <select id="goal-category" class="form-select" required>
+        <option value="">Select...</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-4 form-control-validation">
+      <label for="goal-strategic-theme" class="form-label es-required">Strategic Theme / Pillar</label>
+      <select id="goal-strategic-theme" class="form-select" required>
+        <option value="">Select strategic theme...</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-4 form-control-validation">
+      <label for="goal-priority" class="form-label es-required">Priority</label>
+      <select id="goal-priority" class="form-select" required>
+        <option value="">Select...</option>
+      </select>
+    </div>
+    <div class="col-12 form-control-validation">
+      <label for="goal-statement" class="form-label es-required">Goal Statement</label>
+      <textarea id="goal-statement" class="form-control" rows="3" maxlength="4000" required></textarea>
+      <div class="form-text">Describe the intended strategic outcome the goal should deliver, not the execution plan used to achieve it.</div>
+    </div>
+    <div class="col-12 col-md-6 form-control-validation">
+      <label for="goal-status-readonly" class="form-label">Status / Lifecycle State</label>
+      <input id="goal-status-readonly" class="form-control bg-light" value="Draft" readonly disabled tabindex="-1" />
+      <select id="goal-status" class="form-select d-none" required>
+        <option value="Draft">Draft</option>
+      </select>
+      <div class="form-text">New goals start in Draft. Activation remains a governance action after creation.</div>
+    </div>
+  </div>
+</details>

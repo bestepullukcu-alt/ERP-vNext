@@ -1,0 +1,44 @@
+@{
+    var title = (ViewData["DetailTitle"]?.ToString() ?? string.Empty);
+    var subtitle = (ViewData["DetailSubtitle"]?.ToString() ?? string.Empty);
+    var badgeId = (ViewData["DetailBadgeId"]?.ToString() ?? string.Empty);
+    var backUrl = (ViewData["DetailBackUrl"]?.ToString() ?? "#");
+    var backLabel = (ViewData["DetailBackLabel"]?.ToString() ?? "Back");
+    var editButtonId = (ViewData["DetailEditButtonId"]?.ToString() ?? string.Empty);
+    var activateButtonId = (ViewData["DetailActivateButtonId"]?.ToString() ?? string.Empty);
+    var archiveButtonId = (ViewData["DetailArchiveButtonId"]?.ToString() ?? string.Empty);
+}
+<div class="es-detail-action-header">
+    <div>
+        <h5 class="es-detail-title">@title</h5>
+        @if (!string.IsNullOrWhiteSpace(subtitle))
+        {
+            <small class="es-detail-subtitle text-muted">@subtitle</small>
+        }
+    </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        @if (string.IsNullOrWhiteSpace(badgeId))
+        {
+            <span class="es-status-pill is-info">-</span>
+        }
+        else
+        {
+            <span id="@badgeId" class="es-status-pill is-info">-</span>
+        }
+        <div class="es-action-cluster">
+            <a href="@backUrl" class="btn btn-sm btn-outline-secondary">@backLabel</a>
+            @if (!string.IsNullOrWhiteSpace(editButtonId))
+            {
+                <button id="@editButtonId" class="btn btn-sm btn-primary" type="button">Edit</button>
+            }
+            @if (!string.IsNullOrWhiteSpace(activateButtonId))
+            {
+                <button id="@activateButtonId" class="btn btn-sm btn-outline-success" type="button">Activate</button>
+            }
+            @if (!string.IsNullOrWhiteSpace(archiveButtonId))
+            {
+                <button id="@archiveButtonId" class="btn btn-sm btn-outline-danger" type="button">Archive</button>
+            }
+        </div>
+    </div>
+</div>

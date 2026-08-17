@@ -1,0 +1,21 @@
+@{
+    var listId = (ViewData["ListId"] as string) ?? "inbox";
+    var emptyTitle = (ViewData["EmptyTitle"] as string) ?? string.Empty;
+    var emptyDescription = (ViewData["EmptyDescription"] as string) ?? string.Empty;
+}
+
+<section class="inbox-list" data-work-item-list="@listId">
+    <div class="inbox-list-loading p-3" data-work-item-role="loading">
+        <div class="placeholder-glow mb-2"><span class="placeholder col-12"></span></div>
+        <div class="placeholder-glow mb-2"><span class="placeholder col-10"></span></div>
+        <div class="placeholder-glow"><span class="placeholder col-8"></span></div>
+    </div>
+
+    <div class="inbox-list-empty d-none p-4 text-center" data-work-item-role="empty">
+        <i class="bx bx-envelope-open text-muted mb-2 icon-lg"></i>
+        <h6 class="mb-1">@emptyTitle</h6>
+        <p class="mb-0 text-muted">@emptyDescription</p>
+    </div>
+
+    <div class="inbox-list-items d-none" data-work-item-role="items"></div>
+</section>
