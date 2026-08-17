@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace Diten.PvgService.Api.Tests;
@@ -98,6 +99,56 @@ public sealed class PvgServiceApiHostTests
         Assert.DoesNotContain(routes, route => route.Contains("void", StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain(routes, route => route.Contains("export", StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain(routes, route => route.Contains("bulk", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void Case_intake_triage_route_templates_and_endpoint_names_do_not_expose_forbidden_surfaces()
+    {
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            EnvironmentName = Environments.Development
+        });
+
+        builder.Services.AddPvgServiceApiHost(builder.Configuration, builder.Environment);
+
+        var app = builder.Build();
+        app.MapPvgServiceHealthEndpoints();
+        app.MapPvgCaseIntakeTriageEndpoints();
+
+        var endpointSurfaces = EndpointSurfaces(app);
+        var forbiddenTerms = new[]
+        {
+            "delete",
+            "bulk-delete",
+            "bulk",
+            "archive",
+            "void",
+            "export",
+            "ai",
+            "meddra",
+            "dictionary",
+            "import",
+            "search",
+            "mod-0231",
+            "mod-0232",
+            "mod-0234",
+            "case-processing",
+            "caseprocessing",
+            "meddra-coding",
+            "meddracoding",
+            "signal-management",
+            "signalmanagement"
+        };
+
+        foreach (var endpointSurface in endpointSurfaces)
+        {
+            foreach (var forbiddenTerm in forbiddenTerms)
+            {
+                Assert.False(
+                    ContainsForbiddenSurface(endpointSurface, forbiddenTerm),
+                    $"Endpoint surface '{endpointSurface}' must not expose '{forbiddenTerm}'.");
+            }
+        }
     }
 
     [Fact]
@@ -425,6 +476,27 @@ public sealed class PvgServiceApiHostTests
             })
             .Order(StringComparer.Ordinal)
             .ToArray();
+
+    private static string[] EndpointSurfaces(WebApplication app) =>
+        ((IEndpointRouteBuilder)app)
+            .DataSources
+            .SelectMany(dataSource => dataSource.Endpoints)
+            .OfType<RouteEndpoint>()
+            .SelectMany(endpoint => new[]
+            {
+                endpoint.RoutePattern.RawText ?? string.Empty,
+                endpoint.Metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName ?? string.Empty,
+                endpoint.DisplayName ?? string.Empty
+            })
+            .Where(surface => !string.IsNullOrWhiteSpace(surface))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    private static bool ContainsForbiddenSurface(string surface, string forbiddenTerm) =>
+        string.Equals(forbiddenTerm, "ai", StringComparison.OrdinalIgnoreCase)
+            ? Regex.IsMatch(surface, @"(^|[^A-Za-z])ai([^A-Za-z]|$)", RegexOptions.IgnoreCase)
+            : surface.Contains(forbiddenTerm, StringComparison.OrdinalIgnoreCase);
 
     private static DefaultHttpContext NewContextWithTenant()
     {

@@ -46,6 +46,16 @@ const safeUiStateKeys = [
   "Loading",
   "NoRecords"
 ];
+const forbiddenPvgOperations = ["delete", "bulk-delete", "bulk", "archive", "void", "export"];
+const forbiddenDownstreamUiPatterns = [
+  /MOD-0231|MOD-0232|MOD-0234/i,
+  /CaseProcessing|case-processing/i,
+  /MeddraCoding|meddra-coding/i,
+  /SignalManagement|signal-management/i,
+  /\bMedDRA\b[\s\S]*\b(dictionary|import|search)\b/i,
+  /\b(dictionary|import|search)\b[\s\S]*\bMedDRA\b/i,
+  /\bAI\b|artificial intelligence|artificial-intelligence/i
+];
 const resourceKeys = culture => new Set(
   [...read(pvgResourceFile(culture)).matchAll(/<data name="([^"]+)"/g)].map(match => match[1])
 );
@@ -76,7 +86,7 @@ describe("PVG case intake triage UI static guardrails", () => {
   it("does not expose forbidden PVG actions in UI routes or scripts", () => {
     const source = allPvgUiSource();
 
-    for (const forbidden of ["delete", "bulk-delete", "archive", "void", "export"]) {
+    for (const forbidden of forbiddenPvgOperations) {
       expect(source).not.toMatch(new RegExp(`CaseIntakeTriage/(?:api/)?${forbidden}`, "i"));
       expect(source).not.toMatch(new RegExp(`data-action=["']${forbidden}["']`, "i"));
       expect(source).not.toMatch(new RegExp(`\\b${forbidden}\\s*\\(`, "i"));
@@ -95,8 +105,9 @@ describe("PVG case intake triage UI static guardrails", () => {
   it("does not introduce downstream MOD-0231/MOD-0232/MOD-0234 runtime UI exposure", () => {
     const source = allPvgUiSource();
 
-    expect(source).not.toMatch(/MOD-0231|MOD-0232|MOD-0234/i);
-    expect(source).not.toMatch(/CaseProcessing|Meddra|MedDRA|SignalManagement|signal-management/i);
+    for (const forbiddenPattern of forbiddenDownstreamUiPatterns) {
+      expect(source).not.toMatch(forbiddenPattern);
+    }
   });
 
   it("keeps explicit empty error and loading state hooks", () => {
