@@ -102,6 +102,45 @@ public sealed class PvgServiceApiHostTests
     }
 
     [Fact]
+    public void Case_intake_route_metadata_allows_only_approved_methods_per_template()
+    {
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            EnvironmentName = Environments.Development
+        });
+
+        builder.Services.AddPvgServiceApiHost(builder.Configuration, builder.Environment);
+
+        var app = builder.Build();
+        app.MapPvgCaseIntakeTriageEndpoints();
+
+        var routeMethods = RouteMethodMap(app);
+
+        Assert.Equal(
+            new[]
+            {
+                PvgCaseIntakeTriageEndpoints.RoutePrefix,
+                $"{PvgCaseIntakeTriageEndpoints.RoutePrefix}/{{intakeDraftId}}",
+                $"{PvgCaseIntakeTriageEndpoints.RoutePrefix}/{{intakeDraftId}}/route",
+                $"{PvgCaseIntakeTriageEndpoints.RoutePrefix}/{{intakeDraftId}}/triage"
+            },
+            routeMethods.Keys.Order(StringComparer.Ordinal).ToArray());
+
+        Assert.Equal(["GET", "POST"], routeMethods[PvgCaseIntakeTriageEndpoints.RoutePrefix].Order(StringComparer.Ordinal).ToArray());
+        Assert.Equal(["GET", "PUT"], routeMethods[$"{PvgCaseIntakeTriageEndpoints.RoutePrefix}/{{intakeDraftId}}"].Order(StringComparer.Ordinal).ToArray());
+        Assert.Equal(["POST"], routeMethods[$"{PvgCaseIntakeTriageEndpoints.RoutePrefix}/{{intakeDraftId}}/route"].Order(StringComparer.Ordinal).ToArray());
+        Assert.Equal(["POST"], routeMethods[$"{PvgCaseIntakeTriageEndpoints.RoutePrefix}/{{intakeDraftId}}/triage"].Order(StringComparer.Ordinal).ToArray());
+
+        foreach (var method in routeMethods.Values.SelectMany(methods => methods))
+        {
+            Assert.Contains(method, new[] { "GET", "POST", "PUT" });
+            Assert.NotEqual("DELETE", method);
+            Assert.NotEqual("PATCH", method);
+            Assert.NotEqual("OPTIONS", method);
+        }
+    }
+
+    [Fact]
     public void Case_intake_triage_route_templates_and_endpoint_names_do_not_expose_forbidden_surfaces()
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -164,10 +203,28 @@ public sealed class PvgServiceApiHostTests
 
         foreach (var requestType in requestTypes)
         {
-            Assert.DoesNotContain(
-                requestType.GetProperties(),
-                property => property.Name.Contains("TenantId", StringComparison.OrdinalIgnoreCase) ||
-                            property.Name.Equals("TenantId", StringComparison.OrdinalIgnoreCase));
+            var propertyNames = requestType.GetProperties().Select(property => property.Name).ToArray();
+            var forbiddenClientTenantFields = new[]
+            {
+                "TenantId",
+                "Tenant",
+                "TenantReference",
+                "TenantContext",
+                "ClientTenant",
+                "ClientTenantId",
+                "ClientTenantReference",
+                "ClientTenantContext"
+            };
+
+            foreach (var propertyName in propertyNames)
+            {
+                foreach (var forbiddenField in forbiddenClientTenantFields)
+                {
+                    Assert.False(
+                        propertyName.Contains(forbiddenField, StringComparison.OrdinalIgnoreCase),
+                        $"{requestType.Name}.{propertyName} must not expose client tenant field '{forbiddenField}'.");
+                }
+            }
         }
     }
 
@@ -338,23 +395,73 @@ public sealed class PvgServiceApiHostTests
         foreach (var endpoint in endpoints)
         {
             var missingActor = await ResponseOfAsync(await endpoint.Invoke(NewContextWithTenant()));
-            Assert.Equal(StatusCodes.Status409Conflict, missingActor.StatusCode);
-            Assert.Equal(nameof(PvgApplicationOutcome.Blocked), missingActor.Body.Outcome);
-            Assert.Equal(PvgPermissionReasonCodes.ActorContextRequired, missingActor.Body.ReasonCode);
-            Assert.Empty(missingActor.Body.ValidationReasonCodes);
-            Assert.Null(missingActor.Body.IntakeDraftId);
-            Assert.Empty(missingActor.Body.Items);
+            AssertSafeBlockedResponse(missingActor, PvgPermissionReasonCodes.ActorContextRequired);
 
             var missingCorrelationContext = NewContextWithTenant();
             missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
             missingCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
             var missingCorrelation = await ResponseOfAsync(await endpoint.Invoke(missingCorrelationContext));
-            Assert.Equal(StatusCodes.Status409Conflict, missingCorrelation.StatusCode);
-            Assert.Equal(nameof(PvgApplicationOutcome.Blocked), missingCorrelation.Body.Outcome);
-            Assert.Equal(PvgPermissionReasonCodes.CorrelationContextRequired, missingCorrelation.Body.ReasonCode);
-            Assert.Empty(missingCorrelation.Body.ValidationReasonCodes);
-            Assert.Null(missingCorrelation.Body.IntakeDraftId);
-            Assert.Empty(missingCorrelation.Body.Items);
+            AssertSafeBlockedResponse(missingCorrelation, PvgPermissionReasonCodes.CorrelationContextRequired);
+        }
+    }
+
+    [Fact]
+    public async Task Case_intake_business_endpoints_return_safe_tenant_reason_code_before_service_when_tenant_is_missing()
+    {
+        var createRequest = new PvgCaseIntakeCreateRequest(
+            "channel",
+            "source",
+            null,
+            DateTimeOffset.UtcNow,
+            "reporter",
+            null,
+            null,
+            null,
+            "narrative",
+            null,
+            "serious",
+            "priority",
+            null);
+        var endpoints = new (string Name, Func<DefaultHttpContext, ValueTask<IResult>> Invoke)[]
+        {
+            ("create", context => PvgCaseIntakeTriageEndpoints.CreateDraftAsync(
+                createRequest,
+                context,
+                service: null!,
+                CancellationToken.None)),
+            ("update", context => PvgCaseIntakeTriageEndpoints.UpdateDraftAsync(
+                "draft-reference",
+                EmptyUpdateRequest(),
+                context,
+                service: null!,
+                CancellationToken.None)),
+            ("list", context => PvgCaseIntakeTriageEndpoints.ListDraftsAsync(
+                context,
+                service: null!,
+                cancellationToken: CancellationToken.None)),
+            ("detail", context => PvgCaseIntakeTriageEndpoints.GetDraftByIdAsync(
+                "draft-reference",
+                context,
+                service: null!,
+                CancellationToken.None)),
+            ("triage", context => PvgCaseIntakeTriageEndpoints.TriageDraftAsync(
+                "draft-reference",
+                new PvgCaseIntakeTriageRequest(null, null, null),
+                context,
+                service: null!,
+                CancellationToken.None)),
+            ("route", context => PvgCaseIntakeTriageEndpoints.RouteDraftAsync(
+                "draft-reference",
+                new PvgCaseIntakeRouteRequest(null),
+                context,
+                service: null!,
+                CancellationToken.None))
+        };
+
+        foreach (var endpoint in endpoints)
+        {
+            var missingTenant = await ResponseOfAsync(await endpoint.Invoke(new DefaultHttpContext()));
+            AssertSafeBlockedResponse(missingTenant, PvgValidationReasonCodes.TenantContextRequired);
         }
     }
 
@@ -477,6 +584,20 @@ public sealed class PvgServiceApiHostTests
             .Order(StringComparer.Ordinal)
             .ToArray();
 
+    private static Dictionary<string, string[]> RouteMethodMap(WebApplication app) =>
+        ((IEndpointRouteBuilder)app)
+            .DataSources
+            .SelectMany(dataSource => dataSource.Endpoints)
+            .OfType<RouteEndpoint>()
+            .GroupBy(
+                endpoint => endpoint.RoutePattern.RawText ?? string.Empty,
+                endpoint => endpoint.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods ?? [],
+                StringComparer.Ordinal)
+            .ToDictionary(
+                group => group.Key,
+                group => group.SelectMany(methods => methods).Distinct(StringComparer.Ordinal).ToArray(),
+                StringComparer.Ordinal);
+
     private static string[] EndpointSurfaces(WebApplication app) =>
         ((IEndpointRouteBuilder)app)
             .DataSources
@@ -557,6 +678,40 @@ public sealed class PvgServiceApiHostTests
         Assert.NotNull(body);
         return (responseContext.Response.StatusCode, body);
     }
+
+    private static void AssertSafeBlockedResponse(
+        (int StatusCode, PvgCaseIntakeApiResponse Body) response,
+        string expectedReasonCode)
+    {
+        Assert.Equal(StatusCodes.Status409Conflict, response.StatusCode);
+        Assert.Equal(nameof(PvgApplicationOutcome.Blocked), response.Body.Outcome);
+        Assert.Equal(expectedReasonCode, response.Body.ReasonCode);
+        Assert.Matches("^PVG_[A-Z0-9_]+$", response.Body.ReasonCode);
+        Assert.Empty(response.Body.ValidationReasonCodes);
+        Assert.Null(response.Body.IntakeDraftId);
+        Assert.Empty(response.Body.Items);
+
+        var serialized = JsonSerializer.Serialize(response.Body);
+        foreach (var unsafeSample in UnsafeResponseSamples)
+        {
+            Assert.DoesNotContain(unsafeSample, serialized, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private static readonly string[] UnsafeResponseSamples =
+    [
+        "server-tenant-context",
+        "draft-reference",
+        "actor-reference",
+        "safety-user",
+        "correlation-reference",
+        "channel",
+        "source",
+        "reporter",
+        "narrative",
+        "serious",
+        "priority"
+    ];
 
     private sealed class TestHostEnvironment(string environmentName) : IHostEnvironment
     {
