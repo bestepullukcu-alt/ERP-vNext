@@ -166,6 +166,79 @@ describe("PVG case intake triage UI static guardrails", () => {
     expect(form).toMatch(/aria-busy/);
   });
 
+  it("keeps localized loading text and empty table states visible to users and assistive tech", () => {
+    const index = indexJsSource();
+    const indexView = indexViewSource();
+    const detailView = detailViewSource();
+
+    expect(index).toMatch(/emptyTable:\s*t\('NoRecords'\)/);
+    expect(index).toMatch(/loadingRecords:\s*t\('Loading'\)/);
+    expect(index).toMatch(/processing:\s*t\('Loading'\)/);
+    expect(index).toContain("setListStatus(t('Loading'))");
+    expect(index).toContain("setListStatus(items.length ? '' : t('NoRecords'))");
+    expect(indexView).toMatch(/id="pvg-list-status"[^>]*aria-live="polite"/);
+    expect(indexView).toMatch(/id="skeleton-loader"/);
+    expect(detailView).toMatch(/id="pvg-detail-status"[^>]*aria-live="polite"[^>]*>@Localizer\["Loading"\]/);
+  });
+
+  it("keeps alert visibility controlled by safe message helpers", () => {
+    const index = indexJsSource();
+    const details = detailJsSource();
+    const form = formJsSource();
+
+    for (const source of [index, details, form]) {
+      expect(source).toMatch(/function showAlert\(message\)[\s\S]*alertEl\.textContent = message/);
+      expect(source).toMatch(/function showAlert\(message\)[\s\S]*alertEl\.classList\.remove\('d-none'\)/);
+    }
+
+    expect(index).toMatch(/function hideAlert\(\)[\s\S]*alertEl\?\.classList\.add\('d-none'\)/);
+    expect(details).toMatch(/function hideAlert\(\)[\s\S]*alertEl\?\.classList\.add\('d-none'\)/);
+    expect(indexViewSource()).toMatch(/id="pvg-list-alert"[^>]*class="[^"]*d-none[^"]*"[^>]*role="alert"/);
+    expect(detailViewSource()).toMatch(/id="pvg-detail-alert"[^>]*class="[^"]*d-none[^"]*"[^>]*role="alert"/);
+  });
+
+  it("keeps safe reason-code display sanitized and bounded", () => {
+    for (const source of [indexJsSource(), detailJsSource(), formJsSource()]) {
+      expect(source).toMatch(/function safeMessage\(body, statusCode\)[\s\S]*status === 401[\s\S]*t\('SessionExpired'\)/);
+      expect(source).toMatch(/function safeMessage\(body, statusCode\)[\s\S]*status === 403[\s\S]*t\('NotAuthorized'\)/);
+      expect(source).toMatch(/reasonCode \|\| body\?\.ReasonCode \|\| body\?\.reason_code/);
+      expect(source).toMatch(/validationReasonCodes \|\| body\?\.ValidationReasonCodes/);
+      expect(source).toMatch(/t\('ControlledBlock'\)[\s\S]*t\('ReasonCode'\)/);
+      expect(source).toMatch(/function safeCode\(value\)[\s\S]*replace\(\/\[\^A-Za-z0-9\._-\]\/g, ''\)\.slice\(0, 96\)/);
+    }
+  });
+
+  it("keeps strict same-origin MVC proxy behavior on list detail and form paths", () => {
+    const list = indexJsSource();
+    const details = detailJsSource();
+    const form = formJsSource();
+
+    for (const source of [list, details, form]) {
+      expect(source).toContain("const endpoint = '/Pharmacovigilance/CaseIntakeTriage/api'");
+      expect(source).toMatch(/function safeProxyUrl|const safeProxyUrl = path =>/);
+      expect(source).toMatch(/!path\.startsWith\(`\$\{endpoint\}\/`\)/);
+      expect(source).toMatch(/path\.includes\(':\/\/'\)/);
+      expect(source).toMatch(/path\.startsWith\('\/\/'\)/);
+      expect(source).not.toMatch(/https?:\/\/(?:localhost|127\.0\.0\.1):(?:5000|5011)\b/i);
+    }
+
+    expect(list).toMatch(/url:\s*buildListUrl\(\)/);
+    expect(details).toMatch(/fetch\(safeProxyUrl\(`\$\{endpoint\}\/detail\//);
+    expect(details).toMatch(/fetch\(url,[\s\S]*credentials:\s*'same-origin'/);
+    expect(form).toMatch(/postForm\(url, new FormData\(form\)\)/);
+    expect(form).toMatch(/fetch\(url,[\s\S]*credentials:\s*'same-origin'/);
+  });
+
+  it("keeps command buttons disabled around detail loading and command submission", () => {
+    const details = detailJsSource();
+
+    expect(details).toMatch(/setCommandDisabled\(true\);[\s\S]*setDetailStatus\(t\('Loading'\)\);[\s\S]*loadDetail\(\)/);
+    expect(details).toMatch(/!response\.ok \|\| isBlocked\(body\) \|\| !item[\s\S]*setCommandDisabled\(true\)/);
+    expect(details).toMatch(/setDetailStatus\(''\);[\s\S]*setCommandDisabled\(false\)/);
+    expect(details).toMatch(/try \{[\s\S]*setCommandDisabled\(true\);[\s\S]*setDetailStatus\(t\('Loading'\)\)/);
+    expect(details).toMatch(/finally \{[\s\S]*setCommandDisabled\(false\)/);
+  });
+
   it("keeps all seven Case Intake/Triage resource files present", () => {
     for (const culture of pvgResourceCultures) {
       expect(fs.existsSync(path.join(root, pvgResourceFile(culture)))).toBe(true);
