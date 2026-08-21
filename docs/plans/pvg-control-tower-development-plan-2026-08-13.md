@@ -28,15 +28,14 @@ Measured implementation baseline:
 
 | Area | Baseline |
 |---|---|
-| REG-PV-BASE ports / MOD-0230 guardrail contracts | Source present; tests passed: 31 |
+| REG-PV-BASE ports / MOD-0230 guardrail contracts | Source present; latest tests passed: 38 |
 | MOD-0231 Case Processing contracts | Source present; tests passed: 21 |
 | MOD-0232 MedDRA Coding contracts | Source present; tests passed: 27 |
 | MOD-0234 Signal Management contracts | Source present; tests passed: 33 |
-| MOD-0230 API host | Source present; build passed; API host guardrail tests passed: 5 |
-| MOD-0230 persistence boundary | Source present; RegPvBase tests passed: 37; API host guardrail tests passed: 5 |
-| MOD-0230 business API route family | Source present; API route/context tests passed: 9 |
-| MOD-0230 Gateway route family | Source present; Gateway Ocelot tests passed; live smoke found route-scope broadness |
-| MOD-0230 tenant UI | Source present; frontend build passed; static regulated-scope scans passed; controlled-response hardening verified; browser/runtime smoke remains unauthenticated |
+| MOD-0230 API host and business API route family | Source present; latest API guardrail/negative-contract tests passed: 26 |
+| MOD-0230 persistence boundary | Source present; RegPvBase tests passed: 38; in-memory local/dev store only |
+| MOD-0230 Gateway route family | Source present; Gateway Ocelot tests passed: 19; approved four-template matrix only |
+| MOD-0230 tenant UI | Source present; frontend build passed; static regulated-scope, accessibility, i18n, and regression guardrails present; authenticated browser/runtime smoke remains blocked |
 
 ## 1.1 Status Dashboard
 
@@ -46,7 +45,7 @@ Measured implementation baseline:
 | Area | Status | Evidence |
 |---|---:|---|
 | Governance baseline / DCP-004 | 100% | DCP approved; member build/test gates open |
-| PVG class-library contracts/tests | 100% | 112 serial tests passed before API/persistence; latest serial PVG total reported as 127 |
+| PVG class-library contracts/tests | 100% | Latest serial class-library tests passed: 119/119 |
 | MOD-0230 API host shell (`PVG-0230-BE-01`) | 100% | API build passed; 5 host guardrail tests passed |
 | MOD-0230 persistence boundary (`PVG-0230-BE-02`) | 100% | RegPvBase 37 passed; API guardrails 5 passed |
 | MOD-0230 CQRS/controller endpoints (`PVG-0230-BE-03`) | 100% | API route/context tests 9 passed; lane report total 127 passed |
@@ -68,12 +67,21 @@ Measured implementation baseline:
 | MOD-0230 UI list partial fix (`PVG-0230-UI-FIX-01`) | 100% | Absolute partial paths applied; frontend build passed |
 | MOD-0230 UI smoke retry (`PVG-0230-UI-SMOKE-02`) | 100% | E3 MVC proxy path passed; E4-ready forbidden-surface absence with shared-shell caveat |
 | MOD-0230 UI controlled-response hardening (`DEV-PVG-0230-UI-02`) | 100% | `VER-PVG-0230-BE05-UI02-01` PASS; Web build passed with existing `NU1900` warning |
+| MOD-0230 UI state hardening (`DEV-PVG-0230-UI-03`) | 100% | UI loading/error/empty/in-flight state guardrails pushed |
+| MOD-0230 UI static guardrails (`DEV-PVG-0230-UI-04`) | 100% | Accessibility/interaction static guardrails pushed |
+| MOD-0230 UI i18n guardrails (`DEV-PVG-0230-UI-05`) | 100% | Seven-resource localization coverage guardrails pushed |
+| MOD-0230 negative-surface tests | 100% | API/UI negative-surface tests pushed; latest API tests 26/26 |
+| MOD-0230 API negative contracts (`DEV-PVG-0230-BE06-NEGATIVE-CONTRACT-01`) | 100% | Request DTO, route-method, safe reason-code, and fail-closed tests pushed |
+| MOD-0230 UI regression tests | 100% | Static UI regression tests pushed |
+| PVG deep audit update (`AUD-PVG-DEEP-2026-08-21`) | 100% | Source/gov/static audit complete; plan updated |
 | MOD-0231/0232/0234 downstream drift inspection (`INS-PVG-DOWNSTREAM-02`) | 100% | No downstream runtime drift; composition-only DI watch item recorded |
 | MOD-0230 staging scope manifest (`VER-PVG-STAGING-SCOPE-02`) | 100% | Exact source-only staging list prepared; no staging performed; `.claude/settings.local.json` excluded |
 | MOD-0230 local integration smoke (`PVG-0230-INT-01`) | 100% | E5 local/dev PASS-with-gap; authenticated MVC proxy traversal still unproven |
+| MOD-0230 authenticated MVC proxy proof (`PVG-0230-AUTH-PROXY-01`) | 0% | Blocked until valid tenant-shell session or explicit seeded local-dev login approval |
 | Operational runtime / production / validation | 0% | Blocked by owner/runtime gates |
 
-Overall MOD-0230 local/dev/CI slice estimate: **100% PASS-with-gap**, with authenticated MVC proxy proof still open.
+Overall MOD-0230 local/dev/CI static/build-test slice estimate: **100% PASS-with-gap**, with authenticated MVC proxy proof still open.
+Overall MOD-0230 local/dev runtime proof estimate: **92%**, blocked only by authenticated tenant-shell proxy evidence.
 Overall PVG operational readiness: **0% / NO-GO**.
 
 ## 2. Non-Negotiable Boundaries
@@ -105,6 +113,12 @@ Overall PVG operational readiness: **0% / NO-GO**.
 | `INT-PVG-0230-UI-SMOKE-02` | INT | Retry browser/local UI smoke after UI-FIX-01 | Done with caveats |
 | `DEV-PVG-0230-BE-05` | DEV | Backend read permission/context hardening for list/detail | Done; verified with UI-02 |
 | `DEV-PVG-0230-UI-02` | DEV | Tenant UI/proxy controlled-response hardening for `401`/`403`/`409` and same-origin guardrails | Done; verified with BE-05 |
+| `DEV-PVG-0230-UI-03` | DEV | UI loading, empty, error, and in-flight state hardening | Done |
+| `DEV-PVG-0230-UI-04` | DEV | Static accessibility and interaction guardrails | Done |
+| `DEV-PVG-0230-UI-05` | DEV | Static i18n/resource guardrails | Done |
+| `DEV-PVG-0230-BE06-NEGATIVE-CONTRACT-01` | DEV/TEST | API tests-only negative-contract hardening | Done |
+| `DEV-PVG-0230-UI-REGRESSION-01` | DEV/TEST | UI tests-only regression guardrails | Done |
+| `AUD-PVG-DEEP-2026-08-21` | INS/DOC | Deep PVG source/governance audit and plan update | Done |
 | `VER-PVG-0230-BE05-UI02-01` | VER | Combined BE-05 + UI-02 source/build/test verification | Done; PASS |
 | `VER-PVG-STAGING-SCOPE-02` | VER | Source-only staging manifest before staging | Done; no staging performed |
 | `INS-PVG-DOWNSTREAM-02` | INS | MOD-0231/MOD-0232/MOD-0234 contract drift and blockers | Done; composition-only DI watch |
@@ -151,6 +165,13 @@ Parallelism:
 | 24 | `DEV-PVG-0230-BE-05` | B | MOD-0230 | Backend read permission/context hardening: list/detail carry tenant + actor + correlation and use `pvg.mod0230.intake.read` before field policy/store access | BE-04 | E2 achieved | Done |
 | 25 | `DEV-PVG-0230-UI-02` | A | MOD-0230 | Tenant UI/proxy controlled-response hardening for safe `401`/`403`/`409` display, same-origin proxy guardrails, and l10n completeness | UI-SMOKE-02, BE-05 | E2 achieved | Done |
 | 26 | `VER-PVG-0230-BE05-UI02-01` | C | MOD-0230 | Combined read-only verification of BE-05 + UI-02 scope and forbidden-surface absence | BE-05, UI-02 | E2 achieved | Done |
+| 27 | `DEV-PVG-0230-UI-03` | A/TEST | MOD-0230 | Harden list/detail/form loading, empty, error, and in-flight UI states with static guardrails | UI-02 | E2 achieved | Done |
+| 28 | `DEV-PVG-0230-UI-04` | TEST | MOD-0230 | Add accessibility and interaction static guardrails for alerts, aria-live regions, list load hooks, and disabled-state rules | UI-03 | E2 achieved | Done |
+| 29 | `DEV-PVG-0230-UI-05` | TEST | MOD-0230 | Add static i18n/resource guardrails for seven Case Intake/Triage cultures and safe UI state keys | UI-04 | E2 achieved | Done |
+| 30 | `DEV-PVG-0230-NEGATIVE-SURFACE-01` | TEST | MOD-0230 | Add API/UI tests proving forbidden delete/bulk/archive/void/export, AI, MedDRA dictionary/import/search, and downstream runtime exposure remain absent | UI-05, BE-05 | E2 achieved | Done |
+| 31 | `DEV-PVG-0230-BE06-NEGATIVE-CONTRACT-01` | TEST | MOD-0230 | Add API tests for broader client-tenant field rejection, approved method matrix, and safe fail-closed reason codes across all six endpoints | Negative surface tests | E2 achieved | Done |
+| 32 | `DEV-PVG-0230-UI-REGRESSION-01` | TEST | MOD-0230 | Add static UI regression checks for localized loading/empty states, safe alert display, bounded reason codes, same-origin proxy, and disabled buttons | UI-05 | E2 achieved | Done |
+| 33 | `AUD-PVG-DEEP-2026-08-21` | INS/DOC | PVG | Deep audit current PVG governance, route, API, UI, downstream, and package cleanliness; update this Control Tower plan | Latest pushed branch | E2 achieved | Done |
 
 ## 5. Completed WP: `PVG-0230-BE-01`
 
@@ -1016,6 +1037,237 @@ Control Tower status:
 - Operational runtime remains **NO-GO**.
 - `PVG-0230-AUTH-PROXY-01` remains blocked until a valid tenant-shell session is available or explicit seeded local
   development login approval is granted for verification only.
+
+## 5.22 Completed WP: `DEV-PVG-0230-UI-03`
+
+Goal: harden MOD-0230 UI loading, empty, error, and command in-flight states without adding new runtime surface.
+
+Result:
+
+- List/detail pages include `aria-live` status hooks and alert regions.
+- List loading skeleton is hidden on success and error paths.
+- Detail triage/route controls remain disabled until detail load succeeds and during command submission.
+- Create/update submit button is disabled while submission is in flight.
+- Static UI test coverage was added for same-origin MVC proxy use, forbidden action absence, and no downstream
+  MOD-0231/MOD-0232/MOD-0234 UI exposure.
+
+Evidence:
+
+- `git diff --check` passed during package verification.
+- JavaScript syntax checks passed for the PVG list, detail, form, and static test files.
+- Vitest remained blocked because `frontend/Diten.Web/node_modules/.bin/vitest` was unavailable and no dependency
+  install was authorized.
+- Evidence level achieved: **E2 static/source evidence**.
+
+## 5.23 Completed WP: `DEV-PVG-0230-UI-04`
+
+Goal: add static accessibility and interaction guardrails for the MOD-0230 Case Intake/Triage tenant UI.
+
+Result:
+
+- Static assertions cover `role="alert"` and `aria-live` regions on list/detail pages.
+- Static assertions cover DataTable/list load hooks: `preXhr`, `xhr`, `initComplete`, `showLoading`, `hideLoading`,
+  and empty-state status.
+- Static assertions cover disabled detail triage/route controls before successful detail load and during command
+  submission.
+- Static assertions cover disabled/busy create/update submit behavior during submission.
+
+Evidence:
+
+- UI04 package touched only `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js`.
+- `git diff --check` and JavaScript syntax checks passed.
+- Vitest remained blocked by missing local frontend dependencies.
+- Evidence level achieved: **E2 static/source evidence**.
+
+## 5.24 Completed WP: `DEV-PVG-0230-UI-05`
+
+Goal: add static localization/resource guardrails for MOD-0230 Case Intake/Triage UI.
+
+Result:
+
+- Static test verifies all seven tenant cultures exist: `en`, `fr`, `es`, `zh`, `ar`, `ru`, and `tr`.
+- Static test verifies safe UI state keys in each resource file: `ControlledBlock`, `SessionExpired`,
+  `NotAuthorized`, `Forbidden`, `InvalidProxyEndpoint`, `ReasonCode`, `Loading`, and `NoRecords`.
+- Static test verifies `_IndexL10n.cshtml` exposes those keys through `window.PvgCaseIntakeTriageL10n`.
+- Static test verifies list/form/detail JavaScript localization references are backed by PVG resource keys or shared
+  localizer keys.
+
+Evidence:
+
+- UI05 package touched only `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js`.
+- `git diff --check` and JavaScript syntax checks passed.
+- Vitest remained blocked by missing local frontend dependencies.
+- Evidence level achieved: **E2 static/source evidence**.
+
+## 5.25 Completed WP: `DEV-PVG-0230-NEGATIVE-SURFACE-01`
+
+Goal: add tests-only negative-surface hardening for MOD-0230 API and UI.
+
+Result:
+
+- API tests check route templates, endpoint names, and display names do not expose forbidden surfaces:
+  delete, bulk-delete, bulk, archive, void, export, AI, MedDRA dictionary/import/search, or downstream
+  MOD-0231/MOD-0232/MOD-0234 runtime routes.
+- UI static tests check browser/view surfaces for the same forbidden operations and downstream module names.
+- Existing same-origin MVC proxy and no browser token handling checks remain in place.
+
+Evidence:
+
+- API tests passed: `24/24` at package time.
+- `node --check frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js` passed.
+- No runtime/source, Gateway, docs, execution, appsettings, persistence, seed/job/migration/collection/Mongo,
+  DbContext, repository, menu/catalog, AI, MedDRA data, or downstream runtime surface was changed.
+- Evidence level achieved: **E2 tests/source evidence**.
+
+## 5.26 Completed WP: `DEV-PVG-0230-BE06-NEGATIVE-CONTRACT-01`
+
+Goal: add tests-only backend negative-contract hardening for MOD-0230.
+
+Result:
+
+- Request DTO tests reject broader client tenant field names, not only `TenantId`.
+- Route metadata tests allow only approved methods: `GET`, `POST`, and `PUT`.
+- Route metadata tests exclude `DELETE`, `PATCH`, and `OPTIONS`.
+- All six business endpoints fail closed with safe `PVG_*` reason-code envelopes before service invocation when
+  tenant, actor, or correlation context is missing.
+- Forbidden operation word coverage remains in place for `delete`, `bulk-delete`, `archive`, `void`, and `export`.
+
+Evidence:
+
+- Latest API tests passed during deep audit: `26/26`.
+- `git diff --check HEAD~1..HEAD` passed during package verification.
+- No runtime/source, Gateway, frontend views/scripts/resources, docs, execution, appsettings, persistence,
+  seed/job/migration/collection/Mongo, DbContext, repository, menu/catalog, AI, MedDRA data, or downstream runtime
+  surface was changed.
+- Evidence level achieved: **E2 tests/source evidence**.
+
+## 5.27 Completed WP: `DEV-PVG-0230-UI-REGRESSION-01`
+
+Goal: add tests-only static UI regression coverage after UI03/UI04/UI05.
+
+Result:
+
+- Static UI test coverage now checks localized loading and empty states.
+- Alert visibility and safe message display are checked.
+- Reason-code display is sanitized and bounded.
+- Strict same-origin MVC proxy behavior is checked across list/detail/form paths.
+- Detail command buttons are checked for disabled behavior during detail loading and command submission.
+
+Evidence:
+
+- Latest commit `f0819509 PVG MOD-0230 harden UI regression tests` touched only
+  `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js`.
+- `git diff --check HEAD~1..HEAD` passed during package verification.
+- `node --check frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js` passed during deep audit.
+- Vitest remained blocked by missing local frontend dependencies.
+- Evidence level achieved: **E2 static/source evidence**.
+
+## 5.28 Completed WP: `AUD-PVG-DEEP-2026-08-21`
+
+Goal: perform deep PVG audit from current local/remote branch state and update this plan.
+
+Audit baseline:
+
+- Branch: `feature/pvg/all-four-nonoperational-scaffold-final`.
+- Local HEAD: `f0819509e020da31d624e445ab6d97402740d8a7`.
+- Local upstream-tracking ref: `f0819509e020da31d624e445ab6d97402740d8a7`.
+- Local dirty file before this plan update: `.claude/settings.local.json` only.
+- No staged files before this plan update.
+
+Deep-audit findings:
+
+- High severity: none.
+- Medium severity: none.
+- Low / watch:
+  - `.claude/settings.local.json` remains local-only and must stay excluded from package staging.
+  - `PvgServiceApiHost` registers MOD-0231, MOD-0232, and MOD-0234 application services for composition/build-test
+    wiring. No endpoint maps, Gateway routes, frontend surfaces, persistence, jobs, seeds, AI, MedDRA data, fake
+    signal, fake metric, or fake cohort were found for those downstream modules.
+  - Vitest remains unavailable locally because `frontend/Diten.Web/node_modules/.bin/vitest` is not present.
+
+Confirmed runtime/surface posture:
+
+- PVG API maps only health plus MOD-0230 Case Intake/Triage routes:
+  `/api/v1/pv-case-intake-triage`, `/{intakeDraftId}`, `/{intakeDraftId}/triage`, and
+  `/{intakeDraftId}/route`.
+- Gateway PVG route matrix remains limited to:
+  - `GET, POST /api/pv-case-intake-triage`
+  - `GET, PUT /api/pv-case-intake-triage/{intakeDraftId}`
+  - `POST /api/pv-case-intake-triage/{intakeDraftId}/triage`
+  - `POST /api/pv-case-intake-triage/{intakeDraftId}/route`
+- API reserved-segment guard still rejects `export`, `archive`, `void`, `bulk`, `bulk-delete`, and `delete` before
+  business service invocation.
+- Browser PVG scripts remain on same-origin MVC proxy paths and do not create browser `Authorization` / `Bearer`
+  headers or read `document.cookie`.
+- No appsettings, launchSettings, menu/module catalog, seed, job, migration, collection, Mongo, DbContext, real
+  repository, delete/export/archive/void/bulk runtime action, AI, or MedDRA dictionary/import/search/display surface
+  was found.
+
+Fresh validation run on 2026-08-21:
+
+| Check | Result |
+|---|---:|
+| API tests | `26/26` passed |
+| RegPvBase tests | `38/38` passed |
+| CaseProcessing tests | `21/21` passed |
+| MedDRA Coding tests | `27/27` passed |
+| SignalManagement tests | `33/33` passed |
+| PVG service total | `145/145` passed |
+| Gateway Ocelot tests | `19/19` passed |
+| Web build | Passed, `0` errors; existing unrelated warnings only |
+| `git diff --check` before plan edit | Passed |
+| UI static test syntax | Passed |
+
+Control Tower status after audit:
+
+| Area | % | Status |
+|---|---:|---|
+| Branch/head control | 100% | local and upstream-tracking refs match `f0819509e020da31d624e445ab6d97402740d8a7` |
+| MOD-0230 local/dev API hardening | 100% | pushed; latest API tests `26/26` |
+| MOD-0230 Gateway route matrix | 100% | approved four-template matrix only; Gateway tests `19/19` |
+| MOD-0230 tenant UI static hardening | 100% | UI03/UI04/UI05/regression guardrails present |
+| PVG class-library build/test contracts | 100% | latest serial class-library tests `119/119`; total PVG service tests `145/145` |
+| Package cleanliness | 99% | only `.claude/settings.local.json` was dirty before this plan update |
+| Authenticated MVC proxy proof | 0% | blocked by missing valid tenant-shell session or explicit seeded local-dev login approval |
+| Operational runtime | 0% | NO-GO |
+| MOD-0231 runtime | 0% | blocked |
+| MOD-0232 runtime / MedDRA data | 0% | blocked |
+| MOD-0234 runtime / signal shell | 0% | blocked |
+
+Next Agent Lane prompts:
+
+```text
+PVG-0230-AUTH-PROXY-01
+
+Run the authenticated MVC proxy local/dev smoke only if the owner supplies a valid tenant-shell session or explicitly
+approves seeded local-dev login for this verification only. Verify Web -> MVC proxy -> Gateway -> PVG API traversal,
+same-origin browser behavior, safe fail-closed responses, no browser token handling, and no delete/export/archive/
+void/bulk or MOD-0231/0232/0234 exposure. Stop all processes and report port cleanup evidence.
+```
+
+```text
+INS-PVG-DOWNSTREAM-WATCH-03
+
+Read-only downstream drift watch for PVG after HEAD f0819509. Verify no MOD-0231/MOD-0232/MOD-0234 Gateway,
+frontend, endpoint, persistence, job, seed, AI, MedDRA dictionary/import/search, fake signal, fake metric, or fake
+cohort exposure. Do not edit, stage, commit, push, fetch, merge, restore, install, or clean files.
+```
+
+```text
+VER-PVG-0230-REVIEW-PACKET-02
+
+Read-only reviewer packet refresh for branch feature/pvg/all-four-nonoperational-scaffold-final. Confirm local/remote
+head, dirty files, latest pushed commits, validation evidence, approved Gateway matrix, operational NO-GO, AUTH-PROXY
+blocker, and downstream runtime closure. Do not edit, stage, commit, push, fetch, merge, install, or clean files.
+```
+
+Recommendation:
+
+- Pause new runtime code.
+- Continue only read-only/static/test-only work unless the owner supplies AUTH-PROXY prerequisites or runtime
+  authorization evidence.
+- Do not start operational runtime, Gateway expansion, menu/catalog, persistence, appsettings, jobs, seeds, AI,
+  MedDRA dictionary data, or downstream runtime work without a new approved gate.
 
 ## 6. Verification Commands
 
