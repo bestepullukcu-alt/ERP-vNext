@@ -6792,6 +6792,19 @@ tags.diten-tags .tagify__input {
 .wcn-note-add { display: flex; align-items: center; gap: .5rem; margin-block-start: .5rem; }
 .wcn-note-add .wcn-search { flex: 1 1 auto; min-inline-size: 0; }
 .wcn-note-add .wcn-search .form-control { inline-size: 100%; min-inline-size: 0; padding-inline-end: .75rem; }
+
+/* ── THE WATCHER LIST, inside the Summary's golden field ───────────────────
+   A plain stack of names — no row box, no border, no hover. Deliberately NOT the standardised row language the
+   note / checklist / subtask lists share: those rows are things you ACT on (tick, delete, reorder), and their
+   box is what says so. A watcher is read, never operated, so giving it the same frame would promise a control
+   that is not there. */
+.wcn-watchers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .125rem; }
+.wcn-watcher { display: flex; align-items: baseline; gap: .375rem; }
+.wcn-watcher-name { font-size: .8125rem; }
+/* ⚠ NOT A CHIP. On this page a chip is a SIGNAL — overdue, priority, blocked — something that changes what you
+   do next. A role qualifies a name and changes nothing, so it is quiet secondary text at the supporting-text
+   size the rest of this card already uses. As a chip it would compete with the two signals that matter. */
+.wcn-watcher-role { font-size: .6875rem; color: var(--bs-secondary-color); }
 .wcn-note-hint { margin-block: .375rem 0; }
 /* D2/D3 — the comment composer, brought onto the create form's field pattern.
    `.diten-field` (defined above, shared) supplies the 38px control and the inset glyph; only the flex sizing

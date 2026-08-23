@@ -769,6 +769,13 @@ public sealed class TaskTransitionLogTests
 
     private static TaskItem AssignedTask(TaskLifecycle lifecycle) => new()
     {
+        /*
+         * ⚠ SAID OUT LOUD, because the default is the opposite. `DelegationAllowed` is a non-nullable bool with
+         * no initializer, so an unset task is NOT delegable — and since 2026-08-23 the server enforces that. A
+         * test about WHO may reassign has to state that the task is delegable at all, or it measures the policy
+         * flag instead of the rule it was written for.
+         */
+        DelegationAllowed = true,
         TenantId = TaskTestData.Tenant,
         Title = "Prepare the board pack",
         AssignmentTarget = TaskAssignmentTarget.Person,

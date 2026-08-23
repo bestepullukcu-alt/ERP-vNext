@@ -2007,4 +2007,34 @@
   <data name="AuditFieldTags" xml:space="preserve">
     <value>Étiquettes</value>
   </data>
+  <data name="DetailWatchers" xml:space="preserve">
+    <value>Observateurs</value>
+  </data>
+  <data name="WatcherRoleConsultant" xml:space="preserve">
+    <value>consultant</value>
+  </data>
+  <data name="DetailNotifications" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="NotificationsOff" xml:space="preserve">
+    <value>E-mail désactivé</value>
+  </data>
+  <data name="NotificationsOn" xml:space="preserve">
+    <value>E-mail activé · {0}</value>
+  </data>
+  <data name="NotificationsOnWithReminder" xml:space="preserve">
+    <value>E-mail activé · {0} · rappel {1} jours avant l\u0027échéance</value>
+  </data>
+  <data name="NotificationsAllEvents" xml:space="preserve">
+    <value>pour tous les événements</value>
+  </data>
+  <data name="NotificationsNoEvents" xml:space="preserve">
+    <value>aucun événement sélectionné</value>
+  </data>
+  <data name="NotificationsSomeEvents" xml:space="preserve">
+    <value>pour {0} événements</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DelegationNotAllowed" xml:space="preserve">
+    <value>Cette tâche ne peut pas être déléguée.</value>
+  </data>
 </root>

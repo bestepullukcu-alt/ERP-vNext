@@ -2007,4 +2007,34 @@
   <data name="AuditFieldTags" xml:space="preserve">
     <value>Etiketler</value>
   </data>
+  <data name="DetailWatchers" xml:space="preserve">
+    <value>İzleyiciler</value>
+  </data>
+  <data name="WatcherRoleConsultant" xml:space="preserve">
+    <value>danışman</value>
+  </data>
+  <data name="DetailNotifications" xml:space="preserve">
+    <value>Bildirimler</value>
+  </data>
+  <data name="NotificationsOff" xml:space="preserve">
+    <value>E-posta kapalı</value>
+  </data>
+  <data name="NotificationsOn" xml:space="preserve">
+    <value>E-posta açık · {0}</value>
+  </data>
+  <data name="NotificationsOnWithReminder" xml:space="preserve">
+    <value>E-posta açık · {0} · son tarihten {1} gün önce hatırlatır</value>
+  </data>
+  <data name="NotificationsAllEvents" xml:space="preserve">
+    <value>tüm olaylar için</value>
+  </data>
+  <data name="NotificationsNoEvents" xml:space="preserve">
+    <value>seçili olay yok</value>
+  </data>
+  <data name="NotificationsSomeEvents" xml:space="preserve">
+    <value>{0} olay için</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DelegationNotAllowed" xml:space="preserve">
+    <value>Bu görev devredilemez.</value>
+  </data>
 </root>

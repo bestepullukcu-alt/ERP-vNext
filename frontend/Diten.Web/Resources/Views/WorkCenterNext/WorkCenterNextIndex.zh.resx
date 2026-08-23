@@ -2007,4 +2007,34 @@
   <data name="AuditFieldTags" xml:space="preserve">
     <value>标签</value>
   </data>
+  <data name="DetailWatchers" xml:space="preserve">
+    <value>关注者</value>
+  </data>
+  <data name="WatcherRoleConsultant" xml:space="preserve">
+    <value>顾问</value>
+  </data>
+  <data name="DetailNotifications" xml:space="preserve">
+    <value>通知</value>
+  </data>
+  <data name="NotificationsOff" xml:space="preserve">
+    <value>邮件已关闭</value>
+  </data>
+  <data name="NotificationsOn" xml:space="preserve">
+    <value>邮件已开启 · {0}</value>
+  </data>
+  <data name="NotificationsOnWithReminder" xml:space="preserve">
+    <value>邮件已开启 · {0} · 截止日期前 {1} 天提醒</value>
+  </data>
+  <data name="NotificationsAllEvents" xml:space="preserve">
+    <value>针对所有事件</value>
+  </data>
+  <data name="NotificationsNoEvents" xml:space="preserve">
+    <value>未选择事件</value>
+  </data>
+  <data name="NotificationsSomeEvents" xml:space="preserve">
+    <value>针对 {0} 个事件</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DelegationNotAllowed" xml:space="preserve">
+    <value>此任务不可转派。</value>
+  </data>
 </root>

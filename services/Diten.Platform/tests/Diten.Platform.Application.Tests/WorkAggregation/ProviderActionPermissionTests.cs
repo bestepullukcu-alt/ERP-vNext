@@ -200,6 +200,10 @@ public sealed class ProviderActionPermissionTests
 
     private static TaskItem SelfTask() => new()
     {
+        // ⚠ STATED, because the default is the opposite: an unset task is NOT delegable, and since 2026-08-23
+        // the projection disables `reassign` with a reason when that is so. These tests are about PERMISSIONS,
+        // so the task has to be delegable for the permission to be the thing under test.
+        DelegationAllowed = true,
         TenantId = TaskTestData.Tenant,
         Title = "Write the report",
         AssignmentTarget = TaskAssignmentTarget.SelfAssigned,

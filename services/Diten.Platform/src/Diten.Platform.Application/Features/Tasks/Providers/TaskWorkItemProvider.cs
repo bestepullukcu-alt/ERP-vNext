@@ -56,6 +56,12 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private const string DisabledPermissionKey = "WorkAggregation_ActionDisabled_PermissionDenied";
     private const string DisabledApprovalKey = "WorkAggregation_ActionDisabled_ApprovalPending";
     private const string DisabledChecklistKey = "WorkAggregation_ActionDisabled_ChecklistIncomplete";
+
+    /// <summary>
+    /// The task itself forbids delegation (<c>DelegationAllowed = false</c>). The SAME key shape as its five
+    /// siblings above — a reason a reader can act on, not a new vocabulary.
+    /// </summary>
+    private const string DisabledDelegationKey = "WorkAggregation_ActionDisabled_DelegationNotAllowed";
     /// <summary>An unfinished predecessor. The BLOCKER carries which task and which edge; this is the button's own reason.</summary>
     private const string DisabledDependencyKey = "WorkAggregation_ActionDisabled_DependencyBlocked";
     /// <summary>An open subtask. Same shape as above: the blocker names which child, this is the button's reason.</summary>
@@ -1561,7 +1567,20 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
 
         if (!isPool && (isHolder || isRequester))
         {
-            actions.Add(Build("reassign", ActionReassignKey, actor.Has(TaskPermissions.Assign), requiresReason: true));
+            /*
+             * ⚠ DISABLED WITH A REASON, never withheld. This card's rule is that an action whose reason cannot be
+             * stated is not drawn at all — and here the reason is plain ("this task may not be delegated"), so
+             * the button is drawn, greyed, and explains itself. Hiding it would leave the holder wondering why a
+             * task they hold cannot be handed on.
+             *
+             * The task's own policy is checked BEFORE the permission: "nobody may delegate this" outranks "you
+             * may not delegate", and reporting the permission first would send a reader after an authority that
+             * would never help.
+             */
+            actions.Add(!task.DelegationAllowed
+                ? Disabled("reassign", ActionReassignKey,
+                    TaskReasonCodes.DelegationNotAllowed, DisabledDelegationKey)
+                : Build("reassign", ActionReassignKey, actor.Has(TaskPermissions.Assign), requiresReason: true));
         }
 
         // Only a pooled task that someone has taken can be handed back to the pool.

@@ -116,6 +116,14 @@ public static class TaskReasonCodes
     /// <summary>Reassigning is the holder's or the requester's to do — nobody else's.</summary>
     public const string ReassignNotPermitted = "TASK_REASSIGN_NOT_PERMITTED";
 
+    /// <summary>
+    /// This task was marked as NOT delegable when it was created, so it may not be handed to anybody.
+    ///
+    /// <para>Its OWN code, distinct from <see cref="ReassignNotPermitted"/>: that one says "not YOU", this one
+    /// says "not AT ALL". A caller told the wrong one would go looking for a permission that would never help.</para>
+    /// </summary>
+    public const string DelegationNotAllowed = "TASK_DELEGATION_NOT_ALLOWED";
+
     /// <summary>The proposed assignee is not someone work may be assigned to.</summary>
     public const string AssigneeNotAssignable = "TASK_ASSIGNEE_NOT_ASSIGNABLE";
 

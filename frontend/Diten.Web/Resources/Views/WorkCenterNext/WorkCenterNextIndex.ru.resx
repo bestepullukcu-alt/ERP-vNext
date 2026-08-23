@@ -2007,4 +2007,34 @@
   <data name="AuditFieldTags" xml:space="preserve">
     <value>Метки</value>
   </data>
+  <data name="DetailWatchers" xml:space="preserve">
+    <value>Наблюдатели</value>
+  </data>
+  <data name="WatcherRoleConsultant" xml:space="preserve">
+    <value>консультант</value>
+  </data>
+  <data name="DetailNotifications" xml:space="preserve">
+    <value>Уведомления</value>
+  </data>
+  <data name="NotificationsOff" xml:space="preserve">
+    <value>Почта отключена</value>
+  </data>
+  <data name="NotificationsOn" xml:space="preserve">
+    <value>Почта включена · {0}</value>
+  </data>
+  <data name="NotificationsOnWithReminder" xml:space="preserve">
+    <value>Почта включена · {0} · напомнит за {1} дн. до срока</value>
+  </data>
+  <data name="NotificationsAllEvents" xml:space="preserve">
+    <value>для всех событий</value>
+  </data>
+  <data name="NotificationsNoEvents" xml:space="preserve">
+    <value>события не выбраны</value>
+  </data>
+  <data name="NotificationsSomeEvents" xml:space="preserve">
+    <value>для {0} событий</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DelegationNotAllowed" xml:space="preserve">
+    <value>Эту задачу нельзя делегировать.</value>
+  </data>
 </root>

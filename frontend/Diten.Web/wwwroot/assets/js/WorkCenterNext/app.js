@@ -2133,6 +2133,34 @@
      * A dash claims the field was checked and found empty, which the reader cannot tell from a value that failed
      * to load. Recorded as a knowing divergence (BL-117) rather than a drift.
      */
+    /*
+     * WHAT THIS TASK EMAILS — one sentence, built from a WHOLE pattern per language.
+     *
+     * Three patterns rather than one with a switch inside, because the three answers are genuinely different
+     * sentences and a language may want them ordered differently. Nothing is joined in JavaScript: the reminder
+     * lead is a SLOT in the pattern, not a clause glued on the end — a language that puts "3 gün önce" first can
+     * do so, and one that has no room for it can leave the slot where it belongs.
+     *
+     * The reminder half is folded into the SAME sentence rather than sitting beside it: "e-posta açık" and "3
+     * gün önce hatırlatır" on two rows makes the reader join them, and the join is where the contradiction
+     * ("kapalı" + "hatırlatır") became readable.
+     */
+    const notificationSentence = (notifications, reminderLeadDays) => {
+        const events = notifications.events;
+        const scope = events === null || events === undefined
+            // NOBODY CHOSE. Everything dispatchable is sent — the entity's own rule, and the reason the field is
+            // nullable at all.
+            ? t('NotificationsAllEvents')
+            : events.length === 0
+                // They chose NONE. The master switch is still on, so the distinction is real and worth saying.
+                ? t('NotificationsNoEvents')
+                : tf('NotificationsSomeEvents', events.length);
+
+        return reminderLeadDays === null || reminderLeadDays === undefined
+            ? tf('NotificationsOn', scope)
+            : tf('NotificationsOnWithReminder', scope, reminderLeadDays);
+    };
+
     const renderSummary = (item) => {
         /*
          * ICONS ARE THE CREATE FORM'S — measured, field by field, from `Views/Tasks/_Form.cshtml`. One field must
@@ -2249,6 +2277,78 @@
             </div>`;
         })();
 
+        /*
+         * ── WHO ELSE IS WATCHING (2026-08-23) ───────────────────────────────────────────────────────────────
+         *
+         * Collected by the create form since Phase 1 and shown on no surface until now: the form could name
+         * watchers and nothing could name them back.
+         *
+         * ⚠ THE ROLE IS NOT A CHIP. On this page a chip is a SIGNAL — overdue, priority, blocked — something that
+         * changes what you do next. "Consultant" changes nothing; it qualifies a name. As a chip it would compete
+         * with the two signals that actually matter on the same card, so it is quiet secondary text after the
+         * name, in the same weight the rest of the field's supporting text uses.
+         *
+         * FULL WIDTH and BELOW the two people fields, because it is a LIST — a variable number of rows cannot sit
+         * in a half-width grid cell without either clipping or stretching the field beside it. Same reasoning the
+         * tag strip already carries.
+         *
+         * No watchers, no field — the Summary's own rule.
+         */
+        const watchers = Array.isArray(item.watchers) ? item.watchers : [];
+        const watcherField = !watchers.length ? '' : `<div class="col-12">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-show" aria-hidden="true"></i>
+                    <div>
+                        <div class="backbone-preview-label">${esc(t('DetailWatchers'))}</div>
+                        <ul class="wcn-watchers mt-1">${watchers.map((watcher) => {
+            // A name we could not resolve is stated as unavailable rather than printed as an id — the module's
+            // standing rule, and the same label the comment feed uses for the same situation.
+            const name = watcher.person?.displayName || t('PersonNameUnavailable');
+            /*
+             * The role is dropped for a plain Watcher: "Ayşe Yılmaz (izleyici)" in a list headed "İzleyiciler"
+             * says the same word twice. Only the two roles that ADD something are spoken.
+             */
+            const role = watcher.role && watcher.role !== 'Watcher'
+                ? `<span class="wcn-watcher-role">${esc(t('WatcherRole' + watcher.role))}</span>`
+                : '';
+            return `<li class="wcn-watcher"><span class="wcn-watcher-name">${esc(name)}</span>${role}</li>`;
+        }).join('')}</ul>
+                    </div>
+                </div>
+            </div>`;
+
+        /*
+         * ── WHAT THIS TASK EMAILS, AS ONE SENTENCE (2026-08-23) ─────────────────────────────────────────────
+         *
+         * ⚠ ONE ROW, NOT TWO. "E-posta kapalı" beside "3 gün önce hatırlatır" reads as a contradiction — the
+         * reader has to work out which one wins. The master switch decides whether there is anything else to say
+         * at all, so the sentence is built from it.
+         *
+         * ⚠ `events` NULL AND [] ARE DIFFERENT ANSWERS, and the sentence tells them apart:
+         *     absent  → nobody ever chose, so everything is sent          → "…tüm olaylar için"
+         *     []      → the owner chose none                              → "…seçili olay yok"
+         *     [a, b]  → they chose some                                   → "…2 olay için"
+         *   Collapsing them would either silence a task nobody configured or claim a choice nobody made — the
+         *   distinction the projection went out of its way to preserve.
+         */
+        const notifications = item.notifications;
+        const notificationField = !notifications ? '' : (() => {
+            const value = !notifications.emailEnabled
+                // Nothing is sent, so a reminder lead is not a fact about this task — it is a setting with no
+                // effect, and printing it would invite the reader to believe a reminder is coming.
+                ? t('NotificationsOff')
+                : notificationSentence(notifications, item.reminderLeadDays);
+            return `<div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-envelope" aria-hidden="true"></i>
+                    <div>
+                        <div class="backbone-preview-label">${esc(t('DetailNotifications'))}</div>
+                        <div class="backbone-preview-value mt-1">${esc(value)}</div>
+                    </div>
+                </div>
+            </div>`;
+        })();
+
         const planAction = actionByKey(item, 'plan');
         const planClickable = !!planAction && !planAction.disabled && !isTerminal(item);
         const plannedConflict = item.dueAt && item.plannedDate && item.plannedDate > item.dueAt;
@@ -2278,8 +2378,11 @@
             + planned
             + field('bx-flag', 'DetailPriority', hasPriority(item) ? priorityLabel(item) : '')
             + parentTask
+            + notificationField
             + field('bx-time-five', 'DetailEstimate', item.estimateHours === null || item.estimateHours === undefined
-                ? '' : tf('EstimateHoursValue', item.estimateHours));
+                ? '' : tf('EstimateHoursValue', item.estimateHours))
+            // LAST among the fields and full width — see its own comment for why a list cannot share a row.
+            + watcherField;
 
         /*
          * TAGS LAST, FULL WIDTH, UNDER A RULE. A collection of variable length cannot sit in a fixed grid cell

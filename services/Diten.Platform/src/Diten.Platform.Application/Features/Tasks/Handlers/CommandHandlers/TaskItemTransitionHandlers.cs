@@ -1123,6 +1123,30 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
                 409, TaskReasonCodes.InvalidState, command.CorrelationId);
         }
 
+        /*
+         * ⚠ THE FLAG NOW DECIDES SOMETHING. `DelegationAllowed` has been collected by the create form since
+         * Phase 1 and was asked NOWHERE: a task explicitly marked "may not be delegated" could be handed to
+         * anybody, and nothing said otherwise.
+         *
+         * The refusal lives HERE, at the write, and not only in the projection. A disabled button is a courtesy;
+         * the rule is the endpoint saying no — a client that posts straight to the route must meet the same
+         * answer, and this module has closed three gaps of exactly that shape already (cancel authority,
+         * dependencies, subtasks).
+         *
+         * BEFORE the who-are-you check, deliberately: "this task cannot be delegated at all" is true whoever is
+         * asking, and answering "not you" to the holder would send them looking for a permission that does not
+         * exist.
+         *
+         * <para>Policy only — see <c>TaskItem.DelegationAllowed</c>. Whether a particular PERSON may receive
+         * work stays MOD-0018's decision, checked further down against the assignable set.</para>
+         */
+        if (!task.DelegationAllowed)
+        {
+            return Response<NoContent>.Fail(
+                "This task is marked as not delegable.",
+                409, TaskReasonCodes.DelegationNotAllowed, command.CorrelationId);
+        }
+
         var isHolder = task.AssigneeUserId == _currentUser.UserId;
         var isRequester = task.CreatedByUserId is not null && task.CreatedByUserId == _currentUser.UserId;
         if (!isHolder && !isRequester)

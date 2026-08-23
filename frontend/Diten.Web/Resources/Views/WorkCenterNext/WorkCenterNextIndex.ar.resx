@@ -2007,4 +2007,34 @@
   <data name="AuditFieldTags" xml:space="preserve">
     <value>الوسوم</value>
   </data>
+  <data name="DetailWatchers" xml:space="preserve">
+    <value>المتابعون</value>
+  </data>
+  <data name="WatcherRoleConsultant" xml:space="preserve">
+    <value>مستشار</value>
+  </data>
+  <data name="DetailNotifications" xml:space="preserve">
+    <value>الإشعارات</value>
+  </data>
+  <data name="NotificationsOff" xml:space="preserve">
+    <value>البريد متوقف</value>
+  </data>
+  <data name="NotificationsOn" xml:space="preserve">
+    <value>البريد مفعّل · {0}</value>
+  </data>
+  <data name="NotificationsOnWithReminder" xml:space="preserve">
+    <value>البريد مفعّل · {0} · يذكّر قبل {1} أيام من تاريخ الاستحقاق</value>
+  </data>
+  <data name="NotificationsAllEvents" xml:space="preserve">
+    <value>لكل الأحداث</value>
+  </data>
+  <data name="NotificationsNoEvents" xml:space="preserve">
+    <value>لا أحداث محددة</value>
+  </data>
+  <data name="NotificationsSomeEvents" xml:space="preserve">
+    <value>لـ {0} أحداث</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DelegationNotAllowed" xml:space="preserve">
+    <value>لا يمكن تفويض هذه المهمة.</value>
+  </data>
 </root>
