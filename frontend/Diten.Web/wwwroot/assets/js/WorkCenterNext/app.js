@@ -6342,6 +6342,11 @@
             // The dismiss label, overridable per dialog. The module default stays what it was; a dialog whose own
             // page carries an ACTION by that name says something else instead.
             cancelButtonText: options.cancelText || t('ReasonCancel'),
+            /*
+             * WHETHER TO DRAW AN ICON AT ALL. Absent for every dialog that has one today, so nothing moves; a
+             * dialog that is neither destructive nor a warning nor a question says so by leaving it out.
+             */
+            hideIcon: !!options.hideIcon,
             showInput: !!options.input,
             /*
              * WHAT KIND of box. Absent for every caller that wants prose — the wrapper still answers `textarea`,
@@ -6594,6 +6599,13 @@
         sharedConfirm({
             title: t('SnoozeTitle'),
             subtext: esc(t('SnoozeSubtext')),
+            /*
+             * NO ICON. The five the wrapper draws all carry a seriousness this action does not have — a bin, an
+             * error, a tick, a warning — and the neutral one is a question mark, which asks "are you sure?" over
+             * a dialog whose question is "until when?". A title, a sentence, a labelled field and two buttons
+             * describe this without a picture. (Owner decision; the wrapper's default is unchanged.)
+             */
+            hideIcon: true,
             confirmText: t('SnoozeConfirm'),
             cancelText: t('DialogDismiss'),
             input: {
@@ -8006,7 +8018,28 @@
         state.triggers.forEach((trigger) => { trigger.isUnread = !seenIds.has(trigger.id); });
     };
 
+    /*
+     * WHICH READ IS ALLOWED TO SPEAK.
+     *
+     * Thirteen places re-read the projection, and every write goes through one of them. Two reads that overlap
+     * used to both assign `state.items` and both render, so the one that ANSWERED last won — which is not the
+     * one that ASKED last. That is how a row the user had just removed came back: the read issued before the
+     * removal landed after it, carrying the old snooze, and painted it.
+     *
+     * A counter, not a lock: a stale answer is discarded rather than delaying the fresh one. `state.loadState`
+     * and `state.loadError` are held to the same rule — a stale error must not blank a page that has since
+     * loaded fine.
+     *
+     * ⚠ THIS COVERS EVERY DIALOG, not just the snooze: plan, inquire, reassign, the checklist and the notes all
+     * refresh through this one function. Fixing it in one of them and leaving the siblings is the mistake this
+     * session already made three times.
+     */
+    let loadGeneration = 0;
+
     const loadWorkItems = async () => {
+        const generation = ++loadGeneration;
+        const isStale = () => generation !== loadGeneration;
+
         /*
          * A REFRESH IS NOT A LOAD, and conflating the two is what made every write feel like a page reload.
          *
@@ -8031,6 +8064,7 @@
             state.triggers = data.buildTriggers ? data.buildTriggers() : [];
             state.meetings = data.buildMeetings ? data.buildMeetings() : [];
             state.notes = data.buildNotes ? data.buildNotes() : [];
+            if (isStale()) { return; }
             applySeenState();
             state.loadState = 'ready';
             render();
@@ -8052,6 +8086,9 @@
 
         const result = await api.fetchWorkItems(
             { scope: state.scope === 'team' ? api.SCOPE.TEAM : api.SCOPE.SELF });
+        // A newer read has been issued while this one was in flight: its answer is the current one, and this
+        // answer describes a state that no longer exists. Drop it without touching the screen.
+        if (isStale()) { return; }
         if (result.status === api.STATUS.OK) {
             state.items = result.items;
             // Triggers/meetings/notes have no provider yet — they stay empty until one lands (DEC-1).

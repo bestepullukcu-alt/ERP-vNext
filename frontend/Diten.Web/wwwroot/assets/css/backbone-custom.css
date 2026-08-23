@@ -6824,6 +6824,36 @@ tags.diten-tags .tagify__input {
 .wcn-note-add .wcn-search { flex: 1 1 auto; min-inline-size: 0; }
 .wcn-note-add .wcn-search .form-control { inline-size: 100%; min-inline-size: 0; padding-inline-end: .75rem; }
 
+/* ── THE SHARED CONFIRM'S HEADER GEOMETRY (2026-08-23) ─────────────────────
+   Two things measured in the BROWSER's own rule list, not in a file:
+
+   1. THE TITLE WAS NOT CENTRED — off by 32px, and only the title: description,
+      label, input and buttons all measured 0 from the popup's centre. Cause:
+      sweetalert2.css caps it with `max-inline-size: 16em` (288px) while the
+      popup's grid column is 352px. The TEXT is centred inside that 288px box,
+      but the box itself sits at the column's start. A cap narrower than the
+      column is what turns "centred text" into a title that leans left.
+
+   2. AN ICON THAT IS NOT DRAWN STILL RESERVED ITS SPACE — 80px of it. The
+      library creates `.swal2-icon` whether or not it is given anything to put
+      in it, and this file's own style block forces it to `display: flex`. With
+      the icon suppressed the box stayed, so the title floated below a gap the
+      size of the picture that was removed.
+
+   Both are corrections, not decisions: nothing is resized, nothing is moved. */
+.swal2-container .swal2-modal.swal2-popup .swal2-title { max-inline-size: 100%; }
+/* Only when there is nothing in it — a dialog that HAS an icon is untouched. */
+.swal2-container .swal2-modal.swal2-popup .swal2-icon:empty { display: none !important; }
+/* The title's own top margin exists to hold it off the ICON. With no icon it lands on top of the popup's own
+   padding instead: measured 56px above the title against 32px below the buttons. Removing the margin — not
+   choosing a new number — leaves the popup's own 40px, which is the padding this file already set. A dialog
+   that HAS an icon keeps the margin, because it still has something to be held off. */
+/* `:has()` rather than a sibling combinator: SweetAlert keeps an empty `.swal2-image` between the icon and the
+   title (measured — the popup renders all eighteen of its slots, used or not), so `+` never matches. */
+/* `!important` because the margin comes from Bootstrap's `mt-4` utility, and utilities carry it — the same
+   reason the audit dialog's own title rule in this file carries it. Nothing else about the title is touched. */
+.swal2-container .swal2-modal.swal2-popup:has(.swal2-icon:empty) .swal2-title { margin-block-start: 0 !important; }
+
 /* ── THE WATCHER LIST, inside the Summary's golden field ───────────────────
    A plain stack of names — no row box, no border, no hover. Deliberately NOT the standardised row language the
    note / checklist / subtask lists share: those rows are things you ACT on (tick, delete, reorder), and their

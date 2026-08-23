@@ -165,3 +165,45 @@ describe("the dialog is written in the product's type scale", () => {
     expect(seen.config.width).toBe("400px");
   });
 });
+
+
+describe("the icon", () => {
+  /*
+   * A confirmation's icon carries WEIGHT: the red bin means "cannot be undone", the amber exclamation means
+   * "careful". A dialog with none of that weight is misdescribed by every one of them, and the neutral default
+   * is a question mark — which asks "are you sure?" over a dialog whose question is "until when?".
+   *
+   * ⚠ Measured on a live dialog before the flag existed: the icon carries no `aria-label`, no `role` and no
+   * text, and the dialog is named by `aria-labelledby="swal2-title"`. Hiding it costs a screen reader nothing.
+   */
+  it("is drawn for every caller that does not ask otherwise", () => {
+    const { seen, stub } = captureConfig();
+    loadWrapper(stub)("DeleteConfirmation", () => {}, { entityName: "Bir kayıt" });
+    // MUTATION GUARD: make hiding the default and every dialog in four other modules loses its icon.
+    expect(seen.config.iconHtml).toContain("swal-icon-circle");
+    expect(seen.config.iconHtml).toContain("bx-trash");
+  });
+
+  it("is left out only when a caller asks", () => {
+    const { seen, stub } = captureConfig();
+    loadWrapper(stub)("Snooze", () => {}, { hideIcon: true });
+    expect(seen.config.iconHtml).toBeUndefined();
+  });
+
+  it("does not take the button colour with it", () => {
+    /*
+     * The glyph and `confirmBtnClass` are decided by ONE if-chain. The flag reads that chain's result and drops
+     * only the picture — a destructive dialog that hides its icon is still a destructive dialog.
+     */
+    const shown = captureConfig();
+    loadWrapper(shown.stub)("DeleteConfirmation", () => {}, {});
+    const hidden = captureConfig();
+    loadWrapper(hidden.stub)("DeleteConfirmation", () => {}, { hideIcon: true });
+    expect(hidden.seen.config.customClass.confirmButton).toBe(shown.seen.config.customClass.confirmButton);
+    expect(hidden.seen.config.customClass.confirmButton).toContain("btn-danger");
+
+    const info = captureConfig();
+    loadWrapper(info.stub)("Snooze", () => {}, { hideIcon: true });
+    expect(info.seen.config.customClass.confirmButton).toContain("btn-primary");
+  });
+});

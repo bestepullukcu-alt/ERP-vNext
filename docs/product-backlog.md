@@ -4077,7 +4077,7 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   nötr `YYYY-MM-DD` mi kalsın.
 - **Gelecek regresyon riski: 🟢.**
 
-### BL-188 — [ÖLÇÜM] Diyalogdan vazgeçmek bayat bir görüntü bırakabiliyor
+### BL-188 — ✅ KAPANDI (2026-08-23) — Bayat okuma, yeni okumanın üstüne yazıyordu
 - Sıra: erteleme kaldırıldı (sunucu doğrulandı: `personal.snoozedUntil` yok) → ertele diyaloğu açıldı → geçmiş
   tarih reddedildi → "Vazgeç". Ekranda **kaldırılmış erteleme satırı geri geldi**; sayfa yenilenince gitti.
 - Yani vazgeçme yolu, bir önceki anlık görüntüden yeniden çiziyor olabilir. Sunucu durumu her zaman doğruydu;
@@ -4085,3 +4085,44 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - Bu turun konusu değildi, **düzeltilmedi**; tek bir gözlem olarak kaydediliyor, kovalanacaksa kendi turunu
   hak ediyor.
 - **Gelecek regresyon riski: 🟡** — "kaydettim ama geri geldi" tipi şikâyetlerin klasik kaynağı.
+
+### BL-188 kapanış notu (2026-08-23) — teşhis, sonra düzeltme
+- **Vazgeçme yolu suçsuz çıktı.** Ölçüldü: sarmalayıcı iptalde hiçbir geri çağırma çalıştırmıyor (`onCancel`
+  verilmemiş), hiçbir durum değiştirmiyor, hiç çizmiyor. `toggleSnooze` de kopya değil **canlı** nesne alıyor
+  (`itemById(...)`). Yani bayat görüntünün kaynağı diyalog değildi.
+- **Gerçek kök neden:** `loadWorkItems` — projeksiyonu **on üç yerden** yeniden okunuyor ve her yazma bunun
+  üzerinden tazeleniyor — hangi okumanın daha YENİ olduğuna bakmadan `state.items`'a yazıp çiziyordu. Üst üste
+  binen iki okuma da boyuyordu ve **en son CEVAPLAYAN** kazanıyordu; oysa doğru olan en son SORAN'dır. Silinen
+  satır, silinmeden önce başlamış bir okumanın geç gelen cevabıyla geri geliyordu.
+- **Düzeltme:** kuşak sayacı (`loadGeneration`). Kilit değil — eski cevap **atılıyor**, yeni cevap
+  geciktirilmiyor. `loadState`/`loadError` de aynı kurala tabi: bayat bir hata, yüklenmiş bir sayfayı boşaltamaz.
+- **KARDEŞLER AYNI DÜZELTMEYİ ALDI:** plan, bilgi bekle, yeniden atama, kontrol listesi ve notlar hepsi
+  `afterPhase2Write` → aynı `loadWorkItems` üzerinden tazeleniyor. Tek yerde düzeltildi, hepsi kapsandı.
+- **Canlı kanıt:** bir okuma `fetch` sarmalayıcısıyla 3sn tutuldu, sonra erteleme kaldırıldı; tutulan (bayat)
+  cevap en son geldi ve **satırı geri getirmedi**.
+- ⚠ **Test kapsamı sınırı, açıkça:** jsdom koşumunda tek bir tıklama **iki** okuma üretiyor, çünkü `wcn-boot`
+  her boot'ta app.js'i yeniden yüklerken ÖNCEKİ örneğin belge dinleyicileri hâlâ bağlı — tek DOM'u iki modül
+  örneği paylaşıyor ve her birinin kendi kuşak sayacı var. Sırasız senaryo orada **kurgulanamıyor**; bu yüzden
+  `wcn-stale-refresh.test.js` yalnız kanıtlayabildiğini iddia ediyor (yeni cevap geçer, sırayla gelen cevap
+  çizer) ve yapısal gardiyanı kilitliyor. Sırasızlık kanıtı tarayıcıda.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-189 — [ÖLÇÜM] Harness'ta iki modül örneği tek DOM'u paylaşıyor
+- `wcn-boot` her boot'ta `app.js`'i yeniden yüklüyor; global modül nesneleri siliniyor ama **belge üzerindeki
+  tıklama dinleyicileri** kalıyor. Sonuç: bir tıklama iki kez işleniyor, iki ağ okuması üretiyor.
+- Bugün testleri yanıltmıyor (iddiaların hepsi DOM üzerinde), ama **yarış/sıra** iddialarını imkânsız kılıyor —
+  BL-188'in davranış testi bu yüzden tarayıcıya taşındı.
+- Çözüm yönü: app.js'in boot'ta kendi dinleyicilerini sökebilmesi ya da harness'ın her testi kendi
+  `document`'ında koşturması. **Bu turda yapılmadı.**
+- **Gelecek regresyon riski: 🟡** — zamanlamaya dayalı her yeni test aynı duvara toslar.
+
+### BL-190 — [ÖLÇÜM] Boş ikon kutusu ürünün KENDİ stil bloğundan geliyordu
+- İkon bastırıldığında SweetAlert `.swal2-icon`'a zaten `style="display:none"` yazıyor. Buna rağmen 80px'lik
+  boş kutu ekranda kalıyordu: `_GlobalConfirmation.cshtml`'in kendi satır-içi `<style>` bloğu
+  `.swal2-icon { display: flex !important; … }` diyor ve kütüphanenin satır-içi `display:none`'ını yeniyor.
+- Bu turda `backbone-custom.css`'e `:empty` koşullu bir kural eklenerek çözüldü (ikonu OLAN diyaloglar
+  etkilenmedi — canlı doğrulandı: Rol İzinleri'nde kırmızı çöp kutusu 80px, yerinde).
+- ⚠ Asıl mesele duruyor: **ortak bileşenin satır-içi `<style>` bloğu** FG-003'ün "CSS sınıflarla,
+  backbone-custom.css'te" kuralının dışında ve kütüphanenin kendi davranışlarını `!important` ile eziyor.
+  Taşınması ayrı bir tur; bu turda dokunulmadı.
+- **Gelecek regresyon riski: 🟡.**
