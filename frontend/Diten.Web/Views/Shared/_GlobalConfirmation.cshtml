@@ -1,48 +1,13 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
-<!-- MOD-0013: Premium SweetAlert2 Styling (Native & Bootstrap 5 Classes) -->
-<style>
-    /* Sadece özel ikon bileşeni için gerekli CSS (Layout ve boşluklar SweetAlert parametreleriyle yönetilmektedir) */
-    /* Sadece özel ikon bileşeni için gerekli CSS */
-    .swal-icon-circle {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background: rgba(255, 76, 81, 0.12);
-        border: 2px solid rgba(255, 76, 81, 0.25);
-        margin: 0 auto !important;
-        /* Force center */
-    }
-
-    .swal-icon-circle i {
-        font-size: 2.5rem;
-        /* Colour comes from the per-type text-* utility class on the <i> so the icon
-           matches its circle (warning=amber, success=green, etc.), not a hardcoded red. */
-    }
-
-    .swal2-title {
-        width: 100%;
-        text-align: center;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-    }
-
-    /* Force Icon Centering */
-    .swal2-icon {
-        display: flex !important;
-        justify-content: center !important;
-        width: 100% !important;
-        border: none !important;
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
-    }
-</style>
+@*
+    THE STYLING FOR THIS COMPONENT LIVES IN `wwwroot/assets/css/backbone-custom.css`, under
+    "THE SHARED CONFIRM". It used to be an inline <style> block here, which put four rules that paint EVERY
+    modal in the product outside the file this project keeps its CSS in (FG-003) — and one of them, an
+    unconditional `display: flex !important` on `.swal2-icon`, was strong enough to overrule the library's own
+    `display: none` on an icon that had been suppressed, which is why an icon nobody drew still reserved 80px.
+*@
 
 <script>
     // SweetAlert2: navbar shift fix. The default scrollbarPadding adds padding-right to <body>
@@ -110,23 +75,60 @@
             htmlContent += `<div class="badge bg-label-primary fs-6 mt-1 py-2 px-3 fw-medium">${options.entityName}</div>`;
         }
 
+        /*
+         * ── WHAT THE DIALOG LOOKS LIKE, decided by `type` ────────────────────────────────────────────────────
+         *
+         * Three things come out of this chain and they are INDEPENDENT of each other: the button's colour, the
+         * circle behind the glyph, and the glyph itself. They were three whole strings before; they are three
+         * variables now, so a caller can name a different GLYPH without touching the other two.
+         *
+         * ⚠ `confirmBtnClass` is not readable from outside and does not move. A dialog's colour says how serious
+         * it is — that is the type's business, never the caller's.
+         */
         var type = options.type || (isDeleteAction ? 'delete' : 'info');
         var confirmBtnClass = 'btn-primary';
-        var iconHtml = '<div class="swal-icon-circle bg-label-primary border-primary border-opacity-25"><i class="bx bx-help-circle text-primary"></i></div>';
+        var iconCircleClass = 'swal-icon-circle bg-label-primary border-primary border-opacity-25';
+        var iconGlyph = 'bx-help-circle';
+        var iconTextClass = 'text-primary';
 
         if (type === 'delete') {
             confirmBtnClass = 'btn-danger';
-            iconHtml = '<div class="swal-icon-circle"><i class="bx bx-trash text-danger"></i></div>';
+            iconCircleClass = 'swal-icon-circle';
+            iconGlyph = 'bx-trash';
+            iconTextClass = 'text-danger';
         } else if (type === 'danger' || type === 'error') {
             confirmBtnClass = 'btn-danger';
-            iconHtml = '<div class="swal-icon-circle bg-label-danger border-danger border-opacity-25"><i class="bx bx-error-circle text-danger"></i></div>';
+            iconCircleClass = 'swal-icon-circle bg-label-danger border-danger border-opacity-25';
+            iconGlyph = 'bx-error-circle';
+            iconTextClass = 'text-danger';
         } else if (type === 'success') {
             confirmBtnClass = 'btn-success';
-            iconHtml = '<div class="swal-icon-circle bg-label-success border-success border-opacity-25"><i class="bx bx-check-circle text-success"></i></div>';
+            iconCircleClass = 'swal-icon-circle bg-label-success border-success border-opacity-25';
+            iconGlyph = 'bx-check-circle';
+            iconTextClass = 'text-success';
         } else if (type === 'warning') {
             confirmBtnClass = 'btn-warning';
-            iconHtml = '<div class="swal-icon-circle bg-label-warning border-warning border-opacity-25"><i class="bx bx-error text-warning"></i></div>';
+            iconCircleClass = 'swal-icon-circle bg-label-warning border-warning border-opacity-25';
+            iconGlyph = 'bx-error';
+            iconTextClass = 'text-warning';
         }
+
+        /*
+         * THE GLYPH, and ONLY the glyph, may be named by the caller.
+         *
+         * A dialog's picture and a dialog's gravity are different questions. The snooze dialog is a plain
+         * primary-blue confirmation — its colour is right — but "?" says "are you sure?" while the dialog asks
+         * "until when?". A moon says the second thing and changes nothing about the first.
+         *
+         * ⚠ Default is unchanged: no caller passes `icon`, so every dialog keeps the glyph its type gives it.
+         * The circle, its colour and its size are still the type's, so a caller cannot invent a new look — only
+         * swap the picture inside the one this component already draws.
+         */
+        if (options.icon) {
+            iconGlyph = options.icon;
+        }
+
+        var iconHtml = '<div class="' + iconCircleClass + '"><i class="bx ' + iconGlyph + ' ' + iconTextClass + '"></i></div>';
 
         try {
             if (typeof Swal !== 'undefined') {

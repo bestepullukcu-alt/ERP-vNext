@@ -6824,6 +6824,64 @@ tags.diten-tags .tagify__input {
 .wcn-note-add .wcn-search { flex: 1 1 auto; min-inline-size: 0; }
 .wcn-note-add .wcn-search .form-control { inline-size: 100%; min-inline-size: 0; padding-inline-end: .75rem; }
 
+/* ══ THE SHARED CONFIRM (_GlobalConfirmation.cshtml) ═══════════════════════
+   MOVED HERE 2026-08-23 from an inline <style> block in the partial. These four
+   rules paint EVERY modal in the product, and FG-003 says this project's CSS
+   lives in this file. Each `!important` below was re-examined on the way in;
+   the ones that survived say why.
+
+   Verified before and after on three screens (Görev Merkezi, Rol İzinleri,
+   Yeni Görev): identical geometry, identical colours. */
+
+/* The circle behind the glyph. `margin: 0 auto` centres it; no !important is
+   needed now that `.swal2-icon` below is a flex container that centres its own
+   content — the old one was fighting a margin the library never sets here. */
+.swal-icon-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255, 76, 81, 0.12);
+    border: 2px solid rgba(255, 76, 81, 0.25);
+    margin: 0 auto;
+}
+
+/* Colour comes from the per-type `text-*` utility on the <i>, so the glyph matches its circle
+   (warning = amber, success = green). Only the size is set here. */
+.swal-icon-circle i { font-size: 2.5rem; }
+
+/* The title fills the popup's column and centres in it. The four resets are
+   `!important` because they countermand Bootstrap's own margin/padding
+   utilities on the same element (utilities carry !important, so nothing weaker
+   reaches them). */
+.swal2-title {
+    width: 100%;
+    text-align: center;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* The icon slot: a full-width flex row so the circle sits in the middle of it.
+   ⚠ `display` is NOT forced here any more. The old rule said `display: flex !important`
+   unconditionally, which overruled the library's own inline `display: none` on an icon that
+   had been suppressed — an icon nobody drew still reserved its 80px. `:not(:empty)` says the
+   same thing about the case that matters and stays silent about the other one, so the
+   `:empty` workaround the previous round needed is gone.
+   The remaining !important entries countermand `div:where(.swal2-icon)`'s own
+   width/border/margin in sweetalert2.css, which this component deliberately replaces. */
+.swal2-icon:not(:empty) {
+    display: flex;
+    justify-content: center !important;
+    width: 100% !important;
+    border: none !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
 /* ── THE SHARED CONFIRM'S HEADER GEOMETRY (2026-08-23) ─────────────────────
    Two things measured in the BROWSER's own rule list, not in a file:
 
@@ -6842,8 +6900,78 @@ tags.diten-tags .tagify__input {
 
    Both are corrections, not decisions: nothing is resized, nothing is moved. */
 .swal2-container .swal2-modal.swal2-popup .swal2-title { max-inline-size: 100%; }
-/* Only when there is nothing in it — a dialog that HAS an icon is untouched. */
-.swal2-container .swal2-modal.swal2-popup .swal2-icon:empty { display: none !important; }
+
+/* ── THE DATE BOX INSIDE THE SHARED CONFIRM ────────────────────────────────
+   ⚠ NO WRAPPER. `.swal2-input` must stay a DIRECT CHILD of the popup: the library
+   finds its input by walking the popup's fixed slot list, not by querying the
+   subtree, so a wrapper makes `Swal.getInput()` return null and takes the
+   validator's value, the autofocus and the Enter key with it. Measured, and it
+   shipped once: a FUTURE date was refused as "past" because the validator was
+   reading an empty string.
+
+   So the glyph is PAINTED ON THE BOX. The SVG is the product's own — copied from
+   `.bx-calendar` in `vendor/fonts/iconify-icons.css:3690`, where every `bx` glyph
+   in this product comes from; only the fill is written out, because a
+   `background-image` cannot inherit `currentColor` the way `.bx`'s mask does.
+   Both greys ARE `--bs-secondary-color`, measured on the create form's own date
+   field: #a7acb2 light, #7e7f96 dark. Same shape, same 16px, same 15px inset.
+
+   The whole box opens the picker (flatpickr binds to the input), so this glyph is
+   a sign rather than a control — unlike `.diten-field-icon`, which sits beside a
+   box it has to reach into. */
+.swal2-container .swal2-modal.swal2-popup .swal2-input.wcn-date-input {
+    /* THE PRODUCT'S CONTROL, value for value from `.form-control` (core.css:2571, :8645) — measured against the
+       create form's date field: 38px tall, 15px text, the theme's radius, text starting 39px in. */
+    block-size: 38px;
+    padding-block: calc(0.543rem - var(--bs-border-width));
+    font-size: 0.9375rem;
+    line-height: 1.375;
+    border-radius: var(--bs-border-radius);
+    /* The same inset `.diten-field .form-control` uses: the theme's text inset, the glyph, and the gap. */
+    padding-inline-start: calc(0.9375rem + 1rem + 0.5rem);
+    padding-inline-end: 0.9375rem;
+    /* The library centres this box with 34px side margins and leaves `width: auto`. Filling the column instead
+       keeps the box aligned with the label above it and the buttons below. */
+    margin-inline: 0;
+    inline-size: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='%23a7acb2' d='M7 11h2v2H7zm0 4h2v2H7zm4-4h2v2h-2zm0 4h2v2h-2zm4-4h2v2h-2zm0 4h2v2h-2z'/%3E%3Cpath fill='%23a7acb2' d='M5 22h14c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2h-2V2h-2v2H9V2H7v2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2M19 8l.001 12H5V8z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    /* 0.9375rem is the theme's own text inset — the same number `.diten-field-icon` uses to place its glyph. */
+    background-position: left 0.9375rem center;
+    background-size: 1rem 1rem;
+}
+
+/* RTL: the glyph follows the text to the other edge. `background-position` has no logical keyword, so this is
+   the one place a direction has to be named. */
+[dir="rtl"] .swal2-container .swal2-modal.swal2-popup .swal2-input.wcn-date-input {
+    background-position: right 0.9375rem center;
+}
+
+/* The dark theme's own secondary grey, from the same token. Only the fill differs from the rule above. */
+[data-bs-theme="dark"] .swal2-container .swal2-modal.swal2-popup .swal2-input.wcn-date-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='%237e7f96' d='M7 11h2v2H7zm0 4h2v2H7zm4-4h2v2h-2zm0 4h2v2h-2zm4-4h2v2h-2zm0 4h2v2h-2z'/%3E%3Cpath fill='%237e7f96' d='M5 22h14c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2h-2V2h-2v2H9V2H7v2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2M19 8l.001 12H5V8z'/%3E%3C/svg%3E");
+}
+
+/* ── WHEN THE DIALOG REFUSES WHAT WAS TYPED ────────────────────────────────
+   The library's own validation strip is a grey #f0f0f0 band at 16px with square
+   corners — a colour this product uses nowhere and a size larger than the
+   dialog's own title copy. A refusal is an ALERT, and this product already has
+   one: `.alert-danger`. The variables below are Bootstrap's own alert tokens
+   (core.css:5257 and :5331), so the strip inherits the same subtle danger
+   background, text emphasis and border every other alert in the product uses,
+   in both themes, with no colour written here. */
+.swal2-container .swal2-modal.swal2-popup .swal2-validation-message {
+    background: var(--bs-danger-bg-subtle);
+    color: var(--bs-danger-text-emphasis);
+    border: var(--bs-border-width) solid var(--bs-danger-border-subtle);
+    border-radius: var(--bs-border-radius);
+    padding: 0.75rem 1rem;   /* --bs-alert-padding-y / -x */
+    font-size: 0.8125rem;    /* the product's body copy, as everywhere else in this dialog */
+    font-weight: 400;
+}
+
+/* No rule is needed to HIDE an empty icon any more: the library already writes `display: none` on it, and
+   nothing here overrules that since `.swal2-icon:not(:empty)` replaced the unconditional force above. */
 /* The title's own top margin exists to hold it off the ICON. With no icon it lands on top of the popup's own
    padding instead: measured 56px above the title against 32px below the buttons. Removing the margin — not
    choosing a new number — leaves the popup's own 40px, which is the padding this file already set. A dialog

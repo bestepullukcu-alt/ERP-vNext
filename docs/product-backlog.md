@@ -4116,7 +4116,7 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   `document`'ında koşturması. **Bu turda yapılmadı.**
 - **Gelecek regresyon riski: 🟡** — zamanlamaya dayalı her yeni test aynı duvara toslar.
 
-### BL-190 — [ÖLÇÜM] Boş ikon kutusu ürünün KENDİ stil bloğundan geliyordu
+### BL-190 — ✅ KAPANDI (2026-08-23) — Satır içi stil bloğu backbone-custom.css'e taşındı
 - İkon bastırıldığında SweetAlert `.swal2-icon`'a zaten `style="display:none"` yazıyor. Buna rağmen 80px'lik
   boş kutu ekranda kalıyordu: `_GlobalConfirmation.cshtml`'in kendi satır-içi `<style>` bloğu
   `.swal2-icon { display: flex !important; … }` diyor ve kütüphanenin satır-içi `display:none`'ını yeniyor.
@@ -4126,3 +4126,88 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   backbone-custom.css'te" kuralının dışında ve kütüphanenin kendi davranışlarını `!important` ile eziyor.
   Taşınması ayrı bir tur; bu turda dokunulmadı.
 - **Gelecek regresyon riski: 🟡.**
+
+### BL-190 kapanış notu (2026-08-23)
+- Blok `_GlobalConfirmation.cshtml`'den `backbone-custom.css`'e taşındı; partial'da `<style>` kalmadı.
+- `!important`'lar tek tek gözden geçirildi: `.swal-icon-circle`'ın `margin: 0 auto !important`'ı **kaldırıldı**
+  (kütüphanenin orada verdiği bir marj yoktu, kimseyle dövüşmüyordu). Başlığın dört reseti **kaldı** — Bootstrap
+  utility'leriyle çarpışıyorlar ve utility'ler zaten `!important` taşıyor. İkon satırının width/border/margin
+  reset'leri **kaldı** — `div:where(.swal2-icon)`'u eziyorlar.
+- `.swal2-icon`'un koşulsuz `display: flex !important`'i **`:not(:empty)`** ile koşullu hâle geldi; bu sayede
+  kütüphanenin kendi `display: none`'ı ayakta kalıyor ve geçen turun `:empty` dolanması **silindi**.
+- Üç ekranda önce/sonra ölçüldü (Rol İzinleri · Yeni Görev · Kullanıcılar): çember 80px, glif 40px, slot
+  kenarlığı 0, başlık sapması 0, düğme renkleri aynı.
+
+### BL-191 — ✅ KAPANDI (2026-08-23) — Tarih kutusu ürünün kontrolü oldu; 21→19px KABUL
+- Sahibin bildirdiği "ikon yanlış" kusuru **glif değil, kutu** çıktı. Ölçüm, create formunun tarih alanıyla
+  yan yana: ürün **38px** yükseklik / 15px / `--bs-border-radius`; kütüphanenin kutusu **44.6px** / 17px / 8px.
+- Fark kozmetik değildi: `.diten-field-icon` kendini `calc(38px / 2)`'ye sabitliyor, çünkü bu üründe bir kontrol
+  38px'tir. 45px'lik kutuda glif ortadan **20px yukarıda** duruyordu — alanın *içinde* değil, üst kenarında.
+- Düzeltme, temanın kendi `.form-control` değerlerinden kopyalandı (core.css:2571 ve :8645), hiçbiri seçilmedi.
+  Ayrıca sarmalayıcı alanı **kucaklıyor**: kütüphanenin dikey marjı (15px/3px) girdiden sarmalayıcıya taşındı,
+  yoksa aradaki boşluk glifle kutu arasına düşüyordu.
+- Ölçülen sonuç: 38px · 15px · 6px yarıçap · glif merkezde (0) ve x=15 — create formuyla **birebir**.
+- ⚠ Bir yan etki bilerek bırakıldı: etiket→alan boşluğu 21px'ten **19px**'e indi (kutu 7px kısaldı). Alan→düğme
+  zaten 19px'ti; ikisi artık eşit. Yeni sayı seçilmedi.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-192 — ✅ KAPANDI (2026-08-23, CT kararı) — "Erişilemez ama doğru"
+- Sahibin isteği üzerine ret mesajı artık ürünün **alert** dilinde: `--bs-danger-bg-subtle` / `-text-emphasis` /
+  `-border-subtle`, tema yarıçapı, 13px. Kütüphanenin #f0f0f0, 16px, köşesiz şeridi gitti. İki temada da
+  doğrulandı ve başka bir ekranda (Rol İzinleri "Value is required") aynı dili konuşuyor.
+- ⚠ Ama **arayüzden tetiklenemiyor**: takvim geçmiş günleri zaten devre dışı bırakıyor ve flatpickr
+  `allowInput` olmadan bağlandığı için elle yazılan tarih geri alınıyor. Ölçüm bu yüzden değeri programatik
+  atayarak yapıldı — açıkça yazılıyor.
+- Yani istemci kontrolü bugün **ikinci savunma hattı**; birinci hat takvimin kendisi, üçüncüsü sunucunun 400'ü.
+- **Karar senin:** `allowInput: true` verilip elle yazma açılsın mı (o zaman ret mesajı gerçekten görünür bir
+  yüzey olur), yoksa yazma kapalı mı kalsın?
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-192 kapanış notu (2026-08-23) — CT kararı
+- `allowInput` **açılmayacak**. Bir hata mesajını görünür kılmak için tarih alanına serbest metin deliği açmak,
+  çözdüğünden çok sorun getirir.
+- Mesaj, sunucunun kendi reddinin (400 `TASK_SNOOZE_DATE_INVALID`) istemci aynası. Arayüzden tetiklenememesi
+  **kusur değil**: takvim geçmişi zaten kapatıyor. Alert dili yerinde, **erişilemez ama doğru** olarak duruyor.
+- Doğrulayıcının davranışı artık testle sabit (boş değeri reddeder · bugünü kabul eder · geçmişi reddeder ·
+  geleceği kabul eder), yani erişilemez olması onu ölçülemez yapmıyor.
+
+### BL-193 — ✅ KAPANDI (2026-08-23) — Sarmalayıcı, kütüphanenin girdisini kaybettiriyordu
+- **Bir önceki tur bir kusur getirdi ve commit alınmadığı için üretime gitmedi.** Takvim ikonunu koymak için
+  girdiyi `.diten-field` ile sarmıştım. SweetAlert girdisini popup'ın **doğrudan çocukları** arasındaki sabit
+  slot listesinden bulur; sarmalayıcı kutuyu **torun** yaptı.
+- **Tek sarmalayıcı, üç yara** (üçü de canlı ölçüldü): `Swal.getInput()` → `null` · doğrulayıcıya `''` geliyor,
+  bu yüzden **ileri** bir tarih "geçmiş tarih seçilemez" ile reddediliyordu · otomatik odak ve Enter ölü.
+  Kullanıcının gördüğü yalnız birincisiydi.
+- **Düzeltme (a şıkkı):** sarmalayıcı gitti, glif **kutunun arka planına** boyandı — SVG ürünün kendi
+  `.bx-calendar` varlığından (`vendor/fonts/iconify-icons.css:3690`) kopyalandı. Ek eleman yok, kütüphaneyle
+  dövüş yok. Kutunun tamamı zaten takvimi açıyor.
+- **(b) seçilmedi:** popup'ın doğrudan çocuğu olan mutlak konumlu ikon, dikey yerini üstündeki içerikten alır;
+  başlık/açıklama uzunluğu değişince kayar. **(c) reddedildi:** yaraların yalnız birini kapatıyordu.
+- **Bedeli açıkça yazılıyor:** `background-image` `currentColor` miras alamıyor, bu yüzden glifin grisi iki
+  temada iki ayrı kuralda yazılı (`#a7acb2` / `#7e7f96`). İkisi de `--bs-secondary-color`'ın ölçülmüş değeri;
+  token değişirse bu iki URI elle güncellenmeli. Testte ikisi de kilitli.
+- **Geçen turun ölçümleri korundu ve yeniden ölçüldü:** kutu 38px · yazı 15px · yarıçap 6px · metin 39px'ten ·
+  glif 16px, x=15, dikey merkezde · placeholder duruyor — create formuyla birebir.
+- **Gelecek regresyon riski: 🟢** — "girdi popup'ın doğrudan çocuğudur" iki testte kilitli.
+
+### BL-194 — [ÖLÇÜM] Textarea'lı diyaloglarda Enter onaylamaz (kütüphane davranışı)
+- Geriye uyum ölçümünde çıktı: tek satırlık girdide Enter **onaylıyor**; `textarea` kullanan diyaloglarda
+  **onaylamıyor** — çünkü orada Enter satır başıdır. SweetAlert'in kendi davranışı, bu turda değişmedi.
+- `showInput` kullanan altı çağrının beşi textarea; yani onlarda Enter zaten hiç onaylamıyordu. Kayıt, ileride
+  "Enter çalışmıyor" diye bildirilirse kusur mu davranış mı sorusunu bir kez daha ölçmemek için.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-195 — [ÖLÇÜM] Sol menü bir süre sonra kısalıyor, yenileyince geri geliyor
+- Sahip 2026-08-24'te bildirdi ve ekran görüntüsü verdi: kenar çubuğunda yalnız iki giriş kalmış
+  ("Mutabakat" ve "İnsan Sermayesi Yönetimi ▸ Çalışan Taslakları"); sayfa yenilenince menü tam geldi.
+- İlk ölçüm (CT, aynı gün): istemci tarafında menüyü tazeleyen **hiçbir zamanlayıcı yok** — tüm frontend JS
+  içinde `setInterval` tek yerde geçiyor ve o da WorkCenter'ın saniye sayacı. Yani menü JS ile küçülmüyor;
+  **o sayfa yüklenirken sunucu zaten kısa menüyü üretmiş.**
+- Şüphe (ÖLÇÜLMEDİ, iddia değil): jetonun süresi dolmak üzereyken yapılan bir menü çekimi kısmi/boş dönüyor
+  ve kabuk ne geldiyse onu çiziyor. Bu projede aynı sınıf bir korumanın **var olduğu** bir yer biliyoruz —
+  hak/modül eşitlemesinde "boş çekim = dokunma, asla geri alma" kuralı — ama **menü render'ında yok.**
+- Ölçülecekler: menü hangi çağrıdan besleniyor · o çağrı 401/timeout dönerse ne çiziliyor · kısmi sonucu
+  eleyen bir koruma var mı · jeton yenileme ile zamanlaması çakışıyor mu.
+- ⚠ Bu bir WorkCenter kusuru değil, kiracı kabuğunun (tenant shell) kusuru. Kendi turunda ölçülecek.
+- **Gelecek regresyon riski: 🟡** — menü her sayfada çiziliyor; sessizce eksik çizmesi kullanıcıya
+  "yetkim gitti" gibi görünür ve yanlış hata bildirimleri üretir.

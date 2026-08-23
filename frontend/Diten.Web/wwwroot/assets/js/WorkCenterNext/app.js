@@ -6347,6 +6347,9 @@
              * dialog that is neither destructive nor a warning nor a question says so by leaving it out.
              */
             hideIcon: !!options.hideIcon,
+            // WHICH GLYPH. Absent everywhere else, so every other dialog keeps the one its `type` gives it; the
+            // circle, its colour and the button's colour stay the type's business either way.
+            icon: options.icon,
             showInput: !!options.input,
             /*
              * WHAT KIND of box. Absent for every caller that wants prose — the wrapper still answers `textarea`,
@@ -6600,12 +6603,14 @@
             title: t('SnoozeTitle'),
             subtext: esc(t('SnoozeSubtext')),
             /*
-             * NO ICON. The five the wrapper draws all carry a seriousness this action does not have — a bin, an
-             * error, a tick, a warning — and the neutral one is a question mark, which asks "are you sure?" over
-             * a dialog whose question is "until when?". A title, a sentence, a labelled field and two buttons
-             * describe this without a picture. (Owner decision; the wrapper's default is unchanged.)
+             * A MOON. The dialog's gravity is right as it stands — a plain primary confirmation — but the glyph
+             * its type hands out is a question mark, which asks "are you sure?" while this dialog asks "until
+             * when?". A moon says "later" in a way the title does not repeat.
+             *
+             * Only the picture is named here. The circle, its colour and the confirm button's colour still come
+             * from `type`, untouched: measured at `rgb(105, 108, 255)` before and after.
              */
-            hideIcon: true,
+            icon: 'bx-moon',
             confirmText: t('SnoozeConfirm'),
             cancelText: t('DialogDismiss'),
             input: {
@@ -6623,6 +6628,23 @@
                 placeholder: t('SnoozeDatePlaceholder'),
                 onOpen: (input) => {
                     if (!input) { return; }
+                    /*
+                     * ⚠ THE INPUT STAYS A DIRECT CHILD OF THE POPUP. Do not wrap it — measured 2026-08-23, and
+                     * it cost a shipped defect: SweetAlert finds its input by walking the popup's own FIXED SLOT
+                     * LIST (`.swal2-input`, `.swal2-file`, `.swal2-select`… in order), not by querying the
+                     * subtree. A `.diten-field` wrapper made the box a GRANDCHILD, so `Swal.getInput()` returned
+                     * null and three things broke at once: the validator read '' and answered "you cannot pick a
+                     * past date" for a date in the FUTURE, the dialog never focused the field, and Enter did not
+                     * confirm. `.diten-field` is right everywhere else in this product — it is wrong only INSIDE
+                     * this popup, because this popup is a slot list rather than a free container.
+                     *
+                     * The calendar glyph is painted ON the box instead (`.wcn-date-input` in
+                     * backbone-custom.css), from the very SVG the product's own `.bx-calendar` carries. No
+                     * element is added, so there is nothing for the library to trip over — and the whole box
+                     * opens the picker, so the glyph does not need to be a control of its own.
+                     */
+                    input.classList.add('wcn-date-input');
+
                     if (global.flatpickr) {
                         global.flatpickr(input, { dateFormat: 'Y-m-d', minDate: data.todayIso, disableMobile: true });
                     } else {
@@ -6630,11 +6652,6 @@
                         input.min = data.todayIso;
                     }
                 },
-                /*
-                 * The client check does not REPLACE the server's (400 TASK_SNOOZE_DATE_INVALID) — it gets there
-                 * first. Both stay: one keeps the reader from making the mistake, the other keeps the data
-                 * honest whatever the client believes.
-                 */
                 /*
                  * TODAY IS ALLOWED (BL-182, owner decision 2026-08-23). The check used to reject it, while the
                  * calendar offered it — two halves of one field disagreeing. The server stores the snooze at

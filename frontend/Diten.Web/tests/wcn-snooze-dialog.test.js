@@ -24,11 +24,22 @@ const value = (lang, key) => {
   return m ? m[1] : null;
 };
 
-/** The body of `toggleSnooze`, comments and all — the dialog lives inside it. */
+/** The body of `toggleSnooze`. The dialog lives inside it. */
 const toggleSnooze = () => {
   const start = APP.indexOf("const toggleSnooze");
   return APP.slice(start, APP.indexOf("\n    const ", start + 40));
 };
+
+/**
+ * The same body with its comments removed.
+ *
+ * A guard that greps the source must not match the prose EXPLAINING the thing it forbids — the comment above
+ * `toggleSnooze` says the words "diten-field" precisely to warn the next reader off them. This session has been
+ * caught by that four times; stripping first is the fix that keeps working.
+ */
+const toggleSnoozeCode = () => toggleSnooze()
+  .replace(/\/\*[\s\S]*?\*\//g, "")
+  .replace(/(^|[^:])\/\/.*$/gm, "$1");
 
 describe("the snooze dialog", () => {
   it("goes through the product's one confirm, not a raw Swal", () => {
@@ -48,6 +59,22 @@ describe("the snooze dialog", () => {
     expect(body).toContain("type: 'text'");            // not a native date control — one date language per product
     expect(body).toContain("global.flatpickr");
     expect(body).toContain("minDate: data.todayIso");
+  });
+
+  it("keeps the date box where the library looks for it", () => {
+    /*
+     * ⚠ THE DEFECT THIS ROUND FIXED, pinned so it cannot come back. SweetAlert finds its input among the
+     * popup's DIRECT CHILDREN, in a fixed slot list. A `.diten-field` wrapper made it a grandchild and
+     * `Swal.getInput()` returned null — so the validator read '' and answered "you cannot pick a past date"
+     * for a date in the FUTURE, the field never took focus, and Enter stopped confirming. One wrapper, three
+     * wounds, and only the first was visible.
+     *
+     * MUTATION GUARD: wrap the input again and this goes red.
+     */
+    const code = toggleSnoozeCode();
+    expect(code, "the input is being wrapped").not.toContain("diten-field");
+    expect(code).toContain("classList.add('wcn-date-input')");
+    expect(code, "an element is being inserted around the box").not.toContain("insertBefore");
   });
 
   it("shows the date format the box will actually hold", () => {
@@ -137,5 +164,77 @@ describe("the dialog's words", () => {
     ["görünmez", "disappear", "hidden from", "gelen kutunda"].forEach((claim) =>
       expect(value("tr", "SnoozeSubtext").toLowerCase() + value("en", "SnoozeSubtext").toLowerCase())
         .not.toContain(claim));
+  });
+});
+
+
+describe("what the dialog hands the validator", () => {
+  /*
+   * The shipped defect was not in the validator's RULE, it was in the value reaching it: a wrapper hid the box
+   * from the library, `Swal.getInput()` came back null, and the validator was handed '' — which its empty check
+   * then reported as "you cannot pick a past date", over a date the user had picked in the FUTURE.
+   *
+   * So both halves are pinned here, by CALLING the validator the module actually builds: an empty value is
+   * refused (that check is what turns a lost value into a visible refusal rather than a silent save), and a
+   * future date passes. The harness captures `window.showConfirm`, which is the seam the module calls.
+   */
+  const { bootSurface, app } = require("./wcn-boot");
+  const TASK_ID = "98d1f94e-1848-4539-8a99-774e72651b8a";
+  const FUTURE = new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10);
+
+  const item = {
+    fixtureKind: "workItem", id: TASK_ID, workIntent: "task", assignmentMode: "direct", ownershipState: "owned",
+    admissionState: "admitted", normalizedStatus: "InProgress", taskLifecycle: "InProgress",
+    executionState: "active", timerState: "notApplicable", systemState: "fresh", actionDepth: "inline",
+    title: { kind: "display", text: "Q3", locale: "und" },
+    nativeStatus: { code: "InProgress", label: { kind: "resource", key: "WorkAggregation_TaskStatus_InProgress" } },
+    source: { providerCode: "tasks", providerContractVersion: "1.0", objectType: "task", objectId: TASK_ID,
+      deepLink: `/Tasks/${TASK_ID}` },
+    assignee: { id: "dddddddd-dddd-dddd-dddd-dddddddddddd", isCurrentUser: true },
+    requester: { id: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee", isCurrentUser: false },
+    lifecycleOwner: "tasks", workItemCapabilities: ["planning", "execution"], actions: [],
+    concurrency: { kind: "version", token: "1" }, waitingContext: null, escalation: null
+  };
+
+  let captured;
+  beforeEach(async () => {
+    captured = null;
+    // `toggleSnooze` falls back to an immediate snooze when there is no dialog library at all, so both seams
+    // are present: a Swal object for the guard to pass, and the shared confirm the module actually calls.
+    global.Swal = { fire: () => ({ then: () => {} }), showValidationMessage: () => {}, getInput: () => null };
+    global.showConfirm = (title, callback, options) => { captured = { title, callback, options }; };
+    await bootSurface({ rootAttrs: `data-wcn-page="detail" data-wcn-item-id="${TASK_ID}"`, items: [item] });
+    app().querySelector("[data-wcn-snooze]").click();
+    // The click handler is async (it awaits the item lookup before opening), so one microtask is not enough.
+    await new Promise((r) => setTimeout(r, 50));
+  });
+
+  it("reaches the shared confirm at all", () => {
+    // Non-vacuity: every assertion below would pass on a dialog that never opened.
+    expect(captured, "the snooze dialog never opened").toBeTruthy();
+    /*
+     * What is captured here is what reaches the SHARED COMPONENT: the module's seam flattens its own
+     * `input: {…}` into the wrapper's vocabulary, so the validator arrives as `inputValidator`. Asserting on
+     * that name is deliberate — it is the contract between the module and the component.
+     */
+    expect(typeof captured.options.inputValidator).toBe("function");
+    expect(captured.options.showInput).toBe(true);
+    expect(captured.options.inputType).toBe("text");
+  });
+
+  it("refuses an empty value — the state a lost box produces", () => {
+    // MUTATION GUARD: drop the empty check and a dialog whose value never arrived would save nothing, silently.
+    expect(captured.options.inputValidator("")).toBeTruthy();
+    expect(captured.options.inputValidator(undefined)).toBeTruthy();
+  });
+
+  it("accepts a date in the future", () => {
+    expect(captured.options.inputValidator(FUTURE)).toBeNull();
+  });
+
+  it("refuses a date in the past, and accepts today", () => {
+    expect(captured.options.inputValidator("2020-01-01")).toBeTruthy();
+    const today = new Date().toISOString().slice(0, 10);
+    expect(captured.options.inputValidator(today), "today is a legitimate choice (BL-182)").toBeNull();
   });
 });

@@ -207,3 +207,52 @@ describe("the icon", () => {
     expect(info.seen.config.customClass.confirmButton).toContain("btn-primary");
   });
 });
+
+
+describe("the glyph, and only the glyph", () => {
+  /*
+   * ⚠ A CORRECTION. The previous round reported that the icon and the confirm button's colour "are decided
+   * together in one chain, so opening the glyph means opening the colour too". That was wrong, and it was not
+   * measured: `confirmBtnClass` and the icon markup were always two separate variables. One parameter is enough,
+   * and the colour never leaves the type's hands.
+   */
+  it("can be named by a caller", () => {
+    const { seen, stub } = captureConfig();
+    loadWrapper(stub)("Snooze", () => {}, { icon: "bx-moon" });
+    expect(seen.config.iconHtml).toContain("bx-moon");
+    expect(seen.config.iconHtml, "the old glyph is still in there").not.toContain("bx-help-circle");
+  });
+
+  it("keeps the circle, its colour and its size — those belong to the type", () => {
+    const { seen, stub } = captureConfig();
+    loadWrapper(stub)("Snooze", () => {}, { icon: "bx-moon" });
+    // The same circle the info type draws: same classes, so same background, border and 80px.
+    expect(seen.config.iconHtml).toContain("swal-icon-circle bg-label-primary border-primary border-opacity-25");
+    expect(seen.config.iconHtml).toContain("text-primary");
+  });
+
+  it("does not touch the confirm button's colour, whatever glyph is asked for", () => {
+    const plain = captureConfig();
+    loadWrapper(plain.stub)("DeleteConfirmation", () => {}, {});
+    const swapped = captureConfig();
+    loadWrapper(swapped.stub)("DeleteConfirmation", () => {}, { icon: "bx-moon" });
+    expect(swapped.seen.config.customClass.confirmButton).toBe(plain.seen.config.customClass.confirmButton);
+    expect(swapped.seen.config.customClass.confirmButton).toContain("btn-danger");
+    // …and the destructive circle stays destructive: a moon on a delete dialog is still a delete dialog.
+    expect(swapped.seen.config.iconHtml).toContain("text-danger");
+  });
+
+  it("leaves every existing caller with the glyph its type gives it", () => {
+    // MUTATION GUARD: make the parameter's default anything but "the type's glyph" and this goes red for the
+    // four modules that never asked for one.
+    [["DeleteConfirmation", "bx-trash"], ["AreYouSure", "bx-help-circle"]].forEach(([key, glyph]) => {
+      const { seen, stub } = captureConfig();
+      loadWrapper(stub)(key, () => {}, {});
+      expect(seen.config.iconHtml, `${key} lost its glyph`).toContain(glyph);
+    });
+    const warn = captureConfig();
+    loadWrapper(warn.stub)("AreYouSure", () => {}, { type: "warning" });
+    expect(warn.seen.config.iconHtml).toContain("bx-error");
+    expect(warn.seen.config.iconHtml).toContain("text-warning");
+  });
+});
