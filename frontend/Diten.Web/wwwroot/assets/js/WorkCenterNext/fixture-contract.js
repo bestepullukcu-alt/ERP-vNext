@@ -99,7 +99,11 @@
      */
     const ACTIVITY_EVENT_CODES = [
         'created', 'accepted', 'planned', 'started', 'resumed', 'waiting', 'submittedForReview',
-        'reviewCancelled', 'completed', 'cancelled', 'claimed', 'released', 'reassigned', 'returned', 'unknown'
+        'reviewCancelled', 'completed', 'cancelled', 'claimed', 'released', 'reassigned', 'returned',
+        // A FIELD EDIT (2026-08-23) — the task stayed where it was and something about it changed. It is the one
+        // code whose sentence names WHAT changed rather than which act occurred.
+        'edited',
+        'unknown'
     ];
 
     /*

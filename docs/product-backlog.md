@@ -3865,3 +3865,49 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   ama yol farklı** (alt görev paneli, `inquire` diyaloğu değil).
 - **Yapılacak:** aynı `until(...)` desenine çevir. Bu turda yapılmadı.
 - **Gelecek regresyon riski: 🟡** — yalancı kırmızı.
+
+### BL-169 — ⚠ CANLIDA BULUNAN KUSUR — alan geçmişi "kim" diyemiyordu
+- İlk canlı ölçümde satırlar **"Öncelik: High → Low · İsim bulunamadı"** diyordu; yanındaki `created` satırı
+  kişiyi adıyla söylüyordu.
+- **Sebep:** geçmişi COMMIT anında depo yazıyor ve deponun kullanıcı bağlamı yok — aktör her zaman yazan
+  tarafından `Declare` edilmek zorunda. `UpdateTaskItemHandler` hiçbir şey declare etmiyordu, çünkü alan
+  günlüğünden ÖNCE zaten hiç kayıt üretmiyordu.
+- "Son tarihi kim değiştirdi" bu turun tek sorusu; kişiyi söyleyemeyen bir kayıt sorunun yarısını cevaplıyor.
+- **Düzeltildi** (`task.Declare(TaskTransitionKind.Edited, _currentUser.UserId)`) ve yan etkisi kapatıldı:
+  boş bir "Kaydet" artık satır yazmıyor (`editedWithNothingToSay`). İkisi de testli.
+- **Testle değil, canlı ölçümle bulundu.** **Gelecek regresyon riski: 🟢.**
+
+### BL-170 — [İŞ 3 CEVABI] Mevcut "kayıt öncesi" cümlesi alan değişiklikleri için DOĞRU DEĞİL
+- Cümle: *"Bu görevin, kayıt tutulmaya başlanmadan önceki **adımları** kayıtlı değil."* — bir "adım" yaşam
+  döngüsü hareketi; alan değişikliği adım değil.
+- **Tetikleyicisi de yanlış:** cümle yalnız `created` olayı YOKSA çıkıyor. Geçiş günlüğü varken ama alan
+  günlüğü yokken oluşturulmuş bir görevde `created` VAR → cümle çıkmaz → oysa o görevin alan geçmişi de yok.
+- **Ve bir alan-geçmişi boşluğu görev başına TESPİT EDİLEMEZ:** "hiç alan değişmedi" ile "kayıt başlamadan önce
+  değişti" arasında ayrım yapacak bir işaret yok. Uydurulmuş bir cümle, kanıtlanamayan bir iddia olurdu.
+- **Bu turda hiçbir şey eklenmedi.** Seçenekler (karar CT'de): (a) kiracı bazında "alan geçmişi şu tarihte
+  başladı" damgası tutup cümleyi ona dayandırmak; (b) mevcut cümlenin metnini "adımları" yerine "geçmişi" diye
+  genişletip tetikleyiciyi olduğu gibi bırakmak (eksik kalır ama yanlış olmaz); (c) susmak.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-171 — [ÖLÇÜM] Kısıtlı alanın yazımı zaten reddediliyor; geçmiş satırı elle tohumlandı
+- Kısıtlı bir alanın (`ViewPermission` taşıyan) değerini GÖREMEYEN aktör onu YAZAMIYOR da — canlı 400.
+  Doğru davranış, ama bu turun test edeceği şey okuma yolu olduğu için geçmiş satırı doğrudan Mongo'ya kondu.
+- Okuma ölçümü: değerler (45000/52000), tanım kodu ve etiket **tüm yanıtta hiç geçmiyor**; ekranda satır
+  **"bir alan değiştirildi"** olarak duruyor.
+- **Açıkça yazılıyor:** ikinci aktör için parola CT'de yok; ölçüm **API katmanında** yapıldı, ekranla değil.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-172 — [KARAR] Geçmişte "aktör" alanı olmayan eski satırlar var
+- Bu turdan önce yazılmış iki `Edited` satırı `ActorUserId = null` taşıyor (BL-169 düzeltilmeden önce
+  üretildiler) ve ekranda "İsim bulunamadı" diyorlar. **Geriye doldurma YAPILMADI** — kim olduğu kayıtlı değil
+  ve üretilemez; uydurmak günlüğün tek işini bozardı.
+- Bunlar yalnızca dev veritabanındaki test kayıtları. Üretimde aynı durum oluşamaz (alan günlüğü bu turla
+  birlikte, aktör bildirimiyle birlikte geliyor).
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-173 — ✅ KAPANDI (2026-08-23) — BL-168 kararsız test `until(...)` desenine çevrildi
+- `openCreate` bir makro-görev bekliyordu; panel ise kişi aramasının `await`inden SONRA açılıyor, bu yüzden tam
+  süit yükü altında test 5000ms'i boş yere bekliyordu.
+- Süre **artırılmadı**: `until(() => panel var mı)` ve `until(() => created.length > 0)`. İki ardışık koşuda
+  117/117.
+- **Gelecek regresyon riski: 🟢.**

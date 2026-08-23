@@ -123,7 +123,20 @@ public enum TaskTransitionKind
     /// alternative — refusing to record what could not be named — would put the silent hole back that this whole
     /// log exists to close, so an unnamed record is kept and made loud rather than dropped and made invisible.</para>
     /// </summary>
-    Unknown = 14
+    Unknown = 14,
+
+    /// <summary>
+    /// Somebody changed WHAT the work is, or WHEN it is expected — a field edit rather than a lifecycle move.
+    ///
+    /// <para>Its own kind because it answers a different question. Every other value here says the task MOVED;
+    /// this one says it stayed exactly where it was and something about it changed. Folding it into
+    /// <see cref="Unknown"/> would have buried real edits under the code that exists to shout about undeclared
+    /// transitions.</para>
+    ///
+    /// <para>ONE entry per SAVE, never per field — see <c>TaskTransition.FieldChanges</c>. "Ali moved the due
+    /// date and raised the priority" is how a person remembers it; five rows is not.</para>
+    /// </summary>
+    Edited = 15
 }
 
 /// <summary>Assignment/ownership history event kinds (append-only audit of who held the task).</summary>

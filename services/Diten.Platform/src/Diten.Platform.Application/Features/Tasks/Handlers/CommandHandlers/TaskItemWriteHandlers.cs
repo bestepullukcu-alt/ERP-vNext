@@ -194,6 +194,20 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
                 task.Id, reassigned);
         }
 
+        /*
+         * WHO EDITED IT. ⚠ FOUND LIVE, not by a test: the field-history rows rendered "İsim bulunamadı" as the
+         * actor while the `created` row beside them named a person. The repository writes the history at the
+         * COMMIT and has no user context of its own — the actor has always had to be DECLARED by the writer, and
+         * this handler never declared anything because before field logging it produced no entry at all.
+         *
+         * "Who changed the due date" is the entire question this log exists to answer, so an entry that cannot
+         * name a person is the defect rather than a cosmetic gap.
+         *
+         * The kind is stated too, rather than left to the repository's `moved ? Unknown : Edited` fallback: this
+         * writer knows it is an edit, and a declared intent is how every other handler says so.
+         */
+        task.Declare(TaskTransitionKind.Edited, _currentUser.UserId);
+
         if (!await _tasks.UpdateAsync(task, request.ExpectedVersion, ct))
         {
             return Response<NoContent>.Fail(

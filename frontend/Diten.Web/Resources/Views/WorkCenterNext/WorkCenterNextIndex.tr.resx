@@ -1965,4 +1965,46 @@
   <data name="WaitingOnNobody" xml:space="preserve">
     <value>Belirli bir kişi değil</value>
   </data>
+  <data name="AuditEventEdited" xml:space="preserve">
+    <value>Alanlar değiştirildi</value>
+  </data>
+  <data name="AuditFieldChangeValued" xml:space="preserve">
+    <value>{0}: {1} → {2}</value>
+  </data>
+  <data name="AuditFieldChangeNamed" xml:space="preserve">
+    <value>{0} değiştirildi</value>
+  </data>
+  <data name="AuditFieldHidden" xml:space="preserve">
+    <value>bir alan</value>
+  </data>
+  <data name="AuditFieldEmpty" xml:space="preserve">
+    <value>boş</value>
+  </data>
+  <data name="AuditFieldDueAt" xml:space="preserve">
+    <value>Son tarih</value>
+  </data>
+  <data name="AuditFieldStartAt" xml:space="preserve">
+    <value>Başlangıç</value>
+  </data>
+  <data name="AuditFieldPlannedDate" xml:space="preserve">
+    <value>Planlanan tarih</value>
+  </data>
+  <data name="AuditFieldPriority" xml:space="preserve">
+    <value>Öncelik</value>
+  </data>
+  <data name="AuditFieldAssignee" xml:space="preserve">
+    <value>Atanan</value>
+  </data>
+  <data name="AuditFieldTitle" xml:space="preserve">
+    <value>Başlık</value>
+  </data>
+  <data name="AuditFieldDescription" xml:space="preserve">
+    <value>Açıklama</value>
+  </data>
+  <data name="AuditFieldEstimateHours" xml:space="preserve">
+    <value>Tahmini süre</value>
+  </data>
+  <data name="AuditFieldTags" xml:space="preserve">
+    <value>Etiketler</value>
+  </data>
 </root>

@@ -82,6 +82,20 @@ public sealed class TaskTransition : TenantScopedEntity
     /// Text, never a resource key.</summary>
     public string? Reason { get; set; }
 
+    /// <summary>
+    /// WHICH FIELDS this save changed — empty for a pure lifecycle move, populated for an edit.
+    ///
+    /// <para><b>A LIST ON ONE ENTRY, not one entry per field.</b> Five fields changed in one save is one act, and
+    /// that is how the person who did it remembers it: "Ali moved the due date and raised the priority", not five
+    /// separate events an hour apart. Five rows would also bury the six entries that tell the task's story under
+    /// sixty that do not — the exact objection <c>RecordIfMovedAsync</c> raises against field logging, answered
+    /// rather than ignored.</para>
+    ///
+    /// <para>Embedded rather than a collection of its own for the same reason the log is one collection: the
+    /// reader has ONE question, and it deserves one ordered answer.</para>
+    /// </summary>
+    public List<TaskFieldChange> FieldChanges { get; set; } = [];
+
     public DateTimeOffset? DeletedAt { get; set; }
 }
 

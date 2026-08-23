@@ -1965,4 +1965,46 @@
   <data name="WaitingOnNobody" xml:space="preserve">
     <value>Nobody in particular</value>
   </data>
+  <data name="AuditEventEdited" xml:space="preserve">
+    <value>Fields changed</value>
+  </data>
+  <data name="AuditFieldChangeValued" xml:space="preserve">
+    <value>{0}: {1} → {2}</value>
+  </data>
+  <data name="AuditFieldChangeNamed" xml:space="preserve">
+    <value>{0} changed</value>
+  </data>
+  <data name="AuditFieldHidden" xml:space="preserve">
+    <value>a field</value>
+  </data>
+  <data name="AuditFieldEmpty" xml:space="preserve">
+    <value>empty</value>
+  </data>
+  <data name="AuditFieldDueAt" xml:space="preserve">
+    <value>Due date</value>
+  </data>
+  <data name="AuditFieldStartAt" xml:space="preserve">
+    <value>Start date</value>
+  </data>
+  <data name="AuditFieldPlannedDate" xml:space="preserve">
+    <value>Planned date</value>
+  </data>
+  <data name="AuditFieldPriority" xml:space="preserve">
+    <value>Priority</value>
+  </data>
+  <data name="AuditFieldAssignee" xml:space="preserve">
+    <value>Assignee</value>
+  </data>
+  <data name="AuditFieldTitle" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="AuditFieldDescription" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="AuditFieldEstimateHours" xml:space="preserve">
+    <value>Estimate</value>
+  </data>
+  <data name="AuditFieldTags" xml:space="preserve">
+    <value>Tags</value>
+  </data>
 </root>

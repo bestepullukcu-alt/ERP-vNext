@@ -1965,4 +1965,46 @@
   <data name="WaitingOnNobody" xml:space="preserve">
     <value>لا أحد بعينه</value>
   </data>
+  <data name="AuditEventEdited" xml:space="preserve">
+    <value>تغيّرت الحقول</value>
+  </data>
+  <data name="AuditFieldChangeValued" xml:space="preserve">
+    <value>{0}: {1} ← {2}</value>
+  </data>
+  <data name="AuditFieldChangeNamed" xml:space="preserve">
+    <value>تغيّر {0}</value>
+  </data>
+  <data name="AuditFieldHidden" xml:space="preserve">
+    <value>أحد الحقول</value>
+  </data>
+  <data name="AuditFieldEmpty" xml:space="preserve">
+    <value>فارغ</value>
+  </data>
+  <data name="AuditFieldDueAt" xml:space="preserve">
+    <value>تاريخ الاستحقاق</value>
+  </data>
+  <data name="AuditFieldStartAt" xml:space="preserve">
+    <value>تاريخ البدء</value>
+  </data>
+  <data name="AuditFieldPlannedDate" xml:space="preserve">
+    <value>التاريخ المخطط</value>
+  </data>
+  <data name="AuditFieldPriority" xml:space="preserve">
+    <value>الأولوية</value>
+  </data>
+  <data name="AuditFieldAssignee" xml:space="preserve">
+    <value>المسؤول</value>
+  </data>
+  <data name="AuditFieldTitle" xml:space="preserve">
+    <value>العنوان</value>
+  </data>
+  <data name="AuditFieldDescription" xml:space="preserve">
+    <value>الوصف</value>
+  </data>
+  <data name="AuditFieldEstimateHours" xml:space="preserve">
+    <value>المدة التقديرية</value>
+  </data>
+  <data name="AuditFieldTags" xml:space="preserve">
+    <value>الوسوم</value>
+  </data>
 </root>

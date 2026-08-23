@@ -866,9 +866,33 @@ describe("creating a subtask in detail", () => {
    * The lookup is awaited BEFORE the panel is drawn now, so there is exactly one render — and the node appears
    * a microtask later than it used to. Waiting for the promise chain is what this extra tick is.
    */
+  /*
+   * ⚠ BL-168 — WAIT FOR THE PANEL, NOT FOR A TICK.
+   *
+   * This was `setTimeout(resolve, 0)`, which is one macrotask — and the panel opens after an await on the people
+   * lookup, so under full-suite load the click had not produced a panel yet and the test spent its whole 5000ms
+   * budget looking for a field that was about to exist. Raising the number would only move the threshold; the
+   * next slower machine fails again, and by then nobody remembers why the number is what it is.
+   *
+   * `until` returns the instant the panel is there. Same cure as BL-163.
+   */
+  /*
+   * Wait for a CONDITION, with a ceiling — never for a fixed number of ticks (BL-168, and BL-163 before it).
+   * A sleep encodes a guess about how fast the machine is; under load that guess is wrong often enough to
+   * produce a red run that means nothing.
+   */
+  const until = async (predicate, { timeout = 2000, step = 5 } = {}) => {
+    const deadline = Date.now() + timeout;
+    while (Date.now() < deadline) {
+      if (predicate()) { return; }
+      await new Promise((resolve) => setTimeout(resolve, step));
+    }
+    if (!predicate()) { throw new Error(`until(): condition never became true within ${timeout}ms`); }
+  };
+
   const openCreate = async () => {
     app().querySelector("[data-wcn-subtask-add-detailed]").click();
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await until(() => !!app().querySelector('[data-wcn-newsubtask-field="title"]'));
   };
 
   it("keeps quick-add and offers the detailed panel beside it", async () => {
@@ -911,7 +935,7 @@ describe("creating a subtask in detail", () => {
     title.value = "Alt iş";
     title.dispatchEvent(new window.Event("input", { bubbles: true }));
     app().querySelector("[data-wcn-newsubtask-save]").click();
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await until(() => created.length > 0);
 
     expect(created[created.length - 1].parentTaskItemId).toBe(TASK_ID);
     // Moving a task under a different parent is a different operation with its own rules.

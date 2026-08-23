@@ -266,21 +266,49 @@ public sealed class TaskTransitionLogTests
         Assert.Empty(repository.Transitions.Events);
     }
 
+    /*
+     * ⚠ THIS TEST USED TO ASSERT THE OPPOSITE — "An ordinary edit records nothing" — and its comment said why:
+     * "This is a LIFECYCLE log, not a field-level audit trail… otherwise the six entries that tell the task's
+     * story would be buried under sixty that do not. (Field-level auditing is a separate concern with a separate
+     * owner; see the deferred item raised alongside this round.)"
+     *
+     * That deferred item came due (owner decision, 2026-08-23): "who changed the due date" had no answer
+     * anywhere. The BURIAL the old text warned about is what shaped the answer rather than being ignored — ONE
+     * entry per SAVE listing the fields that moved, not one per field. Two fields changed together is still one
+     * line in the feed.
+     *
+     * A CHECKLIST write still records nothing, and that half of the old decision is asserted below unchanged.
+     */
     [Fact]
-    public async Task An_ordinary_edit_records_nothing()
+    public async Task An_ordinary_edit_records_ONE_entry_naming_the_fields_that_moved()
     {
-        /*
-         * This is a LIFECYCLE log, not a field-level audit trail. Retitling a task, moving its due date or ticking
-         * a checklist item moves none of the three watched fields and writes no entry — otherwise the six entries
-         * that tell the task's story would be buried under sixty that do not. (Field-level auditing is a separate
-         * concern with a separate owner; see the deferred item raised alongside this round.)
-         */
         var task = AssignedTask(TaskLifecycle.InProgress);
         var repository = new FakeTaskItemRepository(task);
 
         var stored = await repository.GetByIdAsync(task.Id);
         stored!.Title = "A better title";
-        stored.DueAt = DateTimeOffset.UtcNow.AddDays(3);
+        stored.DueAt = new DateTimeOffset(2026, 8, 30, 17, 0, 0, TimeSpan.FromHours(3));
+        await repository.UpdateAsync(stored, stored.Version);
+
+        // ONE entry, not two — the whole point of the shape.
+        var entry = Assert.Single(repository.Transitions.Events);
+        Assert.Equal(TaskTransitionKind.Edited, entry.Kind);
+        // The lifecycle did not move, and the entry says so: From == To, the state this log already models.
+        Assert.Equal(entry.FromLifecycle, entry.ToLifecycle);
+        Assert.Equal(
+            new[] { TaskFieldChangeCodes.Title, TaskFieldChangeCodes.DueAt }.Order(),
+            entry.FieldChanges.Select(c => c.Field).Order());
+    }
+
+    [Fact]
+    public async Task A_save_that_changed_nothing_recorded_still_writes_no_entry()
+    {
+        // Non-vacuity for the rule above: recording on EVERY save would pass that test and flood the feed.
+        var task = AssignedTask(TaskLifecycle.InProgress);
+        var repository = new FakeTaskItemRepository(task);
+
+        var stored = await repository.GetByIdAsync(task.Id);
+        stored!.SpentHours += 2;          // a counter — deliberately outside the recorded set
         await repository.UpdateAsync(stored, stored.Version);
 
         Assert.Empty(repository.Transitions.Events);
@@ -432,6 +460,21 @@ public sealed class TaskTransitionLogTests
             {
                 var repository = new FakeTaskItemRepository();
                 await Create(repository);
+                return Last(repository);
+            },
+            /*
+             * A FIELD EDIT (2026-08-23). Driven through the repository rather than a handler, deliberately: the
+             * diff lives at the WRITE, where the pre-image is, so every caller that saves a task gets it —
+             * including the ones that have not been written yet. Routing this through UpdateTaskItemHandler
+             * would prove one path and leave the rule's actual home untested.
+             */
+            [TaskTransitionKind.Edited] = async () =>
+            {
+                var task = AssignedTask(TaskLifecycle.InProgress);
+                var repository = new FakeTaskItemRepository(task);
+                var stored = await repository.GetByIdAsync(task.Id);
+                stored!.DueAt = new DateTimeOffset(2026, 9, 1, 17, 0, 0, TimeSpan.FromHours(3));
+                await repository.UpdateAsync(stored, stored.Version);
                 return Last(repository);
             },
             [TaskTransitionKind.Accepted] = async () =>

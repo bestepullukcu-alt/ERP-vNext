@@ -437,7 +437,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // actions may be offered — and the contract requires every blocked action to be present and disabled,
         // never hidden. A hidden button teaches the reader nothing about why the work will not move.
         var dependencies = ToDependencies(task, edges ?? [], edgeTasks);
-        var activity = ToActivity(comments ?? [], transitions ?? [], displayNames, actor.UserId);
+        var activity = ToActivity(
+            comments ?? [], transitions ?? [], displayNames, actor.UserId, fieldDefinitions, _permissions);
 
         /*
          * THE FOUR CONDITIONAL CONTAINERS, DECIDED ONCE.
@@ -1147,11 +1148,88 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// <para>An event carries NO text: its sentence is built in the reader's language from the codes in
     /// <see cref="WorkItemActivityEventDto"/>. A comment carries no event. Neither half fakes the other's shape.</para>
     /// </summary>
+    /// <summary>
+    /// The recorded field changes, FILTERED FOR THIS READER.
+    ///
+    /// <para>⚠ THE BACK DOOR THIS CLOSES. BL-024 hides a configurable field's VALUE from a caller without its
+    /// view permission — and a history that reported "changed X from 45.000 to 52.000" would hand the same value
+    /// back through a different door. The rule is asked HERE, on the server, through the same
+    /// <c>TaskFieldAccessRules</c> the value goes through, so the two answers cannot drift.</para>
+    ///
+    /// <para>A field the reader may not see keeps its ROW and loses everything else — including its NAME, which
+    /// leaks on its own ("Salary band" tells you the task carries salary data). What remains is that somebody
+    /// edited something at that moment, which the entry's actor and timestamp already say. Dropping the row
+    /// instead would make a person with fewer permissions see a DIFFERENT history rather than a shorter one, and
+    /// the count on screen would disagree between two readers of the same task.</para>
+    /// </summary>
+    private static IReadOnlyList<WorkItemFieldChangeDto>? ToFieldChanges(
+        IReadOnlyList<TaskFieldChange>? changes,
+        IReadOnlyDictionary<string, TaskFieldDefinition>? definitions,
+        IActorPermissionContext actor)
+    {
+        if (changes is null || changes.Count == 0)
+        {
+            return null;
+        }
+
+        var catalogue = definitions ?? new Dictionary<string, TaskFieldDefinition>(StringComparer.OrdinalIgnoreCase);
+
+        return changes.Select(change =>
+        {
+            /*
+             * Only a CONFIGURABLE field can be restricted — the built-in ones (a due date, a priority) are part
+             * of every task and carry no per-field permission. Treating them as unrestricted here is not a
+             * shortcut: there is no rule to consult, and inventing one would hide facts nobody classified.
+             */
+            if (change.Field != TaskFieldChangeCodes.CustomField)
+            {
+                return new WorkItemFieldChangeDto(
+                    change.Field, Label: null, change.From, change.To, change.ValuesOmitted);
+            }
+
+            var definition = change.DefinitionCode is null
+                ? null
+                : catalogue.GetValueOrDefault(change.DefinitionCode);
+
+            /*
+             * The value the rule is asked about is a RECONSTRUCTED one, carrying the definition code and the
+             * classification the definition declares. The stored history row is not a TaskFieldValue and never
+             * was; what matters is that the same rule sees the same two inputs it sees on the read path.
+             *
+             * When the definition is gone (retired and purged), CanView falls back to the value's own
+             * classification — and a history row has none, so it is treated as the classification the definition
+             * WOULD have carried is unknown. Fail closed: unknown means redacted.
+             */
+            if (definition is null)
+            {
+                return new WorkItemFieldChangeDto(
+                    Field: null, Label: null, From: null, To: null,
+                    ValuesOmitted: change.ValuesOmitted, Redacted: true);
+            }
+
+            var probe = new TaskFieldValue
+            {
+                DefinitionCode = definition.Code,
+                ValueType = definition.ValueType,
+                Classification = definition.Classification
+            };
+
+            return TaskFieldAccessRules.CanView(probe, definition, actor)
+                ? new WorkItemFieldChangeDto(
+                    change.Field, ResolveFieldLabel(definition), change.From, change.To, change.ValuesOmitted)
+                : new WorkItemFieldChangeDto(
+                    Field: null, Label: null, From: null, To: null,
+                    ValuesOmitted: change.ValuesOmitted, Redacted: true);
+        }).ToList();
+    }
+
     private static IReadOnlyList<WorkItemActivityEntryDto> ToActivity(
         IReadOnlyList<TaskComment> comments,
         IReadOnlyList<TaskTransition> transitions,
         IReadOnlyDictionary<Guid, string> displayNames,
-        Guid actorUserId)
+        Guid actorUserId,
+        IReadOnlyDictionary<string, TaskFieldDefinition>? fieldDefinitions,
+        IActorPermissionContext permissions)
         => comments
             .Select(comment => new WorkItemActivityEntryDto(
                 Id: comment.Id.ToString(),
@@ -1186,7 +1264,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     Code: TaskTransitionCodes.For(transition.Kind),
                     From: transition.FromLifecycle.ToString(),
                     To: transition.ToLifecycle.ToString(),
-                    Reason: string.IsNullOrWhiteSpace(transition.Reason) ? null : transition.Reason))))
+                    Reason: string.IsNullOrWhiteSpace(transition.Reason) ? null : transition.Reason,
+                    FieldChanges: ToFieldChanges(transition.FieldChanges, fieldDefinitions, permissions)))))
             .OrderByDescending(entry => entry.At)
             .ThenByDescending(entry => entry.Id)
             .ToList();

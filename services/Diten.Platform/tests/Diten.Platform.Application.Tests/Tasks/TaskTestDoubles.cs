@@ -172,12 +172,31 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
                     || previous.AcceptedByUserId != current.AcceptedByUserId;
 
         var intent = current.ReadDeclaredIntent();
-        if (!moved && intent is null)
+        /*
+         * The field diff is DELEGATED to the production rule, never restated here.
+         *
+         * A double that re-implemented the comparison would be free to disagree with it — and this suite has
+         * twice shipped exactly that: a fake that hand-listed fields and silently dropped the new one. Calling
+         * TaskFieldDiff means a field added to the recorded set tomorrow reaches every handler test without
+         * anyone editing this method.
+         */
+        var fieldChanges = TaskFieldDiff.Between(previous, current);
+
+        /*
+         * ⚠ AN `Edited` DECLARATION IS NOT ITSELF NEWS. The edit handler declares one on every save so the entry
+         * can name its actor — but a save that changed nothing recorded must still write nothing, or every
+         * "Kaydet" on an unmodified form would add a row saying so. Any OTHER declared intent is an act in its
+         * own right (a claim, a plan) and is recorded whether or not a field moved.
+         */
+        var editedWithNothingToSay = intent?.Kind == TaskTransitionKind.Edited && fieldChanges.Count == 0;
+
+        if ((!moved && intent is null && fieldChanges.Count == 0) || (!moved && editedWithNothingToSay))
         {
             return;
         }
 
-        Record(current.Id, intent?.Kind ?? TaskTransitionKind.Unknown, previous.Lifecycle, current.Lifecycle, intent);
+        var kind = intent?.Kind ?? (moved ? TaskTransitionKind.Unknown : TaskTransitionKind.Edited);
+        Record(current.Id, kind, previous.Lifecycle, current.Lifecycle, intent, fieldChanges);
     }
 
     private void Record(
@@ -185,7 +204,8 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
         TaskTransitionKind kind,
         TaskLifecycle from,
         TaskLifecycle to,
-        TaskTransitionIntent? intent)
+        TaskTransitionIntent? intent,
+        IReadOnlyList<TaskFieldChange>? fieldChanges = null)
         => Transitions.CreateAsync(new TaskTransition
         {
             TenantId = TaskTestData.Tenant,
@@ -204,7 +224,8 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
             ToLifecycle = to,
             ActorUserId = intent?.ActorUserId,
             Reason = intent?.Reason,
-            ReasonCode = intent?.ReasonCode
+            ReasonCode = intent?.ReasonCode,
+            FieldChanges = fieldChanges is null ? [] : [.. fieldChanges]
         });
 
     public Task<IReadOnlyList<TaskItem>> ListByIdsAsync(

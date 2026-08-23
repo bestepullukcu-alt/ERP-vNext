@@ -117,6 +117,9 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
             from: task.Lifecycle,
             to: task.Lifecycle,
             intent,
+            // No field changes on creation: there is no BEFORE to differ against, and listing every field a new
+            // task was born with would say "changed" about values nobody changed.
+            fieldChanges: null,
             ct);
 
         return created;
@@ -167,9 +170,19 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
     /// two, so a diff that watched only lifecycle and assignee would drop accept from the history of exactly the
     /// tasks whose acceptance was worth recording.</para>
     ///
-    /// <para>An edit that changes a title, a due date or a checklist moves none of the three and records nothing.
-    /// This is a LIFECYCLE log, not a field-level audit trail; conflating the two would bury the six entries that
-    /// tell the task's story under sixty that do not.</para>
+    /// <para>⚠ THE SECOND HALF OF THIS COMMENT USED TO SAY: "An edit that changes a title, a due date or a
+    /// checklist moves none of the three and records nothing. This is a LIFECYCLE log, not a field-level audit
+    /// trail; conflating the two would bury the six entries that tell the task's story under sixty that do
+    /// not."</para>
+    ///
+    /// <para>The objection was right and it is ANSWERED rather than dismissed (owner decision, 2026-08-23):
+    /// "who changed the due date" had no answer anywhere, and the burial it warned about is avoided by recording
+    /// ONE entry per SAVE carrying the list of fields that moved — not one entry per field. Five fields changed
+    /// together is one act and reads as one line. A CHECKLIST write still records nothing, deliberately: that is
+    /// progress on the work, and it has its own container with its own state.</para>
+    ///
+    /// <para>The lifecycle and the field diff share ONE entry when a save does both, so a reassign is not
+    /// reported twice — once as an act and once as a changed field.</para>
     /// </summary>
     private async Task RecordIfMovedAsync(TaskItem previous, TaskItem current, CancellationToken ct)
     {
@@ -178,17 +191,40 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
                     || previous.AcceptedByUserId != current.AcceptedByUserId;
 
         var intent = current.ReadDeclaredIntent();
-        if (!moved && intent is null)
+        /*
+         * The diff runs on the pair already in hand — no extra read, and nothing at all when the save touched
+         * none of the recorded fields.
+         */
+        var fieldChanges = TaskFieldDiff.Between(previous, current);
+
+        /*
+         * ⚠ AN `Edited` DECLARATION IS NOT ITSELF NEWS. The edit handler declares one on every save so the entry
+         * can name its actor — but a save that changed nothing recorded must still write nothing, or every
+         * "Kaydet" on an unmodified form would add a row saying so. Any OTHER declared intent is an act in its
+         * own right (a claim, a plan) and is recorded whether or not a field moved.
+         */
+        var editedWithNothingToSay = intent?.Kind == TaskTransitionKind.Edited && fieldChanges.Count == 0;
+
+        if ((!moved && intent is null && fieldChanges.Count == 0) || (!moved && editedWithNothingToSay))
         {
             return;
         }
 
+        /*
+         * WHICH KIND. A declared intent wins, then movement, and only a save that moved NOTHING but changed
+         * fields is an `Edited`. Ordering it the other way would relabel every reassign as an edit, because a
+         * reassign changes the assignee field too.
+         */
+        var kind = intent?.Kind
+            ?? (moved ? TaskTransitionKind.Unknown : TaskTransitionKind.Edited);
+
         await RecordAsync(
             current.Id,
-            intent?.Kind ?? TaskTransitionKind.Unknown,
+            kind,
             from: previous.Lifecycle,
             to: current.Lifecycle,
             intent,
+            fieldChanges,
             ct);
     }
 
@@ -198,6 +234,7 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
         TaskLifecycle from,
         TaskLifecycle to,
         TaskTransitionIntent? intent,
+        IReadOnlyList<TaskFieldChange>? fieldChanges,
         CancellationToken ct)
         => _transitions.CreateAsync(new TaskTransition
         {
@@ -208,7 +245,8 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
             ToLifecycle = to,
             ActorUserId = intent?.ActorUserId,
             Reason = intent?.Reason,
-            ReasonCode = intent?.ReasonCode
+            ReasonCode = intent?.ReasonCode,
+            FieldChanges = fieldChanges is null ? [] : [.. fieldChanges]
         }, ct);
 }
 

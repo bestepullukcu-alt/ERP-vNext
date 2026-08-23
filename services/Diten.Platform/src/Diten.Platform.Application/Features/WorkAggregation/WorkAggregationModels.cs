@@ -665,12 +665,53 @@ public sealed record WorkItemActivityEntryDto(
 /// <para><c>Reason</c> is the actor's own words when the act required them — a wait, a return, a reassignment.
 /// TEXT, never a resource key, and absent rather than empty when none was given.</para>
 /// </summary>
+/// <summary>
+/// ONE field that changed, inside an <c>edited</c> event.
+///
+/// <para><b>The values are already filtered when they get here.</b> A reader who may not see a field's VALUE may
+/// not see its history either — otherwise the log is a back door around BL-024's field authorization. The
+/// projection asks the same <c>TaskFieldAccessRules</c> the value itself goes through, and a field that fails it
+/// arrives with <see cref="Redacted"/> set, no values, and NO NAME: the name alone can leak ("Salary band"
+/// tells you the task carries salary data). What survives is that somebody edited something, which the entry's
+/// actor and timestamp already say.</para>
+/// </summary>
+public sealed record WorkItemFieldChangeDto(
+    /// <summary>
+    /// The stable field code (<c>dueAt</c>, <c>priority</c>, <c>customField</c>…), or ABSENT when the reader may
+    /// not know which field this was. The client turns it into a sentence in its own language.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? Field,
+    /// <summary>The label for a tenant-defined field, when the reader may see it. Never the raw code.</summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemLabelDto? Label,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? From,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? To,
+    /// <summary>
+    /// The values were too long to keep at write time, so this row says only that the field changed. DIFFERENT
+    /// from <see cref="Redacted"/>: nobody is being kept out, there is simply nothing short to show.
+    /// </summary>
+    bool ValuesOmitted = false,
+    /// <summary>THIS reader may not see this field. The values are omitted and so is the field's identity.</summary>
+    bool Redacted = false);
+
 public sealed record WorkItemActivityEventDto(
     string Code,
     string From,
     string To,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    string? Reason = null);
+    string? Reason = null,
+    /// <summary>
+    /// WHICH FIELDS this act changed. Present on an <c>edited</c> event, and also on any other act whose save
+    /// happened to move a recorded field — a reassign carries its own code AND the field row, from one entry.
+    ///
+    /// <para>Omitted when nothing recorded changed, which is most acts. Already filtered for THIS reader — see
+    /// <see cref="WorkItemFieldChangeDto"/>.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemFieldChangeDto>? FieldChanges = null);
 
 /// <summary>
 /// One typed dependency edge. <c>State</c> is the OTHER task's state in the subtask vocabulary

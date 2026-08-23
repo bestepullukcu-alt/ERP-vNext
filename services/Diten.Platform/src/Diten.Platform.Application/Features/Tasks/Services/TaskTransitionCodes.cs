@@ -39,6 +39,10 @@ public static class TaskTransitionCodes
              * vanished on the way out because nobody had labelled it. The client renders it as "the task changed"
              * — less than the truth, but not a lie, and the row's timestamp and actor are still real.
              */
+            // A field edit. Its own code because the sentence it produces is unlike every other one here: the
+            // others name an act ("started", "cancelled"), this one names what changed.
+            [TaskTransitionKind.Edited] = "edited",
+
             [TaskTransitionKind.Unknown] = "unknown"
         };
 

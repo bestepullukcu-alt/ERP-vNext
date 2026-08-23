@@ -470,9 +470,85 @@
                 : t(entry.eventKey);
         }
 
+        /*
+         * A FIELD EDIT SAYS WHAT CHANGED, not merely that something did (2026-08-23). An `edited` entry whose
+         * sentence were only "the task was edited" would answer the question this feature exists for — "who
+         * changed the due date?" — with "somebody changed something".
+         *
+         * Any OTHER act may carry field changes too (a reassign moves the assignee field), and those keep their
+         * own verb: "Başkasına atandı" is the act, and the field row would only repeat it.
+         */
+        const changes = entry.event && entry.event.fieldChanges;
+        if (entry.event && entry.event.code === 'edited' && changes && changes.length) {
+            return fieldChangeSentence(changes);
+        }
+
         const code = entry.event && entry.event.code;
         if (!code || !KNOWN_EVENT_CODES.has(code) || code === 'unknown') { return t('AuditEventUnknown'); }
         return t('AuditEvent' + code.charAt(0).toLocaleUpperCase('en') + code.slice(1));
+    };
+
+    /*
+     * ── WHAT AN EDIT CHANGED, AS ONE SENTENCE ────────────────────────────────────────────────────────────────
+     *
+     * TWO SHAPES, and the split is measured against what a reader actually needs:
+     *
+     *   ONE field  → the field AND both values: "Son tarih: 2026-08-15 → 2026-08-20". This is the common case
+     *                and the values are the whole answer.
+     *   SEVERAL    → the field NAMES only: "Son tarih, öncelik ve başlık değiştirildi". Four before/after pairs
+     *                on one line is a paragraph, not a row — and the reader's first question is which fields,
+     *                not what each became. The values stay one click away in the record.
+     *
+     * ⚠ THE LIST IS BUILT BY `Intl.ListFormat`, not by joining with a comma. Turkish ends a list with "ve",
+     * English with "and", Arabic with "و" and no space before it — a hard-coded separator is the fragment
+     * assembly this project has banned twice. Each SENTENCE is a whole pattern per language too; only the list
+     * itself is composed, and by the platform's own localized formatter.
+     */
+    const fieldChangeSentence = (changes) => {
+        const names = changes.map(fieldChangeName);
+
+        if (changes.length === 1) {
+            const only = changes[0];
+            // Values are shown only when there are values to show: a long value was never recorded, and a
+            // redacted one must not be.
+            if (!only.redacted && !only.valuesOmitted && (only.from || only.to)) {
+                return tf('AuditFieldChangeValued', names[0], only.from || t('AuditFieldEmpty'),
+                    only.to || t('AuditFieldEmpty'));
+            }
+            return tf('AuditFieldChangeNamed', names[0]);
+        }
+
+        return tf('AuditFieldChangeNamed', formatList(names));
+    };
+
+    /*
+     * The field's NAME in the reader's language — a built-in field from the resx, a tenant field from its own
+     * label, and a field the reader may not see from neither.
+     *
+     * ⚠ A REDACTED CHANGE CONTRIBUTES A GENERIC WORD rather than being dropped from the list. Dropping it would
+     * make one reader see "two fields changed" and another "three", from the same record — and the shorter list
+     * would be a quieter lie than the honest "and one more field".
+     */
+    const fieldChangeName = (change) => {
+        if (change.redacted || !change.field) { return t('AuditFieldHidden'); }
+        if (change.field === 'customField') {
+            return data.resolveLabel(change.label) || t('AuditFieldHidden');
+        }
+        return t('AuditField' + change.field.charAt(0).toLocaleUpperCase('en') + change.field.slice(1));
+    };
+
+    /*
+     * A localized LIST. `Intl.ListFormat` is what knows that Turkish wants "ve" before the last item and English
+     * wants "and"; falling back to a plain join only when the runtime has no such formatter, where a comma is
+     * less wrong than a crash.
+     */
+    const formatList = (items) => {
+        try {
+            return new Intl.ListFormat(global.CurrentLanguage || undefined, { style: 'long', type: 'conjunction' })
+                .format(items);
+        } catch (error) {
+            return items.join(', ');
+        }
     };
 
     // actions[] is the single effective command projection. The browser never

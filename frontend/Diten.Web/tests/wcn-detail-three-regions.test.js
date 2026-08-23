@@ -2848,6 +2848,135 @@ describe("the page reaches the product's one confirm implementation", () => {
   });
 });
 
+describe("the feed says who changed what", () => {
+  /*
+   * "Who changed the due date?" had no answer anywhere before 2026-08-23. It has one now, and these pin the
+   * SHAPE of the answer — one row per save, the fields named, and a hidden field's history hidden too.
+   */
+  const edited = (fieldChanges) => projectionItem({
+    workItemCapabilities: ["planning", "execution", "subtasks", "activity"],
+    subtasks: { mode: "full", items: [] },
+    activity: [{
+      id: "e1", kind: "event", actor: "Diten Admin", at: "2026-08-20T09:00:00+00:00",
+      event: { code: "edited", from: "InProgress", to: "InProgress", fieldChanges }
+    }]
+  });
+
+  it("belongs to the EVENT family — no avatar, one line", async () => {
+    await boot(edited([{ field: "dueAt", from: "2026-08-15", to: "2026-08-20" }]));
+
+    const row = app().querySelector(".wcn-audit-item");
+    // The third kind joins the two that exist; it does not invent a third marker.
+    expect(row.className).toContain("wcn-audit-event");
+    expect(row.className, "an edit was drawn as a comment").not.toContain("wcn-audit-comment");
+    expect(row.querySelector(".wcn-audit-avatar"), "an event grew an avatar").toBeNull();
+  });
+
+  it("names the field AND both ends when exactly one changed", async () => {
+    await boot(edited([{ field: "dueAt", from: "2026-08-15", to: "2026-08-20" }]));
+
+    const line = app().querySelector(".wcn-audit-line").textContent;
+    expect(line).toContain("AuditFieldChangeValued");
+    expect(line, "the field is not named").toContain("AuditFieldDueAt");
+    expect(line, "the old value is missing").toContain("2026-08-15");
+    expect(line, "the new value is missing").toContain("2026-08-20");
+    // Who and when still travel on the same line, as they do for every other event.
+    expect(line).toContain("Diten Admin");
+  });
+
+  /*
+   * SEVERAL fields → the NAMES, not four before/after pairs. The reader's first question is which fields; four
+   * pairs on one row is a paragraph. Measured decision, recorded in the composer's own comment.
+   */
+  it("names the fields and drops the values when several changed at once", async () => {
+    await boot(edited([
+      { field: "dueAt", from: "2026-08-15", to: "2026-08-20" },
+      { field: "priority", from: "Medium", to: "High" },
+      { field: "title", from: "Eski", to: "Yeni" }
+    ]));
+
+    const line = app().querySelector(".wcn-audit-line").textContent;
+    expect(line).toContain("AuditFieldChangeNamed");
+    ["AuditFieldDueAt", "AuditFieldPriority", "AuditFieldTitle"].forEach((key) =>
+      expect(line, `${key} is missing from the list`).toContain(key));
+    expect(line, "a before/after pair survived into the multi-field sentence").not.toContain("2026-08-15");
+  });
+
+  it("builds the list with the platform's localized formatter, never a hard-coded separator", () => {
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    const composer = src.slice(src.indexOf("const formatList"), src.indexOf("const formatList") + 700);
+    // Turkish ends a list with "ve", English with "and", Arabic with "و" — a comma is not a translation.
+    expect(composer).toContain("Intl.ListFormat");
+  });
+
+  /*
+   * MUTATION TARGET (the back door). BL-024 hides a field's VALUE; a history that reported it would hand the
+   * same value back through a different door. The server sends `redacted` with nothing else — and the screen
+   * must not fill the gap with the field's name either.
+   */
+  it("says only that A field changed when the reader may not see it", async () => {
+    await boot(edited([{ redacted: true }]));
+
+    const line = app().querySelector(".wcn-audit-line").textContent;
+    expect(line).toContain("AuditFieldHidden");
+    expect(line, "a redacted change leaked a field name").not.toContain("AuditFieldDueAt");
+  });
+
+  it("keeps a redacted field IN the list, so two readers count the same changes", async () => {
+    await boot(edited([
+      { field: "dueAt", from: "2026-08-15", to: "2026-08-20" },
+      { redacted: true }
+    ]));
+
+    const line = app().querySelector(".wcn-audit-line").textContent;
+    expect(line).toContain("AuditFieldDueAt");
+    // Dropping it would make one reader see "one field changed" and another "two", from one record.
+    expect(line).toContain("AuditFieldHidden");
+  });
+
+  it("says only that the field changed when the values were too long to keep", async () => {
+    await boot(edited([{ field: "description", valuesOmitted: true }]));
+
+    const line = app().querySelector(".wcn-audit-line").textContent;
+    expect(line).toContain("AuditFieldChangeNamed");
+    expect(line).toContain("AuditFieldDescription");
+  });
+
+  it("counts an edit in the tab badge, and keeps it out of the comments filter", async () => {
+    await boot(edited([{ field: "dueAt", from: "2026-08-15", to: "2026-08-20" }]));
+
+    // The badge counts the whole feed, so a third kind needs no arithmetic of its own.
+    expect(app().querySelector(".wcn-audit-count").textContent).toBe("1");
+    // …and "comments only" filters on kind, so an event stays out by construction.
+    const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
+    expect(src).toContain(`item.activity.filter((entry) => entry.kind === 'comment')`);
+  });
+
+  it("ships every field name and both sentence patterns in all seven languages", () => {
+    const keys = [
+      "AuditEventEdited", "AuditFieldChangeValued", "AuditFieldChangeNamed", "AuditFieldHidden",
+      "AuditFieldDueAt", "AuditFieldStartAt", "AuditFieldPlannedDate", "AuditFieldPriority",
+      "AuditFieldAssignee", "AuditFieldTitle", "AuditFieldDescription", "AuditFieldEstimateHours",
+      "AuditFieldTags"
+    ];
+    ["en", "tr", "fr", "es", "zh", "ar", "ru"].forEach((lang) => {
+      const resx = read("Resources", "Views", "WorkCenterNext", `WorkCenterNextIndex.${lang}.resx`);
+      keys.forEach((key) => expect(resx, `${lang} has no ${key}`).toContain(`name="${key}"`));
+      // Whole patterns: the valued sentence owns all three slots, so a language may reorder them.
+      const valued = new RegExp(
+        '<data name="AuditFieldChangeValued"[^>]*>\\s*<value>([\\s\\S]*?)</value>').exec(resx)[1];
+      ["{0}", "{1}", "{2}"].forEach((slot) =>
+        expect(valued, `${lang} dropped ${slot}`).toContain(slot));
+    });
+  });
+
+  it("declares the code in the executable contract", () => {
+    // An undeclared code renders as the generic "the task changed" — which is exactly what this replaces.
+    const contract = read("wwwroot", "assets", "js", "WorkCenterNext", "fixture-contract.js");
+    expect(contract).toMatch(/'edited',?/);
+  });
+});
+
 describe("a parked task says WHO it waits on, not only why", () => {
   /*
    * The projection has carried a `waitingOn` slot since WC-1 with a hard null in it, and the comment beside it
