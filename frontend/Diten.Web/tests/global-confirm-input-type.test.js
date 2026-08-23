@@ -119,3 +119,49 @@ describe("a caller that does name a type", () => {
     expect(opened).toEqual({ tag: "popup" });
   });
 });
+
+
+describe("the dialog is written in the product's type scale", () => {
+  /*
+   * MEASURED, on a rendered page, before any change: the description printed at 18px, the input label at 16px
+   * and the title at 24px. The product itself writes body copy at 13px and secondary copy at 12px — a census of
+   * the detail page's 134 text nodes put 41 at 13px and 46 at 12px, with the page's own title at 18px.
+   *
+   * Nothing here invents a size. Each value below is a class the theme already ships:
+   *   fs-5   → 18px, the theme's own h5 and the size a page titles itself with
+   *   small  → 13px, the same size `.form-label` and `.backbone-preview-description` already use
+   *   form-label → the product's form label, on every create form in the product
+   *
+   * ⚠ THIS FILE IS EVERY MODAL IN THE PRODUCT, which is why these are pinned here rather than in a module test.
+   */
+  it("titles at the product's heading size, not a size of its own", () => {
+    const { seen, stub } = captureConfig();
+    loadWrapper(stub)("Snooze", () => {}, {});
+    expect(seen.config.customClass.title).toContain("fs-5");
+    expect(seen.config.customClass.title, "24px — louder than the page behind it").not.toContain("fs-4");
+  });
+
+  it("writes its description at the product's body size", () => {
+    const { seen, stub } = captureConfig();
+    loadWrapper(stub)("Snooze", () => {}, { subtext: "what this does" });
+    // MUTATION GUARD: drop `small` and the description goes back to the browser default of 18px — bigger than
+    // the page title it opens over, on every modal in the product.
+    expect(seen.config.html).toMatch(/class="[^"]*\bsmall\b[^"]*"/);
+    expect(seen.config.html).toContain("what this does");
+  });
+
+  it("labels its input the way every form in the product labels a field", () => {
+    const { seen, stub } = captureConfig();
+    loadWrapper(stub)("Snooze", () => {}, { showInput: true, inputLabel: "Until" });
+    expect(seen.config.customClass.inputLabel).toBe("form-label");
+  });
+
+  it("leaves the buttons, the icon and the width alone — not this round's subject", () => {
+    const { seen, stub } = captureConfig();
+    loadWrapper(stub)("Snooze", () => {}, {});
+    expect(seen.config.customClass.confirmButton).toContain("px-5");
+    expect(seen.config.customClass.cancelButton).toContain("btn-label-secondary");
+    expect(seen.config.customClass.icon).toContain("d-flex");
+    expect(seen.config.width).toBe("400px");
+  });
+});

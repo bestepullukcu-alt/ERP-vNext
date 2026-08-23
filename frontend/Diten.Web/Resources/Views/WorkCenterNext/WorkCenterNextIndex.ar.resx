@@ -711,7 +711,7 @@
     <value>تأجيل</value>
   </data>
   <data name="SnoozeFuture" xml:space="preserve">
-    <value>اختر تاريخًا مستقبليًا.</value>
+    <value>لا يمكن اختيار تاريخ ماضٍ.</value>
   </data>
   <data name="WaitingOn" xml:space="preserve">
     <value>بانتظار {0}</value>
@@ -2048,5 +2048,8 @@
   </data>
   <data name="DialogDismiss" xml:space="preserve">
     <value>تراجع</value>
+  </data>
+  <data name="SnoozeDatePlaceholder" xml:space="preserve">
+    <value>YYYY-MM-DD</value>
   </data>
 </root>

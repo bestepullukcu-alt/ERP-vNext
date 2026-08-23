@@ -711,7 +711,7 @@
     <value>Отложить</value>
   </data>
   <data name="SnoozeFuture" xml:space="preserve">
-    <value>Выберите будущую дату.</value>
+    <value>Прошедшую дату выбрать нельзя.</value>
   </data>
   <data name="WaitingOn" xml:space="preserve">
     <value>Ожидание: {0}</value>
@@ -2048,5 +2048,8 @@
   </data>
   <data name="DialogDismiss" xml:space="preserve">
     <value>Отмена действия</value>
+  </data>
+  <data name="SnoozeDatePlaceholder" xml:space="preserve">
+    <value>YYYY-MM-DD</value>
   </data>
 </root>

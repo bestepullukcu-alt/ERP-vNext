@@ -711,7 +711,7 @@
     <value>延后</value>
   </data>
   <data name="SnoozeFuture" xml:space="preserve">
-    <value>请选择将来的日期。</value>
+    <value>不能选择过去的日期。</value>
   </data>
   <data name="WaitingOn" xml:space="preserve">
     <value>等待 {0}</value>
@@ -2048,5 +2048,8 @@
   </data>
   <data name="DialogDismiss" xml:space="preserve">
     <value>算了</value>
+  </data>
+  <data name="SnoozeDatePlaceholder" xml:space="preserve">
+    <value>YYYY-MM-DD</value>
   </data>
 </root>

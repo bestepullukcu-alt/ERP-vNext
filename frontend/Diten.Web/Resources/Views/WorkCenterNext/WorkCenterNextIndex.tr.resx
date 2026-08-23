@@ -711,7 +711,7 @@
     <value>Ertele</value>
   </data>
   <data name="SnoozeFuture" xml:space="preserve">
-    <value>Gelecek bir tarih seçin.</value>
+    <value>Geçmiş bir tarih seçilemez.</value>
   </data>
   <data name="WaitingOn" xml:space="preserve">
     <value>{0} bekleniyor</value>
@@ -2048,5 +2048,8 @@
   </data>
   <data name="DialogDismiss" xml:space="preserve">
     <value>Vazgeç</value>
+  </data>
+  <data name="SnoozeDatePlaceholder" xml:space="preserve">
+    <value>YYYY-MM-DD</value>
   </data>
 </root>

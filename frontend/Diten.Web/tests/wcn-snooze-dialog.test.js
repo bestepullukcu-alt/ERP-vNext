@@ -50,9 +50,54 @@ describe("the snooze dialog", () => {
     expect(body).toContain("minDate: data.todayIso");
   });
 
-  it("keeps the client's past-date check, which does not replace the server's", () => {
-    expect(toggleSnooze()).toContain("value <= data.todayIso");
+  it("shows the date format the box will actually hold", () => {
+    // MUTATION GUARD: remove the placeholder and the reader is asked for a date with no clue which shape it
+    // wants — the field is a text box, and the picker only helps the people who find it.
+    expect(toggleSnooze()).toContain("placeholder: t('SnoozeDatePlaceholder')");
+    // Not a new format: the same `Y-m-d` every date field in the product is pinned to.
+    expect(toggleSnooze()).toContain("dateFormat: 'Y-m-d'");
+    LANGS.forEach((lang) => {
+      const p = value(lang, "SnoozeDatePlaceholder");
+      expect(p, `${lang} has no placeholder`).toBeTruthy();
+      /*
+       * The mask the PRODUCT already uses, measured on the create form's two date fields
+       * (`Views/Tasks/_Form.cshtml`), which spell it `YYYY-MM-DD` in every language. A second mask for the same
+       * format would put two answers to one question in one product; the key stays per-language so a language
+       * can diverge later without touching code.
+       */
+      expect(p, `${lang} invents a second date mask`).toBe("YYYY-MM-DD");
+    });
+  });
+
+  it("refuses the PAST and accepts TODAY, which the server accepts too (BL-182)", () => {
+    /*
+     * The calendar offered today (`minDate: todayIso`) while the check rejected it — one field disagreeing with
+     * itself. The server stores the snooze at 23:59:59 of the chosen day, so today means "for the rest of
+     * today", which is a real request. The past is still refused here AND on the server (400).
+     */
+    expect(toggleSnooze()).toContain("value < data.todayIso");
+    expect(toggleSnooze(), "today is still being rejected").not.toContain("value <= data.todayIso");
     expect(toggleSnooze()).toContain("t('SnoozeFuture')");
+  });
+
+  it("shows a snooze that runs to the END of today, having accepted one", () => {
+    /*
+     * MEASURED: with the picker accepting today, the server stored `2026-08-23T20:59:59Z` and the screen showed
+     * NOTHING — no row, no chip, no banner — because four separate places asked "is it snoozed?" with `>`
+     * against today's date. Accepting a value the screen then refuses to display is worse than refusing it.
+     * One predicate now answers the question, and it answers `>=`.
+     */
+    expect(APP).toContain("const isSnoozed = (item) => !!item.snoozedUntil && item.snoozedUntil >= data.todayIso;");
+    expect(APP.match(/isSnoozed\(item\)/g) || [], "a caller still asks this question its own way").toHaveLength(4);
+    expect(APP, "an old `>` comparison survived").not.toContain("item.snoozedUntil > data.todayIso");
+  });
+
+  it("says what it actually refuses, in all seven languages", () => {
+    // The message used to read "pick a FUTURE date" while today is now accepted — the words had to follow the
+    // rule, not the other way round.
+    LANGS.forEach((lang) => expect(value(lang, "SnoozeFuture"), `${lang}`).toBeTruthy());
+    expect(value("tr", "SnoozeFuture")).not.toContain("Gelecek");
+    expect(value("en", "SnoozeFuture").toLowerCase()).not.toContain("future");
   });
 
   it("does not offer a dismiss button that reads like 'cancel the task'", () => {

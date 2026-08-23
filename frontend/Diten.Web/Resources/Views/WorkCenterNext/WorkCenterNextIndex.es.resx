@@ -711,7 +711,7 @@
     <value>Posponer</value>
   </data>
   <data name="SnoozeFuture" xml:space="preserve">
-    <value>Elige una fecha futura.</value>
+    <value>No se puede elegir una fecha pasada.</value>
   </data>
   <data name="WaitingOn" xml:space="preserve">
     <value>Esperando a {0}</value>
@@ -2048,5 +2048,8 @@
   </data>
   <data name="DialogDismiss" xml:space="preserve">
     <value>Descartar</value>
+  </data>
+  <data name="SnoozeDatePlaceholder" xml:space="preserve">
+    <value>YYYY-MM-DD</value>
   </data>
 </root>

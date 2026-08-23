@@ -631,6 +631,19 @@
                     : item.delegator === state.scope;
     // ONE definition of "closed", owned by the data module. It used to be duplicated here, and the action filter
     // getActions now applies (BL-038) depends on this surface agreeing with it exactly — two copies would drift.
+    /*
+     * IS THIS TASK PARKED RIGHT NOW?
+     *
+     * ⚠ `>=`, NOT `>` (BL-182, measured 2026-08-23). Once the picker was allowed to accept TODAY, the four
+     * places that asked this question with `>` all answered "no" for a snooze the server had just accepted and
+     * stored (measured: overlay `2026-08-23T20:59:59Z` on the wire, no row, no chip, no banner on screen). A
+     * snooze until today runs to 23:59 of that day — it is parked, and the screen has to say so.
+     *
+     * A snooze that has genuinely expired never reaches here: the provider projects `snoozedUntil` only while it
+     * is still in the future, so a stale date arrives as null rather than as a date to compare.
+     */
+    const isSnoozed = (item) => !!item.snoozedUntil && item.snoozedUntil >= data.todayIso;
+
     const isTerminal = (item) => data.isTerminal(item);
     const inTab = (item, tab) => item.catalogVisible !== false && !item.dismissed && itemInScope(item)
         && (tab === 'history' ? isTerminal(item) : item.tab === tab && !isTerminal(item));
@@ -1194,7 +1207,7 @@
         // Why the leading action cannot be used, ON the row rather than only in the button's tooltip. A blocked
         // item whose reason needs a hover reads as simply broken.
         blockedPrimaryReason(item) ? chip('secondary', 'bx-lock-alt', blockedPrimaryReason(item)) : '',
-        (item.snoozedUntil && item.snoozedUntil > data.todayIso) ? chip('secondary', 'bx-moon', tf('SnoozedUntil', item.snoozedUntil)) : '',
+        isSnoozed(item) ? chip('secondary', 'bx-moon', tf('SnoozedUntil', item.snoozedUntil)) : '',
         (item.systemState && SYSSTATE[item.systemState]) ? chip(SYSSTATE[item.systemState].kind, SYSSTATE[item.systemState].icon, t(SYSSTATE[item.systemState].key)) : '',
         item.requester ? chip('requester', 'bx-user', item.requester) : ''
     ].join('');
@@ -3183,7 +3196,7 @@
          * verb. The row says the date; the trailing control undoes it. Not snoozed, there is no fact to state,
          * so what remains is the offer: the button, exactly as before.
          */
-        const snoozed = item.snoozedUntil && item.snoozedUntil > data.todayIso;
+        const snoozed = isSnoozed(item);
         const snooze = snoozed
             ? `<div class="wcn-note-row wcn-snooze-row">
                     <i class="bx bx-moon wcn-snooze-icon" aria-hidden="true"></i>
@@ -3759,7 +3772,7 @@
               + `<i class="bx bx-time-five"></i><span>${esc(waitingText)}</span></div>`
             : '';
         // Snoozed (personal park) note.
-        const snoozeNote = (item.snoozedUntil && item.snoozedUntil > data.todayIso)
+        const snoozeNote = isSnoozed(item)
             ? `<div class="wcn-parked wcn-parked-snooze" role="note"><i class="bx bx-moon"></i><span>${esc(tf('SnoozedUntil', item.snoozedUntil))}</span></div>`
             : '';
         const notices = surface.notices.map((notice) =>
@@ -6518,7 +6531,7 @@
         if (!item) { return; }
         const real = isRealTaskItem(item);
 
-        if (item.snoozedUntil && item.snoozedUntil > data.todayIso) {
+        if (isSnoozed(item)) {
             if (real) {
                 await afterPhase2Write(
                     await global.TasksApi.setSnooze(item.id, { snoozedUntil: null }),
@@ -6588,6 +6601,14 @@
                 // date on this page uses. A native control here would be a second date language in one product.
                 type: 'text',
                 label: t('SnoozeUntilLabel'),
+                /*
+                 * THE FORMAT THE BOX EXPECTS, shown before the reader guesses. It is not a new format: flatpickr
+                 * is opened below with `dateFormat: 'Y-m-d'`, the SAME setting `Tasks/form.js` pins for every
+                 * date field in the product, so the placeholder spells out the shape the field will actually
+                 * hold. Each language spells the shape in its OWN letters (YYYY-AA-GG in Turkish, ГГГГ-ММ-ДД in
+                 * Russian) — the order never changes, because the value does not.
+                 */
+                placeholder: t('SnoozeDatePlaceholder'),
                 onOpen: (input) => {
                     if (!input) { return; }
                     if (global.flatpickr) {
@@ -6602,7 +6623,16 @@
                  * first. Both stay: one keeps the reader from making the mistake, the other keeps the data
                  * honest whatever the client believes.
                  */
-                validate: (value) => (!value || value <= data.todayIso ? t('SnoozeFuture') : null)
+                /*
+                 * TODAY IS ALLOWED (BL-182, owner decision 2026-08-23). The check used to reject it, while the
+                 * calendar offered it — two halves of one field disagreeing. The server stores the snooze at
+                 * 23:59:59 of the chosen day, so "snooze until today" means "leave me alone for the rest of
+                 * today": a real request, and one the server accepts.
+                 *
+                 * The past is still refused here, and the server still refuses it too (400
+                 * TASK_SNOOZE_DATE_INVALID). This does not replace that check — it arrives before it.
+                 */
+                validate: (value) => (!value || value < data.todayIso ? t('SnoozeFuture') : null)
             },
             onConfirm: (value) => { if (value) { apply(value).catch(reportSwalFailure); } }
         });

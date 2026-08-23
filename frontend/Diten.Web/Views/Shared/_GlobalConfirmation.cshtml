@@ -90,7 +90,22 @@
         const noBtn = options.cancelButtonText || confirmations['DeleteConfirmationCancelBtn'];
 
         // Build HTML for description with entity name badge
-        let htmlContent = `<div class="mb-2 text-muted-500">${subtext}</div>`;
+        /*
+         * ── THE MODAL'S TYPE SCALE IS THE PRODUCT'S, NOT SweetAlert's (2026-08-23) ───────────────────────────
+         *
+         * MEASURED on a rendered page: this product writes its body copy at 13px and its secondary copy at 12px
+         * (a census of the detail page's 134 text nodes: 41 at 13px, 46 at 12px). The dialog was printing its
+         * description at 18px — larger than the page TITLE it opened over (18px) and 40% larger than the
+         * sentence beside it. Nothing in this file chose 18px; it is the browser's default for an unstyled
+         * block, which is what "no class" means.
+         *
+         * `small` is the theme's OWN 13px utility — the same size `.form-label` and `.backbone-preview-description`
+         * already use. No new scale is introduced here and no number is written: the class already existed.
+         *
+         * ⚠ THIS FILE IS EVERY MODAL IN THE PRODUCT. The change is a reduction to the scale the rest of the
+         * product already uses, verified on three different screens before and after.
+         */
+        let htmlContent = `<div class="mb-2 text-muted-500 small">${subtext}</div>`;
         if (options.entityName) {
             htmlContent += `<div class="badge bg-label-primary fs-6 mt-1 py-2 px-3 fw-medium">${options.entityName}</div>`;
         }
@@ -126,12 +141,17 @@
                     padding: '2.5rem 1.5rem 2rem',
                     customClass: {
                         popup: 'rounded-4 shadow-lg',
-                        title: 'fs-4 fw-bold text-heading mt-4 mb-2 d-block w-100 text-center',
+                        // fs-5 = 18px in this theme (its own h5), the size a page titles itself with. `fs-4`
+                        // was 24px — a dialog shouting louder than the screen behind it.
+                        title: 'fs-5 fw-bold text-heading mt-4 mb-2 d-block w-100 text-center',
                         htmlContainer: 'mb-1 d-block w-100 text-center',
                         actions: 'd-flex justify-content-center mt-4 w-100 gap-2',
                         confirmButton: 'btn ' + confirmBtnClass + ' waves-effect waves-light px-5',
                         cancelButton: 'btn btn-label-secondary waves-effect px-5',
-                        icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100'
+                        icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100',
+                        // The box's label is a FORM label, so it wears the product's form label — 13px, the same
+                        // one every field on every create form uses. SweetAlert's own default was 16px.
+                        inputLabel: 'form-label'
                     },
                     buttonsStyling: false,
                     reverseButtons: true

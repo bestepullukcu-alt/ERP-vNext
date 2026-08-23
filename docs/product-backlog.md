@@ -4035,3 +4035,53 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   `until(koşul, {timeout, step})`. Bu turda YAPILMADI — tur tek bir kusura ayrılmıştı.
 - **Gelecek regresyon riski: 🟡** — kararsız testler gerçek kırmızıları gizler; bu turda bir gerçek kırmızıyı
   (ham diyalog sayacı 9→8) ayırt etmek fazladan üç koşu aldı.
+
+### BL-185 — [KARAR SENİN] Ortak modalin girdisine alan ikonu takılamıyor (İş 2b'nin ölçümü)
+- Soru şuydu: `.diten-field` + `.diten-field-icon` deseni (create formunda 17 kez canlı) SweetAlert'in kendi
+  girdisine uygulanabiliyor mu? **Tarayıcıda denendi, cevap: yapısal olarak evet, görsel olarak hayır.**
+- Ölçüm: `didOpen` içinde girdiyi bir `.diten-field` ile sarmak **çalışıyor** — SweetAlert girdiyi hâlâ buluyor
+  (`.swal2-popup .swal2-input` sorgusu geçerli kalıyor). Ama ikon **girdinin dışına** düşüyor: `-19px`.
+- Nedeni ölçüldü: `.swal2-input` üzerinde `margin: 17px 34px 3px` var. `.diten-field-icon` mutlak konumunu
+  SARMALAYICIYA göre alıyor, sarmalayıcının kutusu ise girdinin marjlarını da içeriyor → ikon 34px dışarıda.
+  Girdiye `form-control` eklemek iç dolguyu (39px) getiriyor ama marj sorununu çözmüyor.
+- Düzeltmek için gereken şey **`.swal2-input`'un marjını sıfırlayan ya da ikonu 34px kaydıran bir CSS kuralı** —
+  yani ortak modale ikon altyapısı eklemek. Brifing bunu yasakladı, **eklenmedi**.
+- **Karar senin:** (a) ortak modale bir "ikonlu girdi" desteği ekleyelim (tek CSS bloğu, ürün geneli);
+  (b) ikonsuz kalsın — placeholder zaten biçimi söylüyor ve takvim tıklamayla açılıyor.
+- **Gelecek regresyon riski: 🟢** (bugün hiçbir şey değişmedi).
+
+### BL-186 — [KARAR SENİN] Sarmalayıcının ikon sözlüğünde "ne zaman?" yok (İş 3'ün ölçümü)
+- `options.type` beş değer tanıyor ve her biri ikonla BİRLİKTE onay düğmesinin rengini de belirliyor:
+  | type | ikon | düğme |
+  |---|---|---|
+  | `info` (varsayılan) | `bx-help-circle` (primary) | `btn-primary` |
+  | `delete` | `bx-trash` (danger) | `btn-danger` |
+  | `danger` / `error` | `bx-error-circle` (danger) | `btn-danger` |
+  | `success` | `bx-check-circle` (success) | `btn-success` |
+  | `warning` | `bx-error` (warning) | `btn-warning` |
+- Ertele ne yıkıcı, ne hata, ne başarı, ne uyarı. Geriye `info` kalıyor — ve o da soru işareti çiziyor.
+  **Hiçbiri uygun değil**, o yüzden bugünkü hâli (soru işareti) korundu.
+- ⚠ Ek ölçüm: özel ikon parametresi `inputType` ile **aynı sınıftan değil**. İkon ve düğme rengi bu dosyada tek
+  bir `if` zincirinde birlikte kararlaştırılıyor; ikonu dışarıdan vermek, düğme rengini de dışarıdan verilebilir
+  kılmadan tutarsızlık üretir. İki parametre demek.
+- **Karar senin.** CT'nin prototipindeki ay (moon) bugün desteklenmiyor.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-187 — [ÖLÇÜM] Create formunun tarih placeholder'ı yerelleştirilebilir değil
+- Ertele diyaloğunun placeholder'ı yeni bir biçim icat etmedi: **ürünün kendi maskesi** kullanıldı — create
+  formundaki iki tarih alanı (`Views/Tasks/_Form.cshtml:173,189`) `YYYY-MM-DD` yazıyor, yedi dilde de aynı.
+- Ama oradaki değer **doğrudan .cshtml'e gömülü**, bir kaynak anahtarı değil: Türkçe bir okuyucu için "AA/GG"
+  demek isteseydik, o iki alan için kod değişikliği gerekirdi. Ertele'nin anahtarı 7 dilde AYRI duruyor
+  (bugün hepsi aynı değeri taşıyor), yani orada karar koda dokunmadan değişebilir.
+- **Karar senin:** maskeler yerelleşsin mi (o zaman create formu da anahtara taşınmalı), yoksa ürün genelinde
+  nötr `YYYY-MM-DD` mi kalsın.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-188 — [ÖLÇÜM] Diyalogdan vazgeçmek bayat bir görüntü bırakabiliyor
+- Sıra: erteleme kaldırıldı (sunucu doğrulandı: `personal.snoozedUntil` yok) → ertele diyaloğu açıldı → geçmiş
+  tarih reddedildi → "Vazgeç". Ekranda **kaldırılmış erteleme satırı geri geldi**; sayfa yenilenince gitti.
+- Yani vazgeçme yolu, bir önceki anlık görüntüden yeniden çiziyor olabilir. Sunucu durumu her zaman doğruydu;
+  yanlış olan tek şey ekrandı ve yalnız yenilemeye kadar sürdü.
+- Bu turun konusu değildi, **düzeltilmedi**; tek bir gözlem olarak kaydediliyor, kovalanacaksa kendi turunu
+  hak ediyor.
+- **Gelecek regresyon riski: 🟡** — "kaydettim ama geri geldi" tipi şikâyetlerin klasik kaynağı.
