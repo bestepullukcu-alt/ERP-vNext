@@ -2037,4 +2037,16 @@
   <data name="WorkAggregation_ActionDisabled_DelegationNotAllowed" xml:space="preserve">
     <value>Esta tarea no se puede delegar.</value>
   </data>
+  <data name="SnoozeTitle" xml:space="preserve">
+    <value>Posponer esta tarea</value>
+  </data>
+  <data name="SnoozeSubtext" xml:space="preserve">
+    <value>La tarea mantiene su estado, su fecha límite no cambia y el solicitante no ve nada. Posponer es una marca solo para ti.</value>
+  </data>
+  <data name="SnoozeUntilLabel" xml:space="preserve">
+    <value>Hasta qué fecha</value>
+  </data>
+  <data name="DialogDismiss" xml:space="preserve">
+    <value>Descartar</value>
+  </data>
 </root>

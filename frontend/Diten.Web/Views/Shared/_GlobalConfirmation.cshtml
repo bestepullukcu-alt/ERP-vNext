@@ -139,7 +139,12 @@
 
                 // Add textarea support if requested
                 if (options.showInput) {
-                    swalConfig.input = 'textarea';
+                    // A CONSTANT BECOMES A PARAMETER. Nothing new is offered here: `inputType` is the type this
+                    // block already hard-coded, and its default is exactly what every existing caller gets today.
+                    // The arbitrary part was the assumption that every confirmation that asks for something asks
+                    // for prose — which is why the dialogs needing a date could not use this component at all
+                    // (BL-146). The label, the validator and the didOpen seam are untouched.
+                    swalConfig.input = options.inputType || 'textarea';
                     if (options.inputLabel) {
                         swalConfig.inputLabel = options.inputLabel;
                     }

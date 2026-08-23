@@ -2037,4 +2037,16 @@
   <data name="WorkAggregation_ActionDisabled_DelegationNotAllowed" xml:space="preserve">
     <value>لا يمكن تفويض هذه المهمة.</value>
   </data>
+  <data name="SnoozeTitle" xml:space="preserve">
+    <value>تأجيل هذه المهمة</value>
+  </data>
+  <data name="SnoozeSubtext" xml:space="preserve">
+    <value>تحتفظ المهمة بحالتها، ولا يتغيّر تاريخ استحقاقها، ولا يرى مقدّم الطلب أي شيء. التأجيل علامة لك وحدك.</value>
+  </data>
+  <data name="SnoozeUntilLabel" xml:space="preserve">
+    <value>حتى أي تاريخ</value>
+  </data>
+  <data name="DialogDismiss" xml:space="preserve">
+    <value>تراجع</value>
+  </data>
 </root>

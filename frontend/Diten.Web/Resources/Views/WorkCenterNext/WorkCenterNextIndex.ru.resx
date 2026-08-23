@@ -2037,4 +2037,16 @@
   <data name="WorkAggregation_ActionDisabled_DelegationNotAllowed" xml:space="preserve">
     <value>Эту задачу нельзя делегировать.</value>
   </data>
+  <data name="SnoozeTitle" xml:space="preserve">
+    <value>Отложить задачу</value>
+  </data>
+  <data name="SnoozeSubtext" xml:space="preserve">
+    <value>Статус задачи не меняется, срок не сдвигается, и заказчик ничего не увидит. Откладывание — пометка только для вас.</value>
+  </data>
+  <data name="SnoozeUntilLabel" xml:space="preserve">
+    <value>До какой даты</value>
+  </data>
+  <data name="DialogDismiss" xml:space="preserve">
+    <value>Отмена действия</value>
+  </data>
 </root>

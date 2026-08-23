@@ -6326,8 +6326,16 @@
             subtext: options.subtext,
             type: options.type || 'info',
             confirmButtonText: options.confirmText,
-            cancelButtonText: t('ReasonCancel'),
+            // The dismiss label, overridable per dialog. The module default stays what it was; a dialog whose own
+            // page carries an ACTION by that name says something else instead.
+            cancelButtonText: options.cancelText || t('ReasonCancel'),
             showInput: !!options.input,
+            /*
+             * WHAT KIND of box. Absent for every caller that wants prose — the wrapper still answers `textarea`,
+             * which is what it always did. A caller that wants a date says so, attaches its picker through the
+             * `didOpen` seam that already exists, and validates through the `inputValidator` that already exists.
+             */
+            inputType: options.input && options.input.type,
             inputLabel: options.input && options.input.label,
             inputPlaceholder: options.input && options.input.placeholder,
             inputValidator: options.input && options.input.validate,
@@ -6342,10 +6350,21 @@
              * An edit box that opened EMPTY would ask the author to retype a sentence they only wanted to fix —
              * which is how an "edit" quietly becomes a rewrite.
              */
-            didOpen: options.input && options.input.value !== undefined
+            /*
+             * The seam serves two needs with one hook, because the wrapper offers one: seeding a textarea with
+             * the sentence being edited, and handing the caller the input it just created so a picker can be
+             * attached to it. Neither adds anything to the shared component.
+             */
+            didOpen: (options.input && options.input.value !== undefined) || (options.input && options.input.onOpen)
                 ? (popup) => {
-                    const box = popup && popup.querySelector('textarea');
-                    if (box) { box.value = options.input.value; box.select(); }
+                    if (!popup) { return; }
+                    if (options.input.value !== undefined) {
+                        const box = popup.querySelector('textarea');
+                        if (box) { box.value = options.input.value; box.select(); }
+                    }
+                    if (typeof options.input.onOpen === 'function') {
+                        options.input.onOpen(popup.querySelector('.swal2-input, input, textarea'), popup);
+                    }
                 }
                 : undefined
         });
@@ -6540,21 +6559,53 @@
             toast(tf('ToastSnoozed', item.title, dateStr));
         };
         if (!global.Swal) { await apply(data.todayIso); return; }
-        global.Swal.fire({
-            title: t('Snooze'),
-            html: '<input id="wcnSnoozeDate" class="form-control" autocomplete="off">',
-            showCancelButton: true, confirmButtonText: t('SnoozeConfirm'), cancelButtonText: t('ReasonCancel'),
-            didOpen: () => {
-                const input = document.getElementById('wcnSnoozeDate');
-                if (global.flatpickr) { global.flatpickr(input, { dateFormat: 'Y-m-d', minDate: data.todayIso, disableMobile: true }); }
-                else { input.type = 'date'; input.min = data.todayIso; }
+        /*
+         * ── SNOOZE, THROUGH THE SHARED CONFIRM (2026-08-23) ─────────────────────────────────────────────────
+         *
+         * It was a raw `Swal.fire` with a bare title and no explanation — a date box that asked the reader to
+         * commit to something without saying what it would do. Everything it lacked, the shared component
+         * already offered; the ONE thing that kept it out was `input: 'textarea'` written as a constant, which
+         * is now the parameter it should always have been.
+         *
+         * ⚠ WHAT THE SENTENCE MAY CLAIM WAS MEASURED, NOT ASSUMED. Three of its four clauses are enforced:
+         * the lifecycle, the normalized status and the waiting context are untouched (the server's own
+         * `SetTaskSnoozeHandler` writes only the reader's overlay), the due date is a different field entirely,
+         * and the requester reads a projection this overlay never reaches. The fourth clause — "it disappears
+         * from your inbox" — is NOT true today: nothing filters a snoozed item out of any list, on the server or
+         * here. So the sentence does not say it. See the round's report and the backlog.
+         *
+         * ⚠ THE DISMISS BUTTON DOES NOT SAY "İptal". The wrapper's default is the shared `Cancel` string, and on
+         * THIS page that word already belongs to an action — "Görevi iptal et", which calls the task off for
+         * everyone. A dismiss control wearing the name of a destructive action is a misread waiting to happen.
+         */
+        sharedConfirm({
+            title: t('SnoozeTitle'),
+            subtext: esc(t('SnoozeSubtext')),
+            confirmText: t('SnoozeConfirm'),
+            cancelText: t('DialogDismiss'),
+            input: {
+                // A TEXT box, not a native `date` one: the picker is flatpickr, the same component every other
+                // date on this page uses. A native control here would be a second date language in one product.
+                type: 'text',
+                label: t('SnoozeUntilLabel'),
+                onOpen: (input) => {
+                    if (!input) { return; }
+                    if (global.flatpickr) {
+                        global.flatpickr(input, { dateFormat: 'Y-m-d', minDate: data.todayIso, disableMobile: true });
+                    } else {
+                        input.type = 'date';
+                        input.min = data.todayIso;
+                    }
+                },
+                /*
+                 * The client check does not REPLACE the server's (400 TASK_SNOOZE_DATE_INVALID) — it gets there
+                 * first. Both stay: one keeps the reader from making the mistake, the other keeps the data
+                 * honest whatever the client believes.
+                 */
+                validate: (value) => (!value || value <= data.todayIso ? t('SnoozeFuture') : null)
             },
-            preConfirm: () => {
-                const v = document.getElementById('wcnSnoozeDate').value;
-                if (!v || v <= data.todayIso) { global.Swal.showValidationMessage(t('SnoozeFuture')); return false; }
-                return v;
-            }
-        }).then(async (res) => { if (res.isConfirmed && res.value) { await apply(res.value); } });
+            onConfirm: (value) => { if (value) { apply(value).catch(reportSwalFailure); } }
+        });
     };
 
     // ── "+ Yeni" — WorkCenter owns only self-tasks; module items are created in

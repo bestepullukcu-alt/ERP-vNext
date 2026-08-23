@@ -2037,4 +2037,16 @@
   <data name="WorkAggregation_ActionDisabled_DelegationNotAllowed" xml:space="preserve">
     <value>此任务不可转派。</value>
   </data>
+  <data name="SnoozeTitle" xml:space="preserve">
+    <value>稍后处理此任务</value>
+  </data>
+  <data name="SnoozeSubtext" xml:space="preserve">
+    <value>任务状态不变，截止日期不动，请求人也看不到任何变化。稍后处理只是给你自己的标记。</value>
+  </data>
+  <data name="SnoozeUntilLabel" xml:space="preserve">
+    <value>推迟到哪一天</value>
+  </data>
+  <data name="DialogDismiss" xml:space="preserve">
+    <value>算了</value>
+  </data>
 </root>

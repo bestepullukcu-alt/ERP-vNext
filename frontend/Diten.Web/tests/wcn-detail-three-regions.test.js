@@ -2843,8 +2843,13 @@ describe("the page reaches the product's one confirm implementation", () => {
     const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js")
       .replace(/\/\*[\s\S]*?\*\//g, "")
       .replace(/(^|[^:])\/\/.*$/gm, "$1");
-    // 10 before BL-147; the bulk RESULT notice became a toast, so nine raw dialogs remain.
-    expect((src.match(/Swal\.fire\(/g) || []).length).toBe(9);
+    // 10 before BL-147; the bulk RESULT notice became a toast (9), and on 2026-08-23 SNOOZE moved to the wrapper
+    // once its hard-coded `input: 'textarea'` became `options.inputType || 'textarea'` — a constant turned into a
+    // parameter, not a component grown. Eight remain: three that this change makes movable and have deliberately
+    // not been moved yet (plan date, meeting time, log time), one that needs `inputOptions` forwarded too
+    // (create-in-source), and four that are not confirmations at all (the "+ Yeni" menu, the meeting form, the
+    // reason+assignee form, the bulk progress bar). Measured and listed under BL-146.
+    expect((src.match(/Swal\.fire\(/g) || []).length).toBe(8);
   });
 });
 

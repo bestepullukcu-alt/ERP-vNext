@@ -2037,4 +2037,16 @@
   <data name="WorkAggregation_ActionDisabled_DelegationNotAllowed" xml:space="preserve">
     <value>This task cannot be delegated.</value>
   </data>
+  <data name="SnoozeTitle" xml:space="preserve">
+    <value>Snooze this task</value>
+  </data>
+  <data name="SnoozeSubtext" xml:space="preserve">
+    <value>The task keeps its status, its due date does not move, and the requester sees nothing. A snooze is a mark for you alone.</value>
+  </data>
+  <data name="SnoozeUntilLabel" xml:space="preserve">
+    <value>Until which date</value>
+  </data>
+  <data name="DialogDismiss" xml:space="preserve">
+    <value>Never mind</value>
+  </data>
 </root>

@@ -2037,4 +2037,16 @@
   <data name="WorkAggregation_ActionDisabled_DelegationNotAllowed" xml:space="preserve">
     <value>Bu görev devredilemez.</value>
   </data>
+  <data name="SnoozeTitle" xml:space="preserve">
+    <value>Görevi ertele</value>
+  </data>
+  <data name="SnoozeSubtext" xml:space="preserve">
+    <value>Görevin durumu değişmez, son tarihi kaymaz ve talep eden hiçbir şey görmez. Erteleme yalnızca senin için bir işarettir.</value>
+  </data>
+  <data name="SnoozeUntilLabel" xml:space="preserve">
+    <value>Hangi tarihe kadar</value>
+  </data>
+  <data name="DialogDismiss" xml:space="preserve">
+    <value>Vazgeç</value>
+  </data>
 </root>

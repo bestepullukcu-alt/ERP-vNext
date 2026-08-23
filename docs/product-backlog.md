@@ -3666,6 +3666,25 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - **KARAR CT'DE.** Seçenekler: (a) sarmalayıcıya `input` tipi + `didOpen` seamı eklemek — ortak bileşen büyür,
   tek modülün ihtiyacıyla değil bir tasarım kararıyla; (b) bunları ham bırakmak ve kuralı "yalnız onay diyalogları
   sarmalayıcıdan geçer" diye daraltmak; (c) diyalog dışı bir yüzeye taşımak (offcanvas form).
+
+- **GÜNCELLEME (2026-08-23) — seçenek (a) alındı, ama BÜYÜTEREK DEĞİL: sabit bir varsayım parametreye çevrildi.**
+  `swalConfig.input = 'textarea'` artık `options.inputType || 'textarea'`. Yeni yetenek yok, varsayılan bugünkü
+  davranış. `showInput` kullanan **altı** mevcut çağıran (Tenants ×3, AuditLog ×1, TemplateMasters ×1,
+  WorkCenterNext seamı ×1) hiçbir tip vermiyor, dolayısıyla altısı da textarea almaya devam ediyor — bu, view'in
+  scripti gerçek bir Swal taklidiyle çalıştırılarak ÖLÇÜLDÜ, kaynak metnine bakılarak değil.
+- **Ertele taşındı** → `app.js`'te kalan ham diyalog sayısı **10 → 8**. Kalanların taşınabilirliği yeniden ölçüldü:
+  | # | diyalog | durum |
+  |---|---|---|
+  | 1 | plan tarihi (`app.js:6263`) | ✅ **artık taşınabilir** — ertelemenin birebir aynı şekli (`inputType:'text'` + flatpickr + `validate`) |
+  | 2 | toplantı zamanı (`app.js:6413`) | ✅ **artık taşınabilir** — aynı şekil, flatpickr `enableTime` ile |
+  | 3 | süre gir (`app.js:6438`) | ✅ **artık taşınabilir** — `inputType: 'number'` |
+  | 4 | kaynakta oluştur (`app.js:6736`) | ⚠ **hâlâ değil** — `input: 'select'` çalışır ama sarmalayıcı `inputOptions`'ı iletmiyor; TEK bir parametre daha gerekiyor |
+  | 5 | "+ Yeni" menüsü (`app.js:6615`) | ❌ onay diyaloğu değil — iki düğmeli menü, onay düğmesi yok |
+  | 6 | toplantı formu (`app.js:6762`) | ❌ dört alanlı form — tek girdilik şekle sığmaz |
+  | 7 | gerekçe + atanan + beklenen kişi (`app.js:6887`) | ❌ çok alanlı form |
+  | 8 | toplu ilerleme (`app.js:7065`) | ❌ ilerleme çubuğu; düğmesi yok, kapatılamaz |
+- **BU TURDA TAŞIMA YAPILMADI** (sahibin talimatı). Üçü hazır bekliyor; dördüncüsü için `inputOptions`
+  kararı CT'de.
   **Ajan kendi başına genişletmedi.** **Gelecek regresyon riski: 🟡** — kural bugünkü hâliyle kısmen ihlal görünüyor.
 
 ### BL-147 — [MODAL] Toplu sonuç bildirimi hâlâ ham modal; `DitenModal` yüklenmediği için taşınamadı
@@ -3971,3 +3990,48 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - Genel `.wcn-detail-card > section + section` kuralı **kaldırıldı**: dolgunun içinde çizgi çizen bir yedek
   kural, bu turda üç kez düzeltilen kusurun dördüncü kez doğacağı yerdi.
 - **Gelecek regresyon riski: 🟢** — yeni bir yığılma eklenirse BL-180'siz kalmaz: gardiyan test onu yakalar.
+
+### BL-181 — 🔴 [ÇELİŞKİ] Erteleme, ertelenen işi HİÇBİR listeden gizlemiyor
+- Brifing, ertele diyaloğunun açıklamasının şunu demesini istedi: *"Bu görev, seçtiğin tarihe kadar gelen
+  kutunda görünmez."* Aynı brifing "uydurma, ÖLÇ ve doğrula" dedi. **Ölçüldü ve doğru değil.**
+- Cümlenin diğer üç iddiası doğrulandı ve sunucuda güvence altında (`SNOOZE_MUST_NOT_CREATE_WAITING`):
+  yaşam döngüsü / normalleştirilmiş durum / bekleme bağlamı değişmiyor (`SetTaskSnoozeHandler` yalnız okuyucunun
+  kendi katmanını yazıyor), son tarih bambaşka bir alan, talep eden bu katmana hiç ulaşmayan bir projeksiyon
+  okuyor.
+- **Dördüncü iddia yok:** `snoozedUntil` üzerinde süzen tek bir yer bile yok — ne sağlayıcıda, ne
+  `activeItems()`'ta. Ertelenen görev listede durmaya devam ediyor, üstüne bir çip ve bir "Bu öğeyi ertelediniz"
+  şeridi ekleniyor. Yani erteleme bugün **bir not**, bir gizleme değil.
+- Bu yüzden diyaloğun cümlesi o iddiayı **yazmıyor**; ürünün yapmadığı bir şeyi anlatan bir diyalog, hiçbir şey
+  söylemeyenden daha kötüdür. Bir gardiyan test (`wcn-snooze-dialog.test.js`) iddianın süzme gelmeden geri
+  sızmasını engelliyor.
+- **Karar senin:** (a) süzmeyi ekle — o zaman cümle tam hâline kavuşur; (b) ertelemeyi açıkça "kişisel bir not"
+  olarak bırak ve adını buna göre gözden geçir.
+- **Gelecek regresyon riski: 🟡** — süzme eklenirse "İşlerim boş" gibi sayaçlar ve boş durumlar da değişir.
+
+### BL-182 — [ÖLÇÜM] Takvim bugünü seçtiriyor, doğrulayıcı bugünü reddediyor
+- `minDate: data.todayIso` bugünü **seçilebilir** bırakıyor; doğrulayıcı ise `value <= todayIso` diyerek onu
+  **reddediyor**. Yani bugüne tıklayan biri sessizce çalışmayan bir tarih seçip "Gelecek bir tarih seçin"
+  uyarısını yiyor.
+- Doğrulayıcıya bu turda dokunulmadı (brifing: "doğrulayıcı olduğu gibi kalsın"). Sunucu ertelemeyi günün
+  **23:59:59**'una yazdığı için bugün aslında anlamlı bir seçim olurdu ("bu akşama kadar").
+- **Karar senin:** ya `minDate` yarına çekilsin, ya doğrulayıcı bugünü kabul etsin. İkisi bugün aynı şeyi
+  söylemiyor.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-183 — [YAPILMADI] "İptal" kelimesi WorkCenter'ın diğer diyaloglarında da aksiyonla çakışıyor
+- Ertele diyaloğunun vazgeçme düğmesi artık `DialogDismiss` ("Vazgeç") — çünkü sarmalayıcının varsayılanı ortak
+  `Cancel` dizesi ve Türkçesi "İptal", bu sayfada ise **"Görevi iptal et"** diye bir AKSİYON var.
+- Aynı çakışma WorkCenterNext'in diğer diyaloglarında da duruyor: `t('ReasonCancel')` = "İptal", modül seamının
+  varsayılanı ve **dört ayrı ham diyalogda** doğrudan geçiliyor.
+- Bu turda yalnız ertele değiştirildi (sahip sırayla gidiyor). Modül geneline yayılması ayrı bir karar.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-184 — [KARARSIZ TEST] Tam süit yükü altında yedi WorkCenter testi zaman aşımına düşüyor
+- Tam koşuda (`npx vitest run`, 92 dosya paralel) şu yedisi kırmızı: alt görev oluşturma ×3, "tümünü göster"
+  kapağı, kontrol listesi seviyesi, havuz kuyruğu kovası, atanan seçici. Süreleri 7–11 saniye.
+- **Yedisi de tek başına koşturulduğunda yeşil** (aynı komut, tek dosya: 356/356 · 71/71). Yani ürün kusuru
+  değil, testlerin sabit bekleme kullanması: makine yüklüyken beklenen olay pencerenin dışına taşıyor.
+- Çözüm biliniyor ve bu depoda üç kez uygulandı (BL-159 / BL-163 / BL-168): sabit `setTimeout` yerine
+  `until(koşul, {timeout, step})`. Bu turda YAPILMADI — tur tek bir kusura ayrılmıştı.
+- **Gelecek regresyon riski: 🟡** — kararsız testler gerçek kırmızıları gizler; bu turda bir gerçek kırmızıyı
+  (ham diyalog sayacı 9→8) ayırt etmek fazladan üç koşu aldı.
