@@ -3948,3 +3948,26 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   dilden de geri alındı.
 - Üçüncü rol istenirse enum, create formu ve yedi dil birlikte açılmalı — ekran tarafı zaten hazır.
 - **Gelecek regresyon riski: 🟢.**
+
+### BL-177 — [YAPILMADI] `.wcn-notes-composer` ayırıcısı eşit değil (yan panel, detay kartı değil)
+- Süpürmede bulundu: `margin-block-start: 1rem` üstte, `padding-block-start: .75rem` altta → **16 / 12**, eşit değil.
+- Sekiz detay kartından biri değil; hızlı notlar YAN PANELİNDE yaşıyor. Dahası panel bugün **arayüzden
+  açılamıyor**: `state.notesOpen`'ı çeviren bir düğme render edilmiyor ("Hızlı not" başka bir akış).
+- Bu yüzden **CSS metninden ölçüldü, ekrandan değil** — ve bu turda değiştirilmedi: ölçemediğim bir yüzeyde
+  düzeltme yapmak, düzelttiğimi ekranda gösteremeyeceğim bir değişiklik demek.
+- **Gelecek regresyon riski: 🟢** (kart ailelerinden bağımsız).
+
+### BL-178 — [ÖLÇÜLEMEDİ] Bölünmüş görünüm yüzeyi arayüzden açılamıyor
+- `[data-wcn-view]` yalnızca `list` ve `table` üretiyor; `.wcn-split-detail` hiçbir tıklamayla açılmıyor.
+- Sonuç: o yüzeydeki ayırıcılar (`.wcn-split-detail .wcn-detail-tabs`, `.wcn-detail-command .wcn-personal`
+  kenar boşluğu) canlı ölçülemedi. Kişisel kartın bu turdaki yapı değişikliği o yüzeyi de etkiliyor olabilir.
+- **Gelecek regresyon riski: 🟡** — bölünmüş görünüm geri geldiğinde kişisel blok orada yeniden ölçülmeli.
+
+### BL-179 — [ÖLÇÜM NOTU] Üst üste bölüm ayırıcısı canlı hiçbir görevde çizilmiyor
+- `renderBusinessContext` N bölümü tek karta yığıyor, ama canlı verideki **hiçbir görev iki bölüm taşımıyor**
+  (60 görevin 2'sinde iş bağlamı var, ikisi de tek bölüm). Fixture'larda da yok.
+- Yine de düzeltildi (`.wcn-bizctx-card`): kart dolgu ödemiyor, her bölüm kendi 1rem'ini ödüyor, çizgi kenardan
+  kenara. Ölçüm için tarayıcıda **bölüm klonlandı** — stiller ürünün, DOM elle çoğaltıldı; açıkça yazılıyor.
+- Genel `.wcn-detail-card > section + section` kuralı **kaldırıldı**: dolgunun içinde çizgi çizen bir yedek
+  kural, bu turda üç kez düzeltilen kusurun dördüncü kez doğacağı yerdi.
+- **Gelecek regresyon riski: 🟢** — yeni bir yığılma eklenirse BL-180'siz kalmaz: gardiyan test onu yakalar.

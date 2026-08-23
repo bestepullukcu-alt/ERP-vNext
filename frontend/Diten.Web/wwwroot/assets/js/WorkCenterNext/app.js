@@ -3260,11 +3260,32 @@
             ? `<span class="wcn-count-inline">${esc(String(notes.length))}</span>`
             : '';
 
+        /*
+         * (f) TWO BLOCKS, NOT ONE — the SAME technique the actions and summary cards already use, copied rather
+         * than re-invented (measured there: `.wcn-acts-destructive` and `.wcn-sumtags`, both edge to edge with
+         * equal space on either side).
+         *
+         * MEASURED BROKEN: the divider was a `border-bottom` on the button strip inside a card with 16px of its
+         * own padding, so it ran 16px short at EACH end and carried 12px above against 0 below — the note row
+         * sat on the line. A divider that stops short of the edge reads as a mistake instead of a division, and
+         * unequal space makes it look like it belongs to the block above.
+         *
+         * The card stops paying for padding and each block pays its own inset; the line then falls BETWEEN the
+         * blocks, where it spans edge to edge by construction. NO NEGATIVE MARGIN anywhere — that fights the
+         * padding and breaks the moment the padding changes.
+         *
+         * It also fixes a second thing quietly: the divider used to belong to the button strip, so SNOOZING a
+         * task (which swaps the strip for a snooze row) made the divider vanish. It belongs to the card now.
+         */
         return `<div class="wcn-detail-section">
-            ${cardHead('bx-note', 'PersonalCardLabel', count)}
-            ${snooze}
-            ${rows ? `<ul class="wcn-notes">${rows}</ul>` : ''}
-            ${addRow}
+            <div class="wcn-personal-main">
+                ${cardHead('bx-note', 'PersonalCardLabel', count)}
+                ${snooze}
+            </div>
+            <div class="wcn-personal-notes">
+                ${rows ? `<ul class="wcn-notes">${rows}</ul>` : ''}
+                ${addRow}
+            </div>
         </div>`;
     };
 
@@ -3860,6 +3881,15 @@
             ? `<section class="card backbone-preview-section wcn-detail-card ${
                 inner.includes('wcn-acts') ? 'wcn-acts-card'
                     : inner.includes('wcn-sum-main') ? 'wcn-sum-card'
+                    : inner.includes('wcn-personal-main') ? 'wcn-personal-card'
+                    /*
+                     * The business-context family (context, related records, compliance, evidence, the process
+                     * blocks) takes the same treatment for the same reason: `renderBusinessContext` joins N
+                     * sections into ONE card, and the divider between two stacked sections is a section divider
+                     * like any other. Inside a padded card it would stop 16px short at each end — the defect
+                     * this round fixed twice already. The card stops paying, each section pays.
+                     */
+                    : inner.includes('wcn-business-section') ? 'wcn-bizctx-card'
                     : inner.includes('wcn-empty-line') ? 'wcn-detail-card--slim p-3' : 'p-4'}">${inner}</section>`
             : '';
         const reviewNote = (item.itemType === 'task' && item.lifecycle === 'PendingReview')

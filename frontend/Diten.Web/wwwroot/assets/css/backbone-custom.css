@@ -5842,13 +5842,11 @@ tags.diten-tags .tagify__input {
    their own vertical padding/border. Stacked sections keep a hairline divider. */
 .wcn-detail-card > .wcn-detail-section,
 .wcn-detail-card > .wcn-business-section { padding-block: 0; border-block-end: 0; }
-.wcn-detail-card > .wcn-detail-section + .wcn-detail-section,
-.wcn-detail-card > .wcn-detail-section + .wcn-business-section,
-.wcn-detail-card > .wcn-business-section + .wcn-detail-section,
-.wcn-detail-card > .wcn-business-section + .wcn-business-section {
-    margin-block-start: 1.25rem; padding-block-start: 1.25rem;
-    border-block-start: 1px solid var(--bs-border-color);
-}
+/* THE STACKING DIVIDER MOVED TO THE CARD FAMILY THAT ACTUALLY STACKS (see `.wcn-bizctx-card` below).
+   It used to be declared here, generically, and it drew its line INSIDE whatever padding the card carried — so
+   the one card that stacks sections would have got a rule stopping 16px short at each end, the same defect this
+   round fixed on three other cards. Nothing else stacks two sections in one card: every other render emits a
+   single section. The reset on the line above stays; only the `+` rule moved. */
 /* Command card — identity, status, actions, personal overlay. */
 /* ── The identity line ─────────────────────────────────────────────────────
    ONE row where there were two, because the two were saying different kinds of thing in the same voice.
@@ -6115,7 +6113,40 @@ tags.diten-tags .tagify__input {
 .wcn-parked-snooze { background: color-mix(in sRGB, var(--bs-secondary) 14%, var(--bs-card-bg)); color: var(--bs-secondary-color); }
 
 /* Personal actions (pin / snooze) — the thin overlay WorkCenter owns --------- */
-.wcn-personal { display: flex; flex-wrap: wrap; gap: .5rem; padding-block: .75rem; border-block-end: 1px solid var(--bs-border-color); }
+/* The strip is now ONLY a strip. Its padding and its divider moved out to the card's two blocks below — the
+   divider was never a property of the button row, which is why snoozing (a different row) used to lose it. */
+.wcn-personal { display: flex; flex-wrap: wrap; gap: .5rem; }
+/* THE PERSONAL CARD PAYS NO PADDING — its two blocks do. Same technique as `.wcn-acts-card` and `.wcn-sum-card`,
+   and the same reason: a section divider must reach the card's edges, and it can only do that if nothing insets
+   the block that carries it. MEASURED BROKEN: the rule stopped 16px short each side and had 12px above against
+   0 below, so the first note sat on the line. 1rem is the card's own group value (its former `p-4`), not a new
+   number, and it is spent EQUALLY on both sides of the line. No negative margin anywhere. */
+.wcn-personal-card { overflow: hidden; padding: 0; }
+.wcn-personal-card .wcn-personal-main { padding: 1rem; }
+.wcn-personal-card .wcn-personal-notes {
+    padding: 1rem;
+    border-block-start: 1px solid var(--bs-border-color);
+}
+/* The block's inset is the block's alone. `.wcn-note-add` carries a .5rem top margin for the case where a note
+   list sits above it; against the card's edge that margin ADDS to the padding and the space below the line
+   becomes 24px against 16px above. Zeroing the first child is the standard shape of this fix and keeps the
+   margin doing its job everywhere else — no number was changed to compensate. */
+.wcn-personal-card .wcn-personal-notes > :first-child { margin-block-start: 0; }
+
+/* Same pattern, third card family. `renderBusinessContext` stacks N sections in one card, and the hairline
+   between two of them is a section divider — so the card pays no padding and each section pays 1rem, exactly as
+   the actions, summary and personal cards do. This divider renders on no task in the current data (no item
+   carries two sections), which is precisely why it was worth fixing now rather than when someone finally sees
+   it. The 1rem matches the p-4 these cards used to carry, so nothing moves for the single-section cards. */
+.wcn-bizctx-card { overflow: hidden; padding: 0; }
+.wcn-bizctx-card > .wcn-business-section { padding: 1rem; }
+.wcn-bizctx-card > .wcn-business-section + .wcn-business-section {
+    /* The space above the line is the previous section's own padding-bottom (1rem), so the space below is the
+       same 1rem — not a second, larger number. The line is declared HERE, by the family that owns the seam,
+       rather than generically by every card. */
+    margin-block-start: 0; padding-block-start: 1rem;
+    border-block-start: 1px solid var(--bs-border-color);
+}
 .wcn-personal-btn {
     display: inline-flex; align-items: center; gap: .375rem; padding: .3125rem .625rem;
     border: 1px solid var(--bs-border-color); border-radius: .375rem; background: transparent;
