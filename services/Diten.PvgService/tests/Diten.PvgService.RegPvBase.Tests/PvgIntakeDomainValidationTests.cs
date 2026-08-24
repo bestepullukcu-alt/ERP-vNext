@@ -33,6 +33,42 @@ public sealed class PvgIntakeDomainValidationTests
     }
 
     [Fact]
+    public void Field_security_governance_candidates_cover_all_16_MOD_0230_user_facing_fields()
+    {
+        var expectedFields = new Dictionary<PvgIntakeField, (PvgFieldSensitivity Sensitivity, bool IsFreeText)>
+        {
+            [PvgIntakeField.IntakeChannel] = (PvgFieldSensitivity.PublicMetadata, false),
+            [PvgIntakeField.SourceType] = (PvgFieldSensitivity.PublicMetadata, false),
+            [PvgIntakeField.SourceReference] = (PvgFieldSensitivity.Confidential, false),
+            [PvgIntakeField.ReceivedAtUtc] = (PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.ReporterType] = (PvgFieldSensitivity.PublicMetadata, false),
+            [PvgIntakeField.ReporterContactSummary] = (PvgFieldSensitivity.Pii, false),
+            [PvgIntakeField.PatientSubjectCode] = (PvgFieldSensitivity.Phi, false),
+            [PvgIntakeField.EventOnsetDate] = (PvgFieldSensitivity.Phi, false),
+            [PvgIntakeField.AdverseEventNarrative] = (PvgFieldSensitivity.Phi, true),
+            [PvgIntakeField.SuspectProductText] = (PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.Seriousness] = (PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.IntakePriority] = (PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.TriageOutcome] = (PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.TriageReason] = (PvgFieldSensitivity.Phi, true),
+            [PvgIntakeField.RouteTargetQueue] = (PvgFieldSensitivity.Confidential, false),
+            [PvgIntakeField.EvidenceLinkReferences] = (PvgFieldSensitivity.Confidential, false)
+        };
+
+        var fields = PvgIntakeFieldDefinition.ApprovedFields;
+
+        Assert.Equal(16, expectedFields.Count);
+        Assert.Equal(expectedFields.Keys.Order(), fields.Select(field => field.Field).Order());
+
+        foreach (var field in fields)
+        {
+            var expected = expectedFields[field.Field];
+            Assert.Equal(expected.Sensitivity, field.Sensitivity);
+            Assert.Equal(expected.IsFreeText, field.IsFreeText);
+        }
+    }
+
+    [Fact]
     public void Draft_request_shapes_do_not_accept_client_tenant_or_forbidden_operations()
     {
         var requestTypes = new[]

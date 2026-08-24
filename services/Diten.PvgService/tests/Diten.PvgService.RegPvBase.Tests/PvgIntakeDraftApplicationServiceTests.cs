@@ -15,6 +15,9 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         "free text narrative with PHI",
         "triage free-text reason",
         "queue-safety-review",
+        "updated-source-ref",
+        "suspect product update",
+        "foreign-tenant-secret",
         "raw exception message",
         "actor-secret-456",
         "corr-secret-789"
@@ -309,6 +312,126 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         AssertSafe(listed);
     }
 
+    [Theory]
+    [InlineData(PvgIntakeOperation.Create, "create")]
+    [InlineData(PvgIntakeOperation.Update, "update")]
+    [InlineData(PvgIntakeOperation.Route, "route")]
+    [InlineData(PvgIntakeOperation.GetById, "detail")]
+    [InlineData(PvgIntakeOperation.GetList, "list")]
+    public async Task Field_security_policy_unavailable_fails_closed_for_supported_MOD_0230_operations(
+        PvgIntakeOperation operation,
+        string expectedSurface)
+    {
+        var callLog = new List<string>();
+        var fieldPolicy = new RecordingFieldSecurityPolicy(callLog);
+        var service = NewService(
+            fieldPolicy,
+            new RecordingWorkflowTransitionGate(callLog),
+            new RecordingEvidenceLinkPort(callLog),
+            new RecordingPermissionGate(callLog));
+
+        string? intakeDraftId = null;
+        if (operation != PvgIntakeOperation.Create)
+        {
+            var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+            Assert.True(created.Result.IsSuccess);
+            intakeDraftId = created.IntakeDraftId;
+            callLog.Clear();
+        }
+
+        fieldPolicy.Decision = PvgPortDecision.FieldSecurityDenied();
+
+        var blocked = operation switch
+        {
+            PvgIntakeOperation.Create => (object)await service.CreateDraftAsync(CreateCommand(ValidCreateRequest())),
+            PvgIntakeOperation.Update => (object)await service.UpdateDraftAsync(
+                new UpdateIntakeDraftCommand(
+                    TenantContext(),
+                    ActorContext(),
+                    CorrelationContext(),
+                    intakeDraftId!,
+                    ValidUpdateRequest())),
+            PvgIntakeOperation.Route => (object)await service.RouteDraftAsync(
+                new RouteIntakeDraftCommand(
+                    TenantContext(),
+                    ActorContext(),
+                    CorrelationContext(),
+                    intakeDraftId!,
+                    new PvgRouteIntakeDraftRequest("queue-safety-review"))),
+            PvgIntakeOperation.GetById => (object)await service.GetDraftByIdAsync(ReadByIdQuery(intakeDraftId!)),
+            PvgIntakeOperation.GetList => (object)await service.ListDraftsAsync(ReadListQuery()),
+            _ => throw new InvalidOperationException($"Unsupported FieldSecurity test operation {operation}.")
+        };
+
+        Assert.Contains(callLog, entry => entry.StartsWith($"field:{operation}:{expectedSurface}:", StringComparison.Ordinal));
+        AssertFieldSecurityBlocked(blocked);
+        AssertSafe(blocked);
+    }
+
+    [Fact]
+    public async Task Triage_field_security_policy_is_not_yet_called_and_remains_owner_approval_blocker()
+    {
+        var callLog = new List<string>();
+        var fieldPolicy = new RecordingFieldSecurityPolicy(callLog);
+        var service = NewService(
+            fieldPolicy,
+            new RecordingWorkflowTransitionGate(callLog),
+            new RecordingEvidenceLinkPort(callLog),
+            new RecordingPermissionGate(callLog));
+        var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+        Assert.True(created.Result.IsSuccess);
+        callLog.Clear();
+        fieldPolicy.Decision = PvgPortDecision.FieldSecurityDenied();
+
+        var triaged = await service.TriageDraftAsync(
+            new TriageIntakeDraftCommand(
+                TenantContext(),
+                ActorContext(),
+                CorrelationContext(),
+                created.IntakeDraftId!,
+                new PvgTriageIntakeDraftRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason")));
+
+        Assert.True(triaged.Result.IsSuccess);
+        Assert.DoesNotContain(callLog, entry => entry.StartsWith("field:Triage:", StringComparison.Ordinal));
+        Assert.Contains("workflow:Triage", callLog);
+        Assert.Contains("evidence:Triage", callLog);
+        AssertSafe(triaged);
+    }
+
+    [Fact]
+    public async Task Cross_tenant_read_and_write_return_safe_not_found_without_existence_leak()
+    {
+        var callLog = new List<string>();
+        var service = NewService(
+            new RecordingFieldSecurityPolicy(callLog),
+            new RecordingWorkflowTransitionGate(callLog),
+            new RecordingEvidenceLinkPort(callLog),
+            new RecordingPermissionGate(callLog));
+        var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+        Assert.True(created.Result.IsSuccess);
+        Assert.NotNull(created.IntakeDraftId);
+
+        var foreignTenant = TenantContext("foreign-tenant-secret");
+        var crossTenantRead = await service.GetDraftByIdAsync(
+            new GetIntakeDraftByIdQuery(foreignTenant, ActorContext(), CorrelationContext(), created.IntakeDraftId!));
+        var crossTenantUpdate = await service.UpdateDraftAsync(
+            new UpdateIntakeDraftCommand(
+                foreignTenant,
+                ActorContext(),
+                CorrelationContext(),
+                created.IntakeDraftId!,
+                ValidUpdateRequest()));
+
+        Assert.False(crossTenantRead.Result.IsSuccess);
+        Assert.False(crossTenantUpdate.Result.IsSuccess);
+        Assert.Equal(PvgApplicationReasonCodes.IntakeDraftNotFound, crossTenantRead.Result.ReasonCode);
+        Assert.Equal(PvgApplicationReasonCodes.IntakeDraftNotFound, crossTenantUpdate.Result.ReasonCode);
+        Assert.Empty(crossTenantRead.Items);
+        Assert.Null(crossTenantUpdate.AuditIntent);
+        AssertSafe(crossTenantRead);
+        AssertSafe(crossTenantUpdate);
+    }
+
     [Fact]
     public async Task Read_queries_require_actor_correlation_and_permission_before_field_policy_or_store_access()
     {
@@ -388,7 +511,7 @@ public sealed class PvgIntakeDraftApplicationServiceTests
             permissionGate ?? new RecordingPermissionGate([]),
             new InMemoryPvgIntakeDraftRepository());
 
-    private static PvgServerTenantContext TenantContext() => new("tenant-secret-123");
+    private static PvgServerTenantContext TenantContext(string tenantId = "tenant-secret-123") => new(tenantId);
 
     private static PvgActorContext ActorContext() => new("actor-secret-456", "HumanUser");
 
@@ -456,6 +579,42 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         {
             Assert.DoesNotContain(sensitiveSample, rendered, StringComparison.OrdinalIgnoreCase);
         }
+    }
+
+    private static void AssertFieldSecurityBlocked(object result)
+    {
+        switch (result)
+        {
+            case PvgIntakeDraftMutationResult mutation:
+                Assert.False(mutation.Result.IsSuccess);
+                Assert.Equal(PvgApplicationOutcome.Blocked, mutation.Result.Outcome);
+                Assert.Equal(PvgSafeReasonCodes.FieldSecurityPolicyUnavailable, mutation.Result.ReasonCode);
+                AssertSafeReasonCode(mutation.Result.ReasonCode);
+                Assert.Empty(mutation.Result.ValidationFailures);
+                Assert.Null(mutation.IntakeDraftId);
+                Assert.Null(mutation.AuditIntent);
+                break;
+            case PvgIntakeDraftQueryResult query:
+                Assert.False(query.Result.IsSuccess);
+                Assert.Equal(PvgApplicationOutcome.Blocked, query.Result.Outcome);
+                Assert.Equal(PvgSafeReasonCodes.FieldSecurityPolicyUnavailable, query.Result.ReasonCode);
+                AssertSafeReasonCode(query.Result.ReasonCode);
+                Assert.Empty(query.Result.ValidationFailures);
+                Assert.Empty(query.Items);
+                break;
+            default:
+                throw new InvalidOperationException($"Unsupported blocked result type {result.GetType().Name}.");
+        }
+    }
+
+    private static void AssertSafeReasonCode(string? reasonCode)
+    {
+        Assert.False(string.IsNullOrWhiteSpace(reasonCode));
+        Assert.StartsWith("PVG_", reasonCode, StringComparison.Ordinal);
+        Assert.All(reasonCode, character =>
+            Assert.True(
+                char.IsUpper(character) || char.IsDigit(character) || character == '_',
+                $"Reason code '{reasonCode}' must contain only safe uppercase token characters."));
     }
 
     private sealed class RecordingFieldSecurityPolicy(List<string> callLog) : IPvgFieldSecurityPolicy
