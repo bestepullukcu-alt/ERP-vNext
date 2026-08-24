@@ -1879,7 +1879,12 @@ describe("the actions card puts its weight where the decision is", () => {
     // …and the helper that carries them into the dialogs still exists and still uses the same key table.
     const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
     expect(src).toMatch(/const outcomeLead = \(action\) =>[\s\S]{0,200}ACTION_OUTCOME_KEY\[action\.code\]/);
-    expect(src, "the plan dialog lost its lead").toMatch(/outcomeLead\(action\)\}<input id="wcnPlanDate"/);
+    /*
+     * ⚠ UPDATED (2026-08-24, A3): the plan dialog is no longer a raw `Swal.fire` with its own `<input>` — it
+     * goes through the shared confirm, so its lead sentence rides `subtext` instead of a hand-built `html`
+     * string. The claim under test is unchanged: the PRIMARY's prose reaches its dialog.
+     */
+    expect(src, "the plan dialog lost its lead").toMatch(/subtext: outcomeLead\(action\)/);
   });
 
   it("never draws a disabled action it cannot explain", async () => {
@@ -2860,13 +2865,20 @@ describe("the page reaches the product's one confirm implementation", () => {
     const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js")
       .replace(/\/\*[\s\S]*?\*\//g, "")
       .replace(/(^|[^:])\/\/.*$/gm, "$1");
-    // 10 before BL-147; the bulk RESULT notice became a toast (9), and on 2026-08-23 SNOOZE moved to the wrapper
-    // once its hard-coded `input: 'textarea'` became `options.inputType || 'textarea'` — a constant turned into a
-    // parameter, not a component grown. Eight remain: three that this change makes movable and have deliberately
-    // not been moved yet (plan date, meeting time, log time), one that needs `inputOptions` forwarded too
-    // (create-in-source), and four that are not confirmations at all (the "+ Yeni" menu, the meeting form, the
-    // reason+assignee form, the bulk progress bar). Measured and listed under BL-146.
-    expect((src.match(/Swal\.fire\(/g) || []).length).toBe(8);
+    /*
+     * ⚠ FOUR, NOT EIGHT (2026-08-24, A3). The four that ASK FOR ONE VALUE went through the shared component —
+     * the plan date, the meeting time, the logged minutes, and the module choice, the last of which needed
+     * `inputOptions` forwarded (the wrapper's seventh and final parameter).
+     *
+     * The four that remain are not confirmations and never will be: a MENU with no confirm button, a
+     * four-field meeting form, a two-field reason+assignee form, and a progress readout that asks nothing.
+     * They are raw by necessity — but they are no longer UNSTYLED: each one now spreads
+     * `window.DitenDialogAppearance()` over its config, so the look still has exactly one definition.
+     */
+    expect((src.match(/Swal\.fire\(/g) || []).length).toBe(4);
+    // …and every one of the four takes the published appearance rather than inventing its own.
+    expect((src.match(/dialogLook\(\)/g) || []).length,
+      "a raw dialog is drawing itself again").toBe(4);
   });
 });
 

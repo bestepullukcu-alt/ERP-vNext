@@ -4575,7 +4575,7 @@
             <div class="offcanvas-header">
                 <h5 class="offcanvas-title" id="wcnSubtaskPanelLabel">${esc(t('SubtaskQuickEditTitle'))}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
-                        aria-label="${esc(t('ReasonCancel'))}"></button>
+                        aria-label="${esc(t('PanelClose'))}"></button>
             </div>
             <div class="offcanvas-body">
                 <div class="mb-3">
@@ -4705,7 +4705,7 @@
             <div class="offcanvas-header">
                 <h5 class="offcanvas-title" id="wcnSubtaskCreateLabel">${esc(t('SubtaskCreateTitle'))}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
-                        aria-label="${esc(t('ReasonCancel'))}"></button>
+                        aria-label="${esc(t('PanelClose'))}"></button>
             </div>
             <div class="offcanvas-body">
                 <div class="mb-3">
@@ -6509,31 +6509,52 @@
             applyPlan(item, item.dueAt || data.todayIso, label);
             return;
         }
-        global.Swal.fire({
+        /*
+         * ── THROUGH THE SHARED COMPONENT (2026-08-24, A3) ────────────────────────────────────────────────
+         *
+         * This was a raw `Swal.fire` with its own `<input class="form-control">` in a `html` string, which is
+         * why it rendered a 38px title, an 18px description and a RED dismiss button beside the snooze
+         * dialog's 18/13/neutral. It asks for ONE value, so it is a confirmation, so it goes through the
+         * component that owns what a confirmation looks like.
+         *
+         * ⚠ NO NEW SEAM WAS OPENED. `inputType: 'text'` + `onOpen` + `validate` is exactly the path the snooze
+         * dialog already takes, flatpickr and all — see `openSnooze`.
+         */
+        const seed = item.plannedDate || item.dueAt;
+        sharedConfirm({
             title: label,
-            html: `${outcomeLead(action)}<input id="wcnPlanDate" class="form-control" autocomplete="off">`,
-            showCancelButton: true, confirmButtonText: t('PlanConfirm'), cancelButtonText: t('DialogDismiss'),
-            didOpen: () => {
-                const input = document.getElementById('wcnPlanDate');
-                // Re-planning opens the picker seeded with the EXISTING plan, so moving a date is an edit of it
-                // rather than starting blank; falling back to the source due date only when there is no plan yet.
-                const seed = item.plannedDate || item.dueAt;
-                if (global.flatpickr) {
-                    global.flatpickr(input, { dateFormat: 'Y-m-d', defaultDate: seed || undefined, disableMobile: true });
-                } else {
-                    input.type = 'date';
-                    if (seed) { input.value = seed; }
-                }
+            subtext: outcomeLead(action),
+            icon: 'bx-calendar',
+            confirmText: t('PlanConfirm'),
+            input: {
+                type: 'text',
+                label: t('PlanDateLabel'),
+                // A REAL EXAMPLE, not the field's own name repeated: the box says what a date looks like here.
+                placeholder: t('DatePlaceholder'),
+                onOpen: (input) => {
+                    if (!input) { return; }
+                    // ⚠ NO WRAPPER — the glyph is painted ON the box. See `.wcn-date-input` and the warning at
+                    // `openSnooze`: a wrapper makes `Swal.getInput()` null and takes the validator, the focus
+                    // and the Enter key with it.
+                    input.classList.add('wcn-date-input');
+                    if (global.flatpickr) {
+                        // Re-planning opens the picker seeded with the EXISTING plan, so moving a date is an
+                        // edit of it rather than starting blank; falling back to the source due date only when
+                        // there is no plan yet.
+                        global.flatpickr(input, { dateFormat: 'Y-m-d', defaultDate: seed || undefined, disableMobile: true });
+                    } else {
+                        input.type = 'date';
+                        if (seed) { input.value = seed; }
+                    }
+                },
+                validate: (value) => (value ? null : t('PlanDateLabel'))
             },
-            preConfirm: () => {
-                const v = document.getElementById('wcnPlanDate').value;
-                if (!v) { global.Swal.showValidationMessage(t('PlanDateLabel')); return false; }
-                return v;
+            onConfirm: (value) => {
+                if (!value) { return; }
+                const applied = real ? submitPlan(item, value) : applyPlan(item, value, label);
+                if (applied && typeof applied.catch === 'function') { applied.catch(reportSwalFailure); }
             }
-        }).then((res) => {
-            if (!res.isConfirmed || !res.value) { return null; }
-            return real ? submitPlan(item, res.value) : applyPlan(item, res.value, label);
-        }).catch(reportSwalFailure);
+        });
     };
 
     // Swal's own promise chain runs well after the click that opened it, outside onClick's try/catch — so a
@@ -6561,6 +6582,34 @@
      * input and nothing else, so the dialogs that need a date picker, a number, a select or a multi-field form
      * stay where they are and are reported rather than bent through a shape that does not fit — see BL-146.
      */
+    /*
+     * ── A DIALOG THAT IS NOT A CONFIRMATION STILL LOOKS LIKE THE PRODUCT (2026-08-24, A3) ──────────────────
+     *
+     * Four dialogs on this page cannot go through `showConfirm`: a menu with no confirm button, a four-field
+     * form, a two-field action confirm, and a progress readout that asks nothing at all. They were raw
+     * `Swal.fire` calls, so they inherited NONE of the product's dialog appearance — measured against the
+     * snooze dialog: 38px title against 18px, 18px body against 13px, 512px popup against 400px, and a RED
+     * dismiss button, because this theme's global default for `.swal2-cancel` is `btn-label-danger`.
+     *
+     * ⚠ THE PACKAGE IS NOT COPIED HERE. `window.DitenDialogAppearance` is declared once, in
+     * `_GlobalConfirmation.cshtml`, and this reads it. Two copies of a look drift within a fortnight; a test
+     * asserts the definition exists in exactly one place.
+     *
+     * The fallback is deliberate and loud rather than silent: a dialog with no appearance is a visible defect,
+     * so it renders (the reader still gets to answer the question) and the console says why it looks wrong.
+     */
+    const dialogLook = (options) => {
+        if (typeof global.DitenDialogAppearance !== 'function') {
+            console.error('[WorkCenterNext] window.DitenDialogAppearance is unavailable (is _GlobalConfirmation loaded?).');
+            return {};
+        }
+        return global.DitenDialogAppearance(options);
+    };
+    // The class the product's dialog DESCRIPTION wears — 13px secondary copy, read from the same one place.
+    const dialogDescriptionClass = () => (typeof global.DitenDialogAppearance === 'function'
+        ? global.DitenDialogAppearance.description
+        : '');
+
     const sharedConfirm = (options) => {
         const confirm = global.showConfirm;
         if (typeof confirm !== 'function') {
@@ -6615,6 +6664,12 @@
             inputType: options.input && options.input.type,
             inputLabel: options.input && options.input.label,
             inputPlaceholder: options.input && options.input.placeholder,
+            /*
+             * THE CHOICES, when the box is a `select`. The shared component's seventh and final parameter — a
+             * `select` with no options is a box that cannot be used, which is why the "create in source" dialog
+             * could not go through this seam and therefore went through none of the product's appearance either.
+             */
+            inputOptions: options.input && options.input.options,
             inputValidator: options.input && options.input.validate,
             /*
              * SEEDING THE BOX, through the wrapper's OWN `didOpen` seam.
@@ -6640,7 +6695,7 @@
                         if (box) { box.value = options.input.value; box.select(); }
                     }
                     if (typeof options.input.onOpen === 'function') {
-                        options.input.onOpen(popup.querySelector('.swal2-input, input, textarea'), popup);
+                        options.input.onOpen(popup.querySelector('.swal2-input, .swal2-select, .swal2-textarea, select, input, textarea'), popup);
                     }
                 }
                 : undefined
@@ -6687,44 +6742,65 @@
     const openMeetingScheduler = (item, action) => {
         const label = actionLabel(action);
         if (!global.Swal) { applyReviewMeeting(item, `${item.dueAt || data.todayIso} 09:00`, label); return; }
-        global.Swal.fire({
+        // Same journey as the plan dialog above, and for the same reason: one value, so one confirmation.
+        const seed = item.dueAt || data.todayIso;
+        sharedConfirm({
             title: label,
-            html: '<input id="wcnMeetWhen" class="form-control" autocomplete="off">',
-            showCancelButton: true, confirmButtonText: t('PlanConfirm'), cancelButtonText: t('DialogDismiss'),
-            didOpen: () => {
-                const input = document.getElementById('wcnMeetWhen');
-                const seed = item.dueAt || data.todayIso;
-                if (global.flatpickr) {
-                    global.flatpickr(input, { enableTime: true, dateFormat: 'Y-m-d H:i', defaultDate: seed, disableMobile: true });
-                } else {
-                    input.type = 'datetime-local';
-                }
+            icon: 'bx-calendar',
+            confirmText: t('PlanConfirm'),
+            input: {
+                type: 'text',
+                label: t('MeetingWhenLabel'),
+                placeholder: t('DateTimePlaceholder'),
+                onOpen: (input) => {
+                    if (!input) { return; }
+                    input.classList.add('wcn-date-input');
+                    if (global.flatpickr) {
+                        global.flatpickr(input, { enableTime: true, dateFormat: 'Y-m-d H:i', defaultDate: seed, disableMobile: true });
+                    } else {
+                        input.type = 'datetime-local';
+                    }
+                },
+                validate: (value) => (value ? null : t('PlanDateLabel'))
             },
-            preConfirm: () => {
-                const v = document.getElementById('wcnMeetWhen').value;
-                if (!v) { global.Swal.showValidationMessage(t('PlanDateLabel')); return false; }
-                return v.replace('T', ' ');
+            onConfirm: (value) => {
+                if (value) { applyReviewMeeting(item, String(value).replace('T', ' '), label); }
             }
-        }).then((res) => { if (res.isConfirmed && res.value) { applyReviewMeeting(item, res.value, label); } });
+        });
     };
 
     // Log time — manual minutes entry into the timesheet (task only).
     const openLogTime = (item, action) => {
         const label = actionLabel(action);
         if (!global.Swal) { return; }
-        global.Swal.fire({
-            title: label, input: 'number', inputLabel: t('LogTimeLabel'),
-            inputPlaceholder: t('LogTimePlaceholder'), inputAttributes: { min: '1', step: '1' },
-            showCancelButton: true, confirmButtonText: t('LogTimeConfirm'), cancelButtonText: t('DialogDismiss'),
-            preConfirm: (v) => { const m = parseInt(v, 10); if (!m || m <= 0) { global.Swal.showValidationMessage(t('LogTimeLabel')); return false; } return m; }
-        }).then((res) => {
-            if (res.isConfirmed && res.value) {
-                const mins = parseInt(res.value, 10);
-                item.timesheet = item.timesheet || { running: false, startedAt: null, loggedMinutes: 0 };
-                item.timesheet.loggedMinutes += mins;
-                item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: label, atMs: data.referenceDate(item.provenance) });
-                render();
-                toast(tf('ToastTimeLogged', formatMinutes(mins)));
+        sharedConfirm({
+            title: label,
+            // A CLOCK, because this box asks for an amount of TIME and the type's default glyph is a question
+            // mark. Same rule as the snooze moon: only the picture is named, the gravity stays the type's.
+            icon: 'bx-time-five',
+            confirmText: t('LogTimeConfirm'),
+            input: {
+                type: 'number',
+                label: t('LogTimeLabel'),
+                // Already a real example ("örn. 30"), so it was kept rather than replaced.
+                placeholder: t('LogTimePlaceholder'),
+                // The glyph is painted ON the box, exactly as the date field does it — no wrapper, nothing for
+                // the library's slot walk to trip over.
+                onOpen: (input) => { if (input) { input.classList.add('wcn-time-input'); } },
+                validate: (value) => {
+                    const m = parseInt(value, 10);
+                    return (!m || m <= 0) ? t('LogTimeLabel') : null;
+                }
+            },
+            onConfirm: (value) => {
+                const mins = parseInt(value, 10);
+                if (mins > 0) {
+                    item.timesheet = item.timesheet || { running: false, startedAt: null, loggedMinutes: 0 };
+                    item.timesheet.loggedMinutes += mins;
+                    item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: label, atMs: data.referenceDate(item.provenance) });
+                    render();
+                    toast(tf('ToastTimeLogged', formatMinutes(mins)));
+                }
             }
         });
     };
@@ -6935,7 +7011,7 @@
     // their source (deep-link). No generic cross-module authoring here (spec v3). ─
     const openNew = () => {
         if (!global.Swal) { return; }
-        global.Swal.fire({
+        global.Swal.fire(Object.assign({
             title: t('NewButton'),
             html: `<div class="wcn-new-menu">
                 <button type="button" class="wcn-new-opt" id="wcnNewSelf"><i class="bx bx-user-check"></i><div><strong>${esc(t('NewSelfTask'))}</strong><span>${esc(t('NewSelfTaskDesc'))}</span></div></button>
@@ -6946,7 +7022,9 @@
                 document.getElementById('wcnNewSelf').onclick = () => { global.Swal.close(); openSelfTask(); };
                 document.getElementById('wcnNewSource').onclick = () => { global.Swal.close(); openCreateInSource(); };
             }
-        });
+        // NOT a confirmation — the two options ARE the answer, so there is no confirm button to colour. It takes
+        // the appearance so a menu does not read as a different product from the dialog it opens.
+        }, dialogLook()));
     };
 
     /*
@@ -7056,13 +7134,25 @@
     const openCreateInSource = () => {
         const opts = {};
         moduleOptions().forEach((m) => { opts[m] = m; });
-        global.Swal.fire({
-            title: t('NewInSource'), input: 'select', inputOptions: opts, inputPlaceholder: t('NewPickModule'),
+        sharedConfirm({
+            title: t('NewInSource'),
+            icon: 'bx-cube',
             // The button names CREATING, not opening: nothing is opened here any more (see below), and the old
             // 'NewOpenSource' label promised an act this dialog no longer performs.
-            showCancelButton: true, confirmButtonText: t('NewCreateInSource'), cancelButtonText: t('DialogDismiss')
-        }).then((res) => {
-            if (res.isConfirmed && res.value) {
+            confirmText: t('NewCreateInSource'),
+            input: {
+                type: 'select',
+                options: opts,
+                label: t('NewPickModuleLabel'),
+                /*
+                 * A SELECT'S PLACEHOLDER IS ITS EMPTY OPTION, not an example — there is nothing to exemplify,
+                 * the choices are all listed. And its glyph is the THEME'S OWN caret, which `.swal2-select`
+                 * already draws: adding a second one would put two arrows on one control.
+                 */
+                placeholder: t('NewPickModule')
+            },
+            onConfirm: (value) => {
+                if (value) {
                 /*
                  * Nothing is opened here, DELIBERATELY — do not "restore" this.
                  *
@@ -7075,20 +7165,26 @@
                  * behaviour is to say this is not wired yet and do nothing — which is exactly what the "(mock)"
                  * toast below already says.
                  */
-                toast(tf('ToastCreateInSource', res.value), 'info');
+                    toast(tf('ToastCreateInSource', value), 'info');
+                }
             }
         });
     };
 
     const openMeetingForm = () => {
         if (!global.Swal) { return; }
-        global.Swal.fire({
+        /*
+         * ⚠ FOUR FIELDS, so it stays a raw `Swal.fire` — and it takes the appearance instead of a seam.
+         * ⚠ STRUCTURE UNTOUCHED THIS ROUND: this form is due to become an offcanvas (decided in B3). Only its
+         * look and its placeholders changed here, so that move starts from the same markup it has today.
+         */
+        global.Swal.fire(Object.assign({
             title: t('MeetingNewTitle'),
-            html: `<label class="form-label" for="wcnMeetingTitle">${esc(t('MeetingTitleLabel'))}</label>
-                <input id="wcnMeetingTitle" class="form-control mb-2">
-                <div class="row g-2"><div class="col"><label class="form-label" for="wcnMeetingStart">${esc(t('MeetingStartLabel'))}</label><input id="wcnMeetingStart" type="time" class="form-control" value="09:00"></div>
-                <div class="col"><label class="form-label" for="wcnMeetingEnd">${esc(t('MeetingEndLabel'))}</label><input id="wcnMeetingEnd" type="time" class="form-control" value="09:30"></div></div>
-                <label class="form-label mt-2" for="wcnMeetingLocation">${esc(t('MeetingLocationLabel'))}</label><input id="wcnMeetingLocation" class="form-control">`,
+            html: `<label class="form-label d-block text-start" for="wcnMeetingTitle">${esc(t('MeetingTitleLabel'))}</label>
+                <input id="wcnMeetingTitle" class="form-control mb-2" placeholder="${esc(t('MeetingTitlePlaceholder'))}">
+                <div class="row g-2"><div class="col"><label class="form-label d-block text-start" for="wcnMeetingStart">${esc(t('MeetingStartLabel'))}</label><input id="wcnMeetingStart" type="time" class="form-control" value="09:00"></div>
+                <div class="col"><label class="form-label d-block text-start" for="wcnMeetingEnd">${esc(t('MeetingEndLabel'))}</label><input id="wcnMeetingEnd" type="time" class="form-control" value="09:30"></div></div>
+                <label class="form-label mt-2 d-block text-start" for="wcnMeetingLocation">${esc(t('MeetingLocationLabel'))}</label><input id="wcnMeetingLocation" class="form-control" placeholder="${esc(t('MeetingLocationPlaceholder'))}">`,
             showCancelButton: true, confirmButtonText: t('MeetingAdd'), cancelButtonText: t('DialogDismiss'),
             preConfirm: () => {
                 const title = document.getElementById('wcnMeetingTitle').value.trim();
@@ -7097,7 +7193,7 @@
                 if (!title || !start || !end || end <= start) { global.Swal.showValidationMessage(t('MeetingValidation')); return false; }
                 return { title, start, end, location: document.getElementById('wcnMeetingLocation').value.trim() };
             }
-        }).then((res) => {
+        }, dialogLook())).then((res) => {
             if (!res.isConfirmed || !res.value) { return; }
             state.meetings.push({ id: `MTG-${Date.now()}`, ...res.value, owner: data.currentUser.name });
             render(); toast(t('MeetingAdded'));
@@ -7207,9 +7303,14 @@
                   + `<option value="">${esc(t('WaitingOnNobody'))}</option>${options}</select>`
                 : '';
 
-            global.Swal.fire({
+            /*
+             * ⚠ THIS IS THE DIALOG THE OWNER PHOTOGRAPHED. TWO fields (who is being waited on, and why), so it
+             * cannot go through `showConfirm` — but every reason it looked wrong was appearance, not structure,
+             * and appearance is now something it can ask for by name.
+             */
+            global.Swal.fire(Object.assign({
                 title: actionLabel(action),
-                html: outcomeLead(action)
+                html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
                     + assigneeField
                     + waitingOnField
                     + `<label class="form-label d-block text-start" for="wcnReasonText">${esc(t('ReasonLabel'))}</label>`
@@ -7233,7 +7334,7 @@
                     if (!assigneeUserId) { global.Swal.showValidationMessage(t('ReassignAssigneeRequired')); return false; }
                     return { reason, assigneeUserId };
                 }
-            }).then((res) => {
+            }, dialogLook())).then((res) => {
                 if (res.isConfirmed && res.value) {
                     applyAction(item, action, res.value.reason, res.value.assigneeUserId, res.value.waitingOnUserId);
                 }
@@ -7391,11 +7492,13 @@
     const runBulkWithProgress = (selected, actionKey, label) => {
         if (!global.Swal) { runBulk(selected, actionKey, label); return; }
         let pct = 0;
-        global.Swal.fire({
+        // NOT a dialog at all — a status readout with no question and no answer. It still wears the product's
+        // dialog surface, because a progress popup that looks like a different library is a jolt mid-flow.
+        global.Swal.fire(Object.assign({
             title: label,
             html: `<div class="wcn-bulk-progress"><div class="wcn-bulk-progress-bar" id="wcnBulkBar"></div></div>` +
                   `<div class="wcn-bulk-progress-text" id="wcnBulkPct">0%</div>`,
-            showConfirmButton: false, allowOutsideClick: false, allowEscapeKey: false,
+            showConfirmButton: false, showCancelButton: false, allowOutsideClick: false, allowEscapeKey: false,
             didOpen: () => {
                 const bar = document.getElementById('wcnBulkBar');
                 const txt = document.getElementById('wcnBulkPct');
@@ -7408,7 +7511,7 @@
                 };
                 step();
             }
-        });
+        }, dialogLook()));
     };
 
     const performBulk = (actionKey) => {

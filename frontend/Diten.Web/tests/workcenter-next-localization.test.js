@@ -193,7 +193,7 @@ describe("WorkCenterNext localization resources", () => {
       path.resolve(__dirname, "../wwwroot/assets/js/WorkCenterNext/app.js"), "utf8");
     const fn = app.slice(app.indexOf("const openCreateInSource"), app.indexOf("const openMeetingForm"));
 
-    expect(fn).toContain("confirmButtonText: t('NewCreateInSource')");
+    expect(fn, "the create-in-source dialog stopped naming CREATING").toContain("confirmText: t('NewCreateInSource')");
     // The LOOKUP, not the bare name: a comment in that function still explains the history on purpose.
     expect(app).not.toContain("t('NewOpenSource')");
 

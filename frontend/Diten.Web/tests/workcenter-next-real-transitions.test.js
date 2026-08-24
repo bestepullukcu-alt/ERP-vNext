@@ -192,7 +192,7 @@ describe("work item actions reach the engine", () => {
       expect(fn).toContain("submitPlan");
       // The real branch calls the engine and nothing else; applyPlan (the local mutation) is reserved for the
       // non-real branch only.
-      expect(fn).toContain("real ? submitPlan(item, res.value) : applyPlan(item, res.value, label)");
+      expect(fn).toContain("real ? submitPlan(item, value) : applyPlan(item, value, label)");
     });
   });
 

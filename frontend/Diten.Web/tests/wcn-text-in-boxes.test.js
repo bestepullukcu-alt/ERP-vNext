@@ -326,8 +326,16 @@ describe("one dismiss word in a module whose actions are named 'iptal'", () => {
     // MUTATION GUARD: turn one back to `ReasonCancel` and this goes red.
     expect(APP, "a dialog still dismisses with the word an action is named after")
       .not.toContain("cancelButtonText: t('ReasonCancel')");
-    const dismissals = (APP.match(/cancelButtonText: t\('DialogDismiss'\)/g) || []).length;
-    expect(dismissals, "the module's dialogs do not share one dismiss word").toBeGreaterThan(6);
+    /*
+     * ⚠ COUNTED IN TWO PLACES NOW (2026-08-24, A3). Four dialogs moved through `sharedConfirm`, which supplies
+     * the dismiss word centrally (`options.cancelText || t('DialogDismiss')`), so they no longer spell it out.
+     * Counting only the literal would read that improvement as a regression.
+     */
+    const literal = (APP.match(/cancelButtonText: t\('DialogDismiss'\)/g) || []).length;
+    const viaSeam = (APP.match(/sharedConfirm\(/g) || []).length;
+    expect(literal + viaSeam, "the module's dialogs do not share one dismiss word").toBeGreaterThan(6);
+    // The seam's own default is the word — remove it and every dialog that relies on it goes silent.
+    expect(APP).toContain("cancelButtonText: options.cancelText || t('DialogDismiss')");
   });
 
   it("gives the subtask-cancel dialog two different words for its two answers", () => {

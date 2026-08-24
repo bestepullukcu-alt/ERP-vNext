@@ -874,6 +874,24 @@
   <data name="DepSentenceSuccSF" xml:space="preserve">
     <value>{0} cannot finish until you start</value>
   </data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>YYYY-MM-DD</value>
+  </data>
+  <data name="DateTimePlaceholder" xml:space="preserve">
+    <value>YYYY-MM-DD HH:MM</value>
+  </data>
+  <data name="MeetingWhenLabel" xml:space="preserve">
+    <value>Meeting date and time</value>
+  </data>
+  <data name="MeetingTitlePlaceholder" xml:space="preserve">
+    <value>Q3 close review</value>
+  </data>
+  <data name="MeetingLocationPlaceholder" xml:space="preserve">
+    <value>Teams / Meeting room 2</value>
+  </data>
+  <data name="NewPickModuleLabel" xml:space="preserve">
+    <value>Which module?</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Finish-to-Start (FS)</value>
   </data>
@@ -887,13 +905,13 @@
     <value>Start-to-Finish (SF)</value>
   </data>
   <data name="DepDone" xml:space="preserve">
-    <value>done</value>
+    <value>Done</value>
   </data>
   <data name="DepInProgress" xml:space="preserve">
-    <value>in progress</value>
+    <value>In progress</value>
   </data>
   <data name="DepNotStarted" xml:space="preserve">
-    <value>not started</value>
+    <value>Not started</value>
   </data>
   <data name="DepCancelled" xml:space="preserve">
     <value>Cancelled</value>

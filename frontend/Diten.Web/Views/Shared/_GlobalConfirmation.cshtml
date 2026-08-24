@@ -28,6 +28,64 @@
     })();
 
     /**
+     * ── THE PRODUCT'S DIALOG APPEARANCE, PUBLISHED (2026-08-24, owner decision A3-b) ──────────────────────────
+     *
+     * ⚠ THIS IS THE ONLY PLACE THESE CLASSES ARE WRITTEN. If you are about to copy one of them into a
+     * `Swal.fire` somewhere, stop: two copies of a look agree on the day they are written and drift within a
+     * fortnight. Call this instead. A test asserts the definition appears exactly once in the codebase.
+     *
+     * WHY IT HAD TO COME OUT. The look lived INSIDE `showConfirm`, so a raw `Swal.fire` — which is what every
+     * dialog with more than one field has to be — inherited none of it. Measured side by side with the snooze
+     * dialog, a raw dialog rendered its title at 38px against 18px, its description at 18px against 13px, its
+     * popup at 512px against 400px, and its dismiss button in RED, because this theme's global default is
+     * `btn-label-danger` and the package above is what was overruling it.
+     *
+     * WHY NOT THE OTHER WAY (rejected alternative (a)): growing `showConfirm` a "custom fields" seam. Six
+     * parameters were added to it this session and all fifteen call sites were re-measured each time; a seventh
+     * turns a confirmation into a form builder.
+     *
+     * OPTIONS — `confirmVariant` names the confirm button's Bootstrap colour, the caller's ONLY influence, and
+     * `showConfirm` derives it from `type` rather than accepting it from outside; `width` is the one geometry a
+     * caller may widen. Everything else is fixed on purpose: a dialog that can choose its own look is a dialog
+     * that will. RETURNS a FRESH `Swal.fire` fragment — spread it over a config, never mutate it in place.
+     *
+     * (No JSDoc at-tags in this file: it is a Razor view, and the at-sign opens a C# expression.)
+     */
+    window.DitenDialogAppearance = function (options) {
+        options = options || {};
+        return {
+            width: options.width || '400px',
+            padding: '2.5rem 1.5rem 2rem',
+            buttonsStyling: false,
+            reverseButtons: true,
+            customClass: {
+                popup: 'rounded-4 shadow-lg',
+                // fs-5 = 18px in this theme (its own h5), the size a page titles itself with. `fs-4`
+                // was 24px — a dialog shouting louder than the screen behind it. An unclassed title is 38px.
+                title: 'fs-5 fw-bold text-heading mt-4 mb-2 d-block w-100 text-center',
+                htmlContainer: 'mb-1 d-block w-100 text-center',
+                actions: 'd-flex justify-content-center mt-4 w-100 gap-2',
+                confirmButton: 'btn ' + (options.confirmVariant || 'btn-primary') + ' waves-effect waves-light px-5',
+                // ⚠ NEUTRAL, and this is the line that stops a dismiss button being red: the theme's global
+                // default for `.swal2-cancel` is `btn-label-danger`, so a dialog that does not say otherwise
+                // ships a "Vazgeç" that looks like the dangerous answer.
+                cancelButton: 'btn btn-label-secondary waves-effect px-5',
+                icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100',
+                // The box's label is a FORM label, so it wears the product's form label — 13px, the same
+                // one every field on every create form uses. SweetAlert's own default was 16px.
+                inputLabel: 'form-label'
+            }
+        };
+    };
+
+    /**
+     * The class a dialog's DESCRIPTION wears — 13px, the product's secondary copy. `showConfirm` wraps its own
+     * subtext in this; a multi-field dialog that writes its own body markup asks for it by name rather than
+     * re-typing three utility classes and getting one of them wrong.
+     */
+    window.DitenDialogAppearance.description = 'mb-2 text-muted-500 small';
+
+    /**
      * MOD-0013: Platform Standards - Global Confirmation System
      * window.showConfirm(keyOrTitle, callback, entityNameOrOptions)
      */
@@ -70,7 +128,7 @@
          * ⚠ THIS FILE IS EVERY MODAL IN THE PRODUCT. The change is a reduction to the scale the rest of the
          * product already uses, verified on three different screens before and after.
          */
-        let htmlContent = `<div class="mb-2 text-muted-500 small">${subtext}</div>`;
+        let htmlContent = `<div class="${window.DitenDialogAppearance.description}">${subtext}</div>`;
         if (options.entityName) {
             htmlContent += `<div class="badge bg-label-primary fs-6 mt-1 py-2 px-3 fw-medium">${options.entityName}</div>`;
         }
@@ -132,31 +190,15 @@
 
         try {
             if (typeof Swal !== 'undefined') {
-                var swalConfig = {
+                // The look is READ, not restated — see `window.DitenDialogAppearance` above. `type` still decides
+                // the confirm button's colour; it is the one thing the package takes from its caller.
+                var swalConfig = Object.assign({
                     title: title,
                     html: htmlContent,
                     showCancelButton: true,
                     confirmButtonText: yesBtn,
-                    cancelButtonText: noBtn,
-                    width: options.width || '400px',
-                    padding: '2.5rem 1.5rem 2rem',
-                    customClass: {
-                        popup: 'rounded-4 shadow-lg',
-                        // fs-5 = 18px in this theme (its own h5), the size a page titles itself with. `fs-4`
-                        // was 24px — a dialog shouting louder than the screen behind it.
-                        title: 'fs-5 fw-bold text-heading mt-4 mb-2 d-block w-100 text-center',
-                        htmlContainer: 'mb-1 d-block w-100 text-center',
-                        actions: 'd-flex justify-content-center mt-4 w-100 gap-2',
-                        confirmButton: 'btn ' + confirmBtnClass + ' waves-effect waves-light px-5',
-                        cancelButton: 'btn btn-label-secondary waves-effect px-5',
-                        icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100',
-                        // The box's label is a FORM label, so it wears the product's form label — 13px, the same
-                        // one every field on every create form uses. SweetAlert's own default was 16px.
-                        inputLabel: 'form-label'
-                    },
-                    buttonsStyling: false,
-                    reverseButtons: true
-                };
+                    cancelButtonText: noBtn
+                }, window.DitenDialogAppearance({ confirmVariant: confirmBtnClass, width: options.width }));
 
                 /*
                  * ── THE ICON IS OPTIONAL (2026-08-23) ────────────────────────────────────────────────────────
@@ -194,6 +236,23 @@
                         swalConfig.inputLabel = options.inputLabel;
                     }
                     swalConfig.inputPlaceholder = options.inputPlaceholder || '';
+                    /*
+                     * ⚠ THE SEVENTH PARAMETER, AND THE LAST (owner, 2026-08-24).
+                     *
+                     * A `select` is useless without its options, so `inputType: 'select'` was reachable but not
+                     * usable — the one dialog that needed it stayed a raw `Swal.fire` and therefore stayed
+                     * unstyled. This is the missing half of a parameter that already exists, not a new capability.
+                     *
+                     * BACKWARDS COMPATIBILITY, COUNTED: `showConfirm` has 15 call sites across 12 files. None
+                     * passes `inputOptions`, so `undefined` is what every one of them evaluates to and the key is
+                     * never written onto the config — the same no-op shape the six parameters before it use.
+                     *
+                     * Anything beyond this belongs in a form, not in a confirmation. The next dialog that needs
+                     * more takes `DitenDialogAppearance` and builds its own body.
+                     */
+                    if (options.inputOptions) {
+                        swalConfig.inputOptions = options.inputOptions;
+                    }
                     swalConfig.inputAttributes = Object.assign({
                         'rows': 3,
                         'class': 'form-control mt-3 px-3 py-2 rounded-3 border-light-subtle shadow-none'

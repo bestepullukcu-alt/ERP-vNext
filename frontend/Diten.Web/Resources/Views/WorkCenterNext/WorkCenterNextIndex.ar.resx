@@ -874,6 +874,24 @@
   <data name="DepSentenceSuccSF" xml:space="preserve">
     <value>لا يمكن أن ينتهي {0} قبل أن تبدأ</value>
   </data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>YYYY-MM-DD</value>
+  </data>
+  <data name="DateTimePlaceholder" xml:space="preserve">
+    <value>YYYY-MM-DD HH:MM</value>
+  </data>
+  <data name="MeetingWhenLabel" xml:space="preserve">
+    <value>تاريخ الاجتماع ووقته</value>
+  </data>
+  <data name="MeetingTitlePlaceholder" xml:space="preserve">
+    <value>مراجعة إقفال الربع الثالث</value>
+  </data>
+  <data name="MeetingLocationPlaceholder" xml:space="preserve">
+    <value>Teams / قاعة الاجتماعات 2</value>
+  </data>
+  <data name="NewPickModuleLabel" xml:space="preserve">
+    <value>أي وحدة؟</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>إنهاء-بدء (FS)</value>
   </data>
@@ -887,13 +905,13 @@
     <value>بدء-إنهاء (SF)</value>
   </data>
   <data name="DepDone" xml:space="preserve">
-    <value>تم</value>
+    <value>مكتملة</value>
   </data>
   <data name="DepInProgress" xml:space="preserve">
-    <value>جارٍ</value>
+    <value>قيد التنفيذ</value>
   </data>
   <data name="DepNotStarted" xml:space="preserve">
-    <value>لم يبدأ</value>
+    <value>لم تبدأ</value>
   </data>
   <data name="DepCancelled" xml:space="preserve">
     <value>أُلغيت</value>

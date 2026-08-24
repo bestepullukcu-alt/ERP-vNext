@@ -1672,17 +1672,39 @@ describe("the comment composer writes to the engine", () => {
  * engine stores it, so the same picker opens for real work and writes through TasksApi rather than a local push.
  */
 describe("the plan date picker writes to the engine for a real task", () => {
-  // A minimal but faithful SweetAlert stand-in: it runs `didOpen` SYNCHRONOUSLY (so the seeded input can be
-  // inspected the instant the click returns, exactly as real SweetAlert would have it in the DOM by then) and
-  // resolves with a fixed confirm value rather than re-implementing SweetAlert's own confirm/cancel machinery.
+  /*
+   * ⚠ THE STUB MOVED TO `showConfirm` (2026-08-24, A3). The plan picker used to be a raw `Swal.fire` with its
+   * own `<input id="wcnPlanDate">`; it now goes through the product's ONE confirm component, which builds the
+   * box itself and hands it to the caller through `didOpen`. So the stand-in stands in for THAT: it creates the
+   * popup and the `.swal2-input` slot the real component would create, runs `didOpen` synchronously, and then
+   * answers with a confirm value.
+   *
+   * ⚠ `.swal2-input` AS A DIRECT CHILD, deliberately — the stub reproduces the real popup's SLOT shape rather
+   * than a convenient one, because the seam's `onOpen` finds the box by querying that slot list. A stub that
+   * wrapped the input would pass while the shipped code failed, which is the exact defect this module already
+   * paid for once.
+   */
   const stubSwal = (confirmed) => {
-    global.Swal = {
-      fire: (options) => {
-        const container = document.createElement("div");
-        container.innerHTML = options.html || "";
-        document.body.appendChild(container);
-        if (options.didOpen) { options.didOpen(); }
-        return Promise.resolve(confirmed);
+    global.Swal = { showValidationMessage: () => {} };
+    global.showConfirm = (title, callback, options) => {
+      /*
+       * ⚠ ONLY THE NEWEST POPUP SURVIVES. Every previously-booted instance in this file still has its click
+       * listener attached (the accumulated-listener property this file documents throughout), so ONE click
+       * opens one dialog per booted item. Keeping them all would make `getElementById` answer with the
+       * OLDEST item's seed — a value that belongs to a different test.
+       */
+      document.querySelectorAll(".swal2-popup").forEach((el) => el.remove());
+      const popup = document.createElement("div");
+      popup.className = "swal2-popup";
+      const box = document.createElement("input");
+      box.className = "swal2-input";
+      // The component's own id, so a test that wants to read the seeded value can still find it by name.
+      box.id = "wcnPlanDate";
+      popup.appendChild(box);
+      document.body.appendChild(popup);
+      if (typeof options.didOpen === "function") { options.didOpen(popup); }
+      if (confirmed && confirmed.isConfirmed && typeof callback === "function") {
+        callback(confirmed.value !== undefined ? confirmed.value : box.value);
       }
     };
   };
@@ -1691,6 +1713,8 @@ describe("the plan date picker writes to the engine for a real task", () => {
     // Several OTHER action flows in this module (reject/return/inquire) also branch on `global.Swal` presence;
     // leaving a stub behind would silently change their behaviour in a later, unrelated test.
     delete global.Swal;
+    delete global.showConfirm;
+    document.querySelectorAll(".swal2-popup").forEach((el) => el.remove());
   });
 
   const planAction = () => ({

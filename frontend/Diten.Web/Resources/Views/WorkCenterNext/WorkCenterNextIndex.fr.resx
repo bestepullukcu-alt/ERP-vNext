@@ -874,6 +874,24 @@
   <data name="DepSentenceSuccSF" xml:space="preserve">
     <value>{0} ne peut pas se terminer tant que vous n’avez pas commencé</value>
   </data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>AAAA-MM-JJ</value>
+  </data>
+  <data name="DateTimePlaceholder" xml:space="preserve">
+    <value>AAAA-MM-JJ HH:MM</value>
+  </data>
+  <data name="MeetingWhenLabel" xml:space="preserve">
+    <value>Date et heure de la réunion</value>
+  </data>
+  <data name="MeetingTitlePlaceholder" xml:space="preserve">
+    <value>Revue de clôture T3</value>
+  </data>
+  <data name="MeetingLocationPlaceholder" xml:space="preserve">
+    <value>Teams / Salle de réunion 2</value>
+  </data>
+  <data name="NewPickModuleLabel" xml:space="preserve">
+    <value>Quel module ?</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Fin-à-Début (FS)</value>
   </data>
@@ -887,13 +905,13 @@
     <value>Début-à-Fin (SF)</value>
   </data>
   <data name="DepDone" xml:space="preserve">
-    <value>terminé</value>
+    <value>Terminé</value>
   </data>
   <data name="DepInProgress" xml:space="preserve">
-    <value>en cours</value>
+    <value>En cours</value>
   </data>
   <data name="DepNotStarted" xml:space="preserve">
-    <value>non démarré</value>
+    <value>Non commencé</value>
   </data>
   <data name="DepCancelled" xml:space="preserve">
     <value>Annulée</value>

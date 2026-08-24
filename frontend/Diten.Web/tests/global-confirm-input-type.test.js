@@ -23,7 +23,12 @@ const VIEW = fs.readFileSync(
 
 /** The view's script body, with Razor's localizer calls resolved to plain strings. */
 const loadWrapper = (swalStub) => {
-  const script = VIEW.slice(VIEW.indexOf("window.showConfirm = function"), VIEW.lastIndexOf("</script>"));
+  /*
+   * ⚠ THE SLICE STARTS AT THE APPEARANCE PACKAGE NOW (2026-08-24, A3). `showConfirm` no longer declares what a
+   * dialog looks like — it READS `window.DitenDialogAppearance`, which is declared just above it in the same
+   * script. Slicing from `window.showConfirm` left that declaration out and the wrapper called undefined.
+   */
+  const script = VIEW.slice(VIEW.indexOf("window.DitenDialogAppearance = function"), VIEW.lastIndexOf("</script>"));
   const js = script.replace(/@Json\.Serialize\(SharedLocalizer\["([^"]+)"\]\.Value\)/g, '"$1"');
   const sandbox = { window: {}, Swal: swalStub, console, confirm: () => false };
   // eslint-disable-next-line no-new-func

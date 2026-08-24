@@ -6982,9 +6982,46 @@ tags.diten-tags .tagify__input {
     background-position: right 0.9375rem center;
 }
 
+/* ── THE DURATION BOX, THE SAME WAY ────────────────────────────────────────
+   ⚠ SAME TECHNIQUE, DELIBERATELY, AND FOR THE SAME REASON: no wrapper, glyph painted on the box. A
+   `.diten-field` around this input would make it a GRANDCHILD of the popup and `Swal.getInput()` would return
+   null — the defect that shipped once on the date field and cost a round to undo.
+
+   THE RULE FOR WHETHER A FIELD GETS A GLYPH AT ALL: it gets one when the glyph SAYS something the label does
+   not. A date box gets a calendar and a duration box gets a clock, because both name a KIND of value. A select
+   already has the theme's own caret and a second arrow would be two arrows on one control. Free prose gets
+   nothing: a pencil beside a comment box says "this is a box you type in", which the box says by existing.
+
+   The SVG is the product's own `.bx-time-five`, copied from `assets/vendor/fonts/iconify-icons.css:6134` —
+   only the fill is written out, because a `background-image` cannot inherit `currentColor` the way `.bx`'s
+   mask does. The grey is `--bs-secondary-color`, the same #a7acb2 the date field measured. */
+.swal2-container .swal2-modal.swal2-popup .swal2-input.wcn-time-input {
+    block-size: 38px;
+    padding-block: calc(0.543rem - var(--bs-border-width));
+    font-size: 0.9375rem;
+    line-height: 1.375;
+    border-radius: var(--bs-border-radius);
+    padding-inline-start: calc(0.9375rem + 1rem + 0.5rem);
+    padding-inline-end: 0.9375rem;
+    margin-inline: 0;
+    inline-size: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='%23a7acb2' d='M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10s10-4.486 10-10S17.514 2 12 2m0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8s8 3.589 8 8s-3.589 8-8 8'/%3E%3Cpath fill='%23a7acb2' d='M13 7h-2v5.414l3.293 3.293l1.414-1.414L13 11.586z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 0.9375rem center;
+    background-size: 1rem 1rem;
+}
+[dir="rtl"] .swal2-container .swal2-modal.swal2-popup .swal2-input.wcn-time-input {
+    background-position: right 0.9375rem center;
+}
+
 /* The dark theme's own secondary grey, from the same token. Only the fill differs from the rule above. */
 [data-bs-theme="dark"] .swal2-container .swal2-modal.swal2-popup .swal2-input.wcn-date-input {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='%237e7f96' d='M7 11h2v2H7zm0 4h2v2H7zm4-4h2v2h-2zm0 4h2v2h-2zm4-4h2v2h-2zm0 4h2v2h-2z'/%3E%3Cpath fill='%237e7f96' d='M5 22h14c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2h-2V2h-2v2H9V2H7v2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2M19 8l.001 12H5V8z'/%3E%3C/svg%3E");
+}
+
+/* Same token, same rule, the clock's turn. */
+[data-bs-theme="dark"] .swal2-container .swal2-modal.swal2-popup .swal2-input.wcn-time-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='%237e7f96' d='M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10s10-4.486 10-10S17.514 2 12 2m0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8s8 3.589 8 8s-3.589 8-8 8'/%3E%3Cpath fill='%237e7f96' d='M13 7h-2v5.414l3.293 3.293l1.414-1.414L13 11.586z'/%3E%3C/svg%3E");
 }
 
 /* ── WHEN THE DIALOG REFUSES WHAT WAS TYPED ────────────────────────────────
