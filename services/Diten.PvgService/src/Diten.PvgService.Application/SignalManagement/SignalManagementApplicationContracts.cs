@@ -37,6 +37,7 @@ public sealed record CreateSignalHypothesisContractCommand(
 public sealed record AttachSignalMetricDataProductReferenceCommand(
     string SignalHypothesisReferenceToken,
     Mod0004MetricReferenceToken MetricReference,
+    SignalThresholdDecisionPlaceholderReference ThresholdDecisionPlaceholderReference,
     Mod0063DataProductCohortReferenceToken DataProductCohortReference,
     SignalManagementServerTenantContext ServerTenantContext,
     SignalManagementActorContext ActorContext,
@@ -49,6 +50,7 @@ public sealed record AttachSignalMetricDataProductReferenceCommand(
     SignalManagementGuardDecision EvidenceGuard,
     SignalManagementGuardDecision AuditIntentMetadataGuard,
     SignalManagementGuardDecision MetricContractGuard,
+    SignalManagementGuardDecision ThresholdDecisionContractGuard,
     SignalManagementGuardDecision DataProductContractGuard);
 
 public sealed record MarkSignalReviewDecisionContractCommand(
@@ -143,7 +145,9 @@ public enum SignalManagementReasonCode
     DataProductContractMissing = 17,
     DataProductContractDenied = 18,
     InvalidRequest = 19,
-    NotFoundOrUnavailable = 20
+    NotFoundOrUnavailable = 20,
+    ThresholdDecisionContractMissing = 21,
+    ThresholdDecisionContractDenied = 22
 }
 
 public static class SignalManagementContractGuard
@@ -203,8 +207,16 @@ public static class SignalManagementContractGuard
             return guardResult;
         }
 
+        if (!command.ThresholdDecisionContractGuard.IsAllowed)
+        {
+            return SignalManagementSafeResult.Blocked(
+                SignalManagementOperation.AttachSignalMetricDataProductReference,
+                command.ThresholdDecisionContractGuard.DeniedReason);
+        }
+
         return HasValue(command.SignalHypothesisReferenceToken) &&
                IsValid(command.MetricReference) &&
+               IsValid(command.ThresholdDecisionPlaceholderReference) &&
                IsValid(command.DataProductCohortReference)
             ? SignalManagementSafeResult.Allowed(SignalManagementOperation.AttachSignalMetricDataProductReference)
             : SignalManagementSafeResult.Blocked(
@@ -396,6 +408,12 @@ public static class SignalManagementContractGuard
         HasValue(metricReference.MetricReferenceToken) &&
         HasValue(metricReference.ThresholdReferenceToken) &&
         metricReference.IsApprovedForSignalUse;
+
+    private static bool IsValid(SignalThresholdDecisionPlaceholderReference thresholdDecisionPlaceholderReference) =>
+        HasValue(thresholdDecisionPlaceholderReference.ThresholdDecisionReferenceToken) &&
+        HasValue(thresholdDecisionPlaceholderReference.ThresholdComparisonReferenceToken) &&
+        HasValue(thresholdDecisionPlaceholderReference.InsufficientDataRuleReferenceToken) &&
+        thresholdDecisionPlaceholderReference.IsApprovedForSignalUse;
 
     private static bool IsValid(Mod0063DataProductCohortReferenceToken dataProductCohortReference) =>
         HasValue(dataProductCohortReference.DataProductReferenceToken) &&

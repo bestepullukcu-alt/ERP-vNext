@@ -32,6 +32,12 @@ public sealed record Mod0004MetricReferenceToken(
     string ThresholdReferenceToken,
     bool IsApprovedForSignalUse);
 
+public sealed record SignalThresholdDecisionPlaceholderReference(
+    string ThresholdDecisionReferenceToken,
+    string ThresholdComparisonReferenceToken,
+    string InsufficientDataRuleReferenceToken,
+    bool IsApprovedForSignalUse);
+
 public sealed record Mod0063DataProductCohortReferenceToken(
     string DataProductReferenceToken,
     string CohortReferenceToken,

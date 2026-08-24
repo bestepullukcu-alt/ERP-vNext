@@ -7,6 +7,7 @@ public sealed class PvgCaseProcessingApplicationService
     private const string AcceptHandoffPermission = "pvg.mod0231.case-processing.accept-handoff";
     private const string UpdateAssessmentPermission = "pvg.mod0231.case-processing.update-assessment";
     private const string MarkReadyPermission = "pvg.mod0231.case-processing.mark-signal-minimum-ready";
+    private const string ReadMetadataPermission = "pvg.mod0231.case-processing.read-metadata";
 
     private readonly Dictionary<string, SafetyCaseMaster> _caseMasters = new(StringComparer.Ordinal);
 
@@ -80,10 +81,11 @@ public sealed class PvgCaseProcessingApplicationService
 
     public PvgCaseProcessingQueryResult GetByIdMetadata(GetCaseProcessingMetadataByIdQuery query)
     {
-        if (!HasTenantContext(query.TenantContext))
+        var validation = PvgCaseProcessingValidator.ValidateGetById(query);
+        if (!validation.IsValid)
         {
             return new PvgCaseProcessingQueryResult(
-                PvgCaseProcessingResult.Blocked(PvgCaseProcessingReasonCodes.TenantContextRequired),
+                PvgCaseProcessingResult.Blocked(validation.Failures.Select(failure => failure.ReasonCode).ToArray()),
                 []);
         }
 
@@ -93,16 +95,17 @@ public sealed class PvgCaseProcessingApplicationService
         }
 
         return new PvgCaseProcessingQueryResult(
-            PvgCaseProcessingResult.Accepted(new("GetCaseProcessingMetadataById", "pvg.mod0231.case-processing.read-metadata", "system", true)),
+            PvgCaseProcessingResult.Accepted(Success("GetCaseProcessingMetadataById", ReadMetadataPermission, query.ActorContext)),
             [ToSummary(caseMaster)]);
     }
 
     public PvgCaseProcessingQueryResult ListMetadata(GetCaseProcessingMetadataListQuery query)
     {
-        if (!HasTenantContext(query.TenantContext))
+        var validation = PvgCaseProcessingValidator.ValidateList(query);
+        if (!validation.IsValid)
         {
             return new PvgCaseProcessingQueryResult(
-                PvgCaseProcessingResult.Blocked(PvgCaseProcessingReasonCodes.TenantContextRequired),
+                PvgCaseProcessingResult.Blocked(validation.Failures.Select(failure => failure.ReasonCode).ToArray()),
                 []);
         }
 
@@ -116,7 +119,7 @@ public sealed class PvgCaseProcessingApplicationService
             .ToArray();
 
         return new PvgCaseProcessingQueryResult(
-            PvgCaseProcessingResult.Accepted(new("ListCaseProcessingMetadata", "pvg.mod0231.case-processing.read-metadata", "system", true)),
+            PvgCaseProcessingResult.Accepted(Success("ListCaseProcessingMetadata", ReadMetadataPermission, query.ActorContext)),
             items);
     }
 
@@ -141,9 +144,6 @@ public sealed class PvgCaseProcessingApplicationService
         caseMaster = null!;
         return false;
     }
-
-    private static bool HasTenantContext(PvgCaseProcessingServerTenantContext? tenantContext) =>
-        tenantContext is not null && !string.IsNullOrWhiteSpace(tenantContext.TenantId);
 
     private static CaseProcessingMetadataSummary ToSummary(SafetyCaseMaster caseMaster) =>
         new(

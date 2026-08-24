@@ -4,10 +4,16 @@ namespace Diten.PvgService.Application.CaseProcessing;
 
 public sealed record GetCaseProcessingMetadataByIdQuery(
     PvgCaseProcessingServerTenantContext TenantContext,
+    PvgCaseProcessingActorContext ActorContext,
+    PvgCaseProcessingCorrelationContext CorrelationContext,
+    PvgCaseProcessingGuardContext GuardContext,
     string CaseProcessingId);
 
 public sealed record GetCaseProcessingMetadataListQuery(
     PvgCaseProcessingServerTenantContext TenantContext,
+    PvgCaseProcessingActorContext ActorContext,
+    PvgCaseProcessingCorrelationContext CorrelationContext,
+    PvgCaseProcessingGuardContext GuardContext,
     int PageNumber,
     int PageSize,
     SignalMinimumLifecycleState? State);

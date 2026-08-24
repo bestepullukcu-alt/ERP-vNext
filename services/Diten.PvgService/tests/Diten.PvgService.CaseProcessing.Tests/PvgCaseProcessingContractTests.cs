@@ -43,6 +43,27 @@ public sealed class PvgCaseProcessingContractTests
     }
 
     [Fact]
+    public void Mod0230_handoff_v01_shape_stays_build_test_only_and_has_no_client_tenant_id()
+    {
+        var propertyNames = typeof(Mod0230HandoffReference)
+            .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+            .Select(property => property.Name)
+            .OrderBy(name => name, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal(
+            [
+                "EvidenceLinkReferenceIds",
+                "IntakeDraftId",
+                "IntakeNumber",
+                "ReceivedAtUtc",
+                "RouteTargetQueueCode",
+                "TriageOutcomeCode"
+            ],
+            propertyNames);
+    }
+
+    [Fact]
     public void Archive_void_export_delete_and_bulk_delete_contracts_do_not_exist()
     {
         var forbiddenNames = new[] { "Archive", "Void", "Export", "Delete", "BulkDelete" };

@@ -180,6 +180,35 @@ public sealed class PvgCaseProcessingApplicationServiceTests
     }
 
     [Fact]
+    public void Read_metadata_requires_context_and_guards_before_returning_results()
+    {
+        var service = new PvgCaseProcessingApplicationService();
+        var accepted = service.AcceptMod0230Handoff(ValidAcceptCommand());
+
+        var missingActor = service.GetByIdMetadata(
+            ByIdQuery(accepted.CaseProcessingId!) with { ActorContext = new PvgCaseProcessingActorContext("", "") });
+        var missingCorrelation = service.GetByIdMetadata(
+            ByIdQuery(accepted.CaseProcessingId!) with { CorrelationContext = new PvgCaseProcessingCorrelationContext("") });
+        var deniedPermission = service.ListMetadata(
+            ListQuery() with { GuardContext = GuardDeniedBy(nameof(PvgCaseProcessingReasonCodes.PermissionDenied)) });
+        var deniedFieldPolicy = service.ListMetadata(
+            ListQuery() with { GuardContext = GuardDeniedBy(nameof(PvgCaseProcessingReasonCodes.FieldPolicyDenied)) });
+
+        Assert.Empty(missingActor.Items);
+        Assert.Empty(missingCorrelation.Items);
+        Assert.Empty(deniedPermission.Items);
+        Assert.Empty(deniedFieldPolicy.Items);
+        Assert.Contains(PvgCaseProcessingReasonCodes.ActorContextRequired, missingActor.Result.ReasonCodes);
+        Assert.Contains(PvgCaseProcessingReasonCodes.CorrelationContextRequired, missingCorrelation.Result.ReasonCodes);
+        Assert.Contains(PvgCaseProcessingReasonCodes.PermissionDenied, deniedPermission.Result.ReasonCodes);
+        Assert.Contains(PvgCaseProcessingReasonCodes.FieldPolicyDenied, deniedFieldPolicy.Result.ReasonCodes);
+        AssertSafe(missingActor);
+        AssertSafe(missingCorrelation);
+        AssertSafe(deniedPermission);
+        AssertSafe(deniedFieldPolicy);
+    }
+
+    [Fact]
     public void Runtime_infrastructure_types_remain_absent()
     {
         var applicationTypeNames = typeof(PvgCaseProcessingApplicationService)
@@ -221,10 +250,10 @@ public sealed class PvgCaseProcessingApplicationServiceTests
         new(TenantContext(), ActorContext(), CorrelationContext(), caseProcessingId, AllowedGuards());
 
     private static GetCaseProcessingMetadataByIdQuery ByIdQuery(string caseProcessingId) =>
-        new(TenantContext(), caseProcessingId);
+        new(TenantContext(), ActorContext(), CorrelationContext(), AllowedGuards(), caseProcessingId);
 
     private static GetCaseProcessingMetadataListQuery ListQuery() =>
-        new(TenantContext(), 1, 10, null);
+        new(TenantContext(), ActorContext(), CorrelationContext(), AllowedGuards(), 1, 10, null);
 
     private static PvgCaseProcessingServerTenantContext TenantContext() => new("tenant-secret-123");
 

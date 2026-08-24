@@ -65,6 +65,21 @@ public sealed class MeddraCodingContractTests
         Assert.Equal(MeddraCodingReasonCode.DictionaryGovernanceMissing, result.ReasonCode);
     }
 
+    [Theory]
+    [MemberData(nameof(InvalidOpaqueDictionaryReferenceCases))]
+    public void Dictionary_version_and_code_references_must_be_opaque_bounded_tokens(MeddraCodedTermReference codedTermReference)
+    {
+        var command = ValidProposeCommand() with
+        {
+            ProposedTerm = codedTermReference
+        };
+
+        var result = MeddraCodingContractGuard.Evaluate(command);
+
+        Assert.False(result.IsAllowed);
+        Assert.Equal(MeddraCodingReasonCode.InvalidRequest, result.ReasonCode);
+    }
+
     [Fact]
     public void Missing_mod0231_source_term_handoff_blocks()
     {
@@ -77,6 +92,20 @@ public sealed class MeddraCodingContractTests
 
         Assert.False(result.IsAllowed);
         Assert.Equal(MeddraCodingReasonCode.MissingSourceTermHandoff, result.ReasonCode);
+    }
+
+    [Fact]
+    public void Mod0231_source_term_lifecycle_not_approved_blocks()
+    {
+        var command = ValidCreateCommand() with
+        {
+            SourceTermReference = ValidSourceTermReference() with { IsApprovedForCoding = false }
+        };
+
+        var result = MeddraCodingContractGuard.Evaluate(command);
+
+        Assert.False(result.IsAllowed);
+        Assert.Equal(MeddraCodingReasonCode.InvalidRequest, result.ReasonCode);
     }
 
     [Fact]
@@ -135,6 +164,37 @@ public sealed class MeddraCodingContractTests
         foreach (var forbiddenFragment in forbiddenFragments)
         {
             Assert.DoesNotContain(contractTypes, typeName => typeName.Contains(forbiddenFragment, StringComparison.Ordinal));
+        }
+    }
+
+    [Fact]
+    public void Contract_surface_does_not_expose_dictionary_display_text_or_search_shapes()
+    {
+        var forbiddenPropertyNames = new[]
+        {
+            "DisplayText",
+            "DisplayName",
+            "DictionaryText",
+            "DictionaryTerm",
+            "PreferredTerm",
+            "LowestLevelTerm",
+            "TermLabel",
+            "TermName",
+            "SearchText",
+            "ImportPayload",
+            "CacheKey"
+        };
+
+        var properties = ContractAssemblies()
+            .SelectMany(assembly => assembly.GetTypes())
+            .Where(type => type.Namespace?.Contains("MeddraCoding", StringComparison.Ordinal) == true)
+            .SelectMany(type => type.GetProperties())
+            .Select(property => property.Name)
+            .ToArray();
+
+        foreach (var forbiddenPropertyName in forbiddenPropertyNames)
+        {
+            Assert.DoesNotContain(properties, propertyName => string.Equals(propertyName, forbiddenPropertyName, StringComparison.Ordinal));
         }
     }
 
@@ -235,6 +295,38 @@ public sealed class MeddraCodingContractTests
                 SourceTermHandoffGuard = PvgGuardDecision.Deny(MeddraCodingReasonCode.SourceTermHandoffDenied)
             },
             MeddraCodingReasonCode.SourceTermHandoffDenied
+        };
+    }
+
+    public static IEnumerable<object[]> InvalidOpaqueDictionaryReferenceCases()
+    {
+        yield return new object[]
+        {
+            ValidCodedTermReference() with
+            {
+                DictionaryVersion = new MeddraDictionaryVersionReference(
+                    "dictionary version display text",
+                    "codeset-version-reference",
+                    true)
+            }
+        };
+        yield return new object[]
+        {
+            ValidCodedTermReference() with
+            {
+                DictionaryVersion = new MeddraDictionaryVersionReference(
+                    new string('d', 129),
+                    "codeset-version-reference",
+                    true)
+            }
+        };
+        yield return new object[]
+        {
+            ValidCodedTermReference() with { CodeReferenceToken = "coded term display text" }
+        };
+        yield return new object[]
+        {
+            ValidCodedTermReference() with { HierarchyReferenceToken = new string('h', 129) }
         };
     }
 

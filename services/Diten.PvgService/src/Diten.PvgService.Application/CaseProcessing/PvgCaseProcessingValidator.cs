@@ -44,6 +44,19 @@ public static class PvgCaseProcessingValidator
         return ToResult(failures);
     }
 
+    public static PvgCaseProcessingValidationResult ValidateGetById(GetCaseProcessingMetadataByIdQuery? query)
+    {
+        var failures = ValidateCommon(query?.TenantContext, query?.ActorContext, query?.CorrelationContext, query?.GuardContext);
+        AddRequired(query?.CaseProcessingId, "CaseProcessingId", PvgCaseProcessingReasonCodes.CaseProcessingIdRequired, failures);
+        return ToResult(failures);
+    }
+
+    public static PvgCaseProcessingValidationResult ValidateList(GetCaseProcessingMetadataListQuery? query)
+    {
+        var failures = ValidateCommon(query?.TenantContext, query?.ActorContext, query?.CorrelationContext, query?.GuardContext);
+        return ToResult(failures);
+    }
+
     public static PvgCaseProcessingResult ToResult(PvgCaseProcessingValidationResult validation) =>
         validation.IsValid
             ? PvgCaseProcessingResult.Accepted(new("Validate", "pvg.case-processing.validate", "system", true))

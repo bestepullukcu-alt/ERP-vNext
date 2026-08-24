@@ -91,6 +91,26 @@ public sealed class MeddraCodingInMemoryServiceTests
     }
 
     [Fact]
+    public void Non_opaque_dictionary_reference_blocks_before_propose_mutation()
+    {
+        var service = new InMemoryMeddraCodingApplicationService();
+        var createResult = service.CreateCodingWorkItem(ValidCreateCommand());
+        var workItemReference = createResult.Records.Single().CodingWorkItemReference;
+        var command = ValidProposeCommand(workItemReference) with
+        {
+            ProposedTerm = ValidCodedTermReference() with { CodeReferenceToken = "coded term display text" }
+        };
+
+        var result = service.ProposeCodedTerm(command);
+        var stored = service.GetByIdMetadata(ValidGetByIdQuery(workItemReference));
+
+        Assert.False(result.Result.IsAllowed);
+        Assert.Equal(MeddraCodingReasonCode.InvalidRequest, result.Result.ReasonCode);
+        Assert.Equal(MeddraCodingReviewStatus.Draft, stored.Records.Single().ReviewStatus);
+        Assert.False(stored.Records.Single().HasProposedTerm);
+    }
+
+    [Fact]
     public void Missing_mod0231_handoff_blocks_create()
     {
         var service = new InMemoryMeddraCodingApplicationService();
@@ -103,6 +123,22 @@ public sealed class MeddraCodingInMemoryServiceTests
 
         Assert.False(result.Result.IsAllowed);
         Assert.Equal(MeddraCodingReasonCode.MissingSourceTermHandoff, result.Result.ReasonCode);
+        Assert.Equal(0, service.StoredItemCount);
+    }
+
+    [Fact]
+    public void Mod0231_source_term_lifecycle_not_approved_blocks_create()
+    {
+        var service = new InMemoryMeddraCodingApplicationService();
+        var command = ValidCreateCommand() with
+        {
+            SourceTermReference = ValidSourceTermReference() with { IsApprovedForCoding = false }
+        };
+
+        var result = service.CreateCodingWorkItem(command);
+
+        Assert.False(result.Result.IsAllowed);
+        Assert.Equal(MeddraCodingReasonCode.InvalidRequest, result.Result.ReasonCode);
         Assert.Equal(0, service.StoredItemCount);
     }
 

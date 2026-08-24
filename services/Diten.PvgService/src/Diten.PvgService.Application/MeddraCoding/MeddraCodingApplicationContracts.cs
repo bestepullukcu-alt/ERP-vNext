@@ -331,12 +331,12 @@ public static class MeddraCodingContractGuard
 
     private static bool IsValid(MeddraCodedTermReference codedTermReference) =>
         IsValid(codedTermReference.DictionaryVersion) &&
-        HasValue(codedTermReference.CodeReferenceToken) &&
-        HasValue(codedTermReference.HierarchyReferenceToken);
+        codedTermReference.UsesOpaqueReferences;
 
     private static bool IsValid(MeddraDictionaryVersionReference dictionaryVersionReference) =>
         HasValue(dictionaryVersionReference.DictionaryVersionReference) &&
         HasValue(dictionaryVersionReference.CodesetVersionReference) &&
+        dictionaryVersionReference.UsesOpaqueReferences &&
         dictionaryVersionReference.IsGovernanceApproved;
 
     private static bool HasValue(string? value) => !string.IsNullOrWhiteSpace(value);

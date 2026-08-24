@@ -9,12 +9,33 @@ public sealed record Mod0231SourceTermReference(
 public sealed record MeddraDictionaryVersionReference(
     string DictionaryVersionReference,
     string CodesetVersionReference,
-    bool IsGovernanceApproved);
+    bool IsGovernanceApproved)
+{
+    public bool UsesOpaqueReferences =>
+        IsOpaqueReference(DictionaryVersionReference) &&
+        IsOpaqueReference(CodesetVersionReference);
+
+    private static bool IsOpaqueReference(string? value) =>
+        !string.IsNullOrWhiteSpace(value) &&
+        value.Length <= 128 &&
+        value.All(character => !char.IsWhiteSpace(character));
+}
 
 public sealed record MeddraCodedTermReference(
     MeddraDictionaryVersionReference DictionaryVersion,
     string CodeReferenceToken,
-    string HierarchyReferenceToken);
+    string HierarchyReferenceToken)
+{
+    public bool UsesOpaqueReferences =>
+        DictionaryVersion.UsesOpaqueReferences &&
+        IsOpaqueReference(CodeReferenceToken) &&
+        IsOpaqueReference(HierarchyReferenceToken);
+
+    private static bool IsOpaqueReference(string? value) =>
+        !string.IsNullOrWhiteSpace(value) &&
+        value.Length <= 128 &&
+        value.All(character => !char.IsWhiteSpace(character));
+}
 
 public sealed record MeddraCodingAssignmentDraft(
     string CodingWorkItemReference,

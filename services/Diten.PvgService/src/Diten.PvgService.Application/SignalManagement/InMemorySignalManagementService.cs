@@ -26,6 +26,7 @@ public sealed class InMemorySignalManagementService
             token,
             SignalReviewDecisionStatus.Draft,
             false,
+            false,
             false);
 
         _contracts[token] = stored;
@@ -60,6 +61,7 @@ public sealed class InMemorySignalManagementService
         var updated = stored with
         {
             HasMetricReference = true,
+            HasThresholdDecisionReference = true,
             HasDataProductCohortReference = true
         };
         _contracts[updated.SignalHypothesisReferenceToken] = updated;
@@ -181,6 +183,7 @@ public sealed class InMemorySignalManagementService
             stored.SignalHypothesisReferenceToken,
             stored.ReviewDecisionStatus,
             stored.HasMetricReference,
+            stored.HasThresholdDecisionReference,
             stored.HasDataProductCohortReference);
 
     private readonly record struct StoredSignalContract(
@@ -188,6 +191,7 @@ public sealed class InMemorySignalManagementService
         string SignalHypothesisReferenceToken,
         SignalReviewDecisionStatus ReviewDecisionStatus,
         bool HasMetricReference,
+        bool HasThresholdDecisionReference,
         bool HasDataProductCohortReference);
 }
 
@@ -195,6 +199,7 @@ public sealed record SignalContractMetadata(
     string SignalHypothesisReferenceToken,
     SignalReviewDecisionStatus ReviewDecisionStatus,
     bool HasMetricReference,
+    bool HasThresholdDecisionReference,
     bool HasDataProductCohortReference);
 
 public sealed record SignalManagementInMemoryResult(

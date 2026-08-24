@@ -108,6 +108,39 @@ public sealed class SignalManagementContractTests
     }
 
     [Fact]
+    public void Missing_threshold_decision_contract_guard_blocks()
+    {
+        var command = ValidAttachCommand() with
+        {
+            ThresholdDecisionContractGuard = SignalManagementGuardDecision.Deny(
+                SignalManagementReasonCode.ThresholdDecisionContractMissing)
+        };
+
+        var result = SignalManagementContractGuard.Evaluate(command);
+
+        Assert.False(result.IsAllowed);
+        Assert.Equal(SignalManagementReasonCode.ThresholdDecisionContractMissing, result.ReasonCode);
+    }
+
+    [Fact]
+    public void Attach_metric_data_product_contract_requires_threshold_decision_placeholder()
+    {
+        var command = ValidAttachCommand() with
+        {
+            ThresholdDecisionPlaceholderReference = new SignalThresholdDecisionPlaceholderReference(
+                "",
+                "threshold-comparison-reference-token",
+                "insufficient-data-rule-reference-token",
+                true)
+        };
+
+        var result = SignalManagementContractGuard.Evaluate(command);
+
+        Assert.False(result.IsAllowed);
+        Assert.Equal(SignalManagementReasonCode.InvalidRequest, result.ReasonCode);
+    }
+
+    [Fact]
     public void Result_serialization_does_not_echo_sensitive_or_raw_values()
     {
         var command = ValidCreateCommand() with
@@ -342,11 +375,13 @@ public sealed class SignalManagementContractTests
         new(
             "signal-hypothesis-reference-token",
             ValidMetricReference(),
+            ValidThresholdDecisionPlaceholderReference(),
             ValidDataProductReference(),
             ValidServerTenantContext(),
             ValidActorContext(),
             AllowPermission(),
             ValidCorrelationContext(),
+            SignalManagementGuardDecision.Allow(),
             SignalManagementGuardDecision.Allow(),
             SignalManagementGuardDecision.Allow(),
             SignalManagementGuardDecision.Allow(),
@@ -367,6 +402,13 @@ public sealed class SignalManagementContractTests
 
     private static Mod0004MetricReferenceToken ValidMetricReference() =>
         new("metric-reference-token", "threshold-reference-token", true);
+
+    private static SignalThresholdDecisionPlaceholderReference ValidThresholdDecisionPlaceholderReference() =>
+        new(
+            "threshold-decision-reference-token",
+            "threshold-comparison-reference-token",
+            "insufficient-data-rule-reference-token",
+            true);
 
     private static Mod0063DataProductCohortReferenceToken ValidDataProductReference() =>
         new("data-product-reference-token", "cohort-reference-token", "lineage-reference-token", true);
