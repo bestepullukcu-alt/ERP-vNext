@@ -10,12 +10,15 @@ public sealed class PvgIntakeDraftApplicationServiceTests
     private static readonly string[] SensitiveSamples =
     [
         "tenant-secret-123",
+        "source-ref",
+        "evidence-ref",
         "patient-subject-code",
         "reporter@example.test",
         "free text narrative with PHI",
         "triage free-text reason",
         "route free-text reason",
         "queue-safety-review",
+        "suspect product",
         "updated-source-ref",
         "suspect product update",
         "foreign-tenant-secret",
@@ -510,14 +513,18 @@ public sealed class PvgIntakeDraftApplicationServiceTests
     public async Task Route_denied_by_evidence_link_blocks_after_workflow_before_mutation()
     {
         var callLog = new List<string>();
+        var store = new InMemoryPvgIntakeDraftRepository();
         var evidencePort = new RecordingEvidenceLinkPort(callLog);
         var service = NewService(
             new RecordingFieldSecurityPolicy(callLog),
             new RecordingWorkflowTransitionGate(callLog),
             evidencePort,
-            new RecordingPermissionGate(callLog));
+            new RecordingPermissionGate(callLog),
+            store);
         var created = await service.CreateDraftAsync(
             CreateCommand(ValidCreateRequest()));
+        Assert.True(created.Result.IsSuccess);
+        callLog.Clear();
         evidencePort.Decision = PvgPortDecision.EvidenceLinkDenied();
 
         var routed = await service.RouteDraftAsync(
@@ -528,20 +535,231 @@ public sealed class PvgIntakeDraftApplicationServiceTests
                 created.IntakeDraftId!,
                 new PvgRouteIntakeDraftRequest("queue-safety-review")));
 
-        Assert.False(routed.Result.IsSuccess);
-        Assert.Equal(PvgSafeReasonCodes.EvidenceLinkUnavailable, routed.Result.ReasonCode);
-        Assert.Null(routed.AuditIntent);
-        Assert.Contains("permission:Route:pvg.mod0230.intake.route", callLog);
-        Assert.Contains("workflow:Route", callLog);
-        Assert.Contains("evidence:Route", callLog);
+        AssertEvidenceLinkBlocked(routed);
+        Assert.Equal(
+            [
+                "permission:Route:pvg.mod0230.intake.route",
+                "field:Route:route:RouteTargetQueue",
+                "workflow:Route",
+                "evidence:Route"
+            ],
+            callLog);
 
-        evidencePort.Decision = AllowedDecision();
-        var fetched = await service.GetDraftByIdAsync(
-            ReadByIdQuery(created.IntakeDraftId!));
+        var persisted = await store.FindByIdAsync(new PvgPersistenceTenantScope(TenantContext().TenantId), created.IntakeDraftId!);
 
-        Assert.Single(fetched.Items);
-        Assert.Equal(PvgIntakeStatus.IntakeCreated, fetched.Items[0].Status);
+        Assert.NotNull(persisted);
+        Assert.Equal(PvgIntakeStatus.IntakeCreated, persisted.Intake.Status);
+        Assert.Null(persisted.Intake.TriageOutcome);
+        Assert.Null(persisted.Intake.TriageReason);
+        Assert.Null(persisted.Intake.RouteTargetQueue);
         AssertSafe(routed);
+    }
+
+    [Fact]
+    public async Task Create_denied_by_evidence_link_blocks_before_mutation_without_sensitive_echo()
+    {
+        var callLog = new List<string>();
+        var store = new InMemoryPvgIntakeDraftRepository();
+        var evidencePort = new RecordingEvidenceLinkPort(callLog)
+        {
+            Decision = PvgPortDecision.EvidenceLinkDenied()
+        };
+        var service = NewService(
+            new RecordingFieldSecurityPolicy(callLog),
+            new RecordingWorkflowTransitionGate(callLog),
+            evidencePort,
+            new RecordingPermissionGate(callLog),
+            store);
+
+        var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+
+        AssertEvidenceLinkBlocked(created);
+        Assert.Equal("permission:Create:pvg.mod0230.intake.create", callLog[0]);
+        Assert.Contains(callLog, entry => entry.StartsWith("field:Create:create:", StringComparison.Ordinal));
+        Assert.Equal("evidence:Create", callLog[^1]);
+
+        var persisted = await store.ListAsync(
+            new PvgPersistenceListScope(new PvgPersistenceTenantScope(TenantContext().TenantId), 1, 10, null));
+
+        Assert.Empty(persisted);
+        AssertSafe(created);
+    }
+
+    [Fact]
+    public async Task Update_denied_by_evidence_link_preserves_existing_draft_without_sensitive_echo()
+    {
+        var callLog = new List<string>();
+        var store = new InMemoryPvgIntakeDraftRepository();
+        var evidencePort = new RecordingEvidenceLinkPort(callLog);
+        var service = NewService(
+            new RecordingFieldSecurityPolicy(callLog),
+            new RecordingWorkflowTransitionGate(callLog),
+            evidencePort,
+            new RecordingPermissionGate(callLog),
+            store);
+        var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+        Assert.True(created.Result.IsSuccess);
+        callLog.Clear();
+        evidencePort.Decision = PvgPortDecision.EvidenceLinkDenied();
+
+        var updated = await service.UpdateDraftAsync(
+            new UpdateIntakeDraftCommand(
+                TenantContext(),
+                ActorContext(),
+                CorrelationContext(),
+                created.IntakeDraftId!,
+                ValidUpdateRequest()));
+
+        AssertEvidenceLinkBlocked(updated);
+        Assert.Equal("permission:Update:pvg.mod0230.intake.update", callLog[0]);
+        Assert.Contains(callLog, entry => entry.StartsWith("field:Update:update:", StringComparison.Ordinal));
+        Assert.Equal("evidence:Update", callLog[^1]);
+
+        var persisted = await store.FindByIdAsync(new PvgPersistenceTenantScope(TenantContext().TenantId), created.IntakeDraftId!);
+
+        Assert.NotNull(persisted);
+        Assert.Equal(PvgIntakeStatus.IntakeCreated, persisted.Intake.Status);
+        Assert.Equal("source-ref", persisted.Intake.SourceReference);
+        Assert.Equal("suspect product", persisted.Intake.SuspectProductText);
+        AssertSafe(updated);
+    }
+
+    [Fact]
+    public async Task Triage_denied_by_evidence_link_blocks_after_workflow_before_mutation()
+    {
+        var callLog = new List<string>();
+        var store = new InMemoryPvgIntakeDraftRepository();
+        var evidencePort = new RecordingEvidenceLinkPort(callLog);
+        var service = NewService(
+            new RecordingFieldSecurityPolicy(callLog),
+            new RecordingWorkflowTransitionGate(callLog),
+            evidencePort,
+            new RecordingPermissionGate(callLog),
+            store);
+        var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+        Assert.True(created.Result.IsSuccess);
+        callLog.Clear();
+        evidencePort.Decision = PvgPortDecision.EvidenceLinkDenied();
+
+        var triaged = await service.TriageDraftAsync(
+            new TriageIntakeDraftCommand(
+                TenantContext(),
+                ActorContext(),
+                CorrelationContext(),
+                created.IntakeDraftId!,
+                new PvgTriageIntakeDraftRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason")));
+
+        AssertEvidenceLinkBlocked(triaged);
+        Assert.Equal(
+            [
+                "permission:Triage:pvg.mod0230.intake.triage",
+                "field:Triage:triage:TriageOutcome",
+                "field:Triage:triage:TriageReason",
+                "workflow:Triage",
+                "evidence:Triage"
+            ],
+            callLog);
+
+        var persisted = await store.FindByIdAsync(new PvgPersistenceTenantScope(TenantContext().TenantId), created.IntakeDraftId!);
+
+        Assert.NotNull(persisted);
+        Assert.Equal(PvgIntakeStatus.IntakeCreated, persisted.Intake.Status);
+        Assert.Null(persisted.Intake.TriageOutcome);
+        Assert.Null(persisted.Intake.TriageReason);
+        Assert.Null(persisted.Intake.RouteTargetQueue);
+        AssertSafe(triaged);
+    }
+
+    [Theory]
+    [InlineData(PvgIntakeOperation.Update)]
+    [InlineData(PvgIntakeOperation.Triage)]
+    [InlineData(PvgIntakeOperation.Route)]
+    public async Task Cross_tenant_mutations_do_not_leak_existence_through_evidence_link_denial(PvgIntakeOperation operation)
+    {
+        var callLog = new List<string>();
+        var evidencePort = new RecordingEvidenceLinkPort(callLog)
+        {
+            Decision = PvgPortDecision.EvidenceLinkDenied()
+        };
+        var service = NewService(
+            new RecordingFieldSecurityPolicy(callLog),
+            new RecordingWorkflowTransitionGate(callLog),
+            evidencePort,
+            new RecordingPermissionGate(callLog));
+        evidencePort.Decision = AllowedDecision();
+        var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+        Assert.True(created.Result.IsSuccess);
+        callLog.Clear();
+        evidencePort.Decision = PvgPortDecision.EvidenceLinkDenied();
+
+        var blocked = operation switch
+        {
+            PvgIntakeOperation.Update => await service.UpdateDraftAsync(
+                new UpdateIntakeDraftCommand(
+                    TenantContext("foreign-tenant-secret"),
+                    ActorContext(),
+                    CorrelationContext(),
+                    created.IntakeDraftId!,
+                    ValidUpdateRequest())),
+            PvgIntakeOperation.Triage => await service.TriageDraftAsync(
+                new TriageIntakeDraftCommand(
+                    TenantContext("foreign-tenant-secret"),
+                    ActorContext(),
+                    CorrelationContext(),
+                    created.IntakeDraftId!,
+                    new PvgTriageIntakeDraftRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason"))),
+            PvgIntakeOperation.Route => await service.RouteDraftAsync(
+                new RouteIntakeDraftCommand(
+                    TenantContext("foreign-tenant-secret"),
+                    ActorContext(),
+                    CorrelationContext(),
+                    created.IntakeDraftId!,
+                    new PvgRouteIntakeDraftRequest("queue-safety-review"))),
+            _ => throw new InvalidOperationException($"Unsupported evidence cross-tenant test operation {operation}.")
+        };
+
+        Assert.False(blocked.Result.IsSuccess);
+        Assert.Equal(PvgApplicationOutcome.Blocked, blocked.Result.Outcome);
+        Assert.Equal(PvgApplicationReasonCodes.IntakeDraftNotFound, blocked.Result.ReasonCode);
+        AssertSafeReasonCode(blocked.Result.ReasonCode);
+        Assert.Empty(blocked.Result.ValidationFailures);
+        Assert.Null(blocked.IntakeDraftId);
+        Assert.Null(blocked.AuditIntent);
+        Assert.Equal([$"permission:{operation}:pvg.mod0230.intake.{operation.ToString().ToLowerInvariant()}"], callLog);
+        Assert.DoesNotContain(callLog, entry => entry.StartsWith($"field:{operation}:", StringComparison.Ordinal));
+        Assert.DoesNotContain($"workflow:{operation}", callLog);
+        Assert.DoesNotContain($"evidence:{operation}", callLog);
+        AssertSafe(blocked);
+    }
+
+    [Fact]
+    public async Task Create_and_update_without_evidence_references_do_not_invoke_evidence_link()
+    {
+        var callLog = new List<string>();
+        var service = NewService(
+            new RecordingFieldSecurityPolicy(callLog),
+            new RecordingWorkflowTransitionGate(callLog),
+            new RecordingEvidenceLinkPort(callLog),
+            new RecordingPermissionGate(callLog));
+
+        var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest() with { EvidenceLinkReferences = [] }));
+
+        Assert.True(created.Result.IsSuccess);
+        Assert.DoesNotContain("evidence:Create", callLog);
+        callLog.Clear();
+
+        var updated = await service.UpdateDraftAsync(
+            new UpdateIntakeDraftCommand(
+                TenantContext(),
+                ActorContext(),
+                CorrelationContext(),
+                created.IntakeDraftId!,
+                ValidUpdateRequest() with { EvidenceLinkReferences = [] }));
+
+        Assert.True(updated.Result.IsSuccess);
+        Assert.DoesNotContain("evidence:Update", callLog);
+        AssertSafe(created);
+        AssertSafe(updated);
     }
 
     [Fact]
@@ -957,6 +1175,17 @@ public sealed class PvgIntakeDraftApplicationServiceTests
             });
         Assert.Equal("HumanUser", auditIntent.ActorKind);
         Assert.True(auditIntent.HasCorrelation);
+    }
+
+    private static void AssertEvidenceLinkBlocked(PvgIntakeDraftMutationResult mutation)
+    {
+        Assert.False(mutation.Result.IsSuccess);
+        Assert.Equal(PvgApplicationOutcome.Blocked, mutation.Result.Outcome);
+        Assert.Equal(PvgSafeReasonCodes.EvidenceLinkUnavailable, mutation.Result.ReasonCode);
+        AssertSafeReasonCode(mutation.Result.ReasonCode);
+        Assert.Empty(mutation.Result.ValidationFailures);
+        Assert.Null(mutation.IntakeDraftId);
+        Assert.Null(mutation.AuditIntent);
     }
 
     private static void AssertFieldSecurityBlocked(object result)
