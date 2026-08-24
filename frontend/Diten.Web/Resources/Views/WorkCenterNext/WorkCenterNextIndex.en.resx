@@ -901,6 +901,9 @@
   <data name="NewInSourceSubtext" xml:space="preserve">
     <value>The record is created in that module and stays there; the Task Center keeps no copy.</value>
   </data>
+  <data name="ConfirmProceedNamed" xml:space="preserve">
+    <value>Yes, {0}</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Finish-to-Start (FS)</value>
   </data>

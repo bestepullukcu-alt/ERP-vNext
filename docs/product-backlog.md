@@ -4652,3 +4652,118 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
   açılan diyaloğun sınıfı aynı dize.
 - Yapılacak: liste fixture'ının hangi alanla varsayılan sekmeye düştüğünü belgeleyip DOM testini eklemek.
 - **Gelecek regresyon riski: 🟡** — kaynak testi bir yeniden düzenlemede yeşil kalıp DOM'da ayrışabilir.
+
+### BL-223 kapanış notu (2026-08-24) — Diyalogdaki select2'nin metni 18px'ti, ürünün alanı 15px
+- **Sahip resimle bildirdi.** Ölçüldü: "Bir kişi seçin" **18px**; yanındaki textarea **15px**, arkadaki sayfanın
+  her `.form-control`'ü **15px**, etiket 13px.
+- **SEBEP — sessizce çalışmayan bir JS seçeneği:** bağlayıcı `selectionCssClass: 'form-select'` geçiyordu ki
+  kontrol ürünün alan stilini giysin. Sınıf elemana **hiç ulaşmadı**: DOM'da
+  `class="select2-selection select2-selection--single"`, içinde `form-select` yok. O anahtar daha yeni bir
+  select2 sürümüne ait; bu paket bilinmeyen anahtarları **sessizce düşürüyor**. Yani stil hiç uygulanmamış,
+  hata da vermemişti.
+- **ÖLÇEREK DÜZELTİLDİ, TAHMİNLE DEĞİL:** kanca `containerCssClass: 'wcn-dialog-select'` yapıldı; sonra DOM
+  tekrar okundu ve sınıfın **kabın değil `.select2-selection`'ın kendisine** indiği görüldü
+  (`select2-selection select2-selection--single wcn-dialog-select`). CSS seçicileri **ölçülen yapıya** göre
+  yazıldı, seçeneğin adına göre değil.
+- **Sayılar ürünün kendi sayıları:** `0.9375rem` (15px) ve `38px` — `.form-control`'den, `.wcn-date-input`'un
+  zaten kopyaladığı aynı değerler. Stil `backbone-custom.css`'te (FG-003), tıpkı ürünün select2'yi diğer
+  yüzeylerde (filtre çipleri) stillediği gibi.
+- **Açılan liste de aynı boyutta:** 15px'lik bir kontrolün 18px'lik menü açması aynı uyumsuzluğun bir adım
+  sonrasıdır (`.wcn-dialog-select-dropdown .select2-results__option`).
+- **Canlı ölçüm (sonra):** select2 metni **15px** = textarea 15px = sayfadaki form-control 15px; kutu 38px;
+  sol kenarlar hizalı (573/573).
+- **Gelecek regresyon riski: 🟢** — testle kilitli (çalışmayan seçenek geri gelirse kırmızı).
+
+### BL-224 kapanış notu (2026-08-24) — Ortak onay diyaloğunun sayımı yanlıştı; bekçi kuruldu
+- **YANLIŞ ÖLÇÜM, DÜZELTİLDİ.** Bu oturum boyunca ortak confirm'in yayılımı **"15 çağrı / 12 dosya"** diye
+  ölçüldü ve her prompt'a öyle yazıldı. Gerçek:
+    `showConfirm(`   = 16
+    `showConfirm?.(` = 58   ← optional chaining; grep'ler bunu HİÇ görmedi
+    **TOPLAM = 74 çağrı / 53 dosya**
+  Yani bu oturumdaki her "geriye uyum ölçüldü" cümlesi yüzeyin **%20'sini** kapsıyordu.
+  ⚠ Yanlış sayı `wcn-dialog-one-language.test.js` içinde `toBe(15)` diye **kilitliydi ve yeşildi** —
+  yanlış güvence veren bir bekçi, bekçisizlikten kötüdür.
+- **DÜZELTME BİÇİMİ ÖNEMLİ: `toBe(15)` → `toBe(74)` YAPILMADI.** Sabit sayı her meşru yeni çağrıda kırılır ve
+  okuyucuya "sayıyı büyüt" refleksini öğretir — 15'in bir oturum boyu yaşamasının sebebi tam olarak buydu.
+  Test artık **KURALI** doğruluyor: opt-in bir parametre, onu adıyla geçmeyen hiç kimseye ulaşmaz. Sayı
+  yalnızca **raporlanıyor**, kilitlenmiyor.
+- **BEKÇİ KURULDU:** `tests/dialog-one-implementation.test.js`
+  - Ham `Swal.fire` açan her dosyayı tarar; **isimli istisna listesi** dışında bir tane bile varsa KIRMIZI.
+  - İstisna listesi **12 dosya** (ham çağrı sayısı 25): `WorkCenter/task-detail.js` 8 ·
+    `WorkCenterNext/app.js` 4 · `Account/{login,forgot-password,reset-password}.js` 2+2+2 ·
+    `pages/demand-ideas/*` 3 · `Platform/{AuditRetention,Administrators}` 2 ·
+    `DocumentManagement/TemplateMasters` 1 · `diten-unauthorized.js` 1.
+  - **Bayat istisna da kırmızı:** listedeki bir dosya düzeltilirse ve satırı kalırsa test uyarır — yoksa
+    delik açık kalır.
+  - Her regex **iki çağrı biçimini de** görür (`showConfirm\s*\??\.?\s*\(`) — sayımı bozan hata buydu.
+  - **Sanity taban:** optional-chaining biçimi toplamın yarısından fazla olmalı; olmazsa matcher'dan şüphelen.
+- **İKİNCİ GERÇEKLEME BULUNDU VE MEŞRU ÇIKTI:** `backbone-shell.js:76` `window.showConfirm` atıyor — ama
+  `if (typeof window.showConfirm !== 'undefined') return;` ile korunmuş bir **yedek** (partial yüklenmezse
+  yerli `window.confirm`). Test bunu **isimle** kabul ediyor VE kapının açık kaldığını doğruluyor: yedek
+  koşulsuz hale gelirse gerçek diyaloğu gölgeler, o yüzden koşul testte kilitli.
+- **MUTASYON (2, ikisi de kırmızı):** yeni bir modüle ham `Swal.fire` yazıldı → bekçi dosya yoluyla kırmızı ·
+  istisna listesine ham çağrısı olmayan bir dosya eklendi → bayatlık testi kırmızı.
+- **KASTEN YAPILMAYANLAR:** 25 ham çağrının hiçbirine dokunulmadı. Sebebi CT kararı: içlerinde `login.js`,
+  `forgot-password.js`, `reset-password.js` var — giriş akışı; kırılırsa kimse sisteme giremez. Ayrı tur.
+- **Gelecek regresyon riski: 🟢** — bu madde riski AZALTIYOR: bundan sonra merge edilen her yeni modül ortak
+  diyaloğu ya çağırır ya da testte durur.
+
+### BL-225 — [TASARLANDI, ÖLÇÜM BEKLİYOR] Onay diyaloğunda ağırlık kademesi
+- **Fikir:** diyaloğun okuyucuyu yavaşlatma derecesi sonuçla orantılı olsun — hafif (sadece sor) / orta
+  (renkli şerit) / ağır ("geri alınamaz" + onay kutucuğu).
+- **CT REDDETTİ, GEREKÇESİYLE (2026-08-24):** kademeyi `type` alanından türetmek yanlış. Ölçüldü: 73 çağrının
+  **50'si `danger`**, yani "en ağır kademe" varsayılan olurdu — %68'e uygulanan bir uyarı hiçbir şey söylemez.
+  Dahası o 46 çağrıya `danger` yazılmış çünkü **düğme kırmızı olsun** istenmiş, "bu iş geri alınamaz" denmek
+  istendiği için değil. **`type` bir renk alanı, bir sonuç alanı değil.** 50 diyaloğa "geri alınamaz" yazmak
+  çoğunda yalan olur; kullanıcı üçüncü seferden sonra o cümleyi okumayı bırakır — ve gerçekten geri alınamayan
+  işte de okumaz.
+- **BU OTURUMUN TEKRAR EDEN HATASI:** anlamı, o anlamı taşımayan bir alandan türetmek (bkz. `snoozedUntil`
+  işaretliyordu ama gizlemiyordu; yorum `segmentFor`'un ona baktığını söylüyordu, bakmıyordu).
+- **YAPIM TETİKLEYİCİSİ:** önce **geri-alınabilirlik ölçümü** (BL-226). Kademe gerçek sonuca göre kurulur;
+  kutucuk yalnız gerçekten dönüşü olmayanlara.
+- **Gelecek regresyon riski: 🟢** (bugün kod yok).
+
+### BL-226 — [YAPILMADI] Yıkıcı aksiyonların geri-alınabilirlik envanteri
+- **Soru:** her yıkıcı aksiyonun bir geri alma yolu var mı? Grep'lenebilir: `reopen`, `reactivate`, `restore`,
+  `undo`, soft-delete alanları.
+- **Bilinen tek ölçüm:** WorkCenterNext'te "Görevi iptal et" **geri alınamıyor** — `reopen`/`reactivate`/`undo`
+  yok.
+- Çıktısı BL-225'in girdisi. CT "ucuz bir tur" dedi.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-227 kapanış notu (2026-08-24) — Onay diyaloğu Seçenek B'ye geçti (74 diyalog, tek dosyadan)
+- **SAHİBİN SEÇİMİ:** dört prototipten **Seçenek B**, rozet **secondary**. CT ağırlık kademesini reddetti
+  (BL-225), yani **tek ağırlık** uygulandı — "geri alınamaz" cümlesi ve onay kutucuğu YOK.
+- **NE DEĞİŞTİ (hepsi `_GlobalConfirmation.cshtml` + `backbone-custom.css`):**
+  - İkon **80px → 32px** ve **başlığın satırına** taşındı. ⚠ Yuvaya değil, **başlığın İÇİNE**: popup bir GRID
+    ve her yuva bir satır; iki şeyi bir satıra almak grid'i ezmek demekti — bu oturumda iki kez kırılan
+    manevra. Tek yuvaya birleştirmek hiç grid cerrahisi istemiyor.
+  - Başlık, açıklama, etiket, alan, rozet, düğmeler: **hepsi sola dayalı, hepsi 24px**.
+  - ⚠ Bunu mümkün kılan tek satır: kütüphanenin `.swal2-html-container` üzerindeki
+    **`padding: 18px 28.8px 5.4px`** iptal edildi. O 28.8px ürünün hiçbir yerinde yok ve açıklamanın x=573,
+    diğerlerinin x=544 olmasının sebebiydi. (Aynı sınıf: daha önce iptal edilen 34px yatay ve dikey marjlar.)
+  - Rozet **`bg-label-primary` → `bg-label-secondary`**, tam genişlik, tek satır (kırpılır).
+    ⚠ `type`'ı İZLEMİYOR, bilerek: rozet kaydın **adını** taşıyor, eylemin ciddiyetini değil. Bir ismi
+    kırmızıya boyamak "bu isim tehlikeli" demektir.
+  - Düğmeler **iki uca** (`justify-content-between`), `px-5` kaldırıldı — referans create-task offcanvas
+    footer'ı; ölçüldü, temanın kendi 20px inset'ini taşıyor.
+  - Popup dolgusu `2.5rem 1.5rem 2rem` → **`1.5rem`** (üstteki fazlalık 80px ikon bloğu içindi, o blok yok).
+  - **Onay düğmesi eylemi adıyla söylüyor:** `ConfirmProceedNamed` = "Evet, {0}", argüman
+    `actionLabel(action)` — yani **düğmede yazan dizenin ta kendisi**. 7 dil. Önce "Evet, uygula" diyordu;
+    o cümle üründeki her onay için doğru, dolayısıyla hiçbiri hakkında bir şey söylemiyordu.
+- **CANLI ÖLÇÜM (5 modül, 4 tip):**
+  | Ekran | Yükseklik | İkon | Hizalar | Onay düğmesi |
+  |---|---|---|---|---|
+  | Görev Merkezi · Görevi iptal et | 436→**260px** | 32px `bx-error-circle` | 24/24/24/24 | "Evet, görevi iptal et" |
+  | Görev Merkezi · Bilgi bekle (ham, 2 alan) | **351px** | 32px `bx-question-mark` | 7 satır da 24 | Onayla |
+  | Kullanıcı Rolleri · sil | **201px** | 32px `bx-trash` | 24/24/24/24 | "Evet, Sil" |
+  | Referans Verileri · gerekçe (girdili) | **319px** | 32px `bx-help-circle` | 24/24/24/24 · etiket→alan 4px · `getInput()` true, doğrudan çocuk | — |
+  | Rol İzinleri · danger | **201px** | 32px `bx-error-circle`, danger çember | 24/24/24 | `btn-danger` |
+  | Görev Merkezi · warning | **201px** | 32px `bx-error`, warning çember | 24/24/24 | `btn-warning` |
+- **İki genişlik × iki tema:** 1440 ve 900'de popup 400px, yatay/dikey taşma **0**. Koyu ve açık temada
+  çember tonu ve glif rengi `type`'tan geliyor (açık: `rgb(255,62,29)` danger).
+- **YOLDA BULUNAN VE DÜZELTİLEN KUSUR:** ikon yuvası gizlenince ham diyalogların çemberi **0px** oldu
+  (ölçüldü). Ham diyalog da ikonu başlığına aldı; artık 32px ve başlıkla aynı satırda.
+- **KASTEN YAPILMAYANLAR:** 25 ham `Swal.fire` (giriş akışı dahil) — BL-224'teki bekçi listesinde, ayrı tur.
+  Ağırlık kademesi — BL-225, ölçüm bekliyor.
+- **Gelecek regresyon riski: 🟢** — görünüm tek tanımda, bekçi (BL-224) yeni ham diyalogları durduruyor.

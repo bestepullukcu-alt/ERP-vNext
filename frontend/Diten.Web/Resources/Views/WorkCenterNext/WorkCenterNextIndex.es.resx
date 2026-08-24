@@ -901,6 +901,9 @@
   <data name="NewInSourceSubtext" xml:space="preserve">
     <value>El registro se crea en ese módulo y allí permanece; el Centro de tareas no guarda copia.</value>
   </data>
+  <data name="ConfirmProceedNamed" xml:space="preserve">
+    <value>Sí, {0}</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Fin a Inicio (FS)</value>
   </data>

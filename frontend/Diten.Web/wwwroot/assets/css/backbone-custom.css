@@ -6936,6 +6936,50 @@ tags.diten-tags .tagify__input {
    Both are corrections, not decisions: nothing is resized, nothing is moved. */
 .swal2-container .swal2-modal.swal2-popup .swal2-title { max-inline-size: 100%; }
 
+/* ══ OPTION B — THE DIALOG THE OWNER CHOSE (2026-08-24) ════════════════════
+   Four measured complaints, one shape. Before: an 80px circle centred over a centred title over a centred
+   description, 436px tall for one sentence; the description sitting 29px further in than everything else; a
+   PURPLE badge inside a red dialog; the buttons crammed together in the middle.
+
+   ⚠ THE ONE THING THAT MAKES THE REST WORK: the library's own `padding: 18px 28.8px 5.4px` on
+   `.swal2-html-container`. That 28.8px is a number this product uses nowhere, and it is why the description
+   measured x=573 while the title, the label, the field and the buttons all measured x=544. Cancelling it puts
+   every row of every dialog on ONE inset. Same class of fix as the 34px and the vertical margins before it. */
+.swal2-container .swal2-modal.swal2-popup .swal2-html-container.dt-dialog-body {
+    padding: 0;
+    margin: 0;
+}
+
+/* The title now carries the icon. `d-flex` comes from the package; this supplies the sizing the library's own
+   title rule would otherwise fight (it centres, caps width, and adds its own top margin). */
+.swal2-container .swal2-modal.swal2-popup .swal2-title.dt-dialog-title {
+    margin: 0 0 0.75rem;
+    padding: 0;
+    justify-content: flex-start;
+}
+/* 32px, down from 80px. The circle still says WHICH kind of dialog this is — it just no longer occupies a
+   block of its own above the words it belongs to. Tint and glyph are still the type's. */
+.swal2-container .swal2-modal.swal2-popup .dt-dialog-title .swal-icon-circle {
+    inline-size: 32px;
+    block-size: 32px;
+    flex: 0 0 auto;
+    margin: 0;
+}
+.swal2-container .swal2-modal.swal2-popup .dt-dialog-title .swal-icon-circle i { font-size: 1.125rem; }
+/* The words take the rest of the row and wrap inside it rather than pushing the circle out of line. */
+.swal2-container .swal2-modal.swal2-popup .dt-dialog-title > span { min-inline-size: 0; }
+
+/* The icon SLOT is empty now (the picture is in the title). The library still creates it, so it is collapsed
+   rather than left reserving space — the same 80px gap that used to sit under a suppressed icon. */
+.swal2-container .swal2-modal.swal2-popup .swal2-icon.dt-dialog-iconslot { display: none !important; }
+
+/* The record's NAME: neutral, full width, one line. Not `type`-coloured — a name is not dangerous. */
+.swal2-container .swal2-modal.swal2-popup .dt-dialog-entity {
+    inline-size: 100%;
+    font-size: 0.8125rem;
+    margin-block-start: 0.625rem;
+}
+
 /* ── A DIALOG FIELD FILLS ITS COLUMN, LIKE EVERY OTHER FIELD IN THIS PRODUCT ──
    MEASURED (2026-08-24), and it is the other half of the label fix: once the label was left-aligned, it started
    at the popup's content edge (x=544) while the box beside it started 34px further in (x=578). The 34px is
@@ -6986,6 +7030,39 @@ tags.diten-tags .tagify__input {
 .swal2-container .swal2-modal.swal2-popup .swal2-html-container .form-label {
     margin-block: 0.875rem 0.25rem;
 }
+
+/* ── THE DIALOG'S SELECT2 IS A FIELD LIKE THE OTHERS ───────────────────────
+   MEASURED, and it is what the owner photographed: the chosen/placeholder text rendered at 18px while the
+   textarea beside it, its own label's field, and every control on the page behind it were at 15px. select2
+   leaves `.select2-selection__rendered` unstyled and inherits nothing useful inside a popup.
+
+   ⚠ NOT FIXED IN JS: `selectionCssClass: 'form-select'` was passed and the class never arrived — that option
+   belongs to a newer select2 than the one this app bundles, and unknown keys are dropped in silence. The hook
+   is `containerCssClass` now, and the numbers live here (FG-003), which is also how this product styles
+   select2 on its other surfaces.
+
+   EVERY NUMBER IS `.form-control`'s, the same ones `.wcn-date-input` already copied: 15px text, 38px box, the
+   theme's radius. The line-height centres the text in that box rather than inventing padding. */
+/* ⚠ THE HOOK LANDS ON `.select2-selection` ITSELF, not on the container — measured in the DOM after wiring it:
+   `<span class="select2-selection select2-selection--single wcn-dialog-select">`. In this bundle
+   `containerCssClass` behaves the way `selectionCssClass` is documented to. The selectors below are written
+   against what was measured, not against what the option is named. */
+.swal2-container .swal2-modal.swal2-popup .wcn-dialog-select {
+    block-size: 38px;
+    border-radius: var(--bs-border-radius);
+}
+.swal2-container .swal2-modal.swal2-popup .wcn-dialog-select .select2-selection__rendered {
+    font-size: 0.9375rem;
+    line-height: 36px;
+    color: var(--bs-body-color);
+    padding-inline-start: 0.9375rem;
+}
+.swal2-container .swal2-modal.swal2-popup .wcn-dialog-select .select2-selection__arrow {
+    block-size: 36px;
+}
+/* The list the control opens reads at the field's size too — a 15px control that opens an 18px menu is the
+   same mismatch one step later. */
+.wcn-dialog-select-dropdown .select2-results__option { font-size: 0.9375rem; }
 
 /* ── THE DATE BOX INSIDE THE SHARED CONFIRM ────────────────────────────────
    ⚠ NO WRAPPER. `.swal2-input` must stay a DIRECT CHILD of the popup: the library

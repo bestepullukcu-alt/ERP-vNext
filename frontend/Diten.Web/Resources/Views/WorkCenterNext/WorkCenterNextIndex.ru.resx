@@ -901,6 +901,9 @@
   <data name="NewInSourceSubtext" xml:space="preserve">
     <value>Запись создаётся в этом модуле и остаётся там; Центр задач копию не хранит.</value>
   </data>
+  <data name="ConfirmProceedNamed" xml:space="preserve">
+    <value>Да, {0}</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Финиш-Старт (FS)</value>
   </data>

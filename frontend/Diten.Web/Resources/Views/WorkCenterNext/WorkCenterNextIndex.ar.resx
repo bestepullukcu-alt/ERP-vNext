@@ -901,6 +901,9 @@
   <data name="NewInSourceSubtext" xml:space="preserve">
     <value>يُنشأ السجل في تلك الوحدة ويبقى فيها؛ ولا يحتفظ مركز المهام بنسخة منه.</value>
   </data>
+  <data name="ConfirmProceedNamed" xml:space="preserve">
+    <value>نعم، {0}</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>إنهاء-بدء (FS)</value>
   </data>

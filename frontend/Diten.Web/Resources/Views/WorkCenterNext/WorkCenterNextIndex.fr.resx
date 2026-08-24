@@ -901,6 +901,9 @@
   <data name="NewInSourceSubtext" xml:space="preserve">
     <value>L'enregistrement est créé dans ce module et y reste ; le Centre de tâches n'en garde aucune copie.</value>
   </data>
+  <data name="ConfirmProceedNamed" xml:space="preserve">
+    <value>Oui, {0}</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Fin-à-Début (FS)</value>
   </data>

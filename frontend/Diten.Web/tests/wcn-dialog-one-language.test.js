@@ -35,6 +35,14 @@ const value = (xml, key) => {
   return xml.slice(xml.indexOf("<value>", at) + 7, xml.indexOf("</value>", at));
 };
 
+/*
+ * ⚠ BOTH CALL FORMS. `showConfirm(...)` and `showConfirm?.(...)` are the same call; a regex that sees only the
+ * first undercounted this product's dialogs by a factor of five for an entire session. Any census in this file
+ * uses THIS constant — never a fresh inline regex.
+ */
+const CALL = /showConfirm\s*\??\.?\s*\(/;
+const CALL_G = /showConfirm\s*\??\.?\s*\(/g;
+
 /** Every shipped source file that could hold a copy of the appearance. */
 const sourceFiles = () => {
   const files = [];
@@ -94,7 +102,8 @@ describe("the appearance has exactly one definition", () => {
   it("keeps the neutral dismiss button in the package, where the theme's red default is overruled", () => {
     const pkg = VIEW.slice(VIEW.indexOf("window.DitenDialogAppearance = function"),
       VIEW.indexOf("window.DitenDialogAppearance.description"));
-    expect(pkg).toContain("cancelButton: 'btn btn-label-secondary waves-effect px-5'");
+    // ⚠ `px-5` dropped with option B — see global-confirm-input-type.test.js. The CLAIM is the neutral tone.
+    expect(pkg).toContain("cancelButton: 'btn btn-label-secondary waves-effect'");
     expect(pkg, "the title lost the product's 18px heading size").toContain("title: 'fs-5 fw-bold text-heading");
     expect(pkg, "the popup width drifted from the reference dialog's 400px").toContain("'400px'");
     expect(pkg, "the form-label (13px) stopped reaching the input")
@@ -154,17 +163,29 @@ describe("eight dialogs, four moved and four dressed", () => {
     expect(VIEW).toContain("if (options.inputOptions)");
   });
 
-  it("leaves all fifteen existing showConfirm callers untouched", () => {
-    // BACKWARDS COMPATIBILITY, COUNTED: the new parameter is opt-in, so a caller that never names it evaluates
-    // to `undefined` and the key is never written onto the config.
-    const callers = sourceFiles().filter((f) => f.endsWith(".js") && /showConfirm\(/.test(fs.readFileSync(f, "utf8")));
-    const total = callers.reduce((n, f) =>
-      n + (fs.readFileSync(f, "utf8").match(/showConfirm\(/g) || []).length, 0);
-    expect(total, "the census of showConfirm call sites moved").toBe(15);
-    expect(callers.length).toBe(12);
+  it("leaves every existing showConfirm caller untouched", () => {
+    /*
+     * ⚠ THIS TEST USED TO ASSERT `toBe(15)` AND IT WAS WRONG — CORRECTED 2026-08-24.
+     *
+     * Its regex was `/showConfirm\(/`, which never matches the OPTIONAL-CHAINING form `showConfirm?.(`. That
+     * form is how most of this product calls the shared confirm: measured 16 plain against 58 optional, i.e.
+     * the census reported 15 while the real surface was 74 calls across 53 files. Every "backwards
+     * compatibility measured" claim made against this number covered a fifth of the dialogs it named.
+     *
+     * ⚠ AND THE FIX IS NOT `toBe(74)`. A hard count breaks on every legitimate new caller, which teaches the
+     * next person to bump the number rather than to look — the same reflex that let 15 survive. What is
+     * actually being claimed here is a RULE: an opt-in parameter reaches nobody who does not name it. So the
+     * rule is what gets asserted, and the count is only reported.
+     */
+    const callers = sourceFiles().filter((f) => f.endsWith(".js") && CALL.test(fs.readFileSync(f, "utf8")));
+    expect(callers.length, "nobody calls the shared confirm — the scan is broken").toBeGreaterThan(20);
+
+    // THE RULE: `inputOptions` is opt-in, so no caller outside this module may be passing it.
     const passing = callers.filter((f) => /inputOptions/.test(fs.readFileSync(f, "utf8")));
-    expect(passing.map((f) => path.basename(f)),
-      "an existing caller was changed by the new parameter").toEqual(["app.js"]);
+    expect(passing.map((f) => path.relative(repoRoot, f)),
+      "a caller outside WorkCenterNext started passing inputOptions").toEqual([
+      "frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js"
+    ]);
   });
 });
 

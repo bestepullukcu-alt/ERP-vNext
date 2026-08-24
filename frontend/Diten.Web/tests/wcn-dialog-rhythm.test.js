@@ -130,3 +130,36 @@ describe("one action, one icon", () => {
  *   · live in the browser, for `inquire` / `reassign` / `plan` — the row button's class and the open dialog's
  *     class read back as the same string. That measurement is in the round's report.
  */
+
+describe("the dialog's select2 is a field like the others", () => {
+  /*
+   * MEASURED, and it is what the owner photographed: the chosen/placeholder text rendered at **18px** while the
+   * textarea beside it, and every control on the page behind, were at **15px**.
+   *
+   * ⚠ THE JS OPTION WAS A NO-OP. `selectionCssClass: 'form-select'` was passed and the class never arrived —
+   * that key belongs to a newer select2 than this app bundles, and unknown keys are dropped in silence. The DOM
+   * read back `class="select2-selection select2-selection--single"` with no `form-select` in it.
+   */
+  it("hooks the control with a class that actually lands, and styles it in CSS", () => {
+    const fn = APP.slice(APP.indexOf("const bindDialogSelect2 ="), APP.indexOf("const bindDialogSelect2 =") + 2200);
+    const code = fn.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+    expect(code, "the option that does nothing came back").not.toContain("selectionCssClass");
+    expect(fn).toContain("containerCssClass: 'wcn-dialog-select'");
+    // FG-003: the numbers live in the stylesheet, never inline.
+    expect(CSS).toContain(".wcn-dialog-select .select2-selection__rendered");
+  });
+
+  it("writes the control at the product's own field size, not select2's", () => {
+    const r = rule(".swal2-container .swal2-modal.swal2-popup .wcn-dialog-select .select2-selection__rendered");
+    // 0.9375rem = 15px = `.form-control`, the same number `.wcn-date-input` already copied.
+    expect(r, "the select drifted off the product's field size").toContain("font-size: 0.9375rem");
+    expect(r).toContain("line-height: 36px");
+    // …and the box is the product's 38px control, not select2's default.
+    expect(rule(".swal2-container .swal2-modal.swal2-popup .wcn-dialog-select {")).toContain("block-size: 38px");
+  });
+
+  it("keeps the list it opens at the field's size too", () => {
+    // A 15px control that opens an 18px menu is the same mismatch one step later.
+    expect(CSS).toContain(".wcn-dialog-select-dropdown .select2-results__option");
+  });
+});

@@ -55,22 +55,48 @@
         options = options || {};
         return {
             width: options.width || '400px',
-            padding: '2.5rem 1.5rem 2rem',
+            /*
+             * ⚠ 1.5rem ON ALL FOUR SIDES (2026-08-24, owner's option B). It was `2.5rem 1.5rem 2rem` — a top
+             * inset sized for an 80px icon block that no longer exists. The icon rides the title now, so the
+             * dialog opens at the same inset it closes at.
+             */
+            padding: '1.5rem',
             buttonsStyling: false,
             reverseButtons: true,
             customClass: {
                 popup: 'rounded-4 shadow-lg',
-                // fs-5 = 18px in this theme (its own h5), the size a page titles itself with. `fs-4`
-                // was 24px — a dialog shouting louder than the screen behind it. An unclassed title is 38px.
-                title: 'fs-5 fw-bold text-heading mt-4 mb-2 d-block w-100 text-center',
-                htmlContainer: 'mb-1 d-block w-100 text-center',
-                actions: 'd-flex justify-content-center mt-4 w-100 gap-2',
-                confirmButton: 'btn ' + (options.confirmVariant || 'btn-primary') + ' waves-effect waves-light px-5',
+                /*
+                 * ── OPTION B, AS THE OWNER CHOSE IT (2026-08-24) ──────────────────────────────────────────
+                 *
+                 * The title is LEFT-ALIGNED and CARRIES THE ICON on its own line (see `showConfirm`, which
+                 * composes the two into this slot). Measured before: a centred 80px circle, a centred title and
+                 * a centred description stacked to 436px for a dialog whose whole content was one sentence.
+                 *
+                 * ⚠ WHY THE ICON MOVED INTO THE TITLE RATHER THAN BESIDE IT. SweetAlert lays the popup out as
+                 * a GRID with one slot per row — icon, title, html, actions. Putting two of them on one visual
+                 * row means overriding that grid, which is the library's own layout contract and the thing
+                 * that broke twice already this session (the label that computed `display: block` and still
+                 * rendered 58px wide). Composing both into ONE slot needs no grid surgery at all.
+                 *
+                 * fs-5 = 18px in this theme (its own h5), the size a page titles itself with. `fs-4` was
+                 * 24px — a dialog shouting louder than the screen behind it. An unclassed title is 38px.
+                 */
+                title: 'fs-5 fw-bold text-heading d-flex align-items-center gap-2 w-100 text-start dt-dialog-title',
+                htmlContainer: 'd-block w-100 text-start dt-dialog-body',
+                /*
+                 * ⚠ BOTH ENDS, NOT THE MIDDLE — copied from the create-task offcanvas footer, which is the
+                 * shape the owner named: `d-flex justify-content-between gap-2`, dismiss left, commit right.
+                 * `px-5` is gone with it: measured, the offcanvas's buttons carry the theme's own 20px inset.
+                 */
+                actions: 'd-flex justify-content-between mt-3 w-100 gap-2',
+                confirmButton: 'btn ' + (options.confirmVariant || 'btn-primary') + ' waves-effect waves-light',
                 // ⚠ NEUTRAL, and this is the line that stops a dismiss button being red: the theme's global
                 // default for `.swal2-cancel` is `btn-label-danger`, so a dialog that does not say otherwise
                 // ships a "Vazgeç" that looks like the dangerous answer.
-                cancelButton: 'btn btn-label-secondary waves-effect px-5',
-                icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100',
+                cancelButton: 'btn btn-label-secondary waves-effect',
+                // The icon slot stays empty now; the picture rides the title. Kept so a caller that still
+                // passes `iconHtml` (a raw dialog) gets a sane box rather than the library's 80px reservation.
+                icon: 'border-0 m-0 p-0 d-flex w-100 dt-dialog-iconslot',
                 /*
                  * The box's label is a FORM label, so it wears the product's form label — 13px, the same
                  * one every field on every create form uses. SweetAlert's own default was 16px.
@@ -203,7 +229,18 @@
         // No sentence, no box: an empty description div still costs a margin and reads as a gap.
         let htmlContent = subtext ? `<div class="${window.DitenDialogAppearance.description}">${subtext}</div>` : '';
         if (options.entityName) {
-            htmlContent += `<div class="badge bg-label-primary fs-6 mt-1 py-2 px-3 fw-medium">${options.entityName}</div>`;
+            /*
+             * ⚠ SECONDARY, NOT PRIMARY (2026-08-24, owner). Measured: this badge rendered `rgb(105,108,255)` —
+             * the theme's PURPLE — inside a red destructive dialog, because the class was `bg-label-primary`
+             * regardless of `type`. The owner spotted it in a screenshot.
+             *
+             * It stays neutral rather than following `type`, and that is the decision: the badge carries the
+             * record's NAME, not the action's gravity. Colouring a name red says the name is dangerous.
+             *
+             * Full width and truncated: a long title used to wrap into a three-line purple block that outweighed
+             * the sentence above it.
+             */
+            htmlContent += `<div class="badge bg-label-secondary fs-6 py-2 px-3 fw-medium d-block text-start text-truncate dt-dialog-entity">${options.entityName}</div>`;
         }
 
         /*
@@ -241,8 +278,17 @@
             if (typeof Swal !== 'undefined') {
                 // The look is READ, not restated — see `window.DitenDialogAppearance` above. `type` still decides
                 // the confirm button's colour; it is the one thing the package takes from its caller.
+                /*
+                 * ⚠ THE ICON IS COMPOSED INTO THE TITLE (2026-08-24, option B), not given to the icon slot.
+                 * See the appearance package for why: the popup is a grid with one slot per row, so two things
+                 * on one visual row means either grid surgery or one slot. This is the one slot.
+                 *
+                 * `title` is `aria-labelledby` for the dialog. The glyph is an empty `<i>` painted by a CSS
+                 * mask — no text, no label — so the accessible name is the title's own words, unchanged.
+                 */
+                var titleHtml = options.hideIcon ? title : (iconHtml + '<span>' + title + '</span>');
                 var swalConfig = Object.assign({
-                    title: title,
+                    title: titleHtml,
                     html: htmlContent,
                     showCancelButton: true,
                     confirmButtonText: yesBtn,
@@ -269,9 +315,11 @@
                  * `aria-label`, no `role` and no text — it is an empty `<i>` whose glyph comes from a CSS
                  * pseudo-element. The dialog is named by `aria-labelledby="swal2-title"`, which is untouched.
                  */
-                if (!options.hideIcon) {
-                    swalConfig.iconHtml = iconHtml;
-                }
+                /*
+                 * ⚠ NO `iconHtml` ANY MORE — the picture is in the title above. Setting it too would draw the
+                 * circle twice, once in the title and once in the slot the library reserves for it.
+                 * `hideIcon` still works: it simply leaves the title without a glyph.
+                 */
 
                 // Add textarea support if requested
                 if (options.showInput) {

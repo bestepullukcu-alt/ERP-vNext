@@ -901,6 +901,9 @@
   <data name="NewInSourceSubtext" xml:space="preserve">
     <value>Kayıt o modülde oluşur ve orada kalır; Görev Merkezi kopyasını tutmaz.</value>
   </data>
+  <data name="ConfirmProceedNamed" xml:space="preserve">
+    <value>Evet, {0}</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Bitince başlar (FS)</value>
   </data>

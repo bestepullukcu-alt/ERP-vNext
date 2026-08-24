@@ -51,11 +51,22 @@ describe("a label belongs to its field, not to the dialog", () => {
     expect(seen.config.customClass.inputLabel, "the label is not left-aligned").toContain("text-start");
   });
 
-  it("keeps the title and the description centred — they address the dialog, not the box", () => {
+  it("left-aligns the title and the description too, on ONE inset", () => {
+    /*
+     * ⚠ REVERSED BY THE OWNER (2026-08-24, option B). This used to assert the title and description stayed
+     * CENTRED while only the field label went left — the arrangement every create form in this product uses.
+     * The owner looked at seven dialogs side by side and reported the real defect underneath it: each modal
+     * had a different left edge, because a centred row and a left-aligned row cannot share one.
+     *
+     * Now EVERY row — title, description, label, field, badge, buttons — starts at the same 24px inset.
+     * Measured live afterwards on five modules: all four rows at 24. The claim is the single inset.
+     */
     const { stub, seen } = capture();
     loadWrapper(stub).showConfirm("Süre gir", () => {}, { showInput: true, inputLabel: "Dakika" });
-    expect(seen.config.customClass.title).toContain("text-center");
-    expect(seen.config.customClass.htmlContainer).toContain("text-center");
+    expect(seen.config.customClass.title).toContain("text-start");
+    expect(seen.config.customClass.htmlContainer).toContain("text-start");
+    expect(seen.config.customClass.inputLabel).toContain("text-start");
+    expect(seen.config.customClass.title, "the title is centred again").not.toContain("text-center");
   });
 
   it("makes the hand-written DIALOG labels and the generated one the same two classes", () => {
@@ -129,7 +140,11 @@ describe("the icon is a thing a raw dialog can have too", () => {
   });
 
   it("gives the reason+assignee dialog the SAME glyph its own button carries", () => {
-    expect(APP).toContain("iconHtml: dialogIcon('info', inboxActionIcon(action))");
+    /*
+     * ⚠ IT RIDES THE TITLE NOW (option B), not the icon slot — the slot is collapsed by the stylesheet, and a
+     * raw dialog still using it drew a circle of height 0. Measured exactly that on the first pass.
+     */
+    expect(APP).toContain("dialogIcon('info', inboxActionIcon(action)) + '<span>'");
     expect(APP, "the module built its own circle").not.toContain("swal-icon-circle");
   });
 
@@ -155,18 +170,24 @@ describe("two dialog selects become the product's own picker", () => {
     // `const bindDialogSelect2 = (` and is not one of them.)
     expect((APP.match(/bindDialogSelect2\(/g) || []).length,
       "a dialog select lost its picker").toBe(3);
-    const fn = APP.slice(APP.indexOf("const bindDialogSelect2 ="), APP.indexOf("const bindDialogSelect2 =") + 1400);
+    const fn = APP.slice(APP.indexOf("const bindDialogSelect2 ="), APP.indexOf("const bindDialogSelect2 =") + 2600);
     expect(fn, "the list is parented to the body again — it will open behind the dialog")
       .toContain("dropdownParent");
     expect(fn).toContain("closest('.swal2-popup')");
-    // The same configuration the filter panel uses; no second options object was invented.
-    expect(fn).toContain("selectionCssClass: 'form-select'");
+    /*
+     * ⚠ WAS `selectionCssClass: 'form-select'` — REMOVED 2026-08-24 because it did NOTHING. That key belongs to
+     * a newer select2 than this app bundles, and unknown keys are dropped in silence: the DOM read back
+     * `class="select2-selection select2-selection--single"` with no `form-select`, and the control's text
+     * rendered at 18px against the product's 15px. The hook that actually lands is `containerCssClass`, and the
+     * sizing lives in the stylesheet (FG-003). See the rhythm test file for the full guard.
+     */
+    expect(fn).toContain("containerCssClass: 'wcn-dialog-select'");
   });
 
   it("never wraps the dialog's own input slot", () => {
     // select2 hides the original in place and inserts its container as a SIBLING, so `Swal.getInput()` still
     // finds `.swal2-select`. Asserted live in the browser too — this pins the intent in code.
-    const fn = APP.slice(APP.indexOf("const bindDialogSelect2 ="), APP.indexOf("const bindDialogSelect2 =") + 1400);
+    const fn = APP.slice(APP.indexOf("const bindDialogSelect2 ="), APP.indexOf("const bindDialogSelect2 =") + 2600);
     expect(fn).not.toContain("wrap(");
     expect(fn).not.toContain("diten-field");
   });

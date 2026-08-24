@@ -6665,9 +6665,23 @@
          * CHOICE (this file's own comment says so), and select2 blanked it — the control opened showing an
          * empty box where the native select had shown the words.
          */
+        /*
+         * ⚠ `selectionCssClass` DOES NOTHING ON THIS SELECT2 BUILD — MEASURED, and it shipped a visible defect.
+         *
+         * It was passed as `'form-select'` so the control would wear the product's field styling. The class
+         * never reached the element: the rendered node measured `class="select2-selection
+         * select2-selection--single"` with NO `form-select`, and its text came out at **18px** beside a
+         * textarea, a label and a page full of controls at **15px** — which is what the owner photographed.
+         * (`selectionCssClass` is a 4.1 option; this bundle ignores unknown keys silently.)
+         *
+         * `containerCssClass` IS honoured here, so the hook is a real class and the styling lives in
+         * `backbone-custom.css` under `.wcn-dialog-select` — which is also where it belongs (FG-003), and how
+         * this product already styles select2 on its other surfaces (the filter chips do the same).
+         */
         const config = {
             dropdownParent: jq(popup || element.closest('.swal2-popup') || document.body),
-            selectionCssClass: 'form-select',
+            containerCssClass: 'wcn-dialog-select',
+            dropdownCssClass: 'wcn-dialog-select-dropdown',
             minimumResultsForSearch: 10,
             width: '100%',
             allowClear: false
@@ -7394,7 +7408,13 @@
              * and appearance is now something it can ask for by name.
              */
             global.Swal.fire(Object.assign({
-                title: actionLabel(action),
+                /*
+                 * ⚠ THE ICON RIDES THE TITLE HERE TOO (2026-08-24, option B). The shared confirm composes the
+                 * two into one slot because the popup is a grid with one slot per row; a raw dialog that kept
+                 * using the ICON SLOT would draw its circle in a row the stylesheet now collapses — measured
+                 * exactly that: circle height 0 on the first pass of this change.
+                 */
+                title: dialogIcon('info', inboxActionIcon(action)) + '<span>' + esc(actionLabel(action)) + '</span>',
                 /*
                  * ⚠ THE GLYPH COMES FROM `inboxActionIcon`, NOT FROM A HAND — CORRECTED 2026-08-24.
                  *
@@ -7409,7 +7429,6 @@
                  *
                  * The CIRCLE and its colour are still `type`'s — `info`, untouched.
                  */
-                iconHtml: dialogIcon('info', inboxActionIcon(action)),
                 html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
                     + assigneeField
                     + waitingOnField
@@ -7490,7 +7509,14 @@
                 // The wrapper picks the icon from the TYPE rather than taking one by name, so a destructive act
                 // gets the danger circle and its red button from a single word instead of three settings.
                 type: action.destructive ? 'danger' : 'info',
-                confirmText: t('ConfirmProceed'),
+                /*
+                 * ⚠ THE BUTTON NAMES THE ACT (2026-08-24, owner). It said "Evet, uygula" — a sentence that is
+                 * true of every confirm in the product and therefore tells the reader nothing about the one in
+                 * front of them. `ConfirmProceedNamed` is "Evet, {0}" and the argument is `actionLabel(action)`,
+                 * i.e. the WORDS ON THE BUTTON THEY JUST PRESSED. No second name is derived; the dialog's
+                 * title, the rail button and this button all read the same string.
+                 */
+                confirmText: tf('ConfirmProceedNamed', actionLabel(action).toLocaleLowerCase('tr')),
                 onConfirm: () => applyAction(item, action)
             });
             return;
@@ -7650,7 +7676,8 @@
                 title: label,
                 subtext: `<div class="wcn-confirm-body">${esc(tf('ConfirmBulkBody', selected.length))}</div>`,
                 type: 'warning',
-                confirmText: t('ConfirmProceed'),
+                // Same rule for the batch: the button says which act is about to run on all of them.
+                confirmText: tf('ConfirmProceedNamed', label.toLocaleLowerCase('tr')),
                 onConfirm: () => runBulkWithProgress(selected, actionKey, label)
             });
             return;

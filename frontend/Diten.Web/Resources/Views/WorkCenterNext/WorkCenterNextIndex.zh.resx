@@ -901,6 +901,9 @@
   <data name="NewInSourceSubtext" xml:space="preserve">
     <value>记录将在该模块中创建并保留在那里；任务中心不保存副本。</value>
   </data>
+  <data name="ConfirmProceedNamed" xml:space="preserve">
+    <value>确定，{0}</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>完成-开始 (FS)</value>
   </data>

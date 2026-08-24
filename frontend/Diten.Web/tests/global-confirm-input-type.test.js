@@ -166,17 +166,38 @@ describe("the dialog is written in the product's type scale", () => {
     expect(seen.config.customClass.inputLabel).toBe("form-label d-block w-100 text-start");
   });
 
-  it("leaves the buttons, the icon and the width alone — not this round's subject", () => {
+  it("keeps the buttons neutral-cancel and the width fixed", () => {
+    /*
+     * ⚠ `px-5` IS GONE (2026-08-24, option B). It padded each button by 3rem so two of them filled the middle
+     * of the popup; the reference the owner named — the create-task offcanvas footer — measured the theme's own
+     * 20px inset and pushed dismiss and commit to opposite ends instead. The buttons now carry no extra inset.
+     *
+     * What this test actually protects is unchanged and still here: the dismiss button stays NEUTRAL (the
+     * theme's global default for `.swal2-cancel` is `btn-label-danger`, so silence ships a red "Vazgeç"), and
+     * the popup keeps one width.
+     */
     const { seen, stub } = captureConfig();
     loadWrapper(stub)("Snooze", () => {}, {});
-    expect(seen.config.customClass.confirmButton).toContain("px-5");
+    expect(seen.config.customClass.confirmButton, "the button grew its own inset again").not.toContain("px-5");
     expect(seen.config.customClass.cancelButton).toContain("btn-label-secondary");
-    expect(seen.config.customClass.icon).toContain("d-flex");
+    expect(seen.config.customClass.cancelButton, "the button grew its own inset again").not.toContain("px-5");
+    expect(seen.config.customClass.actions, "the buttons went back to the middle").toContain("justify-content-between");
     expect(seen.config.width).toBe("400px");
   });
 });
 
 
+/*
+ * ⚠ THE ICON MOVED FROM `iconHtml` INTO `title` (2026-08-24, owner's option B).
+ *
+ * SweetAlert lays the popup out as a GRID with one slot per row — icon, title, html, actions. Option B puts
+ * the 32px circle ON the title's line, and doing that by overriding the grid is the manoeuvre that has broken
+ * twice in this file's history. Composing both into ONE slot needs no grid surgery, so `title` now carries
+ * `iconHtml + '<span>' + title + '</span>'` and the icon slot is left empty.
+ *
+ * Every assertion below therefore reads `config.title` where it used to read `config.iconHtml`. WHAT IS BEING
+ * CLAIMED IS UNCHANGED: the type owns the circle and its colour, the caller may name only the glyph.
+ */
 describe("the icon", () => {
   /*
    * A confirmation's icon carries WEIGHT: the red bin means "cannot be undone", the amber exclamation means
@@ -190,14 +211,16 @@ describe("the icon", () => {
     const { seen, stub } = captureConfig();
     loadWrapper(stub)("DeleteConfirmation", () => {}, { entityName: "Bir kayıt" });
     // MUTATION GUARD: make hiding the default and every dialog in four other modules loses its icon.
-    expect(seen.config.iconHtml).toContain("swal-icon-circle");
-    expect(seen.config.iconHtml).toContain("bx-trash");
+    expect(seen.config.title).toContain("swal-icon-circle");
+    expect(seen.config.title).toContain("bx-trash");
   });
 
   it("is left out only when a caller asks", () => {
     const { seen, stub } = captureConfig();
     loadWrapper(stub)("Snooze", () => {}, { hideIcon: true });
-    expect(seen.config.iconHtml).toBeUndefined();
+    // `hideIcon` now means "a title with no glyph", not "an empty icon slot".
+    expect(seen.config.title, "hideIcon still drew a circle").not.toContain("swal-icon-circle");
+    expect(seen.config.iconHtml, "the icon slot must stay empty — the picture is in the title").toBeUndefined();
   });
 
   it("does not take the button colour with it", () => {
@@ -229,16 +252,16 @@ describe("the glyph, and only the glyph", () => {
   it("can be named by a caller", () => {
     const { seen, stub } = captureConfig();
     loadWrapper(stub)("Snooze", () => {}, { icon: "bx-moon" });
-    expect(seen.config.iconHtml).toContain("bx-moon");
-    expect(seen.config.iconHtml, "the old glyph is still in there").not.toContain("bx-help-circle");
+    expect(seen.config.title).toContain("bx-moon");
+    expect(seen.config.title, "the old glyph is still in there").not.toContain("bx-help-circle");
   });
 
   it("keeps the circle, its colour and its size — those belong to the type", () => {
     const { seen, stub } = captureConfig();
     loadWrapper(stub)("Snooze", () => {}, { icon: "bx-moon" });
     // The same circle the info type draws: same classes, so same background, border and 80px.
-    expect(seen.config.iconHtml).toContain("swal-icon-circle bg-label-primary border-primary border-opacity-25");
-    expect(seen.config.iconHtml).toContain("text-primary");
+    expect(seen.config.title).toContain("swal-icon-circle bg-label-primary border-primary border-opacity-25");
+    expect(seen.config.title).toContain("text-primary");
   });
 
   it("does not touch the confirm button's colour, whatever glyph is asked for", () => {
@@ -249,7 +272,7 @@ describe("the glyph, and only the glyph", () => {
     expect(swapped.seen.config.customClass.confirmButton).toBe(plain.seen.config.customClass.confirmButton);
     expect(swapped.seen.config.customClass.confirmButton).toContain("btn-danger");
     // …and the destructive circle stays destructive: a moon on a delete dialog is still a delete dialog.
-    expect(swapped.seen.config.iconHtml).toContain("text-danger");
+    expect(swapped.seen.config.title).toContain("text-danger");
   });
 
   it("leaves every existing caller with the glyph its type gives it", () => {
@@ -258,11 +281,11 @@ describe("the glyph, and only the glyph", () => {
     [["DeleteConfirmation", "bx-trash"], ["AreYouSure", "bx-help-circle"]].forEach(([key, glyph]) => {
       const { seen, stub } = captureConfig();
       loadWrapper(stub)(key, () => {}, {});
-      expect(seen.config.iconHtml, `${key} lost its glyph`).toContain(glyph);
+      expect(seen.config.title, `${key} lost its glyph`).toContain(glyph);
     });
     const warn = captureConfig();
     loadWrapper(warn.stub)("AreYouSure", () => {}, { type: "warning" });
-    expect(warn.seen.config.iconHtml).toContain("bx-error");
-    expect(warn.seen.config.iconHtml).toContain("text-warning");
+    expect(warn.seen.config.title).toContain("bx-error");
+    expect(warn.seen.config.title).toContain("text-warning");
   });
 });
