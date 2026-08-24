@@ -3,6 +3,7 @@ using Diten.PvgService.Application.CaseProcessing;
 using Diten.PvgService.Application.MeddraCoding;
 using Diten.PvgService.Application.RegPvBase;
 using Diten.PvgService.Application.SignalManagement;
+using Diten.PvgService.Domain.RegPvBase;
 using Diten.PvgService.Infrastructure.RegPvBase;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -465,6 +466,94 @@ public sealed class PvgServiceApiHostTests
         }
     }
 
+    [Fact]
+    public void Case_intake_api_response_contract_exposes_safe_observability_error_model_only()
+    {
+        var properties = typeof(PvgCaseIntakeApiResponse)
+            .GetProperties()
+            .Select(property => (property.Name, property.PropertyType))
+            .ToArray();
+
+        Assert.Equal(
+            [
+                (nameof(PvgCaseIntakeApiResponse.Outcome), typeof(string)),
+                (nameof(PvgCaseIntakeApiResponse.ReasonCode), typeof(string)),
+                (nameof(PvgCaseIntakeApiResponse.ValidationReasonCodes), typeof(IReadOnlyList<string>)),
+                (nameof(PvgCaseIntakeApiResponse.IntakeDraftId), typeof(string)),
+                (nameof(PvgCaseIntakeApiResponse.Items), typeof(IReadOnlyList<PvgIntakeDraftSummary>))
+            ],
+            properties);
+
+        Assert.DoesNotContain(properties, property =>
+            property.Name.Contains("Tenant", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Actor", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Correlation", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Trace", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Audit", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Metadata", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Payload", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Raw", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Reporter", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Patient", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Product", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Evidence", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Queue", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Phi", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Pii", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task Case_intake_blocked_observability_responses_do_not_echo_trace_headers_or_request_values()
+    {
+        var endpoints = new (string Name, Func<DefaultHttpContext, ValueTask<IResult>> Invoke)[]
+        {
+            ("create", context => PvgCaseIntakeTriageEndpoints.CreateDraftAsync(
+                SensitiveCreateRequest(),
+                context,
+                service: null!,
+                CancellationToken.None)),
+            ("update", context => PvgCaseIntakeTriageEndpoints.UpdateDraftAsync(
+                "draft-reference",
+                SensitiveUpdateRequest(),
+                context,
+                service: null!,
+                CancellationToken.None)),
+            ("list", context => PvgCaseIntakeTriageEndpoints.ListDraftsAsync(
+                context,
+                service: null!,
+                cancellationToken: CancellationToken.None)),
+            ("detail", context => PvgCaseIntakeTriageEndpoints.GetDraftByIdAsync(
+                "draft-reference",
+                context,
+                service: null!,
+                CancellationToken.None)),
+            ("triage", context => PvgCaseIntakeTriageEndpoints.TriageDraftAsync(
+                "draft-reference",
+                new PvgCaseIntakeTriageRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason"),
+                context,
+                service: null!,
+                CancellationToken.None)),
+            ("route", context => PvgCaseIntakeTriageEndpoints.RouteDraftAsync(
+                "draft-reference",
+                new PvgCaseIntakeRouteRequest("queue-safety-review"),
+                context,
+                service: null!,
+                CancellationToken.None))
+        };
+
+        foreach (var endpoint in endpoints)
+        {
+            var invalidCorrelationContext = NewContextWithTenant();
+            invalidCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-reference";
+            invalidCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "safety-user";
+            invalidCorrelationContext.Request.Headers[PvgCaseIntakeRequestContext.CorrelationIdHeader] = "unsafe correlation value";
+
+            var response = await ResponseOfAsync(await endpoint.Invoke(invalidCorrelationContext));
+
+            AssertSafeBlockedResponse(response, PvgPermissionReasonCodes.CorrelationContextInvalid);
+        }
+    }
+
     [Theory]
     [InlineData("export")]
     [InlineData("archive")]
@@ -651,6 +740,38 @@ public sealed class PvgServiceApiHostTests
             null,
             null);
 
+    private static PvgCaseIntakeCreateRequest SensitiveCreateRequest() =>
+        new(
+            "channel",
+            "source",
+            "source-ref",
+            DateTimeOffset.UtcNow,
+            "reporter",
+            "reporter@example.test",
+            "patient-subject-code",
+            DateOnly.FromDateTime(DateTime.UnixEpoch),
+            "free text narrative with PHI",
+            "suspect product",
+            "serious",
+            "priority",
+            ["evidence-ref"]);
+
+    private static PvgCaseIntakeUpdateRequest SensitiveUpdateRequest() =>
+        new(
+            "channel",
+            "source",
+            "source-ref",
+            DateTimeOffset.UtcNow,
+            "reporter",
+            "reporter@example.test",
+            "patient-subject-code",
+            DateOnly.FromDateTime(DateTime.UnixEpoch),
+            "free text narrative with PHI",
+            "suspect product",
+            "serious",
+            "priority",
+            ["evidence-ref"]);
+
     private static async Task<int> StatusCodeOfAsync(IResult result)
     {
         var responseContext = new DefaultHttpContext();
@@ -705,8 +826,18 @@ public sealed class PvgServiceApiHostTests
         "actor-reference",
         "safety-user",
         "correlation-reference",
+        "unsafe correlation value",
         "channel",
         "source",
+        "source-ref",
+        "evidence-ref",
+        "patient-subject-code",
+        "reporter@example.test",
+        "free text narrative with PHI",
+        "triage free-text reason",
+        "route free-text reason",
+        "queue-safety-review",
+        "suspect product",
         "reporter",
         "narrative",
         "serious",

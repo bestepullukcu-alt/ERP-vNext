@@ -315,6 +315,129 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         AssertSafe(crossTenantRoute);
     }
 
+    [Theory]
+    [InlineData(PvgIntakeOperation.Create)]
+    [InlineData(PvgIntakeOperation.Update)]
+    [InlineData(PvgIntakeOperation.GetById)]
+    [InlineData(PvgIntakeOperation.GetList)]
+    [InlineData(PvgIntakeOperation.Triage)]
+    [InlineData(PvgIntakeOperation.Route)]
+    public async Task Business_operations_require_correlation_before_permission_ports_mutation_and_error_metadata(
+        PvgIntakeOperation operation)
+    {
+        var callLog = new List<string>();
+        var service = NewService(
+            new RecordingFieldSecurityPolicy(callLog),
+            new RecordingWorkflowTransitionGate(callLog),
+            new RecordingEvidenceLinkPort(callLog),
+            new RecordingPermissionGate(callLog));
+
+        string? intakeDraftId = null;
+        if (operation != PvgIntakeOperation.Create)
+        {
+            var prepared = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+            Assert.True(prepared.Result.IsSuccess);
+            intakeDraftId = prepared.IntakeDraftId;
+            callLog.Clear();
+        }
+
+        var blocked = operation switch
+        {
+            PvgIntakeOperation.Create => (object)await service.CreateDraftAsync(
+                new CreateIntakeDraftCommand(TenantContext(), ActorContext(), null!, ValidCreateRequest())),
+            PvgIntakeOperation.Update => (object)await service.UpdateDraftAsync(
+                new UpdateIntakeDraftCommand(TenantContext(), ActorContext(), null!, intakeDraftId!, ValidUpdateRequest())),
+            PvgIntakeOperation.GetById => (object)await service.GetDraftByIdAsync(
+                new GetIntakeDraftByIdQuery(TenantContext(), ActorContext(), null!, intakeDraftId!)),
+            PvgIntakeOperation.GetList => (object)await service.ListDraftsAsync(
+                new GetIntakeDraftListQuery(TenantContext(), ActorContext(), null!, 1, 10, null)),
+            PvgIntakeOperation.Triage => (object)await service.TriageDraftAsync(
+                new TriageIntakeDraftCommand(
+                    TenantContext(),
+                    ActorContext(),
+                    null!,
+                    intakeDraftId!,
+                    new PvgTriageIntakeDraftRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason"))),
+            PvgIntakeOperation.Route => (object)await service.RouteDraftAsync(
+                new RouteIntakeDraftCommand(
+                    TenantContext(),
+                    ActorContext(),
+                    null!,
+                    intakeDraftId!,
+                    new PvgRouteIntakeDraftRequest("queue-safety-review"))),
+            _ => throw new InvalidOperationException($"Unsupported correlation guard test operation {operation}.")
+        };
+
+        Assert.Empty(callLog);
+        AssertSafeBlockedApplicationResult(blocked, PvgPermissionReasonCodes.CorrelationContextRequired);
+        AssertSafe(blocked);
+    }
+
+    [Fact]
+    public async Task Successful_operations_preserve_correlation_for_guard_evaluation_and_emit_safe_observability_metadata()
+    {
+        var callLog = new List<string>();
+        var permissionGate = new RecordingPermissionGate(callLog);
+        var service = NewService(
+            new RecordingFieldSecurityPolicy(callLog),
+            new RecordingWorkflowTransitionGate(callLog),
+            new RecordingEvidenceLinkPort(callLog),
+            permissionGate);
+
+        var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+        Assert.True(created.Result.IsSuccess);
+
+        var updated = await service.UpdateDraftAsync(
+            new UpdateIntakeDraftCommand(
+                TenantContext(),
+                ActorContext(),
+                CorrelationContext(),
+                created.IntakeDraftId!,
+                ValidUpdateRequest()));
+        var detail = await service.GetDraftByIdAsync(ReadByIdQuery(created.IntakeDraftId!));
+        var listed = await service.ListDraftsAsync(ReadListQuery());
+        var triaged = await service.TriageDraftAsync(
+            new TriageIntakeDraftCommand(
+                TenantContext(),
+                ActorContext(),
+                CorrelationContext(),
+                created.IntakeDraftId!,
+                new PvgTriageIntakeDraftRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason")));
+        var routed = await service.RouteDraftAsync(
+            new RouteIntakeDraftCommand(
+                TenantContext(),
+                ActorContext(),
+                CorrelationContext(),
+                created.IntakeDraftId!,
+                new PvgRouteIntakeDraftRequest("queue-safety-review")));
+
+        Assert.Equal(
+            [
+                (PvgIntakeOperation.Create, "pvg.mod0230.intake.create", "corr-secret-789"),
+                (PvgIntakeOperation.Update, "pvg.mod0230.intake.update", "corr-secret-789"),
+                (PvgIntakeOperation.GetById, "pvg.mod0230.intake.read", "corr-secret-789"),
+                (PvgIntakeOperation.GetList, "pvg.mod0230.intake.read", "corr-secret-789"),
+                (PvgIntakeOperation.Triage, "pvg.mod0230.intake.triage", "corr-secret-789"),
+                (PvgIntakeOperation.Route, "pvg.mod0230.intake.route", "corr-secret-789")
+            ],
+            permissionGate.Requests
+                .Select(request => (request.Operation, request.RequiredPermission, request.CorrelationId))
+                .ToArray());
+
+        foreach (var mutation in new[] { created, updated, triaged, routed })
+        {
+            var auditIntent = Assert.IsType<PvgAuditIntent>(mutation.AuditIntent);
+            Assert.True(auditIntent.HasCorrelation);
+            AssertSafeAuditIntent(auditIntent);
+            AssertSafe(mutation);
+        }
+
+        Assert.True(detail.Result.IsSuccess);
+        Assert.True(listed.Result.IsSuccess);
+        AssertSafe(detail);
+        AssertSafe(listed);
+    }
+
     [Fact]
     public async Task Update_denied_by_field_security_keeps_existing_status()
     {
@@ -1214,6 +1337,32 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         }
     }
 
+    private static void AssertSafeBlockedApplicationResult(object result, string expectedReasonCode)
+    {
+        switch (result)
+        {
+            case PvgIntakeDraftMutationResult mutation:
+                Assert.False(mutation.Result.IsSuccess);
+                Assert.Equal(PvgApplicationOutcome.Blocked, mutation.Result.Outcome);
+                Assert.Equal(expectedReasonCode, mutation.Result.ReasonCode);
+                AssertSafeReasonCode(mutation.Result.ReasonCode);
+                Assert.Empty(mutation.Result.ValidationFailures);
+                Assert.Null(mutation.IntakeDraftId);
+                Assert.Null(mutation.AuditIntent);
+                break;
+            case PvgIntakeDraftQueryResult query:
+                Assert.False(query.Result.IsSuccess);
+                Assert.Equal(PvgApplicationOutcome.Blocked, query.Result.Outcome);
+                Assert.Equal(expectedReasonCode, query.Result.ReasonCode);
+                AssertSafeReasonCode(query.Result.ReasonCode);
+                Assert.Empty(query.Result.ValidationFailures);
+                Assert.Empty(query.Items);
+                break;
+            default:
+                throw new InvalidOperationException($"Unsupported blocked result type {result.GetType().Name}.");
+        }
+    }
+
     private static void AssertSafeReasonCode(string? reasonCode)
     {
         Assert.False(string.IsNullOrWhiteSpace(reasonCode));
@@ -1265,12 +1414,15 @@ public sealed class PvgIntakeDraftApplicationServiceTests
 
     private sealed class RecordingPermissionGate(List<string> callLog) : IPvgPermissionGate
     {
+        public List<PvgPermissionRequest> Requests { get; } = [];
+
         public PvgPermissionDecision Decision { get; set; } = PvgPermissionDecision.Allowed();
 
         public ValueTask<PvgPermissionDecision> EvaluateAsync(
             PvgPermissionRequest request,
             CancellationToken cancellationToken = default)
         {
+            Requests.Add(request);
             callLog.Add($"permission:{request.Operation}:{request.RequiredPermission}");
             return ValueTask.FromResult(Decision);
         }
