@@ -642,7 +642,7 @@
     <value>在冻结窗口开启前无法开始。</value>
   </data>
   <data name="ConfirmBody" xml:space="preserve">
-    <value>您即将对“{0}”执行此操作。是否继续？</value>
+    <value>您即将执行此操作。确认吗？</value>
   </data>
   <data name="ConfirmBulkBody" xml:space="preserve">
     <value>您即将对 {0} 个项目批量执行此操作。是否继续？</value>
@@ -740,7 +740,7 @@
     <value>计划日期晚于来源截止日期——有逾期风险。</value>
   </data>
   <data name="ConfirmBodyOnBehalf" xml:space="preserve">
-    <value>您即将代表 {1} 对“{0}”执行此操作。是否继续？</value>
+    <value>您即将代表 {0} 执行此操作。确认吗？</value>
   </data>
   <data name="ToastReleased" xml:space="preserve">
     <value>{0} · 已释放到任务池（模拟）</value>

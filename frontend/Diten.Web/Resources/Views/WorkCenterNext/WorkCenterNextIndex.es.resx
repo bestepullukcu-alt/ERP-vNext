@@ -642,7 +642,7 @@
     <value>No puede iniciar hasta que se abra la ventana de congelación.</value>
   </data>
   <data name="ConfirmBody" xml:space="preserve">
-    <value>Está a punto de aplicar esta acción a «{0}». ¿Continuar?</value>
+    <value>Está a punto de aplicar esta acción. ¿Confirma?</value>
   </data>
   <data name="ConfirmBulkBody" xml:space="preserve">
     <value>Está a punto de aplicar esta acción a {0} elementos a la vez. ¿Continuar?</value>
@@ -740,7 +740,7 @@
     <value>La fecha planificada es posterior a la fecha límite de origen — riesgo de incumplimiento.</value>
   </data>
   <data name="ConfirmBodyOnBehalf" xml:space="preserve">
-    <value>Está a punto de aplicar esta acción a «{0}» en nombre de {1}. ¿Continuar?</value>
+    <value>Está a punto de aplicar esta acción en nombre de {0}. ¿Confirma?</value>
   </data>
   <data name="ToastReleased" xml:space="preserve">
     <value>{0} · liberado a la bandeja (mock)</value>

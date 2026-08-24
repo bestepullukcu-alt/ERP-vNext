@@ -4285,3 +4285,129 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - Sayı, kuralın kendisiyle değiştirildi: "bu soruyu tek bir yüklem cevaplar" → karşılaştırmanın ikinci bir
   kopyası olmadığı iddia ediliyor, çağrı sayısı değil.
 - **Gelecek regresyon riski: 🟢.**
+
+### BL-200 — ✅ KAPANDI (2026-08-24) — Havada duran üç metin ürünün kendi kutu diline girdi
+Sahip üçünü aynı oturumda gösterdi; üçü tek hastalıktı ve tek kararla kapandı: **bir şeye ait olan cümle,
+o şey için ürünün zaten sahip olduğu kutunun içine girer.** Hiçbiri için yeni tasarım yapılmadı.
+
+**A1 — Yasak cümlesi.** Ölçüldü: alt görev engeli `alert alert-warning` (`wcn-subtask-gate`), aynı türden
+cümleyi taşıyan rail gerekçesi ise **zeminsiz, kenarlıksız, dolgusuz** — yalnız `color: var(--bs-warning)`.
+Aynı yasak, iki muamele. Rail gerekçesi aynı alert'e geçti; `.wcn-act-reason` artık yalnız `.wcn-subtask-gate`'in
+yaptığını yapıyor (dolgu `.625rem .875rem`, 13px), renk/kenarlık/yarıçap temanın.
+`.wcn-act-reason` kullanıcısı **bir taneydi** (rail). Ama **kardeşi** `.wcn-actionbar-reason` (dar ekran şeridi)
+birebir aynı çıplak muameleyi taşıyordu — bu oturumda üç kez tekrarlanan "birini düzeltip kardeşini bırakma"
+hatasına düşmemek için o da aynı anda düzeltildi. **Canlı yan yana kanıt:** rail gerekçesi ile alt görev engeli
+tek karede, altı CSS özelliğinde birebir aynı (zemin · kenarlık · yarıçap · dolgu · punto · renk).
+Ray dar: kutu 1440 ve 900'de raya **sığıyor**, metin sarıyor ama **düğmeleri itmiyor**.
+
+**A2 — Onayın nesnesi.** Ölçüm: kaydın adını söylemenin **iki mekanizması** vardı — `entityName` rozeti
+(**altı dosyada on çağrı**) ve cümlenin içine tırnakla gömülü başlık (**yalnız WorkCenterNext**). İkisi aynı
+anda hiç kullanılmıyordu, ama iki mekanizma tek iş demekti. **Rozet seçildi**: zaten var, ürünün çoğunluğu onu
+konuşuyor ve zaten istenen çerçeveli kutu (yüzey · yarıçap · dolgu temadan). Cümle karşılığında tırnaklı
+başlığını bıraktı: `ConfirmBody` artık `{0}` taşımıyor, `ConfirmBodyOnBehalf` yalnız vekâlet edeni taşıyor —
+**yedi dilde** güncellendi. Açıklama satırı (gri nesir) düz kaldı; kutuya giren, eylemin nesnesi.
+⚠ Ortak bileşene **beşinci** değişiklik; geriye uyum yine ölçüldü (15 çağrı / 12 dosya, üç ekran canlı).
+
+**A5 — Boş alt görev kartı.** Ölçüldü: alt görev yokken kart **başlığıyla birlikte kayboluyor**, yerine tek
+satırlık `wcn-empty-line` geliyordu. **Ürünün kendi boş-durum dili bulundu ve kullanıldı**: yan kart (Kontrol
+Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "henüz yok" cümlesini
+`.wcn-block-hint` olarak yazıyor — o ipucu zaten **bu kartın** ekleme satırının altında da var
+(`subtaskInheritHint`). Yani yeni bir şey çizilmedi, iki mevcut satır kendi sırasına kondu.
+**Alert yok** (sahip açıkça istedi). Cümle ekleme satırının **altında**, yani silinen satırın olacağı yerde.
+İlerleme çubuğu ve "N tamam" okuması boşken **çizilmiyor**: 0/0 bir ölçüm değil.
+**Yükseklik ölçüldü:** boş **163px** → bir alt görev eklendiğinde **255px** (aynı kart, gerçek yazımla).
+
+**Canlı doğrulama:** devredilemez görevde gerekçe kutusu · "Görevi iptal et" diyaloğunda çerçeveli rozet
+("Yeni maliyet merkezi açılış talebi") · alt görevi olmayan görevde başlık + ekleme satırı + altında cümle.
+**Mutasyon (3/3 kırmızı):** çıplak `<p>` · rozetsiz gövde · başlıksız boş kart.
+**İki genişlik × iki tema:** 1440/900 × aydınlık/karanlık — dördünde de aynı.
+- ⚠ **YAZILI BİR KARAR TERS ÇEVRİLDİ, açıkça:** eski tasarımı çivileyen iki test vardı ("tek satır, üstünde
+  ekleme kutusu"). Sahibin kararıyla ikisi de yeniden yazıldı; testlerin içine hem eski şeklin ne olduğu hem de
+  neden bırakıldığı yazıldı, sessizce silinmedi.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-201 — ✅ KAPANDI (2026-08-24, CT kararı) — Silme EKLENMEYECEK, iptal doğru mekanizma
+- Sahip "veri silindiğinde de aynı yere düşsün" dedi. Boş durum `items.length === 0` olduğu anda çiziliyor,
+  yani sebebi ne olursa olsun aynı — ama bugün **hiçbir yol** bir alt görevi listeden kaldırmıyor: satır menüsü
+  yalnız **"Alt görevi iptal et"** sunuyor, iptal edilen satır listede kalıyor (aşağı sıralanıyor) ve API'de de
+  silme ucu yok.
+- Yani "sildim ve kart boşaldı" hâli bugün **yalnız hiç eklenmemiş** görevlerde oluşuyor. Boş kartın kendisi
+  doğru; eksik olan silme eylemi.
+- **Karar senin:** alt görev silme gerçekten gerekiyor mu, yoksa iptal yeterli mi?
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-202 — [ÖLÇÜM] "Görevi iptal et" diyaloğunun vazgeçme düğmesi de "İptal" diyor
+- BL-183'te modül geneli için not edilmişti; bu turda **tek karede** görüldü: başlık "Görevi iptal et",
+  vazgeçme düğmesi "İptal", onay düğmesi "Evet, uygula". Yani aynı diyalogda "iptal" iki farklı şey demek.
+- Ertele diyaloğu bunu `DialogDismiss` ("Vazgeç") ile çözmüştü; aksiyon onayları hâlâ `t('ReasonCancel')`
+  varsayılanını kullanıyor.
+- **Karar senin:** `DialogDismiss` modül geneline yayılsın mı?
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-203 — [ÖLÇÜM] Menü ucu N+1 yapıyor (süre ölçümü KİRLİ, yeniden alınacak)
+- Sahip 2026-08-24'te "sayfa açılmıyor, 3 dakika donuyor" dedi.
+- KÖK SEBEP, `GetTenantNavigationMenuQueryHandler.cs` — bu KESİN, koddan okundu:
+  - satır 55-57: `foreach (var module in modules)` içinde `await _accessService.HasAccessAsync(...)`
+  - satır 94-96: `foreach (var module in entitled)` içinde `await _pageRepository.GetByModuleAsync(...)`
+  N modül için 2N gidiş-dönüş. Klasik N+1.
+- ⚠ SÜRE ÖLÇÜMÜ GEÇERSİZ. İlk kayıtta `27.2s · 18.1s · 13.9s · 10.7s · 5.3s` yazmıştım. O ölçüm
+  alınırken makinenin yük ortalaması **8 çekirdekte 58.66** idi ve BAŞKA BİR WORKTREE'NİN test süiti
+  (`ERP-vNext-pss-entitlement-subscription`) çalışıyordu. 7 kat aşırı yüklü bir makinede alınan süre,
+  sorgunun kendi süresi değildir. Aynı ölçüm boşta bir makinede TEKRARLANACAK.
+- Kirli ölçümün yine de söylediği bir şey var: aynı uç aynı dakikada `27.2s` ve `0.9s` verdi. Bu
+  kararsızlık N+1'in imzasıdır — sabit maliyetli bir sorgu yük altında bu kadar salınmaz.
+- BL-195 (menü kısalması) ile ilişkisi: MUHTEMEL, kanıtlanmadı. Çağrı zaman aşımına uğrayıp kabuğun
+  eline geçeni çizmesi bu tabloyla uyumlu, ama BL-195 ilk bildirildiğinde makinenin yükü ölçülmedi.
+  İkisini tek sebebe bağlamak için temiz ölçüm gerekiyor.
+- Yapılacak: (1) boşta makinede süreyi yeniden ölç, (2) iki döngüdeki await'ler toplu okumaya çevrilsin,
+  (3) menü render'ına kısmi/boş sonucu eleyen koruma — yavaşlık düzelse bile eksik veri çizilmemeli.
+- Ayrıca ölçüldü (aynı kirli koşulda, aynı uyarı geçerli): ağ geçidi (5000) 401 için bile 0.5-1.8s
+  eklerken platform servisi doğrudan 60-120ms veriyor.
+- ⚠ WorkCenter kusuru DEĞİL; platform sorgusunun kusuru. Ama her sayfayı etkiliyor.
+- **Gelecek regresyon riski: 🔴** — modül sayısı arttıkça doğrusal kötüleşir.
+
+### BL-201 kapanış notu (2026-08-24) — CT kararı
+- Alt görev **silme eklenmeyecek**. Bir iş kaydı silinmez, iptal edilir: denetim izi onu birinin oluşturduğunu
+  ve birinin durdurduğunu söylemek zorunda; silme geçmişi yalan söyler hâle getirir.
+- CT'nin "veri silindiğinde de aynı yere düşsün" cümlesi kötü seçilmişti; kastı **"kart boşaldığında"** idi.
+- ⚠ **Canlı ölçümle doğrulandı ve açıkça yazılıyor:** tek alt görevi olan bir karttan o alt görev **iptal
+  edildi** → kart boşalmadı. Satır `wcn-subtask-cancelled` olarak listede kaldı, sayaç **1**, kart 199px.
+  Yani "hepsini iptal et → boş hâl" senaryosu **tasarım gereği oluşamaz**; boş hâl yalnız hiç öğe olmadığında
+  çizilir ve orada doğru çalışıyor (başlık + sayaç 0 + ekleme satırı + altında cümle, 163px).
+
+### BL-204 — ✅ KAPANDI (2026-08-24) — Gerekçe kutusu sütuna hapsolmuştu
+- Ölçüm: `.wcn-actrail-secondary` saran bir flex satırı ve öğeleri **içerikleri kadar** (`flex: 0 1 auto`);
+  alert de düğmeyle **aynı `<li>`** içinde. Sonuç: 371px'lik kartta **194px**'lik uyarı — girinti gibi okunuyor.
+- **Düzeltme:** gerekçe taşıyan ikincil satır tüm satırı alıyor (`wcn-act-hasreason` → `flex: 1 0 100%`) ve
+  **düğme de birlikte** genişliyor (`inline-size: 100%`). Gerekçesi olmayan aksiyonlar doğal genişliklerinde.
+- **Düğme neden birlikte taşınıyor:** bu kart **aynı anda iki gerekçe** gösterebiliyor (canlı ölçüldü: Tamamla
+  altında "Bir alt görev hâlâ açık", Başkasına ata altında "Bu görev devredilemez."). Alert'leri tek başına
+  karta yaymak, hangi cümlenin hangi düğmeye ait olduğunu söyleyen tek şeyi — altında durmasını — bozardı.
+- **Dar ekran kardeşi ölçüldü, hapsolma YOK:** `.wcn-actionbar` `display: block`, gerekçe zaten tam genişlik
+  (853px'lik şeritte 821px). Dokunulmadı.
+- Dört kombinasyonda doğrulandı (1440/900 × aydınlık/karanlık): gerekçeli satırlar liste genişliğinde
+  (371px / 805px), gerekçesizler 95px ve 116px.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-202 kapanış notu (2026-08-24) — Tek vazgeçme kelimesi, körü körüne değil
+- **Sayım (15 çağrı / 12 dosya):** on ikisi Delete / Remove / Publish / Reactivate yapan modüllerde — orada
+  "İptal" yalnız "vazgeçtim" demek, **dokunulmadı**. Biri (AuditLog) zaten kendi etiketini geçiyordu,
+  **dokunulmadı**. Biri (premium-modal) yalnız aktarıcı, **dokunulmadı**.
+- **Değişen: yalnız WorkCenterNext.** Sebebi: bu modülün **iki aksiyonunun adı "iptal"** (Görevi iptal et,
+  Alt görevi iptal et). Aynı diyalogda onay düğmesi "İptal et" derken vazgeçme düğmesinin de "İptal" demesi,
+  bir soruya iki cevabı aynı kelimeyle sunmaktı. Modülün **yedi ham diyaloğu + ortak seam varsayılanı + alt
+  görev iptal onayı** artık `DialogDismiss` ("Vazgeç") kullanıyor.
+- Canlı: "Görevi iptal et" → onay "Evet, uygula", vazgeç **"Vazgeç"**. Alt görev iptali → onay "İptal et",
+  vazgeç **"Vazgeç"**.
+- Yedi dilde mevcut ve `ReasonCancel`'dan farklı olduğu testle kilitli.
+- ⚠ **Dokunulmayan iki yer:** iki panelin kapatma (×) düğmesinin `aria-label`'ı hâlâ `ReasonCancel` ("İptal").
+  Bunlar diyalog vazgeçme düğmesi değil, panel kapatma düğmesi — doğru kelime muhtemelen "Kapat"; bu turun
+  konusu değildi → **BL-205**.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-205 — [YAPILMADI] Panel kapatma düğmeleri "İptal" diye adlandırılıyor
+- `app.js:4473` ve `4603`: offcanvas kapatma (×) düğmelerinin `aria-label`'ı `t('ReasonCancel')` = "İptal".
+  Ekran okuyucu bir KAPATMA düğmesini "İptal" diye duyuyor.
+- Doğru karşılık büyük olasılıkla `PanelClose` ("Paneli kapat") — modülde zaten var.
+- BL-202'nin kapsamı diyalog düğmeleriydi; bu ikisi ayrı bir yüzey, bu turda **değiştirilmedi**.
+- **Gelecek regresyon riski: 🟢.**

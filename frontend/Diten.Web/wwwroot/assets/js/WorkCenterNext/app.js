@@ -1773,8 +1773,18 @@
          * — measured on a blocked task: `CHECKLIST_INCOMPLETE` → `WorkAggregation_ActionDisabled_ChecklistIncomplete`.
          * It is NOT re-derived from `gates` here; a second derivation is a second answer waiting to disagree.
          */
+        /*
+         * ⚠ ONE PROHIBITION, ONE VOICE (2026-08-24). Measured: the subtask gate — the sentence that says why
+         * "Tamamla" will refuse — is drawn as `alert alert-warning` (app.js, `wcn-subtask-gate`), while THIS
+         * sentence, which says the same kind of thing about the same kind of button, had no surface, no border
+         * and no padding at all: bare amber text floating beside the control. Same refusal, two treatments.
+         *
+         * The product already answered the question, so its answer is used: the theme's own alert, plus the
+         * modifier below that does exactly what `.wcn-subtask-gate` does to it (tighter padding, 13px). No new
+         * colour, no new radius, no new number. The lock stays — it is the glyph that states the prohibition.
+         */
         const reason = action.disabled && action.disabledReason
-            ? `<p class="wcn-act-reason"><i class="bx bx-lock-alt" aria-hidden="true"></i>${esc(action.disabledReason)}</p>`
+            ? `<p class="alert alert-warning wcn-act-reason d-flex align-items-start gap-2" role="note"><i class="bx bx-lock-alt" aria-hidden="true"></i><span>${esc(action.disabledReason)}</span></p>`
             : '';
         // The primary is the only tier that keeps its sentence in the card.
         const outcome = variant === 'primary' ? actionOutcome(action) : '';
@@ -1784,7 +1794,24 @@
         const cls = variant === 'primary'
             ? `wcn-act-btn wcn-act-fill wcn-act-fill-${nature}`
             : `wcn-act-btn wcn-act-bare wcn-act-bare-${nature}`;
-        return `<li class="wcn-act wcn-act-${variant}${action.disabled ? ' wcn-act-disabled' : ''}">
+        /*
+         * ⚠ A SECONDARY ACTION THAT CARRIES A REASON TAKES THE WHOLE ROW (2026-08-24).
+         *
+         * MEASURED: `.wcn-actrail-secondary` is a wrapping flex row whose items size to their content
+         * (`flex: 0 1 auto`), and the alert lives INSIDE the same `<li>` as its button — so the sentence was
+         * clipped to the button's width: a 194px box in a 371px card, which reads as an indented paragraph
+         * rather than a full-width notice.
+         *
+         * ⚠ THE BUTTON TRAVELS WITH IT, and that is the decision rather than an accident: this card can show
+         * TWO reasons at once (measured on this very task — "Bir alt görev hâlâ açık" under Tamamla and "Bu
+         * görev devredilemez." under Başkasına ata). Spreading the alerts across the card on their own would
+         * break the one thing that says which sentence belongs to which button: sitting under it. Moving the
+         * pair keeps the pairing without a word of extra text.
+         *
+         * An action with NO reason keeps its natural width — nothing else about the row changes.
+         */
+        const rowClass = variant === 'secondary' && reason ? ' wcn-act-hasreason' : '';
+        return `<li class="wcn-act wcn-act-${variant}${action.disabled ? ' wcn-act-disabled' : ''}${rowClass}">
             <button type="button" class="${cls}"
                     data-wcn-action="${esc(action.key)}" data-wcn-id="${esc(item.id)}"${
             disabled ? ' disabled aria-disabled="true"' : ''}${busy ? ' aria-busy="true"' : ''}>
@@ -1866,7 +1893,9 @@
          * than in the card.
          */
         const reason = primary.disabled && primary.disabledReason
-            ? `<p class="wcn-actionbar-reason"><i class="bx bx-lock-alt" aria-hidden="true"></i>${esc(primary.disabledReason)}</p>`
+            // Its sibling in the rail was the one reported; this one carried the SAME bare treatment for the
+            // SAME sentence, and fixing one while leaving the other is the mistake this session made three times.
+            ? `<p class="alert alert-warning wcn-actionbar-reason d-flex align-items-start gap-2" role="note"><i class="bx bx-lock-alt" aria-hidden="true"></i><span>${esc(primary.disabledReason)}</span></p>`
             : '';
 
         const depthLink = surface?.surfaceMode === 'deeplink'
@@ -2988,14 +3017,36 @@
 
         if (!subtaskItems.length) {
             /*
-             * NOTHING YET is one line, and the line still adds. The quick-add lives HERE too — a parent with no
-             * children is exactly where adding one matters most, and an earlier draft that replaced it with a
-             * button to somewhere else was caught by two tests.
+             * ── THE EMPTY CARD IS STILL THE CARD (2026-08-24, owner) ─────────────────────────────────────────
+             *
+             * MEASURED BEFORE: an empty subtask list replaced the whole card — head and all — with a single
+             * `wcn-empty-line`: icon, sentence and add box on one row. So the card the reader had been looking
+             * at DISAPPEARED the moment its last child was deleted, and a task that never had children never
+             * showed the card at all. The same screen said two different things about the same capability.
+             *
+             * ⚠ THE LANGUAGE IS THE SIBLING CARD'S, not a new one. The checklist card next door already answers
+             * this: it keeps `cardHead`, keeps its add row where it always is, and puts its "nothing yet"
+             * sentence in a `.wcn-block-hint` — 12px secondary text, no alert, no box. That hint is also what
+             * sits under THIS card's add row already (`subtaskInheritHint`), so the shape below is two existing
+             * lines in their existing order rather than a design.
+             *
+             * ⚠ NO ALERT (owner, explicit). An empty list is not a warning; nothing is wrong.
+             *
+             * The sentence lands UNDER the add row, which is where a deleted row would have been — so "never had
+             * any" and "just deleted the last one" look identical, which is what was asked for.
+             *
+             * The progress bar and the "N tamam" reading are left out on purpose: 0 of 0 is not a measurement,
+             * and drawing an empty bar would say the card is tracking something it is not.
              */
-            return `<div class="wcn-empty-line">
-                <i class="bx bx-list-check" aria-hidden="true"></i>
-                <span class="wcn-empty-text">${esc(t('SubtasksEmpty'))}</span>
-                ${full ? `<div class="wcn-empty-action">${subtaskAddRow(item)}</div>` : ''}
+            return `<div class="wcn-detail-section" id="wcn-subtasks-card" tabindex="-1">
+                <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0 d-flex align-items-center gap-2">
+                        <i class="bx bx-sitemap dt-card-icon" aria-hidden="true"></i>${esc(t('SubtasksLabel'))}
+                        <span class="badge bg-label-secondary wcn-subtask-count">0</span>
+                    </h6>
+                </div>
+                ${full ? `${subtaskAddRow(item)}${subtaskInheritHint()}` : ''}
+                <p class="wcn-block-hint">${esc(t('SubtasksEmpty'))}</p>
             </div>`;
         }
 
@@ -4775,7 +4826,12 @@
             global.showConfirm(
                 message,
                 () => resolve(true),
-                { confirmButtonText: t('SubtaskCancelConfirmYes'), onCancel: () => resolve(false) });
+                /*
+                 * ⚠ NOT "İptal" HERE EITHER: this dialog asks whether a subtask should be CANCELLED and its
+                 * confirm button says "İptal et". The dismiss button cannot wear the same word.
+                 */
+                { confirmButtonText: t('SubtaskCancelConfirmYes'), cancelButtonText: t('DialogDismiss'),
+                    onCancel: () => resolve(false) });
             return;
         }
         console.warn('[WorkCenterNext] window.showConfirm is unavailable; the destructive action was not offered.');
@@ -6351,7 +6407,7 @@
         global.Swal.fire({
             title: label,
             html: `${outcomeLead(action)}<input id="wcnPlanDate" class="form-control" autocomplete="off">`,
-            showCancelButton: true, confirmButtonText: t('PlanConfirm'), cancelButtonText: t('ReasonCancel'),
+            showCancelButton: true, confirmButtonText: t('PlanConfirm'), cancelButtonText: t('DialogDismiss'),
             didOpen: () => {
                 const input = document.getElementById('wcnPlanDate');
                 // Re-planning opens the picker seeded with the EXISTING plan, so moving a date is an edit of it
@@ -6414,9 +6470,17 @@
             subtext: options.subtext,
             type: options.type || 'info',
             confirmButtonText: options.confirmText,
-            // The dismiss label, overridable per dialog. The module default stays what it was; a dialog whose own
-            // page carries an ACTION by that name says something else instead.
-            cancelButtonText: options.cancelText || t('ReasonCancel'),
+            /*
+             * ⚠ ONE DISMISS WORD FOR THIS MODULE, AND IT IS NOT "İptal" (BL-202).
+             *
+             * MEASURED across the product: twelve of the fifteen `showConfirm` calls live in modules whose
+             * actions are Delete / Remove / Publish / Reactivate — there "İptal" can only mean "never mind", and
+             * they are LEFT ALONE. This module is the exception: two of its actions are literally named "iptal"
+             * (Görevi iptal et, Alt görevi iptal et), so a dismiss button saying "İptal" offers the same word
+             * for both answers to one question. Every dialog here says "Vazgeç" — one word, so a reader never
+             * has to work out which "iptal" a button means from where it sits.
+             */
+            cancelButtonText: options.cancelText || t('DialogDismiss'),
             /*
              * WHETHER TO DRAW AN ICON AT ALL. Absent for every dialog that has one today, so nothing moves; a
              * dialog that is neither destructive nor a warning nor a question says so by leaving it out.
@@ -6425,6 +6489,18 @@
             // WHICH GLYPH. Absent everywhere else, so every other dialog keeps the one its `type` gives it; the
             // circle, its colour and the button's colour stay the type's business either way.
             icon: options.icon,
+            /*
+             * WHAT THE ACTION IS ABOUT, in the box the wrapper already draws for it.
+             *
+             * MEASURED (2026-08-24): the product had TWO ways to name the record a confirm is about — this
+             * `entityName` badge, used by ten call sites across six files, and a title quoted INSIDE the
+             * sentence, used only by this module. Never both at once, but two mechanisms for one job.
+             *
+             * The badge won because it already exists, it is what the rest of the product speaks, and it is
+             * ALREADY the framed box the owner asked for — a surface, a radius and padding from the theme, no
+             * new design. The sentence gave its quoted title up in exchange (see `ConfirmBody`).
+             */
+            entityName: options.entityName,
             showInput: !!options.input,
             /*
              * WHAT KIND of box. Absent for every caller that wants prose — the wrapper still answers `textarea`,
@@ -6509,7 +6585,7 @@
         global.Swal.fire({
             title: label,
             html: '<input id="wcnMeetWhen" class="form-control" autocomplete="off">',
-            showCancelButton: true, confirmButtonText: t('PlanConfirm'), cancelButtonText: t('ReasonCancel'),
+            showCancelButton: true, confirmButtonText: t('PlanConfirm'), cancelButtonText: t('DialogDismiss'),
             didOpen: () => {
                 const input = document.getElementById('wcnMeetWhen');
                 const seed = item.dueAt || data.todayIso;
@@ -6534,7 +6610,7 @@
         global.Swal.fire({
             title: label, input: 'number', inputLabel: t('LogTimeLabel'),
             inputPlaceholder: t('LogTimePlaceholder'), inputAttributes: { min: '1', step: '1' },
-            showCancelButton: true, confirmButtonText: t('LogTimeConfirm'), cancelButtonText: t('ReasonCancel'),
+            showCancelButton: true, confirmButtonText: t('LogTimeConfirm'), cancelButtonText: t('DialogDismiss'),
             preConfirm: (v) => { const m = parseInt(v, 10); if (!m || m <= 0) { global.Swal.showValidationMessage(t('LogTimeLabel')); return false; } return m; }
         }).then((res) => {
             if (res.isConfirmed && res.value) {
@@ -6760,7 +6836,7 @@
                 <button type="button" class="wcn-new-opt" id="wcnNewSelf"><i class="bx bx-user-check"></i><div><strong>${esc(t('NewSelfTask'))}</strong><span>${esc(t('NewSelfTaskDesc'))}</span></div></button>
                 <button type="button" class="wcn-new-opt" id="wcnNewSource"><i class="bx bx-cube"></i><div><strong>${esc(t('NewInSource'))}</strong><span>${esc(t('NewInSourceDesc'))}</span></div></button>
             </div>`,
-            showConfirmButton: false, showCancelButton: true, cancelButtonText: t('ReasonCancel'),
+            showConfirmButton: false, showCancelButton: true, cancelButtonText: t('DialogDismiss'),
             didOpen: () => {
                 document.getElementById('wcnNewSelf').onclick = () => { global.Swal.close(); openSelfTask(); };
                 document.getElementById('wcnNewSource').onclick = () => { global.Swal.close(); openCreateInSource(); };
@@ -6879,7 +6955,7 @@
             title: t('NewInSource'), input: 'select', inputOptions: opts, inputPlaceholder: t('NewPickModule'),
             // The button names CREATING, not opening: nothing is opened here any more (see below), and the old
             // 'NewOpenSource' label promised an act this dialog no longer performs.
-            showCancelButton: true, confirmButtonText: t('NewCreateInSource'), cancelButtonText: t('ReasonCancel')
+            showCancelButton: true, confirmButtonText: t('NewCreateInSource'), cancelButtonText: t('DialogDismiss')
         }).then((res) => {
             if (res.isConfirmed && res.value) {
                 /*
@@ -6908,7 +6984,7 @@
                 <div class="row g-2"><div class="col"><label class="form-label" for="wcnMeetingStart">${esc(t('MeetingStartLabel'))}</label><input id="wcnMeetingStart" type="time" class="form-control" value="09:00"></div>
                 <div class="col"><label class="form-label" for="wcnMeetingEnd">${esc(t('MeetingEndLabel'))}</label><input id="wcnMeetingEnd" type="time" class="form-control" value="09:30"></div></div>
                 <label class="form-label mt-2" for="wcnMeetingLocation">${esc(t('MeetingLocationLabel'))}</label><input id="wcnMeetingLocation" class="form-control">`,
-            showCancelButton: true, confirmButtonText: t('MeetingAdd'), cancelButtonText: t('ReasonCancel'),
+            showCancelButton: true, confirmButtonText: t('MeetingAdd'), cancelButtonText: t('DialogDismiss'),
             preConfirm: () => {
                 const title = document.getElementById('wcnMeetingTitle').value.trim();
                 const start = document.getElementById('wcnMeetingStart').value;
@@ -7036,7 +7112,7 @@
                     + `placeholder="${esc(t('ReasonPlaceholder'))}"></textarea>`,
                 showCancelButton: true,
                 confirmButtonText: t('ReasonConfirm'),
-                cancelButtonText: t('ReasonCancel'),
+                cancelButtonText: t('DialogDismiss'),
                 preConfirm: () => {
                     const reason = String(document.getElementById('wcnReasonText')?.value || '').trim();
                     if (!reason) { global.Swal.showValidationMessage(t('ReasonRequired')); return false; }
@@ -7065,9 +7141,13 @@
         // approval — can't fire irreversibly (spec v2 §6, P1 fix).
         if (action.confirm) {
             if (!global.Swal) { return; }
+            /*
+             * The sentence no longer quotes the title: the badge below carries it, in the product's own framed
+             * chip. Two places saying the same name is how one of them goes stale.
+             */
             const body = item.delegator
-                ? tf('ConfirmBodyOnBehalf', item.title, item.delegator)
-                : tf('ConfirmBody', item.title);
+                ? tf('ConfirmBodyOnBehalf', item.delegator)
+                : t('ConfirmBody');
             /*
              * SIGNAL (b) FOR "REQUIRED" — said at the moment it matters, and at no cost to the flow.
              *
@@ -7094,6 +7174,8 @@
                  * reader to remember what they are sure ABOUT.
                  */
                 subtext: `${outcomeLead(action)}<div class="wcn-confirm-body">${esc(body)}</div>${requiredWarning}`,
+                // The object of the action, in the wrapper's own badge — the one mechanism the product keeps.
+                entityName: esc(item.title),
                 // The wrapper picks the icon from the TYPE rather than taking one by name, so a destructive act
                 // gets the danger circle and its red button from a single word instead of three settings.
                 type: action.destructive ? 'danger' : 'info',

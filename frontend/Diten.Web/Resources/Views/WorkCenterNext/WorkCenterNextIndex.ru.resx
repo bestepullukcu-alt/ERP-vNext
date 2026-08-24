@@ -642,7 +642,7 @@
     <value>Нельзя начать, пока не откроется окно заморозки.</value>
   </data>
   <data name="ConfirmBody" xml:space="preserve">
-    <value>Вы собираетесь применить это действие к «{0}». Продолжить?</value>
+    <value>Вы собираетесь выполнить это действие. Подтверждаете?</value>
   </data>
   <data name="ConfirmBulkBody" xml:space="preserve">
     <value>Вы собираетесь применить это действие сразу к {0} элементам. Продолжить?</value>
@@ -740,7 +740,7 @@
     <value>Планируемая дата позже срока источника — риск просрочки.</value>
   </data>
   <data name="ConfirmBodyOnBehalf" xml:space="preserve">
-    <value>Вы собираетесь применить это действие к «{0}» от имени {1}. Продолжить?</value>
+    <value>Вы собираетесь выполнить это действие от имени {0}. Подтверждаете?</value>
   </data>
   <data name="ToastReleased" xml:space="preserve">
     <value>{0} · возвращено в пул (макет)</value>

@@ -642,7 +642,7 @@
     <value>Impossible de démarrer avant l'ouverture de la fenêtre de gel.</value>
   </data>
   <data name="ConfirmBody" xml:space="preserve">
-    <value>Vous êtes sur le point d'appliquer cette action à « {0} ». Continuer ?</value>
+    <value>Vous êtes sur le point d'appliquer cette action. Confirmez-vous ?</value>
   </data>
   <data name="ConfirmBulkBody" xml:space="preserve">
     <value>Vous êtes sur le point d'appliquer cette action à {0} éléments à la fois. Continuer ?</value>
@@ -740,7 +740,7 @@
     <value>La date planifiée dépasse l'échéance source — risque de retard.</value>
   </data>
   <data name="ConfirmBodyOnBehalf" xml:space="preserve">
-    <value>Vous êtes sur le point d'appliquer cette action à « {0} » au nom de {1}. Continuer ?</value>
+    <value>Vous êtes sur le point d'appliquer cette action au nom de {0}. Confirmez-vous ?</value>
   </data>
   <data name="ToastReleased" xml:space="preserve">
     <value>{0} · libéré vers la file (mock)</value>

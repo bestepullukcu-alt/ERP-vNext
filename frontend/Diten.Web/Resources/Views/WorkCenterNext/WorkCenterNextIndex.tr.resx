@@ -642,7 +642,7 @@
     <value>Sayım donma penceresi açılana kadar başlatılamaz.</value>
   </data>
   <data name="ConfirmBody" xml:space="preserve">
-    <value>“{0}” için bu işlemi uygulamak üzeresiniz. Onaylıyor musunuz?</value>
+    <value>Bu işlemi uygulamak üzeresiniz. Onaylıyor musunuz?</value>
   </data>
   <data name="ConfirmBulkBody" xml:space="preserve">
     <value>{0} öğeye bu işlemi topluca uygulamak üzeresiniz. Onaylıyor musunuz?</value>
@@ -740,7 +740,7 @@
     <value>Planlanan tarih kaynak son tarihinden sonra — gecikme riski.</value>
   </data>
   <data name="ConfirmBodyOnBehalf" xml:space="preserve">
-    <value>Bu işlemi {1} adına “{0}” için uygulamak üzeresiniz. Onaylıyor musunuz?</value>
+    <value>{0} adına bu işlemi uygulamak üzeresiniz. Onaylıyor musunuz?</value>
   </data>
   <data name="ToastReleased" xml:space="preserve">
     <value>{0} · havuza bırakıldı (mock)</value>

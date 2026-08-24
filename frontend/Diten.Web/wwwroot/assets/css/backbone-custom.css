@@ -7523,9 +7523,11 @@ tags.diten-tags .tagify__input {
 /* A disabled primary keeps its reason here too: on a narrow screen this bar may be the only part of the page
    the reader has seen, so "you cannot press this" without "because…" is worse here than in the card. */
 .wcn-actionbar-reason {
-    display: flex; align-items: flex-start; gap: .375rem; margin: 0 0 .5rem;
-    font-size: .75rem; color: var(--bs-warning);
+    margin: 0 0 .5rem;
+    padding: .625rem .875rem;
+    font-size: .8125rem;
 }
+.wcn-actionbar-reason i { font-size: 1rem; line-height: 1.4; }
 .wcn-actionbar-locked { opacity: .75; }
 /* Room under the last card so the bar never covers its final row.
    ⚠ BL-138 — "only where the bar exists" was the COMMENT, not the rule. The media query alone applied 80px of
@@ -7581,6 +7583,15 @@ tags.diten-tags .tagify__input {
 /* Secondary and destructive are peers of each other, not of the primary: one wrapping row, auto widths. */
 .wcn-actrail-secondary { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
 .wcn-actrail-secondary .wcn-act { flex: 0 1 auto; }
+/* …EXCEPT one carrying a reason: the sentence needs the card's width, so its row takes the whole line. Measured
+   before: a 194px alert inside a 371px card, indistinguishable from an indent.
+
+   The BUTTON does not come with it. Stretching it too was the first attempt, and it inverted the card's weight:
+   the DISABLED action ran the full width while the one you can actually use sat small beside it. Pairing does
+   not need the width — the sentence lives inside its own action's row and sits directly beneath its own button,
+   so two reasons at once still read one to a button. */
+.wcn-actrail-secondary .wcn-act-hasreason { flex: 1 0 100%; align-items: flex-start; }
+.wcn-actrail-secondary .wcn-act-hasreason > .wcn-act-reason { align-self: stretch; }
 /* ── The card's padding lives on the BLOCKS, not the card ──────────────────
    MEASURED: the destructive rule ran 748→1053 inside a card spanning 732→1069 — 16px short at each end, because
    the card's `p-4` pushed it inward. A rule that does not reach the edge reads as a mistake.
@@ -7610,10 +7621,15 @@ tags.diten-tags .tagify__input {
 .wcn-act-outcome { font-size: .75rem; color: var(--bs-secondary-color); }
 /* Why a disabled action cannot be used — beside the button it is about, with the one icon that survived: the
    lock states the prohibition rather than repeating a word next to it. */
+/* ⚠ THE SURFACE COMES FROM `alert alert-warning` NOW, not from here. This rule only does to it what
+   `.wcn-subtask-gate` does to the same alert: tighten the padding and set the size. Colour, border and radius
+   are the theme's. Measured before: no background, no border, no padding — amber text on the card. */
 .wcn-act-reason {
-    display: flex; align-items: flex-start; gap: .375rem; margin: 0;
-    font-size: .75rem; color: var(--bs-warning);
+    margin: .5rem 0 0;
+    padding: .625rem .875rem;
+    font-size: .8125rem;
 }
+.wcn-act-reason i { font-size: 1rem; line-height: 1.4; }
 .wcn-act-disabled .wcn-act-btn { opacity: .55; cursor: not-allowed; }
 .wcn-act-btn:disabled { cursor: not-allowed; }
 /* The card while a write is in flight: every control goes quiet at once. */

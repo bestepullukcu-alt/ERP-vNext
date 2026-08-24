@@ -642,7 +642,7 @@
     <value>لا يمكن البدء حتى تُفتح نافذة التجميد.</value>
   </data>
   <data name="ConfirmBody" xml:space="preserve">
-    <value>أنت على وشك تطبيق هذا الإجراء على “{0}”. هل تريد المتابعة؟</value>
+    <value>أنت على وشك تنفيذ هذا الإجراء. هل تؤكد؟</value>
   </data>
   <data name="ConfirmBulkBody" xml:space="preserve">
     <value>أنت على وشك تطبيق هذا الإجراء على {0} عنصرًا دفعة واحدة. هل تريد المتابعة؟</value>
@@ -740,7 +740,7 @@
     <value>التاريخ المخطط بعد تاريخ الاستحقاق المصدري — خطر التأخر.</value>
   </data>
   <data name="ConfirmBodyOnBehalf" xml:space="preserve">
-    <value>أنت على وشك تطبيق هذا الإجراء على “{0}” بالنيابة عن {1}. هل تريد المتابعة؟</value>
+    <value>أنت على وشك تنفيذ هذا الإجراء نيابةً عن {0}. هل تؤكد؟</value>
   </data>
   <data name="ToastReleased" xml:space="preserve">
     <value>{0} · أُعيد إلى القائمة (تجريبي)</value>

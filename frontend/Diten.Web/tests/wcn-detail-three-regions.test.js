@@ -624,11 +624,24 @@ describe("the rendered page", () => {
     expect(card.querySelector("h6"), "the card has no standard heading").not.toBeNull();
   });
 
-  it("says 'no subtasks yet' in ONE line that still adds one", async () => {
+  it("keeps the whole card when there are no subtasks yet", async () => {
+    /*
+     * ⚠ THIS REVERSES A WRITTEN DECISION (owner, 2026-08-24), and it is reversed openly rather than quietly.
+     *
+     * The old shape — and the old assertion — was ONE LINE: the card's head disappeared with its last child and
+     * a `wcn-empty-line` took the whole card's place. Reported as a defect: the card a reader had been looking
+     * at vanished the moment the list emptied, so "never had any" and "just emptied" looked like two different
+     * screens, and the counter, the head and the add row all went with it.
+     *
+     * The new shape is the SIBLING CARD'S: head kept (count 0), add row where it always is, and the sentence
+     * beneath it as a `.wcn-block-hint` — no alert, because an empty list is not a warning.
+     */
     await boot(projectionItem());
-    const empty = app().querySelector(".wcn-empty-line");
-    expect(empty, "the empty state is not a line").not.toBeNull();
-    expect(empty.querySelector("[data-wcn-subtask-input]"), "the line cannot add anything").not.toBeNull();
+    const card = app().querySelector("#wcn-subtasks-card");
+    expect(card, "the card vanished with its last child").not.toBeNull();
+    expect(card.querySelector(".wcn-subtask-count").textContent).toBe("0");
+    expect(card.querySelector("[data-wcn-subtask-input]"), "the card cannot add anything").not.toBeNull();
+    expect(app().querySelector(".wcn-empty-line"), "the one-line empty state is back").toBeNull();
   });
 
   it("caps a long subtask list inside its own card instead of running past the rail", async () => {
@@ -973,11 +986,15 @@ describe("the subtask list reads and behaves like a checklist", () => {
     expect(app().querySelector("[data-wcn-showall]")).not.toBeNull();
   });
 
-  it("still says nothing-yet in ONE line, with the add row on it", async () => {
+  it("says nothing-yet UNDER the add row, in the card that stayed", async () => {
+    // Same reversal as above (owner, 2026-08-24): the empty card is still a card. The sentence lands where a
+    // removed row would have been, so an emptied list and a never-filled one look the same.
     await boot(withSubtasks([]));
-    const empty = app().querySelector(".wcn-empty-line");
-    expect(empty).not.toBeNull();
-    expect(empty.querySelector("[data-wcn-subtask-input]")).not.toBeNull();
+    const card = app().querySelector("#wcn-subtasks-card");
+    expect(card.querySelector("[data-wcn-subtask-input]")).not.toBeNull();
+    const hints = [...card.querySelectorAll(".wcn-block-hint")].map((h) => h.textContent.trim());
+    expect(hints).toContain("SubtasksEmpty");
+    expect(card.innerHTML.indexOf("wcn-subtask-add")).toBeLessThan(card.innerHTML.indexOf("SubtasksEmpty"));
   });
 
   it("keeps the row one line high: the title is clipped, not wrapped", () => {
@@ -3200,8 +3217,14 @@ describe("a comment can be rewritten and withdrawn, and says so", () => {
      * The shared wrapper has no `inputValue`, and it is NOT being given one — a shared component does not grow
      * to suit one module (standing rule). Its existing `didOpen` seam carries the value instead.
      */
+    /*
+     * ⚠ READ THE WHOLE FUNCTION, not a fixed slice. This used to take the first 3000 characters and broke the
+     * day the seam grew a comment — a length is an assumption about the code's shape, and it rots exactly like
+     * the call-count this suite's sibling had to give up for the same reason.
+     */
     const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
-    const seam = src.slice(src.indexOf("const sharedConfirm"), src.indexOf("const sharedConfirm") + 3000);
+    const start = src.indexOf("const sharedConfirm");
+    const seam = src.slice(start, src.indexOf("\n    const ", start + 30));
     expect(seam).toContain("didOpen");
     const shared = read("Views", "Shared", "_GlobalConfirmation.cshtml");
     expect(shared, "the shared confirm grew an option for one module").not.toContain("inputValue");

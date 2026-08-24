@@ -642,7 +642,7 @@
     <value>Can't start until the freeze window opens.</value>
   </data>
   <data name="ConfirmBody" xml:space="preserve">
-    <value>You're about to apply this action to “{0}”. Proceed?</value>
+    <value>You are about to apply this action. Do you confirm?</value>
   </data>
   <data name="ConfirmBulkBody" xml:space="preserve">
     <value>You're about to apply this action to {0} items at once. Proceed?</value>
@@ -740,7 +740,7 @@
     <value>The planned date is after the source due date — risk of missing it.</value>
   </data>
   <data name="ConfirmBodyOnBehalf" xml:space="preserve">
-    <value>You're about to apply this action to “{0}” on behalf of {1}. Proceed?</value>
+    <value>You are about to apply this action on behalf of {0}. Do you confirm?</value>
   </data>
   <data name="ToastReleased" xml:space="preserve">
     <value>{0} · released to the pool (mock)</value>
