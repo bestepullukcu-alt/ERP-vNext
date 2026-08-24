@@ -2052,4 +2052,7 @@
   <data name="SnoozeDatePlaceholder" xml:space="preserve">
     <value>YYYY-MM-DD</value>
   </data>
+  <data name="SignalSnoozed" xml:space="preserve">
+    <value>Pospuestos</value>
+  </data>
 </root>

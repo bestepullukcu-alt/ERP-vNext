@@ -49,7 +49,8 @@
     const STATUS_KEY = { 'Pending': 'StatusPending', 'In Progress': 'StatusInProgress', 'Waiting': 'StatusWaiting', 'Done': 'StatusDone', 'Cancelled': 'StatusCancelled' };
     const TYPE_KEY = { approval: 'TypeApproval', task: 'TypeTask', review: 'TypeReview', issue: 'TypeIssue', exception: 'TypeException', meetingInvite: 'ChipMeetingInvite' };
     const TYPE_ICON_MAP = { approval: 'bx-check-shield', task: 'bx-task', review: 'bx-search-alt', issue: 'bx-error-circle', exception: 'bx-error-alt', meetingInvite: 'bx-calendar-event' };
-    const SIGNAL_ICON = { blocked: 'bx-lock-alt', 'sla-risk': 'bx-time-five', escalated: 'bx-up-arrow-alt' };
+    const SIGNAL_ICON = { blocked: 'bx-lock-alt', 'sla-risk': 'bx-time-five', escalated: 'bx-up-arrow-alt',
+        snoozed: 'bx-moon' };
     const MODE_KEY = { direct: 'ModeDirect', approval: 'ModeApproval', groupQueue: 'ModeGroupQueue', offered: 'ModeOffered' };
     const SYSSTATE = {
         stale: { key: 'BannerStale', icon: 'bx-refresh', kind: 'warning' },
@@ -65,8 +66,28 @@
     const TAB_KEY = { inbox: 'TabInbox', islerim: 'TabMine', havuz: 'TabPool', history: 'TabHistory' };
     const SEGMENTS = { islerim: ['aktif', 'bekleyen', 'planli'] };
     const SEGMENT_KEY = { aktif: 'SegActive', bekleyen: 'SegWaiting', planli: 'SegPlanned' };
-    const SIGNALS = ['blocked', 'sla-risk', 'escalated'];
-    const SIGNAL_KEY = { blocked: 'SignalBlocked', 'sla-risk': 'SignalSlaRisk', escalated: 'SignalEscalated' };
+    /*
+     * ⚠ `snoozed` IS A SIGNAL THAT WORKS BACKWARDS, AND THAT IS DELIBERATE (BL-181).
+     *
+     * Every other chip here NARROWS what is on screen: turn on "SLA riski" and you see fewer rows. This one
+     * REVEALS — a snoozed row is hidden by default, and the chip is the door back to it. "Ertelenmiş (3)" turned
+     * on shows those three and nothing else.
+     *
+     * The asymmetry is the point, not an oversight: parking something is the reader's own decision to stop being
+     * shown it, so the default has to be absence. A chip that merely narrowed would be a filter over rows the
+     * reader had already asked not to see — which is to say, no snooze at all.
+     *
+     * ⚠ DO NOT "FIX" THIS FOR CONSISTENCY. Making it behave like its neighbours puts every parked item straight
+     * back in the list and deletes the feature.
+     */
+    const SIGNALS = ['blocked', 'sla-risk', 'escalated', 'snoozed'];
+    const SIGNAL_KEY = { blocked: 'SignalBlocked', 'sla-risk': 'SignalSlaRisk', escalated: 'SignalEscalated',
+        snoozed: 'SignalSnoozed' };
+    /*
+     * WHERE PARKING APPLIES. `havuz` is work nobody holds yet — a personal overlay has nothing to hide there —
+     * and `history` is finished: an item you snoozed and later completed must still appear in your own past.
+     */
+    const SNOOZE_TABS = ['inbox', 'islerim'];
 
     const state = {
         tab: 'inbox',
@@ -237,7 +258,10 @@
     const SIGNAL_TEST = {
         blocked: (i) => !!(i.blockedState && i.blockedState.blocked),
         'sla-risk': (i) => i.slaState === 'overdue' || i.slaState === 'due-soon',
-        escalated: (i) => !!i.escalated
+        escalated: (i) => !!i.escalated,
+        // The SAME predicate the chip, the note row and the parked banner already use — wrapped rather than
+        // duplicated, because it is declared further down and a second copy would be a second answer.
+        snoozed: (i) => isSnoozed(i)
     };
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -654,7 +678,17 @@
      * used to cover both, and covering both is what let the chip and the segment bar describe two different
      * populations at once.
      */
-    const tabCount = (tab) => state.items.filter((item) => inTab(item, tab)).length
+    /*
+     * ⚠ A PARKED ITEM IS NOT COUNTED HERE, and the badge is where that subtraction belongs — NOT in `inTab`.
+     * `inTab` feeds `tabItems()`, which is where the chips do their counting; hiding there would blind the
+     * "Ertelenmiş" chip to the very rows it exists to reveal (measured: chip 0, three rows unreachable).
+     *
+     * A badge says "work waiting for you in this tab". Work you parked is not waiting for you — you decided
+     * that. So the screen shows 16 rows, a badge of 16, and a chip that says "Ertelenmiş (3)": two different
+     * populations, correctly. The chip does not claim "3 of the 16 above"; it says "3 things you put away".
+     */
+    const tabCount = (tab) => state.items.filter((item) => inTab(item, tab)
+        && !(SNOOZE_TABS.indexOf(tab) >= 0 && isSnoozed(item))).length
         + (tab === 'inbox' ? state.triggers.length : 0);
 
     // Items in the current tab, before any in-tab filter — the population every in-tab counter starts from.
@@ -696,6 +730,21 @@
         if (except !== 'type' && state.typeFilter.size && !state.typeFilter.has(item.itemType)) { return false; }
         if (except !== 'signal' && state.signalFilter.size) {
             for (const sig of state.signalFilter) { if (!SIGNAL_TEST[sig](item)) { return false; } }
+        }
+        /*
+         * ── A PARKED ITEM IS NOT ON SCREEN (BL-181) ──────────────────────────────────────────────────────────
+         *
+         * Hidden HERE and not in `inTab`, on purpose: `facetItems('signal')` skips the whole signal axis, so the
+         * chip counts exactly what this line hides. Put the same test in `inTab` and the chip would read 0 while
+         * three items sat behind it — a door with no handle.
+         *
+         * The `snoozed` chip being ON is what opens them, and the loop above has already done that half: with
+         * `snoozed` in the filter set, only snoozed items pass it. So this line only has to answer the OTHER
+         * case — nobody asked for them, so they stay parked.
+         */
+        if (except !== 'signal' && !state.signalFilter.has('snoozed')
+            && SNOOZE_TABS.indexOf(state.tab) >= 0 && isSnoozed(item)) {
+            return false;
         }
         if (state.moduleFilter.length && !state.moduleFilter.includes(item.sourceModule)) { return false; }
         if (state.priorityFilter !== 'all' && item.priority !== state.priorityFilter) { return false; }
@@ -1218,6 +1267,25 @@
         const selected = item.id === state.selectedId;
         const terminal = isTerminal(item);
         const pinBtn = inbox || terminal ? '' : `<button type="button" class="wcn-pin${item.pinned ? ' pinned' : ''}" data-wcn-pin="${item.id}" title="${esc(t(item.pinned ? 'Unpin' : 'Pin'))}" aria-label="${esc(t(item.pinned ? 'Unpin' : 'Pin'))}" aria-pressed="${item.pinned}"><i class="bx ${item.pinned ? 'bxs-pin' : 'bx-pin'}"></i></button>`;
+        /*
+         * TAKING IT BACK, ON THE ROW THAT WAS REVEALED (BL-181 §6).
+         *
+         * A reader who opens "Ertelenmiş" to look at what they parked is one thought away from wanting it back,
+         * and sending them into the detail page to find the personal card would be a detour for a decision they
+         * have already made.
+         *
+         * ⚠ NO NEW ROW LANGUAGE. This is the PIN, exactly: same place in `.wcn-row-actions`, same small icon
+         * button, same filled-vs-outline way of saying on/off, same `aria-pressed`, same one-click toggle
+         * through the handler that already exists (`data-wcn-snooze`). A menu was the rejected alternative —
+         * this row has no menu, and adding one for a single item would be a second vocabulary for the same job.
+         *
+         * It appears ONLY on a parked row, which is to say only while the chip is open: on every other row it
+         * would be a control for a state the item is not in.
+         */
+        const unsnoozeBtn = isSnoozed(item)
+            ? `<button type="button" class="wcn-pin pinned" data-wcn-snooze="${item.id}" title="${
+                esc(t('SnoozeClear'))}" aria-label="${esc(t('SnoozeClear'))}" aria-pressed="true"><i class="bx bxs-moon"></i></button>`
+            : '';
         const onBehalfBadge = item.delegator
             ? `<span class="wcn-badge wcn-badge-delegation" title="${esc(tf('OnBehalfOf', item.delegator))}"><i class="bx bx-user-voice"></i>${esc(tf('OnBehalfShort', item.delegator))}</span>`
             : '';
@@ -1236,7 +1304,7 @@
                 ${compact ? '' : `<p class="wcn-row-summary">${esc(summary)}</p>`}
                 <div class="wcn-row-chips">${rowChips(item)}</div>
             </div>
-            <div class="wcn-row-actions">${pinBtn}${actionCluster(item)}</div>
+            <div class="wcn-row-actions">${unsnoozeBtn}${pinBtn}${actionCluster(item)}</div>
         </div>`;
     };
 
@@ -5569,8 +5637,15 @@
             case 'resolve': setProjectionState(item, 'Done', null, 'Çözüldü'); return 'resolved';
             case 'start':
             case 'resume':
-                // Resuming closes any wait/snooze reason so the item leaves the
-                // "Bekleyen" segment (segmentFor keys off waitingOn/snoozedUntil).
+                /*
+                 * Resuming clears the wait AND the reader's own snooze.
+                 *
+                 * ⚠ The old comment here said `segmentFor` keys off `waitingOn`/`snoozedUntil`. Measured and
+                 * wrong: `segmentFor` lives in the data layer and reads `normalizedStatus` and the plan date —
+                 * it has never looked at either field. What clearing `waitingOn` really does is end the wait the
+                 * SERVER is projecting; what clearing the snooze does is put the item back on this reader's
+                 * screen, which is the whole of BL-181.
+                 */
                 item.waitingOn = null; item.snoozedUntil = null;
                 setProjectionState(item, 'InProgress', 'InProgress', 'Devam ediyor');
                 item.executionState = 'active';
@@ -6617,15 +6692,23 @@
                 // A TEXT box, not a native `date` one: the picker is flatpickr, the same component every other
                 // date on this page uses. A native control here would be a second date language in one product.
                 type: 'text',
-                label: t('SnoozeUntilLabel'),
                 /*
-                 * THE FORMAT THE BOX EXPECTS, shown before the reader guesses. It is not a new format: flatpickr
-                 * is opened below with `dateFormat: 'Y-m-d'`, the SAME setting `Tasks/form.js` pins for every
-                 * date field in the product, so the placeholder spells out the shape the field will actually
-                 * hold. Each language spells the shape in its OWN letters (YYYY-AA-GG in Turkish, ГГГГ-ММ-ДД in
-                 * Russian) — the order never changes, because the value does not.
+                 * THE LABEL IS THE FIELD'S OWN TEXT (owner decision, 2026-08-24).
+                 *
+                 * "Hangi tarihe kadar" sits INSIDE the box rather than on a line above it. The dialog asks one
+                 * question and now asks it once: a label above an empty box, with the same words repeated
+                 * nowhere else, spent a whole row saying what the box could say itself.
+                 *
+                 * ⚠ NO SEPARATE `label` ANY MORE. Keeping both would print the same sentence twice, one under
+                 * the other. The words are unchanged and still come from `SnoozeUntilLabel` in all seven
+                 * languages — only where they are drawn has moved.
+                 *
+                 * ⚠ WHAT THIS COSTS, stated rather than hidden: the format hint (`YYYY-MM-DD`) is no longer
+                 * shown. It is not needed to USE the field — the picker fills the box and the box is not typed
+                 * into (flatpickr binds without `allowInput`) — but a reader who wants to know the shape before
+                 * choosing no longer sees it. `SnoozeDatePlaceholder` is kept in the resx for that reason.
                  */
-                placeholder: t('SnoozeDatePlaceholder'),
+                placeholder: t('SnoozeUntilLabel'),
                 onOpen: (input) => {
                     if (!input) { return; }
                     /*

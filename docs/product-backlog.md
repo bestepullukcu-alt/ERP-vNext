@@ -3991,7 +3991,7 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   kural, bu turda üç kez düzeltilen kusurun dördüncü kez doğacağı yerdi.
 - **Gelecek regresyon riski: 🟢** — yeni bir yığılma eklenirse BL-180'siz kalmaz: gardiyan test onu yakalar.
 
-### BL-181 — 🔴 [ÇELİŞKİ] Erteleme, ertelenen işi HİÇBİR listeden gizlemiyor
+### BL-181 — ✅ KAPANDI (2026-08-24) — Erteleme artık gerçekten erteliyor
 - Brifing, ertele diyaloğunun açıklamasının şunu demesini istedi: *"Bu görev, seçtiğin tarihe kadar gelen
   kutunda görünmez."* Aynı brifing "uydurma, ÖLÇ ve doğrula" dedi. **Ölçüldü ve doğru değil.**
 - Cümlenin diğer üç iddiası doğrulandı ve sunucuda güvence altında (`SNOOZE_MUST_NOT_CREATE_WAITING`):
@@ -4211,3 +4211,77 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - ⚠ Bu bir WorkCenter kusuru değil, kiracı kabuğunun (tenant shell) kusuru. Kendi turunda ölçülecek.
 - **Gelecek regresyon riski: 🟡** — menü her sayfada çiziliyor; sessizce eksik çizmesi kullanıcıya
   "yetkim gitti" gibi görünür ve yanlış hata bildirimleri üretir.
+
+### BL-196 — ✅ KAPANDI (2026-08-24) — Ertele diyaloğunun sorusu alanın kendi metni oldu
+- **Sahip kararı:** "Hangi tarihe kadar" artık üstteki ayrı etiket satırı değil, **tarih alanının placeholder'ı**.
+  Diyalog tek bir soru soruyor ve onu bir kez soruyor; boş bir kutunun üstünde duran etiket, kutunun kendisinin
+  söyleyebileceği şeyi bir satır harcayarak söylüyordu.
+- **İkisi birden yapılmadı:** aynı cümle hem etikette hem placeholder'da olsaydı alt alta iki kez yazardı.
+  Kelimeler değişmedi, yedi dilde aynı `SnoozeUntilLabel` anahtarından geliyor — yalnız **nerede çizildiği**
+  değişti.
+- **Bedeli açıkça:** biçim ipucu (`YYYY-MM-DD`) artık görünmüyor. Alanı KULLANMAK için gerekmiyor (kutuyu takvim
+  dolduruyor, elle yazılmıyor), ama şekli seçmeden önce bilmek isteyen okuyucu artık göremiyor.
+  `SnoozeDatePlaceholder` yedi dilde **duruyor** — serbest yazım açılırsa (BL-192) geri gelecek metin bu; yedi
+  dili yeniden çevirmek yerine kayıtlı bırakıldı, testle de kilitli.
+- **Canlı doğrulandı (gerçek tıklama, tam döngü):** aç → takvimden 28 Ağustos → "Ertele"ye BAS → diyalog kapandı
+  → çip ve şerit göründü → sayfa yenile → "Ertelendi 2026-08-28 Kaldır" duruyor. Dört kombinasyonda
+  (1440/900 × aydınlık/karanlık) kutu 38px · yazı 15px · yarıçap 6px · glif 15px/merkez · metin 39px'ten ·
+  girdi popup'ın doğrudan çocuğu · odak girdide · `getInput()` dolu.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-197 — [ÖLÇÜM] Testte "bugün" UTC'den alınırsa günün üç saati kırmızı olur
+- Bu turda yakalandı: modülün `todayIso`'su **2026-08-24** derken `new Date().toISOString()` **2026-08-23**
+  veriyordu — okuyucunun saati UTC'nin önünde (UTC+3) ve o üç saat boyunca UTC'den türetilen tarih bu
+  doğrulayıcıya göre **dün**.
+- Ürün tutarlı: takvimin `minDate`'i de doğrulayıcı da aynı `data.todayIso`'yu okuyor. Yanlış olan **testti**;
+  düzeltildi ve gerekçesi testin içine yazıldı.
+- Aynı tuzak zamana dayanan her yeni test için geçerli: "bugün"ü üründen sor, saatten değil.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-181 kapanış notu (2026-08-24)
+- **Gizleme FETCH'te değil RENDER'da.** CT'nin ilk tasarımı (sunucuda, sayfalamadan önce elemek) ölçümle
+  geçersiz kılınmıştı: `work-items-api.js`'te sayfalama yok, bütün sayaçlar `state.items` üzerinden istemcide
+  hesaplanıyor; sunucuda elenen satır çipte de sayılamaz ve BL-045'in kusuru geri gelirdi.
+- **`snoozed` bir SİNYAL** — `SIGNALS`/`SIGNAL_KEY`/`SIGNAL_ICON`/`SIGNAL_TEST`'e eklendi, testi **mevcut**
+  `isSnoozed`; eş anlamlı ikinci bir yardımcı yazılmadı.
+- **Gizleme `passesFilters` içinde, `inTab`'da DEĞİL.** Sebep koda yazıldı: `facetItems('signal')` sinyal
+  eksenini atlıyor, böylece çip kendi sakladığını sayabiliyor. `inTab`'a konsaydı çip 0 derken üç satır
+  ulaşılamaz olurdu — mutasyon kanıtı bunu gösteriyor (5 test kırmızı).
+- **Çip TERSİNE çalışıyor ve bu asimetri koda yorumla yazıldı** ("DO NOT fix this for consistency").
+- **Sekme rozeti ertelenmişi saymıyor** — ama bu `tabCount`'ta yapıldı, `inTab`'da değil; brifingin "`inTab` de
+  eleyecek" cümlesi çip sayımıyla çelişiyordu, gerekçesi koda ve rapora yazıldı.
+- **Kapsam:** yalnız `inbox` + `islerim` (`SNOOZE_TABS`). Canlı ölçüldü: ertelenmiş ama TAMAMLANMIŞ bir iş
+  Geçmiş'te duruyor ve rozet 13'te kalıyor; Havuz'da kişisel örtü uygulanmıyor.
+- **Geri alma satırda:** `.wcn-row-actions` içinde, PIN'in birebir dili (aynı yer, aynı küçük ikon düğmesi,
+  dolu/boş glif, `aria-pressed`, aynı `data-wcn-snooze` yolu). Menü reddedildi — bu satırda menü yok, tek iş
+  için ikinci bir dil açmak olurdu.
+- **Süresi dolan kendiliğinden dönüyor:** sağlayıcı `snoozedUntil`i yalnız gelecekteyse yansıtıyor; istemci
+  tarafı testle kilitlendi (geçmiş tarihli örtü gizlemiyor, çip de çıkmıyor).
+- **Canlı tam senaryo (gerçek tıklama):** İşlerim 26 → üç iş ertelendi → rozet **23**, liste **Aktif 16**,
+  çip **"Ertelenmiş 3"** (tek karede) → çipe tıklandı → yalnız o 3 satır, her birinde geri-alma düğmesi,
+  segmentler 3/0/0, tür çipi 3 → biri geri alındı → çip **2**, rozet **24**, liste **Aktif 17** → **yenilendi**,
+  hepsi aynı kaldı.
+- **Facet tutarlılığı:** her ölçümde Aktif+Bekleyen+Planlı = rozet ve tür çipi = görünen topluluk
+  (23 = 16+4+3 · 2 = 2+0+0 · 24 = 17+4+3).
+- **Şerit:** sinyal çipleri 3 → 4; 1440 ve 900'de, iki temada tek satır, sarma/taşma/kesilme yok.
+- **Yanlış yorum düzeltildi:** `app.js`'teki "segmentFor waitingOn/snoozedUntil üzerinden çalışır" cümlesi
+  ölçülüp yanlış bulundu (`segmentFor` veri katmanında, `normalizedStatus` ve plan tarihine bakıyor).
+- **Gelecek regresyon riski: 🟡** — "rozet ve çip iki farklı topluluk" bilinçli bir asimetri; ilerideki bir
+  "tutarlılık" düzeltmesi özelliği sessizce geri kırabilir. Üç mutasyon testi bu yüzden var.
+
+### BL-198 — [KARAR SENİN] "Ertelenmiş" çipi Havuz ve Geçmiş'te de görünüyor (ama orada gizlemiyor)
+- Kapsam kararı gereği gizleme yalnız `inbox`/`islerim`'de. Çip ise sayısı sıfırdan büyükse **her sekmede**
+  çiziliyor ve orada **normal daraltan** bir sinyal gibi davranıyor.
+- Canlı görüldü: Geçmiş'te "Ertelenmiş 1" çıktı — ertelenip sonra tamamlanmış işi bulmaya yarıyor, hiçbir şeyi
+  gizlemiyor. Zararsız, hatta faydalı; ama aynı çip iki sekmede iki farklı şey yapıyor.
+- **Karar senin:** (a) böyle kalsın (Geçmiş'te "parkettiğim ve sonra bitirdiklerim" araması); (b) çip yalnız
+  `SNOOZE_TABS`'ta çizilsin.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-199 — [DÜZELTİLDİ] Gardiyan testte sayı vardı, kural değil
+- `wcn-snooze-dialog.test.js` `isSnoozed(item)` çağrılarını **dörde** sabitlemişti. BL-181 üç meşru çağıran
+  ekleyince doğru bir değişiklik kırmızıya döndü — orchestrator demir kural #10'un "kayıtta sayı yerine ölçüm"
+  uyarısının test hâli.
+- Sayı, kuralın kendisiyle değiştirildi: "bu soruyu tek bir yüklem cevaplar" → karşılaştırmanın ikinci bir
+  kopyası olmadığı iddia ediliyor, çağrı sayısı değil.
+- **Gelecek regresyon riski: 🟢.**

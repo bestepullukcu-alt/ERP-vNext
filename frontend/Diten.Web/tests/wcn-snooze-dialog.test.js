@@ -77,10 +77,30 @@ describe("the snooze dialog", () => {
     expect(code, "an element is being inserted around the box").not.toContain("insertBefore");
   });
 
-  it("shows the date format the box will actually hold", () => {
-    // MUTATION GUARD: remove the placeholder and the reader is asked for a date with no clue which shape it
-    // wants — the field is a text box, and the picker only helps the people who find it.
-    expect(toggleSnooze()).toContain("placeholder: t('SnoozeDatePlaceholder')");
+  it("asks its question inside the box, not on a line above it", () => {
+    /*
+     * Owner decision (2026-08-24): "Hangi tarihe kadar" IS the field's text. The dialog asks one question and
+     * asks it once — a label above an empty box spent a row saying what the box can say itself.
+     *
+     * ⚠ NOT BOTH. A separate `label` alongside would print the same sentence twice, one under the other.
+     */
+    const code = toggleSnoozeCode();
+    expect(code).toContain("placeholder: t('SnoozeUntilLabel')");
+    expect(code, "the same words are also drawn on a line above").not.toContain("label: t('SnoozeUntilLabel')");
+    LANGS.forEach((lang) => expect(value(lang, "SnoozeUntilLabel"), `${lang} has no question`).toBeTruthy());
+  });
+
+  it("keeps the format hint's words, unused, rather than deleting them", () => {
+    /*
+     * `SnoozeDatePlaceholder` (`YYYY-MM-DD`) is no longer drawn: the picker fills the box and the box is not
+     * typed into. The strings stay in the seven resx files because the hint may be wanted back the day free
+     * typing is allowed (BL-192), and re-translating seven languages to undo a layout decision is waste.
+     */
+    LANGS.forEach((lang) => expect(value(lang, "SnoozeDatePlaceholder"), `${lang}`).toBe("YYYY-MM-DD"));
+  });
+
+  it("still pins the format the box will actually hold", () => {
+    // MUTATION GUARD: the picker's own format is what the box ends up holding, whatever the box says while empty.
     // Not a new format: the same `Y-m-d` every date field in the product is pinned to.
     expect(toggleSnooze()).toContain("dateFormat: 'Y-m-d'");
     LANGS.forEach((lang) => {
@@ -115,8 +135,17 @@ describe("the snooze dialog", () => {
      * One predicate now answers the question, and it answers `>=`.
      */
     expect(APP).toContain("const isSnoozed = (item) => !!item.snoozedUntil && item.snoozedUntil >= data.todayIso;");
-    expect(APP.match(/isSnoozed\(item\)/g) || [], "a caller still asks this question its own way").toHaveLength(4);
+    /*
+     * ⚠ NOT A COUNT. This used to pin the number of call sites at four, and the next round that legitimately
+     * added one (BL-181 gave the question three more askers: the signal predicate, the row filter and the tab
+     * badge) turned a correct change red. A number in a guard rots with the code — the rule is "ONE predicate
+     * answers this question", so what is asserted is that nobody re-implements it.
+     */
+    const askers = (APP.match(/isSnoozed\(/g) || []).length;
+    expect(askers, "nobody asks whether an item is parked").toBeGreaterThan(1);
     expect(APP, "an old `>` comparison survived").not.toContain("item.snoozedUntil > data.todayIso");
+    expect(APP.match(/snoozedUntil\s*>=?\s*data\.todayIso/g) || [],
+      "a second copy of the comparison exists — it belongs to `isSnoozed` alone").toHaveLength(1);
   });
 
   it("says what it actually refuses, in all seven languages", () => {
@@ -234,7 +263,14 @@ describe("what the dialog hands the validator", () => {
 
   it("refuses a date in the past, and accepts today", () => {
     expect(captured.options.inputValidator("2020-01-01")).toBeTruthy();
-    const today = new Date().toISOString().slice(0, 10);
+    /*
+     * ⚠ "TODAY" IS THE MODULE'S, NOT UTC's. Measured while writing this: the module's `todayIso` read
+     * 2026-08-24 while `new Date().toISOString()` read 2026-08-23 — the reader's clock is ahead of UTC, and for
+     * those three hours a UTC-derived date is YESTERDAY to this validator. The product is consistent because
+     * the picker's `minDate` and this check both read the same `data.todayIso`; the test has to do the same or
+     * it fails for three hours a day and passes for the other twenty-one.
+     */
+    const today = global.WorkCenterNextData.todayIso;
     expect(captured.options.inputValidator(today), "today is a legitimate choice (BL-182)").toBeNull();
   });
 });
