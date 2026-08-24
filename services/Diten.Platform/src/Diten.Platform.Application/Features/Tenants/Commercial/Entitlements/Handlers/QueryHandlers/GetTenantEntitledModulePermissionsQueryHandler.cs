@@ -8,7 +8,7 @@ using MediatR;
 namespace Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Handlers.QueryHandlers;
 
 /// <summary>
-/// FIX-3 — resolves a tenant's effectively-Active entitled modules (reusing the entitlement projection) and,
+/// FIX-3 — resolves a tenant's effectively accessible modules (reusing the authoritative entitlement projection) and,
 /// for each, the permission keys it DECLARES in the descriptor catalog: page <c>RequiredPermission</c> ∪ action
 /// <c>PermissionKey</c> (de-duplicated). Descriptors live under the platform scope (Guid.Empty) where
 /// self-registration stores them, so they are read inside a platform scope. A module with no descriptors is
@@ -18,8 +18,6 @@ namespace Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Ha
 public sealed class GetTenantEntitledModulePermissionsQueryHandler
     : IRequestHandler<GetTenantEntitledModulePermissionsQuery, Response<IReadOnlyList<TenantEntitledModulePermissionsDto>>>
 {
-    private const string ActiveAccess = "Active";
-
     private readonly IMediator _mediator;
     private readonly IModulePageDescriptorRepository _pageRepository;
     private readonly IModulePageActionDescriptorRepository _actionRepository;
@@ -43,25 +41,57 @@ public sealed class GetTenantEntitledModulePermissionsQueryHandler
     {
         // Effective entitlement is evaluated against the tenant (reuse the authoritative projection).
         var entitlements = await _mediator.Send(new GetTenantModuleEntitlementsQuery(request.TenantId), ct);
-        if (!entitlements.IsSuccessful || entitlements.Data is null)
+        if (!entitlements.IsSuccessful)
         {
-            return Response<IReadOnlyList<TenantEntitledModulePermissionsDto>>.Success(
-                Array.Empty<TenantEntitledModulePermissionsDto>());
+            return ForwardFailure(entitlements);
         }
 
-        var activeCodes = entitlements.Data
-            .Where(r => string.Equals(r.EffectiveAccess, ActiveAccess, StringComparison.OrdinalIgnoreCase))
+        if (entitlements.Data is null)
+        {
+            return ProjectionUnavailable(entitlements.CorrelationId);
+        }
+
+        if (entitlements.Data.Any(row => row.TenantId != request.TenantId))
+        {
+            return ProjectionUnavailable(entitlements.CorrelationId);
+        }
+
+        var candidateCodes = entitlements.Data
             .Select(r => r.ModuleCode)
             .Where(c => !string.IsNullOrWhiteSpace(c))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        var result = new List<TenantEntitledModulePermissionsDto>(activeCodes.Count);
+        var entitledCodes = new List<string>(candidateCodes.Count);
+        foreach (var code in candidateCodes)
+        {
+            var effectiveAccess = await _mediator.Send(
+                new GetTenantModuleEffectiveAccessQuery(request.TenantId, code),
+                ct);
+            if (!effectiveAccess.IsSuccessful)
+            {
+                return ForwardFailure(effectiveAccess);
+            }
+
+            if (effectiveAccess.Data is null
+                || effectiveAccess.Data.TenantId != request.TenantId
+                || !string.Equals(effectiveAccess.Data.ModuleCode, code, StringComparison.OrdinalIgnoreCase))
+            {
+                return ProjectionUnavailable(effectiveAccess.CorrelationId);
+            }
+
+            if (effectiveAccess.Data.HasAccess)
+            {
+                entitledCodes.Add(code);
+            }
+        }
+
+        var result = new List<TenantEntitledModulePermissionsDto>(entitledCodes.Count);
 
         // Descriptors are stored under the platform scope (Guid.Empty), like the catalog UI / self-registration.
         using (TenantScope.BeginPlatform(_tenantContext, Guid.Empty))
         {
-            foreach (var code in activeCodes)
+            foreach (var code in entitledCodes)
             {
                 var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -89,4 +119,18 @@ public sealed class GetTenantEntitledModulePermissionsQueryHandler
 
         return Response<IReadOnlyList<TenantEntitledModulePermissionsDto>>.Success(result);
     }
+
+    private static Response<IReadOnlyList<TenantEntitledModulePermissionsDto>> ForwardFailure<T>(Response<T> response) =>
+        Response<IReadOnlyList<TenantEntitledModulePermissionsDto>>.Fail(
+            response.Errors,
+            response.StatusCode,
+            response.ReasonCode,
+            response.CorrelationId);
+
+    private static Response<IReadOnlyList<TenantEntitledModulePermissionsDto>> ProjectionUnavailable(string? correlationId) =>
+        Response<IReadOnlyList<TenantEntitledModulePermissionsDto>>.Fail(
+            "Tenant entitlement projection is unavailable.",
+            503,
+            "tenant_entitlement_projection_unavailable",
+            correlationId);
 }

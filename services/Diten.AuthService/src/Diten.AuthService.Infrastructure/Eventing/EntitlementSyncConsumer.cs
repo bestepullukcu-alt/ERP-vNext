@@ -50,6 +50,8 @@ public sealed class EntitlementSyncConsumer : IConsumer<EventTransportMessage>
             TenantEntitlementAddedV1.Name => EntitlementOperation.Grant,
             TenantEntitlementEnabledV1.Name => EntitlementOperation.Grant,
             TenantEntitlementDisabledV1.Name => EntitlementOperation.Revoke,
+            TenantEntitlementExpiryUpdatedV1.Name => EntitlementOperation.Reconcile,
+            TenantEntitlementOverrideRemovedV1.Name => EntitlementOperation.Reconcile,
             // FIX-2 — a plan/subscription change re-points the tenant's virtual (plan-derived) entitlement set,
             // which emits no per-module events. Pull the authoritative set and reconcile Module-grants.
             TenantSubscriptionChangedV1.Name => EntitlementOperation.Reconcile,
@@ -84,6 +86,18 @@ public sealed class EntitlementSyncConsumer : IConsumer<EventTransportMessage>
 
         // Idempotency — reuse the internal-events inbox; the sync operations are themselves idempotent,
         // so this primarily suppresses redundant work on re-delivery.
+        TenantEntitlementReadResult? entitlementRead = null;
+        if (operation is EntitlementOperation.Grant or EntitlementOperation.Reconcile)
+        {
+            entitlementRead = await _entitlementClient.ReadEntitledModulesWithPermissionKeysAsync(tenantId, ct);
+            if (!entitlementRead.IsAuthoritative)
+            {
+                // No authoritative decision was made, so the same EventId must remain retryable.
+                LogUnavailable(message, tenantId);
+                return;
+            }
+        }
+
         var firstDelivery = await _inbox.TryInsertAsync(message.EventId, message.EventName, tenantId, ct);
         if (!firstDelivery)
         {
@@ -96,26 +110,27 @@ public sealed class EntitlementSyncConsumer : IConsumer<EventTransportMessage>
         switch (operation)
         {
             case EntitlementOperation.Grant:
-                // FIX-3 — resolve the module's DECLARED catalog permission keys (namespace-agnostic) and grant by
-                // them. Pull the full entitled set and pick this module; if the pull is empty/unreachable, the keys
-                // fall through empty and GrantModuleWithKeysAsync falls back to the convention resolver.
-                var grantModules = await _entitlementClient.GetEntitledModulesWithPermissionKeysAsync(tenantId, ct);
-                var grantKeys = grantModules
-                    .FirstOrDefault(m => string.Equals(m.ModuleCode, payload.ModuleCode, StringComparison.OrdinalIgnoreCase))
-                    ?.PermissionKeys ?? (IReadOnlyList<string>)Array.Empty<string>();
-                await _sync.GrantModuleWithKeysAsync(tenantId, payload.ModuleCode, grantKeys, Actor, ct);
+                // Resolve the module's DECLARED catalog permission keys (namespace-agnostic) only from an
+                // authoritative read. A confirmed result that omits the event module revokes that module's sourced
+                // grants; an unavailable read returned before the inbox insert and remains retryable.
+                var grantedModule = entitlementRead!.Modules
+                    .FirstOrDefault(m => string.Equals(m.ModuleCode, payload.ModuleCode, StringComparison.OrdinalIgnoreCase));
+                if (grantedModule is null)
+                {
+                    await _sync.RevokeModuleAsync(tenantId, payload.ModuleCode, Actor, ct);
+                    break;
+                }
+
+                await _sync.GrantModuleWithKeysAsync(
+                    tenantId, payload.ModuleCode, grantedModule.PermissionKeys, Actor, ct);
                 break;
             case EntitlementOperation.Revoke:
                 await _sync.RevokeModuleAsync(tenantId, payload.ModuleCode, Actor, ct);
                 break;
             case EntitlementOperation.Reconcile:
-                // FIX-3 — catalog-key-driven reconcile. Skip on empty: never strip existing Module-grants on a
-                // transient/unreachable Platform pull.
-                var entitledModules = await _entitlementClient.GetEntitledModulesWithPermissionKeysAsync(tenantId, ct);
-                if (entitledModules.Count > 0)
-                {
-                    await _sync.SyncTenantModulesWithKeysAsync(tenantId, entitledModules, Actor, ct);
-                }
+                // Catalog-key-driven authoritative reconcile. Confirmed empty removes stale module grants; an
+                // unavailable read returned before the inbox insert and performs no grant or revoke.
+                await _sync.SyncTenantModulesWithKeysAsync(tenantId, entitlementRead!.Modules, Actor, ct);
                 break;
         }
 
@@ -123,6 +138,11 @@ public sealed class EntitlementSyncConsumer : IConsumer<EventTransportMessage>
             "entitlement.sync.applied EventId={EventId} EventName={EventName} TenantId={TenantId} ModuleCode={ModuleCode}",
             message.EventId, message.EventName, tenantId, payload.ModuleCode);
     }
+
+    private void LogUnavailable(EventTransportMessage message, Guid tenantId)
+        => _logger.LogWarning(
+            "entitlement.sync.skipped_unavailable EventId={EventId} EventName={EventName} TenantId={TenantId}",
+            message.EventId, message.EventName, tenantId);
 
     private EntitlementPayload? Deserialize(EventTransportMessage message)
     {

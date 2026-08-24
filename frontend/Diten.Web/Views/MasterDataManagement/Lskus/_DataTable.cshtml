@@ -1,0 +1,17 @@
+@using Diten.Web.Views.MasterDataManagement.Lskus
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LskusIndex> Localizer
+
+<div id="skeleton-loader" class="placeholder-glow mb-3"><span class="placeholder col-12"></span></div>
+<table id="lskusTable" class="datatables-lskus table" data-dt-standard="v2">
+    <thead>
+        <tr>
+            <th>@Localizer["CanonicalCode"]</th>
+            <th>@Localizer["Gsku"]</th>
+            <th>@Localizer["Market"]</th>
+            <th>@Localizer["Status"]</th>
+            <th>@Localizer["Version"]</th>
+            <th>@Localizer["Actions"]</th>
+        </tr>
+    </thead>
+</table>

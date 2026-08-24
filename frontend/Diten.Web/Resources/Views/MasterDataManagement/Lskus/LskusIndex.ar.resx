@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Title"><value>وحدات SKU المحلية</value></data>
+  <data name="PageDescription"><value>إنشاء ومراجعة وحدات SKU الخاصة بالسوق</value></data>
+  <data name="CreateTitle"><value>إنشاء LSKU</value></data>
+  <data name="Gsku"><value>GSKU</value></data>
+  <data name="Market"><value>السوق</value></data>
+  <data name="Save"><value>حفظ</value></data>
+  <data name="AddNew"><value>إضافة جديد</value></data>
+  <data name="Unknown"><value>غير معروف</value></data>
+  <data name="Actions"><value>الإجراءات</value></data>
+  <data name="ViewDetails"><value>عرض التفاصيل</value></data>
+  <data name="QuickView"><value>عرض سريع</value></data>
+  <data name="Cancel"><value>إلغاء</value></data>
+  <data name="Search"><value>بحث</value></data>
+  <data name="Export"><value>تصدير</value></data>
+  <data name="Filter"><value>تصفية</value></data>
+  <data name="Apply"><value>تطبيق</value></data>
+  <data name="Reset"><value>إعادة تعيين</value></data>
+  <data name="SaveView"><value>حفظ العرض</value></data>
+  <data name="ColumnVisibility"><value>إظهار الأعمدة</value></data>
+  <data name="Status"><value>الحالة</value></data>
+  <data name="CanonicalCode"><value>الرمز القياسي</value></data>
+  <data name="Version"><value>الإصدار</value></data>
+  <data name="CreatedAt"><value>تاريخ الإنشاء</value></data>
+  <data name="UpdatedAt"><value>تاريخ التحديث</value></data>
+  <data name="Loading"><value>جارٍ التحميل</value></data>
+  <data name="CreateSuccess"><value>تم إنشاء LSKU</value></data>
+  <data name="CreateReconciliationPending"><value>الإنشاء بانتظار المطابقة.</value></data>
+  <data name="ErrorInvalidFormAttempt"><value>محاولة نموذج غير صالحة.</value></data>
+  <data name="ErrorValidation"><value>تحقق من الحقول المطلوبة.</value></data>
+  <data name="ErrorNotFound"><value>لم يتم العثور على العنصر المرجعي.</value></data>
+  <data name="ErrorConflict"><value>يتعارض الطلب مع البيانات الحالية.</value></data>
+  <data name="ErrorProviderUnavailable"><value>موفر المرجع غير متاح.</value></data>
+  <data name="ErrorProviderTimeout"><value>انتهت مهلة موفر المرجع.</value></data>
+  <data name="ErrorForbidden"><value>ليس لديك إذن.</value></data>
+  <data name="ErrorGateway"><value>تعذر إكمال الطلب.</value></data>
+</root>

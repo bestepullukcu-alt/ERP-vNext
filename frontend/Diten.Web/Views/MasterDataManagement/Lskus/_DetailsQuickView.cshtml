@@ -1,0 +1,26 @@
+@using Diten.Web.Views.MasterDataManagement.Lskus
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LskusIndex> Localizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasDetailsPreview">
+    <div class="offcanvas-header">
+        <div>
+            <small class="text-muted">@Localizer["QuickView"]</small>
+            <h5 id="oc-title" class="offcanvas-title">@Localizer["Unknown"]</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div id="lskuDetailLoading" class="d-none">@Localizer["Loading"]</div>
+        <div id="lskuDetailError" class="alert alert-danger d-none"></div>
+        <dl id="lskuDetails" class="row">
+            <dt>@Localizer["CanonicalCode"]</dt><dd id="oc-code">-</dd>
+            <dt>@Localizer["Gsku"]</dt><dd id="oc-gsku-code">-</dd>
+            <dt>@Localizer["Market"]</dt><dd id="oc-market">-</dd>
+            <dt>@Localizer["Status"]</dt><dd id="oc-status">-</dd>
+            <dt>@Localizer["Version"]</dt><dd id="oc-version">-</dd>
+            <dt>@Localizer["CreatedAt"]</dt><dd id="oc-created-at">-</dd>
+            <dt>@Localizer["UpdatedAt"]</dt><dd id="oc-updated-at">-</dd>
+        </dl>
+    </div>
+</div>

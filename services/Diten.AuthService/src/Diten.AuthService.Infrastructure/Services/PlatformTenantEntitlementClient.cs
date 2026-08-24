@@ -67,7 +67,8 @@ public sealed class PlatformTenantEntitlementClient : ITenantEntitlementClient
             var envelope = await response.Content.ReadFromJsonAsync<PlatformEnvelope<List<string>>>(JsonOptions, ct);
             return envelope?.Data ?? (IReadOnlyList<string>)Array.Empty<string>();
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
+        catch (Exception ex) when (ex is HttpRequestException or JsonException
+                                   || ex is TaskCanceledException && !ct.IsCancellationRequested)
         {
             // Best-effort: Platform unreachable / slow / malformed → skip the reconcile, never throw.
             _logger.LogWarning(ex, "Tenant entitled-modules read errored. TenantId={TenantId}", tenantId);
@@ -77,10 +78,16 @@ public sealed class PlatformTenantEntitlementClient : ITenantEntitlementClient
 
     public async Task<IReadOnlyList<EntitledModulePermissionKeys>> GetEntitledModulesWithPermissionKeysAsync(Guid tenantId, CancellationToken ct)
     {
+        var result = await ReadEntitledModulesWithPermissionKeysAsync(tenantId, ct);
+        return result.IsAuthoritative ? result.Modules : Array.Empty<EntitledModulePermissionKeys>();
+    }
+
+    public async Task<TenantEntitlementReadResult> ReadEntitledModulesWithPermissionKeysAsync(Guid tenantId, CancellationToken ct)
+    {
         if (string.IsNullOrWhiteSpace(_options.InternalApiKey))
         {
             _logger.LogWarning("Tenant entitlement (with-permissions) read skipped: Platform internal API key is not configured.");
-            return Array.Empty<EntitledModulePermissionKeys>();
+            return TenantEntitlementReadResult.Unavailable();
         }
 
         try
@@ -96,28 +103,41 @@ public sealed class PlatformTenantEntitlementClient : ITenantEntitlementClient
                     "Tenant entitled-modules-with-permissions read failed. TenantId={TenantId} StatusCode={StatusCode}",
                     tenantId,
                     (int)response.StatusCode);
-                return Array.Empty<EntitledModulePermissionKeys>();
+                return TenantEntitlementReadResult.Unavailable();
             }
 
             var envelope = await response.Content.ReadFromJsonAsync<PlatformEnvelope<List<EntitledModulePermissionsRow>>>(JsonOptions, ct);
-            var rows = envelope?.Data;
-            if (rows is null || rows.Count == 0)
+            if (envelope is null || !envelope.IsSuccessful || envelope.Data is null)
             {
-                return Array.Empty<EntitledModulePermissionKeys>();
+                _logger.LogWarning(
+                    "Tenant entitled-modules-with-permissions response was not authoritative. TenantId={TenantId}",
+                    tenantId);
+                return TenantEntitlementReadResult.Unavailable();
             }
 
-            return rows
+            if (envelope.Data.Any(r => string.IsNullOrWhiteSpace(r.ModuleCode)))
+            {
+                _logger.LogWarning(
+                    "Tenant entitled-modules-with-permissions response contained an invalid module row. TenantId={TenantId}",
+                    tenantId);
+                return TenantEntitlementReadResult.Unavailable();
+            }
+
+            var modules = envelope.Data
                 .Where(r => !string.IsNullOrWhiteSpace(r.ModuleCode))
                 .Select(r => new EntitledModulePermissionKeys(
                     r.ModuleCode!,
                     (IReadOnlyList<string>)(r.PermissionKeys ?? new List<string>())))
                 .ToList();
+
+            return TenantEntitlementReadResult.Confirmed(modules);
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
+        catch (Exception ex) when (ex is HttpRequestException or JsonException
+                                   || ex is TaskCanceledException && !ct.IsCancellationRequested)
         {
             // Best-effort: Platform unreachable / slow / malformed → skip the reconcile (or fall back), never throw.
             _logger.LogWarning(ex, "Tenant entitled-modules-with-permissions read errored. TenantId={TenantId}", tenantId);
-            return Array.Empty<EntitledModulePermissionKeys>();
+            return TenantEntitlementReadResult.Unavailable();
         }
     }
 
@@ -134,7 +154,7 @@ public sealed class PlatformTenantEntitlementClient : ITenantEntitlementClient
     }
 
     // Platform returns Response<T> as { data, isSuccessful, statusCode, errors } — only Data is needed here.
-    private sealed record PlatformEnvelope<T>(T? Data);
+    private sealed record PlatformEnvelope<T>(T? Data, bool IsSuccessful);
 
     // Mirror of Platform's TenantEntitledModulePermissionsDto (case-insensitive binding).
     private sealed record EntitledModulePermissionsRow(string? ModuleCode, List<string>? PermissionKeys);

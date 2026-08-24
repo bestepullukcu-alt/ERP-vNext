@@ -1,0 +1,28 @@
+@using Diten.Web.Views.MasterDataManagement.FinishedGoods
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<FinishedGoodsIndex> Localizer
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-finishedgoods" data-dt-standard="v2" class="datatables-finishedgoods table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="all">@Localizer["CanonicalCode"]</th>
+                    <th>@Localizer["GskuCanonicalCode"]</th>
+                    <th>@Localizer["LifecycleStatus"]</th>
+                    <th>@Localizer["CreatedAt"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,56 @@
+@model Diten.Web.Models.Gskus.CreateGskuViewModel
+@using Diten.Web.Views.MasterDataManagement.Gskus
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<GskusIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">@Localizer["FormTitleCreate"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body border-top p-4">
+        <div id="formGskuAlert" class="alert alert-danger d-none" role="alert"></div>
+        <form id="formGsku" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="formAttemptToken" name="FormAttemptToken" value="@ViewData["GskuFormAttemptToken"]" />
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="globalProductId" class="form-label fw-medium">
+                        @Localizer["GlobalProduct"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="globalProductId" name="GlobalProductId" class="form-select select2" required
+                            data-placeholder="@Localizer["GlobalProductPlaceholder"]">
+                        <option value=""></option>
+                    </select>
+                    <div class="invalid-feedback">@Localizer["GlobalProductRequired"]</div>
+                </div>
+
+                <div class="col-12">
+                    <label for="packQuantity" class="form-label fw-medium">
+                        @Localizer["PackQuantity"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="number" id="packQuantity" name="PackQuantity" class="form-control"
+                           min="0" step="any" inputmode="decimal" placeholder="@Localizer["PackQuantityPlaceholder"]" required />
+                    <div class="invalid-feedback">@Localizer["PackQuantityRequired"]</div>
+                    <div class="form-text">@Localizer["PackQuantityHelp"]</div>
+                </div>
+
+                <div class="col-12">
+                    <label for="packUomCode" class="form-label fw-medium">
+                        @Localizer["PackUom"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="packUomCode" name="PackUomCode" class="form-select select2" required
+                            data-placeholder="@Localizer["PackUomPlaceholder"]">
+                        <option value=""></option>
+                    </select>
+                    <div class="invalid-feedback">@Localizer["PackUomRequired"]</div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" id="btnSaveGsku" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>

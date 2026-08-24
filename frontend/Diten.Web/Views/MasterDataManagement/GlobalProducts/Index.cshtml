@@ -1,0 +1,30 @@
+@using Diten.Web.Views.MasterDataManagement.GlobalProducts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<GlobalProductsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Permissions
+@{
+    ViewData["Title"] = Localizer["GlobalProductsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canCreate = Permissions.Has("mdm.global-products.create");
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/MasterDataManagement/GlobalProducts/_Filter.cshtml" />
+
+<div class="mb-3" data-can-create="@canCreate.ToString().ToLowerInvariant()">
+    <h5 class="mb-0">@Localizer["GlobalProductsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/MasterDataManagement/GlobalProducts/_DataTable.cshtml" />
+@* Contract marker rendered by the partial: id="offcanvasDetailsPreview" *@
+<partial name="~/Views/MasterDataManagement/GlobalProducts/_DetailsQuickView.cshtml" />
+<partial name="~/Views/MasterDataManagement/GlobalProducts/_CreateEditOffcanvas.cshtml" />
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/MasterDataManagement/GlobalProducts/_IndexL10n.cshtml" />
+    <script src="~/assets/js/MasterDataManagement/GlobalProducts/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/MasterDataManagement/GlobalProducts/index.js" asp-append-version="true"></script>
+}

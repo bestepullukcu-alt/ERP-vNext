@@ -4,6 +4,8 @@ using Diten.Platform.Infrastructure;
 using Diten.Platform.Infrastructure.BackgroundJobs;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Common.Observability;
+using Diten.Platform.API.Configuration;
+using Diten.Platform.API.Security;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 using Prometheus;
@@ -58,6 +60,9 @@ builder.Services.AddDitenObservability(
     healthChecks =>
     {
         healthChecks.AddCheck<MongoDbReadinessHealthCheck>("mongodb", tags: new[] { "ready" });
+        healthChecks.AddCheck<Diten.Platform.API.Observability.BusinessReferenceDataProviderReadinessHealthCheck>(
+            "business_reference_data_provider",
+            tags: new[] { "ready" });
         if (string.Equals(
                 builder.Configuration["Eventing:Transport"],
                 "RabbitMQ",
@@ -86,11 +91,30 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers();
+builder.Services.Configure<ModuleRegistrationCredentialOptions>(
+    builder.Configuration.GetSection(ModuleRegistrationCredentialOptions.SectionName));
+builder.Services.Configure<VerifiedGskuResolverCredentialOptions>(
+    builder.Configuration.GetSection(VerifiedGskuResolverCredentialOptions.SectionName));
+builder.Services.Configure<VerifiedGskuOperationalProvisioningOptions>(
+    builder.Configuration.GetSection(VerifiedGskuOperationalProvisioningOptions.SectionName));
+builder.Services.Configure<VerifiedMarketOperationalProvisioningOptions>(
+    builder.Configuration.GetSection(VerifiedMarketOperationalProvisioningOptions.SectionName));
+builder.Services.AddScoped<
+    Diten.Platform.Application.Features.BusinessReferenceData.Services.IBusinessReferenceDataVerifiedGskuOperationalEligibility,
+    DevelopmentBusinessReferenceDataVerifiedGskuOperationalEligibility>();
+builder.Services.AddScoped<Diten.Platform.Application.Features.BusinessReferenceData.Services.IBusinessReferenceDataVerifiedMarketOperationalEligibility,
+    DevelopmentBusinessReferenceDataVerifiedMarketOperationalEligibility>();
+builder.Services.AddScoped<VerifiedMarketOperationalProvisioningRunner>();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<IModuleRegistrationCredentialAuthenticator, ModuleRegistrationCredentialAuthenticator>();
+builder.Services.AddSingleton<IVerifiedGskuResolverCredentialAuthenticator, VerifiedGskuResolverCredentialAuthenticator>();
+builder.Services.AddScoped<IVerifiedGskuResolverJwtTenantContext, VerifiedGskuResolverJwtTenantContext>();
 
 // AG-STEP-011 / MOD-0018-FU14 Group B — self-explain observer (API-layer; reuses the API-layer PermissionClaimEvaluator).
 builder.Services.AddScoped<Diten.Platform.API.Observability.ICorrelationContext, Diten.Platform.API.Observability.CorrelationContext>();
 builder.Services.AddScoped<Diten.Platform.API.Authorization.Explain.ISelfAccessExplainService, Diten.Platform.API.Authorization.Explain.SelfAccessExplainService>();
 builder.Services.AddHostedService<BusinessReferenceDataCatalogLoadWorker>();
+builder.Services.AddHostedService<VerifiedGskuOperationalProvisioningRunner>();
 // A1 — auto-register every controller [HasPermission] key into AuthService at startup (best-effort, idempotent).
 builder.Services.AddHostedService<Diten.Platform.API.Services.Security.PlatformPermissionAutoRegistrationWorker>();
 // MC-3b — self-register Platform-internal module manifests (workflow, …) into the catalog in-process at startup.
@@ -154,6 +178,16 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+if (VerifiedMarketOperationalCommandLine.IsRequested(args))
+{
+    VerifiedMarketOperationalCommandLine.EnsureDevelopment(builder.Environment);
+    await using var operationalScope = app.Services.CreateAsyncScope();
+    await operationalScope.ServiceProvider
+        .GetRequiredService<VerifiedMarketOperationalProvisioningRunner>()
+        .RunAsync();
+    return;
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();
