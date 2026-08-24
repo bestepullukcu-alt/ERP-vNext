@@ -2943,7 +2943,6 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   **projeksiyondan** hesaplanıyor, DOM yalnız INDEKS'i veriyor. Kapalı görevde Sortable hiç bağlanmıyor.
 - **Gelecek regresyon riski: 🟢 eklemeli** — düğmeler yerinde, kapalı görev korunuyor.
 
-
 ### BL-095 — 🟠 Sıralama ucu sahiplik sormuyor; sıra da bir anlam taşıyabilir
 - **Ölçüm (2026-08-13):** `ReorderChecklistCommand` görev/run/kapalı/sürüm denetimlerinden geçiyor ama
   `RefuseNotYours` çağırmıyor — bilinçli: sıralama TÜM listeyi bir kerede yazıyor, tek maddenin anlamını
@@ -4086,27 +4085,6 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   hak ediyor.
 - **Gelecek regresyon riski: 🟡** — "kaydettim ama geri geldi" tipi şikâyetlerin klasik kaynağı.
 
-### BL-188 kapanış notu (2026-08-23) — teşhis, sonra düzeltme
-- **Vazgeçme yolu suçsuz çıktı.** Ölçüldü: sarmalayıcı iptalde hiçbir geri çağırma çalıştırmıyor (`onCancel`
-  verilmemiş), hiçbir durum değiştirmiyor, hiç çizmiyor. `toggleSnooze` de kopya değil **canlı** nesne alıyor
-  (`itemById(...)`). Yani bayat görüntünün kaynağı diyalog değildi.
-- **Gerçek kök neden:** `loadWorkItems` — projeksiyonu **on üç yerden** yeniden okunuyor ve her yazma bunun
-  üzerinden tazeleniyor — hangi okumanın daha YENİ olduğuna bakmadan `state.items`'a yazıp çiziyordu. Üst üste
-  binen iki okuma da boyuyordu ve **en son CEVAPLAYAN** kazanıyordu; oysa doğru olan en son SORAN'dır. Silinen
-  satır, silinmeden önce başlamış bir okumanın geç gelen cevabıyla geri geliyordu.
-- **Düzeltme:** kuşak sayacı (`loadGeneration`). Kilit değil — eski cevap **atılıyor**, yeni cevap
-  geciktirilmiyor. `loadState`/`loadError` de aynı kurala tabi: bayat bir hata, yüklenmiş bir sayfayı boşaltamaz.
-- **KARDEŞLER AYNI DÜZELTMEYİ ALDI:** plan, bilgi bekle, yeniden atama, kontrol listesi ve notlar hepsi
-  `afterPhase2Write` → aynı `loadWorkItems` üzerinden tazeleniyor. Tek yerde düzeltildi, hepsi kapsandı.
-- **Canlı kanıt:** bir okuma `fetch` sarmalayıcısıyla 3sn tutuldu, sonra erteleme kaldırıldı; tutulan (bayat)
-  cevap en son geldi ve **satırı geri getirmedi**.
-- ⚠ **Test kapsamı sınırı, açıkça:** jsdom koşumunda tek bir tıklama **iki** okuma üretiyor, çünkü `wcn-boot`
-  her boot'ta app.js'i yeniden yüklerken ÖNCEKİ örneğin belge dinleyicileri hâlâ bağlı — tek DOM'u iki modül
-  örneği paylaşıyor ve her birinin kendi kuşak sayacı var. Sırasız senaryo orada **kurgulanamıyor**; bu yüzden
-  `wcn-stale-refresh.test.js` yalnız kanıtlayabildiğini iddia ediyor (yeni cevap geçer, sırayla gelen cevap
-  çizer) ve yapısal gardiyanı kilitliyor. Sırasızlık kanıtı tarayıcıda.
-- **Gelecek regresyon riski: 🟢.**
-
 ### BL-189 — [ÖLÇÜM] Harness'ta iki modül örneği tek DOM'u paylaşıyor
 - `wcn-boot` her boot'ta `app.js`'i yeniden yüklüyor; global modül nesneleri siliniyor ama **belge üzerindeki
   tıklama dinleyicileri** kalıyor. Sonuç: bir tıklama iki kez işleniyor, iki ağ okuması üretiyor.
@@ -4126,17 +4104,6 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   backbone-custom.css'te" kuralının dışında ve kütüphanenin kendi davranışlarını `!important` ile eziyor.
   Taşınması ayrı bir tur; bu turda dokunulmadı.
 - **Gelecek regresyon riski: 🟡.**
-
-### BL-190 kapanış notu (2026-08-23)
-- Blok `_GlobalConfirmation.cshtml`'den `backbone-custom.css`'e taşındı; partial'da `<style>` kalmadı.
-- `!important`'lar tek tek gözden geçirildi: `.swal-icon-circle`'ın `margin: 0 auto !important`'ı **kaldırıldı**
-  (kütüphanenin orada verdiği bir marj yoktu, kimseyle dövüşmüyordu). Başlığın dört reseti **kaldı** — Bootstrap
-  utility'leriyle çarpışıyorlar ve utility'ler zaten `!important` taşıyor. İkon satırının width/border/margin
-  reset'leri **kaldı** — `div:where(.swal2-icon)`'u eziyorlar.
-- `.swal2-icon`'un koşulsuz `display: flex !important`'i **`:not(:empty)`** ile koşullu hâle geldi; bu sayede
-  kütüphanenin kendi `display: none`'ı ayakta kalıyor ve geçen turun `:empty` dolanması **silindi**.
-- Üç ekranda önce/sonra ölçüldü (Rol İzinleri · Yeni Görev · Kullanıcılar): çember 80px, glif 40px, slot
-  kenarlığı 0, başlık sapması 0, düğme renkleri aynı.
 
 ### BL-191 — ✅ KAPANDI (2026-08-23) — Tarih kutusu ürünün kontrolü oldu; 21→19px KABUL
 - Sahibin bildirdiği "ikon yanlış" kusuru **glif değil, kutu** çıktı. Ölçüm, create formunun tarih alanıyla
@@ -4162,14 +4129,6 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - **Karar senin:** `allowInput: true` verilip elle yazma açılsın mı (o zaman ret mesajı gerçekten görünür bir
   yüzey olur), yoksa yazma kapalı mı kalsın?
 - **Gelecek regresyon riski: 🟢.**
-
-### BL-192 kapanış notu (2026-08-23) — CT kararı
-- `allowInput` **açılmayacak**. Bir hata mesajını görünür kılmak için tarih alanına serbest metin deliği açmak,
-  çözdüğünden çok sorun getirir.
-- Mesaj, sunucunun kendi reddinin (400 `TASK_SNOOZE_DATE_INVALID`) istemci aynası. Arayüzden tetiklenememesi
-  **kusur değil**: takvim geçmişi zaten kapatıyor. Alert dili yerinde, **erişilemez ama doğru** olarak duruyor.
-- Doğrulayıcının davranışı artık testle sabit (boş değeri reddeder · bugünü kabul eder · geçmişi reddeder ·
-  geleceği kabul eder), yani erişilemez olması onu ölçülemez yapmıyor.
 
 ### BL-193 — ✅ KAPANDI (2026-08-23) — Sarmalayıcı, kütüphanenin girdisini kaybettiriyordu
 - **Bir önceki tur bir kusur getirdi ve commit alınmadığı için üretime gitmedi.** Takvim ikonunu koymak için
@@ -4237,37 +4196,6 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   düzeltildi ve gerekçesi testin içine yazıldı.
 - Aynı tuzak zamana dayanan her yeni test için geçerli: "bugün"ü üründen sor, saatten değil.
 - **Gelecek regresyon riski: 🟢.**
-
-### BL-181 kapanış notu (2026-08-24)
-- **Gizleme FETCH'te değil RENDER'da.** CT'nin ilk tasarımı (sunucuda, sayfalamadan önce elemek) ölçümle
-  geçersiz kılınmıştı: `work-items-api.js`'te sayfalama yok, bütün sayaçlar `state.items` üzerinden istemcide
-  hesaplanıyor; sunucuda elenen satır çipte de sayılamaz ve BL-045'in kusuru geri gelirdi.
-- **`snoozed` bir SİNYAL** — `SIGNALS`/`SIGNAL_KEY`/`SIGNAL_ICON`/`SIGNAL_TEST`'e eklendi, testi **mevcut**
-  `isSnoozed`; eş anlamlı ikinci bir yardımcı yazılmadı.
-- **Gizleme `passesFilters` içinde, `inTab`'da DEĞİL.** Sebep koda yazıldı: `facetItems('signal')` sinyal
-  eksenini atlıyor, böylece çip kendi sakladığını sayabiliyor. `inTab`'a konsaydı çip 0 derken üç satır
-  ulaşılamaz olurdu — mutasyon kanıtı bunu gösteriyor (5 test kırmızı).
-- **Çip TERSİNE çalışıyor ve bu asimetri koda yorumla yazıldı** ("DO NOT fix this for consistency").
-- **Sekme rozeti ertelenmişi saymıyor** — ama bu `tabCount`'ta yapıldı, `inTab`'da değil; brifingin "`inTab` de
-  eleyecek" cümlesi çip sayımıyla çelişiyordu, gerekçesi koda ve rapora yazıldı.
-- **Kapsam:** yalnız `inbox` + `islerim` (`SNOOZE_TABS`). Canlı ölçüldü: ertelenmiş ama TAMAMLANMIŞ bir iş
-  Geçmiş'te duruyor ve rozet 13'te kalıyor; Havuz'da kişisel örtü uygulanmıyor.
-- **Geri alma satırda:** `.wcn-row-actions` içinde, PIN'in birebir dili (aynı yer, aynı küçük ikon düğmesi,
-  dolu/boş glif, `aria-pressed`, aynı `data-wcn-snooze` yolu). Menü reddedildi — bu satırda menü yok, tek iş
-  için ikinci bir dil açmak olurdu.
-- **Süresi dolan kendiliğinden dönüyor:** sağlayıcı `snoozedUntil`i yalnız gelecekteyse yansıtıyor; istemci
-  tarafı testle kilitlendi (geçmiş tarihli örtü gizlemiyor, çip de çıkmıyor).
-- **Canlı tam senaryo (gerçek tıklama):** İşlerim 26 → üç iş ertelendi → rozet **23**, liste **Aktif 16**,
-  çip **"Ertelenmiş 3"** (tek karede) → çipe tıklandı → yalnız o 3 satır, her birinde geri-alma düğmesi,
-  segmentler 3/0/0, tür çipi 3 → biri geri alındı → çip **2**, rozet **24**, liste **Aktif 17** → **yenilendi**,
-  hepsi aynı kaldı.
-- **Facet tutarlılığı:** her ölçümde Aktif+Bekleyen+Planlı = rozet ve tür çipi = görünen topluluk
-  (23 = 16+4+3 · 2 = 2+0+0 · 24 = 17+4+3).
-- **Şerit:** sinyal çipleri 3 → 4; 1440 ve 900'de, iki temada tek satır, sarma/taşma/kesilme yok.
-- **Yanlış yorum düzeltildi:** `app.js`'teki "segmentFor waitingOn/snoozedUntil üzerinden çalışır" cümlesi
-  ölçülüp yanlış bulundu (`segmentFor` veri katmanında, `normalizedStatus` ve plan tarihine bakıyor).
-- **Gelecek regresyon riski: 🟡** — "rozet ve çip iki farklı topluluk" bilinçli bir asimetri; ilerideki bir
-  "tutarlılık" düzeltmesi özelliği sessizce geri kırabilir. Üç mutasyon testi bu yüzden var.
 
 ### BL-198 — [KARAR SENİN] "Ertelenmiş" çipi Havuz ve Geçmiş'te de görünüyor (ama orada gizlemiyor)
 - Kapsam kararı gereği gizleme yalnız `inbox`/`islerim`'de. Çip ise sayısı sıfırdan büyükse **her sekmede**
@@ -4365,3 +4293,223 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - ALINAN DERS: süre ölçümü, makinenin yükü yazılmadan kayda geçmez. Bu oturumda
   ikinci kez kirli koşulda ölçüp sonuç çıkardım.
 - **Gelecek regresyon riski: 🟡** — kod şekli kötü, etkisi bugün yok.
+
+### ⚠ KAYIT (2026-08-24) — BL-204…BL-212 bu dosyada YOK
+- Bu turda ölçüldü: dosyanın en büyük numarası **BL-203**. Oysa son iki turda BL-206…BL-212 bu dosyaya
+  yazılmıştı ve bu turun şartnamesi **BL-205 ile BL-211'e numarayla atıfta bulunuyor** — yani sahip tarafında
+  o kayıtlar var, diskteki dosyada yok.
+- `git status`: `docs/product-backlog.md` **değişmemiş** görünüyor; yani kayıtlar commit'lenmedi, geri alındı.
+- Çakışmayı önlemek için bu tur **BL-213'ten** devam ediyor. BL-204…BL-212 aralığı **kullanılmadı ve
+  yeniden kullanılmayacak** — sahibin elindeki numaralar korunsun diye.
+- ⚠ Bu bir tahmin değil ölçüm: kaybolan kayıtların içeriği bu turda yeniden yazılmadı; yalnız durum bildirildi.
+
+### BL-204 — ✅ KAPANDI (2026-08-24) — Gerekçe kutusu sütuna hapsolmuştu
+- Ölçüm: `.wcn-actrail-secondary` saran bir flex satırı ve öğeleri **içerikleri kadar** (`flex: 0 1 auto`);
+  alert de düğmeyle **aynı `<li>`** içinde. Sonuç: 371px'lik kartta **194px**'lik uyarı — girinti gibi okunuyor.
+- **Düzeltme:** gerekçe taşıyan ikincil satır tüm satırı alıyor (`wcn-act-hasreason` → `flex: 1 0 100%`) ve
+  **düğme de birlikte** genişliyor (`inline-size: 100%`). Gerekçesi olmayan aksiyonlar doğal genişliklerinde.
+- **Düğme neden birlikte taşınıyor:** bu kart **aynı anda iki gerekçe** gösterebiliyor (canlı ölçüldü: Tamamla
+  altında "Bir alt görev hâlâ açık", Başkasına ata altında "Bu görev devredilemez."). Alert'leri tek başına
+  karta yaymak, hangi cümlenin hangi düğmeye ait olduğunu söyleyen tek şeyi — altında durmasını — bozardı.
+- **Dar ekran kardeşi ölçüldü, hapsolma YOK:** `.wcn-actionbar` `display: block`, gerekçe zaten tam genişlik
+  (853px'lik şeritte 821px). Dokunulmadı.
+- Dört kombinasyonda doğrulandı (1440/900 × aydınlık/karanlık): gerekçeli satırlar liste genişliğinde
+  (371px / 805px), gerekçesizler 95px ve 116px.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-205 — [YAPILMADI] Panel kapatma düğmeleri "İptal" diye adlandırılıyor
+- `app.js:4473` ve `4603`: offcanvas kapatma (×) düğmelerinin `aria-label`'ı `t('ReasonCancel')` = "İptal".
+  Ekran okuyucu bir KAPATMA düğmesini "İptal" diye duyuyor.
+- Doğru karşılık büyük olasılıkla `PanelClose` ("Paneli kapat") — modülde zaten var.
+- BL-202'nin kapsamı diyalog düğmeleriydi; bu ikisi ayrı bir yüzey, bu turda **değiştirilmedi**.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-206 kapanış notu (2026-08-24) — Düğmeler satırı paylaşır, cümle kendi eylemini söyler
+- **Kusurun kökü (ölçüldü):** alert, düğmeyle AYNI `<li>`'nin içindeydi. BL-201'de `<li>`'ye
+  `flex: 1 0 100%` verilerek cümleye kart genişliği kazandırıldı — ve satır kaybedildi: sarma yapan bir flex
+  sırasında tam genişlik bir `<li>`, diğer bütün düğmeleri kendi satırına iter. Sahibin sorusu tam bu:
+  "Başkasına ata neden Bilgi bekle'nin yanında değil?"
+- **Karar (sahip, 2026-08-24):** cümle `<li>`'den ÇIKAR. Düğmeler doğal genişlikte tek satırda
+  (`flex: 0 1 auto` geri geldi), gerekçeler `<ul class="wcn-actrail-secondary">`'den SONRA tam genişlik.
+  Yakınlığın taşıdığı eşleştirme iki yeni taşıyıcıya devredildi: cümle **aksiyonun adını söyler**
+  (`ActionDisabledWithName`, 7 dil) ve düğme `aria-describedby` ile **kendi cümlesine bağlanır**.
+- **Silinen:** `.wcn-actrail-secondary .wcn-act-hasreason` iki CSS kuralı + yorumu, `app.js`'teki
+  `wcn-act-hasreason` sınıfı. Yanlış bir kararı doğru anlatan yorum da gitti.
+- **Kimlik kararlı:** `wcn-actreason-{itemId}-{actionCode}` — sayaçtan/rastgeleden değil aksiyon kodundan
+  türetiliyor, çünkü bu kart her yoklamada yeniden çiziliyor; sayaç tabanlı bir id `aria-describedby`'yi bir
+  sonraki çizimde boşluğa düşürürdü. Testle kilitli (iki çizim, aynı id).
+- **Canlı ölçüm (9bf6194e, 1440×900, koyu ve açık):** "Bilgi bekle" ve "Başkasına ata" üst kenarları
+  **y=523 ve y=523 — aynı satır**. İki gerekçe kutusu da **371px = kartın iç genişliği**. Cümle:
+  "Başkasına ata — Bu görev devredilemez." `aria-describedby` →
+  `wcn-actreason-9bf6194e-…-reassign` → var olan `.wcn-act-reason`, doğru cümle. 900×900'da aynısı: y=1388
+  / y=1388, kutular 805px. İkinci aday 869195b4 aynı sonucu verdi.
+- **Birincil aksiyon (Tamamla) DEĞİŞMEDİ:** kendi katmanında tek başına, zaten tam genişlik, belirsizlik yok
+  → adını söylemesine gerek yok, `aria-describedby` almadı. Canlı doğrulandı: "Bir alt görev hâlâ açık"
+  hâlâ kendi `<li>`'sinin içinde, 371px.
+- **Yıkıcı katman aynı yoldan geçiyor:** her iki tier de artık tek bir `actionRail()` üretiyor, `<ul>`
+  markup'ı kodda tek yerde (testle kilitli). ⚠ **Ölçüldü: 62 fixture öğesinin hiçbirinde gerekçesi olan
+  devre dışı bir yıkıcı aksiyon yok** — yani canlı vaka bulunamadı; muamele yapısal olarak uygulanmış ve
+  testle korunuyor, ekranda gözlenemedi.
+- **Dar şerit (`.wcn-actionbar`) ayrı kod yolu, DEĞİŞMEDİ:** `renderActionBar` yalnız **birincil** aksiyonun
+  gerekçesini çiziyor (`wcn-actionbar-reason`), ikincil/yıkıcı olanlar gerekçesiz bir dropdown'a katlanıyor.
+  Tek cümle, tek düğme → belirsizlik yok, ad gerekmiyor. 900×900'de ölçüldü: 821px, tam genişlik.
+- **Gelecek regresyon riski: 🟢** (yapı sadeleşti; iki tier tek üreticiye indi).
+
+### BL-207 — [YAPILMADI] Aynı engel sayfada üç yerde birden yazıyor
+- Ölçüldü (9bf6194e, 1440×900): (1) sayfa üstü kırmızı şerit "1 alt görev kapanmadan tamamlanamaz — Alt
+  görevlere git", (2) aksiyon kartında "Bir alt görev hâlâ açık", (3) alt görev kartında sarı kutuda aynı
+  engel. **Üçü de yanlış değil, ama üçü birden fazla.**
+- Ölçülecek: üçü aynı kaynaktan mı geliyor (`disabledReasonCode` / `gates` / `wcn-subtask-gate`), hangisi
+  hangi soruyu cevaplıyor (— "bu sayfada bir sorun var" / "bu düğme neden çalışmıyor" / "hangi alt görev"),
+  hangisi silinebilir?
+- Bu turda **kasıtlı olarak dokunulmadı** — sahibin kararı alınmadan bir uyarı silmek, üç kez söylemekten
+  daha kötü olabilir.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-208 — [YAPILMADI] Dar şeritteki dropdown'da devre dışı aksiyon sebebini söylemiyor
+- Ölçüldü (900×900, 9bf6194e): `.wcn-actionbar` dropdown'ında "Başkasına ata" **disabled** ama yanında hiçbir
+  cümle yok. Kartta aynı düğme "Bu görev devredilemez." diyor; şeritte sessiz.
+- BL-206'nın kapsamı karttı; şerit ayrı bir kod yolu (`renderActionBar`) ve bu turda değiştirilmedi.
+- **Gelecek regresyon riski: 🟢** (katkısal düzeltme).
+
+### BL-209 — [YAPILMADI] Enterprise Strategy testleri kırmızı (bu turdan önce de kırmızıydı)
+- `npx vitest run tests/` → **1517 geçti, 9 kırmızı**; hepsi `strategy-apis`, `objectives-edit-hydration`,
+  `planning-cycles-*`, `strategy-periods-*` dosyalarında.
+- `git stash` ile doğrulandı: bu turun değişikliklerinden **önce de** kırmızıydılar. WorkCenterNext'e ait
+  değil, bu turda düzeltilmedi.
+- Ayrıca `wcn-text-in-boxes.test.js` içindeki BL-201 testlerinden biri (`inline-size: 100%` bekleyen) de
+  bu turdan önce kırmızıydı — o test bloğu BL-206 ile tamamen değiştirildi.
+
+### BL-210 kapanış notu (2026-08-24) — Bağımlılık satırı kuralı söylüyor (A4, sahip C seçeneği)
+- **Ölçülen kusur (canlı, `bfcfa8ba`):** `ÖNCÜL · sasasa · FS · tamam` — dört parça yan yana, aralarında
+  görünür ilişki yok; `FS`'in açılımı YALNIZ `title` tooltip'inde (dokunmatikte hiç yok); `tamam` öncülün
+  durumu ama satırın sağ ucunda satırın kendi durumu gibi okunuyor.
+- **Yapılan:** kompakt tek satır korundu. Yön **ok ikonu** oldu (sol = yukarıdan biri beni tutuyor,
+  sağ = ben aşağıdakini tutuyorum); `ÖNCÜL`/`ARDIL` kelimeleri gitti. Tür **yarım cümle** olarak satırın
+  içine yazıldı. Durum rozeti ve sözlüğü (`DEP_STATE_KEY` / `DEP_STATE_KIND`, `cancelled` dahil)
+  **değişmedi**.
+- **Anlam TÜRETİLDİ, uydurulmadı.** Kaynak: `DEPENDENCY_TYPES` (fixture-contract.js:76 = motorun
+  `TaskDependencyType`'ı) + ürünün zaten yazdığı iki yer — `DepTypeFS` "Bitince başlar (FS)" ailesi ve
+  `BlockerFinishToStart` "«{0}» kapanmadan başlanamaz" ailesi. İlk fiil öncülün ulaşması gereken nokta,
+  ikinci fiil ardılın o zaman yapabileceği şey. Sekiz cümle bu tek kuralı iki uçtan okuyor; beşinci bir
+  anlam üretilmedi.
+- **`Blocker*` anahtarları YENİDEN KULLANILMADI**, bilerek: onlar edilgen, tırnaklı ve yalnız CANLI bir
+  engeli anlatıyor. Bu satır ilişkinin kendisini anlatıyor (bitmiş bir öncülün de türü var) ve sahibin
+  seçtiği ikinci tekil şahısla konuşuyor.
+- **Kısaltma KALDI, rütbesi düştü** — cümleden SONRA, küçük ve soluk, `title`'ı hâlâ duruyor; artık `wcn-chip`
+  değil, çünkü çip cümleyle eşit ağırlık iddia eder. Karar: bileni için en hızlı okuma, ama cümle onsuz da
+  tam. Testle kilitli (kısaltma DOM'dan silinince satır hâlâ kuralı söylüyor).
+- **Satır dili icat edilmedi:** `.diten-checkitem`'dan değer değer kopyalandı — `padding: .375rem .5rem`,
+  `1px solid var(--bs-border-color)`, `border-radius: .375rem`, `background: var(--bs-card-bg)`,
+  `align-items: center`. Canlı ölçüm: `6px 8px` / `1px rgb(228,230,232)` / `6px` / `rgb(255,255,255)` / center.
+- **Ok SESSİZ (`aria-hidden="true"`)** — cümle yönü zaten kelimeyle söylüyor; kendini duyuran bir ikon yönü
+  ekran okuyucuya iki kez okuturdu.
+- **CANLI KAPSAM — SEKİZDEN KAÇI GÖRÜLDÜ:**
+  - Gerçek backend verisiyle **2/8**: `pred/FS` (`bfcfa8ba` "sasasa", durum **tamam**; `38589f6a`, durum
+    **başlamadı**) ve `succ/FS` (`95312464`). Ölçüldü: 62 öğenin 3'ünde bağımlılık var, **üçü de FS**.
+  - Kalan **6/8** için **FIXTURE EKLENDİ** ve bu yazıldı: `islerim-showcase-fixtures.js` içindeki
+    `ISLERIM-WORK-ACTIVE` ("max veri" showcase görevi) bağımlılık listesi 2'den 8'e çıkarıldı. Mevcut iki
+    satır **değiştirilmedi**, yeni dize eklenmedi (başlıklar o görevin zaten kullandığı iki kaynak).
+    `?fixtures=showcase` ile sekizi de canlı görüldü, sekiz farklı cümle.
+- **DURUM × YÖN (sahibin 2. koşulu), canlı:** `pred/FS/done` → "sasasa bitmeden başlayamazsın" + yeşil
+  **tamam**; `pred/FS/not-started` → "Anahtar kullanıcı eğitimi bitmeden başlayamazsın" + gri **başlamadı**.
+  Fark rozetin renginde ve kelimesinde görünür; cümle ikisinde de aynı kuralı söylüyor — çünkü kural durumla
+  değişmiyor, yalnız o kuralın şu an ısırıp ısırmadığı değişiyor.
+- **İki genişlik × iki tema:** 1440 ve 900'de sekiz satır da 35px, yatay taşma **yok** (satır `scrollWidth -
+  clientWidth = 0`, sayfa `0`). Koyu temada satır yüzeyi kart yüzeyiyle aynı (rgb(43,44,64)), kutu kenarlıkla
+  tanımlanıyor — `.diten-checkitem` ile aynı davranış.
+- **UZUN BAŞLIK:** 121 karakterlik bir cümleyle ölçüldü (900px): satır 35px → **50px**, cümle **2 satıra
+  sarıyor**, kırpma yok, yatay taşma yok. Karar: sarsın — kırpılmış bir kural, üzerine hareket edilemeyen
+  bir kuraldır.
+- **DEĞİŞMEYENLER (dokunulmadı, yazıldı):** kart **salt okunur**, "Bağımlılık ilişkisi kaynağında yönetilir"
+  ipucu duruyor, düzenleme/Gantt/graf eklenmedi (testle kilitli: kartta 0 adet buton/input/link). Boş durum
+  (`!dependencies.length` → kart hiç çizilmez) **bu turda değişmedi**; A5'te kararlaştırılan boş-durum dili
+  ayrı bir turda gelecek.
+- **Gelecek regresyon riski: 🟢** (katkısal; sözlükler ve kart sözleşmesi el değmedi).
+
+### BL-211 — [YAPILMADI] Bağımlılık durum sözlüğünde büyük/küçük harf tutarsız
+- Canlı ölçüldü (`ISLERIM-WORK-ACTIVE`, tr): rozetler **"tamam" · "devam" · "başlamadı"** küçük harfle
+  başlarken `DepCancelled` **"İptal edildi"** büyük harfle ve tam cümle gibi.
+- Sahibin bu turdaki talimatı sözlüğün **değişmemesiydi** (`DEP_STATE_KEY` / `DEP_STATE_KIND`, `cancelled`
+  dahil) → **dokunulmadı**.
+- Düzeltilecekse yedi dilde birden ve rozet ailesinin tamamına bakılarak yapılmalı.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-212 — [YAPILMADI] Engel afişindeki `FS` çipi hâlâ tek taşıyıcı
+- `renderBlocked` satırları `<span class="wcn-chip wcn-chip-danger wcn-dep-type" title="…">FS</span>`
+  kullanmayı sürdürüyor: kısaltmanın açılımı orada **hâlâ yalnız tooltip'te**.
+- Orada cümle zaten var (`BlockerFinishToStart` ailesi), yani afiş bağımlılık satırı kadar kör değil — ama
+  çip aynı tooltip-bağımlılığını taşıyor.
+- A4'ün kapsamı **bağımlılık kartıydı**; afiş ayrı bir yüzey ve bu turda **değiştirilmedi**.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-213 kapanış notu (2026-08-24) — WorkCenter diyalogları tek dil konuşuyor (A3, sahip kararı (b))
+- **Ölçülen fark (ham `Swal.fire` ↔ ertele diyaloğu):** başlık 38px↔18px · açıklama 18px↔13px · popup
+  512px↔400px · vazgeç KIRMIZI↔nötr · ikon yok↔ay.
+- **Sebep, dikkatsizlik değil yapıydı:** görünüm `showConfirm`'ün İÇİNDE bir `customClass` sabitiydi. Onay
+  olamayan bir diyalog, görünümü de alamıyordu. Kırmızı vazgeç düğmesi temanın **küresel varsayılanı**
+  (`btn-label-danger`); paketi alan onu eziyordu, almayan ezemiyordu.
+- **Yapılan:** `window.DitenDialogAppearance(options)` — adlandırılmış, yayınlanmış, **tek tanım**. `showConfirm`
+  artık onu OKUYOR; `confirmVariant` (düğme rengi) dışarıdan gelmiyor, `type`'tan türüyor.
+- **Reddedilen (a):** ortak bileşene "özel alanlar" dikişi. Bu oturumda ona altı parametre eklendi; yedincisi
+  form üreticisine çevirirdi.
+- **`inputOptions` = YEDİNCİ ve SON parametre.** `select` seçenekleriyle gelmezse kullanılamaz bir kutudur —
+  eksik bir parametrenin diğer yarısı, yeni bir yetenek değil. **Geriye uyum sayıldı: 15 çağrı / 12 dosya,
+  hiçbiri `inputOptions` geçmiyor** (testle kilitli).
+- **Dört diyalog TAŞINDI** (tek değer → onay): Planla · Toplantı zamanı · Süre gir · Modül seç.
+  Tarih dikişi açılmadı — ertele diyaloğunun `inputType` + `onOpen` + `validate` yolu kullanıldı.
+- **Dört diyalog PAKETİ ALDI** (onay değil / çok alanlı): "+ Yeni" menüsü · Yeni toplantı formu ·
+  Aksiyon onayı (sahibin fotoğrafladığı) · Toplu ilerleme. Ham `Swal.fire` kaldılar ama artık `dialogLook()`
+  yayıyorlar. Yeni toplantı formunun **yapısına dokunulmadı** (B3'te offcanvas olacak).
+- **PLACEHOLDER SAYIMI:** sekiz diyalogda **9 kutu** var. Doldurulabilir 7'sinin **3'ünde placeholder VARDI**
+  (`LogTimePlaceholder` "örn. 30", `ReasonPlaceholder`, select'in boş seçeneği `NewPickModule`), **4'üne
+  EKLENDİ** (`DatePlaceholder`, `DateTimePlaceholder`, `MeetingTitlePlaceholder`,
+  `MeetingLocationPlaceholder`). Kalan 2 kutu `type="time"` — native saat kutusu placeholder'ı **hiç
+  göstermez**, değeri (09:00/09:30) zaten örnek; eklenmedi ve **eklenmediği yazıldı**.
+- **ALAN İKONU — tek tek:**
+  - tarih (Planla) → **takvim**, `.wcn-date-input`, sarmalayıcı YOK
+  - tarih+saat (Toplantı zamanı) → **takvim**, aynı sınıf
+  - süre (Süre gir) → **saat**, yeni `.wcn-time-input`, AYNI teknik (glif kutunun arka planında), SVG ürünün
+    kendi `.bx-time-five`'ı, koyu tema ve RTL varyantlarıyla
+  - select (Modül seç) → **ikon YOK**: temanın kendi oku zaten var, ikincisi iki ok olurdu
+  - serbest metin (gerekçe, toplantı başlığı, konum) → **ikon YOK**: kutunun ne olduğunu kutu söylüyor
+  - saat kutuları (başlangıç/bitiş) → native kontrolün kendi saat ikonu var, dokunulmadı
+- **BL-205 kapandı:** `app.js:4578` ve `4708` → `PanelClose`. Canlı doğrulandı: panelin kapatma düğmesi
+  **"Paneli kapat"** diyor. Dosyada `ReasonCancel` **sıfır** kez geçiyor.
+- **BL-211 kapandı, İLK TEŞHİS DÜZELTİLEREK:** `DepCancelled` baştan doğruymuş; aykırı olan üçü.
+  `DepDone`/`DepInProgress`/`DepNotStarted` artık **ürünün kendi sözlüğüyle birebir aynı** —
+  `SubtaskStatusDone`/`InProgress`/`NotStarted` değerlerinden ÖLÇÜLEREK kopyalandı, uydurulmadı, 7 dil.
+  (en "Done", tr "Tamamlandı", fr "Terminé", es "Completado", zh "已完成", ar "مكتملة", ru "Готово").
+- **Gelecek regresyon riski: 🟢** (görünüm tek tanıma indi; sözleşme genişlemedi).
+
+### BL-214 — [YAPILMADI] İki diyalog kullanıcı arayüzünden ULAŞILAMIYOR
+- **"+ Yeni" Swal menüsü (`openNew`, app.js:7012):** dispatch onu yalnız `data-wcn-new` değeri
+  task/note/meeting/source **olmayan** bir düğme için çağırıyor. Canlı ölçüldü: DOM'daki dört düğmenin
+  dördü de bilinen kind taşıyor → **hiçbir tıklama buraya varmıyor**. Liste sayfasındaki "+ Yeni" artık bir
+  Bootstrap dropdown'ı; bu Swal menüsünün yerini almış.
+- **Toplu ilerleme (`runBulkWithProgress`, app.js:7448):** `data-wcn-check` işaretçisi kodda yalnız
+  OKUNUYOR, hiçbir yerde ÇİZİLMİYOR (grep: 4 eşleşme, hepsi olay yakalayıcı). Seçim kutusu olmadan
+  `state.tableSelected` boş kalıyor, toplu şerit hiç görünmüyor, diyalog hiç açılmıyor.
+- Bu turda **ikisi de görünüm paketini aldı** (kaynak seviyesinde ve testle kilitli), ama görünümleri
+  tıklanarak değil kendi kod yollarına girilerek ölçüldü — raporda böyle yazıldı.
+- Ulaşılabilir kılmak için: `openNew` ya silinmeli ya dropdown'un yerine geri konmalı; toplu işlem için
+  tablonun seçim sütunu geri gelmeli. **İkisi de ürün kararı, bu turun konusu değil.**
+- **Gelecek regresyon riski: 🟡** — ölü kod, ama görünüm paketini aldığı için ileride yanlış bir "çalışıyor"
+  izlenimi verebilir.
+
+### BL-215 — [YAPILMADI] Görünüm paketinin DÖRT eski kopyası WorkCenter dışında duruyor
+- Ölçüldü: `popup: 'rounded-4 shadow-lg'` dizesi bu turdan ÖNCE de dört dosyada kendi kopyasını taşıyordu —
+  `shared/premium-modal.js`, `Account/login.js`, `Account/forgot-password.js`, `Account/reset-password.js`.
+- A3'ün kapsamı WorkCenter'dı: bu turda **hiçbiri değiştirilmedi**. Test onları **listeliyor** (birine
+  dokunulursa kırmızı olur) ve WorkCenter'ın **sıfır** kopya taşıdığını kilitliyor.
+- Doğrusu: dördü de `window.DitenDialogAppearance()` okumalı. Account ekranları ayrı bir tur.
+- **Gelecek regresyon riski: 🟡** — paket değişirse bu dört ekran ayrışır.
+
+### BL-216 — [YAPILMADI] Referans diyaloğun kendi placeholder'ı, sahibin A-kuralını çiğniyor
+- Sahibin (A) kuralı: placeholder GERÇEK BİR ÖRNEK olacak, alan adının tekrarı değil.
+- Ölçüldü: **ertele diyaloğu** — bu turun REFERANSI — tarih kutusuna placeholder olarak
+  `SnoozeUntilLabel` ("Hangi tarihe kadar") koyuyor; bu bir soru, örnek değil. `SnoozeDatePlaceholder`
+  ("YYYY-AA-GG") resx'te duruyor ama **kullanılmıyor**.
+- Ertele diyaloğu sekiz diyalogdan biri DEĞİLDİ, o yüzden bu turda **kasıtlı olarak dokunulmadı** —
+  referansı tur ortasında değiştirmek, kıyaslamayı geçersiz kılardı.
+- **Gelecek regresyon riski: 🟢.**
