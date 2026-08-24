@@ -72,6 +72,7 @@ Measured implementation baseline:
 | MOD-0230 UI i18n guardrails (`DEV-PVG-0230-UI-05`) | 100% | Seven-resource localization coverage guardrails pushed |
 | MOD-0230 negative-surface tests | 100% | API/UI negative-surface tests pushed; latest API tests 26/26 |
 | MOD-0230 API negative contracts (`DEV-PVG-0230-BE06-NEGATIVE-CONTRACT-01`) | 100% | Request DTO, route-method, safe reason-code, and fail-closed tests pushed |
+| MOD-0230 triage FieldSecurity guard (`PVG-0230-BE07-FIELDSECURITY-TRIAGE-01`) | 100% | Commit `6ee2c29f`; RegPvBase focused tests `48/48`; API focused tests `26/26` |
 | MOD-0230 UI regression tests | 100% | Static UI regression tests pushed |
 | PVG deep audit update (`AUD-PVG-DEEP-2026-08-21`) | 100% | Source/gov/static audit complete; plan updated |
 | MOD-0231/0232/0234 downstream drift inspection (`INS-PVG-DOWNSTREAM-02`) | 100% | No downstream runtime drift; composition-only DI watch item recorded |
@@ -117,6 +118,7 @@ Overall PVG operational readiness: **0% / NO-GO**.
 | `DEV-PVG-0230-UI-04` | DEV | Static accessibility and interaction guardrails | Done |
 | `DEV-PVG-0230-UI-05` | DEV | Static i18n/resource guardrails | Done |
 | `DEV-PVG-0230-BE06-NEGATIVE-CONTRACT-01` | DEV/TEST | API tests-only negative-contract hardening | Done |
+| `PVG-0230-BE07-FIELDSECURITY-TRIAGE-01` | DEV/TEST | Add MOD-0230 triage FieldSecurity guard for `TriageOutcome` and `TriageReason` | Done |
 | `DEV-PVG-0230-UI-REGRESSION-01` | DEV/TEST | UI tests-only regression guardrails | Done |
 | `DOC-PVG-DOWNSTREAM-CL-01` | DOC | Record MOD-0231/0232/0234 class-library/test-only downstream hardening evidence | Done |
 | `DOC-PVG-FIELDSECURITY-BLOCKER-01` | DOC | Record MOD-0230 FieldSecurity owner-approval blocker and missing evidence | Done |
@@ -1297,7 +1299,7 @@ Goal: record MOD-0230 FieldSecurity owner-approval status without authorizing ru
 
 Approval status:
 
-PVG-MOD0230-FieldSecurity-Contract v1 remains governance-only / owner approval required. MOD-0230 has recorded sensitivity classes and expected mask/omit/deny behavior, but no MOD-0019 owner-approved artifact/version, fail-closed proof, or focused MOD-0230 field-security test evidence exists.
+PVG-MOD0230-FieldSecurity-Contract v1 remains governance-only / owner approval required. MOD-0230 has recorded sensitivity classes and expected mask/omit/deny behavior, and BE07 improved local fail-closed test evidence for create/update/route/detail/list/triage. MOD-0019 owner approval, owner-approved artifact/version, export/audit field-security evidence, raw-value leak scans, and cross-tenant checks are still missing.
 
 Missing evidence:
 
@@ -1315,6 +1317,31 @@ Scope controls:
 - Operational runtime remains **NO-GO**.
 - MOD-0231, MOD-0232, and MOD-0234 runtime remains blocked.
 - This documentation update authorizes no runtime code.
+
+## 5.31 Completed WP: `PVG-0230-BE07-FIELDSECURITY-TRIAGE-01`
+
+Goal: record MOD-0230 BE07 triage FieldSecurity guard completion without claiming operational runtime,
+owner approval, or production readiness.
+
+Completed local/dev work:
+
+- MOD-0230 triage now invokes `IPvgFieldSecurityPolicy` for `TriageOutcome` and `TriageReason`.
+- Commit evidence: `6ee2c29f PVG add triage field security guard`.
+- RegPvBase focused tests passed: `48/48`.
+- API focused tests passed: `26/26`.
+- FieldSecurity gap improved: create/update/route/detail/list/triage now have fail-closed test evidence.
+
+Remaining governance blockers:
+
+- `PVG-MOD0230-FieldSecurity-Contract v1` remains governance-only / owner approval required.
+- MOD-0019 owner approval is still missing.
+- Operational runtime remains **NO-GO**.
+- MOD-0231, MOD-0232, and MOD-0234 runtime remains blocked.
+
+Scope controls:
+
+- No operational runtime authorization is recorded.
+- No owner approval or production readiness is claimed.
 
 ## 6. Verification Commands
 
