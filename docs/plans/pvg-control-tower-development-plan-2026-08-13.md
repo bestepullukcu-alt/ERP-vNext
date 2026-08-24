@@ -73,6 +73,7 @@ Measured implementation baseline:
 | MOD-0230 negative-surface tests | 100% | API/UI negative-surface tests pushed; latest API tests 26/26 |
 | MOD-0230 API negative contracts (`DEV-PVG-0230-BE06-NEGATIVE-CONTRACT-01`) | 100% | Request DTO, route-method, safe reason-code, and fail-closed tests pushed |
 | MOD-0230 triage FieldSecurity guard (`PVG-0230-BE07-FIELDSECURITY-TRIAGE-01`) | 100% | Commit `6ee2c29f`; RegPvBase focused tests `48/48`; API focused tests `26/26` |
+| MOD-0230 AuditEvent tests-only evidence (`DOC-PVG-0230-AUDIT-EVIDENCE-TESTS-01`) | 100% | Commit `816d5359`; RegPvBase focused tests `54/54`; API focused tests `26/26`; MOD-0021 owner approval still required |
 | MOD-0230 UI regression tests | 100% | Static UI regression tests pushed |
 | PVG deep audit update (`AUD-PVG-DEEP-2026-08-21`) | 100% | Source/gov/static audit complete; plan updated |
 | MOD-0231/0232/0234 downstream drift inspection (`INS-PVG-DOWNSTREAM-02`) | 100% | No downstream runtime drift; composition-only DI watch item recorded |
@@ -119,6 +120,7 @@ Overall PVG operational readiness: **0% / NO-GO**.
 | `DEV-PVG-0230-UI-05` | DEV | Static i18n/resource guardrails | Done |
 | `DEV-PVG-0230-BE06-NEGATIVE-CONTRACT-01` | DEV/TEST | API tests-only negative-contract hardening | Done |
 | `PVG-0230-BE07-FIELDSECURITY-TRIAGE-01` | DEV/TEST | Add MOD-0230 triage FieldSecurity guard for `TriageOutcome` and `TriageReason` | Done |
+| `DOC-PVG-0230-AUDIT-EVIDENCE-TESTS-01` | DOC/TEST | Record MOD-0230 AuditEvent tests-only evidence without owner approval or runtime authorization | Done |
 | `DEV-PVG-0230-UI-REGRESSION-01` | DEV/TEST | UI tests-only regression guardrails | Done |
 | `DOC-PVG-DOWNSTREAM-CL-01` | DOC | Record MOD-0231/0232/0234 class-library/test-only downstream hardening evidence | Done |
 | `DOC-PVG-FIELDSECURITY-BLOCKER-01` | DOC | Record MOD-0230 FieldSecurity owner-approval blocker and missing evidence | Done |
@@ -1342,6 +1344,40 @@ Scope controls:
 
 - No operational runtime authorization is recorded.
 - No owner approval or production readiness is claimed.
+
+## 5.32 Completed WP: `DOC-PVG-0230-AUDIT-EVIDENCE-TESTS-01`
+
+Goal: record MOD-0230 AuditEvent tests-only evidence without claiming operational runtime authorization,
+MOD-0021 owner approval, or production readiness.
+
+Completed local/dev evidence:
+
+- AuditEvent tests-only evidence completed.
+- Commit evidence: `816d5359 PVG add audit intent evidence tests`.
+- RegPvBase focused tests passed: `54/54`.
+- API focused tests passed: `26/26`.
+- Audit intent metadata is allow-listed only:
+  - `Operation`
+  - `Status`
+  - `RequiredPermission`
+  - `ActorKind`
+  - `HasCorrelation`
+  - `AcceptedAtUtc`
+- Create, update, triage, and route success paths have safe audit intent assertions.
+- Denied, missing-context, and cross-tenant paths assert no unsafe audit payload.
+- No real AuditEvent port was introduced.
+
+Remaining governance blockers:
+
+- MOD-0021 AuditEvent owner approval remains required for operational runtime.
+- Operational runtime remains **NO-GO**.
+- MOD-0231, MOD-0232, and MOD-0234 runtime remains blocked.
+
+Scope controls:
+
+- This is tests-only evidence and does not authorize operational runtime.
+- No MOD-0021 owner approval or production readiness is claimed.
+- No delete, export, archive, void, or bulk surface is authorized.
 
 ## 6. Verification Commands
 
