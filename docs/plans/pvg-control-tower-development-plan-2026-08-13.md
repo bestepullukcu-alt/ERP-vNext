@@ -45,7 +45,7 @@ Measured implementation baseline:
 | Area | Status | Evidence |
 |---|---:|---|
 | Governance baseline / DCP-004 | 100% | DCP approved; member build/test gates open |
-| PVG class-library contracts/tests | 100% | Latest serial class-library tests passed: 119/119 |
+| PVG class-library contracts/tests | 100% | Latest PVG relevant class-library/test-only validation passed: 159/159; commit `de4fca61` |
 | MOD-0230 API host shell (`PVG-0230-BE-01`) | 100% | API build passed; 5 host guardrail tests passed |
 | MOD-0230 persistence boundary (`PVG-0230-BE-02`) | 100% | RegPvBase 37 passed; API guardrails 5 passed |
 | MOD-0230 CQRS/controller endpoints (`PVG-0230-BE-03`) | 100% | API route/context tests 9 passed; lane report total 127 passed |
@@ -118,6 +118,7 @@ Overall PVG operational readiness: **0% / NO-GO**.
 | `DEV-PVG-0230-UI-05` | DEV | Static i18n/resource guardrails | Done |
 | `DEV-PVG-0230-BE06-NEGATIVE-CONTRACT-01` | DEV/TEST | API tests-only negative-contract hardening | Done |
 | `DEV-PVG-0230-UI-REGRESSION-01` | DEV/TEST | UI tests-only regression guardrails | Done |
+| `DOC-PVG-DOWNSTREAM-CL-01` | DOC | Record MOD-0231/0232/0234 class-library/test-only downstream hardening evidence | Done |
 | `AUD-PVG-DEEP-2026-08-21` | INS/DOC | Deep PVG source/governance audit and plan update | Done |
 | `VER-PVG-0230-BE05-UI02-01` | VER | Combined BE-05 + UI-02 source/build/test verification | Done; PASS |
 | `VER-PVG-STAGING-SCOPE-02` | VER | Source-only staging manifest before staging | Done; no staging performed |
@@ -1236,7 +1237,7 @@ Control Tower status after audit:
 | MOD-0230 local/dev API hardening | 100% | pushed; latest API tests `26/26` |
 | MOD-0230 Gateway route matrix | 100% | approved four-template matrix only; Gateway tests `19/19` |
 | MOD-0230 tenant UI static hardening | 100% | UI03/UI04/UI05/regression guardrails present |
-| PVG class-library build/test contracts | 100% | latest serial class-library tests `119/119`; total PVG service tests `145/145` |
+| PVG class-library build/test contracts | 100% | latest PVG relevant class-library/test-only validation `159/159`; commit `de4fca61` |
 | Package cleanliness | 99% | only `.claude/settings.local.json` was dirty before this plan update |
 | Authenticated MVC proxy proof | 100% | local/dev tenant-shell proxy smoke passed with safe `PVG_PERMISSION_DENIED` |
 | Operational runtime | 0% | NO-GO |
@@ -1269,6 +1270,25 @@ Recommendation:
   authorization evidence.
 - Do not start operational runtime, Gateway expansion, menu/catalog, persistence, appsettings, jobs, seeds, AI,
   MedDRA dictionary data, or downstream runtime work without a new approved gate.
+
+## 5.29 Completed WP: `DOC-PVG-DOWNSTREAM-CL-01`
+
+Goal: record completed local/dev class-library/test-only downstream hardening progress after commit
+`de4fca61 PVG harden downstream class-library contracts`.
+
+Recorded progress:
+
+- MOD-0231 Case Processing read/guard/handoff contract hardening completed.
+- MOD-0232 MedDRA Coding opaque reference contract hardening completed.
+- MOD-0234 Signal Management threshold/data-product placeholder contract hardening completed.
+- PVG relevant tests passed: `159/159`.
+
+Scope controls:
+
+- Operational runtime remains **NO-GO**.
+- MOD-0231, MOD-0232, and MOD-0234 runtime remains blocked.
+- No Gateway, frontend, API endpoint, persistence, appsettings, seed, job, menu/catalog, AI, MedDRA
+  data/import/search/cache, export, delete, archive, void, or bulk runtime exposure is authorized or recorded.
 
 ## 6. Verification Commands
 
