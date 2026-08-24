@@ -8,7 +8,8 @@
 | Item | Status |
 |---|---|
 | Branch | `feature/pvg/all-four-nonoperational-scaffold-final` |
-| Current branch/head | `23a71673` |
+| Current local HEAD | `083c9db3 PVG record retention blocker evidence` |
+| Remote sync status | Local branch is ahead of remote by `5` commits; do not push from this packet refresh |
 | PVG build-test readiness | **100% PASS** |
 | PVG operational readiness | **0% / NO-GO** |
 | Operational runtime authorization | Not granted |
@@ -28,17 +29,37 @@ MOD-0230 is ready at the local/dev/CI build-test level only.
 |---|---|
 | Build-test/local-dev readiness | **100% PASS** |
 | Local/dev runtime proof | **100% PASS**, non-operational only |
-| API focused tests | `26/26` passed |
-| RegPvBase focused tests | `64/64` passed |
+| API focused tests | Latest local closeout `35/35` passed |
+| RegPvBase focused tests | Latest local closeout `80/80` passed |
 | Gateway Ocelot tests | `19/19` passed |
 | PVG UI JavaScript syntax checks | Passed |
 | FieldSecurity evidence | Tests-only evidence recorded; MOD-0019 owner approval still required |
 | AuditEvent evidence | Tests-only evidence recorded; MOD-0021 owner approval still required |
 | WorkflowTransitionGate evidence | Tests-only evidence recorded; MOD-0023 owner approval still required |
 | EvidenceLink evidence | Tests-only evidence recorded; MOD-0031 owner approval still required |
+| TraceBundle/correlation/observability evidence | Tests-only evidence recorded; TraceBundle/Observability owner approval still required |
+| Retention/legal-hold/archive/void blocker evidence | Tests-only evidence recorded; retention/legal-hold owner approval still required |
 
 MOD-0230 local/dev behavior remains fail-closed. The current evidence proves the approved local route/API/UI
 surface and failure-path coverage, but it does not replace owner approvals for platform-owned controls.
+
+Latest local-only evidence not yet pushed:
+
+- TraceBundle/correlation/observability evidence:
+  - `695a3b18 PVG add trace observability evidence tests`
+  - `2fc2ead6 PVG record trace observability evidence`
+  - RegPvBase focused tests passed: `71/71`
+  - API focused tests passed: `28/28`
+- Retention/legal-hold/archive/void blocker evidence:
+  - `80069ab4 PVG add retention blocker evidence tests`
+  - `083c9db3 PVG record retention blocker evidence`
+  - RegPvBase focused tests passed: `80/80`
+  - API focused tests passed: `35/35`
+- Final local closeout audit:
+  - RegPvBase focused tests passed: `80/80`
+  - API focused tests passed: `35/35`
+  - Staged files: none
+  - Dirty files: only `.claude/settings.local.json`
 
 ### MOD-0231 Case Processing
 
