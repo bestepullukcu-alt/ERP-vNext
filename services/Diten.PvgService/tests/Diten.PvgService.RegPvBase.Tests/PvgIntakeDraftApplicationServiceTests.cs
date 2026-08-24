@@ -14,6 +14,7 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         "reporter@example.test",
         "free text narrative with PHI",
         "triage free-text reason",
+        "route free-text reason",
         "queue-safety-review",
         "updated-source-ref",
         "suspect product update",
@@ -351,14 +352,18 @@ public sealed class PvgIntakeDraftApplicationServiceTests
     public async Task Triage_denied_by_workflow_gate_blocks_before_mutation()
     {
         var callLog = new List<string>();
+        var store = new InMemoryPvgIntakeDraftRepository();
         var workflowGate = new RecordingWorkflowTransitionGate(callLog);
         var service = NewService(
             new RecordingFieldSecurityPolicy(callLog),
             workflowGate,
             new RecordingEvidenceLinkPort(callLog),
-            new RecordingPermissionGate(callLog));
+            new RecordingPermissionGate(callLog),
+            store);
         var created = await service.CreateDraftAsync(
             CreateCommand(ValidCreateRequest()));
+        Assert.True(created.Result.IsSuccess);
+        callLog.Clear();
         workflowGate.Decision = PvgPortDecision.WorkflowTransitionDenied();
 
         var triaged = await service.TriageDraftAsync(
@@ -376,17 +381,129 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         Assert.Contains(callLog, entry => entry.StartsWith("field:Triage:triage:", StringComparison.Ordinal));
         Assert.Contains("workflow:Triage", callLog);
         Assert.DoesNotContain("evidence:Triage", callLog);
+        Assert.Equal(
+            [
+                "permission:Triage:pvg.mod0230.intake.triage",
+                "field:Triage:triage:TriageOutcome",
+                "field:Triage:triage:TriageReason",
+                "workflow:Triage"
+            ],
+            callLog);
         Assert.True(
             callLog.FindIndex(entry => entry.StartsWith("field:Triage:triage:", StringComparison.Ordinal)) <
             callLog.FindIndex(entry => entry == "workflow:Triage"));
 
-        workflowGate.Decision = AllowedDecision();
-        var fetched = await service.GetDraftByIdAsync(
-            ReadByIdQuery(created.IntakeDraftId!));
+        var persisted = await store.FindByIdAsync(new PvgPersistenceTenantScope(TenantContext().TenantId), created.IntakeDraftId!);
 
-        Assert.Single(fetched.Items);
-        Assert.Equal(PvgIntakeStatus.IntakeCreated, fetched.Items[0].Status);
+        Assert.NotNull(persisted);
+        Assert.Equal(PvgIntakeStatus.IntakeCreated, persisted.Intake.Status);
+        Assert.Null(persisted.Intake.TriageOutcome);
+        Assert.Null(persisted.Intake.TriageReason);
+        Assert.Null(persisted.Intake.RouteTargetQueue);
         AssertSafe(triaged);
+    }
+
+    [Fact]
+    public async Task Route_denied_by_workflow_gate_blocks_before_evidence_and_preserves_route_target()
+    {
+        var callLog = new List<string>();
+        var store = new InMemoryPvgIntakeDraftRepository();
+        var workflowGate = new RecordingWorkflowTransitionGate(callLog);
+        var service = NewService(
+            new RecordingFieldSecurityPolicy(callLog),
+            workflowGate,
+            new RecordingEvidenceLinkPort(callLog),
+            new RecordingPermissionGate(callLog),
+            store);
+        var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+        Assert.True(created.Result.IsSuccess);
+        callLog.Clear();
+        workflowGate.Decision = PvgPortDecision.WorkflowTransitionDenied();
+
+        var routed = await service.RouteDraftAsync(
+            new RouteIntakeDraftCommand(
+                TenantContext(),
+                ActorContext(),
+                CorrelationContext(),
+                created.IntakeDraftId!,
+                new PvgRouteIntakeDraftRequest("queue-safety-review")));
+
+        Assert.False(routed.Result.IsSuccess);
+        Assert.Equal(PvgApplicationOutcome.Blocked, routed.Result.Outcome);
+        Assert.Equal(PvgSafeReasonCodes.WorkflowTransitionGateUnavailable, routed.Result.ReasonCode);
+        AssertSafeReasonCode(routed.Result.ReasonCode);
+        Assert.Empty(routed.Result.ValidationFailures);
+        Assert.Null(routed.IntakeDraftId);
+        Assert.Null(routed.AuditIntent);
+        Assert.Equal(
+            [
+                "permission:Route:pvg.mod0230.intake.route",
+                "field:Route:route:RouteTargetQueue",
+                "workflow:Route"
+            ],
+            callLog);
+        Assert.DoesNotContain("evidence:Route", callLog);
+
+        var persisted = await store.FindByIdAsync(new PvgPersistenceTenantScope(TenantContext().TenantId), created.IntakeDraftId!);
+
+        Assert.NotNull(persisted);
+        Assert.Equal(PvgIntakeStatus.IntakeCreated, persisted.Intake.Status);
+        Assert.Null(persisted.Intake.TriageOutcome);
+        Assert.Null(persisted.Intake.TriageReason);
+        Assert.Null(persisted.Intake.RouteTargetQueue);
+        AssertSafe(routed);
+    }
+
+    [Theory]
+    [InlineData(PvgIntakeOperation.Triage)]
+    [InlineData(PvgIntakeOperation.Route)]
+    public async Task Cross_tenant_triage_and_route_do_not_leak_existence_through_workflow_denial(PvgIntakeOperation operation)
+    {
+        var callLog = new List<string>();
+        var workflowGate = new RecordingWorkflowTransitionGate(callLog)
+        {
+            Decision = PvgPortDecision.WorkflowTransitionDenied()
+        };
+        var service = NewService(
+            new RecordingFieldSecurityPolicy(callLog),
+            workflowGate,
+            new RecordingEvidenceLinkPort(callLog),
+            new RecordingPermissionGate(callLog));
+        var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+        Assert.True(created.Result.IsSuccess);
+        callLog.Clear();
+
+        var blocked = operation switch
+        {
+            PvgIntakeOperation.Triage => await service.TriageDraftAsync(
+                new TriageIntakeDraftCommand(
+                    TenantContext("foreign-tenant-secret"),
+                    ActorContext(),
+                    CorrelationContext(),
+                    created.IntakeDraftId!,
+                    new PvgTriageIntakeDraftRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason"))),
+            PvgIntakeOperation.Route => await service.RouteDraftAsync(
+                new RouteIntakeDraftCommand(
+                    TenantContext("foreign-tenant-secret"),
+                    ActorContext(),
+                    CorrelationContext(),
+                    created.IntakeDraftId!,
+                    new PvgRouteIntakeDraftRequest("queue-safety-review"))),
+            _ => throw new InvalidOperationException($"Unsupported workflow cross-tenant test operation {operation}.")
+        };
+
+        Assert.False(blocked.Result.IsSuccess);
+        Assert.Equal(PvgApplicationOutcome.Blocked, blocked.Result.Outcome);
+        Assert.Equal(PvgApplicationReasonCodes.IntakeDraftNotFound, blocked.Result.ReasonCode);
+        AssertSafeReasonCode(blocked.Result.ReasonCode);
+        Assert.Empty(blocked.Result.ValidationFailures);
+        Assert.Null(blocked.IntakeDraftId);
+        Assert.Null(blocked.AuditIntent);
+        Assert.Equal([$"permission:{operation}:pvg.mod0230.intake.{operation.ToString().ToLowerInvariant()}"], callLog);
+        Assert.DoesNotContain(callLog, entry => entry.StartsWith($"field:{operation}:", StringComparison.Ordinal));
+        Assert.DoesNotContain($"workflow:{operation}", callLog);
+        Assert.DoesNotContain($"evidence:{operation}", callLog);
+        AssertSafe(blocked);
     }
 
     [Fact]
@@ -708,13 +825,14 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         IPvgFieldSecurityPolicy fieldPolicy,
         IPvgWorkflowTransitionGate workflowGate,
         IPvgEvidenceLinkPort evidencePort,
-        IPvgPermissionGate? permissionGate = null) =>
+        IPvgPermissionGate? permissionGate = null,
+        IPvgIntakeDraftStore? draftStore = null) =>
         new(
             fieldPolicy,
             workflowGate,
             evidencePort,
             permissionGate ?? new RecordingPermissionGate([]),
-            new InMemoryPvgIntakeDraftRepository());
+            draftStore ?? new InMemoryPvgIntakeDraftRepository());
 
     private static PvgServerTenantContext TenantContext(string tenantId = "tenant-secret-123") => new(tenantId);
 
