@@ -305,6 +305,9 @@
   <data name="ActionCompleteInSource" xml:space="preserve">
     <value>Завершить в {0}</value>
   </data>
+  <data name="ActionDisabledWithName" xml:space="preserve">
+    <value>{0} — {1}</value>
+  </data>
   <data name="ActionCompleteInSourceHint" xml:space="preserve">
     <value>Эту работу нельзя завершить здесь — она закрывается в {0}</value>
   </data>

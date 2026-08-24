@@ -4411,3 +4411,59 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - Doğru karşılık büyük olasılıkla `PanelClose` ("Paneli kapat") — modülde zaten var.
 - BL-202'nin kapsamı diyalog düğmeleriydi; bu ikisi ayrı bir yüzey, bu turda **değiştirilmedi**.
 - **Gelecek regresyon riski: 🟢.**
+
+### BL-206 kapanış notu (2026-08-24) — Düğmeler satırı paylaşır, cümle kendi eylemini söyler
+- **Kusurun kökü (ölçüldü):** alert, düğmeyle AYNI `<li>`'nin içindeydi. BL-201'de `<li>`'ye
+  `flex: 1 0 100%` verilerek cümleye kart genişliği kazandırıldı — ve satır kaybedildi: sarma yapan bir flex
+  sırasında tam genişlik bir `<li>`, diğer bütün düğmeleri kendi satırına iter. Sahibin sorusu tam bu:
+  "Başkasına ata neden Bilgi bekle'nin yanında değil?"
+- **Karar (sahip, 2026-08-24):** cümle `<li>`'den ÇIKAR. Düğmeler doğal genişlikte tek satırda
+  (`flex: 0 1 auto` geri geldi), gerekçeler `<ul class="wcn-actrail-secondary">`'den SONRA tam genişlik.
+  Yakınlığın taşıdığı eşleştirme iki yeni taşıyıcıya devredildi: cümle **aksiyonun adını söyler**
+  (`ActionDisabledWithName`, 7 dil) ve düğme `aria-describedby` ile **kendi cümlesine bağlanır**.
+- **Silinen:** `.wcn-actrail-secondary .wcn-act-hasreason` iki CSS kuralı + yorumu, `app.js`'teki
+  `wcn-act-hasreason` sınıfı. Yanlış bir kararı doğru anlatan yorum da gitti.
+- **Kimlik kararlı:** `wcn-actreason-{itemId}-{actionCode}` — sayaçtan/rastgeleden değil aksiyon kodundan
+  türetiliyor, çünkü bu kart her yoklamada yeniden çiziliyor; sayaç tabanlı bir id `aria-describedby`'yi bir
+  sonraki çizimde boşluğa düşürürdü. Testle kilitli (iki çizim, aynı id).
+- **Canlı ölçüm (9bf6194e, 1440×900, koyu ve açık):** "Bilgi bekle" ve "Başkasına ata" üst kenarları
+  **y=523 ve y=523 — aynı satır**. İki gerekçe kutusu da **371px = kartın iç genişliği**. Cümle:
+  "Başkasına ata — Bu görev devredilemez." `aria-describedby` →
+  `wcn-actreason-9bf6194e-…-reassign` → var olan `.wcn-act-reason`, doğru cümle. 900×900'da aynısı: y=1388
+  / y=1388, kutular 805px. İkinci aday 869195b4 aynı sonucu verdi.
+- **Birincil aksiyon (Tamamla) DEĞİŞMEDİ:** kendi katmanında tek başına, zaten tam genişlik, belirsizlik yok
+  → adını söylemesine gerek yok, `aria-describedby` almadı. Canlı doğrulandı: "Bir alt görev hâlâ açık"
+  hâlâ kendi `<li>`'sinin içinde, 371px.
+- **Yıkıcı katman aynı yoldan geçiyor:** her iki tier de artık tek bir `actionRail()` üretiyor, `<ul>`
+  markup'ı kodda tek yerde (testle kilitli). ⚠ **Ölçüldü: 62 fixture öğesinin hiçbirinde gerekçesi olan
+  devre dışı bir yıkıcı aksiyon yok** — yani canlı vaka bulunamadı; muamele yapısal olarak uygulanmış ve
+  testle korunuyor, ekranda gözlenemedi.
+- **Dar şerit (`.wcn-actionbar`) ayrı kod yolu, DEĞİŞMEDİ:** `renderActionBar` yalnız **birincil** aksiyonun
+  gerekçesini çiziyor (`wcn-actionbar-reason`), ikincil/yıkıcı olanlar gerekçesiz bir dropdown'a katlanıyor.
+  Tek cümle, tek düğme → belirsizlik yok, ad gerekmiyor. 900×900'de ölçüldü: 821px, tam genişlik.
+- **Gelecek regresyon riski: 🟢** (yapı sadeleşti; iki tier tek üreticiye indi).
+
+### BL-207 — [YAPILMADI] Aynı engel sayfada üç yerde birden yazıyor
+- Ölçüldü (9bf6194e, 1440×900): (1) sayfa üstü kırmızı şerit "1 alt görev kapanmadan tamamlanamaz — Alt
+  görevlere git", (2) aksiyon kartında "Bir alt görev hâlâ açık", (3) alt görev kartında sarı kutuda aynı
+  engel. **Üçü de yanlış değil, ama üçü birden fazla.**
+- Ölçülecek: üçü aynı kaynaktan mı geliyor (`disabledReasonCode` / `gates` / `wcn-subtask-gate`), hangisi
+  hangi soruyu cevaplıyor (— "bu sayfada bir sorun var" / "bu düğme neden çalışmıyor" / "hangi alt görev"),
+  hangisi silinebilir?
+- Bu turda **kasıtlı olarak dokunulmadı** — sahibin kararı alınmadan bir uyarı silmek, üç kez söylemekten
+  daha kötü olabilir.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-208 — [YAPILMADI] Dar şeritteki dropdown'da devre dışı aksiyon sebebini söylemiyor
+- Ölçüldü (900×900, 9bf6194e): `.wcn-actionbar` dropdown'ında "Başkasına ata" **disabled** ama yanında hiçbir
+  cümle yok. Kartta aynı düğme "Bu görev devredilemez." diyor; şeritte sessiz.
+- BL-206'nın kapsamı karttı; şerit ayrı bir kod yolu (`renderActionBar`) ve bu turda değiştirilmedi.
+- **Gelecek regresyon riski: 🟢** (katkısal düzeltme).
+
+### BL-209 — [YAPILMADI] Enterprise Strategy testleri kırmızı (bu turdan önce de kırmızıydı)
+- `npx vitest run tests/` → **1517 geçti, 9 kırmızı**; hepsi `strategy-apis`, `objectives-edit-hydration`,
+  `planning-cycles-*`, `strategy-periods-*` dosyalarında.
+- `git stash` ile doğrulandı: bu turun değişikliklerinden **önce de** kırmızıydılar. WorkCenterNext'e ait
+  değil, bu turda düzeltilmedi.
+- Ayrıca `wcn-text-in-boxes.test.js` içindeki BL-201 testlerinden biri (`inline-size: 100%` bekleyen) de
+  bu turdan önce kırmızıydı — o test bloğu BL-206 ile tamamen değiştirildi.

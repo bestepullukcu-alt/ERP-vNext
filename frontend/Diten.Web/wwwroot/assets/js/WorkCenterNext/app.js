@@ -1764,6 +1764,50 @@
      * icon that survives is the LOCK on a blocked action's reason, because it states the prohibition rather
      * than repeating a word beside it.
      */
+    /*
+     * ── THE ID THAT CARRIES THE PAIRING ───────────────────────────────────────────────────────────────────
+     *
+     * DERIVED FROM THE ACTION'S OWN CODE, never generated. A counter or a random suffix would produce a new id
+     * on every re-render — and this card re-renders on every poll, every filter change and every write — so an
+     * `aria-describedby` written in one pass would point at nothing in the next. The action code is the thing
+     * that is stable across renders, so it is the thing the id is made of. The item id joins it because the
+     * list surface can hold many items at once and an id must be unique in the document.
+     *
+     * Empty for an action with nothing to describe: an `aria-describedby` pointing at an element that was never
+     * drawn is worse than no attribute, because a screen reader announces the gap as a broken reference.
+     */
+    const actionReasonId = (item, action) => (action?.disabled && action?.disabledReason
+        ? `wcn-actreason-${String(item?.id || '').replace(/[^a-zA-Z0-9_-]/g, '')}-${
+            String(action.code || action.key || '').replace(/[^a-zA-Z0-9_-]/g, '')}`
+        : '');
+
+    /*
+     * The sentence, standing on its own beneath the rail — and therefore NAMING the action it refuses.
+     *
+     * ⚠ THE NAME IS `actionLabel(action)`, the string on the button itself, not a second label derived for
+     * prose. Two names for one action agree on the day they are written and diverge on the day one of them is
+     * retranslated; the reader then has to work out whether "Devret" and "Başkasına ata" are the same control.
+     */
+    const actionReasonNote = (item, action) => {
+        const id = actionReasonId(item, action);
+        if (!id) { return ''; }
+        return `<p class="alert alert-warning wcn-act-reason d-flex align-items-start gap-2" id="${esc(id)}"
+                   role="note"><i class="bx bx-lock-alt" aria-hidden="true"></i><span>${
+            esc(tf('ActionDisabledWithName', actionLabel(action), action.disabledReason))}</span></p>`;
+    };
+
+    /*
+     * ── ONE TIER: A ROW OF BUTTONS, THEN THE SENTENCES ────────────────────────────────────────────────────
+     *
+     * Both non-primary tiers are drawn through here so the secondary rail and the destructive rail cannot
+     * drift: the destructive tier wears the same `wcn-actrail-secondary` row and had the same defect, and the
+     * previous fix touched only one of them.
+     */
+    const actionRail = (item, list, variant, locked) =>
+        `<ul class="wcn-actrail-secondary">${
+            list.map((a) => actionButton(item, a, variant, locked)).join('')}</ul>${
+            list.map((a) => actionReasonNote(item, a)).join('')}`;
+
     const actionButton = (item, action, variant, locked) => {
         const disabled = action.disabled || locked;
         /*
@@ -1783,7 +1827,18 @@
          * modifier below that does exactly what `.wcn-subtask-gate` does to it (tighter padding, 13px). No new
          * colour, no new radius, no new number. The lock stays — it is the glyph that states the prohibition.
          */
-        const reason = action.disabled && action.disabledReason
+        /*
+         * ⚠ ONLY THE PRIMARY KEEPS ITS SENTENCE IN ITS OWN ROW (2026-08-24). The secondary and destructive
+         * tiers share a wrapping flex row, and an alert inside one of those `<li>`s can only be as wide as the
+         * button — or, if the `<li>` is widened to fix that, the button leaves the row and the actions stop
+         * being able to stand side by side. Both were tried; each broke the other.
+         *
+         * So the sentence LEAVES the `<li>` (see `actionRail`): the buttons keep their natural widths on one
+         * line, and the sentences stack full-width beneath them. What proximity used to say — which sentence
+         * belongs to which button — the sentence now says itself, by naming the action (`ActionDisabledWithName`),
+         * and `aria-describedby` says it again for a reader who never sees the layout.
+         */
+        const reason = variant === 'primary' && action.disabled && action.disabledReason
             ? `<p class="alert alert-warning wcn-act-reason d-flex align-items-start gap-2" role="note"><i class="bx bx-lock-alt" aria-hidden="true"></i><span>${esc(action.disabledReason)}</span></p>`
             : '';
         // The primary is the only tier that keeps its sentence in the card.
@@ -1794,26 +1849,11 @@
         const cls = variant === 'primary'
             ? `wcn-act-btn wcn-act-fill wcn-act-fill-${nature}`
             : `wcn-act-btn wcn-act-bare wcn-act-bare-${nature}`;
-        /*
-         * ⚠ A SECONDARY ACTION THAT CARRIES A REASON TAKES THE WHOLE ROW (2026-08-24).
-         *
-         * MEASURED: `.wcn-actrail-secondary` is a wrapping flex row whose items size to their content
-         * (`flex: 0 1 auto`), and the alert lives INSIDE the same `<li>` as its button — so the sentence was
-         * clipped to the button's width: a 194px box in a 371px card, which reads as an indented paragraph
-         * rather than a full-width notice.
-         *
-         * ⚠ THE BUTTON TRAVELS WITH IT, and that is the decision rather than an accident: this card can show
-         * TWO reasons at once (measured on this very task — "Bir alt görev hâlâ açık" under Tamamla and "Bu
-         * görev devredilemez." under Başkasına ata). Spreading the alerts across the card on their own would
-         * break the one thing that says which sentence belongs to which button: sitting under it. Moving the
-         * pair keeps the pairing without a word of extra text.
-         *
-         * An action with NO reason keeps its natural width — nothing else about the row changes.
-         */
-        const rowClass = variant === 'secondary' && reason ? ' wcn-act-hasreason' : '';
-        return `<li class="wcn-act wcn-act-${variant}${action.disabled ? ' wcn-act-disabled' : ''}${rowClass}">
+        const describedBy = variant === 'primary' ? '' : actionReasonId(item, action);
+        return `<li class="wcn-act wcn-act-${variant}${action.disabled ? ' wcn-act-disabled' : ''}">
             <button type="button" class="${cls}"
                     data-wcn-action="${esc(action.key)}" data-wcn-id="${esc(item.id)}"${
+            describedBy ? ` aria-describedby="${esc(describedBy)}"` : ''}${
             disabled ? ' disabled aria-disabled="true"' : ''}${busy ? ' aria-busy="true"' : ''}>
                 ${busy ? '<i class="bx bx-loader-alt bx-spin" aria-hidden="true"></i>' : ''}<span>${esc(label)}</span>
             </button>
@@ -2019,14 +2059,13 @@
                         <p class="wcn-act-outcome">${esc(tf('ActionCompleteInSourceHint', moduleName))}</p>
                     </li>
                     ${rest.length
-                ? `<li class="wcn-acts-row"><ul class="wcn-actrail-secondary">${
-                    rest.map((a) => actionButton(item, a, 'secondary', locked)).join('')}</ul></li>`
+                ? `<li class="wcn-acts-row">${actionRail(item, rest, 'secondary', locked)}</li>`
                 : ''}
                 </ul>
                 </div>
                 ${destructiveOnly.length
-                ? `<div class="wcn-acts-destructive"><ul class="wcn-actrail-secondary">${
-                    destructiveOnly.map((a) => actionButton(item, a, 'destructive', locked)).join('')}</ul></div>`
+                ? `<div class="wcn-acts-destructive">${
+                    actionRail(item, destructiveOnly, 'destructive', locked)}</div>`
                 : ''}
             </div>`;
         }
@@ -2046,18 +2085,12 @@
             <ul class="wcn-actrail">
                 ${primary ? actionButton(item, primary, 'primary', locked) : ''}
                 ${secondary.length
-            ? `<li class="wcn-acts-row">
-                    <ul class="wcn-actrail-secondary">${
-                secondary.map((a) => actionButton(item, a, 'secondary', locked)).join('')}</ul>
-                  </li>`
+            ? `<li class="wcn-acts-row">${actionRail(item, secondary, 'secondary', locked)}</li>`
             : ''}
             </ul>
             </div>
             ${destructive.length
-            ? `<div class="wcn-acts-destructive">
-                <ul class="wcn-actrail-secondary">${
-                destructive.map((a) => actionButton(item, a, 'destructive', locked)).join('')}</ul>
-              </div>`
+            ? `<div class="wcn-acts-destructive">${actionRail(item, destructive, 'destructive', locked)}</div>`
             : ''}
         </div>`;
     };

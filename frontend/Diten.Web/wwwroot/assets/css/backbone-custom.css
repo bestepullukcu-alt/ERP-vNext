@@ -7583,15 +7583,11 @@ tags.diten-tags .tagify__input {
 /* Secondary and destructive are peers of each other, not of the primary: one wrapping row, auto widths. */
 .wcn-actrail-secondary { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
 .wcn-actrail-secondary .wcn-act { flex: 0 1 auto; }
-/* …EXCEPT one carrying a reason: the sentence needs the card's width, so its row takes the whole line. Measured
-   before: a 194px alert inside a 371px card, indistinguishable from an indent.
-
-   The BUTTON does not come with it. Stretching it too was the first attempt, and it inverted the card's weight:
-   the DISABLED action ran the full width while the one you can actually use sat small beside it. Pairing does
-   not need the width — the sentence lives inside its own action's row and sits directly beneath its own button,
-   so two reasons at once still read one to a button. */
-.wcn-actrail-secondary .wcn-act-hasreason { flex: 1 0 100%; align-items: flex-start; }
-.wcn-actrail-secondary .wcn-act-hasreason > .wcn-act-reason { align-self: stretch; }
+/* ⚠ NO ROW IS WIDENED TO CARRY A SENTENCE. Two rules used to stretch the `<li>` of an action that had a reason,
+   because the alert lived inside it and was otherwise clipped to the button's width. It worked and it cost the
+   row: a widened `<li>` pushes every other button onto its own line, so "Bilgi bekle" and "Başkasına ata" could
+   never stand side by side. The sentence LEAVES the `<li>` instead (`actionRail` in app.js) and sits after the
+   rail, where it is card-width for free — the buttons keep `flex: 0 1 auto` above it. */
 /* ── The card's padding lives on the BLOCKS, not the card ──────────────────
    MEASURED: the destructive rule ran 748→1053 inside a card spanning 732→1069 — 16px short at each end, because
    the card's `p-4` pushed it inward. A rule that does not reach the edge reads as a mistake.

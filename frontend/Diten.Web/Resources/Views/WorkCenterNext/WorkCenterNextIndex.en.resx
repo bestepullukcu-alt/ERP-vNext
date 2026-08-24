@@ -305,6 +305,9 @@
   <data name="ActionCompleteInSource" xml:space="preserve">
     <value>Complete in {0}</value>
   </data>
+  <data name="ActionDisabledWithName" xml:space="preserve">
+    <value>{0} — {1}</value>
+  </data>
   <data name="ActionCompleteInSourceHint" xml:space="preserve">
     <value>This work cannot be finished here; it is completed in {0}</value>
   </data>

@@ -305,6 +305,9 @@
   <data name="ActionCompleteInSource" xml:space="preserve">
     <value>الإكمال في {0}</value>
   </data>
+  <data name="ActionDisabledWithName" xml:space="preserve">
+    <value>{0} — {1}</value>
+  </data>
   <data name="ActionCompleteInSourceHint" xml:space="preserve">
     <value>لا يمكن إنهاء هذا العمل هنا؛ يكتمل في {0}</value>
   </data>
