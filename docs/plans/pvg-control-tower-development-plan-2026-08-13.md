@@ -76,6 +76,7 @@ Measured implementation baseline:
 | MOD-0230 AuditEvent tests-only evidence (`DOC-PVG-0230-AUDIT-EVIDENCE-TESTS-01`) | 100% | Commit `816d5359`; RegPvBase focused tests `54/54`; API focused tests `26/26`; MOD-0021 owner approval still required |
 | MOD-0230 WorkflowTransitionGate tests-only evidence (`DOC-PVG-0230-WORKFLOW-EVIDENCE-TESTS-01`) | 100% | Commit `bfa7099c`; RegPvBase focused tests `57/57`; API focused tests `26/26`; MOD-0023 owner approval still required |
 | MOD-0230 EvidenceLink tests-only evidence (`DOC-PVG-0230-EVIDENCELINK-EVIDENCE-TESTS-01`) | 100% | Commit `a44c324b`; RegPvBase focused tests `64/64`; API focused tests `26/26`; MOD-0031 owner approval still required |
+| MOD-0230 TraceBundle/correlation/observability tests-only evidence (`DEV-PVG-0230-TRACE-OBS-EVIDENCE-TESTS-01`) | 100% | Commit `695a3b18`; RegPvBase focused tests `71/71`; API focused tests `28/28`; TraceBundle/Observability owner approval still required |
 | PVG full audit refresh (`AUD-PVG-FULL-2026-08-24`) | 100% | Local/remote `603601cc`; PVG focused tests `196/196`; Gateway `19/19`; PVG UI JS syntax checks passed; operational runtime `0% / NO-GO` |
 | PVG operational approval packet draft | 100% draft | Commit `603601cc`; docs-only packet exists; no owner approval or operational runtime authorization claimed |
 | MOD-0230 UI regression tests | 100% | Static UI regression tests pushed |
@@ -127,6 +128,7 @@ Overall PVG operational readiness: **0% / NO-GO**.
 | `DOC-PVG-0230-AUDIT-EVIDENCE-TESTS-01` | DOC/TEST | Record MOD-0230 AuditEvent tests-only evidence without owner approval or runtime authorization | Done |
 | `DOC-PVG-0230-WORKFLOW-EVIDENCE-TESTS-01` | DOC/TEST | Record MOD-0230 WorkflowTransitionGate tests-only evidence without owner approval or runtime authorization | Done |
 | `DOC-PVG-0230-EVIDENCELINK-EVIDENCE-TESTS-01` | DOC/TEST | Record MOD-0230 EvidenceLink tests-only evidence without owner approval or runtime authorization | Done |
+| `DEV-PVG-0230-TRACE-OBS-EVIDENCE-TESTS-01` | DEV/TEST | Add TraceBundle/correlation/observability tests-only evidence without owner approval or runtime authorization | Done |
 | `AUD-PVG-FULL-2026-08-24` | AUD/DOC | Full PVG local/dev build-test audit and development-plan refresh at commit `603601cc` | Done |
 | `DEV-PVG-0230-UI-REGRESSION-01` | DEV/TEST | UI tests-only regression guardrails | Done |
 | `DOC-PVG-DOWNSTREAM-CL-01` | DOC | Record MOD-0231/0232/0234 class-library/test-only downstream hardening evidence | Done |
@@ -186,6 +188,7 @@ Parallelism:
 | 32 | `DEV-PVG-0230-UI-REGRESSION-01` | TEST | MOD-0230 | Add static UI regression checks for localized loading/empty states, safe alert display, bounded reason codes, same-origin proxy, and disabled buttons | UI-05 | E2 achieved | Done |
 | 33 | `AUD-PVG-DEEP-2026-08-21` | INS/DOC | PVG | Deep audit current PVG governance, route, API, UI, downstream, and package cleanliness; update this Control Tower plan | Latest pushed branch | E2 achieved | Done |
 | 34 | `DOC-PVG-0230-EVIDENCELINK-EVIDENCE-TESTS-01` | DOC/TEST | MOD-0230 | Record EvidenceLink tests-only evidence and keep MOD-0031 owner approval plus operational runtime gates blocked | EvidenceLink evidence-test commit | E2 achieved | Done |
+| 35 | `DEV-PVG-0230-TRACE-OBS-EVIDENCE-TESTS-01` | TEST | MOD-0230 | Add TraceBundle/correlation/observability tests-only evidence and keep owner approval plus operational runtime gates blocked | Trace/observability evidence-test commit | E2 achieved | Done |
 
 ## 5. Completed WP: `PVG-0230-BE-01`
 
@@ -1451,6 +1454,38 @@ Scope controls:
 
 - This is tests-only evidence and does not authorize operational runtime.
 - No MOD-0031 owner approval or production readiness is claimed.
+- No delete, export, archive, void, or bulk surface is authorized.
+
+## 5.34.1 Completed WP: `DEV-PVG-0230-TRACE-OBS-EVIDENCE-TESTS-01`
+
+Goal: add MOD-0230 TraceBundle/correlation/observability tests-only evidence without claiming operational runtime
+authorization, TraceBundle/Observability owner approval, or production readiness.
+
+Completed local/dev evidence:
+
+- `DEV-PVG-0230-TRACE-OBS-EVIDENCE-TESTS-01` completed.
+- Commit evidence: `695a3b18 PVG add trace observability evidence tests`.
+- RegPvBase focused tests passed: `71/71`.
+- API focused tests passed: `28/28`.
+- All six MOD-0230 operations require correlation before downstream guards, mutation, audit metadata, or error
+  metadata.
+- Successful operations pass correlation to guard evaluation while exposing only safe metadata such as
+  `HasCorrelation`.
+- API blocked/error responses expose safe PVG reason codes only.
+- Raw tenant, actor, correlation, PHI/PII, free-text, product, reporter, patient, queue, and evidence values are not
+  echoed.
+- API response contract has no trace, audit, or raw metadata fields.
+
+Remaining governance blockers:
+
+- TraceBundle / Observability owner approval remains required before operational runtime.
+- Operational runtime remains **0% / NO-GO**.
+- MOD-0231, MOD-0232, and MOD-0234 runtime remains blocked.
+
+Scope controls:
+
+- This is tests-only evidence and does not authorize operational runtime.
+- No TraceBundle/Observability owner approval or production readiness is claimed.
 - No delete, export, archive, void, or bulk surface is authorized.
 
 ## 5.35 Completed WP: `DOC-PVG-FINAL-BUILD-TEST-AUDIT-01`
