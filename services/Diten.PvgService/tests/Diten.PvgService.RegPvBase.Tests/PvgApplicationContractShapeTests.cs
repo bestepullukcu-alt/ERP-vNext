@@ -20,13 +20,32 @@ public sealed class PvgApplicationContractShapeTests
     private static readonly string[] SensitiveSamples =
     [
         "tenant-secret-123",
+        "actor-secret-456",
+        "corr-secret-789",
+        "source-ref",
+        "evidence-ref",
         "patient-subject-code",
         "reporter@example.test",
         "free text narrative with PHI",
         "triage free-text reason",
+        "route free-text reason",
+        "queue-safety-review",
+        "suspect product",
         "raw exception message",
         "System.InvalidOperationException",
         "client-supplied-id"
+    ];
+
+    private static readonly string[] ForbiddenRetentionRuntimeTerms =
+    [
+        "Retention",
+        "LegalHold",
+        "Archive",
+        "Void",
+        "Export",
+        "Delete",
+        "BulkDelete",
+        "Bulk"
     ];
 
     [Fact]
@@ -64,6 +83,99 @@ public sealed class PvgApplicationContractShapeTests
         AssertNoForbiddenNames(applicationTypes);
         AssertNoForbiddenNames(Enum.GetNames<PvgIntakeOperation>());
         AssertNoForbiddenNames(Enum.GetNames<PvgApplicationOutcome>());
+    }
+
+    [Fact]
+    public void Commands_queries_service_operations_and_dtos_do_not_expose_retention_or_forbidden_runtime_members()
+    {
+        var publicSurfaceNames = ContractTypes
+            .Concat(
+            [
+                typeof(PvgCreateIntakeDraftRequest),
+                typeof(PvgUpdateIntakeDraftRequest),
+                typeof(PvgTriageIntakeDraftRequest),
+                typeof(PvgRouteIntakeDraftRequest),
+                typeof(PvgIntakeDraftSummary),
+                typeof(PvgIntakeDraftMutationResult),
+                typeof(PvgIntakeDraftQueryResult),
+                typeof(PvgApplicationResult),
+                typeof(PvgApplicationSuccessMetadata),
+                typeof(PvgAuditIntent),
+                typeof(SafetyCaseIntake),
+                typeof(PvgIntakeDraftApplicationService)
+            ])
+            .SelectMany(type => PublicMemberNames(type).Append(type.Name))
+            .ToArray();
+
+        AssertNoForbiddenNames(publicSurfaceNames);
+    }
+
+    [Fact]
+    public void Supported_domain_operations_do_not_define_retention_legal_hold_archive_or_void_state()
+    {
+        var stateNames = typeof(SafetyCaseIntake)
+            .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+            .Select(property => property.Name)
+            .Concat(Enum.GetNames<PvgIntakeStatus>())
+            .ToArray();
+
+        AssertNoForbiddenNames(stateNames);
+    }
+
+    [Fact]
+    public void Supported_mutations_do_not_change_retention_legal_hold_archive_void_or_sensitive_source_state()
+    {
+        var intake = new SafetyCaseIntake(
+            "tenant-secret-123",
+            PvgIntakeStatus.IntakeCreated,
+            "Portal",
+            "Reporter",
+            DateTimeOffset.UnixEpoch,
+            "HealthcareProfessional",
+            "free text narrative with PHI",
+            "Serious",
+            "High")
+        {
+            SourceReference = "source-ref",
+            ReporterContactSummary = "reporter@example.test",
+            PatientSubjectCode = "patient-subject-code",
+            SuspectProductText = "suspect product",
+            EvidenceLinkReferences = ["evidence-ref"]
+        };
+
+        intake.MarkUpdated();
+        intake.MarkTriaged(PvgTriageOutcome.Rejected, "triage free-text reason");
+        intake.MarkRoutePending("queue-safety-review");
+
+        Assert.Equal(PvgIntakeStatus.RoutePending, intake.Status);
+        Assert.Equal(PvgTriageOutcome.Rejected, intake.TriageOutcome);
+        Assert.Equal("triage free-text reason", intake.TriageReason);
+        Assert.Equal("queue-safety-review", intake.RouteTargetQueue);
+        Assert.Equal("source-ref", intake.SourceReference);
+        Assert.Equal("reporter@example.test", intake.ReporterContactSummary);
+        Assert.Equal("patient-subject-code", intake.PatientSubjectCode);
+        Assert.Equal("suspect product", intake.SuspectProductText);
+        Assert.Equal(["evidence-ref"], intake.EvidenceLinkReferences);
+        AssertNoForbiddenNames(PublicMemberNames(typeof(SafetyCaseIntake)));
+    }
+
+    [Theory]
+    [InlineData(PvgApplicationReasonCodes.IntakeDraftNotFound)]
+    [InlineData(PvgPermissionReasonCodes.ActorContextRequired)]
+    [InlineData(PvgPermissionReasonCodes.CorrelationContextRequired)]
+    [InlineData(PvgSafeReasonCodes.FieldSecurityPolicyUnavailable)]
+    [InlineData(PvgSafeReasonCodes.WorkflowTransitionGateUnavailable)]
+    [InlineData(PvgSafeReasonCodes.EvidenceLinkUnavailable)]
+    public void Blocked_outputs_use_safe_reason_codes_without_retention_or_sensitive_value_echo(string reasonCode)
+    {
+        var result = PvgApplicationResult.Blocked(reasonCode);
+
+        Assert.Equal(PvgApplicationOutcome.Blocked, result.Outcome);
+        Assert.Null(result.Metadata);
+        Assert.Empty(result.ValidationFailures);
+        AssertSafeReasonCode(result.ReasonCode);
+        AssertNoForbiddenNames([result.ReasonCode!]);
+        AssertResultDoesNotEchoSensitiveValues(result);
     }
 
     [Fact]
@@ -140,10 +252,24 @@ public sealed class PvgApplicationContractShapeTests
 
     private static void AssertNoForbiddenNames(IEnumerable<string> names)
     {
-        Assert.DoesNotContain(names, name => name.Contains("Archive", StringComparison.OrdinalIgnoreCase));
-        Assert.DoesNotContain(names, name => name.Contains("Void", StringComparison.OrdinalIgnoreCase));
-        Assert.DoesNotContain(names, name => name.Contains("Export", StringComparison.OrdinalIgnoreCase));
-        Assert.DoesNotContain(names, name => name.Contains("Delete", StringComparison.OrdinalIgnoreCase));
-        Assert.DoesNotContain(names, name => name.Contains("BulkDelete", StringComparison.OrdinalIgnoreCase));
+        foreach (var forbiddenTerm in ForbiddenRetentionRuntimeTerms)
+        {
+            Assert.DoesNotContain(names, name => name.Contains(forbiddenTerm, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    private static IEnumerable<string> PublicMemberNames(Type type) =>
+        type.GetMembers(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly)
+            .Where(member => member.MemberType is MemberTypes.Method or MemberTypes.Property or MemberTypes.Field)
+            .Select(member => member.Name);
+
+    private static void AssertSafeReasonCode(string? reasonCode)
+    {
+        Assert.False(string.IsNullOrWhiteSpace(reasonCode));
+        Assert.StartsWith("PVG_", reasonCode, StringComparison.Ordinal);
+        Assert.All(reasonCode, character =>
+            Assert.True(
+                char.IsUpper(character) || char.IsDigit(character) || character == '_',
+                $"Reason code '{reasonCode}' must contain only safe uppercase token characters."));
     }
 }

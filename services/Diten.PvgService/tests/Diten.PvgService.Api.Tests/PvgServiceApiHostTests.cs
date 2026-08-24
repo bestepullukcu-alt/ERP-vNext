@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Xunit;
@@ -139,6 +140,26 @@ public sealed class PvgServiceApiHostTests
             Assert.NotEqual("PATCH", method);
             Assert.NotEqual("OPTIONS", method);
         }
+    }
+
+    [Fact]
+    public void Case_intake_endpoint_methods_and_public_dtos_do_not_expose_retention_or_forbidden_operations()
+    {
+        var apiSurfaceNames = new[]
+        {
+            typeof(PvgCaseIntakeTriageEndpoints),
+            typeof(PvgCaseIntakeCreateRequest),
+            typeof(PvgCaseIntakeUpdateRequest),
+            typeof(PvgCaseIntakeTriageRequest),
+            typeof(PvgCaseIntakeRouteRequest),
+            typeof(PvgCaseIntakeApiResponse),
+            typeof(PvgCaseIntakeRequestContext),
+            typeof(PvgIntakeDraftApplicationService)
+        }
+        .SelectMany(type => PublicMemberNames(type).Append(type.Name))
+        .ToArray();
+
+        AssertNoForbiddenRuntimeSurface(apiSurfaceNames);
     }
 
     [Fact]
@@ -587,6 +608,44 @@ public sealed class PvgServiceApiHostTests
     [InlineData("bulk")]
     [InlineData("bulk-delete")]
     [InlineData("delete")]
+    public async Task Case_intake_reserved_operation_paths_return_not_found_without_error_payload_echo(string reservedWord)
+    {
+        var updateResult = await PvgCaseIntakeTriageEndpoints.UpdateDraftAsync(
+            reservedWord,
+            SensitiveUpdateRequest(),
+            NewContextWithTenantActorAndCorrelation(),
+            service: null!,
+            CancellationToken.None);
+        var triageResult = await PvgCaseIntakeTriageEndpoints.TriageDraftAsync(
+            reservedWord,
+            new PvgCaseIntakeTriageRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason"),
+            NewContextWithTenantActorAndCorrelation(),
+            service: null!,
+            CancellationToken.None);
+        var routeResult = await PvgCaseIntakeTriageEndpoints.RouteDraftAsync(
+            reservedWord,
+            new PvgCaseIntakeRouteRequest("queue-safety-review"),
+            NewContextWithTenantActorAndCorrelation(),
+            service: null!,
+            CancellationToken.None);
+
+        foreach (var result in new[] { updateResult, triageResult, routeResult })
+        {
+            var response = await RawResponseOfAsync(result);
+
+            Assert.Equal(StatusCodes.Status404NotFound, response.StatusCode);
+            Assert.DoesNotContain(reservedWord, response.Body, StringComparison.OrdinalIgnoreCase);
+            AssertNoUnsafeResponseSamples(response.Body);
+        }
+    }
+
+    [Theory]
+    [InlineData("export")]
+    [InlineData("archive")]
+    [InlineData("void")]
+    [InlineData("bulk")]
+    [InlineData("bulk-delete")]
+    [InlineData("delete")]
     public async Task Case_intake_reserved_operation_words_are_not_accepted_as_triage_or_route_ids(string reservedWord)
     {
         var triageResult = await PvgCaseIntakeTriageEndpoints.TriageDraftAsync(
@@ -783,6 +842,20 @@ public sealed class PvgServiceApiHostTests
         return responseContext.Response.StatusCode;
     }
 
+    private static async Task<(int StatusCode, string Body)> RawResponseOfAsync(IResult result)
+    {
+        var responseContext = new DefaultHttpContext();
+        responseContext.RequestServices = new ServiceCollection()
+            .AddLogging()
+            .BuildServiceProvider();
+        responseContext.Response.Body = new MemoryStream();
+        await result.ExecuteAsync(responseContext);
+        responseContext.Response.Body.Position = 0;
+
+        using var reader = new StreamReader(responseContext.Response.Body);
+        return (responseContext.Response.StatusCode, await reader.ReadToEndAsync());
+    }
+
     private static async Task<(int StatusCode, PvgCaseIntakeApiResponse Body)> ResponseOfAsync(IResult result)
     {
         var responseContext = new DefaultHttpContext();
@@ -813,11 +886,41 @@ public sealed class PvgServiceApiHostTests
         Assert.Empty(response.Body.Items);
 
         var serialized = JsonSerializer.Serialize(response.Body);
+        AssertNoUnsafeResponseSamples(serialized);
+    }
+
+    private static void AssertNoUnsafeResponseSamples(string body)
+    {
         foreach (var unsafeSample in UnsafeResponseSamples)
         {
-            Assert.DoesNotContain(unsafeSample, serialized, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain(unsafeSample, body, StringComparison.OrdinalIgnoreCase);
         }
     }
+
+    private static void AssertNoForbiddenRuntimeSurface(IEnumerable<string> names)
+    {
+        foreach (var forbiddenTerm in ForbiddenRuntimeSurfaceTerms)
+        {
+            Assert.DoesNotContain(names, name => name.Contains(forbiddenTerm, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    private static IEnumerable<string> PublicMemberNames(Type type) =>
+        type.GetMembers(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly)
+            .Where(member => member.MemberType is MemberTypes.Method or MemberTypes.Property or MemberTypes.Field)
+            .Select(member => member.Name);
+
+    private static readonly string[] ForbiddenRuntimeSurfaceTerms =
+    [
+        "retention",
+        "legalhold",
+        "archive",
+        "void",
+        "export",
+        "delete",
+        "bulk-delete",
+        "bulk"
+    ];
 
     private static readonly string[] UnsafeResponseSamples =
     [
