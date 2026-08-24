@@ -4467,3 +4467,66 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
   değil, bu turda düzeltilmedi.
 - Ayrıca `wcn-text-in-boxes.test.js` içindeki BL-201 testlerinden biri (`inline-size: 100%` bekleyen) de
   bu turdan önce kırmızıydı — o test bloğu BL-206 ile tamamen değiştirildi.
+
+### BL-210 kapanış notu (2026-08-24) — Bağımlılık satırı kuralı söylüyor (A4, sahip C seçeneği)
+- **Ölçülen kusur (canlı, `bfcfa8ba`):** `ÖNCÜL · sasasa · FS · tamam` — dört parça yan yana, aralarında
+  görünür ilişki yok; `FS`'in açılımı YALNIZ `title` tooltip'inde (dokunmatikte hiç yok); `tamam` öncülün
+  durumu ama satırın sağ ucunda satırın kendi durumu gibi okunuyor.
+- **Yapılan:** kompakt tek satır korundu. Yön **ok ikonu** oldu (sol = yukarıdan biri beni tutuyor,
+  sağ = ben aşağıdakini tutuyorum); `ÖNCÜL`/`ARDIL` kelimeleri gitti. Tür **yarım cümle** olarak satırın
+  içine yazıldı. Durum rozeti ve sözlüğü (`DEP_STATE_KEY` / `DEP_STATE_KIND`, `cancelled` dahil)
+  **değişmedi**.
+- **Anlam TÜRETİLDİ, uydurulmadı.** Kaynak: `DEPENDENCY_TYPES` (fixture-contract.js:76 = motorun
+  `TaskDependencyType`'ı) + ürünün zaten yazdığı iki yer — `DepTypeFS` "Bitince başlar (FS)" ailesi ve
+  `BlockerFinishToStart` "«{0}» kapanmadan başlanamaz" ailesi. İlk fiil öncülün ulaşması gereken nokta,
+  ikinci fiil ardılın o zaman yapabileceği şey. Sekiz cümle bu tek kuralı iki uçtan okuyor; beşinci bir
+  anlam üretilmedi.
+- **`Blocker*` anahtarları YENİDEN KULLANILMADI**, bilerek: onlar edilgen, tırnaklı ve yalnız CANLI bir
+  engeli anlatıyor. Bu satır ilişkinin kendisini anlatıyor (bitmiş bir öncülün de türü var) ve sahibin
+  seçtiği ikinci tekil şahısla konuşuyor.
+- **Kısaltma KALDI, rütbesi düştü** — cümleden SONRA, küçük ve soluk, `title`'ı hâlâ duruyor; artık `wcn-chip`
+  değil, çünkü çip cümleyle eşit ağırlık iddia eder. Karar: bileni için en hızlı okuma, ama cümle onsuz da
+  tam. Testle kilitli (kısaltma DOM'dan silinince satır hâlâ kuralı söylüyor).
+- **Satır dili icat edilmedi:** `.diten-checkitem`'dan değer değer kopyalandı — `padding: .375rem .5rem`,
+  `1px solid var(--bs-border-color)`, `border-radius: .375rem`, `background: var(--bs-card-bg)`,
+  `align-items: center`. Canlı ölçüm: `6px 8px` / `1px rgb(228,230,232)` / `6px` / `rgb(255,255,255)` / center.
+- **Ok SESSİZ (`aria-hidden="true"`)** — cümle yönü zaten kelimeyle söylüyor; kendini duyuran bir ikon yönü
+  ekran okuyucuya iki kez okuturdu.
+- **CANLI KAPSAM — SEKİZDEN KAÇI GÖRÜLDÜ:**
+  - Gerçek backend verisiyle **2/8**: `pred/FS` (`bfcfa8ba` "sasasa", durum **tamam**; `38589f6a`, durum
+    **başlamadı**) ve `succ/FS` (`95312464`). Ölçüldü: 62 öğenin 3'ünde bağımlılık var, **üçü de FS**.
+  - Kalan **6/8** için **FIXTURE EKLENDİ** ve bu yazıldı: `islerim-showcase-fixtures.js` içindeki
+    `ISLERIM-WORK-ACTIVE` ("max veri" showcase görevi) bağımlılık listesi 2'den 8'e çıkarıldı. Mevcut iki
+    satır **değiştirilmedi**, yeni dize eklenmedi (başlıklar o görevin zaten kullandığı iki kaynak).
+    `?fixtures=showcase` ile sekizi de canlı görüldü, sekiz farklı cümle.
+- **DURUM × YÖN (sahibin 2. koşulu), canlı:** `pred/FS/done` → "sasasa bitmeden başlayamazsın" + yeşil
+  **tamam**; `pred/FS/not-started` → "Anahtar kullanıcı eğitimi bitmeden başlayamazsın" + gri **başlamadı**.
+  Fark rozetin renginde ve kelimesinde görünür; cümle ikisinde de aynı kuralı söylüyor — çünkü kural durumla
+  değişmiyor, yalnız o kuralın şu an ısırıp ısırmadığı değişiyor.
+- **İki genişlik × iki tema:** 1440 ve 900'de sekiz satır da 35px, yatay taşma **yok** (satır `scrollWidth -
+  clientWidth = 0`, sayfa `0`). Koyu temada satır yüzeyi kart yüzeyiyle aynı (rgb(43,44,64)), kutu kenarlıkla
+  tanımlanıyor — `.diten-checkitem` ile aynı davranış.
+- **UZUN BAŞLIK:** 121 karakterlik bir cümleyle ölçüldü (900px): satır 35px → **50px**, cümle **2 satıra
+  sarıyor**, kırpma yok, yatay taşma yok. Karar: sarsın — kırpılmış bir kural, üzerine hareket edilemeyen
+  bir kuraldır.
+- **DEĞİŞMEYENLER (dokunulmadı, yazıldı):** kart **salt okunur**, "Bağımlılık ilişkisi kaynağında yönetilir"
+  ipucu duruyor, düzenleme/Gantt/graf eklenmedi (testle kilitli: kartta 0 adet buton/input/link). Boş durum
+  (`!dependencies.length` → kart hiç çizilmez) **bu turda değişmedi**; A5'te kararlaştırılan boş-durum dili
+  ayrı bir turda gelecek.
+- **Gelecek regresyon riski: 🟢** (katkısal; sözlükler ve kart sözleşmesi el değmedi).
+
+### BL-211 — [YAPILMADI] Bağımlılık durum sözlüğünde büyük/küçük harf tutarsız
+- Canlı ölçüldü (`ISLERIM-WORK-ACTIVE`, tr): rozetler **"tamam" · "devam" · "başlamadı"** küçük harfle
+  başlarken `DepCancelled` **"İptal edildi"** büyük harfle ve tam cümle gibi.
+- Sahibin bu turdaki talimatı sözlüğün **değişmemesiydi** (`DEP_STATE_KEY` / `DEP_STATE_KIND`, `cancelled`
+  dahil) → **dokunulmadı**.
+- Düzeltilecekse yedi dilde birden ve rozet ailesinin tamamına bakılarak yapılmalı.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-212 — [YAPILMADI] Engel afişindeki `FS` çipi hâlâ tek taşıyıcı
+- `renderBlocked` satırları `<span class="wcn-chip wcn-chip-danger wcn-dep-type" title="…">FS</span>`
+  kullanmayı sürdürüyor: kısaltmanın açılımı orada **hâlâ yalnız tooltip'te**.
+- Orada cümle zaten var (`BlockerFinishToStart` ailesi), yani afiş bağımlılık satırı kadar kör değil — ama
+  çip aynı tooltip-bağımlılığını taşıyor.
+- A4'ün kapsamı **bağımlılık kartıydı**; afiş ayrı bir yüzey ve bu turda **değiştirilmedi**.
+- **Gelecek regresyon riski: 🟢.**

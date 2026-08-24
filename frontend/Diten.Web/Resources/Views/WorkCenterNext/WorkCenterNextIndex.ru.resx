@@ -850,6 +850,30 @@
   <data name="DepSuccessor" xml:space="preserve">
     <value>Последующ.</value>
   </data>
+  <data name="DepSentencePredFS" xml:space="preserve">
+    <value>Вы не можете начать, пока не завершится {0}</value>
+  </data>
+  <data name="DepSentencePredFF" xml:space="preserve">
+    <value>Вы не можете завершить, пока не завершится {0}</value>
+  </data>
+  <data name="DepSentencePredSS" xml:space="preserve">
+    <value>Вы не можете начать, пока не начнётся {0}</value>
+  </data>
+  <data name="DepSentencePredSF" xml:space="preserve">
+    <value>Вы не можете завершить, пока не начнётся {0}</value>
+  </data>
+  <data name="DepSentenceSuccFS" xml:space="preserve">
+    <value>{0} не может начаться, пока вы не завершите</value>
+  </data>
+  <data name="DepSentenceSuccFF" xml:space="preserve">
+    <value>{0} не может завершиться, пока вы не завершите</value>
+  </data>
+  <data name="DepSentenceSuccSS" xml:space="preserve">
+    <value>{0} не может начаться, пока вы не начнёте</value>
+  </data>
+  <data name="DepSentenceSuccSF" xml:space="preserve">
+    <value>{0} не может завершиться, пока вы не начнёте</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Финиш-Старт (FS)</value>
   </data>

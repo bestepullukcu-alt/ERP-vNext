@@ -37,9 +37,28 @@
                 { id: 'S3', title: 'Fark kaydı öner', status: 'not-started' },
                 { id: 'S4', title: 'Cetveli kontrol et', status: 'not-started' }
             ] },
+            /*
+             * ⚠ EXTENDED 2026-08-24 (A4) — FOUR EDGE TYPES × TWO DIRECTIONS, ALL EIGHT.
+             *
+             * The two rows that were here (pred/FS, succ/FS) are UNCHANGED and still lead the list. The six
+             * added below exist because the dependency row now carries a DIFFERENT SENTENCE for each
+             * combination, and live data offers only FinishToStart in either direction — measured on the dev
+             * backend: 62 items, 3 with dependencies, all of them FS. Six of the eight sentences had no way to
+             * be looked at.
+             *
+             * This is the "max data" showcase task, whose stated job in this file is to be the richest surface
+             * for designing the detail page, so the table belongs here rather than in a new fixture that would
+             * add a task to everyone's list. No new strings: the titles are the two this task already used.
+             */
             dependencies: [
                 { id: 'D1', title: resource('IsDepLedgerClose'), type: 'FinishToStart', state: 'done', direction: 'pred' },
-                { id: 'D2', title: resource('IsDepConsolidation'), type: 'FinishToStart', state: 'not-started', direction: 'succ' }
+                { id: 'D2', title: resource('IsDepConsolidation'), type: 'FinishToStart', state: 'not-started', direction: 'succ' },
+                { id: 'D3', title: resource('IsDepLedgerClose'), type: 'FinishToFinish', state: 'in-progress', direction: 'pred' },
+                { id: 'D4', title: resource('IsDepConsolidation'), type: 'FinishToFinish', state: 'not-started', direction: 'succ' },
+                { id: 'D5', title: resource('IsDepLedgerClose'), type: 'StartToStart', state: 'done', direction: 'pred' },
+                { id: 'D6', title: resource('IsDepConsolidation'), type: 'StartToStart', state: 'in-progress', direction: 'succ' },
+                { id: 'D7', title: resource('IsDepLedgerClose'), type: 'StartToFinish', state: 'not-started', direction: 'pred' },
+                { id: 'D8', title: resource('IsDepConsolidation'), type: 'StartToFinish', state: 'cancelled', direction: 'succ' }
             ],
             attachments: [
                 { id: 'A1', label: resource('IsAttachTrialBalance'), version: 3 },

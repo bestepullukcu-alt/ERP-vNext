@@ -850,6 +850,30 @@
   <data name="DepSuccessor" xml:space="preserve">
     <value>Successeur</value>
   </data>
+  <data name="DepSentencePredFS" xml:space="preserve">
+    <value>Vous ne pouvez pas commencer tant que {0} n’est pas terminé</value>
+  </data>
+  <data name="DepSentencePredFF" xml:space="preserve">
+    <value>Vous ne pouvez pas terminer tant que {0} n’est pas terminé</value>
+  </data>
+  <data name="DepSentencePredSS" xml:space="preserve">
+    <value>Vous ne pouvez pas commencer tant que {0} n’a pas commencé</value>
+  </data>
+  <data name="DepSentencePredSF" xml:space="preserve">
+    <value>Vous ne pouvez pas terminer tant que {0} n’a pas commencé</value>
+  </data>
+  <data name="DepSentenceSuccFS" xml:space="preserve">
+    <value>{0} ne peut pas commencer tant que vous n’avez pas terminé</value>
+  </data>
+  <data name="DepSentenceSuccFF" xml:space="preserve">
+    <value>{0} ne peut pas se terminer tant que vous n’avez pas terminé</value>
+  </data>
+  <data name="DepSentenceSuccSS" xml:space="preserve">
+    <value>{0} ne peut pas commencer tant que vous n’avez pas commencé</value>
+  </data>
+  <data name="DepSentenceSuccSF" xml:space="preserve">
+    <value>{0} ne peut pas se terminer tant que vous n’avez pas commencé</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Fin-à-Début (FS)</value>
   </data>

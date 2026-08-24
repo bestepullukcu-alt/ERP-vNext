@@ -850,6 +850,30 @@
   <data name="DepSuccessor" xml:space="preserve">
     <value>لاحقة</value>
   </data>
+  <data name="DepSentencePredFS" xml:space="preserve">
+    <value>لا يمكنك البدء قبل انتهاء {0}</value>
+  </data>
+  <data name="DepSentencePredFF" xml:space="preserve">
+    <value>لا يمكنك الإنهاء قبل انتهاء {0}</value>
+  </data>
+  <data name="DepSentencePredSS" xml:space="preserve">
+    <value>لا يمكنك البدء قبل بدء {0}</value>
+  </data>
+  <data name="DepSentencePredSF" xml:space="preserve">
+    <value>لا يمكنك الإنهاء قبل بدء {0}</value>
+  </data>
+  <data name="DepSentenceSuccFS" xml:space="preserve">
+    <value>لا يمكن أن يبدأ {0} قبل أن تنتهي</value>
+  </data>
+  <data name="DepSentenceSuccFF" xml:space="preserve">
+    <value>لا يمكن أن ينتهي {0} قبل أن تنتهي</value>
+  </data>
+  <data name="DepSentenceSuccSS" xml:space="preserve">
+    <value>لا يمكن أن يبدأ {0} قبل أن تبدأ</value>
+  </data>
+  <data name="DepSentenceSuccSF" xml:space="preserve">
+    <value>لا يمكن أن ينتهي {0} قبل أن تبدأ</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>إنهاء-بدء (FS)</value>
   </data>

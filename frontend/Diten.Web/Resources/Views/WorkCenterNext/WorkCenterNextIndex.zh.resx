@@ -850,6 +850,30 @@
   <data name="DepSuccessor" xml:space="preserve">
     <value>后续</value>
   </data>
+  <data name="DepSentencePredFS" xml:space="preserve">
+    <value>{0} 完成前你无法开始</value>
+  </data>
+  <data name="DepSentencePredFF" xml:space="preserve">
+    <value>{0} 完成前你无法完成</value>
+  </data>
+  <data name="DepSentencePredSS" xml:space="preserve">
+    <value>{0} 开始前你无法开始</value>
+  </data>
+  <data name="DepSentencePredSF" xml:space="preserve">
+    <value>{0} 开始前你无法完成</value>
+  </data>
+  <data name="DepSentenceSuccFS" xml:space="preserve">
+    <value>你完成前 {0} 无法开始</value>
+  </data>
+  <data name="DepSentenceSuccFF" xml:space="preserve">
+    <value>你完成前 {0} 无法完成</value>
+  </data>
+  <data name="DepSentenceSuccSS" xml:space="preserve">
+    <value>你开始前 {0} 无法开始</value>
+  </data>
+  <data name="DepSentenceSuccSF" xml:space="preserve">
+    <value>你开始前 {0} 无法完成</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>完成-开始 (FS)</value>
   </data>

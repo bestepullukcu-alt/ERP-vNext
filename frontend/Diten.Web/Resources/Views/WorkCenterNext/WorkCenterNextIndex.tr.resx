@@ -850,6 +850,30 @@
   <data name="DepSuccessor" xml:space="preserve">
     <value>Ardıl</value>
   </data>
+  <data name="DepSentencePredFS" xml:space="preserve">
+    <value>{0} bitmeden başlayamazsın</value>
+  </data>
+  <data name="DepSentencePredFF" xml:space="preserve">
+    <value>{0} bitmeden bitiremezsin</value>
+  </data>
+  <data name="DepSentencePredSS" xml:space="preserve">
+    <value>{0} başlamadan başlayamazsın</value>
+  </data>
+  <data name="DepSentencePredSF" xml:space="preserve">
+    <value>{0} başlamadan bitiremezsin</value>
+  </data>
+  <data name="DepSentenceSuccFS" xml:space="preserve">
+    <value>Sen bitirmeden {0} başlayamaz</value>
+  </data>
+  <data name="DepSentenceSuccFF" xml:space="preserve">
+    <value>Sen bitirmeden {0} bitemez</value>
+  </data>
+  <data name="DepSentenceSuccSS" xml:space="preserve">
+    <value>Sen başlamadan {0} başlayamaz</value>
+  </data>
+  <data name="DepSentenceSuccSF" xml:space="preserve">
+    <value>Sen başlamadan {0} bitemez</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Bitince başlar (FS)</value>
   </data>

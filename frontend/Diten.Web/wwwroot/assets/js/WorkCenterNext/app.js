@@ -3273,15 +3273,87 @@
     const DEP_STATE_KIND = {
         done: 'success', 'in-progress': 'info', 'not-started': 'secondary', cancelled: 'secondary'
     };
+    /*
+     * ── EIGHT SENTENCES: FOUR EDGE TYPES × TWO DIRECTIONS (2026-08-24, owner's option C) ──────────────────
+     *
+     * ⚠ NOTHING HERE IS INVENTED. The meaning of each edge type is DERIVED, not guessed:
+     *
+     *   `DEPENDENCY_TYPES` (fixture-contract.js:76) is the engine's own `TaskDependencyType` spelling, and the
+     *   product ALREADY states what each one means, in seven languages, in two places:
+     *     · `DEP_TYPE_KEY` → `DepTypeFS` = "Bitince başlar (FS)" / "Finish-to-Start (FS)"
+     *                       `DepTypeFF` = "Bitince biter"  · `DepTypeSS` = "Başlayınca başlar"
+     *                       `DepTypeSF` = "Başlayınca biter"
+     *     · `BLOCKER_SENTENCE_KEY` → `BlockerFinishToStart` = "«{0}» kapanmadan başlanamaz", and its three
+     *       siblings, which are the SAME four rules already written as sentences for the red banner.
+     *
+     *   Read together: the first verb is what the PREDECESSOR must reach, the second is what the SUCCESSOR is
+     *   then allowed to do. FinishToStart = predecessor finishes → successor may start. FinishToFinish =
+     *   predecessor finishes → successor may finish. StartToStart / StartToFinish likewise from "starts".
+     *
+     * The eight keys below apply that one rule from BOTH ends. `pred` — the listed task is my predecessor, so
+     * the sentence is about what I cannot do. `succ` — the listed task waits on me, so it is about what IT
+     * cannot do. Same rule, two viewpoints; no fifth or sixth semantic was introduced.
+     *
+     * ⚠ These are NOT the `Blocker*` keys reused. Those are passive, quoted, and only ever describe a live
+     * block ("«X» kapanmadan başlanamaz"). This row describes the RELATIONSHIP whether or not it currently
+     * blocks anything — a finished predecessor still has an edge type — and it speaks in the second person,
+     * which is the voice the owner chose. Two sentences, two jobs, and neither is a translation of the other.
+     */
+    const DEP_SENTENCE_KEY = {
+        pred: {
+            FinishToStart: 'DepSentencePredFS', FinishToFinish: 'DepSentencePredFF',
+            StartToStart: 'DepSentencePredSS', StartToFinish: 'DepSentencePredSF'
+        },
+        succ: {
+            FinishToStart: 'DepSentenceSuccFS', FinishToFinish: 'DepSentenceSuccFF',
+            StartToStart: 'DepSentenceSuccSS', StartToFinish: 'DepSentenceSuccSF'
+        }
+    };
+    /*
+     * THE DIRECTION IS AN ARROW NOW, and the word is gone.
+     *
+     * "ÖNCÜL" / "ARDIL" are the vocabulary of a scheduling tool, not of the person holding the task, and they
+     * sat as a fourth loose part in a row of four loose parts. The arrow points the way the constraint runs:
+     * LEFT = something upstream holds me, RIGHT = I hold something downstream.
+     *
+     * ⚠ `aria-hidden` ON THE ARROW, deliberately. It is not a second, silent statement of the direction — the
+     * SENTENCE says the direction in words ("… bitmeden başlayamazsın" vs "sen bitirmeden … başlayamaz"), so a
+     * reader who never sees the icon loses nothing. An icon that repeats the sentence and announces itself
+     * would make a screen reader read the direction twice.
+     */
+    const DEP_DIR_ICON = { pred: 'bx-left-arrow-alt', succ: 'bx-right-arrow-alt' };
     const renderDependencies = (item) => {
         if (!hasCap(item, 'dependencies') || !item.dependencies || !item.dependencies.length) { return ''; }
-        const rows = item.dependencies.map((d) =>
-            `<li class="wcn-dep${d.state === 'cancelled' ? ' is-cancelled' : ''}">
-                <span class="wcn-dep-dir">${esc(t(d.direction === 'pred' ? 'DepPredecessor' : 'DepSuccessor'))}</span>
-                <span class="wcn-dep-title">${esc(d.title)}</span>
-                <span class="wcn-chip wcn-chip-secondary wcn-dep-type" title="${esc(t(DEP_TYPE_KEY[d.type] || d.type))}">${esc(DEP_TYPE_ABBR[d.type] || d.type)}</span>
-                <span class="wcn-badge wcn-badge-${DEP_STATE_KIND[d.state] || 'secondary'}">${esc(t(DEP_STATE_KEY[d.state] || d.state))}</span>
-            </li>`).join('');
+        const rows = item.dependencies.map((d) => {
+            const dir = d.direction === 'succ' ? 'succ' : 'pred';
+            const sentenceKey = (DEP_SENTENCE_KEY[dir] || {})[d.type];
+            /*
+             * An edge type the contract has never declared cannot be given a sentence, so it falls back to the
+             * bare title rather than to an invented one. A wrong sentence about a dependency is worse than a
+             * missing one.
+             */
+            const sentence = sentenceKey ? tf(sentenceKey, d.title) : d.title;
+            /*
+             * ⚠ THE ABBREVIATION SURVIVES, DEMOTED — the decision, written down.
+             *
+             * It was the ONLY carrier of the edge type, and its expansion lived exclusively in a `title`
+             * tooltip: absent on touch, and never sought on a desktop. That is what the sentence fixes. But
+             * deleting `FS` would cost the reader who DOES know the notation the fastest read on the row, so it
+             * stays as a small muted marker AFTER the sentence — a footnote to a statement that is already
+             * complete without it, rather than the statement itself.
+             *
+             * It is no longer a `wcn-chip`: a chip claims the same weight as the sentence beside it. The
+             * blocked banner's chip (`renderBlocked`) is a different surface and was NOT touched this round.
+             */
+            return `<li class="wcn-dep wcn-dep-${dir}${d.state === 'cancelled' ? ' is-cancelled' : ''}">
+                <i class="bx ${DEP_DIR_ICON[dir]} wcn-dep-arrow" aria-hidden="true"></i>
+                <span class="wcn-dep-title">${esc(sentence)}</span>
+                <span class="wcn-dep-abbr" title="${esc(t(DEP_TYPE_KEY[d.type] || d.type))}">${
+                esc(DEP_TYPE_ABBR[d.type] || d.type)}</span>
+                <span class="wcn-badge wcn-badge-${DEP_STATE_KIND[d.state] || 'secondary'}">${
+                esc(t(DEP_STATE_KEY[d.state] || d.state))}</span>
+            </li>`;
+        }).join('');
         return `<div class="wcn-detail-section">
             ${cardHead('bx-link', 'DependenciesLabel')}
             <ul class="wcn-deps">${rows}</ul>

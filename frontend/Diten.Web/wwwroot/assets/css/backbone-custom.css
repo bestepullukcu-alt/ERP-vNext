@@ -6092,6 +6092,10 @@ tags.diten-tags .tagify__input {
 .wcn-blocked-oneline .wcn-blocked-title { font-weight: 600; }
 .wcn-blocked-goto { font-size: .75rem; }
 /* A cancelled predecessor is still shown — it just no longer holds anything up. */
+/* A CALLED-OFF PREDECESSOR BLOCKS NOTHING, and the row says so by going quiet rather than disappearing —
+   hiding it would erase the record. The whole row mutes now, not just the title, because the title is no
+   longer a separate part: it is inside the sentence, and striking half a sentence reads as a typo. */
+.wcn-dep.is-cancelled { opacity: .65; }
 .wcn-dep.is-cancelled .wcn-dep-title { text-decoration: line-through; color: var(--bs-secondary-color); }
 .wcn-confirm-body { font-size: .9375rem; color: var(--bs-body-color); line-height: 1.5; }
 /* The outcome sentence at the head of a dialog. It arrived here from the action rail, where every secondary
@@ -6738,9 +6742,40 @@ tags.diten-tags .tagify__input {
 .wcn-subtask-add { display: flex; gap: .5rem; margin-block-start: .5rem; }
 .wcn-subtask-add input { flex: 1; }
 .wcn-block-hint { display: flex; align-items: center; gap: .375rem; margin-block-start: .5rem; font-size: .75rem; color: var(--bs-secondary-color); }
-.wcn-dep { display: flex; align-items: center; gap: .5rem; font-size: .8125rem; flex-wrap: wrap; }
-.wcn-dep-dir { font-size: .6875rem; text-transform: uppercase; letter-spacing: .02em; color: var(--bs-secondary-color); min-inline-size: 3.5rem; }
-.wcn-dep-title { flex: 1; min-inline-size: 6rem; }
+/* ── A DEPENDENCY ROW IS A ROW LIKE THE OTHERS (2026-08-24) ────────────────
+   ⚠ EVERY NUMBER BELOW IS COPIED FROM `.diten-checkitem`, VALUE FOR VALUE — the same border, radius, padding
+   and surface the checklist item, the subtask row and the note row already wear. This list was the one that
+   had no box at all: four loose parts floating on the card with nothing saying they belonged together. No new
+   row language was invented; the existing one was applied.
+
+   `align-items: center` and not baseline, for the reason the note row records: this row holds boxes of
+   different heights (an icon, a wrapping sentence, a marker, a badge) and baseline aligns text baselines. */
+.wcn-dep {
+    display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+    font-size: .8125rem;
+    padding: .375rem .5rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: .375rem;
+    background: var(--bs-card-bg);
+}
+/* The direction, as the constraint's own arrow: LEFT = something upstream holds me, RIGHT = I hold something
+   downstream. It replaces the words ÖNCÜL / ARDIL. `aria-hidden` in the markup — the sentence already says the
+   direction, so the icon is a shorthand for it and never a second announcement. */
+.wcn-dep-arrow { flex: 0 0 auto; font-size: 1rem; line-height: 1; color: var(--bs-secondary-color); }
+.wcn-dep-pred .wcn-dep-arrow { color: var(--bs-warning); }
+.wcn-dep-succ .wcn-dep-arrow { color: var(--bs-secondary-color); }
+/* The half-sentence. It WRAPS rather than clipping: a truncated rule is a rule you cannot act on, and this is
+   the only thing on the row that states what the dependency actually does. `min-width: 0` lets it wrap inside
+   the flex row instead of forcing the row wide. */
+.wcn-dep-title { flex: 1 1 12rem; min-inline-size: 0; }
+/* The two-letter form, kept for the reader who knows the notation — a footnote to a complete sentence, not the
+   statement itself. Deliberately NOT a `wcn-chip`: a chip would claim the sentence's weight. */
+.wcn-dep-abbr {
+    flex: 0 0 auto;
+    font-size: .6875rem; letter-spacing: .02em;
+    color: var(--bs-secondary-color);
+    cursor: help;
+}
 .wcn-attach { display: flex; align-items: center; gap: .5rem; font-size: .8125rem; padding: .375rem .5rem; border: 1px solid var(--bs-border-color); border-radius: .375rem; cursor: pointer; }
 .wcn-attach:hover { border-color: var(--bs-primary); }
 .wcn-attach-name { flex: 1; }

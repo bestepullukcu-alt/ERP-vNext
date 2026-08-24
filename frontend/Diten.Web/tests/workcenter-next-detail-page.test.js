@@ -1385,8 +1385,14 @@ describe("the blocked banner says what is in the way", () => {
 
     const dep = app().querySelector(".wcn-dep");
     expect(dep).not.toBeNull();
-    expect(dep.querySelector(".wcn-dep-title").textContent).toBe("Sözleşme imzası");
-    expect(dep.querySelector(".wcn-dep-type").textContent).toBe("FS");
+    /*
+     * ⚠ UPDATED (2026-08-24, A4 option C). This used to assert the title ALONE in `.wcn-dep-title`, which is
+     * exactly the defect: the row said "ÖNCÜL · Sözleşme imzası · FS · tamam" and only a `title` tooltip ever
+     * explained what FS meant. The cell now holds the half-sentence, and the title is inside it.
+     */
+    expect(dep.querySelector(".wcn-dep-title").textContent).toContain("DepSentencePredFS");
+    // The abbreviation survives, demoted — a footnote beside a complete sentence, no longer a chip.
+    expect(dep.querySelector(".wcn-dep-abbr").textContent).toBe("FS");
     expect(dep.querySelector(".wcn-badge").textContent).toBe("DepInProgress");
   });
 
