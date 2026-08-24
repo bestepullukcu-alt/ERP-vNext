@@ -123,6 +123,103 @@ public sealed class SignalManagementInMemoryServiceTests
     }
 
     [Fact]
+    public void Read_guards_block_metadata_before_returning_contracts()
+    {
+        var service = new InMemorySignalManagementService();
+        var create = service.CreateSignalHypothesisContract(ValidCreateCommand());
+        var token = create.Contract!.SignalHypothesisReferenceToken;
+
+        var deniedPermission = service.GetByIdMetadata(ValidGetByIdQuery(token) with
+        {
+            PermissionDecision = new SignalManagementPermissionDecision(false, SignalManagementReasonCode.PermissionDenied)
+        });
+        var deniedFieldPolicy = service.ListMetadata(ValidListQuery() with
+        {
+            FieldPolicyGuard = SignalManagementGuardDecision.Deny(SignalManagementReasonCode.FieldPolicyDenied)
+        });
+        var missingCorrelation = service.GetByIdMetadata(ValidGetByIdQuery(token) with
+        {
+            CorrelationContext = new SignalManagementCorrelationContext("")
+        });
+
+        Assert.False(deniedPermission.IsAllowed);
+        Assert.False(deniedFieldPolicy.IsAllowed);
+        Assert.False(missingCorrelation.IsAllowed);
+        Assert.Equal(SignalManagementReasonCode.PermissionDenied, deniedPermission.ReasonCode);
+        Assert.Equal(SignalManagementReasonCode.FieldPolicyDenied, deniedFieldPolicy.ReasonCode);
+        Assert.Equal(SignalManagementReasonCode.MissingCorrelationContext, missingCorrelation.ReasonCode);
+        Assert.Null(deniedPermission.Contract);
+        Assert.Empty(deniedFieldPolicy.Contracts);
+        Assert.Null(missingCorrelation.Contract);
+
+        var serialized = JsonSerializer.Serialize(new[] { deniedPermission, deniedFieldPolicy, missingCorrelation });
+        Assert.DoesNotContain(token, serialized, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("server-tenant-context-reference", serialized, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Cross_tenant_list_returns_empty_metadata_without_existence_leak()
+    {
+        var service = new InMemorySignalManagementService();
+        var create = service.CreateSignalHypothesisContract(ValidCreateCommand());
+        var token = create.Contract!.SignalHypothesisReferenceToken;
+
+        var crossTenantList = service.ListMetadata(ValidListQuery() with
+        {
+            ServerTenantContext = new SignalManagementServerTenantContext("other-server-tenant-context")
+        });
+
+        Assert.True(crossTenantList.IsAllowed);
+        Assert.Empty(crossTenantList.Contracts);
+
+        var serialized = JsonSerializer.Serialize(crossTenantList);
+        Assert.DoesNotContain(token, serialized, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("other-server-tenant-context", serialized, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Unapproved_upstream_references_block_create_before_state_change()
+    {
+        var service = new InMemorySignalManagementService();
+
+        var unapprovedCase = service.CreateSignalHypothesisContract(ValidCreateCommand() with
+        {
+            CaseReference = ValidCaseReference() with { IsApprovedForSignalUse = false }
+        });
+        var unapprovedCoding = service.CreateSignalHypothesisContract(ValidCreateCommand() with
+        {
+            CodedOutputReference = ValidCodedOutputReference() with { IsApprovedForSignalUse = false }
+        });
+
+        Assert.False(unapprovedCase.IsAllowed);
+        Assert.False(unapprovedCoding.IsAllowed);
+        Assert.Equal(SignalManagementReasonCode.InvalidRequest, unapprovedCase.ReasonCode);
+        Assert.Equal(SignalManagementReasonCode.InvalidRequest, unapprovedCoding.ReasonCode);
+        Assert.Equal(0, service.StoredContractCount);
+    }
+
+    [Theory]
+    [InlineData(SignalReviewDecisionStatus.Draft)]
+    [InlineData(SignalReviewDecisionStatus.UnderReview)]
+    [InlineData(SignalReviewDecisionStatus.Blocked)]
+    public void Non_recorded_review_decision_status_blocks_before_state_change(SignalReviewDecisionStatus blockedStatus)
+    {
+        var service = new InMemorySignalManagementService();
+        var create = service.CreateSignalHypothesisContract(ValidCreateCommand());
+        var token = create.Contract!.SignalHypothesisReferenceToken;
+
+        var blocked = service.MarkReviewDecisionContract(ValidReviewCommand(token) with
+        {
+            ReviewDecisionStatus = blockedStatus
+        });
+        var stored = service.GetByIdMetadata(ValidGetByIdQuery(token));
+
+        Assert.False(blocked.IsAllowed);
+        Assert.Equal(SignalManagementReasonCode.InvalidRequest, blocked.ReasonCode);
+        Assert.Equal(SignalReviewDecisionStatus.Draft, stored.Contract?.ReviewDecisionStatus);
+    }
+
+    [Fact]
     public void Result_serialization_does_not_echo_sensitive_or_raw_inputs()
     {
         var service = new InMemorySignalManagementService();

@@ -197,6 +197,85 @@ public sealed class MeddraCodingInMemoryServiceTests
     }
 
     [Fact]
+    public void Read_guards_block_metadata_before_returning_records()
+    {
+        var service = new InMemoryMeddraCodingApplicationService();
+        var createResult = service.CreateCodingWorkItem(ValidCreateCommand());
+        var workItemReference = createResult.Records.Single().CodingWorkItemReference;
+
+        var deniedPermission = service.GetByIdMetadata(ValidGetByIdQuery(workItemReference) with
+        {
+            PermissionDecision = new PvgPermissionDecision(false, MeddraCodingReasonCode.PermissionDenied)
+        });
+        var deniedFieldPolicy = service.ListMetadata(ValidListQuery() with
+        {
+            FieldPolicyGuard = PvgGuardDecision.Deny(MeddraCodingReasonCode.FieldPolicyDenied)
+        });
+        var missingCorrelation = service.GetByIdMetadata(ValidGetByIdQuery(workItemReference) with
+        {
+            CorrelationContext = new PvgCorrelationContext("")
+        });
+
+        Assert.False(deniedPermission.Result.IsAllowed);
+        Assert.False(deniedFieldPolicy.Result.IsAllowed);
+        Assert.False(missingCorrelation.Result.IsAllowed);
+        Assert.Equal(MeddraCodingReasonCode.PermissionDenied, deniedPermission.Result.ReasonCode);
+        Assert.Equal(MeddraCodingReasonCode.FieldPolicyDenied, deniedFieldPolicy.Result.ReasonCode);
+        Assert.Equal(MeddraCodingReasonCode.MissingCorrelationContext, missingCorrelation.Result.ReasonCode);
+        Assert.Empty(deniedPermission.Records);
+        Assert.Empty(deniedFieldPolicy.Records);
+        Assert.Empty(missingCorrelation.Records);
+
+        var serialized = JsonSerializer.Serialize(new[] { deniedPermission, deniedFieldPolicy, missingCorrelation });
+        Assert.DoesNotContain(workItemReference, serialized, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("server-tenant-context-reference", serialized, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Cross_tenant_list_returns_empty_metadata_without_existence_leak()
+    {
+        var service = new InMemoryMeddraCodingApplicationService();
+        var createResult = service.CreateCodingWorkItem(ValidCreateCommand());
+        var workItemReference = createResult.Records.Single().CodingWorkItemReference;
+
+        var crossTenantList = service.ListMetadata(ValidListQuery() with
+        {
+            ServerTenantContext = new PvgServerTenantContext("other-server-tenant-context-reference")
+        });
+
+        Assert.True(crossTenantList.Result.IsAllowed);
+        Assert.Empty(crossTenantList.Records);
+
+        var serialized = JsonSerializer.Serialize(crossTenantList);
+        Assert.DoesNotContain(workItemReference, serialized, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("other-server-tenant-context-reference", serialized, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData(MeddraCodingReviewStatus.Draft)]
+    [InlineData(MeddraCodingReviewStatus.ReviewRequired)]
+    [InlineData(MeddraCodingReviewStatus.Blocked)]
+    public void Non_reviewed_review_status_blocks_before_state_change(MeddraCodingReviewStatus blockedStatus)
+    {
+        var service = new InMemoryMeddraCodingApplicationService();
+        var createResult = service.CreateCodingWorkItem(ValidCreateCommand());
+        var workItemReference = createResult.Records.Single().CodingWorkItemReference;
+        var proposeResult = service.ProposeCodedTerm(ValidProposeCommand(workItemReference));
+
+        var blockedReview = service.MarkCodingReviewed(ValidReviewedCommand(workItemReference) with
+        {
+            ReviewStatus = blockedStatus
+        });
+        var stored = service.GetByIdMetadata(ValidGetByIdQuery(workItemReference));
+
+        Assert.True(proposeResult.Result.IsAllowed);
+        Assert.False(blockedReview.Result.IsAllowed);
+        Assert.Equal(MeddraCodingReasonCode.InvalidRequest, blockedReview.Result.ReasonCode);
+        Assert.Equal(MeddraCodingReviewStatus.Proposed, stored.Records.Single().ReviewStatus);
+        Assert.True(stored.Records.Single().HasProposedTerm);
+    }
+
+    [Fact]
     public void Blocked_result_serialization_does_not_echo_sensitive_or_raw_values()
     {
         var service = new InMemoryMeddraCodingApplicationService();
