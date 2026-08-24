@@ -28,7 +28,7 @@ Measured implementation baseline:
 
 | Area | Baseline |
 |---|---|
-| REG-PV-BASE ports / MOD-0230 guardrail contracts | Source present; latest tests passed: 38 |
+| REG-PV-BASE ports / MOD-0230 guardrail contracts | Source present; latest focused tests passed: 64 |
 | MOD-0231 Case Processing contracts | Source present; tests passed: 21 |
 | MOD-0232 MedDRA Coding contracts | Source present; tests passed: 27 |
 | MOD-0234 Signal Management contracts | Source present; tests passed: 33 |
@@ -75,6 +75,7 @@ Measured implementation baseline:
 | MOD-0230 triage FieldSecurity guard (`PVG-0230-BE07-FIELDSECURITY-TRIAGE-01`) | 100% | Commit `6ee2c29f`; RegPvBase focused tests `48/48`; API focused tests `26/26` |
 | MOD-0230 AuditEvent tests-only evidence (`DOC-PVG-0230-AUDIT-EVIDENCE-TESTS-01`) | 100% | Commit `816d5359`; RegPvBase focused tests `54/54`; API focused tests `26/26`; MOD-0021 owner approval still required |
 | MOD-0230 WorkflowTransitionGate tests-only evidence (`DOC-PVG-0230-WORKFLOW-EVIDENCE-TESTS-01`) | 100% | Commit `bfa7099c`; RegPvBase focused tests `57/57`; API focused tests `26/26`; MOD-0023 owner approval still required |
+| MOD-0230 EvidenceLink tests-only evidence (`DOC-PVG-0230-EVIDENCELINK-EVIDENCE-TESTS-01`) | 100% | Commit `a44c324b`; RegPvBase focused tests `64/64`; API focused tests `26/26`; MOD-0031 owner approval still required |
 | MOD-0230 UI regression tests | 100% | Static UI regression tests pushed |
 | PVG deep audit update (`AUD-PVG-DEEP-2026-08-21`) | 100% | Source/gov/static audit complete; plan updated |
 | MOD-0231/0232/0234 downstream drift inspection (`INS-PVG-DOWNSTREAM-02`) | 100% | No downstream runtime drift; composition-only DI watch item recorded |
@@ -123,6 +124,7 @@ Overall PVG operational readiness: **0% / NO-GO**.
 | `PVG-0230-BE07-FIELDSECURITY-TRIAGE-01` | DEV/TEST | Add MOD-0230 triage FieldSecurity guard for `TriageOutcome` and `TriageReason` | Done |
 | `DOC-PVG-0230-AUDIT-EVIDENCE-TESTS-01` | DOC/TEST | Record MOD-0230 AuditEvent tests-only evidence without owner approval or runtime authorization | Done |
 | `DOC-PVG-0230-WORKFLOW-EVIDENCE-TESTS-01` | DOC/TEST | Record MOD-0230 WorkflowTransitionGate tests-only evidence without owner approval or runtime authorization | Done |
+| `DOC-PVG-0230-EVIDENCELINK-EVIDENCE-TESTS-01` | DOC/TEST | Record MOD-0230 EvidenceLink tests-only evidence without owner approval or runtime authorization | Done |
 | `DEV-PVG-0230-UI-REGRESSION-01` | DEV/TEST | UI tests-only regression guardrails | Done |
 | `DOC-PVG-DOWNSTREAM-CL-01` | DOC | Record MOD-0231/0232/0234 class-library/test-only downstream hardening evidence | Done |
 | `DOC-PVG-FIELDSECURITY-BLOCKER-01` | DOC | Record MOD-0230 FieldSecurity owner-approval blocker and missing evidence | Done |
@@ -180,6 +182,7 @@ Parallelism:
 | 31 | `DEV-PVG-0230-BE06-NEGATIVE-CONTRACT-01` | TEST | MOD-0230 | Add API tests for broader client-tenant field rejection, approved method matrix, and safe fail-closed reason codes across all six endpoints | Negative surface tests | E2 achieved | Done |
 | 32 | `DEV-PVG-0230-UI-REGRESSION-01` | TEST | MOD-0230 | Add static UI regression checks for localized loading/empty states, safe alert display, bounded reason codes, same-origin proxy, and disabled buttons | UI-05 | E2 achieved | Done |
 | 33 | `AUD-PVG-DEEP-2026-08-21` | INS/DOC | PVG | Deep audit current PVG governance, route, API, UI, downstream, and package cleanliness; update this Control Tower plan | Latest pushed branch | E2 achieved | Done |
+| 34 | `DOC-PVG-0230-EVIDENCELINK-EVIDENCE-TESTS-01` | DOC/TEST | MOD-0230 | Record EvidenceLink tests-only evidence and keep MOD-0031 owner approval plus operational runtime gates blocked | EvidenceLink evidence-test commit | E2 achieved | Done |
 
 ## 5. Completed WP: `PVG-0230-BE-01`
 
@@ -1409,6 +1412,42 @@ Scope controls:
 
 - This is tests-only evidence and does not authorize operational runtime.
 - No MOD-0023 owner approval or production readiness is claimed.
+- No delete, export, archive, void, or bulk surface is authorized.
+
+## 5.34 Completed WP: `DOC-PVG-0230-EVIDENCELINK-EVIDENCE-TESTS-01`
+
+Goal: record MOD-0230 EvidenceLink tests-only evidence without claiming operational runtime authorization,
+MOD-0031 owner approval, or production readiness.
+
+Completed local/dev evidence:
+
+- EvidenceLink tests-only evidence completed.
+- Commit evidence: `a44c324b PVG add evidence link evidence tests`.
+- RegPvBase focused tests passed: `64/64`.
+- API focused tests passed: `26/26`.
+- EvidenceLink denial is covered for create, update, triage, and route.
+- Denied or unavailable EvidenceLink returns safe `PVG_EVIDENCE_LINK_UNAVAILABLE`.
+- EvidenceLink denial happens before mutation:
+  - create leaves the store empty.
+  - update preserves the original draft status, source, and product.
+  - triage preserves status and triage fields.
+  - route preserves status and route target.
+- Cross-tenant mutation returns not-found before FieldSecurity, Workflow, or EvidenceLink with no existence leak.
+- Create/update without evidence references are characterized as not invoking EvidenceLink.
+- Raw `source-ref`, `evidence-ref`, suspect product, reporter, patient, and free-text values are covered by leak
+  scans.
+- No real MOD-0031 approval was introduced.
+
+Remaining governance blockers:
+
+- MOD-0031 EvidenceLink owner approval remains required for operational runtime.
+- Operational runtime remains **NO-GO**.
+- MOD-0231, MOD-0232, and MOD-0234 runtime remains blocked.
+
+Scope controls:
+
+- This is tests-only evidence and does not authorize operational runtime.
+- No MOD-0031 owner approval or production readiness is claimed.
 - No delete, export, archive, void, or bulk surface is authorized.
 
 ## 6. Verification Commands
