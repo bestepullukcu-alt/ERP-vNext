@@ -119,6 +119,7 @@ Overall PVG operational readiness: **0% / NO-GO**.
 | `DEV-PVG-0230-BE06-NEGATIVE-CONTRACT-01` | DEV/TEST | API tests-only negative-contract hardening | Done |
 | `DEV-PVG-0230-UI-REGRESSION-01` | DEV/TEST | UI tests-only regression guardrails | Done |
 | `DOC-PVG-DOWNSTREAM-CL-01` | DOC | Record MOD-0231/0232/0234 class-library/test-only downstream hardening evidence | Done |
+| `DOC-PVG-FIELDSECURITY-BLOCKER-01` | DOC | Record MOD-0230 FieldSecurity owner-approval blocker and missing evidence | Done |
 | `AUD-PVG-DEEP-2026-08-21` | INS/DOC | Deep PVG source/governance audit and plan update | Done |
 | `VER-PVG-0230-BE05-UI02-01` | VER | Combined BE-05 + UI-02 source/build/test verification | Done; PASS |
 | `VER-PVG-STAGING-SCOPE-02` | VER | Source-only staging manifest before staging | Done; no staging performed |
@@ -1290,6 +1291,31 @@ Scope controls:
 - No Gateway, frontend, API endpoint, persistence, appsettings, seed, job, menu/catalog, AI, MedDRA
   data/import/search/cache, export, delete, archive, void, or bulk runtime exposure is authorized or recorded.
 
+## 5.30 Completed WP: `DOC-PVG-FIELDSECURITY-BLOCKER-01`
+
+Goal: record MOD-0230 FieldSecurity owner-approval status without authorizing runtime work.
+
+Approval status:
+
+PVG-MOD0230-FieldSecurity-Contract v1 remains governance-only / owner approval required. MOD-0230 has recorded sensitivity classes and expected mask/omit/deny behavior, but no MOD-0019 owner-approved artifact/version, fail-closed proof, or focused MOD-0230 field-security test evidence exists.
+
+Missing evidence:
+
+- No explicit MOD-0019 masking / row-field security owner approval.
+- No owner-approved FieldSecurity contract artifact or link.
+- No approved v1 version evidence.
+- Missing fail-closed proof for absent/unavailable field policy.
+- Missing tests across all 16 MOD-0230 fields for list/detail/create/update/export/audit.
+- Missing-policy denial evidence.
+- Raw-value leak scans still required.
+- Cross-tenant checks still required.
+
+Scope controls:
+
+- Operational runtime remains **NO-GO**.
+- MOD-0231, MOD-0232, and MOD-0234 runtime remains blocked.
+- This documentation update authorizes no runtime code.
+
 ## 6. Verification Commands
 
 Run PVG tests serially to avoid shared build-output locks:
@@ -1317,6 +1343,7 @@ python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0234 --name "S
 | Authenticated MVC proxy traversal with valid tenant-shell auth context | PVG / integration owner | Remaining local/dev evidence gap |
 | Dirty `.claude/settings.local.json` outside package | Local workspace owner | Blocks safe staging if blind stage-all is used |
 | MOD-0019 real masking/row-field security owner contract | Platform/PSS owner needed | Blocks operational runtime and export |
+| PVG-MOD0230-FieldSecurity-Contract v1 approval | MOD-0019 masking / row-field security owner | Governance-only; owner approval, approved artifact/link, v1 evidence, fail-closed proof, focused 16-field tests, missing-policy denial evidence, raw-value leak scans, and cross-tenant checks are still required |
 | MOD-0023 real workflow/inbox contract | Platform/PSS owner needed | Blocks operational runtime routing/handoff |
 | MOD-0031 real evidence-link contract | Platform/PSS owner needed | Blocks operational runtime handoff/evidence |
 | Retention/legal-hold owner | Compliance/legal owner needed | Blocks archive/void and production validation |
