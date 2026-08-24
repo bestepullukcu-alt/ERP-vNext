@@ -4,6 +4,7 @@ namespace Diten.Platform.Domain.Repositories;
 
 public interface IBusinessReferenceDataStewardshipRepository
 {
+    Guid GetRequiredReferenceTenantId();
     Task<(IReadOnlyList<BusinessReferenceDataSet> Items, long TotalCount)> QuerySetsAsync(BusinessReferenceDataSetListQuery query, CancellationToken ct = default);
     Task<bool> IsCatalogGovernedSetAsync(Guid setId, CancellationToken ct = default);
     Task<bool> IsCatalogGovernedVersionAsync(Guid versionId, CancellationToken ct = default);
@@ -32,6 +33,38 @@ public interface IBusinessReferenceDataStewardshipRepository
     Task<bool> DeactivateUsageRegistrationAsync(Guid usageRegistrationId, string actorId, CancellationToken ct = default);
     Task<BusinessReferenceDataUsageImpactSummary> GetUsageImpactSummaryAsync(string setCode, CancellationToken ct = default);
     Task<bool> UpdateSetUsageSummaryAsync(string setCode, int totalRegistrations, int criticalRegistrations, DateTimeOffset updatedAt, CancellationToken ct = default);
+    Task CreateTenantAssignmentAsync(BusinessReferenceDataTenantAssignment assignment, CancellationToken ct = default);
+    Task<BusinessReferenceDataTenantAssignment?> GetTenantAssignmentByIdAsync(Guid assignmentId, Guid consumerTenantId, CancellationToken ct = default);
+    Task<BusinessReferenceDataTenantAssignment?> GetActiveTenantAssignmentAsync(Guid consumerTenantId, string setCode, CancellationToken ct = default);
+    Task<BusinessReferenceDataTenantAssignment?> GetTenantAssignmentForReconciliationAsync(Guid consumerTenantId, string setCode, CancellationToken ct = default);
+    Task<BusinessReferenceDataTenantAssignmentReconciliationResult> EnsureActiveTenantAssignmentAsync(
+        Guid consumerTenantId,
+        string setCode,
+        string actorId,
+        CancellationToken ct = default);
+    Task<bool> RevokeTenantAssignmentAsync(Guid assignmentId, Guid consumerTenantId, int expectedVersion, string actorId, CancellationToken ct = default);
+    Task<bool> ReactivateTenantAssignmentAsync(Guid assignmentId, Guid consumerTenantId, int expectedVersion, string actorId, CancellationToken ct = default);
+    Task<bool> SoftDeleteTenantAssignmentAsync(Guid assignmentId, Guid consumerTenantId, int expectedVersion, string actorId, CancellationToken ct = default);
+    Task<BusinessReferenceDataPublishOperationCreateResult> CreateOrGetPublishOperationAsync(BusinessReferenceDataPublishOperation operation, CancellationToken ct = default);
+    Task<BusinessReferenceDataPublishOperation?> GetPublishOperationByIdAsync(Guid publishOperationId, CancellationToken ct = default);
+    Task<BusinessReferenceDataPublishOperation?> GetPublishOperationByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default);
+    Task<bool> IsPublishOperationVerifiedAsync(Guid publishOperationId, CancellationToken ct = default);
+    Task<BusinessReferenceDataVerifiedPublication?> GetVerifiedPublicationAsync(
+        string setCode,
+        CancellationToken ct = default);
+    Task<BusinessReferenceDataVerifiedPublication?> GetVerifiedPublicationAsync(
+        string setCode,
+        string catalogVersion,
+        string catalogFingerprint,
+        CancellationToken ct = default);
+    Task<bool> TransitionPublishOperationAsync(
+        Guid publishOperationId,
+        int expectedVersion,
+        BusinessReferenceDataPublishOperationState nextState,
+        BusinessReferenceDataPublishCheckpoint nextCheckpoint,
+        string actorId,
+        string? errorCode = null,
+        CancellationToken ct = default);
     Task CreateImportPreviewAsync(BusinessReferenceDataImportPreview preview, CancellationToken ct = default);
     Task<BusinessReferenceDataImportPreview?> GetImportPreviewByIdAsync(Guid previewId, CancellationToken ct = default);
     Task<bool> UpdateImportPreviewAsync(BusinessReferenceDataImportPreview preview, CancellationToken ct = default);
@@ -54,3 +87,30 @@ public sealed record BusinessReferenceDataUsageImpactSummary(
     int MediumRegistrations,
     int LowRegistrations,
     DateTimeOffset? LastRegisteredAt);
+
+public enum BusinessReferenceDataPublishOperationCreateOutcome
+{
+    Created,
+    Replayed,
+    Conflict
+}
+
+public sealed record BusinessReferenceDataPublishOperationCreateResult(
+    BusinessReferenceDataPublishOperationCreateOutcome Outcome,
+    BusinessReferenceDataPublishOperation Operation);
+
+public enum BusinessReferenceDataTenantAssignmentReconciliationOutcome
+{
+    Created,
+    Replayed,
+    Conflict
+}
+
+public sealed record BusinessReferenceDataTenantAssignmentReconciliationResult(
+    BusinessReferenceDataTenantAssignmentReconciliationOutcome Outcome,
+    BusinessReferenceDataTenantAssignment Assignment);
+
+public sealed record BusinessReferenceDataVerifiedPublication(
+    BusinessReferenceDataSet Set,
+    BusinessReferenceDataVersion Version,
+    BusinessReferenceDataPublishOperation Operation);

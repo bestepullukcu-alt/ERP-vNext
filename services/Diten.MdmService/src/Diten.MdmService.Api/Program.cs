@@ -10,7 +10,7 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure();
+builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddPersistence(builder.Configuration);
 
 var jwtSecret = builder.Configuration["JwtSettings:Secret"];
@@ -74,6 +74,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.Configure<PlatformRegistrationOptions>(builder.Configuration.GetSection(PlatformRegistrationOptions.SectionName));
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IModuleManifestProvider, LegalEntityManifestProvider>();
+builder.Services.AddSingleton<IModuleManifestProvider, ProductItemSkuMasterManifestProvider>();
 builder.Services.AddHostedService<ModuleRegistrationHostedService>();
 
 // MOD-0021 Faz 2 — forward MDM audit events to Platform's central store (S2S), reusing the same Platform base URL +

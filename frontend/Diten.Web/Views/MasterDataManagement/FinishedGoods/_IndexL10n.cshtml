@@ -1,0 +1,43 @@
+@using Diten.Web.Views.MasterDataManagement.FinishedGoods
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<FinishedGoodsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="finishedgoods-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        AddNew = Localizer["AddNew"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        ColumnVisibility = Localizer["ColumnVisibility"].Value,
+        CreateConfirmation = Localizer["CreateConfirmation"].Value,
+        CreatePendingWithCode = Localizer["CreatePendingWithCode"].Value,
+        CreatePending = Localizer["CreatePending"].Value,
+        CreateSuccessWithCode = Localizer["CreateSuccessWithCode"].Value,
+        ErrorConflict = Localizer["ErrorConflict"].Value,
+        ErrorForbidden = Localizer["ErrorForbidden"].Value,
+        ErrorGateway = Localizer["ErrorGateway"].Value,
+        ErrorNotFound = Localizer["ErrorNotFound"].Value,
+        ErrorUnauthorized = Localizer["ErrorUnauthorized"].Value,
+        ErrorValidation = Localizer["ErrorValidation"].Value,
+        Export = Localizer["Export"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        GskuNotReferenceable = Localizer["GskuNotReferenceable"].Value,
+        GskuRequired = Localizer["GskuRequired"].Value,
+        LifecycleDraft = Localizer["LifecycleDraft"].Value,
+        LifecycleIdentityApproved = Localizer["LifecycleIdentityApproved"].Value,
+        LifecyclePendingIdentityApproval = Localizer["LifecyclePendingIdentityApproval"].Value,
+        LifecycleRetired = Localizer["LifecycleRetired"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        Search = Localizer["Search"].Value,
+        Status = Localizer["Status"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value
+    })
+</script>

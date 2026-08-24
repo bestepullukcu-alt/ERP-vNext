@@ -1,0 +1,29 @@
+@using Diten.Web.Views.MasterDataManagement.Gskus
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<GskusIndex> Localizer
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-gskus" data-dt-standard="v2" class="datatables-gskus table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="all">@Localizer["CanonicalCode"]</th>
+                    <th>@Localizer["GlobalProduct"]</th>
+                    <th>@Localizer["RevisionIdentifier"]</th>
+                    <th>@Localizer["PackQuantity"]</th>
+                    <th>@Localizer["LifecycleStatus"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

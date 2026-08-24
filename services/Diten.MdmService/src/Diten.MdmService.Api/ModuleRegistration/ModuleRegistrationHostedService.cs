@@ -5,28 +5,27 @@ using Microsoft.Extensions.Options;
 namespace Diten.MdmService.Api.ModuleRegistration;
 
 /// <summary>
-/// Pushes this service's module manifest to the Platform module-catalog at startup (self-registration). BEST-EFFORT
-/// with retry: runs after the app is up (BackgroundService), retries a few times with increasing backoff to swallow the
-/// "Platform not ready yet" startup race, and NEVER crashes startup. Safe to repeat every restart (Platform reconcile is
-/// idempotent). Sends X-Internal-Api-Key (S2S, direct to Platform — /api/internal is not gateway-exposed).
+/// Pushes every registered manifest independently to Platform at startup. Each manifest has its own retry loop, and
+/// registration uses only the dedicated MDM per-service credential transport.
 /// </summary>
 public sealed class ModuleRegistrationHostedService : BackgroundService
 {
-    private const string InternalApiKeyHeader = "X-Internal-Api-Key";
+    private const string CredentialIdentifierHeader = "X-Module-Registration-Credential-Id";
+    private const string CredentialSecretHeader = "X-Module-Registration-Credential";
     private const int MaxAttempts = 5;
 
-    private readonly IModuleManifestProvider _manifestProvider;
+    private readonly IReadOnlyList<IModuleManifestProvider> _manifestProviders;
     private readonly PlatformRegistrationOptions _options;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<ModuleRegistrationHostedService> _logger;
 
     public ModuleRegistrationHostedService(
-        IModuleManifestProvider manifestProvider,
+        IEnumerable<IModuleManifestProvider> manifestProviders,
         IOptions<PlatformRegistrationOptions> options,
         IHttpClientFactory httpClientFactory,
         ILogger<ModuleRegistrationHostedService> logger)
     {
-        _manifestProvider = manifestProvider;
+        _manifestProviders = manifestProviders.ToArray();
         _options = options.Value;
         _httpClientFactory = httpClientFactory;
         _logger = logger;
@@ -34,20 +33,51 @@ public sealed class ModuleRegistrationHostedService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (string.IsNullOrWhiteSpace(_options.BaseUrl) || string.IsNullOrWhiteSpace(_options.InternalApiKey))
+        await RunRegistrationsAsync(Task.Delay, stoppingToken);
+    }
+
+    public async Task RunRegistrationsAsync(
+        Func<TimeSpan, CancellationToken, Task> delay,
+        CancellationToken stoppingToken)
+    {
+        if (string.IsNullOrWhiteSpace(_options.BaseUrl)
+            || string.IsNullOrWhiteSpace(_options.ModuleRegistrationCredentialIdentifier)
+            || string.IsNullOrWhiteSpace(_options.ModuleRegistrationCredentialSecret))
         {
-            _logger.LogWarning("Module self-registration skipped: PlatformRegistration BaseUrl/InternalApiKey not configured.");
+            _logger.LogWarning("Module self-registration skipped: dedicated Platform registration credential is not configured.");
             return;
         }
 
-        var manifest = _manifestProvider.GetManifest();
+        foreach (var provider in _manifestProviders)
+        {
+            try
+            {
+                await RegisterProviderAsync(provider, delay, stoppingToken);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Module manifest provider or delivery failed; continuing with the next provider.");
+            }
+        }
+    }
+
+    private async Task RegisterProviderAsync(
+        IModuleManifestProvider provider,
+        Func<TimeSpan, CancellationToken, Task> delay,
+        CancellationToken stoppingToken)
+    {
+        var manifest = provider.GetManifest();
         try
         {
             var stopped = await ModuleRegistrationRetry.RunAsync(
                 attempt: (attemptNumber, ct) => TryRegisterAsync(manifest, attemptNumber, ct),
                 maxAttempts: MaxAttempts,
                 backoff: attemptNumber => TimeSpan.FromSeconds(Math.Pow(2, attemptNumber)), // 2s, 4s, 8s, 16s
-                delay: Task.Delay,
+                delay: delay,
                 stoppingToken);
 
             if (!stopped)
@@ -75,7 +105,8 @@ public sealed class ModuleRegistrationHostedService : BackgroundService
             {
                 Content = JsonContent.Create(manifest)
             };
-            request.Headers.Add(InternalApiKeyHeader, _options.InternalApiKey);
+            request.Headers.Add(CredentialIdentifierHeader, _options.ModuleRegistrationCredentialIdentifier);
+            request.Headers.Add(CredentialSecretHeader, _options.ModuleRegistrationCredentialSecret);
 
             var client = _httpClientFactory.CreateClient();
             using var response = await client.SendAsync(request, ct);

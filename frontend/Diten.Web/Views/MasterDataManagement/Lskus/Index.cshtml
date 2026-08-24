@@ -1,0 +1,12 @@
+@using Diten.Web.Views.MasterDataManagement.Lskus
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LskusIndex> Localizer
+@{ ViewData["Title"] = Localizer["Title"].Value; Layout = "_LayoutTenantShell"; var canCreate = ViewData["CanCreateLsku"] as bool? == true; }
+@* <partial name="_Filter" /> *@
+<partial name="~/Views/MasterDataManagement/Lskus/_Filter.cshtml" />
+<div class="mb-3" data-can-create="@canCreate.ToString().ToLowerInvariant()"><h5>@Localizer["Title"]</h5><p class="text-muted">@Localizer["PageDescription"]</p></div>
+<partial name="~/Views/MasterDataManagement/Lskus/_DataTable.cshtml" />
+@* id="offcanvasDetailsPreview" is rendered by the real details partial. *@
+<partial name="~/Views/MasterDataManagement/Lskus/_DetailsQuickView.cshtml" />
+@if (canCreate) { <partial name="~/Views/MasterDataManagement/Lskus/_CreateEditOffcanvas.cshtml" /> }
+@section Scripts { @* <partial name="_IndexL10n" /> *@ <partial name="~/Views/MasterDataManagement/Lskus/_IndexL10n.cshtml" /><script src="~/assets/js/MasterDataManagement/Lskus/index.l10n.js" asp-append-version="true"></script><script src="~/assets/js/MasterDataManagement/Lskus/index.js" asp-append-version="true"></script> }

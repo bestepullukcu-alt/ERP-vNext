@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Title"><value>Local SKUs</value></data>
+  <data name="PageDescription"><value>Create and review market-specific SKUs</value></data>
+  <data name="CreateTitle"><value>Create LSKU</value></data>
+  <data name="Gsku"><value>GSKU</value></data>
+  <data name="Market"><value>Market</value></data>
+  <data name="Save"><value>Save</value></data>
+  <data name="AddNew"><value>Add new</value></data>
+  <data name="Unknown"><value>Unknown</value></data>
+  <data name="Actions"><value>Actions</value></data>
+  <data name="ViewDetails"><value>View details</value></data>
+  <data name="QuickView"><value>Quick view</value></data>
+  <data name="Cancel"><value>Cancel</value></data>
+  <data name="Search"><value>Search</value></data>
+  <data name="Export"><value>Export</value></data>
+  <data name="Filter"><value>Filter</value></data>
+  <data name="Apply"><value>Apply</value></data>
+  <data name="Reset"><value>Reset</value></data>
+  <data name="SaveView"><value>Save view</value></data>
+  <data name="ColumnVisibility"><value>Column visibility</value></data>
+  <data name="Status"><value>Status</value></data>
+  <data name="CanonicalCode"><value>Canonical code</value></data>
+  <data name="Version"><value>Version</value></data>
+  <data name="CreatedAt"><value>Created</value></data>
+  <data name="UpdatedAt"><value>Updated</value></data>
+  <data name="Loading"><value>Loading</value></data>
+  <data name="CreateSuccess"><value>LSKU created</value></data>
+  <data name="CreateReconciliationPending"><value>Creation is pending reconciliation.</value></data>
+  <data name="ErrorInvalidFormAttempt"><value>Invalid form attempt.</value></data>
+  <data name="ErrorValidation"><value>Check the required fields.</value></data>
+  <data name="ErrorNotFound"><value>Referenced item was not found.</value></data>
+  <data name="ErrorConflict"><value>Request conflicts with existing data.</value></data>
+  <data name="ErrorProviderUnavailable"><value>Reference provider is unavailable.</value></data>
+  <data name="ErrorProviderTimeout"><value>Reference provider timed out.</value></data>
+  <data name="ErrorForbidden"><value>You do not have permission.</value></data>
+  <data name="ErrorGateway"><value>Request could not be completed.</value></data>
+</root>

@@ -192,6 +192,178 @@
       "UpstreamScheme": "http"
     },
     {
+      "DownstreamPathTemplate": "/api/global-products",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/global-products",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/global-products/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/global-products/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/product-abbreviations",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/product-abbreviations",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PATCH",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/product-abbreviations/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/product-abbreviations/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PATCH",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/finished-goods",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/finished-goods",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/finished-goods/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/finished-goods/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/gskus",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/gskus",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/gskus/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/gskus/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/lskus",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/lskus",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/lskus/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/lskus/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
       "DownstreamPathTemplate": "/api/golden-reference-slim",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [

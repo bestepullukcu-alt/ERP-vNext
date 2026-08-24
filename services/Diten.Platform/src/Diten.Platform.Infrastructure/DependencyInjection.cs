@@ -118,6 +118,8 @@ public static class DependencyInjection
         services.Configure<TenantManagementOptions>(configuration.GetSection(TenantManagementOptions.SectionName));
         services.Configure<AuditRetentionSeedOptions>(configuration.GetSection(AuditRetentionSeedOptions.SectionName));
         services.Configure<BusinessReferenceDataCatalogLoadOptions>(configuration.GetSection(BusinessReferenceDataCatalogLoadOptions.SectionName));
+        services.Configure<BusinessReferenceDataProviderOptions>(configuration.GetSection(BusinessReferenceDataProviderOptions.SectionName));
+        services.AddSingleton<IValidateOptions<BusinessReferenceDataProviderOptions>, BusinessReferenceDataProviderOptionsValidator>();
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
         services.Configure<AuthServiceOptions>(configuration.GetSection(AuthServiceOptions.SectionName));
         services.Configure<MdmServiceOptions>(configuration.GetSection(MdmServiceOptions.SectionName));
@@ -472,6 +474,8 @@ public static class DependencyInjection
             new("JwtSettings:PreviousSecrets", "Platform", SecretRequirementKind.JwtPreviousCollection, Required: false),
             new("MongoDbSettings:ConnectionString", "Platform", SecretRequirementKind.ConnectionString),
             new("AuthService:InternalApiKey", "Platform", SecretRequirementKind.InternalApiKey),
+            new("ModuleRegistrationCredentials:Mdm:ActiveSecret", "Platform", SecretRequirementKind.InternalApiKey),
+            new("ModuleRegistrationCredentials:Mdm:PreviousSecret", "Platform", SecretRequirementKind.InternalApiKey, Required: false),
             new("Smtp:Password", "Platform", MinimumLength: 8, Required: smtpEnabled, IsEnabled: () => smtpEnabled)
         ];
     }

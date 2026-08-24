@@ -4,7 +4,9 @@ using MediatR;
 
 namespace Diten.Platform.Application.Features.ModuleRegistration;
 
-public sealed record RegisterModuleManifestCommand(ModuleManifestDocument Manifest)
+public sealed record RegisterModuleManifestCommand(
+    ModuleManifestDocument Manifest,
+    string? TrustedProducerOwnerCode = null)
     : IRequest<Response<ModuleManifestReconcileResult>>;
 
 /// <summary>Summary of one idempotent, best-effort reconcile pass over a pushed module manifest.</summary>

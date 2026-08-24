@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Diten.MdmService.Application.Features.ProductAbbreviationRegister.Services;
 
 namespace Diten.MdmService.Application;
 
@@ -19,6 +20,8 @@ public static class DependencyInjection
         // (validation/exception failures short-circuit before reaching it).
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.AuditForwardingBehavior<,>));
         services.AddValidatorsFromAssembly(assembly);
+        services.AddScoped<ProductAbbreviationAuthorization>();
+        services.AddScoped<ProductAbbreviationWorkflow>();
 
         return services;
     }

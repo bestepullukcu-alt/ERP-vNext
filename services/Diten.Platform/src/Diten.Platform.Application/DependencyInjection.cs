@@ -61,6 +61,8 @@ public static class DependencyInjection
         services.AddScoped<IPlatformLookupProvider, PlatformLookupProvider>();
         services.AddScoped<Features.ModuleCatalog.Services.IModuleTaxonomyResolver, Features.ModuleCatalog.Services.ModuleTaxonomyResolver>();
         services.AddScoped<IBusinessReferenceDataValidationService, BusinessReferenceDataValidationService>();
+        services.AddScoped<IBusinessReferenceDataPublicationEligibility, RuntimeBusinessReferenceDataPublicationEligibility>();
+        services.AddScoped<IBusinessReferenceDataPublishCheckpointObserver, NoOpBusinessReferenceDataPublishCheckpointObserver>();
         services.AddScoped<IBusinessReferenceDataPublishService, BusinessReferenceDataPublishService>();
         services.AddScoped<IBusinessReferenceDataImportService, BusinessReferenceDataImportService>();
         services.AddScoped<IBusinessReferenceDataImportParser, CsvBusinessReferenceDataImportParser>();

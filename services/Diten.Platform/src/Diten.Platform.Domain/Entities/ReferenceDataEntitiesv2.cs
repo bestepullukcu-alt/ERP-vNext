@@ -251,6 +251,192 @@ public sealed class BusinessReferenceDataUsageRegistration : TenantScopedEntity
 }
 
 [BsonIgnoreExtraElements]
+public sealed class BusinessReferenceDataTenantAssignment : TenantScopedEntity
+{
+    [BsonRepresentation(BsonType.String)]
+    public Guid BusinessReferenceDataTenantAssignmentId { get; set; } = Guid.NewGuid();
+
+    [BsonRepresentation(BsonType.String)]
+    public required Guid ConsumerTenantId { get; init; }
+
+    public required string SetCode { get; set; }
+
+    [BsonRepresentation(BsonType.String)]
+    public BusinessReferenceDataTenantAssignmentStatus AssignmentStatus { get; set; } = BusinessReferenceDataTenantAssignmentStatus.ACTIVE;
+
+    public DateTimeOffset? RevokedAt { get; set; }
+    public string? RevokedBy { get; set; }
+}
+
+public enum BusinessReferenceDataTenantAssignmentStatus
+{
+    ACTIVE,
+    REVOKED
+}
+
+[BsonIgnoreExtraElements]
+public sealed class BusinessReferenceDataPublishOperation : TenantScopedEntity
+{
+    [BsonRepresentation(BsonType.String)]
+    public Guid PublishOperationId { get; set; } = Guid.NewGuid();
+
+    [BsonRepresentation(BsonType.String)]
+    public required Guid BusinessReferenceDataSetId { get; init; }
+
+    [BsonRepresentation(BsonType.String)]
+    public required Guid BusinessReferenceDataVersionId { get; init; }
+
+    public required string IdempotencyKey { get; set; }
+
+    [BsonRepresentation(BsonType.String)]
+    public BusinessReferenceDataPublishOperationState OperationState { get; set; } = BusinessReferenceDataPublishOperationState.PENDING;
+
+    [BsonRepresentation(BsonType.String)]
+    public BusinessReferenceDataPublishCheckpoint PublishCheckpoint { get; set; } = BusinessReferenceDataPublishCheckpoint.INITIALIZED;
+
+    [BsonRepresentation(BsonType.String)]
+    public Guid? ExpectedPublishedVersionId { get; init; }
+
+    public required long ExpectedSetVersion { get; init; }
+    public required string ExpectedTargetVersionToken { get; init; }
+    public string? CatalogVersion { get; init; }
+    public string? CatalogFingerprint { get; init; }
+    public DateTimeOffset? PreMutationContextVerifiedAt { get; set; }
+    public int RetryCount { get; set; }
+    public DateTimeOffset LastAttemptAt { get; set; } = DateTimeOffset.UtcNow;
+    public string? LastErrorCode { get; set; }
+    public DateTimeOffset? LastErrorAt { get; set; }
+    public DateTimeOffset? CompletedAt { get; set; }
+}
+
+public enum BusinessReferenceDataPublishOperationState
+{
+    PENDING,
+    RUNNING,
+    RECOVERY_REQUIRED,
+    COMPLETED,
+    FAILED_TERMINAL
+}
+
+public enum BusinessReferenceDataPublishCheckpoint
+{
+    INITIALIZED,
+    TARGET_VERSION_WRITTEN,
+    PRIOR_VERSIONS_DEPRECATED,
+    REQUIRED_WRITES_VERIFIED,
+    POINTER_PROMOTED,
+    COMPLETION_VERIFIED
+}
+
+public static class BusinessReferenceDataPublishStateMachine
+{
+    public static bool IsValidTransition(
+        BusinessReferenceDataPublishOperationState currentState,
+        BusinessReferenceDataPublishCheckpoint currentCheckpoint,
+        BusinessReferenceDataPublishOperationState nextState,
+        BusinessReferenceDataPublishCheckpoint nextCheckpoint)
+    {
+        if (currentState is BusinessReferenceDataPublishOperationState.COMPLETED or BusinessReferenceDataPublishOperationState.FAILED_TERMINAL)
+        {
+            return false;
+        }
+
+        if (currentState == BusinessReferenceDataPublishOperationState.PENDING)
+        {
+            return currentCheckpoint == BusinessReferenceDataPublishCheckpoint.INITIALIZED
+                   && nextCheckpoint == BusinessReferenceDataPublishCheckpoint.INITIALIZED
+                   && nextState is BusinessReferenceDataPublishOperationState.RUNNING
+                       or BusinessReferenceDataPublishOperationState.FAILED_TERMINAL;
+        }
+
+        if (currentState == BusinessReferenceDataPublishOperationState.RECOVERY_REQUIRED)
+        {
+            return nextState == BusinessReferenceDataPublishOperationState.RUNNING
+                   && nextCheckpoint == currentCheckpoint;
+        }
+
+        if (currentState != BusinessReferenceDataPublishOperationState.RUNNING)
+        {
+            return false;
+        }
+
+        if (nextState == BusinessReferenceDataPublishOperationState.RECOVERY_REQUIRED)
+        {
+            return nextCheckpoint == currentCheckpoint;
+        }
+
+        if (nextState == BusinessReferenceDataPublishOperationState.FAILED_TERMINAL)
+        {
+            return currentCheckpoint < BusinessReferenceDataPublishCheckpoint.POINTER_PROMOTED
+                   && nextCheckpoint == currentCheckpoint;
+        }
+
+        if (nextState == BusinessReferenceDataPublishOperationState.COMPLETED)
+        {
+            return currentCheckpoint == BusinessReferenceDataPublishCheckpoint.COMPLETION_VERIFIED
+                   && nextCheckpoint == BusinessReferenceDataPublishCheckpoint.COMPLETION_VERIFIED;
+        }
+
+        return nextState == BusinessReferenceDataPublishOperationState.RUNNING
+               && (int)nextCheckpoint == (int)currentCheckpoint + 1;
+    }
+
+    public static bool IsSameReplayTarget(
+        BusinessReferenceDataPublishOperation existing,
+        BusinessReferenceDataPublishOperation replay)
+    {
+        return existing.TenantId == replay.TenantId
+               && string.Equals(existing.IdempotencyKey, replay.IdempotencyKey, StringComparison.Ordinal)
+               && existing.BusinessReferenceDataSetId == replay.BusinessReferenceDataSetId
+               && existing.BusinessReferenceDataVersionId == replay.BusinessReferenceDataVersionId
+               && existing.ExpectedPublishedVersionId == replay.ExpectedPublishedVersionId
+               && existing.ExpectedSetVersion == replay.ExpectedSetVersion
+               && string.Equals(existing.CatalogVersion, replay.CatalogVersion, StringComparison.Ordinal)
+               && string.Equals(existing.CatalogFingerprint, replay.CatalogFingerprint, StringComparison.Ordinal)
+               && string.Equals(
+                   existing.ExpectedTargetVersionToken,
+                   replay.ExpectedTargetVersionToken,
+                   StringComparison.Ordinal);
+    }
+
+    public static bool IsVerifiedPublication(
+        BusinessReferenceDataPublishOperation operation,
+        Guid? publishedVersionId,
+        long currentSetVersion,
+        string currentTargetVersionToken,
+        bool targetVersionHasOperationPublishEvidence)
+    {
+        return !operation.IsDeleted
+               && operation.OperationState == BusinessReferenceDataPublishOperationState.COMPLETED
+               && operation.PublishCheckpoint == BusinessReferenceDataPublishCheckpoint.COMPLETION_VERIFIED
+               && operation.CompletedAt.HasValue
+               && HasVerifiedPostMutationContext(
+                   operation,
+                   publishedVersionId,
+                   currentSetVersion,
+                   currentTargetVersionToken,
+                   targetVersionHasOperationPublishEvidence);
+    }
+
+    public static bool HasVerifiedPostMutationContext(
+        BusinessReferenceDataPublishOperation operation,
+        Guid? publishedVersionId,
+        long currentSetVersion,
+        string currentTargetVersionToken,
+        bool targetVersionHasOperationPublishEvidence)
+    {
+        return !operation.IsDeleted
+               && operation.PreMutationContextVerifiedAt.HasValue
+               && publishedVersionId == operation.BusinessReferenceDataVersionId
+               && operation.ExpectedSetVersion < long.MaxValue
+               && currentSetVersion == operation.ExpectedSetVersion + 1
+               && !string.IsNullOrWhiteSpace(currentTargetVersionToken)
+               && !string.Equals(currentTargetVersionToken, operation.ExpectedTargetVersionToken, StringComparison.Ordinal)
+               && targetVersionHasOperationPublishEvidence;
+    }
+}
+
+[BsonIgnoreExtraElements]
 public sealed class BusinessReferenceDataImportPreview : TenantScopedEntity
 {
     [BsonRepresentation(BsonType.String)]

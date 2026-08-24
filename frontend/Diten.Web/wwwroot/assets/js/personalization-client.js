@@ -1,28 +1,11 @@
 'use strict';
 
 window.personalizationClient = (function () {
-    const apiBaseUrl = window.ApiBaseUrl || '';
+    const viewsEndpoint = '/api/personalization/views';
     const authRefreshSignal = 'auth-refresh-in-progress';
-
-    const getTenantId = () => {
-        const user = window.CurrentUser || {};
-        return user.tenantId || null;
-    };
-
-    const shouldSendTenantHeader = () => {
-        const actorType = (window.CurrentUser || {}).actorType || '';
-        const isAdminHost = window.location.hostname.toLowerCase().startsWith('admin.');
-        const isPlatformRoute = window.location.pathname.toLowerCase().startsWith('/platform/');
-        return !isAdminHost && !isPlatformRoute && String(actorType).toLowerCase() === 'tenant_user';
-    };
 
     const getHeaders = (includeJsonContentType) => {
         const headers = {};
-        const tenantId = getTenantId();
-        if (shouldSendTenantHeader() && tenantId) {
-            headers['X-Tenant-Id'] = tenantId;
-        }
-
         if (includeJsonContentType) {
             headers['Content-Type'] = 'application/json';
         }
@@ -47,10 +30,44 @@ window.personalizationClient = (function () {
         redirectToLogin();
     };
 
+    const isJsonResponse = (response) =>
+        (response.headers?.get('content-type') || '').toLowerCase().includes('application/json');
+
+    const isLoginResponse = (response) => {
+        if (!response?.redirected || !response.url) return false;
+
+        try {
+            const path = new URL(response.url, window.location.origin).pathname.toLowerCase();
+            return path === '/account/login' || path === '/platform/login';
+        } catch (error) {
+            return false;
+        }
+    };
+
+    const createNonJsonError = (response) => {
+        const error = new Error(response.statusText || 'Unexpected non-JSON personalization response');
+        error.code = 'personalization-non-json-response';
+        error.nonJsonResponse = true;
+        return error;
+    };
+
     const handleResponse = async (response) => {
         if (response.ok) {
             if (response.status === 204) {
                 return true;
+            }
+
+            if (!isJsonResponse(response)) {
+                if (isLoginResponse(response)) {
+                    handleUnauthorized();
+
+                    const authError = new Error(authRefreshSignal);
+                    authError.code = authRefreshSignal;
+                    authError.authHandled = true;
+                    throw authError;
+                }
+
+                throw createNonJsonError(response);
             }
 
             return await response.json();
@@ -82,7 +99,7 @@ window.personalizationClient = (function () {
             pageKey: pageKey || ''
         });
 
-        return `${apiBaseUrl}/api/personalization/views?${query.toString()}`;
+        return `${viewsEndpoint}?${query.toString()}`;
     };
 
     // The gateway's TenantResolutionMiddleware decides whether a personalization
@@ -108,11 +125,18 @@ window.personalizationClient = (function () {
             headers: getHeaders(false)
         });
 
-        return await handleResponse(response);
+        try {
+            return await handleResponse(response);
+        } catch (error) {
+            // A proxy fallback must not surface as a JSON parse console error or
+            // prevent a register from operating without a saved view.
+            if (error?.nonJsonResponse) return [];
+            throw error;
+        }
     };
 
     const saveView = async (payload) => {
-        const url = appendScopeQuery(`${apiBaseUrl}/api/personalization/views`, payload?.moduleKey, payload?.pageKey);
+        const url = appendScopeQuery(viewsEndpoint, payload?.moduleKey, payload?.pageKey);
         const response = await fetch(url, {
             method: 'POST',
             credentials: 'include',
@@ -124,7 +148,7 @@ window.personalizationClient = (function () {
     };
 
     const updateView = async (id, payload) => {
-        const url = appendScopeQuery(`${apiBaseUrl}/api/personalization/views/${id}`, payload?.moduleKey, payload?.pageKey);
+        const url = appendScopeQuery(`${viewsEndpoint}/${encodeURIComponent(id)}`, payload?.moduleKey, payload?.pageKey);
         const response = await fetch(url, {
             method: 'PUT',
             credentials: 'include',
@@ -136,7 +160,7 @@ window.personalizationClient = (function () {
     };
 
     const deleteView = async (id, moduleKey, pageKey) => {
-        const url = appendScopeQuery(`${apiBaseUrl}/api/personalization/views/${id}`, moduleKey, pageKey);
+        const url = appendScopeQuery(`${viewsEndpoint}/${encodeURIComponent(id)}`, moduleKey, pageKey);
         const response = await fetch(url, {
             method: 'DELETE',
             credentials: 'include',
