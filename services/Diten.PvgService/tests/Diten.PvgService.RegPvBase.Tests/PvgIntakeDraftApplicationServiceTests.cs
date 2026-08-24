@@ -172,6 +172,146 @@ public sealed class PvgIntakeDraftApplicationServiceTests
     }
 
     [Fact]
+    public void Audit_intent_contract_is_safe_build_test_metadata_only()
+    {
+        var properties = typeof(PvgAuditIntent)
+            .GetProperties()
+            .Select(property => (property.Name, property.PropertyType))
+            .ToArray();
+
+        Assert.Equal(
+            [
+                (nameof(PvgAuditIntent.Operation), typeof(PvgIntakeOperation)),
+                (nameof(PvgAuditIntent.Status), typeof(PvgIntakeStatus)),
+                (nameof(PvgAuditIntent.RequiredPermission), typeof(string)),
+                (nameof(PvgAuditIntent.ActorKind), typeof(string)),
+                (nameof(PvgAuditIntent.HasCorrelation), typeof(bool)),
+                (nameof(PvgAuditIntent.AcceptedAtUtc), typeof(DateTimeOffset))
+            ],
+            properties);
+        Assert.DoesNotContain(properties, property =>
+            property.Name.Contains("Tenant", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("ActorId", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("CorrelationId", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Reporter", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Patient", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Narrative", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Product", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Reason", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Queue", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Contains("Payload", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Theory]
+    [InlineData(PvgIntakeOperation.Create, PvgIntakeStatus.IntakeCreated, "pvg.mod0230.intake.create")]
+    [InlineData(PvgIntakeOperation.Update, PvgIntakeStatus.IntakeUpdated, "pvg.mod0230.intake.update")]
+    [InlineData(PvgIntakeOperation.Triage, PvgIntakeStatus.Triaged, "pvg.mod0230.intake.triage")]
+    [InlineData(PvgIntakeOperation.Route, PvgIntakeStatus.RoutePending, "pvg.mod0230.intake.route")]
+    public async Task Successful_mutations_emit_safe_audit_intent_metadata_only(
+        PvgIntakeOperation operation,
+        PvgIntakeStatus expectedStatus,
+        string expectedPermission)
+    {
+        var service = NewService(
+            new RecordingFieldSecurityPolicy([]),
+            new RecordingWorkflowTransitionGate([]),
+            new RecordingEvidenceLinkPort([]),
+            new RecordingPermissionGate([]));
+
+        var mutation = await MutateAsync(service, operation);
+
+        Assert.True(mutation.Result.IsSuccess);
+        var auditIntent = Assert.IsType<PvgAuditIntent>(mutation.AuditIntent);
+        Assert.Equal(operation, auditIntent.Operation);
+        Assert.Equal(expectedStatus, auditIntent.Status);
+        Assert.Equal(expectedPermission, auditIntent.RequiredPermission);
+        Assert.Equal("HumanUser", auditIntent.ActorKind);
+        Assert.True(auditIntent.HasCorrelation);
+        Assert.True(auditIntent.AcceptedAtUtc <= DateTimeOffset.UtcNow);
+        Assert.True(auditIntent.AcceptedAtUtc > DateTimeOffset.UtcNow.AddMinutes(-1));
+        AssertSafeAuditIntent(auditIntent);
+    }
+
+    [Fact]
+    public async Task Denied_missing_and_cross_tenant_paths_do_not_emit_audit_intent_or_sensitive_payload()
+    {
+        var deniedPermission = new RecordingPermissionGate([])
+        {
+            Decision = PvgPermissionDecision.Denied(PvgPermissionReasonCodes.PermissionDenied)
+        };
+        var permissionDenied = await NewService(
+                new RecordingFieldSecurityPolicy([]),
+                new RecordingWorkflowTransitionGate([]),
+                new RecordingEvidenceLinkPort([]),
+                deniedPermission)
+            .UpdateDraftAsync(
+                new UpdateIntakeDraftCommand(
+                    TenantContext(),
+                    ActorContext(),
+                    CorrelationContext(),
+                    "missing-draft",
+                    ValidUpdateRequest()));
+
+        var fieldSecurityDeniedPolicy = new RecordingFieldSecurityPolicy([]);
+        var fieldSecurityDeniedService = NewService(
+            fieldSecurityDeniedPolicy,
+            new RecordingWorkflowTransitionGate([]),
+            new RecordingEvidenceLinkPort([]),
+            new RecordingPermissionGate([]));
+        var createdForFieldSecurity = await fieldSecurityDeniedService.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+        Assert.True(createdForFieldSecurity.Result.IsSuccess);
+        fieldSecurityDeniedPolicy.Decision = PvgPortDecision.FieldSecurityDenied();
+
+        var missingActor = await NewService(
+                new RecordingFieldSecurityPolicy([]),
+                new RecordingWorkflowTransitionGate([]),
+                new RecordingEvidenceLinkPort([]),
+                new RecordingPermissionGate([]))
+            .CreateDraftAsync(
+                new CreateIntakeDraftCommand(TenantContext(), null!, CorrelationContext(), ValidCreateRequest()));
+        var fieldSecurityDenied = await fieldSecurityDeniedService.UpdateDraftAsync(
+            new UpdateIntakeDraftCommand(
+                TenantContext(),
+                ActorContext(),
+                CorrelationContext(),
+                createdForFieldSecurity.IntakeDraftId!,
+                ValidUpdateRequest()));
+
+        var crossTenantService = NewService(
+            new RecordingFieldSecurityPolicy([]),
+            new RecordingWorkflowTransitionGate([]),
+            new RecordingEvidenceLinkPort([]),
+            new RecordingPermissionGate([]));
+        var createdForCrossTenant = await crossTenantService.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+        var crossTenantRead = await crossTenantService.GetDraftByIdAsync(
+            new GetIntakeDraftByIdQuery(
+                TenantContext("foreign-tenant-secret"),
+                ActorContext(),
+                CorrelationContext(),
+                createdForCrossTenant.IntakeDraftId!));
+        var crossTenantRoute = await crossTenantService.RouteDraftAsync(
+            new RouteIntakeDraftCommand(
+                TenantContext("foreign-tenant-secret"),
+                ActorContext(),
+                CorrelationContext(),
+                createdForCrossTenant.IntakeDraftId!,
+                new PvgRouteIntakeDraftRequest("queue-safety-review")));
+
+        Assert.Null(permissionDenied.AuditIntent);
+        Assert.Null(missingActor.AuditIntent);
+        Assert.Null(fieldSecurityDenied.AuditIntent);
+        Assert.Null(crossTenantRoute.AuditIntent);
+        Assert.Empty(crossTenantRead.Items);
+        Assert.Equal(PvgApplicationReasonCodes.IntakeDraftNotFound, crossTenantRead.Result.ReasonCode);
+        Assert.Equal(PvgApplicationReasonCodes.IntakeDraftNotFound, crossTenantRoute.Result.ReasonCode);
+        AssertSafe(permissionDenied);
+        AssertSafe(missingActor);
+        AssertSafe(fieldSecurityDenied);
+        AssertSafe(crossTenantRead);
+        AssertSafe(crossTenantRoute);
+    }
+
+    [Fact]
     public async Task Update_denied_by_field_security_keeps_existing_status()
     {
         var callLog = new List<string>();
@@ -591,6 +731,45 @@ public sealed class PvgIntakeDraftApplicationServiceTests
     private static GetIntakeDraftListQuery ReadListQuery() =>
         new(TenantContext(), ActorContext(), CorrelationContext(), 1, 10, null);
 
+    private static async ValueTask<PvgIntakeDraftMutationResult> MutateAsync(
+        PvgIntakeDraftApplicationService service,
+        PvgIntakeOperation operation)
+    {
+        if (operation == PvgIntakeOperation.Create)
+        {
+            return await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+        }
+
+        var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+        Assert.True(created.Result.IsSuccess);
+
+        return operation switch
+        {
+            PvgIntakeOperation.Update => await service.UpdateDraftAsync(
+                new UpdateIntakeDraftCommand(
+                    TenantContext(),
+                    ActorContext(),
+                    CorrelationContext(),
+                    created.IntakeDraftId!,
+                    ValidUpdateRequest())),
+            PvgIntakeOperation.Triage => await service.TriageDraftAsync(
+                new TriageIntakeDraftCommand(
+                    TenantContext(),
+                    ActorContext(),
+                    CorrelationContext(),
+                    created.IntakeDraftId!,
+                    new PvgTriageIntakeDraftRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason"))),
+            PvgIntakeOperation.Route => await service.RouteDraftAsync(
+                new RouteIntakeDraftCommand(
+                    TenantContext(),
+                    ActorContext(),
+                    CorrelationContext(),
+                    created.IntakeDraftId!,
+                    new PvgRouteIntakeDraftRequest("queue-safety-review"))),
+            _ => throw new InvalidOperationException($"Unsupported mutation operation {operation}.")
+        };
+    }
+
     private static PvgCreateIntakeDraftRequest ValidCreateRequest() =>
         new(
             "Portal",
@@ -644,6 +823,22 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         {
             Assert.DoesNotContain(sensitiveSample, rendered, StringComparison.OrdinalIgnoreCase);
         }
+    }
+
+    private static void AssertSafeAuditIntent(PvgAuditIntent auditIntent)
+    {
+        AssertSafe(auditIntent);
+        Assert.Contains(
+            auditIntent.RequiredPermission,
+            new[]
+            {
+                "pvg.mod0230.intake.create",
+                "pvg.mod0230.intake.update",
+                "pvg.mod0230.intake.triage",
+                "pvg.mod0230.intake.route"
+            });
+        Assert.Equal("HumanUser", auditIntent.ActorKind);
+        Assert.True(auditIntent.HasCorrelation);
     }
 
     private static void AssertFieldSecurityBlocked(object result)
