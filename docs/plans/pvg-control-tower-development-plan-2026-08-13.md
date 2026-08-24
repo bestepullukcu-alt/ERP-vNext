@@ -35,7 +35,7 @@ Measured implementation baseline:
 | MOD-0230 API host and business API route family | Source present; latest API guardrail/negative-contract tests passed: 26 |
 | MOD-0230 persistence boundary | Source present; RegPvBase tests passed: 38; in-memory local/dev store only |
 | MOD-0230 Gateway route family | Source present; Gateway Ocelot tests passed: 19; approved four-template matrix only |
-| MOD-0230 tenant UI | Source present; frontend build passed; static regulated-scope, accessibility, i18n, and regression guardrails present; authenticated browser/runtime smoke remains blocked |
+| MOD-0230 tenant UI | Source present; frontend build passed; static regulated-scope, accessibility, i18n, and regression guardrails present; authenticated browser/runtime smoke passed with safe fail-closed denial |
 
 ## 1.1 Status Dashboard
 
@@ -76,12 +76,12 @@ Measured implementation baseline:
 | PVG deep audit update (`AUD-PVG-DEEP-2026-08-21`) | 100% | Source/gov/static audit complete; plan updated |
 | MOD-0231/0232/0234 downstream drift inspection (`INS-PVG-DOWNSTREAM-02`) | 100% | No downstream runtime drift; composition-only DI watch item recorded |
 | MOD-0230 staging scope manifest (`VER-PVG-STAGING-SCOPE-02`) | 100% | Exact source-only staging list prepared; no staging performed; `.claude/settings.local.json` excluded |
-| MOD-0230 local integration smoke (`PVG-0230-INT-01`) | 100% | E5 local/dev PASS-with-gap; authenticated MVC proxy traversal still unproven |
-| MOD-0230 authenticated MVC proxy proof (`PVG-0230-AUTH-PROXY-01`) | 0% | Blocked until valid tenant-shell session or explicit seeded local-dev login approval |
+| MOD-0230 local integration smoke (`PVG-0230-INT-01`) | 100% | E5 local/dev PASS-with-gap superseded by authenticated proxy proof |
+| MOD-0230 authenticated MVC proxy proof (`PVG-0230-AUTH-PROXY-01`) | 100% | Tenant login succeeded; Web -> MVC proxy -> Gateway -> PVG API returned safe `PVG_PERMISSION_DENIED` under local/dev deny adapters |
 | Operational runtime / production / validation | 0% | Blocked by owner/runtime gates |
 
-Overall MOD-0230 local/dev/CI static/build-test slice estimate: **100% PASS-with-gap**, with authenticated MVC proxy proof still open.
-Overall MOD-0230 local/dev runtime proof estimate: **92%**, blocked only by authenticated tenant-shell proxy evidence.
+Overall MOD-0230 local/dev/CI static/build-test slice estimate: **100% PASS**.
+Overall MOD-0230 local/dev runtime proof estimate: **100% local/dev PASS**, with operational runtime still blocked.
 Overall PVG operational readiness: **0% / NO-GO**.
 
 ## 2. Non-Negotiable Boundaries
@@ -130,7 +130,7 @@ Parallelism:
 - Local E5 closeout is complete with one auth-context gap.
 - Source-only staging manifest is prepared; use exact path list only and keep `.claude/settings.local.json` excluded.
 - Downstream inspection is complete and can be treated as a watch item only.
-- Authenticated MVC proxy traversal remains a targeted follow-up if a valid tenant-shell cookie/token becomes available.
+- Authenticated MVC proxy traversal is recorded complete for local/dev evidence only.
 - No two writer lanes touch the same shared runtime surface.
 
 ## 4. Work Package Plan
@@ -159,7 +159,7 @@ Parallelism:
 | 18 | `PVG-0230-UI-SMOKE-02` | INT | MOD-0230 | Retry browser/runtime UI smoke after list-page fix | UI-FIX-01 | E3 achieved; E4-ready with caveats | Done |
 | 19 | `VER-PVG-STAGING-SCOPE-02` | C | MOD-0230 / DCP-004 | Produce exact source-only staging list excluding local settings/generated output; do not stage | Package audit | E1/E2 manifest | Done |
 | 20 | `PVG-0230-INT-01` | INT | MOD-0230 | End-to-end local runtime smoke after API/Gateway/UI | INT-API-GW-03, UI-SMOKE-02 | E5 local/dev PASS-with-gap | Done |
-| 21 | `PVG-0230-AUTH-PROXY-01` | INT | MOD-0230 | Prove authenticated MVC proxy traversal with valid tenant-shell auth cookie/token | Valid local tenant auth context | E3/E4-ready targeted | Pending |
+| 21 | `PVG-0230-AUTH-PROXY-01` | INT | MOD-0230 | Prove authenticated MVC proxy traversal with valid tenant-shell auth cookie/token | Valid local tenant context | E3/E4-ready achieved; safe fail-closed denial | Done |
 | 22 | `PVG-DOWNSTREAM-WATCH-01` | C | MOD-0231/0232/0234 | Reconfirm downstream modules remain non-operational after GW-03/RUN-01 | GW-03, RUN-01 | E1/E2 achieved | Done |
 | 23 | `PVG-0230-DOC-01` | C/DOC | MOD-0230/0231 | Record `MOD0230HandoffReference v0.1 build/test`, future v1 operational decision, and downstream DI composition-only note | BE-01, BE-02, downstream inspection | E1 | Done locally |
 | 24 | `DEV-PVG-0230-BE-05` | B | MOD-0230 | Backend read permission/context hardening: list/detail carry tenant + actor + correlation and use `pvg.mod0230.intake.read` before field policy/store access | BE-04 | E2 achieved | Done |
@@ -338,8 +338,9 @@ Result:
 - No Gateway, frontend, appsettings, launchSettings, seed, job, migration, collection, Mongo, DbContext, repository,
   AI, MedDRA data, or downstream MOD-0231/0232/0234 runtime exposure was introduced.
 - Operational runtime remains **NO-GO**.
-- `PVG-0230-AUTH-PROXY-01` remains blocked until a valid tenant-shell session is provided or seeded local development
-  login use is explicitly approved for verification only.
+- At this point in the sequence, `PVG-0230-AUTH-PROXY-01` was still blocked until a valid tenant-shell session was
+  provided or seeded local development login use was explicitly approved for verification only. It is later recorded
+  complete in §5.17.
 
 Evidence:
 
@@ -902,29 +903,37 @@ Result:
 
 Gap:
 
-- Authenticated MVC proxy -> Gateway -> PVG API traversal was not proven because no valid tenant-shell auth cookie was
-  available. A generated token cookie still redirected to login.
+- Authenticated MVC proxy -> Gateway -> PVG API traversal was not proven in this closeout because no valid
+  tenant-shell auth cookie was available. A generated token cookie still redirected to login. This gap is later
+  closed by §5.17.
 
 Control Tower status:
 
-- E5 local/dev closeout is achieved as **PASS-with-gap**.
+- E5 local/dev closeout was achieved as **PASS-with-gap** at this point in the sequence.
 - This is local/dev evidence only and does not authorize operational runtime.
-- The remaining technical evidence gap is isolated to `PVG-0230-AUTH-PROXY-01`.
+- The remaining technical evidence gap was isolated to `PVG-0230-AUTH-PROXY-01`; it is later recorded complete in
+  §5.17.
 
-## 5.17 Pending WP: `PVG-0230-AUTH-PROXY-01`
+## 5.17 Completed WP: `PVG-0230-AUTH-PROXY-01`
 
-Goal: prove authenticated MVC proxy traversal with a valid tenant-shell auth cookie/token.
+Goal: prove authenticated MVC proxy traversal with a valid tenant-shell auth session.
 
-Required checks:
+Result:
 
-- Use a valid local Web auth session with tenant context.
-- Load Case Intake/Triage UI under authenticated tenant shell.
-- Confirm MVC proxy call reaches Gateway and PVG API with expected tenant/actor/correlation context behavior.
-- Confirm no direct browser service-port calls and no PVG forbidden action surfaces.
+- Tenant login succeeded with the supplied local-dev admin account.
+- Web tenant-shell Case Intake/Triage page loaded.
+- MVC proxy reached Gateway and Gateway reached `Diten.PvgService.Api`.
+- PVG returned safe fail-closed `PVG_PERMISSION_DENIED` under local/dev deny adapters.
+- Forbidden delete, export, archive, void, and bulk routes remained closed.
+- No operational runtime authorization was granted.
+- No MOD-0231, MOD-0232, or MOD-0234 runtime exposure was introduced.
+- Services were stopped and local smoke ports were confirmed closed.
 
 Evidence target:
 
-- Targeted E3/E4-ready evidence. This does not change operational runtime authorization.
+- E3/E4-ready local/dev evidence achieved for authenticated Web -> MVC proxy -> Gateway -> PVG API traversal.
+- This remains local/dev evidence only and does not authorize operational runtime, production use, supplier
+  qualification, or validation.
 
 ## 5.18 Completed WP: `VER-PVG-STAGING-SCOPE-02`
 
@@ -1035,8 +1044,9 @@ Control Tower status:
 
 - UI-02 is complete for local/dev build-test hardening.
 - Operational runtime remains **NO-GO**.
-- `PVG-0230-AUTH-PROXY-01` remains blocked until a valid tenant-shell session is available or explicit seeded local
-  development login approval is granted for verification only.
+- At this point in the sequence, `PVG-0230-AUTH-PROXY-01` was still blocked until a valid tenant-shell session was
+  available or explicit seeded local development login approval was granted for verification only. It is later
+  recorded complete in §5.17.
 
 ## 5.22 Completed WP: `DEV-PVG-0230-UI-03`
 
@@ -1228,7 +1238,7 @@ Control Tower status after audit:
 | MOD-0230 tenant UI static hardening | 100% | UI03/UI04/UI05/regression guardrails present |
 | PVG class-library build/test contracts | 100% | latest serial class-library tests `119/119`; total PVG service tests `145/145` |
 | Package cleanliness | 99% | only `.claude/settings.local.json` was dirty before this plan update |
-| Authenticated MVC proxy proof | 0% | blocked by missing valid tenant-shell session or explicit seeded local-dev login approval |
+| Authenticated MVC proxy proof | 100% | local/dev tenant-shell proxy smoke passed with safe `PVG_PERMISSION_DENIED` |
 | Operational runtime | 0% | NO-GO |
 | MOD-0231 runtime | 0% | blocked |
 | MOD-0232 runtime / MedDRA data | 0% | blocked |
@@ -1237,18 +1247,9 @@ Control Tower status after audit:
 Next Agent Lane prompts:
 
 ```text
-PVG-0230-AUTH-PROXY-01
-
-Run the authenticated MVC proxy local/dev smoke only if the owner supplies a valid tenant-shell session or explicitly
-approves seeded local-dev login for this verification only. Verify Web -> MVC proxy -> Gateway -> PVG API traversal,
-same-origin browser behavior, safe fail-closed responses, no browser token handling, and no delete/export/archive/
-void/bulk or MOD-0231/0232/0234 exposure. Stop all processes and report port cleanup evidence.
-```
-
-```text
 INS-PVG-DOWNSTREAM-WATCH-03
 
-Read-only downstream drift watch for PVG after HEAD f0819509. Verify no MOD-0231/MOD-0232/MOD-0234 Gateway,
+Read-only downstream drift watch for PVG after AUTH-PROXY local/dev evidence. Verify no MOD-0231/MOD-0232/MOD-0234 Gateway,
 frontend, endpoint, persistence, job, seed, AI, MedDRA dictionary/import/search, fake signal, fake metric, or fake
 cohort exposure. Do not edit, stage, commit, push, fetch, merge, restore, install, or clean files.
 ```
