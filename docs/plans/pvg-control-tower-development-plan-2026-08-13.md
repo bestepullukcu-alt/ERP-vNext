@@ -29,9 +29,9 @@ Measured implementation baseline:
 | Area | Baseline |
 |---|---|
 | REG-PV-BASE ports / MOD-0230 guardrail contracts | Source present; latest focused tests passed: 64 |
-| MOD-0231 Case Processing contracts | Source present; tests passed: 21 |
-| MOD-0232 MedDRA Coding contracts | Source present; tests passed: 27 |
-| MOD-0234 Signal Management contracts | Source present; tests passed: 33 |
+| MOD-0231 Case Processing contracts | Source present; latest focused tests passed: 23 |
+| MOD-0232 MedDRA Coding contracts | Source present; latest focused tests passed: 40 |
+| MOD-0234 Signal Management contracts | Source present; latest focused tests passed: 43 |
 | MOD-0230 API host and business API route family | Source present; latest API guardrail/negative-contract tests passed: 26 |
 | MOD-0230 persistence boundary | Source present; RegPvBase tests passed: 38; in-memory local/dev store only |
 | MOD-0230 Gateway route family | Source present; Gateway Ocelot tests passed: 19; approved four-template matrix only |
@@ -76,6 +76,8 @@ Measured implementation baseline:
 | MOD-0230 AuditEvent tests-only evidence (`DOC-PVG-0230-AUDIT-EVIDENCE-TESTS-01`) | 100% | Commit `816d5359`; RegPvBase focused tests `54/54`; API focused tests `26/26`; MOD-0021 owner approval still required |
 | MOD-0230 WorkflowTransitionGate tests-only evidence (`DOC-PVG-0230-WORKFLOW-EVIDENCE-TESTS-01`) | 100% | Commit `bfa7099c`; RegPvBase focused tests `57/57`; API focused tests `26/26`; MOD-0023 owner approval still required |
 | MOD-0230 EvidenceLink tests-only evidence (`DOC-PVG-0230-EVIDENCELINK-EVIDENCE-TESTS-01`) | 100% | Commit `a44c324b`; RegPvBase focused tests `64/64`; API focused tests `26/26`; MOD-0031 owner approval still required |
+| PVG full audit refresh (`AUD-PVG-FULL-2026-08-24`) | 100% | Local/remote `603601cc`; PVG focused tests `196/196`; Gateway `19/19`; PVG UI JS syntax checks passed; operational runtime `0% / NO-GO` |
+| PVG operational approval packet draft | 100% draft | Commit `603601cc`; docs-only packet exists; no owner approval or operational runtime authorization claimed |
 | MOD-0230 UI regression tests | 100% | Static UI regression tests pushed |
 | PVG deep audit update (`AUD-PVG-DEEP-2026-08-21`) | 100% | Source/gov/static audit complete; plan updated |
 | MOD-0231/0232/0234 downstream drift inspection (`INS-PVG-DOWNSTREAM-02`) | 100% | No downstream runtime drift; composition-only DI watch item recorded |
@@ -125,6 +127,7 @@ Overall PVG operational readiness: **0% / NO-GO**.
 | `DOC-PVG-0230-AUDIT-EVIDENCE-TESTS-01` | DOC/TEST | Record MOD-0230 AuditEvent tests-only evidence without owner approval or runtime authorization | Done |
 | `DOC-PVG-0230-WORKFLOW-EVIDENCE-TESTS-01` | DOC/TEST | Record MOD-0230 WorkflowTransitionGate tests-only evidence without owner approval or runtime authorization | Done |
 | `DOC-PVG-0230-EVIDENCELINK-EVIDENCE-TESTS-01` | DOC/TEST | Record MOD-0230 EvidenceLink tests-only evidence without owner approval or runtime authorization | Done |
+| `AUD-PVG-FULL-2026-08-24` | AUD/DOC | Full PVG local/dev build-test audit and development-plan refresh at commit `603601cc` | Done |
 | `DEV-PVG-0230-UI-REGRESSION-01` | DEV/TEST | UI tests-only regression guardrails | Done |
 | `DOC-PVG-DOWNSTREAM-CL-01` | DOC | Record MOD-0231/0232/0234 class-library/test-only downstream hardening evidence | Done |
 | `DOC-PVG-FIELDSECURITY-BLOCKER-01` | DOC | Record MOD-0230 FieldSecurity owner-approval blocker and missing evidence | Done |
@@ -1512,6 +1515,84 @@ Scope controls:
 - No owner approval is claimed.
 - MOD-0231, MOD-0232, and MOD-0234 runtime remains blocked.
 
+## 5.36 Completed WP: `AUD-PVG-FULL-2026-08-24`
+
+Goal: run a full PVG local/dev build-test audit and update the development plan without changing runtime code,
+Gateway, frontend, persistence, or operational authorization.
+
+Audit verdict:
+
+- PASS for PVG local/dev/CI build-test readiness.
+- Operational runtime remains **0% / NO-GO**.
+- Branch: `feature/pvg/all-four-nonoperational-scaffold-final`.
+- Local and remote HEAD: `603601cc`.
+- Staged files: none.
+- Dirty files before and after audit: only `.claude/settings.local.json` plus this intentional plan update.
+
+Validation evidence:
+
+- `git diff --check` passed before the plan update.
+- RegPvBase focused tests passed: `64/64`.
+- API focused tests passed: `26/26`.
+- CaseProcessing focused tests passed: `23/23`.
+- MedDRA Coding focused tests passed: `40/40`.
+- SignalManagement focused tests passed: `43/43`.
+- PVG focused test total passed: `196/196`.
+- Gateway Ocelot tests passed: `19/19`; existing `NU1900` vulnerability metadata warning came from restricted
+  NuGet metadata access.
+- PVG UI JavaScript syntax checks passed for:
+  - `tests/pvg-case-intake-triage-ui.test.js`
+  - `index.js`
+  - `index.l10n.js`
+  - `form.js`
+  - `details.js`
+
+Readiness status:
+
+- MOD-0230 build-test/local-dev readiness: **100% PASS**.
+- MOD-0230 local/dev runtime proof: **100% PASS**, non-operational only.
+- MOD-0231 class-library/test-only readiness: **100%**; runtime **0% blocked**.
+- MOD-0232 class-library/test-only readiness: **100%**; runtime **0% blocked**.
+- MOD-0234 class-library/test-only readiness: **100%**; runtime **0% blocked**.
+- PVG build-test readiness: **100% PASS**.
+- PVG operational readiness: **0% / NO-GO**.
+
+Forbidden-surface confirmation:
+
+- Gateway PVG route matrix remains MOD-0230 only:
+  - `GET/POST /api/pv-case-intake-triage`
+  - `GET/PUT /api/pv-case-intake-triage/{intakeDraftId}`
+  - `POST /api/pv-case-intake-triage/{intakeDraftId}/triage`
+  - `POST /api/pv-case-intake-triage/{intakeDraftId}/route`
+- PVG API maps only health plus MOD-0230 Case Intake/Triage endpoints.
+- MOD-0231, MOD-0232, and MOD-0234 remain class-library/test-only; API host DI registration is composition-only
+  and no downstream endpoint is mapped.
+- No MOD-0231, MOD-0232, or MOD-0234 Gateway, frontend, or API runtime exposure was found.
+- No delete, export, archive, void, or bulk runtime surface was found.
+- No AI behavior was found.
+- No MedDRA dictionary data, import, search, or cache was found.
+- No fake signal, fake metric, or fake cohort was found.
+- No service appsettings, launchSettings, Mongo, DbContext, migration, seed, or job files were found.
+
+Remaining blockers:
+
+- MOD-0019 FieldSecurity owner approval remains required.
+- MOD-0021 AuditEvent owner approval remains required.
+- MOD-0023 WorkflowTransitionGate owner approval remains required.
+- MOD-0031 EvidenceLink owner approval remains required.
+- TraceBundle / Observability approval remains required.
+- Retention / legal-hold approval remains required.
+- Explicit operational runtime authorization remains required.
+- Operational approval packet exists as a draft at `docs/plans/pvg-operational-approval-packet-draft-2026-08-24.md`;
+  if used for external approval routing, refresh its snapshot head to the current branch head.
+
+Scope controls:
+
+- This audit record authorizes no runtime code and no operational runtime.
+- No production readiness is claimed.
+- No owner approval is claimed.
+- MOD-0231, MOD-0232, and MOD-0234 runtime remains blocked.
+
 ## 6. Verification Commands
 
 Run PVG tests serially to avoid shared build-output locks:
@@ -1536,7 +1617,7 @@ python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0234 --name "S
 
 | Blocker | Owner | Effect |
 |---|---|---|
-| Authenticated MVC proxy traversal with valid tenant-shell auth context | PVG / integration owner | Remaining local/dev evidence gap |
+| Production-grade authenticated proxy/runtime validation | PVG / platform runtime owner needed | Local/dev AUTH-PROXY evidence is complete; operational runtime validation remains blocked until runtime authorization |
 | Dirty `.claude/settings.local.json` outside package | Local workspace owner | Blocks safe staging if blind stage-all is used |
 | MOD-0019 real masking/row-field security owner contract | Platform/PSS owner needed | Blocks operational runtime and export |
 | PVG-MOD0230-FieldSecurity-Contract v1 approval | MOD-0019 masking / row-field security owner | Governance-only; owner approval, approved artifact/link, v1 evidence, fail-closed proof, focused 16-field tests, missing-policy denial evidence, raw-value leak scans, and cross-tenant checks are still required |
