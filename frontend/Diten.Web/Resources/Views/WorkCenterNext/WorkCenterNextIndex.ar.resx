@@ -892,6 +892,15 @@
   <data name="NewPickModuleLabel" xml:space="preserve">
     <value>أي وحدة؟</value>
   </data>
+  <data name="LogTimeSubtext" xml:space="preserve">
+    <value>يُضاف إلى الوقت المسجَّل مسبقًا على هذه المهمة؛ ولا يبدأ المؤقّت أو يوقفه.</value>
+  </data>
+  <data name="MeetingWhenSubtext" xml:space="preserve">
+    <value>يحجز اجتماع المراجعة في التقويم؛ ولا يتغيّر تاريخ الاستحقاق.</value>
+  </data>
+  <data name="NewInSourceSubtext" xml:space="preserve">
+    <value>يُنشأ السجل في تلك الوحدة ويبقى فيها؛ ولا يحتفظ مركز المهام بنسخة منه.</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>إنهاء-بدء (FS)</value>
   </data>

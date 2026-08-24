@@ -208,7 +208,12 @@ describe("WorkCenterNext localization resources", () => {
     // Non-vacuity for the label above: if the open were restored, "Create in source" would be a lie again.
     const app = fs.readFileSync(
       path.resolve(__dirname, "../wwwroot/assets/js/WorkCenterNext/app.js"), "utf8");
-    const fn = app.slice(app.indexOf("const openCreateInSource"), app.indexOf("const openMeetingForm"));
+    /*
+     * ⚠ THE END MARKER MOVED (2026-08-24): `openMeetingForm` was DELETED — it wrote to `state.meetings` and
+     * made no API call — so the slice ran past this function and into unrelated code. It now ends at the next
+     * surviving declaration.
+     */
+    const fn = app.slice(app.indexOf("const openCreateInSource"), app.indexOf("const createMeetingFollowup"));
 
     expect(fn).not.toContain("global.open");
   });

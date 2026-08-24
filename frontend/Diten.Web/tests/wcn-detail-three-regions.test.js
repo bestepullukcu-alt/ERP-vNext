@@ -2875,10 +2875,14 @@ describe("the page reaches the product's one confirm implementation", () => {
      * They are raw by necessity — but they are no longer UNSTYLED: each one now spreads
      * `window.DitenDialogAppearance()` over its config, so the look still has exactly one definition.
      */
-    expect((src.match(/Swal\.fire\(/g) || []).length).toBe(4);
-    // …and every one of the four takes the published appearance rather than inventing its own.
+    /*
+     * ⚠ THREE (2026-08-24, A2): the four-field MEETING FORM was DELETED rather than restyled — measured, it
+     * wrote to `state.meetings` and made no API call, so everything it collected vanished on reload.
+     */
+    expect((src.match(/Swal\.fire\(/g) || []).length).toBe(3);
+    // …and every one of the three takes the published appearance rather than inventing its own.
     expect((src.match(/dialogLook\(\)/g) || []).length,
-      "a raw dialog is drawing itself again").toBe(4);
+      "a raw dialog is drawing itself again").toBe(3);
   });
 });
 

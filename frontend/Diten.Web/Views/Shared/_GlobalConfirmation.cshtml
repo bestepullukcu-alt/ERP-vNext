@@ -71,9 +71,36 @@
                 // ships a "Vazgeç" that looks like the dangerous answer.
                 cancelButton: 'btn btn-label-secondary waves-effect px-5',
                 icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100',
-                // The box's label is a FORM label, so it wears the product's form label — 13px, the same
-                // one every field on every create form uses. SweetAlert's own default was 16px.
-                inputLabel: 'form-label'
+                /*
+                 * The box's label is a FORM label, so it wears the product's form label — 13px, the same
+                 * one every field on every create form uses. SweetAlert's own default was 16px.
+                 *
+                 * ⚠ `d-block text-start`, ADDED 2026-08-24 — A LABEL BELONGS TO ITS FIELD, NOT TO THE DIALOG.
+                 *
+                 * MEASURED: the popup centres everything, so "Bir tarih seçin", "Dakika", "Toplantı tarihi ve
+                 * saati" and "Hangi modül?" all floated in the middle above a full-width box whose text starts
+                 * at the left edge. The owner reported all four; they are ONE defect, on this line.
+                 *
+                 * The product already had the answer on screen: the hand-written labels in the "Bilgi bekle"
+                 * dialog carry exactly `form-label d-block text-start` and sit correctly. Nothing was designed
+                 * here — the two classes already in use were copied, and now the generated label and the
+                 * hand-written ones cannot drift.
+                 *
+                 * ⚠ TITLE AND DESCRIPTION STAY CENTRED, on purpose. They address the DIALOG ("Süre gir", and
+                 * what it will do); the label addresses the BOX under it. A centred title above a
+                 * left-aligned field label is the same arrangement every create form in this product uses.
+                 */
+                /*
+                 * ⚠ `w-100` IS NOT DECORATION — MEASURED. With `d-block text-start` alone the label computed
+                 * `display: block` and still rendered 58px wide, starting 94px to the RIGHT of its own box
+                 * (label x=691, input x=597): SweetAlert lays the popup out as a GRID and an auto-width item
+                 * lands centred in its track. `text-start` then aligns text inside a box that is itself in the
+                 * middle — the class was doing its job on a box that was the wrong size.
+                 *
+                 * `d-block w-100 text-*` is the trio the TITLE in this same package already uses, for the same
+                 * reason. Nothing new was invented; the existing idiom was completed.
+                 */
+                inputLabel: 'form-label d-block w-100 text-start'
             }
         };
     };
@@ -84,6 +111,39 @@
      * re-typing three utility classes and getting one of them wrong.
      */
     window.DitenDialogAppearance.description = 'mb-2 text-muted-500 small';
+
+    /**
+     * ── THE ICON, AS A THING A RAW DIALOG CAN ALSO HAVE (2026-08-24) ──────────────────────────────────────
+     *
+     * The circle, its tint and its glyph were built INSIDE `showConfirm` from `type`, so a multi-field dialog —
+     * which cannot be a confirmation — could take the whole appearance and still open with a bare gap where
+     * every other dialog has a picture. That is what the owner photographed on "Bilgi bekle".
+     *
+     * So the same builder is published. It takes the SAME two inputs `showConfirm` uses (`type` decides the
+     * circle and its colour, `icon` may name the glyph) and hands back the `iconHtml` string. One builder, two
+     * consumers; no second look, and no new parameter — `options.icon` is the seam opened for the snooze moon
+     * and it is what every caller uses.
+     *
+     * `null` is a real answer: a dialog with nothing to say about its own gravity draws nothing at all.
+     */
+    window.DitenDialogAppearance.iconHtml = function (type, glyph) {
+        var circle = 'swal-icon-circle bg-label-primary border-primary border-opacity-25';
+        var text = 'text-primary';
+        var picture = 'bx-help-circle';
+        if (type === 'delete') { circle = 'swal-icon-circle'; text = 'text-danger'; picture = 'bx-trash'; }
+        else if (type === 'danger' || type === 'error') {
+            circle = 'swal-icon-circle bg-label-danger border-danger border-opacity-25';
+            text = 'text-danger'; picture = 'bx-error-circle';
+        } else if (type === 'success') {
+            circle = 'swal-icon-circle bg-label-success border-success border-opacity-25';
+            text = 'text-success'; picture = 'bx-check-circle';
+        } else if (type === 'warning') {
+            circle = 'swal-icon-circle bg-label-warning border-warning border-opacity-25';
+            text = 'text-warning'; picture = 'bx-error';
+        }
+        if (glyph) { picture = glyph; }
+        return '<div class="' + circle + '"><i class="bx ' + picture + ' ' + text + '"></i></div>';
+    };
 
     /**
      * MOD-0013: Platform Standards - Global Confirmation System
@@ -108,7 +168,19 @@
         const isDeleteAction = normalizedKey.includes('delete') || normalizedKey.includes('sil') || options.type === 'danger';
 
         const title = confirmations[keyOrTitle + 'Title'] || confirmations[keyOrTitle] || keyOrTitle || confirmations['AreYouSure'];
-        const subtext = confirmations[keyOrTitle + 'SubText'] || options.subtext || confirmations['ConfirmAction'];
+        /*
+         * ⚠ AN EXPLICIT EMPTY SUBTEXT IS AN ANSWER, NOT A MISSING ONE (2026-08-24).
+         *
+         * `options.subtext || default` treated '' as "the caller said nothing", so a dialog that deliberately
+         * has no sentence got the generic confirmation one instead: "Devam etmek istediğinize emin misiniz?"
+         * printed over a box asking "kaç dakika?". Four dialogs wore it, and it told the reader nothing in any
+         * of them.
+         *
+         * `undefined` still means "not supplied" and still takes the default, so EVERY existing caller is
+         * unchanged — measured: of the 15 call sites, none passes an empty string today.
+         */
+        const subtext = confirmations[keyOrTitle + 'SubText']
+            || (options.subtext !== undefined ? options.subtext : confirmations['ConfirmAction']);
         const yesBtn = confirmations[keyOrTitle + 'YesBtn'] || options.confirmButtonText || (isDeleteAction ? confirmations['DeleteConfirmationYesBtn'] : confirmations['Apply']);
         const noBtn = options.cancelButtonText || confirmations['DeleteConfirmationCancelBtn'];
 
@@ -128,7 +200,8 @@
          * ⚠ THIS FILE IS EVERY MODAL IN THE PRODUCT. The change is a reduction to the scale the rest of the
          * product already uses, verified on three different screens before and after.
          */
-        let htmlContent = `<div class="${window.DitenDialogAppearance.description}">${subtext}</div>`;
+        // No sentence, no box: an empty description div still costs a margin and reads as a gap.
+        let htmlContent = subtext ? `<div class="${window.DitenDialogAppearance.description}">${subtext}</div>` : '';
         if (options.entityName) {
             htmlContent += `<div class="badge bg-label-primary fs-6 mt-1 py-2 px-3 fw-medium">${options.entityName}</div>`;
         }
@@ -144,32 +217,12 @@
          * it is — that is the type's business, never the caller's.
          */
         var type = options.type || (isDeleteAction ? 'delete' : 'info');
+        // The BUTTON's colour is the only thing this chain still decides; the picture comes from the published
+        // builder above, so the module dialogs and this wrapper cannot end up with two different circles.
         var confirmBtnClass = 'btn-primary';
-        var iconCircleClass = 'swal-icon-circle bg-label-primary border-primary border-opacity-25';
-        var iconGlyph = 'bx-help-circle';
-        var iconTextClass = 'text-primary';
-
-        if (type === 'delete') {
-            confirmBtnClass = 'btn-danger';
-            iconCircleClass = 'swal-icon-circle';
-            iconGlyph = 'bx-trash';
-            iconTextClass = 'text-danger';
-        } else if (type === 'danger' || type === 'error') {
-            confirmBtnClass = 'btn-danger';
-            iconCircleClass = 'swal-icon-circle bg-label-danger border-danger border-opacity-25';
-            iconGlyph = 'bx-error-circle';
-            iconTextClass = 'text-danger';
-        } else if (type === 'success') {
-            confirmBtnClass = 'btn-success';
-            iconCircleClass = 'swal-icon-circle bg-label-success border-success border-opacity-25';
-            iconGlyph = 'bx-check-circle';
-            iconTextClass = 'text-success';
-        } else if (type === 'warning') {
-            confirmBtnClass = 'btn-warning';
-            iconCircleClass = 'swal-icon-circle bg-label-warning border-warning border-opacity-25';
-            iconGlyph = 'bx-error';
-            iconTextClass = 'text-warning';
-        }
+        if (type === 'delete' || type === 'danger' || type === 'error') { confirmBtnClass = 'btn-danger'; }
+        else if (type === 'success') { confirmBtnClass = 'btn-success'; }
+        else if (type === 'warning') { confirmBtnClass = 'btn-warning'; }
 
         /*
          * THE GLYPH, and ONLY the glyph, may be named by the caller.
@@ -182,11 +235,7 @@
          * The circle, its colour and its size are still the type's, so a caller cannot invent a new look — only
          * swap the picture inside the one this component already draws.
          */
-        if (options.icon) {
-            iconGlyph = options.icon;
-        }
-
-        var iconHtml = '<div class="' + iconCircleClass + '"><i class="bx ' + iconGlyph + ' ' + iconTextClass + '"></i></div>';
+        var iconHtml = window.DitenDialogAppearance.iconHtml(type, options.icon);
 
         try {
             if (typeof Swal !== 'undefined') {

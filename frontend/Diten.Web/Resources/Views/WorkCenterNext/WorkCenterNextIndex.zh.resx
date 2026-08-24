@@ -892,6 +892,15 @@
   <data name="NewPickModuleLabel" xml:space="preserve">
     <value>哪个模块？</value>
   </data>
+  <data name="LogTimeSubtext" xml:space="preserve">
+    <value>累加到该任务已记录的工时上；不会启动或停止计时器。</value>
+  </data>
+  <data name="MeetingWhenSubtext" xml:space="preserve">
+    <value>将复核会议写入日历；截止日期不变。</value>
+  </data>
+  <data name="NewInSourceSubtext" xml:space="preserve">
+    <value>记录将在该模块中创建并保留在那里；任务中心不保存副本。</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>完成-开始 (FS)</value>
   </data>

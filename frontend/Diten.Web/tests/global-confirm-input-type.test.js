@@ -158,7 +158,12 @@ describe("the dialog is written in the product's type scale", () => {
   it("labels its input the way every form in the product labels a field", () => {
     const { seen, stub } = captureConfig();
     loadWrapper(stub)("Snooze", () => {}, { showInput: true, inputLabel: "Until" });
-    expect(seen.config.customClass.inputLabel).toBe("form-label");
+    /*
+     * ⚠ `d-block text-start` JOINED IT (2026-08-24). A label belongs to its FIELD, not to the dialog: the popup
+     * centres everything, so four dialogs printed a centred label above a full-width box. The two classes are
+     * the ones the hand-written labels in this module already used.
+     */
+    expect(seen.config.customClass.inputLabel).toBe("form-label d-block w-100 text-start");
   });
 
   it("leaves the buttons, the icon and the width alone — not this round's subject", () => {

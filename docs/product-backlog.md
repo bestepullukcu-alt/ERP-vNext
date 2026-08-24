@@ -4513,3 +4513,142 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - Ertele diyaloğu sekiz diyalogdan biri DEĞİLDİ, o yüzden bu turda **kasıtlı olarak dokunulmadı** —
   referansı tur ortasında değiştirmek, kıyaslamayı geçersiz kılardı.
 - **Gelecek regresyon riski: 🟢.**
+
+### BL-217 kapanış notu (2026-08-24) — Yedi kusur, üç kök sebep, iki ölü uç (A2)
+- **1·3·4·5 — ortalanmış etiketler.** Dördü de ortak bileşenin `inputLabel` yolundan geçiyordu; popup her şeyi
+  ortaladığı için etiket alanın üstünde ortada duruyordu. **Tek satır** düzeltti:
+  `inputLabel: 'form-label d-block w-100 text-start'`.
+  ⚠ `w-100` süs değil, **ölçüldü**: `d-block text-start` ile etiket `display: block` hesaplanıyor ama yine
+  58px genişlikte, kendi kutusunun **94px sağında** kalıyordu (etiket x=691, girdi x=597) — SweetAlert popup'ı
+  GRID kuruyor ve otomatik genişlikli bir öğe kendi izinin ortasına düşüyor. `d-block w-100 text-*` üçlüsü
+  paketteki BAŞLIĞIN zaten kullandığı üçlü; yeni bir şey icat edilmedi, var olan deyim tamamlandı.
+  Canlı: etiket x=597, kutu x=597 — **aynı sol kenar**.
+- **Başlık ve açıklama ORTADA KALDI**, kasıtlı: ikisi de DİYALOĞA sesleniyor, etiket ise altındaki KUTUYA.
+  Ürünün her oluşturma formunda aynı düzen var. Testle kilitli.
+- **Elle yazılan etiketler ayrışmadı:** "Bilgi bekle"nin iki etiketi zaten `form-label d-block text-start`
+  taşıyordu; test artık DİYALOG içindeki elle yazılmış her etiketin `text-start` taşıdığını doğruluyor.
+  ⚠ Offcanvas PANEL etiketleri (`form-label`, `text-start` yok) kapsam dışı bırakıldı ve bu yazıldı: panel
+  zaten sola dayalı, orada `text-start` hiçbir şeyi değiştirmezdi.
+- **6 — "Devam etmek istediğinize emin misiniz?"** Ortak bileşenin varsayılanıydı ve `options.subtext || default`
+  ifadesi `''` değerini "çağıran bir şey söylemedi" sayıyordu. Artık `undefined` "söylenmedi", `''` ise
+  "bilerek yok" demek. WorkCenter seam'i: `options.input` varsa (yani GİRDİ İSTEMİ ise) `''`, yoksa varsayılan.
+  **GERÇEK ONAYLAR DOKUNULMADI** — canlı doğrulandı: `/RoleAssignments` silme onayı hâlâ
+  "Devam etmek istediğinize emin misiniz?" diyor.
+- **ONAY / İSTEM SAYIMI (15 çağrı, 12 dosya):** 14'ü ONAY (Tenants ×2, ReferenceData hierarchy + mappings,
+  AuditLog redaksiyon, UserRoleAssignments, RoleAssignments, QmsBaselines details + designer ×3,
+  ControlledDocuments, Instantiations, WorkCenter `confirmDestructive`, premium-modal aktarıcı) → **varsayılanı
+  korudu**. 1'i WorkCenter seam'i (`sharedConfirm`) → istemleri sessizleştirdi, onaylarını korudu.
+- **Üç yeni cümle, 7 dil:** `LogTimeSubtext` · `MeetingWhenSubtext` · `NewInSourceSubtext`. Her biri kutunun
+  SORMADIĞI bir şeyi söylüyor (eklenir/sayacı başlatmaz · takvime yazar/son tarih değişmez · kayıt o modülde
+  kalır).
+- **2·6·7 — ikonlar.** Çember+glif `showConfirm`'ün İÇİNDE kuruluyordu, bu yüzden ham bir diyalog paketi alıp
+  yine ikonsuz açılıyordu. `window.DitenDialogAppearance.iconHtml(type, glyph)` yayınlandı; `showConfirm` de
+  onu okuyor (tek üretici, iki tüketici). **Yeni parametre AÇILMADI** — `options.icon` ertele turunda açılmıştı.
+  - "Bilgi bekle"/"Başkasına ata" → **`bx-conversation`**. Gerekçe: bu diyalog işi bir KİŞİYE devrediyor ve
+    nedenini yazıyor; ikisi de bir insana mesaj. Varsayılan `?` "emin misin?" diye soruyor — sorulan soru bu
+    değil; kilit ya da uyarı ise olmayan bir yasak iddia ederdi. Çember ve rengi hâlâ `type`'ın (`info`).
+  - "Hızlı not"un `?` ikonu **düzeltilmedi, diyalog silindi**.
+- **4 — iki select artık select2.** Ürünün kendi kurulumu kullanıldı, yeni sarmalayıcı yazılmadı.
+  ⚠ **Z-INDEX YAPISAL OLARAK ÇÖZÜLDÜ:** `dropdownParent` = POPUP. flatpickr takvimi bu oturumda 1074'te kalıp
+  1090'lık diyaloğun ARKASINA düşmüştü; bir torun atasının arkasında kalamaz, yani soru bir sayıyla
+  cevaplanmadı, ortadan kaldırıldı.
+  **KANIT (canlı):** liste açıldı, bir seçeneğin merkezinde `document.elementFromPoint` çağrıldı → dönen eleman
+  **o seçeneğin ta kendisi** (`select2-results__option | Diten Admin`). Sonra **gerçek tıklama**: `<select>`
+  değeri `11111111-1111-1111-1111-111111111111`, kontrolde "Diten Admin" göründü. Modül seçicide de aynı:
+  gerçek tıklama → `Swal.getInput().value === "Görevler"`.
+  **`Swal.getInput()` HÂLÂ ÇALIŞIYOR** ve `.swal2-select` popup'ın DOĞRUDAN ÇOCUĞU: select2 orijinali yerinde
+  gizleyip kendi kabını KARDEŞ olarak ekliyor, araya girmiyor.
+- **⚠ SEAM'DE BULUNAN GERÇEK KUSUR (bir tur yaşamış olacaktı):** `didOpen` dikişi kutuyu
+  `popup.querySelector('.swal2-input, .swal2-select, …')` ile buluyordu; `querySelector` seçici sırasına değil
+  **BELGE SIRASINA** bakar ve SweetAlert bütün yuvalarını çizip kullanmadıklarını gizler — bu yüzden `select`
+  diyaloğuna **gizli `.swal2-input`** veriliyordu ve modül seçici sessizce yerli kaldı. Artık kütüphanenin
+  kendi cevabı soruluyor: `Swal.getInput()`.
+- **⚠ SELECT2'NİN YUTTUĞU GERÇEK CÜMLE:** `placeholder: ''` geçmek select2'nin placeholder mekanizmasını
+  AÇIYOR ve boş değerli ilk seçeneği placeholder sayıp hiç çizmiyor. "Kim bekleniyor?" seçicisinin ilk
+  seçeneği bir placeholder değil, **gerçek bir cevap** ("Belirli bir kişi değil") — ve kutu boş açılıyordu.
+  Artık placeholder anahtarı yalnız gerçekten varsa geçiliyor. Canlı doğrulandı.
+- **⚠ ETİKET DÜZELTMESİNİN İKİNCİ YARISI (ölçülerek bulundu):** etiket sola gelince, kütüphanenin girdi
+  yuvalarına verdiği `margin-inline: 34px` yüzünden etiket kutunun **34px soluna** düştü (etiket x=544,
+  kutu x=578) — bu 34px ürünün hiçbir yerinde kullanılmıyor ve `.wcn-date-input`/`.wcn-time-input` onu zaten
+  elle iptal ediyordu. Tek yerde iptal edildi: popup içindeki `.swal2-input/.swal2-select/.swal2-textarea`
+  artık sütununu dolduruyor. **Her modülün onayını etkiler** — kutular 68px genişledi, hiçbir şey yer
+  değiştirmedi; üç ekran öncesi/sonrası canlı ölçüldü. Canlı: etiket x=544, kutu x=544.
+- **5 — iki ölü uç KALDIRILDI (devre dışı bırakılmadı).** `openQuickNote` → `state.notes.unshift(...)`,
+  `openMeetingForm` → `state.meetings.push(...)`, ikisinde de API çağrısı YOK, `state` ikisini de `[]` ile
+  başlatıp hiç yüklemiyor. Menüden iki madde, iki diyalog ve iki dispatch dalı silindi.
+  ⚠ **AJANDA PANELİNİN "+" DÜĞMESİ DE GİTTİ** — bu turun şartnamesinde YOKTU ve burada söyleniyor: aynı silinen
+  forma açılan **ikinci kapıydı**; bırakılsaydı var olmayan bir fonksiyonu çağıracaktı. Panelin başka hiçbir
+  yeri değişmedi.
+  ⚠ **DOKUNULMAYANLAR:** detay sayfasının KİŞİSEL NOT kartı (`TasksApi.addPersonalNote`, gerçek) ve
+  "Onay toplantısı planla" AKSİYONU (sözleşmesi var) — ikisi de yerinde, testle kilitli.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-218 — [ERTELENDİ, silinmedi] Genel not ve ajanda: ürünün istediği, arkası olmayan iki özellik
+- BL-217'de kaldırılan iki uç bir NİYETİ temsil ediyordu ve o niyet kayboldu sayılmasın:
+  - **Hızlı not:** göreve bağlı olmayan, kişisel, serbest bir not. (Göreve BAĞLI kişisel not zaten gerçek ve
+    çalışıyor — `TasksApi.addPersonalNote`.)
+  - **Toplantı planla:** Görev Merkezi'nden takvime bir toplantı yazmak.
+- Gereken: bir kalıcılık sahibi (hangi servis? MOD-0024 mü, ayrı bir kişisel-veri servisi mi?) ve toplantı için
+  gerçek bir takvim entegrasyonu.
+- **Gelecek regresyon riski: 🟢** (bugün kod yok).
+
+### BL-219 — [KAYIT] "Onay toplantısı planla" da yalnız tarayıcı belleğine yazıyor
+- Ölçüldü: `applyReviewMeeting` → `state.meetings.push({...})`; kodun kendi yorumu "the mock applies an explicit
+  replacement projection after Calendar returns" diyor. **Sözleşmesi var** (`WorkAggregationModels.cs:832`
+  `reviewMeetingPolicy`), **gerçeklemesi yok**.
+- Bu yüzden BL-217'de SİLİNMEDİ: silinen ikisinin aksine bunun arkasında bir sözleşme duruyor, yani eksik olan
+  özellik değil, servis.
+- Bu turda **dokunulmadı** — yalnız kaydedildi.
+- **Gelecek regresyon riski: 🟡** — kullanıcı bir toplantı planladığını sanıp takvimde bulamaz.
+
+### BL-220 — [KAYIT] Notlar ve ajanda PANELLERİ hep boş
+- İkisi de liste sayfasının parçası; `state.notes` / `state.meetings` artık hiç doldurulmuyor (BL-217), yani
+  panellerin ikisi de kalıcı olarak boş.
+- Bu turda **kasıtlı olarak değiştirilmediler**: kaderleri liste sayfasının kendi turunda kararlaşacak
+  (sil / boş-durum dili / BL-218 ile birlikte geri getir).
+- **Gelecek regresyon riski: 🟡** — boş bir panel, açan için cevapsız bir soru.
+
+### BL-221 kapanış notu (2026-08-24) — Diyalogların dikey ritmi ürünün ritmi oldu (A1)
+- **REFERANS ÖLÇÜMÜ (/Tasks/Create, canlı):** etiket → alan **4px** (`.form-label { margin-bottom: 4px }`,
+  altı alanda da) · alan → sonraki etiket **14px** ("Tahmin (saat)" → "Etiketler") · etiket **13px**.
+- **KUSUR, ÖLÇÜLDÜ:** Planla · Süre gir · Modül seç → etiket→alan **19px**. Bilgi bekle · Yeniden ata →
+  alan→sonraki etiket **0px**.
+- **İKİ KÖK SEBEP:**
+  1. Geçen tur yalnız `margin-inline` sıfırlandı; kütüphanenin DİKEY marjları duruyordu.
+     ÖNCE: `.swal2-input` `margin: 15px 0px 3px` · `.swal2-input-label` `margin: 13px 0px 4px` → 4+15 = 19px.
+     SONRA: yuvaların dikey marjı **0**, etiket `margin: 14px 0px 4px` → **4px**.
+  2. Elle yazılmış diyaloglarda grup boşluğu `<select class="form-select mb-3">` üzerindeydi — select2
+     orijinali gizleyince o marj hiçbir şey üretmez oldu (**0px** ölçüldü). `mb-3` kaldırıldı; grup boşluğunu
+     artık TEK mekanizma taşıyor: bir sonraki etiketin üst marjı.
+- **SAYILAR UYDURULMADI, ÖLÇÜLDÜ:** `0.25rem` (4px) = referansın kendi `.form-label` alt marjı.
+  `0.875rem` (14px) = referansın **ekranda görünen** grup boşluğu.
+  ⚠ **Neden 14 ve neden 12 değil — fudge gibi göründüğü için yazılıyor:** o formda boşluğu `.row.g-3` üretiyor
+  ve her grup SÜTUNUNA `margin-top: 12px` koyuyor; sütunun kutusu içindeki girdiden 2px daha aşağı iniyor
+  (alan altı 755, sonraki etiket üstü 769). Popup'ta öyle bir sütun yok, dolayısıyla 12px kural 12px çizer ve
+  kopyaladığı formdan 2px daha sıkı durur. Kopyayı aslına benzeten değer ölçülen değerdir; mekanizma CSS'te
+  yazılı ki sonraki okuyucu nereden geldiğini bilsin.
+- **YAN YANA KANIT:** /Tasks/Create üzerinde ürünün KENDİ onay diyaloğu açıldı; aynı ekran görüntüsünde form
+  grubu (REF 4px / REF 14px işaretli) ve diyalog grubu (DLG 4px işaretli) birlikte, aynı fonksiyonla ölçülmüş.
+- **İKON SÖZLÜĞÜ İKİYE AYRILMIŞTI, BİRLEŞTİRİLDİ.** Geçen tur elle `bx-conversation` seçilmiş ve HEM
+  "Bilgi bekle"ye HEM "Yeniden ata"ya verilmişti; rail düğmesi ise `bx-user-pin` çiziyordu — **aynı aksiyon,
+  iki ikon**. Artık aksiyondan açılan her diyalog `inboxActionIcon(action)` okuyor (5 okuma: taşma menüsü +
+  dört diyalog). Sözlükte eksik olan ikisi **sözlüğe** eklendi: `logTime: 'bx-time-five'`,
+  `requestInfo: 'bx-question-mark'`. Canlı doğrulandı: rail `plan → bx-calendar-plus`,
+  `inquire → bx-question-mark`, `reassign → bx-user-pin`; açtıkları diyaloglar **aynı üç glif**.
+- **"Yeniden ata" denetim listesine eklendi** (geçen tur yoktu): etiket→alan 4/4, alan→sonraki etiket 14,
+  x eşit, ikon `bx-user-pin`.
+- **GERİYE UYUM (üç ekran canlı, ritim kuralı hepsini etkiliyor):** `/Platform/ReferenceData` (etiket→alan 4,
+  x eşit, kutu→düğme 16px, taşma yok, popup 400px) · `/UserRoleAssignments` (357px, taşma yok, `bx-trash`,
+  ters düğme sırası, rozet) · `/RoleAssignments` (357px, taşma yok, danger çemberi, varsayılan cümle yerinde).
+  **Hiçbiri daralmadı, hiçbiri taşmadı.**
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-222 — [KAYIT] İkon eşleşmesi için jsdom testi yazılamadı, canlı ölçüldü
+- Kıyaslanacak glif LİSTE SATIRININ aksiyon kümesinde çiziliyor ve bir satırın oraya ulaşması sekme/kabul
+  kurallarına bağlı (`admissionState`, `ownershipState`, aktif sekme). Üç ayrı fixture şekli denendi, hiçbiri
+  satırı varsayılan sekmeye koymadı — test ikonları değil fixture'ı doğrulamış olacaktı.
+- Bunun yerine iddia **iki başka yoldan** kilitlendi: (a) kaynak testi — iki yüzey de `inboxActionIcon`
+  çağırıyor ve hiçbir diyalog elle glif seçmiyor; (b) canlı ölçüm — üç aksiyon için rail düğmesinin sınıfı ile
+  açılan diyaloğun sınıfı aynı dize.
+- Yapılacak: liste fixture'ının hangi alanla varsayılan sekmeye düştüğünü belgeleyip DOM testini eklemek.
+- **Gelecek regresyon riski: 🟡** — kaynak testi bir yeniden düzenlemede yeşil kalıp DOM'da ayrışabilir.

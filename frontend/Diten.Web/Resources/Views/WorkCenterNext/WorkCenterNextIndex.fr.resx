@@ -892,6 +892,15 @@
   <data name="NewPickModuleLabel" xml:space="preserve">
     <value>Quel module ?</value>
   </data>
+  <data name="LogTimeSubtext" xml:space="preserve">
+    <value>S'ajoute au temps déjà saisi sur cette tâche ; ne démarre ni n'arrête le chronomètre.</value>
+  </data>
+  <data name="MeetingWhenSubtext" xml:space="preserve">
+    <value>Inscrit la réunion de revue au calendrier ; l'échéance ne change pas.</value>
+  </data>
+  <data name="NewInSourceSubtext" xml:space="preserve">
+    <value>L'enregistrement est créé dans ce module et y reste ; le Centre de tâches n'en garde aucune copie.</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Fin-à-Début (FS)</value>
   </data>

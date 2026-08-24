@@ -892,6 +892,15 @@
   <data name="NewPickModuleLabel" xml:space="preserve">
     <value>Какой модуль?</value>
   </data>
+  <data name="LogTimeSubtext" xml:space="preserve">
+    <value>Добавляется к уже учтённому времени по этой задаче; таймер не запускается и не останавливается.</value>
+  </data>
+  <data name="MeetingWhenSubtext" xml:space="preserve">
+    <value>Записывает встречу по проверке в календарь; срок не меняется.</value>
+  </data>
+  <data name="NewInSourceSubtext" xml:space="preserve">
+    <value>Запись создаётся в этом модуле и остаётся там; Центр задач копию не хранит.</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Финиш-Старт (FS)</value>
   </data>

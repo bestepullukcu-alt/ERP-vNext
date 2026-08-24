@@ -892,6 +892,15 @@
   <data name="NewPickModuleLabel" xml:space="preserve">
     <value>Hangi modül?</value>
   </data>
+  <data name="LogTimeSubtext" xml:space="preserve">
+    <value>Bu göreve daha önce girilen süreye eklenir; sayacı başlatmaz ya da durdurmaz.</value>
+  </data>
+  <data name="MeetingWhenSubtext" xml:space="preserve">
+    <value>İnceleme toplantısını takvime yazar; son tarih değişmez.</value>
+  </data>
+  <data name="NewInSourceSubtext" xml:space="preserve">
+    <value>Kayıt o modülde oluşur ve orada kalır; Görev Merkezi kopyasını tutmaz.</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Bitince başlar (FS)</value>
   </data>

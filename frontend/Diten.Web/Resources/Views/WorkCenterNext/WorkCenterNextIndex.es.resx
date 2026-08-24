@@ -892,6 +892,15 @@
   <data name="NewPickModuleLabel" xml:space="preserve">
     <value>¿Qué módulo?</value>
   </data>
+  <data name="LogTimeSubtext" xml:space="preserve">
+    <value>Se suma al tiempo ya registrado en esta tarea; no inicia ni detiene el cronómetro.</value>
+  </data>
+  <data name="MeetingWhenSubtext" xml:space="preserve">
+    <value>Reserva la reunión de revisión en el calendario; la fecha límite no cambia.</value>
+  </data>
+  <data name="NewInSourceSubtext" xml:space="preserve">
+    <value>El registro se crea en ese módulo y allí permanece; el Centro de tareas no guarda copia.</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Fin a Inicio (FS)</value>
   </data>

@@ -892,6 +892,15 @@
   <data name="NewPickModuleLabel" xml:space="preserve">
     <value>Which module?</value>
   </data>
+  <data name="LogTimeSubtext" xml:space="preserve">
+    <value>Adds to the time already logged on this task; it does not start or stop the timer.</value>
+  </data>
+  <data name="MeetingWhenSubtext" xml:space="preserve">
+    <value>Books the review meeting in the calendar; the due date is unchanged.</value>
+  </data>
+  <data name="NewInSourceSubtext" xml:space="preserve">
+    <value>The record is created in that module and stays there; the Task Center keeps no copy.</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Finish-to-Start (FS)</value>
   </data>

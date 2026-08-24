@@ -97,7 +97,8 @@ describe("the appearance has exactly one definition", () => {
     expect(pkg).toContain("cancelButton: 'btn btn-label-secondary waves-effect px-5'");
     expect(pkg, "the title lost the product's 18px heading size").toContain("title: 'fs-5 fw-bold text-heading");
     expect(pkg, "the popup width drifted from the reference dialog's 400px").toContain("'400px'");
-    expect(pkg, "the form-label (13px) stopped reaching the input").toContain("inputLabel: 'form-label'");
+    expect(pkg, "the form-label (13px) stopped reaching the input")
+      .toContain("inputLabel: 'form-label d-block w-100 text-start'");
     expect(VIEW, "the description stopped being the product's 13px secondary copy")
       .toContain("window.DitenDialogAppearance.description = 'mb-2 text-muted-500 small'");
   });
@@ -130,11 +131,16 @@ describe("eight dialogs, four moved and four dressed", () => {
     const stripped = APP.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
     const raw = stripped.match(/Swal\.fire\(/g) || [];
     const dressed = stripped.match(/dialogLook\(\)/g) || [];
-    expect(raw, "a raw dialog appeared or disappeared without this test being told").toHaveLength(4);
-    expect(dressed, "a raw dialog is drawing itself again").toHaveLength(4);
+    /*
+     * ⚠ THREE, NOT FOUR (2026-08-24): the four-field MEETING FORM was deleted, not restyled — it wrote to
+     * `state.meetings` and nowhere else, so everything it produced vanished on reload. What remains is the
+     * "+ Yeni" menu, the reason+assignee form, and the bulk progress readout.
+     */
+    expect(raw, "a raw dialog appeared or disappeared without this test being told").toHaveLength(3);
+    expect(dressed, "a raw dialog is drawing itself again").toHaveLength(3);
     // Every raw call is an `Object.assign(...)`, which is the only shape that can carry the package.
     expect((stripped.match(/Swal\.fire\(Object\.assign\(/g) || []),
-      "a raw dialog opened without the appearance").toHaveLength(4);
+      "a raw dialog opened without the appearance").toHaveLength(3);
   });
 
   it("reads the package instead of copying it", () => {
@@ -172,8 +178,6 @@ describe("every box carries a real example", () => {
     { dialog: "Planla", key: "DatePlaceholder", labelKey: "PlanDateLabel" },
     { dialog: "Toplantı zamanı", key: "DateTimePlaceholder", labelKey: "MeetingWhenLabel" },
     { dialog: "Süre gir", key: "LogTimePlaceholder", labelKey: "LogTimeLabel" },
-    { dialog: "Yeni toplantı — başlık", key: "MeetingTitlePlaceholder", labelKey: "MeetingTitleLabel" },
-    { dialog: "Yeni toplantı — konum", key: "MeetingLocationPlaceholder", labelKey: "MeetingLocationLabel" },
     { dialog: "Aksiyon onayı — gerekçe", key: "ReasonPlaceholder", labelKey: "ReasonLabel" }
   ];
 
@@ -182,8 +186,8 @@ describe("every box carries a real example", () => {
     expect(APP).toContain("placeholder: t('DatePlaceholder')");
     expect(APP).toContain("placeholder: t('DateTimePlaceholder')");
     expect(APP).toContain("placeholder: t('LogTimePlaceholder')");
-    expect(APP).toContain(`placeholder="${"$"}{esc(t('MeetingTitlePlaceholder'))}"`);
-    expect(APP).toContain(`placeholder="${"$"}{esc(t('MeetingLocationPlaceholder'))}"`);
+    // The meeting FORM's two boxes went with the form itself (deleted); its strings stay in the resx for the
+    // deferred feature and are checked by the l10n block below, not here.
     expect(APP).toContain(`placeholder="${"$"}{esc(t('ReasonPlaceholder'))}"`);
   });
 
@@ -227,7 +231,7 @@ describe("a field gets a glyph only when the glyph says something", () => {
      * this product, so the check is scoped to the dialog functions rather than to the whole file.
      */
     ["const openDatePicker", "const openMeetingScheduler", "const openLogTime", "const openCreateInSource",
-      "const openMeetingForm", "const openNew"].forEach((name) => {
+      "const openNew"].forEach((name) => {
       const fn = APP.slice(APP.indexOf(name), APP.indexOf(name) + 2600);
       expect(fn, `${name} put a wrapper around a dialog input`).not.toContain("diten-field");
     });
@@ -240,10 +244,16 @@ describe("a field gets a glyph only when the glyph says something", () => {
     expect(reason, "a glyph was put on a free-text box").not.toContain("wcn-date-input");
   });
 
-  it("names a glyph for the two dialogs whose question the default '?' misdescribes", () => {
-    // Only the PICTURE is named — the circle, its colour and the button's colour stay the type's business.
-    expect(APP).toContain("icon: 'bx-calendar'");
-    expect(APP).toContain("icon: 'bx-time-five'");
+  it("takes the glyph from the ONE action dictionary, not from a hand", () => {
+    /*
+     * ⚠ CORRECTED (2026-08-24): these dialogs used to name `bx-calendar` and `bx-time-five` by hand, which is
+     * how one action ended up with two pictures — the rail button drew `bx-user-pin` for "Yeniden ata" while
+     * the dialog it opened drew a speech bubble. `inboxActionIcon` is the product's one dictionary and both
+     * surfaces read it. Only the SNOOZE keeps a hand-named glyph, and it is not opened by an action.
+     */
+    expect((APP.match(/icon: inboxActionIcon\(action\)/g) || []).length,
+      "an action dialog started choosing its own picture").toBe(3);
+    expect(APP, "the snooze moon is not action-driven and stays").toContain("icon: 'bx-moon'");
   });
 });
 

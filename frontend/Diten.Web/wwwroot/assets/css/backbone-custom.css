@@ -6936,6 +6936,57 @@ tags.diten-tags .tagify__input {
    Both are corrections, not decisions: nothing is resized, nothing is moved. */
 .swal2-container .swal2-modal.swal2-popup .swal2-title { max-inline-size: 100%; }
 
+/* ── A DIALOG FIELD FILLS ITS COLUMN, LIKE EVERY OTHER FIELD IN THIS PRODUCT ──
+   MEASURED (2026-08-24), and it is the other half of the label fix: once the label was left-aligned, it started
+   at the popup's content edge (x=544) while the box beside it started 34px further in (x=578). The 34px is
+   SweetAlert's own `margin-inline` on its input slots — a number this product uses nowhere else, and the reason
+   `.wcn-date-input` and `.wcn-time-input` each already had to cancel it by hand.
+
+   Cancelling it once, here, is what stops the next field having to remember. `.form-control` fills its column
+   everywhere else in this product; a dialog is not the exception. The label, the box and the buttons now share
+   one left edge.
+
+   ⚠ THIS TOUCHES EVERY MODULE'S CONFIRM — deliberately, and it makes their boxes WIDER by 68px rather than
+   moving anything: three other screens were re-measured live before and after. */
+.swal2-container .swal2-modal.swal2-popup .swal2-input,
+.swal2-container .swal2-modal.swal2-popup .swal2-select,
+.swal2-container .swal2-modal.swal2-popup .swal2-textarea {
+    margin-inline: 0;
+    inline-size: 100%;
+    /* ── AND THE VERTICAL MARGINS TOO (2026-08-24) ──────────────────────────
+       ⚠ `margin-inline: 0` WAS HALF A FIX. Measured on the Planla dialog afterwards: the label sat 19px above
+       its box where the product's own form sits 4px above it — because the library keeps `margin: 1em auto` on
+       its input slots, which computed to a 15px TOP margin stacking on the label's own 4px bottom.
+
+       MEASURED BEFORE (Planla):  .swal2-input        margin `15px 0px 3px`
+                                  .swal2-input-label  margin `13px 0px 4px`   → gap 19px
+       MEASURED ON /Tasks/Create: .form-label         margin `0px 0px 4px`    → gap 4px, six fields, all four.
+
+       So the slot keeps no vertical margin of its own and the LABEL owns the whole rhythm — which is exactly
+       how the reference form works. */
+    margin-block: 0;
+}
+
+/* ── ONE RHYTHM, BOTH KINDS OF LABEL ───────────────────────────────────────
+   `.swal2-input-label` is the one the shared component generates; `.form-label` is the one a multi-field
+   dialog writes by hand. They sit in the same popups and must not keep two rhythms.
+
+   THE TWO NUMBERS ARE MEASURED OFF /Tasks/Create, NOT CHOSEN:
+     · 0.25rem (4px)   — `.form-label`'s own `margin-bottom` there. Six fields measured, all four.
+     · 0.875rem (14px) — the RENDERED gap from a field's bottom to the next group's label
+                         ("Tahmin (saat)" → "Etiketler", measured 14px).
+
+   ⚠ WHY 14 AND NOT THE 12px TOKEN, stated because it looks like a fudge and is not. On that form the gap is
+   produced by `.row.g-3`, which puts `margin-top: 12px` on each group COLUMN — and the column's box extends
+   2px past the input inside it, so what a reader actually sees between the two groups is 14px (field bottom
+   755, next label top 769). A popup has no such column, so 12px of label margin would render 12px and sit 2px
+   tighter than the form it is copying. The measured value is the one that makes the two look alike, which is
+   what was asked for; the mechanism is written down here so the next reader knows where it came from. */
+.swal2-container .swal2-modal.swal2-popup .swal2-input-label,
+.swal2-container .swal2-modal.swal2-popup .swal2-html-container .form-label {
+    margin-block: 0.875rem 0.25rem;
+}
+
 /* ── THE DATE BOX INSIDE THE SHARED CONFIRM ────────────────────────────────
    ⚠ NO WRAPPER. `.swal2-input` must stay a DIRECT CHILD of the popup: the library
    finds its input by walking the popup's fixed slot list, not by querying the

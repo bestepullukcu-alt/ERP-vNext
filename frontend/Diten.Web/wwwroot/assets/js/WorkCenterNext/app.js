@@ -889,8 +889,21 @@
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end wcn-dd-menu">
                         ${createItem('task', 'bx-task', t('NewSelfTask'))}
-                        ${createItem('note', 'bx-note', t('NewNote'))}
-                        ${createItem('meeting', 'bx-calendar-event', t('NewMeeting'))}
+                        ${/*
+                           * ⚠ "HIZLI NOT" AND "TOPLANTI PLANLA" WERE REMOVED, NOT DISABLED (2026-08-24).
+                           *
+                           * MEASURED: both wrote to browser memory and nowhere else — `state.notes.unshift(...)`
+                           * and `state.meetings.push(...)`, no API call anywhere, and `state` starts them as `[]`
+                           * and never loads them. Everything either one produced vanished on the next reload.
+                           *
+                           * DISABLING WAS REJECTED, deliberately: a disabled control with no reason beside it is
+                           * the exact defect this session already filed (BL-208), and there is no answer to
+                           * "when, then?" to put in one. A promise nobody can keep is worse than an absence.
+                           *
+                           * ⚠ NOT THE SAME THING, AND STILL HERE: the detail page's PERSONAL NOTE card writes
+                           * through `TasksApi.addPersonalNote` (real), and the "Onay toplantısı planla" ACTION
+                           * has a contract behind it (`reviewMeetingPolicy`). Neither was touched.
+                           */ ''}
                         <li><hr class="dropdown-divider"></li>
                         ${createItem('source', 'bx-link-external', t('NewInSource'))}
                     </ul>
@@ -1308,10 +1321,21 @@
         </div>`;
     };
 
+    /*
+     * ── THE ONE ACTION→ICON DICTIONARY (extended 2026-08-24) ──────────────────────────────────────────────
+     *
+     * ⚠ THE ROW BUTTON AND THE DIALOG IT OPENS BOTH READ THIS. A dialog that picks its own glyph gives one
+     * action two pictures — measured: the rail drew `bx-user-pin` for "Yeniden ata" while the dialog it opened
+     * drew a speech bubble. If an action has no entry here, ADD IT HERE; do not work around it at a call site.
+     *
+     * `logTime` and `requestInfo` were added for exactly that reason: both open a dialog, neither was listed,
+     * and both would otherwise have fallen through to the generic arrow.
+     */
     const inboxActionIcon = (action) => ({
         accept: 'bx-check', approve: 'bx-check-shield', signoff: 'bx-check-circle',
         reject: 'bx-x-circle', decline: 'bx-x-circle', return: 'bx-undo',
-        inquire: 'bx-question-mark', reassign: 'bx-user-pin', plan: 'bx-calendar-plus',
+        inquire: 'bx-question-mark', requestInfo: 'bx-question-mark',
+        reassign: 'bx-user-pin', plan: 'bx-calendar-plus', logTime: 'bx-time-five',
         reviewMeeting: 'bx-calendar-event', scheduleReviewMeeting: 'bx-calendar-event'
     }[action.key] || 'bx-right-arrow-alt');
 
@@ -5432,7 +5456,16 @@
             <div class="wcn-panel-head">
                 <h6><i class="bx bx-calendar-event text-primary"></i>${esc(t('AgendaTitle'))}</h6>
                 <div class="wcn-panel-head-actions">
-                    <button type="button" class="btn btn-icon btn-sm btn-outline-primary" data-wcn-meeting-add title="${esc(t('AgendaAddMeeting'))}" aria-label="${esc(t('AgendaAddMeeting'))}"><i class="bx bx-plus"></i></button>
+                    ${/*
+                       * ⚠ THE AGENDA PANEL'S "+" WENT WITH THE FORM IT OPENED (2026-08-24).
+                       *
+                       * NOT NAMED IN THE ROUND'S BRIEF, and stated here rather than done quietly: the brief said
+                       * the notes and agenda PANELS do not change this round, and this is the one exception —
+                       * because it was a SECOND door onto the same deleted dead end (`openMeetingForm`).
+                       * Leaving the button would have called a function that no longer exists; leaving the
+                       * handler and removing the button, or the reverse, would have been a control that throws
+                       * or a control that does nothing. The panel is otherwise untouched.
+                       */ ''}
                     <button type="button" class="btn btn-icon btn-sm btn-text-secondary" data-wcn-toggle="agenda" aria-label="${esc(t('PanelClose'))}"><i class="bx bx-x"></i></button>
                 </div>
             </div>
@@ -6524,7 +6557,8 @@
         sharedConfirm({
             title: label,
             subtext: outcomeLead(action),
-            icon: 'bx-calendar',
+            // The rail button's own glyph — one dictionary, so the button and the dialog it opens agree.
+            icon: inboxActionIcon(action),
             confirmText: t('PlanConfirm'),
             input: {
                 type: 'text',
@@ -6598,6 +6632,52 @@
      * The fallback is deliberate and loud rather than silent: a dialog with no appearance is a visible defect,
      * so it renders (the reader still gets to answer the question) and the console says why it looks wrong.
      */
+    /*
+     * ── SELECT2 INSIDE A DIALOG (2026-08-24, A2 job 4) ────────────────────────────────────────────────────
+     *
+     * The rest of this product picks from a select2; two dialog selects were native `<select>`s. This binds
+     * them with the SAME configuration `mountPanelSelect2` uses — no second wrapper, no new options object.
+     *
+     * ⚠⚠ `dropdownParent` IS THE POPUP, AND THAT IS THE WHOLE POINT.
+     *
+     * select2's default parent is `<body>`, where its list lands at the library's own z-index. That is exactly
+     * how flatpickr's calendar shipped BEHIND this dialog earlier in this session — calendar 1074, SweetAlert
+     * 1090 — and every click on a day reached the page behind. It passed every test and survived days.
+     * Parenting the list INSIDE the popup removes the stacking question rather than answering it with a number:
+     * a descendant cannot be behind its ancestor.
+     *
+     * ⚠ THE `<select>` STAYS A DIRECT CHILD of whatever held it. select2 hides the original in place and
+     * inserts `.select2-container` as its SIBLING, so `Swal.getInput()` (which walks the popup's fixed slot
+     * list) still finds `.swal2-select`. This is measured, not assumed — a wrapper around a dialog input is
+     * the defect that cost this session a whole round.
+     */
+    const bindDialogSelect2 = (element, popup) => {
+        const jq = global.jQuery;
+        if (!element || !jq || !jq.fn || !jq.fn.select2) { return false; }
+        const $s = jq(element);
+        if ($s.hasClass('select2-hidden-accessible')) { return true; }
+        /*
+         * ⚠ NO `placeholder` KEY UNLESS THERE IS A PLACEHOLDER — MEASURED, and it cost a real sentence.
+         *
+         * Passing `placeholder: ''` still switches select2's placeholder decorator ON, and that decorator
+         * treats the first option with an EMPTY VALUE as the placeholder and renders nothing for it. The
+         * waiting-on picker's first option is not a placeholder at all: "Belirli bir kişi değil" is a REAL
+         * CHOICE (this file's own comment says so), and select2 blanked it — the control opened showing an
+         * empty box where the native select had shown the words.
+         */
+        const config = {
+            dropdownParent: jq(popup || element.closest('.swal2-popup') || document.body),
+            selectionCssClass: 'form-select',
+            minimumResultsForSearch: 10,
+            width: '100%',
+            allowClear: false
+        };
+        const declared = String($s.data('placeholder') || '');
+        if (declared) { config.placeholder = declared; }
+        $s.select2(config);
+        return true;
+    };
+
     const dialogLook = (options) => {
         if (typeof global.DitenDialogAppearance !== 'function') {
             console.error('[WorkCenterNext] window.DitenDialogAppearance is unavailable (is _GlobalConfirmation loaded?).');
@@ -6605,6 +6685,14 @@
         }
         return global.DitenDialogAppearance(options);
     };
+    /*
+     * THE ICON, for a dialog that cannot go through `showConfirm`. Read from the published builder — the same
+     * one the shared confirm uses — so the circle, its tint and the glyph cannot become a second design here.
+     */
+    const dialogIcon = (type, glyph) => (typeof global.DitenDialogAppearance === 'function'
+        && typeof global.DitenDialogAppearance.iconHtml === 'function'
+        ? global.DitenDialogAppearance.iconHtml(type, glyph)
+        : '');
     // The class the product's dialog DESCRIPTION wears — 13px secondary copy, read from the same one place.
     const dialogDescriptionClass = () => (typeof global.DitenDialogAppearance === 'function'
         ? global.DitenDialogAppearance.description
@@ -6619,9 +6707,21 @@
             return;
         }
         confirm(options.title, options.onConfirm, {
-            // HTML, deliberately: the outcome sentence in front of a confirm is markup the caller already built,
-            // and the wrapper renders `subtext` as HTML for exactly this.
-            subtext: options.subtext,
+            /*
+             * HTML, deliberately: the outcome sentence in front of a confirm is markup the caller already built,
+             * and the wrapper renders `subtext` as HTML for exactly this.
+             *
+             * ⚠ AN INPUT PROMPT GETS NO GENERIC CONFIRMATION SENTENCE (2026-08-24, owner).
+             *
+             * "Devam etmek istediğinize emin misiniz?" is the shared component's default, and it appeared over
+             * "Kaç dakika?", "Ne zaman?" and "Hangi modül?" — three questions it does not answer. A dialog that
+             * ASKS FOR A VALUE is not asking for a confirmation, so it either says something of its own or says
+             * nothing, and '' is now how it says nothing (see the wrapper).
+             *
+             * ⚠ A REAL CONFIRMATION IS UNTOUCHED: no `input`, no override, so the default still arrives — the
+             * bulk confirm and the subtask cancel in this very module still ask whether the reader is sure.
+             */
+            subtext: options.subtext !== undefined ? options.subtext : (options.input ? '' : undefined),
             type: options.type || 'info',
             confirmButtonText: options.confirmText,
             /*
@@ -6695,7 +6795,21 @@
                         if (box) { box.value = options.input.value; box.select(); }
                     }
                     if (typeof options.input.onOpen === 'function') {
-                        options.input.onOpen(popup.querySelector('.swal2-input, .swal2-select, .swal2-textarea, select, input, textarea'), popup);
+                        /*
+                         * ⚠ `Swal.getInput()`, NOT A SELECTOR LIST — MEASURED, and it was wrong for one round.
+                         *
+                         * SweetAlert renders ALL its slots into the popup (input, file, range, select, checkbox,
+                         * textarea) and hides the ones it is not using. `querySelector('.swal2-input,
+                         * .swal2-select, …')` returns the first match in DOCUMENT ORDER, not in the order the
+                         * selectors are written — so a `select` dialog was handed the hidden `.swal2-input` and
+                         * its picker attached to a box nobody could see. The select stayed native and the defect
+                         * was invisible except by measuring `select2-hidden-accessible`.
+                         *
+                         * The library already answers this exact question about itself, so it is asked.
+                         */
+                        const current = (global.Swal && typeof global.Swal.getInput === 'function' && global.Swal.getInput())
+                            || popup.querySelector('.swal2-input, .swal2-select, .swal2-textarea');
+                        options.input.onOpen(current, popup);
                     }
                 }
                 : undefined
@@ -6746,7 +6860,9 @@
         const seed = item.dueAt || data.todayIso;
         sharedConfirm({
             title: label,
-            icon: 'bx-calendar',
+            // What booking it does and does NOT do — the due date is the question a reader actually has here.
+            subtext: esc(t('MeetingWhenSubtext')),
+            icon: inboxActionIcon(action),
             confirmText: t('PlanConfirm'),
             input: {
                 type: 'text',
@@ -6775,9 +6891,13 @@
         if (!global.Swal) { return; }
         sharedConfirm({
             title: label,
-            // A CLOCK, because this box asks for an amount of TIME and the type's default glyph is a question
-            // mark. Same rule as the snooze moon: only the picture is named, the gravity stays the type's.
-            icon: 'bx-time-five',
+            /*
+             * ITS OWN SENTENCE, saying what the box cannot: that this ADDS to what is already logged and does
+             * not touch the running timer. The generic "are you sure?" it used to wear said nothing at all
+             * above a field asking "how many minutes?".
+             */
+            subtext: esc(t('LogTimeSubtext')),
+            icon: inboxActionIcon(action),
             confirmText: t('LogTimeConfirm'),
             input: {
                 type: 'number',
@@ -7136,6 +7256,8 @@
         moduleOptions().forEach((m) => { opts[m] = m; });
         sharedConfirm({
             title: t('NewInSource'),
+            // Where the record will LIVE, which is the thing a module picker leaves unsaid.
+            subtext: esc(t('NewInSourceSubtext')),
             icon: 'bx-cube',
             // The button names CREATING, not opening: nothing is opened here any more (see below), and the old
             // 'NewOpenSource' label promised an act this dialog no longer performs.
@@ -7149,7 +7271,10 @@
                  * the choices are all listed. And its glyph is the THEME'S OWN caret, which `.swal2-select`
                  * already draws: adding a second one would put two arrows on one control.
                  */
-                placeholder: t('NewPickModule')
+                placeholder: t('NewPickModule'),
+                // select2, from the same binder the filter panel uses — and parented INTO the popup so its
+                // list cannot open behind the dialog the way flatpickr's calendar once did.
+                onOpen: (box, popup) => { bindDialogSelect2(box, popup); }
             },
             onConfirm: (value) => {
                 if (value) {
@@ -7171,35 +7296,11 @@
         });
     };
 
-    const openMeetingForm = () => {
-        if (!global.Swal) { return; }
-        /*
-         * ⚠ FOUR FIELDS, so it stays a raw `Swal.fire` — and it takes the appearance instead of a seam.
-         * ⚠ STRUCTURE UNTOUCHED THIS ROUND: this form is due to become an offcanvas (decided in B3). Only its
-         * look and its placeholders changed here, so that move starts from the same markup it has today.
-         */
-        global.Swal.fire(Object.assign({
-            title: t('MeetingNewTitle'),
-            html: `<label class="form-label d-block text-start" for="wcnMeetingTitle">${esc(t('MeetingTitleLabel'))}</label>
-                <input id="wcnMeetingTitle" class="form-control mb-2" placeholder="${esc(t('MeetingTitlePlaceholder'))}">
-                <div class="row g-2"><div class="col"><label class="form-label d-block text-start" for="wcnMeetingStart">${esc(t('MeetingStartLabel'))}</label><input id="wcnMeetingStart" type="time" class="form-control" value="09:00"></div>
-                <div class="col"><label class="form-label d-block text-start" for="wcnMeetingEnd">${esc(t('MeetingEndLabel'))}</label><input id="wcnMeetingEnd" type="time" class="form-control" value="09:30"></div></div>
-                <label class="form-label mt-2 d-block text-start" for="wcnMeetingLocation">${esc(t('MeetingLocationLabel'))}</label><input id="wcnMeetingLocation" class="form-control" placeholder="${esc(t('MeetingLocationPlaceholder'))}">`,
-            showCancelButton: true, confirmButtonText: t('MeetingAdd'), cancelButtonText: t('DialogDismiss'),
-            preConfirm: () => {
-                const title = document.getElementById('wcnMeetingTitle').value.trim();
-                const start = document.getElementById('wcnMeetingStart').value;
-                const end = document.getElementById('wcnMeetingEnd').value;
-                if (!title || !start || !end || end <= start) { global.Swal.showValidationMessage(t('MeetingValidation')); return false; }
-                return { title, start, end, location: document.getElementById('wcnMeetingLocation').value.trim() };
-            }
-        }, dialogLook())).then((res) => {
-            if (!res.isConfirmed || !res.value) { return; }
-            state.meetings.push({ id: `MTG-${Date.now()}`, ...res.value, owner: data.currentUser.name });
-            render(); toast(t('MeetingAdded'));
-        });
-    };
-
+    /*
+     * ⚠ `openMeetingForm` WAS DELETED (2026-08-24) — see the note on the "+ Yeni" menu above. It collected a
+     * title, two times and a location, pushed them onto `state.meetings`, and lost all four on the next reload.
+     * Its intent is recorded in the backlog as a DEFERRED feature rather than a removed one.
+     */
     const createMeetingFollowup = (meeting) => {
         if (!meeting) { return; }
         createSelfTask({ title: tf('MeetingFollowupTitle', meeting.title), date: null, priority: 'Medium' }, { sourceModule: t('MeetingSource') });
@@ -7213,27 +7314,11 @@
         render(); toast(t('NoteAdded'));
     };
 
-    // "+ Yeni → Hızlı not": a light capture modal, not the heavy task form. The
-    // in-panel input (addGlobalNote) only exists when the notes panel is open, so
-    // the menu needs its own lightweight entry point. No backend — pushes to the
-    // existing personal-notes layer (state.notes).
-    const openQuickNote = () => {
-        sharedConfirm({
-            title: t('NewNote'),
-            confirmText: t('NewCreate'),
-            input: {
-                placeholder: t('NotePlaceholder'),
-                validate: (val) => ((val || '').trim() ? null : t('NotePlaceholder'))
-            },
-            onConfirm: (value) => {
-                const text = String(value || '').trim();
-                if (!text) { return; }
-                state.notes.unshift({ id: `NOTE-${Date.now()}`, text, ageKey: 'TimeToday', converted: false });
-                render(); toast(t('NoteAdded'));
-            }
-        });
-    };
-
+    /*
+     * ⚠ `openQuickNote` WAS DELETED (2026-08-24), same measurement and same reason as the meeting form: it
+     * pushed onto `state.notes` and nothing else. Its `?` icon — the defect the owner photographed — is gone
+     * with it rather than repainted.
+     */
     const convertGlobalNote = (note) => {
         if (!note || note.converted) { return; }
         note.converted = true;
@@ -7288,7 +7373,7 @@
                 .join('');
             const assigneeField = needsAssignee
                 ? `<label class="form-label d-block text-start" for="wcnReassignAssignee">${esc(t('ReassignAssigneeLabel'))}</label>`
-                  + `<select id="wcnReassignAssignee" class="form-select mb-3">`
+                  + `<select id="wcnReassignAssignee" class="form-select">`
                   + `<option value="">${esc(t('ReassignAssigneePlaceholder'))}</option>${options}</select>`
                 : '';
             /*
@@ -7299,7 +7384,7 @@
              */
             const waitingOnField = offersWaitingOn && people.length
                 ? `<label class="form-label d-block text-start" for="wcnWaitingOn">${esc(t('WaitingOnLabel'))}</label>`
-                  + `<select id="wcnWaitingOn" class="form-select mb-3">`
+                  + `<select id="wcnWaitingOn" class="form-select">`
                   + `<option value="">${esc(t('WaitingOnNobody'))}</option>${options}</select>`
                 : '';
 
@@ -7310,6 +7395,21 @@
              */
             global.Swal.fire(Object.assign({
                 title: actionLabel(action),
+                /*
+                 * ⚠ THE GLYPH COMES FROM `inboxActionIcon`, NOT FROM A HAND — CORRECTED 2026-08-24.
+                 *
+                 * The previous round picked `bx-conversation` by hand and gave the SAME picture to two
+                 * different actions. The rail's own button already draws `bx-question-mark` for "Bilgi bekle"
+                 * and `bx-user-pin` for "Yeniden ata", so one action was showing two icons: a pin on the
+                 * button, a speech bubble in the dialog it opened.
+                 *
+                 * This product has ONE action→icon dictionary and it is `inboxActionIcon` (app.js:1324). A
+                 * dialog opened BY an action asks it, exactly as the button did. An action the dictionary does
+                 * not know gets added TO THE DICTIONARY, never worked around here.
+                 *
+                 * The CIRCLE and its colour are still `type`'s — `info`, untouched.
+                 */
+                iconHtml: dialogIcon('info', inboxActionIcon(action)),
                 html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
                     + assigneeField
                     + waitingOnField
@@ -7319,6 +7419,11 @@
                 showCancelButton: true,
                 confirmButtonText: t('ReasonConfirm'),
                 cancelButtonText: t('DialogDismiss'),
+                // Both pickers become select2, through the same binder, parented into this popup.
+                didOpen: (popup) => {
+                    bindDialogSelect2(document.getElementById('wcnReassignAssignee'), popup);
+                    bindDialogSelect2(document.getElementById('wcnWaitingOn'), popup);
+                },
                 preConfirm: () => {
                     const reason = String(document.getElementById('wcnReasonText')?.value || '').trim();
                     if (!reason) { global.Swal.showValidationMessage(t('ReasonRequired')); return false; }
@@ -7798,7 +7903,6 @@
             return;
         }
 
-        if (event.target.closest('[data-wcn-meeting-add]')) { openMeetingForm(); return; }
         const meetingFollowupEl = event.target.closest('[data-wcn-meeting-followup]');
         if (meetingFollowupEl) {
             createMeetingFollowup(state.meetings.find((m) => m.id === meetingFollowupEl.getAttribute('data-wcn-meeting-followup')));
@@ -7877,8 +7981,6 @@
         if (newEl) {
             const kind = newEl.getAttribute('data-wcn-new');
             if (kind === 'task') { openSelfTask(); }
-            else if (kind === 'note') { openQuickNote(); }
-            else if (kind === 'meeting') { openMeetingForm(); }
             else if (kind === 'source') { openCreateInSource(); }
             else { openNew(); }
             return;
