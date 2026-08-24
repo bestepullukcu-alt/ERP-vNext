@@ -15,6 +15,11 @@ public sealed class PvgIntakeDraftApplicationService
         .Where(definition => definition.Sensitivity != PvgFieldSensitivity.PublicMetadata)
         .Select(definition => definition.Field)
         .ToArray();
+    private static readonly PvgIntakeField[] TriageFieldSecurityControlledFields =
+    [
+        PvgIntakeField.TriageOutcome,
+        PvgIntakeField.TriageReason
+    ];
 
     private readonly IPvgFieldSecurityPolicy _fieldSecurityPolicy;
     private readonly IPvgWorkflowTransitionGate _workflowTransitionGate;
@@ -191,6 +196,18 @@ public sealed class PvgIntakeDraftApplicationService
         if (draft is null)
         {
             return BlockedMutation(PvgApplicationReasonCodes.IntakeDraftNotFound);
+        }
+
+        var fieldDecision = await EnsureFieldSecurityAsync(
+            PvgIntakeOperation.Triage,
+            "triage",
+            command.TenantContext.TenantId,
+            command.ActorContext.ActorId,
+            TriageFieldSecurityControlledFields,
+            cancellationToken);
+        if (fieldDecision is not null)
+        {
+            return new PvgIntakeDraftMutationResult(fieldDecision, null, null);
         }
 
         var workflowDecision = await EnsureWorkflowAsync(

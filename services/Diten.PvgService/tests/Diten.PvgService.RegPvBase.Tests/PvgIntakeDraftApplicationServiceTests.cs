@@ -233,8 +233,12 @@ public sealed class PvgIntakeDraftApplicationServiceTests
         Assert.Equal(PvgSafeReasonCodes.WorkflowTransitionGateUnavailable, triaged.Result.ReasonCode);
         Assert.Null(triaged.AuditIntent);
         Assert.Contains("permission:Triage:pvg.mod0230.intake.triage", callLog);
+        Assert.Contains(callLog, entry => entry.StartsWith("field:Triage:triage:", StringComparison.Ordinal));
         Assert.Contains("workflow:Triage", callLog);
         Assert.DoesNotContain("evidence:Triage", callLog);
+        Assert.True(
+            callLog.FindIndex(entry => entry.StartsWith("field:Triage:triage:", StringComparison.Ordinal)) <
+            callLog.FindIndex(entry => entry == "workflow:Triage"));
 
         workflowGate.Decision = AllowedDecision();
         var fetched = await service.GetDraftByIdAsync(
@@ -315,6 +319,7 @@ public sealed class PvgIntakeDraftApplicationServiceTests
     [Theory]
     [InlineData(PvgIntakeOperation.Create, "create")]
     [InlineData(PvgIntakeOperation.Update, "update")]
+    [InlineData(PvgIntakeOperation.Triage, "triage")]
     [InlineData(PvgIntakeOperation.Route, "route")]
     [InlineData(PvgIntakeOperation.GetById, "detail")]
     [InlineData(PvgIntakeOperation.GetList, "list")]
@@ -351,6 +356,13 @@ public sealed class PvgIntakeDraftApplicationServiceTests
                     CorrelationContext(),
                     intakeDraftId!,
                     ValidUpdateRequest())),
+            PvgIntakeOperation.Triage => (object)await service.TriageDraftAsync(
+                new TriageIntakeDraftCommand(
+                    TenantContext(),
+                    ActorContext(),
+                    CorrelationContext(),
+                    intakeDraftId!,
+                    new PvgTriageIntakeDraftRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason"))),
             PvgIntakeOperation.Route => (object)await service.RouteDraftAsync(
                 new RouteIntakeDraftCommand(
                     TenantContext(),
@@ -369,7 +381,47 @@ public sealed class PvgIntakeDraftApplicationServiceTests
     }
 
     [Fact]
-    public async Task Triage_field_security_policy_is_not_yet_called_and_remains_owner_approval_blocker()
+    public async Task Triage_allowed_by_field_security_calls_workflow_evidence_and_mutates_safely()
+    {
+        var callLog = new List<string>();
+        var fieldPolicy = new RecordingFieldSecurityPolicy(callLog);
+        var service = NewService(
+            fieldPolicy,
+            new RecordingWorkflowTransitionGate(callLog),
+            new RecordingEvidenceLinkPort(callLog),
+            new RecordingPermissionGate(callLog));
+        var created = await service.CreateDraftAsync(CreateCommand(ValidCreateRequest()));
+        Assert.True(created.Result.IsSuccess);
+        callLog.Clear();
+
+        var triaged = await service.TriageDraftAsync(
+            new TriageIntakeDraftCommand(
+                TenantContext(),
+                ActorContext(),
+                CorrelationContext(),
+                created.IntakeDraftId!,
+                new PvgTriageIntakeDraftRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason")));
+
+        Assert.True(triaged.Result.IsSuccess);
+        Assert.Contains("field:Triage:triage:TriageOutcome", callLog);
+        Assert.Contains("field:Triage:triage:TriageReason", callLog);
+        Assert.Contains("workflow:Triage", callLog);
+        Assert.Contains("evidence:Triage", callLog);
+        Assert.True(
+            callLog.IndexOf("field:Triage:triage:TriageOutcome") <
+            callLog.FindIndex(entry => entry == "workflow:Triage"));
+
+        var fetched = await service.GetDraftByIdAsync(
+            ReadByIdQuery(created.IntakeDraftId!));
+
+        Assert.Single(fetched.Items);
+        Assert.Equal(PvgIntakeStatus.Triaged, fetched.Items[0].Status);
+        AssertSafe(triaged);
+        AssertSafe(fetched);
+    }
+
+    [Fact]
+    public async Task Triage_denied_by_field_security_blocks_before_workflow_evidence_and_mutation()
     {
         var callLog = new List<string>();
         var fieldPolicy = new RecordingFieldSecurityPolicy(callLog);
@@ -391,11 +443,24 @@ public sealed class PvgIntakeDraftApplicationServiceTests
                 created.IntakeDraftId!,
                 new PvgTriageIntakeDraftRequest(PvgTriageOutcome.Rejected, "PVG_TRIAGE_REASON_REJECTED", "triage free-text reason")));
 
-        Assert.True(triaged.Result.IsSuccess);
-        Assert.DoesNotContain(callLog, entry => entry.StartsWith("field:Triage:", StringComparison.Ordinal));
-        Assert.Contains("workflow:Triage", callLog);
-        Assert.Contains("evidence:Triage", callLog);
+        Assert.False(triaged.Result.IsSuccess);
+        Assert.Equal(PvgApplicationOutcome.Blocked, triaged.Result.Outcome);
+        Assert.Equal(PvgSafeReasonCodes.FieldSecurityPolicyUnavailable, triaged.Result.ReasonCode);
+        Assert.Null(triaged.IntakeDraftId);
+        Assert.Null(triaged.AuditIntent);
+        Assert.Contains("permission:Triage:pvg.mod0230.intake.triage", callLog);
+        Assert.Contains("field:Triage:triage:TriageOutcome", callLog);
+        Assert.DoesNotContain("workflow:Triage", callLog);
+        Assert.DoesNotContain("evidence:Triage", callLog);
+
+        fieldPolicy.Decision = AllowedDecision();
+        var fetched = await service.GetDraftByIdAsync(
+            ReadByIdQuery(created.IntakeDraftId!));
+
+        Assert.Single(fetched.Items);
+        Assert.Equal(PvgIntakeStatus.IntakeCreated, fetched.Items[0].Status);
         AssertSafe(triaged);
+        AssertSafe(fetched);
     }
 
     [Fact]
