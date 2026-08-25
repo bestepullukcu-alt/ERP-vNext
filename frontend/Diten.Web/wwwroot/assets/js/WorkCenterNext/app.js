@@ -1109,74 +1109,65 @@
 
     // Inbox chips: single-select main types (Tümü clears), multi risk signals that
     // combine with a type ("Onay + SLA Riski"). Counts use the unfiltered inbox set.
+    /*
+     * ── ONE TYPE CHIP, ONE HANDLER, TWO SELECTION MODES (2026-08-25, BL-260) ──────────────────────────────
+     *
+     * The type axis used to be drawn by two functions emitting two different attributes — `data-wcn-inbox-type`
+     * in the Inbox and `data-wcn-typechip` everywhere else — with two click handlers and two copies of the
+     * count-and-hide rule. One axis, two code paths; the reader could not see it, and that is exactly what made
+     * it survive.
+     *
+     * ⚠ THE BEHAVIOUR DIFFERENCE IS REAL AND IS KEPT: the Inbox is SINGLE-select (picking one clears the rest,
+     * with a "Tümü" chip to clear), the other tabs are MULTI-select toggles. That is a product decision about
+     * two different reading tasks, not an accident — so it survives as ONE predicate rather than as two
+     * implementations.
+     *
+     * ⚠ THE URL IS UNTOUCHED. Both paths always wrote `types=`; old links keep working.
+     */
+    const typesAreSingleSelect = () => state.tab === 'inbox';
+
+    /**
+     * One type chip. Hidden at zero unless it is the active one — the rule the signal chips and the other
+     * tabs' type chips have always used, now the only copy of it.
+     */
+    const typeChipHtml = (key, labelKey, icon) => {
+        const count = typeCount(key);
+        const on = state.typeFilter.has(key);
+        if (!count && !on) { return ''; }
+        return `<button type="button" class="wcn-fchip${on ? ' active' : ''}" data-wcn-typechip="${esc(key)}" aria-pressed="${on}">` +
+            `<i class="bx ${icon}"></i><span>${esc(t(labelKey))}</span><span class="wcn-fchip-count">${count}</span>${on ? CHIP_X : ''}</button>`;
+    };
+
+    const sigChipHtml = (sig) => {
+        const count = signalCount(sig);
+        const on = state.signalFilter.has(sig);
+        if (!count && !on) { return ''; }
+        return `<button type="button" class="wcn-fchip wcn-fchip-signal${on ? ' active' : ''}" data-wcn-sigchip="${sig}" aria-pressed="${on}">` +
+            `<i class="bx ${SIGNAL_ICON[sig]}"></i><span>${esc(t(SIGNAL_KEY[sig]))}</span><span class="wcn-fchip-count">${count}</span>${on ? CHIP_X : ''}</button>`;
+    };
+
     const buildInboxChips = () => {
         const allActive = state.typeFilter.size === 0;
+        /*
+         * ⚠ "Tümü" IS NOT A TYPE CHIP and keeps its own attribute: it means "clear the axis", which is why it
+         * stays drawn at zero while every real type chip does not.
+         */
         const allChip = `<button type="button" class="wcn-fchip${allActive ? ' active' : ''}" data-wcn-inbox-all aria-pressed="${allActive}">` +
             `<i class="bx bx-collection"></i><span>${esc(t('ChipAll'))}</span><span class="wcn-fchip-count">${allTypesCount()}</span></button>`;
-        const mainChips = INBOX_MAIN.map((cfg) => {
-            const on = state.typeFilter.has(cfg.key);
-            const c = typeCount(cfg.key);
-            /*
-             * ⚠ A CHIP AT ZERO IS NOT DRAWN AT ALL (2026-08-25) — not dimmed, not disabled. Measured on live
-             * data: six of the seven inbox type chips read 0 (Onay · İnceleme · Sorun · İstisna · Toplantı
-             * Daveti), every one of them clickable, every one leading to an empty list. Promising a population
-             * that does not exist is the same defect as the nine dead cards this session removed.
-             *
-             * The old comment here said "never dimmed at 0 (no perpetual grey chips)", which diagnosed the
-             * problem correctly and then solved the wrong half: the grey was never the issue, the promise was.
-             *
-             * ⚠ THIS IS NOT A PERMANENT REMOVAL. The count comes from the live projection, so the moment
-             * another module starts sending reviews or issues, its chip reappears by itself. Nobody needs to
-             * put it back — do not report the absence as a defect.
-             *
-             * ⚠ SAME MECHANISM AS EVERYWHERE ELSE, not a second one: the signal chips below and the default
-             * tab's type chips already use exactly `count > 0 || the filter is on`. The second half matters —
-             * an active chip stays drawn even at 0, or the reader could never switch it back off.
-             */
-            if (!c && !on) { return ''; }
-            return `<button type="button" class="wcn-fchip${on ? ' active' : ''}" data-wcn-inbox-type="${cfg.key}" aria-pressed="${on}">` +
-                `<i class="bx ${cfg.icon}"></i><span>${esc(t(cfg.labelKey))}</span><span class="wcn-fchip-count">${c}</span>${on ? CHIP_X : ''}</button>`;
-        }).join('');
-        const riskChips = INBOX_RISK.map((sig) => {
-            const c = signalCount(sig);
-            const on = state.signalFilter.has(sig);
-            if (!c && !on) { return ''; }   // secondary: hidden at 0 unless active
-            return `<button type="button" class="wcn-fchip wcn-fchip-signal${on ? ' active' : ''}" data-wcn-sigchip="${sig}" aria-pressed="${on}">` +
-                `<i class="bx ${SIGNAL_ICON[sig]}"></i><span>${esc(t(SIGNAL_KEY[sig]))}</span><span class="wcn-fchip-count">${c}</span>${on ? CHIP_X : ''}</button>`;
-        }).join('');
+        const mainChips = INBOX_MAIN.map((cfg) => typeChipHtml(cfg.key, cfg.labelKey, cfg.icon)).join('');
+        const riskChips = INBOX_RISK.map(sigChipHtml).join('');
         return `<div class="wcn-chips-types">${allChip}${mainChips}</div>` +
             (riskChips ? `<span class="wcn-chips-sep"></span><div class="wcn-chips-signals">${riskChips}</div>` : '');
     };
 
-    // Default chips for İşlerim / Havuz / Geçmiş — unchanged multi-select type+signal.
     const buildDefaultChips = () => {
-        const typeChip = (ty) => {
-            const c = typeCount(ty);
-            const on = state.typeFilter.has(ty);
-            return `<button type="button" class="wcn-fchip${on ? ' active' : ''}${c ? '' : ' empty'}" data-wcn-typechip="${ty}" aria-pressed="${on}">` +
-                `<i class="bx ${TYPE_ICON_MAP[ty]}"></i><span>${esc(t(TYPE_KEY[ty]))}</span><span class="wcn-fchip-count">${c}</span>${on ? CHIP_X : ''}</button>`;
-        };
-        const sigChip = (sig) => {
-            const c = signalCount(sig);
-            const on = state.signalFilter.has(sig);
-            if (!c && !on) { return ''; }
-            return `<button type="button" class="wcn-fchip wcn-fchip-signal${on ? ' active' : ''}" data-wcn-sigchip="${sig}" aria-pressed="${on}">` +
-                `<i class="bx ${SIGNAL_ICON[sig]}"></i><span>${esc(t(SIGNAL_KEY[sig]))}</span><span class="wcn-fchip-count">${c}</span>${on ? CHIP_X : ''}</button>`;
-        };
-        // Only surface types actually present in this tab (or an active filter) — a row
-        // of perpetual "0" type chips (İşlerim is task-dominant) is pure noise. The
-        // segment bar already splits by state; chips here carry type + risk signals.
         const types = Object.keys(TYPE_KEY)
-            .filter((ty) => typeCount(ty) > 0 || state.typeFilter.has(ty))
-            .map(typeChip).join('');
-        const signals = SIGNALS.map(sigChip).join('');
+            .map((ty) => typeChipHtml(ty, TYPE_KEY[ty], TYPE_ICON_MAP[ty])).join('');
+        const signals = SIGNALS.map(sigChipHtml).join('');
         return `<div class="wcn-chips-types">${types}</div>` +
             (signals ? `<span class="wcn-chips-sep"></span><div class="wcn-chips-signals">${signals}</div>` : '');
     };
 
-    // Chips markup (Tümü/type/risk). Shared: List/Split render it inside the toolbar
-    // band (chips left, search+filter right); Table renders it as a strip above the
-    // grid (the grid owns its own toolbar), so chips never vanish on view switch.
     const chipsMarkup = () => {
         const chipsInner = state.tab === 'inbox' ? buildInboxChips() : buildDefaultChips();
         return `<div class="wcn-chips" role="group" aria-label="${esc(t('FilterType'))}">${chipsInner}</div>`;
@@ -1659,11 +1650,19 @@
     const renderList = (items) => {
         state.visibleOrder = [];
         if (state.tab === 'inbox') {
-            const sorted = items.slice().sort((a, b) => {
-                if (a.itemType === 'approval' && b.itemType !== 'approval') { return -1; }
-                if (a.itemType !== 'approval' && b.itemType === 'approval') { return 1; }
-                return bySla(a, b);
-            });
+            /*
+             * ⚠ THE INBOX HONOURS THE SORT CONTROL TOO (2026-08-25, BL-258). It had its own hard-coded
+             * "approvals first, then SLA" and would have been the one tab where the control still did nothing —
+             * shipping the very defect this item exists to remove, on a quarter of the surface.
+             *
+             * ⚠ APPROVALS STILL LEAD, banded exactly like pinned work in the list below: a decision waiting on
+             * the reader outranks work they merely hold, and the chosen order applies inside each band.
+             */
+            const inboxSorter = SORTERS[state.sortKey] || SORTERS.sla;
+            const inboxOrdered = items.slice().sort(inboxSorter);
+            if (state.sortDir === 'desc') { inboxOrdered.reverse(); }
+            const sorted = inboxOrdered.filter((i) => i.itemType === 'approval')
+                .concat(inboxOrdered.filter((i) => i.itemType !== 'approval'));
             const entries = [
                 ...activeTriggers().map((trigger) => ({ kind: 'trigger', trigger })),
                 ...sorted.map((item) => ({ kind: 'item', item }))
@@ -1678,10 +1677,35 @@
             return `<div class="wcn-group-rows">${rows}</div>${listPager(entries.length, paged.pages, paged.start)}`;
         }
         if (!items.length) { return emptyState(); }
-        // Flat, SLA-sorted (most urgent first) — the SLA-state group headings are
-        // replaced by the per-row left colour accent (wcn-row-accent), so urgency reads
-        // at a glance without the heading weight. Order preserved via bySla.
-        const sortedItems = items.slice().sort(bySla);
+        /*
+         * ── THE CHOSEN ORDER IS ACTUALLY APPLIED (2026-08-25, BL-258) ─────────────────────────────────────
+         *
+         * This read `items.slice().sort(bySla)` — SLA, always, whatever the reader had asked for. The sort
+         * control added a round earlier wrote `state.sortKey`, wrote the URL and re-rendered, and the rows came
+         * back in the same order every time.
+         *
+         * ⚠ THE PREVIOUS ROUND "VERIFIED" THIS BY READING `aria-sort` — a TABLE attribute. The list has no
+         * such attribute and never had; the check passed against a surface that was not under test. Measuring
+         * the wrong surface is this session's recurring defect, and this is its most expensive instance: a
+         * feature was reported as delivered and did nothing.
+         *
+         * ⚠ ONE SORTER. `SORTERS` is the same map the grid uses, so list and table cannot disagree; `bySla`
+         * remains the default entry in it rather than a second code path.
+         */
+        const sorter = SORTERS[state.sortKey] || SORTERS.sla;
+        const ordered = items.slice().sort(sorter);
+        if (state.sortDir === 'desc') { ordered.reverse(); }
+        /*
+         * ⚠ PINNED WORK FLOATS, AND THE SORT STILL APPLIES INSIDE EACH BAND.
+         *
+         * The decision, since the brief asked for one: a pin means "I will come back to this", so an order that
+         * buries it defeats the only thing a pin does. But silently overriding the order the reader JUST chose
+         * would be its own lie. Both are answered by banding — pinned first, unpinned after, each band in the
+         * chosen order — so the sort is visibly honoured in both halves and the pin still wins the top.
+         *
+         * `sort` is stable in every engine this ships to (ES2019), so the band split preserves the order above.
+         */
+        const sortedItems = ordered.filter((i) => i.pinned).concat(ordered.filter((i) => !i.pinned));
         const paged = paginateList(sortedItems);
         const rows = paged.pageItems.map((item) => { state.visibleOrder.push(item.id); return rowHtml(item); }).join('');
         return `<div class="wcn-list wcn-group-rows">${rows}</div>${listPager(sortedItems.length, paged.pages, paged.start)}`;
@@ -8272,21 +8296,24 @@
         const groupEl = event.target.closest('[data-wcn-group]');
         if (groupEl) { state.group = groupEl.getAttribute('data-wcn-group'); state.selectedId = null; render(); return; }
 
-        // Inbox chips — "Tümü" clears types; main type chips are single-select.
+        // "Tümü" clears the axis — the Inbox's reset, not a type.
         if (event.target.closest('[data-wcn-inbox-all]')) { state.typeFilter.clear(); state.selectedId = null; render(); return; }
-        const inboxTypeEl = event.target.closest('[data-wcn-inbox-type]');
-        if (inboxTypeEl) {
-            const ty = inboxTypeEl.getAttribute('data-wcn-inbox-type');
-            const only = state.typeFilter.size === 1 && state.typeFilter.has(ty);
-            state.typeFilter = only ? new Set() : new Set([ty]);   // toggle-off → Tümü
-            state.selectedId = null;
-            render(); return;
-        }
-        // Type / signal filter chips — multi-select toggle (İşlerim/Havuz/Geçmiş).
+        /*
+         * ⚠ ONE HANDLER, TWO MODES — see `typesAreSingleSelect`. This was two branches reading two attributes
+         * and doing the same bookkeeping twice.
+         */
         const typeChipEl = event.target.closest('[data-wcn-typechip]');
         if (typeChipEl) {
             const ty = typeChipEl.getAttribute('data-wcn-typechip');
-            if (state.typeFilter.has(ty)) { state.typeFilter.delete(ty); } else { state.typeFilter.add(ty); }
+            if (typesAreSingleSelect()) {
+                const only = state.typeFilter.size === 1 && state.typeFilter.has(ty);
+                state.typeFilter = only ? new Set() : new Set([ty]);   // toggle-off → Tümü
+                state.selectedId = null;
+            } else if (state.typeFilter.has(ty)) {
+                state.typeFilter.delete(ty);
+            } else {
+                state.typeFilter.add(ty);
+            }
             render(); return;
         }
         const sigChipEl = event.target.closest('[data-wcn-sigchip]');

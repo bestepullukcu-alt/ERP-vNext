@@ -188,42 +188,44 @@ describe("② signals widen the net; axes narrow it", () => {
 });
 
 describe("③ a chip at zero is not drawn at all", () => {
-  it("draws no inbox type chip for a population that does not exist", () => {
+  /*
+   * ⚠ THESE ASSERTIONS MOVED HOUSE (2026-08-25, BL-260) and the rule did not change.
+   *
+   * They used to look inside `buildInboxChips`'s `mainChips` block, because the type axis was drawn by two
+   * functions with a copy of the guard in each. The axis is now ONE builder — `typeChipHtml` — so the guard
+   * has one home and these read it there. A rule with one copy is the whole point of the round that moved it;
+   * a test still pointing at the old address would have gone red for the right reason and been "fixed" by
+   * deleting it, which is how a rule quietly stops being enforced.
+   */
+  const chipBuilder = () => APP.split("const typeChipHtml = ")[1].split("\n    const ")[0];
+
+  it("draws no type chip for a population that does not exist", () => {
     /*
      * MEASURED live: six of seven inbox type chips read 0 (Onay · İnceleme · Sorun · İstisna · Toplantı
      * Daveti), all clickable, all leading to an empty list. Promising a population that is not there is the
      * defect this session removed nine times over.
      *
-     * MUTATION GUARD: draw them again and this goes red. Asserted on the source because the rule is one line
-     * and the inbox fixture needed to exercise it would be six items the provider cannot send.
+     * MUTATION GUARD: drop the guard and this goes red.
      */
-    /*
-     * ⚠ ANCHORED ON THE TYPE-CHIP BLOCK, NOT ON THE WHOLE FUNCTION. The first version searched the entire
-     * `buildInboxChips` body for the guard — and the RISK chips below have carried that exact line all along,
-     * so deleting the guard from the type chips left the test green. A rule that another line can satisfy is a
-     * rule nothing enforces; this session has now recorded that twice.
-     */
-    const fn = APP.split("const buildInboxChips")[1].split("const buildDefaultChips")[0];
-    const mainChips = fn.split("const mainChips")[1].split("const riskChips")[0];
-    expect(mainChips, "zero type chips are drawn again").toContain("if (!c && !on) { return ''; }");
+    expect(chipBuilder(), "zero chips are drawn again").toContain("if (!count && !on) { return ''; }");
   });
 
   it("keeps an ACTIVE chip drawn even at zero, or it could never be switched off", () => {
-    const fn = APP.split("const buildInboxChips")[1].split("const buildDefaultChips")[0];
-    const mainChips = fn.split("const mainChips")[1].split("const riskChips")[0];
-    // The second half of the guard: `!on` is what keeps a switched-on chip reachable at zero.
-    expect(mainChips).toContain("!c && !on");
+    expect(chipBuilder()).toContain("!count && !on");
   });
 
   it("keeps the Tümü chip, which is the axis's own zero state", () => {
-    const fn = APP.split("const buildInboxChips")[1].split("const buildDefaultChips")[0];
+    const fn = APP.split("const buildInboxChips = ")[1].split("const buildDefaultChips")[0];
     const all = fn.split("const allChip")[1].split("const mainChips")[0];
-    expect(all, "the reset chip was hidden with the rest").not.toContain("!c && !on");
+    expect(all, "the reset chip was hidden with the rest").not.toContain("!count && !on");
   });
 
-  it("uses the mechanism that already existed, not a second one", () => {
-    // The signal chips and the default tab's type chips have always hidden at zero. One rule, three callers.
-    expect(APP.split("const buildDefaultChips")[1]).toContain("typeCount(ty) > 0 || state.typeFilter.has(ty)");
+  it("has ONE copy of the rule, not one per surface", () => {
+    // The signal chips carry the same guard by design; what must not exist again is a THIRD copy inside a
+    // per-tab type-chip builder.
+    const code = APP.replace(/\/\*[\s\S]*?\*\//g, "");
+    expect((code.match(/if \(!count && !on\) \{ return ''; \}/g) || []).length,
+      "the guard was copied per surface again").toBe(2);
   });
 });
 

@@ -5582,3 +5582,87 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
   Yani ulaşılabilir ama boş aşama çiziliyor ve akış okunuyor.
 - Ulaşılabilir her aşama boşsa pano ürünün **boş durum cümlesine** düşüyor — beş başlık altında beş boş kutu değil.
 - **Gelecek regresyon riski: 🟢**
+
+### BL-258 — [DÜZELTİLDİ 2026-08-25] Liste sıralaması state'i ve URL'yi yazıyor, SATIRLARI dizmiyordu
+- CT ölçtü: `?sort=priority&dir=desc` ekranda `High · High · High · Medium · Low · High` — yani **Low'dan sonra
+  High**, hiç sıralama yok. `renderList` `items.slice().sort(bySla)` ile sabit sıralıyor, `state.sortKey`'e
+  bakmıyordu.
+- ⚠ **GEÇEN TUR BUNU `aria-sort` OKUYARAK "DOĞRULADI" — o bir TABLO niteliği.** Listede öyle bir nitelik yok ve
+  hiç olmadı; kontrol, test edilmeyen bir yüzeye karşı geçti. **Yanlış yüzeyi ölçmek** bu oturumun tekrar eden
+  kusuru ve bu, en pahalı örneği: bir özellik teslim edildi diye raporlandı ve hiçbir şey yapmıyordu.
+- ⚠ **GELEN KUTUSU DA DÜZELTİLDİ.** Kendi "önce onaylar, sonra SLA" sıralaması vardı; dokunulmasa kontrolün
+  çalışmadığı tek sekme olarak kalacaktı — aynı kusur, yüzeyin dörtte birinde. Onaylar hâlâ önde, ama artık
+  **bant** olarak; seçilen sıra her bandın içinde uygulanıyor.
+- **SABİTLİ SATIR KARARI ve gerekçesi:** sabitleme "buna sonra döneceğim" demek, dolayısıyla onu gömen bir sıra
+  sabitlemenin tek işlevini yok eder — ama okuyucunun az önce seçtiği sırayı sessizce ezmek de kendi başına bir
+  yalandır. İkisi de **bantlama** ile cevaplanıyor: önce sabitliler, sonra diğerleri, **her bant seçilen sırada**.
+  `sort` ES2019'dan beri kararlı olduğu için bant bölmesi üstteki sırayı bozmuyor.
+- **KANIT — ham projeksiyondan okundu, ekrandaki çipten değil.** Sekiz satır, dört anahtar, iki yön: **8/8 dizili.**
+
+  | Anahtar | asc | desc |
+  |---|---|---|
+  | sla | overdue×6 · due-soon | overdue · on-track×5 |
+  | title | Ahmet → … | Zeynep-yönü → … |
+  | priority | High×6 · Medium×2 | Low · Medium×6 |
+  | status | In Progress×5 | Pending×5 |
+
+  Dört `desc` durumunda da `&dir=desc` URL'de korundu. `dir=asc`'in URL'den düşmesi **kusur değil**: varsayılan
+  değer, `sort=sla` gibi yazılmıyor ve geri okumada state zaten `asc`'ten başlıyor — round-trip ölçüldü, tutuyor.
+- **Gelecek regresyon riski: 🟢**
+
+### BL-259 — [ÖLÇÜLDÜ, DEĞİŞİKLİK YOK] Takvimde bir güne çok iş
+- CT'nin sırası izlendi: önce ölç, sonra karar ver. Eylül 2026, bir güne **14 iş** düşen hücre:
+  - hücre yüksekliği **315px** — hücre BÜYÜYOR, satırın tamamı onunla birlikte
+  - `scrollHeight === clientHeight` (315 = 315) ve `overflow: visible` → **hiçbir şey kırpılmıyor**
+  - öğe metni `text-overflow: ellipsis` ile kısalıyor ama `title` niteliği tam başlığı taşıyor
+  - öğeler tıklanabilir (`data-wcn-row`) ve klavyeyle erişilebilir (`tabindex=0`)
+  - sayfada yatay taşma yok — 900 ve 1440'ta aynı
+- CT'nin kuralı: *"Kaydırılıyor ya da hücre büyüyorsa DOKUNMA, ölçümü yaz."* → **DOKUNULMADI.**
+  Hücre başına sınır ve "+N daha" **eklenmedi**; ölçüm onu gerektirmiyor.
+- ⚠ Not, kusur değil: 14 işlik bir gün satırı 315px'e çıkarıyor, yani o hafta ekranda baskın oluyor. Kırpma
+  olmadığı için yanıltmıyor; yoğunluk sorunu isterse ayrı bir karar konusudur.
+- **Gelecek regresyon riski: 🟢**
+
+### BL-260 — [DÜZELTİLDİ 2026-08-25] Tür ekseni iki ayrı kodla çiziliyordu
+- Gelen Kutusu `data-wcn-inbox-type`, diğer üç sekme `data-wcn-typechip`: **bir eksen, iki render'cı, iki
+  işleyici, sayma-ve-gizleme kuralının iki kopyası.** Kullanıcı görmüyordu — onu hayatta tutan da buydu.
+- Tek `typeChipHtml` + tek işleyici. Sinyal çipleri de aynı elden (`sigChipHtml`) çiziliyor.
+- ⚠ **DAVRANIŞ FARKI GERÇEK VE KORUNDU:** Gelen Kutusu **tek-seçim** (birini seçince diğerleri kalkar, "Tümü"
+  temizler), diğer sekmeler **çok-seçim**. Bu iki farklı okuma görevine dair bir ürün kararı; iki uygulama
+  olarak değil, **tek bir yüklem** (`typesAreSingleSelect`) olarak yaşıyor.
+- ⚠ "Tümü" tür çipi değil: ekseni temizler, o yüzden sıfırda da çizilmeye devam ediyor.
+- **ÖNCE/SONRA — dört sekmede birebir aynı:**
+
+  | Sekme | Önce | Sonra |
+  |---|---|---|
+  | Gelen Kutusu | Tümü 19 · Kabul Bekleyen 19 · SLA riski 15 | **aynı** |
+  | İşlerim | Görev 36 · Bloke 4 · SLA riski 13 · Ertelenmiş 1 | **aynı** |
+  | Havuz | Görev 2 · SLA riski 2 | **aynı** |
+  | Geçmiş | Görev 18 · SLA riski 10 · Ertelenmiş 1 | **aynı** |
+
+- URL sözcük dağarcığı değişmedi (`types=`), eski bağlantılar çalışıyor. Canlı: `?tab=islerim&types=task`.
+- ⚠ Birleştirme **üç testi kırdı** ve üçü de kuralın ESKİ ADRESİNİ arıyordu. Silinmediler — kuralın yeni tek
+  evine taşındılar, ve neden taşındıkları yazıldı. *Eski adrese bakan bir test doğru sebeple kırmızıya döner ve
+  silinerek "düzeltilir" — bir kural sessizce böyle zorlanmaz olur.* Üstüne, kuralın kopya sayısını sayan yeni
+  bir iddia eklendi.
+- **Gelecek regresyon riski: 🟢**
+
+### BL-184 güncelleme (2026-08-25) — KAPANDI: tekrarlamıyor
+- Tam süit **BEŞ KEZ ÜST ÜSTE** koşuldu. Sonuç, beşinde de **birebir aynı**:
+
+  | Koşu | Geçen | Kalan |
+  |---|---|---|
+  | 1 | 1721 | 9 |
+  | 2 | 1721 | 9 |
+  | 3 | 1721 | 9 |
+  | 4 | 1721 | 9 |
+  | 5 | 1721 | 9 |
+
+  Dokuz kırmızının hepsi dokunulmayan Enterprise Strategy testleri (oturum başından beri kırmızı, başka
+  modülün).
+- ⚠ **NEDEN-SONUÇ HÂLÂ KURULMUŞ DEĞİL.** En güçlü aday BL-189'du (harness'ın çift yüklemesi / dinleyici sızıntısı)
+  ve düzeltildi; kararsızlık ondan sonra hiç görülmedi. Ama "düzeltildikten sonra görülmedi" ile "o yüzden
+  oluyordu" aynı cümle değil — kayıt bu ayrımı koruyarak kapanıyor.
+- Kapanış gerekçesi: beş ardışık özdeş koşu, tekrarlamayan bir kararsızlığı açık tutmak için yeterli kanıt
+  değil. Yeniden görülürse bu not ve BL-189 düzeltmesi başlangıç noktasıdır.
+- **Gelecek regresyon riski: 🟢**
