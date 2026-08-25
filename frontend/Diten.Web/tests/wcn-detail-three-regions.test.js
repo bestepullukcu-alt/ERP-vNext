@@ -887,7 +887,7 @@ describe("the subtask list reads and behaves like a checklist", () => {
   });
 
   // ── the checkbox ──
-  it("is a CHECKBOX now, and ticking it completes the subtask through the transition endpoint", async () => {
+  it("is a CHECKBOX now, and ticking it drives THIS subtask to done through the transition endpoint", async () => {
     const calls = [];
     await boot(withSubtasks([child({ id: "sub-1" })]));
     global.TasksApi.transition = (id, code) => { calls.push({ id, code }); return Promise.resolve({ ok: true, status: 204 }); };
@@ -898,14 +898,22 @@ describe("the subtask list reads and behaves like a checklist", () => {
     /*
      * The COUNT is not asserted, and that is a property of the harness rather than of the code: every boot in
      * this file leaves its document listeners behind (jsdom keeps one document per file), so a single click is
-     * heard once per boot so far. What matters — and what is asserted — is that the click reaches the ordinary
-     * completion transition for THIS subtask, and reaches nothing else.
+     * heard once per boot so far. What matters — and what is asserted — is that the click reaches THIS subtask
+     * and nothing else.
+     *
+     * ⚠ THIS TEST USED TO REQUIRE EVERY CALL TO BE `complete`, and that requirement was itself the defect
+     * (BL-238, measured live on a real task): the fixture child is `not-started`, and a not-started task cannot
+     * be completed — the server refused with 409 TASK_INVALID_STATE, correctly, every single time. A green test
+     * described a checkbox that could only ever produce an error. What the tick means is "this is finished", so
+     * the codes it may use are the ones that GET there. The start→complete ordering is pinned in
+     * wcn-subtask-tick-and-pause.test.js.
      */
     expect(calls.length, "no transition was attempted").toBeGreaterThan(0);
     calls.forEach((call) => {
-      expect(call.code).toBe("complete");
+      expect(["start", "complete"], `the tick reached for '${call.code}'`).toContain(call.code);
       expect(call.id).toBe("sub-1");
     });
+    expect(calls[calls.length - 1].code, "the tick did not end at done").toBe("complete");
   });
 
   it("does NOT tick optimistically — a refusal leaves the row exactly as it was, and says why", async () => {

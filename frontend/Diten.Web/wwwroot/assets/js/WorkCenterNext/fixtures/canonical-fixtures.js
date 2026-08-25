@@ -119,9 +119,9 @@
             dependencies: [],
             attachments: [],
             concurrency: { kind: 'version', token: '13' },
-            actions: [action('pause'), action('complete', { requiresConfirmation: true })],
+            actions: [action('complete', { requiresConfirmation: true })],
             primaryActionCode: 'complete',
-            secondaryActionCodes: ['pause'],
+            secondaryActionCodes: [],
             expectation: { surfaceMode: 'execution', readOnly: false, primaryActionCode: 'complete' }
         }),
         base('WC-TASK-WAITING', 'task', 'FixtureTitleTaskWaiting', {

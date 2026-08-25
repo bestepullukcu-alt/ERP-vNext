@@ -524,9 +524,6 @@
   <data name="ActResume" xml:space="preserve">
     <value>Devam et</value>
   </data>
-  <data name="ActPause" xml:space="preserve">
-    <value>Duraklat</value>
-  </data>
   <data name="ActLogTime" xml:space="preserve">
     <value>Süre gir</value>
   </data>
@@ -604,9 +601,6 @@
   </data>
   <data name="ToastTimerStarted" xml:space="preserve">
     <value>{0} · zamanlayıcı başladı (mock)</value>
-  </data>
-  <data name="ToastTimerPaused" xml:space="preserve">
-    <value>Zamanlayıcı duraklatıldı · {0} girildi (mock)</value>
   </data>
   <data name="ToastTimeLogged" xml:space="preserve">
     <value>{0} girildi (mock)</value>
@@ -915,6 +909,9 @@
   </data>
   <data name="TimerFollowsStatusHint" xml:space="preserve">
     <value>Geçen süre kaydedilmiyor — harcadığınız süreyi elle girin.</value>
+  </data>
+  <data name="SubtaskStartedNotCompleted" xml:space="preserve">
+    <value>Alt görev başlatıldı ama tamamlanamadı: {0}</value>
   </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Bitince başlar (FS)</value>
@@ -1653,6 +1650,9 @@
   </data>
   <data name="SubtaskCancelConfirmYes" xml:space="preserve">
     <value>İptal et</value>
+  </data>
+  <data name="ToastSubtaskCompleted" xml:space="preserve">
+    <value>Alt görev tamamlandı: {0}</value>
   </data>
   <data name="ToastSubtaskCancelled" xml:space="preserve">
     <value>Alt görev iptal edildi: {0}</value>

@@ -108,8 +108,8 @@
             requester: req('USR-201', 'Deniz Koç'),
             source: source('finance', 'CloseTask', 'FIN-7781'),
             concurrency: { kind: 'version', token: 'is-01' }, dueAt: '2026-07-25',
-            actions: [action('pause'), action('complete', { requiresConfirmation: true }), action('logTime', { input: 'minutes' }), action('requestInfo', { requiresReason: true }), action('reassign', { requiresReason: true })],
-            primaryActionCode: 'complete', secondaryActionCodes: ['pause'], overflowActionCodes: ['logTime', 'requestInfo', 'reassign'],
+            actions: [action('complete', { requiresConfirmation: true }), action('logTime', { input: 'minutes' }), action('requestInfo', { requiresReason: true }), action('reassign', { requiresReason: true })],
+            primaryActionCode: 'complete', secondaryActionCodes: [], overflowActionCodes: ['logTime', 'requestInfo', 'reassign'],
             expectation: { surfaceMode: 'execution', readOnly: false, primaryActionCode: 'complete' }
         }),
         // Issue you've taken on — act-directly (Çöz), no accept gate.
@@ -157,8 +157,8 @@
             priority: 'Medium', requester: req('USR-204', 'Burak Şahin'),
             source: source('procurement', 'SourcingTask', 'TED-4471'),
             concurrency: { kind: 'version', token: 'is-04' }, dueAt: '2026-07-28',
-            actions: [action('pause'), action('complete', { requiresConfirmation: true })],
-            primaryActionCode: 'complete', secondaryActionCodes: ['pause'],
+            actions: [action('complete', { requiresConfirmation: true })],
+            primaryActionCode: 'complete', secondaryActionCodes: [],
             expectation: { surfaceMode: 'execution', readOnly: false, primaryActionCode: 'complete' }
         }),
         // Snoozed — personal signal (stays in Aktif per Fable's law), low priority.

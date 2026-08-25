@@ -524,9 +524,6 @@
   <data name="ActResume" xml:space="preserve">
     <value>Reprendre</value>
   </data>
-  <data name="ActPause" xml:space="preserve">
-    <value>Pause</value>
-  </data>
   <data name="ActLogTime" xml:space="preserve">
     <value>Saisir le temps</value>
   </data>
@@ -604,9 +601,6 @@
   </data>
   <data name="ToastTimerStarted" xml:space="preserve">
     <value>{0} · minuteur démarré (mock)</value>
-  </data>
-  <data name="ToastTimerPaused" xml:space="preserve">
-    <value>Minuteur en pause · {0} enregistré (mock)</value>
   </data>
   <data name="ToastTimeLogged" xml:space="preserve">
     <value>{0} enregistré (mock)</value>
@@ -915,6 +909,9 @@
   </data>
   <data name="TimerFollowsStatusHint" xml:space="preserve">
     <value>Le temps écoulé n'est pas enregistré — saisissez manuellement le temps passé.</value>
+  </data>
+  <data name="SubtaskStartedNotCompleted" xml:space="preserve">
+    <value>La sous-tâche a démarré mais n'a pas pu être terminée : {0}</value>
   </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Fin-à-Début (FS)</value>
@@ -1653,6 +1650,9 @@
   </data>
   <data name="SubtaskCancelConfirmYes" xml:space="preserve">
     <value>Annuler</value>
+  </data>
+  <data name="ToastSubtaskCompleted" xml:space="preserve">
+    <value>Sous-tâche terminée : {0}</value>
   </data>
   <data name="ToastSubtaskCancelled" xml:space="preserve">
     <value>Sous-tâche annulée : {0}</value>

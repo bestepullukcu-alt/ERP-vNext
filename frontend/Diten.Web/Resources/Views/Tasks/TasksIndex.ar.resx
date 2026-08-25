@@ -99,6 +99,7 @@
   <data name="ErrorPlanDateRequired" xml:space="preserve"><value>التاريخ مطلوب لتعيين خطتك الشخصية.</value></data>
   <data name="ErrorDueDateRequired" xml:space="preserve"><value>تاريخ الاستحقاق مطلوب.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>المهمة في انتظار قرار المعتمِد.</value></data>
+  <data name="ErrorReviewPending" xml:space="preserve"><value>المهمة في انتظار رد المراجع.</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>لا يمكن إكمال هذه المهمة في حالتها الحالية. ابدأها أولاً.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>لا يمكن إلغاء هذه المهمة إلا من قِبل الشخص الذي طلبها. إذا كنت لا تريد العمل، فأعده بدلاً من ذلك.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>اذكر ما تنتظره المهمة.</value></data>

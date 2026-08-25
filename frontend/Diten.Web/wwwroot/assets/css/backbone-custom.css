@@ -7865,8 +7865,14 @@ tags.diten-tags .tagify__input {
     font-size: .8125rem;
 }
 .wcn-act-reason i { font-size: 1rem; line-height: 1.4; }
+/* ⚠ THE DIMMING HANGS OFF `:disabled`, NOT OFF THE WRAPPER (2026-08-25). It used to require
+   `.wcn-act-disabled` on the parent `<li>` — a class only the CARD's render path writes. Measured on a real
+   blocked task at 900px: the sticky bar's copy of the SAME button came back `opacity: 1`, full bright green,
+   reading as clickable while its own sentence above said it was blocked. Keyed to the button's own state, every
+   render path is covered, including ones not written yet. The wrapper rule stays for the anchor variant, which
+   has no `:disabled`. */
 .wcn-act-disabled .wcn-act-btn { opacity: .55; cursor: not-allowed; }
-.wcn-act-btn:disabled { cursor: not-allowed; }
+.wcn-act-btn:disabled { opacity: .55; cursor: not-allowed; }
 /* The card while a write is in flight: every control goes quiet at once. */
 .wcn-acts-locked { opacity: .75; }
 .wcn-act-none { margin: 0; }

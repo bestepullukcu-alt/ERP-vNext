@@ -99,6 +99,7 @@
   <data name="ErrorPlanDateRequired" xml:space="preserve"><value>Une date est requise pour définir votre plan personnel.</value></data>
   <data name="ErrorDueDateRequired" xml:space="preserve"><value>Une date d’échéance est requise.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>La tâche attend la décision de l'approbateur.</value></data>
+  <data name="ErrorReviewPending" xml:space="preserve"><value>La tâche attend la réponse du relecteur.</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>Cette tâche ne peut pas être terminée dans cet état. Démarrez-la d'abord.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Seule la personne qui a demandé cette tâche peut l'annuler. Si vous ne voulez pas ce travail, renvoyez-le.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Indiquez ce que la tâche attend.</value></data>

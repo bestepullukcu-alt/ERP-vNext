@@ -524,9 +524,6 @@
   <data name="ActResume" xml:space="preserve">
     <value>继续</value>
   </data>
-  <data name="ActPause" xml:space="preserve">
-    <value>暂停</value>
-  </data>
   <data name="ActLogTime" xml:space="preserve">
     <value>记录时间</value>
   </data>
@@ -604,9 +601,6 @@
   </data>
   <data name="ToastTimerStarted" xml:space="preserve">
     <value>{0} · 计时已开始（模拟）</value>
-  </data>
-  <data name="ToastTimerPaused" xml:space="preserve">
-    <value>计时已暂停 · 已记录 {0}（模拟）</value>
   </data>
   <data name="ToastTimeLogged" xml:space="preserve">
     <value>已记录 {0}（模拟）</value>
@@ -915,6 +909,9 @@
   </data>
   <data name="TimerFollowsStatusHint" xml:space="preserve">
     <value>系统不记录经过的时间 — 请手动填写您花费的时间。</value>
+  </data>
+  <data name="SubtaskStartedNotCompleted" xml:space="preserve">
+    <value>子任务已启动但无法完成：{0}</value>
   </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>完成-开始 (FS)</value>
@@ -1653,6 +1650,9 @@
   </data>
   <data name="SubtaskCancelConfirmYes" xml:space="preserve">
     <value>取消它</value>
+  </data>
+  <data name="ToastSubtaskCompleted" xml:space="preserve">
+    <value>子任务已完成：{0}</value>
   </data>
   <data name="ToastSubtaskCancelled" xml:space="preserve">
     <value>子任务已取消：{0}</value>

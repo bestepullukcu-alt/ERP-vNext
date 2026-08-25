@@ -96,6 +96,14 @@
         // can do nothing about it themselves — the definition is an administrator's to correct.
         FIELD_OPTION_SOURCE_INVALID: 'errorFieldOptionSourceInvalid',
         APPROVAL_PENDING: 'errorApprovalPending',
+        /*
+         * ⚠ A SEPARATE CODE ON PURPOSE, and it was missing here until it was measured live (2026-08-25): the
+         * subtask checkbox met a review-gated child, the server refused with REVIEW_PENDING, and the reader was
+         * shown "İşlem sırasında bir hata oluştu" — the generic message. The server's own comment says why the
+         * two gates must not be conflated: approval and review are cleared by DIFFERENT PEOPLE, so borrowing
+         * the approval sentence would send the holder to the wrong person.
+         */
+        REVIEW_PENDING: 'errorReviewPending',
         // An unmet predecessor. Same string the PROJECTION uses to disable the button, deliberately: the greyed
         // control and this refusal are one fact seen from two sides.
         DEPENDENCY_BLOCKED: 'errorDependencyBlocked',
@@ -142,6 +150,8 @@
      */
     const BLOCKING_REASON_CODES = new Set([
         'APPROVAL_PENDING',
+        // A rule, not a race: the reviewer holds the work until they answer.
+        'REVIEW_PENDING',
         // A RULE about the task's state, not a race — so the surface refreshes and explains rather than saying
         // "somebody changed it first", which would be a different (and wrong) instruction.
         'TASK_INVALID_STATE',

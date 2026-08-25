@@ -1847,8 +1847,18 @@
          * belongs to which button — the sentence now says itself, by naming the action (`ActionDisabledWithName`),
          * and `aria-describedby` says it again for a reader who never sees the layout.
          */
+        /*
+         * ⚠ THE PRIMARY'S SENTENCE IS ADDRESSED TOO (2026-08-25). It sits directly under its own button, so a
+         * SEEING reader needs nothing more — and that was taken as enough. Measured on a real task: the `<p>`
+         * carried no id and the button carried no `aria-describedby`, so a screen-reader user heard "Tamamla,
+         * dimmed" and was told nothing about the open subtask holding it. Proximity is a visual argument; it
+         * does not survive being read aloud. The id is free here — the stacked rail only ever claims it for the
+         * secondary and destructive tiers, which do not draw this block.
+         */
+        const reasonId = actionReasonId(item, action);
         const reason = variant === 'primary' && action.disabled && action.disabledReason
-            ? `<p class="alert alert-warning wcn-act-reason d-flex align-items-start gap-2" role="note"><i class="bx bx-lock-alt" aria-hidden="true"></i><span>${esc(action.disabledReason)}</span></p>`
+            ? `<p class="alert alert-warning wcn-act-reason d-flex align-items-start gap-2" role="note"${
+                reasonId ? ` id="${esc(reasonId)}"` : ''}><i class="bx bx-lock-alt" aria-hidden="true"></i><span>${esc(action.disabledReason)}</span></p>`
             : '';
         // The primary is the only tier that keeps its sentence in the card.
         const outcome = variant === 'primary' ? actionOutcome(action) : '';
@@ -1858,7 +1868,7 @@
         const cls = variant === 'primary'
             ? `wcn-act-btn wcn-act-fill wcn-act-fill-${nature}`
             : `wcn-act-btn wcn-act-bare wcn-act-bare-${nature}`;
-        const describedBy = variant === 'primary' ? '' : actionReasonId(item, action);
+        const describedBy = reasonId;
         return `<li class="wcn-act wcn-act-${variant}${action.disabled ? ' wcn-act-disabled' : ''}">
             <button type="button" class="${cls}"
                     data-wcn-action="${esc(action.key)}" data-wcn-id="${esc(item.id)}"${
@@ -1951,10 +1961,17 @@
          * reader may see without scrolling, so "you cannot press this" without "because…" would be worse here
          * than in the card.
          */
+        /*
+         * ⚠ ITS OWN ID, NOT THE CARD'S. The bar is `d-lg-none` — hidden above 992px but STILL IN THE DOM — so
+         * the card's sentence and this one coexist on every page. Handing both the same id would make the
+         * document invalid and send `getElementById` to whichever came first, which is the card's, which is the
+         * one the bar's button is NOT next to.
+         */
+        const reasonId = actionReasonId(item, primary) ? `${actionReasonId(item, primary)}-bar` : '';
         const reason = primary.disabled && primary.disabledReason
             // Its sibling in the rail was the one reported; this one carried the SAME bare treatment for the
             // SAME sentence, and fixing one while leaving the other is the mistake this session made three times.
-            ? `<p class="alert alert-warning wcn-actionbar-reason d-flex align-items-start gap-2" role="note"><i class="bx bx-lock-alt" aria-hidden="true"></i><span>${esc(primary.disabledReason)}</span></p>`
+            ? `<p class="alert alert-warning wcn-actionbar-reason d-flex align-items-start gap-2" role="note"${reasonId ? ` id="${esc(reasonId)}"` : ''}><i class="bx bx-lock-alt" aria-hidden="true"></i><span>${esc(primary.disabledReason)}</span></p>`
             : '';
 
         const depthLink = surface?.surfaceMode === 'deeplink'
@@ -1967,6 +1984,7 @@
                </a>`
             : `<button type="button" class="wcn-act-btn wcn-act-fill wcn-act-fill-${nature} wcn-actionbar-lead"
                     data-wcn-action="${esc(primary.key)}" data-wcn-id="${esc(item.id)}"${
+            reasonId ? ` aria-describedby="${esc(reasonId)}"` : ''}${
             disabled ? ' disabled aria-disabled="true"' : ''}${busy ? ' aria-busy="true"' : ''}>
                 ${busy ? '<i class="bx bx-loader-alt bx-spin" aria-hidden="true"></i>' : ''}<span>${esc(label)}</span>
                </button>`;
@@ -3682,7 +3700,8 @@
          *
          * MEASURED: the timer is not an independent control. It is a SIDE EFFECT of the task's state —
          *     'start'    → the task becomes "Devam ediyor" AND the timer runs
-         *     'pause'    → the task pauses            AND the timer folds
+         *     'complete' → the task ends              AND the timer folds
+         * (`pause` was in this list until 2026-08-24 — it never existed on the server; see BL-237.)
          *     'complete' → the task ends              AND the timer folds
          * Putting start/pause here would open a SECOND way to change the task's lifecycle, from inside a card
          * that reads as a readout. This session already refused exactly that for document approval — do not
@@ -4961,9 +4980,36 @@
      * assigned to the reader, which is NOT the ordinary case, so the record is fetched when it is missing —
      * exactly as the quick-edit panel does. Returns null when the record cannot be read, and the caller stops.
      */
-    const subtaskVersion = async (subtaskId) => {
-        const known = Number(itemById(subtaskId)?.concurrency?.token ?? NaN);
-        if (Number.isFinite(known)) { return known; }
+    /*
+     * ⚠ `forceReload` EXISTS FOR THE SECOND HALF OF A TWO-STEP WRITE (2026-08-24, BL-238). After `start`, the
+     * cached token in `state` is one behind the server; handing it to `complete` produces a concurrency
+     * refusal about a change the reader just made. The cache is right everywhere else, so it stays the default.
+     */
+    /*
+     * WHERE A CHILD'S STATE ACTUALLY LIVES. A subtask appears twice: as a row inside its parent's
+     * `subtasks.items` (always), and as a top-level item of its own (only when it is also assigned to me).
+     * The parent's row is the one the checkbox was drawn from, so it is asked first; the standalone item is
+     * the fallback for a child reached from somewhere else.
+     *
+     * Returns `null` when neither knows — the caller then takes the single-call path and lets the SERVER
+     * decide, which is the same thing it did before this two-step existed.
+     */
+    const subtaskStatusOf = (standalone, subtaskId) => {
+        const parent = itemById(state.selectedId);
+        const row = ((parent && parent.subtasks && parent.subtasks.items) || [])
+            .find((child) => child.id === subtaskId);
+        if (row && row.status) { return row.status; }
+        if (standalone && standalone.taskLifecycle) {
+            return standalone.taskLifecycle === 'Open' ? 'not-started' : 'in-progress';
+        }
+        return null;
+    };
+
+    const subtaskVersion = async (subtaskId, options) => {
+        if (!options || !options.forceReload) {
+            const known = Number(itemById(subtaskId)?.concurrency?.token ?? NaN);
+            if (Number.isFinite(known)) { return known; }
+        }
 
         const record = await global.TasksApi.get(subtaskId);
         if (!record.ok || !record.data) {
@@ -5764,11 +5810,18 @@
                 item.timesheet = item.timesheet || { running: false, startedAt: null, loggedMinutes: 0 };
                 item.timesheet.running = true; item.timesheet.startedAt = Date.now();
                 return 'timerStart';
-            case 'pause':
-                foldTimer(item);
-                item.executionState = 'paused';
-                item.timerState = 'paused';
-                return 'timerPause';
+            /*
+             * ⚠ `pause` WAS REMOVED (2026-08-24, BL-237). MEASURED: `TasksController`'s transition list is
+             * accept · claim · release · plan · start · inquire · submitReview · return · reassign · complete ·
+             * cancel — no `pause`, and no match in the Tasks application layer either. This branch changed
+             * LOCAL state only, so the button worked in the showcase and was never offered on a real task.
+             *
+             * ⚠ NOT ADDED TO THE BACKEND EITHER, deliberately: `pause` means a new lifecycle state — a new
+             * value in every list, every filter and a migration. That is a feature decision, not tidying. And
+             * stopping work already has two honest routes: "Bilgi bekle" (you are waiting on someone, with a
+             * reason) and "Ertele" (you are putting it off yourself). See the backlog if the product really
+             * wants "pause my own work" as its own thing.
+             */
             case 'complete':
                 foldTimer(item);
                 item.waitingOn = null; item.snoozedUntil = null;
@@ -5816,7 +5869,6 @@
             case 'removed': toast(tf('ToastItemRemoved', label)); break;
             case 'toReview': toast(tf('ToastSentToReview', item.title)); break;
             case 'timerStart': toast(tf('ToastTimerStarted', item.title)); break;
-            case 'timerPause': toast(tf('ToastTimerPaused', formatMinutes(item.timesheet.loggedMinutes))); break;
             case 'resolved': toast(tf('ToastAction', label)); break;
             default: toast(reason ? tf('ToastActionReason', label, reason) : tf('ToastAction', label));
         }
@@ -6274,8 +6326,66 @@
         if (expectedVersion === null) { return; }
         const title = subtask?.title || '';
 
+        /*
+         * ── ONE TICK, TWO TRANSITIONS (2026-08-24, BL-238) ────────────────────────────────────────────────
+         *
+         * MEASURED on a real task (`370ab18b` / subtask `ea832a9b`): ticking the box called `complete` on a
+         * task nobody had started, and the server refused with 409 TASK_INVALID_STATE. The server is RIGHT —
+         * a not-started task cannot be finished — and the refusal was even shown properly, translated
+         * ("Bu görev bu durumdayken tamamlanamaz. Önce başlatın."), not as a raw error.
+         *
+         * The defect was never the behaviour; it was the ROUTE. The row menu offers no "Başlat", so ticking a
+         * box meant: open the subtask → start it → come back → tick. Three navigations to say "this is done".
+         * That is the system handing its own rule back to the reader as work.
+         *
+         * The reader's intent when they tick a box is "this is finished". So the box performs whatever the
+         * engine needs to get there: `start` first when the child has not begun, then `complete`.
+         *
+         * ⚠ ONLY WHEN NEEDED. A child already in progress gets `complete` alone — an unnecessary `start` is a
+         * second write, a second audit entry and a second chance to fail.
+         *
+         * ⚠ THE SECOND CALL USES THE NEW VERSION. `start` bumps it; reusing the old token makes `complete`
+         * fail as a concurrency conflict about a change the reader just made themselves. The version is re-read
+         * from the server between the two rather than guessed at (`expectedVersion + 1` would be a second
+         * model of the server's counter).
+         *
+         * ⚠ AND IF `start` SUCCEEDS WHILE `complete` FAILS, THE READER IS TOLD. The child is then "in
+         * progress" — a state they did not ask for — so the message says both halves: it started, it did not
+         * finish. Silence here would leave the list showing a change nobody chose.
+         */
+        const status = subtaskStatusOf(subtask, subtaskId);
+        const needsStart = status === 'not-started';
+
+        if (needsStart) {
+            const started = await global.TasksApi.transition(subtaskId, 'start', { expectedVersion });
+            if (!started.ok) {
+                // Nothing moved: the ordinary refusal path, with the server's own reason.
+                await afterPhase2Write(started, 'ToastSubtaskCompleted', title);
+                return;
+            }
+            const nextVersion = await subtaskVersion(subtaskId, { forceReload: true });
+            if (nextVersion === null) { return; }
+            const finished = await global.TasksApi.transition(subtaskId, 'complete', { expectedVersion: nextVersion });
+            if (!finished.ok) {
+                // ⚠ HALF-DONE, AND SAID OUT LOUD. The child is running now and the reader did not ask for that.
+                toast(tf('SubtaskStartedNotCompleted', global.TasksApi.failureMessage(finished)), 'warning');
+                await loadWorkItems();
+                render();
+                return;
+            }
+            await afterPhase2Write(finished, 'ToastSubtaskCompleted', title);
+            return;
+        }
+
         const result = await global.TasksApi.transition(subtaskId, 'complete', { expectedVersion });
-        await afterPhase2Write(result, 'ToastActionApplied', title);
+        /*
+         * ⚠ ITS OWN KEY, NOT `ToastActionApplied` (measured live 2026-08-25). That string takes TWO arguments —
+         * "{1} — '{0}' işlemi tamamlandı" — and this call site passed one, so the reader was shown a literal
+         * "{1} — 'Alt görev' işlemi tamamlandı". The warning was already written six hundred lines up, on
+         * `afterPhase2Write` itself: an argument short prints the placeholder, which is the raw-key failure
+         * wearing a different hat. A one-fact sentence gets a one-argument key instead of borrowing a two.
+         */
+        await afterPhase2Write(result, 'ToastSubtaskCompleted', title);
     };
 
     const postComment = async (taskId, text) => {

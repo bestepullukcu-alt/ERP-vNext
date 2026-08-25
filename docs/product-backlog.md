@@ -5040,7 +5040,9 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
   aradığı dizeler açıklayıcı YORUMDA ve dışa aktarma satırında da vardı. Bir yorumun tatmin edebildiği kural,
   hiçbir şeyin zorlamadığı kuraldır. Test artık nesnenin kendisine bakıyor.
 
-### BL-237 kapanış notu (2026-08-24) — Tur C özeti
+### Tur C kapanış notu (2026-08-24) — özet, kendi numarası YOK
+- ⚠ Bu başlık `BL-237` diye yazılmıştı ve dosyada BL-237 iki kez sayıldı. Bir özet bir madde değildir;
+  numara almaz. Düzeltildi 2026-08-25.
 - İş 1 → BL-234 güncellemesi · İş 2 → BL-235 · İş 3 → BL-236 · İş 4 → BL-184/189/222.
 - **MUTASYON (2, ikisi de kırmızı):** tik tak gösterge geri kondu · fixture kuralı silindi.
 - **TAM REGRESYON (örnekleme yok, canlı):** diyalog ikon 32px (hesaplanan) · dolgu 24px · dört hiza da eşit ·
@@ -5080,3 +5082,95 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
   CT önerisi: **(a)** — kullanıcının niyeti "bu iş bitti" demek; ara durumu ondan istemek, sistemin kendi
   kuralını kullanıcıya iş olarak geri vermektir.
 - **Gelecek regresyon riski: 🟡** — veri bozulmuyor, ama en sık yapılan hareket üç adıma çıkıyor.
+
+### BL-237 güncelleme (2026-08-25) — KAPANDI: `pause` mock'tan kaldırıldı, backend'e EKLENMEDİ
+- CT kararı uygulandı. `case 'pause'` ve ona bağlı yerel durum değişimi silindi; `islerim-showcase-fixtures.js`
+  ve `canonical-fixtures.js` içinde "Duraklat" sunan her şey kaldırıldı.
+- **SİLME KANITI:** `'pause'` → `wwwroot/assets/js/WorkCenterNext/` altında **sıfır** eşleşme (yorumlar hariç
+  tutuldu; yorum kaldırmanın gerekçesini kaydediyor, davranışı değil). Test bunu her koşuda ölçüyor.
+- Ölü kalan iki şey de gitti: ulaşılamaz `case 'timerPause'` dalı, ve 7 dilden `ActPause` ("Duraklat") +
+  `ToastTimerPaused` anahtarları.
+- ⚠ **`TimerStatePaused` KALDI ve bu bir kalıntı DEĞİL.** `ResolveExecutionState`, `Waiting` ve `PendingReview`
+  yaşam döngülerini `"paused"` diye yansıtıyor — yani bir görev gerçekten duraklamış olabilir, sadece bir
+  DÜĞMEYLE duraklatılamaz. Geçişle birlikte bu dalı da silmek, bekleyen her görevde durum satırını boşaltırdı.
+  Ölçüldü, silinmedi.
+- ⚠ Backend'e eklenmemesinin gerekçesi kodun içine yazıldı: `pause` yeni bir yaşam döngüsü durumu demek — her
+  listede, her filtrede yeni bir değer ve bir migration. Bu bir ürün kararı, temizlik değil. Ayrıca işi
+  durdurmanın iki dürüst yolu zaten var: **Bilgi bekle** (başkasını bekliyorsunuz, gerekçesiyle) ve **Ertele**.
+- **Gelecek regresyon riski: 🟢** — hiçbir şey kaybolmadı; var olmayan bir düğme kaldırıldı.
+
+### BL-238 güncelleme (2026-08-25) — KAPANDI: tik kutusu artık `start` + `complete` yapıyor
+- CT'nin (a) seçeneği uygulandı. Kutu, çocuk `not-started` ise önce `start`, sonra `complete` çağırıyor;
+  zaten başlamış bir çocukta **tek** yazma yapıyor (gereksiz `start` = ikinci yazma, ikinci denetim kaydı,
+  ikinci başarısızlık ihtimali).
+- ⚠ İkinci çağrı YENİ sürümü kullanıyor. `start` sürümü artırıyor; eski jetonu tekrar kullanmak `complete`i,
+  kullanıcının bir saniye önce kendi yaptığı değişiklik yüzünden eşzamanlılık çakışmasına düşürürdü. Sürüm
+  sunucudan **yeniden okunuyor**, `expectedVersion + 1` diye tahmin edilmiyor.
+- **CANLI DOĞRULAMA (gerçek görev, fixture değil)** — `0276e51e` / alt görev `eddb350d`:
+  `start(v1)→204`, `complete(v2)→204`. Üç ölçüm de tuttu: satır `wcn-subtask-done` / "Tamamlandı" ·
+  ebeveynin **"Bir alt görev hâlâ açık"** gerekçesi kalktı · **Tamamla etkinleşti**.
+- **BAŞARISIZLIK YOLU (gerçek ret)** — `359bd3ee`, incelemeye bağlı alt görev: `start`→204, `complete`→**409
+  `REVIEW_PENDING`**. Kullanıcının gördüğü: *"Alt görev başlatıldı ama tamamlanamadı: Görev, incelemeyi yapan
+  kişinin yanıtını bekliyor."* Satır dürüstçe "Devam ediyor" kalıyor — çocuk gerçekten çalışır durumda ve
+  kullanıcı bunu istememişti, o yüzden her iki yarı da söyleniyor.
+- **Gelecek regresyon riski: 🟢** — sunucu hâlâ tek karar verici; istemci yalnızca aynı hedefe giden yolu
+  yürüyor.
+
+### BL-239 — [DÜZELTİLDİ 2026-08-25] Alt görev bildirimi ham `{1}` yer tutucusu gösteriyordu
+- Canlı ölçümde ekranda okunan: **`{1} — 'BL-238 hata yolu — orta' işlemi tamamlandı`**.
+- Neden: `ToastActionApplied` İKİ argüman istiyor (`{1} — '{0}' işlemi tamamlandı`, yani aksiyon etiketi +
+  başlık); alt görev çağrı yeri yalnızca başlığı veriyordu.
+- ⚠ Uyarı zaten kodun içinde yazılıydı — `afterPhase2Write`'ın kendi yorumunda: *"bir argüman eksik vermek
+  ikincisinin yer tutucusunu bastırır, bu da ham-anahtar hatasının başka bir şapkayla dönmüş hâlidir."*
+  Yorum uyarıyordu, hiçbir şey zorlamıyordu. **Bu, kusurun kendisiydi, aynı sınıftan.**
+- Düzeltme: tek olguluk cümleye kendi tek argümanlı anahtarı verildi — `ToastSubtaskCompleted`, 7 dil.
+  Test hem anahtarın kullanıldığını hem de 7 dilde değerin `{1}` İÇERMEDİĞİNİ ölçüyor.
+- **Gelecek regresyon riski: 🟢**
+
+### BL-240 — [DÜZELTİLDİ 2026-08-25] `REVIEW_PENDING` haritasız; kullanıcı "bir hata oluştu" okuyordu
+- İlk ret ölçümünde sunucu **409 `REVIEW_PENDING`** dedi, ekranda **"İşlem sırasında bir hata oluştu."** çıktı.
+- Mekanizma doğru çalışıyordu: `failureMessage` haritasız kodu genel cümleye düşürüyor **ve konsola yazıyor**,
+  tam da bulunabilir kalsın diye. Eksik olan mekanizma değil, **haritanın kendisiydi** — üç halka birden:
+  `REASON_CODE_MESSAGE_KEYS` · `BLOCKING_REASON_CODES` · `_IndexL10n.cshtml` yükü.
+- ⚠ `APPROVAL_PENDING` cümlesi ödünç ALINMADI. Sunucunun kendi doc-yorumu gerekçeyi söylüyor: iki kapıyı
+  **farklı kişiler** açar; incelemeci işi tutarken kullanıcıya "onay bekleniyor" demek onu yanlış kişiye
+  yollar. Yeni anahtar `ErrorReviewPending`, 7 dil. Test iki cümlenin aynı olmadığını da ölçüyor.
+- Yeniden ölçüldü (`359bd3ee`): kullanıcı artık *"…Görev, incelemeyi yapan kişinin yanıtını bekliyor."* okuyor.
+- **Gelecek regresyon riski: 🟢**
+
+### BL-241 — [ÖLÇÜLDÜ, AÇIK] Engelleyici kontrol listesi maddesi `complete`i engellemedi
+- Ölçüm (2026-08-25, görev `de76acfa`): `addChecklistItem` ile `{ text, required: true, blocking: true }`
+  eklendi (204 döndü), ardından aynı görev `complete` edildi — **204, ret yok**.
+- ⚠ Bu tek başına kanıt DEĞİL: `addChecklistItem` isteğinin `required`/`blocking` bayraklarını okuyup
+  okumadığı ölçülmedi; bayraklar sessizce düşmüş de olabilir. İki olasılıktan hangisi olduğu bilinmiyor,
+  bu yüzden kapatılmadı ve "kural uygulanmıyor" diye YAZILMADI.
+- Yapılacak ölçüm: maddeyi ekledikten sonra projeksiyonun `checklist.items[]` çıktısında `blocking: true`
+  görünüyor mu; görünüyorsa `CHECKLIST_INCOMPLETE` neden dönmüyor.
+- `CHECKLIST_INCOMPLETE` istemci tarafında zaten haritalı ve engelleyici sayılıyor — yani kopuk halka
+  istemcide değil.
+- **Gelecek regresyon riski: 🟡** — eğer kural gerçekten uygulanmıyorsa, ekran zorunlu bir adımı zorunluymuş
+  gibi gösteriyor demektir; veri bozulmaz ama söz tutulmaz.
+
+### BL-242 — [DÜZELTİLDİ 2026-08-25] Kapalı birincil aksiyonun gerekçesi düğmeye BAĞLI değildi
+- Ölçüm (gerçek görev `f5d31d28`, kapalı "Tamamla"): gerekçe `<p>` ekranda, `role="note"` ile — ama `id` boş,
+  düğmede `aria-describedby` yok. Gören okuyucu nedeni öğreniyordu; ekran okuyucu kullanan **yalnızca
+  "Tamamla, kapalı" duyuyordu.**
+- Kod bilerek böyleydi: birincil katmanın cümlesi kendi `<li>`'sinin içinde, düğmenin hemen altında duruyor —
+  "yakınlık yeterli" varsayımı. ⚠ Yakınlık **görsel** bir argüman; sesli okunduğunda ayakta kalmıyor.
+- Düzeltme: birincil de artık `aria-describedby` taşıyor; id yardımcı işlevden geliyor (ikincil/yıkıcı katmanlar
+  zaten kullanıyordu, çakışma yok). Canlı doğrulandı: id tekil, işaret ettiği metin "Bir alt görev hâlâ açık".
+- **Gelecek regresyon riski: 🟢**
+
+### BL-243 — [DÜZELTİLDİ 2026-08-25] Yapışkan alt raydaki aynı düğme KAPALI GÖRÜNMÜYORDU
+- Ölçüm (900px, `f5d31d28`): karttaki kapalı "Tamamla" `opacity: .55`; **yapışkan raydaki aynı düğme
+  `opacity: 1`** — tam parlak yeşil, kendi "Bir alt görev hâlâ açık" cümlesinin hemen altında tıklanabilir
+  görünüyor. `disabled` niteliği ikisinde de vardı; eksik olan yalnızca **görünüm**.
+- Neden: sönükleştirme `.wcn-act-disabled .wcn-act-btn` kuralına, yani sarmalayan `<li>`'ye asılıydı — o sınıfı
+  sadece KART yolu yazıyor. Ray başka bir render yolu, sarmalayıcısı yok.
+- Düzeltme kuralı düğmenin **kendi durumuna** taşıdı: `.wcn-act-btn:disabled { opacity: .55 }`. Böylece bugün
+  yazılmamış render yolları da kapsanıyor. Sarmalayıcı kuralı, `:disabled` alamayan `<a>` çeşidi için kaldı.
+- Raya kendi gerekçe id'si verildi (`…-complete-bar`): ray `d-lg-none`, yani 992px üstünde gizli ama **DOM'da**,
+  iki cümle her sayfada bir arada. Aynı id çift id demekti; `getElementById` kartınkini döndürürdü.
+- ⚠ Bu, oturumda üçüncü kez aynı sınıf: **bir yüzeyi düzeltip ikizini unutmak.** Bu yüzden düzeltme JS'te değil
+  CSS'te, davranışın kaynağında yapıldı.
+- **Gelecek regresyon riski: 🟢**
