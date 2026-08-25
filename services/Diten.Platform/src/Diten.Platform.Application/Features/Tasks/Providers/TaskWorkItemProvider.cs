@@ -554,7 +554,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // MOD-0024 IS the lifecycle owner here (unlike a workflow-gated business object).
             LifecycleOwner: TaskProviderCode,
             WorkItemCapabilities: ResolveCapabilities(
-                dependencyList, checklistBlock, subtasks, businessContext),
+                dependencyList, checklistBlock, subtasks, businessContext,
+                task.EstimateHours, task.SpentHours),
             Actions: actions,
             Concurrency: new WorkItemConcurrencyDto("version", task.Version.ToString()),
             WaitingContext: waiting is null
@@ -647,6 +648,13 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 : WorkItemLabelDto.Display(task.Description),
             StartAt: task.StartAt,
             EstimateHours: task.EstimateHours,
+            /*
+             * ⚠ ONLY WHEN THERE IS SOMETHING TO SAY (2026-08-24, Tur B). The effort card compares spent against
+             * estimate; a task with neither would otherwise get a card reading "0 / 0", which is the confident
+             * zero this projection avoids everywhere else — it reads as "nobody has worked on this" rather than
+             * "this is not being tracked".
+             */
+            SpentHours: task.EstimateHours is null && task.SpentHours == 0 ? null : task.SpentHours,
             Tags: task.Tags is { Count: > 0 } ? task.Tags.ToList() : null,
             /*
              * WC-1 — the reader's own layer, or nothing at all.
@@ -767,7 +775,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         IReadOnlyList<WorkItemDependencyDto>? dependencies,
         WorkItemChecklistDto? checklist,
         WorkItemSubtasksDto? subtasks,
-        WorkItemBusinessContextDto? businessContext)
+        WorkItemBusinessContextDto? businessContext,
+        decimal? estimateHours,
+        decimal spentHours)
     {
         // Unconditional: MOD-0024 owns planning and execution for every task it projects.
         var capabilities = new List<string> { "planning", "execution" };
@@ -790,6 +800,18 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         if (dependencies is not null)
         {
             capabilities.Add("dependencies");
+        }
+
+        /*
+         * ⚠ `taskContext` — THE EFFORT CARD'S GATE (2026-08-24, Tur B).
+         *
+         * Declared only when the task actually carries effort figures, for the same reason `businessContext`
+         * and `checklist` are conditional: a capability is a promise that the card has something to show. A
+         * task nobody estimated and nobody logged against gets no card rather than a card of zeroes.
+         */
+        if (estimateHours is not null || spentHours != 0)
+        {
+            capabilities.Add("taskContext");
         }
 
         /*

@@ -119,11 +119,21 @@
             ? true
             : typeof value === 'object' && typeof value.id === 'string' && value.id.length > 0;
     const CAPABILITIES = [
-        'planning', 'execution', 'timeTracking', 'checklist', 'subtasks', 'dependencies',
+        /*
+         * ⚠ `taskContext` ADDED 2026-08-24 (Tur B). The effort card has existed on the detail page since the
+         * beginning and has NEVER rendered: it gates on this capability, and the capability was not in this
+         * list, so no fixture could declare it and no provider emitted it. Meanwhile the data was being
+         * collected (`FieldEstimateHours` / `FieldSpentHours` on the create form) and stored
+         * (`TaskItem.EstimateHours` / `SpentHours`) — only the projection never carried it.
+         */
+        'planning', 'execution', 'taskContext', 'timeTracking', 'checklist', 'subtasks', 'dependencies',
         'attachments', 'evidence', 'activity', 'processStages', 'businessContext', 'relatedRecords'
     ];
     const VALUE_TYPES = ['text', 'number', 'currency', 'percentage', 'date', 'datetime', 'boolean', 'status', 'person', 'reference', 'link'];
     const DATA_CAPABILITIES = {
+        // The effort card needs figures to compare; declaring the capability without them is a promise of a
+        // card that renders "0 / 0" — the confident zero this contract refuses everywhere else.
+        taskContext: ['effort'],
         timeTracking: ['timeEntries'],
         checklist: ['checklist'],
         subtasks: ['subtasks'],

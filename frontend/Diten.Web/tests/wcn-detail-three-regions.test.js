@@ -2879,10 +2879,17 @@ describe("the page reaches the product's one confirm implementation", () => {
      * ⚠ THREE (2026-08-24, A2): the four-field MEETING FORM was DELETED rather than restyled — measured, it
      * wrote to `state.meetings` and made no API call, so everything it collected vanished on reload.
      */
-    expect((src.match(/Swal\.fire\(/g) || []).length).toBe(3);
-    // …and every one of the three takes the published appearance rather than inventing its own.
+    /*
+     * ⚠ ONE (2026-08-24, Tur B). Two of the three raw dialogs went with the dead code they belonged to: the
+     * "+ Yeni" Swal menu (no click could reach it — a Bootstrap dropdown replaced it) and the bulk progress
+     * readout (`data-wcn-check` was read in four places and drawn in none, so the strip could never appear).
+     * Both had just been given the product's dialog appearance, which is the most dangerous state for dead
+     * code: it looks maintained. What remains is the reason+assignee form, which genuinely cannot be a
+     * confirmation.
+     */
+    expect((src.match(/Swal\.fire\(/g) || []).length).toBe(1);
     expect((src.match(/dialogLook\(\)/g) || []).length,
-      "a raw dialog is drawing itself again").toBe(3);
+      "the surviving raw dialog is drawing itself again").toBe(1);
   });
 });
 
@@ -3655,15 +3662,23 @@ describe("the three small ones", () => {
    * stay selected and flagged on the surface behind it, which is the durable record; the modal was never where
    * the recovery happened.
    */
-  it("reports a partial bulk failure as a toast, not as a dialog to dismiss", () => {
+  it("has no bulk path left to report from", () => {
+    /*
+     * ⚠ THIS TEST'S SUBJECT WAS DELETED (2026-08-24, Tur B). It pinned that a partial bulk failure reported
+     * through a toast rather than a dialog — a real decision, about code that could never run.
+     *
+     * MEASURED: `data-wcn-check` was READ in four places and DRAWN in none. The table renders no selection
+     * column, so `state.tableSelected` could never become non-empty through the UI, the bulk bar could never
+     * appear, and `runBulk` could never be called. The whole path went, and the assertion became a claim
+     * about nothing.
+     *
+     * What is pinned now is the deletion itself — half-removed code is worse than code left alone.
+     */
     const src = read("wwwroot", "assets", "js", "WorkCenterNext", "app.js");
-    const fn = src.slice(src.indexOf("const runBulk = "), src.indexOf("const runBulkWithProgress"));
-    const code = fn.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
-    expect(code, "the bulk result still stops the reader with a dialog").not.toMatch(/Swal\.fire/);
-    expect(code, "the result is not reported at all").toContain("toast(tf('BulkResult'");
-    // Total failure and partial failure still read differently.
-    expect(code).toContain("'error'");
-    expect(code).toContain("'warning'");
+    const code = src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+    ["const runBulk", "const runBulkWithProgress", "const performBulk", "const bulkBar"].forEach((fn) =>
+      expect(code, `${fn} came back without its selection column`).not.toContain(fn));
+    expect(code, "a bulk handler survived the strip it depended on").not.toContain("data-wcn-bulk");
   });
 
   /*

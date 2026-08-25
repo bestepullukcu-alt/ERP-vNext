@@ -907,6 +907,15 @@
   <data name="SubtaskCreateAllFields" xml:space="preserve">
     <value>All fields</value>
   </data>
+  <data name="TimerStateRunning" xml:space="preserve">
+    <value>In progress — the timer is running</value>
+  </data>
+  <data name="TimerStatePaused" xml:space="preserve">
+    <value>Paused — the timer is folded</value>
+  </data>
+  <data name="TimerFollowsStatusHint" xml:space="preserve">
+    <value>The timer follows the task’s status; start and pause it from the actions.</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Finish-to-Start (FS)</value>
   </data>

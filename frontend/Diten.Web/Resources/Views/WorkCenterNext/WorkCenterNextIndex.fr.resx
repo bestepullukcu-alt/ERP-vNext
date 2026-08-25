@@ -907,6 +907,15 @@
   <data name="SubtaskCreateAllFields" xml:space="preserve">
     <value>Tous les champs</value>
   </data>
+  <data name="TimerStateRunning" xml:space="preserve">
+    <value>En cours — le chronomètre tourne</value>
+  </data>
+  <data name="TimerStatePaused" xml:space="preserve">
+    <value>En pause — le chronomètre est arrêté</value>
+  </data>
+  <data name="TimerFollowsStatusHint" xml:space="preserve">
+    <value>Le chronomètre suit le statut de la tâche ; démarrez-le et mettez-le en pause depuis les actions.</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Fin-à-Début (FS)</value>
   </data>

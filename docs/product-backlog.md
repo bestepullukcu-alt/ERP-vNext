@@ -4885,3 +4885,77 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
   gerekçe cümlesi eylemini söylüyor · `aria-describedby` çözülüyor · düğmeler y=523/523 · yapışkan ray ·
   bekçi **yeşil**, KNOWN_RAW **12 dosya**, büyümedi.
 - **Gelecek regresyon riski: 🟢.**
+
+### BL-232 kapanış notu (2026-08-24) — Tur B: dokuz ölü kart, iki ölü uç, iki boş panel, süre kartı
+- **① ÜÇ GÖRÜNÜM MODU DETAYDAN ÇIKARILDI** (`renderCalendar` · `renderKanban` · `renderSplit`). Bunlar detay
+  kartı değil: liste alıp sıralayıp kart üretiyorlar, yani **liste sayfasının görünüm modları**. Silinmediler —
+  `scratchpad/view-modes.js`'e alındı; liste sayfası turunda bağlanacak → **BL-233**.
+- **② EFOR KARTI BAĞLANDI.** ÖLÇÜM: kart baştan beri vardı ve **hiç çizilmemişti**. Veri toplanıyor
+  (`FieldEstimateHours`/`FieldSpentHours`) ve saklanıyordu (`TaskItem.EstimateHours`/`SpentHours`), ama
+  projeksiyon yalnız tahmini taşıyordu **ve** `taskContext` yetkisi sözleşmenin yetki listesinde **hiç yoktu** —
+  yani hiçbir fixture da bildiremezdi. Eklenenler: DTO'ya `SpentHours`, sağlayıcıya koşullu
+  `capabilities.Add("taskContext")` (yalnız rakam varsa — yetki, kartın gösterecek şeyi olduğu sözüdür),
+  sözleşmeye `taskContext: ['effort']`, mapper'a düz çiftten `item.effort` kurulumu.
+  ⚠ **ATAMA GEÇMİŞİ ÇİZİLMİYOR:** `assignmentHistory` mapper'da, sözleşmede ve **tüm backend'de 0 eşleşme**.
+  Yarısı veriyle yarısı boş alt başlıkla çizilen kart, okuyucunun "kimse devretmemiş" ile "bunu izlemiyoruz"u
+  ayırmasını engeller. Alan listesi → **BL-233**.
+  ⚠ **FG-003:** ilerleme çubuğu `style="width:"` kullanıyordu; ürünün kendi `.wcn-progress-{0..100}` kademe
+  sınıflarına çevrildi. Kesin oran `aria-valuenow`'da ve yandaki "7.5 / 12" okumasında duruyor.
+- **③ ONAY KARTI — ÖLÇÜLDÜ, ④'E KATILDI.** `WorkflowApprovalWorkItemProvider` içinde `Amount`/`LineItem`/
+  `Currency` **0 eşleşme**. Onaylar canlı geliyor ama tutar ve kalem taşımıyorlar; kart `item.amount == null`
+  kapısında bekliyordu ve o kapı hiç açılmayacaktı. Alan listesi → **BL-233**.
+- **④ DÖRT KART SİLİNDİ:** `renderReviewContext` · `renderExceptionContext` · `renderMeetingContext`
+  (üçünün de arkasında sağlayıcı ve veri yok) · `renderThread` (yorum/etkinlik kartı bu işi zaten yapıyor).
+  **SİLME KANITI:** dördü de `wwwroot/` + `Views/` altında **sıfır eşleşme** (testle kilitli, isimle raporlar).
+- **İŞ 2a — `openNew` SİLİNDİ.** Dispatch ona yalnız task/note/meeting/source DIŞINDA bir `data-wcn-new` için
+  gidiyordu; DOM'daki dördü de bilinen kind taşıyor → hiçbir tıklama ulaşamıyordu. Yerini başlıktaki Bootstrap
+  dropdown almış.
+- **İŞ 2b — TOPLU SEÇİM ŞERİDİ SİLİNDİ** (`bulkBar` · `runBulk` · `runBulkWithProgress` · `performBulk` +
+  dispatch dalları). `data-wcn-check` **dört yerde okunuyor, hiçbir yerde çizilmiyordu**; seçim sütunu
+  olmadan `state.tableSelected` hiç dolamaz, şerit hiç görünemezdi.
+  ⚠ **İKİSİ DE GEÇEN TUR GÖRÜNÜM PAKETİNİ ALMIŞTI** — ölü kodun en tehlikeli hâli: bakımlı görünüyor.
+- **İŞ 2c — NOTLAR VE AJANDA PANELLERİ SİLİNDİ.** İkisi de kalıcı boştu (besleyen `openQuickNote`/
+  `openMeetingForm` geçen turda silinmişti, `state.notes`/`state.meetings` `[]` ile başlayıp hiç yüklenmiyor).
+  BL-218 ile birlikte geri gelecekler.
+- **İŞ 3 — SÜRE KARTI.** ⚠ **BAŞLAT/DURAKLAT KARTA TAŞINMADI**, ve teşhis bu turda değişti: sayaç bağımsız bir
+  kumanda değil, görevin durumunun **yan etkisi** (`start`→işler, `pause`/`complete`→katlanır). Karta kumanda
+  koymak, salt-okunur görünen bir kartın içinden yaşam döngüsünü değiştiren **ikinci bir otorite** açardı —
+  bu oturumda doküman onayı için tam bu gerekçeyle reddedilmişti.
+  Karta eklenenler: **"Süre gir"** (durum değiştirmez, kişisel ölçüm — rail'den alındı, rail'de `logTime`
+  filtreleniyor), **durum satırı** ("Devam ediyor — sayaç işliyor" / "Duraklatıldı — sayaç durdu") ve tek
+  satırlık **ipucu** ("Sayaç görevin durumunu izler; başlatma ve duraklatma aksiyonlardan yapılır"). 7 dil.
+- **CANLI (1440×koyu, 900×açık):** süre kartı 3sa 45dk + durum + ipucu + "Süre gir" ✓ · rail'de "Süre gir"
+  **yok** ✓ · efor kartı "7.5 / 12", `wcn-progress-60`, inline stil **yok** ✓ · satır yükseklikleri 44/44 ·
+  kontrast done 4.76 / iptal 5.19 · yatay taşma 0.
+- **⚠ SAYAÇ YENİLEMEDE KORUNMUYOR — ÖLÇÜLDÜ VE DÜZELTİLMEDİ:** canlı sayaç 37:29 → yenileme → **37:15**, yani
+  devam etmedi, baştan başladı. Sebep: mapper `startedAt`'ı `Date.now() - (37 * 60000)` ile **her yüklemede
+  yeniden üretiyor** ve `TaskItem`'da sayaç başlangıcı alanı **hiç yok** (DTO yalnız `TimerState` taşıyor).
+  TOPLAM korunuyor (saklanan `loggedMinutes`'tan geliyor); tiklayan sayı fixture tiyatrosu → **BL-234**.
+- **FIXTURE:** `ISLERIM-WORK-ACTIVE`'e `taskContext` yetkisi + `effort` eklendi, `timesheet` nesnesi
+  `loggedMinutes`'a çevrildi (mapper `timesheet`i kendisi türetiyor, elle verilen ezilip kart "0sa 0dk"
+  okuyordu — ölçüldü).
+- **MUTASYON (3, hepsi kırmızı):** silinen bir render geri kondu · `SpentHours` DTO'dan düşürüldü ·
+  `logTime` rail'e geri kondu.
+- **REGRESYON:** diyalog 32px/24-24-24-24/iki uçta · gerekçe cümlesi · `aria-describedby` · düğmeler
+  y=523/523 · yapışkan ray · bağımlılık cümlesi · "Tüm alanlar" kapısı yerinde · **bekçi yeşil, KNOWN_RAW 12**.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-233 — [ERTELENDİ] Üç kartın alan listesi ve üç görünüm modu
+- **Onay kalem tablosu** (`renderApprovalContext`): tutar + para birimi + kalem satırları (hesap · masraf
+  merkezi · miktar · birim fiyat · satır toplamı). Sağlayıcı bugün hiçbirini taşımıyor.
+- **İnceleme imza geçmişi** (`renderReviewContext`): imzalayan · rol · karar · tarih · not.
+- **Sapma kartı** (`renderExceptionContext`): beklenen · gerçekleşen · fark · eşik · gerekçe.
+- **Atama geçmişi** (efor kartının çizilmeyen yarısı): devreden · devralan · tarih · gerekçe.
+- **Üç görünüm modu** (`renderCalendar`/`renderKanban`/`renderSplit`): `scratchpad/view-modes.js`'te duruyor,
+  liste sayfası turunda bağlanacak.
+- Gerekçe: kartı yeniden yazmak yarım gün, **alanları yeniden düşünmek günler**.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-234 — [YAPILMADI] Çalışan sayaç sayfa yenilemesinde sıfırlanıyor
+- Ölçüldü: canlı sayaç 37:29 → yenile → 37:15. Devam etmiyor, **yeniden başlıyor**.
+- Sebep iki katmanlı: mapper `startedAt: Date.now() - (37 * 60000)` ile sabit bir başlangıç uyduruyor, VE
+  `TaskItem`'da gerçek bir sayaç başlangıcı alanı **yok** — DTO yalnız `TimerState` (running/paused) taşıyor.
+- Yani tiklayan sayı bugün fixture tiyatrosu; gerçek bir görevde de doğru olamaz.
+- Gereken: `TaskItem`'a bir `TimerStartedAt`, projeksiyona taşınması, mapper'ın uydurmayı bırakması.
+- TOPLAM etkilenmiyor — o saklanan `loggedMinutes`'tan geliyor ve yenilemede korunuyor.
+- **Gelecek regresyon riski: 🟡** — kullanıcı sayaca güvenip yanlış süre bildirebilir.

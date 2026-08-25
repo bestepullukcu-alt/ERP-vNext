@@ -1540,21 +1540,6 @@
         </article>`;
     };
 
-    const renderSplit = (items) => {
-        if (!items.length) { return emptyState(); }
-        state.visibleOrder = [];
-        const rows = items.slice().sort(bySla).map((item) => {
-            state.visibleOrder.push(item.id);
-            return splitCard(item);
-        }).join('');
-        if (!state.selectedId || state.visibleOrder.indexOf(state.selectedId) < 0) {
-            state.selectedId = state.visibleOrder[0] || null;
-        }
-        return `<div class="wcn-split">
-            <nav class="wcn-split-list" aria-label="${esc(t('ViewList'))}">${rows}</nav>
-            <section class="card wcn-split-detail" aria-label="${esc(t('DetailTabsLabel'))}">${detailHtml(itemById(state.selectedId))}</section>
-        </div>`;
-    };
 
     // Step-bar = the SOURCE-declared stages (spec v3) — only when the item carries
     // the `stages` capability, NOT a universal WorkCenter lifecycle. The active
@@ -1900,6 +1885,16 @@
     const actionTiers = (item) => {
         const all = itemActions(item);
         const actions = all.filter((a) => {
+            /*
+             * ⚠ "Süre gir" IS DRAWN BY THE TIMESHEET CARD, NOT HERE (2026-08-24, Tur B). It is a personal
+             * measurement, not a lifecycle move — it changes no state — so standing it beside Complete and
+             * Pause misfiled it. The card owns it now; leaving it in both places would be one action with two
+             * homes, which is how the two drift.
+             *
+             * ⚠ THE ACTION ITSELF IS UNTOUCHED: same projection entry, same key, same handler, same dialog.
+             * Only where the button is painted moved.
+             */
+            if (a.key === 'logTime') { return false; }
             if (!a.disabled || a.disabledReason) { return true; }
             if (!reportedUnexplainedActions.has(a.code)) {
                 reportedUnexplainedActions.add(a.code);
@@ -3663,6 +3658,40 @@
         const live = ts.running
             ? `<span class="wcn-ts-live"><span class="wcn-ts-dot"></span><span id="wcnTimerValue">00:00</span><span class="wcn-ts-runtxt">${esc(t('TimerRunning'))}</span></span>`
             : '';
+        /*
+         * ── WHAT THIS CARD MAY AND MAY NOT CARRY (2026-08-24, Tur B) ──────────────────────────────────────
+         *
+         * The owner's complaint was that the card states a total and then falls silent — pausing means going
+         * to another card. The obvious fix is a start/pause button here, and it is the WRONG one.
+         *
+         * MEASURED: the timer is not an independent control. It is a SIDE EFFECT of the task's state —
+         *     'start'    → the task becomes "Devam ediyor" AND the timer runs
+         *     'pause'    → the task pauses            AND the timer folds
+         *     'complete' → the task ends              AND the timer folds
+         * Putting start/pause here would open a SECOND way to change the task's lifecycle, from inside a card
+         * that reads as a readout. This session already refused exactly that for document approval — do not
+         * create a second authority.
+         *
+         * ⚠ WHAT DOES BELONG HERE IS "Süre gir". Logging minutes by hand does NOT change the task's state; it
+         * is a personal measurement, not a lifecycle move. It sits in the action rail today, beside Complete
+         * and Pause, which is company it does not keep.
+         *
+         * The card also SAYS what the timer is doing and why, so the reader stops looking for a button that is
+         * deliberately elsewhere.
+         */
+        const logAction = itemActions(item).find((a) => a.key === 'logTime' && !a.disabled);
+        const logButton = logAction
+            ? `<button type="button" class="btn btn-sm btn-label-secondary wcn-ts-log"
+                       data-wcn-action="${esc(logAction.key)}" data-wcn-id="${esc(item.id)}">
+                    <i class="bx ${inboxActionIcon(logAction)} me-1"></i>${esc(actionLabel(logAction))}
+               </button>`
+            : '';
+        const stateKey = ts.running ? 'TimerStateRunning'
+            : item.executionState === 'paused' ? 'TimerStatePaused'
+            : null;
+        const stateLine = stateKey
+            ? `<p class="wcn-ts-state">${esc(t(stateKey))}</p>`
+            : '';
         return `<div class="wcn-detail-section">
             ${cardHead('bx-stopwatch', 'TimesheetLabel')}
             <div class="wcn-timesheet">
@@ -3671,6 +3700,9 @@
                 <span class="wcn-ts-sub">${esc(t('TimeLoggedLabel'))}</span>
                 ${live}
             </div>
+            ${stateLine}
+            <p class="wcn-block-hint"><i class="bx bx-info-circle"></i>${esc(t('TimerFollowsStatusHint'))}</p>
+            ${logButton}
         </div>`;
     };
 
@@ -3718,95 +3750,49 @@
     const sectionHeadText = (icon, title) =>
         `<div class="wcn-business-head"><span class="wcn-business-icon"><i class="bx ${icon}"></i></span><h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(title)}</h6></div>`;
 
-    const renderApprovalContext = (item) => {
-        if (item.itemType !== 'approval' || !hasCap(item, 'approvalContext') || item.amount == null) { return ''; }
-        const lines = (item.lineItems || []).map((line) => `<tr>
-            <td><span class="wcn-line-desc">${esc(line.desc)}</span><span class="wcn-line-code">${esc(line.gl || '—')} · ${esc(line.costCenter || '—')}</span></td>
-            <td class="text-end">${esc(String(line.qty))}</td>
-            <td class="text-end">${esc(formatMoney(line.unitPrice, item.currency))}</td>
-            <td class="text-end wcn-line-total">${esc(formatMoney(Number(line.qty) * Number(line.unitPrice), item.currency))}</td>
-        </tr>`).join('');
-        return `<section class="wcn-detail-section wcn-business-section">
-            ${sectionHead('bx-wallet-alt', 'ApprovalContextTitle')}
-            <div class="wcn-kpi-grid">
-                <div class="wcn-kpi wcn-kpi-primary"><span>${esc(t('ApprovalAmount'))}</span><strong>${esc(formatMoney(item.amount, item.currency))}</strong></div>
-                <div class="wcn-kpi"><span>${esc(t('ApprovalThreshold'))}</span><strong>${esc(formatMoney(item.threshold, item.currency))}</strong></div>
-                <div class="wcn-kpi"><span>${esc(t('BudgetImpact'))}</span><strong>${esc(item.budgetImpact)}</strong></div>
-            </div>
-            ${lines ? `<div class="wcn-subsection-title">${esc(t('LineItemsTitle'))}</div>
-                <div class="table-responsive wcn-line-table-wrap"><table class="table table-sm wcn-line-table">
-                    <thead><tr><th>${esc(t('LineDescription'))}</th><th class="text-end">${esc(t('LineQuantity'))}</th><th class="text-end">${esc(t('LineUnitPrice'))}</th><th class="text-end">${esc(t('ApprovalAmount'))}</th></tr></thead>
-                    <tbody>${lines}</tbody>
-                </table></div>` : ''}
-        </section>`;
-    };
+    /*
+     * `renderApprovalContext` WAS DELETED (2026-08-24, Tur B). It drew an approval's amount and its line items
+     * — description, GL account, cost centre, quantity, unit price — behind `item.amount == null`, and that gate
+     * was never going to open: the approval provider that feeds this screen emits no Amount, LineItem or Currency
+     * at all. Approvals do arrive here; their commercial detail does not. The field list is kept in BL-233 rather
+     * than in a card nobody can render, because rewriting the card is half a day and rethinking the fields is not.
+     */
 
-    const renderReviewContext = (item) => {
-        if (item.itemType !== 'review' || !hasCap(item, 'reviewContext') || !item.artifact) { return ''; }
-        const checks = (item.reviewChecklist || []).map((check) =>
-            `<li class="wcn-review-check ${check.done ? 'is-done' : ''}"><i class="bx ${check.done ? 'bx-check-circle' : 'bx-circle'}"></i><span>${esc(check.label)}</span><small>${esc(t(check.done ? 'ReviewCheckComplete' : 'ReviewCheckPending'))}</small></li>`
-        ).join('');
-        const signatures = (item.signatureHistory || []).map((signature) =>
-            `<li class="wcn-process-row"><span class="wcn-process-marker is-${esc(signature.status)}"><i class="bx bx-pen"></i></span><div><strong>${esc(signature.actor)}</strong><span>${esc(t(signature.status === 'signed' ? 'SignatureSigned' : 'SignaturePending'))}${signature.at ? ` · ${esc(signature.at)}` : ''}</span></div></li>`
-        ).join('');
-        return `<section class="wcn-detail-section wcn-business-section">
-            ${sectionHead('bx-file-find', 'ReviewContextTitle')}
-            <a class="wcn-artifact-card" href="${esc(item.artifact.url)}">
-                <span class="wcn-business-icon"><i class="bx bx-file"></i></span>
-                <span><strong>${esc(item.artifact.name)}</strong><small>${esc(t('ReviewVersion'))}: ${esc(item.artifact.version)}</small></span>
-                <i class="bx bx-link-external"></i>
-            </a>
-            ${checks ? `<div class="wcn-subsection-title">${esc(t('ReviewChecklistTitle'))}</div><ul class="wcn-review-checks">${checks}</ul>` : ''}
-            ${signatures ? `<div class="wcn-subsection-title">${esc(t('SignatureHistoryTitle'))}</div><ol class="wcn-process-list">${signatures}</ol>` : ''}
-        </section>`;
-    };
 
-    const renderExceptionContext = (item) => {
-        if (item.itemType !== 'exception' || !hasCap(item, 'exceptionContext') || !item.discrepancy) { return ''; }
-        const d = item.discrepancy;
-        const options = (item.resolutionOptions || []).map((option) => `<li><i class="bx bx-chevron-right"></i><span>${esc(option)}</span></li>`).join('');
-        return `<section class="wcn-detail-section wcn-business-section">
-            ${sectionHead('bx-error-alt', 'ExceptionContextTitle')}
-            <div class="wcn-discrepancy">
-                <div><span>${esc(t('DiscrepancyField'))}</span><strong>${esc(d.field)}</strong></div>
-                <div><span>${esc(t('ExpectedValue'))}</span><strong>${esc(String(d.expected))}</strong></div>
-                <div><span>${esc(t('ActualValue'))}</span><strong>${esc(String(d.actual))}</strong></div>
-                <div class="is-alert"><span>${esc(t('DeltaPercent'))}</span><strong>${esc(String(d.deltaPct))}%</strong></div>
-            </div>
-            ${item.rootCause ? `<div class="wcn-callout"><i class="bx bx-search-alt"></i><div><span>${esc(t('RootCause'))}</span><strong>${esc(item.rootCause)}</strong></div></div>` : ''}
-            ${options ? `<div class="wcn-subsection-title">${esc(t('ResolutionOptions'))}</div><ul class="wcn-option-list">${options}</ul>` : ''}
-        </section>`;
-    };
 
+    /*
+     * ── THE EFFORT CARD, CONNECTED AT LAST (2026-08-24, Tur B) ────────────────────────────────────────────
+     *
+     * MEASURED: this card has existed since the beginning and NEVER rendered. The data was collected
+     * (`FieldEstimateHours` / `FieldSpentHours` on the create form) and stored (`TaskItem.EstimateHours` /
+     * `SpentHours`) — the projection simply never carried the spent half, and `taskContext` was not even in
+     * the contract's capability list, so no fixture could declare it either.
+     *
+     * ⚠ THE ASSIGNMENT HISTORY IS NOT DRAWN, and that is a decision rather than an omission. Measured:
+     * `assignmentHistory` has ZERO matches in the mapper, the contract and the entire backend. Drawing half a
+     * card with data and half with a blank sub-heading is worse than a card that shows only what it knows —
+     * the reader cannot tell "nobody reassigned this" from "we do not track that". Its field list is in the
+     * backlog so the intent is not lost.
+     */
     const renderTaskContext = (item) => {
         if (item.itemType !== 'task' || !hasCap(item, 'taskContext') || !item.effort) { return ''; }
         const estimate = Number(item.effort.estimate) || 0;
         const spent = Number(item.effort.spent) || 0;
         const progress = estimate ? Math.min(100, Math.round((spent / estimate) * 100)) : 0;
-        const history = (item.assignmentHistory || []).map((entry) =>
-            `<li class="wcn-process-row"><span class="wcn-process-marker"><i class="bx bx-user"></i></span><div><strong>${esc(entry.assignee)}</strong><span>${esc(entry.action)} · ${esc(entry.at)}</span></div></li>`
-        ).join('');
+        /*
+         * ⚠ NO INLINE `style="width:…"` (FG-003). The bar's width comes from the product's own
+         * `.wcn-progress-{0..100}` step classes — the same ones the bulk progress bar uses — rounded to the
+         * nearest ten. The exact figure is not lost: it is spoken by `aria-valuenow` and written out beside
+         * the bar as "spent / estimate".
+         */
+        const step = Math.round(progress / 10) * 10;
         return `<section class="wcn-detail-section wcn-business-section">
             ${sectionHead('bx-timer', 'TaskContextTitle')}
-            <div class="wcn-effort-head"><div><span>${esc(t('EffortSpent'))}</span><strong>${esc(String(spent))} / ${esc(String(estimate))} ${esc(t('HoursShort'))}</strong></div><span>${progress}%</span></div>
-            <div class="progress wcn-effort-progress" role="progressbar" aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar wcn-progress-${Math.round(progress / 10) * 10}"></div></div>
-            ${history ? `<div class="wcn-subsection-title">${esc(t('AssignmentHistoryTitle'))}</div><ol class="wcn-process-list">${history}</ol>` : ''}
+            <div class="wcn-effort-head"><div><span>${esc(t('EffortSpent'))}</span><strong>${esc(String(spent))} / ${esc(String(estimate))}</strong></div></div>
+            <div class="progress wcn-effort-progress" role="progressbar" aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100" aria-label="${esc(t('EffortSpent'))}"><div class="progress-bar wcn-progress-${step}"></div></div>
         </section>`;
     };
 
-    const renderMeetingContext = (item) => {
-        if (item.itemType !== 'meetingInvite' || !hasCap(item, 'meetingContext')) { return ''; }
-        const agenda = (item.agenda || []).map((entry) => `<li>${esc(entry)}</li>`).join('');
-        const participants = (item.participants || []).map((person) =>
-            `<li class="wcn-participant"><span class="avatar avatar-sm"><span class="avatar-initial rounded-circle bg-label-primary">${esc(person.name.charAt(0))}</span></span><div><strong>${esc(person.name)}</strong><span>${esc(t(person.role === 'organizer' ? 'ParticipantOrganizer' : person.role === 'optional' ? 'ParticipantOptional' : 'ParticipantRequired'))}</span></div><small class="is-${esc(person.status)}">${esc(t(person.status === 'accepted' ? 'AttendanceAccepted' : person.status === 'declined' ? 'AttendanceDeclined' : 'AttendancePending'))}</small></li>`
-        ).join('');
-        return `<section class="wcn-detail-section wcn-business-section">
-            ${sectionHead('bx-calendar-event', 'MeetingContextTitle')}
-            <div class="wcn-meeting-facts"><span><i class="bx bx-time"></i>${esc(item.meetingStart)}–${esc(item.meetingEnd)}</span><span><i class="bx bx-map"></i>${esc(item.meetingLocation)}</span><span><i class="bx bx-user-check"></i>${esc(t(item.attendanceStatus === 'accepted' ? 'AttendanceAccepted' : item.attendanceStatus === 'declined' ? 'AttendanceDeclined' : 'AttendancePending'))}</span></div>
-            ${agenda ? `<div class="wcn-subsection-title">${esc(t('MeetingAgendaTitle'))}</div><ol class="wcn-agenda-list">${agenda}</ol>` : ''}
-            ${participants ? `<div class="wcn-subsection-title">${esc(t('MeetingParticipantsTitle'))}</div><ul class="wcn-participants">${participants}</ul>` : ''}
-        </section>`;
-    };
 
     const renderBusinessContext = (item) => {
         if (!hasCap(item, 'businessContext')) { return ''; }
@@ -3842,14 +3828,6 @@
         return `<section class="wcn-detail-section wcn-business-section">${sectionHead('bx-git-branch', 'ApprovalChainTitle')}<ol class="wcn-process-list">${rows}</ol></section>`;
     };
 
-    const renderThread = (item) => {
-        if (!hasCap(item, 'thread') || !(item.thread || []).length) { return ''; }
-        const messages = item.thread.map((message) => {
-            const mine = message.actor === data.currentUser.name;
-            return `<li class="wcn-thread-message${mine ? ' is-mine' : ''}"><div class="wcn-thread-bubble"><strong>${esc(message.actor)}</strong><p>${esc(message.text)}</p><time>${esc(message.at)}</time></div></li>`;
-        }).join('');
-        return `<section class="wcn-detail-section wcn-business-section">${sectionHead('bx-conversation', 'ConversationTitle')}<ul class="wcn-thread">${messages}</ul></section>`;
-    };
 
     const renderRelated = (item) => {
         if (!hasCap(item, 'related') || !(item.related || []).length) { return ''; }
@@ -4441,6 +4419,9 @@
             card(renderDependencies(item)),
             card(renderChecklist(item)),
             card(renderTimesheet(item)),
+            // The effort card sits beside the timesheet: one says how long this was expected to take, the
+            // other how much has been clocked. Both gate on their own capability, so neither draws a zero.
+            card(renderTaskContext(item)),
             card(renderAttachments(item)),
             card(renderEvidence(item)),
             card(renderCompliance(item)),
@@ -5233,23 +5214,6 @@
         });
     };
 
-    const bulkBar = (visible) => {
-        const selected = visible.filter((i) => state.tableSelected.has(i.id));
-        if (!selected.length) { return ''; }
-        const candidates = itemActions(selected[0]).filter((a) => a.bulk && !a.disabled);
-        const acts = candidates.filter((candidate) => selected.every((item) => {
-            const match = actionByKey(item, candidate.key);
-            return !!(match && match.bulk && !match.disabled);
-        }));
-        const inner = acts.length
-            ? acts.map((a) => `<button type="button" class="btn btn-sm btn-label-${a.kind}" data-wcn-bulk="${a.key}">${esc(t(a.labelKey))}</button>`).join('')
-            : `<span class="wcn-bulk-note"><i class="bx bx-info-circle"></i>${esc(t('BulkNoCommonAction'))}</span>`;
-        return `<div class="wcn-bulkbar" role="region" aria-label="${esc(t('BulkActionsLabel'))}">
-            <span class="wcn-bulk-count">${esc(tf('BulkSelected', selected.length))}</span>
-            <div class="wcn-bulk-actions">${inner}</div>
-            <button type="button" class="btn btn-sm btn-text-secondary wcn-bulk-clear" data-wcn-bulk-clear>${esc(t('BulkClear'))}</button>
-        </div>`;
-    };
 
     // ── Kanban view (READ-ONLY, spec v3) — columns by status; WorkCenter doesn't
     // own status so cards don't drag between columns. Personal plan/pin only. ───
@@ -5269,79 +5233,10 @@
         </div>`;
     };
 
-    const renderKanban = () => {
-        const items = activeItems();
-        if (!items.length) { return emptyState(); }
-        state.visibleOrder = [];
-        let cols;
-        if (SEGMENTS[state.tab]) {
-            cols = [{ label: t(SEGMENT_KEY[state.segment]), items }];
-        } else {
-            const order = ['Pending', 'In Progress', 'Waiting', 'Done', 'Cancelled'];
-            cols = order.map((st) => ({ label: t(STATUS_KEY[st]), items: items.filter((i) => i.status === st) })).filter((c) => c.items.length);
-        }
-        const colHtml = cols.map((col) => {
-            const cards = col.items.slice().sort(bySla).map((item) => { state.visibleOrder.push(item.id); return kanbanCard(item); }).join('');
-            return `<div class="wcn-kcol">
-                <header class="wcn-kcol-head"><span>${esc(col.label)}</span><span class="wcn-kcol-count">${col.items.length}</span></header>
-                <div class="wcn-kcol-body">${cards}</div>
-            </div>`;
-        }).join('');
-        return `<div class="wcn-kanban">
-            <div class="wcn-viewnote"><i class="bx bx-info-circle"></i><span>${esc(t('KanbanReadonly'))}</span></div>
-            <div class="wcn-kboard">${colHtml}</div>
-        </div>`;
-    };
 
     // ── Calendar view (READ-ONLY deadline clustering, spec v3) — source due
     // (red) + personal plan (blue) on a month grid. No drag-reschedule. ────────
     const pad2 = (n) => String(n).padStart(2, '0');
-    const renderCalendar = () => {
-        const items = activeItems();
-        state.visibleOrder = items.map((i) => i.id);
-        const lang = (document.documentElement.lang || 'tr').slice(0, 2);
-        const today = new Date(data.todayIso + 'T00:00:00');
-        const year = today.getFullYear();
-        const month = today.getMonth();
-        const first = new Date(year, month, 1);
-        const startDow = (first.getDay() + 6) % 7;               // Monday = 0
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        let monthTitle;
-        try { monthTitle = new Intl.DateTimeFormat(lang, { month: 'long', year: 'numeric' }).format(first); }
-        catch (e) { monthTitle = (month + 1) + '/' + year; }
-        const wd = [];
-        for (let i = 0; i < 7; i++) {
-            try { wd.push(new Intl.DateTimeFormat(lang, { weekday: 'short' }).format(new Date(2024, 0, 1 + i))); }
-            catch (e) { wd.push(''); }
-        }
-        // Cluster items by day: source due + personal plan (distinct kinds).
-        const byDay = {};
-        items.forEach((i) => {
-            if (i.dueAt) { (byDay[i.dueAt] = byDay[i.dueAt] || []).push({ item: i, kind: 'due' }); }
-            if (i.plannedDate && i.plannedDate !== i.dueAt) { (byDay[i.plannedDate] = byDay[i.plannedDate] || []).push({ item: i, kind: 'plan' }); }
-        });
-        const cells = [];
-        for (let b = 0; b < startDow; b++) { cells.push('<div class="wcn-cal-cell wcn-cal-empty"></div>'); }
-        for (let d = 1; d <= daysInMonth; d++) {
-            const iso = `${year}-${pad2(month + 1)}-${pad2(d)}`;
-            const isToday = iso === data.todayIso;
-            const entries = (byDay[iso] || []).map((e) =>
-                `<div class="wcn-cal-item wcn-cal-${e.kind}" data-wcn-row="${e.item.id}" title="${esc(e.item.title)}" tabindex="0" role="button" aria-label="${esc(tf('TableOpenRow', e.item.title))}">
-                    <span class="wcn-cal-dot"></span><span class="wcn-cal-item-text">${esc(e.item.title)}</span>
-                </div>`).join('');
-            cells.push(`<div class="wcn-cal-cell${isToday ? ' wcn-cal-today' : ''}">
-                <span class="wcn-cal-day">${d}</span>${entries}
-            </div>`);
-        }
-        return `<div class="wcn-calendar">
-            <div class="wcn-cal-head">
-                <span class="wcn-cal-month">${esc(monthTitle)}</span>
-                <span class="wcn-cal-legend"><span class="wcn-cal-lg wcn-cal-due"></span>${esc(t('CalLegendDue'))} <span class="wcn-cal-lg wcn-cal-plan"></span>${esc(t('CalLegendPlan'))}</span>
-            </div>
-            <div class="wcn-cal-weekdays">${wd.map((w) => `<span>${esc(w)}</span>`).join('')}</div>
-            <div class="wcn-cal-grid">${cells.join('')}</div>
-        </div>`;
-    };
 
     // ── Focus / Today view ────────────────────────────────────────────────────
     const renderFocus = (items) => {
@@ -5493,59 +5388,7 @@
         if (node && typeof node.focus === 'function') { node.focus(); }
     };
 
-    const renderAgenda = () => {
-        const meetings = state.meetings.slice().sort((a, b) => a.start.localeCompare(b.start));
-        const rows = meetings.length ? meetings.map((meeting) => `<article class="wcn-agenda-item">
-            <div class="wcn-agenda-time"><strong>${esc(meeting.start)}</strong><span>${esc(meeting.end)}</span></div>
-            <div class="wcn-agenda-body">
-                <h6>${esc(meeting.title)}</h6>
-                <span><i class="bx bx-map"></i>${esc(meeting.location || '—')}</span>
-                <span><i class="bx bx-user"></i>${esc(meeting.owner || data.currentUser.name)}</span>
-            </div>
-            <button type="button" class="btn btn-xs btn-label-primary" data-wcn-meeting-followup="${meeting.id}"><i class="bx bx-task"></i>${esc(t('MeetingFollowup'))}</button>
-        </article>`).join('') : `<div class="wcn-panel-empty">${esc(t('AgendaEmpty'))}</div>`;
-        return `<div class="wcn-panel-inner">
-            <div class="wcn-panel-head">
-                <h6><i class="bx bx-calendar-event text-primary"></i>${esc(t('AgendaTitle'))}</h6>
-                <div class="wcn-panel-head-actions">
-                    ${/*
-                       * ⚠ THE AGENDA PANEL'S "+" WENT WITH THE FORM IT OPENED (2026-08-24).
-                       *
-                       * NOT NAMED IN THE ROUND'S BRIEF, and stated here rather than done quietly: the brief said
-                       * the notes and agenda PANELS do not change this round, and this is the one exception —
-                       * because it was a SECOND door onto the same deleted dead end (`openMeetingForm`).
-                       * Leaving the button would have called a function that no longer exists; leaving the
-                       * handler and removing the button, or the reverse, would have been a control that throws
-                       * or a control that does nothing. The panel is otherwise untouched.
-                       */ ''}
-                    <button type="button" class="btn btn-icon btn-sm btn-text-secondary" data-wcn-toggle="agenda" aria-label="${esc(t('PanelClose'))}"><i class="bx bx-x"></i></button>
-                </div>
-            </div>
-            <div class="wcn-agenda-list">${rows}</div>
-        </div>`;
-    };
 
-    const renderNotes = () => {
-        const notes = state.notes.filter((note) => !note.converted);
-        const rows = notes.length ? notes.map((note) => `<article class="wcn-note-card">
-            <p>${esc(note.text)}</p>
-            <div class="wcn-note-card-foot">
-                <span>${esc(t(note.ageKey || 'TimeToday'))}</span>
-                <button type="button" class="btn btn-xs btn-label-warning" data-wcn-note-convert="${note.id}"><i class="bx bx-task"></i>${esc(t('NotesConvertTask'))}</button>
-            </div>
-        </article>`).join('') : `<div class="wcn-panel-empty">${esc(t('NotesEmpty'))}</div>`;
-        return `<div class="wcn-panel-inner">
-            <div class="wcn-panel-head">
-                <h6><i class="bx bx-note text-warning"></i>${esc(t('NotesPanelTitle'))}</h6>
-                <button type="button" class="btn btn-icon btn-sm btn-text-secondary" data-wcn-toggle="notes" aria-label="${esc(t('PanelClose'))}"><i class="bx bx-x"></i></button>
-            </div>
-            <div class="wcn-notes-list">${rows}</div>
-            <div class="wcn-notes-composer">
-                <textarea class="form-control form-control-sm" rows="2" data-wcn-global-note-input placeholder="${esc(t('NotesAddPlaceholder'))}"></textarea>
-                <button type="button" class="btn btn-sm btn-primary" data-wcn-global-note-add>${esc(t('NotesAdd'))}</button>
-            </div>
-        </div>`;
-    };
 
     const renderLoadingState = () => `<div class="wcn-system-page" role="status" aria-live="polite">
         <span class="spinner-border spinner-border-sm text-primary" aria-hidden="true"></span>
@@ -5736,9 +5579,16 @@
             case 'focus': main = renderFocus(items); break;
             default: main = renderList(items);
         }
-        const sidePanel = state.agendaOpen ? `<aside id="wcnSidePanel" class="wcn-sidepanel" aria-label="${esc(t('AgendaTitle'))}">${renderAgenda()}</aside>`
-                        : state.notesOpen ? `<aside id="wcnSidePanel" class="wcn-sidepanel" aria-label="${esc(t('NotesPanelTitle'))}">${renderNotes()}</aside>`
-                        : '';
+        /*
+         * ⚠ THE NOTES AND AGENDA PANELS WERE REMOVED (2026-08-24, Tur B). Both were PERMANENTLY EMPTY: the only
+         * code that fed them (`openQuickNote`, `openMeetingForm`) was deleted a round earlier because it wrote
+         * to browser memory and nowhere else, and `state.notes` / `state.meetings` are initialised to `[]` and
+         * never loaded. An empty panel is an unanswered question for whoever opens it.
+         *
+         * They come back together with the feature that fills them — see the backlog entry for the deferred
+         * personal-note and calendar work.
+         */
+        const sidePanel = '';
 
         const mainPanel = `<div id="wcn-main-panel" class="wcn-main${state.view === 'table' ? '' : ' wcn-main-open'}" role="tabpanel" aria-labelledby="wcn-tab-${state.tab}" tabindex="0">${main}</div>`;
         const workspaceToolbar = state.view === 'table'
@@ -7194,23 +7044,13 @@
 
     // ── "+ Yeni" — WorkCenter owns only self-tasks; module items are created in
     // their source (deep-link). No generic cross-module authoring here (spec v3). ─
-    const openNew = () => {
-        if (!global.Swal) { return; }
-        global.Swal.fire(Object.assign({
-            title: t('NewButton'),
-            html: `<div class="wcn-new-menu">
-                <button type="button" class="wcn-new-opt" id="wcnNewSelf"><i class="bx bx-user-check"></i><div><strong>${esc(t('NewSelfTask'))}</strong><span>${esc(t('NewSelfTaskDesc'))}</span></div></button>
-                <button type="button" class="wcn-new-opt" id="wcnNewSource"><i class="bx bx-cube"></i><div><strong>${esc(t('NewInSource'))}</strong><span>${esc(t('NewInSourceDesc'))}</span></div></button>
-            </div>`,
-            showConfirmButton: false, showCancelButton: true, cancelButtonText: t('DialogDismiss'),
-            didOpen: () => {
-                document.getElementById('wcnNewSelf').onclick = () => { global.Swal.close(); openSelfTask(); };
-                document.getElementById('wcnNewSource').onclick = () => { global.Swal.close(); openCreateInSource(); };
-            }
-        // NOT a confirmation — the two options ARE the answer, so there is no confirm button to colour. It takes
-        // the appearance so a menu does not read as a different product from the dialog it opens.
-        }, dialogLook()));
-    };
+    /*
+     * ⚠ `openNew` WAS DELETED (2026-08-24, Tur B). MEASURED: the dispatch reached it only for a
+     * `[data-wcn-new]` whose kind was not task/note/meeting/source, and every such element in the DOM carried
+     * a known kind — the Bootstrap dropdown in the header replaced this Swal menu. No click could arrive.
+     * It had just been given the product's dialog appearance, which is the most dangerous state for dead code:
+     * it looked maintained.
+     */
 
     /*
      * "+ Yeni ▸ Görev" opens the ONE quick-create surface (quick-create.js drives the offcanvas). It owns the
@@ -7618,123 +7458,10 @@
     // Bulk apply with a partial-failure model (spec v2 §6): some items fail (mock:
     // a stale/changed source record) — succeeded ones clear, failed ones stay
     // selected and flagged so the user can retry, never a silent all-or-nothing.
-    const runBulk = (selected, actionKey, label) => {
-        const failed = [];
-        let ok = 0;
-        selected.forEach((item) => {
-            const action = actionByKey(item, actionKey);
-            if (!action || !action.bulk || action.disabled) { failed.push(item); return; }
-            if (item.bulkConflict) { failed.push(item); return; }
-            /*
-             * Symmetry with the single-action path (applyAction): a real item NEVER goes through
-             * applyTransition, which only simulates. Without this, the moment a provider ships
-             * providerCode:"tasks" together with supportsBulk:true, a bulk approve would change the screen and
-             * leave the database untouched — the same defect already fixed once for single actions, silently
-             * reintroduced. Bulk writes against the real engine are a separate slice; until then a real item is
-             * reported as failed rather than faked.
-             */
-            if (isRealTaskItem(item)) {
-                console.warn(`[WorkCenterNext] Bulk "${actionKey}" skipped for real item ${item.id}: bulk `
-                    + 'transitions are not wired to the engine, and simulating one would show a change that '
-                    + 'was never persisted.');
-                failed.push(item);
-                return;
-            }
-            applyTransition(item, action.key);
-            markSeen(item);
-            item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: actionLabel(action), atMs: data.referenceDate(item.provenance) });
-            ok += 1;
-        });
-        state.tableSelected.clear();
-        state.bulkFailedIds = new Set(failed.map((i) => i.id));
-        failed.forEach((i) => state.tableSelected.add(i.id));
-        render();
-        /*
-         * BEHAVIOUR CHANGE (BL-147): the partial-failure REPORT is a toast, not a modal.
-         *
-         * A modal is for a decision, and this asks for none — it says what happened and offers one button whose
-         * only job is to make it go away. Stopping the reader to dismiss a sentence is how a product teaches
-         * people to close dialogs without reading them, and the dialogs that DO ask something are the ones that
-         * then get closed unread.
-         *
-         * Nothing is lost by the move: the failed rows stay selected and flagged on the surface behind it (see
-         * `bulkFailedIds` above), which is the durable record — the modal was never where the recovery happened.
-         * The tone still separates total failure from partial.
-         */
-        if (failed.length) {
-            toast(tf('BulkResult', selected.length, ok, failed.length),
-                failed.length === selected.length ? 'error' : 'warning');
-        } else {
-            toast(tf('ToastBulk', ok));
-        }
-    };
 
     // Brief progress pass before applying, so a large batch reads as work being
     // done rather than an instant, opaque state jump.
-    const runBulkWithProgress = (selected, actionKey, label) => {
-        if (!global.Swal) { runBulk(selected, actionKey, label); return; }
-        let pct = 0;
-        // NOT a dialog at all — a status readout with no question and no answer. It still wears the product's
-        // dialog surface, because a progress popup that looks like a different library is a jolt mid-flow.
-        global.Swal.fire(Object.assign({
-            title: label,
-            html: `<div class="wcn-bulk-progress"><div class="wcn-bulk-progress-bar" id="wcnBulkBar"></div></div>` +
-                  `<div class="wcn-bulk-progress-text" id="wcnBulkPct">0%</div>`,
-            showConfirmButton: false, showCancelButton: false, allowOutsideClick: false, allowEscapeKey: false,
-            didOpen: () => {
-                const bar = document.getElementById('wcnBulkBar');
-                const txt = document.getElementById('wcnBulkPct');
-                const step = () => {
-                    pct = Math.min(100, pct + 20);
-                    if (bar) { bar.className = `wcn-bulk-progress-bar wcn-progress-${pct}`; }
-                    if (txt) { txt.textContent = pct + '%'; }
-                    if (pct >= 100) { global.setTimeout(() => { global.Swal.close(); runBulk(selected, actionKey, label); }, 150); }
-                    else { global.setTimeout(step, 90); }
-                };
-                step();
-            }
-        }, dialogLook()));
-    };
 
-    const performBulk = (actionKey) => {
-        const selected = state.items.filter((i) => state.tableSelected.has(i.id) && !i.dismissed);
-        if (!selected.length) { return; }
-        const sample = actionByKey(selected[0], actionKey);
-        if (!sample || !sample.bulk || sample.disabled || !selected.every((item) => {
-            const action = actionByKey(item, actionKey);
-            return !!(action && action.bulk && !action.disabled);
-        })) { toast(t('BulkNoCommonAction'), 'warning'); return; }
-        const label = sample ? actionLabel(sample) : '';
-        if (sample.reason && global.Swal) {
-            sharedConfirm({
-                title: label,
-                confirmText: t('ReasonConfirm'),
-                input: {
-                    label: t('ReasonLabel'),
-                    placeholder: t('ReasonPlaceholder'),
-                    validate: (value) => (String(value || '').trim() ? null : t('ReasonRequired'))
-                },
-                onConfirm: (value) => {
-                    if (String(value || '').trim()) { runBulkWithProgress(selected, actionKey, label); }
-                }
-            });
-            return;
-        }
-        // Confirm before a high-consequence batch — approving 42 payments at once
-        // is far riskier than a single click (spec v2 §6, P1 fix).
-        if (sample && sample.confirm && global.Swal) {
-            sharedConfirm({
-                title: label,
-                subtext: `<div class="wcn-confirm-body">${esc(tf('ConfirmBulkBody', selected.length))}</div>`,
-                type: 'warning',
-                // Same rule for the batch: the button says which act is about to run on all of them.
-                confirmText: tf('ConfirmProceedNamed', label.toLocaleLowerCase('tr')),
-                onConfirm: () => runBulkWithProgress(selected, actionKey, label)
-            });
-            return;
-        }
-        runBulkWithProgress(selected, actionKey, label);
-    };
 
     // ── Keyboard (spec §4: j/k move · a accept · r reject · Enter open · Esc) ──
     const isTyping = (target) => target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName);
@@ -8060,7 +7787,6 @@
             const kind = newEl.getAttribute('data-wcn-new');
             if (kind === 'task') { openSelfTask(); }
             else if (kind === 'source') { openCreateInSource(); }
-            else { openNew(); }
             return;
         }
 
@@ -8470,9 +8196,7 @@
             return;
         }
 
-        const bulkEl = event.target.closest('[data-wcn-bulk]');
-        if (bulkEl) { performBulk(bulkEl.getAttribute('data-wcn-bulk')); return; }
-        if (event.target.closest('[data-wcn-bulk-clear]')) { state.tableSelected.clear(); render(); return; }
+
 
         const sortEl = event.target.closest('[data-wcn-sort]');
         if (sortEl) {
@@ -8544,19 +8268,12 @@
             render();
             return;
         }
-        const checkAll = event.target.closest('[data-wcn-check-all]');
-        if (checkAll) {
-            const on = checkAll.checked;
-            state.visibleOrder.forEach((id) => { if (on) { state.tableSelected.add(id); } else { state.tableSelected.delete(id); } });
-            render();
-            return;
-        }
-        const checkEl = event.target.closest('[data-wcn-check]');
-        if (checkEl) {
-            const id = checkEl.getAttribute('data-wcn-check');
-            if (checkEl.checked) { state.tableSelected.add(id); } else { state.tableSelected.delete(id); }
-            render();
-        }
+        /*
+         * ⚠ THE BULK SELECTION HANDLERS WENT WITH THE STRIP (2026-08-24, Tur B). MEASURED: `data-wcn-check`
+         * was READ in four places and DRAWN in none — the table renders no selection column, so
+         * `state.tableSelected` could never become non-empty through the UI and the bulk bar could never
+         * appear. Like the "+ Yeni" menu, it had just been given the product's dialog appearance.
+         */
     };
 
     let searchTimer = null;

@@ -480,6 +480,17 @@
                 editable: entry.editable !== false
             }))
         } : null;
+        /*
+         * ⚠ THE EFFORT CARD'S DATA, ASSEMBLED HERE (2026-08-24, Tur B). The wire carries two flat numbers
+         * (`estimateHours`, `spentHours`) because that is how `TaskItem` stores them; the card wants one
+         * object. Building it here rather than reshaping the DTO keeps the wire shaped like the record.
+         *
+         * A fixture may hand `effort` in directly — it is a declared data capability — so an existing object
+         * wins over the flat pair.
+         */
+        if (!item.effort && (item.estimateHours != null || item.spentHours != null)) {
+            item.effort = { estimate: item.estimateHours ?? 0, spent: item.spentHours ?? 0 };
+        }
         item.subtasks = item.subtasks || null;
         item.dependencies = item.dependencies ? item.dependencies.map((entry) => ({
             ...entry,

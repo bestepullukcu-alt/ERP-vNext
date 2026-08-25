@@ -411,6 +411,24 @@ public sealed record WorkItemProjectionDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     decimal? EstimateHours = null,
     /// <summary>
+    /// How many hours have actually gone into this, the counterpart of <see cref="EstimateHours"/>.
+    /// </summary>
+    /// <remarks>
+    /// ⚠ ADDED 2026-08-24 (Tur B). MEASURED: the effort card on the detail page has existed and never once
+    /// rendered — it reads <c>item.effort.spent</c> against <c>item.effort.estimate</c>, and while the create
+    /// form collects both (<c>FieldEstimateHours</c>, <c>FieldSpentHours</c>) and <c>TaskItem</c> stores both
+    /// (<c>EstimateHours</c>, <c>SpentHours</c>), only the estimate ever reached this DTO. The card was
+    /// waiting on a field nobody had carried across.
+    ///
+    /// <para>
+    /// ⚠ NOT NULLABLE ON THE ENTITY, so it is not nullable here: <c>TaskItem.SpentHours</c> is a
+    /// <c>decimal</c>, and zero spent is a real answer ("nobody has worked on this yet"), not an absence.
+    /// It is still omitted from the wire when zero AND no estimate exists — see the provider.
+    /// </para>
+    /// </remarks>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    decimal? SpentHours = null,
+    /// <summary>
     /// The task's own tags. Omitted when there are none: an empty array would reach the client as a present
     /// container and render an empty chip strip, which is the same "labelled blank" this round removes
     /// everywhere else.

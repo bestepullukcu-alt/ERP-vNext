@@ -24,7 +24,7 @@
             summary: resource('IsSummaryElimination'),
             taskLifecycle: 'InProgress', executionState: 'active', timerState: 'running',
             nativeStatus: { code: 'IN_PROGRESS', label: resource('StatusInProgress') },
-            workItemCapabilities: ['planning', 'execution', 'timeTracking', 'checklist', 'subtasks', 'dependencies', 'attachments', 'activity', 'businessContext', 'relatedRecords'],
+            workItemCapabilities: ['planning', 'execution', 'taskContext', 'timeTracking', 'checklist', 'subtasks', 'dependencies', 'attachments', 'activity', 'businessContext', 'relatedRecords'],
             checklist: { items: [
                 { id: 'C1', label: resource('IsChkMatchBalances'), completed: true, required: true },
                 { id: 'C2', label: resource('IsChkEliminate'), completed: false, required: true },
@@ -92,7 +92,18 @@
                 { id: 'TE-1', actor: 'Selin Aras', minutes: 95, at: '2026-07-23 10:15', note: '[FIXTURE] Mizan içe aktarma' },
                 { id: 'TE-2', actor: 'Selin Aras', minutes: 130, at: '2026-07-24 14:40', note: '[FIXTURE] Şirketler arası eşleştirme' }
             ],
-            timesheet: { loggedMinutes: 225, running: false, startedAt: null },
+            /*
+             * ⚠ `loggedMinutes`, NOT `timesheet` (2026-08-24, Tur B). Measured: the mapper DERIVES `timesheet`
+             * from the `timeTracking` capability and reads the total from `loggedMinutes` — a `timesheet`
+             * object handed in by a fixture is overwritten and the card read "0sa 0dk" beside two real entries.
+             */
+            loggedMinutes: 225,
+            /*
+             * ⚠ THE EFFORT CARD'S DATA (Tur B). `taskContext` is declared above; this is what it promises.
+             * Live tasks get these two from `TaskItem.EstimateHours` / `SpentHours` through the projection —
+             * a fixture states them directly, which is what the `taskContext: ['effort']` data rule asks for.
+             */
+            effort: { estimate: 12, spent: 7.5 },
             priority: 'High',
             requester: req('USR-201', 'Deniz Koç'),
             source: source('finance', 'CloseTask', 'FIN-7781'),

@@ -145,11 +145,17 @@ describe("eight dialogs, four moved and four dressed", () => {
      * `state.meetings` and nowhere else, so everything it produced vanished on reload. What remains is the
      * "+ Yeni" menu, the reason+assignee form, and the bulk progress readout.
      */
-    expect(raw, "a raw dialog appeared or disappeared without this test being told").toHaveLength(3);
-    expect(dressed, "a raw dialog is drawing itself again").toHaveLength(3);
-    // Every raw call is an `Object.assign(...)`, which is the only shape that can carry the package.
+    /*
+     * ⚠ ONE (2026-08-24, Tur B). Two of the three were DEAD and went with the code they belonged to: the
+     * "+ Yeni" Swal menu (unreachable — a Bootstrap dropdown replaced it) and the bulk progress readout (its
+     * selection column is drawn nowhere). Both had just been given this appearance, which is dead code at its
+     * most convincing. The survivor is the reason+assignee form, which genuinely cannot be a confirmation.
+     */
+    expect(raw, "a raw dialog appeared or disappeared without this test being told").toHaveLength(1);
+    expect(dressed, "the surviving raw dialog is drawing itself again").toHaveLength(1);
+    // The raw call is an `Object.assign(...)`, which is the only shape that can carry the package.
     expect((stripped.match(/Swal\.fire\(Object\.assign\(/g) || []),
-      "a raw dialog opened without the appearance").toHaveLength(3);
+      "a raw dialog opened without the appearance").toHaveLength(1);
   });
 
   it("reads the package instead of copying it", () => {
@@ -285,8 +291,13 @@ describe("BL-205 — a close button is not a cancel button", () => {
      * CLOSE button as "Vazgeç" on two of the four panels while the other two already said the right word.
      */
     expect(APP, "a panel close button is announced as a cancel").not.toContain("ReasonCancel");
+    /*
+     * ⚠ TWO, NOT FOUR (2026-08-24, Tur B). The notes and agenda panels were removed — both were permanently
+     * empty after the code that fed them was deleted a round earlier. Their close buttons went with them.
+     * The two that remain are the subtask edit and subtask create panels.
+     */
     expect((APP.match(/aria-label="\$\{esc\(t\('PanelClose'\)\)\}"/g) || []).length,
-      "a panel lost its close label").toBe(4);
+      "a panel lost its close label").toBe(2);
   });
 });
 
