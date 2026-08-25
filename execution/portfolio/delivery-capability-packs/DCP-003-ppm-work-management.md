@@ -6,13 +6,19 @@ type: Delivery Capability Pack
 standard: CAP-001
 status: draft
 owner_domain: portfolio-delivery
-owner: TBD
+owner: enterprise-architect-interim-governance-only / permanent-business-owner-TBD
 parent_module: MOD-0117
 branch: feature/ppm-integration
 created: 2026-07-07
 ---
 
 # DCP-003 — PPM Work Management (Delivery Capability Pack)
+
+> **DEFERRED SCOPE-PARTITION PLANNING SOURCE — NON-EXECUTABLE:** Enterprise Architect scope-partition
+> decision dated 2026-07-28 removed active MOD-0117 core and C1 Work Records/Project implementation from
+> this draft. DCP-006 is the sole active orchestration contract for Management & Governance 1.3. DCP-003 is
+> retained only for deferred legacy safe-parity planning and migration reference; it authorizes no module
+> pack, service scaffold, production implementation or delivery sequence.
 
 > **Artifact type:** This is a **Delivery Capability Pack** (CAP-001 governance / orchestration contract).
 > It is **NOT** a runtime entity, **NOT** a module pack, **NOT** a MOD-0014 runtime Capability Group,
@@ -41,55 +47,56 @@ created: 2026-07-07
 | Parent module identity | **MOD-0117 — Project & Portfolio Management (PPM)** (Blueprint-kanonik) |
 | Identity proof | `verify_module_id.py . --check-id MOD-0117 --name "Project & Portfolio Management (PPM)"` → `OK … proven` (exit 0, 2026-07-07) |
 | Owner domain | portfolio-delivery (kısa kod `ppm`) — kullanıcı onayı 2026-07-07 |
-| Owner | 🔴 TBD |
+| Interim governance owner | Enterprise Architect — OD-07 reconciliation only; no business acceptance or production authority |
+| Permanent business owner | 🔴 TBD |
 | Standard | CAP-001 — `.antigravity/rules/capability-pack-standard.md` |
 | Authority note | Bu pack AGENTS.md §1 yetki hiyerarşisini (`Module Pack > Domain Config > AGENTS.md > .antigravity/`) değiştirmez; yalnızca üst seviye orkestrasyon yaşam döngüsüdür. |
 
 ## 2. Business outcome
 
-Eski `DitenPPM` + `PharmacovigilanceWeb` PPM yeteneğinin (iş/proje kayıtları, görevler, workstream,
-takvim planlama, efor kaydı, toplantı/durum raporları) ERP-vNext üzerinde **tenant-güvenli, RBAC'lı,
-7 dilli ve audit-uyumlu** olarak yeniden kurulması; eski sistemin auth'suz/tenant'sız teknik borcunun
-**devralınmaması**. Hedef, Blueprint `R1 - PPM MVP` kapsamının eski-sistem-paritesi alt kümesidir.
+Eski `DitenPPM` + `PharmacovigilanceWeb` içindeki PPM Task/My Tasks, Workstream, Calendar Scheduling,
+Project Effort Log, Meeting/Status Reports ve migration bilgisini ileride yeniden değerlendirilebilecek,
+non-executable safe-parity planlama kaynağı olarak korumak. Aktif portfolio/investment/initiative/program/
+project/benefit-value teslimatı DCP-006'ya aittir.
 
 ## 3. Problem statement
 
 - Eski PPM backend'inde kimlik doğrulama, TenantId ve soft delete yoktur; kullanıcı kimliği client'tan gelir (feasibility audit §3).
 - ~39.000 satır sayfa-JS'i vNext DataTable v2 / l10n / SweetAlert2 / tenant-shell standartlarıyla uyumsuzdur; 3 UI çağrısının backend karşılığı yoktur.
-- ERP-vNext'te PPM için domain, registry kaydı ve module pack yoktur; Blueprint'te MOD-0117 mevcuttur ama repo governance'ına işlenmemiştir.
+- **2026-07-07 historical AS-IS finding:** ERP-vNext'te PPM domain ve registry kaydı yoktu. Bugün
+  `portfolio-delivery` domain scaffold ve MOD-0117 registry kaydı mevcuttur; aktif bir PPM module pack
+  hâlâ yoktur.
 - Alanların bir kısmı başka modüllerin SoR'una değer (MOD-0023/0024/0028/0048/0280/0288) — sınırlar sözleşmeyle sabitlenmezse SoR sürünmesi ve isim çakışması (özellikle "Workflow") kaçınılmazdır.
 
 ## 4. Capability boundary
 
-**İçeride:** Work Record yaşam döngüsü; PPM Task instance'ları (subtask/dependency/checklist/complete);
-Workstream hiyerarşisi; Calendar Scheduling (schedule slot + yerleşmemiş iş kuyruğu); Project Effort Log
-(ASSUMPTION-1 rejimi); Meeting / Status Report aggregate'i; PPM'e özel geçici referans veriler; bunların
-tenant-shell UI'ları; `/services/ppm/*` gateway kontratı; `ppm.*` permission ailesi.
+**İçeride — deferred planning only:** PPM Task/My Tasks, Workstream, Calendar Scheduling, Project Effort
+Log, Meeting / Status Reports ve legacy migration referansları. Bunlar implementation authority taşımaz.
 
 **Dışarıda (sahibi başka modül):** onay/SLA/eskalasyon motoru (MOD-0023); görev/checklist şablonları
 (MOD-0024); doküman/binary depolama (MOD-0028/0262); kurumsal lookup SSOT (MOD-0048); organizasyon
 dizini (MOD-0288); Time Entry/Attendance/Leave (MOD-0280); bildirim gönderimi (MOD-0027); audit trail
 depolama (MOD-0021); Google/SignalR/AI entegrasyonları (§12 exclusions).
 
-**Scope guard:** Blueprint MOD-0117 50+ soft page tanımlar (demand intake, benefits, capacity...);
-bu DCP'nin kapsamı **eski sistem paritesinin güvenli alt kümesidir** — geniş Blueprint kapsamı ileride
-ayrı FU dalgalarıdır.
+**Scope guard:** DCP-006, aktif Management & Governance 1.3/MOD-0117 orchestration sahibidir. Demand
+implementation ve Capacity kapsam dışıdır; Demand yalnız typed MOD-0117 transition/reference olabilir.
 
 ## 5. Member modules and follow-ups
 
-Kesin FU numaraları **rezerve edilmedi** — her üye pack authoring'de
-`verify_module_id.py --check-id MOD-0117-FUxx --name "..." --parent MOD-0117` preflight'ından geçer.
+Kesin FU numaraları **rezerve edilmedi**. Bu backlog ileride yeni explicit EA/user kararıyla yeniden
+etkinleştirilirse, o tarihteki her yeni kimlik parent-aware DCP-002 preflight'ından geçmek zorundadır. Bu
+ifade mevcut module-pack authoring talimatı değildir.
 
 | # | Candidate member | Kimlik | Faz | UI yüzeyi |
 |---|---|---|---|---|
-| C1 | PPM Work Records Core | **MOD-0117** (parent MVP dilimi) | **MVP** | DataTable v2 + Compact Create/Edit |
-| C2 | PPM Task Core / My Tasks | MOD-0117-FU adayı | P1 | DataTable v2 + Detail/Form + Wizard (complete) |
-| C3 | PPM Workstream & Hierarchy | MOD-0117-FU adayı | P1 | DataTable + Detail/Form (hiyerarşi tasarım kararı pack'te) |
-| C5 | PPM Project Effort Log | MOD-0117-FU adayı (ASSUMPTION-1) | P1/P2 (B2'ye bağlı) | DataTable v2 + Slim Offcanvas; QuickTimer detayı Read-only |
-| C4 | PPM Calendar Scheduling | MOD-0117-FU adayı | P2 | Calendar screen (FullCalendar vendor onayı şart) |
-| C6 | PPM Meeting / Status Reports | MOD-0117-FU adayı | P2 | Detail/Form (zengin editör vendor kararı pack'te; CDN yasak) |
+| C1 | PPM Work Records Core | **MOD-0117** | **Historical — retired from active sequence** | Active implementation moved to DCP-006 scope partition |
+| C2 | PPM Task Core / My Tasks | Identity unresolved | **Deferred / non-executable** | Must reconcile MOD-0024, DWS, MOD-0023 and DCP-004 first |
+| C3 | PPM Workstream & Hierarchy | Identity unresolved | **Deferred / non-executable** | Must reconcile MOD-0024, DWS, MOD-0023 and DCP-004 first |
+| C5 | PPM Project Effort Log | Identity unresolved | **Deferred / non-executable** | ASSUMPTION-1 remains unresolved |
+| C4 | PPM Calendar Scheduling | Identity unresolved | **Deferred / non-executable** | Future planning only |
+| C6 | PPM Meeting / Status Reports | Identity unresolved | **Deferred / non-executable** | Future planning only |
 | C7 | PPM Files / Attachments | — | Ertelendi | Evidence/document **link** deseni (§12) |
-| C8 | PPM Reference Data / Lookups | C1'e gömülü | MVP içi | — (MOD-0048 devri follow-up) |
+| C8 | PPM Reference Data / Lookups | Historical C1 note | **Deferred / non-executable** | MOD-0048 boundary reference |
 | C9 | Google Calendar / Meet Integration | — | **Faz-dışı** | — |
 | C10 | SignalR Real-time Meeting Hub | — | **Faz-dışı** | — |
 | C11 | AI Action Extraction | — | **Faz-dışı / Bloklu** | — |
@@ -101,7 +108,7 @@ Kesin FU numaraları **rezerve edilmedi** — her üye pack authoring'de
 | Nesne | SoR | Statü |
 |---|---|---|
 | Work Record / Project | **MOD-0117** | KESİN (Blueprint SoR: "programs/projects, portfolio items, demand items") |
-| PPM Task instance | **MOD-0117** | KESİN (MOD-0024 yalnız şablon SoR'u) |
+| PPM Task instance | **Unresolved after scope partition** | MOD-0024, MOD-0354 (historical alias CAND-CAP-0008), MOD-0023 and DCP-004 reconciliation required |
 | Task/Checklist **şablonları** | MOD-0024 | KESİN — PPM sahiplenemez |
 | Schedule Slot | MOD-0117-FU adayı | ÖNERİ (Blueprint'te başka sahip yok) |
 | Project Effort Log / Time Entry | **ÇÖZÜMSÜZ** | ASSUMPTION-1 (§18 Open decisions) |
@@ -114,48 +121,57 @@ Kesin FU numaraları **rezerve edilmedi** — her üye pack authoring'de
 ## 7. Dependency graph
 
 ```text
-AuthService (JWT/RBAC/kullanıcı) ─┐
-Diten.Platform (tenant/nav/manifest) ─┤→ C1 Work Records Core ─→ C2 Task Core ─→ C3 Workstream
-Gateway (/services/ppm/*) ─┘                                      │
-                                                                  ├─→ C5 Effort Log (B2 kararına bağlı)
+ DCP-006 — active 1.3/MOD-0117 orchestration
+                         │
+                         └── DCP-003 deferred planning archive
+                                  ├── C2 Task/My Tasks
+                                  ├── C3 Workstream
+                                  ├── C4 Calendar
+                                  ├── C5 Effort Log
+                                  └── C6 Meeting/Status
 MOD-0021 AuditEvent v1 (kontrat) ────────────────────────────────┤
-MOD-0023 Workflow Designer (hazır DEĞİL → yalın statü) ──────────┤─→ C4 Calendar ─→ C6 Meeting/Status Reports
-MOD-0024 şablon kontratı (ileride) ──────────────────────────────┘
-MOD-0027/0028/0048/0288: hedef kontratlar (follow-up)
-MOD-0280 (repoda yok): Effort Log sınır kontratı — EA-TBD
-MOD-0007 (pack yok): Decision link kontratı — follow-up
+Future reconciliation dependencies only:
+  C2/C3 ── MOD-0024 + MOD-0354 + MOD-0023 + DCP-004
+  C4/C6 ── MOD-0023 + MOD-0027/0028/0048/0288 + MOD-0007
+  C5    ── MOD-0280 SoR decision
 ```
 
 ## 8. Ordered delivery sequence
 
-`C1 → C2 → C3 → (C5, B2 kararına göre) → C4 → C6`. C7–C11 bu DCP'de başlamaz.
-Her adımda: üye module pack `draft → approved/ready-for-dev` kapısı + kendi acceptance criteria'sı.
+There is no production delivery sequence in DCP-003 after the 2026-07-28 scope partition. C1 is retired
+from this active sequence; C2–C6 are unordered, deferred and non-executable planning records. No module pack
+may be authored from this sequence. Task and Workstream planning must first be reconciled with MOD-0024,
+MOD-0354, MOD-0023 and DCP-004.
 
 ## 9. Prerequisites
 
-1. Bu DCP `approved` / `ready-for-execution` (kullanıcı onayı).
-2. B-serisi bloklayıcılar (§18): özellikle B6 (MVP rol matrisi) C1'den önce.
-3. C1 module pack (`MOD-0117 PPM Work Records Core`) `approved`/`ready-for-dev`.
-4. Gateway route + port rezervasyonu (`ports.md`) — C1 pack'in Gateway/Routing bölümünde, integration-agent ile.
-5. Veri migration ayrı fazdır; B4 (kullanıcı eşleme) ve B5 (hedef tenant) kapanmadan **migration-ready denemez**.
+1. DCP-003 remains `draft` and non-executable.
+2. No C1 or C2–C6 module pack may be authored from this document.
+3. Any future reconsideration requires a new explicit EA/user governance decision and current SoR
+   reconciliation; PPM Task and Workstream additionally require MOD-0024, MOD-0354, MOD-0023 and
+   DCP-004 reconciliation.
+4. Legacy migration remains blocked by B4/B5 and requires separate approved governance.
 
 ## 10. Architecture decisions
 
-- **Yeni mikroservis:** `services/Diten.PpmService/` — 5 katman + CQRS + 4 pipeline behavior + `Response<T>`; C1 pack onayına kadar **oluşturulmaz**. Port: `ports.md` bandından C1 aşamasında rezerve edilir (ASSUMPTION-4: 5060 önerisi).
+The following entries are retained as historical planning constraints only; they are not approved runtime
+decisions or implementation authority.
+
+- **Service authority:** DCP-003 does not authorize `Diten.PpmService` scaffolding. Active scaffold gates are
+  defined by DCP-006 and the reconciled portfolio-delivery domain config.
 - **Kimlik/Tenant:** `userId`/`tenantId` yalnız JWT claim + tenant middleware'den; client-supplied kimlik deseni (eski sistem) **yasak**. DTO'da TenantId yasak; cross-tenant 404.
 - **Veri:** GUID (subtype-4), `IsDeleted`/`DeletedAt`, tenant-first compound index (ESR). Eski ObjectId/`Status` bool desenleri devralınmaz.
 - **Statü yaşam döngüsü:** MOD-0023 hazır olana dek yalın `statusId` alanı; approval-engine yazımı yasak.
 - **Concurrency:** MeetingReport/MeetingInvite `Version` optimistic concurrency davranışı korunur.
 - **UI:** `_LayoutTenantShell.cshtml`; DataTable v2; SweetAlert2 (MOD-0013 standardı); CDN plugin yasağı; 7 dil l10n köprüsü. Eski JS/View **kopyalanmaz** — yalnızca iş kuralı referansı.
-- **Takvimden kayıt kontratı:** Eski 6 örtüşen endpoint (`CreateTaskOrMeeting`, `UpsertTask`, `upsert-meeting`, `SaveTask`, `SaveMeeting`, `UpdateTaskOrMeeting`) tek konsolide `calendar/entries` kontratına indirgenir (C4 pack'inde).
+- **Historical calendar proposal:** Eski 6 örtüşen endpoint'in tek kontrata indirilmesi yalnız future
+  reconciliation girdisidir; aktif C4 pack veya endpoint kararı değildir.
 - **Sırlar:** Eski appsettings sırları (SMTP şifresi, Google service-account key) repoya taşınmaz; mevcutları rotate edilmelidir.
 
 ## 11. Scope
 
-Bkz. §4 (boundary) + §5 (üyeler). İlk uygulanabilir dilim (**minimum güvenli ilk faz = C1**):
-Work Record CRUD (soft delete + audit alanları), tenant-scoped kod üretimi, PPM-yerel referans-veri
-**okuma** uçları, JWT+`[HasPermission]`, gateway kontratı, Work Records DataTable v2 liste + Compact
-Create/Edit (backend kontratı aynı pack'te hazır olduğu için), yalın statü yaşam döngüsü, 7 dil l10n.
+Scope is limited to preserving deferred legacy safe-parity planning and migration evidence in §4/§5.
+There is no implementable first slice. Active Work Records/Project scope is governed only by DCP-006.
 
 ## 12. Explicit exclusions
 
@@ -190,28 +206,33 @@ Create/Edit (backend kontratı aynı pack'te hazır olduğu için), yalın stat�
 1. `portfolio-delivery` + `ppm` domain kararı onaylı mı? → **EVET (2026-07-07, kullanıcı).**
 2. Effort Log geçici sahipliği (ASSUMPTION-1) kabul mü? → **EVET — MOD-0280 SoR kararı TBD kalarak.**
 3. Faz-dışı liste (Google/SignalR/AI/TimerPopup/Excel) onaylı mı? → **EVET.**
-4. MVP rol matrisi (B6) kim tarafından, ne zaman verilecek? → **EVET (2026-07-07, kullanıcı)** — §18 "B6 kararı" tablosu.
+4. Historical C1 role matrix (B6) recorded? → **YES (2026-07-07)**; retained as reference, not active authority.
 5. C5 Effort Log P1 mi P2 mi? → B2 EA kararına bağlı, 🔴 açık.
-6. FullCalendar ve zengin editör vendor onayları? → C4/C6 pack'lerinden önce, 🔴 açık.
+6. FullCalendar ve zengin editör kararları? → Yalnız backlog yeniden etkinleştirilirse future governance
+   reconciliation girdisi, 🔴 açık.
 
 ## 15. Gate criteria
 
 - **DCP onay kapısı:** `draft → under-review → approved` yalnızca kullanıcı onayıyla.
-- **Üye pack kapısı:** her üye `module-pack-standard.md` 20 bölümüyle ayrıca geçer; C1 için ek koşul: B6 rol matrisi.
+- **Non-execution gate:** no member module pack may be initiated from DCP-003.
 - **Kimlik kapısı:** her FU için preflight exit 0 + registry satırı.
 - **Naming kapısı:** §13/1 grep kuralı.
 - **Kontrat kapısı:** backend kontratı olmayan hiçbir ekran operational UI kapsamına alınmaz (TimerPopup emsali).
-- **APP-PPM-BUNDLE hizası:** OIDC/SSO, RBAC hooks, AuditEvent v1, Data Contracts, Correlation-ID maddeleri C1'den itibaren; Workflow APIs maddesi MOD-0023 hazır olduğunda.
+- **Scope-partition gate:** active 1.3/MOD-0117 work routes through DCP-006; deferred task/workstream work
+  requires fresh cross-owner reconciliation before module-pack authoring.
 - **Migration kapısı:** B4 + B5 kapanmadan migration scripti yazılmaz; Mongo GUID subtype-4 kuralı zorunlu.
 
 ## 16. Acceptance criteria
 
-1. Bu DCP `approved` olduğunda: domain scaffold + registry rezervasyonu mevcut (bu materialization ile sağlandı), üye sırası ve sınırlar bağlayıcı.
-2. C1 tamamlandığında: tenant-güvenli Work Records CRUD + liste UI'ı, `ppm.work-records.*` permission seed'i, gateway route'u ve 7 dil RESX'i canlı; hiçbir `Workflow*` adı üretilmemiş; approval-engine yok.
-3. Her üye pack `done` olduğunda kendi acceptance criteria'sı + bu DCP'nin gate kriterleri birlikte sağlanmış.
-4. Runtime davranışı bu DCP'nin kendisi tarafından hiçbir aşamada değiştirilmemiş (yalnızca üye pack'ler değiştirir).
+1. DCP-003 remains `draft`, retained and non-executable.
+2. C1 is recorded as historical/retired from the active sequence.
+3. C2–C6 remain deferred planning records and create no module-pack authority.
+4. DCP-006 is the sole active 1.3/MOD-0117 orchestration contract.
+5. No runtime behavior is changed by this reconciliation.
 
 ## 17. Downstream business-module impacts
+
+These are deferred planning implications only:
 
 - **MOD-0023:** PPM, Workflow Designer'ın ilk büyük tüketici adayıdır; MOD-0023 önceliklendirmesine talep sinyali üretir.
 - **MOD-0024:** PPM task instance hacmi, şablon motoru gereksinimlerini şekillendirir.
@@ -228,19 +249,20 @@ Create/Edit (backend kontratı aynı pack'te hazır olduğu için), yalın stat�
 |---|---|---|---|---|
 | B1 | Domain adı/kısa kodu | DCP/pack konacak yer yok | Kullanıcı/EA Yol A onayı | ✅ **KAPANDI 2026-07-07** — `portfolio-delivery` / `ppm` |
 | B2 | Timesheet SoR sınırı (MOD-0280 vs MOD-0117-FU) | C5 veri modeli/permission tasarlanamaz | EA kararı + registry notu | 🔴 **AÇIK — TBD** (ASSUMPTION-1 geçici kabul, 2026-07-07) |
-| B3 | MOD-0117 registry rezervasyonu + FU numaraları | Rezervasyonsuz pack açılamaz | Registry satırı + preflight | ✅ Parent rezervasyonu bu materialization'da; FU'lar 🔴 açık (pack authoring'de) |
+| B3 | MOD-0117 registry rezervasyonu + FU numaraları | Deferred backlog kimliksizdir | Yeni EA/user reactivation kararı sonrası registry + parent-aware preflight | ✅ Parent mevcut; FU authoring yetkisi yok |
 | B4 | Eski kullanıcı Id ↔ AuthService eşlemesi | Migration-ready denemez | Eşleme stratejisi (ör. e-posta) | 🔴 AÇIK |
 | B5 | PvPPM verisinin hedef tenant ataması | Migration scripti yazılamaz | Hedef tenant kararı | 🔴 AÇIK |
 | B6 | RBAC rol × kaynak × aksiyon matrisi | Permission seed anlamlandırılamaz; implementation-ready denemez | Business rol matrisi (en az MVP: Admin/Member/Viewer) | ✅ **KAPANDI 2026-07-07** — MVP matrisi kullanıcı tarafından verildi (aşağıda "B6 kararı") |
 | B7 | Karşılıksız UI kontratları (TimeTracker/Stop, UpdateTaskOrder, AI ExtractActions) | Kontratsız akışlar kapsama alınamaz | Kapsam kararı | ✅ **KAPANDI 2026-07-07** — ilk DCP'de faz-dışı |
 | B8 | MOD-0023 hazır değil (review/planned) | PPM onay akışı yazamaz | Yalın statü + motor yasağı kuralı | ✅ **KAPANDI 2026-07-07** — kural kabul edildi (§10/§13) |
 
-**Onaylanan kararlar (2026-07-07, kullanıcı):** domain `portfolio-delivery`; kısa kod `ppm`; "Workflow"
-adlandırma yasağı; ilk faz `PPM Work Records Core`; Google/SignalR/AI/TimerPopup/Excel-import ilk faz dışı;
+**Tarihsel karar kaydı (2026-07-07; aktif sıra 2026-07-28 scope partition ile kaldırıldı):** domain
+`portfolio-delivery`; kısa kod `ppm`; "Workflow" adlandırma yasağı; eski ilk faz `PPM Work Records Core`;
+Google/SignalR/AI/TimerPopup/Excel-import ilk faz dışı;
 Project Effort Log ASSUMPTION-1 geçici kabul (MOD-0280 SoR kararı TBD); eski UI kopyalanmayacak;
 approval-engine yazılmayacak (MOD-0023'e kadar yalın statü).
 
-**B6 kararı — C1 MVP RBAC matrisi (2026-07-07, kullanıcı):**
+**B6 tarihsel kaydı — retired C1 MVP RBAC matrisi (2026-07-07, kullanıcı; non-executable):**
 
 Roller: `PPM Admin`, `PPM Member`, `PPM Viewer`. C1 permission seti:
 `ppm.work-records.read`, `ppm.work-records.create`, `ppm.work-records.update`,
@@ -259,7 +281,7 @@ Tenant kuralları (bağlayıcı): tüm roller yalnızca kendi `TenantId` kapsam�
 context/JWT'den çözülür. İlk fazda **CompanyId kullanılmaz** (ASSUMPTION-3 ilk faz için kullanıcı onaylı).
 İlk fazda approval/SLA/escalation yok — yalnız yalın status lifecycle. Delete = soft delete (`IsDeleted`/`DeletedAt`).
 
-> C1 module pack'te netleştirilecek iki tasarım noktası (karar değil, tasarım detayı):
+> **Retired C1 historical design questions — non-executable:**
 > (1) **Viewer görünürlük mekanizması** — "kendisine görünür kılınan kayıt" hangi mekanizmayla belirlenir
 > (varsayılan tenant-geneli read mi, açık paylaşım/atama mı)?
 > (2) **Member'ın team-member kapsamı** — C1'de team/assignee kavramı hangi minimum veri modeliyle temsil
@@ -274,8 +296,9 @@ context/JWT'den çözülür. İlk fazda **CompanyId kullanılmaz** (ASSUMPTION-3
   Risk: MOD-0288 drift'i. Kalıcı karar: MOD-0288 besleme kontratı.
 - **ASSUMPTION-3 (CompanyId):** PPM tenant-level izolasyonla başlar; company-level filtre P2+ follow-up.
   Risk: sonradan boyut ekleme migration'ı. Kalıcı karar: EA/product.
-- **ASSUMPTION-4 (Port):** `Diten.PpmService` için 5060 önerilir; kesin rezervasyon C1 aşamasında `ports.md`'ye
-  işlenir (fiili fleet'te 5059 MDM kullanımı doğrulanarak). Risk: bant çakışması.
+- **ASSUMPTION-4 (Port) — retired historical proposal:** `5060` eski öneriydi ve aktif rezervasyon değildir.
+  Aktif port kararı yalnız DCP-006 Slice 2 için OD-03/OD-04 kapandıktan ve onaylı module pack mevcut
+  olduktan sonra verilebilir.
 
 **🔴 TBD:** pack owner; FU numaraları; FullCalendar vendor onayı; zengin editör vendor kararı;
 C5'in P1/P2 yerleşimi; geçici attachment ihtiyacı; MOD-0117'nin wave ataması (master plan/delivery board).
@@ -287,10 +310,21 @@ C5'in P1/P2 yerleşimi; geçici attachment ihtiyacı; MOD-0117'nin wave ataması
 - MOD-0280 geldiğinde Effort Log ↔ Time Entry SoR kontratı / devri.
 - Veri migration fazı (Id yeniden anahtarlama GUID subtype-4, tenant ataması, kullanıcı eşleme) — B4/B5 kapandığında ayrı plan.
 - Google/SignalR/AI/TimerPopup/Excel-import için kapsam kararları (ayrı tur).
-- Blueprint geniş kapsamı (demand intake, benefits, capacity) için ayrı FU dalgaları.
+- Demand implementation ve Capacity bu DCP dışında kalır; Demand yalnız typed MOD-0117
+  transition/reference olabilir. Benefit/value aktif orchestration DCP-006'dadır.
 
 ## 20. Audit and reconciliation notes
 
+### Change log
+
+| Date | Change | Authority |
+|---|---|---|
+| 2026-07-28 | OD-07 scope partition: C1 retired from the active sequence; C2–C6 retained as deferred/non-executable legacy safe-parity planning; DCP-006 established as sole active 1.3/MOD-0117 orchestration. | Enterprise Architect — interim governance owner only |
+
+- 2026-07-28: **Scope partition** — DCP-006 became the sole active 1.3/MOD-0117 orchestration contract.
+  DCP-003 was retained as a deferred, non-executable legacy safe-parity planning source; C1 retired from its
+  active sequence and C2–C6 deferred. Enterprise Architect is interim governance owner only; permanent PPM
+  business owner remains TBD.
 - 2026-07-07: Migration feasibility audit (read-only) — eski backend/UI haritası, endpoint/view mapping, bloklayıcılar.
 - 2026-07-07: Governance audit (read-only) — MOD-0117 preflight exit 0; registry/master plan'da PPM yokluğu; MOD-0023/0280 sınır analizi.
 - 2026-07-07: Kullanıcı karar turu — B1/B7/B8 kapandı; ASSUMPTION-1 geçici kabul; DCP taslağı onaylanarak materialize edildi (`draft`).

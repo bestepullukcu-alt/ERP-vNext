@@ -2,7 +2,7 @@
 """verify_module_id.py — Module ID Canonicalization Gate (DCP-002).
 
 The Blueprint workbook
-    docs/System Capability & Implementation Blueprint - master 7.xlsx :: Blueprint_Data
+    docs/System Capability & Implementation Blueprint - master 8.1.xlsx :: Blueprint_Data
 is the canonical authority for MOD IDs and canonical capability names.
 
 Modes
@@ -25,7 +25,7 @@ import os
 import re
 import sys
 
-BLUEPRINT = "docs/System Capability & Implementation Blueprint - master 7.xlsx"
+BLUEPRINT = "docs/System Capability & Implementation Blueprint - master 8.1.xlsx"
 REGISTRY = "execution/registries/module-id-registry.md"
 PACK_GLOB = "execution/domains/*/module-packs/*.md"
 
