@@ -57,6 +57,19 @@ Documentation-only canonical alignment already applied to the working tree. Old 
 
 The unresolved items above have been mapped: `PSS-011 → MOD-0048`, `PSS-004 → MOD-0017-FU01`, `NEW-003 → MOD-0027-FU02`, `PSS-XCUT-SV → MOD-0287`; `MOD-0266`/`MOD-0008` name-aligned to Blueprint; `MOD-0169` retired; and the remainder to the temporary candidate namespace — `CAND-CAP-0001` (Tenant User / Identity Foundation ← MOD-0047), `CAND-CAP-0002` (SaaS Subscription, Plan & Entitlement ← MOD-0297, PSS-005/006/007/008, MOD-0298), `CAND-CAP-0003` (Platform Administration & Operations ← NEW-002, PSS-009/010), `CAND-CAP-0004` (Tenant Impersonation / Support Tooling ← NEW-004), `CAND-CAP-0005` (SaaS Billing & Invoicing ← MOD-0299). Candidate IDs are temporary governance identities pending Enterprise Architect canonical `MOD-xxxx` allocation; lifecycle: legacy → CAND-CAP alias → EA MOD-xxxx. Runtime literals `MOD-0297` / `MOD-0299` remain unchanged as legacy compatibility literals.
 
+### CAND-CAP-0007 reservation (Business Process Management)
+
+`CAND-CAP-0007` is reserved for **Business Process Management** as a temporary governance/documentation
+identity because `Blueprint_Data` has no exact canonical MOD row for this capability family. It is not a
+Blueprint-canonical module and remains `candidate / pending-EA` until an Enterprise Architect assigns a
+canonical identity. Its governance charter is `DCP-005`; the first planned member slice is
+`CAND-CAP-0007-FU01 — Process Architecture & Modeling`. The candidate identity and its FU identity must never
+be written into runtime literals, namespaces, permission keys, collection names, or event `ModuleCode`
+values. Existing frontend `mod-process-*` identifiers remain prototype/navigation identities only: they are
+not deprecated aliases, canonical aliases, module reservations, or implementation evidence. No production,
+runtime, frontend, Gateway, WorkCenter, service-scaffold, or executable BPMN authority is granted by this
+reservation.
+
 ## Minimal SoR Reconciliation Records
 
 | Field | Value |
