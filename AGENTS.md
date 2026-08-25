@@ -28,6 +28,7 @@ ERP-vNext/
 ├── .antigravity/                        Global Engineering System (ajanlar, kurallar, workflow'lar)
 ├── execution/                           Domain ve module execution katmanı
 │   └── domains/
+│       ├── business-process-management/  (BPM — governance scaffold; CAND-CAP-0007; production service yok)
 │       ├── developer-enablement/        (DEVEN — mevcut; Diten.DevEnablementService golden references)
 │       ├── pharmacovigilance/           (PVG — governance scaffold mevcut; DCP-004; production service yok)
 │       ├── master-data-management/       (MDM — governance scaffold mevcut; production service yok)
@@ -44,6 +45,7 @@ ERP-vNext/
 │   # Diten.MdmService/                   MDM service scaffold henüz oluşturulmadı
 │   # Diten.PpmService/                   PPM service henüz scaffold edilmedi; C1 "PPM Work Records Core" module pack onayı olmadan oluşturulmaz (DCP-003)
 │   # Diten.PvgService/                   PVG service scaffold henüz oluşturulmadı; DCP-004 approved/ready-for-execution + üye module pack approved/ready-for-dev onayı olmadan oluşturulmaz
+│   # BPM production service              Henüz kararlaştırılmadı veya oluşturulmadı; DCP-005 + üye pack onayı ve açık kullanıcı yetkisi olmadan scaffold edilmez
 ├── frontend/                            Razor MVC + Sneat PRO + DataTables v2
 │   └── Diten.Web/
 ├── gateway/                             Ocelot API Gateway
@@ -220,7 +222,7 @@ Fix/refactor işleri için: [.antigravity/rules/GEMINI.md](.antigravity/rules/GE
 feature/{domain-kısa}/{module-id}-{slug}
 ```
 
-- `domain-kısa`: `mdm` | `pss` | `deven` | `esbp` | `ppm` | `pvg`
+- `domain-kısa`: `bpm` | `mdm` | `pss` | `deven` | `esbp` | `ppm` | `pvg`
 - `module-id`: `mdm-001`, `pss-002`, vb. (küçük harf)
 - `slug`: 2-4 kelimelik kısa isim
 
