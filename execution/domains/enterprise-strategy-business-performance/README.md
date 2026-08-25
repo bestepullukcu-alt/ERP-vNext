@@ -67,8 +67,8 @@ module pack'leri `_LayoutTenantShell` kullanır; `_Layout.cshtml` değiştirilme
 
 - [domain-config.md](domain-config.md) — domain sınırları, repo scope, sahiplik ve Gate 2 kontratı
 - [module-packs/](module-packs/) — gelecekteki onaylı modül sözleşmeleri
-- [DCP-005](../../portfolio/delivery-capability-packs/DCP-005-management-governance-core.md) — ordered delivery ve üst seviye gate'ler
-- [Control Tower master plan](../../../docs/enterprise-strategy-control-tower-master-plan.md)
+- [DCP-005](../../portfolio/delivery-capability-packs/DCP-005-management-governance-core.md) — historical/foundation governance ve Gate provenance kaynağı
+- [DCP-006](../../portfolio/delivery-capability-packs/DCP-006-portfolio-delivery-process-core.md) — 1.3/1.4/1.6 için tek aktif orchestration contract
 
 ## Yeni Modül Akışı
 
