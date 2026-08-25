@@ -5139,6 +5139,7 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - **Gelecek regresyon riski: 🟢**
 
 ### BL-241 — [ÖLÇÜLDÜ, AÇIK] Engelleyici kontrol listesi maddesi `complete`i engellemedi
+- ✅ **KAPANDI — KUSUR YOK, CT ÖLÇTÜ 2026-08-24.** Kural sunucuda UYGULANIYOR: `TaskItemTransitionHandlers.cs:261` — `Done` hedefinde `BlocksCompletion(checklist)` doğruysa **409 `ChecklistIncomplete`**. Kuralın kapsamı da kodun kendi yorumunda yazılı: *"Only **Blocking** items gate completion — an unfinished `Required` item is an expectation, not a barrier."* Yeni eklenen maddenin varsayılan seviyesi **`Optional`** (`diten-checkitem.js:102`) ve ekleme satırındaki çip bunu ekranda "İsteğe bağlı" diye söylüyor. Yani seviyesi değiştirilmemiş bir madde engellemez ve `204` **beklenen** cevaptır. Ekran zorunlu olmayan bir adımı zorunlu göstermiyor.
 - Ölçüm (2026-08-25, görev `de76acfa`): `addChecklistItem` ile `{ text, required: true, blocking: true }`
   eklendi (204 döndü), ardından aynı görev `complete` edildi — **204, ret yok**.
 - ⚠ Bu tek başına kanıt DEĞİL: `addChecklistItem` isteğinin `required`/`blocking` bayraklarını okuyup
