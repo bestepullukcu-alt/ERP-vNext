@@ -4970,7 +4970,6 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - **Gelecek regresyon riski: 🟡** — kullanıcı sayaca güvenip yanlış süre bildirebilir.
 
 ### BL-234 GÜNCELLEME (2026-08-24, Tur C) — tik tak eden gösterge GEÇİCİ OLARAK KALDIRILDI
-- ✅ **KAPANDI — CT DOĞRULADI 2026-08-24 (Tur C).** Tik tak eden gösterge ve saniyelik `setInterval` kaldırıldı; canlı ölçüm: kart yalnız "3sa 45dk girildi" diyor, `wcn-ts-live`/`wcnTimerValue` DOM'da yok. Entity alanı eklenmedi — doğru çözüm MOD-0280'e ait (blueprint, HCM, EA-TBD).
 - Durum: **[GEÇİCİ ÇÖZÜM UYGULANDI]** — özellik yazılmadı, yalan söylemek durduruldu.
 - Kaldırılan: `wcn-ts-live` / `wcnTimerValue` göstergesi ve onu boyayan bir saniyelik `setInterval`.
 - **Kalanlar (hepsi gerçek):** TOPLAM (`loggedMinutes`, saklanıyor, yenilemede korunuyor) · görevin DURUMU ·
@@ -5024,7 +5023,6 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - **Gelecek regresyon riski: 🟡.**
 
 ### BL-189 KAPANDI (2026-08-24, Tur C) — modül kendi dinleyicilerini söküyor
-- ✅ **KAPANDI — CT DOĞRULADI 2026-08-24 (Tur C).** `window.__wcnTeardown` canlı ölçüldü (`typeof` = function): boot önceki örneğin dinleyicilerini söküyor. Üretim davranışı, test uyarlaması değil.
 - Bütün dinleyiciler `document` üzerinde, dolayısıyla ikinci bir boot birincinin ÜSTÜNE biniyordu: tek tık
   `onClick`'i **iki kez**, iki farklı `state` nesnesine karşı çalıştırıyordu.
 - Boot'ta `global.__wcnTeardown` çağrılıyor; click/change/input/keydown sökülüyor ve sayaç durduruluyor.
@@ -5033,7 +5031,6 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - Testle kilitli: eklenen her boot dinleyicisinin bir `removeEventListener` karşılığı olmalı.
 
 ### BL-222 KAPANDI (2026-08-24, Tur C) — "minimum görünür satır" yazıldı
-- ✅ **KAPANDI (Tur C).** Kural `fixture-contract.js`'te tek yerde. ⚠ Ajan kendi testinin zayıflığını da kaydetti: ilk hâli, aradığı dizeler yorumda da geçtiği için nesne silinmesine rağmen yeşil kalmıştı — düzeltildi.
 - Kural `fixture-contract.js`'te **tek yerde**: `MINIMUM_VISIBLE_ROW` + `inTab`'den ÖLÇÜLEREK çıkarılmış dört
   koşul (`catalogVisible !== false` · `!dismissed` · `itemInScope` · `tab` eşleşmesi, `history` hariç terminal
   satırlar gizli).
