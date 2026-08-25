@@ -4428,6 +4428,7 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - **Gelecek regresyon riski: 🟢** (katkısal; sözlükler ve kart sözleşmesi el değmedi).
 
 ### BL-211 — [YAPILMADI] Bağımlılık durum sözlüğünde büyük/küçük harf tutarsız
+- ✅ **KAPANDI — CT DOĞRULADI 2026-08-24.** `DepDone` artık "Tamamlandı"; üçü de ürünün kendi durum sözlüğüyle aynı. Kayıt turlar arasında güncellenmemişti.
 - Canlı ölçüldü (`ISLERIM-WORK-ACTIVE`, tr): rozetler **"tamam" · "devam" · "başlamadı"** küçük harfle
   başlarken `DepCancelled` **"İptal edildi"** büyük harfle ve tam cümle gibi.
 - Sahibin bu turdaki talimatı sözlüğün **değişmemesiydi** (`DEP_STATE_KEY` / `DEP_STATE_KIND`, `cancelled`
@@ -4436,6 +4437,7 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - **Gelecek regresyon riski: 🟢.**
 
 ### BL-212 — [YAPILMADI] Engel afişindeki `FS` çipi hâlâ tek taşıyıcı
+- ✅ **KAPANDI — CT DOĞRULADI 2026-08-24.** Afişteki kısaltma `wcn-dep-abbr` dipnotu olarak çiziliyor (canlı ölçüldü, ISLERIM-WORK-BLOCKED), kırmızı hap gitti. Kart ile afiş tek dil konuşuyor.
 - `renderBlocked` satırları `<span class="wcn-chip wcn-chip-danger wcn-dep-type" title="…">FS</span>`
   kullanmayı sürdürüyor: kısaltmanın açılımı orada **hâlâ yalnız tooltip'te**.
 - Orada cümle zaten var (`BlockerFinishToStart` ailesi), yani afiş bağımlılık satırı kadar kör değil — ama
@@ -4483,6 +4485,7 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - **Gelecek regresyon riski: 🟢** (görünüm tek tanıma indi; sözleşme genişlemedi).
 
 ### BL-214 — [YAPILMADI] İki diyalog kullanıcı arayüzünden ULAŞILAMIYOR
+- ✅ **KAPANDI — CT DOĞRULADI 2026-08-24.** Tur B'de silindi: `runBulk`/`bulkBar` sıfır eşleşme, `openNew` yalnız silinme gerekçesini anlatan bir yorum olarak duruyor.
 - **"+ Yeni" Swal menüsü (`openNew`, app.js:7012):** dispatch onu yalnız `data-wcn-new` değeri
   task/note/meeting/source **olmayan** bir düğme için çağırıyor. Canlı ölçüldü: DOM'daki dört düğmenin
   dördü de bilinen kind taşıyor → **hiçbir tıklama buraya varmıyor**. Liste sayfasındaki "+ Yeni" artık bir
@@ -4506,6 +4509,7 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - **Gelecek regresyon riski: 🟡** — paket değişirse bu dört ekran ayrışır.
 
 ### BL-216 — [YAPILMADI] Referans diyaloğun kendi placeholder'ı, sahibin A-kuralını çiğniyor
+- ✅ **KAPANDI — CT DOĞRULADI 2026-08-24.** Ertele kutusunun placeholder'ı `YYYY-AA-GG`; etiket ayrıca duruyor. Referans artık kendi kuralını çiğnemiyor.
 - Sahibin (A) kuralı: placeholder GERÇEK BİR ÖRNEK olacak, alan adının tekrarı değil.
 - Ölçüldü: **ertele diyaloğu** — bu turun REFERANSI — tarih kutusuna placeholder olarak
   `SnoozeUntilLabel` ("Hangi tarihe kadar") koyuyor; bu bir soru, örnek değil. `SnoozeDatePlaceholder`
@@ -4602,6 +4606,7 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - **Gelecek regresyon riski: 🟡** — kullanıcı bir toplantı planladığını sanıp takvimde bulamaz.
 
 ### BL-220 — [KAYIT] Notlar ve ajanda PANELLERİ hep boş
+- ✅ **KAPANDI — CT DOĞRULADI 2026-08-24.** Tur B'de paneller kaldırıldı; `/WorkCenterNext` üzerinde panel düğmesi ve `#wcnSidePanel` sıfır. BL-218 ile birlikte geri gelecekler.
 - İkisi de liste sayfasının parçası; `state.notes` / `state.meetings` artık hiç doldurulmuyor (BL-217), yani
   panellerin ikisi de kalıcı olarak boş.
 - Bu turda **kasıtlı olarak değiştirilmediler**: kaderleri liste sayfasının kendi turunda kararlaşacak
@@ -4829,6 +4834,7 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - **Gelecek regresyon riski: 🟡** — okunabilirlik borcu, her yeni "soluk" satırda büyüyor.
 
 ### BL-230 — [KAYIT] İki ölü yol: afişteki kısaltma ve `SnoozeDatePlaceholder`
+- ✅ **KAPANDI — CT DOĞRULADI 2026-08-24.** İki ölü yol da canlandı: afişteki kısaltma fixture eklendikten sonra çiziliyor, `SnoozeDatePlaceholder` hem resx'te hem çağrıda kullanılıyor.
 - **Afişteki `FS` kısaltması hiç çizilmiyor:** hiçbir fixture ve hiçbir canlı öğe `blocker.dependencyType`
   taşımıyor. Kod ve testi hazır, veri yok. Bir fixture eklenirse görünür olur.
 - **`SnoozeDatePlaceholder`** ("YYYY-MM-DD", yerelleştirilmemiş) BL-228 ile kullanımdan çıktı; yerini
