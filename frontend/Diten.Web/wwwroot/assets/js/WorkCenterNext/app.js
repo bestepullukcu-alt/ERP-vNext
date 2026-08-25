@@ -165,6 +165,8 @@
         sortDir: 'asc',
         pageLength: 10,
         listPage: 0,
+        // `YYYY-MM`, or null for "the month we are in" — see `calendarAnchor`.
+        calendarMonth: null,
         tableColumnVisibility: [true, true, true, true, true, true, true, true],
         loadState: 'loading',
         loadError: null,
@@ -246,6 +248,9 @@
         // link nobody would type. Anything unparseable stays on page 1 rather than blanking the list.
         const page = parseInt(params.get('page'), 10);
         state.listPage = Number.isFinite(page) && page > 0 ? page - 1 : 0;
+        // Shape-checked rather than whitelisted: any month is legitimate, but only `YYYY-MM` is a month.
+        const month = params.get('month');
+        state.calendarMonth = month && /^\d{4}-\d{2}$/.test(month) ? month : null;
         if (state.tab !== 'islerim') { state.segment = 'aktif'; }
     };
 
@@ -272,6 +277,8 @@
         put('sort', state.sortKey, 'sla');
         put('dir', state.sortDir, 'asc');
         put('page', state.listPage > 0 ? String(state.listPage + 1) : '', '');
+        // Only when the reader has moved off the current month — the default stays out of the URL.
+        put('month', state.calendarMonth || '', '');
         global.history.replaceState({ workCenterNext: true }, '', url.pathname + url.search + url.hash);
     };
 
@@ -5385,6 +5392,24 @@
      * this file); the only additions are the calendar's missing empty state and this note.
      */
 
+    /*
+     * Which month the grid is showing. `state.calendarMonth` is a `YYYY-MM` string or null for "today's month",
+     * so the default costs no state and the URL stays clean until the reader actually moves.
+     */
+    const calendarAnchor = () => {
+        const iso = state.calendarMonth && /^\d{4}-\d{2}$/.test(state.calendarMonth)
+            ? state.calendarMonth + '-01'
+            : data.todayIso.slice(0, 7) + '-01';
+        return new Date(iso + 'T00:00:00');
+    };
+    const shiftMonth = (delta) => {
+        const at = calendarAnchor();
+        const next = new Date(at.getFullYear(), at.getMonth() + delta, 1);
+        const key = `${next.getFullYear()}-${pad2(next.getMonth() + 1)}`;
+        // Back to the default rather than storing today's own month: same state, one less thing in the URL.
+        state.calendarMonth = key === data.todayIso.slice(0, 7) ? null : key;
+    };
+
     const renderCalendar = () => {
         const items = activeItems();
         /*
@@ -5396,8 +5421,9 @@
         state.visibleOrder = items.map((i) => i.id);
         const lang = (document.documentElement.lang || 'tr').slice(0, 2);
         const today = new Date(data.todayIso + 'T00:00:00');
-        const year = today.getFullYear();
-        const month = today.getMonth();
+        const at = calendarAnchor();
+        const year = at.getFullYear();
+        const month = at.getMonth();
         const first = new Date(year, month, 1);
         const startDow = (first.getDay() + 6) % 7;               // Monday = 0
         const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -5428,13 +5454,42 @@
                 <span class="wcn-cal-day">${d}</span>${entries}
             </div>`);
         }
+        /*
+         * ── WHAT IS NOT ON THIS SCREEN (2026-08-25, BL-256) ───────────────────────────────────────────────
+         *
+         * MEASURED before the month control existed: 30 items in the list, 6 in the grid — the other 24 sat in
+         * July and September with nothing on screen saying so. A month view that shows a fifth of the list and
+         * stays silent is the same lie this session removed from the chips and the columns.
+         *
+         * ⚠ THE SENTENCE STAYS EVEN THOUGH THE ARROWS EXIST. Navigation answers "let me look"; this answers
+         * "is there anything to look for" — and a reader should not have to click through months to find out.
+         *
+         * ⚠ DATELESS ITEMS ARE COUNTED SEPARATELY because no amount of navigating will ever reach them.
+         * Measured at ZERO on live data today (every task carries a `dueAt`), which is exactly why it is
+         * written as a condition rather than assumed away.
+         */
+        const monthKey = `${year}-${pad2(month + 1)}`;
+        const dateOf = (i) => i.dueAt || i.plannedDate || null;
+        const dateless = items.filter((i) => !dateOf(i)).length;
+        const elsewhere = items.filter((i) => { const d = dateOf(i); return d && String(d).slice(0, 7) !== monthKey; }).length;
+        const outside = elsewhere || dateless
+            ? `<p class="wcn-cal-outside" role="note"><i class="bx bx-info-circle" aria-hidden="true"></i>${
+                esc(dateless ? tf('CalOutsideAndUndated', elsewhere, dateless) : tf('CalOutside', elsewhere))}</p>`
+            : '';
+        const isCurrent = monthKey === data.todayIso.slice(0, 7);
+        const nav = `<span class="wcn-cal-nav btn-group btn-group-sm">
+            <button type="button" class="btn btn-label-secondary btn-icon" data-wcn-cal-month="prev" aria-label="${esc(t('CalPrevMonth'))}"><i class="bx bx-chevron-left"></i></button>
+            <button type="button" class="btn btn-label-secondary${isCurrent ? ' disabled' : ''}" data-wcn-cal-month="today"${isCurrent ? ' disabled' : ''}>${esc(t('CalToday'))}</button>
+            <button type="button" class="btn btn-label-secondary btn-icon" data-wcn-cal-month="next" aria-label="${esc(t('CalNextMonth'))}"><i class="bx bx-chevron-right"></i></button>
+        </span>`;
         return `<div class="wcn-calendar">
             <div class="wcn-cal-head">
-                <span class="wcn-cal-month">${esc(monthTitle)}</span>
+                <span class="wcn-cal-month">${esc(monthTitle)}</span>${nav}
                 <span class="wcn-cal-legend"><span class="wcn-cal-lg wcn-cal-due"></span>${esc(t('CalLegendDue'))} <span class="wcn-cal-lg wcn-cal-plan"></span>${esc(t('CalLegendPlan'))}</span>
             </div>
             <div class="wcn-cal-weekdays">${wd.map((w) => `<span>${esc(w)}</span>`).join('')}</div>
             <div class="wcn-cal-grid">${cells.join('')}</div>
+            ${outside}
         </div>`;
     };
 
@@ -5443,13 +5498,36 @@
         const items = activeItems();
         if (!items.length) { return emptyState(); }
         state.visibleOrder = [];
-        let cols;
-        if (SEGMENTS[state.tab]) {
-            cols = [{ label: t(SEGMENT_KEY[state.segment]), items }];
-        } else {
-            const order = ['Pending', 'In Progress', 'Waiting', 'Done', 'Cancelled'];
-            cols = order.map((st) => ({ label: t(STATUS_KEY[st]), items: items.filter((i) => i.status === st) })).filter((c) => c.items.length);
-        }
+        /*
+         * ── THE COLUMNS ARE THE FLOW, ON EVERY TAB (2026-08-25, BL-257) ───────────────────────────────────
+         *
+         * This used to ask `SEGMENTS[state.tab]` first and, on a tab that has segments, draw ONE column
+         * labelled with the current segment. Measured on İşlerim: a single "Aktif 30" column — a board that is
+         * a list with extra furniture. A board whose shape changes with the tab is two boards under one name.
+         *
+         * ⚠ THE SEGMENT FILTER STILL APPLIES; it just stops deciding the columns. `activeItems()` has already
+         * narrowed to "Aktif", and the board arranges THAT by stage.
+         *
+         * ⚠ FLOW ORDER, NOT ALPHABETICAL — Pending → In Progress → Waiting → Done → Cancelled is the order the
+         * work moves in, and a board read left-to-right is the only reason to prefer it over a list.
+         *
+         * ⚠ AN EMPTY STAGE IS DRAWN; AN IMPOSSIBLE ONE IS NOT — and the difference was measured, not assumed.
+         * `inTab` sorts terminal work into History and non-terminal work everywhere else, so Done and Cancelled
+         * CANNOT occur outside History and the other three cannot occur inside it. Drawing all five everywhere
+         * would put two or three permanently empty columns on every board — the same promise-of-a-population
+         * this session removed from the chips and the table's columns. So: a stage this tab can reach is drawn
+         * even at zero (the flow stays readable); a stage it can never reach is left out.
+         */
+        const FLOW = ['Pending', 'In Progress', 'Waiting', 'Done', 'Cancelled'];
+        const TERMINAL_STATES = ['Done', 'Cancelled'];
+        const reachable = (st) => (state.tab === 'history'
+            ? TERMINAL_STATES.indexOf(st) >= 0
+            : TERMINAL_STATES.indexOf(st) < 0);
+        const cols = FLOW.filter(reachable)
+            .map((st) => ({ label: t(STATUS_KEY[st]), items: items.filter((i) => i.status === st) }));
+        // Every reachable stage empty means the board has nothing to arrange — the product's empty-state
+        // sentence, not five empty columns with a heading each.
+        if (!cols.some((col) => col.items.length)) { return emptyState(); }
         const colHtml = cols.map((col) => {
             const cards = col.items.slice().sort(bySla).map((item) => { state.visibleOrder.push(item.id); return kanbanCard(item); }).join('');
             return `<div class="wcn-kcol">
@@ -8219,6 +8297,14 @@
         }
         if (event.target.closest('[data-wcn-chip-clear]')) { state.typeFilter.clear(); state.signalFilter.clear(); render(); return; }
         if (event.target.closest('[data-wcn-search-clear]')) { state.search = ''; render(); return; }
+        const calMonthEl = event.target.closest('[data-wcn-cal-month]');
+        if (calMonthEl) {
+            const dir = calMonthEl.getAttribute('data-wcn-cal-month');
+            if (dir === 'today') { state.calendarMonth = null; } else { shiftMonth(dir === 'next' ? 1 : -1); }
+            render();
+            return;
+        }
+
         const listPageEl = event.target.closest('[data-wcn-list-page]');
         if (listPageEl) {
             state.listPage = Math.max(0, state.listPage + (listPageEl.getAttribute('data-wcn-list-page') === 'next' ? 1 : -1));

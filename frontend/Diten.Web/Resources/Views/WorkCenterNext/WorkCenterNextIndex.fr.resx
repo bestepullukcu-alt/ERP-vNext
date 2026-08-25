@@ -1018,6 +1018,21 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>Lecture seule — le statut change dans la source ; ici, seulement plan/épingle personnels.</value>
   </data>
+  <data name="CalPrevMonth" xml:space="preserve">
+    <value>Mois précédent</value>
+  </data>
+  <data name="CalNextMonth" xml:space="preserve">
+    <value>Mois suivant</value>
+  </data>
+  <data name="CalToday" xml:space="preserve">
+    <value>Aujourd'hui</value>
+  </data>
+  <data name="CalOutside" xml:space="preserve">
+    <value>{0} éléments sont sur d’autres mois.</value>
+  </data>
+  <data name="CalOutsideAndUndated" xml:space="preserve">
+    <value>{0} éléments sont sur d’autres mois ; {1} sans date n’apparaissent jamais au calendrier.</value>
+  </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>Échéance source</value>
   </data>

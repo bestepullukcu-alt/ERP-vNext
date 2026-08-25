@@ -1018,6 +1018,21 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>Read-only — status changes in the source; here you only set personal plan/pin.</value>
   </data>
+  <data name="CalPrevMonth" xml:space="preserve">
+    <value>Previous month</value>
+  </data>
+  <data name="CalNextMonth" xml:space="preserve">
+    <value>Next month</value>
+  </data>
+  <data name="CalToday" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="CalOutside" xml:space="preserve">
+    <value>{0} items fall in other months.</value>
+  </data>
+  <data name="CalOutsideAndUndated" xml:space="preserve">
+    <value>{0} items fall in other months; {1} have no date and never appear on the calendar.</value>
+  </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>Source due</value>
   </data>

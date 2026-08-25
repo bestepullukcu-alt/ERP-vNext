@@ -1018,6 +1018,21 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>Solo lectura — el estado cambia en el origen; aquí solo plan/fijado personal.</value>
   </data>
+  <data name="CalPrevMonth" xml:space="preserve">
+    <value>Mes anterior</value>
+  </data>
+  <data name="CalNextMonth" xml:space="preserve">
+    <value>Mes siguiente</value>
+  </data>
+  <data name="CalToday" xml:space="preserve">
+    <value>Hoy</value>
+  </data>
+  <data name="CalOutside" xml:space="preserve">
+    <value>{0} elementos están en otros meses.</value>
+  </data>
+  <data name="CalOutsideAndUndated" xml:space="preserve">
+    <value>{0} elementos están en otros meses; {1} no tienen fecha y nunca aparecen en el calendario.</value>
+  </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>Vencim. origen</value>
   </data>

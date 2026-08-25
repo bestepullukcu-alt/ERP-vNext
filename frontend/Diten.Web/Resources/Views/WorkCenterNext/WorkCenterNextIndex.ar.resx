@@ -1018,6 +1018,21 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>للقراءة فقط — تتغيّر الحالة في المصدر؛ هنا فقط الخطة/التثبيت الشخصي.</value>
   </data>
+  <data name="CalPrevMonth" xml:space="preserve">
+    <value>الشهر السابق</value>
+  </data>
+  <data name="CalNextMonth" xml:space="preserve">
+    <value>الشهر التالي</value>
+  </data>
+  <data name="CalToday" xml:space="preserve">
+    <value>اليوم</value>
+  </data>
+  <data name="CalOutside" xml:space="preserve">
+    <value>{0} عنصرًا في أشهر أخرى.</value>
+  </data>
+  <data name="CalOutsideAndUndated" xml:space="preserve">
+    <value>{0} عنصرًا في أشهر أخرى؛ و{1} بلا تاريخ ولا تظهر في التقويم أبدًا.</value>
+  </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>استحقاق المصدر</value>
   </data>

@@ -1018,6 +1018,21 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>只读——状态在来源中更改；此处仅设置个人计划/置顶。</value>
   </data>
+  <data name="CalPrevMonth" xml:space="preserve">
+    <value>上个月</value>
+  </data>
+  <data name="CalNextMonth" xml:space="preserve">
+    <value>下个月</value>
+  </data>
+  <data name="CalToday" xml:space="preserve">
+    <value>今天</value>
+  </data>
+  <data name="CalOutside" xml:space="preserve">
+    <value>另有 {0} 项在其他月份。</value>
+  </data>
+  <data name="CalOutsideAndUndated" xml:space="preserve">
+    <value>另有 {0} 项在其他月份；{1} 项没有日期，永远不会出现在日历中。</value>
+  </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>来源截止</value>
   </data>

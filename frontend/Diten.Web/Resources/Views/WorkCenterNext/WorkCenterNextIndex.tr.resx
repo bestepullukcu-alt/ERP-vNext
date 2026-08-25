@@ -1018,6 +1018,21 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>Salt-okunur — durum kaynağında değişir; buradan yalnızca kişisel plan/sabitleme.</value>
   </data>
+  <data name="CalPrevMonth" xml:space="preserve">
+    <value>Önceki ay</value>
+  </data>
+  <data name="CalNextMonth" xml:space="preserve">
+    <value>Sonraki ay</value>
+  </data>
+  <data name="CalToday" xml:space="preserve">
+    <value>Bugün</value>
+  </data>
+  <data name="CalOutside" xml:space="preserve">
+    <value>Başka aylarda {0} iş var.</value>
+  </data>
+  <data name="CalOutsideAndUndated" xml:space="preserve">
+    <value>Başka aylarda {0} iş var; {1} işin tarihi yok ve takvimde görünmüyor.</value>
+  </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>Kaynak son tarih</value>
   </data>

@@ -5549,3 +5549,36 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - Karar gerekiyor: (a) ay ileri/geri kontrolü eklensin · (b) takvim "önümüzdeki 30 gün" gibi kayan bir
   pencereye geçsin · (c) bugünkü hâliyle kalsın ve başlık ayın adını taşıdığı için yeterli sayılsın.
 - **Gelecek regresyon riski: 🟡** — kullanıcı 30 öğelik bir listeden 6'sını görüp gerisinin olmadığını sanabilir.
+
+### BL-256 güncelleme (2026-08-25) — KAPANDI: takvim gezinilebilir ve dışarıda kalanı söylüyor
+- CT kararı (a) uygulandı: **ay geri / Bugün / ay ileri**. "Bugün"deyken o düğme kapalı.
+- Seçili ay URL'ye yazılıyor (`?month=2026-09`), varsayılan ay **URL'de yer kaplamıyor** — "Bugün"e dönünce
+  parametre siliniyor. Okuma biçim kontrolüyle (`YYYY-MM`), beyaz listeyle değil: her ay meşru, ama yalnız
+  `YYYY-MM` bir aydır.
+- ⚠ **CÜMLE, OKLAR OLMASINA RAĞMEN KALDI** — CT'nin ayrı maddesi. Gezinme "bakayım" sorusunu yanıtlar; bu cümle
+  "bakacak bir şey var mı" sorusunu. Okuyucu aylarca tıklayarak öğrenmemeli.
+  Canlı: Ağustos'ta *"Başka aylarda 24 iş var."* · Eylül'de *"…9 iş var."* · Temmuz'da *"…27 iş var."*
+- ⚠ **CÜMLE ÖĞE SAYIYOR, GİRDİ DEĞİL.** Kişisel planı ayrı bir güne düşen bir görev takvimde İKİ kez çiziliyor
+  (son tarih + plan, ayrı ayrı açıklamalı). Temmuz'da 4 girdi = 3 öğe ölçüldü; **3 + 27 = 30 = liste.**
+- ⚠ **TARİHSİZ ÖĞE AYRI SAYILIYOR** çünkü hiçbir gezinme onlara ulaşamaz. Canlı veride **sıfır** ölçüldü (her
+  görevde `dueAt` var) — tam da bu yüzden varsayım değil, koşul olarak yazıldı (`CalOutsideAndUndated`).
+- 5 yeni anahtar, **7 dil**.
+- **SÜZME KANITI** (İşlerim): çip kapalı → liste 30 · kanban 30 · takvim (görünen + dışarıda) 30.
+  Bloke açık → 4 · 4 · 4.
+- **Gelecek regresyon riski: 🟢**
+
+### BL-257 — [DÜZELTİLDİ 2026-08-25] Kanban sekmeye göre şekil değiştiriyordu
+- Ölçüm: segmentsiz sekmelerde durum sütunları, segmentli sekmede tek "Aktif 30" sütunu — yani İşlerim'de pano
+  bir listeden farksızdı. **Tek isim altında iki pano.**
+- Artık her sekmede yaşam döngüsü sütunları. Segment süzgeci **çalışmaya devam ediyor**, yalnız sütunları
+  belirlemiyor: `activeItems()` zaten "Aktif"e daraltıyor, pano onu aşamalara diziyor.
+- Sıra **akışın sırası**: Beklemede → Devam ediyor → Bekliyor → Tamamlandı → İptal edildi. Alfabetik değil,
+  çünkü soldan sağa okunabilmesi panoyu listeden ayıran tek şey.
+- ⚠ **BOŞ SÜTUN ÇİZİLİYOR, İMKÂNSIZ SÜTUN ÇİZİLMİYOR — ve fark ÖLÇÜLDÜ.** `inTab` terminal işi Geçmiş'e,
+  terminal olmayanı diğer sekmelere ayırıyor; yani Tamamlandı/İptal Geçmiş dışında **oluşamaz**, diğer üçü de
+  Geçmiş'in içinde. Beşini her yerde çizmek, her panoya iki-üç kalıcı boş sütun koymak olurdu — bu oturumda
+  çiplerden ve tablo sütunlarından kaldırdığımız "var olmayan topluluğu vaat etme" sınıfının aynısı.
+  **Canlı sayım:** İşlerim 3 sütun (13 · 17 · **0**) · Havuz 3 sütun (2 · **0** · **0**) · Geçmiş 2 sütun (9 · 9).
+  Yani ulaşılabilir ama boş aşama çiziliyor ve akış okunuyor.
+- Ulaşılabilir her aşama boşsa pano ürünün **boş durum cümlesine** düşüyor — beş başlık altında beş boş kutu değil.
+- **Gelecek regresyon riski: 🟢**

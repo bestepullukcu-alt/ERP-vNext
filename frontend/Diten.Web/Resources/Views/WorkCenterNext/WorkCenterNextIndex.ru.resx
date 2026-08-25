@@ -1018,6 +1018,21 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>Только чтение — статус меняется в источнике; здесь только личный план/закрепление.</value>
   </data>
+  <data name="CalPrevMonth" xml:space="preserve">
+    <value>Предыдущий месяц</value>
+  </data>
+  <data name="CalNextMonth" xml:space="preserve">
+    <value>Следующий месяц</value>
+  </data>
+  <data name="CalToday" xml:space="preserve">
+    <value>Сегодня</value>
+  </data>
+  <data name="CalOutside" xml:space="preserve">
+    <value>Ещё {0} задач в других месяцах.</value>
+  </data>
+  <data name="CalOutsideAndUndated" xml:space="preserve">
+    <value>Ещё {0} задач в других месяцах; у {1} нет даты, и они никогда не появятся в календаре.</value>
+  </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>Срок источника</value>
   </data>
