@@ -190,7 +190,7 @@
     const STATE_VALUES = {
         tab: ['inbox', 'islerim', 'havuz', 'history'],
         segment: ['aktif', 'bekleyen', 'planli'],
-        view: ['list', 'table', 'focus'],
+        view: ['list', 'table', 'split', 'kanban', 'calendar', 'focus'],
         priority: ['all', 'High', 'Medium', 'Low'],
         mode: ['all', 'direct', 'approval', 'groupQueue', 'offered'],
         // ⚠ THE SORT KEYS ARE NOT LISTED HERE — they are validated against `SORTERS` instead, which is the
@@ -1033,11 +1033,19 @@
     // Split / Kanban / Calendar are deferred to the backlog (BL-*) — the row detail is
     // now its own page (openDetailPage → /WorkCenterNext/Details/{id}), so the in-app
     // split panel is retired. Remaining views: List · Table · (Focus in İşlerim).
+    /*
+     * ⚠ CALENDAR IS OFFERED ONLY WHERE A DATE MEANS SOMETHING. Measured on live data: `dueAt` is set on 76/76
+     * items, so every tab can fill a month. `plannedDate` — the reader's OWN date — exists on 4/76, which is
+     * why the calendar draws both kinds and legends them separately rather than promising a planning board.
+     *
+     * ⚠ KANBAN IS NOT OFFERED IN THE INBOX. Its columns are lifecycle states, and an inbox row has exactly one
+     * (waiting to be accepted); one column holding everything is a list with extra furniture.
+     */
     const TAB_VIEWS = {
-        inbox: ['list', 'table'],
-        islerim: ['list', 'table', 'focus'],
-        havuz: ['list', 'table'],
-        history: ['list', 'table']
+        inbox: ['list', 'table', 'split', 'calendar'],
+        islerim: ['list', 'table', 'split', 'kanban', 'calendar', 'focus'],
+        havuz: ['list', 'table', 'split', 'kanban', 'calendar'],
+        history: ['list', 'table', 'split', 'kanban', 'calendar']
     };
     const buildTabs = () => {
         const tab = (key) => {
@@ -1231,13 +1239,46 @@
         const pageLength = state.view === 'table'
             ? `<div class="dt-length"><label><span class="visually-hidden">${esc(t('RowsPerPage'))}</span><select class="form-select ms-0" data-wcn-page-length aria-label="${esc(t('RowsPerPage'))}">${[10, 25, 50, 100].map((size) => `<option value="${size}"${state.pageLength === size ? ' selected' : ''}>${size}</option>`).join('')}</select></label></div>`
             : '';
+        /*
+         * ── SORTING THE LIST (2026-08-25, BL-255) ─────────────────────────────────────────────────────────
+         *
+         * Only the TABLE could be sorted; the list, which is the default view, could not be sorted at all —
+         * even though `SORTERS`, `state.sortKey` and the `[data-wcn-sort]` handler were all sitting there.
+         *
+         * ⚠ THE PRODUCT'S OWN DROPDOWN, not a new pattern: the same `.dropdown` + `.wcn-menu-item` rows the row
+         * overflow and the column-visibility menu already use, in the same toolbar slot beside them.
+         *
+         * ⚠ ONE SORTER, ONE PARAMETER. It drives `state.sortKey` / `state.sortDir` — the very state the grid
+         * mirrors into — so switching list↔table keeps the order, and `?sort=&dir=` means the same thing in
+         * both views. A second sorting implementation is what made these two disagree in the first place.
+         *
+         * ⚠ NOT DRAWN FOR THE TABLE, which sorts from its own headers, and not for kanban/calendar, whose
+         * arrangement IS their sort (columns by state, cells by day). Offering it there would be a control that
+         * changes nothing.
+         */
+        const SORT_LABEL = { sla: 'ColSla', title: 'ColTitle', module: 'ColModule', type: 'ColType',
+            status: 'ColStatus', priority: 'ColPriority', requester: 'ColRequester' };
+        // What each sorter READS, so "does this tell two rows apart" can be asked of the same field the sort uses.
+        const SORT_FIELD = { module: (i) => i.sourceModule, type: (i) => i.itemType, status: (i) => i.status,
+            priority: (i) => i.priority, requester: (i) => i.requester };
+        const sortable = Object.keys(SORTERS)
+            // Same rule the table's columns follow: a key that cannot tell two rows apart is not offered.
+            .filter((key) => key === 'sla' || key === 'title' || distinguishes(activeItems(), SORT_FIELD[key]));
+        const sortMenu = (state.view === 'list' || state.view === 'split') ? `<div class="dropdown">
+            <button type="button" class="btn btn-icon btn-label-secondary wcn-sortbtn" data-bs-toggle="dropdown" aria-expanded="false" title="${esc(t('SortLabel'))}" aria-label="${esc(t('SortLabel'))}"><i class="icon-base bx bx-sort-alt-2 icon-sm"></i></button>
+            <ul class="dropdown-menu dropdown-menu-end">${sortable.map((key) => {
+                const on = state.sortKey === key;
+                const arrow = on ? (state.sortDir === 'asc' ? 'bx-up-arrow-alt' : 'bx-down-arrow-alt') : 'bx-minus';
+                return `<li><button type="button" class="dropdown-item wcn-menu-item${on ? ' active' : ''}" data-wcn-sort="${esc(key)}" aria-pressed="${on}"><i class="bx ${arrow}"></i><span class="wcn-menu-text"><span class="wcn-menu-label">${esc(t(SORT_LABEL[key]))}</span></span></button></li>`;
+            }).join('')}</ul>
+        </div>` : '';
         const colVis = state.view === 'table' ? `<div class="dropdown">
             <button type="button" class="btn btn-icon btn-label-secondary dt-colvis-btn position-relative d-none d-md-inline-flex wcn-colvis" data-bs-toggle="dropdown" aria-expanded="false" title="${esc(t('ColumnVisibility'))}" aria-label="${esc(t('ColumnVisibility'))}"><i class="icon-base bx bx-show icon-sm"></i></button>
             <div class="dropdown-menu dropdown-menu-end wcn-colvis-menu">${[{ key: 'ColType', col: 1 }, { key: 'ColTitle', col: 2 }, { key: 'ColModule', col: 3 }, { key: 'ColStatus', col: 4 }, { key: 'ColPriority', col: 5 }, { key: 'ColSla', col: 6 }, { key: 'ColRequester', col: 7 }].map((c) => `<label class="dropdown-item"><input type="checkbox" class="form-check-input me-2" data-wcn-column="${c.col}"${state.tableColumnVisibility[c.col] ? ' checked' : ''}>${esc(t(c.key))}</label>`).join('')}</div>
         </div>` : '';
         return `<div class="wcn-workspace-toolbar">
                 <div class="dt-layout-row row my-0 justify-content-between wcn-toolbar-row">
-                    <div class="dt-layout-start col-md-auto me-auto">${pageLength}</div>
+                    <div class="dt-layout-start col-md-auto me-auto d-flex align-items-center gap-2">${pageLength}${sortMenu}</div>
                     <div class="dt-layout-end col-md-auto ms-auto d-flex gap-md-4 justify-content-md-between justify-content-center gap-4 flex-wrap mt-0">
                         <div class="dt-search">${searchBox}</div>
                         <div class="dt-buttons dt-buttons-actions btn-group">${colVis}${filterBtn}</div>
@@ -5329,6 +5370,116 @@
     const TABLE_COLUMN_NAME = ['control', 'type', 'title', 'module', 'status', 'priority', 'sla', 'requester', 'action'];
     const TABLE_COLUMN_INDEX = TABLE_COLUMN_NAME.reduce((acc, name, i) => { acc[name] = i; return acc; }, {});
 
+
+    /*
+     * ── THE THREE VIEW MODES, RECONNECTED (2026-08-25, BL-233) ─────────────────────────────────────────────
+     *
+     * Tur B lifted these out of the DETAIL page, where they never belonged: each one takes a LIST and arranges
+     * it, so they are list-page views. They sat in a scratchpad while the detail page was finished.
+     *
+     * ⚠ FILTERING IS RESPECTED BY CONSTRUCTION, not by a rule repeated here: all three start from
+     * `activeItems()` — the same call `renderList` and `renderTable` make — so tab, segment, chips, search and
+     * the quick filters apply to them without a second implementation to keep in step.
+     *
+     * ⚠ NOTHING WAS REWRITTEN. The bodies are as they were measured (89 lines, 8 of 10 dependencies still in
+     * this file); the only additions are the calendar's missing empty state and this note.
+     */
+
+    const renderCalendar = () => {
+        const items = activeItems();
+        /*
+         * ⚠ AN EMPTY MONTH IS NOT A CALENDAR. This drew the grid unconditionally, so a filter that matched
+         * nothing produced 31 blank boxes and no sentence — the reader could not tell "nothing is due" from
+         * "the page failed". Same empty-state language as every other view.
+         */
+        if (!items.length) { return emptyState(); }
+        state.visibleOrder = items.map((i) => i.id);
+        const lang = (document.documentElement.lang || 'tr').slice(0, 2);
+        const today = new Date(data.todayIso + 'T00:00:00');
+        const year = today.getFullYear();
+        const month = today.getMonth();
+        const first = new Date(year, month, 1);
+        const startDow = (first.getDay() + 6) % 7;               // Monday = 0
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        let monthTitle;
+        try { monthTitle = new Intl.DateTimeFormat(lang, { month: 'long', year: 'numeric' }).format(first); }
+        catch (e) { monthTitle = (month + 1) + '/' + year; }
+        const wd = [];
+        for (let i = 0; i < 7; i++) {
+            try { wd.push(new Intl.DateTimeFormat(lang, { weekday: 'short' }).format(new Date(2024, 0, 1 + i))); }
+            catch (e) { wd.push(''); }
+        }
+        // Cluster items by day: source due + personal plan (distinct kinds).
+        const byDay = {};
+        items.forEach((i) => {
+            if (i.dueAt) { (byDay[i.dueAt] = byDay[i.dueAt] || []).push({ item: i, kind: 'due' }); }
+            if (i.plannedDate && i.plannedDate !== i.dueAt) { (byDay[i.plannedDate] = byDay[i.plannedDate] || []).push({ item: i, kind: 'plan' }); }
+        });
+        const cells = [];
+        for (let b = 0; b < startDow; b++) { cells.push('<div class="wcn-cal-cell wcn-cal-empty"></div>'); }
+        for (let d = 1; d <= daysInMonth; d++) {
+            const iso = `${year}-${pad2(month + 1)}-${pad2(d)}`;
+            const isToday = iso === data.todayIso;
+            const entries = (byDay[iso] || []).map((e) =>
+                `<div class="wcn-cal-item wcn-cal-${e.kind}" data-wcn-row="${e.item.id}" title="${esc(e.item.title)}" tabindex="0" role="button" aria-label="${esc(tf('TableOpenRow', e.item.title))}">
+                    <span class="wcn-cal-dot"></span><span class="wcn-cal-item-text">${esc(e.item.title)}</span>
+                </div>`).join('');
+            cells.push(`<div class="wcn-cal-cell${isToday ? ' wcn-cal-today' : ''}">
+                <span class="wcn-cal-day">${d}</span>${entries}
+            </div>`);
+        }
+        return `<div class="wcn-calendar">
+            <div class="wcn-cal-head">
+                <span class="wcn-cal-month">${esc(monthTitle)}</span>
+                <span class="wcn-cal-legend"><span class="wcn-cal-lg wcn-cal-due"></span>${esc(t('CalLegendDue'))} <span class="wcn-cal-lg wcn-cal-plan"></span>${esc(t('CalLegendPlan'))}</span>
+            </div>
+            <div class="wcn-cal-weekdays">${wd.map((w) => `<span>${esc(w)}</span>`).join('')}</div>
+            <div class="wcn-cal-grid">${cells.join('')}</div>
+        </div>`;
+    };
+
+
+    const renderKanban = () => {
+        const items = activeItems();
+        if (!items.length) { return emptyState(); }
+        state.visibleOrder = [];
+        let cols;
+        if (SEGMENTS[state.tab]) {
+            cols = [{ label: t(SEGMENT_KEY[state.segment]), items }];
+        } else {
+            const order = ['Pending', 'In Progress', 'Waiting', 'Done', 'Cancelled'];
+            cols = order.map((st) => ({ label: t(STATUS_KEY[st]), items: items.filter((i) => i.status === st) })).filter((c) => c.items.length);
+        }
+        const colHtml = cols.map((col) => {
+            const cards = col.items.slice().sort(bySla).map((item) => { state.visibleOrder.push(item.id); return kanbanCard(item); }).join('');
+            return `<div class="wcn-kcol">
+                <header class="wcn-kcol-head"><span>${esc(col.label)}</span><span class="wcn-kcol-count">${col.items.length}</span></header>
+                <div class="wcn-kcol-body">${cards}</div>
+            </div>`;
+        }).join('');
+        return `<div class="wcn-kanban">
+            <div class="wcn-viewnote"><i class="bx bx-info-circle"></i><span>${esc(t('KanbanReadonly'))}</span></div>
+            <div class="wcn-kboard">${colHtml}</div>
+        </div>`;
+    };
+
+
+    const renderSplit = (items) => {
+        if (!items.length) { return emptyState(); }
+        state.visibleOrder = [];
+        const rows = items.slice().sort(bySla).map((item) => {
+            state.visibleOrder.push(item.id);
+            return splitCard(item);
+        }).join('');
+        if (!state.selectedId || state.visibleOrder.indexOf(state.selectedId) < 0) {
+            state.selectedId = state.visibleOrder[0] || null;
+        }
+        return `<div class="wcn-split">
+            <nav class="wcn-split-list" aria-label="${esc(t('ViewList'))}">${rows}</nav>
+            <section class="card wcn-split-detail" aria-label="${esc(t('DetailTabsLabel'))}">${detailHtml(itemById(state.selectedId))}</section>
+        </div>`;
+    };
+
     const renderTable = (items) => {
         if (!items.length) { return emptyState(); }
         const sorter = SORTERS[state.sortKey] || SORTERS.sla;
@@ -5828,6 +5979,9 @@
                 main = renderTable(renderedItems);
                 break;
             case 'focus': main = renderFocus(items); break;
+            case 'split': main = renderSplit(items); break;
+            case 'kanban': main = renderKanban(); break;
+            case 'calendar': main = renderCalendar(); break;
             default: main = renderList(items);
         }
         /*
@@ -7218,6 +7372,33 @@
     // lifecycle, normalized status, tab or lifecycle segment — the executable contract says so outright
     // (SNOOZE_MUST_NOT_CREATE_WAITING) and the server honours it: the write touches the reader's own overlay
     // document and never the task.
+    /*
+     * ── A PIN THAT SURVIVES A RELOAD (2026-08-25, BL-254) ─────────────────────────────────────────────────
+     *
+     * MEASURED: this flipped `item.pinned` and nothing else. Pin, refresh, gone — a mark whose only meaning is
+     * "I will come back to this" disappearing at exactly the moment it is needed.
+     *
+     * ⚠ IT FOLLOWS THE SNOOZE EXACTLY: same overlay row on the server, same PUT-under-/personal shape, same
+     * `afterPhase2Write` (re-read the projection, never apply optimistically), same fixture branch for showcase
+     * items that have no engine behind them. No new table and no new endpoint family.
+     */
+    const togglePin = async (item) => {
+        if (!item) { return; }
+        const next = !item.pinned;
+        if (isRealTaskItem(item)) {
+            await afterPhase2Write(
+                await global.TasksApi.setPinned(item.id, { pinned: next }),
+                next ? 'ToastPinned' : 'ToastUnpinned',
+                item.title);
+            return;
+        }
+        item.pinned = next;
+        item.personal = item.personal || {};
+        item.personal.pinned = next;
+        render();
+        toast(tf(next ? 'ToastPinned' : 'ToastUnpinned', item.title));
+    };
+
     const toggleSnooze = async (item) => {
         if (!item) { return; }
         const real = isRealTaskItem(item);
@@ -8113,8 +8294,7 @@
         const pinEl = event.target.closest('[data-wcn-pin]');
         if (pinEl) {
             event.stopPropagation();
-            const item = itemById(pinEl.getAttribute('data-wcn-pin'));
-            if (item) { item.pinned = !item.pinned; render(); toast(tf(item.pinned ? 'ToastPinned' : 'ToastUnpinned', item.title)); }
+            await togglePin(itemById(pinEl.getAttribute('data-wcn-pin')));
             return;
         }
 

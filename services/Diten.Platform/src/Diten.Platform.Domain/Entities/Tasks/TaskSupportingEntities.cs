@@ -479,6 +479,15 @@ public sealed class TaskPersonalOverlay : TenantScopedEntity
     /// </summary>
     public DateTimeOffset? SnoozedUntil { get; set; }
 
+    /// <summary>
+    /// The reader marked this task to come back to. Personal, like the snooze beside it: the requester cannot
+    /// tell, and it changes nothing about the task itself.
+    ///
+    /// <para>It lives HERE rather than on the task because pinning is an opinion, not a property — two people
+    /// looking at the same task can disagree about it, and the overlay is the row that already models that.</para>
+    /// </summary>
+    public bool Pinned { get; set; }
+
     /// <summary>The reader's own notes, oldest first. Empty is the normal state.</summary>
     public List<TaskPersonalNote> Notes { get; set; } = [];
 

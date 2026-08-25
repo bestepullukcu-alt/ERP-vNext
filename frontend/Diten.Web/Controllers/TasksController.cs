@@ -310,6 +310,17 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiSetSnooze(Guid id)
         => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/tasks/{id}/personal/snooze", readBody: true);
 
+    /// <summary>
+    /// Pin or unpin for the caller. Never moves the task — the same promise the snooze above makes.
+    ///
+    /// ⚠ THIS LINE IS WHY THE FIRST LIVE TEST RETURNED 404: this controller is a PROXY with one method per
+    /// endpoint, so a route that exists on the service is still invisible to the browser until it is named
+    /// here. Measured, not guessed — the request went out and came back 404 with the handler already in place.
+    /// </summary>
+    [HttpPut("api/{id:guid}/personal/pin")]
+    public Task<IActionResult> ApiSetPinned(Guid id)
+        => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/tasks/{id}/personal/pin", readBody: true);
+
     // ── Dependencies (BL-028) ────────────────────────────────────────────────
     //
     // Not transitions, so they are NOT in TaskTransitionRoutes: these are their own resource under a task

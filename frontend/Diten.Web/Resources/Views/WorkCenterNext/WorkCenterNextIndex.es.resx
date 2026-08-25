@@ -377,6 +377,9 @@
   <data name="ColPriority" xml:space="preserve">
     <value>Prioridad</value>
   </data>
+  <data name="SortLabel" xml:space="preserve">
+    <value>Ordenar</value>
+  </data>
   <data name="ColSla" xml:space="preserve">
     <value>SLA</value>
   </data>

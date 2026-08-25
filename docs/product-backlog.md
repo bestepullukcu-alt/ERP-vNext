@@ -5482,3 +5482,70 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - Karar gerekiyor: sabitleme kişisel veri olarak sunucuya mı yazılsın (erteleme gibi), yoksa oturumluk mu
   kalsın? Oturumluk kalacaksa ekranda bunu söylemeli — bugün hiçbir şey söylemiyor.
 - **Gelecek regresyon riski: 🟡** — kullanıcı bir şey işaretliyor, sistem unutuyor ve unuttuğunu söylemiyor.
+
+### BL-233 güncelleme (2026-08-25) — KAPANDI: üç görünüm modu liste sayfasına bağlandı
+- Tur B'de detay sayfasından çıkarılmışlardı ve bu **doğruydu**: üçü de bir LİSTE alıp düzenliyor, yani liste
+  sayfası görünümleri. Scratchpad'de bekletildiler, silinmediler — tam da bunun için.
+- Üçü `TAB_VIEWS`'e, dispatch'e ve URL beyaz listesine eklendi. **Hiçbir gövde yeniden yazılmadı**; tek ekleme
+  takvimin eksik boş durumu oldu.
+- ⚠ **SÜZME YAPI GEREĞİ ÇALIŞIYOR**, tekrarlanan bir kuralla değil: üçü de `activeItems()` ile başlıyor —
+  `renderList` ve `renderTable`'ın çağırdığı aynı işlev. **Kanıt tablosu:**
+
+  | Durum | Liste | Kanban | Split | Takvim |
+  |---|---|---|---|---|
+  | çip kapalı | 30 | **30** | **30** | 6 |
+  | Bloke açık | 4 | **4** | **4** | 2 |
+
+- ⚠ **TAKVİM AYRI VE BUNU YAZIYORUM:** süzmeyi uyguluyor (6→2), ama **yalnız içinde bulunulan ayı** çiziyor ve
+  **ay değiştirme kontrolü yok**. Yani 30 öğelik listenin 6'sı görünüyor. Boş değil ama tam da değil —
+  CT'nin "boş bir takvim, takvim değildir" uyarısının komşusu. **Karar gerekiyor** (BL-256).
+- ⚠ **KANBAN İÇİN "ÖNCE BAK" TALİMATI HAKLIYDI VE BENİM ÖLÇÜMÜM YANLIŞTI.** Denetimde "0 CSS kuralı" yazmışım;
+  yalnız `.wcn-kanban` sarmalayıcısını aramışım. Gerçekte `.wcn-kboard`(1) + `.wcn-kcol`(4) + `.wcn-kcard`(9)
+  = **14 kural** var. Ekranda bakıldı: Geçmiş sekmesinde iki sütun (Tamamlandı 9 · İptal edildi 9), flex satır,
+  272px sütunlar, taşma yok. **Stil yazılmadı, gerek yoktu.**
+- ⚠ Kanban İşlerim'de **tek sütun** çiziyor — kodun kendi dalı: segmenti olan sekmede segment tek sütun olur.
+  Yani panonun asıl değeri segmentsiz sekmelerde (Havuz · Geçmiş). Davranış değiştirilmedi, ölçüldü ve yazıldı.
+- Kanban Gelen Kutusu'na eklenmedi: sütunları yaşam döngüsü durumları, gelen kutusu satırının tek durumu var.
+- **Gelecek regresyon riski: 🟢**
+
+### BL-255 — [DÜZELTİLDİ 2026-08-25] Liste görünümü hiç sıralanamıyordu
+- Yalnız tablo sıralanabiliyordu; `SORTERS`, `state.sortKey` ve `[data-wcn-sort]` işleyicisi duruyordu ama
+  hiçbir kontrol onları sürmüyordu (geçen tur ölçülen altıncı ölü yol).
+- Kontrol ürünün **mevcut** deseninden: satır taşma menüsünün ve kolon-görünürlüğü menüsünün kullandığı
+  `.dropdown` + `.wcn-menu-item` satırları, aynı araç çubuğu yuvasında. Yeni desen icat edilmedi.
+- ⚠ **TEK SIRALAYICI, TEK PARAMETRE.** `state.sortKey`/`sortDir`'i sürüyor — grid'in aynaladığı state — yani
+  liste↔tablo geçişinde sıra korunuyor ve `?sort=&dir=` iki görünümde aynı şeyi söylüyor. İkinci bir sıralama
+  uygulaması, bu ikisinin baştan ayrışmasının sebebiydi.
+- ⚠ Tablo için çizilmiyor (kendi başlıklarından sıralanıyor); kanban ve takvim için de çizilmiyor — onlarda
+  **düzenin kendisi sıralamadır** (sütun = durum, hücre = gün), orada bir kontrol hiçbir şeyi değiştirmezdi.
+- Yalnız iki satırı ayırt edebilen anahtarlar sunuluyor — tablo sütunlarıyla **aynı yardımcı** (`distinguishes`).
+- `SortLabel` 7 dilde eklendi.
+- **Gelecek regresyon riski: 🟢**
+
+### BL-254 güncelleme (2026-08-25) — KAPANDI: sabitleme sunucuya yazılıyor
+- CT kararı uygulandı, **ertelemenin yolu aynen izlendi**: aynı `TaskPersonalOverlay` satırı (yeni bir tablo
+  yok), aynı `PUT {id}/personal/…` deseni, aynı komut/işleyici biçimi, aynı `afterPhase2Write` (iyimser uygulama
+  yok — projeksiyon yeniden okunuyor), showcase öğeleri için aynı fixture dalı.
+- Yeni alan `TaskPersonalOverlay.Pinned`; **MongoDB olduğu için migration gerekmedi** — eksik alan `false`
+  olarak okunuyor. Projeksiyonda `personal.pinned`; `Pinned` "söylenecek bir şey var mı" testine de eklendi,
+  yoksa yalnızca sabitlenmiş bir görev `personal: null` yansıtıp işareti kaybederdi.
+- ⚠ **İLK CANLI TIKLAMA 404 DÖNDÜ VE SEBEBİ KAYDA DEĞER:** Web tarafındaki `TasksController` bir **vekil** ve
+  her uç tek tek yazılmış. Servis tarafında rota hazırken tarayıcı için hâlâ yoktu. Ölçüldü, tahmin edilmedi;
+  vekil satırı eklendi ve teste bağlandı.
+- **KALICILIK KANITI (gerçek tıklama):** sabitle → `PUT /personal/pin` → **204** → sayfa yenilendi →
+  **hâlâ sabitli**, projeksiyonda `personal.pinned: true`.
+- **"Yalnız sabitli" filtresi artık gerçekten sonuç döndürüyor:** 30 → **1**.
+- Sabitli satırın listedeki yeri ÖLÇÜLDÜ ve **değiştirilmedi**: bugün ayrı bir üste-taşıma yok, satır kendi
+  sıralamasındaki yerinde kalıyor. CT'nin "davranışı değiştirme" talimatı gereği dokunulmadı.
+- **Gelecek regresyon riski: 🟢** — backend 2342/2342 yeşil.
+
+### BL-256 — [ÖLÇÜLDÜ, AÇIK] Takvim yalnız içinde bulunulan ayı gösteriyor, ay değiştirilemiyor
+- Ölçüm: İşlerim'de liste 30 öğe, takvimde **6** öğe. Sebep süzme değil — takvim `data.todayIso`'nun ayını
+  çiziyor ve başka bir aya geçecek hiçbir kontrol yok. Canlı veride `dueAt` 76/76 dolu, ama tarihler aylara
+  yayılmış.
+- ⚠ `plannedDate` — okuyucunun KENDİ tarihi — 76'nın yalnız **4'ünde** dolu. Takvim iki türü ayrı gösterip
+  açıklıyor (kırmızı = kaynak son tarih, mor = kişisel plan), yani yanıltmıyor; ama "planlama panosu" vaadi
+  bugünkü veriyle karşılanmıyor.
+- Karar gerekiyor: (a) ay ileri/geri kontrolü eklensin · (b) takvim "önümüzdeki 30 gün" gibi kayan bir
+  pencereye geçsin · (c) bugünkü hâliyle kalsın ve başlık ayın adını taşıdığı için yeterli sayılsın.
+- **Gelecek regresyon riski: 🟡** — kullanıcı 30 öğelik bir listeden 6'sını görüp gerisinin olmadığını sanabilir.

@@ -505,6 +505,11 @@ public sealed record WorkItemPersonalDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     DateTimeOffset? SnoozedUntil,
     /// <summary>
+    /// Whether this reader has pinned the task. Personal in exactly the way the snooze above is: the requester
+    /// cannot observe it and it changes nothing about the task.
+    /// </summary>
+    bool Pinned,
+    /// <summary>
     /// This reader's notes, OLDEST FIRST — the order they were written, which is the order they read as a train
     /// of thought. Always present when the container is (declared-and-empty is a state; a half is not).
     /// </summary>

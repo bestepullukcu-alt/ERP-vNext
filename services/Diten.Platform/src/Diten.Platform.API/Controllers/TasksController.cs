@@ -389,6 +389,19 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// Pin or unpin this task for the caller. Like the snooze above, the task itself does not move: no
+    /// lifecycle, no status, no waiting context, and nothing the requester can observe.
+    /// </summary>
+    [HttpPut("{id:guid}/personal/pin")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> SetPinned(
+        Guid id, [FromBody] SetTaskPinnedRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new SetTaskPinnedCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     // ── Dependencies (BL-028, pack §12 Y3) ───────────────────────────────────
 
     /// <summary>

@@ -224,6 +224,12 @@ public sealed record SetTaskSnoozeCommand(
     SetTaskSnoozeRequest Request,
     string CorrelationId) : IRequest<Response<NoContent>>;
 
+/// <summary>Pin or unpin for the caller. Same overlay row as the snooze above, same untouched task.</summary>
+public sealed record SetTaskPinnedCommand(
+    Guid TaskItemId,
+    SetTaskPinnedRequest Request,
+    string CorrelationId) : IRequest<Response<NoContent>>;
+
 // ── Phase 5: configurable field definitions ──────────────────────────────────
 
 public sealed record CreateTaskFieldDefinitionCommand(

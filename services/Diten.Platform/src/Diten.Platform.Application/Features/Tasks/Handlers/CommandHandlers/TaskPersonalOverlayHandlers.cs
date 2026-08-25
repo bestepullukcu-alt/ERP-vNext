@@ -202,3 +202,55 @@ public sealed class SetTaskSnoozeHandler : IRequestHandler<SetTaskSnoozeCommand,
         return Response<NoContent>.Success(204, command.CorrelationId);
     }
 }
+
+/// <summary>
+/// Pin or unpin for the caller.
+///
+/// <para><b>The task is not touched</b> — same promise the snooze above makes, and for the same reason: a pin is
+/// the reader's own opinion about what to come back to, and the requester must not be able to see it.</para>
+///
+/// <para><b>Why this exists at all:</b> pinning was a browser-memory toggle. Measured live — pin, refresh, gone.
+/// A mark that says "I will come back to this" and then disappears fails at exactly the moment it is needed.
+/// No new table and no new endpoint family: it is one more column on the overlay row the snooze already
+/// upserts.</para>
+///
+/// <para><b>No date to validate</b>, so unlike the snooze there is no past-date refusal here — a boolean is
+/// either state and both are legal.</para>
+/// </summary>
+public sealed class SetTaskPinnedHandler : IRequestHandler<SetTaskPinnedCommand, Response<NoContent>>
+{
+    private readonly ITaskItemRepository _tasks;
+    private readonly ITaskPersonalOverlayRepository _overlays;
+    private readonly ICurrentUserContext _currentUser;
+    private readonly ITenantContext _tenantContext;
+
+    public SetTaskPinnedHandler(
+        ITaskItemRepository tasks,
+        ITaskPersonalOverlayRepository overlays,
+        ICurrentUserContext currentUser,
+        ITenantContext tenantContext)
+    {
+        _tasks = tasks;
+        _overlays = overlays;
+        _currentUser = currentUser;
+        _tenantContext = tenantContext;
+    }
+
+    public async Task<Response<NoContent>> Handle(SetTaskPinnedCommand command, CancellationToken ct)
+    {
+        var task = await _tasks.GetByIdAsync(command.TaskItemId, ct);
+        if (task is null)
+        {
+            return Response<NoContent>.Fail(
+                "Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        var overlay = await _overlays.GetAsync(task.Id, _currentUser.UserId, ct)
+            ?? AddTaskPersonalNoteHandler.NewOverlay(
+                task.Id, _currentUser.UserId, _tenantContext.TenantId, _currentUser.ActorName);
+
+        overlay.Pinned = command.Request.Pinned;
+        await _overlays.UpsertAsync(overlay, ct);
+        return Response<NoContent>.Success(204, command.CorrelationId);
+    }
+}

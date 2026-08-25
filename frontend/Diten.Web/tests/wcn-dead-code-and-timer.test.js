@@ -42,8 +42,19 @@ describe("the dead renders are gone, not just unwired", () => {
     "renderReviewContext", "renderExceptionContext", "renderMeetingContext",
     // Redundant: the comment/activity card already does this job.
     "renderThread",
-    // List-page view modes, not detail cards — they take a list, sort it and emit cards.
-    "renderCalendar", "renderKanban", "renderSplit",
+    /*
+     * ⚠ `renderCalendar` / `renderKanban` / `renderSplit` LEFT THIS LIST (2026-08-25, BL-233) and the reason
+     * is the whole point of the round that removed them.
+     *
+     * They were never dead code. They were LIST-PAGE views sitting on the DETAIL page, where nothing could
+     * reach them — each one takes a list and arranges it. Tur B lifted them into a scratchpad rather than
+     * deleting them, precisely so this could happen: they are now wired to the list page, in `TAB_VIEWS`, in
+     * the URL whitelist and in the view switcher, and `wcn-view-modes-and-pin.test.js` holds them to reading
+     * the FILTERED list like every other view.
+     *
+     * The distinction this guard exists to make still stands: code with no caller is removed, code with the
+     * wrong caller is moved. These were the second kind.
+     */
     // Unreachable: a Bootstrap dropdown replaced this menu, so no click could arrive.
     "openNew",
     /*

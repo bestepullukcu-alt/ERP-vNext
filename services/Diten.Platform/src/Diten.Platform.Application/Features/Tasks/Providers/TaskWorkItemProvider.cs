@@ -715,9 +715,14 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             .Select(note => new WorkItemPersonalNoteDto(note.Id.ToString(), note.Text, note.CreatedAt))
             .ToList();
 
-        return snoozedUntil is null && notes.Count == 0
+        /*
+         * ⚠ `Pinned` JOINS THE "IS THERE ANYTHING TO SAY" TEST. Without it a task whose ONLY personal state is
+         * a pin would project `personal: null`, and the mark would vanish on the next read — which is the very
+         * defect this column was added to fix.
+         */
+        return snoozedUntil is null && notes.Count == 0 && !overlay.Pinned
             ? null
-            : new WorkItemPersonalDto(snoozedUntil, notes);
+            : new WorkItemPersonalDto(snoozedUntil, overlay.Pinned, notes);
     }
 
     /// <summary>

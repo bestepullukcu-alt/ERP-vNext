@@ -612,6 +612,10 @@ public sealed record AddTaskPersonalNoteRequest(string Text);
 /// </summary>
 public sealed record SetTaskSnoozeRequest(DateTimeOffset? SnoozedUntil);
 
+/// <summary>Pin or unpin this task for the caller. Mirrors <see cref="SetTaskSnoozeRequest"/> — same table,
+/// same shape, same "the task is untouched" promise.</summary>
+public sealed record SetTaskPinnedRequest(bool Pinned);
+
 /// <summary>Create from a template; the template supplies the shape and (optionally) the checklist.</summary>
 public sealed record CreateTaskFromTemplateRequest(
     Guid TaskTemplateId,
