@@ -11,6 +11,17 @@
    both Create and Edit. The description sentence that used to sit here was dropped: "Yeni Görev" already says
    what the page is, so the sentence restated the title in longer words. If a title ever needs explaining, the
    title is what should be fixed. *@
+@* ⚠ THE THIRD CREATE GATE'S CARRIER (2026-08-24). The subtask panel can send a reader here for the FULL form —
+   the only gate that renders `#taskCustomFields`, i.e. the only one that can collect a tenant-defined required
+   field. Two facts have to survive the trip: which task this becomes a child of, and where the reader came
+   from. Both are read back by `form-page.js`.
+
+   ⚠ `ReturnUrl` HAS ALREADY BEEN THROUGH `Url.IsLocalUrl` in the controller — it is null here if it pointed
+   off-site. Nothing downstream re-checks it, so nothing downstream may widen it. *@
+<div id="taskCreateContext"
+     data-parent-task-id="@(ViewData["ParentTaskId"] as string ?? string.Empty)"
+     data-return-url="@(ViewData["ReturnUrl"] as string ?? string.Empty)"></div>
+
 <partial name="~/Views/Tasks/_Form.cshtml" />
 
 @section Styles {

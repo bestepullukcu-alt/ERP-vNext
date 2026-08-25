@@ -6601,7 +6601,10 @@ tags.diten-tags .tagify__input {
 }
 .diten-checkitem-box[aria-pressed="true"] { color: var(--bs-success); }
 /* A done row recedes; it does not disappear. The list is also a record of what was covered. */
-.diten-checkitem.done .diten-checkitem-text { color: var(--bs-secondary-color); text-decoration: line-through; }
+/* ⚠ SAME TOKEN AS THE SUBTASK ROW (2026-08-24) — the two are one row language, and this rule is why the
+   checklist half still measured 2.09 while the subtask half already read 4.76. Both move together or the card
+   shows two completed states. See the note on the shared `.done` background for the full measurement. */
+.diten-checkitem.done .diten-checkitem-text { color: var(--bs-body-color); text-decoration: line-through; }
 /* A closed task, or a template item's text. Not hidden — a control that vanishes takes its own explanation with
    it, and the reader is left wondering whether the capability ever existed. */
 .diten-checkitem-btn:disabled, .diten-checkitem-level:disabled { opacity: .4; cursor: not-allowed; }
@@ -6630,18 +6633,47 @@ tags.diten-tags .tagify__input {
    the whole row to .55. One vocabulary now: a completed row recedes to the disabled tone and keeps its
    strike-through, because the strike says WHAT happened and the tone says it is no longer actionable.
    A CANCELLED subtask keeps its own deeper fade: called-off work is not finished work. */
+/* ⚠ A LIGHTER SURFACE FOR THE COMPLETED ROW (2026-08-24). MEASURED: `--bs-secondary-bg` renders
+   rgb(228,230,232), and the muted title on top of it gave **1.83** contrast — below 3.0, which is the floor
+   for interface elements, let alone the 4.5 for text. A row meant to read as finished history was the hardest
+   row on the card to read.
+
+   `--bs-light-bg-subtle` is the product's own next surface up (#f4f5f6) and it is what both row types now use.
+   ⚠ THE TOKEN ITSELF IS UNTOUCHED — `--bs-secondary-bg` is used across the whole product and changing it here
+   would repaint screens nobody looked at. Only these two rules move, and they move together: the checklist
+   item and the subtask row are one row language (this file says so three rules above) and a split would put
+   two completed states on one page. */
+/* ── ONE ROW, ONE HEIGHT ───────────────────────────────────────────────────
+   MEASURED: the subtask row stood 52px against the checklist's 44px; removing the imported `.btn` height took
+   it to 40px — past the mark, because the two rows are sized by DIFFERENT tallest children (the checklist
+   carries a 30px move control, the subtask a 26px action). Sizing a row by whatever happens to be tallest
+   inside it is why they never matched.
+
+   So both declare the same floor, and the value is the CHECKLIST'S OWN MEASURED HEIGHT (44px) — the taller of
+   the two, so nothing is shrunk and no content is squeezed. */
+.diten-checkitem,
+.wcn-subtasks > li.wcn-subtask { min-block-size: 2.75rem; }
+
 .diten-checkitem.done,
 .wcn-subtasks > li.wcn-subtask-done {
-    background: var(--bs-secondary-bg);
+    background: var(--bs-light-bg-subtle);
     border-color: color-mix(in sRGB, var(--bs-border-color) 70%, transparent);
 }
-.wcn-subtasks > li.wcn-subtask-done .wcn-subtask-title { color: var(--bs-secondary-color); text-decoration: line-through; }
+/* ⚠ THE TITLE IS BODY-COLOURED, NOT MUTED (2026-08-24). Measured on the new surface: `--bs-secondary-color`
+   gives **2.09** — still under the 3.0 floor even after the background was lightened, because the lever was
+   never the background. `--bs-body-color` measures **4.76**, above AA.
+
+   WHAT THIS COSTS, stated: the completed row no longer recedes by COLOUR. It does not need to — the row
+   already says "finished" three other ways (its own fill, the strike-through, and a tick glyph in place of an
+   empty box). The colour was the fourth telling, and it was the one that made the row hard to read.
+   The same reasoning and the same token apply to the cancelled row below. */
+.wcn-subtasks > li.wcn-subtask-done .wcn-subtask-title { color: var(--bs-body-color); text-decoration: line-through; }
 /* Hover still answers on a completed row — it is readable history, not a dead zone. */
 .diten-checkitem.done:hover,
 .diten-checkitem.done:focus-within,
 .wcn-subtasks > li.wcn-subtask-done:hover,
 .wcn-subtasks > li.wcn-subtask-done:focus-within {
-    background: color-mix(in sRGB, rgba(var(--bs-primary-rgb), .03), var(--bs-secondary-bg));
+    background: color-mix(in sRGB, rgba(var(--bs-primary-rgb), .03), var(--bs-light-bg-subtle));
 }
 
 /* ── The capped scroll region is a REGION ──────────────────────────────────
@@ -7879,7 +7911,9 @@ tags.diten-tags .tagify__input {
    different mechanism. */
 .wcn-subtask-cancelled .wcn-subtask-title {
     text-decoration: line-through;
-    color: var(--bs-secondary-color);
+    /* Same measurement, same conclusion as the completed row above: muted read 2.29, body colour reads 4.76,
+       and the strike-through plus the `bx-x-square` glyph already carry "called off". */
+    color: var(--bs-body-color);
 }
 .wcn-subtask-cancelled .wcn-subtask-toggle i,
 .wcn-subtask-cancelled .wcn-subtask-check { color: var(--bs-secondary-color); }

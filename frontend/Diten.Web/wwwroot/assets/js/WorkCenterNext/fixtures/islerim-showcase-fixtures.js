@@ -35,7 +35,14 @@
                 { id: 'S1', title: 'Q2 hesap bakiyelerini içe aktar', status: 'done' },
                 { id: 'S2', title: 'Şirketler arası kalemleri işaretle', status: 'in-progress' },
                 { id: 'S3', title: 'Fark kaydı öner', status: 'not-started' },
-                { id: 'S4', title: 'Cetveli kontrol et', status: 'not-started' }
+                { id: 'S4', title: 'Cetveli kontrol et', status: 'not-started' },
+                /*
+                 * ⚠ ADDED 2026-08-24 (Tur A, iş 3). The CANCELLED subtask row's styling was rewritten in the
+                 * previous round — two mechanisms reduced to one — and could not be looked at: measured, not a
+                 * single fixture and not one of the 62 live items carried `status: 'cancelled'`.
+                 * S1–S4 above are untouched.
+                 */
+                { id: 'S5', title: '[FIXTURE] Dış denetçi kontrolü — talep geri çekildi', status: 'cancelled' }
             ] },
             /*
              * ⚠ EXTENDED 2026-08-24 (A4) — FOUR EDGE TYPES × TWO DIRECTIONS, ALL EIGHT.
@@ -75,7 +82,18 @@
                 { actor: 'Selin Aras', kind: 'comment', text: 'Şirketler arası kalemleri işaretliyorum, öğleden sonra biter.', at: '2026-07-24 11:30' }
             ],
             personal: personal({ plannedDate: '2026-07-25', note: 'Konsolidasyon çalışmasından önce bitmeli.' }),
-            timeEntries: [], priority: 'High',
+            /*
+             * ⚠ REAL TIME ENTRIES 2026-08-24 (Tur A, iş 3). This was `[]`. MEASURED across the 62 live tasks:
+             * `timeTracking` capability count = 0, so the timesheet card has never been on screen — it renders
+             * only behind `hasCap(item, 'timeTracking')`. The capability is declared above; this gives it
+             * something to show. The `[FIXTURE]` prefix keeps it from reading as a real record.
+             */
+            timeEntries: [
+                { id: 'TE-1', actor: 'Selin Aras', minutes: 95, at: '2026-07-23 10:15', note: '[FIXTURE] Mizan içe aktarma' },
+                { id: 'TE-2', actor: 'Selin Aras', minutes: 130, at: '2026-07-24 14:40', note: '[FIXTURE] Şirketler arası eşleştirme' }
+            ],
+            timesheet: { loggedMinutes: 225, running: false, startedAt: null },
+            priority: 'High',
             requester: req('USR-201', 'Deniz Koç'),
             source: source('finance', 'CloseTask', 'FIN-7781'),
             concurrency: { kind: 'version', token: 'is-01' }, dueAt: '2026-07-25',
@@ -107,7 +125,13 @@
             source: source('hr', 'OnboardingTask', 'ONB-5521'),
             concurrency: { kind: 'version', token: 'is-03' }, dueAt: '2026-07-23',
             actions: [disabledAction('start', 'DEPENDENCY_BLOCKED', 'ActionDisabledDependencyBlocked')],
-            blockedState: { blocked: true, affectedActionCodes: ['start'], blockers: [{ code: 'DEPENDENCY_BLOCKED', label: resource('IsDepSignedContract') }] },
+            /*
+             * ⚠ `dependencyType` ADDED 2026-08-24 (Tur A, iş 3). The blocked banner's FS abbreviation was moved
+             * to the dependency card's footnote treatment in the previous round and could not be looked at:
+             * measured, no fixture and no live item carried `blocker.dependencyType`, so that branch never
+             * drew. Everything else on this blocker is unchanged.
+             */
+            blockedState: { blocked: true, affectedActionCodes: ['start'], blockers: [{ code: 'DEPENDENCY_BLOCKED', label: resource('IsDepSignedContract'), dependencyType: 'FinishToStart', affectedActionCode: 'start' }] },
             primaryActionCode: 'start',
             expectation: { surfaceMode: 'execution', readOnly: false, primaryActionCode: 'start', criticalBannerCode: 'hardBlocked' }
         }),

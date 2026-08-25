@@ -10,6 +10,23 @@
     // Where a completed create/edit returns to: the Task Center owns the personal work list.
     const WORK_CENTER_URL = '/WorkCenterNext';
 
+    /*
+     * WHERE THIS PAGE WAS OPENED FROM, and what it is creating a child of. Both are written into the DOM by
+     * `Create.cshtml` after the controller has vetted them; this reads, it never decides.
+     */
+    const createContext = () => {
+        const host = document.getElementById('taskCreateContext');
+        return {
+            parentTaskId: host?.getAttribute('data-parent-task-id') || '',
+            returnUrl: host?.getAttribute('data-return-url') || ''
+        };
+    };
+    /* A child task carries its parent on the SAME field the subtask panel uses — one name for one thing. */
+    const withParent = (payload) => {
+        const { parentTaskId } = createContext();
+        return parentTaskId ? Object.assign({}, payload, { parentTaskItemId: parentTaskId }) : payload;
+    };
+
     // MOD-0024's own module code, as declared by its manifest (`TaskManifestProvider.ModuleCode`). A field
     // definition may be restricted to one consuming module; this form only offers the ones that reach it.
     const TASK_MODULE_CODE = 'tasks';
@@ -798,7 +815,7 @@
                     taskId,
                     global.TaskForm.buildUpdatePayload(
                         draft, form.getAttribute('data-task-version'), withheldOnEdit))
-                : await global.TasksApi.create(global.TaskForm.buildCreatePayload(draft));
+                : await global.TasksApi.create(withParent(global.TaskForm.buildCreatePayload(draft)));
 
             if (result.ok) {
                 global.TaskForm.clearDraft();
@@ -807,9 +824,16 @@
                     title: t(mode === 'edit' ? 'toastSaved' : 'toastCreated'),
                     timer: 1600
                 });
-                // The Task Center is the single personal entry point, so saving returns there — not to a
-                // competing task list (MOD-0024 pack §5 / the manifest's own note).
-                global.location.href = WORK_CENTER_URL;
+                /*
+                 * The Task Center is the single personal entry point, so saving returns there — not to a
+                 * competing task list (MOD-0024 pack §5 / the manifest's own note).
+                 *
+                 * ⚠ UNLESS THE READER WAS SENT HERE FROM SOMEWHERE (2026-08-24). The subtask panel opens this
+                 * page for the full form; dropping that reader on the Task Center would lose the task they
+                 * were working inside. `returnUrl` has ALREADY been validated server-side with
+                 * `Url.IsLocalUrl` and is empty if it pointed off-site — this line does not re-open that gate.
+                 */
+                global.location.href = createContext().returnUrl || WORK_CENTER_URL;
             } else {
                 // Reason-code driven, so "no organization unit" reads as itself rather than a generic failure.
                 global.DitenModal.error({

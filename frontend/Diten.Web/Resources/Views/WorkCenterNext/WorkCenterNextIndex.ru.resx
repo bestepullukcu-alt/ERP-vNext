@@ -904,6 +904,9 @@
   <data name="ConfirmProceedNamed" xml:space="preserve">
     <value>Да, {0}</value>
   </data>
+  <data name="SubtaskCreateAllFields" xml:space="preserve">
+    <value>Все поля</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Финиш-Старт (FS)</value>
   </data>

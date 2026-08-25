@@ -4835,3 +4835,53 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
   `DatePlaceholder` ("YYYY-AA-GG") aldı. Yedi resx'te duruyor.
 - İkisi de zararsız; silinmeleri ya da beslenmeleri ayrı bir karar.
 - **Gelecek regresyon riski: 🟢.**
+
+### BL-231 kapanış notu (2026-08-24) — Tur A: üçüncü oluşturma kapısı, iki görsel düzeltme, üç fixture
+- **İŞ 1 — "Tüm alanlar" kapısı.** ÖLÇÜLEN üç kapı ve alan sayıları: kutuya yaz+Enter **1** (son tarih/öncelik/
+  atanan EBEVEYNDEN miras) · panel **5** · `/Tasks/Create` **20**. Kritik olan sayı değil: **`#taskCustomFields`
+  yalnız tam formda çiziliyor** ve çalışma anında `TaskFieldDefinition`'dan doluyor (`IsRequired` taşır). Yani
+  kiracı zorunlu bir özel alan tanımladığı gün iki kısayol onu TOPLAYAMAZ, tam form toplayabilir. Kısayolu
+  büyütmek değil, kapı açmak doğrusu.
+  - İlk iki kapı **aynen duruyor** (testle kilitli).
+  - Desen **aynalandı, icat edilmedi**: düzenleme panelindeki `SubtaskOpenFullDetail` ile aynı ikincil düğme,
+    aynı `bx-link-external` glifi, aynı footer konumu.
+  - `TasksController.Create()` iki parametre kazandı: `parent` + `returnUrl`.
+  - ⚠ **AÇIK YÖNLENDİRME KAPALI:** `Url.IsLocalUrl(returnUrl)` sunucu tarafında; dışarıyı gösteren değer
+    **null**'a düşer ve istemci Görev Merkezi'ne döner. `form-page.js` URL'i kendisi PARSE ETMİYOR (testle
+    kilitli: `URLSearchParams`/`location.search` yok) — yani aşağıda kimse kapıyı genişletemez.
+  - Ebeveyn, modülün zaten kullandığı alanla taşınıyor: `parentTaskItemId`.
+  - **CANLI TAM DÖNGÜ:** panelde "Tüm alanlar" → `/Tasks/Create?parent=…&returnUrl=…` (30 alan, özel alanlar
+    bölümü **var**) → başlık+son tarih doldur → Oluştur → **detay sayfasına döndü** → yeni alt görev listede
+    **göründü** → sayfa yenilendi → **hâlâ orada**.
+- **İŞ 2a — tamamlanmış satırın zemini.** `--bs-secondary-bg` rgb(228,230,232) idi, üstündeki soluk metin
+  **1.83** veriyordu. Zemin `--bs-light-bg-subtle`'a alındı (**token'a dokunulmadı** — ürünün her yerinde
+  kullanılıyor), iki satır türü için **birlikte**.
+  ⚠ **Zemin tek başına yetmedi:** yeni zeminde bile **2.09** çıktı, çünkü kaldıraç zemin değil METİN rengiydi.
+  `--bs-body-color`'a geçildi. **SONUÇ (canlı, iki tema):**
+  | | açık | koyu |
+  |---|---|---|
+  | tamamlanmış alt görev | 1.83 → **4.76** | → **6.09** |
+  | tamamlanmış kontrol listesi | 1.83 → **4.76** | → **6.09** |
+  | iptal edilmiş alt görev | 2.29 → **5.19** | → **6.54** |
+  Üçü de AA (4.5) üstünde. **BEDELİ YAZILI:** tamamlanmış satır artık RENKLE geri çekilmiyor — gerek de yok,
+  satır "bitti"yi zaten üç ayrı yolla söylüyor (kendi dolgusu, üstü çizili, tik glifi). Renk dördüncü söyleyişti
+  ve okumayı zorlaştıran oydu. **BL-229 bu iki satır için kapandı**, ürünün geri kalanı için açık.
+- **İŞ 2b — satır yüksekliği.** Alt görev **52px**, kontrol listesi 44px. Sebep: alt görevin "aç" düğmesi
+  `btn btn-icon` taşıyordu (temanın 38px kontrol yüksekliği). Sınıf kaldırıldı → 40px, yani **fazla düştü**:
+  iki satır FARKLI en-uzun-çocuktan boyutlanıyordu (kontrol listesi 30px taşıma kolu, alt görev 26px eylem).
+  İkisine de **ortak taban** verildi; değer kontrol listesinin **ölçülmüş 44px**'i, yani hiçbir şey küçülmedi.
+  **SONUÇ: 44 / 44, eşit** (iki tema, iki genişlik). Bilgi kaybı yok: aynı glif, aynı `title`, aynı `aria-label`.
+- **İŞ 3 — üç fixture eklendi, hiçbiri bozulmadan.** Üçü de MEVCUT `ISLERIM-WORK-*` görevlerine alan olarak
+  eklendi, yeni görev açılmadı; `[FIXTURE]` öneki gerçek kayıtla karışmasın diye.
+  - **İptal edilmiş alt görev** (`S5`): önceki turda satırın stili yeniden yazılmıştı ama ne bir fixture ne de
+    62 canlı öğe `status: 'cancelled'` taşıyordu — ekranda hiç görülememişti. S1–S4 dokunulmadı.
+  - **`blocker.dependencyType`**: afişteki FS kısaltması önceki turda kartın dipnotuna çevrilmişti ama hiçbir
+    veri bu alanı taşımadığı için o dal hiç çizilmiyordu.
+  - **Gerçek `timeEntries` + `timesheet`**: `timeTracking` yetkisi 62 canlı görevin **0**'ında var, yani zaman
+    kartı hiç ekrana gelmemişti. Liste `[]` idi, iki gerçek kayıt kondu.
+- **MUTASYON (3, hepsi kırmızı):** `returnUrl` dış URL kabul etsin · zemin eski koyu değere dönsün · alt görev
+  düğmesi `btn btn-icon`'a dönsün.
+- **REGRESYON (canlı):** diyalog 32px ikon başlık satırında, hizalar 24/24/24/24, düğmeler iki uçta, "Vazgeç" ·
+  gerekçe cümlesi eylemini söylüyor · `aria-describedby` çözülüyor · düğmeler y=523/523 · yapışkan ray ·
+  bekçi **yeşil**, KNOWN_RAW **12 dosya**, büyümedi.
+- **Gelecek regresyon riski: 🟢.**

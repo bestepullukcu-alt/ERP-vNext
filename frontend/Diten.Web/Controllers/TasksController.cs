@@ -53,10 +53,31 @@ public sealed class TasksController : Controller
     [HttpGet("")]
     public IActionResult Index() => Redirect(WorkCenterUrl);
 
+    /// <summary>
+    /// The full create form, optionally opened as a SUBTASK of an existing task and told where to go back to.
+    /// </summary>
+    /// <remarks>
+    /// WHY THE PARAMETERS EXIST (2026-08-24). Measured, there are three create gates and they offer different
+    /// numbers of fields: the inline box (1 field, the rest inherited from the parent), the detail panel
+    /// (5 fields), and this page (20). Only this one renders <c>#taskCustomFields</c>, which is populated at
+    /// runtime from <c>TaskFieldDefinition</c> — so the day a tenant defines a REQUIRED custom field, the two
+    /// shortcuts cannot collect it and this page can. The panel therefore needs a door to here.
+    ///
+    /// <para>
+    /// ⚠ <paramref name="returnUrl"/> IS NOT TRUSTED. <see cref="Url.IsLocalUrl"/> is the gate: an absolute URL,
+    /// a protocol-relative <c>//evil.example</c> or anything else off-site is dropped and the caller falls back
+    /// to the task list. An unchecked return parameter is an open-redirect, and this one is reachable from a
+    /// link a user can be handed.
+    /// </para>
+    /// </remarks>
     [HttpGet("Create")]
-    public IActionResult Create()
+    public IActionResult Create(Guid? parent, string? returnUrl)
     {
         ViewBag.ActiveMenu = "tasks";
+        ViewData["ParentTaskId"] = parent?.ToString();
+        ViewData["ReturnUrl"] = !string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl)
+            ? returnUrl
+            : null;
         return View("~/Views/Tasks/Create.cshtml");
     }
 

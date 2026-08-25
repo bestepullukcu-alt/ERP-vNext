@@ -904,6 +904,9 @@
   <data name="ConfirmProceedNamed" xml:space="preserve">
     <value>Evet, {0}</value>
   </data>
+  <data name="SubtaskCreateAllFields" xml:space="preserve">
+    <value>Tüm alanlar</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Bitince başlar (FS)</value>
   </data>

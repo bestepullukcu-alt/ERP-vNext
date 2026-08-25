@@ -41,7 +41,15 @@ describe("① a called-off subtask recedes once, not twice", () => {
     const block = CSS.slice(CSS.indexOf(".wcn-subtask-cancelled .wcn-subtask-title"),
       CSS.indexOf(".wcn-subtask-cancelled .wcn-subtask-title") + 400);
     expect(block).toContain("text-decoration: line-through");
-    expect(block).toContain("color: var(--bs-secondary-color)");
+    /*
+     * ⚠ THE TOKEN CHANGED AGAIN (2026-08-24, Tur A). It was `--bs-secondary-color` — one mechanism instead of
+     * two, which was the point of ① — but measured on the new lighter surface it still read **2.29**, under
+     * the 3.0 floor. `--bs-body-color` measures **5.19** here and **6.54** in dark.
+     *
+     * What ① actually claimed is unchanged and still asserted below: ONE mechanism, not two. The strike-through
+     * plus the `bx-x-square` glyph carry "called off"; the colour was never the thing saying it.
+     */
+    expect(block).toContain("color: var(--bs-body-color)");
     expect(CSS, "the row is dimmed by opacity again").not.toContain(".wcn-subtask-cancelled { opacity");
     // …and the tone is the THEME's, never a hand-picked grey that would dodge the contrast check.
     expect(block, "a literal colour appeared").not.toMatch(/#[0-9a-f]{3,6}/i);
@@ -160,5 +168,54 @@ describe("④ the reference dialog obeys its own placeholder rule", () => {
       expect(v, `${lang}: the placeholder repeats the label`)
         .not.toBe(String(value(resx(lang), "SnoozeUntilLabel") || "").trim());
     });
+  });
+});
+
+describe("⑤ the two row types are one row — same height, readable when finished", () => {
+  /*
+   * TUR A, iş 2. Two things the owner photographed, one measurement each.
+   */
+  it("gives the completed row a surface its own text can be read on", () => {
+    /*
+     * MUTATION GUARD: put `--bs-secondary-bg` back and this goes red.
+     *
+     * MEASURED: `--bs-secondary-bg` renders rgb(228,230,232) and the muted title on it gave **1.83** contrast
+     * — under 3.0, the floor for interface elements, never mind 4.5 for text. The row meant to read as
+     * finished history was the hardest row on the card to read.
+     *
+     * ⚠ THE TOKEN IS NOT TOUCHED. `--bs-secondary-bg` is used across the whole product; repainting it here
+     * would change screens nobody looked at. Only these two rules move — and they move TOGETHER, because the
+     * checklist item and the subtask row are one row language (the stylesheet says so three rules above) and
+     * a split would put two completed states on one page.
+     */
+    const done = rule(".diten-checkitem.done,");
+    expect(done).toContain("background: var(--bs-light-bg-subtle)");
+    expect(done, "the dark surface came back").not.toContain("background: var(--bs-secondary-bg)");
+    // Both row types, one rule — a selector that lost its sibling would split the language.
+    expect(CSS).toContain(".diten-checkitem.done,\n.wcn-subtasks > li.wcn-subtask-done {");
+    // The hover state follows the same surface, or hovering would look like a different row.
+    expect(CSS).toContain("color-mix(in sRGB, rgba(var(--bs-primary-rgb), .03), var(--bs-light-bg-subtle))");
+  });
+
+  it("stops the subtask row importing a 38px control height", () => {
+    /*
+     * MUTATION GUARD: put `btn btn-icon` back and this goes red.
+     *
+     * MEASURED: the subtask row stood 52px against the checklist row's 44px with identical padding, radius and
+     * background. The whole difference was one button — `.btn` carries the theme's 38px control height, and a
+     * 38px control inside a 6px-padded row sets the row's height from the inside.
+     *
+     * The checklist's own action (`diten-checkitem-btn`) is not a `.btn` at all, and `.wcn-subtask-rowaction`
+     * already declares everything this control needs. Nothing was removed: same glyph, same title, same
+     * aria-label, same handler.
+     */
+    const at = APP.indexOf('class="wcn-subtask-rowaction"');
+    expect(at, "the row action markup vanished — the slice measures nothing").toBeGreaterThan(-1);
+    const markup = APP.slice(at - 60, at + 300);
+    expect(markup, "the row action imported the theme's control height again").not.toContain("btn btn-icon");
+    expect(markup).toContain('class="wcn-subtask-rowaction"');
+    // The control is still a control — nothing was traded away for the height.
+    expect(markup).toContain("aria-label=");
+    expect(markup).toContain("title=");
   });
 });

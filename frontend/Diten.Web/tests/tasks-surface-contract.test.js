@@ -56,10 +56,20 @@ describe("MOD-0024 task surface contract", () => {
   });
 
   describe("saving returns to the Task Center", () => {
-    it("sends the user to /WorkCenterNext after create or edit", () => {
+    it("sends the user to /WorkCenterNext after create or edit — unless they were sent here", () => {
+      /*
+       * ⚠ THE DESTINATION GAINED ONE EXCEPTION (2026-08-24, Tur A). The Task Center is still the default and
+       * still the single personal entry point. What changed is that the subtask panel can now open this page
+       * for the FULL form (the only create gate that renders `#taskCustomFields`), and dropping that reader on
+       * the Task Center would lose the task they were working inside.
+       *
+       * ⚠ THE RETURN URL IS NOT TRUSTED HERE. `TasksController.Create` puts it through `Url.IsLocalUrl` and
+       * writes an empty attribute when it points off-site, so this fallback is what an off-site value gets.
+       * The guard is asserted in the create-gate test file; this one pins the default.
+       */
       const formPage = read("wwwroot", "assets", "js", "Tasks", "form-page.js");
       expect(formPage).toMatch(/WORK_CENTER_URL\s*=\s*'\/WorkCenterNext'/);
-      expect(formPage).toContain("global.location.href = WORK_CENTER_URL");
+      expect(formPage).toContain("createContext().returnUrl || WORK_CENTER_URL");
       // The old destination was the now-removed list.
       expect(formPage).not.toMatch(/location\.href = '\/Tasks'/);
     });

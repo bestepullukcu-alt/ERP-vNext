@@ -3038,7 +3038,17 @@
 
         if (actions.length === 1) {
             const only = actions[0];
-            return `<button type="button" class="btn btn-icon wcn-subtask-rowaction" ${only.attrs}
+            /*
+             * ⚠ NO `btn btn-icon` (2026-08-24). MEASURED: the subtask row stood 52px against the checklist
+             * row's 44px, with identical padding, radius and background — the whole difference was this
+             * button. `.btn` carries the theme's 38px control height, and a 38px control inside a 6px-padded
+             * row sets the row's height from the inside.
+             *
+             * The checklist's own action (`diten-checkitem-btn`) is not a `.btn` at all; `.wcn-subtask-rowaction`
+             * already declares everything this control needs. Nothing is lost — same glyph, same hit area,
+             * same title and aria-label; only the imported height is gone.
+             */
+            return `<button type="button" class="wcn-subtask-rowaction" ${only.attrs}
                         title="${esc(t(only.labelKey))}" aria-label="${esc(t(only.labelKey))}">
                     <i class="bx ${only.icon} icon-md"></i>
                 </button>`;
@@ -4734,6 +4744,27 @@
      * It reuses TaskForm.buildCreatePayload and the ordinary create endpoint, because a subtask IS a task; the
      * only thing that makes it one is parentTaskItemId, which is fixed here and deliberately not editable.
      */
+    /*
+     * ── THE THIRD CREATE GATE (2026-08-24, owner approved) ────────────────────────────────────────
+     *
+     * MEASURED, three gates with different field counts:
+     *     inline box + Enter      1 field   (due date / priority / assignee INHERITED from the parent)
+     *     this panel              5 fields
+     *     /Tasks/Create          20 fields  — and the ONLY one that renders `#taskCustomFields`
+     *
+     * That last clause is why this button exists rather than why the panel should grow. The custom
+     * fields section fills at runtime from `TaskFieldDefinition`, which carries `IsRequired` and has
+     * its own CRUD screens. The day a tenant defines a required custom field, the two shortcuts CANNOT
+     * collect it and the full form can. A shortcut that silently cannot satisfy the tenant's own rule
+     * needs a door, not more fields.
+     *
+     * ⚠ THE OTHER TWO GATES ARE UNTOUCHED. This panel stays a shortcut; it is not becoming the form.
+     *
+     * ⚠ THE PATTERN IS MIRRORED, NOT INVENTED: the subtask EDIT panel already carries
+     * `SubtaskOpenFullDetail` — same secondary button, same external-link glyph, same place in the
+     * footer. A second visual language for "leave here and continue in the full surface" would be one
+     * language too many.
+     */
     const subtaskCreatePanel = () => {
         if (!state.subtaskCreateParentId) { return ''; }
         const draft = state.subtaskCreateDraft || {};
@@ -4791,10 +4822,14 @@
                 </div>
                 <p class="wcn-block-hint">${esc(t('SubtaskCreateParentFixed'))}</p>
             </div>
-            <div class="offcanvas-footer p-3 border-top">
+            <div class="offcanvas-footer p-3 border-top d-flex flex-column gap-2">
                 <button type="button" class="btn btn-primary w-100"
                         data-wcn-newsubtask-save="${esc(state.subtaskCreateParentId)}"${state.subtaskCreateSaving ? ' disabled' : ''}>
                     ${esc(t('SubtaskCreateSubmit'))}
+                </button>
+                <button type="button" class="btn btn-label-secondary w-100"
+                        data-wcn-newsubtask-full="${esc(state.subtaskCreateParentId)}">
+                    <i class="bx bx-link-external me-1"></i>${esc(t('SubtaskCreateAllFields'))}
                 </button>
             </div>
         </div>`;
@@ -8147,6 +8182,19 @@
         const openTaskFullEl = event.target.closest('[data-wcn-open-task-full]');
         if (openTaskFullEl) {
             openDetailPage(openTaskFullEl.getAttribute('data-wcn-open-task-full'));
+            return;
+        }
+        const newSubtaskFullEl = event.target.closest('[data-wcn-newsubtask-full]');
+        if (newSubtaskFullEl) {
+            /*
+             * ⚠ THE RETURN URL IS THIS PAGE, and it is built here rather than taken from anywhere: the server
+             * still puts it through `Url.IsLocalUrl`, so a hand-crafted link cannot turn this into an open
+             * redirect — but sending a value we did not construct would be asking the gate to save us.
+             */
+            const parentId = newSubtaskFullEl.getAttribute('data-wcn-newsubtask-full');
+            const back = `/WorkCenterNext/Details/${encodeURIComponent(parentId)}`;
+            global.location.href = `/Tasks/Create?parent=${encodeURIComponent(parentId)}`
+                + `&returnUrl=${encodeURIComponent(back)}`;
             return;
         }
         const subtaskSaveEl = event.target.closest('[data-wcn-subtask-save]');
