@@ -1,8 +1,11 @@
+extern alias PlatformProducer;
+
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Diten.AuthService.Application.S2S;
 using Diten.AuthService.Infrastructure.S2S;
+using PlatformAttestations = PlatformProducer::Diten.Platform.Application.Features.EntitlementAttestations;
 
 namespace Diten.AuthService.Application.Tests.S2S;
 
@@ -21,7 +24,28 @@ public sealed class EntitlementAttestationConsumerTests : IDisposable
         Assert.Equal(EntitlementAttestationOutcomeKind.Continue, result.Kind);
         Assert.Equal(new EntitlementStateVersionV1(3, 5, 7), result.Version);
         Assert.Equal(1, local.Calls);
-        Assert.Equal("607a718d4cc46e5512632a1452d433f4f06799c433082fc39a62fd5e266ea4ed", Convert.ToHexString(SHA256.HashData(Payload())).ToLowerInvariant());
+        Assert.Equal("607a718d4cc46e5512632a1452d433f4f06799c433082fc39a62fd5e266ea4ed", Convert.ToHexString(SHA256.HashData(ProducerPayload())).ToLowerInvariant());
+    }
+
+    [Fact]
+    public void Producer_checkpoint_contract_and_canonical_signing_bytes_are_exact()
+    {
+        var header = PlatformAttestations.EntitlementAttestationSigner.CanonicalHeader("key-2026-01");
+        var payload = ProducerPayload();
+        var token = Token();
+        var parts = token.Split('.');
+
+        Assert.Equal("platform.entitlement-attestation", PlatformAttestations.EntitlementAttestationContractV1.ContractId);
+        Assert.Equal("1.0", PlatformAttestations.EntitlementAttestationContractV1.ContractVersion);
+        Assert.Equal("diten-platform-service", PlatformAttestations.EntitlementAttestationContractV1.Issuer);
+        Assert.Equal("diten-auth-service", PlatformAttestations.EntitlementAttestationContractV1.Audience);
+        Assert.Equal("diten-entitlement-attestation+jwt", PlatformAttestations.EntitlementAttestationContractV1.Type);
+        Assert.Equal("RS256", PlatformAttestations.EntitlementAttestationContractV1.Algorithm);
+        Assert.Equal(3072, _rsa.KeySize);
+        Assert.Equal(header, Decode(parts[0]));
+        Assert.Equal(payload, Decode(parts[1]));
+        Assert.Equal($"{B64(header)}.{B64(payload)}", $"{parts[0]}.{parts[1]}");
+        Assert.True(_rsa.VerifyData(Encoding.ASCII.GetBytes($"{parts[0]}.{parts[1]}"), Decode(parts[2]), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1));
     }
 
     [Theory]
@@ -66,8 +90,18 @@ public sealed class EntitlementAttestationConsumerTests : IDisposable
         var bad = Token()[..^1] + (Token()[^1] == 'A' ? "B" : "A");
         Assert.Equal(EntitlementAttestationOutcomeKind.Unauthorized, (await Consumer(bad).EnforceAsync(Request(), Snapshot(), default)).Kind);
         using var small = RSA.Create(2048);
-        Assert.Equal(EntitlementAttestationOutcomeKind.Unauthorized, (await Consumer(Token(signer: small), rsa: small).EnforceAsync(Request(), Snapshot(), default)).Kind);
+        Assert.Equal(EntitlementAttestationOutcomeKind.Unauthorized, (await Consumer(Resign(Token(), small), rsa: small).EnforceAsync(Request(), Snapshot(), default)).Kind);
         Assert.Equal(EntitlementAttestationOutcomeKind.Unauthorized, (await Consumer(Token(), testOnly: true).EnforceAsync(Request(), Snapshot(), default)).Kind);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Test_only_identity_is_rejected_in_production_active_and_previous_slots(bool active)
+    {
+        var key = new EntitlementAttestationTrustedKey(EntitlementAttestationContractV1.Issuer, "test-key-2026-01", _rsa, active, true);
+        var result = await Consumer(Token("test-key-2026-01"), keys: new Keys(key)).EnforceAsync(Request(), Snapshot(), default);
+        Assert.Equal(EntitlementAttestationOutcomeKind.Unauthorized, result.Kind);
     }
 
     [Fact]
@@ -91,11 +125,18 @@ public sealed class EntitlementAttestationConsumerTests : IDisposable
         Assert.Equal(EntitlementAttestationOutcomeKind.ServiceUnavailable, result.Kind); Assert.Equal(0, local.Calls);
     }
 
+    [Fact]
+    public async Task Platform_version_mutation_between_decision_and_final_revalidation_is_409()
+    {
+        var result = await Consumer(Token(), fence: EntitlementVersionFenceResult.Older).EnforceAsync(Request(), Snapshot(), default);
+        Assert.Equal(EntitlementAttestationOutcomeKind.Conflict, result.Kind);
+        Assert.Equal("entitlement_attestation_version_older", result.Code);
+    }
+
     [Theory]
-    [InlineData(EntitlementVersionFenceResult.Older)]
     [InlineData(EntitlementVersionFenceResult.Incomparable)]
     [InlineData(EntitlementVersionFenceResult.AuthorityUnavailable)]
-    public async Task Version_rollback_incomparability_or_uncertainty_is_503(EntitlementVersionFenceResult fence)
+    public async Task Version_incomparability_or_uncertainty_is_503(EntitlementVersionFenceResult fence)
     {
         Assert.Equal(EntitlementAttestationOutcomeKind.ServiceUnavailable, (await Consumer(Token(), fence: fence).EnforceAsync(Request(), Snapshot(), default)).Kind);
     }
@@ -127,17 +168,26 @@ public sealed class EntitlementAttestationConsumerTests : IDisposable
 
     private EntitlementAttestationConsumer Consumer(string? token, RSA? rsa = null, bool testOnly = false,
         EntitlementAttestationProviderFailureV1? providerFailure = null, Local? local = null,
-        EntitlementVersionFenceResult fence = EntitlementVersionFenceResult.Accepted, DateTimeOffset? now = null) => new(
-        new Provider(token, providerFailure), new Keys(new(EntitlementAttestationContractV1.Issuer, "key-2026-01", rsa ?? _rsa, true, testOnly)),
+        EntitlementVersionFenceResult fence = EntitlementVersionFenceResult.Accepted, DateTimeOffset? now = null,
+        IEntitlementAttestationTrustedKeyProvider? keys = null) => new(
+        new Provider(token, providerFailure), keys ?? new Keys(new(EntitlementAttestationContractV1.Issuer, "key-2026-01", rsa ?? _rsa, true, testOnly)),
         local ?? new(Fu16LocalAuthorizationResultKind.Accepted), new Fence(fence), new() { Enabled = true }, new Clock(now ?? Issued.AddSeconds(1)));
 
     private static EntitlementAttestationRequestV1 Request() => new(Tenant, "PPM", Hash);
     private static Fu16LocalAuthorizationSnapshot Snapshot() => new(Guid.NewGuid(), 4, 3, Guid.NewGuid(), 8, Guid.NewGuid(), 9, 10, "jti", "nonce");
-    private string Token(EntitlementAttestationDecisionV1 decision = EntitlementAttestationDecisionV1.Active, RSA? signer = null)
-    { var h=Encoding.UTF8.GetBytes("{\"alg\":\"RS256\",\"kid\":\"key-2026-01\",\"typ\":\"diten-entitlement-attestation+jwt\"}"); var p=Payload(decision); var input=$"{B64(h)}.{B64(p)}"; return $"{input}.{B64((signer ?? _rsa).SignData(Encoding.ASCII.GetBytes(input),HashAlgorithmName.SHA256,RSASignaturePadding.Pkcs1))}"; }
-    private static byte[] Payload(EntitlementAttestationDecisionV1 decision = EntitlementAttestationDecisionV1.Active) => Encoding.UTF8.GetBytes(
-        $"{{\"aud\":\"diten-auth-service\",\"contract_id\":\"platform.entitlement-attestation\",\"contract_version\":\"1.0\",\"decision\":\"{decision}\",\"iat\":\"2026-08-25T10:11:12.345Z\",\"iss\":\"diten-platform-service\",\"jti\":\"fixture-jti\",\"module_applicability_version\":7,\"module_code\":\"PPM\",\"physical_entitlement_version\":3,\"request_hash\":\"{Hash}\",\"resolved_at_utc\":\"2026-08-25T10:11:12.345Z\",\"subscription_version\":5,\"tenant_id\":\"11111111-2222-3333-4444-555555555555\",\"valid_until_utc\":\"2026-08-25T10:11:27.345Z\"}}");
+    private string Token(EntitlementAttestationDecisionV1 decision = EntitlementAttestationDecisionV1.Active, RSA? signer = null) =>
+        Token("key-2026-01", decision, signer);
+    private string Token(string keyId, EntitlementAttestationDecisionV1 decision = EntitlementAttestationDecisionV1.Active, RSA? signer = null)
+    {
+        var identity = new ProducerIdentity(keyId, signer ?? _rsa, false);
+        return new PlatformAttestations.EntitlementAttestationSigner(identity).Sign(ProducerDecision(decision), Issued, "fixture-jti").Token;
+    }
+    private static PlatformAttestations.EntitlementDecisionSnapshotV1 ProducerDecision(EntitlementAttestationDecisionV1 decision = EntitlementAttestationDecisionV1.Active) =>
+        new(Tenant, "PPM", Hash, Enum.Parse<PlatformAttestations.EntitlementDecisionV1>(decision.ToString(), false), new(3, 5, 7), Issued);
+    private static byte[] ProducerPayload(EntitlementAttestationDecisionV1 decision = EntitlementAttestationDecisionV1.Active) =>
+        PlatformAttestations.EntitlementAttestationSigner.CanonicalPayload(ProducerDecision(decision), Issued, Issued.AddSeconds(15), "fixture-jti");
     private string ReplaceAndSign(string token, string claim, string replacement, int part) { var pieces=token.Split('.'); using var doc=JsonDocument.Parse(Decode(pieces[part])); var text=Encoding.UTF8.GetString(Decode(pieces[part])); var old=doc.RootElement.GetProperty(claim).GetString()!; pieces[part]=B64(Encoding.UTF8.GetBytes(text.Replace($"\"{old}\"",$"\"{replacement}\"",StringComparison.Ordinal))); var input=$"{pieces[0]}.{pieces[1]}"; pieces[2]=B64(_rsa.SignData(Encoding.ASCII.GetBytes(input),HashAlgorithmName.SHA256,RSASignaturePadding.Pkcs1)); return string.Join('.',pieces); }
+    private static string Resign(string token, RSA signer) { var pieces=token.Split('.'); var input=$"{pieces[0]}.{pieces[1]}"; pieces[2]=B64(signer.SignData(Encoding.ASCII.GetBytes(input),HashAlgorithmName.SHA256,RSASignaturePadding.Pkcs1)); return string.Join('.',pieces); }
     private static string B64(ReadOnlySpan<byte> b) => Convert.ToBase64String(b).TrimEnd('=').Replace('+','-').Replace('/','_');
     private static byte[] Decode(string s) { s=s.Replace('-','+').Replace('_','/'); s+=new string('=',(4-s.Length%4)%4); return Convert.FromBase64String(s); }
     public void Dispose() => _rsa.Dispose();
@@ -146,4 +196,5 @@ public sealed class EntitlementAttestationConsumerTests : IDisposable
     private sealed class Fence(EntitlementVersionFenceResult result) : IEntitlementStateVersionFence { public Task<EntitlementVersionFenceResult> ObserveAsync(Guid t,string m,EntitlementStateVersionV1 v,CancellationToken c)=>Task.FromResult(result); }
     private sealed class Local(Fu16LocalAuthorizationResultKind result) : IFu16AuthorizationTransactionSession { public int Calls {get;private set;} public Task<Fu16LocalAuthorizationResult> ValidateAndConsumeAsync(Fu16LocalAuthorizationSnapshot s,CancellationToken c){Calls++;return Task.FromResult(new Fu16LocalAuthorizationResult(result));} }
     private sealed class Clock(DateTimeOffset now) : TimeProvider { public override DateTimeOffset GetUtcNow()=>now; }
+    private sealed record ProducerIdentity(string KeyId, RSA Rsa, bool IsTestOnly) : PlatformAttestations.IEntitlementAttestationSigningIdentity;
 }

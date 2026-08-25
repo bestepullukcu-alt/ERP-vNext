@@ -78,7 +78,13 @@ public sealed class EntitlementAttestationConsumer
         if (!TryDecision(p, out var decision)) return EntitlementAttestationValidationResult.Unavailable("entitlement_attestation_indeterminate");
         var fence = await _versionFence.ObserveAsync(request.TenantId, request.ModuleCode, version, cancellationToken);
         if (fence != EntitlementVersionFenceResult.Accepted)
-            return EntitlementAttestationValidationResult.Unavailable($"entitlement_attestation_version_{fence.ToString().ToLowerInvariant()}");
+            return fence switch
+            {
+                EntitlementVersionFenceResult.Older => EntitlementAttestationValidationResult.Conflict("entitlement_attestation_version_older"),
+                EntitlementVersionFenceResult.Incomparable => EntitlementAttestationValidationResult.Unavailable("entitlement_attestation_version_incomparable"),
+                EntitlementVersionFenceResult.AuthorityUnavailable => EntitlementAttestationValidationResult.Unavailable("entitlement_attestation_version_authorityunavailable"),
+                _ => EntitlementAttestationValidationResult.Unavailable("entitlement_attestation_version_unknown")
+            };
         if (decision != EntitlementAttestationDecisionV1.Active)
             return EntitlementAttestationValidationResult.Forbidden($"entitlement_{decision.ToString().ToLowerInvariant()}", decision, version, validUntil);
 
