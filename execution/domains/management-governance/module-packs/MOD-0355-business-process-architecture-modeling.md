@@ -9,14 +9,17 @@ module_code: MOD-0355
 shell: tenant
 golden_reference: none
 entity_base: EntityBase
-status: draft
+status: ready-for-dev
 owner: ali.tufanoglu / enterprise-architect-interim
+business_owner: ali.tufanoglu / business-process-governance-owner-interim
+technical_owner: ali.tufanoglu / management-governance-technical-owner-interim
+legacy_parity_owner: ali.tufanoglu / business-process-governance-owner-interim
 branch: feature/mg/mod-0355-business-process-architecture-modeling
 started: 2026-08-25
 target: 2026-09-15
 form_field_count: 0
 port: TBD
-implementation_authority: none
+implementation_authority: explicit-user-control-tower-bounded-core-model-contract-test
 production_authority: none
 ---
 
@@ -24,14 +27,15 @@ production_authority: none
 
 > **Canonical materialization provenance:** Canonical Master 8.1 promotion checkpoint
 > `ee1d7dc5766a67012df2af35d3eed1aa779da27d` was merged into the materialization base by merge commit
-> `e034c5fddd0d05e0dda6ef72ce88f41a36efa3d4`. This materialized file is draft governance authority only
-> and grants no implementation, runtime or production authority.
+> `e034c5fddd0d05e0dda6ef72ce88f41a36efa3d4`. This materialized file is ready-for-dev governance authority
+> only for the bounded Core Model & Contract-Test slice and grants no runtime or production authority.
 
-> **Draft / no-code guard:** `status: draft`, `implementation_authority: none` and
-> `production_authority: none` are binding. This pack does not authorize code, service scaffolding, schema,
-> collection, endpoint, route, Gateway, frontend, migration, deployment or production activation.
-> Implementation requires explicit human promotion to `approved` or `ready-for-dev`, explicit implementation
-> authority and closure of the applicable gates in §18.
+> **Ready-for-dev bounded implementation guard:** `status: ready-for-dev`,
+> `implementation_authority: explicit-user-control-tower-bounded-core-model-contract-test` and
+> `production_authority: none` are binding. The explicit user decision dated 2026-08-25 authorizes only the
+> exact Core scaffold, module and test paths in §5. It does not authorize a listener, endpoint, route, port
+> binding, Gateway, frontend, WorkCenter, credential, migration, deployment, external adapter, production
+> activation or modification of another internal module.
 
 > **Planning boundary:** `target` is provisional planning metadata, not a delivery commitment or authority.
 
@@ -72,8 +76,9 @@ Delivery is divided into five independently gated slices:
 4. Frontend & Legacy Parity
 5. Runtime activation
 
-Governance availability of a contract shape is not runtime availability and grants no implementation or
-production authority.
+Governance availability alone is not runtime or implementation availability. Present implementation authority
+exists only for the bounded Core Model & Contract-Test paths and guards recorded in frontmatter and §5;
+runtime, deployment and production authority remain absent.
 
 ## 2. Ownership and Boundaries
 
@@ -720,15 +725,47 @@ credentials and delivery adapter remain in the Approval/Auth/Audit second slice.
 
 ## 5. Repo Scope
 
-Materializing this draft pack may create only:
+Governance materialization scope was limited to:
 
 - `execution/domains/management-governance/module-packs/MOD-0355-business-process-architecture-modeling.md`
 
-Future Core Model & Contract-Test implementation scope, only after explicit authorization:
+The explicit 2026-08-25 authorization permits the bounded Core Model & Contract-Test slice to create or
+update only:
 
-- `services/Diten.ManagementGovernanceService/src/**/Modules/ProcessModeling/**`
-- Dedicated ProcessModeling domain, application, persistence and infrastructure paths.
-- Dedicated ProcessModeling unit, contract, architecture and integration test paths.
+- `services/Diten.ManagementGovernanceService/Diten.ManagementGovernanceService.sln`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Diten.ManagementGovernanceService.Api.csproj`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Diten.ManagementGovernanceService.Application.csproj`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Diten.ManagementGovernanceService.Domain.csproj`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Diten.ManagementGovernanceService.Persistence.csproj`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/Diten.ManagementGovernanceService.Infrastructure.csproj`
+- compile/test-only `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs`
+- service-local composition files:
+  `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/DependencyInjection.cs`,
+  `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/DependencyInjection.cs`
+  and
+  `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/DependencyInjection.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Modules/ProcessModeling/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Modules/ProcessModeling/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/ProcessModeling/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/Modules/ProcessModeling/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/Diten.ManagementGovernanceService.Tests.csproj`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Diten.ManagementGovernanceService.IntegrationTests.csproj`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Diten.ManagementGovernanceService.ArchitectureTests.csproj`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/Modules/ProcessModeling/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Modules/ProcessModeling/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Modules/ProcessModeling/**`
+
+The solution, five source projects, compile/test-only `Program.cs` and three root composition files are shared
+service-shell artifacts. MOD-0355 may create an absent artifact or make an additive-only ProcessModeling
+composition change. It may not overwrite, replace, remove or weaken an existing artifact, registration,
+reference or content owned by MOD-0007 `DecisionRegistry`, MOD-0354 `Dws` or another authorized sibling.
+Existing shared-shell content is preserved byte-for-byte except for the minimal additive ProcessModeling
+project/reference/registration hunk. Any incompatible shell state or ambiguous ownership blocks the Core
+scaffold fail-closed and requires a separate topology amendment.
+
+The compile/test-only `Program.cs` cannot call `Run`, `RunAsync`, `Start`, `StartAsync` or equivalent host
+activation; it cannot bind a port, expose an endpoint, start a listener/worker or load runtime configuration.
+No `appsettings*`, `launchSettings.json`, controller, endpoint, worker, broker or deployment file is authorized.
 
 Later slices require separate explicit scope activation:
 
@@ -738,7 +775,8 @@ Later slices require separate explicit scope activation:
 - Gateway routing.
 - Runtime deployment and configuration.
 
-The listed future paths grant no present write authority.
+The exact Core paths above grant present bounded write authority only; every later-slice path remains
+unauthorized.
 
 ## 6. Protected Paths
 
@@ -858,7 +896,7 @@ Contract-Test `ready-for-dev`.
 
 ## 10. Backend File Convention
 
-The planned bounded-module structure is:
+The authorized bounded-module structure is:
 
 ```text
 services/Diten.ManagementGovernanceService/src/
@@ -1139,7 +1177,9 @@ Authorization rules:
 - [ ] `ApprovalOutcomeVersion` and additional outcome fields are rejected.
 - [ ] Approval outcome is absent from Core entity/request schemas.
 - [ ] Governance documentation does not claim runtime availability.
-- [ ] Approval-required publish remains unavailable until the second slice is executable.
+- [ ] `PublishProcessModelVersionCommand` contract, domain transition specification and fail-closed tests may
+      exist in Core, but no successful application handler or persistence mutation is authorized until the
+      Approval/Auth/Audit second slice is separately approved and executable.
 - [ ] MOD-0018, MOD-0021 and MOD-0023 integrations require separate approval and fixtures.
 
 ### Optional reference integrations
@@ -1178,18 +1218,37 @@ Authorization rules:
 
 ### Architecture tests
 
-1. Dws project layers cannot reference ProcessModeling project layers; reciprocal rule applies.
-2. Domain/Persistence namespace and type scans show no reciprocal implementation dependency.
-3. Each module registers only its own handlers, repositories, collections and adapters.
-4. Repository interfaces and implementations are module-owned.
-5. Mongo collection names, mappings, indexes and serializers are disjoint.
-6. No shared business entity, value object or aggregate exists.
-7. Dws uses only `management-governance.dws.*`; ProcessModeling uses only its permission family.
-8. No shared task, approval or workflow helper exists.
+The exact 12-test matrix below is parameterized and must pass independently for every co-hosted sibling.
+The initial logical sibling set is explicitly `Modules/Dws` and `DecisionRegistry`. Dws physical roots remain
+`src/Diten.ManagementGovernanceService.{Domain,Application,Persistence,Infrastructure}/Modules/Dws/**`.
+DecisionRegistry physical roots are
+`src/Diten.ManagementGovernanceService.{Domain,Application,Persistence,Infrastructure}/DecisionRegistry/**`
+plus
+`tests/Diten.ManagementGovernanceService.Tests/DecisionRegistry/**`,
+`tests/Diten.ManagementGovernanceService.IntegrationTests/DecisionRegistry/**` and
+`tests/Diten.ManagementGovernanceService.ArchitectureTests/DecisionRegistry/**`, all relative to
+`services/Diten.ManagementGovernanceService/`. Any later sibling is added to the same matrix before
+composition. Moving DecisionRegistry to `Modules/DecisionRegistry/**` requires a separate amendment and
+topology reconciliation; this pack cannot infer that move. For each `Sibling`:
+
+1. `Sibling` project layers cannot reference ProcessModeling project layers; the reciprocal rule applies.
+2. Domain/Persistence type and namespace scans show no reciprocal implementation dependency.
+3. DI composition registers only module-owned handlers, repositories and adapters; registrations cannot
+   replace, decorate or capture the other module's services.
+4. Repository interfaces and implementations are module-owned and cannot accept the other module's context.
+5. Mongo collection names, mappings, serializers and tenant-first named indexes are disjoint.
+6. No shared business entity, value object, aggregate or mutable persistence document exists.
+7. Permission families are disjoint: ProcessModeling uses only
+   `management-governance.process-modeling.*`; Dws and DecisionRegistry retain only their owner-approved
+   permission families.
+8. No shared task, approval, workflow, audit-intent or outbox business helper exists.
 9. Cross-module communication uses only opaque IDs, versioned query contracts or versioned events.
-10. Shared contract assemblies reference neither module.
-11. No local transaction spans Dws and ProcessModeling aggregates or collections.
-12. Negative mutation tests prove representative forbidden dependencies fail.
+10. Session and transaction ownership is module-local; no local transaction spans ProcessModeling and
+    `Sibling` aggregates, repositories, collections, audit intents or outbox records.
+11. Migration, bootstrap and persistence-owner manifests cannot create, rename, adopt or mutate the other
+    module's collections or indexes.
+12. Negative architecture and mutation tests prove representative type/namespace, DI, repository,
+    collection/index, session/transaction, permission, audit-outbox and migration violations fail.
 
 If mechanical isolation cannot be proven, same-host scaffolding is blocked. The fail-closed fallback is
 separately owned/deployed service boundaries with separate projects, DI containers, persistence ownership,
@@ -1262,13 +1321,18 @@ Frontend and runtime activation tests become mandatory only in their separately 
 
 ### A-class decisions
 
-- [ ] **A-01 — OPEN:** Confirm permanent MOD-0355 business owner and technical owner.
+- [x] **A-01 — CLOSED WITH INTERIM ACCOUNTABLE ROLES:** Business owner is
+      `ali.tufanoglu / business-process-governance-owner-interim`; technical owner is
+      `ali.tufanoglu / management-governance-technical-owner-interim`. Permanent organizational assignees
+      remain a pre-production follow-up, not a bounded Core blocker.
 - [x] **A-02 — CLOSED FOR CORE:** Exact lifecycle, immutability, terminal Retired state, monotonic revisions,
       one open Draft/Review and no parallel variants.
 - [x] **A-03 — CLOSED FOR CORE:** `ModuleCode = MOD-0355`, exact 16 permissions and exact command/query
       mapping. ProcessModel has no archive command.
-- [ ] **A-04 — SECOND-SLICE OWNER DECISION / NOT A CORE BLOCKER:** Decide whether authoritative
-      `approval not required` permits direct publish by an authorized publisher.
+- [ ] **A-04 — SECOND-SLICE OWNER DECISION / NOT A CORE CONTRACT BLOCKER:** Decide whether authoritative
+      `approval not required` permits direct publish by an authorized publisher. Until this closes,
+      `PublishProcessModelVersionCommand` may exist only as a contract/domain transition specification and
+      fail-closed test target; a successful application handler or persistence mutation is unauthorized.
 - [x] **A-05 — NOT APPLICABLE TO MINIMAL CORE V1:** Activity classification deferred to a future versioned
       amendment.
 - [x] **A-06 — NOT APPLICABLE TO MINIMAL CORE V1:** Control-point classification deferred to a future
@@ -1278,30 +1342,34 @@ Frontend and runtime activation tests become mandatory only in their separately 
 - [x] **A-08 — CLOSED FOR CORE:** Exact
       `management-governance.process-modeling.content-hash@1.0`, corrected field order, normalization,
       deterministic sorting, framing and three independently recomputed vectors.
-- [ ] **A-09 — TECHNICALLY CLOSED / ACCOUNTABLE OWNER CONFIRMATION OPEN:** Confirm exact archive and
-      retention policy: four mutable catalogs only; durable non-archivable ProcessModel; immutable
-      Published/Retired history; no ordinary delete, TTL or purge.
-- [ ] **A-10 — TECHNICALLY CLOSED / ACCOUNTABLE OWNER CONFIRMATION OPEN:** Confirm the exact 12-test
-      isolation matrix and mandatory fail-closed split fallback.
+- [x] **A-09 — CLOSED BY ACCOUNTABLE OWNER:** Exact archive and retention policy is confirmed: four mutable
+      catalogs only; durable non-archivable ProcessModel; immutable Published/Retired history; no ordinary
+      delete, TTL or purge.
+- [x] **A-10 — CLOSED BY ACCOUNTABLE OWNER:** The exact 12-test isolation matrix and mandatory fail-closed
+      split fallback are confirmed.
 - [x] **A-11 — CLOSED BY CONTROL TOWER:** Missing classification, Approval/Auth/Audit, KPI/Metric, Artifact,
       owner/interface adapters, frontend, Gateway and runtime activation do not block Minimal Core v1
       Core Model & Contract-Test `ready-for-dev`.
-- [ ] **A-12 — OPEN:** Assign legacy parity/disposition accountable owner.
+- [x] **A-12 — CLOSED WITH INTERIM ACCOUNTABLE ROLE:** Legacy parity/disposition owner is
+      `ali.tufanoglu / business-process-governance-owner-interim`; Control Tower is reviewer, not the
+      accountable owner.
 - [x] **A-13 — CLOSED BY CONTROL TOWER:** Governance availability, implementation authority and runtime
       activation are separate gates.
 
 ### Core ready-for-dev gates
 
 - [x] Master 8.1 promotion is merged into the materialization target.
-- [ ] DCP-002 exact identity preflight passes.
-- [ ] Registry row resolves exactly to MOD-0355 without collision.
-- [ ] A-01, A-09 and A-10 accountable-owner confirmations are recorded.
-- [ ] Exact owned objects, lifecycle, permissions and protected paths are approved.
-- [ ] Exact ContentHash contract and three vectors pass.
-- [ ] Exact error matrix and four-participant transaction boundary are approved.
-- [ ] Core contract-test matrix is approved.
-- [ ] No implementation or production authority is inferred from `draft`.
-- [ ] Explicit user authorization is recorded before code or service scaffolding begins.
+- [x] DCP-002 exact identity preflight passes.
+- [x] Registry row resolves exactly to MOD-0355 without collision.
+- [x] A-01, A-09 and A-10 accountable-owner confirmations are recorded.
+- [x] Exact owned objects, lifecycle, permissions and protected paths are approved.
+- [x] Exact ContentHash contract and three vectors pass.
+- [x] Exact error matrix and four-participant transaction boundary are approved.
+- [x] Core contract-test matrix is approved.
+- [x] Ready-for-dev grants only the exact bounded implementation authority recorded in frontmatter and §5;
+      no runtime or production authority is inferred.
+- [x] Explicit user authorization dated 2026-08-25 is recorded for the bounded Core scaffold and
+      Contract-Test slice only.
 
 ### B-class runtime blockers
 
@@ -1397,10 +1465,8 @@ Governance availability cannot become local fallback, hard-coded truth or inferr
 
 ## 20. Follow-up Items
 
-- Confirm permanent business and technical owners.
-- Confirm the §18 A-09 archive/retention decision.
-- Confirm the §18 A-10 isolation/fallback decision.
-- Assign the legacy parity/disposition owner.
+- Replace interim business, technical and legacy-parity accountable roles with permanent organizational
+  assignees before production activation.
 - Introduce activity/control-point/relationship classification only through a future versioned amendment.
 - Resolve approval policy and ApprovalOutcome binding in the Approval/Auth/Audit slice.
 - Add MOD-0018 permission/SoD enforcement through an owner-approved PSS slice.
@@ -1411,7 +1477,8 @@ Governance availability cannot become local fallback, hard-coded truth or inferr
 - Complete the read-only legacy parity inventory and owner-approved disposition.
 - Allocate service port and Gateway route only during separately authorized runtime activation.
 - Define any process-instance/runtime engine as a separate canonical capability.
-- Record implementation, deployment and production authority separately; none is granted by this draft.
+- Preserve the bounded Core implementation authority recorded in frontmatter and §5. Runtime activation,
+  deployment and production authority remain absent until separately recorded.
 
 ### Mechanical self-check
 
@@ -1431,10 +1498,10 @@ Governance availability cannot become local fallback, hard-coded truth or inferr
 - Normative hash vectors: `3`
 - Non-empty normative graph vectors: `1`
 - Vector recomputations: `PASS / PASS / PASS`
-- Status: `draft`
-- Implementation authority: `none`
+- Status: `ready-for-dev`
+- Implementation authority: `explicit-user-control-tower-bounded-core-model-contract-test`
 - Production authority: `none`
-- Repository scope: exact-one MOD-0355 module-pack file
-
-
-22:10
+- Initial materialization scope: exact-one MOD-0355 module-pack file
+- Ready-for-dev promotion reconciliation scope: exact four governance files (this pack, DCP-005, DCP-006
+  and the module registry)
+- Bounded implementation scope: only the exact shared-shell and ProcessModeling paths and guards in §5
