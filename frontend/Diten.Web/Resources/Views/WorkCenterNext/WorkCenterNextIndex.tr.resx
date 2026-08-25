@@ -908,13 +908,13 @@
     <value>Tüm alanlar</value>
   </data>
   <data name="TimerStateRunning" xml:space="preserve">
-    <value>Devam ediyor — sayaç işliyor</value>
+    <value>Devam ediyor</value>
   </data>
   <data name="TimerStatePaused" xml:space="preserve">
-    <value>Duraklatıldı — sayaç durdu</value>
+    <value>Duraklatıldı</value>
   </data>
   <data name="TimerFollowsStatusHint" xml:space="preserve">
-    <value>Sayaç görevin durumunu izler; başlatma ve duraklatma aksiyonlardan yapılır.</value>
+    <value>Geçen süre kaydedilmiyor — harcadığınız süreyi elle girin.</value>
   </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Bitince başlar (FS)</value>

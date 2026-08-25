@@ -908,13 +908,13 @@
     <value>كل الحقول</value>
   </data>
   <data name="TimerStateRunning" xml:space="preserve">
-    <value>قيد التنفيذ — المؤقّت يعمل</value>
+    <value>قيد التنفيذ</value>
   </data>
   <data name="TimerStatePaused" xml:space="preserve">
-    <value>موقوف مؤقتًا — المؤقّت متوقف</value>
+    <value>موقوف مؤقتًا</value>
   </data>
   <data name="TimerFollowsStatusHint" xml:space="preserve">
-    <value>يتبع المؤقّت حالة المهمة؛ ابدأه وأوقفه من الإجراءات.</value>
+    <value>لا يُسجَّل الوقت المنقضي — أدخل الوقت الذي قضيته يدويًا.</value>
   </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>إنهاء-بدء (FS)</value>

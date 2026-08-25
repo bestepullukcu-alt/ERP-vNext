@@ -4965,3 +4965,87 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - Gereken: `TaskItem`'a bir `TimerStartedAt`, projeksiyona taşınması, mapper'ın uydurmayı bırakması.
 - TOPLAM etkilenmiyor — o saklanan `loggedMinutes`'tan geliyor ve yenilemede korunuyor.
 - **Gelecek regresyon riski: 🟡** — kullanıcı sayaca güvenip yanlış süre bildirebilir.
+
+### BL-234 GÜNCELLEME (2026-08-24, Tur C) — tik tak eden gösterge GEÇİCİ OLARAK KALDIRILDI
+- Durum: **[GEÇİCİ ÇÖZÜM UYGULANDI]** — özellik yazılmadı, yalan söylemek durduruldu.
+- Kaldırılan: `wcn-ts-live` / `wcnTimerValue` göstergesi ve onu boyayan bir saniyelik `setInterval`.
+- **Kalanlar (hepsi gerçek):** TOPLAM (`loggedMinutes`, saklanıyor, yenilemede korunuyor) · görevin DURUMU ·
+  **"Süre gir"** — kalıcı olan tek yazma yolu.
+- İpucu cümlesi artık dürüst: *"Geçen süre kaydedilmiyor — harcadığınız süreyi elle girin."* (7 dil).
+- ⚠ **DURUM CÜMLESİ DE DÜZELTİLDİ:** "Devam ediyor — sayaç işliyor" diyordu; gösterge kalkınca bu cümle bir
+  alt satırdaki ipucuyla ÇELİŞİR hâle geldi (biri sayaç işliyor diyor, diğeri kaydedilmiyor). Artık yalnız
+  görevin kendi durumunu söylüyor: "Devam ediyor" / "Duraklatıldı". 7 dil.
+- ⚠ **ENTITY ALANI EKLENMEDİ, MIGRATION YAZILMADI** (testle kilitli: DTO'da `TimerStartedAt` yok). Doğru çözüm
+  **MOD-0280**'e ait (blueprint, EA-TBD) — orada gerçek bir sayaç başlangıcı saklanınca gösterge geri gelir.
+- **CANLI:** toplam 3sa 45dk · durum "Devam ediyor" · tik tak **yok** · yenileme öncesi/sonrası **birebir aynı**.
+- **Gelecek regresyon riski: 🟢** (artık yanlış bir sayı gösterilmiyor).
+
+### BL-235 — [KAYIT] Beş yetki sözleşmede var, sağlayıcıda yok
+- Sağlayıcı (`ResolveCapabilities`) **altı** yetki biliyor: planning · execution · businessContext · checklist ·
+  subtasks · dependencies · activity · **taskContext** (bu oturumda eklendi). Aşağıdaki beşinin **kod dalı hiç
+  yok** — "veri yok" değil, üretilmiyor.
+- | yetki | sözleşmedeki veri | arayüzdeki kart | arkasındaki veri (ÖLÇÜLDÜ) | engel |
+  |---|---|---|---|---|
+  | `timeTracking` | `timeEntries` | `renderTimesheet` ✓ | backend'de `TimeEntry` **0 eşleşme** | **MOD-0280**'e ait (blueprint, EA-TBD) |
+  | `attachments` | `attachments` | `renderAttachments` ✓ | `TaskAttachment`/`IAttachmentStore`/`BlobStorage` → **0 dosya** | üründe **hiç ek deposu yok** |
+  | `evidence` | `evidence` | `renderEvidence` ✓ | Task tarafında yalnız **iki `EvidenceRequired` boolean'ı** (kontrol listesi maddesinde); kodun kendi yorumu: *"evidence itself is MOD-0031's"* | görev kanıt İSTEYEBİLİYOR ama saklayacak yeri yok — sahibi **MOD-0031** |
+  | `processStages` | `processStages` | **kart yok** (`renderProcess` 0) | `ProcessStage` backend'de **0 eşleşme** | iş süreci kavramı **hiç tasarlanmamış** |
+  | `relatedRecords` | `relatedRecords` | `renderRelated` ✓ | yalnız `MaxRelatedRecords = 20` sabiti; `TaskItem`'da alan **0** | sınır var, **alan yok** — sağlayıcı eksik değil, model eksik |
+- Gerçek veride 63 görevin hiçbirinde çıkmamalarının sebebi bu.
+- **Gelecek regresyon riski: 🟢** (bugün kod yok).
+
+### BL-236 — [KAYIT] `--bs-secondary-color` tokeni AA altında, ürün genelinde
+- TARAMA (WorkCenterNext + detay + kaynak sayfası, iki tema): token'ı kullanan **20 ayrı metin**.
+  | tema | token | kart yüzeyindeki oran | AA(4.5) altı | 3.0 altı |
+  |---|---|---|---|---|
+  | açık | `rgb(167,172,178)` | **2.29** | 20/20 | 20/20 |
+  | koyu | `rgb(126,127,150)` | **3.49** | 20/20 | 1/20 |
+- Yani sorun tek tek birleşimlerde değil, **tokenin kendisinde**: hiçbir kullanım 2.29'un (açık) üstüne
+  çıkamıyor. Değeri değiştirmek bir **tasarım sistemi kararı** ve ürünün her ekranını repaint eder → bu turda
+  **dokunulmadı**, kaydedildi.
+- ⚠ **BİZİM KURDUĞUMUZ TEK KUSURLU BİRLEŞİM DÜZELTİLDİ:** `wcn-subtask-status` tokenin kendi tabanının da
+  ALTINDAYDI (2.09 açık / 3.25 koyu), çünkü bu oturumda getirdiğimiz tamamlanmış-satır zemininde duruyor.
+  `--bs-body-color`'a alındı → **6.09**. Seçtiğimiz bir zemin, bir metni tokenin tabanının altına itmemeli.
+- ⚠ **YANLIŞ POZİTİF, KAYDA GEÇSİN:** taramada en düşük oran (1.83) `wcn-step-label.visually-hidden` — ekran
+  okuyucu için var, **görünmüyor**. Kontrast ölçümü orada anlamsız.
+- **Gelecek regresyon riski: 🟡** — her yeni "soluk metin" bu borcu büyütüyor.
+
+### BL-184 GÜNCELLEME (2026-08-24, Tur C) — kararsızlık ÜREMEDİ
+- Tam süit **art arda üç kez** koşuldu: **10 kırmızı / 1602 yeşil**, üçünde de **birebir aynı** — hiçbir test
+  koşudan koşuya değişmedi.
+- Yani bu oturumda üç kez araya giren kararsızlık, **bu turdaki hâliyle üremiyor**. Sebebi kesin olarak
+  ölçülemedi; en güçlü aday BL-189'du (aynı belgede iki modül örneği, paylaşılan dinleyiciler) ve o bu turda
+  **düzeltildi** — kararsızlığın kaybolmuş olması muhtemelen onun yan etkisi, ama **kanıtlanmadı**.
+- Madde kapanmıyor: üremeyen bir hata, olmayan bir hata değildir.
+- **Gelecek regresyon riski: 🟡.**
+
+### BL-189 KAPANDI (2026-08-24, Tur C) — modül kendi dinleyicilerini söküyor
+- Bütün dinleyiciler `document` üzerinde, dolayısıyla ikinci bir boot birincinin ÜSTÜNE biniyordu: tek tık
+  `onClick`'i **iki kez**, iki farklı `state` nesnesine karşı çalıştırıyordu.
+- Boot'ta `global.__wcnTeardown` çağrılıyor; click/change/input/keydown sökülüyor ve sayaç durduruluyor.
+- ⚠ **Bu bir test uyarlaması DEĞİL, üretim davranışı:** bundle'ı iki kez yükleyen ya da yeniden enjekte eden
+  herhangi bir sayfa aynı çakışmayı yaşar. Testte önce görülmesi yan fayda.
+- Testle kilitli: eklenen her boot dinleyicisinin bir `removeEventListener` karşılığı olmalı.
+
+### BL-222 KAPANDI (2026-08-24, Tur C) — "minimum görünür satır" yazıldı
+- Kural `fixture-contract.js`'te **tek yerde**: `MINIMUM_VISIBLE_ROW` + `inTab`'den ÖLÇÜLEREK çıkarılmış dört
+  koşul (`catalogVisible !== false` · `!dismissed` · `itemInScope` · `tab` eşleşmesi, `history` hariç terminal
+  satırlar gizli).
+- ⚠ **AÇIKÇA BİR TARİF, İKİNCİ BİR GERÇEKLEME DEĞİL:** kuralın KOŞTUĞU yer hâlâ `inTab`; ikisi çelişirse
+  `inTab` haklıdır ve yorum bayattır. Testle kilitli (`const inTab` tek yerde).
+- ⚠ **KENDİ TESTİMİN ZAYIFLIĞI, KAYDA GEÇSİN:** ilk hâli nesne silinmiş olmasına rağmen YEŞİL kaldı — çünkü
+  aradığı dizeler açıklayıcı YORUMDA ve dışa aktarma satırında da vardı. Bir yorumun tatmin edebildiği kural,
+  hiçbir şeyin zorlamadığı kuraldır. Test artık nesnenin kendisine bakıyor.
+
+### BL-237 kapanış notu (2026-08-24) — Tur C özeti
+- İş 1 → BL-234 güncellemesi · İş 2 → BL-235 · İş 3 → BL-236 · İş 4 → BL-184/189/222.
+- **MUTASYON (2, ikisi de kırmızı):** tik tak gösterge geri kondu · fixture kuralı silindi.
+- **TAM REGRESYON (örnekleme yok, canlı):** diyalog ikon 32px (hesaplanan) · dolgu 24px · dört hiza da eşit ·
+  düğmeler iki uçta · "Vazgeç" · onay "Evet, görevi iptal et" · gerekçe cümlesi eylemini söylüyor ·
+  `aria-describedby` çözülüyor · düğmeler y=523/523 · "Tüm alanlar" kapısı yerinde · rail'de "Süre gir" YOK ·
+  satır 44/44 · kontrast 6.09/6.54/6.09 · efor kartı 7.5/12 · bağımlılık cümlesi + sol ok + FS dipnotu ·
+  yapışkan ray · silinen 15 fonksiyon sıfır eşleşme · bekçi yeşil, KNOWN_RAW 12 · FG-003 (inline stil yok).
+- **SÜİT: 1612 geçti / 9 kırmızı** — dokuzu da Enterprise Strategy, oturum başından beri kırmızı, dokunulmadı.
+- ⚠ **EKRAN GÖRÜNTÜSÜ ALINAMADI:** tarayıcı paneli bu turun sonunda boş kare döndürmeye başladı. Süre kartının
+  yeni hâli **ölçümle** doğrulandı (DOM), **görüntüyle doğrulanmadı**.
+- **Gelecek regresyon riski: 🟢.**

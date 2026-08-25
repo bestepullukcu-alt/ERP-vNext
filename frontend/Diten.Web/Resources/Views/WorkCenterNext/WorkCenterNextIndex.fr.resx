@@ -908,13 +908,13 @@
     <value>Tous les champs</value>
   </data>
   <data name="TimerStateRunning" xml:space="preserve">
-    <value>En cours — le chronomètre tourne</value>
+    <value>En cours</value>
   </data>
   <data name="TimerStatePaused" xml:space="preserve">
-    <value>En pause — le chronomètre est arrêté</value>
+    <value>En pause</value>
   </data>
   <data name="TimerFollowsStatusHint" xml:space="preserve">
-    <value>Le chronomètre suit le statut de la tâche ; démarrez-le et mettez-le en pause depuis les actions.</value>
+    <value>Le temps écoulé n'est pas enregistré — saisissez manuellement le temps passé.</value>
   </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Fin-à-Début (FS)</value>

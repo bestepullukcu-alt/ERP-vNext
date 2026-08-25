@@ -3655,9 +3655,25 @@
         if (!hasCap(item, 'timeTracking')) { return ''; }
         if (item.itemType !== 'task' || item.lifecycle === 'PendingAcceptance') { return ''; }
         const ts = item.timesheet || { loggedMinutes: 0, running: false };
-        const live = ts.running
-            ? `<span class="wcn-ts-live"><span class="wcn-ts-dot"></span><span id="wcnTimerValue">00:00</span><span class="wcn-ts-runtxt">${esc(t('TimerRunning'))}</span></span>`
-            : '';
+        /*
+         * ⚠ THE TICKING READOUT WAS REMOVED (2026-08-24, Tur C) — it was telling a lie.
+         *
+         * MEASURED: it showed 37:29, the page was refreshed, and it came back at 37:15 — not continuing, but
+         * STARTING OVER. The cause is two layers deep: the mapper invents an anchor
+         * (`startedAt: Date.now() - 37min`) on every load, and `TaskItem` has no timer-start field at all —
+         * the projection carries `TimerState` (running/paused) and nothing to count from.
+         *
+         * So the number could never be right, on a fixture or on a real task. A readout that ticks convincingly
+         * and resets on refresh is worse than no readout: a reader trusts it and reports the wrong hours.
+         *
+         * ⚠ WHAT STAYS, because it is real: the TOTAL (`loggedMinutes`, stored, survives refresh), the task's
+         * STATE, and "Süre gir" — the only path that writes anything durable. The hint below now says plainly
+         * that elapsed time is not recorded.
+         *
+         * ⚠ NO ENTITY FIELD, NO MIGRATION. The honest fix belongs to MOD-0280 (blueprint, EA-TBD). This round
+         * stops lying; it does not build the feature. See BL-234.
+         */
+        const live = '';
         /*
          * ── WHAT THIS CARD MAY AND MAY NOT CARRY (2026-08-24, Tur B) ──────────────────────────────────────
          *
@@ -3686,6 +3702,12 @@
                     <i class="bx ${inboxActionIcon(logAction)} me-1"></i>${esc(actionLabel(logAction))}
                </button>`
             : '';
+        /*
+         * ⚠ THE STATE LINE NAMES THE TASK, NOT A TIMER (2026-08-24, Tur C). It used to read "Devam ediyor —
+         * sayaç işliyor", which contradicted the hint below it the moment the ticking readout was removed:
+         * one line claimed a timer was running while the next said elapsed time is not recorded. Only the
+         * task's own state survives — that part is true and comes from the projection.
+         */
         const stateKey = ts.running ? 'TimerStateRunning'
             : item.executionState === 'paused' ? 'TimerStatePaused'
             : null;
@@ -5311,20 +5333,13 @@
     };
 
     // ── Live timer tick (updates only the running segment text node) ──────────
-    let timerInterval = null;
-    const stopTimerTick = () => { if (timerInterval) { global.clearInterval(timerInterval); timerInterval = null; } };
-    const setupTimerTick = () => {
-        stopTimerTick();
-        const item = itemById(state.selectedId);
-        if (!item || !item.timesheet || !item.timesheet.running) { return; }
-        const paint = () => {
-            const el = document.getElementById('wcnTimerValue');
-            if (!el || !item.timesheet.running) { stopTimerTick(); return; }
-            el.textContent = formatSegment(Date.now() - item.timesheet.startedAt);
-        };
-        paint();
-        timerInterval = global.setInterval(paint, 1000);
-    };
+    /*
+     * ⚠ `setupTimerTick` / `stopTimerTick` WERE REMOVED with the readout they painted (2026-08-24, Tur C).
+     * They drove a one-second interval against `item.timesheet.startedAt` — an anchor the mapper invented on
+     * every page load, so the interval was counting from a moment that never happened.
+     */
+    const stopTimerTick = () => {};
+    const setupTimerTick = () => {};
 
     // ── Render dispatcher ─────────────────────────────────────────────────────
     const itemById = (id) => state.items.find((i) => i.id === id) || null;
@@ -8446,17 +8461,50 @@
          * the handler ran, threw on an undefined global, and produced no request, no toast and no warning.
          * A failed click now says so, in the console and to the user.
          */
-        document.addEventListener('click', (event) => {
+        /*
+         * ── ONE INSTANCE OWNS THE DOCUMENT (2026-08-24, Tur C — BL-189) ───────────────────────────────────
+         *
+         * ⚠ THIS IS PRODUCTION BEHAVIOUR, not a test accommodation. Every listener below is on `document`, so
+         * a second boot of this module in the same document does not REPLACE the first — it stacks on top of
+         * it. One click then runs `onClick` twice, against two different `state` objects, and the second one
+         * wins whatever the first decided.
+         *
+         * It bites in the test harness first (two instances, one jsdom document — BL-189), which is why it was
+         * found there. But it is equally reachable in the browser: any page that loads `app.js` twice, or a
+         * host that re-injects the bundle, gets two modules fighting over one page. A module that registers
+         * document-level handlers has to be able to unregister them.
+         *
+         * The previous instance's handlers are torn down through a marker on `document` itself — the only
+         * thing both instances can see, since they share no scope.
+         */
+        if (global.__wcnTeardown) {
+            try { global.__wcnTeardown(); } catch (error) { console.warn('WorkCenterNext teardown failed.', error); }
+        }
+        const onClickWrapped = (event) => {
+            /*
+             * onClick is async, so anything it throws becomes an UNHANDLED REJECTION — which the browser
+             * swallows. That is how a page missing Tasks/api.js looked exactly like a page whose buttons were
+             * never wired: the handler ran, threw on an undefined global, and produced no request, no toast
+             * and no warning. A failed click now says so, in the console and to the user.
+             */
             Promise.resolve()
                 .then(() => onClick(event))
                 .catch((error) => {
                     console.error('WorkCenterNext click handler failed.', error);
                     toast(t('ErrorTitle'), 'error');
                 });
-        });
+        };
+        document.addEventListener('click', onClickWrapped);
         document.addEventListener('change', onChange);
         document.addEventListener('input', onInput);
         document.addEventListener('keydown', onKeydown);
+        global.__wcnTeardown = () => {
+            document.removeEventListener('click', onClickWrapped);
+            document.removeEventListener('change', onChange);
+            document.removeEventListener('input', onInput);
+            document.removeEventListener('keydown', onKeydown);
+            stopTimerTick();
+        };
         // The quick-create offcanvas announces a new task instead of touching state directly, so this module
         // stays the only owner of the work-item list.
         document.addEventListener('wcn:task-created', (event) => {

@@ -73,6 +73,35 @@
      * second vocabulary for the same idea — and that is what gives it `cancelled`, which the blocking rule needs:
      * a called-off predecessor blocks nothing.
      */
+    /*
+     * ── MINIMUM VISIBLE ROW (BL-222, written down 2026-08-24) ─────────────────────────────────────────────
+     *
+     * WHAT A FIXTURE MUST CARRY TO APPEAR IN A TAB AT ALL. This was never stated anywhere, and it cost three
+     * separate attempts to build a test fixture that reached the default tab — each one produced a row the
+     * list silently dropped, so the test would have been proving something about the fixture rather than
+     * about the feature. The rule lived only inside `inTab` in app.js; it lives here now, next to the shapes
+     * it constrains.
+     *
+     * MEASURED from `app.js`'s own `inTab`:
+     *     item.catalogVisible !== false          — `false` hides the row outright
+     *     !item.dismissed                        — a dismissed row is gone from every tab
+     *     itemInScope(item)                      — the row must belong to the active scope (mine / delegated)
+     *     item.tab === <the open tab>            — 'inbox' | 'islerim' | 'havuz'
+     *     !isTerminal(item)                      — …except in 'history', which shows ONLY terminal rows
+     *
+     * So the shortest fixture that is visible on the default tab carries `tab: 'inbox'`, a non-terminal
+     * lifecycle, no `dismissed`, and `catalogVisible` either absent or true.
+     *
+     * ⚠ THIS IS A DESCRIPTION, NOT A SECOND IMPLEMENTATION. `inTab` stays the one place the rule RUNS; if the
+     * two ever disagree, `inTab` is right and this comment is stale — fix the comment.
+     */
+    const MINIMUM_VISIBLE_ROW = Object.freeze({
+        tab: 'inbox',
+        requires: Object.freeze(['tab', 'normalizedStatus', 'taskLifecycle']),
+        forbids: Object.freeze(['dismissed', 'catalogVisible:false']),
+        note: 'history shows terminal rows only; every other tab hides them'
+    });
+
     const DEPENDENCY_TYPES = ['FinishToStart', 'FinishToFinish', 'StartToStart', 'StartToFinish'];
     const DEPENDENCY_DIRECTIONS = ['pred', 'succ'];
     /*
@@ -510,6 +539,7 @@
     };
 
     global.WorkCenterNextContract = {
+        MINIMUM_VISIBLE_ROW,
         enums: { WORK_INTENTS, ASSIGNMENT_MODES, OWNERSHIP_STATES, ADMISSION_STATES, NORMALIZED_STATUSES, TASK_LIFECYCLES, EXECUTION_STATES, TIMER_STATES, SYSTEM_STATES, ACTION_DEPTHS, REVIEW_MEETING_REQUIREMENTS, WAITING_CONTEXT_TYPES, SUBTASK_STATUSES, PRIORITIES, SLA_STATES, DEPENDENCY_TYPES, DEPENDENCY_DIRECTIONS, ACTIVITY_KINDS, ACTIVITY_EVENT_CODES, CAPABILITIES, VALUE_TYPES },
         limits: LIMITS,
         isLabel,

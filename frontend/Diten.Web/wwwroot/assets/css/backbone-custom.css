@@ -7266,8 +7266,15 @@ tags.diten-tags .tagify__input {
    (d-flex justify-content-between + h5.mb-0 + .breadcrumb.mb-0), which the theme already styles. */
 
 /* A subtask's status in words, beside its title: the icon alone encodes it in colour only. */
+/* ⚠ THIS ONE IS OURS TO FIX (2026-08-24, Tur C). MEASURED across every `--bs-secondary-color` text in the
+   module: the token's own floor is 2.29 (light) / 3.49 (dark) on the card surface, and twenty texts sit at it.
+   That floor is a design-system decision and is recorded rather than changed.
+
+   `wcn-subtask-status` was the ONE combination that fell BELOW it — 2.09 light, 3.25 dark — because it sits on
+   the completed row's tinted background, which THIS SESSION introduced. A background we chose must not push a
+   text under the token's own baseline, so the chip takes the same body colour the row's title already took. */
 .wcn-subtask-status {
-    margin-inline-start: auto; font-size: .75rem; color: var(--bs-secondary-color); white-space: nowrap;
+    margin-inline-start: auto; font-size: .75rem; color: var(--bs-body-color); white-space: nowrap;
 }
 
 /* Empty states -------------------------------------------------------------

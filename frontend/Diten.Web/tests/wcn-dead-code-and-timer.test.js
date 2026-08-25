@@ -134,7 +134,7 @@ describe("the timesheet card gained a control, not an authority", () => {
      * Logging minutes changes no state — it is a personal measurement, not a lifecycle move — so standing it
      * beside Complete and Pause misfiled it. One action, one home.
      */
-    const card = APP.slice(APP.indexOf("const renderTimesheet"), APP.indexOf("const renderTimesheet") + 3000);
+    const card = APP.slice(APP.indexOf("const renderTimesheet"), APP.indexOf("const renderTimesheet") + 5200);
     expect(card).toContain("wcn-ts-log");
     expect(card).toContain("a.key === 'logTime'");
     expect(code(APP), "the rail draws it again").toContain("if (a.key === 'logTime') { return false; }");
@@ -147,7 +147,7 @@ describe("the timesheet card gained a control, not an authority", () => {
      * lifecycle from inside a card that reads as a readout — the same "second authority" this session refused
      * for document approval.
      */
-    const card = APP.slice(APP.indexOf("const renderTimesheet"), APP.indexOf("const renderTimesheet") + 3000);
+    const card = APP.slice(APP.indexOf("const renderTimesheet"), APP.indexOf("const renderTimesheet") + 5200);
     expect(code(card), "the card started driving the lifecycle").not.toMatch(/data-wcn-action="(start|pause|complete)"/);
   });
 
