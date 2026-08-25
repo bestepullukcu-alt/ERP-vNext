@@ -192,7 +192,11 @@
         segment: ['aktif', 'bekleyen', 'planli'],
         view: ['list', 'table', 'focus'],
         priority: ['all', 'High', 'Medium', 'Low'],
-        mode: ['all', 'direct', 'approval', 'groupQueue', 'offered']
+        mode: ['all', 'direct', 'approval', 'groupQueue', 'offered'],
+        // ⚠ THE SORT KEYS ARE NOT LISTED HERE — they are validated against `SORTERS` instead, which is the
+        // thing that would actually have to know how to sort. A second hand-typed list is a second place to
+        // forget a column.
+        sortDir: ['asc', 'desc']
         // `panel` LEFT THIS LIST with the panels it named (2026-08-25, BL-244). A whitelist for a query
         // parameter nothing reads and nothing writes is a promise the URL cannot keep.
     };
@@ -224,6 +228,24 @@
         state.selectedId = params.get('item') || null;
         state.typeFilter = new Set((params.get('types') || '').split(',').filter((x) => TYPE_KEY[x]));
         state.signalFilter = new Set((params.get('signals') || '').split(',').filter((x) => SIGNALS.indexOf(x) >= 0));
+        /*
+         * ── SORT AND PAGE SURVIVE A RELOAD (2026-08-25, BL-251) ──────────────────────────────────────────
+         *
+         * MEASURED: the table sorted correctly, in both directions, with the right `aria-sort` — and none of it
+         * reached the URL. Refresh and you were back on page 1 in the default order, and a sorted list could not
+         * be sent to anyone. Every other piece of list state (tab, segment, chips, search, view) already made
+         * the round trip; these two were simply missed.
+         *
+         * ⚠ VALIDATED AGAINST `SORTERS`, not against a copy of its keys. A column added there is sortable from
+         * a URL the same day, and an unknown key falls back to the default instead of stranding the table.
+         */
+        const sortKey = params.get('sort');
+        if (sortKey && Object.prototype.hasOwnProperty.call(SORTERS, sortKey)) { state.sortKey = sortKey; }
+        setIfAllowed('sortDir', 'dir', 'sortDir');
+        // ⚠ 1-BASED IN THE URL, 0-BASED IN STATE. `?page=1` is the first page to a reader; `?page=0` would be a
+        // link nobody would type. Anything unparseable stays on page 1 rather than blanking the list.
+        const page = parseInt(params.get('page'), 10);
+        state.listPage = Number.isFinite(page) && page > 0 ? page - 1 : 0;
         if (state.tab !== 'islerim') { state.segment = 'aktif'; }
     };
 
@@ -246,6 +268,10 @@
         put('signals', Array.from(state.signalFilter).sort().join(','), '');
         put('q', state.search, '');
         put('item', state.selectedId, '');
+        // Both carry their defaults as the third argument, so an untouched list still has a clean URL.
+        put('sort', state.sortKey, 'sla');
+        put('dir', state.sortDir, 'asc');
+        put('page', state.listPage > 0 ? String(state.listPage + 1) : '', '');
         global.history.replaceState({ workCenterNext: true }, '', url.pathname + url.search + url.hash);
     };
 
@@ -5273,6 +5299,36 @@
         }));
     };
 
+    /*
+     * ── A COLUMN THAT CANNOT TELL TWO ROWS APART IS NOT A COLUMN (2026-08-25, BL-253) ──────────────────
+     *
+     * MEASURED across 76 live tasks: "Tip" read "Görev" on every row and "Modül" read "Görevler" on every row.
+     * Two of nine columns, sortable, filterable, and carrying exactly zero information — a promise of a
+     * distinction the data does not make.
+     *
+     * Same decision as the zero-count chips one round earlier, and the same mechanism the `priority` column
+     * has used since BL-032: draw it when it distinguishes, leave it out when it does not.
+     *
+     * ⚠ NOT A PERMANENT REMOVAL, and this is why the test is on the DATA and not on a hard-coded list: the
+     * moment a second provider sends work — or a task of another type arrives — the column reappears by
+     * itself. Nobody has to put it back, and its absence today is not a defect to report.
+     *
+     * ⚠ AN EMPTY LIST IS NOT "NO DISTINCTION". With nothing to show there is nothing to judge, so the column
+     * stays and the reader keeps the header they had a moment ago.
+     */
+    const distinguishes = (items, pick) => {
+        if (items.length < 2) { return true; }
+        const first = pick(items[0]);
+        return items.some((i) => pick(i) !== first);
+    };
+
+    /*
+     * Column index ↔ sort key, in ONE place. The two directions are derived from a single list so they cannot
+     * drift, and the indices survive a hidden column: `visible: false` keeps a column's slot in the array.
+     */
+    const TABLE_COLUMN_NAME = ['control', 'type', 'title', 'module', 'status', 'priority', 'sla', 'requester', 'action'];
+    const TABLE_COLUMN_INDEX = TABLE_COLUMN_NAME.reduce((acc, name, i) => { acc[name] = i; return acc; }, {});
+
     const renderTable = (items) => {
         if (!items.length) { return emptyState(); }
         const sorter = SORTERS[state.sortKey] || SORTERS.sla;
@@ -5340,7 +5396,12 @@
             serverSide: false,
             stateSave: false,
             pageLength: state.pageLength,
-            order: [[6, 'asc']],
+            /*
+             * ⚠ THE ORDER COMES FROM STATE, WHICH COMES FROM THE URL (2026-08-25, BL-251). It was pinned to
+             * `[[6,'asc']]`, so a shared or reloaded link always landed on SLA-ascending no matter what the
+             * sender had been looking at.
+             */
+            order: [[TABLE_COLUMN_INDEX[state.sortKey] ?? 6, state.sortDir === 'desc' ? 'desc' : 'asc']],
             colReorder: { columns: ':gt(0):not(:last-child)' },
             search: { search: state.search },
             // WorkCenter localises via window.WCN.t, not the shared window.L10n that
@@ -5354,9 +5415,9 @@
             ),
             columns: [
                 { data: 'id', name: 'control' },
-                { data: 'itemType', name: 'type', visible: state.tableColumnVisibility[1], render: (value, type, row) => type === 'display' ? chip('type', row.typeIcon, typeLabel(row)) : value },
+                { data: 'itemType', name: 'type', visible: state.tableColumnVisibility[1] && distinguishes(items, (i) => i.itemType), render: (value, type, row) => type === 'display' ? chip('type', row.typeIcon, typeLabel(row)) : value },
                 { data: 'title', name: 'title', visible: state.tableColumnVisibility[2], className: 'fw-medium text-heading', render: (value) => esc(value) },
-                { data: 'sourceModule', name: 'module', visible: state.tableColumnVisibility[3], render: (value) => esc(value) },
+                { data: 'sourceModule', name: 'module', visible: state.tableColumnVisibility[3] && distinguishes(items, (i) => i.sourceModule), render: (value) => esc(value) },
                 { data: 'status', name: 'status', visible: state.tableColumnVisibility[4], render: (value, type, row) => type === 'display' ? `<span class="wcn-badge wcn-badge-${row.fixtureKind === 'triggerOnly' ? 'info' : STATUS_KIND[displayStatus(row)]}">${esc(statusLabel(row))}</span>` : value },
                 // Hidden outright when nothing on the surface has a priority — otherwise every real row shows an
                 // empty flag chip under a column header promising data the projection does not carry (BL-032).
@@ -5390,6 +5451,24 @@
         workCenterDt.on('length.dt', (_event, _settings, length) => { state.pageLength = Number(length) || 10; });
         workCenterDt.on('column-visibility.dt', (_event, _settings, column, visible) => {
             if (column > 0 && column < state.tableColumnVisibility.length) { state.tableColumnVisibility[column] = !!visible; }
+        });
+        /*
+         * ⚠ THE TABLE IS THE ONLY THING THAT SORTS, so it is the thing the URL must listen to.
+         *
+         * MEASURED: `state.sortKey` / `SORTERS` / the `[data-wcn-sort]` click handler exist, and
+         * `data-wcn-sort="` is emitted ZERO times — a whole sorting mechanism with no control to drive it,
+         * while the grid sorted through its own engine and told nobody. Rather than serialise state the reader
+         * cannot change, the grid's order is mirrored INTO that state, which makes the existing machinery live
+         * again instead of leaving a second dead path behind.
+         */
+        workCenterDt.on('order.dt', () => {
+            const current = (workCenterDt.order() || [])[0];
+            if (!current) { return; }
+            const key = TABLE_COLUMN_NAME[current[0]];
+            if (!key) { return; }
+            state.sortKey = key;
+            state.sortDir = current[1] === 'desc' ? 'desc' : 'asc';
+            syncUrl();
         });
     };
 

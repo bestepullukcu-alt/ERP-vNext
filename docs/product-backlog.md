@@ -5407,3 +5407,78 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - Testin kendi dilimi de bir kez yanlış geçti: CSS penceresi ilk `}` ile kesiliyordu ve üstündeki yorum
   `{ outline: 0 }` ifadesini ALINTILIYOR. Pencere kurala bağlandı.
 - **Gelecek regresyon riski: 🟢**
+
+### BL-250 — [DÜZELTİLDİ 2026-08-25] Liste satırı ile detay satırı iki ayrı dil konuşuyordu
+- Denetimde altı ölçüm ayrışıyordu. **İkisi benim ölçüm hatamdı, ikisi bilerek farklı, ikisi düzeltildi.**
+
+  | Ölçüm | Detay satırı | Liste satırı (önce) | Sonuç |
+  |---|---|---|---|
+  | yarıçap | 6px | 8px | **eşitlendi → 6px** |
+  | hizalama | center | stretch | **eşitlendi → center** |
+  | dolgu | 6px 8px | 12px 14px | **bilerek farklı** |
+  | yükseklik | 52px | 98px | **bilerek farklı** |
+  | kenarlık | 1px opak | 1px saydam | **bilerek farklı** |
+  | hover | %3 tint | "renk değişmiyor" | **ÖLÇÜM HATASIYDI — zaten çalışıyor** |
+
+- **Hizalama neden güvenli:** SLA vurgu çubuğu kendi `align-self: stretch`'ini taşıyor, yani ebeveyn
+  `center` olunca da tam yükseklikte kalıyor. Hiçbir şey ebeveynin gerilmesine bağlı değildi.
+- **Dolgu ve yükseklik neden farklı bırakıldı:** liste satırı iki satırlık (başlık + özet + çip şeridi), detay
+  satırı tek satırlık. 6px/8px'e sıkıştırmak, bir sayıyı kazanmak için içeriği kırpmak olurdu. **Yükseklik bir
+  kural değil, içeriğin sonucudur.**
+- **Saydam kenarlık bilerek:** Sneat `data-skin` anahtarını `.card` gibi yansıtıyor (`bordered` skininde
+  renkleniyor ve gölge kalkıyor) ve `:hover`'da zaten renkleniyor. Detay satırı KART İÇİNDE durduğu için opak;
+  bu satır SAYFA üstünde durduğu için gölgeli. İki yüzey, iki doğru cevap.
+- ⚠ **HOVER ÖLÇÜMÜ YANLIŞTI VE SEBEBİ ÖNEMLİ:** denetim `dispatchEvent(new MouseEvent('mouseover'))` kullanmış;
+  bu `:hover` sözde-sınıfını DOĞURMAZ. Gerçek fareyle yeniden ölçüldü: `rgba(105,108,255,.035)` — tam olarak
+  detay sayfasının %3 tint'i, üstüne kenarlık rengi. **Bu oturumda üçüncü kez sentetik olay yanlış negatif
+  verdi** (programatik `.focus()`, `mouseover`, ve şimdi bu). Kural: sözde-sınıf gerçek girdiyle ölçülür.
+- **Gelecek regresyon riski: 🟢**
+
+### BL-251 — [DÜZELTİLDİ 2026-08-25] Sıralama ve sayfa numarası URL'ye yazılmıyordu
+- Sekme, segment, çipler, arama, görünüm zaten round-trip yapıyordu; bu ikisi atlanmıştı. Yenileyince 1. sayfaya
+  ve varsayılan sıraya dönülüyordu, sıralı bir liste paylaşılamıyordu.
+- ⚠ **YOLA ÇIKARKEN BULUNAN ALTINCI ÖLÜ YOL:** `state.sortKey` · `state.sortDir` · `SORTERS` ve 8415'teki
+  `[data-wcn-sort]` işleyicisi duruyor, ama **`data-wcn-sort="` sıfır kez çiziliyor**. Yani listeyi hiçbir
+  kontrol sıralamıyor; sıralayan tek şey DataTables'ın kendi motoru ve o kimseye haber vermiyordu.
+- Bu yüzden çözüm "state'i serileştir" değil, **grid'in sırasını state'e AYNALAMAK** oldu (`order.dt` kancası).
+  Böylece var olan makine ölü kalmak yerine canlandı; ikinci bir ölü yol bırakılmadı.
+- Grid'in açılış sırası artık `state`'ten, yani URL'den geliyor (`order: [[6,'asc']]` sabiti kalktı).
+- ⚠ Sıralama anahtarı `SORTERS`'ın KENDİSİNE karşı doğrulanıyor, elle yazılmış bir kopya listeye karşı değil —
+  yeni bir sütun eklendiği gün URL'den de sıralanabilir olur.
+- ⚠ URL'de 1-tabanlı, state'te 0-tabanlı: `?page=0` kimsenin yazmayacağı bir bağlantı.
+- **CANLI:** `?sort=priority` → `?sort=priority&dir=desc`; bağlantıyla geri dönüldüğünde `aria-sort=descending`
+  ve sıra korunuyor. Sayfa: `?page=2` ile "11–20 / 30". **En uzun gerçekçi URL 110 karakter** (sekme + sıra +
+  yön + iki sinyal + arama) — makul.
+- **Gelecek regresyon riski: 🟢**
+
+### BL-252 — [ÖLÇÜLDÜ, DEĞİŞİKLİK YOK] "SLA riski" iki yerde ama KOPYA DEĞİL
+- Ölçüm önce yapıldı, karar sonra:
+  - **Sinyal çipi** → `slaState ∈ {overdue, due-soon}`. Tek sabit ikili, tek anahtar.
+  - **"SLA durumu" seçicisi** → DÖRT değer üzerinde çoklu seçim: `overdue · due-soon · on-track · no-sla`.
+- Yani seçici kesin olarak daha ifadeli: "yalnız gecikmiş", "yolunda", "tarihi yok" çiple **sorulamıyor**.
+  Çip, seçicinin bir ÖN AYARI; kopyası değil. Birini kaldırmak bir şeyi eksiltirdi.
+- İkisi eksenler-arası AND kuralıyla birleşiyor — bu turda kurduğumuz kuralın aynısı, tutarlı.
+- **Karar: ikisi de kalıyor.** Hiçbir URL parametresi kaldırılmadı, eski bağlantılar aynen çalışıyor.
+
+### BL-253 — [DÜZELTİLDİ 2026-08-25] İki sütun hiçbir satırı ayırt etmiyordu
+- Ölçüm (76 canlı görev): "Tip" her satırda **Görev**, "Modül" her satırda **Görevler**. Dokuz sütunun ikisi,
+  sıralanabilir ve filtrelenebilir hâlde, sıfır bilgi taşıyor. Canlıda 9 sütun → **6 görünür sütun**.
+- Sıfır sayaçlı çiple aynı karar, ve `priority` sütununun BL-032'den beri kullandığı **aynı mekanizma**: ayırt
+  ediyorsa çiz, etmiyorsa çizme. İkinci bir mekanizma yazılmadı.
+- ⚠ Test VERİYE bakıyor, sabit bir listeye değil: ikinci bir sağlayıcı iş göndermeye başladığı an sütun
+  kendiliğinden geri gelir. Koda yazıldı ki kimse yokluğunu kusur diye bildirmesin.
+- ⚠ Boş liste "ayrım yok" DEĞİLDİR: gösterecek bir şey yokken yargılanacak bir şey de yok, sütun kalıyor.
+- **"Yalnız sabitli" filtresi KALDI.** Sabitleme çalışıyor — `item.pinned` gerçekten dönüyor; bugün sıfır
+  olması "hiç kullanılmamış" demek, "imkânsız" değil. CT'nin ayrımı burada tam yerine oturdu.
+- **Gelecek regresyon riski: 🟢**
+
+### BL-254 — [ÖLÇÜLDÜ, AÇIK] Sabitleme sunucuya gitmiyor — BEŞİNCİ yerel-yalnız yol
+- Ölçüm: sabitle düğmesi yalnız `item.pinned = !item.pinned` yapıyor, hiçbir API çağrısı yok. Canlı doğrulama:
+  bir görev sabitlendi (`bfcfa8ba`), sayfa yenilendi, **sabitleme KAYBOLDU**.
+- BL-244'ün sayımına eklenmesi gereken beşinci yol. Kıyas: **erteleme** aynı ailedeydi ve artık gerçek bir
+  yazma (kodun kendi yorumu bunu söylüyor); sabitleme geride kalmış.
+- ⚠ Bu, "Yalnız sabitli" filtresini kaldırma gerekçesi DEĞİL — filtre çalışan bir kontrolü süzüyor. Kusur
+  filtrede değil, sabitlemenin kalıcı olmamasında.
+- Karar gerekiyor: sabitleme kişisel veri olarak sunucuya mı yazılsın (erteleme gibi), yoksa oturumluk mu
+  kalsın? Oturumluk kalacaksa ekranda bunu söylemeli — bugün hiçbir şey söylemiyor.
+- **Gelecek regresyon riski: 🟡** — kullanıcı bir şey işaretliyor, sistem unutuyor ve unuttuğunu söylemiyor.

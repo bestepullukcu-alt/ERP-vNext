@@ -5646,10 +5646,31 @@ tags.diten-tags .tagify__input {
 .wcn-group-rows { display: flex; flex-direction: column; gap: .5rem; }
 
 /* Row ---------------------------------------------------------------------- */
+/* ── ONE ROW LANGUAGE WITH THE DETAIL PAGE (2026-08-25, BL-250) ────────────────────────────────────────
+ *
+ * The detail page's row (`.diten-checkitem`) settled on: 1px border · 6px radius · 6px 8px padding ·
+ * align-items:center · a 3% primary tint on hover. This row disagreed on all six measurements. Two of those
+ * six turned out to be MY MEASUREMENT, not the code — see below — and two are kept different on purpose.
+ *
+ *   RADIUS   → unified to .375rem. It carries no information and had no reason to differ.
+ *   ALIGN    → unified to center. Safe here because the SLA accent bar carries its own `align-self: stretch`,
+ *              so it still runs the full height; nothing depended on the parent stretching.
+ *   PADDING  → LEFT DIFFERENT, deliberately. This row is two lines (title + summary + chip strip); the detail
+ *              row is one. Squeezing it to 6px/8px would crop content to win a number.
+ *   HEIGHT   → LEFT DIFFERENT for the same reason (81px vs 44px). A height is an OUTCOME of the content, not
+ *              a rule to enforce.
+ *   BORDER   → LEFT TRANSPARENT, and it is NOT an oversight. It mirrors the Sneat skin toggle exactly as
+ *              `.card` does — `data-skin=bordered` colours it and drops the shadow — and `:hover` colours it
+ *              too. The detail row is opaque because it sits INSIDE a card; this one sits on the page and
+ *              carries a shadow instead. Two surfaces, two correct answers.
+ *   HOVER    → ALREADY MATCHED. The audit reported "no colour change"; that measurement used a dispatched
+ *              `mouseover`, which never raises `:hover`. Re-measured with a real pointer:
+ *              `rgba(105,108,255,.035)` — the 3% tint, plus a border colour. Nothing to fix.
+ */
 .wcn-row {
-    display: flex; align-items: stretch; gap: .625rem; padding: .75rem .875rem;
+    display: flex; align-items: center; gap: .625rem; padding: .75rem .875rem;
     background: var(--bs-paper-bg); border: 1px solid transparent;
-    border-radius: .5rem; cursor: pointer; transition: border-color .15s ease, box-shadow .15s ease;
+    border-radius: .375rem; cursor: pointer; transition: border-color .15s ease, box-shadow .15s ease;
     box-shadow: var(--bs-box-shadow);
 }
 /* Respect the Sneat skin toggle exactly like .card: default skin = drop shadow, no
