@@ -55,9 +55,6 @@
     const MEETINGS = [
         { id: 'MTG-1001', title: 'Haftalık Operasyon Toplantısı', start: '14:00', end: '15:00', location: 'Teams', owner: 'Selin Aras' }
     ];
-    const NOTES = [
-        { id: 'NOTE-1001', text: 'Q3 bütçe revizyonları için departman onaylarını topla.', ageKey: 'TimeToday', converted: false }
-    ];
     const TYPE_ICON = { approval: 'bx-check-shield', task: 'bx-task', review: 'bx-search-alt', issue: 'bx-error-circle', exception: 'bx-error-alt' };
     /*
      * Friendly module name for a provider code, from the resx (7 languages).
@@ -648,7 +645,6 @@
         buildTriggers,
         showcaseFixturesEnabled,
         buildMeetings: () => (showcaseFixturesEnabled() ? clone(MEETINGS) : []),
-        buildNotes: () => (showcaseFixturesEnabled() ? clone(NOTES) : []),
         resolveLabel
     };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -4596,6 +4596,10 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - Gereken: bir kalıcılık sahibi (hangi servis? MOD-0024 mü, ayrı bir kişisel-veri servisi mi?) ve toplantı için
   gerçek bir takvim entegrasyonu.
 - **Gelecek regresyon riski: 🟢** (bugün kod yok).
+- **GÜNCELLEME 2026-08-25 (BL-244):** "bugün kod yok" artık tam olarak doğru. BL-217'de render'lar
+  silinmişti ama kancaları, durum alanları, `panel` URL parametresi ve veri üreticileri kalmıştı; hepsi
+  kaldırıldı. Paneller geri geldiğinde bu katman da **yeniden yazılacak** — geriye yalnızca bu niyet kaydı
+  kaldı.
 
 ### BL-219 — [KAYIT] "Onay toplantısı planla" da yalnız tarayıcı belleğine yazıyor
 - Ölçüldü: `applyReviewMeeting` → `state.meetings.push({...})`; kodun kendi yorumu "the mock applies an explicit
@@ -5262,3 +5266,65 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - İkon seçimi sahibin ilgilendiği bir karar olduğu için düzeltilmedi, öneri olarak bırakıldı: `bx-x` veya
   `bx-block`. Sahibin seçmesi gerekiyor.
 - **Gelecek regresyon riski: 🟢**
+
+### BL-245 güncelleme (2026-08-25) — KAPANDI: `cancel: 'bx-x-circle'`
+- CT kararı uygulandı, **haritaya** eklendi (`inboxActionIcon`), çağrı yerinde seçilmedi.
+- `reject` ve `decline` zaten bu glifi taşıyordu; üçü bir aile — "bu iş ilerlemiyor". Anlamı ETİKET taşıyor,
+  ikon TONU. Reddedilenler koda yazıldı: `bx-x` (kapat/vazgeç, kapatma düğmesinin glifi) · `bx-block`
+  (yasak; iptal bir karar, yasak değil).
+- **CANLI ÖLÇÜM:** listede dört menü birden açıldı — 40 menü satırı, **kod başına tam bir ikon**:
+  `cancel → bx-x-circle` · `inquire → bx-question-mark` · `plan → bx-calendar-plus` · `reassign → bx-user-pin`.
+  Aynı kodun iki ikonlu olduğu tek bir yer yok.
+- ⚠ **RAYDA İKON YOK** — "ikisinde de aynı" koşulu rayda karşılanamıyor çünkü ray ikon çizmiyor. Ölçüldü:
+  `complete` · `inquire` · `reassign` · `cancel`, dördü de metin-yalnız (`wcn-act-btn` içinde tek `<span>`).
+  Bu katman tasarımı, bu turda değiştirilmedi.
+- ⚠ **DİYALOG FARKLI BİR GLİF KULLANIYOR VE BU KUSUR DEĞİL.** "Görevi iptal et" onay diyaloğu
+  `bx-error-circle text-danger` gösteriyor. Bu glif aksiyondan değil, diyaloğun TÜRÜNDEN geliyor
+  (`_GlobalConfirmation` → `iconHtml(type)`), yani ürünün tamamındaki ~74 onay diyaloğuyla ortak dil:
+  daire "bu yıkıcı bir onaydır" der, menü ikonu "bu aksiyon bir iptaldir" der. **İki eksen, eksen başına tek
+  glif.** Birini diğerine benzetmek, sahibin onayladığı tek-diyalog-dili kararını bozardı.
+
+#### İKON HARİTASI SAYIMI (CT kararı bekliyor — bu turda doldurulmadı)
+- Çizilebilir kod sayısı **26** (sunucunun `BuildActions`'ı + showcase fixture'ları). Haritada **12**.
+  **14'ü varsayılana (`bx-right-arrow-alt`, genel ileri oku) düşüyor:**
+
+  | Kod | Kaynak | Kod | Kaynak |
+  |---|---|---|---|
+  | `claim` | sunucu + fixture | `acceptMeeting` | fixture |
+  | `release` | sunucu | `acceptOffer` | fixture |
+  | `start` | sunucu + fixture | `declineMeeting` | fixture |
+  | `resume` | sunucu + fixture | `delegate` | fixture |
+  | `complete` | sunucu + fixture | `dispute` | fixture |
+  | `submitReview` | sunucu | `replan` | fixture |
+  | *(`cancel` bu turda dolduruldu)* | — | `resolve` | fixture |
+
+- ⚠ Ters yönde bir bulgu daha: **`reviewMeeting` haritada var, hiçbir kaynak üretmiyor** — ölü harita girdisi.
+- ⚠ Bunların hepsi her yerde görünmüyor: ray ikon çizmiyor, yani varsayılan glif yalnız MENÜ satırlarında ve
+  onay diyaloğunun başlığında görünür. Yine de `complete` ve `start` gibi en sık kodların menüde genel ileri
+  oku takıması, `cancel` ile aynı sınıftan bir kusur.
+- **Gelecek regresyon riski: 🟡** — yanlış bilgi vermiyor ama ikon dili yarım; okuyucu şekilden bilgi almayı
+  bırakıyor.
+
+### BL-244 güncelleme (2026-08-25) — KAPANDI: ulaşılamaz beş kanca ve taşıdıkları her şey silindi
+- Silinenler: beş kanca (`data-wcn-toggle` · `data-wcn-global-note-input` · `data-wcn-global-note-add` ·
+  `data-wcn-note-convert` · `data-wcn-meeting-followup`), üç işlev (`addGlobalNote` · `convertGlobalNote` ·
+  `createMeetingFollowup`), iki durum bayrağı (`state.agendaOpen` · `state.notesOpen`), taşıdıkları veri
+  (`state.notes`, `buildNotes`, `NOTES` fixture'ı) ve `panel` URL parametresi — hem okuması, hem yazması,
+  hem beyaz listesi.
+- **SİLME KANITI:** on iki adın hepsi `wwwroot/` altında **sıfır** eşleşme (yorumlar hariç tutuldu). Test
+  her koşuda ad ad ölçüyor, hangisinin geri geldiğini adıyla söylüyor.
+- ⚠ **KİŞİSEL NOT KARTINA DOKUNULMADI** ve bu teste yazıldı: `data-wcn-note-input` / `-note-add` / `-note-save`
+  ile `addPersonalNote` duruyor ve **çizildiği** de ölçülüyor (`data-wcn-note-add="${item.id}"`), sadece
+  anıldığı değil. İki ad bir kelime farkla ayrılıyor ve birbirleriyle ilgileri yok.
+- ⚠ İki test bu silmeden düştü ve ikisi de kuralı koruyacak şekilde onarıldı:
+  1. `buildNotes()` üzerindeki fixture-kapısı iddiası kaldırıldı (kapatılacak bir üretici kalmadı); kuralın
+     kendisi var olan her üretici için aynen duruyor.
+  2. `openCreateInSource` dilimi **üçüncü kez** bir komşunun adına bağlı olduğu için koptu — önce
+     `openMeetingForm`, sonra `createMeetingFollowup` silinmişti. Her seferinde `indexOf` -1 döndü ve dilim
+     DOSYANIN SONUNA kadar uzadı; ikinci sefer gürültülü koptu, üçüncüsünün kopacağının garantisi yoktu.
+     **Kaybolmasına izin verilen bir koda çakılı pencere, pencere değildir**: dilim artık adı ne olursa olsun
+     aynı girinti düzeyindeki bir sonraki bildirimde bitiyor, ayrıca boş-değil ve dosya-değil diye iki kez
+     ölçülüyor.
+- **BL-218 GÜNCELLEMESİ:** o kayıt "ertelendi, silinmedi" diyordu — artık kod da yok. Paneller geri geldiğinde
+  **render'ları, kancaları, durum alanları ve URL parametresi yeniden yazılacak**; geriye yalnızca niyet kaldı.
+- **Gelecek regresyon riski: 🟢** — silinen hiçbir şeye kullanıcı erişemiyordu.

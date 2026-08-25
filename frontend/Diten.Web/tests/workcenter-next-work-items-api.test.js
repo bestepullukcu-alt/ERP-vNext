@@ -163,7 +163,17 @@ describe("WorkCenterNext work-items API seam (WC-1b)", () => {
     expect(global.WorkCenterNextData.buildItems()).toEqual([]);
     expect(global.WorkCenterNextData.buildTriggers()).toEqual([]);
     expect(global.WorkCenterNextData.buildMeetings()).toEqual([]);
-    expect(global.WorkCenterNextData.buildNotes()).toEqual([]);
+    /*
+     * ⚠ `buildNotes` IS NOT MISSING FROM THIS LIST BY OVERSIGHT (2026-08-25, BL-244). It fed the global notes
+     * PANEL, which was deleted a round earlier along with its render; the builder and its fixture went with the
+     * handlers this round. There is no builder left to gate.
+     *
+     * ⚠ The detail page's PERSONAL note card is a different thing and is not affected: it is served by
+     * `TasksApi.addPersonalNote`, never by a fixture builder, so it was never on this list to begin with.
+     *
+     * The RULE this test states is unchanged and still enforced for every builder that exists: nothing yields
+     * fixture data unless the server-rendered attribute says so.
+     */
 
     document.body.innerHTML = '<div id="wcnApp" data-wcn-fixtures="showcase"></div>'; // Development opt-in
     expect(global.WorkCenterNextData.showcaseFixturesEnabled()).toBe(true);

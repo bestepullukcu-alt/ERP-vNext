@@ -209,11 +209,24 @@ describe("WorkCenterNext localization resources", () => {
     const app = fs.readFileSync(
       path.resolve(__dirname, "../wwwroot/assets/js/WorkCenterNext/app.js"), "utf8");
     /*
-     * ⚠ THE END MARKER MOVED (2026-08-24): `openMeetingForm` was DELETED — it wrote to `state.meetings` and
-     * made no API call — so the slice ran past this function and into unrelated code. It now ends at the next
-     * surviving declaration.
+     * ⚠ THE END MARKER IS NO LONGER A NEIGHBOUR'S NAME, and that is the whole point of this comment.
+     *
+     * It was `openMeetingForm`, which got deleted (2026-08-24), so it became `createMeetingFollowup` — which
+     * got deleted too (2026-08-25, BL-244). Each time, `indexOf` answered -1, the slice ran to the END OF THE
+     * FILE, and the assertion started reading eight thousand lines of unrelated code. The second time it went
+     * red loudly; there is no guarantee the third would have.
+     *
+     * A window pinned to code that is allowed to disappear is not a window. This one ends at the next
+     * declaration at this indentation level, whatever it happens to be called.
      */
-    const fn = app.slice(app.indexOf("const openCreateInSource"), app.indexOf("const createMeetingFollowup"));
+    const from = app.indexOf("const openCreateInSource");
+    expect(from, "the function under test is gone; this assertion proves nothing").toBeGreaterThan(-1);
+    const rest = app.slice(from + 1);
+    const next = rest.search(/\n {4}const \w+ = /);
+    const fn = next === -1 ? rest : rest.slice(0, next);
+    // Non-vacuity, twice over: the slice must be a FUNCTION, not the file and not an empty string.
+    expect(fn.length, "the slice collapsed").toBeGreaterThan(200);
+    expect(fn.length, "the slice swallowed the file").toBeLessThan(app.length / 4);
 
     expect(fn).not.toContain("global.open");
   });

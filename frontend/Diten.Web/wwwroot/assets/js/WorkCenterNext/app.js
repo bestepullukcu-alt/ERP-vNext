@@ -91,8 +91,6 @@
 
     const state = {
         tab: 'inbox',
-        agendaOpen: false,
-        notesOpen: false,
         segment: 'aktif',        // meaningful within İşlerim
         view: 'list',
         viewsByTab: { inbox: 'list', islerim: 'list', havuz: 'list', history: 'list' },
@@ -194,8 +192,9 @@
         segment: ['aktif', 'bekleyen', 'planli'],
         view: ['list', 'table', 'focus'],
         priority: ['all', 'High', 'Medium', 'Low'],
-        mode: ['all', 'direct', 'approval', 'groupQueue', 'offered'],
-        panel: ['', 'agenda', 'notes']
+        mode: ['all', 'direct', 'approval', 'groupQueue', 'offered']
+        // `panel` LEFT THIS LIST with the panels it named (2026-08-25, BL-244). A whitelist for a query
+        // parameter nothing reads and nothing writes is a promise the URL cannot keep.
     };
 
     const hydrateStateFromUrl = () => {
@@ -225,9 +224,6 @@
         state.selectedId = params.get('item') || null;
         state.typeFilter = new Set((params.get('types') || '').split(',').filter((x) => TYPE_KEY[x]));
         state.signalFilter = new Set((params.get('signals') || '').split(',').filter((x) => SIGNALS.indexOf(x) >= 0));
-        const panel = params.get('panel') || '';
-        state.agendaOpen = panel === 'agenda';
-        state.notesOpen = panel === 'notes';
         if (state.tab !== 'islerim') { state.segment = 'aktif'; }
     };
 
@@ -250,7 +246,6 @@
         put('signals', Array.from(state.signalFilter).sort().join(','), '');
         put('q', state.search, '');
         put('item', state.selectedId, '');
-        put('panel', state.agendaOpen ? 'agenda' : state.notesOpen ? 'notes' : '', '');
         global.history.replaceState({ workCenterNext: true }, '', url.pathname + url.search + url.hash);
     };
 
@@ -1331,9 +1326,21 @@
      * `logTime` and `requestInfo` were added for exactly that reason: both open a dialog, neither was listed,
      * and both would otherwise have fallen through to the generic arrow.
      */
+    /*
+     * ⚠ THE MAP DECIDES, NEVER THE CALL SITE. A glyph chosen where the button is drawn is how one action ends
+     * up with two icons — measured twice in this session — so every surface asks this one function.
+     *
+     * ⚠ `cancel` JOINS `reject` AND `decline` ON THE SAME GLYPH, deliberately (2026-08-25, BL-245). It used to
+     * fall to the default `bx-right-arrow-alt`, so "Görevi iptal et" wore a generic FORWARD arrow: red text,
+     * neutral icon, wrong direction. The three are one family — "this work is not going ahead" — and inventing
+     * a fourth negative shape asks the reader to learn a meaning they already know. The LABEL carries the
+     * meaning; the icon carries the tone.
+     *   Rejected: `bx-x` (it means close/dismiss and is already the close button's glyph) and `bx-block` (it
+     *   means forbidden; a cancellation is a decision, not a prohibition).
+     */
     const inboxActionIcon = (action) => ({
         accept: 'bx-check', approve: 'bx-check-shield', signoff: 'bx-check-circle',
-        reject: 'bx-x-circle', decline: 'bx-x-circle', return: 'bx-undo',
+        reject: 'bx-x-circle', decline: 'bx-x-circle', cancel: 'bx-x-circle', return: 'bx-undo',
         inquire: 'bx-question-mark', requestInfo: 'bx-question-mark',
         reassign: 'bx-user-pin', plan: 'bx-calendar-plus', logTime: 'bx-time-five',
         reviewMeeting: 'bx-calendar-event', scheduleReviewMeeting: 'bx-calendar-event'
@@ -7306,7 +7313,6 @@
         const item = data.toPresentation(fixture, { provenance: 'fixture' });
         state.items.push(item);
         state.tab = 'islerim'; state.segment = 'aktif'; state.selectedId = id; state.view = 'list';
-        state.agendaOpen = false; state.notesOpen = false;
         render();
         toast(tf('ToastSelfTaskCreated', v.title));
         return item;
@@ -7361,31 +7367,22 @@
      * ⚠ `openMeetingForm` WAS DELETED (2026-08-24) — see the note on the "+ Yeni" menu above. It collected a
      * title, two times and a location, pushed them onto `state.meetings`, and lost all four on the next reload.
      * Its intent is recorded in the backlog as a DEFERRED feature rather than a removed one.
+     *
+     * ⚠ `createMeetingFollowup`, `addGlobalNote` and `convertGlobalNote` WENT WITH THE PANELS (2026-08-25,
+     * BL-244). `renderNotes` and `renderAgenda` were deleted a round earlier and their handlers were left
+     * behind — measured at ZERO emissions for all five of `data-wcn-toggle`, `data-wcn-global-note-input`,
+     * `data-wcn-global-note-add`, `data-wcn-note-convert` and `data-wcn-meeting-followup`. A listener for
+     * markup nothing draws is not dormant code; it reads as a present feature to whoever opens this file next.
+     *
+     * ⚠ NOT THE PERSONAL NOTE CARD. `data-wcn-note-input` / `-note-add` / `-note-save` are a DIFFERENT thing
+     * and are untouched: the detail page draws them and they reach the server through
+     * `TasksApi.addPersonalNote`. The names are one word apart and the two have nothing to do with each other.
      */
-    const createMeetingFollowup = (meeting) => {
-        if (!meeting) { return; }
-        createSelfTask({ title: tf('MeetingFollowupTitle', meeting.title), date: null, priority: 'Medium' }, { sourceModule: t('MeetingSource') });
-    };
-
-    const addGlobalNote = () => {
-        const input = document.querySelector('#wcnApp [data-wcn-global-note-input]');
-        const text = input && input.value.trim();
-        if (!text) { return; }
-        state.notes.unshift({ id: `NOTE-${Date.now()}`, text, ageKey: 'TimeToday', converted: false });
-        render(); toast(t('NoteAdded'));
-    };
-
     /*
      * ⚠ `openQuickNote` WAS DELETED (2026-08-24), same measurement and same reason as the meeting form: it
      * pushed onto `state.notes` and nothing else. Its `?` icon — the defect the owner photographed — is gone
      * with it rather than repainted.
      */
-    const convertGlobalNote = (note) => {
-        if (!note || note.converted) { return; }
-        note.converted = true;
-        createSelfTask({ title: note.text, date: null, priority: 'Medium' }, { sourceModule: t('NotesSource') });
-    };
-
     const performAction = async (item, actionKey) => {
         const action = actionByKey(item, actionKey);
         if (!item || !action || action.disabled || state.submittingItemId === item.id) { return; }
@@ -7824,15 +7821,6 @@
         const root = event.target.closest('#wcnApp');
         if (!root && !event.target.closest('.wcn-bulkbar')) { /* still allow bulkbar inside app */ }
 
-        const toggleEl = event.target.closest('[data-wcn-toggle]');
-        if (toggleEl) {
-            const panel = toggleEl.getAttribute('data-wcn-toggle');
-            if (panel === 'agenda') { state.agendaOpen = !state.agendaOpen; state.notesOpen = false; }
-            if (panel === 'notes') { state.notesOpen = !state.notesOpen; state.agendaOpen = false; }
-            render();
-            return;
-        }
-
         const jumpEl = event.target.closest('[data-wcn-jump]');
         if (jumpEl) {
             const jumpId = jumpEl.getAttribute('data-wcn-jump');
@@ -7861,18 +7849,6 @@
 
         if (event.target.closest('[data-wcn-retry]')) {
             loadWorkItems();   // WC-1b — re-issue the real request instead of faking success
-            return;
-        }
-
-        const meetingFollowupEl = event.target.closest('[data-wcn-meeting-followup]');
-        if (meetingFollowupEl) {
-            createMeetingFollowup(state.meetings.find((m) => m.id === meetingFollowupEl.getAttribute('data-wcn-meeting-followup')));
-            return;
-        }
-        if (event.target.closest('[data-wcn-global-note-add]')) { addGlobalNote(); return; }
-        const noteConvertEl = event.target.closest('[data-wcn-note-convert]');
-        if (noteConvertEl) {
-            convertGlobalNote(state.notes.find((note) => note.id === noteConvertEl.getAttribute('data-wcn-note-convert')));
             return;
         }
 
@@ -8479,7 +8455,6 @@
             state.items = data.buildItems();
             state.triggers = data.buildTriggers ? data.buildTriggers() : [];
             state.meetings = data.buildMeetings ? data.buildMeetings() : [];
-            state.notes = data.buildNotes ? data.buildNotes() : [];
             if (isStale()) { return; }
             applySeenState();
             state.loadState = 'ready';
@@ -8510,7 +8485,6 @@
             // Triggers/meetings/notes have no provider yet — they stay empty until one lands (DEC-1).
             state.triggers = [];
             state.meetings = [];
-            state.notes = [];
             applySeenState();
             state.loadState = 'ready';
         } else {
