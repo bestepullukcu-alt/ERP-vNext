@@ -7859,9 +7859,30 @@ tags.diten-tags .tagify__input {
 
 /* A cancelled subtask is history, not work. It stays visible — the record matters — but it must not read as
    something waiting to be done, which is how three of them came to fill a live list. FG-003: class, not inline. */
-.wcn-subtask-cancelled .wcn-subtask-title { text-decoration: line-through; }
-.wcn-subtask-cancelled { opacity: .55; }
-.wcn-subtask-cancelled .wcn-subtask-toggle i { color: var(--bs-secondary-color); }
+/* ── A CALLED-OFF SUBTASK RECEDES THE WAY EVERY OTHER ROW RECEDES ─────────
+   MEASURED, three states and their signals:
+     bekliyor      glyph `bx-square`                                                   → 1 signal
+     tamamlandı    fill + muted title colour + strike + green toggle + `bxs-check-square` → 5
+     iptal edildi  strike + OPACITY .55 + muted toggle + `bx-x-square`                 → 4
+
+   ⚠ TWO OF THE CANCELLED ROW'S FOUR SAID THE SAME THING, and one of them said it by making the row harder to
+   read. `opacity` multiplies against whatever is behind it, so it dims the TEXT as well as the chrome — a row
+   that is still supposed to be legible history. The strike-through already carries "this was called off".
+
+   THE FIX IS NOT A NEW IDEA — it is the completed row's own vocabulary, which the comment above this block
+   already states: "a completed row recedes to the disabled tone and keeps its strike-through". A cancelled row
+   does the same, and is told apart by the two signals that actually differ: it carries NO completed fill, and
+   its glyph is `bx-x-square` rather than a tick.
+
+   ⚠ `opacity` IS NOT REPLACED BY A FAINTER COLOUR EITHER. `--bs-secondary-color` is the theme's own disabled
+   tone and it is contrast-checked; a hand-picked lighter grey would reintroduce the same defect with a
+   different mechanism. */
+.wcn-subtask-cancelled .wcn-subtask-title {
+    text-decoration: line-through;
+    color: var(--bs-secondary-color);
+}
+.wcn-subtask-cancelled .wcn-subtask-toggle i,
+.wcn-subtask-cancelled .wcn-subtask-check { color: var(--bs-secondary-color); }
 
 /* Row-level cancel: quiet until the row is hovered or focused, so the list reads as work and not as a row of
    delete buttons. */

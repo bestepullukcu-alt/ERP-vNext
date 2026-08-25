@@ -3233,9 +3233,26 @@
             const name = b.labelText || '';
             const sentenceKey = BLOCKER_SENTENCE_KEY[b.dependencyType] || BLOCKER_CODE_SENTENCE_KEY[b.code];
             const affectsKey = BLOCKED_AFFECTS_KEY[b.affectedActionCode];
+            /*
+             * ⚠ ONE TREATMENT FOR THE ABBREVIATION, WHEREVER IT APPEARS (2026-08-24).
+             *
+             * This row drew `FS` as a `wcn-chip wcn-chip-danger` — a loud red pill whose expansion lived ONLY
+             * in a `title` tooltip: absent on touch, never sought on a desktop. The dependency card solved
+             * exactly this and the banner was left behind, so one abbreviation had two treatments.
+             *
+             * It now wears `wcn-dep-abbr`, the card's own footnote: small, muted, AFTER the sentence, keeping
+             * its `title` as a bonus rather than as the only carrier.
+             *
+             * ⚠ WHY THE CARD'S SENTENCES (`DepSentence*`) ARE **NOT** REUSED HERE, asked and answered:
+             * they describe the RELATIONSHIP — true whether or not it currently bites ("X bitmeden
+             * başlayamazsın"). This banner describes a LIVE block and pairs its sentence with the clause
+             * naming WHICH act is stopped (`BlockedAffects*`). Swapping in the card's sentence would state the
+             * rule twice and drop the half that says what it is stopping right now. Same abbreviation
+             * treatment, different sentence — deliberately.
+             */
             return `<li class="wcn-blocked-item">
-                ${b.dependencyType ? `<span class="wcn-chip wcn-chip-danger wcn-dep-type" title="${esc(t(DEP_TYPE_KEY[b.dependencyType] || b.dependencyType))}">${esc(DEP_TYPE_ABBR[b.dependencyType] || b.dependencyType)}</span>` : ''}
                 <span class="wcn-blocked-why">${esc(sentenceKey ? tf(sentenceKey, name) : name)}</span>
+                ${b.dependencyType ? `<span class="wcn-dep-abbr" title="${esc(t(DEP_TYPE_KEY[b.dependencyType] || b.dependencyType))}">${esc(DEP_TYPE_ABBR[b.dependencyType] || b.dependencyType)}</span>` : ''}
                 ${affectsKey ? `<span class="wcn-blocked-affects">${esc(t(affectsKey))}</span>` : ''}
             </li>`;
         }).join('');
@@ -7084,22 +7101,21 @@
                 // date on this page uses. A native control here would be a second date language in one product.
                 type: 'text',
                 /*
-                 * THE LABEL IS THE FIELD'S OWN TEXT (owner decision, 2026-08-24).
+                 * ⚠ THE LABEL IS BACK, AND THE PLACEHOLDER IS AN EXAMPLE (2026-08-24).
                  *
-                 * "Hangi tarihe kadar" sits INSIDE the box rather than on a line above it. The dialog asks one
-                 * question and now asks it once: a label above an empty box, with the same words repeated
-                 * nowhere else, spent a whole row saying what the box could say itself.
+                 * It was the other way round: no label, and "Hangi tarihe kadar" used as the placeholder. That
+                 * broke the rule this session set for every other box — a placeholder is a REAL EXAMPLE, never
+                 * the field's own name repeated — and it broke it in the one dialog every other dialog was
+                 * measured against. A reference that ignores its own rule is the fastest way to make the rule
+                 * ignorable.
                  *
-                 * ⚠ NO SEPARATE `label` ANY MORE. Keeping both would print the same sentence twice, one under
-                 * the other. The words are unchanged and still come from `SnoozeUntilLabel` in all seven
-                 * languages — only where they are drawn has moved.
-                 *
-                 * ⚠ WHAT THIS COSTS, stated rather than hidden: the format hint (`YYYY-MM-DD`) is no longer
-                 * shown. It is not needed to USE the field — the picker fills the box and the box is not typed
-                 * into (flatpickr binds without `allowInput`) — but a reader who wants to know the shape before
-                 * choosing no longer sees it. `SnoozeDatePlaceholder` is kept in the resx for that reason.
+                 * Both halves are the ones the other date dialogs already use: `SnoozeUntilLabel` above the
+                 * box, `DatePlaceholder` ("YYYY-AA-GG") inside it — the same pair as Planla. Nothing new was
+                 * written, and `SnoozeDatePlaceholder` (an un-localised "YYYY-MM-DD" kept for this moment) is
+                 * now unused; see the backlog.
                  */
-                placeholder: t('SnoozeUntilLabel'),
+                label: t('SnoozeUntilLabel'),
+                placeholder: t('DatePlaceholder'),
                 onOpen: (input) => {
                     if (!input) { return; }
                     /*

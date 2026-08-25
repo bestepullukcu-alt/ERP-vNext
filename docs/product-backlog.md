@@ -4767,3 +4767,71 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - **KASTEN YAPILMAYANLAR:** 25 ham `Swal.fire` (giriş akışı dahil) — BL-224'teki bekçi listesinde, ayrı tur.
   Ağırlık kademesi — BL-225, ölçüm bekliyor.
 - **Gelecek regresyon riski: 🟢** — görünüm tek tanımda, bekçi (BL-224) yeni ham diyalogları durduruyor.
+
+### BL-228 kapanış notu (2026-08-24) — Detay sayfasının son dört maddesi
+- **① İPTAL EDİLEN ALT GÖREV — iki mekanizma bire indi.**
+  ÖLÇÜM, üç durum ve sinyal sayıları: `bekliyor` 1 (sadece glif) · `tamamlandı` 5 (dolgu + soluk başlık +
+  üstü çizili + yeşil kutu + tik glifi) · `iptal edildi` 4 (üstü çizili + **opaklık .55** + soluk kutu +
+  x glifi). İkisi aynı şeyi söylüyordu ve `opacity` bunu **metni karartarak** söylüyordu — hâlâ okunması
+  gereken bir kayıt satırında.
+  Düzeltme yeni bir fikir değil: tamamlanmış satırın kendi sözlüğü (temanın devre-dışı tonu + üstü çizili).
+  İptal, tamamlanmıştan **gerçekten farklı iki sinyalle** ayrılıyor: tamamlanma dolgusu YOK, glifi x.
+  **KONTRAST (ölçüldü):** açık tema 2.21 → **2.29** · koyu tema 3.06 → **3.49**. İyileşti ama ⚠ ikisi de
+  WCAG AA (4.5) altında — sebebi `--bs-secondary-color`'ın kendisi; `tamamlandı` satırı kendi dolgusu
+  üzerinde **1.83** ölçüyor. Bu turda tanıtılmadı, bu turda çözülmedi → **BL-229**.
+  ⚠ Satır **görünmeye devam ediyor** ve sıralaması değişmedi (dibe iniyor) — sahip kararı.
+- **② /Tasks/{id} — ürünün golden desenine getirildi.**
+  ÖLÇÜM ÇİZİLEN SAYFADA yapıldı (Razor'da değil):
+  | | golden (`GoldenReferenceCompact/Details`) | `/Tasks/{id}` ÖNCE | SONRA |
+  |---|---|---|---|
+  | breadcrumb | var | **YOK** | var |
+  | düğmeler | Geri · Düzenle | **"Kaydet"** → `href=…/Edit` | Geri · Düzenle |
+  | `.backbone-preview-field` | 12 | **0** | 8 |
+  | `.backbone-preview-section` | 4 | 0 | 1 |
+  | `col-md-6` | var | **yok** | var |
+  | alan deseni | ikon + etiket üstte + değer altta | `<dl class="row">` 3/9 | golden ile aynı |
+  ⚠ **"Kaydet aslında Edit'e link" kusuru DOĞRULANDI ve düzeltildi** — etiket artık "Düzenle"; sayfa
+  salt-okunur kaldı, aksiyon EKLENMEDİ (testte: başlıkta tam 2 kontrol, `TasksApi` yazma çağrısı yok).
+  ⚠ Başlık/breadcrumb/düğmeler **Razor'a** taşındı, alanlar JS'te kaldı — golden'ın kendi bölüşümü bu.
+  ⚠ `WorkCenter/task-detail.js` (bekçinin KNOWN_RAW listesindeki 8 ham Swal.fire) **hiç açılmadı**; bu sayfa
+  `Tasks/details-page.js` tarafından çiziliyor. Bekçi yeşil, KNOWN_RAW hâlâ **12 dosya**.
+- **③ ENGEL AFİŞİNDEKİ `FS` — kartla aynı muameleye geçti.**
+  Afiş `wcn-chip wcn-chip-danger wcn-dep-type` çiziyordu: yüksek sesli kırmızı hap, açılımı YALNIZ `title`
+  tooltip'inde. Artık kartın dipnotu (`wcn-dep-abbr`) — küçük, soluk, **cümleden SONRA**. Modülde tek
+  kısaltma sınıfı kaldı (testle kilitli).
+  ⚠ **Kartın cümleleri (`DepSentence*`) burada KULLANILMADI, gerekçesiyle:** onlar İLİŞKİYİ tarif eder
+  (şu an ısırsa da ısırmasa da). Afiş CANLI bir engeli tarif ediyor ve cümlesini "hangi eylemi durduruyor"
+  yan cümlesiyle (`BlockedAffects*`) eşliyor. Kartın cümlesini koymak kuralı iki kez söyleyip şu an önemli
+  olan yarısını düşürürdü. **Aynı kısaltma muamelesi, farklı cümle — bilerek.**
+  ⚠ **CANLI GÖRÜLEMEDİ:** hiçbir fixture ve hiçbir canlı öğe `blocker.dependencyType` taşımıyor (kanonik
+  engelli fixture `code: 'DEPENDENCY_BLOCKED'` veriyor ama tür vermiyor), dolayısıyla afişteki kısaltma
+  bugün hiç çizilmiyor. Değişiklik testle korunuyor, ekranda gözlenemedi → **BL-230**.
+- **④ ERTELE PLACEHOLDER'I — referans kendi kuralına uydu.**
+  Etiketi yoktu ve "Hangi tarihe kadar" placeholder olarak kullanılıyordu. Artık diğer tarih diyaloglarının
+  kullandığı çift: etiket `SnoozeUntilLabel`, placeholder `DatePlaceholder` ("YYYY-AA-GG"). Yeni dize
+  yazılmadı. `SnoozeDatePlaceholder` ("YYYY-MM-DD", yerelleştirilmemiş) artık **kullanılmıyor** → BL-230.
+  ⚠ **ÜÇ YARA CANLI DOĞRULANDI:** `.swal2-input` popup'ın **doğrudan çocuğu** ✓ · `Swal.getInput()` null
+  **değil** ✓ · açılışta **odak girdide** ✓. Ayrıca yeni tasarım: ikon 32px başlık satırında, etiket→alan
+  4px, düğmeler iki uçta.
+- **MUTASYON (4, hepsi kırmızı):** iptal satırına opaklık geri · Razor'dan breadcrumb düşürüldü · afiş çipi
+  tooltip'e döndü · placeholder etiketin tekrarına döndü.
+- **ESKİ İDDİAYI SAVUNAN İKİ TEST GÜNCELLENDİ:** `wcn-snooze-dialog` ("etiket değil placeholder" diyordu —
+  tersine çevrildi, gerekçesiyle) ve `workcenter-next-detail-page` (`.wcn-dep-type` bekliyordu).
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-229 — [YAPILMADI] Ürünün "geri çekilmiş metin" tonu WCAG AA altında
+- Ölçüldü (canlı, iki tema): `--bs-secondary-color` üzerine kurulu geri-çekilmiş satırlar —
+  iptal edilmiş alt görev **2.29** (açık) / **3.49** (koyu); **tamamlanmış** alt görev kendi dolgusu üzerinde
+  **1.83**. AA eşiği normal metin için 4.5.
+- Bu ton temanın kendi devre-dışı rengi; elle daha koyu bir gri seçmek aynı kusuru başka mekanizmayla geri
+  getirir. Doğru çözüm token seviyesinde ve **bütün ürünü** etkiler.
+- BL-228'de tanıtılmadı (opaklık kaldırılınca kontrast **arttı**), sadece görünür oldu.
+- **Gelecek regresyon riski: 🟡** — okunabilirlik borcu, her yeni "soluk" satırda büyüyor.
+
+### BL-230 — [KAYIT] İki ölü yol: afişteki kısaltma ve `SnoozeDatePlaceholder`
+- **Afişteki `FS` kısaltması hiç çizilmiyor:** hiçbir fixture ve hiçbir canlı öğe `blocker.dependencyType`
+  taşımıyor. Kod ve testi hazır, veri yok. Bir fixture eklenirse görünür olur.
+- **`SnoozeDatePlaceholder`** ("YYYY-MM-DD", yerelleştirilmemiş) BL-228 ile kullanımdan çıktı; yerini
+  `DatePlaceholder` ("YYYY-AA-GG") aldı. Yedi resx'te duruyor.
+- İkisi de zararsız; silinmeleri ya da beslenmeleri ayrı bir karar.
+- **Gelecek regresyon riski: 🟢.**

@@ -1362,8 +1362,15 @@ describe("the blocked banner says what is in the way", () => {
     expect(row.querySelector(".wcn-blocked-why").textContent).toContain("BlockerFinishToStart");
     // ...and WHICH act it stops.
     expect(row.querySelector(".wcn-blocked-affects").textContent).toBe("BlockedAffectsStart");
-    // The edge type is shown as its display abbreviation, never the wire spelling.
-    expect(row.querySelector(".wcn-dep-type").textContent).toBe("FS");
+    /*
+     * ⚠ `.wcn-dep-type` → `.wcn-dep-abbr` (2026-08-24). The banner drew the edge type as a loud red chip whose
+     * expansion lived only in a `title` tooltip — absent on touch. It now wears the dependency card's own
+     * footnote treatment: small, muted, AFTER the sentence. One abbreviation, one treatment.
+     *
+     * The claim is unchanged: the edge type is shown as its display abbreviation, never the wire spelling.
+     */
+    expect(row.querySelector(".wcn-dep-abbr").textContent).toBe("FS");
+    expect(row.querySelector(".wcn-chip"), "the banner draws a chip again").toBeNull();
   });
 
   it("keeps the blocked action visible and disabled", async () => {

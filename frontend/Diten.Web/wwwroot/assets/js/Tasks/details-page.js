@@ -9,9 +9,33 @@
     const esc = (value) => String(value ?? '').replace(/[&<>"']/g,
         (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
-    const row = (label, value) => value == null || value === ''
-        ? ''
-        : `<dt class="col-sm-3">${esc(label)}</dt><dd class="col-sm-9">${esc(value)}</dd>`;
+    /*
+     * ── THE PRODUCT'S OWN READ-ONLY FIELD, COPIED FROM THE GOLDEN REFERENCE ──────────────────────────────
+     *
+     * MEASURED before, side by side with `GoldenReferenceCompact/Details`:
+     *     golden : 12 × `.backbone-preview-field`, 4 × `.card.backbone-preview-section`, `col-md-6`
+     *     here   :  0 ×  …                          0 × …                                 no columns
+     * This page drew a `<dl class="row">` — a definition list with a 3/9 split, a shape the product uses
+     * nowhere else. Arriving here from the Task Center felt like leaving the product, which is what the
+     * owner reported.
+     *
+     * The markup below is the golden reference's, element for element: a glyph, then the label above and the
+     * value beneath it. Nothing was designed here.
+     *
+     * ⚠ AN EMPTY FIELD STILL DRAWS, showing "-" — that is the golden reference's own behaviour
+     * (`string.IsNullOrWhiteSpace(...) ? "-" : ...`). A record view whose rows appear and disappear by content
+     * makes two records of the same type look like two different kinds of thing.
+     */
+    const field = (icon, label, value) => `
+        <div class="col-12 col-md-6">
+            <div class="backbone-preview-field">
+                <i class="bx ${icon}"></i>
+                <div>
+                    <div class="backbone-preview-label">${esc(label)}</div>
+                    <div class="backbone-preview-value mt-1">${value == null || value === '' ? '-' : esc(value)}</div>
+                </div>
+            </div>
+        </div>`;
 
     const boot = async () => {
         const host = document.getElementById('taskDetails');
@@ -19,7 +43,8 @@
         if (!host || !taskId) { return; }
 
         const result = await global.TasksApi.get(taskId);
-        const body = host.querySelector('.card-body');
+        // The host is now the Razor section (`.backbone-preview-section`), not a bare `.card-body`.
+        const body = host.querySelector('.backbone-preview-section') || host.querySelector('.card-body');
         if (!body) { return; }
 
         if (!result.ok) {
@@ -29,22 +54,26 @@
         }
 
         const task = result.data;
+        /*
+         * ⚠ THE TITLE AND THE EDIT LINK ARE NOT DRAWN HERE ANY MORE — they moved into the Razor header, where
+         * the golden reference keeps them, together with the breadcrumb and a Back button this page never had.
+         * The old header also carried a button labelled "Kaydet" that was an `<a href=".../Edit">`: a Save
+         * button on a read-only page that saved nothing. It says "Düzenle" now, in Razor.
+         */
+        const assignmentKey = task.assignmentTarget === 'PositionPool' ? 'Pool'
+            : task.assignmentTarget === 'Person' ? 'Person' : 'Self';
         body.innerHTML = `
-            <div class="d-flex justify-content-between align-items-start mb-3">
-                <h5 class="mb-0">${esc(task.title)}</h5>
-                <a class="btn btn-sm btn-label-primary" href="/Tasks/${esc(task.id)}/Edit">${esc(t('actionSave'))}</a>
-            </div>
-            <dl class="row mb-0">
-                ${row(t('columnStatus'), t(`lifecycle${task.lifecycle}`))}
-                ${row(t('columnPriority'), t(`priority${task.priority}`))}
-                ${row(t('columnAssignment'), t(`target${task.assignmentTarget === 'PositionPool' ? 'Pool'
-                    : task.assignmentTarget === 'Person' ? 'Person' : 'Self'}`))}
-                ${row(t('columnDueAt'), (task.dueAt || '').slice(0, 10))}
-                ${row(t('fieldEstimateHours'), task.estimateHours)}
-                ${row(t('fieldSpentHours'), task.spentHours)}
-                ${row(t('fieldRemainingHours'), task.remainingHours)}
-                ${row(t('fieldDescription'), task.description)}
-            </dl>`;
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">${esc(task.title)}</h6>
+            <div class="row g-4">
+                ${field('bx-flag', t('columnStatus'), t(`lifecycle${task.lifecycle}`))}
+                ${field('bx-up-arrow-alt', t('columnPriority'), t(`priority${task.priority}`))}
+                ${field('bx-user-pin', t('columnAssignment'), t(`target${assignmentKey}`))}
+                ${field('bx-calendar', t('columnDueAt'), (task.dueAt || '').slice(0, 10))}
+                ${field('bx-time-five', t('fieldEstimateHours'), task.estimateHours)}
+                ${field('bx-timer', t('fieldSpentHours'), task.spentHours)}
+                ${field('bx-hourglass', t('fieldRemainingHours'), task.remainingHours)}
+                ${field('bx-detail', t('fieldDescription'), task.description)}
+            </div>`;
     };
 
     if (document.readyState === 'loading') {

@@ -77,16 +77,24 @@ describe("the snooze dialog", () => {
     expect(code, "an element is being inserted around the box").not.toContain("insertBefore");
   });
 
-  it("asks its question inside the box, not on a line above it", () => {
+  it("labels the field and puts a real example inside the box", () => {
     /*
-     * Owner decision (2026-08-24): "Hangi tarihe kadar" IS the field's text. The dialog asks one question and
-     * asks it once — a label above an empty box spent a row saying what the box can say itself.
+     * ⚠ REVERSED (2026-08-24). This used to assert the OPPOSITE: no label, and "Hangi tarihe kadar" used as
+     * the placeholder, on the reasoning that the dialog asks one question and should ask it once.
      *
-     * ⚠ NOT BOTH. A separate `label` alongside would print the same sentence twice, one under the other.
+     * What that reasoning missed is the rule this same session then set for every other box in the product:
+     * a placeholder is a REAL EXAMPLE, never the field's own name repeated. The snooze dialog is the
+     * REFERENCE every other dialog was measured against — a reference that breaks its own rule is the
+     * fastest way to make the rule ignorable, so it was the last one to be brought into line.
+     *
+     * Both halves are now the pair every other date dialog already used: `SnoozeUntilLabel` above the box,
+     * `DatePlaceholder` ("YYYY-AA-GG") inside it.
      */
     const code = toggleSnoozeCode();
-    expect(code).toContain("placeholder: t('SnoozeUntilLabel')");
-    expect(code, "the same words are also drawn on a line above").not.toContain("label: t('SnoozeUntilLabel')");
+    expect(code).toContain("label: t('SnoozeUntilLabel')");
+    expect(code).toContain("placeholder: t('DatePlaceholder')");
+    expect(code, "the label's own words are the placeholder again")
+      .not.toContain("placeholder: t('SnoozeUntilLabel')");
     LANGS.forEach((lang) => expect(value(lang, "SnoozeUntilLabel"), `${lang} has no question`).toBeTruthy());
   });
 
