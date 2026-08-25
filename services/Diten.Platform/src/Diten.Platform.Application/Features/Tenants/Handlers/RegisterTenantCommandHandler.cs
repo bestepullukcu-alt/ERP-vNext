@@ -25,6 +25,7 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
     private readonly IQuotaService _quotaService;
     private readonly ITenantActivationNotifier _tenantActivationNotifier;
     private readonly ILogger<RegisterTenantCommandHandler> _logger;
+    private readonly TenantSubscriptionTransactionWriter _subscriptionTransactions;
 
     public RegisterTenantCommandHandler(
         ITenantRegistryRepository repository,
@@ -37,7 +38,8 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
         IEventBus eventBus,
         IQuotaService quotaService,
         ITenantActivationNotifier tenantActivationNotifier,
-        ILogger<RegisterTenantCommandHandler> logger)
+        ILogger<RegisterTenantCommandHandler> logger,
+        TenantSubscriptionTransactionWriter subscriptionTransactions)
     {
         _repository = repository;
         _subscriptionPlanRepository = subscriptionPlanRepository;
@@ -50,6 +52,7 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
         _quotaService = quotaService;
         _tenantActivationNotifier = tenantActivationNotifier;
         _logger = logger;
+        _subscriptionTransactions = subscriptionTransactions;
     }
 
     public async Task<Response<Guid>> Handle(RegisterTenantCommand request, CancellationToken cancellationToken)
@@ -276,6 +279,16 @@ public sealed class RegisterTenantCommandHandler : IRequestHandler<RegisterTenan
             _subscriptionPlanRepository,
             _tenantSubscriptionRepository,
             _currentUser,
+            _subscriptionTransactions,
+            async (session, subscription, plan, transactionCt) =>
+            {
+                var quotas = await _quotaService.InitializeSubscriptionQuotasAsync(session, subscription, plan, false,
+                    "TenantProvisioning", "Tenant subscription created; quota usage initialized.", actor,
+                    Guid.NewGuid().ToString("N"), transactionCt);
+                return quotas.IsSuccessful ? Response<NoContent>.Success(204) : Response<NoContent>.Fail(quotas.Errors, quotas.StatusCode);
+            },
+            nameof(RegisterTenantCommand),
+            Diten.Platform.Domain.Enums.AuditOperation.Create,
             cancellationToken);
 
         if (!subscriptionResult.IsSuccessful)

@@ -26,20 +26,9 @@ public sealed class SuspendTenantSubscriptionCommandHandlerTests
         var fixture = CreateFixture(ActorId);
         TenantSubscriptionChangedV1? publishedEvent = null;
         EventPublishOptions? publishOptions = null;
-        fixture.EventBus
-            .Setup(x => x.PublishAsync(
-                It.IsAny<TenantSubscriptionChangedV1>(),
-                It.IsAny<EventPublishOptions>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<TenantSubscriptionChangedV1, EventPublishOptions, CancellationToken>((@event, options, _) =>
-            {
-                publishedEvent = @event;
-                publishOptions = options;
-            })
-            .ReturnsAsync((TenantSubscriptionChangedV1 @event, EventPublishOptions options, CancellationToken _) =>
-                CreateEnvelope(@event, options));
-
         var result = await fixture.Handler.Handle(CreateCommand(), CancellationToken.None);
+        publishedEvent = (TenantSubscriptionChangedV1?)fixture.Transactions.Events.Event;
+        publishOptions = fixture.Transactions.Events.Options;
 
         Assert.True(result.IsSuccessful);
         Assert.NotNull(publishedEvent);
@@ -62,16 +51,8 @@ public sealed class SuspendTenantSubscriptionCommandHandlerTests
     {
         var fixture = CreateFixture(Guid.Empty);
         TenantSubscriptionChangedV1? publishedEvent = null;
-        fixture.EventBus
-            .Setup(x => x.PublishAsync(
-                It.IsAny<TenantSubscriptionChangedV1>(),
-                It.IsAny<EventPublishOptions>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<TenantSubscriptionChangedV1, EventPublishOptions, CancellationToken>((@event, _, _) => publishedEvent = @event)
-            .ReturnsAsync((TenantSubscriptionChangedV1 @event, EventPublishOptions options, CancellationToken _) =>
-                CreateEnvelope(@event, options));
-
         var result = await fixture.Handler.Handle(CreateCommand(), CancellationToken.None);
+        publishedEvent = (TenantSubscriptionChangedV1?)fixture.Transactions.Events.Event;
 
         Assert.True(result.IsSuccessful);
         Assert.NotNull(publishedEvent);
@@ -89,7 +70,7 @@ public sealed class SuspendTenantSubscriptionCommandHandlerTests
         var result = await fixture.Handler.Handle(CreateCommand(), CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
-        VerifyPublishNever(fixture.EventBus);
+        Assert.Equal(0, fixture.Transactions.Events.Count);
     }
 
     [Fact]
@@ -100,7 +81,7 @@ public sealed class SuspendTenantSubscriptionCommandHandlerTests
         var result = await fixture.Handler.Handle(CreateCommand(), CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
-        VerifyPublishNever(fixture.EventBus);
+        Assert.Equal(0, fixture.Transactions.Events.Count);
     }
 
     [Fact]
@@ -108,13 +89,13 @@ public sealed class SuspendTenantSubscriptionCommandHandlerTests
     {
         var fixture = CreateFixture(ActorId);
         fixture.SubscriptionRepository
-            .Setup(x => x.UpdateAsync(It.IsAny<TenantSubscription>(), It.IsAny<byte[]?>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.UpdateAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<TenantSubscription>(), It.IsAny<byte[]?>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new TenantSubscriptionConcurrencyException());
 
         var result = await fixture.Handler.Handle(CreateCommand(), CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
-        VerifyPublishNever(fixture.EventBus);
+        Assert.Equal(0, fixture.Transactions.Events.Count);
     }
 
     [Fact]
@@ -128,7 +109,7 @@ public sealed class SuspendTenantSubscriptionCommandHandlerTests
         var result = await fixture.Handler.Handle(CreateCommand(), CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
-        VerifyPublishNever(fixture.EventBus);
+        Assert.Equal(0, fixture.Transactions.Events.Count);
     }
 
     private static TestFixture CreateFixture(
@@ -140,7 +121,7 @@ public sealed class SuspendTenantSubscriptionCommandHandlerTests
             .Setup(x => x.GetByTenantIdAsync(TenantId, SubscriptionId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(CreateSubscription(subscriptionStatus));
         subscriptionRepository
-            .Setup(x => x.UpdateAsync(It.IsAny<TenantSubscription>(), It.IsAny<byte[]?>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.UpdateAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<TenantSubscription>(), It.IsAny<byte[]?>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         var tenantRepository = new Mock<ITenantRegistryRepository>();
@@ -148,7 +129,7 @@ public sealed class SuspendTenantSubscriptionCommandHandlerTests
             .Setup(x => x.GetByIdAsync(TenantId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(CreateTenant());
         tenantRepository
-            .Setup(x => x.UpdateAsync(It.IsAny<Tenant>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.UpdateAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<Tenant>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         var planRepository = new Mock<ISubscriptionPlanRepository>();
@@ -160,16 +141,16 @@ public sealed class SuspendTenantSubscriptionCommandHandlerTests
         currentUser.SetupGet(x => x.UserId).Returns(currentUserId);
         currentUser.SetupGet(x => x.ActorName).Returns("platform-admin");
 
-        var eventBus = new Mock<IEventBus>();
-
+        var transactions = new SubscriptionTransactionTestDependencies(subscriptionRepository.Object,
+            tenantRepository.Object, planRepository.Object, currentUser.Object);
         var handler = new SuspendTenantSubscriptionCommandHandler(
             subscriptionRepository.Object,
             tenantRepository.Object,
             planRepository.Object,
             currentUser.Object,
-            eventBus.Object);
+            transactions.Writer);
 
-        return new TestFixture(handler, subscriptionRepository, tenantRepository, eventBus);
+        return new TestFixture(handler, subscriptionRepository, tenantRepository, transactions);
     }
 
     private static TenantSubscription CreateSubscription(TenantSubscriptionStatus status)
@@ -211,33 +192,9 @@ public sealed class SuspendTenantSubscriptionCommandHandlerTests
             new SuspendTenantSubscriptionRequest("billing issue", RowVersion));
     }
 
-    private static EventEnvelope<TenantSubscriptionChangedV1> CreateEnvelope(
-        TenantSubscriptionChangedV1 @event,
-        EventPublishOptions options)
-    {
-        return new EventEnvelope<TenantSubscriptionChangedV1>(
-            new EventMetadata(
-                options.EventId ?? Guid.NewGuid(),
-                @event.EventName,
-                @event.EventVersion,
-                options.CorrelationId ?? Guid.NewGuid(),
-                options.CausationId,
-                options.TenantId,
-                options.Producer ?? "Diten.Platform",
-                options.OccurredAtUtc ?? DateTimeOffset.UtcNow),
-            @event);
-    }
-
-    private static void VerifyPublishNever(Mock<IEventBus> eventBus)
-    {
-        Assert.DoesNotContain(
-            eventBus.Invocations,
-            invocation => invocation.Method.Name == nameof(IEventBus.PublishAsync));
-    }
-
     private sealed record TestFixture(
         SuspendTenantSubscriptionCommandHandler Handler,
         Mock<ITenantSubscriptionRepository> SubscriptionRepository,
         Mock<ITenantRegistryRepository> TenantRepository,
-        Mock<IEventBus> EventBus);
+        SubscriptionTransactionTestDependencies Transactions);
 }

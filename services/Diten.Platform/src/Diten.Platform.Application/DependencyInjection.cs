@@ -24,6 +24,7 @@ using Diten.Platform.Contracts.Events;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Diten.Platform.Application.Features.Tenants.Commercial.Subscriptions;
 
 namespace Diten.Platform.Application;
 
@@ -58,6 +59,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantModuleAccessService, TenantModuleAccessService>();
         services.AddScoped<IActorSafetyGuard, ActorSafetyGuard>();
         services.AddScoped<IQuotaService, QuotaService>();
+        services.AddScoped<TenantSubscriptionTransactionWriter>();
         services.AddScoped<IPlatformLookupProvider, PlatformLookupProvider>();
         services.AddScoped<Features.ModuleCatalog.Services.IModuleTaxonomyResolver, Features.ModuleCatalog.Services.ModuleTaxonomyResolver>();
         services.AddScoped<IBusinessReferenceDataValidationService, BusinessReferenceDataValidationService>();

@@ -5,6 +5,11 @@ namespace Diten.Platform.Application.Features.Quotas.Services;
 
 public interface IQuotaService
 {
+    Task<Response<IReadOnlyList<QuotaStatusDto>>> InitializeSubscriptionQuotasAsync(IPlatformTransactionSession session,
+        Diten.Platform.Domain.Entities.TenantSubscription subscription,
+        Diten.Platform.Domain.Entities.SubscriptionPlan plan, bool synchronizeExisting,
+        string source, string reason, string actorId, string correlationId, CancellationToken ct) =>
+        throw new PlatformTransactionUnavailableException("The quota service does not implement transaction-bound subscription quota synchronization.");
     Task<Response<QuotaMutationDto>> TryConsumeEntitlementAsync(IPlatformTransactionSession session, TryConsumeQuotaRequest request, CancellationToken ct) =>
         throw new PlatformTransactionUnavailableException(
             "The quota service does not implement transaction-bound physical-entitlement consume.");

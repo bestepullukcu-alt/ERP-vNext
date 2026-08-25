@@ -15,19 +15,22 @@ public sealed class ActivateTenantSubscriptionCommandHandler : IRequestHandler<A
     private readonly ISubscriptionPlanRepository _planRepository;
     private readonly ICurrentUserContext _currentUser;
     private readonly IQuotaService _quotaService;
+    private readonly TenantSubscriptionTransactionWriter _writer;
 
     public ActivateTenantSubscriptionCommandHandler(
         ITenantSubscriptionRepository subscriptionRepository,
         ITenantRegistryRepository tenantRepository,
         ISubscriptionPlanRepository planRepository,
         ICurrentUserContext currentUser,
-        IQuotaService quotaService)
+        IQuotaService quotaService,
+        TenantSubscriptionTransactionWriter writer)
     {
         _subscriptionRepository = subscriptionRepository;
         _tenantRepository = tenantRepository;
         _planRepository = planRepository;
         _currentUser = currentUser;
         _quotaService = quotaService;
+        _writer = writer;
     }
 
     public async Task<Response<NoContent>> Handle(ActivateTenantSubscriptionCommand request, CancellationToken ct)
@@ -48,6 +51,8 @@ public sealed class ActivateTenantSubscriptionCommandHandler : IRequestHandler<A
             return Response<NoContent>.Fail("Current period end date must be after the start date.", 400);
         }
 
+        var previousPlanId = subscription.PlanId;
+        var previousStatus = subscription.Status.ToString();
         var now = DateTimeOffset.UtcNow;
         subscription.Status = TenantSubscriptionStatus.Active;
         subscription.CurrentPeriodStartUtc = request.Request.CurrentPeriodStartUtc;
@@ -56,31 +61,15 @@ public sealed class ActivateTenantSubscriptionCommandHandler : IRequestHandler<A
         subscription.UpdatedBy = _currentUser.ActorName;
         TenantSubscriptionLifecycle.AddHistory(subscription, "activated", null, _currentUser.ActorName, now);
 
-        try
-        {
-            await _subscriptionRepository.UpdateAsync(subscription, request.Request.RowVersion, ct);
-        }
-        catch (TenantSubscriptionConcurrencyException)
-        {
-            return Response<NoContent>.Fail("Tenant subscription was modified by another process.", 409);
-        }
-
-        var snapshotResponse = await TenantSubscriptionCommandSupport.UpdateTenantSnapshotAsync(subscription, _tenantRepository, _planRepository, _currentUser, ct, markTenantActive: true);
-        if (!snapshotResponse.IsSuccessful)
-        {
-            return snapshotResponse;
-        }
-
-        var quotaResponse = await _quotaService.InitializeTenantQuotasAsync(
-            request.TenantId,
-            "SubscriptionActivation",
-            "Tenant subscription activated; quota usage initialized.",
-            _currentUser.ActorName,
-            Guid.NewGuid().ToString(),
-            ct);
-
-        return quotaResponse.IsSuccessful
-            ? snapshotResponse
-            : Response<NoContent>.Fail(quotaResponse.Errors, quotaResponse.StatusCode);
+        return await _writer.UpdateAsync(subscription, request.Request.RowVersion,
+            previousPlanId, previousStatus,
+            nameof(ActivateTenantSubscriptionCommand), AuditOperation.Activate, true,
+            async (session, current, plan, transactionCt) =>
+            {
+                var quota = await _quotaService.InitializeSubscriptionQuotasAsync(session, current, plan, false,
+                    "SubscriptionActivation", "Tenant subscription activated; quota usage initialized.",
+                    _currentUser.ActorName, Guid.NewGuid().ToString("N"), transactionCt);
+                return quota.IsSuccessful ? Response<NoContent>.Success(204) : Response<NoContent>.Fail(quota.Errors, quota.StatusCode);
+            }, ct);
     }
 }
