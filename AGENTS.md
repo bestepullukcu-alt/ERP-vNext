@@ -29,20 +29,21 @@ ERP-vNext/
 ├── execution/                           Domain ve module execution katmanı
 │   └── domains/
 │       ├── developer-enablement/        (DEVEN — mevcut; Diten.DevEnablementService golden references)
+│       ├── enterprise-strategy-business-performance/ (ESBP — governance scaffold mevcut; Diten.EnterpriseStrategyService)
+│       ├── management-governance/       (MG — governance scaffold; DWS + BPM; production service yok)
 │       ├── pharmacovigilance/           (PVG — governance scaffold mevcut; DCP-004; production service yok)
 │       ├── master-data-management/       (MDM — governance scaffold mevcut; production service yok)
 │       ├── platform-shared-services/    (PSS — mevcut; Diten.Platform + Diten.AuthService)
 │       └── portfolio-delivery/          (PPM — governance scaffold mevcut; MOD-0117; production service yok)
-│       # planned, not scaffolded yet:
-│       # enterprise-strategy-business-performance (ESBP)
 ├── services/                            .NET 8 mikroservisler
 │   ├── Diten.AuthService/
 │   ├── Diten.DevEnablementService/
 │   ├── Diten.Platform/
 │   ├── Diten.Platform.Common/
 │   └── Diten.EnterpriseStrategyService/
+│   # Diten.ManagementGovernanceService/  MG service henüz scaffold edilmedi; approved module pack + açık kullanıcı onayı gerekir
 │   # Diten.MdmService/                   MDM service scaffold henüz oluşturulmadı
-│   # Diten.PpmService/                   PPM service henüz scaffold edilmedi; C1 "PPM Work Records Core" module pack onayı olmadan oluşturulmaz (DCP-003)
+│   # Diten.PpmService/                   DCP-006 + OD-03/04 + approved Slice 2 pack + açık kullanıcı onayı gerekir
 │   # Diten.PvgService/                   PVG service scaffold henüz oluşturulmadı; DCP-004 approved/ready-for-execution + üye module pack approved/ready-for-dev onayı olmadan oluşturulmaz
 ├── frontend/                            Razor MVC + Sneat PRO + DataTables v2
 │   └── Diten.Web/
@@ -220,7 +221,7 @@ Fix/refactor işleri için: [.antigravity/rules/GEMINI.md](.antigravity/rules/GE
 feature/{domain-kısa}/{module-id}-{slug}
 ```
 
-- `domain-kısa`: `mdm` | `pss` | `deven` | `esbp` | `ppm` | `pvg`
+- `domain-kısa`: `mdm` | `pss` | `deven` | `esbp` | `mg` | `ppm` | `pvg`
 - `module-id`: `mdm-001`, `pss-002`, vb. (küçük harf)
 - `slug`: 2-4 kelimelik kısa isim
 
@@ -287,7 +288,7 @@ SOP'tan sapmaların tam listesi, yukarıdaki hiyerarşi ve proje bazlı SOP dosy
 
 ## Module ID Canonicalization Gate (DCP-002)
 
-The Blueprint (`docs/System Capability & Implementation Blueprint - master 7.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
+The Blueprint (`docs/System Capability & Implementation Blueprint - master 8.1.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Master 7 is its historical predecessor only. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
 
 1. **Blueprint lookup** — the ID + canonical name must exist in `Blueprint_Data`, or the ID must be an FU/child of an existing Blueprint MOD parent.
 2. **Registry collision** — it must not already map to a different capability in `execution/registries/module-id-registry.md`.

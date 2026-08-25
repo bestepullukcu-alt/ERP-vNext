@@ -15,7 +15,7 @@ Defines the functional capabilities, domain partitions, and high-level module bo
 Placeholder. The complete capability and domain framework details will be migrated from the Enterprise Blueprint Excel sheets.
 
 ## Source / migration note
-Source: System Capability & Implementation Blueprint (Excel source: `docs/System Capability & Implementation Blueprint - master 7.xlsx`). Content migration will follow in subsequent phases.
+Source: System Capability & Implementation Blueprint (canonical Excel source: `docs/System Capability & Implementation Blueprint - master 8.1.xlsx`; Master 7 is the historical predecessor). Content migration will follow in subsequent phases.
 
 ## Owner / update rule
 - Owner: Enterprise Architect / Product Management
