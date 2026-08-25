@@ -28,7 +28,7 @@ Measured implementation baseline:
 
 | Area | Baseline |
 |---|---|
-| REG-PV-BASE ports / MOD-0230 guardrail contracts | Source present; latest focused tests passed: 85 |
+| REG-PV-BASE ports / MOD-0230 guardrail contracts | Source present; latest focused tests passed: 88 |
 | MOD-0231 Case Processing contracts | Source present; latest focused tests passed: 23 |
 | MOD-0232 MedDRA Coding contracts | Source present; latest focused tests passed: 40 |
 | MOD-0234 Signal Management contracts | Source present; latest focused tests passed: 43 |
@@ -79,6 +79,7 @@ Measured implementation baseline:
 | MOD-0230 TraceBundle/correlation/observability tests-only evidence (`DEV-PVG-0230-TRACE-OBS-EVIDENCE-TESTS-01`) | 100% | Commit `695a3b18`; RegPvBase focused tests `71/71`; API focused tests `28/28`; TraceBundle/Observability owner approval still required |
 | MOD-0230 retention/legal-hold blocker tests-only evidence (`DEV-PVG-0230-RETENTION-LEGALHOLD-BLOCKER-TESTS-01`) | 100% | Commit `80069ab4`; API focused tests `35/35`; RegPvBase focused tests `80/80`; retention/legal-hold owner approval still required |
 | MOD-0230 annex/contract alignment tests (`DEV-PVG-0230-ANNEX-CONTRACT-ALIGNMENT-TESTS-01`) | 100% local | Local commit `PVG add MOD-0230 contract alignment tests`; RegPvBase focused tests `85/85`; API focused tests `36/36` |
+| MOD-0230 validation bounds hardening (`DEV-PVG-0230-BE08-VALIDATION-BOUNDS-01`) | 100% local | Local commit `PVG harden MOD-0230 validation bounds`; RegPvBase focused tests `88/88`; API focused tests `36/36` |
 | PVG full audit refresh (`AUD-PVG-FULL-2026-08-24`) | 100% | Local/remote `603601cc`; PVG focused tests `196/196`; Gateway `19/19`; PVG UI JS syntax checks passed; operational runtime `0% / NO-GO` |
 | PVG operational approval packet draft | 100% draft | Commit `603601cc`; docs-only packet exists; no owner approval or operational runtime authorization claimed |
 | GMG MOD-0230 approval package review (`DOC-PVG-GMG-APPROVAL-PACKAGE-REVIEW-01`) | 100% evidence review | External package `MOD-0230_Approval-Package_v0.1_2026-08-25.docx` is GMG tenant/customer go-live evidence, not global PVG product architecture authority; issued for signature, not signed; Records 1-9 are design/control approvals only after execution; Record 10 blocks GMG operational runtime only |
@@ -134,6 +135,7 @@ Overall PVG operational readiness: **0% / NO-GO**.
 | `DEV-PVG-0230-TRACE-OBS-EVIDENCE-TESTS-01` | DEV/TEST | Add TraceBundle/correlation/observability tests-only evidence without owner approval or runtime authorization | Done |
 | `DEV-PVG-0230-RETENTION-LEGALHOLD-BLOCKER-TESTS-01` | DEV/TEST | Add retention/legal-hold/archive/void blocker tests-only evidence without owner approval or runtime authorization | Done |
 | `DEV-PVG-0230-ANNEX-CONTRACT-ALIGNMENT-TESTS-01` | DEV/TEST | Add product-scope MOD-0230 annex/contract alignment tests without treating tenant input as global authority | Done; local commit recorded |
+| `DEV-PVG-0230-BE08-VALIDATION-BOUNDS-01` | DEV/TEST | Add module-pack validation bounds for MOD-0230 create/update/triage without opening runtime scope | Done; local commit recorded |
 | `AUD-PVG-FULL-2026-08-24` | AUD/DOC | Full PVG local/dev build-test audit and development-plan refresh at commit `603601cc` | Done |
 | `DEV-PVG-0230-UI-REGRESSION-01` | DEV/TEST | UI tests-only regression guardrails | Done |
 | `DOC-PVG-DOWNSTREAM-CL-01` | DOC | Record MOD-0231/0232/0234 class-library/test-only downstream hardening evidence | Done |
@@ -1743,6 +1745,44 @@ Validation:
 Scope controls:
 
 - This is local tests-only/product-contract evidence plus this plan update.
+- No Gateway, frontend, appsettings, launchSettings, persistence, Mongo, DbContext, repository, seed, job, menu/catalog,
+  AI, MedDRA data/import/search/cache, delete/export/archive/void/bulk, or downstream MOD-0231/MOD-0232/MOD-0234
+  runtime exposure is added.
+- No operational runtime authorization is claimed.
+- Operational runtime remains **0% / NO-GO**.
+
+## 5.39 Completed Local WP: `DEV-PVG-0230-BE08-VALIDATION-BOUNDS-01`
+
+Goal: continue MOD-0230 backend hardening inside `.antigravity`, DCP-004, and module-pack build/test boundaries by
+implementing binding validation rules from the MOD-0230 validation table.
+
+Changed files:
+
+- `services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftValidator.cs`
+- `services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/PvgIntakeDomainValidationTests.cs`
+- `docs/plans/pvg-control-tower-development-plan-2026-08-13.md`
+
+What changed:
+
+- Commit evidence: local commit message `PVG harden MOD-0230 validation bounds`.
+- Create/update validation now rejects out-of-bounds `SourceReference`, `ReporterContactSummary`,
+  `PatientSubjectCode`, `AdverseEventNarrative`, `SuspectProductText`, and `EvidenceLinkReferences`.
+- `ReceivedAtUtc` now rejects dates before 1900-01-01 UTC and future timestamps beyond the allowed server skew.
+- `EventOnsetDate` now rejects dates before 1900-01-01, future dates, and dates after `ReceivedAtUtc`.
+- `PatientSubjectCode` now rejects whitespace, email-like values, overlong values, and values with more than two digit
+  groups.
+- `TriageReason` now rejects values above the approved 1000-character bound.
+- Validation failures continue to return safe reason codes only and do not echo raw PHI/PII/free-text/source/product
+  values.
+
+Validation:
+
+- `git diff --check`: passed.
+- RegPvBase focused tests: `88/88` passed.
+- API focused tests: `36/36` passed.
+
+Scope controls:
+
 - No Gateway, frontend, appsettings, launchSettings, persistence, Mongo, DbContext, repository, seed, job, menu/catalog,
   AI, MedDRA data/import/search/cache, delete/export/archive/void/bulk, or downstream MOD-0231/MOD-0232/MOD-0234
   runtime exposure is added.

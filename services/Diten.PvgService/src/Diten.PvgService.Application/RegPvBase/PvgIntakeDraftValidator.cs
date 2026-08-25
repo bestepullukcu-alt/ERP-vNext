@@ -4,6 +4,16 @@ namespace Diten.PvgService.Application.RegPvBase;
 
 public static class PvgIntakeDraftValidator
 {
+    private const int SourceReferenceMaxLength = 128;
+    private const int ReporterContactSummaryMaxLength = 256;
+    private const int PatientSubjectCodeMaxLength = 64;
+    private const int AdverseEventNarrativeMaxLength = 8000;
+    private const int SuspectProductTextMaxLength = 512;
+    private const int TriageReasonMaxLength = 1000;
+    private const int EvidenceLinkReferencesMaxCount = 20;
+    private static readonly DateTimeOffset EarliestSupportedReceivedAtUtc = new(1900, 1, 1, 0, 0, 0, TimeSpan.Zero);
+    private static readonly DateOnly EarliestSupportedEventOnsetDate = new(1900, 1, 1);
+
     private static readonly HashSet<string> SupportedTriageReasonCodes = new(StringComparer.Ordinal)
     {
         "PVG_TRIAGE_REASON_VALID",
@@ -23,6 +33,16 @@ public static class PvgIntakeDraftValidator
             request.AdverseEventNarrative,
             request.Seriousness,
             request.IntakePriority);
+        AddCreateUpdateFieldRuleFailures(
+            failures,
+            request.SourceReference,
+            request.ReceivedAtUtc,
+            request.ReporterContactSummary,
+            request.PatientSubjectCode,
+            request.EventOnsetDate,
+            request.AdverseEventNarrative,
+            request.SuspectProductText,
+            request.EvidenceLinkReferences);
 
         return ToResult(failures);
     }
@@ -39,6 +59,16 @@ public static class PvgIntakeDraftValidator
             request.AdverseEventNarrative,
             request.Seriousness,
             request.IntakePriority);
+        AddCreateUpdateFieldRuleFailures(
+            failures,
+            request.SourceReference,
+            request.ReceivedAtUtc,
+            request.ReporterContactSummary,
+            request.PatientSubjectCode,
+            request.EventOnsetDate,
+            request.AdverseEventNarrative,
+            request.SuspectProductText,
+            request.EvidenceLinkReferences);
 
         return ToResult(failures);
     }
@@ -61,6 +91,11 @@ public static class PvgIntakeDraftValidator
         var triageReasonCode = request.TriageReasonCode?.Trim();
         if (triageReasonCode is { Length: > 0 } &&
             !SupportedTriageReasonCodes.Contains(triageReasonCode))
+        {
+            failures.Add(Invalid(PvgIntakeField.TriageReason));
+        }
+
+        if (TrimmedLengthExceeds(request.TriageReason, TriageReasonMaxLength))
         {
             failures.Add(Invalid(PvgIntakeField.TriageReason));
         }
@@ -137,6 +172,58 @@ public static class PvgIntakeDraftValidator
         }
     }
 
+    private static void AddCreateUpdateFieldRuleFailures(
+        ICollection<PvgValidationFailure> failures,
+        string? sourceReference,
+        DateTimeOffset? receivedAtUtc,
+        string? reporterContactSummary,
+        string? patientSubjectCode,
+        DateOnly? eventOnsetDate,
+        string? adverseEventNarrative,
+        string? suspectProductText,
+        IReadOnlyList<string>? evidenceLinkReferences)
+    {
+        if (TrimmedLengthExceeds(sourceReference, SourceReferenceMaxLength))
+        {
+            failures.Add(Invalid(PvgIntakeField.SourceReference));
+        }
+
+        if (receivedAtUtc is { } receivedAt && !IsSupportedReceivedAt(receivedAt))
+        {
+            failures.Add(Invalid(PvgIntakeField.ReceivedAtUtc));
+        }
+
+        if (TrimmedLengthExceeds(reporterContactSummary, ReporterContactSummaryMaxLength))
+        {
+            failures.Add(Invalid(PvgIntakeField.ReporterContactSummary));
+        }
+
+        if (!IsSupportedPatientSubjectCode(patientSubjectCode))
+        {
+            failures.Add(Invalid(PvgIntakeField.PatientSubjectCode));
+        }
+
+        if (eventOnsetDate is { } onsetDate && !IsSupportedEventOnsetDate(onsetDate, receivedAtUtc))
+        {
+            failures.Add(Invalid(PvgIntakeField.EventOnsetDate));
+        }
+
+        if (TrimmedLengthExceeds(adverseEventNarrative, AdverseEventNarrativeMaxLength))
+        {
+            failures.Add(Invalid(PvgIntakeField.AdverseEventNarrative));
+        }
+
+        if (TrimmedLengthExceeds(suspectProductText, SuspectProductTextMaxLength))
+        {
+            failures.Add(Invalid(PvgIntakeField.SuspectProductText));
+        }
+
+        if (evidenceLinkReferences is { Count: > EvidenceLinkReferencesMaxCount })
+        {
+            failures.Add(Invalid(PvgIntakeField.EvidenceLinkReferences));
+        }
+    }
+
     private static PvgValidationFailure Missing(PvgIntakeField field) =>
         new(field, PvgValidationReasonCodes.RequiredFieldMissing);
 
@@ -145,6 +232,65 @@ public static class PvgIntakeDraftValidator
 
     private static PvgValidationResult ToResult(IReadOnlyList<PvgValidationFailure> failures) =>
         failures.Count == 0 ? PvgValidationResult.Valid : new PvgValidationResult(failures);
+
+    private static bool IsSupportedReceivedAt(DateTimeOffset receivedAtUtc)
+    {
+        var normalized = receivedAtUtc.ToUniversalTime();
+        return normalized >= EarliestSupportedReceivedAtUtc &&
+            normalized <= DateTimeOffset.UtcNow.AddMinutes(5);
+    }
+
+    private static bool IsSupportedEventOnsetDate(DateOnly eventOnsetDate, DateTimeOffset? receivedAtUtc)
+    {
+        if (eventOnsetDate < EarliestSupportedEventOnsetDate ||
+            eventOnsetDate > DateOnly.FromDateTime(DateTime.UtcNow))
+        {
+            return false;
+        }
+
+        return receivedAtUtc is null ||
+            eventOnsetDate <= DateOnly.FromDateTime(receivedAtUtc.Value.UtcDateTime);
+    }
+
+    private static bool IsSupportedPatientSubjectCode(string? value)
+    {
+        if (IsBlank(value))
+        {
+            return true;
+        }
+
+        var trimmed = value!.Trim();
+        return trimmed.Length <= PatientSubjectCodeMaxLength &&
+            !trimmed.Any(char.IsWhiteSpace) &&
+            !trimmed.Contains('@', StringComparison.Ordinal) &&
+            CountDigitGroups(trimmed) <= 2;
+    }
+
+    private static int CountDigitGroups(string value)
+    {
+        var groups = 0;
+        var inDigitGroup = false;
+        foreach (var character in value)
+        {
+            if (char.IsDigit(character))
+            {
+                if (!inDigitGroup)
+                {
+                    groups++;
+                    inDigitGroup = true;
+                }
+            }
+            else
+            {
+                inDigitGroup = false;
+            }
+        }
+
+        return groups;
+    }
+
+    private static bool TrimmedLengthExceeds(string? value, int maxLength) =>
+        value?.Trim().Length > maxLength;
 
     private static bool IsBlank(string? value) => string.IsNullOrWhiteSpace(value);
 }

@@ -126,6 +126,40 @@ public sealed class PvgIntakeDomainValidationTests
     }
 
     [Fact]
+    public void Create_validation_rejects_out_of_bounds_MOD_0230_fields_without_echoing_values()
+    {
+        var request = new PvgCreateIntakeDraftRequest(
+            "portal",
+            "reporter",
+            new string('s', 129),
+            DateTimeOffset.UtcNow.AddMinutes(10),
+            "healthcare-professional",
+            new string('r', 257),
+            "PAT 123@unsafe",
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)),
+            new string('n', 8001),
+            new string('p', 513),
+            "serious",
+            "high",
+            Enumerable.Range(1, 21).Select(index => $"evidence-ref-{index}").ToArray());
+
+        var result = PvgIntakeDraftValidator.ValidateCreate(
+            new PvgServerTenantContext("tenant-secret-123"),
+            request);
+
+        Assert.False(result.IsValid);
+        AssertContainsInvalid(result, PvgIntakeField.SourceReference);
+        AssertContainsInvalid(result, PvgIntakeField.ReceivedAtUtc);
+        AssertContainsInvalid(result, PvgIntakeField.ReporterContactSummary);
+        AssertContainsInvalid(result, PvgIntakeField.PatientSubjectCode);
+        AssertContainsInvalid(result, PvgIntakeField.EventOnsetDate);
+        AssertContainsInvalid(result, PvgIntakeField.AdverseEventNarrative);
+        AssertContainsInvalid(result, PvgIntakeField.SuspectProductText);
+        AssertContainsInvalid(result, PvgIntakeField.EvidenceLinkReferences);
+        AssertValidationResultDoesNotEchoSensitiveValues(result);
+    }
+
+    [Fact]
     public void Update_validation_requires_baseline_fields_without_echoing_sensitive_values()
     {
         var request = new PvgUpdateIntakeDraftRequest(
@@ -153,6 +187,35 @@ public sealed class PvgIntakeDomainValidationTests
     }
 
     [Fact]
+    public void Update_validation_rejects_unsupported_date_and_patient_code_shapes()
+    {
+        var request = new PvgUpdateIntakeDraftRequest(
+            "portal",
+            "reporter",
+            "source-ref",
+            new DateTimeOffset(1899, 12, 31, 23, 59, 59, TimeSpan.Zero),
+            "healthcare-professional",
+            "summary",
+            "PAT-123-45-67",
+            new DateOnly(1899, 12, 31),
+            "free text narrative with PHI",
+            "suspect product",
+            "serious",
+            "high",
+            null);
+
+        var result = PvgIntakeDraftValidator.ValidateUpdate(
+            new PvgServerTenantContext("tenant-secret-123"),
+            request);
+
+        Assert.False(result.IsValid);
+        AssertContainsInvalid(result, PvgIntakeField.ReceivedAtUtc);
+        AssertContainsInvalid(result, PvgIntakeField.PatientSubjectCode);
+        AssertContainsInvalid(result, PvgIntakeField.EventOnsetDate);
+        AssertValidationResultDoesNotEchoSensitiveValues(result);
+    }
+
+    [Fact]
     public void Triage_validation_requires_safe_outcome_and_reason_code_without_echoing_values()
     {
         var request = new PvgTriageIntakeDraftRequest(
@@ -169,6 +232,23 @@ public sealed class PvgIntakeDomainValidationTests
             result.Failures,
             failure => failure.Field == PvgIntakeField.TriageReason &&
                 failure.ReasonCode == PvgValidationReasonCodes.FieldValueInvalid);
+        AssertValidationResultDoesNotEchoSensitiveValues(result);
+    }
+
+    [Fact]
+    public void Triage_validation_rejects_overlong_reason_without_echoing_values()
+    {
+        var request = new PvgTriageIntakeDraftRequest(
+            PvgTriageOutcome.Duplicate,
+            "PVG_TRIAGE_REASON_DUPLICATE",
+            new string('t', 1001));
+
+        var result = PvgIntakeDraftValidator.ValidateTriage(
+            new PvgServerTenantContext("tenant-secret-123"),
+            request);
+
+        Assert.False(result.IsValid);
+        AssertContainsInvalid(result, PvgIntakeField.TriageReason);
         AssertValidationResultDoesNotEchoSensitiveValues(result);
     }
 
@@ -203,6 +283,14 @@ public sealed class PvgIntakeDomainValidationTests
     {
         AssertNoForbiddenNames(Enum.GetNames<PvgIntakeStatus>());
         AssertNoForbiddenNames(Enum.GetNames<PvgIntakeOperation>());
+    }
+
+    private static void AssertContainsInvalid(PvgValidationResult result, PvgIntakeField field)
+    {
+        Assert.Contains(
+            result.Failures,
+            failure => failure.Field == field &&
+                failure.ReasonCode == PvgValidationReasonCodes.FieldValueInvalid);
     }
 
     private static void AssertValidationResultDoesNotEchoSensitiveValues(PvgValidationResult result)
