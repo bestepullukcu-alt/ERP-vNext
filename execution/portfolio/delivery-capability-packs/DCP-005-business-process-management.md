@@ -122,7 +122,23 @@ not implementation dependencies that this draft pretends already exist.
 - Published model versions are immutable; revision creates a new monotonic version.
 - Typed references carry external owner/resource IDs; BPM never forks external masters.
 - Candidate IDs are documentation identities only and never serialized as runtime module codes.
-- `bpm.*` is a draft permission proposal, not an approved contract.
+- Primary topology proposal is a separate bounded `Diten.BusinessProcessManagementService`; fallback is an
+  isolated `BusinessProcessManagement` module in a future explicitly approved Management Governance owning
+  service. They are mutually exclusive: no dual write, mirrored collection, runtime failover or compatibility
+  write is permitted. `Diten.Platform` and legacy `Diten.EnterpriseStrategyService` are excluded owners.
+- The projected base is `Diten.Platform.Common.Persistence.TenantScopedEntity`; its missing `DeletedAt`
+  contract must be resolved by approved base composition/amendment before implementation.
+- FU01 persists exact lifecycle states `Draft -> Review -> Published -> Retired`. Published/Retired never reopen;
+  revision creates a new monotonic Draft and never rewrites a predecessor.
+- Publish and retire approval are mandatory for FU01. MOD-0023 alone decides approval; BPM independently checks
+  BPM permission and idempotently applies a matching terminal approved result.
+- Parallel effective-dated variants are excluded. A definition has one non-overlapping published timeline and
+  at most one effective Published version at an instant.
+- `bpm.*` is family notation only, never an enforceable wildcard; exact proposed keys are listed in the FU01
+  pack and remain subject to domain/security owner approval.
+- FU01 owns model metadata, canonical content manifest, canonicalization profile/version and SHA-256 checksum;
+  external content/document storage owns XML/binary bytes. No arbitrary URL/path is a valid artifact reference.
+- FU01 has zero metric/KPI, performance-observation, improvement, benefit or PPM-handoff schema.
 
 ## 11. Scope
 
@@ -151,15 +167,22 @@ and narrow AGENTS.md domain/branch documentation. It does not authorize product 
 
 ## 14. Review questions
 
-1. Who is the accountable business owner and technical owner?
-2. Is future topology a new BPM service or an explicitly approved existing service?
-3. Is model artifact storage metadata-only with external document reference?
-4. Which owner/directory and process-classification providers are authoritative?
-5. Is publish approval mandatory or policy-driven through MOD-0023?
-6. Are effective-dated parallel published variants allowed?
-7. Is `bpm.*` the approved permission prefix?
-8. Which of MOD-0004/MOD-0060 is the authoritative metric-definition contract per use case?
-9. What exact MOD-0117 object accepts a future improvement handoff?
+Technical decisions are closed by §10 and the FU01 pack. The remaining human/provider-owner decisions are:
+
+1. Appoint the accountable `Business Process Management / Process Excellence Owner`.
+2. Appoint the `BPM Domain Technical Owner` and approve primary versus fallback topology/deployment ownership.
+3. MOD-0001/provider owner approves owner types, mandatory/optional binding and non-disclosing lookup contract.
+4. MOD-0048 owner approves exact process classification sets and tenant/global applicability.
+5. MOD-0028/MOD-0262 and security/data owners approve binary/XML storage, retention, legal hold, malware scan,
+   encryption/KMS and signed-download contract.
+6. MOD-0018/Auth and domain/security owners approve the exact permission literals, seeds and role matrix.
+7. MOD-0023/security/business owners approve SoD/self-approval details within mandatory publish/retire approval.
+8. Platform/base owner resolves `TenantScopedEntity` plus required `DeletedAt`/`DeletedBy` composition.
+9. Infrastructure owner proves same-database Mongo replica-set transactions for publication + receipt + outbox.
+10. Enterprise Architect allocates a canonical runtime MOD/ModuleCode before any integration event publication.
+
+MOD-0004/MOD-0060 metric-contract resolution and MOD-0117 handoff target remain FU02/FU03 decisions and do not
+enter FU01 schema.
 
 ## 15. Gate criteria
 
@@ -190,8 +213,10 @@ and narrow AGENTS.md domain/branch documentation. It does not authorize product 
 
 ## 18. Open decisions
 
-The nine review questions in §14 are blocking owner/topology decisions. Additionally, MOD-0025 governance
-readiness and the MOD-0004/MOD-0060 overlap require owner-backed contract decisions before integration.
+The human/provider-owner decisions in §14 remain blockers. MOD-0025 registry/pack absence does not block core
+FU01 architecture/model authoring; it becomes a hard gate before `RuleSetRef`, rule-conditioned validation,
+rule evaluation or a rule-dependent lifecycle acceptance criterion is introduced. No local fallback rule engine
+is permitted.
 
 ## 19. Future follow-ups
 
