@@ -4086,6 +4086,7 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - **Gelecek regresyon riski: 🟡** — "kaydettim ama geri geldi" tipi şikâyetlerin klasik kaynağı.
 
 ### BL-189 — [ÖLÇÜM] Harness'ta iki modül örneği tek DOM'u paylaşıyor
+- ✅ **KAPANDI — CT DOĞRULADI 2026-08-24 (Tur C).** `window.__wcnTeardown` canlı ölçüldü (`typeof` = function): boot önceki örneğin dinleyicilerini söküyor. Üretim davranışı, test uyarlaması değil.
 - `wcn-boot` her boot'ta `app.js`'i yeniden yüklüyor; global modül nesneleri siliniyor ama **belge üzerindeki
   tıklama dinleyicileri** kalıyor. Sonuç: bir tıklama iki kez işleniyor, iki ağ okuması üretiyor.
 - Bugün testleri yanıltmıyor (iddiaların hepsi DOM üzerinde), ama **yarış/sıra** iddialarını imkânsız kılıyor —
@@ -4649,6 +4650,7 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - **Gelecek regresyon riski: 🟢.**
 
 ### BL-222 — [KAYIT] İkon eşleşmesi için jsdom testi yazılamadı, canlı ölçüldü
+- ✅ **KAPANDI (Tur C).** Kural `fixture-contract.js`'te tek yerde. ⚠ Ajan kendi testinin zayıflığını da kaydetti: ilk hâli, aradığı dizeler yorumda da geçtiği için nesne silinmesine rağmen yeşil kalmıştı — düzeltildi.
 - Kıyaslanacak glif LİSTE SATIRININ aksiyon kümesinde çiziliyor ve bir satırın oraya ulaşması sekme/kabul
   kurallarına bağlı (`admissionState`, `ownershipState`, aktif sekme). Üç ayrı fixture şekli denendi, hiçbiri
   satırı varsayılan sekmeye koymadı — test ikonları değil fixture'ı doğrulamış olacaktı.
@@ -4958,6 +4960,7 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - **Gelecek regresyon riski: 🟢.**
 
 ### BL-234 — [YAPILMADI] Çalışan sayaç sayfa yenilemesinde sıfırlanıyor
+- ✅ **KAPANDI — CT DOĞRULADI 2026-08-24 (Tur C).** Tik tak eden gösterge ve saniyelik `setInterval` kaldırıldı; canlı ölçüm: kart yalnız "3sa 45dk girildi" diyor, `wcn-ts-live`/`wcnTimerValue` DOM'da yok. Entity alanı eklenmedi — doğru çözüm MOD-0280'e ait (blueprint, HCM, EA-TBD).
 - Ölçüldü: canlı sayaç 37:29 → yenile → 37:15. Devam etmiyor, **yeniden başlıyor**.
 - Sebep iki katmanlı: mapper `startedAt: Date.now() - (37 * 60000)` ile sabit bir başlangıç uyduruyor, VE
   `TaskItem`'da gerçek bir sayaç başlangıcı alanı **yok** — DTO yalnız `TimerState` (running/paused) taşıyor.
@@ -4967,6 +4970,7 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - **Gelecek regresyon riski: 🟡** — kullanıcı sayaca güvenip yanlış süre bildirebilir.
 
 ### BL-234 GÜNCELLEME (2026-08-24, Tur C) — tik tak eden gösterge GEÇİCİ OLARAK KALDIRILDI
+- ✅ **KAPANDI — CT DOĞRULADI 2026-08-24 (Tur C).** Tik tak eden gösterge ve saniyelik `setInterval` kaldırıldı; canlı ölçüm: kart yalnız "3sa 45dk girildi" diyor, `wcn-ts-live`/`wcnTimerValue` DOM'da yok. Entity alanı eklenmedi — doğru çözüm MOD-0280'e ait (blueprint, HCM, EA-TBD).
 - Durum: **[GEÇİCİ ÇÖZÜM UYGULANDI]** — özellik yazılmadı, yalan söylemek durduruldu.
 - Kaldırılan: `wcn-ts-live` / `wcnTimerValue` göstergesi ve onu boyayan bir saniyelik `setInterval`.
 - **Kalanlar (hepsi gerçek):** TOPLAM (`loggedMinutes`, saklanıyor, yenilemede korunuyor) · görevin DURUMU ·
@@ -5020,6 +5024,7 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - **Gelecek regresyon riski: 🟡.**
 
 ### BL-189 KAPANDI (2026-08-24, Tur C) — modül kendi dinleyicilerini söküyor
+- ✅ **KAPANDI — CT DOĞRULADI 2026-08-24 (Tur C).** `window.__wcnTeardown` canlı ölçüldü (`typeof` = function): boot önceki örneğin dinleyicilerini söküyor. Üretim davranışı, test uyarlaması değil.
 - Bütün dinleyiciler `document` üzerinde, dolayısıyla ikinci bir boot birincinin ÜSTÜNE biniyordu: tek tık
   `onClick`'i **iki kez**, iki farklı `state` nesnesine karşı çalıştırıyordu.
 - Boot'ta `global.__wcnTeardown` çağrılıyor; click/change/input/keydown sökülüyor ve sayaç durduruluyor.
@@ -5028,6 +5033,7 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - Testle kilitli: eklenen her boot dinleyicisinin bir `removeEventListener` karşılığı olmalı.
 
 ### BL-222 KAPANDI (2026-08-24, Tur C) — "minimum görünür satır" yazıldı
+- ✅ **KAPANDI (Tur C).** Kural `fixture-contract.js`'te tek yerde. ⚠ Ajan kendi testinin zayıflığını da kaydetti: ilk hâli, aradığı dizeler yorumda da geçtiği için nesne silinmesine rağmen yeşil kalmıştı — düzeltildi.
 - Kural `fixture-contract.js`'te **tek yerde**: `MINIMUM_VISIBLE_ROW` + `inTab`'den ÖLÇÜLEREK çıkarılmış dört
   koşul (`catalogVisible !== false` · `!dismissed` · `itemInScope` · `tab` eşleşmesi, `history` hariç terminal
   satırlar gizli).
