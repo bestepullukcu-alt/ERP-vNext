@@ -32,6 +32,12 @@ public sealed class QuotaUsageRepository : TenantRepository<QuotaUsage>, IQuotaU
         return usage;
     }
 
+    public async Task<QuotaUsage> CreateAsync(IPlatformTransactionSession session, QuotaUsage usage, CancellationToken ct = default)
+    {
+        await Collection.InsertOneAsync(PlatformMongoTransactionSession.Require(session, _dbContext), usage, cancellationToken: ct);
+        return usage;
+    }
+
     public async Task<QuotaUsage?> GetByTenantAndKeyAsync(Guid tenantId, string quotaKey, CancellationToken ct = default)
         => await GetByTenantAndKeyCoreAsync(null, tenantId, quotaKey, ct);
 
@@ -157,6 +163,15 @@ public sealed class QuotaUsageRepository : TenantRepository<QuotaUsage>, IQuotaU
     }
 
     public async Task<QuotaUsage?> UpdateLimitAsync(Guid tenantId, string quotaKey, decimal limitValue, Guid subscriptionId, Guid planId, string source, string? overrideSource, DateTimeOffset now, CancellationToken ct = default)
+        => await UpdateLimitCoreAsync(null, tenantId, quotaKey, limitValue, subscriptionId, planId, source, overrideSource, now, ct);
+
+    public Task<QuotaUsage?> UpdateLimitAsync(IPlatformTransactionSession session, Guid tenantId, string quotaKey,
+        decimal limitValue, Guid subscriptionId, Guid planId, string source, string? overrideSource,
+        DateTimeOffset now, CancellationToken ct = default) =>
+        UpdateLimitCoreAsync(PlatformMongoTransactionSession.Require(session, _dbContext), tenantId, quotaKey,
+            limitValue, subscriptionId, planId, source, overrideSource, now, ct);
+
+    private async Task<QuotaUsage?> UpdateLimitCoreAsync(IClientSessionHandle? session, Guid tenantId, string quotaKey, decimal limitValue, Guid subscriptionId, Guid planId, string source, string? overrideSource, DateTimeOffset now, CancellationToken ct)
     {
         var filter = Builders<QuotaUsage>.Filter.And(
             Builders<QuotaUsage>.Filter.Eq(x => x.TenantId, tenantId),
@@ -172,11 +187,10 @@ public sealed class QuotaUsageRepository : TenantRepository<QuotaUsage>, IQuotaU
             .Set(x => x.LastUpdatedUtc, now)
             .Set(x => x.UpdatedAt, now);
 
-        return await Collection.FindOneAndUpdateAsync(
-            filter,
-            update,
-            new FindOneAndUpdateOptions<QuotaUsage> { ReturnDocument = ReturnDocument.After },
-            ct);
+        var options = new FindOneAndUpdateOptions<QuotaUsage> { ReturnDocument = ReturnDocument.After };
+        return session is null
+            ? await Collection.FindOneAndUpdateAsync(filter, update, options, ct)
+            : await Collection.FindOneAndUpdateAsync(session, filter, update, options, ct);
     }
 
     public async Task<QuotaUsage?> SetCurrentValueAsync(Guid tenantId, string quotaKey, decimal currentValue, DateTimeOffset now, CancellationToken ct = default)

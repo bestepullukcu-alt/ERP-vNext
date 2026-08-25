@@ -20,6 +20,10 @@ internal static class TenantSubscriptionCommandSupport
         ISubscriptionPlanRepository planRepository,
         ITenantSubscriptionRepository subscriptionRepository,
         ICurrentUserContext currentUser,
+        TenantSubscriptionTransactionWriter writer,
+        Func<IPlatformTransactionSession, TenantSubscription, SubscriptionPlan, CancellationToken, Task<Response<NoContent>>>? participant,
+        string mutation,
+        AuditOperation operation,
         CancellationToken ct)
     {
         var tenant = await tenantRepository.GetByIdAsync(tenantId, ct);
@@ -70,27 +74,7 @@ internal static class TenantSubscriptionCommandSupport
         }
 
         TenantSubscriptionLifecycle.AddHistory(subscription, isTrial ? "trial_started" : "plan_assigned", null, currentUser.ActorName, now);
-        await subscriptionRepository.CreateAsync(subscription, ct);
-
-        tenant.PlanId = plan.Id;
-        tenant.PlanCode = plan.Code;
-        tenant.PlanName = plan.Name;
-        tenant.SubscriptionStatus = subscription.Status;
-        tenant.TrialStartDateUtc = subscription.TrialStartDateUtc;
-        tenant.TrialEndDateUtc = subscription.TrialEndDateUtc;
-        tenant.UpdatedAt = now;
-        tenant.UpdatedBy = currentUser.ActorName;
-        tenant.ActivityTimeline.Add(new TenantActivityEvent
-        {
-            EventType = isTrial ? "tenant_subscription.trial_started" : "tenant_subscription.plan_assigned",
-            Message = isTrial ? "Trial subscription started." : "Subscription plan assigned.",
-            Actor = currentUser.ActorName,
-            At = now
-        });
-
-        await tenantRepository.UpdateAsync(tenant, ct);
-
-        return Response<Guid>.Success(subscription.Id, 201);
+        return await writer.CreateAsync(subscription, tenant, plan, mutation, operation, participant, ct);
     }
 
     public static async Task<Response<NoContent>> UpdateTenantSnapshotAsync(

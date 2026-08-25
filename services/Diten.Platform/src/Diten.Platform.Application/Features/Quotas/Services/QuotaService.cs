@@ -149,6 +149,41 @@ public sealed class QuotaService : IQuotaService
         return Response<IReadOnlyList<QuotaStatusDto>>.Success(statuses);
     }
 
+    public async Task<Response<IReadOnlyList<QuotaStatusDto>>> InitializeSubscriptionQuotasAsync(
+        IPlatformTransactionSession session, TenantSubscription subscription, SubscriptionPlan plan,
+        bool synchronizeExisting, string source, string reason, string actorId, string correlationId, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        var now = DateTimeOffset.UtcNow;
+        var statuses = new List<QuotaStatusDto>();
+        if (plan.DefaultQuotas is null || plan.DefaultQuotas.Count == 0)
+            return Response<IReadOnlyList<QuotaStatusDto>>.Fail(QuotaErrorCodes.ConfigurationMissing, 400);
+        foreach (var item in plan.DefaultQuotas.Where(x => QuotaKeys.IsKnown(x.Key)))
+        {
+            var key = NormalizeKey(item.Key);
+            var usage = synchronizeExisting
+                ? await _usageRepository.UpdateLimitAsync(session, subscription.TenantId, key, item.Value,
+                    subscription.Id, plan.Id, QuotaLimitSources.PlanDefault, null, now, ct)
+                : await _usageRepository.GetByTenantAndKeyAsync(session, subscription.TenantId, key, ct);
+            if (usage is null)
+            {
+                usage = new QuotaUsage
+                {
+                    TenantId = subscription.TenantId, QuotaKey = key, CurrentValue = 0, LimitValue = item.Value,
+                    PeriodStart = subscription.CurrentPeriodStartUtc ?? now,
+                    PeriodEnd = subscription.CurrentPeriodEndUtc ?? now.AddMonths(1), LastUpdatedUtc = now,
+                    Source = QuotaLimitSources.PlanDefault, SubscriptionId = subscription.Id, PlanId = plan.Id,
+                    CreatedBy = actorId
+                };
+                await _usageRepository.CreateAsync(session, usage, ct);
+            }
+            await WriteEventAsync(session, subscription.TenantId, key, 0, source, reason,
+                correlationId, subscription.Id.ToString("D"), false, null, ct);
+            statuses.Add(ToStatus(usage));
+        }
+        return Response<IReadOnlyList<QuotaStatusDto>>.Success(statuses);
+    }
+
     public async Task<Response<IReadOnlyList<QuotaStatusDto>>> SyncTenantQuotaLimitsAsync(Guid tenantId, string source, string reason, string actorId, string correlationId, CancellationToken ct)
     {
         var limits = await ResolveLimitsAsync(tenantId, false, ct);
