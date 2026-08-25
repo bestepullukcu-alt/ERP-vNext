@@ -14,10 +14,21 @@
 | PVG operational readiness | **0% / NO-GO** |
 | Operational runtime authorization | Not granted |
 | Production readiness | Not claimed |
+| External GMG approval package | `MOD-0230_Approval-Package_v0.1_2026-08-25.docx`; issued for signature, not yet signed or approved |
 
 PVG has enough local/dev/CI build-test evidence to prepare an owner approval review. PVG does not yet have the
 owner approvals, runtime authorization, retention/legal-hold decision, or operational foundation contracts required
 to open operational runtime.
+
+The GMG approval package is useful planning evidence but is not an executed approval record. It states that every
+Name, Signature, and Date field is empty and that nothing in the package approves anything until signed. Records 1-9
+can become design/control approvals after execution; Record 10 remains the operational runtime release gate.
+
+GMG evidence is tenant/customer-specific. It applies to GMG tenant operational go-live and regulated-data use; it is
+not global PVG product architecture authority and must not rename `Diten.PvgService` or change the vendor-neutral,
+multi-tenant service boundary. Unsigned GMG Records 1-9 do not block generic local/dev build-test development that
+stays inside approved module-pack boundaries. GMG Record 10 blocks GMG tenant operational runtime only. Global PVG
+operational runtime remains separately gated by product/platform owner approvals and explicit runtime authorization.
 
 ## 2. Ready Evidence Summary
 
@@ -140,13 +151,14 @@ Each row must be completed by the owning team before PVG operational runtime can
 
 | Approval gate | Owner/team | Artifact/link | Approved version | Caveats | Required follow-up tests | Approval status |
 |---|---|---|---|---|---|---|
-| MOD-0019 FieldSecurity | TBD | TBD | TBD | Must cover masking, row/field security, unavailable-policy behavior, raw-value leak prevention, and cross-tenant no-leak semantics. | Re-run MOD-0230 RegPvBase/API FieldSecurity tests plus owner-specified 16-field masking/list/detail/create/update/export/audit checks. | Required |
-| MOD-0021 AuditEvent | TBD | TBD | TBD | Must approve safe event names, metadata allow-list, redaction rules, critical audit failure behavior, and no raw sensitive payload. | Re-run MOD-0230 AuditEvent evidence tests and owner-specified audit failure/redaction tests. | Required |
-| MOD-0023 WorkflowTransitionGate | TBD | TBD | TBD | Must approve triage/route transition policy, unavailable-workflow behavior, inbox/queue semantics, and mutation-before-transition denial. | Re-run MOD-0230 WorkflowTransitionGate evidence tests and owner-specified workflow/inbox transition tests. | Required |
-| MOD-0031 EvidenceLink | TBD | TBD | TBD | Must approve object reference shape, evidence-link availability behavior, evidence completeness, evidence-pack boundary, and degraded-mode policy if any. | Re-run MOD-0230 EvidenceLink evidence tests and owner-specified evidence-pack/link-query tests. | Required |
-| TraceBundle / Observability | TBD | TBD | TBD | Must approve correlation header, trace stitching, canonical/external ID behavior, regulated error model, and observability payload safety. | Re-run correlation/regulated-error tests and owner-specified trace/telemetry safety checks. | Required |
-| Retention / legal-hold | TBD | TBD | TBD | Required before archive or void can ever be introduced; must cover legal hold, retention reason, actor, UTC timestamp, correlation, and audit requirements. | Add and run owner-specified retention/legal-hold tests before any archive/void scope is opened. | Required |
-| Operational runtime authorization | TBD | TBD | TBD | Must explicitly authorize runtime mode, environment, deployment boundary, service startup, non-production adapter removal, and remaining restrictions. | Full PVG focused suite, Gateway route tests, UI syntax/static checks, startup guard checks, and any owner-mandated operational smoke tests. | Required |
+| MOD-0019 FieldSecurity | GQD + Data Protection + IT/CSV Owner after Record 1/2 route exists | GMG package Record 3; `GMG-CSV-STD-0001` section/annex TBD | Not approved | Design approval is pending signature; 16-field allow/mask/omit/deny matrix is deferred until IT supplies field definitions. | Re-run MOD-0230 RegPvBase/API FieldSecurity tests plus owner-specified 16-field masking/list/detail/create/update/export/audit checks. | Required / unsigned |
+| MOD-0021 AuditEvent | GQD + IT/CSV Owner after Record 1/2 route exists | GMG package Record 4; `GMG-CSV-STD-0001` section/annex TBD | Not approved | Specification approval is pending signature; operational use additionally requires GMG-CSV-SOP-0004 Audit Trail Review. | Re-run MOD-0230 AuditEvent evidence tests and owner-specified audit failure/redaction tests. | Required / unsigned |
+| MOD-0023 WorkflowTransitionGate | MOD-0230 Process Owner + GQD + IT/CSV Owner after Record 1/2 route exists | GMG package Record 5; `GMG-CSV-STD-0001` section/annex TBD | Not approved | Design approval is pending signature; MOD-0230 transitions, queues, and inbox semantics are deferred until IT supplies the process model. | Re-run MOD-0230 WorkflowTransitionGate evidence tests and owner-specified workflow/inbox transition tests. | Required / unsigned |
+| MOD-0031 EvidenceLink | GQD + MOD-0230 Process Owner after Record 1/2 route exists | GMG package Record 6; `GMG-CSV-STD-0001` section/annex TBD | Not approved | Design approval is pending signature; per-object-class completeness rules are deferred until IT supplies the object class list. | Re-run MOD-0230 EvidenceLink evidence tests and owner-specified evidence-pack/link-query tests. | Required / unsigned |
+| TraceBundle / Observability | System Owner + IT/CSV Owner + GQD inspection-facing review after Record 1/2 route exists | GMG package Record 7; `GMG-CSV-STD-0001` section/annex TBD | Not approved | Specification approval is pending signature; no instance-level live bundle generation is authorized. | Re-run correlation/regulated-error tests and owner-specified trace/telemetry safety checks. | Required / unsigned |
+| Retention / legal-hold | GQD + Legal + QPPV after Record 1/2 route exists | GMG package Record 8; `GMG-CSV-STD-0001` section TBD | Not approved | Policy framework approval is pending signature; retention class table is deferred until IT supplies object classes. | Add and run owner-specified retention/legal-hold tests before any archive/void scope is opened. | Required / unsigned |
+| RBAC / permission framework | System Owner + GQD + IT/CSV Owner after Record 1/2 route exists | GMG package Record 9; `GMG-CSV-STD-0001` annex TBD | Not approved | Framework approval is pending signature; actual grants, actor-role matrix, QPPV dependency, and permission key grammar remain deferred. | Reconcile runtime permission keys and run owner-specified access/segregation tests before any grants are seeded. | Required / unsigned |
+| Operational runtime authorization | IT/CSV Owner + both QPPVs + GQD | GMG package Record 10 / GMG-CSV-CHK-0001 | Not approved | Record 10 is intentionally open; every gate line must close before signature. | Full PVG focused suite, Gateway route tests, UI syntax/static checks, startup guard checks, and any owner-mandated operational smoke tests. | Required / open |
 
 ## 6. Required Owner Response Fields
 
@@ -171,6 +183,8 @@ PVG operational runtime can move from **0% / NO-GO** only after all of the follo
 - MOD-0019, MOD-0021, MOD-0023, and MOD-0031 owner approvals are supplied with artifact links and approved versions.
 - TraceBundle / Observability approval is supplied with artifact link and approved version.
 - Retention / legal-hold owner decision is supplied, even if archive/void remains excluded.
+- For GMG tenant go-live only: GMG package Records 1-9 are signed where applicable, the deferred
+  field/process/object/role inputs are supplied, and GMG Record 10 is signed for that tenant/runtime boundary.
 - Explicit operational runtime authorization is supplied for the target environment and boundary.
 - Required follow-up tests from every owner approval pass.
 - Non-production deny adapters and switches are removed or disabled according to the approved runtime packet.
