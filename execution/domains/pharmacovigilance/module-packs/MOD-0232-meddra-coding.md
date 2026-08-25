@@ -2,13 +2,15 @@
 id: MOD-0232
 name: MedDRA Coding
 domain: pharmacovigilance
-service: TBD
+service: Diten.PvgService
 shell: tenant
 golden_reference: slim
 entity_base: EntityBase
-status: draft
+status: ready-for-dev
+build_gate: open
+operational_runtime_gate: closed
 owner: TBD
-branch: feature/pvg/mod-0232-meddra-coding
+branch: feature/pvg/mod-0232-build-test-governance
 started: 2026-08-04
 target: TBD
 form_field_count: 7
@@ -16,23 +18,29 @@ form_field_count: 7
 
 # MOD-0232 - MedDRA Coding
 
-> Draft planning artifact only. This module pack does not authorize runtime work. DCP-004 remains `draft`;
-> production implementation stays blocked until DCP-004 is `approved` / `ready-for-execution`, this module pack
-> is `approved` / `ready-for-dev`, MOD-0231 Case Processing contracts are approved, CODESET and MedDRA source
-> governance are closed, and W-3A0 blockers are resolved or accepted through production-grade external contracts.
+> **Status change 2026-08-11.** DCP-004 is `approved` and this pack is `ready-for-dev` for the
+> **local/dev/CI build-test gate only**. The gate authorizes non-operational class-library contracts/tests under
+> `services/Diten.PvgService/**` for MOD-0232 MedDRA Coding only, after a separate work package. It does **not**
+> authorize operational runtime, API host, Program.cs, controllers, Gateway, frontend, appsettings, persistence,
+> Mongo, DbContext, repositories, collections, seeds, jobs, migrations, partner integration, AI, dictionary import,
+> dictionary redistribution, static MedDRA data, cache/search index, export, delete, or bulk-delete.
+>
+> **Operational runtime gate remains closed.** MOD-0231 source-term/lifecycle handoff, CODESET ownership/interface/
+> version validation, MedDRA source/license/version/import governance, W-3A0 production foundations, and downstream
+> MOD-0234 consumption contracts remain blockers for operational use.
 
 > DCP-002 gate (2026-08-04): `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0232 --name "MedDRA Coding"` -> `OK  MOD-0232: proven against Blueprint/registry.`
 
 ## Module Summary
 
 MOD-0232 MedDRA Coding is the canonical Pharmacovigilance terminology-coding module for assigning MedDRA-coded
-terms to case-processing source terms. Under DCP-004, this draft covers the urgent W-3C planning contract only:
-dictionary-version binding, coded-term assignment boundaries, coding audit trail, and diff/export semantics needed
-by downstream PVG signal work.
+terms to case-processing source terms. Under DCP-004, this build/test artifact covers the urgent W-3C
+non-operational contract boundary only: dictionary-version binding, coded-term assignment boundaries, coding audit
+trail, and diff/export semantics needed by downstream PVG signal work.
 
-This draft does not implement MedDRA runtime, import a dictionary, redistribute dictionary content, create a coding
-workbench, add static UI terms, scaffold a PVG service, create frontend pages, add gateway routes, seed
-permissions, or change runtime files.
+This build/test pack does not implement MedDRA runtime, import a dictionary, redistribute dictionary content,
+create a coding workbench, add static UI terms, create an API host, create frontend pages, add gateway routes,
+seed permissions, or change runtime files outside the approved non-operational class-library boundary.
 
 Blueprint / DCP-004 context:
 
@@ -49,7 +57,7 @@ Blueprint / DCP-004 context:
 
 ## Ownership and Boundaries
 
-In scope for this draft:
+In scope for this build/test artifact:
 
 - MedDRA Coding canonical boundary for PVG coded-term assignment planning.
 - Case-processing source term to MedDRA coded-term assignment contract.
@@ -57,9 +65,9 @@ In scope for this draft:
 - Dictionary-version binding rule for every coding assignment.
 - Coding audit trail, review workflow, evidence-link, and diff/export contract requirements.
 - W-3A0, MOD-0231, CODESET, masking, audit, workflow, evidence, and trace dependency map.
-- Future readiness questions and blockers before `ready-for-dev`.
+- Future readiness questions and blockers before operational runtime.
 
-Out of scope for this draft:
+Out of scope for this build/test artifact:
 
 - Production runtime implementation of MOD-0232.
 - MedDRA dictionary import, storage, search, browse, update, or redistribution implementation.
@@ -67,8 +75,9 @@ Out of scope for this draft:
 - Full case processing, owned by MOD-0231.
 - Signal hypothesis, review, and evaluation, owned by MOD-0234.
 - W-3A0 foundation remediation development.
-- Runtime service scaffold, frontend UI, gateway routes, database collections, seed data, jobs, tests, permission
-  seeds, module catalog/menu entries, or appsettings changes.
+- Runtime service scaffold, frontend UI, gateway routes, database collections, seed data, jobs, runtime/integration
+  tests outside the non-operational class-library boundary, permission seeds, module catalog/menu entries, or
+  appsettings changes.
 - AI coding recommendation, auto-coding, or medical coding decision support unless explicitly added by a later
   approved revision with governance controls.
 
@@ -88,12 +97,12 @@ Planned logical objects for MOD-0232, not runtime classes yet:
 | Coding Evidence Requirement | MOD-0232 defines evidence-link requirements; MOD-0031 owns link/query behavior | Planned only |
 | Coding Diff / Export Contract | MOD-0232 owns bounded diff/export semantics for downstream consumers | Planned only |
 
-Future runtime objects, repositories, commands, queries, DTOs, endpoints, frontend routes, and permissions are not
-authorized by this draft. They must be finalized after open decisions close.
+Future operational runtime objects, repositories, commands, queries, DTOs, endpoints, frontend routes, and
+permissions are not authorized by this build/test artifact. They must be finalized after open decisions close.
 
 ## Entity Fields
 
-Recorded draft-planning create/edit user-entered field count: `7`.
+Recorded build/test-planning create/edit user-entered field count: `7`.
 
 Golden Reference decision: `slim`, because the create/edit form has 8 or fewer user-entered fields. The future
 tenant UI may use Index-hosted create/edit offcanvas only after runtime gates and MedDRA display authority are
@@ -120,39 +129,51 @@ Server-resolved fields must not be user-entered or counted as form fields:
   and generated coding work item IDs.
 - MOD-0231 case/source-term context that is resolved from `sourceTermCandidateId`.
 
-No field is implementation-ready until validation, masking, row/field access, audit, evidence, workflow, CODESET,
-and MedDRA source/license/versioning rules are approved.
+No field is operational-runtime-ready until validation, masking, row/field access, audit, evidence, workflow,
+CODESET, and MedDRA source/license/versioning rules are approved.
 
 ## Repo Scope
 
-Authorized by this draft:
+Authorized by the build/test gate:
 
 - `execution/domains/pharmacovigilance/module-packs/MOD-0232-meddra-coding.md`
+- `services/Diten.PvgService/**` - non-operational MOD-0232 class-library contracts/tests only, after a separate
+  work package. No API host, Program.cs, controllers, appsettings, persistence, Mongo, collections, seeds, jobs,
+  migrations, dictionary import, dictionary redistribution, static MedDRA data, cache/search index, partner
+  integration, AI, export, delete, or bulk-delete.
 
-Future only, blocked until DCP-004 and this module pack pass approval gates:
+Future operational/runtime scope, still blocked until the operational runtime gate is approved:
 
-- PVG runtime service path - planned future dedicated `Diten.PvgService`; frontmatter `service` remains `TBD`
-  until explicit service scaffold approval.
+- PVG runtime service behavior under `Diten.PvgService`; frontmatter names the class-library build/test boundary
+  only and does not authorize an API host, port listener, appsettings, persistence, or runtime endpoint.
 - PVG frontend paths - planned tenant MVC surface under
   `frontend/Diten.Web/Views/Pharmacovigilance/MeddraCoding/**`.
-- PVG gateway route paths - future API remains Gateway-owned, TBD, and not authorized by this draft.
-- PVG tests - TBD after service/frontend boundaries are approved.
+- PVG gateway route paths - future API remains Gateway-owned, TBD, and not authorized by this build/test artifact.
+- PVG tests - allowed only for non-operational class-library build/test contracts in this gate.
 - MedDRA dictionary import/storage/search paths - TBD and additionally blocked by CODESET and source/license policy.
 
 ## Protected Paths
 
 - `.antigravity/**`.
-- `services/**` - no PVG runtime service scaffold is authorized by this draft.
-- `frontend/**` - no PVG UI is authorized by this draft.
-- `gateway/**` - no gateway route is authorized by this draft.
+- `services/**` except `services/Diten.PvgService/**` for MOD-0232 non-operational class-library contracts/tests.
+  Runtime service behavior, API host, Program.cs, controllers, appsettings, Mongo, DbContext, repositories,
+  collections, seeds, jobs, migrations, dictionary import, dictionary redistribution, static MedDRA data,
+  cache/search index, partner integration, AI, export, delete, and bulk-delete remain protected.
+- `frontend/**` - no PVG UI is authorized by this build/test artifact.
+- `gateway/**` - no gateway route is authorized by this build/test artifact.
 - `gateway/Diten.ApiGateway/**/ocelot.json` - integration-agent owned if a future route is approved.
 - `frontend/Diten.Web/Views/Shared/_Layout.cshtml`.
 - `frontend/Diten.Web/Controllers/Archive/**`.
 - `frontend/Diten.Web/Views/Archive/**`.
-- Runtime appsettings, seed files, tests, and service configuration files.
+- Runtime appsettings, seed files, runtime/integration tests outside the non-operational class-library boundary, and
+  service configuration files.
 - `execution/portfolio/delivery-capability-packs/DCP-004-pvg-urgent-w3-development-block.md` - status remains unchanged.
-- `execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md` - consumed as an upstream draft, not edited by this pack.
-- `execution/domains/pharmacovigilance/module-packs/MOD-0231-case-processing.md` - consumed as an upstream draft, not edited by this pack.
+- `execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md` - consumed as upstream
+  build/test-gated intake/handoff planning and non-operational scaffold evidence; operational handoff remains
+  blocked until owner-approved contracts. Not edited by this pack.
+- `execution/domains/pharmacovigilance/module-packs/MOD-0231-case-processing.md` - consumed as upstream
+  build/test-gated Signal Minimum Scope planning and non-operational scaffold evidence; operational source-term /
+  lifecycle handoff remains blocked until owner-approved contracts. Not edited by this pack.
 - Other domain module packs and runtime internals unless explicitly authorized by the user.
 
 ## Dependencies
@@ -161,8 +182,8 @@ W-3A0, MOD-0231, CODESET, and MedDRA source governance dependencies are blockers
 
 | Dependency | Owning module / source | Status for MOD-0232 |
 |---|---|---|
-| DCP-004 | PVG Urgent W-3 Development Block | BLOCKER - currently `draft`; execution not authorized |
-| MOD-0231 Case Processing | source term/case-processing contract and Signal Minimum Scope handoff | BLOCKER - must define approved source term and lifecycle contract |
+| DCP-004 | PVG Urgent W-3 Development Block | Approved; build/test gate open for MOD-0232 only by this pack; operational runtime remains closed |
+| MOD-0231 Case Processing | source term/case-processing contract and Signal Minimum Scope handoff | Build/test dependency; source-term/lifecycle handoff remains an operational blocker until owner-approved and testable |
 | CODESET | foundation dictionary/codeset authority | BLOCKER - dictionary version binding, validation, and code reference contract required |
 | MedDRA source/license/versioning/import policy | business/legal/governance decision | BLOCKER - source, license, allowed storage/use, import validation, release cadence, and redistribution policy are open |
 | REG-PV-BASE | DCP-004 minimum integration contract | BLOCKER |
@@ -180,7 +201,7 @@ MOD-0004 Metric & Semantic Registry and MOD-0063 Data Warehouse / Lakehouse are 
 blockers unless this module's approved scope emits signal analytics, semantic metric IDs, or data-product outputs.
 They remain downstream DCP-004 / MOD-0234-facing gates unless explicitly added to MOD-0232 scope.
 
-### Required Interface Contracts Before `ready-for-dev`
+### Required Interface Contracts Before Operational Runtime
 
 | Owner | Required contract for MOD-0232 | Required MOD-0232 decision | Status |
 |---|---|---|---|
@@ -206,17 +227,19 @@ They remain downstream DCP-004 / MOD-0234-facing gates unless explicitly added t
 
 ## Runtime Constraints
 
-- No runtime service scaffold is authorized.
-- No service port is reserved.
+- No operational runtime service scaffold or API host is authorized.
+- No additional MOD-0232 service port is reserved, and no `Diten.PvgService` port listener is authorized by this
+  pack.
 - No gateway route is authorized.
 - No database collection, index, migration, seed, import job, scheduler, cache, or search index is authorized.
 - No UI shell, DataTable page, coding workbench, dictionary browser, or static MedDRA data is authorized.
-- `Diten.PvgService` cannot be created until DCP-004 is `approved` / `ready-for-execution` and the active member
-  module pack is `approved` / `ready-for-dev`.
+- `Diten.PvgService` is authorized here only as the non-operational class-library boundary for MOD-0232 contracts
+  and tests. This does not authorize an API host, port listener, appsettings, persistence, or runtime endpoint.
 - Recommended future service boundary is a dedicated `Diten.PvgService`. The same future service boundary should
   host MOD-0230, MOD-0231, and MOD-0232 PVG runtime behavior if approved.
-- `service` remains `TBD` in frontmatter until explicit service scaffold approval. This draft does not reserve a
-  service port or create a service folder.
+- `service` is resolved as `Diten.PvgService` in frontmatter for non-operational build/test class-library work
+  only. This build/test artifact does not reserve a MOD-0232 service port or authorize an operational service
+  scaffold.
 - `entity_base: EntityBase` remains correct for Diten-owned tenant coding work items, coding assignments,
   append-only recoding/diff records, archive/void metadata if later approved, and audit/evidence/workflow-linked
   records under the future PVG boundary. Partner-native or dictionary-provider records remain outside the repo
@@ -258,17 +281,18 @@ source-term contract, CODESET, MedDRA governance, and W-3A0 production blockers 
 
 ## Backend File Convention
 
-`service: TBD`
+`service: Diten.PvgService`
 
-Recommended future boundary: dedicated `Diten.PvgService`.
+Non-operational build/test class-library boundary: dedicated `Diten.PvgService`.
 
 - Do not host MOD-0232 inside `Diten.Platform`, `Diten.AuthService`, `Diten.DevEnablementService`, or
   `Diten.EnterpriseStrategyService`.
 - If a buy/partner coding or dictionary-provider system is selected, `Diten.PvgService` should act as the controlled
   wrapper / orchestration layer for Diten tenant UI, source-term candidate contract, coding assignment, audit,
   evidence, workflow, correlation, MOD-0234 handoff, and adapter/source-governance semantics.
-- Internal build scope is limited to the MedDRA Coding assignment contract, tenant UI boundary, workflow/audit /
-  evidence integration, diff/export contract, and approved adapter layer after approval.
+- Internal build scope is limited to MedDRA Coding class-library contracts/tests. Tenant UI, workflow/audit/evidence
+  runtime integration, diff/export runtime, dictionary import/search/cache, and adapter behavior remain blocked
+  until separately approved.
 
 If a PVG runtime service is later approved, backend implementation must follow the Golden Reference CQRS shape:
 
@@ -296,13 +320,14 @@ Naming rules for future implementation:
 - Forbidden until CODESET and MedDRA governance approve it: dictionary import/search/cache commands, static
   dictionary fixtures, and source-code literals containing MedDRA terms.
 
-This section is a future convention statement, not implementation authorization.
+This section is a future convention statement, not operational implementation authorization.
 
 ## Frontend File Contract
 
 `golden_reference: slim`
 
-The recorded draft-planning create/edit field count is 7, so MOD-0232 MedDRA Coding follows Golden Reference Slim:
+The recorded build/test-planning create/edit field count is 7, so MOD-0232 MedDRA Coding follows Golden Reference
+Slim:
 
 - `Index.cshtml`.
 - `_CreateEditOffcanvas.cshtml`.
@@ -334,8 +359,8 @@ No frontend files may be created until runtime gates, masking matrix, and dictio
 
 ## Validation Rules
 
-MedDRA Coding fields are recorded for draft planning. Detailed validation, masking, workflow, evidence, dictionary,
-license, audit, and export behavior still must be resolved before `ready-for-dev`:
+MedDRA Coding fields are recorded for build/test planning. Detailed validation, masking, workflow, evidence,
+dictionary, license, audit, and export behavior still must be resolved before operational runtime:
 
 | Field | Required | Rule | DB-level | Pre-check | Sensitivity / fail-closed requirement |
 |---|---|---|---|---|---|
@@ -392,7 +417,7 @@ Recommended governance posture:
 
 ### Workflow States
 
-Recorded draft workflow states for MOD-0232 planning:
+Recorded build/test-planning workflow states for MOD-0232:
 
 ```text
 ReadyForCoding
@@ -487,15 +512,16 @@ Open authorization decisions:
 - Archive permission is unusable until retention/legal-hold policy is approved.
 - Export/diff is limited to masked / approved output unless a later approved field and license policy permits more.
 - Dictionary search/display, source-term detail, reviewer override, and recoding behavior must be finalized before
-  `ready-for-dev`.
+  operational runtime.
 - PHI/PII and licensed-dictionary field-level authorization must align with MOD-0019 and CODESET before runtime.
-- Permission seed/grant ownership must remain with MOD-0018 / AuthService; this draft authorizes no seed.
+- Permission seed/grant ownership must remain with MOD-0018 / AuthService; this build/test artifact authorizes no
+  seed.
 
-No permission seed is authorized by this draft.
+No permission seed is authorized by this build/test artifact.
 
 ## Gateway / API Routing Decision
 
-Decision: Future API remains Gateway-owned, but no Gateway route is authorized by this draft.
+Decision: Future API remains Gateway-owned, but no Gateway route is authorized by this build/test artifact.
 
 No DELETE or bulk-delete route may be introduced for MOD-0232. Any future Gateway/API route must be additive around
 read, create/update, assign-code, review, recode, export/diff, and archive only after the relevant approvals;
@@ -515,23 +541,24 @@ Direct service-port calls from frontend remain forbidden.
 
 ## Acceptance Criteria
 
-Acceptance criteria for this draft pack:
+Acceptance criteria for this build/test gate pack:
 
 - [x] Pack exists at `execution/domains/pharmacovigilance/module-packs/MOD-0232-meddra-coding.md`.
-- [x] Status is `draft`.
+- [x] Status is `ready-for-dev` for local/dev/CI build-test only.
+- [x] `build_gate: open`.
+- [x] `operational_runtime_gate: closed`.
 - [x] Canonical name is exactly `MedDRA Coding`.
 - [x] DCP-002 preflight passed for MOD-0232.
-- [x] DCP-004 remains `draft`; no execution is authorized.
+- [x] DCP-004 is `approved`; MOD-0232 execution is limited to non-operational class-library contracts/tests.
 - [x] W-3A0, MOD-0231, CODESET, and MedDRA source/license/versioning dependencies are recorded as production
       blockers, not waived.
 - [x] Audit, evidence, masking, workflow, correlation, and tenant isolation dependencies are recorded as blockers.
-- [x] No runtime implementation is authorized.
-- [x] Form field count recorded for draft planning as `7`.
-- [x] Golden Reference recorded for draft planning as `slim`.
-- [x] Shell recorded for draft planning as `tenant`.
-- [x] Entity base recorded for draft planning as `EntityBase`.
-- [x] Future service boundary recorded as dedicated `Diten.PvgService`; frontmatter `service` remains `TBD` until
-      explicit scaffold approval.
+- [x] No operational runtime implementation is authorized.
+- [x] Form field count recorded for build/test planning as `7`.
+- [x] Golden Reference recorded for build/test planning as `slim`.
+- [x] Shell recorded for build/test planning as `tenant`.
+- [x] Entity base recorded for build/test planning as `EntityBase`.
+- [x] Service boundary recorded as `Diten.PvgService` for non-operational build/test class-library contracts/tests only.
 - [x] MOD-0231 fields consumed by MOD-0232 are recorded.
 - [x] MedDRA source/license/version/import governance recommendations are recorded.
 - [x] Workflow states and MOD-0234 `Approved` consumption gate are recorded.
@@ -539,28 +566,31 @@ Acceptance criteria for this draft pack:
 - [x] Delete and bulk-delete are explicitly excluded.
 - [x] Archive remains blocked until retention/legal-hold approval.
 
-Acceptance criteria before any future implementation can start:
+Acceptance criteria before operational runtime can start:
 
-- [ ] DCP-004 is `approved` / `ready-for-execution`.
-- [ ] This module pack is `approved` / `ready-for-dev`.
+- [x] DCP-004 is `approved` / `ready-for-execution` for sequencing.
+- [x] This module pack is `ready-for-dev` for the build/test gate only.
 - [ ] MOD-0231 Case Processing source-term/case-processing contract is approved and compatible with this pack.
 - [ ] CODESET contract is approved for dictionary identity, version binding, validation, and code-reference shape.
 - [ ] MedDRA source, license, versioning, import validation, update cadence, storage, display, export, cache, and
       redistribution policy are approved.
-- [ ] `service` is resolved through explicit service scaffold approval; frontmatter currently remains `TBD`.
+- [x] `service` is resolved as `Diten.PvgService` for non-operational class-library contracts/tests only.
 - [ ] W-3A0 REG-PV-BASE, CASE-LIFECYCLE, and CODESET dependencies are closed or explicitly satisfied by
       production-grade external contracts.
 - [ ] Required interface contracts are concrete for MOD-0018, MOD-0019, MOD-0021, MOD-0023, MOD-0031, Blueprint
       MOD-0040 / TRACE-BUNDLE, MOD-0231, CODESET, MedDRA source governance, and MOD-0234.
 - [ ] Detailed validation rules, masking behavior, row/field access behavior, audit payload rules, evidence-link
       rules, workflow transition rules, Gateway routing, dictionary display/search/export behavior, and tests are
-      fully specified from the recorded draft-planning field model.
+      fully specified from the recorded build/test-planning field model.
 - [ ] Delete/retention/legal-hold behavior is decided.
 - [ ] Build/buy/partner integration boundary for MedDRA dictionary sourcing and coding tooling is finalized.
 
 ## Test Expectations
 
-No runtime tests are expected for this draft because no runtime files are authorized.
+Only non-operational class-library build/tests under `services/Diten.PvgService/**` are expected for this gate.
+No runtime, API, persistence, Gateway, frontend, dictionary import, dictionary redistribution, static MedDRA data,
+cache/search index, seed, job, collection, migration, partner integration, AI, export, delete, or bulk-delete test
+surface is authorized.
 
 Future implementation test expectations must include:
 
@@ -582,8 +612,8 @@ Future implementation test expectations must include:
 
 ## Ready-for-dev Checklist
 
-- [ ] DCP-004 status changed outside this pack to `approved` / `ready-for-execution`.
-- [ ] MOD-0232 status changed outside this draft to `approved` / `ready-for-dev`.
+- [x] DCP-004 status is `approved` / `ready-for-execution` for sequencing.
+- [x] MOD-0232 status is `ready-for-dev` for the build/test gate only.
 - [ ] MOD-0231 Case Processing source-term and lifecycle contract approved.
 - [ ] CODESET owner, interface, dictionary-version model, validation behavior, and unavailable-code behavior approved.
 - [ ] MedDRA source/license/versioning/import policy approved, including allowed storage, search, display, export,
@@ -597,16 +627,16 @@ Future implementation test expectations must include:
 - [ ] MOD-0031 evidence-link object reference shape and evidence completeness behavior approved.
 - [ ] Blueprint MOD-0040 / TRACE-BUNDLE ID, correlation header, trace stitching, and regulated error model approved.
 - [ ] MOD-0234 downstream coded-term handoff and diff/export consumer contract approved.
-- [ ] `service` resolved through explicit service scaffold approval.
-- [x] Future service/deployment boundary recorded as dedicated `Diten.PvgService`; scaffold approval still required
-      before frontmatter `service` changes.
-- [x] `shell` recorded for draft planning as `tenant`.
+- [x] `service` resolved as `Diten.PvgService` for non-operational build/test class-library work only.
+- [x] Future service/deployment boundary recorded as dedicated `Diten.PvgService`; operational runtime approval still
+      required before API host, port listener, appsettings, persistence, Gateway, frontend, or runtime endpoint.
+- [x] `shell` recorded for build/test planning as `tenant`.
 - [x] Route surface recorded as `/Pharmacovigilance/MeddraCoding` with
       `frontend/Diten.Web/Views/Pharmacovigilance/MeddraCoding/**`.
-- [x] `entity_base` recorded for draft planning as `EntityBase`.
-- [x] `form_field_count` recorded for draft planning as `7`.
-- [x] `golden_reference` recorded for draft planning as `slim`.
-- [x] Create/edit fields and required/optional classification recorded for draft planning.
+- [x] `entity_base` recorded for build/test planning as `EntityBase`.
+- [x] `form_field_count` recorded for build/test planning as `7`.
+- [x] `golden_reference` recorded for build/test planning as `slim`.
+- [x] Create/edit fields and required/optional classification recorded for build/test planning.
 - [ ] Detailed validation rules and field-level tests approved.
 - [ ] Delete/retention/legal-hold policy approved.
 - [ ] Build/buy/partner boundary for dictionary source and coding tools finalized.
@@ -614,11 +644,12 @@ Future implementation test expectations must include:
 ## Implementation Notes
 
 - Use canonical name exactly: `MedDRA Coding`.
-- Treat DCP-004 W-3C as delivery planning context only; it does not authorize runtime work.
+- Treat DCP-004 W-3C as delivery planning context only; it authorizes build/test class-library contracts/tests but
+  does not authorize operational runtime work.
 - Frontmatter decisions recorded for draft planning 2026-08-04: `shell: tenant`, `entity_base: EntityBase`,
-  `form_field_count: 7`, and `golden_reference: slim`. `service` remains TBD.
-- Service boundary reconciled 2026-08-04: future boundary is dedicated `Diten.PvgService`. Frontmatter `service`
-  remains TBD until explicit service scaffold approval.
+  `form_field_count: 7`, and `golden_reference: slim`.
+- Frontmatter service decision reconciled 2026-08-11: `service: Diten.PvgService` for non-operational build/test
+  class-library contracts/tests only. Operational runtime remains closed.
 - Route/UI profile reconciled 2026-08-04: future tenant MVC route is `/Pharmacovigilance/MeddraCoding`, view root
   is `frontend/Diten.Web/Views/Pharmacovigilance/MeddraCoding/**`, layout is `_LayoutTenantShell`, and frontend
   profile is same-origin MVC proxy. Future API remains Gateway-owned and not authorized now.
@@ -634,14 +665,16 @@ Future implementation test expectations must include:
 - Treat MOD-0231 as the required upstream source of case-processing source terms. MOD-0232 must not duplicate the
   case master or invent source-term shape before MOD-0231 approves it.
 - Treat CODESET and MedDRA source/license/versioning as hard blockers. No local static data, seed, fixture, or UI
-  term list is authorized by this draft.
+  term list is authorized by this build/test artifact.
 - Use Blueprint MOD-0040 / TRACE-BUNDLE for canonical ID, correlation header, trace stitching, and regulated error
   behavior if runtime is later approved.
 - Use MOD-0004 and MOD-0063 only as downstream gates unless MOD-0232 explicitly emits analytics, semantic metric
   IDs, or data-product outputs in a later approved revision.
 - Keep dictionary assignments append-only and version-bound. Recoding must be represented as an auditable diff, not
   as silent overwrite.
-- No service, frontend, gateway, runtime, appsettings, seed, or test file is in scope for this draft.
+- No API host, frontend, gateway, operational runtime, appsettings, seed, collection, migration, job, dictionary
+  import, dictionary redistribution, static MedDRA data, cache/search index, partner integration, AI, export,
+  delete, or bulk-delete file is in scope for this build/test gate.
 
 ## Follow-up Items
 
@@ -650,12 +683,12 @@ Future implementation test expectations must include:
   fields recorded here.
 - Approve concrete MOD-0234 consumption contract for `Approved` coded output, or explicitly approve any degraded
   consumption contract later.
-- Obtain explicit approval before changing frontmatter `service` from TBD or creating `Diten.PvgService`.
+- Obtain explicit approval before creating operational runtime behavior under `Diten.PvgService`.
 - Define same-origin MVC proxy endpoints after frontend implementation is approved.
 - Finalize MedDRA source/provider, license, allowed usage, import validation, versioning, release cadence, and
   redistribution policy.
 - Resolve detailed validation, masking, audit payload, evidence-link, workflow transition, dictionary display/search,
-  export, and fail-closed tests for the recorded draft-planning 7-field model.
+  export, and fail-closed tests for the recorded build/test-planning 7-field model.
 - Finalize actor roles and permission matrix with MOD-0018 / AuthService seed/grant ownership.
 - Resolve retention/legal-hold policy before any archive/void operation is introduced.
 - Finalize build/buy/partner boundary for MedDRA dictionary sourcing, coding tools, search, and optional assisted

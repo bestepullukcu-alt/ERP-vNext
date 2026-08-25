@@ -1,0 +1,152 @@
+@using Diten.Web.Views.Pharmacovigilance.CaseIntakeTriage
+@using Microsoft.AspNetCore.Mvc.Localization
+@model object?
+@inject IHtmlLocalizer<CaseIntakeTriageIndex> Localizer
+@{
+    var mode = (ViewData["FormMode"] as string) ?? "create";
+    var isEdit = string.Equals(mode, "edit", StringComparison.OrdinalIgnoreCase);
+    var intakeDraftId = ViewData["IntakeDraftId"] as string;
+    var title = isEdit ? Localizer["EditTitle"] : Localizer["CreateTitle"];
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h5 class="mb-1">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-style1 mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/Pharmacovigilance/CaseIntakeTriage">@Localizer["PageTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="/Pharmacovigilance/CaseIntakeTriage" class="btn btn-label-secondary">
+            <i class="icon-base bx bx-x me-1"></i>@Localizer["BackToList"]
+        </a>
+        <button type="submit" form="pvg-case-intake-form" class="btn btn-primary">
+            <i class="icon-base bx bx-save me-1"></i>@(isEdit ? Localizer["UpdateDraft"] : Localizer["SaveDraft"])
+        </button>
+    </div>
+</div>
+
+<div id="pvg-form-alert" class="alert alert-danger d-none" role="alert"></div>
+
+<form id="pvg-case-intake-form" class="needs-validation" novalidate data-mode="@mode" data-intake-draft-id="@intakeDraftId">
+    @Html.AntiForgeryToken()
+    <div class="row g-4">
+        <div class="col-12 col-xl-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["SourceSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="IntakeChannel">@Localizer["IntakeChannel"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="IntakeChannel" name="IntakeChannel" required>
+                                <option value="">@Localizer["SelectPlaceholder"]</option>
+                                <option value="Portal">@Localizer["ChannelPortal"]</option>
+                                <option value="Email">@Localizer["ChannelEmail"]</option>
+                                <option value="Phone">@Localizer["ChannelPhone"]</option>
+                                <option value="Partner">@Localizer["ChannelPartner"]</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="SourceType">@Localizer["SourceType"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="SourceType" name="SourceType" required>
+                                <option value="">@Localizer["SelectPlaceholder"]</option>
+                                <option value="Spontaneous">@Localizer["SourceSpontaneous"]</option>
+                                <option value="Literature">@Localizer["SourceLiterature"]</option>
+                                <option value="Study">@Localizer["SourceStudy"]</option>
+                                <option value="Partner">@Localizer["SourcePartner"]</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="SourceReference">@Localizer["SourceReference"] <span class="text-danger">*</span></label>
+                            <input class="form-control" id="SourceReference" name="SourceReference" maxlength="128" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="ReceivedAtUtc">@Localizer["ReceivedAtUtc"] <span class="text-danger">*</span></label>
+                            <input class="form-control" id="ReceivedAtUtc" name="ReceivedAtUtc" type="datetime-local" required />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["SubjectEventSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="ReporterType">@Localizer["ReporterType"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="ReporterType" name="ReporterType" required>
+                                <option value="">@Localizer["SelectPlaceholder"]</option>
+                                <option value="Consumer">@Localizer["ReporterConsumer"]</option>
+                                <option value="HealthcareProfessional">@Localizer["ReporterHealthcareProfessional"]</option>
+                                <option value="Regulator">@Localizer["ReporterRegulator"]</option>
+                                <option value="Partner">@Localizer["ReporterPartner"]</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="PatientSubjectCode">@Localizer["PatientSubjectCode"] <span class="text-danger">*</span></label>
+                            <input class="form-control" id="PatientSubjectCode" name="PatientSubjectCode" maxlength="128" required />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="ReporterContactSummary">@Localizer["ReporterContactSummary"]</label>
+                            <textarea class="form-control" id="ReporterContactSummary" name="ReporterContactSummary" rows="3" maxlength="1000"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="EventOnsetDate">@Localizer["EventOnsetDate"]</label>
+                            <input class="form-control" id="EventOnsetDate" name="EventOnsetDate" type="date" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="AdverseEventNarrative">@Localizer["AdverseEventNarrative"] <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="AdverseEventNarrative" name="AdverseEventNarrative" rows="4" maxlength="4000" required></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["WorkflowSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="SuspectProductText">@Localizer["SuspectProductText"] <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="SuspectProductText" name="SuspectProductText" rows="3" maxlength="1000" required></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="Seriousness">@Localizer["Seriousness"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="Seriousness" name="Seriousness" required>
+                                <option value="">@Localizer["SelectPlaceholder"]</option>
+                                <option value="NonSerious">@Localizer["SeriousnessNonSerious"]</option>
+                                <option value="Serious">@Localizer["SeriousnessSerious"]</option>
+                                <option value="Unknown">@Localizer["SeriousnessUnknown"]</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="IntakePriority">@Localizer["IntakePriority"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="IntakePriority" name="IntakePriority" required>
+                                <option value="">@Localizer["SelectPlaceholder"]</option>
+                                <option value="Routine">@Localizer["PriorityRoutine"]</option>
+                                <option value="Expedited">@Localizer["PriorityExpedited"]</option>
+                                <option value="Critical">@Localizer["PriorityCritical"]</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["EvidenceSection"]</h6>
+                    <label class="form-label" for="EvidenceLinkReferencesRaw">@Localizer["EvidenceLinkReferences"]</label>
+                    <textarea class="form-control" id="EvidenceLinkReferencesRaw" name="EvidenceLinkReferencesRaw" rows="4" maxlength="2000"></textarea>
+                    <div class="form-text">@Localizer["EvidenceHelp"]</div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

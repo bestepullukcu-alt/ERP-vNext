@@ -1,0 +1,41 @@
+@using Diten.Web.Views.Pharmacovigilance.CaseIntakeTriage
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CaseIntakeTriageIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="pvg-case-intake-triage-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Actions = Localizer["Actions"].Value,
+        Apply = Localizer["Apply"].Value,
+        Blocked = Localizer["Blocked"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        ControlledBlock = Localizer["ControlledBlock"].Value,
+        Forbidden = Localizer["Forbidden"].Value,
+        Details = Localizer["Details"].Value,
+        Edit = Localizer["Edit"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        InvalidProxyEndpoint = Localizer["InvalidProxyEndpoint"].Value,
+        Loading = Localizer["Loading"].Value,
+        NotAuthorized = Localizer["NotAuthorized"].Value,
+        NoRecords = Localizer["NoRecords"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        QuickView = Localizer["Details"].Value,
+        ReasonCode = Localizer["ReasonCode"].Value,
+        Reset = Localizer["Reset"].Value,
+        Routed = Localizer["Routed"].Value,
+        Saved = Localizer["Saved"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        SessionExpired = Localizer["SessionExpired"].Value,
+        ShowAll = Localizer["ShowAll"].Value,
+        Status = Localizer["Status"].Value,
+        Triaged = Localizer["Triaged"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Updated = Localizer["Updated"].Value,
+        ViewDetails = Localizer["Details"].Value
+    })
+</script>

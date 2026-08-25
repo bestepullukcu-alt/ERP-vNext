@@ -2,13 +2,15 @@
 id: MOD-0231
 name: Case Processing
 domain: pharmacovigilance
-service: TBD
+service: Diten.PvgService
 shell: tenant
 golden_reference: compact
 entity_base: EntityBase
-status: draft
+status: ready-for-dev
+build_gate: open
+operational_runtime_gate: closed
 owner: TBD
-branch: feature/pvg/mod-0231-case-processing
+branch: feature/pvg/mod-0231-build-test-governance
 started: 2026-08-04
 target: TBD
 form_field_count: 16
@@ -16,24 +18,26 @@ form_field_count: 16
 
 # MOD-0231 - Case Processing
 
-> Draft planning artifact only. This module pack does not authorize runtime work. DCP-004 remains `draft`;
-> production implementation stays blocked until DCP-004 is `approved` / `ready-for-execution`, this module pack
-> is `approved` / `ready-for-dev`, MOD-0230 dependencies are contract-closed, and W-3A0 blockers are resolved or
-> accepted through production-grade external contracts.
+> **Status change 2026-08-10.** DCP-004 is `approved` and this pack is `ready-for-dev` for the
+> **local/dev/CI build/test gate only**. This authorizes future non-operational class-library contracts and tests
+> under `services/Diten.PvgService/**` for MOD-0231 Signal Minimum Scope only, after a separate work package.
+> Operational runtime remains closed: no API host, Gateway route, frontend, appsettings, Mongo, collections,
+> seeds, jobs, migrations, partner integration, AI, archive/void/export/delete/bulk-delete, production use,
+> supplier qualification, or validation is authorized.
 
 > DCP-002 gate (2026-08-04): `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0231 --name "Case Processing"` -> `OK  MOD-0231: proven against Blueprint/registry.`
 
 ## Module Summary
 
-MOD-0231 Case Processing is the canonical Pharmacovigilance case-processing module. Under DCP-004, this draft
-covers only the urgent W-3B delivery slice named **Signal Minimum Scope**. "Signal Minimum Scope" is a delivery
+MOD-0231 Case Processing is the canonical Pharmacovigilance case-processing module. Under DCP-004, this build/test
+pack covers only the urgent W-3B delivery slice named **Signal Minimum Scope**. "Signal Minimum Scope" is a delivery
 slice / MVP scope label only; it is not the canonical module name and must not replace `Case Processing` in
 frontmatter, registry references, routes, permissions, or runtime literals.
 
 The Signal Minimum Scope exists to define the minimum Safety Case master-record, lifecycle, trace, and assessment
 contract that downstream MOD-0234 Signal Management can consume without authoring the full W-4 Case Processing
-module. This draft does not implement case processing runtime, service scaffold, frontend, gateway, database,
-seed, workflow, evidence, audit, masking, or analytics behavior.
+module. This pack does not implement operational case-processing runtime, API host, frontend, gateway, database,
+seed, workflow engine, evidence store, audit store, masking engine, or analytics behavior.
 
 Blueprint / DCP-004 context:
 
@@ -50,7 +54,7 @@ Blueprint / DCP-004 context:
 
 ## Ownership and Boundaries
 
-In scope for this draft:
+In scope for this build/test gate:
 
 - Case Processing canonical boundary for the Signal Minimum Scope only.
 - Safety Case master-record contract needed after MOD-0230 intake and before MOD-0234 signal review.
@@ -58,18 +62,20 @@ In scope for this draft:
 - Minimum assessment fields needed for signal handoff, without full case processing workbench behavior.
 - W-3A0, MOD-0230, workflow, evidence, audit, masking, correlation, and regulated error-model dependency map.
 - Future module-pack readiness questions and blockers.
+- Future non-operational class-library contracts and tests under `services/Diten.PvgService/**`, only after a
+  separate MOD-0231 scaffold work package and only for Signal Minimum Scope.
 
-Out of scope for this draft:
+Out of scope for this build/test gate:
 
-- Production runtime implementation of MOD-0231.
+- Operational runtime implementation of MOD-0231.
 - Full W-4 Case Processing.
 - Case narrative authoring workbench, full medical review, full causality model, full regulatory assessment,
   submission/reporting, quality workflow, or PV operations beyond Signal Minimum Scope.
 - MedDRA coding implementation and dictionary/version binding, owned by MOD-0232.
 - Signal hypothesis, evaluation, and review decision ownership, owned by MOD-0234.
 - W-3A0 foundation remediation development.
-- Runtime service scaffold, frontend UI, gateway routes, database collections, seed data, migrations, jobs,
-  tests, permission seeds, or module catalog/menu entries.
+- API host, frontend UI, gateway routes, appsettings, database collections, persistence, seed data, migrations,
+  jobs, permission seeds, module catalog/menu entries, or runtime endpoints.
 - AI extraction, summarization, recommendation, or routing implementation.
 
 ## Owned Objects
@@ -86,12 +92,13 @@ Planned logical objects for the Signal Minimum Scope, not runtime classes yet:
 | Evidence Pack Requirement | MOD-0231 defines case-processing evidence requirements; MOD-0031 owns evidence links | Planned only |
 | Signal Handoff Summary | MOD-0231 produces bounded output for MOD-0234; MOD-0234 owns signal hypothesis/evaluation | Planned only |
 
-Future runtime objects, repositories, commands, queries, DTOs, endpoints, frontend routes, and permissions are not
-authorized by this draft. They must be finalized after open decisions close.
+Operational runtime objects, repositories, endpoints, frontend routes, and permissions are not authorized by this
+build/test gate. Non-operational command/query contracts, domain models, validators, fail-closed ports, and tests
+may be added only under a separate MOD-0231 scaffold work package.
 
 ## Entity Fields
 
-Create/edit user-entered field count recorded for draft planning for the Signal Minimum Scope: `16`.
+Create/edit user-entered field count recorded for build/test planning for the Signal Minimum Scope: `16`.
 
 Golden Reference decision: `compact`, because the create/edit form has more than 8 user-entered fields and the
 case-processing review surface needs separate Create/Edit/Details pages.
@@ -119,36 +126,45 @@ status timestamps, and MOD-0234 downstream signal identifiers.
 | SignalHandoffSummary | No | PHI | Yes | Bounded handoff text only; no analytics/data-product output unless separately approved. |
 | ProcessingNotesInternal | No | confidential | Yes | Internal notes are not exportable unless masked/export policy later permits it. |
 
-Every field included in create/edit/list/detail/export surfaces must later receive masking behavior, row/field
-access rule, audit payload rule, evidence-link rule, workflow rule, and fail-closed tests before `ready-for-dev`.
+Every field included in future create/edit/list/detail/export surfaces must later receive masking behavior,
+row/field access rule, audit payload rule, evidence-link rule, workflow rule, and fail-closed tests before any
+operational runtime or exposed surface.
 
 ## Repo Scope
 
-Authorized by this draft:
+Authorized by this build/test gate:
 
 - `execution/domains/pharmacovigilance/module-packs/MOD-0231-case-processing.md`
+- Future non-operational class-library contracts and tests under `services/Diten.PvgService/**` for MOD-0231
+  Signal Minimum Scope only, after a separate work package. This may define contracts, domain models, validators,
+  fail-closed ports, and tests; it must not create an API host, runtime listener, persistence adapter, repository
+  implementation, database collection, appsettings, Gateway route, frontend file, seed, job, partner integration,
+  AI behavior, archive/void/export/delete/bulk-delete surface, or operational endpoint.
 
-Future only, blocked until DCP-004 and this module pack pass approval gates:
+Still blocked until separate approval:
 
-- PVG runtime service path - planned future dedicated `Diten.PvgService`; frontmatter `service` remains `TBD`
-  until explicit service scaffold approval.
+- Operational PVG runtime service behavior - `Diten.PvgService` is named in frontmatter only for local
+  non-operational build/test class-library work.
 - PVG frontend paths - planned tenant MVC surface under
   `frontend/Diten.Web/Views/Pharmacovigilance/CaseProcessing/**`.
 - PVG gateway route paths - TBD and integration-agent-owned.
-- PVG tests - TBD after service/frontend boundaries are approved.
+- Operational PVG tests - TBD after operational service/frontend boundaries are approved. Non-operational
+  class-library tests may be added only under a separate MOD-0231 scaffold work package.
 
 ## Protected Paths
 
 - `.antigravity/**`.
-- `services/**` - no PVG runtime service scaffold is authorized by this draft.
-- `frontend/**` - no PVG UI is authorized by this draft.
-- `gateway/**` - no gateway route is authorized by this draft.
+- `services/**` except future separately assigned non-operational class-library contracts/tests under
+  `services/Diten.PvgService/**` for MOD-0231 Signal Minimum Scope.
+- `frontend/**` - no PVG UI is authorized by this build/test gate.
+- `gateway/**` - no gateway route is authorized by this build/test gate.
 - `gateway/Diten.ApiGateway/**/ocelot.json` - integration-agent owned if a future route is approved.
 - `frontend/Diten.Web/Views/Shared/_Layout.cshtml`.
 - `frontend/Diten.Web/Controllers/Archive/**`.
 - `frontend/Diten.Web/Views/Archive/**`.
 - `execution/portfolio/delivery-capability-packs/DCP-004-pvg-urgent-w3-development-block.md` - status remains unchanged.
-- `execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md` - consumed as an upstream draft, not edited by this pack.
+- `execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md` - consumed as an upstream
+  build/test dependency, not edited by this pack.
 - Other domain module packs and runtime internals unless explicitly authorized by the user.
 
 ## Dependencies
@@ -157,17 +173,17 @@ W-3A0 and upstream MOD-0230 dependencies are blockers, not waived:
 
 | Dependency | Owning module / source | Status for MOD-0231 Signal Minimum Scope |
 |---|---|---|
-| DCP-004 | PVG Urgent W-3 Development Block | BLOCKER - currently `draft`; execution not authorized |
-| MOD-0230 Case Intake & Triage | Intake baseline, triage/routing boundary, evidence-pack contract | BLOCKER - MOD-0230 remains draft and must define approved handoff contract |
-| REG-PV-BASE | DCP-004 minimum integration contract | BLOCKER |
-| CASE-LIFECYCLE | W-3A0 foundation dependency | BLOCKER |
-| SSO + RBAC/ABAC | MOD-0018 RBAC / permissions plus Platform/Auth foundations | BLOCKER |
-| PHI/PII masking hooks | MOD-0019 Data Masking & Row/Field Security | BLOCKER |
-| AuditEvent v1 | MOD-0021 Audit Trail Service | BLOCKER |
-| Workflow/Inbox v1 | MOD-0023 Workflow Designer | BLOCKER |
-| Evidence-Link | MOD-0031 Evidence Linking Service | BLOCKER |
-| TRACE-BUNDLE: canonical ID, Correlation-ID, trace stitching, regulated error model | Blueprint MOD-0040 / platform trace standards | BLOCKER |
-| OTel / operational telemetry | Platform observability foundations | BLOCKER |
+| DCP-004 | PVG Urgent W-3 Development Block | SATISFIED for build/test - `approved`; operational runtime still closed |
+| MOD-0230 Case Intake & Triage | Intake baseline, triage/routing boundary, evidence-pack contract | REQUIRED - build/test may define an unavailable/fail-closed handoff port only; owner-approved operational handoff remains BLOCKER |
+| REG-PV-BASE | DCP-004 minimum integration contract | BUILD/TEST ONLY through fail-closed contracts; operational runtime BLOCKER |
+| CASE-LIFECYCLE | W-3A0 foundation dependency | BUILD/TEST ONLY through local lifecycle contract/tests; operational runtime BLOCKER |
+| SSO + RBAC/ABAC | MOD-0018 RBAC / permissions plus Platform/Auth foundations | REQUIRED; missing permission/actor/tenant context must fail closed |
+| PHI/PII masking hooks | MOD-0019 Data Masking & Row/Field Security | REQUIRED; unavailable policy must deny/omit/mask with no permissive fallback |
+| AuditEvent v1 | MOD-0021 Audit Trail Service | REQUIRED; build/test may create metadata-only audit intent only, not append/persist |
+| Workflow/Inbox v1 | MOD-0023 Workflow Designer | REQUIRED; unavailable transition gate must block mutation |
+| Evidence-Link | MOD-0031 Evidence Linking Service | REQUIRED; unavailable evidence link must block processing/handoff or remain pending only by approved contract |
+| TRACE-BUNDLE: canonical ID, Correlation-ID, trace stitching, regulated error model | Blueprint MOD-0040 / platform trace standards | REQUIRED; missing/invalid correlation must fail closed before mutation |
+| OTel / operational telemetry | Platform observability foundations | REQUIRED for safe error/telemetry shape; no operational telemetry sink authorized |
 | MOD-0232 MedDRA Coding | Coding contract and dictionary-version binding | Downstream / parallel gate; not implemented here |
 | MOD-0234 Signal Management | Signal MVP consumer | Downstream consumer; requires this slice contract |
 
@@ -175,11 +191,11 @@ MOD-0004 Metric & Semantic Registry and MOD-0063 Data Warehouse / Lakehouse are 
 blockers unless this module's approved scope emits signal analytics, semantic metric IDs, or data-product outputs.
 They remain downstream DCP-004 / MOD-0234-facing gates unless explicitly added to MOD-0231 scope.
 
-### Required Interface Contracts Before `ready-for-dev`
+### Required Interface Contracts for Build/Test and Operational Runtime
 
 | Owner | Required contract for MOD-0231 | Required MOD-0231 decision | Status |
 |---|---|---|---|
-| MOD-0230 | intake handoff object reference, triage/routing outcome, evidence boundary, safe metadata | exact fields consumed from MOD-0230 and fail-closed behavior when intake contract is unavailable | OPEN / BLOCKER |
+| MOD-0230 | intake handoff object reference, triage/routing outcome, evidence boundary, safe metadata | exact fields consumed from MOD-0230 and fail-closed behavior when intake contract is unavailable | BUILD/TEST MAY DEFINE FAIL-CLOSED PORT; operational handoff remains BLOCKER |
 | MOD-0018 RBAC / permissions | canonical permission keys, seed/grant ownership, actor context, tenant authorization context, optional data-scope shape | actor roles and permission matrix for read/create/update/process/assess/handoff/archive/export or explicit de-scope | OPEN / BLOCKER |
 | MOD-0019 masking / row-field security | field sensitivity vocabulary, masking/omit/deny behavior, row-scope and field-scope evaluation, unavailable-policy behavior | per-field sensitivity matrix and fail-closed behavior for list/detail/create/update/export/audit | OPEN / BLOCKER |
 | MOD-0021 AuditEvent v1 | append/event shape, safe metadata envelope, redaction rules, critical audit failure policy, correlation propagation | audited operations, payload allow-list, and behavior when audit append/outbox is unavailable | OPEN / BLOCKER |
@@ -190,32 +206,53 @@ They remain downstream DCP-004 / MOD-0234-facing gates unless explicitly added t
 
 ### MOD-0230 Handoff Fields Consumed by MOD-0231
 
-MOD-0231 consumes the approved MOD-0230 handoff contract as an upstream reference. It must not re-own intake
-records, intake artifacts, triage state, or routing decisions.
+MOD-0231 consumes MOD-0230 handoff evidence as an upstream reference. It must not re-own intake records, intake
+artifacts, triage state, or routing decisions.
+
+Current implemented build/test evidence is **`MOD0230HandoffReference v0.1`**. This v0.1 shape is not the future
+owner-approved operational handoff contract. It exists only to support local/dev/CI build-test handoff and downstream
+fail-closed proof.
+
+| `MOD0230HandoffReference v0.1` field | MOD-0231 build/test use | Operational status |
+|---|---|---|
+| `IntakeDraftId` | Upstream intake draft reference | Build/test evidence only; v1 approval required for runtime |
+| `IntakeNumber` | Trace/display reference | Build/test evidence only; canonical identity remains server-owned |
+| `ReceivedAtUtc` | Lifecycle baseline context | Build/test evidence only; workflow/SLA policy still blocked |
+| `TriageOutcomeCode` | Triage outcome reference | Build/test evidence only; MOD-0023 transition/routing approval still blocked |
+| `RouteTargetQueueCode` | Initial queue reference | Build/test evidence only; MOD-0023 queue/assignment authority still blocked |
+| `EvidenceLinkReferenceIds` | Evidence reference IDs | Build/test evidence only; MOD-0031 completeness and evidence-pack approval still blocked |
+
+`TenantId` and correlation / trace context are external server context. They must be resolved by the server-side
+tenant and TRACE-BUNDLE / Blueprint MOD-0040 infrastructure and must not be supplied as authoritative fields in a
+client handoff payload.
+
+The table below remains the planned **v1 operational handoff** consumption list. Fields that are not present in
+`MOD0230HandoffReference v0.1` are not produced by BE-01 or BE-02 and must continue to block operational MOD-0231
+runtime until owner-approved v1 evidence exists.
 
 | MOD-0230 field / output | MOD-0231 Signal Minimum Scope use | Status |
 |---|---|---|
-| Safety Case Intake ID | Required upstream same-tenant intake reference | BLOCKED until MOD-0230 handoff contract approved |
-| TenantId | Server-resolved tenant isolation only; never client-supplied | BLOCKED by tenant/security gate |
-| System-generated case/intake number | Trace/display reference | OPEN / TRACE-BUNDLE dependent |
-| IntakeChannel | Source context | BLOCKED until MOD-0230 option-set contract approved |
-| SourceType | Source context | BLOCKED until MOD-0230 option-set contract approved |
-| SourceReference | External source trace, masked/redacted | BLOCKED by MOD-0019 and TRACE-BUNDLE |
-| ReceivedAtUtc | Lifecycle/SLA baseline | BLOCKED by workflow/SLA policy |
-| ReporterType | Case context | BLOCKED until MOD-0230 option-set contract approved |
-| ReporterContactSummary | Restricted PII context, masked | BLOCKED by MOD-0019 |
-| PatientSubjectCode | Restricted PHI subject reference | BLOCKED by MOD-0019 |
-| EventOnsetDate | Event timeline | BLOCKED by MOD-0019 and date policy |
-| AdverseEventNarrative | Restricted PHI assessment input | BLOCKED by MOD-0019 / MOD-0021 |
-| SuspectProductText | Product assessment input | BLOCKED by product/reference policy |
-| Seriousness | Initial seriousness baseline | BLOCKED until MOD-0230 seriousness contract approved |
-| IntakePriority | Initial priority baseline | BLOCKED by workflow/SLA policy |
-| TriageOutcome | Required handoff gate | BLOCKED by MOD-0023 |
-| TriageReason | Restricted triage rationale | BLOCKED by MOD-0019 / MOD-0021 |
-| RouteTargetQueue | Initial processing queue | BLOCKED by MOD-0023 |
-| EvidenceLinkReferences | Evidence boundary; MOD-0031 owns link/query/evidence pack | BLOCKED by MOD-0031 |
-| Correlation ID / trace bundle | Audit and trace continuity | BLOCKED by Blueprint MOD-0040 / TRACE-BUNDLE |
-| Workflow instance ID | Lifecycle continuity if approved by MOD-0023 | BLOCKED by MOD-0023 |
+| Safety Case Intake ID | Required upstream same-tenant intake reference | v0.1 maps only to `IntakeDraftId`; owner-approved v1 operational handoff remains BLOCKED |
+| TenantId | Server-resolved tenant isolation only; never client-supplied | External server context; not a v0.1 or v1 client handoff field |
+| System-generated case/intake number | Trace/display reference | v0.1 maps only to `IntakeNumber`; TRACE-BUNDLE/canonical identity approval still required |
+| IntakeChannel | Source context | Not in BE-01/BE-02 v0.1; BLOCKED until MOD-0230 option-set contract approved |
+| SourceType | Source context | Not in BE-01/BE-02 v0.1; BLOCKED until MOD-0230 option-set contract approved |
+| SourceReference | External source trace, masked/redacted | Not in BE-01/BE-02 v0.1; BLOCKED by MOD-0019 and TRACE-BUNDLE |
+| ReceivedAtUtc | Lifecycle/SLA baseline | Present in v0.1 for build/test only; workflow/SLA policy still blocked |
+| ReporterType | Case context | Not in BE-01/BE-02 v0.1; BLOCKED until MOD-0230 option-set contract approved |
+| ReporterContactSummary | Restricted PII context, masked | Not in BE-01/BE-02 v0.1; BLOCKED by MOD-0019 |
+| PatientSubjectCode | Restricted PHI subject reference | Not in BE-01/BE-02 v0.1; BLOCKED by MOD-0019 |
+| EventOnsetDate | Event timeline | Not in BE-01/BE-02 v0.1; BLOCKED by MOD-0019 and date policy |
+| AdverseEventNarrative | Restricted PHI assessment input | Not in BE-01/BE-02 v0.1; BLOCKED by MOD-0019 / MOD-0021 |
+| SuspectProductText | Product assessment input | Not in BE-01/BE-02 v0.1; BLOCKED by product/reference policy |
+| Seriousness | Initial seriousness baseline | Not in BE-01/BE-02 v0.1; BLOCKED until MOD-0230 seriousness contract approved |
+| IntakePriority | Initial priority baseline | Not in BE-01/BE-02 v0.1; BLOCKED by workflow/SLA policy |
+| TriageOutcome | Required handoff gate | v0.1 maps only to `TriageOutcomeCode`; MOD-0023 approval still blocked |
+| TriageReason | Restricted triage rationale | Not in BE-01/BE-02 v0.1; BLOCKED by MOD-0019 / MOD-0021 |
+| RouteTargetQueue | Initial processing queue | v0.1 maps only to `RouteTargetQueueCode`; MOD-0023 queue/assignment approval still blocked |
+| EvidenceLinkReferences | Evidence boundary; MOD-0031 owns link/query/evidence pack | v0.1 carries reference IDs only; MOD-0031 completeness/evidence-pack approval still blocked |
+| Correlation ID / trace bundle | Audit and trace continuity | External server context; not a client-supplied handoff field; BLOCKED by Blueprint MOD-0040 / TRACE-BUNDLE |
+| Workflow instance ID | Lifecycle continuity if approved by MOD-0023 | Not in BE-01/BE-02 v0.1; BLOCKED by MOD-0023 |
 
 Missing MOD-0230 handoff contract must block MOD-0231 create, process, assessment, and signal handoff. No assumed
 Safety Case master state may be created from incomplete or cross-tenant intake data.
@@ -241,17 +278,20 @@ depending on the final MOD-0023 workflow and MOD-0234 interface contract.
 
 ## Runtime Constraints
 
-- No runtime service scaffold is authorized.
-- No service port is reserved.
+- Only non-operational local/dev/CI class-library contracts and tests may be authorized by a later work package.
+- No API host, runtime listener, controller, health endpoint, repository implementation, Mongo/DbContext adapter,
+  collection, migration, appsettings, launchSettings, seed, job, Gateway route, frontend file, partner integration,
+  AI behavior, archive/void/export/delete/bulk-delete, or operational endpoint is authorized.
+- No new service port is reserved for MOD-0231. It shares the already recorded `Diten.PvgService` build/test
+  boundary, and that boundary remains non-operational for this pack.
 - No gateway route is authorized.
 - No database collection, index, migration, seed, or job is authorized.
 - No UI shell or DataTable page is authorized.
-- `Diten.PvgService` cannot be created until DCP-004 is `approved` / `ready-for-execution` and the active member
-  module pack is `approved` / `ready-for-dev`.
-- Recommended future service boundary is a dedicated `Diten.PvgService` with a hybrid partner-aware integration
-  posture. The same future service boundary should host MOD-0230 and MOD-0231 PVG runtime behavior if approved.
-- `service` remains `TBD` in frontmatter until explicit service scaffold approval. This draft does not reserve a
-  service port or create a service folder.
+- `Diten.PvgService` is the named service boundary for non-operational MOD-0231 build/test scaffold only. This
+  does not approve operational runtime, production use, supplier qualification, validation, or exposed endpoints.
+- Recommended future operational service boundary remains a dedicated `Diten.PvgService` with a hybrid
+  partner-aware integration posture. The same future service boundary should host MOD-0230 and MOD-0231 PVG
+  runtime behavior only if operational runtime is later approved.
 - `entity_base: EntityBase` remains correct for Diten-owned tenant case-processing records, lifecycle state,
   archive/void metadata if later approved, and audit/evidence/workflow-linked records under the future PVG boundary.
   Partner-native records remain outside the repo entity model unless an approved adapter contract maps them.
@@ -266,7 +306,7 @@ depending on the final MOD-0023 workflow and MOD-0234 interface contract.
   regulated error responses.
 - Delete, archive, retention, and legal-hold behavior is undecided. Soft delete alone is not accepted for regulated
   case processing records until retention/legal-hold rules are explicitly approved.
-- Full W-4 Case Processing remains out of scope; this draft cannot grow the slice into full runtime scope without
+- Full W-4 Case Processing remains out of scope; this build/test pack cannot grow the slice into full runtime scope without
   explicit user approval and pack revision.
 
 ## Layout & Shell Contract
@@ -287,7 +327,7 @@ handoff, and W-3A0 production blockers are approved.
 
 ## Backend File Convention
 
-`service: TBD`
+`service: Diten.PvgService` - non-operational build/test class-library boundary only.
 
 Recommended future boundary: dedicated `Diten.PvgService` with a hybrid partner-aware integration posture.
 
@@ -296,8 +336,9 @@ Recommended future boundary: dedicated `Diten.PvgService` with a hybrid partner-
 - If a buy/partner PV safety system is selected, `Diten.PvgService` should act as the controlled wrapper /
   orchestration layer for Diten tenant UI, case-processing contract, MOD-0230 handoff, audit, evidence, workflow,
   correlation, MOD-0234 handoff, and adapter semantics.
-- Internal build scope is limited to the Signal Minimum Scope contract, tenant UI boundary, workflow/audit/evidence
-  integration, and adapter layer after approval; it must not become full W-4 Case Processing.
+- Internal build scope is limited to Signal Minimum Scope class-library contracts, domain models, validators,
+  fail-closed ports, metadata-only audit intent, and tests after a separate work package; it must not become full
+  W-4 Case Processing.
 
 If a PVG runtime service is later approved, backend implementation must follow the Golden Reference CQRS shape:
 
@@ -329,7 +370,7 @@ This section is a future convention statement, not implementation authorization.
 
 `golden_reference: compact`
 
-The create/edit field count recorded for draft planning is 16, so MOD-0231 Signal Minimum Scope follows Golden Reference Compact:
+The create/edit field count recorded for build/test planning is 16, so MOD-0231 Signal Minimum Scope follows Golden Reference Compact:
 
 - `Index.cshtml`.
 - `Create.cshtml`.
@@ -352,8 +393,9 @@ preferred profile for this regulated tenant surface; direct service-port calls a
 
 ## Validation Rules
 
-Signal Minimum Scope fields are recorded for draft planning. Detailed validation, masking, workflow, evidence, and
-audit behavior still must be resolved before `ready-for-dev`:
+Signal Minimum Scope fields are recorded for build/test planning. A future non-operational scaffold may define
+validation contracts and fail-closed tests only. Detailed masking, workflow, evidence, audit, persistence, UI, and
+Gateway behavior still must be resolved before any operational runtime or exposed surface:
 
 | Field | Required | Rule | DB-level | Pre-check | Sensitivity / fail-closed requirement |
 |---|---|---|---|---|---|
@@ -446,13 +488,13 @@ Open authorization decisions:
 - Archive permission is unusable until retention/legal-hold policy is approved.
 - Export is masked-only unless a later field policy approval explicitly permits more.
 - PHI/PII field-level authorization must align with MOD-0019 before runtime.
-- Permission seed/grant ownership must remain with MOD-0018 / AuthService; this draft authorizes no seed.
+- Permission seed/grant ownership must remain with MOD-0018 / AuthService; this build/test gate authorizes no seed.
 
-No permission seed is authorized by this draft.
+No permission seed is authorized by this build/test gate.
 
 ## Gateway / API Routing Decision
 
-Decision: Gateway route is required for any future runtime API, but no route is authorized by this draft.
+Decision: Gateway route is required for any future runtime API, but no route is authorized by this build/test gate.
 
 Future route decision must define:
 
@@ -467,34 +509,39 @@ Direct service-port calls from frontend remain forbidden.
 
 ## Acceptance Criteria
 
-Acceptance criteria for this draft pack:
+Acceptance criteria for this build/test gate pack:
 
 - [x] Pack exists at `execution/domains/pharmacovigilance/module-packs/MOD-0231-case-processing.md`.
-- [x] Status is `draft`.
+- [x] Status is `ready-for-dev` for local/dev/CI build/test only.
+- [x] `build_gate: open`.
+- [x] `operational_runtime_gate: closed`.
 - [x] Canonical name is exactly `Case Processing`.
 - [x] `Signal Minimum Scope` is recorded only as delivery slice / MVP scope, never as canonical module name.
 - [x] DCP-002 preflight passed for MOD-0231.
-- [x] DCP-004 remains `draft`; no execution is authorized.
-- [x] W-3A0 dependencies and MOD-0230 dependency are recorded as production blockers, not waived.
-- [x] No runtime implementation is authorized.
-- [x] Form field count recorded for draft planning as `16`.
-- [x] Golden Reference resolved for draft planning as `compact`.
-- [x] Shell resolved for draft planning as `tenant`.
-- [x] Entity base recorded for draft planning as `EntityBase` for a future dedicated PVG service boundary.
-- [x] Future service boundary recorded as dedicated `Diten.PvgService`; frontmatter `service` remains `TBD` until
-      explicit scaffold approval.
-- [x] MOD-0230 handoff fields consumed by MOD-0231 are recorded.
+- [x] DCP-004 is `approved`; MOD-0231 build/test gate may open without approving operational runtime.
+- [x] W-3A0 dependencies and MOD-0230 dependency are recorded as operational blockers, not waived.
+- [x] No operational runtime implementation is authorized.
+- [x] Future non-operational scaffold is limited to class-library contracts/tests under `services/Diten.PvgService/**`
+      and must not create API host, Gateway, frontend, appsettings, Mongo, collections, seeds, jobs, migrations,
+      partner integration, AI, archive/void/export/delete/bulk-delete, or runtime endpoints.
+- [x] Form field count recorded for build/test planning as `16`.
+- [x] Golden Reference resolved for build/test planning as `compact`.
+- [x] Shell resolved for build/test planning as `tenant`.
+- [x] Entity base recorded for build/test planning as `EntityBase` for a future dedicated PVG service boundary.
+- [x] Service boundary recorded as `Diten.PvgService` for non-operational build/test class-library work only.
+- [x] MOD-0230 handoff fields consumed by MOD-0231 are recorded, including v0.1 build/test shape versus future
+      v1 operational handoff blocker.
 - [x] Minimum lifecycle states before MOD-0234 consumption are recorded.
 - [x] Actor roles and permission matrix are recorded.
 - [x] Delete and bulk-delete are explicitly excluded.
 - [x] Archive remains blocked until retention/legal-hold approval.
 
-Acceptance criteria before any future implementation can start:
+Acceptance criteria before any future operational or exposed implementation can start:
 
-- [ ] DCP-004 is `approved` / `ready-for-execution`.
-- [ ] This module pack is `approved` / `ready-for-dev`.
+- [x] DCP-004 is `approved` / `ready-for-execution`.
+- [x] This module pack is `ready-for-dev` for the build/test gate only.
 - [ ] MOD-0230 handoff contract is approved and compatible with this pack.
-- [ ] `service` is resolved through explicit service scaffold approval; frontmatter currently remains `TBD`.
+- [x] `service` is resolved as `Diten.PvgService` for non-operational local build/test scaffold only.
 - [ ] W-3A0 REG-PV-BASE and CASE-LIFECYCLE dependencies are closed or explicitly satisfied by production-grade external contracts.
 - [ ] Required interface contracts are concrete for MOD-0018, MOD-0019, MOD-0021, MOD-0023, MOD-0031,
       Blueprint MOD-0040 / TRACE-BUNDLE, MOD-0230, and MOD-0234.
@@ -505,9 +552,18 @@ Acceptance criteria before any future implementation can start:
 
 ## Test Expectations
 
-No runtime tests are expected for this draft because no runtime files are authorized.
+Expected for the next non-operational build/test scaffold work package:
 
-Future implementation test expectations must include:
+- Class-library build and unit tests only under `services/Diten.PvgService/**`.
+- MOD-0230 handoff unavailable/fail-closed tests.
+- 16-field domain validation tests with no raw PHI/PII/free-text echo.
+- Command/query contract-shape tests with no client-supplied `TenantId`.
+- Fail-closed tests for permission, masking, audit intent, workflow transition, evidence link, correlation, and
+  regulated error/result shapes.
+- Tests proving no API host, controller, Program.cs, appsettings, Gateway, frontend, persistence, repository,
+  Mongo/DbContext, seed, job, archive/void/export/delete/bulk-delete, partner integration, or AI surface exists.
+
+Future operational implementation test expectations must include:
 
 - DCP-002 identity proof remains valid.
 - Backend build and unit/integration tests for the approved PVG service boundary.
@@ -527,10 +583,11 @@ Future implementation test expectations must include:
 - [x] Required governance files read.
 - [x] Golden Reference Slim and Compact module packs read.
 - [x] DCP-002 preflight passed.
-- [x] Pack status is `draft`.
-- [ ] DCP-004 promoted to `approved` / `ready-for-execution`.
-- [ ] MOD-0230 handoff contract approved.
-- [ ] W-3A0 dependency owner/scope resolved or production-grade contracts accepted.
+- [x] Pack status is `ready-for-dev` for the build/test gate only.
+- [x] DCP-004 promoted to `approved` / `ready-for-execution`.
+- [~] MOD-0230 handoff contract required; next build/test scaffold may define fail-closed unavailable behavior only.
+- [~] W-3A0 dependency owner/scope resolved for build/test through fail-closed local contracts only; operational
+      runtime remains blocked until production-grade contracts are accepted.
 - [ ] MOD-0018 RBAC/permission contract and actor matrix resolved.
 - [ ] MOD-0019 masking / row-field security contract resolved.
 - [ ] MOD-0021 AuditEvent v1 append/redaction/failure contract resolved.
@@ -538,18 +595,18 @@ Future implementation test expectations must include:
 - [ ] MOD-0031 Evidence-Link object/evidence-pack contract resolved.
 - [ ] Blueprint MOD-0040 / TRACE-BUNDLE canonical ID, correlation, trace-stitching, and error-model contract resolved.
 - [ ] MOD-0234 signal handoff consumption contract approved.
-- [ ] `service` resolved.
-- [x] Future service/deployment boundary recorded as dedicated `Diten.PvgService`; scaffold approval still required
-      before frontmatter `service` changes.
-- [x] `shell` resolved for draft planning as `tenant`.
-- [x] `entity_base` recorded for draft planning as `EntityBase` for future dedicated PVG service boundary.
+- [x] `service` resolved as `Diten.PvgService` for non-operational build/test class-library work only.
+- [x] Future service/deployment boundary recorded as dedicated `Diten.PvgService`; operational runtime approval still
+      required before API host, persistence, Gateway, frontend, or deployment work.
+- [x] `shell` resolved for build/test planning as `tenant`.
+- [x] `entity_base` recorded for build/test planning as `EntityBase` for future dedicated PVG service boundary.
 - [x] Signal Minimum Scope create/edit fields defined.
 - [x] Signal Minimum Scope fields marked required/optional.
-- [x] PHI/PII/sensitive-field matrix recorded for draft planning for every field.
-- [x] `form_field_count` resolved for draft planning as `16`.
-- [x] `golden_reference` resolved for draft planning as `compact`.
+- [x] PHI/PII/sensitive-field matrix recorded for build/test planning for every field.
+- [x] `form_field_count` resolved for build/test planning as `16`.
+- [x] `golden_reference` resolved for build/test planning as `compact`.
 - [ ] Entity fields and validation rules fully specified.
-- [x] Authorization actor/role matrix recorded for draft planning.
+- [x] Authorization actor/role matrix recorded for build/test planning.
 - [ ] Delete, retention, archive, and legal-hold policy approved.
 - [x] Build/buy/partner integration boundary proposed and recorded as hybrid, partner-aware internal control wrapper.
 - [ ] Gateway route decision approved and assigned to integration-agent if needed.
@@ -557,23 +614,26 @@ Future implementation test expectations must include:
 
 ## Implementation Notes
 
-- This pack is intentionally incomplete because it is a draft planning artifact.
-- DCP-004 is still `draft`; this pack cannot be used to start runtime work.
+- This pack is intentionally limited to the local/dev/CI build/test gate.
+- DCP-004 is `approved`; this pack can be used to start a separate non-operational class-library scaffold work
+  package only. It cannot be used to start operational runtime work.
 - MOD-0231 is Blueprint W-4, but DCP-004 permits urgent W-3 delivery-slice planning for Signal Minimum Scope while
   preserving the canonical name and Blueprint wave metadata.
 - Signal Minimum Scope is a delivery slice only. Do not use it as a module name, registry name, runtime literal,
   permission prefix, route segment, or frontmatter `name`.
-- Frontmatter decisions reconciled 2026-08-04: `shell: tenant`, `entity_base: EntityBase`,
-  `form_field_count: 16`, and `golden_reference: compact`. `service` remains TBD.
-- Service boundary reconciled 2026-08-04: future boundary is dedicated `Diten.PvgService` with a hybrid
-  partner-aware integration posture. Frontmatter `service` remains TBD until explicit service scaffold approval.
+- Frontmatter decisions reconciled 2026-08-10: `service: Diten.PvgService`, `shell: tenant`,
+  `entity_base: EntityBase`, `form_field_count: 16`, and `golden_reference: compact`.
+- Service boundary reconciled 2026-08-10: `Diten.PvgService` is the MOD-0231 build/test class-library boundary.
+  This does not approve API host, persistence, appsettings, Gateway, frontend, deployment, production runtime,
+  supplier qualification, or validation.
 - Route/UI profile reconciled 2026-08-04: future tenant MVC route is `/Pharmacovigilance/CaseProcessing`, view root
   is `frontend/Diten.Web/Views/Pharmacovigilance/CaseProcessing/**`, layout is `_LayoutTenantShell`, and frontend
   profile is same-origin MVC proxy.
 - Signal Minimum Scope field model reconciled 2026-08-04 with 16 user-entered create/edit fields and compact
   Golden Reference. Detailed validation, masking, audit, workflow, evidence, and test rules remain blockers.
 - MOD-0230 handoff and minimum MOD-0234 consumption lifecycle states were recorded 2026-08-04 as planning
-  decisions. They do not resolve MOD-0230, MOD-0023, MOD-0031, MOD-0021, MOD-0019, or TRACE-BUNDLE blockers.
+  decisions. `MOD0230HandoffReference v0.1` is recorded as build/test evidence only; it does not resolve the
+  future v1 operational handoff, MOD-0023, MOD-0031, MOD-0021, MOD-0019, or TRACE-BUNDLE blockers.
 - Delete and bulk-delete policy reconciled 2026-08-04: delete and bulk-delete are excluded. Archive/void remains
   blocked until retention/legal-hold approval.
 - MOD-0230 is a hard upstream dependency. MOD-0231 must not redefine intake records, intake artifacts, triage state,
@@ -599,8 +659,8 @@ Future implementation test expectations must include:
 - Resolve MOD-0018, MOD-0019, MOD-0021, MOD-0023, MOD-0031, Blueprint MOD-0040 / TRACE-BUNDLE, and MOD-0234
   interface contracts.
 - Resolve detailed validation, masking, audit payload, evidence-link, workflow transition, and fail-closed tests for
-  the 16-field model recorded for draft planning.
+  the 16-field model recorded for build/test planning.
 - Resolve retention/legal-hold policy before any archive/void operation is introduced.
 - Finalize actor roles and permission matrix with MOD-0018 / AuthService seed/grant ownership.
 - Prepare separate planning for W-3A0 if requested.
-- Update this pack toward `approved` / `ready-for-dev` only with explicit user approval.
+- Move beyond the build/test gate only with explicit operational runtime approval.

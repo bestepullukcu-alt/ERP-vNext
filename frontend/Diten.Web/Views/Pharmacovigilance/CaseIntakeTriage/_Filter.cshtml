@@ -1,0 +1,35 @@
+@using Diten.Web.Views.Pharmacovigilance.CaseIntakeTriage
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CaseIntakeTriageIndex> Localizer
+
+<div id="inlineFilterHost" class="pt-0 pb-3 px-3">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="card">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label" for="pvgStatusFilter">@Localizer["Status"]</label>
+                        <select id="pvgStatusFilter" class="form-select">
+                            <option value="">@Localizer["ShowAll"]</option>
+                            <option value="IntakeCreated">@Localizer["StatusIntakeCreated"]</option>
+                            <option value="IntakeUpdated">@Localizer["StatusIntakeUpdated"]</option>
+                            <option value="Triaged">@Localizer["StatusTriaged"]</option>
+                            <option value="RoutePending">@Localizer["StatusRoutePending"]</option>
+                            <option value="Routed">@Localizer["StatusRouted"]</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-auto">
+                        <button type="button" id="pvgApplyFilter" class="btn btn-primary">
+                            <i class="icon-base bx bx-filter-alt me-1"></i>@Localizer["Apply"]
+                        </button>
+                    </div>
+                    <div class="col-12 col-md-auto">
+                        <button type="button" id="pvgResetFilter" class="btn btn-label-secondary">
+                            <i class="icon-base bx bx-reset me-1"></i>@Localizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

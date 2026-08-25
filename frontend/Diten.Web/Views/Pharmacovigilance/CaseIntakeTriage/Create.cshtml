@@ -1,0 +1,16 @@
+@using Diten.Web.Views.Pharmacovigilance.CaseIntakeTriage
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CaseIntakeTriageIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["CreateTitle"].Value;
+    ViewData["FormMode"] = "create";
+    Layout = "_LayoutTenantShell";
+}
+
+<partial name="~/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/Pharmacovigilance/CaseIntakeTriage/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Pharmacovigilance/CaseIntakeTriage/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js" asp-append-version="true"></script>
+}
