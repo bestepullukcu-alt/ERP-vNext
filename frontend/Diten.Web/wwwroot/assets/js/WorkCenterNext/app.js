@@ -709,7 +709,29 @@
     const segmentCount = (seg) => facetItems().filter((i) => data.segmentFor(i) === seg).length;
     const typeCount = (ty) => facetItems('type').filter((i) => i.itemType === ty).length
         + (state.tab === 'inbox' && ty === 'meetingInvite' ? state.triggers.length : 0);
-    const signalCount = (sig) => facetItems('signal').filter((i) => SIGNAL_TEST[sig](i)).length;
+    /*
+     * ── A PARKED ITEM IS NOT ON SCREEN, SO IT IS NOT IN A COUNT EITHER (2026-08-25, BL-045 follow-up) ──
+     *
+     * MEASURED on live data: İşlerim showed "SLA riski 14" while the segments under it summed to 13 — off by
+     * EXACTLY the one snoozed item ("CT scroll testi", due 2026-09-30). The tab badge already excluded it; the
+     * signal chip did not.
+     *
+     * WHY ONLY THE SIGNAL CHIP LEAKED, since the same hiding rule serves all three counters: the rule lives in
+     * `passesFilters` behind `except !== 'signal'`, and `signalCount` is the one facet that skips the signal
+     * axis. Type and segment counts run the rule and were always right. So this is not a missing rule, it is
+     * one facet stepping over it.
+     *
+     * ⚠ THE CHIP'S OWN COUNT IS THE EXCEPTION. "Ertelenmiş 1" must keep counting the parked item — that chip
+     * exists to reveal it, and a chip reading 0 that opens one row is the same lie in the other direction.
+     *
+     * ⚠ THE CHIP'S BEHAVIOUR IS UNCHANGED. Turning `snoozed` on still reveals parked items everywhere; only
+     * the ARITHMETIC moved. `parkedOffScreen` answers false for everyone once that chip is on, so the counts follow
+     * the list into the revealed state on their own.
+     */
+    const parkedOffScreen = (item) => !state.signalFilter.has('snoozed')
+        && SNOOZE_TABS.indexOf(state.tab) >= 0 && isSnoozed(item);
+    const signalCount = (sig) => facetItems('signal')
+        .filter((i) => SIGNAL_TEST[sig](i) && (sig === 'snoozed' || !parkedOffScreen(i))).length;
     // The "Tümü" chip is the type axis's own zero state, so it counts the same population its siblings do —
     // left on the raw tab total it would have disagreed with the chips beside it the moment any filter was on.
     const allTypesCount = () => facetItems('type').length + state.triggers.length;
@@ -724,7 +746,19 @@
     const passesFilters = (item, except) => {
         if (except !== 'type' && state.typeFilter.size && !state.typeFilter.has(item.itemType)) { return false; }
         if (except !== 'signal' && state.signalFilter.size) {
-            for (const sig of state.signalFilter) { if (!SIGNAL_TEST[sig](item)) { return false; } }
+            /*
+             * ⚠ OR ACROSS SIGNALS, AND ACROSS AXES (2026-08-25). This was a `for` loop demanding EVERY selected
+             * signal — measured live: Bloke(4) and SLA riski(7) together produced 1. Two chip rows sat on the
+             * same screen under two different combining rules, because the type row four lines up has always
+             * been OR (`typeFilter.has`).
+             *
+             * A signal answers "what needs attention"; picking two of them asks for a WIDER net, not a
+             * narrower one. Intersection is what a reader expects between DIFFERENT questions (type AND
+             * signal AND module), which is the rule the rest of this function keeps.
+             */
+            let any = false;
+            for (const sig of state.signalFilter) { if (SIGNAL_TEST[sig](item)) { any = true; break; } }
+            if (!any) { return false; }
         }
         /*
          * ── A PARKED ITEM IS NOT ON SCREEN (BL-181) ──────────────────────────────────────────────────────────
@@ -737,10 +771,7 @@
          * `snoozed` in the filter set, only snoozed items pass it. So this line only has to answer the OTHER
          * case — nobody asked for them, so they stay parked.
          */
-        if (except !== 'signal' && !state.signalFilter.has('snoozed')
-            && SNOOZE_TABS.indexOf(state.tab) >= 0 && isSnoozed(item)) {
-            return false;
-        }
+        if (except !== 'signal' && parkedOffScreen(item)) { return false; }
         if (state.moduleFilter.length && !state.moduleFilter.includes(item.sourceModule)) { return false; }
         if (state.priorityFilter !== 'all' && item.priority !== state.priorityFilter) { return false; }
         if (state.modeFilter !== 'all' && item.assignmentMode !== state.modeFilter) { return false; }
@@ -1044,7 +1075,24 @@
         const mainChips = INBOX_MAIN.map((cfg) => {
             const on = state.typeFilter.has(cfg.key);
             const c = typeCount(cfg.key);
-            // Inbox main chips are never dimmed at 0 (spec: no perpetual grey chips).
+            /*
+             * ⚠ A CHIP AT ZERO IS NOT DRAWN AT ALL (2026-08-25) — not dimmed, not disabled. Measured on live
+             * data: six of the seven inbox type chips read 0 (Onay · İnceleme · Sorun · İstisna · Toplantı
+             * Daveti), every one of them clickable, every one leading to an empty list. Promising a population
+             * that does not exist is the same defect as the nine dead cards this session removed.
+             *
+             * The old comment here said "never dimmed at 0 (no perpetual grey chips)", which diagnosed the
+             * problem correctly and then solved the wrong half: the grey was never the issue, the promise was.
+             *
+             * ⚠ THIS IS NOT A PERMANENT REMOVAL. The count comes from the live projection, so the moment
+             * another module starts sending reviews or issues, its chip reappears by itself. Nobody needs to
+             * put it back — do not report the absence as a defect.
+             *
+             * ⚠ SAME MECHANISM AS EVERYWHERE ELSE, not a second one: the signal chips below and the default
+             * tab's type chips already use exactly `count > 0 || the filter is on`. The second half matters —
+             * an active chip stays drawn even at 0, or the reader could never switch it back off.
+             */
+            if (!c && !on) { return ''; }
             return `<button type="button" class="wcn-fchip${on ? ' active' : ''}" data-wcn-inbox-type="${cfg.key}" aria-pressed="${on}">` +
                 `<i class="bx ${cfg.icon}"></i><span>${esc(t(cfg.labelKey))}</span><span class="wcn-fchip-count">${c}</span>${on ? CHIP_X : ''}</button>`;
         }).join('');
@@ -1343,7 +1391,32 @@
         reject: 'bx-x-circle', decline: 'bx-x-circle', cancel: 'bx-x-circle', return: 'bx-undo',
         inquire: 'bx-question-mark', requestInfo: 'bx-question-mark',
         reassign: 'bx-user-pin', plan: 'bx-calendar-plus', logTime: 'bx-time-five',
-        reviewMeeting: 'bx-calendar-event', scheduleReviewMeeting: 'bx-calendar-event'
+        scheduleReviewMeeting: 'bx-calendar-event',
+        /*
+         * ── THE LIFECYCLE VERBS (2026-08-25, BL-245) ────────────────────────────────────────────────────
+         *
+         * MEASURED: 26 action codes can be drawn, 12 were mapped, and the fourteen falling through included
+         * `start` and `complete` — the two most-used acts in the product — while rarities like
+         * `scheduleReviewMeeting` carried their own glyph. That ordering is BACKWARDS. The frequency order is
+         * what is being fixed here; the vocabulary is not being grown.
+         */
+        // One movement, one glyph: resuming is starting again, and a reader who learned one knows the other.
+        start: 'bx-play', resume: 'bx-play',
+        // NOT `bx-check` — that is `accept`, which means "I take this on". Finishing is the second tick.
+        complete: 'bx-check-double',
+        // Taking work out of a pool, and putting it back. A pair, drawn as a pair.
+        claim: 'bx-user-plus', release: 'bx-user-minus',
+        submitReview: 'bx-send'
+    /*
+     * ⚠ SEVEN CODES STAY ON THE DEFAULT ON PURPOSE — acceptMeeting · acceptOffer · declineMeeting · delegate ·
+     * dispute · replan · resolve. An icon that says nothing is noise, and 26 separate glyphs is a dictionary
+     * nobody learns. The LABEL carries the meaning; the glyph carries the tone, and only where the tone is
+     * worth a shape of its own.
+     *
+     * ⚠ `reviewMeeting` WAS REMOVED FROM THIS MAP: measured at zero sources — no provider and no fixture emits
+     * it. `scheduleReviewMeeting` is the live one. A map entry for a code nothing sends is a glyph chosen for
+     * a button that cannot exist.
+     */
     }[action.key] || 'bx-right-arrow-alt');
 
     const actionMenuTone = (action) => {

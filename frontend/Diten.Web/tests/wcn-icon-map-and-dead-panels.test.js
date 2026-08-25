@@ -43,6 +43,61 @@ describe("BL-245 — a cancellation looks like a cancellation", () => {
     });
   });
 
+  it("gives the lifecycle verbs their own glyphs, and only them", () => {
+    /*
+     * MEASURED: 26 drawable codes, 12 mapped, and the fourteen on the default included `start` and `complete`
+     * — the two most-used acts — while rarities carried bespoke glyphs. Frequency order fixed; vocabulary not
+     * grown.
+     *
+     * MUTATION GUARD: drop any one of these and this goes red naming it.
+     */
+    const map = APP.split("const inboxActionIcon")[1].split("}[action.key]")[0];
+    const VERBS = {
+      // One movement, one glyph — resuming is starting again.
+      start: "bx-play", resume: "bx-play",
+      // NOT `bx-check`: that is `accept` ("I take this on"). Finishing is the second tick.
+      complete: "bx-check-double",
+      // Out of the pool and back into it, drawn as the pair they are.
+      claim: "bx-user-plus", release: "bx-user-minus",
+      submitReview: "bx-send"
+    };
+    Object.entries(VERBS).forEach(([key, glyph]) => {
+      expect(map, `${key} lost its glyph`).toContain(`${key}: '${glyph}'`);
+    });
+  });
+
+  it("EVERY mapped glyph exists in the icon font", () => {
+    /*
+     * ⚠ THE ASSERTION A NAME-ONLY TEST CANNOT MAKE. An invented class renders an empty square and passes any
+     * check that only looks at the source. So each glyph is looked up in the stylesheet that actually defines
+     * it — a typo fails here rather than on someone's screen.
+     */
+    const css = fs.readFileSync(web("wwwroot", "assets", "vendor", "fonts", "iconify-icons.css"), "utf8");
+    const map = APP.split("const inboxActionIcon")[1].split("}[action.key]")[0];
+    const glyphs = [...new Set((map.match(/'(bx-[a-z-]+)'/g) || []).map((g) => g.slice(1, -1)))];
+    expect(glyphs.length, "the map was not read").toBeGreaterThan(10);
+    glyphs.forEach((g) => {
+      expect(css.includes(`.${g}`) || css.includes(`"${g}"`), `${g} is not in the icon font`).toBe(true);
+    });
+  });
+
+  it("leaves seven codes on the default DELIBERATELY, and says so", () => {
+    // An icon that says nothing is noise; 26 glyphs is a dictionary nobody learns. The reason is in the code
+    // so the next reader does not "complete" the map thinking it was forgotten.
+    const map = APP.split("const inboxActionIcon")[1].split("}[action.key]")[0];
+    ["acceptMeeting", "acceptOffer", "declineMeeting", "delegate", "dispute", "replan", "resolve"]
+      .forEach((key) => { expect(map, `${key} was mapped`).not.toContain(`${key}:`); });
+    expect(map, "the deliberate omission is undocumented").toContain("ON THE DEFAULT ON PURPOSE");
+  });
+
+  it("drops the map entry no source can reach", () => {
+    // MEASURED at zero sources: no provider and no fixture emits `reviewMeeting`. `scheduleReviewMeeting` is
+    // the live one. A glyph chosen for a button that cannot exist is the map's own version of dead code.
+    const map = APP.split("const inboxActionIcon")[1].split("}[action.key]")[0];
+    expect(map).not.toContain("reviewMeeting: 'bx-calendar-event'");
+    expect(map, "the live one went with it").toContain("scheduleReviewMeeting: 'bx-calendar-event'");
+  });
+
   it("chooses the glyph in the MAP, never at a call site", () => {
     /*
      * Twice this session an icon picked where a button is drawn gave one action two different icons. Every

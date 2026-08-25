@@ -5276,6 +5276,40 @@ tags.diten-tags .tagify__input {
     transition: border-color .12s ease, color .12s ease, background-color .12s ease; }
 .wcn-fchip:hover { border-color: color-mix(in sRGB, var(--bs-primary) 55%, var(--bs-border-color)); color: var(--bs-primary); }
 .wcn-fchip:focus-visible { outline: 2px solid color-mix(in sRGB, var(--bs-primary) 35%, transparent); outline-offset: 2px; }
+
+/* ── KEYBOARD FOCUS FOR THE FIVE CONTROLS THE GLOBAL RESET SWALLOWED ────────────────────────────────────
+ *
+ * MEASURED with a REAL Tab press (programmatic `.focus()` does not raise `:focus-visible` and gave a wrong
+ * answer first time): a global `button:focus, button:focus-visible { outline: 0 }` strips the ring from every
+ * plain button on the page. Three controls survived because they declare their own rule — `.wcn-row`,
+ * `.wcn-fchip` and the tab — and five did not: the row's primary action, the row's overflow menu, the segment
+ * buttons, the view switcher and the pager. A keyboard user drove all five blind.
+ *
+ * ⚠ THE GLOBAL RESET IS NOT TOUCHED — it governs the whole product, and this page is not the place to decide
+ * that. These five simply say what the survivors already say.
+ *
+ * ⚠ THE PRODUCT'S OWN RING, NOT A NEW ONE: 2px solid `--bs-primary` with a 1–2px offset is exactly what
+ * `.wcn-row` and `.wcn-fchip` use. `--bs-btn-focus-box-shadow` was measured EMPTY on this theme, so deriving
+ * from it would have produced nothing at all.
+ */
+.wcn-inbox-action-primary:focus-visible,
+.wcn-inbox-action-more:focus-visible,
+.wcn-seg:focus-visible,
+.wcn-views .wcn-viewbtn:focus-visible,
+.wcn-list-pager .btn:focus-visible,
+/* The row's own icon buttons were missing from the inventory this rule was written
+   from, and a real Tab lands on the pin before it reaches anything above: measured
+   `outline-style: none` on `.wcn-pin` while the five named here were already ringed.
+   An inventory assembled by listing what someone noticed will keep missing the ones
+   nobody happened to tab onto — this was found by pressing the key, not by reading.
+
+   ONE selector, not two: the un-snooze control wears `.wcn-pin` as well. A separate
+   `.wcn-unsnooze` rule was written first and matched nothing, which is the quieter
+   half of the same mistake — a rule can be dead as easily as a control can be bare. */
+.wcn-pin:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
 .wcn-fchip.active { border-color: var(--bs-primary); background: color-mix(in sRGB, var(--bs-primary) 12%, transparent); color: var(--bs-primary); }
 .wcn-fchip.empty { opacity: .45; }
 .wcn-fchip-count { font-size: .6875rem; font-weight: 700; opacity: .85; }

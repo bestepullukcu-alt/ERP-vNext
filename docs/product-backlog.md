@@ -5328,3 +5328,82 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - **BL-218 GÜNCELLEMESİ:** o kayıt "ertelendi, silinmedi" diyordu — artık kod da yok. Paneller geri geldiğinde
   **render'ları, kancaları, durum alanları ve URL parametresi yeniden yazılacak**; geriye yalnızca niyet kaldı.
 - **Gelecek regresyon riski: 🟢** — silinen hiçbir şeye kullanıcı erişemiyordu.
+
+### BL-245 güncelleme (2026-08-25) — yaşam döngüsü fiilleri haritaya alındı
+- CT kararı: `start`+`resume → bx-play` · `complete → bx-check-double` · `claim → bx-user-plus` ·
+  `release → bx-user-minus` · `submitReview → bx-send`. Kalan yedisi (acceptMeeting · acceptOffer ·
+  declineMeeting · delegate · dispute · replan · resolve) **bilerek** varsayılanda; gerekçe koda yazıldı.
+- Ölü `reviewMeeting` girdisi silindi (`scheduleReviewMeeting` canlı olan).
+- ⚠ **GLİF VARLIĞI ÖLÇÜLDÜ**, ada bakılmadı: test artık her glifi `iconify-icons.css` içinde arıyor.
+  Mutasyonla kanıtlandı — `bx-send` yerine uydurma bir glif konunca test kırmızıya döndü.
+- **CANLIDA GÖRÜLEN DÖRT**: `bx-play` (Başlat) · `bx-check-double` (Tamamla) · `bx-send` (İncelemeye gönder) ·
+  `bx-user-plus` (Havuz/Üstlen). ⚠ **`release` ve `resume` GÖRÜLEMEDİ** — 76 canlı görevin hiçbirinde ve
+  hiçbir fixture'da yok. "Doğrulandı" yazılmadı.
+- ⚠ Ara ölçümde bir kez yanıldım ve düzelttim: detay sayfasının rayı ikon çizmiyor, ama **liste satırının
+  birincil düğmesi çiziyor** — beş glifin görünür olduğu yüzey orası.
+
+### BL-246 — [DÜZELTİLDİ 2026-08-25] Ertelenmiş öğe sinyal çipinin sayısına sızıyordu
+- Ölçüm: İşlerim'de "SLA riski **14**", altındaki segmentlerin toplamı **13** — fark tam olarak bir ertelenmiş
+  satır (CT scroll testi, 2026-09-30).
+- **SEBEP, ve neden yalnız BİR sayaç sızdırdı:** erteleme gizlemesi `passesFilters` içinde
+  `except !== 'signal'` arkasında duruyor; `signalCount` ise sinyal eksenini atlayan tek faset. Tür ve segment
+  sayaçları kuralı hep çalıştırıyordu ve hep doğruydu. Yani eksik bir kural değil, **kuralın üstünden atlayan
+  bir faset** vardı.
+- ⚠ **BL-045 TASARIMINA DOKUNULMADI.** Çipin segmentten bağımsız sayması bilerek verilmiş karardır ve öyle
+  kaldı; çipe basınca segmentlerin yeniden hesaplanması da çalışmaya devam ediyor.
+- ⚠ "Ertelenmiş" çipinin KENDİ sayacı ertelenmişleri saymaya devam ediyor — o çip onları açığa çıkarmak için
+  var; 0 yazıp bir satır açan çip aynı yalanın tersidir. Kural `signalCount` içinde tek bir istisnayla yazıldı.
+- ⚠ Çipin DAVRANIŞI değişmedi, yalnız ARİTMETİĞİ: `snoozed` açıkken `parkedOffScreen` herkese false döndüğü
+  için sayaçlar listenin açığa çıkmış hâlini kendiliğinden takip ediyor.
+- **KANIT TABLOSU** (çip sayısı = o çipe basınca segmentlerin toplamı) — üç sekme × her sinyal, **6/6 eşit**:
+
+  | Sekme | Çip | Sayaç | Segment toplamı |
+  |---|---|---|---|
+  | Gelen Kutusu | SLA riski | 15 | 15 |
+  | İşlerim | Bloke | 4 | 4 |
+  | İşlerim | **SLA riski** | **13** (önce 14) | **13** |
+  | İşlerim | Ertelenmiş | 1 | 1 |
+  | Geçmiş | SLA riski | 10 | 10 |
+  | Geçmiş | Ertelenmiş | 1 | 1 |
+
+- **Gelecek regresyon riski: 🟢**
+
+### BL-247 — [DÜZELTİLDİ 2026-08-25] İki çip satırı, iki farklı birleşme kuralı
+- Ölçüm: tür ekseni OR (`typeFilter.has`), sinyal ekseni AND (`for … if (!TEST) return false`). Aynı ekranda,
+  aynı görünümde, iki farklı mantık. Canlı sonuç: Bloke(4) + SLA(7) = **1**.
+- Sinyal filtresi **OR** oldu; eksenler arası AND korundu (tür ∧ sinyal ∧ modül …).
+- **Ölçüm sonrası:** Bloke(4) ∪ SLA(13) = **16** — yani biri iki sinyali birden taşıyor. URL yazma/okuma
+  bozulmadı (`signals=blocked,sla-risk`), testle kilitlendi.
+- Gerekçe koda yazıldı: bir sinyal "neye dikkat etmeliyim" sorusunu yanıtlar; iki tanesini seçmek **daha geniş**
+  bir ağ ister, daha dar değil. Kesişim FARKLI sorular arasında doğrudur.
+- **Gelecek regresyon riski: 🟢**
+
+### BL-248 — [DÜZELTİLDİ 2026-08-25] Sayacı sıfır olan tür çipi çizilmeyecek
+- Ölçüm: Gelen Kutusu'nun 7 tür çipinden **6'sı** gerçek veride 0 (Onay · İnceleme · Sorun · İstisna ·
+  Toplantı Daveti), hepsi tıklanabilir, hepsi boş listeye götürüyor. Canlıda 7 çip → **3 çip**.
+- Eski yorum "never dimmed at 0 (no perpetual grey chips)" diyordu: teşhis doğru, çözülen yarı yanlış. **Gri
+  hiç sorun değildi; VAAT sorundu.**
+- ⚠ "Tümü" çipi istisna olarak kaldı — o eksenin sıfır durumudur.
+- ⚠ **KALICI GİZLEME DEĞİL** ve bu koda yazıldı: sayaç canlı projeksiyondan geliyor, başka bir modül inceleme
+  ya da sorun göndermeye başladığı anda çip kendiliğinden geri gelir. Kimsenin geri koyması gerekmiyor.
+- ⚠ İkinci bir mekanizma yazılmadı: sinyal çipleri ve diğer sekmelerin tür çipleri zaten
+  `sayaç > 0 || filtre açık` kuralını kullanıyordu; aynısı kullanıldı.
+- ⚠ **TESTİN KENDİ KUSURU YAKALANDI:** ilk hâli `buildInboxChips`'in TAMAMINDA guard satırını arıyordu ve o
+  satır `riskChips`'te de var — guard tür çiplerinden silindiğinde test YEŞİL kaldı. Bu oturumda ikinci kez
+  aynı sınıf: **başka bir satırın tatmin edebildiği kural, hiçbir şeyin zorlamadığı kuraldır.** Test artık
+  yalnız `mainChips` bloğuna bakıyor; mutasyon tekrarlandı, kırmızıya döndü.
+- **Gelecek regresyon riski: 🟢**
+
+### BL-249 — [DÜZELTİLDİ 2026-08-25] Beş kontrol ailesi klavyeyle görünmezdi
+- Ölçüm (GERÇEK Tab ile): `core.css`'teki küresel `button:focus, button:focus-visible { outline: 0 }` her düz
+  düğmenin halkasını siliyor. Kendi kuralı olan üçü kurtuluyordu (`.wcn-row` · `.wcn-fchip` · sekme, 2px),
+  beşi kurtulmuyordu: satır birincil düğmesi · satır menüsü · segment · görünüm düğmesi · sayfalama.
+- Beşine de ürünün kendi halkası verildi: `2px solid var(--bs-primary)`, offset 2px — kurtulanların kullandığı
+  değerlerin aynısı. ⚠ `--bs-btn-focus-box-shadow` **boş** ölçüldü; ondan türetmek hiçbir şey çizmezdi.
+- ⚠ Küresel kurala DOKUNULMADI — bütün ürünü ilgilendirir, bu sayfanın vereceği karar değil.
+- ⚠ **PROGRAMATİK `.focus()` YANILTIR** — `:focus-visible` doğmaz. Denetimde ilk ölçüm böyle yapılıp yanlış
+  çıkmış, bu turda gerçek Tab ile hem ölçüldü hem doğrulandı: satır menüsü düğmesinde
+  `solid 2px rgb(105,108,255)`, offset 2px.
+- Testin kendi dilimi de bir kez yanlış geçti: CSS penceresi ilk `}` ile kesiliyordu ve üstündeki yorum
+  `{ outline: 0 }` ifadesini ALINTILIYOR. Pencere kurala bağlandı.
+- **Gelecek regresyon riski: 🟢**
