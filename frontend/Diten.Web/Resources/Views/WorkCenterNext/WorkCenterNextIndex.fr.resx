@@ -542,12 +542,6 @@
   <data name="StepClosedOn" xml:space="preserve">
     <value>Clôturé le {0}</value>
   </data>
-  <data name="BlockedSubtaskOneLine" xml:space="preserve">
-    <value>Ne peut être terminé tant que des sous-tâches restent ouvertes ({0})</value>
-  </data>
-  <data name="BlockedGoToSubtasks" xml:space="preserve">
-    <value>Aller aux sous-tâches</value>
-  </data>
   <data name="StepAccepted" xml:space="preserve">
     <value>Accepté</value>
   </data>
@@ -890,7 +884,7 @@
     <value>S'ajoute au temps déjà saisi sur cette tâche ; ne démarre ni n'arrête le chronomètre.</value>
   </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
-    <value>Inscrit la réunion de revue au calendrier ; l'échéance ne change pas.</value>
+    <value>La connexion au calendrier n'est pas encore en place : cet enregistrement n'apparaît que sur cet écran et disparaît à la fermeture de la page. L'échéance ne change pas.</value>
   </data>
   <data name="NewInSourceSubtext" xml:space="preserve">
     <value>L'enregistrement est créé dans ce module et y reste ; le Centre de tâches n'en garde aucune copie.</value>

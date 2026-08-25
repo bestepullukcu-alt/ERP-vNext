@@ -1450,7 +1450,7 @@ describe("priority is shown where it exists and nowhere else (BL-032)", () => {
  * BL-035 on screen. The banner mechanism was already there for dependencies; a subtask blocker has to reach it
  * with a sentence of its own rather than falling through to a bare label.
  */
-describe("an open subtask is named in the blocked banner", () => {
+describe("an open subtask is named where it can be cleared, not in a banner", () => {
   const withOpenSubtask = () => projectionItem({
     workItemCapabilities: ["planning", "execution", "subtasks"],
     subtasks: {
@@ -1486,33 +1486,35 @@ describe("an open subtask is named in the blocked banner", () => {
     }
   });
 
-  it("collapses a subtask blocker to one sentence and points at the list that names it", async () => {
+  it("does not draw a banner for a subtask block at all", async () => {
     /*
-     * ⚠ THIS ASSERTION CHANGED, and the reason is worth keeping.
+     * ⚠ THIS ASSERTION HAS CHANGED TWICE, and the whole chain is worth keeping because each step was right
+     * when it was made.
      *
-     * It used to require a per-blocker ROW: the subtask's own sentence plus which act it stops. That was right
-     * while the banner was the only place a blocker was named. It is not any more — measured on a live blocked
-     * task, the banner printed a title and three rows each ending in the same words, naming three subtasks that
-     * the Subtasks card listed directly below with their own controls. Four sentences for one fact.
+     * ROUND 1 it required a per-blocker ROW — the subtask's sentence plus which act it stopped — which was
+     * correct while the banner was the only place a blocker was named.
+     * ROUND 2 measured the banner printing a title and three rows ending in the same words, naming three
+     * subtasks the Subtasks card already listed with their own controls, and collapsed it to one line plus a
+     * link.
+     * ROUND 3 (2026-08-25, BL-207) measured the PAGE rather than the banner and found the collapse had stopped
+     * one step short: the same block was still stated three times — banner, the button's own reason, the
+     * Subtasks card's amber line — and the link scrolled to a card already on screen. So the banner says
+     * nothing here now.
      *
-     * So the banner now states the fact once and LINKS to the list. The per-blocker sentence is not lost, it
-     * moved to where the subtask already lived.
+     * ⚠ BL-104 IS ANSWERED BY THIS, not left open: its complaint was that the collapsed line stopped NAMING
+     * the single blocker. The name never needed the banner — the Subtasks card carries it, beside the checkbox
+     * that clears it, which is asserted below.
      *
-     * ⚠ WHAT THIS COSTS, said plainly: with a single blocker the old banner NAMED it ("Bütçe kalemini doğrula")
-     * and this one does not — it says "1 subtask" and offers the link. Recorded as BL-104; if the owner wants
-     * the name back for n === 1, that is a branch here and not a redesign.
-     *
-     * The dependency-typed path is untouched and still renders full rows — see the companion assertion in
-     * wcn-detail-three-regions: those blockers appear nowhere else, so collapsing them would delete rather than
-     * de-duplicate.
+     * The dependency-typed path is untouched — see wcn-detail-three-regions. Those blockers appear nowhere
+     * else, so silencing them would delete rather than de-duplicate.
      */
     await bootDetailPage(withOpenSubtask());
 
-    const banner = app().querySelector(".wcn-blocked");
-    expect(banner.classList.contains("wcn-blocked-oneline")).toBe(true);
-    expect(banner.textContent).toContain("BlockedSubtaskOneLine");
-    expect(app().querySelector(".wcn-blocked-item"), "the repeated per-blocker row survived").toBeNull();
-    expect(app().querySelector("[data-wcn-goto-subtasks]"), "no route to the list that names it").not.toBeNull();
+    expect(app().querySelector(".wcn-blocked"), "the third telling is back").toBeNull();
+    expect(app().querySelector(".wcn-blocked-item"), "an orphaned blocker row survived").toBeNull();
+    // What replaced it, and what BL-104 actually asked for: the child BY NAME, where it can be cleared.
+    expect(app().querySelector("#wcn-subtasks-card"), "the card that owns this block is gone").not.toBeNull();
+    expect(app().querySelector("[data-wcn-subtask]"), "no way to clear the block").not.toBeNull();
   });
 
   it("keeps completion visible and disabled", async () => {

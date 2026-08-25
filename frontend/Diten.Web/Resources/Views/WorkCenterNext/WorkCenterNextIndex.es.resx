@@ -542,12 +542,6 @@
   <data name="StepClosedOn" xml:space="preserve">
     <value>Cerrado el {0}</value>
   </data>
-  <data name="BlockedSubtaskOneLine" xml:space="preserve">
-    <value>No puede completarse mientras haya subtareas abiertas ({0})</value>
-  </data>
-  <data name="BlockedGoToSubtasks" xml:space="preserve">
-    <value>Ir a las subtareas</value>
-  </data>
   <data name="StepAccepted" xml:space="preserve">
     <value>Aceptado</value>
   </data>
@@ -890,7 +884,7 @@
     <value>Se suma al tiempo ya registrado en esta tarea; no inicia ni detiene el cronómetro.</value>
   </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
-    <value>Reserva la reunión de revisión en el calendario; la fecha límite no cambia.</value>
+    <value>La conexión con el calendario aún no existe: este registro solo aparece en esta pantalla y se pierde al cerrar la página. La fecha límite no cambia.</value>
   </data>
   <data name="NewInSourceSubtext" xml:space="preserve">
     <value>El registro se crea en ese módulo y allí permanece; el Centro de tareas no guarda copia.</value>

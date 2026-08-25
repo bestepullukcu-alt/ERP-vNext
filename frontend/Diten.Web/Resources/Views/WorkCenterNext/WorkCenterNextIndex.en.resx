@@ -542,12 +542,6 @@
   <data name="StepClosedOn" xml:space="preserve">
     <value>Closed on {0}</value>
   </data>
-  <data name="BlockedSubtaskOneLine" xml:space="preserve">
-    <value>Cannot be completed while subtasks remain open ({0})</value>
-  </data>
-  <data name="BlockedGoToSubtasks" xml:space="preserve">
-    <value>Go to subtasks</value>
-  </data>
   <data name="StepAccepted" xml:space="preserve">
     <value>Accepted</value>
   </data>
@@ -890,7 +884,7 @@
     <value>Adds to the time already logged on this task; it does not start or stop the timer.</value>
   </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
-    <value>Books the review meeting in the calendar; the due date is unchanged.</value>
+    <value>The calendar connection is not in place yet: this record shows only on this screen and is lost when you close the page. The due date is unchanged.</value>
   </data>
   <data name="NewInSourceSubtext" xml:space="preserve">
     <value>The record is created in that module and stays there; the Task Center keeps no copy.</value>

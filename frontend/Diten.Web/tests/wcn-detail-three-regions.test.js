@@ -1646,7 +1646,7 @@ describe("a finished task says WHEN it finished", () => {
   });
 });
 
-describe("the blocked notice says it once and points at the real list", () => {
+describe("the blocked notice speaks only for blocks with nowhere else to live", () => {
   const blocked = (n, code = "SUBTASK_BLOCKED") => projectionItem({
     /*
      * The contract refuses a `blockedState` that names an action the item does not carry as DISABLED with a
@@ -1667,8 +1667,7 @@ describe("the blocked notice says it once and points at the real list", () => {
       supportsBulk: false,
       riskLevel: "normal"
     }],
-    // The subtasks the blockers ARE. The whole point of the one-liner is that this list already names them, so
-    // a fixture without it would be testing the collapse against a page that had nothing to collapse into.
+    // The subtasks the blockers ARE — the card that made the banner redundant.
     subtasks: { mode: "full", items: Array.from({ length: n }, (_, i) => subtask(i)) },
     blockedState: {
       blocked: true,
@@ -1680,72 +1679,62 @@ describe("the blocked notice says it once and points at the real list", () => {
     }
   });
 
-  it("collapses N subtask blockers to ONE sentence", async () => {
-    /*
-     * MEASURED before, on a live blocked task: a title ("3 sorun ilerlemeyi engelliyor") followed by three rows
-     * each ending "…tamamlamayı engelliyor" — the same sentence four times — naming three subtasks that the
-     * Subtasks card already listed by name with their own controls. The banner was a second, worse copy of a
-     * list the page already had.
-     */
+  /*
+   * ⚠ THIS BLOCK USED TO ASSERT THE OPPOSITE, and it was right at the time.
+   *
+   * The banner first printed one row per open subtask — the same sentence four times over — so a round of work
+   * collapsed it to one line plus an "Alt görevlere git" link, and these tests pinned that. CT then measured
+   * the page as a whole (BL-207) and found the collapse had not gone far enough: the SAME block was still
+   * stated three times — banner, the button's own reason, and the Subtasks card's amber line — and the link
+   * scrolled to a card already on the screen. One telling per question, standing where the question is asked.
+   *
+   * So the subtask banner is not drawn at all now, and the assertions move with the decision rather than being
+   * deleted: what the page must NOT say is as much a rule as what it must.
+   */
+  it("draws NOTHING when every blocker is a subtask", async () => {
     await boot(blocked(3));
-    const banner = app().querySelector(".wcn-blocked");
-    expect(banner.classList.contains("wcn-blocked-oneline")).toBe(true);
-    expect(banner.querySelector(".wcn-blocked-list"), "the repeated list survived").toBeNull();
-    expect(banner.textContent).toContain("BlockedSubtaskOneLine");
+    expect(app().querySelector(".wcn-blocked"), "the banner is back for subtasks").toBeNull();
   });
 
-  it("carries a link to the subtasks card, and the card exists to receive it", async () => {
-    // A count with no route to the thing counted just relocates the question.
-    await boot(blocked(2));
-    const link = app().querySelector("[data-wcn-goto-subtasks]");
-    expect(link, "no link out of the notice").not.toBeNull();
-    expect(link.tagName, "a div cannot be reached by Tab or fired by Enter").toBe("BUTTON");
-    expect(app().querySelector("#wcn-subtasks-card"), "the link's target does not exist").not.toBeNull();
+  it("leaves no empty alert box behind", async () => {
+    await boot(blocked(3));
+    // A bordered box with nothing in it reads as a page that failed to finish drawing.
+    expect(app().querySelector(".wcn-blocked-list"), "an empty banner shell survived").toBeNull();
+    expect(app().textContent).not.toContain("BlockedBannerCount");
   });
 
-  it("HAS A HANDLER — the assertion this session earned the hard way", async () => {
-    /*
-     * MUTATION TARGET. Twice in this session a control shipped with no handler at all ("Tümünü gör", in two
-     * places): it looked finished, it was reachable, it did nothing. Deleting the `data-wcn-goto-subtasks`
-     * branch from the click delegate fails here.
-     *
-     * Asserted as BEHAVIOUR, not as source text: the notice is rendered while the Activity tab is open — the
-     * case a plain `#anchor` could never handle, because the subtasks card is in the DOM but hidden — and the
-     * click must both switch the tab and reveal the card.
-     */
+  it("still says it in the two places that stand beside the fix", async () => {
     await boot(blocked(3));
-    app().querySelector('[data-wcn-detail-tab="activity"]').click();
-    await new Promise((r) => setTimeout(r, 0));
-    const panelOf = () => app().querySelector("#wcn-subtasks-card").closest("[data-wcn-detail-panel]");
-    expect(panelOf().classList.contains("d-none"), "precondition: the card starts hidden").toBe(true);
-
-    app().querySelector("[data-wcn-goto-subtasks]").click();
-    await new Promise((r) => setTimeout(r, 0));
-
-    expect(panelOf().classList.contains("d-none"), "the link did not reveal the card").toBe(false);
-    expect(app().querySelector('[data-wcn-detail-tab="general"]').classList.contains("active")).toBe(true);
+    // The button's own sentence, at the button — "why is this dead".
+    const reason = app().querySelector(".wcn-act-reason");
+    expect(reason, "the action stopped explaining itself").not.toBeNull();
+    // And the children by name, with the controls that clear the block — "which one, and how".
+    expect(app().querySelector("#wcn-subtasks-card"), "the card that owns this block is gone").not.toBeNull();
+    expect(app().querySelectorAll("[data-wcn-subtask]").length).toBe(3);
   });
 
   it("keeps the FULL list when a blocker is not a subtask", async () => {
     /*
-     * A dependency-typed blocker appears nowhere else on this page, so collapsing it would delete information
-     * rather than de-duplicate it — and the link would point at a card that does not contain it.
+     * A dependency-typed blocker appears nowhere else on this page — the Dependencies card shows the
+     * relationship, never which act is stopped right now — so dropping it would delete information rather than
+     * de-duplicate it.
      */
     await boot(blocked(2, "DEPENDENCY_BLOCKED"));
     const banner = app().querySelector(".wcn-blocked");
-    expect(banner.classList.contains("wcn-blocked-oneline")).toBe(false);
+    expect(banner, "a block with nowhere else to live was silenced too").not.toBeNull();
     expect(banner.querySelector(".wcn-blocked-list")).not.toBeNull();
-    expect(app().querySelector("[data-wcn-goto-subtasks]"), "a link that would point nowhere").toBeNull();
+    expect(banner.querySelectorAll(".wcn-blocked-item").length).toBe(2);
   });
 
-  it("stays BELOW the strip — the strip asks 'where', the notice answers 'why not'", async () => {
-    await boot(blocked(3));
+  it("stays BELOW the strip when it IS drawn — the strip asks 'where', the notice answers 'why not'", async () => {
+    await boot(blocked(2, "DEPENDENCY_BLOCKED"));
     const card = app().querySelector(".wcn-detail-command");
     const kids = [...card.children];
     expect(kids.indexOf(card.querySelector(".wcn-stepbar")))
       .toBeLessThan(kids.indexOf(card.querySelector(".wcn-blocked")));
   });
 });
+
 
 describe("the detail tabs and their panels are one widget, not two", () => {
   it("wires tab → panel in both directions", async () => {
@@ -3341,21 +3330,26 @@ describe("the guidance answers the strip, so it comes after it", () => {
   it("puts the guidance before the block notice when a task carries both", async () => {
     // The contract requires every blocked code to name an action the reader can SEE disabled, so the fixture
     // carries that action too — a blocker pointing at nothing would have the item dropped, not rendered.
+    //
+    // ⚠ A DEPENDENCY BLOCK, not a subtask one (2026-08-25, BL-207). This test is about ORDER — obstacle after
+    // instruction — and a subtask block no longer draws a banner at all, so it could no longer carry the
+    // question being asked. Swapped rather than deleted: the ordering rule did not change, only the example
+    // that can demonstrate it.
     await boot(projectionItem({
       admissionState: "pendingAcceptance",
       primaryActionCode: "complete",
       actions: [{
         code: "complete", label: { kind: "resource", key: "WorkAggregation_Action_complete" },
         semanticType: "complete", enabled: false, source: "provider",
-        disabledReasonCode: "SUBTASK_BLOCKED",
+        disabledReasonCode: "DEPENDENCY_BLOCKED",
         // A LABEL, not a bare string — the contract's `isLabel` is what makes a reason translatable.
-        disabledReason: { kind: "display", text: "3 alt görev kapanmadan tamamlanamaz", locale: "und" },
+        disabledReason: { kind: "display", text: "Mizan kapanmadan tamamlanamaz", locale: "und" },
         requiresConfirmation: false, requiresReason: false, requiresEvidence: false,
         supportsBulk: false, riskLevel: "normal"
       }],
       blockedState: { blocked: true, affectedActionCodes: ["complete"],
-        blockers: [{ code: "SUBTASK_BLOCKED", affectedActionCode: "complete",
-          label: { kind: "resource", key: "WorkAggregation_ActionDisabled_SubtaskOpen" } }] }
+        blockers: [{ code: "DEPENDENCY_BLOCKED", affectedActionCode: "complete", dependencyType: "FinishToStart",
+          label: { kind: "display", text: "Mizanı kapat", locale: "und" } }] }
     }));
 
     const guidance = app().querySelector(".wcn-guidance");

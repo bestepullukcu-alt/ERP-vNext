@@ -5175,3 +5175,90 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - ⚠ Bu, oturumda üçüncü kez aynı sınıf: **bir yüzeyi düzeltip ikizini unutmak.** Bu yüzden düzeltme JS'te değil
   CSS'te, davranışın kaynağında yapıldı.
 - **Gelecek regresyon riski: 🟢**
+
+### BL-208 güncelleme (2026-08-25) — KAPANDI: menüdeki devre dışı madde gerekçesini söylüyor
+- **SEBEP, tahmin edilenlerden hiçbiri değildi.** Gerekçe "geçilmiyor" da değildi, "çizilip gizleniyor" da:
+  yapışkan şeridin menüsü `actionMenuLi`'yi **hiç çağırmıyordu**. Kendi `<li><button class="dropdown-item">`
+  şablonunu elle yazıyordu ve o şablon yalnızca ETİKET taşıyordu. Yani gizlenecek bir gerekçe yoktu —
+  gerekçe kavramından hiç haberi olmayan **ikinci bir render yolu** vardı. `wcn-menu-reason` bu sırada
+  uygulamadaki diğer BÜTÜN menülerde doğru çalışıyordu.
+- ⚠ Bu, BL-243'ün ve oturumdaki diğer ikisinin aynısı: **bir yüzeyi düzeltip ikizini unutmak.** O yüzden
+  düzeltme "şeride gerekçe eklemek" değil, şeridi paylaşılan satıra bağlamak oldu — menü satırlarına bundan
+  sonra eklenecek şey ikinci kez hatırlanmayı beklemiyor.
+- Kilit iki farklı türetimle hesaplanıyordu (`state.submittingItemId === item.id` ile
+  `interactionLocked = !!submittingActionCode`). Paylaşılan satır artık kilidi isteğe bağlı olarak **dışarıdan
+  alıyor**; şerit kendi cevabını geçiyor, mevcut çağıranların davranışı değişmedi.
+- Erişilebilirlik: menü satırı kendi gerekçesine `aria-describedby` ile bağlandı. Id `-menu` ekiyle ayrıldı —
+  detay sayfası aynı aksiyonu **üç kez** çizebiliyor (kart rayı · şeridin ana düğmesi `-bar` · bu menü).
+  Canlı ölçüm (`848a624f`): dört gerekçe, dört tekil id, çift yok.
+- ⚠ **KIRPILMIYORDU AMA OKUNMUYORDU.** `white-space: normal` zaten vardı, `max-inline-size: 15rem` bir TAVAN.
+  Ölçüm: cümleye 97px düşüyordu — etiketlerin ihtiyaç duyduğu genişlik neyse o — ve "Bu görev devredilemez."
+  iki-üç kelimelik bir sütuna sarıyordu. Kırpık değildi, sadece okunmuyordu; tavan bunu göremezdi. `13rem`
+  **taban** eklendi: menü içeriğine göre büyüdüğü için içeride kırpmak yerine menüyü genişletiyor.
+  Sonuç ölçüldü: menü 274px, cümle tek satır, ekran dışına taşma yok (900px).
+- **Gelecek regresyon riski: 🟢**
+
+### BL-207 güncelleme (2026-08-25) — KAPANDI: alt görev engeli afişten düştü, diğerleri kaldı
+- **ENGEL TÜRÜ SAYIMI (ölçüldü, varsayılmadı).** Sağlayıcı `ResolveBlockers` ile tam **iki** kod üretiyor.
+  Kontrol listesi, onay ve inceleme `blockedState`'e **hiç ulaşmıyor** — onlar `Gates` ve aksiyonun kendi
+  `disabledReason`'ı üzerinden konuşuyor. Yani afişin baştan beri iki ailesi vardı:
+
+  | Engel kodu | Afiş çiziyordu | Sayfada kendi kartı | Kart engeli adıyla + düzeltmesiyle gösteriyor mu | Karar |
+  |---|---|---|---|---|
+  | `SUBTASK_BLOCKED` | evet | ALT GÖREVLER | **evet** — çocuk adıyla, tik kutusuyla, kendi sarı satırıyla | **afişten DÜŞ** |
+  | `DEPENDENCY_BLOCKED` | evet | BAĞIMLILIKLAR | **hayır** — ilişkiyi ve karşı görevin durumunu gösterir, ama "şu an hangi eylemi durdurduğunu" söylemez (`BlockedAffects*` yalnız afişte var) | **afişte KAL** |
+  | `CHECKLIST_INCOMPLETE` · `APPROVAL_PENDING` · `REVIEW_PENDING` | **hayır, hiç** | — | — | afişi ilgilendirmiyor |
+
+- Uygulama tek bir kümeye asıldı (`BANNER_SUPPRESSED_CODES`), tek bir kodun özel durumuna değil: ileride kendi
+  kartını kazanan aile aynı yoldan düşer, kazanmayan cümlesini burada tutar. **Afiş silinmedi.**
+- Karışık kümede yalnızca bastırılan kod düşüyor, kalanı tam liste olarak çiziliyor (test ediyor).
+- Boş afiş kutusu bırakılmıyor: geriye engel kalmazsa hiç çizilmiyor.
+- Ölü kalan her şey gitti: `allSubtasks` tek-satır dalı, `data-wcn-goto-subtasks` tıklama işleyicisi, CSS'i
+  (`wcn-blocked-oneline` · `wcn-blocked-goto`) ve 7 dilden `BlockedSubtaskOneLine` + `BlockedGoToSubtasks`.
+- ⚠ **ALTI TEST ESKİ KARARI YAZIYA DÖKMÜŞTÜ** ve kırmızıya döndü. Silinmediler — yeni kuralı ölçecek şekilde
+  değiştirildiler, her birinde kararın nasıl iki kez değiştiği yazılı. Sayfanın **söylememesi gereken** şey de
+  en az söylemesi gereken kadar kuraldır.
+- ⚠ **BL-104 BU KARARLA CEVAPLANDI**, açıkta bırakılmadı: şikâyeti, toplanan satırın tek engeli artık ADIYLA
+  anmamasıydı. İsim afişe hiç ihtiyaç duymuyordu — alt görev kartı onu, temizleyen tik kutusunun yanında
+  zaten taşıyor.
+- Canlı ölçüm (`848a624f`, 900px ve 1440px, iki tema): afiş yok · düğmenin gerekçesi yerinde · alt görev
+  kartı adıyla ve kutusuyla yerinde.
+- **Gelecek regresyon riski: 🟢**
+
+### BL-219 güncelleme (2026-08-25) — KAPANDI: toplantı diyaloğu ne yaptığını söylüyor
+- Eski cümle: *"İnceleme toplantısını takvime yazar; son tarih değişmez."* — **takvime hiçbir şey yazmıyor.**
+  `applyReviewMeeting` `state.meetings`'e ekliyor ve `item._fixture`'ı yeniden yansıtıyor; sunucuya hiçbir şey
+  gitmiyor, yenilemede kayboluyor.
+- Yeni cümle üç olguyu da adıyla söylüyor — bağlantı kurulmadı · kayıt yalnız bu ekranda · kapatınca kaybolur —
+  ve son tarih notunu koruyor. **7 dil.** Test hem eski iddianın 7 dilde de gitmiş olduğunu, hem üç işaretin
+  7 dilde de bulunduğunu ölçüyor.
+- ⚠ AKSİYON SİLİNMEDİ, sayaç ve `pause`'un aksine: ilan edilmiş sözleşmesi var
+  (`reviewMeetingPolicy`, WorkAggregationModels.cs:832). **Yalan söylemeyi bırak, özellik yazma.**
+- Canlı doğrulandı (`INBOX-REVIEW-REQUIRED-MEETING?fixtures=showcase`): diyalog yeni cümleyi gösteriyor.
+- **Gelecek regresyon riski: 🟢**
+
+### BL-244 — [SAYIM, DÜZELTİLMEDİ] `state.*` üzerine yazıp sunucuya hiç gitmeyen yollar
+- CT iki tane bulup silmişti, üçüncüsü BL-219'du. **Dördüncüsü var** — ve beklenenden büyük.
+- Sayım (`wwwroot/assets/js/WorkCenterNext/app.js`), dört yol:
+  1. `applyReviewMeeting` → `state.meetings.push` — **BL-219, bu tur dürüstleştirildi** (silinmedi: sözleşmesi var).
+  2. `applyTransition` içindeki `case 'accept'` / `itemType === 'meetingInvite'` → `state.meetings.push`.
+     ⚠ **Kusur değil:** çağıranı `isRealTaskItem` ile çitli; gerçek görevler sunucuya gidiyor, fixture olmayan
+     her şey için konsola "MOCK transition" uyarısı basılıyor. Yapı gereği dürüst.
+  3. `createSelfTask`'ın fixture dalı → `state.items.push`. Aynı şekilde showcase'e çitli, kendi yorumunda yazılı.
+  4. **`addGlobalNote` → `state.notes.unshift`, VE ULAŞILAMAZ.** Ölçüm: beş kanca hiç çizilmeyen işaretlemeyi
+     dinliyor — `data-wcn-toggle` · `data-wcn-global-note-input` · `data-wcn-global-note-add` ·
+     `data-wcn-note-convert` · `data-wcn-meeting-followup` — beşinin de `="` ile çizim sayısı **0**.
+     Tur B'de `renderNotes`/`renderAgenda` silindiğinde işleyicileri kaldı. Yanlarında `state.notesOpen`,
+     `state.agendaOpen` ve URL'in `panel` parametresi de yaşıyor.
+- ⚠ CT'nin talimatı gereği **düzeltilmedi, kaydedildi**. Temizlenirse tek bir işte temizlenmeli: beş kanca,
+  iki durum alanı, `panel` URL parametresi ve `convertGlobalNote`/`createMeetingFollowup` işlevleri.
+- **Gelecek regresyon riski: 🟢 (ulaşılamaz kod kullanıcıya görünmüyor) / 🟡 bakım** — silinmiş bir yüzeyin
+  işleyicisi, kodu okuyan için hâlâ var olan bir özellik gibi duruyor.
+
+### BL-245 — [ÖLÇÜLDÜ, AÇIK] `cancel` menüde genel ok ikonuyla çiziliyor
+- Ölçüm (`848a624f`, şerit menüsü): `inboxActionIcon` haritasında `cancel` yok, geri düşüş
+  `bx-right-arrow-alt` — yani "Görevi iptal et" **ileri oku** takıyor. Metin kırmızı, ikon nötr ve yanlış yönde.
+- ⚠ `inquire: bx-question-mark` DOKUNULMADI: sahibin bir tur önce onayladığı ikon.
+- İkon seçimi sahibin ilgilendiği bir karar olduğu için düzeltilmedi, öneri olarak bırakıldı: `bx-x` veya
+  `bx-block`. Sahibin seçmesi gerekiyor.
+- **Gelecek regresyon riski: 🟢**

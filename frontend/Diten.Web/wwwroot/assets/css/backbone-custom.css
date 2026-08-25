@@ -719,6 +719,11 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     line-height: 1.25;
     color: var(--bs-secondary-color);
     white-space: normal;
+    /* ⚠ A FLOOR AS WELL AS A CEILING (2026-08-25, BL-208). The cap alone left the sentence at whatever width the
+       LABELS happened to need: measured 97px on a real task, so "Bu görev devredilemez." wrapped into a narrow
+       column two or three words wide. It was not truncated — it was simply unreadable, which the cap could not
+       see. A dropdown sizes to its content, so a floor here widens the menu instead of clipping inside it. */
+    min-inline-size: 13rem;
     max-inline-size: 15rem;
     margin-block-start: 0.1rem;
 }
@@ -6088,9 +6093,6 @@ tags.diten-tags .tagify__input {
    times — naming three subtasks that the Subtasks card already lists by name with their own controls. Wrapping
    allowed (the sentence localises to seven languages, and the link must not be pushed off a narrow row), but
    the row no longer stacks a list under itself. */
-.wcn-blocked-oneline { align-items: center; flex-wrap: wrap; }
-.wcn-blocked-oneline .wcn-blocked-title { font-weight: 600; }
-.wcn-blocked-goto { font-size: .75rem; }
 /* A cancelled predecessor is still shown — it just no longer holds anything up. */
 /* A CALLED-OFF PREDECESSOR BLOCKS NOTHING, and the row says so by going quiet rather than disappearing —
    hiding it would erase the record. The whole row mutes now, not just the title, because the title is no
@@ -6710,7 +6712,6 @@ tags.diten-tags .tagify__input {
 .wcn-subtask-check:focus-visible,
 .wcn-subtask-title:focus-visible,
 .wcn-subtask-rowaction:focus-visible,
-.wcn-blocked-goto:focus-visible,
 .wcn-linklike:focus-visible,
 .wc-tab-compact:focus-visible,
 .diten-checkitem-box:focus-visible,

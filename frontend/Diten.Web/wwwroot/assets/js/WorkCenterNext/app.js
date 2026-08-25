@@ -1350,13 +1350,38 @@
     // receive semantic text colours. Icon + label sit in a flex
     // row (see .wcn-menu-item CSS) so the glyph is vertically centred with the text,
     // not baseline-dropped like a raw Sneat dropdown-item.
-    const actionMenuLi = (item, action) => {
-        const interactionLocked = state.submittingItemId === item.id;
+    const actionMenuLi = (item, action, lockedOverride) => {
+        /*
+         * ⚠ THE LOCK MAY BE HANDED IN. Two derivations exist and they are not the same sentence: rows on the
+         * list ask `state.submittingItemId === item.id`, while the detail surface's resolver publishes
+         * `interactionLocked = !!submittingActionCode`. When the sticky bar's menu started sharing this row
+         * (BL-208) it would have silently swapped its own answer for the row's. It passes its own instead, and
+         * the default is unchanged for every existing caller.
+         */
+        const interactionLocked = lockedOverride === undefined
+            ? state.submittingItemId === item.id
+            : !!lockedOverride;
         const disabled = action.disabled || interactionLocked ? ' disabled aria-disabled="true"' : '';
         // Disabled reason sits on its own muted line under the label — never mashed onto
         // the end of the label text (e.g. "Onayla ve kapat" + why-it's-locked).
-        const reason = action.disabled ? `<small class="wcn-menu-reason">${esc(action.disabledReason || t(action.disabledReasonKey))}</small>` : '';
-        return `<li><button type="button" class="dropdown-item wcn-menu-item${actionMenuTone(action)}" data-wcn-action="${action.key}" data-wcn-id="${item.id}"${disabled}><i class="bx ${inboxActionIcon(action)}"></i><span class="wcn-menu-text"><span class="wcn-menu-label">${esc(actionLabel(action))}</span>${reason}</span></button></li>`;
+        /*
+         * ⚠ THE SENTENCE IS ADDRESSED TO THE ITEM, NOT MERELY NEAR IT (2026-08-25). Same finding as the card's
+         * primary a day earlier: the muted line was on screen and no assistive technology could tell which
+         * control it explained. A menu is worse than a card here — the rows are identical in shape, so "the one
+         * underneath" is not even a visual answer once the menu is read aloud.
+         *
+         * ⚠ `-menu` SUFFIX, DELIBERATELY. The detail page draws this action up to three times: the card's rail
+         * (bare id), the sticky bar's lead button (`-bar`) and this menu. Reusing the rail's id would put two
+         * elements with one id in the document and send `getElementById` to whichever came first — which is not
+         * the one beside this row.
+         */
+        const reasonId = action.disabled && actionReasonId(item, action)
+            ? `${actionReasonId(item, action)}-menu`
+            : '';
+        const reason = action.disabled ? `<small class="wcn-menu-reason"${
+            reasonId ? ` id="${esc(reasonId)}"` : ''}>${esc(action.disabledReason || t(action.disabledReasonKey))}</small>` : '';
+        return `<li><button type="button" class="dropdown-item wcn-menu-item${actionMenuTone(action)}" data-wcn-action="${action.key}" data-wcn-id="${item.id}"${
+            reasonId ? ` aria-describedby="${esc(reasonId)}"` : ''}${disabled}><i class="bx ${inboxActionIcon(action)}"></i><span class="wcn-menu-text"><span class="wcn-menu-label">${esc(actionLabel(action))}</span>${reason}</span></button></li>`;
     };
 
     // Grouped menu body: neutral/constructive actions first, then — separated by a
@@ -2019,10 +2044,17 @@
                     <span>${esc(t('ActionsOther'))}</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    ${rest.map((a) => `<li><button type="button" class="dropdown-item${
-                a.destructive ? ' text-danger' : ''}" data-wcn-action="${esc(a.key)}"
-                        data-wcn-id="${esc(item.id)}"${a.disabled || locked ? ' disabled' : ''}>${
-                esc(actionLabel(a))}</button></li>`).join('')}
+                    ${/*
+                     * ⚠ THE SHARED ROW, NOT A SECOND ONE (2026-08-25, BL-208). This menu used to hand-roll its
+                     * own `<li><button class="dropdown-item">` — label only. MEASURED at 900px on task
+                     * 9bf6194e: "Başkasına ata" sat dimmed here and said NOTHING, while the card two hundred
+                     * pixels up said "Bu görev devredilemez." The reason was never passed, so there was nothing
+                     * to hide: this was a SECOND render path that had simply never been taught about reasons.
+                     *
+                     * `actionMenuLi` is the one every other menu in the app already uses. It brings the icon,
+                     * the semantic tone and the reason line with it — and, more to the point, the next thing
+                     * added to menu rows arrives here for free instead of being remembered twice.
+                     */ ''}${rest.map((a) => actionMenuLi(item, a, locked)).join('')}
                 </ul>
                </div>`
             : '';
@@ -3248,9 +3280,34 @@
     // is the first of these; the shape was designed for it.
     const BLOCKER_CODE_SENTENCE_KEY = { SUBTASK_BLOCKED: 'BlockerSubtaskOpen' };
     const BLOCKED_AFFECTS_KEY = { start: 'BlockedAffectsStart', complete: 'BlockedAffectsComplete' };
+    /*
+     * ── WHAT THE BANNER MAY SAY, AND WHAT IT MUST LEAVE TO THE PAGE (2026-08-25, BL-207) ──────────────────
+     *
+     * MEASURED: the provider emits exactly TWO blocker codes — DEPENDENCY_BLOCKED and SUBTASK_BLOCKED
+     * (`ResolveBlockers`). Checklist, approval and review never reach `blockedState` at all; they are `Gates`
+     * and they speak through the action's own `disabledReason`. So the banner has only ever had two families to
+     * decide between, and only one of them owns a card on this page:
+     *
+     *   SUBTASK_BLOCKED   → the Subtasks card lists the open child BY NAME, with the checkbox that clears it,
+     *                       and its own amber line. Three sentences for one fact, and only that card sits where
+     *                       the fix is. DROPPED HERE.
+     *   DEPENDENCY_BLOCKED → the Dependencies card shows the relationship and the other task's state, but never
+     *                       says WHICH ACT IS STOPPED RIGHT NOW — that clause (`BlockedAffects*`) exists only
+     *                       here. Removing it would delete a fact rather than de-duplicate one. KEPT.
+     *
+     * The rule the decision follows: a result lives where the act is. A sentence that stands beside nothing is
+     * a third telling, and the "Alt görevlere git" link proved it — it scrolled to a card already on screen.
+     *
+     * ⚠ THE BANNER IS NOT GONE. It is not drawn for ONE code. A family that grows its own card later drops out
+     * the same way; one that never does keeps its sentence here.
+     */
+    const BANNER_SUPPRESSED_CODES = new Set(['SUBTASK_BLOCKED']);
     const renderBlocked = (item) => {
         if (!isBlocked(item)) { return ''; }
-        const blockers = item.blockedState.blockers || [];
+        const all = item.blockedState.blockers || [];
+        const blockers = all.filter((b) => !BANNER_SUPPRESSED_CODES.has(b.code));
+        // ⚠ EMPTY MEANS ABSENT, not an empty box. A task blocked only by its subtasks now renders no banner at
+        // all — a bordered alert with nothing in it reads as a page that failed to finish drawing.
         if (!blockers.length) { return ''; }
         const rows = blockers.map((b) => {
             const name = b.labelText || '';
@@ -3279,32 +3336,6 @@
                 ${affectsKey ? `<span class="wcn-blocked-affects">${esc(t(affectsKey))}</span>` : ''}
             </li>`;
         }).join('');
-        /*
-         * WHEN EVERY BLOCKER IS A SUBTASK, SAY IT ONCE AND POINT.
-         *
-         * MEASURED on a live blocked task: the banner printed a title ("3 sorun ilerlemeyi engelliyor") and then
-         * three rows, each ending "tamamlamayı engelliyor" — the same sentence four times — while the three
-         * subtasks it was naming were already listed, by name and with their own controls, in the Subtasks card
-         * further down the page. The banner was a second, worse copy of a list the page already had.
-         *
-         * So: one sentence, and a way to reach the real list. The link is the whole point — a count with no
-         * route to the thing counted just relocates the question.
-         *
-         * ⚠ ONLY when every blocker is a subtask. A dependency-typed blocker (FinishToStart and friends) is NOT
-         * shown anywhere else on this page, so collapsing those rows would delete information rather than
-         * de-duplicate it, and the link would point at a card that does not contain them. Mixed sets keep the
-         * full list.
-         */
-        const allSubtasks = blockers.every((b) => b.code === 'SUBTASK_BLOCKED');
-        if (allSubtasks) {
-            return `<div class="wcn-blocked wcn-blocked-oneline" role="alert">
-                <i class="bx bx-lock-alt" aria-hidden="true"></i>
-                <span class="wcn-blocked-title">${esc(tf('BlockedSubtaskOneLine', blockers.length))}</span>
-                <button type="button" class="wcn-linklike wcn-blocked-goto" data-wcn-goto-subtasks>${
-                    esc(t('BlockedGoToSubtasks'))}</button>
-            </div>`;
-        }
-
         return `<div class="wcn-blocked" role="alert">
             <i class="bx bx-lock-alt" aria-hidden="true"></i>
             <div class="wcn-blocked-body">
@@ -8075,46 +8106,6 @@
         if (showAllEl) {
             const key = showAllEl.getAttribute('data-wcn-showall');
             if (key) { state.expandedLists[key] = !state.expandedLists[key]; render(); }
-            return;
-        }
-        /*
-         * THE BLOCKED BANNER'S LINK — and the reason it is a handler and not a href.
-         *
-         * The Subtasks card lives inside the GENERAL tab. A reader looking at the banner may be on the Activity
-         * tab, where the card is in the DOM but hidden, so a plain `#wcn-subtasks-card` anchor would scroll to
-         * something invisible and appear to do nothing. Switching tab first is the difference between a link
-         * that works and a link that looks broken.
-         *
-         * ⚠ This session has twice shipped a control with NO handler at all ("Tümünü gör", in two places), which
-         * is why the link's behaviour is asserted by a test rather than trusted.
-         *
-         * Focus moves with the scroll, not just the viewport: a keyboard reader who activates a link and keeps
-         * tabbing must continue from where they were sent, otherwise the next Tab returns them to the banner.
-         * The card carries `tabindex="-1"` so it can receive that focus without becoming a tab stop of its own.
-         */
-        const gotoSubtasksEl = event.target.closest('[data-wcn-goto-subtasks]');
-        if (gotoSubtasksEl) {
-            if (state.detailTab !== 'general') {
-                state.detailTab = 'general';
-                render();
-            }
-            const card = document.getElementById('wcn-subtasks-card');
-            if (card) {
-                /*
-                 * TWO MECHANISMS, ONE OUTCOME — and deliberately not `preventScroll`.
-                 *
-                 * `scrollIntoView` gives the smooth motion that keeps a reader oriented. But focusing a
-                 * `tabindex="-1"` element ALSO scrolls it into view, by the browser's own rules, and that path
-                 * survives environments where scripted scrolling is refused — measured in this very session:
-                 * `scrollingElement.scrollTop = n` reads back unchanged under the headless pane while real
-                 * input scrolls fine. Suppressing the focus scroll would have staked the whole behaviour on the
-                 * one call that can be ignored.
-                 *
-                 * They target the same element, so the redundancy costs a no-op and buys the guarantee.
-                 */
-                card.scrollIntoView({ block: 'start', behavior: 'smooth' });
-                card.focus();
-            }
             return;
         }
         const detailTabEl = event.target.closest('[data-wcn-detail-tab]');

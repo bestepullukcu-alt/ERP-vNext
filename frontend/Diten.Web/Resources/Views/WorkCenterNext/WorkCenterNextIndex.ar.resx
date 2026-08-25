@@ -542,12 +542,6 @@
   <data name="StepClosedOn" xml:space="preserve">
     <value>أُغلق في {0}</value>
   </data>
-  <data name="BlockedSubtaskOneLine" xml:space="preserve">
-    <value>لا يمكن الإكمال ما دامت هناك مهام فرعية مفتوحة ({0})</value>
-  </data>
-  <data name="BlockedGoToSubtasks" xml:space="preserve">
-    <value>الانتقال إلى المهام الفرعية</value>
-  </data>
   <data name="StepAccepted" xml:space="preserve">
     <value>مقبول</value>
   </data>
@@ -890,7 +884,7 @@
     <value>يُضاف إلى الوقت المسجَّل مسبقًا على هذه المهمة؛ ولا يبدأ المؤقّت أو يوقفه.</value>
   </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
-    <value>يحجز اجتماع المراجعة في التقويم؛ ولا يتغيّر تاريخ الاستحقاق.</value>
+    <value>لم يتم بعد إعداد الاتصال بالتقويم: يظهر هذا السجل على هذه الشاشة فقط ويُفقد عند إغلاق الصفحة. لا يتغيّر تاريخ الاستحقاق.</value>
   </data>
   <data name="NewInSourceSubtext" xml:space="preserve">
     <value>يُنشأ السجل في تلك الوحدة ويبقى فيها؛ ولا يحتفظ مركز المهام بنسخة منه.</value>

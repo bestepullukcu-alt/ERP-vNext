@@ -542,12 +542,6 @@
   <data name="StepClosedOn" xml:space="preserve">
     <value>{0} tarihinde kapandı</value>
   </data>
-  <data name="BlockedSubtaskOneLine" xml:space="preserve">
-    <value>{0} alt görev kapanmadan tamamlanamaz</value>
-  </data>
-  <data name="BlockedGoToSubtasks" xml:space="preserve">
-    <value>Alt görevlere git</value>
-  </data>
   <data name="StepAccepted" xml:space="preserve">
     <value>Kabul</value>
   </data>
@@ -890,7 +884,7 @@
     <value>Bu göreve daha önce girilen süreye eklenir; sayacı başlatmaz ya da durdurmaz.</value>
   </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
-    <value>İnceleme toplantısını takvime yazar; son tarih değişmez.</value>
+    <value>Takvim bağlantısı henüz kurulmadı: bu kayıt yalnızca bu ekranda görünür ve sayfayı kapattığınızda kaybolur. Son tarih değişmez.</value>
   </data>
   <data name="NewInSourceSubtext" xml:space="preserve">
     <value>Kayıt o modülde oluşur ve orada kalır; Görev Merkezi kopyasını tutmaz.</value>

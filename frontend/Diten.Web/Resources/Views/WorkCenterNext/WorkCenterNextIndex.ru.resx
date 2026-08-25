@@ -542,12 +542,6 @@
   <data name="StepClosedOn" xml:space="preserve">
     <value>Закрыто {0}</value>
   </data>
-  <data name="BlockedSubtaskOneLine" xml:space="preserve">
-    <value>Нельзя завершить, пока открыты подзадачи ({0})</value>
-  </data>
-  <data name="BlockedGoToSubtasks" xml:space="preserve">
-    <value>К подзадачам</value>
-  </data>
   <data name="StepAccepted" xml:space="preserve">
     <value>Принято</value>
   </data>
@@ -890,7 +884,7 @@
     <value>Добавляется к уже учтённому времени по этой задаче; таймер не запускается и не останавливается.</value>
   </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
-    <value>Записывает встречу по проверке в календарь; срок не меняется.</value>
+    <value>Связь с календарём ещё не настроена: эта запись видна только на этом экране и исчезнет при закрытии страницы. Срок не меняется.</value>
   </data>
   <data name="NewInSourceSubtext" xml:space="preserve">
     <value>Запись создаётся в этом модуле и остаётся там; Центр задач копию не хранит.</value>
