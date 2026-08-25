@@ -1,6 +1,7 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.ModuleCatalog.Commands;
+using Diten.Platform.Application.Features.Workflow;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -42,19 +43,41 @@ public sealed class ActivateModuleCatalogItemCommandHandler : IRequestHandler<Ac
         // Blocked (or a failed evaluation — fail-closed) → WorkflowTransitionBlockedException → activation is
         // aborted and the item stays in its current state (no commit). This is the template other state-
         // transitioning modules follow (see docs/workflow-transition-gate-standard.md).
-        await _transitionGate.EnsureAllowedOrThrowAsync(
-            new WorkflowGateRequest(
-                ObjectType: "ModuleCatalogItem",
-                ObjectId: item.Id.ToString(),
-                ObjectRef: $"ModuleCatalogItem:{item.ModuleCode}",
-                RequestedTransition: "Activate",
-                RequestedTargetState: ModuleCatalogStatus.Active.ToString(),
-                ActorId: GateActor,
-                ReasonCode: null),
-            ct);
+        try
+        {
+            await _transitionGate.EnsureAllowedOrThrowAsync(
+                BuildGateRequest(item),
+                ct);
+        }
+        catch (WorkflowTransitionBlockedException ex)
+        {
+            return Response<NoContent>.Fail(
+                ex.Result.BlockingMessage ?? "Workflow gate blocked module activation.",
+                ex.Result.StatusCode,
+                ex.Result.BlockingReasonCode,
+                ex.Result.CorrelationId);
+        }
 
         item.Status = ModuleCatalogStatus.Active;
         await _repository.UpdateAsync(item, ct);
         return Response<NoContent>.Success(204);
+    }
+
+    private static WorkflowGateRequest BuildGateRequest(Diten.Platform.Domain.Entities.ModuleCatalogItem item)
+    {
+        var binding = item.WorkflowBinding;
+        return new WorkflowGateRequest(
+            ObjectType: "ModuleCatalogItem",
+            ObjectId: item.Id.ToString(),
+            ObjectRef: $"ModuleCatalogItem:{item.ModuleCode}",
+            RequestedTransition: "Activate",
+            RequestedTargetState: ModuleCatalogStatus.Active.ToString(),
+            ActorId: GateActor,
+            ReasonCode: null,
+            CorrelationId: binding?.CorrelationId,
+            TargetScope: binding is null ? null : WorkflowTransitionGateTargetScope.Tenant,
+            TargetTenantId: binding?.TargetTenantId,
+            RequiresWorkflowGate: binding?.RequiresWorkflowGate,
+            TargetTenantSource: binding?.TargetTenantSource);
     }
 }

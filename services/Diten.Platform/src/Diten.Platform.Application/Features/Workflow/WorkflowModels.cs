@@ -64,6 +64,12 @@ public static class WorkflowReasonCodes
     public const string WorkflowEscalationIdempotent = "WORKFLOW_ESCALATION_IDEMPOTENT";
     public const string WorkflowTimeoutProcessed = "WORKFLOW_TIMEOUT_PROCESSED";
     public const string WorkflowNoOverdueTasks = "WORKFLOW_NO_OVERDUE_TASKS";
+    public const string WorkflowEvaluationUnavailable = "WORKFLOW_EVALUATION_UNAVAILABLE";
+    public const string WorkflowRequiredGateNotFound = "WORKFLOW_REQUIRED_GATE_NOT_FOUND";
+    public const string WorkflowInvalidTargetScope = "WORKFLOW_INVALID_TARGET_SCOPE";
+    public const string WorkflowTargetTenantRequired = "WORKFLOW_TARGET_TENANT_REQUIRED";
+    public const string WorkflowTargetTenantUnauthorized = "WORKFLOW_TARGET_TENANT_UNAUTHORIZED";
+    public const string WorkflowTargetTenantMismatch = "WORKFLOW_TARGET_TENANT_MISMATCH";
 }
 
 public enum WorkflowTransitionGateDecision
@@ -82,6 +88,12 @@ public enum WorkflowTransitionGateStatus
     Rejected = 4,
     Cancelled = 5,
     NotTerminalApproved = 6
+}
+
+public enum WorkflowTransitionGateTargetScope
+{
+    CurrentTenant = 0,
+    Tenant = 1
 }
 
 // Request payload for creating a workflow definition. TenantId is intentionally absent — it is never
@@ -252,7 +264,11 @@ public sealed record EvaluateWorkflowTransitionGateRequest(
     string RequestedTransition,
     string RequestedTargetState,
     string ActorId,
-    string? ReasonCode);
+    string? ReasonCode,
+    WorkflowTransitionGateTargetScope? TargetScope = null,
+    Guid? TargetTenantId = null,
+    bool? RequiresWorkflowGate = null,
+    string? TargetTenantSource = null);
 
 public sealed record EvaluateWorkflowTransitionGateResponse(
     WorkflowTransitionGateDecision Decision,

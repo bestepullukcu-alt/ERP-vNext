@@ -55,6 +55,7 @@ public sealed class CreateModuleCatalogItemCommandHandler : IRequestHandler<Crea
             Icon = string.IsNullOrWhiteSpace(request.Request.Icon) ? null : request.Request.Icon.Trim(), // FIX-MODULE-ICON
             Origin = ModuleCatalogOrigin.Manual // MC-4 — operator-added
         };
+        item.WorkflowBinding = BuildWorkflowBinding(item, request.Request.WorkflowBinding, isUpdate: false);
 
         try
         {
@@ -67,5 +68,38 @@ public sealed class CreateModuleCatalogItemCommandHandler : IRequestHandler<Crea
         }
 
         return Response<Guid>.Success(item.Id, 201);
+    }
+
+    private static ModuleCatalogWorkflowBindingMetadata? BuildWorkflowBinding(
+        ModuleCatalogItem item,
+        ModuleCatalogWorkflowBindingRequest? request,
+        bool isUpdate)
+    {
+        if (request is null)
+        {
+            return null;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        return new ModuleCatalogWorkflowBindingMetadata
+        {
+            ObjectType = "ModuleCatalogItem",
+            ObjectId = item.Id.ToString(),
+            ObjectRef = $"ModuleCatalogItem:{item.ModuleCode}",
+            TargetTenantId = request.TargetTenantId,
+            TargetTenantSource = "WorkflowBindingMetadata",
+            RequiresWorkflowGate = request.RequiresWorkflowGate,
+            WorkflowDefinitionKey = string.IsNullOrWhiteSpace(request.WorkflowDefinitionKey)
+                ? null
+                : request.WorkflowDefinitionKey.Trim(),
+            WorkflowTemplateId = request.WorkflowTemplateId,
+            CreatedBy = "system:module-catalog",
+            CreatedAtUtc = now,
+            UpdatedBy = isUpdate ? "system:module-catalog" : null,
+            UpdatedAtUtc = isUpdate ? now : null,
+            CorrelationId = string.IsNullOrWhiteSpace(request.CorrelationId)
+                ? Guid.NewGuid().ToString()
+                : request.CorrelationId.Trim()
+        };
     }
 }

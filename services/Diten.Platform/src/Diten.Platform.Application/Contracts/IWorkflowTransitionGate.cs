@@ -1,3 +1,5 @@
+using Diten.Platform.Application.Features.Workflow;
+
 namespace Diten.Platform.Application.Contracts;
 
 /// <summary>
@@ -25,7 +27,11 @@ public sealed record WorkflowGateRequest(
     string RequestedTargetState,
     string ActorId,
     string? ReasonCode = null,
-    string? CorrelationId = null);
+    string? CorrelationId = null,
+    WorkflowTransitionGateTargetScope? TargetScope = null,
+    Guid? TargetTenantId = null,
+    bool? RequiresWorkflowGate = null,
+    string? TargetTenantSource = null);
 
 public sealed record WorkflowGateResult(
     bool IsAllowed,
@@ -33,7 +39,8 @@ public sealed record WorkflowGateResult(
     string GateStatus,
     string? BlockingReasonCode,
     string? BlockingMessage,
-    string? CorrelationId)
+    string? CorrelationId,
+    int StatusCode = 200)
 {
     public bool IsBlocked => !IsAllowed;
 }

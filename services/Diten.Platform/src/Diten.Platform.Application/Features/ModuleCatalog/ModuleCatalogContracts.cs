@@ -19,7 +19,8 @@ public sealed record ModuleCatalogItemDto(
     DateTimeOffset CreatedAt,
     DateTimeOffset? UpdatedAt,
     string? Icon = null, // FIX-MODULE-ICON — module sidebar icon (boxicons class), operator-editable SOFT field.
-    bool IsBaseline = false); // FEAT-CATALOG-BASELINE-BADGE — entitlement-free module (HARD/code-owned; read-only).
+    bool IsBaseline = false, // FEAT-CATALOG-BASELINE-BADGE — entitlement-free module (HARD/code-owned; read-only).
+    ModuleCatalogWorkflowBindingDto? WorkflowBinding = null);
 
 public sealed record ModuleCatalogListItemDto(
     Guid Id,
@@ -50,7 +51,8 @@ public sealed record CreateModuleCatalogItemRequest(
     bool IsCoreModule,
     bool IsTenantAssignable,
     int? SortOrder,
-    string? Icon = null); // FIX-MODULE-ICON — optional boxicons class.
+    string? Icon = null, // FIX-MODULE-ICON — optional boxicons class.
+    ModuleCatalogWorkflowBindingRequest? WorkflowBinding = null);
 
 public sealed record UpdateModuleCatalogItemRequest(
     string ModuleCode,
@@ -64,7 +66,30 @@ public sealed record UpdateModuleCatalogItemRequest(
     bool IsCoreModule,
     bool IsTenantAssignable,
     int? SortOrder,
-    string? Icon = null); // FIX-MODULE-ICON — optional boxicons class.
+    string? Icon = null, // FIX-MODULE-ICON — optional boxicons class.
+    ModuleCatalogWorkflowBindingRequest? WorkflowBinding = null);
+
+public sealed record ModuleCatalogWorkflowBindingRequest(
+    Guid TargetTenantId,
+    bool RequiresWorkflowGate,
+    string? WorkflowDefinitionKey = null,
+    Guid? WorkflowTemplateId = null,
+    string? CorrelationId = null);
+
+public sealed record ModuleCatalogWorkflowBindingDto(
+    string ObjectType,
+    string ObjectId,
+    string ObjectRef,
+    Guid TargetTenantId,
+    string TargetTenantSource,
+    bool RequiresWorkflowGate,
+    string? WorkflowDefinitionKey,
+    Guid? WorkflowTemplateId,
+    string CreatedBy,
+    DateTimeOffset CreatedAtUtc,
+    string? UpdatedBy,
+    DateTimeOffset? UpdatedAtUtc,
+    string CorrelationId);
 
 public sealed record ModuleCatalogFilterRequest(
     string? Search,
@@ -82,7 +107,8 @@ public static class ModuleCatalogMapper
     public static ModuleCatalogItemDto ToDto(Diten.Platform.Domain.Entities.ModuleCatalogItem item) =>
         new(item.Id, item.ModuleCode, item.ModuleName, item.DisplayName, item.Description, item.Domain, item.Service,
             item.Status.ToString(), item.ModuleVersion, item.IsCoreModule, item.IsTenantAssignable,
-            item.SortOrder, item.Origin.ToString(), item.CreatedAt, item.UpdatedAt, item.Icon, item.IsBaseline);
+            item.SortOrder, item.Origin.ToString(), item.CreatedAt, item.UpdatedAt, item.Icon, item.IsBaseline,
+            ToWorkflowBindingDto(item.WorkflowBinding));
 
     public static ModuleCatalogListItemDto ToListDto(Diten.Platform.Domain.Entities.ModuleCatalogItem item) =>
         new(item.Id, item.ModuleCode, item.ModuleName, item.DisplayName, item.Domain, item.Service,
@@ -104,4 +130,23 @@ public static class ModuleCatalogMapper
             totalCount,
             totalPages);
     }
+
+    private static ModuleCatalogWorkflowBindingDto? ToWorkflowBindingDto(
+        Diten.Platform.Domain.Entities.ModuleCatalogWorkflowBindingMetadata? binding) =>
+        binding is null
+            ? null
+            : new ModuleCatalogWorkflowBindingDto(
+                binding.ObjectType,
+                binding.ObjectId,
+                binding.ObjectRef,
+                binding.TargetTenantId,
+                binding.TargetTenantSource,
+                binding.RequiresWorkflowGate,
+                binding.WorkflowDefinitionKey,
+                binding.WorkflowTemplateId,
+                binding.CreatedBy,
+                binding.CreatedAtUtc,
+                binding.UpdatedBy,
+                binding.UpdatedAtUtc,
+                binding.CorrelationId);
 }

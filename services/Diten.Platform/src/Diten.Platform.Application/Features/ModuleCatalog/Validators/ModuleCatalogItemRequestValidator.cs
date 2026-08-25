@@ -14,7 +14,8 @@ public abstract class ModuleCatalogItemRequestValidator<T> : AbstractValidator<T
         Func<T, string?> service,
         Func<T, string?> status,
         Func<T, string?> version,
-        Func<T, int?> sortOrder)
+        Func<T, int?> sortOrder,
+        Func<T, ModuleCatalogWorkflowBindingRequest?>? workflowBinding = null)
     {
         RuleFor(x => moduleCode(x))
             .Cascade(CascadeMode.Stop)
@@ -60,5 +61,29 @@ public abstract class ModuleCatalogItemRequestValidator<T> : AbstractValidator<T
         RuleFor(x => sortOrder(x))
             .GreaterThanOrEqualTo(0).When(x => sortOrder(x).HasValue)
             .WithMessage("SortOrder must be greater than or equal to 0.");
+
+        if (workflowBinding is not null)
+        {
+            RuleFor(x => workflowBinding(x)!.TargetTenantId)
+                .NotEmpty()
+                .When(x => workflowBinding(x) is not null)
+                .WithMessage("WorkflowBinding.TargetTenantId is required.");
+
+            RuleFor(x => workflowBinding(x)!)
+                .Must(binding => !string.IsNullOrWhiteSpace(binding.WorkflowDefinitionKey)
+                    || (binding.WorkflowTemplateId.HasValue && binding.WorkflowTemplateId.Value != Guid.Empty))
+                .When(x => workflowBinding(x) is not null)
+                .WithMessage("WorkflowBinding requires WorkflowDefinitionKey or WorkflowTemplateId.");
+
+            RuleFor(x => workflowBinding(x)!.WorkflowDefinitionKey)
+                .MaximumLength(128)
+                .When(x => workflowBinding(x)?.WorkflowDefinitionKey is not null)
+                .WithMessage("WorkflowBinding.WorkflowDefinitionKey cannot exceed 128 characters.");
+
+            RuleFor(x => workflowBinding(x)!.CorrelationId)
+                .MaximumLength(128)
+                .When(x => workflowBinding(x)?.CorrelationId is not null)
+                .WithMessage("WorkflowBinding.CorrelationId cannot exceed 128 characters.");
+        }
     }
 }

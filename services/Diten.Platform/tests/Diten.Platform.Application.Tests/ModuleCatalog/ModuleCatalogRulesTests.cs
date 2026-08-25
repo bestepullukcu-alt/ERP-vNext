@@ -123,6 +123,70 @@ public sealed class ModuleCatalogRulesTests
     }
 
     [Fact]
+    public async Task Create_handler_persists_workflow_binding_with_server_resolved_object_identity()
+    {
+        var repository = new InMemoryModuleCatalogRepository();
+        var targetTenantId = Guid.Parse("77777777-7777-7777-7777-777777777777");
+        var handler = new CreateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
+
+        var response = await handler.Handle(new CreateModuleCatalogItemCommand(new CreateModuleCatalogItemRequest(
+            "b09-fu01",
+            "B09 FU01",
+            "B09 FU01",
+            null,
+            "Platform",
+            "Diten.Platform",
+            "Draft",
+            "1.0.0",
+            false,
+            true,
+            null,
+            WorkflowBinding: new ModuleCatalogWorkflowBindingRequest(
+                targetTenantId,
+                true,
+                WorkflowDefinitionKey: "B09-FU01",
+                CorrelationId: "catalog-binding-corr"))), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        var item = await repository.GetByCodeAsync("B09-FU01");
+        Assert.NotNull(item);
+        Assert.NotNull(item!.WorkflowBinding);
+        Assert.Equal("ModuleCatalogItem", item.WorkflowBinding!.ObjectType);
+        Assert.Equal(item.Id.ToString(), item.WorkflowBinding.ObjectId);
+        Assert.Equal("ModuleCatalogItem:B09-FU01", item.WorkflowBinding.ObjectRef);
+        Assert.Equal(targetTenantId, item.WorkflowBinding.TargetTenantId);
+        Assert.Equal("WorkflowBindingMetadata", item.WorkflowBinding.TargetTenantSource);
+        Assert.True(item.WorkflowBinding.RequiresWorkflowGate);
+        Assert.Equal("B09-FU01", item.WorkflowBinding.WorkflowDefinitionKey);
+        Assert.Equal("catalog-binding-corr", item.WorkflowBinding.CorrelationId);
+    }
+
+    [Fact]
+    public void Create_validator_rejects_incomplete_workflow_binding()
+    {
+        var validator = new CreateModuleCatalogItemCommandValidator();
+        var command = new CreateModuleCatalogItemCommand(new CreateModuleCatalogItemRequest(
+            "b09-fu01",
+            "B09 FU01",
+            "B09 FU01",
+            null,
+            "Platform",
+            "Diten.Platform",
+            "Draft",
+            "1.0.0",
+            false,
+            true,
+            null,
+            WorkflowBinding: new ModuleCatalogWorkflowBindingRequest(Guid.Empty, true)));
+
+        var result = validator.Validate(command);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, x => x.ErrorMessage == "WorkflowBinding.TargetTenantId is required.");
+        Assert.Contains(result.Errors, x => x.ErrorMessage == "WorkflowBinding requires WorkflowDefinitionKey or WorkflowTemplateId.");
+    }
+
+    [Fact]
     public async Task ExistsByCode_ignores_soft_deleted_records()
     {
         var repository = new InMemoryModuleCatalogRepository();
@@ -187,6 +251,50 @@ public sealed class ModuleCatalogRulesTests
         Assert.False(response.IsSuccessful);
         Assert.Equal(400, response.StatusCode);
         Assert.Equal("ORIGINAL-CODE", item.ModuleCode);
+    }
+
+    [Fact]
+    public async Task Update_handler_preserves_existing_workflow_binding_when_legacy_request_omits_it()
+    {
+        var repository = new InMemoryModuleCatalogRepository();
+        var binding = new ModuleCatalogWorkflowBindingMetadata
+        {
+            ObjectType = "ModuleCatalogItem",
+            ObjectId = "existing-id",
+            ObjectRef = "ModuleCatalogItem:ORIGINAL-CODE",
+            TargetTenantId = Guid.Parse("77777777-7777-7777-7777-777777777777"),
+            TargetTenantSource = "WorkflowBindingMetadata",
+            RequiresWorkflowGate = true,
+            WorkflowDefinitionKey = "B09-FU01",
+            CorrelationId = "existing-corr"
+        };
+        var item = await repository.CreateAsync(new ModuleCatalogItem
+        {
+            ModuleCode = "ORIGINAL-CODE",
+            ModuleName = "Original",
+            DisplayName = "Original",
+            Domain = "Platform",
+            Service = "Diten.Platform",
+            WorkflowBinding = binding
+        });
+        var handler = new UpdateModuleCatalogItemCommandHandler(repository, PassthroughTaxonomyResolver.Instance);
+
+        var response = await handler.Handle(new UpdateModuleCatalogItemCommand(item.Id, new UpdateModuleCatalogItemRequest(
+            "ORIGINAL-CODE",
+            "Original",
+            "Updated Display",
+            null,
+            "Platform",
+            "Diten.Platform",
+            "Draft",
+            "1.0.0",
+            false,
+            true,
+            0)), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Same(binding, item.WorkflowBinding);
+        Assert.Equal("Updated Display", item.DisplayName);
     }
 
     [Fact]
