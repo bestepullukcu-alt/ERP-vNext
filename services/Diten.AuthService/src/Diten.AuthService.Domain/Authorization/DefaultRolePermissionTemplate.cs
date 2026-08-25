@@ -60,6 +60,31 @@ public static class DefaultRolePermissionTemplate
         };
 
     /// <summary>
+    /// Tenant-scoped permissions intentionally excluded from the general Viewer baseline because an active module
+    /// entitlement is required. Keep this list exact; adjacent permissions are not implicitly authorized.
+    /// </summary>
+    public static readonly IReadOnlySet<string> EntitlementOnlyViewerPermissions =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "mdm.global-products.read",
+            "mdm.global-products.create",
+            "mdm.finished-goods.read",
+            "mdm.finished-goods.create",
+            "mdm.gskus.read",
+            "mdm.gskus.create",
+            "mdm.lskus.read",
+            "mdm.lskus.create",
+            "mdm.product-abbreviations.read",
+            "mdm.product-abbreviations.request",
+            "mdm.product-abbreviations.cancel",
+            "mdm.product-abbreviations.approve",
+            "mdm.product-abbreviations.reject",
+            "mdm.product-abbreviations.correct",
+            "mdm.product-abbreviations.retire",
+            "mdm.product-abbreviations.audit"
+        };
+
+    /// <summary>
     /// Returns the catalog permissions that <paramref name="roleName"/> should be granted.
     /// Deleted permissions are always excluded; platform permissions are excluded from tenant
     /// roles. Unknown roles get nothing.
@@ -92,7 +117,8 @@ public static class DefaultRolePermissionTemplate
             ViewerRole => available
                 .Where(p => p.Scope == PermissionScope.Tenant
                             && string.Equals(p.Action, ReadAction, StringComparison.OrdinalIgnoreCase)
-                            && !TenantSelfServicePermissions.Contains(p.Key))
+                            && !TenantSelfServicePermissions.Contains(p.Key)
+                            && !EntitlementOnlyViewerPermissions.Contains(p.Key))
                 .ToList(),
 
             _ => Array.Empty<Permission>()

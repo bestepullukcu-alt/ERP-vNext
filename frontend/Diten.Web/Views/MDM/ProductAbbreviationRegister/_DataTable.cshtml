@@ -1,0 +1,29 @@
+@using Diten.Web.Views.MDM.ProductAbbreviationRegister
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProductAbbreviationRegisterIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="card">
+    <div id="skeleton-loader" class="p-4" style="display: none;">
+        <div class="shimmer skeleton-row mb-4" style="width: 100%; height: 32px;"></div>
+        <div class="shimmer skeleton-row mb-3" style="width: 100%; height: 24px;"></div>
+        <div class="shimmer skeleton-row" style="width: 100%; height: 24px;"></div>
+    </div>
+    <div class="card-datatable table-responsive">
+        <table id="dt-product-abbreviation-register" data-dt-standard="v2"
+               class="datatables-product-abbreviation-register table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="cell-fit"><input type="checkbox" class="dt-checkboxes-select-all form-check-input" aria-label="@Localizer["SelectAll"]" /></th>
+                    <th>@Localizer["GlobalProduct"]</th>
+                    <th>@Localizer["Abbreviation"]</th>
+                    <th>@Localizer["LifecycleStatus"]</th>
+                    <th>@Localizer["Version"]</th>
+                    <th>@Localizer["RetirementPending"]</th>
+                    <th class="cell-fit text-end">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

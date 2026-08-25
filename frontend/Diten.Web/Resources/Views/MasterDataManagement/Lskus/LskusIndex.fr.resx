@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Title"><value>SKU locaux</value></data>
+  <data name="PageDescription"><value>Créer et consulter les SKU propres au marché</value></data>
+  <data name="CreateTitle"><value>Créer un LSKU</value></data>
+  <data name="Gsku"><value>GSKU</value></data>
+  <data name="Market"><value>Marché</value></data>
+  <data name="Save"><value>Enregistrer</value></data>
+  <data name="AddNew"><value>Ajouter</value></data>
+  <data name="Unknown"><value>Inconnu</value></data>
+  <data name="Actions"><value>Actions</value></data>
+  <data name="ViewDetails"><value>Voir les détails</value></data>
+  <data name="QuickView"><value>Aperçu rapide</value></data>
+  <data name="Cancel"><value>Annuler</value></data>
+  <data name="Search"><value>Rechercher</value></data>
+  <data name="Export"><value>Exporter</value></data>
+  <data name="Filter"><value>Filtrer</value></data>
+  <data name="Apply"><value>Appliquer</value></data>
+  <data name="Reset"><value>Réinitialiser</value></data>
+  <data name="SaveView"><value>Enregistrer la vue</value></data>
+  <data name="ColumnVisibility"><value>Visibilité des colonnes</value></data>
+  <data name="Status"><value>Statut</value></data>
+  <data name="CanonicalCode"><value>Code canonique</value></data>
+  <data name="Version"><value>Version</value></data>
+  <data name="CreatedAt"><value>Créé</value></data>
+  <data name="UpdatedAt"><value>Mis à jour</value></data>
+  <data name="Loading"><value>Chargement</value></data>
+  <data name="CreateSuccess"><value>LSKU créé</value></data>
+  <data name="CreateReconciliationPending"><value>La création est en attente de rapprochement.</value></data>
+  <data name="ErrorInvalidFormAttempt"><value>Tentative de formulaire invalide.</value></data>
+  <data name="ErrorValidation"><value>Vérifiez les champs obligatoires.</value></data>
+  <data name="ErrorNotFound"><value>Élément référencé introuvable.</value></data>
+  <data name="ErrorConflict"><value>La demande est en conflit avec les données existantes.</value></data>
+  <data name="ErrorProviderUnavailable"><value>Le fournisseur de référence est indisponible.</value></data>
+  <data name="ErrorProviderTimeout"><value>Le fournisseur de référence a expiré.</value></data>
+  <data name="ErrorForbidden"><value>Vous n'avez pas l'autorisation.</value></data>
+  <data name="ErrorGateway"><value>La demande n'a pas pu être traitée.</value></data>
+</root>

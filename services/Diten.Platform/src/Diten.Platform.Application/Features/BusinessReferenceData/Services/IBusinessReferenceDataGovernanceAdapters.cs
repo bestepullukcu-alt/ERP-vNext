@@ -3,6 +3,16 @@ using Diten.Platform.Application.Contracts.Events;
 
 namespace Diten.Platform.Application.Features.BusinessReferenceData.Services;
 
+public interface IBusinessReferenceDataPublicationEligibility
+{
+    BusinessReferenceDataPublicationEligibilityDecision Evaluate();
+}
+
+public sealed record BusinessReferenceDataPublicationEligibilityDecision(
+    bool IsEligible,
+    string ReasonCode,
+    string GovernanceMode);
+
 public interface IBusinessReferenceDataWorkflowAdapter
 {
     Task<BusinessReferenceDataWorkflowLaunchResult> LaunchApprovalWorkflowAsync(

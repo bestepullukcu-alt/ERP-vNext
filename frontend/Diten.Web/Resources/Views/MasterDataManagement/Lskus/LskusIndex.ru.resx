@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Title"><value>Локальные SKU</value></data>
+  <data name="PageDescription"><value>Создание и просмотр SKU для рынков</value></data>
+  <data name="CreateTitle"><value>Создать LSKU</value></data>
+  <data name="Gsku"><value>GSKU</value></data>
+  <data name="Market"><value>Рынок</value></data>
+  <data name="Save"><value>Сохранить</value></data>
+  <data name="AddNew"><value>Добавить</value></data>
+  <data name="Unknown"><value>Неизвестно</value></data>
+  <data name="Actions"><value>Действия</value></data>
+  <data name="ViewDetails"><value>Просмотреть сведения</value></data>
+  <data name="QuickView"><value>Быстрый просмотр</value></data>
+  <data name="Cancel"><value>Отмена</value></data>
+  <data name="Search"><value>Поиск</value></data>
+  <data name="Export"><value>Экспорт</value></data>
+  <data name="Filter"><value>Фильтр</value></data>
+  <data name="Apply"><value>Применить</value></data>
+  <data name="Reset"><value>Сбросить</value></data>
+  <data name="SaveView"><value>Сохранить представление</value></data>
+  <data name="ColumnVisibility"><value>Видимость столбцов</value></data>
+  <data name="Status"><value>Статус</value></data>
+  <data name="CanonicalCode"><value>Канонический код</value></data>
+  <data name="Version"><value>Версия</value></data>
+  <data name="CreatedAt"><value>Создано</value></data>
+  <data name="UpdatedAt"><value>Обновлено</value></data>
+  <data name="Loading"><value>Загрузка</value></data>
+  <data name="CreateSuccess"><value>LSKU создан</value></data>
+  <data name="CreateReconciliationPending"><value>Создание ожидает согласования.</value></data>
+  <data name="ErrorInvalidFormAttempt"><value>Недопустимая попытка формы.</value></data>
+  <data name="ErrorValidation"><value>Проверьте обязательные поля.</value></data>
+  <data name="ErrorNotFound"><value>Связанный элемент не найден.</value></data>
+  <data name="ErrorConflict"><value>Запрос конфликтует с существующими данными.</value></data>
+  <data name="ErrorProviderUnavailable"><value>Поставщик справочных данных недоступен.</value></data>
+  <data name="ErrorProviderTimeout"><value>Истекло время ожидания поставщика.</value></data>
+  <data name="ErrorForbidden"><value>У вас нет разрешения.</value></data>
+  <data name="ErrorGateway"><value>Не удалось выполнить запрос.</value></data>
+</root>

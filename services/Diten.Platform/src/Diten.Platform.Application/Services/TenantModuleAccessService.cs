@@ -1,4 +1,6 @@
 using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements;
+using Diten.Platform.Domain.Entities;
+using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 
 namespace Diten.Platform.Application.Services;
@@ -56,6 +58,21 @@ public sealed class TenantModuleAccessService : ITenantModuleAccessService
             return new TenantModuleEffectiveAccessDto(
                 tenantId, normalizedCode, displayName, "Baseline",
                 Domain.Enums.TenantModuleEffectiveAccess.Active, true, null, null);
+        }
+
+        if (SystemTenantRules.IsSystemTenantId(tenantId))
+        {
+            if (module is null || module.IsDeleted || module.Status != ModuleCatalogStatus.Active || !module.IsTenantAssignable)
+            {
+                return new TenantModuleEffectiveAccessDto(
+                    tenantId, normalizedCode, module?.DisplayName ?? module?.ModuleName ?? normalizedCode, "None",
+                    TenantModuleEffectiveAccess.NoAccess, false, null, null);
+            }
+
+            var displayName = module.DisplayName ?? module.ModuleName ?? normalizedCode;
+            return new TenantModuleEffectiveAccessDto(
+                tenantId, normalizedCode, displayName, "PlatformSystemTenant",
+                TenantModuleEffectiveAccess.Active, true, "PlatformSystemTenant", null);
         }
 
         var physicalRows = await _entitlementRepository.GetByTenantAndModuleAsync(tenantId, normalizedCode, ct);

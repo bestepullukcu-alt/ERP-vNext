@@ -41,6 +41,17 @@ public static class DependencyInjection
         services.AddSingleton<IMongoClient>(client);
         services.AddScoped<IMongoDatabase>(_ => client.GetDatabase(databaseName));
         services.AddScoped<ILegalEntityRepository, LegalEntityRepository>();
+        services.AddScoped<ICodeReservationRepository, CodeReservationRepository>();
+        services.AddScoped<IGlobalProductRepository, GlobalProductRepository>();
+        services.AddScoped<IProductDefinitionRevisionRepository, ProductDefinitionRevisionRepository>();
+        services.AddScoped<IGskuRepository, GskuRepository>();
+        services.AddScoped<IFinishedGoodRepository, FinishedGoodRepository>();
+        services.AddScoped<ILskuRepository, LskuRepository>();
+        services.AddScoped<IProductAbbreviationRegisterRepository, ProductAbbreviationRegisterRepository>();
+        services.AddScoped<IProductAbbreviationAllocationLedgerRepository, ProductAbbreviationAllocationLedgerRepository>();
+        services.AddScoped<IProductAbbreviationHistoryRepository, ProductAbbreviationHistoryRepository>();
+        services.AddSingleton(TimeProvider.System);
+        services.AddScoped<IAuditIntentDeliveryRepository, AuditIntentDeliveryRepository>();
 
         return services;
     }

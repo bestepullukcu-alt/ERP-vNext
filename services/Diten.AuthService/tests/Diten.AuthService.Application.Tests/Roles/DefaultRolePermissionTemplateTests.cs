@@ -49,6 +49,82 @@ public sealed class DefaultRolePermissionTemplateTests
         Assert.DoesNotContain("platform.tenants.read", keys);
     }
 
+    [Fact]
+    public void Viewer_baseline_excludes_exact_Product_Item_Sku_Master_entitlement_permissions()
+    {
+        var catalog = new List<Permission>
+        {
+            new("mdm", "global-products", "read", "Read Global Products", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "global-products", "create", "Create Global Products", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "finished-goods", "read", "Read Finished Goods", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "finished-goods", "create", "Create Finished Goods", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "read", "Read GSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "create", "Create GSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "lskus", "read", "Read LSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "lskus", "create", "Create LSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-abbreviations", "read", "Read Product Abbreviations", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-abbreviations", "request", "Request Product Abbreviations", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-abbreviations", "cancel", "Cancel Product Abbreviations", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-abbreviations", "approve", "Approve Product Abbreviations", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-abbreviations", "reject", "Reject Product Abbreviations", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-abbreviations", "correct", "Correct Product Abbreviations", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-abbreviations", "retire", "Retire Product Abbreviations", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-abbreviations", "audit", "Audit Product Abbreviations", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "legal-entities", "read", "Read Legal Entities", null,
+                moduleOverride: "legal-entity")
+        };
+
+        var viewerKeys = DefaultRolePermissionTemplate.SelectFor("Viewer", catalog).Select(p => p.Key).ToList();
+        var adminKeys = DefaultRolePermissionTemplate.SelectFor("Admin", catalog).Select(p => p.Key).ToList();
+
+        Assert.Equal(["mdm.legal-entities.read"], viewerKeys);
+        Assert.Equal(["mdm.legal-entities.read"], adminKeys);
+        Assert.DoesNotContain("mdm.gskus.read", viewerKeys);
+        Assert.DoesNotContain("mdm.gskus.create", viewerKeys);
+        Assert.DoesNotContain("mdm.gskus.create", adminKeys);
+        Assert.DoesNotContain("mdm.lskus.read", viewerKeys);
+        Assert.DoesNotContain("mdm.lskus.create", viewerKeys);
+        Assert.DoesNotContain("mdm.lskus.create", adminKeys);
+        Assert.DoesNotContain("mdm.product-abbreviations.read", viewerKeys);
+        Assert.DoesNotContain("mdm.product-abbreviations.read", adminKeys);
+        Assert.Equal(
+            [
+                "mdm.finished-goods.create",
+                "mdm.finished-goods.read",
+                "mdm.global-products.create",
+                "mdm.global-products.read",
+                "mdm.gskus.create",
+                "mdm.gskus.read",
+                "mdm.lskus.create",
+                "mdm.lskus.read",
+                "mdm.product-abbreviations.approve",
+                "mdm.product-abbreviations.audit",
+                "mdm.product-abbreviations.cancel",
+                "mdm.product-abbreviations.correct",
+                "mdm.product-abbreviations.read",
+                "mdm.product-abbreviations.reject",
+                "mdm.product-abbreviations.request",
+                "mdm.product-abbreviations.retire"
+            ],
+            DefaultRolePermissionTemplate.EntitlementOnlyViewerPermissions.OrderBy(k => k).ToArray());
+    }
+
     // FIX-TENANT-SELFSERVICE-PERMS — the tenant Admin receives the curated tenant-scoped platform.* self-service
     // keys, but NO other platform.* permission (escalation boundary preserved).
     [Fact]

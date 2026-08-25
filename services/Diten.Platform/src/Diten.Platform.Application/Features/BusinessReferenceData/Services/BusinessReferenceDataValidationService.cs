@@ -115,6 +115,31 @@ public sealed class BusinessReferenceDataValidationService : IBusinessReferenceD
                         ? (BusinessReferenceDataValidationSeverity.Info, false, "Sort orders are valid.")
                         : (BusinessReferenceDataValidationSeverity.Error, true, $"Invalid sort order found for value codes: {string.Join(", ", invalidSortOrders)}."), false, null, correlationId, now));
                     break;
+                case "RDV-011":
+                    if (version is null)
+                    {
+                        results.Add(MakeResult(versionId, ruleId, (BusinessReferenceDataValidationSeverity.Info, false, "Skipped because version is missing."), false, null, correlationId, now));
+                        break;
+                    }
+
+                    var attributeIssues = ValidateAttributeContract(version);
+                    results.Add(MakeResult(versionId, ruleId, attributeIssues.Count == 0
+                        ? (BusinessReferenceDataValidationSeverity.Info, false, "Attribute definitions and values are valid.")
+                        : (BusinessReferenceDataValidationSeverity.Error, true, $"Attribute contract issues: {string.Join("; ", attributeIssues)}."), false, null, correlationId, now));
+                    break;
+                case "RDV-012":
+                    if (version is null)
+                    {
+                        results.Add(MakeResult(versionId, ruleId, (BusinessReferenceDataValidationSeverity.Info, false, "Skipped because version is missing."), false, null, correlationId, now));
+                        break;
+                    }
+
+                    var owningSet = await _repository.GetSetByIdAsync(version.BusinessReferenceDataSetId, ct);
+                    var lockedIssues = ValidateLockedGskuContract(owningSet?.SetCode, version);
+                    results.Add(MakeResult(versionId, ruleId, lockedIssues.Count == 0
+                        ? (BusinessReferenceDataValidationSeverity.Info, false, "Locked GSKU catalog contract is valid.")
+                        : (BusinessReferenceDataValidationSeverity.Error, true, $"Locked GSKU catalog issues: {string.Join("; ", lockedIssues)}."), false, null, correlationId, now));
+                    break;
                 default:
                     results.Add(MakeStubResult(versionId, ruleId, correlationId, now, "Rule implementation deferred to later batches."));
                     break;
@@ -220,6 +245,128 @@ public sealed class BusinessReferenceDataValidationService : IBusinessReferenceD
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
             .ToList();
+    }
+
+    private static List<string> ValidateAttributeContract(BusinessReferenceDataVersion version)
+    {
+        var issues = new List<string>();
+        var duplicateDefinitions = version.AttributeDefinitions
+            .GroupBy(x => NormalizeCode(x.AttributeCode), StringComparer.OrdinalIgnoreCase)
+            .Where(x => string.IsNullOrWhiteSpace(x.Key) || x.Count() > 1)
+            .Select(x => x.Key ?? "<missing-code>");
+        issues.AddRange(duplicateDefinitions.Select(x => $"duplicate attribute definition {x}"));
+
+        var definitions = version.AttributeDefinitions
+            .Where(x => !string.IsNullOrWhiteSpace(x.AttributeCode))
+            .GroupBy(x => x.AttributeCode.Trim(), StringComparer.Ordinal)
+            .ToDictionary(x => x.Key, x => x.First(), StringComparer.Ordinal);
+        foreach (var definition in definitions.Values)
+        {
+            if (!string.Equals(definition.DataType, "string", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(definition.DataType, "integer", StringComparison.OrdinalIgnoreCase))
+            {
+                issues.Add($"unsupported data type {definition.AttributeCode}:{definition.DataType}");
+            }
+        }
+
+        foreach (var value in version.Values)
+        {
+            var attributes = value.Attributes ?? new Dictionary<string, string>();
+            foreach (var key in attributes.Keys.Where(key => !definitions.ContainsKey(key)))
+            {
+                issues.Add($"unknown attribute {value.ValueCode}:{key}");
+            }
+
+            foreach (var definition in definitions.Values.Where(x => x.IsRequired))
+            {
+                if (!attributes.TryGetValue(definition.AttributeCode, out var raw) || string.IsNullOrWhiteSpace(raw))
+                {
+                    issues.Add($"missing required attribute {value.ValueCode}:{definition.AttributeCode}");
+                }
+            }
+
+            foreach (var pair in attributes)
+            {
+                if (!definitions.TryGetValue(pair.Key, out var definition)
+                    || !string.Equals(definition.DataType, "integer", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (!int.TryParse(pair.Value, System.Globalization.NumberStyles.None,
+                        System.Globalization.CultureInfo.InvariantCulture, out var parsed)
+                    || parsed < 0
+                    || !string.Equals(parsed.ToString(System.Globalization.CultureInfo.InvariantCulture), pair.Value, StringComparison.Ordinal))
+                {
+                    issues.Add($"invalid canonical non-negative integer {value.ValueCode}:{pair.Key}");
+                }
+            }
+        }
+
+        return issues;
+    }
+
+    private static List<string> ValidateLockedGskuContract(string? setCode, BusinessReferenceDataVersion version)
+    {
+        if (string.Equals(setCode, "pack-applicability", StringComparison.Ordinal))
+        {
+            return version.AttributeDefinitions.Count == 0
+                   && version.Values.Count == 1
+                   && LockedValueMatches(version.Values[0], "SCALAR_QUANTITY_APPLIES", "Scalar Quantity Applies", null, null)
+                ? []
+                : ["pack-applicability must contain only SCALAR_QUANTITY_APPLIES"];
+        }
+
+        if (!string.Equals(setCode, "uom", StringComparison.Ordinal))
+        {
+            return [];
+        }
+
+        var expected = new Dictionary<string, (string Name, string Dimension, string Precision)>(StringComparer.Ordinal)
+        {
+            ["C62"] = ("One", "COUNT", "0"),
+            ["GRM"] = ("Gram", "MASS", "3"),
+            ["KGM"] = ("Kilogram", "MASS", "3"),
+            ["MLT"] = ("Millilitre", "VOLUME", "3"),
+            ["LTR"] = ("Litre", "VOLUME", "3")
+        };
+        var definitionsValid = version.AttributeDefinitions.Count == 2
+                               && version.AttributeDefinitions.Any(x => x.AttributeCode == "DimensionCode"
+                                                                        && x.DataType == "string" && x.IsRequired)
+                               && version.AttributeDefinitions.Any(x => x.AttributeCode == "MaximumDecimalPrecision"
+                                                                        && x.DataType == "integer" && x.IsRequired);
+        if (!definitionsValid || version.Values.Count != expected.Count
+            || version.Values.Any(value => !expected.TryGetValue(value.ValueCode, out var contract)
+                                           || !LockedValueMatches(value, value.ValueCode, contract.Name, contract.Dimension, contract.Precision)))
+        {
+            return ["uom values, dimensions or precision differ from the locked contract"];
+        }
+
+        return [];
+    }
+
+    private static bool LockedValueMatches(
+        BusinessReferenceDataValue value,
+        string code,
+        string name,
+        string? dimension,
+        string? precision)
+    {
+        var attributes = value.Attributes ?? new Dictionary<string, string>();
+        if (!string.Equals(value.ValueCode, code, StringComparison.Ordinal)
+            || !string.Equals(value.DisplayName, name, StringComparison.Ordinal)
+            || value.IsDeprecated)
+        {
+            return false;
+        }
+
+        return dimension is null
+            ? attributes.Count == 0
+            : attributes.Count == 2
+              && attributes.TryGetValue("DimensionCode", out var actualDimension)
+              && string.Equals(actualDimension, dimension, StringComparison.Ordinal)
+              && attributes.TryGetValue("MaximumDecimalPrecision", out var actualPrecision)
+              && string.Equals(actualPrecision, precision, StringComparison.Ordinal);
     }
 
     private static string? NormalizeCode(string? code)

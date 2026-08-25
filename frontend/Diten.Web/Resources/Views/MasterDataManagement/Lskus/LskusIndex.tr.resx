@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Title"><value>Yerel SKU'lar</value></data>
+  <data name="PageDescription"><value>Pazara özel SKU'ları oluşturun ve inceleyin</value></data>
+  <data name="CreateTitle"><value>LSKU Oluştur</value></data>
+  <data name="Gsku"><value>GSKU</value></data>
+  <data name="Market"><value>Pazar</value></data>
+  <data name="Save"><value>Kaydet</value></data>
+  <data name="AddNew"><value>Yeni ekle</value></data>
+  <data name="Unknown"><value>Bilinmiyor</value></data>
+  <data name="Actions"><value>İşlemler</value></data>
+  <data name="ViewDetails"><value>Ayrıntıları görüntüle</value></data>
+  <data name="QuickView"><value>Hızlı görünüm</value></data>
+  <data name="Cancel"><value>İptal</value></data>
+  <data name="Search"><value>Ara</value></data>
+  <data name="Export"><value>Dışa aktar</value></data>
+  <data name="Filter"><value>Filtre</value></data>
+  <data name="Apply"><value>Uygula</value></data>
+  <data name="Reset"><value>Sıfırla</value></data>
+  <data name="SaveView"><value>Görünümü kaydet</value></data>
+  <data name="ColumnVisibility"><value>Sütun görünürlüğü</value></data>
+  <data name="Status"><value>Durum</value></data>
+  <data name="CanonicalCode"><value>Kanonik kod</value></data>
+  <data name="Version"><value>Sürüm</value></data>
+  <data name="CreatedAt"><value>Oluşturulma</value></data>
+  <data name="UpdatedAt"><value>Güncellenme</value></data>
+  <data name="Loading"><value>Yükleniyor</value></data>
+  <data name="CreateSuccess"><value>LSKU oluşturuldu</value></data>
+  <data name="CreateReconciliationPending"><value>Oluşturma uzlaştırma bekliyor.</value></data>
+  <data name="ErrorInvalidFormAttempt"><value>Geçersiz form denemesi.</value></data>
+  <data name="ErrorValidation"><value>Zorunlu alanları kontrol edin.</value></data>
+  <data name="ErrorNotFound"><value>Başvurulan kayıt bulunamadı.</value></data>
+  <data name="ErrorConflict"><value>İstek mevcut veriyle çakışıyor.</value></data>
+  <data name="ErrorProviderUnavailable"><value>Referans sağlayıcısı kullanılamıyor.</value></data>
+  <data name="ErrorProviderTimeout"><value>Referans sağlayıcısı zaman aşımına uğradı.</value></data>
+  <data name="ErrorForbidden"><value>Yetkiniz yok.</value></data>
+  <data name="ErrorGateway"><value>İstek tamamlanamadı.</value></data>
+</root>

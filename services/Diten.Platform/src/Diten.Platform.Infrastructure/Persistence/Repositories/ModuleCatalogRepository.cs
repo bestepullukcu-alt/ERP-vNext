@@ -23,6 +23,12 @@ public sealed class ModuleCatalogRepository : GlobalRepository<ModuleCatalogItem
         return await Collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
+    public async Task<ModuleCatalogItem?> GetByCodeIncludingDeletedAsync(string moduleCode, CancellationToken ct = default)
+    {
+        var filter = Builders<ModuleCatalogItem>.Filter.Eq(x => x.ModuleCode, moduleCode);
+        return await Collection.Find(filter).FirstOrDefaultAsync(ct);
+    }
+
     public async Task<bool> ExistsByCodeAsync(string moduleCode, Guid? excludeId = null, CancellationToken ct = default)
     {
         var filters = new List<FilterDefinition<ModuleCatalogItem>>
@@ -45,6 +51,14 @@ public sealed class ModuleCatalogRepository : GlobalRepository<ModuleCatalogItem
         var filter = Builders<ModuleCatalogItem>.Filter.And(
             ExecutionFilter,
             Builders<ModuleCatalogItem>.Filter.Eq(x => x.Id, item.Id));
+        await Collection.ReplaceOneAsync(filter, item, cancellationToken: ct);
+    }
+
+    public async Task RestoreAsync(ModuleCatalogItem item, CancellationToken ct = default)
+    {
+        item.IsDeleted = false;
+        item.UpdatedAt = DateTimeOffset.UtcNow;
+        var filter = Builders<ModuleCatalogItem>.Filter.Eq(x => x.Id, item.Id);
         await Collection.ReplaceOneAsync(filter, item, cancellationToken: ct);
     }
 
