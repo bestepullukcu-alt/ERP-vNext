@@ -21,6 +21,26 @@ namespace Diten.PvgService.Api.Tests;
 
 public sealed class PvgServiceApiHostTests
 {
+    private static readonly string[] AnnexFieldNames =
+    [
+        nameof(PvgIntakeField.IntakeChannel),
+        nameof(PvgIntakeField.SourceType),
+        nameof(PvgIntakeField.SourceReference),
+        nameof(PvgIntakeField.ReceivedAtUtc),
+        nameof(PvgIntakeField.ReporterType),
+        nameof(PvgIntakeField.ReporterContactSummary),
+        nameof(PvgIntakeField.PatientSubjectCode),
+        nameof(PvgIntakeField.EventOnsetDate),
+        nameof(PvgIntakeField.AdverseEventNarrative),
+        nameof(PvgIntakeField.SuspectProductText),
+        nameof(PvgIntakeField.Seriousness),
+        nameof(PvgIntakeField.IntakePriority),
+        nameof(PvgIntakeField.TriageOutcome),
+        nameof(PvgIntakeField.TriageReason),
+        nameof(PvgIntakeField.RouteTargetQueue),
+        nameof(PvgIntakeField.EvidenceLinkReferences)
+    ];
+
     [Fact]
     public void Development_host_wires_health_application_services_and_deny_adapters()
     {
@@ -248,6 +268,27 @@ public sealed class PvgServiceApiHostTests
                 }
             }
         }
+    }
+
+    [Fact]
+    public void Public_case_intake_request_shapes_cover_annex_fields_without_extra_user_payload_fields()
+    {
+        var requestFieldNames = new[]
+        {
+            typeof(PvgCaseIntakeCreateRequest),
+            typeof(PvgCaseIntakeUpdateRequest),
+            typeof(PvgCaseIntakeTriageRequest),
+            typeof(PvgCaseIntakeRouteRequest)
+        }
+        .SelectMany(type => type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+        .Select(property => property.Name)
+        .Where(name => !string.Equals(name, nameof(PvgCaseIntakeTriageRequest.TriageReasonCode), StringComparison.Ordinal))
+        .Distinct(StringComparer.Ordinal)
+        .Order(StringComparer.Ordinal)
+        .ToArray();
+
+        Assert.Equal(16, AnnexFieldNames.Length);
+        Assert.Equal(AnnexFieldNames.Order(StringComparer.Ordinal).ToArray(), requestFieldNames);
     }
 
     [Fact]

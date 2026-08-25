@@ -17,6 +17,35 @@ public sealed class PvgApplicationContractShapeTests
         typeof(GetIntakeDraftListQuery)
     ];
 
+    private static readonly string[] AnnexFieldNames =
+    [
+        nameof(PvgIntakeField.IntakeChannel),
+        nameof(PvgIntakeField.SourceType),
+        nameof(PvgIntakeField.SourceReference),
+        nameof(PvgIntakeField.ReceivedAtUtc),
+        nameof(PvgIntakeField.ReporterType),
+        nameof(PvgIntakeField.ReporterContactSummary),
+        nameof(PvgIntakeField.PatientSubjectCode),
+        nameof(PvgIntakeField.EventOnsetDate),
+        nameof(PvgIntakeField.AdverseEventNarrative),
+        nameof(PvgIntakeField.SuspectProductText),
+        nameof(PvgIntakeField.Seriousness),
+        nameof(PvgIntakeField.IntakePriority),
+        nameof(PvgIntakeField.TriageOutcome),
+        nameof(PvgIntakeField.TriageReason),
+        nameof(PvgIntakeField.RouteTargetQueue),
+        nameof(PvgIntakeField.EvidenceLinkReferences)
+    ];
+
+    private static readonly string[] AnnexPermissionKeys =
+    [
+        "pvg.mod0230.intake.create",
+        "pvg.mod0230.intake.read",
+        "pvg.mod0230.intake.route",
+        "pvg.mod0230.intake.triage",
+        "pvg.mod0230.intake.update"
+    ];
+
     private static readonly string[] SensitiveSamples =
     [
         "tenant-secret-123",
@@ -57,6 +86,105 @@ public sealed class PvgApplicationContractShapeTests
         Assert.Contains(typeof(RouteIntakeDraftCommand), ContractTypes);
         Assert.Contains(typeof(GetIntakeDraftByIdQuery), ContractTypes);
         Assert.Contains(typeof(GetIntakeDraftListQuery), ContractTypes);
+    }
+
+    [Fact]
+    public void Annex_field_inventory_matches_domain_field_contract()
+    {
+        Assert.Equal(16, AnnexFieldNames.Length);
+        Assert.Equal(AnnexFieldNames.Length, AnnexFieldNames.Distinct(StringComparer.Ordinal).Count());
+
+        var domainFields = Enum.GetNames<PvgIntakeField>()
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        var approvedFields = PvgIntakeFieldDefinition.ApprovedFields
+            .Select(field => field.Field.ToString())
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal(AnnexFieldNames.Order(StringComparer.Ordinal).ToArray(), domainFields);
+        Assert.Equal(AnnexFieldNames.Order(StringComparer.Ordinal).ToArray(), approvedFields);
+    }
+
+    [Fact]
+    public void Annex_field_sensitivity_and_free_text_flags_match_domain_definitions()
+    {
+        var expectedDefinitions = new Dictionary<PvgIntakeField, (PvgFieldSensitivity Sensitivity, bool AllowsFreeText)>
+        {
+            [PvgIntakeField.IntakeChannel] = (PvgFieldSensitivity.PublicMetadata, false),
+            [PvgIntakeField.SourceType] = (PvgFieldSensitivity.PublicMetadata, false),
+            [PvgIntakeField.SourceReference] = (PvgFieldSensitivity.Confidential, false),
+            [PvgIntakeField.ReceivedAtUtc] = (PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.ReporterType] = (PvgFieldSensitivity.PublicMetadata, false),
+            [PvgIntakeField.ReporterContactSummary] = (PvgFieldSensitivity.Pii, false),
+            [PvgIntakeField.PatientSubjectCode] = (PvgFieldSensitivity.Phi, false),
+            [PvgIntakeField.EventOnsetDate] = (PvgFieldSensitivity.Phi, false),
+            [PvgIntakeField.AdverseEventNarrative] = (PvgFieldSensitivity.Phi, true),
+            [PvgIntakeField.SuspectProductText] = (PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.Seriousness] = (PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.IntakePriority] = (PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.TriageOutcome] = (PvgFieldSensitivity.RegulatedSafety, false),
+            [PvgIntakeField.TriageReason] = (PvgFieldSensitivity.Phi, true),
+            [PvgIntakeField.RouteTargetQueue] = (PvgFieldSensitivity.Confidential, false),
+            [PvgIntakeField.EvidenceLinkReferences] = (PvgFieldSensitivity.Confidential, false)
+        };
+
+        var approvedDefinitions = PvgIntakeFieldDefinition.ApprovedFields.ToDictionary(
+            definition => definition.Field,
+            definition => (definition.Sensitivity, definition.IsFreeText));
+
+        Assert.Equal(expectedDefinitions, approvedDefinitions);
+    }
+
+    [Fact]
+    public void Application_request_shapes_cover_annex_fields_without_extra_user_payload_fields()
+    {
+        var requestFieldNames = new[]
+        {
+            typeof(PvgCreateIntakeDraftRequest),
+            typeof(PvgUpdateIntakeDraftRequest),
+            typeof(PvgTriageIntakeDraftRequest),
+            typeof(PvgRouteIntakeDraftRequest)
+        }
+        .SelectMany(type => type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+        .Select(property => property.Name)
+        .Where(name => !string.Equals(name, nameof(PvgTriageIntakeDraftRequest.TriageReasonCode), StringComparison.Ordinal))
+        .Distinct(StringComparer.Ordinal)
+        .Order(StringComparer.Ordinal)
+        .ToArray();
+
+        Assert.Equal(AnnexFieldNames.Order(StringComparer.Ordinal).ToArray(), requestFieldNames);
+    }
+
+    [Fact]
+    public void Supported_operations_and_permission_keys_remain_annex_bounded()
+    {
+        Assert.Equal(
+            ["Create", "GetById", "GetList", "Route", "Triage", "Update"],
+            Enum.GetNames<PvgIntakeOperation>().Order(StringComparer.Ordinal).ToArray());
+
+        var permissionKeys = typeof(PvgIntakeDraftApplicationService)
+            .GetFields(BindingFlags.NonPublic | BindingFlags.Static)
+            .Where(field => field.Name.EndsWith("Permission", StringComparison.Ordinal))
+            .Select(field => field.GetRawConstantValue()?.ToString())
+            .OfType<string>()
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal(AnnexPermissionKeys, permissionKeys);
+        AssertNoForbiddenNames(permissionKeys);
+    }
+
+    [Fact]
+    public void Supported_state_and_triage_outcome_contracts_remain_limited_to_annex_flow()
+    {
+        Assert.Equal(
+            ["Draft", "IntakeCreated", "IntakeUpdated", "RoutePending", "Routed", "TriagePending", "Triaged"],
+            Enum.GetNames<PvgIntakeStatus>().Order(StringComparer.Ordinal).ToArray());
+
+        Assert.Equal(
+            ["Duplicate", "Rejected", "Triaged"],
+            Enum.GetNames<PvgTriageOutcome>().Order(StringComparer.Ordinal).ToArray());
     }
 
     [Fact]

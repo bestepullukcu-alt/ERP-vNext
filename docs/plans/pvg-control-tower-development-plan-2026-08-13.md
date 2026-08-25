@@ -28,11 +28,11 @@ Measured implementation baseline:
 
 | Area | Baseline |
 |---|---|
-| REG-PV-BASE ports / MOD-0230 guardrail contracts | Source present; latest focused tests passed: 64 |
+| REG-PV-BASE ports / MOD-0230 guardrail contracts | Source present; latest focused tests passed: 85 |
 | MOD-0231 Case Processing contracts | Source present; latest focused tests passed: 23 |
 | MOD-0232 MedDRA Coding contracts | Source present; latest focused tests passed: 40 |
 | MOD-0234 Signal Management contracts | Source present; latest focused tests passed: 43 |
-| MOD-0230 API host and business API route family | Source present; latest API guardrail/negative-contract tests passed: 26 |
+| MOD-0230 API host and business API route family | Source present; latest API guardrail/negative-contract tests passed: 36 |
 | MOD-0230 persistence boundary | Source present; RegPvBase tests passed: 38; in-memory local/dev store only |
 | MOD-0230 Gateway route family | Source present; Gateway Ocelot tests passed: 19; approved four-template matrix only |
 | MOD-0230 tenant UI | Source present; frontend build passed; static regulated-scope, accessibility, i18n, and regression guardrails present; authenticated browser/runtime smoke passed with safe fail-closed denial |
@@ -78,6 +78,7 @@ Measured implementation baseline:
 | MOD-0230 EvidenceLink tests-only evidence (`DOC-PVG-0230-EVIDENCELINK-EVIDENCE-TESTS-01`) | 100% | Commit `a44c324b`; RegPvBase focused tests `64/64`; API focused tests `26/26`; MOD-0031 owner approval still required |
 | MOD-0230 TraceBundle/correlation/observability tests-only evidence (`DEV-PVG-0230-TRACE-OBS-EVIDENCE-TESTS-01`) | 100% | Commit `695a3b18`; RegPvBase focused tests `71/71`; API focused tests `28/28`; TraceBundle/Observability owner approval still required |
 | MOD-0230 retention/legal-hold blocker tests-only evidence (`DEV-PVG-0230-RETENTION-LEGALHOLD-BLOCKER-TESTS-01`) | 100% | Commit `80069ab4`; API focused tests `35/35`; RegPvBase focused tests `80/80`; retention/legal-hold owner approval still required |
+| MOD-0230 annex/contract alignment tests (`DEV-PVG-0230-ANNEX-CONTRACT-ALIGNMENT-TESTS-01`) | 100% local | Local commit `PVG add MOD-0230 contract alignment tests`; RegPvBase focused tests `85/85`; API focused tests `36/36` |
 | PVG full audit refresh (`AUD-PVG-FULL-2026-08-24`) | 100% | Local/remote `603601cc`; PVG focused tests `196/196`; Gateway `19/19`; PVG UI JS syntax checks passed; operational runtime `0% / NO-GO` |
 | PVG operational approval packet draft | 100% draft | Commit `603601cc`; docs-only packet exists; no owner approval or operational runtime authorization claimed |
 | GMG MOD-0230 approval package review (`DOC-PVG-GMG-APPROVAL-PACKAGE-REVIEW-01`) | 100% evidence review | External package `MOD-0230_Approval-Package_v0.1_2026-08-25.docx` is GMG tenant/customer go-live evidence, not global PVG product architecture authority; issued for signature, not signed; Records 1-9 are design/control approvals only after execution; Record 10 blocks GMG operational runtime only |
@@ -132,6 +133,7 @@ Overall PVG operational readiness: **0% / NO-GO**.
 | `DOC-PVG-0230-EVIDENCELINK-EVIDENCE-TESTS-01` | DOC/TEST | Record MOD-0230 EvidenceLink tests-only evidence without owner approval or runtime authorization | Done |
 | `DEV-PVG-0230-TRACE-OBS-EVIDENCE-TESTS-01` | DEV/TEST | Add TraceBundle/correlation/observability tests-only evidence without owner approval or runtime authorization | Done |
 | `DEV-PVG-0230-RETENTION-LEGALHOLD-BLOCKER-TESTS-01` | DEV/TEST | Add retention/legal-hold/archive/void blocker tests-only evidence without owner approval or runtime authorization | Done |
+| `DEV-PVG-0230-ANNEX-CONTRACT-ALIGNMENT-TESTS-01` | DEV/TEST | Add product-scope MOD-0230 annex/contract alignment tests without treating tenant input as global authority | Done; local commit recorded |
 | `AUD-PVG-FULL-2026-08-24` | AUD/DOC | Full PVG local/dev build-test audit and development-plan refresh at commit `603601cc` | Done |
 | `DEV-PVG-0230-UI-REGRESSION-01` | DEV/TEST | UI tests-only regression guardrails | Done |
 | `DOC-PVG-DOWNSTREAM-CL-01` | DOC | Record MOD-0231/0232/0234 class-library/test-only downstream hardening evidence | Done |
@@ -1709,6 +1711,43 @@ Runtime position:
 - MOD-0231, MOD-0232, and MOD-0234 runtime remains blocked.
 - Continued development must remain local/dev, class-library/test-only, docs-only, or bounded MOD-0230 build-test
   hardening unless a later signed record and explicit runtime authorization changes the gate.
+
+## 5.38 Completed WP: `DEV-PVG-0230-ANNEX-CONTRACT-ALIGNMENT-TESTS-01`
+
+Goal: continue PVG product development using `.antigravity`, DCP-004, and MOD-0230 module-pack rules only, while
+treating GMG material as tenant/customer input rather than global product authority.
+
+Changed files:
+
+- `services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/PvgApplicationContractShapeTests.cs`
+- `services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgServiceApiHostTests.cs`
+- `docs/plans/pvg-control-tower-development-plan-2026-08-13.md`
+
+Evidence added:
+
+- Commit evidence: local commit message `PVG add MOD-0230 contract alignment tests`.
+- MOD-0230 domain field inventory remains exactly the 16 expected Case Intake/Triage fields.
+- Field sensitivity and free-text flags match the domain contract.
+- Application request shapes cover the 16 product fields without extra user payload fields.
+- API request shapes cover the same 16 product fields without extra user payload fields.
+- Supported operation enum remains limited to create, update, list, detail, triage, and route semantics.
+- Runtime permission keys remain bounded to `pvg.mod0230.intake.read`, `create`, `update`, `triage`, and `route`.
+- Supported state and triage outcome enums remain limited to the MOD-0230 product flow.
+
+Validation:
+
+- `git diff --check`: passed.
+- RegPvBase focused tests: `85/85` passed.
+- API focused tests: `36/36` passed.
+
+Scope controls:
+
+- This is local tests-only/product-contract evidence plus this plan update.
+- No Gateway, frontend, appsettings, launchSettings, persistence, Mongo, DbContext, repository, seed, job, menu/catalog,
+  AI, MedDRA data/import/search/cache, delete/export/archive/void/bulk, or downstream MOD-0231/MOD-0232/MOD-0234
+  runtime exposure is added.
+- No operational runtime authorization is claimed.
+- Operational runtime remains **0% / NO-GO**.
 
 ## 6. Verification Commands
 
