@@ -5052,3 +5052,31 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - ⚠ **EKRAN GÖRÜNTÜSÜ ALINAMADI:** tarayıcı paneli bu turun sonunda boş kare döndürmeye başladı. Süre kartının
   yeni hâli **ölçümle** doğrulandı (DOM), **görüntüyle doğrulanmadı**.
 - **Gelecek regresyon riski: 🟢.**
+
+### BL-237 — [ÖLÇÜLDÜ] `pause` geçişi backend'de YOK; "Duraklat" yalnız mock'ta yaşıyor
+- CT yaşam döngüsü turunda ölçtü (2026-08-24), gerçek görev `370ab18b`.
+- `TasksController` geçiş listesi: `accept · claim · release · plan · start · inquire · submitReview ·
+  return · reassign · complete · cancel` — **`pause` YOK.** Tasks uygulama katmanında da eşleşme yok.
+- Frontend'de `case 'pause'` (app.js:5767) **yerel/mock durum değişimi**; showcase fixture'ında "Duraklat"
+  düğmesi görünüyor ve tarayıcıda "çalışıyor". Gerçek görevde hiç sunulmuyor.
+- ⚠ İki sonucu var: (1) süre kartını üstüne kurduğumuz "duraklat → sayaç katlanır" anlatısının **arkası yok**;
+  (2) showcase, gerçek veride **imkânsız bir aksiyon** gösteriyor — bu oturumda tam bu sınıfı temizledik.
+- Karar gerekiyor: `pause` backend'e eklenecek mi, yoksa mock'tan da kaldırılacak mı? İkisi de olur;
+  ikisinin arasında kalmak olmaz.
+- **Gelecek regresyon riski: 🟡** — sunulmadığı için kullanıcıyı bugün yanıltmıyor, ama showcase yanıltıyor.
+
+### BL-238 — [ÖLÇÜLDÜ] Alt görev tik kutusu, başlatılmamış satırda yalnızca hata üretebiliyor
+- CT ölçtü (2026-08-24), gerçek görev `370ab18b` / alt görev `ea832a9b`.
+- Satırdaki tik kutusu doğrudan `complete` çağırıyor. Sunucu **409 `TASK_INVALID_STATE`** dönüyor:
+  bir görev `start` edilmeden `complete` edilemiyor.
+- Hata DÜRÜSTÇE gösteriliyor — *"Bu görev bu durumdayken tamamlanamaz. Önce başlatın."* (çevrilmiş, ham
+  hata değil). Yani sistem doğru davranıyor; kusur davranışta değil, **sunulan yolda**.
+- ⚠ Satır menüsünde **"başlat" yok** (yalnız aç · iptal et). Yani bir onay kutusunu işaretlemek için:
+  alt görevi aç → başlat → geri dön → işaretle. **Üç gezinme, bir tık için.**
+- API ile `start` + `complete` yapıldığında her şey doğru çalışıyor: satır `done`, ebeveynin
+  "Bir alt görev hâlâ açık" gerekçesi kalkıyor, **Tamamla etkinleşiyor** (CT canlı doğruladı).
+- Seçenekler: (a) tik kutusu gerekiyorsa `start`+`complete`i arka arkaya yapsın; (b) satır menüsüne
+  "Başlat" eklensin; (c) başlatılmamış satırda kutu devre dışı olsun ve gerekçesini söylesin.
+  CT önerisi: **(a)** — kullanıcının niyeti "bu iş bitti" demek; ara durumu ondan istemek, sistemin kendi
+  kuralını kullanıcıya iş olarak geri vermektir.
+- **Gelecek regresyon riski: 🟡** — veri bozulmuyor, ama en sık yapılan hareket üç adıma çıkıyor.
