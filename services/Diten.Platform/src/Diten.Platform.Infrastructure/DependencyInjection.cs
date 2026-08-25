@@ -5,6 +5,7 @@ using Diten.BuildingBlocks.Security.Secrets;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Features.Lookups.Services;
+using Diten.Platform.Application.Features.EntitlementAttestations;
 using Diten.Platform.Application.Features.Notifications.Services;
 using Diten.Platform.Application.Features.TenantOrganization.Services;
 using Diten.Platform.Application.Contracts.Eventing;
@@ -157,6 +158,11 @@ public static class DependencyInjection
         services.AddScoped<ITenantDefaultsProvider, TenantDefaultsProvider>();
         services.AddSingleton<EntitlementCacheService>();
         services.AddScoped<IEntitlementChecker, EntitlementChecker>();
+        services.AddOptions<PlatformEntitlementAttestationOptions>()
+            .Bind(configuration.GetSection("PlatformEntitlementAttestation"));
+        services.AddSingleton<VersionAwareEntitlementDecisionCache>();
+        services.AddScoped<IAuthoritativeEntitlementDecisionSource, MongoAuthoritativeEntitlementDecisionSource>();
+        services.AddScoped<IPlatformEntitlementDecisionProvider, PlatformEntitlementDecisionProvider>();
         services.AddScoped<IAdminUserInvitationService, AdminUserInvitationService>();
         services.AddScoped<ITenantActivationNotifier, AuthServiceTenantActivationNotifier>();
         services.AddScoped<ICatalogPermissionSyncService, CatalogPermissionSyncService>();
