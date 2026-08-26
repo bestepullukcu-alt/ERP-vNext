@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "dws-mutation-evidence-v1",
+  "mutations": [
+    {
+      "id": "M01-canonical-property-order",
+      "disposition": "expected-red",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Modules/Dws/DwsDomain.cs",
+      "restoredSha256": "a34d7da11f6f352ea556e68b09c7d76e1f4ff8d976d5c1bf95d0f1ed3504e6cb",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "failureText": "2 canonical byte-order failures",
+      "testType": "Diten.ManagementGovernanceService.Tests.Modules.Dws.DwsDomainContractTests",
+      "testMethod": "Canonical_builder_produces_normative_bytes_and_hash"
+    },
+    {
+      "id": "M02-dependency-cycle-guard",
+      "disposition": "expected-red",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Modules/Dws/DwsDomain.cs",
+      "restoredSha256": "a34d7da11f6f352ea556e68b09c7d76e1f4ff8d976d5c1bf95d0f1ed3504e6cb",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "failureText": "expected DwsConflictException; no exception",
+      "testType": "Diten.ManagementGovernanceService.Tests.Modules.Dws.DwsDomainContractTests",
+      "testMethod": "Dependency_validator_rejects_missing_duplicate_and_multihop_cycle"
+    },
+    {
+      "id": "M03-atomic-participant",
+      "disposition": "expected-red",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/Dws/DwsPersistenceManifest.cs",
+      "restoredSha256": "70374a2af3697852a5cf323224468e4da39d3f2f89734cec89fa328042a7c2ae",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "failureText": "participant count expected 5 actual 4",
+      "testType": "Diten.ManagementGovernanceService.IntegrationTests.Modules.Dws.DwsPersistenceContractTests",
+      "testMethod": "Atomic_persistence_seam_applies_all_participants_with_CAS_or_rolls_back"
+    },
+    {
+      "id": "G01-remove-active-session-guard",
+      "disposition": "security-policy-forbidden",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Modules/Dws/DwsContracts.cs",
+      "restoredSha256": "116e5bd90d9062614defc15dcd8071b1747c1df31f75fd558c3e2f8f0f84333b",
+      "failureText": "mutant would authorize body execution without active transaction",
+      "testType": "Diten.ManagementGovernanceService.IntegrationTests.Modules.Dws.DwsPersistenceContractTests",
+      "testMethod": "Inactive_session_is_rejected_before_body_execution"
+    },
+    {
+      "id": "G02-bind-live-mongo-27017",
+      "disposition": "security-policy-forbidden",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs",
+      "restoredSha256": "e447b3b3bb928c66d03fc7805418a40f612e86d11e8196378c65c6065758174c",
+      "failureText": "mutant would add a forbidden listener and protected developer Mongo binding",
+      "testType": "Diten.ManagementGovernanceService.ArchitectureTests.Modules.Dws.DwsArchitectureTests",
+      "testMethod": "Compile_only_boundary_never_activates_runtime"
+    }
+  ]
+}
