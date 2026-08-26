@@ -361,6 +361,138 @@ passed immediately before protected runtime work, bilateral fixtures are approve
 authority is recorded. MOD-0023 parent `ready-for-dev` status does not promote its PPM amendment, which remains
 `DRAFT / NON-EXECUTABLE` at checkpoint `0ef0a517840d1d8c7d0bbd2fdb2d5d443f0d8470`.
 
+#### 4.9.1 Gate I parallel consumer contract-test handoffs — AUTHORIZED / NON-RUNTIME
+
+The Control Tower authorizes three independent **consumer contract-test-only** lanes. This authority is limited
+to pure PPM-owned reference/wrapper records, strict serializers/validators, typed producer-port interfaces,
+typed fail-closed result mapping and unit/contract/architecture fixtures. It does not authorize a production
+provider client, HTTP endpoint/controller, DI registration, configuration/feature flag, Mongo collection/index,
+relationship mutation handler, audit/outbox writer, worker/listener, Gateway/frontend/WorkCenter surface,
+credential, deployment or activation. No lane is runtime-executable and no lane completion is a full Gate I,
+full 1.3 or production-parity claim.
+
+The exact source allowlist is additive and create-if-absent under these roots only:
+
+- `services/Diten.PpmService/src/Diten.PpmService.Domain/GateI/DecisionTrace/**`
+- `services/Diten.PpmService/src/Diten.PpmService.Domain/GateI/FundingScenario/**`
+- `services/Diten.PpmService/src/Diten.PpmService.Domain/GateI/BenefitRealization/**`
+- `services/Diten.PpmService/src/Diten.PpmService.Application/Features/InvestmentCases/GateI/DecisionTrace/**`
+- `services/Diten.PpmService/src/Diten.PpmService.Application/Features/InvestmentCases/GateI/FundingScenario/**`
+- `services/Diten.PpmService/src/Diten.PpmService.Application/Features/BenefitCommitments/GateI/BenefitRealization/**`
+
+The exact test allowlist is:
+
+- `services/Diten.PpmService/tests/Diten.PpmService.Tests/GateI/DecisionTrace/**`
+- `services/Diten.PpmService/tests/Diten.PpmService.Tests/GateI/FundingScenario/**`
+- `services/Diten.PpmService/tests/Diten.PpmService.Tests/GateI/BenefitRealization/**`
+- `services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/GateI/DecisionTrace/**`
+- `services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/GateI/FundingScenario/**`
+- `services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/GateI/BenefitRealization/**`
+- `services/Diten.PpmService/tests/Diten.PpmService.Architecture.Tests/GateI/DecisionTrace/**`
+- `services/Diten.PpmService/tests/Diten.PpmService.Architecture.Tests/GateI/FundingScenario/**`
+- `services/Diten.PpmService/tests/Diten.PpmService.Architecture.Tests/GateI/BenefitRealization/**`
+
+Existing project files may receive only the minimum additive compile/test reference required for these roots.
+`Persistence`, `Infrastructure`, `Api`, composition roots and every other source/test path remain outside this
+handoff.
+
+##### I-A — Decision Trace
+
+The authorized part consumes MOD-0007 checkpoint `9968ecede48822f95a74461a4959c94b23abbc9b`
+for bilateral fixture/provenance evidence and core checkpoint
+`2d354a97bfbe09ed665e44dba8665181d2a56d78`. It owns only the PPM wrappers already fixed in §4.8:
+
+- `GoverningDecisionReferenceV1` = exact four-field wrapper nesting the unmodified five-field
+  `management-governance.decision-reference` / `1.0` `DecisionRevisionReferenceV1`;
+- `SupportingDecisionReferenceV1` = the same exact nested tuple under its distinct four-field wrapper identity;
+- `InvestmentCaseContextV1` = exact three-field `ppm.investment-case-context` / `1.0`.
+
+The producer call contract is exact operation
+`decision-registry.decision-references.validate.v1`, permission
+`management-governance.decision-references.validate`, audience
+`diten-management-governance-service`, Client ID `diten.management-governance`, owner `MOD-0007` and protocol
+scope `diten.s2s.delegated.invoke`. Only `HistoricalResolve` and `NewReferenceEligibility` are valid;
+`CurrentSelectionEligibility` is `400`. The read-only validation port creates no receipt, audit, cache or PPM
+mutation. Later attach/replace/remove commands remain unauthorized and must use the PPM-owned idempotency,
+tenant-first CAS, receipt, audit-intent and outbox transaction when separately approved.
+
+Conditional MOD-0023 `InvestmentCaseApprovalOutcomeReferenceV1` remains **BLOCKED / TEST-PLAN-ONLY**. Its nested
+`platform.approval-outcome-reference` / `1.0` tuple is exactly three fields, but checkpoint
+`0ef0a517840d1d8c7d0bbd2fdb2d5d443f0d8470` remains `DRAFT / NON-EXECUTABLE`; the attestation signing mechanism,
+validity/nonce decisions and bilateral executable fixtures are not approved. Therefore no MOD-0023 DTO,
+serializer, port, fake, source file or positive acceptance fixture may be materialized under this handoff.
+Negative architecture tests must prove its absence until the producer amendment is promoted and Gate 2 plus
+explicit user/runtime authority are recorded.
+
+##### I-B — Funding & Scenario, atomic coordinated lane
+
+This lane may be developed in parallel internally, but its consumer checkpoint and later activation are atomic:
+both the MOD-0136 and MOD-0138 contract-test sets must be green; one producer cannot be substituted for, merged
+with or used to infer the other. The inputs are producer-owned checkpoints:
+
+- MOD-0136 fixture closure `711962a3fdc1226d947672dc9b48d29296c960a0` and core
+  `1949b93ead3dc1ac3234673bbe00ed67e3615743`;
+- MOD-0138 fixture/security closure `3df680d6e006bfce19e382253ddd1f2f873c2295` and core
+  `acae87090f35e5e0a7f37ad66dd8e98fc69c07bb`.
+
+The exact PPM values are `SelectedBudgetVersionReferenceV1`,
+`InvestmentCaseScenarioVersionReferenceV1`, `InvestmentCaseComparatorOutputReferenceV1` and
+`SelectedScenarioReferenceV1` from §4.8. Their nested producer tuples are exact five-field
+`fpa.budget-version-reference` / `1.0`, exact five-field `fpa.scenario-planning-reference` / `1.0`
+`ScenarioVersionReferenceV1`, or its separate exact five-field `ComparatorOutputReferenceV1`. No budget amount,
+currency, period, line, certification or selected-baseline truth; no scenario assumption, compared list,
+algorithm, ranking, metric, output payload, occurrence, disposition or current-state flag may be copied.
+
+MOD-0136 validation is exact operation/permission
+`budgeting.budget-version-references.validate`, audience `diten-fpa-service`, Client ID `diten.fpa`, owner
+`MOD-0136`. MOD-0138 validation is exact operation/permission
+`fpa.scenario-planning.references.validate`, the same workload audience/Client ID, and distinct owner
+`MOD-0138`. Shared workload identity never merges module entitlement, operation, permission, signing or fixture
+ownership. `HistoricalResolve`, `NewReferenceEligibility` and `CurrentSelectionEligibility` are supported only
+as fixed by each wrapper: Current is valid for selected Budget and selected Scenario only and is `400` for
+scenario-version/comparator analytical wrappers. Producer success never makes the PPM wrapper its selection SoR.
+
+##### I-C — Benefit Realization
+
+This lane consumes MOD-0072 fixture/security checkpoint
+`b4589139e8c9db544de5b66300640b214db3acf4` and core checkpoint
+`5e937d79d3c2824e1647e8cd105b45c53d19c74c`. PPM owns only exact four-field
+`ppm.benefit-commitment-outcome-reference` / `1.0` `BenefitCommitmentOutcomeReferenceV1`, nesting the unmodified
+five-field, lower-camel producer tuple `diten.decision-intelligence.outcome-reference` / `1.0`. Actual value,
+measurement identity/period/value, evidence and realization state are forbidden; no
+`OutcomeMeasurementReference` identity is minted.
+
+The producer call contract is exact operation
+`outcome-tracking.outcome-references.validate`, permission
+`decision-intelligence.outcome-references.validate`, audience `diten-decision-intelligence-service`, Client ID
+`diten.decision-intelligence`, owner `MOD-0072` and protocol scope `diten.s2s.delegated.invoke`.
+`HistoricalResolve` and `NewReferenceEligibility` are valid; `CurrentSelectionEligibility` is `400`.
+
+##### Common fixture, security, idempotency and composition gates
+
+Every lane must verify exact ordinal contract/type/version/property names; missing, duplicate, extra,
+case-changed, normalized, aliased or unsupported values fail closed. Tests read producer evidence from the exact
+immutable checkpoint and repository path (`git show <checkpoint>:<path>` or an independently checksum-bound
+test artifact); they do not copy, regenerate or reinterpret producer fixtures. Each lane must cover exact
+round-trip bytes/field allowlists, all supported and forbidden modes, `400/401/403/404/409/503`, missing and
+cross-tenant non-disclosure, provider timeout/unavailable/malformed/indeterminate responses, and no-copy scans.
+
+Trusted `TenantId`, effective actor, delegation, S2S identity, operation, permission and request hash come only
+from validated FU16 server context. Payload/header overrides, generic internal keys, role-name inference,
+wildcards, aliases, cached allow, last-known-good allow and producer error reclassification are forbidden.
+Provider validation is read-only and has no idempotency receipt; future PPM relationship mutation must be
+tenant-scoped, idempotent and atomically persist business relationship, receipt, local audit intent and outbox,
+with same-key/same-payload stable replay, changed payload/provenance `409`, body-once unknown-commit
+reconciliation and cancellation propagation.
+
+The three contract-test lanes may be built and reviewed concurrently. Production provider implementations,
+Persistence/Infrastructure/Api composition, credentials, routes and relationship mutation remain a later
+per-adapter runtime gate. Cross-lane composition starts only after I-A Decision, atomic I-B Budget+Scenario and
+I-C Outcome contract-test checkpoints pass, MOD-0023 is either formally promoted or explicitly excluded by
+policy, producer runtime evidence and FU16 provisioning are approved, and a new explicit Control Tower runtime
+authorization is recorded. Legacy parity/browser acceptance occurs after composition and never retires or
+changes a legacy surface through this amendment.
+
 ### 4.10 ExternalContextReference validation projection
 
 This is the authorized provider contract for the internal endpoint
@@ -415,6 +547,10 @@ The authorized Phase 2A implementation may create only:
 - `services/Diten.PpmService/tests/**`.
 - Gateway route work only through a separate `integration-agent` task after route/port approval.
 
+The later Gate I contract-test-only authority is narrower and is limited to the exact Domain/Application and
+test roots enumerated in §4.9.1. It does not inherit the broad Phase 2A/frontend/Gateway scope above and grants
+no Persistence, Infrastructure, Api, composition or runtime change.
+
 Gateway configuration remains unauthorized and integration-agent-only.
 
 ## 6. Protected Paths
@@ -456,8 +592,9 @@ The four canonical producer parent packs and bounded core checkpoints now exist 
 histories. They are not composed into this PPM branch, do not choose physical service placement for PPM and do
 not themselves approve a PPM bilateral consumer adapter. MOD-0023 requires promotion of its separate PSS-owned
 amendment. A PPM Gate I
-consumer adapter becomes executable only after its producer contract and matching MOD-0117 consumer amendment
-are approved and explicit runtime authority is recorded.
+consumer adapter becomes executable only after its producer contract, the bounded §4.9.1 consumer contract-test
+checkpoint and a matching later MOD-0117 runtime amendment are approved and explicit runtime authority is
+recorded.
 
 ## 8. Runtime Constraints
 
@@ -618,10 +755,11 @@ surfaces and contract tests. This evidence grants neither production activation 
 | Gate I-C outcome/realization references | Gate I-C | BenefitCommitment `0..n`; planned target only in PPM | MOD-0072 authoritative validation |
 
 Gate I delivery is split into four independently approved executable slices: **I-A Decision**, **I-B Budget**,
-**I-B Scenario**, and **I-C Outcome**. This governance closure authorizes none of them. Adapter code for a slice
-cannot start until the named producer pack/contract is approved, bilateral exact serialization and mode/error
-fixtures are approved, this MOD-0117 consumer amendment is approved for execution, and explicit runtime authority
-is recorded. Conditional MOD-0023 `ApprovalOutcome` remains a separate PSS-owned amendment and adapter.
+**I-B Scenario**, and **I-C Outcome**. This governance closure authorizes none of those executable/runtime
+slices; §4.9.1 authorizes only their bounded pure consumer contract-test handoffs. Production adapter code for a
+slice cannot start until the named producer pack/contract is approved, bilateral exact serialization and
+mode/error fixtures are approved, a later MOD-0117 runtime amendment is approved, and explicit runtime authority
+is recorded. Conditional MOD-0023 `ApprovalOutcome` remains a separate blocked PSS-owned amendment and adapter.
 
 For delivery planning, those four atomic adapters are grouped into three parallel NON-EXECUTABLE lanes:
 
@@ -631,9 +769,9 @@ For delivery planning, those four atomic adapters are grouped into three paralle
    coordinated lane; neither adapter may infer or copy producer-owned selection/analytical truth.
 3. **I-C Benefit Realization:** MOD-0072 outcome-reference contract tests with planned target remaining in PPM.
 
-The next executable handoff still requires a separately approved MOD-0117 consumer amendment for the named
-lane. Cross-lane composition, production activation and legacy page-parity acceptance occur only after the
-three lanes close; this plan is not implementation authority.
+The next executable/runtime handoff still requires a separately approved MOD-0117 runtime amendment for the
+named lane. Cross-lane composition, production activation and legacy page-parity acceptance occur only after
+the three lanes close; the bounded contract-test handoff is not runtime implementation authority.
 
 Invalid Unicode, unpaired surrogate and ambiguous normalized values fail closed. Validation, persistence and
 unique indexes must use the same normalized values.
@@ -891,10 +1029,15 @@ claim a fresh test execution or production activation.
 - [x] Control Tower recorded Phase 2A lifecycle, referenceability and cardinality decisions.
 - [x] Phase 2A object/UI scope and Golden Slim selections are approved.
 - [x] Gate L exact InvestmentCase/BenefitCommitment fields, states, invariants and cardinalities are approved.
-- [ ] Gate I-A MOD-0007 contract and conditional MOD-0023 amendment/contract are approved.
-- [ ] Gate I-B MOD-0136 and MOD-0138 exact versioned typed contracts are approved.
-- [ ] Gate I-C MOD-0072 exact versioned typed contract is approved.
-- [ ] Each Gate I consumer amendment has separate approval and explicit runtime authority after its producer contract.
+- [x] Gate I-A MOD-0007 exact contract is approved for bounded consumer contract tests; conditional MOD-0023
+  remains explicitly blocked/test-plan-only while its amendment is DRAFT / NON-EXECUTABLE.
+- [x] Gate I-B MOD-0136 and MOD-0138 exact versioned typed contracts and immutable producer checkpoints are
+  approved for the atomic bounded consumer contract-test lane.
+- [x] Gate I-C MOD-0072 exact versioned typed contract and immutable producer checkpoint are approved for the
+  bounded consumer contract-test lane.
+- [x] The three exact NON-RUNTIME consumer contract-test handoffs are authorized in §4.9.1.
+- [ ] Each Gate I production adapter has a later runtime amendment, explicit runtime authority and live bilateral
+  evidence after its producer contract-test checkpoint.
 - [x] Every Phase 2A frontend surface has an exact field count and Golden Slim decision.
 - [x] Phase 2A hub/routes and visibility/referenceability presentation are approved.
 - [x] Exact S2S service identity and actor delegation are approved for the internal provider slice.
@@ -968,7 +1111,8 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
    compatibility evidence; the provider implementation and isolated contract/security evidence already exist.
 4. Exact allowlisted `PpmAuditIntentSubmittedV1` payload/consumer mapping, authenticated publisher credential
    and MOD-0035/MOD-0021 delivery integration.
-5. Gate I-A/B/C exact producer contracts, physical placement decisions and later MOD-0117 consumer amendments.
+5. Gate I-A/B/C physical provider placement, runtime composition, credentials/live bilateral evidence and later
+   MOD-0117 runtime amendments; §4.9.1 authorizes only bounded consumer contract tests.
 
 ### Open UI decisions
 
@@ -981,6 +1125,7 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-08-26 | Authorized exact pure Domain/Application and test roots for three parallel NON-RUNTIME consumer contract-test lanes: I-A MOD-0007 Decision Trace with MOD-0023 explicitly blocked/test-plan-only, atomic I-B MOD-0136+MOD-0138 Funding & Scenario, and I-C MOD-0072 Benefit Realization. Bound exact producer checkpoints, wrappers, operations, permissions, service identities, mode/error/no-copy/security/idempotency fixtures and later composition gates. No Persistence/Infrastructure/Api/runtime/frontend/Gateway/WorkCenter authority, status promotion or production activation was granted. | User / Enterprise Strategy Control Tower |
 | 2026-08-26 | Reconciled factual Gate L (`536aa685`) and default-disabled ExternalContextReference provider (`eddabab0` + `682b0afb`) implementation evidence, replaced stale missing-producer-pack wording with immutable ready-for-dev/core checkpoint provenance, and recorded three parallel NON-EXECUTABLE I-A/I-B/I-C planning lanes. MOD-0117 remains `review`; Gate I adapters, composition, activation, parity acceptance and production authority remain open. | Enterprise Strategy Control Tower governance reconciliation |
 | 2026-08-02 | Closed only the PPM-owned Gate I consumer profile ledger: exact `1.0` wrapper names/field allowlists, shared typed InvestmentCase context, four executable-slice boundaries and Historical/New/Current validation plus 400/401/403/404/409/503 mapping. Producer contracts/statuses, MOD-0023, runtime authority, MOD-0117 `review` status and OD-04 remain unchanged/open as applicable. | User / Portfolio Governance Process Owner |
 | 2026-08-02 | Staged the OPEN Gate I authority into I-A Decision Trace, I-B Funding & Scenario and I-C Benefit Realization. Recorded exact cardinalities, institutional owner roles, common fail-closed/no-copy baseline, MOD-0023 hazards and conjunctive full-1.3 wording. This amendment is non-executable: no producer contract name/version, physical placement, adapter/runtime authority, status promotion or completion claim was created. | User / Enterprise Strategy Control Tower |
