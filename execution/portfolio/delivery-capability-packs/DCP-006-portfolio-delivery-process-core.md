@@ -702,6 +702,32 @@ and MOD-0035/MOD-0021 integration must be delivered on a separate PSS branch/wor
 pack and explicit user approval. MOD-0117 authorizes no AuthService, Platform, MOD-0035 or Gateway runtime
 change; Gateway remains integration-agent-only.
 
+#### Gate I bounded runtime-composition reconciliation — DEFAULT-OFF / NON-ACTIVATING
+
+The exact MOD-0117 contract lanes are now composed at `20c95c16b65b0733120d74020508c13dd56abe22`
+from I-A `fd3699956bab53d44ade6d08d22f3345d2445857`, I-B
+`a64139023ba596113c3c260cac175a8841a909e2` and I-C
+`f6e9ec3db984a376ec863cab511d30d587130570`. The user authorizes the pack-specific bounded implementation
+allowlist in MOD-0117 §4.9.2. This DCP records orchestration only and does not expand that allowlist.
+
+Composition order is exact and owner-scoped: authority prerequisites MOD-0018-FU16 `cfbfee00`, MOD-0035
+`f1568ace`, MOD-0021 `525f6275` and Model-A `94f11ce8`; Platform entitlement transactions and attestation
+(`2a66f0e9` → `5fab3b77` → `941a6098` → `e163bd8c` → `ea2638f0`);
+FU16 Auth foundation/grants/consumer/fence (`84ad2793` → `56acefd9` → `197f351a` → `f7dd4a61` →
+`b952bbe4` → `1f5c69a6` exact Auth delta); signed eventing/audit intake (`3bd29dd1` → `f4f10b41` →
+`1ec4ad62`); then owner-provided MOD-0007, MOD-0136, MOD-0138 and MOD-0072 validation providers against
+their immutable fixture/core checkpoints. Cross-owner histories are scope-reconciled in separate worktrees;
+this is not authority for a bulk cross-service cherry-pick or overwrite.
+
+MOD-0023 is **ExcludedV1** from the first runtime-composition release. No ApprovalOutcome DTO/provider/positive
+fixture or persistence is allowed; every approval-required path returns zero-residue `503`. It remains a later
+separate PSS amendment/Gate 2/bilateral/explicit-runtime decision. OD-04 therefore remains `OPEN / PARTIAL`.
+The composition is only internal and default-off, has no Gateway/browser route, contains no secret or provider
+URI, and cannot be enabled by this amendment. Migration rehearsal, credential/vault/key provisioning,
+entitlement/grants, broker/DLQ/replay/observability, live bilateral/normal-port evidence, deployment review and
+explicit activation authority remain conjunctive later gates. `Composition-ready` must never be reported as
+`activation-ready`, production-ready, Gate I complete or full 1.3 complete.
+
 ## 11. Scope
 
 Authorized planning artifacts are ownership matrices, interface contracts, delivery sequencing, gates,
@@ -867,7 +893,7 @@ and no deferred regression debt.
 | OD-01 | ✅ **CLOSED — 2026-07-28:** Master 8.1 is canonical and historical CAND-CAP-0008/0009 aliases resolve to MOD-0354/0355 | None | Enterprise Architect |
 | OD-02 | ✅ **CLOSED — 2026-07-28:** Initial modular-monolith placement with mandatory architecture tests and fail-closed split fallback | Module packs must prove isolation before service scaffold | Enterprise Architect |
 | OD-03 | ✅ **CLOSED — 2026-07-29:** Permanent owner role is Portfolio Governance Process Owner (PPM Business Owner); minimum Slice 2 Phase 2A/2B scope and future `Diten.PpmService` SoR placement are approved. This grants no scaffold or production authority | None; runtime gates remain under OD-04 | Portfolio Governance Process Owner |
-| OD-04 | 🔴 **OPEN / PARTIAL:** MOD-0117 pack is in `review`; Phase 2A and Gate L are implemented in the isolated PPM branch. PPM's two-gate entitlement/permission policy, audit event identity and Minimal Mutation Audit v1 consumer contract are governance-locked. PSS-B1 fixes the provider-side `platform.ppm-entitlement-decision.v1` contract and every-instance invalidation behavior. The default-disabled MOD-0117 `ppm.external-context-reference` provider is implemented with isolated evidence. Gate I-A, Gate I-B and Gate I-C, MOD-0354 consumer/DWS runtime, production activation and remaining composition stay open | Existing producer pack/core checkpoints must be reconciled into exact bilateral PPM contracts; separate MOD-0023 amendment promotion; later MOD-0117 consumer amendments/adapters; composed activation, provider/consumer/DWS and parity evidence. Does not block the already implemented Phase 2A/Gate L local slices | Named Gate I business owners + shared-module owners |
+| OD-04 | 🔴 **OPEN / PARTIAL:** MOD-0117 pack is in `review`; Phase 2A and Gate L are implemented. Gate I-A/I-B/I-C contract checkpoints are composed at `20c95c16`, and MOD-0117 §4.9.2 now permits only bounded internal default-off composition. MOD-0023 is ExcludedV1. MOD-0354 consumer/DWS runtime, provider placement, migration, credentials, broker/live evidence, deployment and production activation remain open | Implement and verify the exact default-off allowlist; owner services supply validation providers; complete migration/credential/audit/live evidence and obtain a separate activation amendment. Does not block the already implemented Phase 2A/Gate L local slices | Named Gate I business owners + shared-module owners |
 | OD-05 | ES containment/migration necessity | CAND-CAP-0007-FU01 participation | ESBP + EA |
 | OD-06 | DCP-005/DCP-006 formal successor relationship after approval | Portfolio governance | Enterprise Architect |
 | OD-07 | ✅ **CLOSED — scope partition, 2026-07-28.** DCP-006 is sole active 1.3/MOD-0117 orchestration; DCP-003 is deferred/non-executable and portfolio-delivery domain config is reconciled | None; draft MOD-0117 pack authoring is eligible after OD-03 closure and canonical preflight, while OD-04 still blocks ready-for-dev/runtime | Enterprise Architect technical/governance owner |
@@ -946,6 +972,7 @@ adapter, runtime, merge or production authority:
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-08-26 | Reconciled the exact composed I-A/I-B/I-C checkpoint into a bounded, internal-only, default-off MOD-0117 runtime-composition handoff. Recorded owner-scoped Auth/Platform/Eventing/producer order, retained OD-04 OPEN/PARTIAL, and excluded MOD-0023 from release V1 with zero-residue 503 behavior. No activation, secret/key, deployment, Gateway/frontend/WorkCenter or production authority was granted. | User / Enterprise Strategy Control Tower |
 | 2026-08-26 | Reconciled the isolated MOD-0117 Gate L/provider/audit checkpoints and later immutable producer ready-for-dev/core evidence. Recorded three parallel NON-EXECUTABLE I-A/I-B/I-C planning lanes while preserving OD-04 OPEN/PARTIAL, MOD-0117 `review`, MOD-0023 DRAFT/NON-EXECUTABLE and all composition/activation/parity gates. | Enterprise Strategy Control Tower governance reconciliation |
 | 2026-08-03 | Reconciled the conditional MOD-0023 approval-outcome consumer wrapper, non-selection validation modes, PPM-owned source-attestation baseline and audited producer checkpoint provenance. MOD-0117 remains `review`; MOD-0023 PPM amendment remains `DRAFT / NON-EXECUTABLE`; OD-04 remains `OPEN / PARTIAL`; no runtime authority or other producer status changed. | User / Portfolio Governance Process Owner |
 | 2026-08-02 | Closed the PPM-owned Gate I consumer profile decision only: exact `1.0` wrappers, shared InvestmentCase context, validation modes/error mapping and four independent future executable slices. No producer contract/status, MOD-0023 scope, runtime authority, MOD-0117 `review` status or OD-04 `OPEN / PARTIAL` status changed. | User / Portfolio Governance Process Owner |

@@ -493,6 +493,123 @@ policy, producer runtime evidence and FU16 provisioning are approved, and a new 
 authorization is recorded. Legacy parity/browser acceptance occurs after composition and never retires or
 changes a legacy surface through this amendment.
 
+#### 4.9.2 Gate I runtime-composition amendment R1 — BOUNDED IMPLEMENTATION / DEFAULT-OFF / NON-ACTIVATING
+
+The user explicitly authorizes a bounded **runtime-composition implementation handoff** for the three PPM
+consumer lanes, but not their activation. This amendment keeps the pack in `review`, does not change
+or create production authority, and grants no deployment, production credential/key, secret, broker, listener,
+endpoint/controller, Gateway, frontend, WorkCenter, migration execution, live traffic or provider-service
+mutation authority. All composed code must remain internal-only and default-off. Missing configuration,
+provider placement, credential, authority or compatibility evidence returns `503`; it can never be interpreted
+as absence, denial, `404`, cached allow or local truth.
+
+The immutable PPM contract-test composition is exact:
+
+| Lane | Source checkpoint | Generated composed checkpoint | Scope/result |
+|---|---|---|---|
+| I-A Decision Trace | `fd3699956bab53d44ade6d08d22f3345d2445857` | `f63baf4a0440b9e3a5ec0f7ad47c4b926e4ab582` | MOD-0007 only; 38 focused unit tests |
+| I-B Funding & Scenario | `a64139023ba596113c3c260cac175a8841a909e2` | `16df5472e136f9bff761532128c2dc9b490ea031` | atomic MOD-0136 + MOD-0138 lane; 20 focused unit tests |
+| I-C Benefit Realization | `f6e9ec3db984a376ec863cab511d30d587130570` | `20c95c16b65b0733120d74020508c13dd56abe22` | MOD-0072; 48 focused unit tests; final composed HEAD |
+
+The composed branch has exact 19 Domain/Application/test files, builds with zero warnings/errors, passes the
+combined 106 focused unit tests, 34 immutable/checkpoint integration tests and the full 244-test unit/contract
+suite. This is **composition-ready contract evidence**, not an activation-ready runtime result. The existing
+Mongo-dependent integration baseline still requires externally provisioned `27018` replica-set and `27019`
+standalone test authorities; their absence is not converted into a product PASS.
+
+##### Exact dependency checkpoint composition order
+
+The following is an ordered, scope-verified materialization plan, not authority to merge unrelated histories
+or overwrite another owner’s service. Every group remains in its owner worktree and must be reconciled by exact
+file scope before the PPM composition is enabled:
+
+1. **Governance and entitlement authority:** MOD-0018-FU16
+   `cfbfee00b24314819101faa88d7ed8f1c83c7bd2`, MOD-0035
+   `f1568ace514a33e951c652802347dd22ddd1ac11`, MOD-0021
+   `525f6275a91eab7892741d8239dc1d0390915c3c` and Model-A governance
+   `94f11ce83b5935f418565c312f237a45e54b7750` are authority prerequisites; they are not runtime code
+   cherry-picks. Platform physical/applicability/subscription transaction chain is
+   `2a66f0e911344ff0cdaa64415478638735fe63f8` →
+   `5fab3b77189cd03e91d58c531eeb5da589b7fa08` →
+   `941a60985433de04c162a24b0470c1775349c0db` →
+   `e163bd8cc0b2c8a3c22f1c7d158ba48960a72562`; then Platform attestation producer
+   `ea2638f0e851863c6bcf29fa394ee22279a6fc2f`.
+2. **FU16 Auth authority:** Auth foundation chain
+   `84ad2793f6d3f405205fa4467e581f220e78b041` →
+   `56acefd9cacfa3cb57a54a6d6c193500a20acbcc` →
+   `197f351a5e1e3c38db6698c95d2517428ddeb05c` →
+   `f7dd4a61d8d8910dd1ede56e00e6aeb531ae7305`; then entitlement-attestation consumer
+   `b952bbe40b4281d5fb8e9a75d5dc2a2f6b41e7cd` and exact fence reconciliation
+   `1f5c69a63faf3e973153bf5efc6d873d59acbd43`. The last checkpoint is provenance from the combined
+   Platform/Auth evidence branch; only its exact AuthService delta may be reconciled into an Auth-owned branch.
+3. **Signed eventing and audit intake:** BuildingBlocks security foundation
+   `3bd29dd18d5f42ceaebc6ab44a13d2961458fbc8` → Platform Gate I audit acceptance
+   `f4f10b419df9b7ab2f807c7979ca4003e80e742b` → bilateral immutable fixture evidence
+   `1ec4ad62c4cc70021114b7da544f4d9652d5be35`.
+4. **Producer authorities:** MOD-0007 fixture/core
+   `9968ecede48822f95a74461a4959c94b23abbc9b` / `2d354a97bfbe09ed665e44dba8665181d2a56d78`;
+   MOD-0136 fixture/core `711962a3fdc1226d947672dc9b48d29296c960a0` /
+   `1949b93ead3dc1ac3234673bbe00ed67e3615743`; MOD-0138 fixture/core
+   `3df680d6e006bfce19e382253ddd1f2f873c2295` /
+   `acae87090f35e5e0a7f37ad66dd8e98fc69c07bb`; MOD-0072 fixture/core
+   `b4589139e8c9db544de5b66300640b214db3acf4` /
+   `5e937d79d3c2824e1647e8cd105b45c53d19c74c`. Core checkpoints do not themselves prove or authorize a
+   live validation endpoint; each producer owner must supply its provider implementation and runtime evidence.
+5. **PPM consumer composition:** exact contract-test base `20c95c16b65b0733120d74020508c13dd56abe22`,
+   followed only by the default-off implementation roots below. Composition tests must prove all dependency
+   versions and identities before any flag can become eligible for a later activation amendment.
+
+##### Exact bounded implementation allowlist
+
+Future work under this amendment is create-if-absent/additive-only and limited to:
+
+- the six Domain/Application Gate I roots already listed in §4.9.1;
+- `services/Diten.PpmService/src/Diten.PpmService.Domain/Entities/InvestmentCase.cs` and
+  `services/Diten.PpmService/src/Diten.PpmService.Domain/Entities/BenefitCommitment.cs`, only for the exact
+  no-copy reference relationships fixed in §4.8;
+- `services/Diten.PpmService/src/Diten.PpmService.Persistence/GateI/**`;
+- `services/Diten.PpmService/src/Diten.PpmService.Persistence/Mongo/PpmMongoContext.cs` and
+  `services/Diten.PpmService/src/Diten.PpmService.Persistence/DependencyInjection.cs`, additive composition
+  only; existing Phase 2A/Gate L collections and registrations cannot be replaced;
+- `services/Diten.PpmService/src/Diten.PpmService.Infrastructure/GateI/**` and
+  `services/Diten.PpmService/src/Diten.PpmService.Infrastructure/DependencyInjection.cs`, additive typed
+  provider/option registration only;
+- the exact Unit/Integration Gate I test roots listed in §4.9.1;
+- `services/Diten.PpmService/src/Diten.PpmService.Api/appsettings.json` and
+  `services/Diten.PpmService/src/Diten.PpmService.Api/appsettings.Development.json`, only for explicit Boolean
+  `false` defaults. Provider URI, credential, key, secret, broker address and activation value are forbidden.
+
+The exact internal flags are `GateI:Composition:Enabled`, `GateI:DecisionTrace:Enabled`,
+`GateI:FundingScenario:Enabled` and `GateI:BenefitRealization:Enabled`; all default to `false`, and the common
+flag plus the named lane flag must both be true before a provider call is even considered. This amendment does
+not authorize any code or deployment to set them true. There is no Gate I browser or Gateway route. The
+producer validation services remain owned respectively by MOD-0007 / `Diten.ManagementGovernanceService`,
+MOD-0136+MOD-0138 / `Diten.FpaService`, and MOD-0072 / `Diten.DecisionIntelligenceService`; PPM owns only its
+typed clients, reference relationships and transactional local receipt/audit/outbox behavior. Platform owns
+entitlement-attestation production, AuthService owns FU16 enforcement, BuildingBlocks owns event mechanics and
+Platform remains the audit-intake consumer.
+
+##### MOD-0023 ExcludedV1 — first runtime release
+
+MOD-0023 is explicitly excluded from this first composition release. `ExcludedV1` is a PPM release
+disposition, not a producer contract or runtime identity. No ApprovalOutcome DTO, serializer, provider/client,
+DI registration, positive fixture, persistence field or migration may be added. Any policy or lifecycle path
+that requires `ApprovalOutcome` must return `503` before provider lookup or business mutation, with zero
+relationship, receipt, audit-intent and outbox residue. It cannot fall back to MOD-0007, a local approval flag,
+cache, user role or inferred policy. Later inclusion requires a separate MOD-0023 amendment promotion, Gate 2,
+bilateral fixtures and explicit runtime plus activation authority.
+
+##### Composition-ready versus activation-ready
+
+`Composition-ready` means only that default-off code builds and that contract, security, tenant isolation,
+same-key replay/changed-payload conflict, transaction rollback/unknown-commit, no-copy and cross-lane tests pass
+against exact immutable evidence. `Activation-ready` additionally requires all owner-issued provider
+placements/contracts, offline migration plan and rehearsal, production credential/vault/key provisioning,
+entitlement/grant provisioning, signing identity, broker/DLQ/replay/observability evidence, live bilateral and
+normal-port delivery, deployment review and a new explicit Control Tower activation amendment. Until then the
+flags remain false, missing dependencies remain `503`, no migration runs, no live listener/worker starts and
+neither Gate I nor full 1.3 may be reported complete.
+
 ### 4.10 ExternalContextReference validation projection
 
 This is the authorized provider contract for the internal endpoint
@@ -755,13 +872,14 @@ surfaces and contract tests. This evidence grants neither production activation 
 | Gate I-C outcome/realization references | Gate I-C | BenefitCommitment `0..n`; planned target only in PPM | MOD-0072 authoritative validation |
 
 Gate I delivery is split into four independently approved executable slices: **I-A Decision**, **I-B Budget**,
-**I-B Scenario**, and **I-C Outcome**. This governance closure authorizes none of those executable/runtime
-slices; §4.9.1 authorizes only their bounded pure consumer contract-test handoffs. Production adapter code for a
-slice cannot start until the named producer pack/contract is approved, bilateral exact serialization and
-mode/error fixtures are approved, a later MOD-0117 runtime amendment is approved, and explicit runtime authority
-is recorded. Conditional MOD-0023 `ApprovalOutcome` remains a separate blocked PSS-owned amendment and adapter.
+**I-B Scenario**, and **I-C Outcome**. §4.9.1 records their completed bounded pure consumer contract-test
+handoffs; §4.9.2 now authorizes only internal default-off composition code for I-A Decision, atomic I-B and I-C.
+No slice is activation-ready. Provider placement, migration, credentials, live bilateral evidence and explicit
+activation authority remain later gates. Conditional MOD-0023 `ApprovalOutcome` is ExcludedV1 and remains a
+separate blocked PSS-owned amendment and adapter.
 
-For delivery planning, those four atomic adapters are grouped into three parallel NON-EXECUTABLE lanes:
+For checkpoint provenance, those four atomic adapters were grouped into three contract-test lanes now composed
+at `20c95c16b65b0733120d74020508c13dd56abe22`:
 
 1. **I-A Decision Trace:** MOD-0007 governing/supporting decision contract tests; the conditional MOD-0023
    ApprovalOutcome adapter stays blocked until its amendment promotion, Gate 2 and explicit runtime authority.
@@ -1036,6 +1154,10 @@ claim a fresh test execution or production activation.
 - [x] Gate I-C MOD-0072 exact versioned typed contract and immutable producer checkpoint are approved for the
   bounded consumer contract-test lane.
 - [x] The three exact NON-RUNTIME consumer contract-test handoffs are authorized in §4.9.1.
+- [x] The three immutable contract-test checkpoints are composed at `20c95c16`; §4.9.2 authorizes only a
+  bounded, internal, default-off implementation handoff and explicitly excludes MOD-0023 from release V1.
+- [ ] Gate I runtime composition is activation-ready. Provider placement, migration rehearsal, credentials,
+  entitlement/grants, signed audit transport, broker/live evidence and explicit activation authority remain open.
 - [ ] Each Gate I production adapter has a later runtime amendment, explicit runtime authority and live bilateral
   evidence after its producer contract-test checkpoint.
 - [x] Every Phase 2A frontend surface has an exact field count and Golden Slim decision.
@@ -1111,8 +1233,8 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
    compatibility evidence; the provider implementation and isolated contract/security evidence already exist.
 4. Exact allowlisted `PpmAuditIntentSubmittedV1` payload/consumer mapping, authenticated publisher credential
    and MOD-0035/MOD-0021 delivery integration.
-5. Gate I-A/B/C physical provider placement, runtime composition, credentials/live bilateral evidence and later
-   MOD-0117 runtime amendments; §4.9.1 authorizes only bounded consumer contract tests.
+5. Gate I-A/B/C bounded default-off composition may proceed only under §4.9.2. Physical provider placement,
+   migration execution, credentials, activation and live bilateral evidence remain later owner/runtime gates.
 
 ### Open UI decisions
 
@@ -1125,6 +1247,7 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-08-26 | Authorized the bounded, internal-only, default-off Gate I runtime-composition implementation handoff after exact I-A/I-B/I-C contract checkpoints were composed. Recorded dependency checkpoint order, exact source/config/test allowlist and provider ownership. MOD-0023 is `ExcludedV1`: no DTO/provider/positive fixture, and every ApprovalOutcome-required path remains zero-residue `503`. This grants no activation, secret/key, deployment, broker/live, frontend, Gateway or WorkCenter authority. | User / Enterprise Strategy Control Tower |
 | 2026-08-26 | Authorized exact pure Domain/Application and test roots for three parallel NON-RUNTIME consumer contract-test lanes: I-A MOD-0007 Decision Trace with MOD-0023 explicitly blocked/test-plan-only, atomic I-B MOD-0136+MOD-0138 Funding & Scenario, and I-C MOD-0072 Benefit Realization. Bound exact producer checkpoints, wrappers, operations, permissions, service identities, mode/error/no-copy/security/idempotency fixtures and later composition gates. No Persistence/Infrastructure/Api/runtime/frontend/Gateway/WorkCenter authority, status promotion or production activation was granted. | User / Enterprise Strategy Control Tower |
 | 2026-08-26 | Reconciled factual Gate L (`536aa685`) and default-disabled ExternalContextReference provider (`eddabab0` + `682b0afb`) implementation evidence, replaced stale missing-producer-pack wording with immutable ready-for-dev/core checkpoint provenance, and recorded three parallel NON-EXECUTABLE I-A/I-B/I-C planning lanes. MOD-0117 remains `review`; Gate I adapters, composition, activation, parity acceptance and production authority remain open. | Enterprise Strategy Control Tower governance reconciliation |
 | 2026-08-02 | Closed only the PPM-owned Gate I consumer profile ledger: exact `1.0` wrapper names/field allowlists, shared typed InvestmentCase context, four executable-slice boundaries and Historical/New/Current validation plus 400/401/403/404/409/503 mapping. Producer contracts/statuses, MOD-0023, runtime authority, MOD-0117 `review` status and OD-04 remain unchanged/open as applicable. | User / Portfolio Governance Process Owner |
