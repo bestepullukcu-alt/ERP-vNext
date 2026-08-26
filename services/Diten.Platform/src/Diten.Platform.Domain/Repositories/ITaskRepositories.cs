@@ -294,4 +294,18 @@ public interface IDocumentReferenceListRepository
     /// </summary>
     Task<IReadOnlyList<DocumentReferenceEntry>> SearchAsync(
         Guid listVersionId, string? term, int limit, CancellationToken ct = default);
+
+    /// <summary>
+    /// The rows for these UIDs within ONE version — used to freeze a citation and to resolve a task type's
+    /// governing documents.
+    ///
+    /// <para>⚠ Scoped to a version rather than "the newest matching row" on purpose. A citation records WHICH
+    /// register said this; resolving across versions would make two callers reading the same UID a moment apart
+    /// freeze two different titles, which is the failure the version id exists to rule out.</para>
+    ///
+    /// <para>A UID with no row simply does not come back. Callers must treat a short answer as an answer — the
+    /// register not listing a document is a state, not an error.</para>
+    /// </summary>
+    Task<IReadOnlyList<DocumentReferenceEntry>> GetEntriesByUidsAsync(
+        Guid listVersionId, IReadOnlyCollection<string> documentUids, CancellationToken ct = default);
 }

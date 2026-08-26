@@ -42,6 +42,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
     // BL-023 — is the assignee above me, and if so who carries the request. Neither decides anything.
     private readonly ITaskAssignmentDirection? _direction;
     private readonly ITaskUpwardRequestService? _upwardRequests;
+    private readonly TaskDocumentReferenceFreezer? _documentFreezer;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<CreateTaskItemHandler> _logger;
 
@@ -68,7 +69,12 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
          * absent pair can only ever SKIP the request; it can never open one by accident.
          */
         ITaskAssignmentDirection? direction = null,
-        ITaskUpwardRequestService? upwardRequests = null)
+        ITaskUpwardRequestService? upwardRequests = null,
+        /*
+         * DCP-005 slice 3 — also OPTIONAL, and for the same reason: a caller that supplies none behaves exactly
+         * as it did before citations existed. An absent freezer can only skip a citation; it can never write one.
+         */
+        TaskDocumentReferenceFreezer? documentFreezer = null)
     {
         _tasks = tasks;
         _assignments = assignments;
@@ -87,6 +93,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         _direction = direction;
         _upwardRequests = upwardRequests;
         _tenantContext = tenantContext;
+        _documentFreezer = documentFreezer;
         _logger = logger;
     }
 
@@ -270,6 +277,26 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         // running for it. A task whose feed has no `created` predates the log entirely, and the screen says so
         // rather than presenting an incomplete story as a complete one.
         task.Declare(TaskTransitionKind.Created, actorId);
+
+        /*
+         * ── DCP-005 slice 3 — freeze the citations BEFORE the task is written ──────────────────────────────
+         *
+         * Before, not after, because a refused citation must not leave a task behind. The author asked for a
+         * task that cites a document; a task saved without the citation, followed by an error, is the worst of
+         * the three possible outcomes — it looks like a success and reads like a different request.
+         */
+        if (_documentFreezer is not null && request.DocumentUids is { Count: > 0 })
+        {
+            var frozen = await _documentFreezer.ResolveNewAsync(
+                task.DocumentReferences, request.DocumentUids, DateTimeOffset.UtcNow, ct);
+            if (!frozen.Success)
+            {
+                return Fail($"The document '{frozen.OffendingUid}' cannot be cited.",
+                    frozen.ReasonCode!, command.CorrelationId);
+            }
+
+            task.DocumentReferences = frozen.References;
+        }
 
         await _tasks.CreateAsync(task, ct);
 

@@ -12,6 +12,18 @@
   <data name="FieldTitle" xml:space="preserve"><value>Название задачи</value></data>
   <data name="FieldTitlePlaceholder" xml:space="preserve"><value>напр. Подготовить квартальную отчётность</value></data>
   <data name="FieldDescription" xml:space="preserve"><value>Описание</value></data>
+  <data name="FieldGoverningDocuments" xml:space="preserve"><value>Регулирующие документы</value></data>
+  <data name="FieldGoverningDocumentsPlaceholder" xml:space="preserve"><value>Поиск по коду или названию…</value></data>
+  <data name="DocRefSuggestedByType" xml:space="preserve"><value>Предложено этим типом задачи. Уберите неподходящие.</value></data>
+  <data name="DocRefNoneNamed" xml:space="preserve"><value>Этот тип задачи не указывает ни одного регулирующего документа.</value></data>
+  <data name="DocRefNotInRegister" xml:space="preserve"><value>Этот тип задачи указывает {0} документ(ов), которых нет в текущем реестре.</value></data>
+  <data name="DocRefAllBlocked" xml:space="preserve"><value>Этот тип задачи указывает {0} документ(ов), на которые реестр не позволяет ссылаться.</value></data>
+  <data name="DocRefBlocked" xml:space="preserve"><value>Ссылка невозможна</value></data>
+  <data name="DocRefRemove" xml:space="preserve"><value>Убрать</value></data>
+  <data name="DocRefNoResults" xml:space="preserve"><value>Нет документов, соответствующих поиску.</value></data>
+  <data name="DocRefSectionTitle" xml:space="preserve"><value>В соответствии с</value></data>
+  <data name="DocRefReferencedAt" xml:space="preserve"><value>Дата ссылки</value></data>
+  <data name="DocRefUnavailable" xml:space="preserve"><value>Не удалось прочитать реестр документов.</value></data>
   <data name="FieldTaskType" xml:space="preserve"><value>Тип задачи</value></data>
   <data name="FieldTaskTypeNone" xml:space="preserve"><value>Без типа</value></data>
   <data name="FieldPriority" xml:space="preserve"><value>Приоритет</value></data>

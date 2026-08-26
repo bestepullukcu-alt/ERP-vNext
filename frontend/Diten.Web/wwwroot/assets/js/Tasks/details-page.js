@@ -37,6 +37,38 @@
             </div>
         </div>`;
 
+    /*
+     * ── DCP-005 slice 3 — "according to" ────────────────────────────────────────────────────────────────
+     *
+     * ⚠ DRAWN ONLY WHEN THERE IS SOMETHING TO DRAW, and that is the one place this page departs from the
+     * golden reference's "an empty field still shows a dash" rule — on purpose, and the pack names the rule:
+     * DCP-004, do not announce a capability there is no data for. An empty "According to" card on every task in
+     * the product would tell every reader that citations exist and that this task has none, which is a claim
+     * about the task rather than about the feature.
+     *
+     * ⚠ EVERY VALUE HERE IS THE FROZEN ONE. Nothing on this path asks the register anything; a read that
+     * re-resolved a title would undo the freeze on every page load and would look exactly like this function.
+     */
+    const documentCard = (references) => {
+        if (!Array.isArray(references) || references.length === 0) { return ''; }
+
+        const rows = references.map((r) => `
+            <li class="tasks-docref-frozen">
+                <span class="tasks-docref-code">${esc(r.documentCode)}</span>
+                <span class="tasks-docref-title">${esc(r.title)}</span>
+                ${r.documentVersion ? `<span class="tasks-docref-version">${esc(r.documentVersion)}</span>` : ''}
+                ${r.status ? `<span class="tasks-docref-status">${esc(r.status)}</span>` : ''}
+                <span class="tasks-docref-date">${esc(t('docRefReferencedAt'))} ${
+                    esc(String(r.referencedAt || '').slice(0, 10))}</span>
+            </li>`).join('');
+
+        return `
+            <section class="tasks-docref-card mt-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">${esc(t('docRefSectionTitle'))}</h6>
+                <ul class="list-unstyled mb-0">${rows}</ul>
+            </section>`;
+    };
+
     const boot = async () => {
         const host = document.getElementById('taskDetails');
         const taskId = host?.getAttribute('data-task-id');
@@ -73,7 +105,8 @@
                 ${field('bx-timer', t('fieldSpentHours'), task.spentHours)}
                 ${field('bx-hourglass', t('fieldRemainingHours'), task.remainingHours)}
                 ${field('bx-detail', t('fieldDescription'), task.description)}
-            </div>`;
+            </div>
+            ${documentCard(task.documentReferences)}`;
     };
 
     if (document.readyState === 'loading') {

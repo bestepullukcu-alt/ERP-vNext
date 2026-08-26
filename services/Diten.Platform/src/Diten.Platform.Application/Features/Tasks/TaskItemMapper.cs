@@ -113,5 +113,16 @@ public static class TaskItemMapper
         task.ReviewWorkflowInstanceId,
         // BL-023 — the upward request's instance, so the detail surface can show that the work was ASKED for
         // rather than assigned. A link only; the decision stays MOD-0023's.
-        task.RequestWorkflowInstanceId);
+        task.RequestWorkflowInstanceId,
+        /*
+         * DCP-005 slice 3 — the frozen six, copied out as they were stored. Nothing here consults the register:
+         * a read path that re-resolved a citation would undo the freezing on every page load, and would look
+         * exactly like this line while doing it.
+         */
+        task.DocumentReferences
+            .Select(r => new TaskDocumentReferenceDto(
+                r.DocumentUid, r.DocumentCode, r.Title, r.DocumentVersion, r.Status, r.ReferencedAt,
+                r.ListVersionId))
+            .ToList(),
+        task.TaskTypeId);
 }

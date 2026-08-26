@@ -147,6 +147,12 @@ const ICON_MAP = {
    * is a controlled classification, and two glyphs one pixel apart would say they are the same kind of thing.
    */
   taskTypeId: "bx-purchase-tag",
+  /*
+   * DCP-005 slice 3. `bx-file` — a DOCUMENT, which is literally what is being searched for. Deliberately not
+   * `bx-search`: the glyph names what the box is FOR, and a magnifier would say "search" on a form where three
+   * other pickers also search and wear the noun they look for.
+   */
+  taskDocumentSearch: "bx-file",
   taskDescription: "bx-align-left",
   taskAssignmentTarget: "bx-directions",
   taskAssignee: "bx-user",

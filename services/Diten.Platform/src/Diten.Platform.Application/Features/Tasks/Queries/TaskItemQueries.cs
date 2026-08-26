@@ -156,3 +156,14 @@ public sealed record GetDocumentReferenceListVersionsQuery(string CorrelationId)
 /// </summary>
 public sealed record SearchDocumentReferencesQuery(string? Term, int Limit, string CorrelationId)
     : IRequest<Response<IReadOnlyList<DocumentReferenceEntryDto>>>;
+
+/// <summary>
+/// The governing documents of ONE task type, resolved against the current register (DCP-005 §6.4).
+///
+/// <para>⚠ A SUGGESTION, never a requirement. The answer feeds a pre-ticked list the author may untick, and
+/// adding a document the type never named is equally allowed — the type knows the usual answer, not the only
+/// one.</para>
+/// </summary>
+public sealed record GetTaskTypeGoverningDocumentsQuery(
+    Guid TaskTypeId, string? OrganizationCode, string CorrelationId)
+    : IRequest<Response<TaskTypeGoverningDocumentsDto>>;

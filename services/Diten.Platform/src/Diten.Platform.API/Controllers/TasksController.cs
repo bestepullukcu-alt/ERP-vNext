@@ -500,6 +500,24 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// DCP-005 slice 3 — the governing documents a task type suggests, resolved against the current register.
+    ///
+    /// <para>⚠ Guarded by <c>DocumentListRead</c>, the SAME permission as the search, and that is a decision
+    /// rather than a copy. Citing a procedure is ordinary work, so every task author needs to read the register;
+    /// inventing a third permission for "read it from the task form" would mean two answers to one question and
+    /// a role template that grants one and forgets the other. Importing stays separately gated.</para>
+    /// </summary>
+    [HttpGet("task-types/{id:guid}/governing-documents")]
+    [HasPermission(TaskPermissions.DocumentListRead)]
+    public async Task<IActionResult> GetTaskTypeGoverningDocuments(
+        Guid id, [FromQuery] string? organizationCode, CancellationToken ct)
+    {
+        var response = await _mediator.Send(
+            new GetTaskTypeGoverningDocumentsQuery(id, organizationCode, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     // ── DCP-005 slice 1: task types ──────────────────────────────────────
 
     /// <summary>

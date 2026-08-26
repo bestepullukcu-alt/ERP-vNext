@@ -12,6 +12,18 @@
   <data name="FieldTitle" xml:space="preserve"><value>任务标题</value></data>
   <data name="FieldTitlePlaceholder" xml:space="preserve"><value>例如：准备季度申报</value></data>
   <data name="FieldDescription" xml:space="preserve"><value>说明</value></data>
+  <data name="FieldGoverningDocuments" xml:space="preserve"><value>管理文件</value></data>
+  <data name="FieldGoverningDocumentsPlaceholder" xml:space="preserve"><value>按编号或标题搜索…</value></data>
+  <data name="DocRefSuggestedByType" xml:space="preserve"><value>此任务类型的建议。请移除不适用的项。</value></data>
+  <data name="DocRefNoneNamed" xml:space="preserve"><value>此任务类型未指定任何管理文件。</value></data>
+  <data name="DocRefNotInRegister" xml:space="preserve"><value>此任务类型指定的 {0} 份文件不在当前登记册中。</value></data>
+  <data name="DocRefAllBlocked" xml:space="preserve"><value>此任务类型指定的 {0} 份文件不允许被引用。</value></data>
+  <data name="DocRefBlocked" xml:space="preserve"><value>无法引用</value></data>
+  <data name="DocRefRemove" xml:space="preserve"><value>移除</value></data>
+  <data name="DocRefNoResults" xml:space="preserve"><value>没有符合该搜索的文件。</value></data>
+  <data name="DocRefSectionTitle" xml:space="preserve"><value>依据</value></data>
+  <data name="DocRefReferencedAt" xml:space="preserve"><value>引用日期</value></data>
+  <data name="DocRefUnavailable" xml:space="preserve"><value>无法读取文件登记册。</value></data>
   <data name="FieldTaskType" xml:space="preserve"><value>任务类型</value></data>
   <data name="FieldTaskTypeNone" xml:space="preserve"><value>无类型</value></data>
   <data name="FieldPriority" xml:space="preserve"><value>优先级</value></data>

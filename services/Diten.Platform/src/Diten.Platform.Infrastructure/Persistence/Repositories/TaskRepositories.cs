@@ -630,6 +630,20 @@ public sealed class DocumentReferenceListRepository : TenantRepository<DocumentR
 
         return await _entries.Find(filter).SortBy(x => x.DocumentCode).Limit(limit).ToListAsync(ct);
     }
+
+    public async Task<IReadOnlyList<DocumentReferenceEntry>> GetEntriesByUidsAsync(
+        Guid listVersionId, IReadOnlyCollection<string> documentUids, CancellationToken ct = default)
+    {
+        // An empty ask is an empty answer, and never a query that matches everything.
+        if (documentUids.Count == 0) { return []; }
+
+        var filter = Builders<DocumentReferenceEntry>.Filter.And(
+            EntryScope,
+            Builders<DocumentReferenceEntry>.Filter.Eq(x => x.ListVersionId, listVersionId),
+            Builders<DocumentReferenceEntry>.Filter.In(x => x.DocumentUid, documentUids));
+
+        return await _entries.Find(filter).SortBy(x => x.DocumentCode).ToListAsync(ct);
+    }
 }
 
 // ── Phase 2+ repositories. Registered now so the schema/collections exist and later phases are additive. ──

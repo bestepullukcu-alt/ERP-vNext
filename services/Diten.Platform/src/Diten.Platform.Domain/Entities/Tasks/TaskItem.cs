@@ -262,6 +262,16 @@ public sealed class TaskItem : TenantScopedEntity
     /// </summary>
     public Guid? TaskTypeId { get; set; }
 
+    /// <summary>
+    /// Controlled documents this task cites, FROZEN at the moment each one was chosen (DCP-005 §6.2).
+    ///
+    /// <para>⚠ <b>NOTHING IN THE PRODUCT MAY REWRITE A FROZEN ENTRY.</b> Not a batch job, not a "refresh"
+    /// control, not a helpful update handler. The whole point is that a closed task keeps reading the way its
+    /// author read it; code that re-resolves a frozen entry from the current list cancels the freezing it was
+    /// written to provide, and does so invisibly.</para>
+    /// </summary>
+    public List<TaskDocumentReference> DocumentReferences { get; set; } = [];
+
     // ── Recurrence (Phase 4 behaviour; schema now) ───────────────────────────
     public Guid? RecurrenceRuleId { get; set; }
 
@@ -346,4 +356,50 @@ public sealed class TaskFieldValue
 
     /// <summary>When true the value must be OMITTED from the browser payload — never CSS-hidden.</summary>
     public bool Redacted { get; set; }
+}
+
+/// <summary>
+/// One controlled document a task cites — the SIX frozen fields plus the list version they were read from
+/// (DCP-005 §6.2).
+///
+/// <para><b>Why six and not four.</b> Four (uid, version, status, referenced_at) was the original agreement.
+/// The lookup model then exposed a hole: the ERP holds no document table, so a refreshed list may carry a
+/// changed title or a reallocated code — and a CLOSED task would begin showing its old version number under a
+/// new name. Nothing errors; the record simply reads wrong to the next person who opens it. Code and title are
+/// the human-readable identity the author actually relied on, and they cost two strings.</para>
+///
+/// <para><b>Why the list version is stored.</b> "Which register said this" is the question an auditor asks
+/// second, and without it the answer is a guess. It is also the only thing that makes a frozen row
+/// reproducible: the version can be reopened and read even after it has been withdrawn.</para>
+///
+/// <para>⚠ Every property is init-only for a reason that is not style. A settable property is an invitation,
+/// and the invitation here is exactly the mistake: some later handler "helpfully" refreshes a title and the
+/// freeze is gone with no diff to notice. The compiler now refuses.</para>
+/// </summary>
+public sealed class TaskDocumentReference
+{
+    /// <summary>The register's own identifier — the join key, and the only field used to match on removal.</summary>
+    public required string DocumentUid { get; init; }
+
+    /// <summary>Frozen. The human-readable code (e.g. <c>GMG-QMS-SOP-0005</c>).</summary>
+    public required string DocumentCode { get; init; }
+
+    /// <summary>Frozen. The title as it read when the author cited it.</summary>
+    public required string Title { get; init; }
+
+    /// <summary>Frozen. The register's version string; null when the register itself carried none.</summary>
+    public string? DocumentVersion { get; init; }
+
+    /// <summary>Frozen. The register's own status word, passed through unchanged.</summary>
+    public string? Status { get; init; }
+
+    /// <summary>Frozen. When the citation was made — not when the task was created or last saved.</summary>
+    public required DateTimeOffset ReferencedAt { get; init; }
+
+    /// <summary>
+    /// Which imported list version the five frozen values were read from
+    /// (<c>DocumentReferenceListVersion.Id</c>). A withdrawn version stays readable here on purpose: the task
+    /// cited what it cited, and withdrawal is a statement about the FUTURE, not about the past.
+    /// </summary>
+    public required Guid ListVersionId { get; init; }
 }

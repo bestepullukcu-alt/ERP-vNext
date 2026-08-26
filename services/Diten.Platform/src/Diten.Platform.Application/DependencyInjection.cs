@@ -234,6 +234,16 @@ public static class DependencyInjection
             Features.Tasks.Services.TaskChecklistService>();
         // Phase 3 — the approval handoff to MOD-0023 (charter Binding A). MOD-0024 starts and reads; it never
         // owns approval state.
+        /*
+         * DCP-005 slice 3 — the ONE place a citation is frozen.
+         *
+         * ⚠ REGISTERED, and the omission is worth the comment: the handlers take it as an OPTIONAL constructor
+         * argument so every existing test construction stays valid, which means a missing registration compiles,
+         * passes every unit test, and silently drops every citation at runtime. Measured live on 2026-08-26 —
+         * the task saved, the form showed two documents, and the record carried none.
+         */
+        services.AddScoped<Features.Tasks.Services.TaskDocumentReferenceFreezer>();
+
         services.AddScoped<Features.Tasks.Services.ITaskApprovalService,
             Features.Tasks.Services.TaskApprovalService>();
         // Phase 3b — the REVIEW handoff: the same engine asked a second question, never a second engine.

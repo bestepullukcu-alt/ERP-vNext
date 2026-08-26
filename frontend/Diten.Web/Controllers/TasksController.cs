@@ -424,6 +424,21 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiActiveTaskTypes()
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/task-types/active", readBody: false);
 
+    /// <summary>
+    /// DCP-005 slice 3 — what this type suggests citing.
+    ///
+    /// <para>⚠ THIS METHOD IS THE POINT. A route that exists on the service is INVISIBLE to the browser until
+    /// it is named here; that gap has now produced a live 404 three times in this module (the pin, the task
+    /// types, the withdrawal). Adding the service route without this one ships a feature nobody can reach.</para>
+    /// </summary>
+    [HttpGet("api/task-types/{id:guid}/governing-documents")]
+    public Task<IActionResult> ApiTaskTypeGoverningDocuments(Guid id, [FromQuery] string? organizationCode)
+        => ProxyAsync(
+            HttpMethod.Get,
+            $"{_gatewayUrl}/api/v1/tasks/task-types/{id}/governing-documents"
+                + $"?organizationCode={Uri.EscapeDataString(organizationCode ?? string.Empty)}",
+            readBody: false);
+
     /// <summary>Every type, retired ones included — the management grid reads this.</summary>
     [HttpGet("api/task-types")]
     public Task<IActionResult> ApiTaskTypes()

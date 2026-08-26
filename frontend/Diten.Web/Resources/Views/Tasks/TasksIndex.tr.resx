@@ -12,6 +12,18 @@
   <data name="FieldTitle" xml:space="preserve"><value>Görev başlığı</value></data>
   <data name="FieldTitlePlaceholder" xml:space="preserve"><value>örn. Üç aylık beyanı hazırla</value></data>
   <data name="FieldDescription" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="FieldGoverningDocuments" xml:space="preserve"><value>Yöneten dokümanlar</value></data>
+  <data name="FieldGoverningDocumentsPlaceholder" xml:space="preserve"><value>Kod ya da başlıkla ara…</value></data>
+  <data name="DocRefSuggestedByType" xml:space="preserve"><value>Bu görev türünün önerisi. Uymayanları çıkarın.</value></data>
+  <data name="DocRefNoneNamed" xml:space="preserve"><value>Bu görev türü hiçbir yöneten doküman belirtmiyor.</value></data>
+  <data name="DocRefNotInRegister" xml:space="preserve"><value>Bu görev türünün belirttiği {0} doküman güncel kütükte yok.</value></data>
+  <data name="DocRefAllBlocked" xml:space="preserve"><value>Bu görev türünün belirttiği {0} dokümana atıf yapılamıyor.</value></data>
+  <data name="DocRefBlocked" xml:space="preserve"><value>Atıf yapılamaz</value></data>
+  <data name="DocRefRemove" xml:space="preserve"><value>Çıkar</value></data>
+  <data name="DocRefNoResults" xml:space="preserve"><value>Bu aramaya uyan doküman yok.</value></data>
+  <data name="DocRefSectionTitle" xml:space="preserve"><value>Şuna göre</value></data>
+  <data name="DocRefReferencedAt" xml:space="preserve"><value>Atıf tarihi</value></data>
+  <data name="DocRefUnavailable" xml:space="preserve"><value>Doküman kütüğü okunamadı.</value></data>
   <data name="FieldTaskType" xml:space="preserve"><value>Görev türü</value></data>
   <data name="FieldTaskTypeNone" xml:space="preserve"><value>Tür yok</value></data>
   <data name="FieldPriority" xml:space="preserve"><value>Öncelik</value></data>

@@ -12,6 +12,18 @@
   <data name="FieldTitle" xml:space="preserve"><value>Task title</value></data>
   <data name="FieldTitlePlaceholder" xml:space="preserve"><value>e.g. Prepare the quarterly filing</value></data>
   <data name="FieldDescription" xml:space="preserve"><value>Description</value></data>
+  <data name="FieldGoverningDocuments" xml:space="preserve"><value>Governing documents</value></data>
+  <data name="FieldGoverningDocumentsPlaceholder" xml:space="preserve"><value>Search by code or title…</value></data>
+  <data name="DocRefSuggestedByType" xml:space="preserve"><value>Suggested by this task type. Remove any that do not apply.</value></data>
+  <data name="DocRefNoneNamed" xml:space="preserve"><value>This task type names no governing document.</value></data>
+  <data name="DocRefNotInRegister" xml:space="preserve"><value>This task type names {0} document(s) the current register does not list.</value></data>
+  <data name="DocRefAllBlocked" xml:space="preserve"><value>This task type names {0} document(s) the register does not allow citing.</value></data>
+  <data name="DocRefBlocked" xml:space="preserve"><value>Cannot be cited</value></data>
+  <data name="DocRefRemove" xml:space="preserve"><value>Remove</value></data>
+  <data name="DocRefNoResults" xml:space="preserve"><value>No document matches that search.</value></data>
+  <data name="DocRefSectionTitle" xml:space="preserve"><value>According to</value></data>
+  <data name="DocRefReferencedAt" xml:space="preserve"><value>Cited on</value></data>
+  <data name="DocRefUnavailable" xml:space="preserve"><value>The document register could not be read.</value></data>
   <data name="FieldTaskType" xml:space="preserve"><value>Task type</value></data>
   <data name="FieldTaskTypeNone" xml:space="preserve"><value>No type</value></data>
   <data name="FieldPriority" xml:space="preserve"><value>Priority</value></data>

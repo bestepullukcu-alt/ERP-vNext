@@ -165,6 +165,24 @@ public sealed class TaskTypesController : Controller
 
         var payload = await response.Content
             .ReadFromJsonAsync<GatewayResponse<TaskTypeEditViewModel>>(_jsonOptions);
+
+        /*
+         * ⚠ THE TEXTAREA HAS TO BE REHYDRATED FROM THE LIST, and leaving this out was silent data loss.
+         *
+         * The API answers with `groupDocuments` (a list); the form edits `groupDocumentsText` (one UID per
+         * line). Nothing derived the second from the first, so the edit form opened EMPTY on a type that had
+         * governing documents — and the save is a full replace, so pressing Save without touching the field
+         * deleted them. No error, no diff, 302 and a success message. FOUND LIVE on 2026-08-26 while setting up
+         * slice 3, on a type carrying two documents.
+         *
+         * Same shape as the BL-024 field-preservation defect: the write path was right, the READ path never
+         * handed it what it needed to preserve.
+         */
+        if (payload?.Data is { } model && model.GroupDocuments is { Count: > 0 })
+        {
+            model.GroupDocumentsText = string.Join(Environment.NewLine, model.GroupDocuments);
+        }
+
         return payload?.Data;
     }
 

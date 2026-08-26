@@ -37,6 +37,17 @@
 
     const readForm = () => ({
         title: el('taskTitle')?.value,
+        /*
+         * ⚠ THIS LINE WAS MISSING AND THE PICKER WROTE NOTHING. Slice 1 added the type control to this form and
+         * the payload builder already had `taskTypeId: trimOrNull(draft.taskTypeId)` — but the draft never
+         * carried it, so the value was `undefined` on every save. The control looked right, the request was
+         * valid, the task stored no type, and nothing anywhere said so.
+         *
+         * MEASURED LIVE on 2026-08-26: a task created with DEV-QMS visibly selected came back with
+         * `taskTypeId: null`. On a GxP record the type is what carries the record class, so this was a
+         * classification that silently never happened.
+         */
+        taskTypeId: el('taskTypeId')?.value,
         description: el('taskDescription')?.value,
         priority: el('taskPriority')?.value,
         assignmentTarget: el('taskAssignmentTarget')?.value,
@@ -72,6 +83,19 @@
     const writeForm = (draft) => {
         if (!draft) { return; }
         setValue('taskTitle', draft.title);
+        /*
+         * ⚠ THE TYPE HAS TO BE WRITTEN BACK, and leaving it out was silent data loss of the same shape as the
+         * task-type screen's own governing-documents textarea (found the same afternoon).
+         *
+         * The edit form opened showing "Tür yok" on a task that HAD a type, and the save is a full replace — so
+         * an edit that only touched the title cleared the classification. On a GxP record the type is what
+         * carries the record class, which makes this the field least able to afford a silent reset.
+         *
+         * The picker is filled asynchronously by its own module, so the value is applied again once the options
+         * have landed; setting it now would otherwise be dropped by a `<select>` that has no such option yet.
+         */
+        setValue('taskTypeId', draft.taskTypeId);
+        if (draft.taskTypeId) { global.__pendingTaskTypeId = draft.taskTypeId; }
         setValue('taskDescription', draft.description);
         setValue('taskPriority', draft.priority);
         setValue('taskAssignmentTarget', draft.assignmentTarget);
@@ -723,6 +747,8 @@
             const existing = await global.TasksApi.get(taskId);
             if (existing.ok && existing.data) {
                 writeForm(existing.data);
+                // ⚠ BY VALUE, from what the task froze — never re-read from the register. See document-references.js.
+                global.TaskDocumentReferences?.hydrate(existing.data.documentReferences);
                 withheldOnEdit = {
                     plannedDate: (existing.data.plannedDate || '').slice(0, 10) || null,
                     startAt: (existing.data.startAt || '').slice(0, 10) || null,
@@ -784,7 +810,18 @@
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
             const fieldValues = global.TaskForm.readCustomFieldValues(customFieldsRow(), customFieldDefinitions);
-            const draft = { ...readForm(), fieldValues };
+            /*
+             * DCP-005 slice 3 — the citations join the draft here, as UIDs.
+             *
+             * ⚠ `undefined` when the picker never rendered, and that is deliberate: an edit saved from a form
+             * with no citation section must LEAVE the task's citations alone, not clear them. The server reads
+             * null and empty as different answers for exactly this case.
+             */
+            const draft = {
+                ...readForm(),
+                fieldValues,
+                documentUids: global.TaskDocumentReferences?.uids(),
+            };
 
             const check = global.TaskForm.validateDraft(draft);
             // A required configurable field left empty blocks the save here AND is refused by the server. Both
@@ -875,6 +912,16 @@
                 option.textContent = `${type.code} · ${type.name}`;
                 select.appendChild(option);
             });
+            /*
+             * ⚠ APPLY THE LOADED TASK'S TYPE HERE, not in writeForm. writeForm runs while this list is still a
+             * single "no type" option, and a `<select>` silently ignores a value it has no option for — which is
+             * exactly how an edit form came to show "Tür yok" on a task that had a type.
+             */
+            if (global.__pendingTaskTypeId) {
+                select.value = global.__pendingTaskTypeId;
+                global.__pendingTaskTypeId = null;
+            }
+
             // The picker is a select2 like every other one on this form; it has to be told the list grew.
             if (global.jQuery && global.jQuery(select).data('select2')) {
                 global.jQuery(select).trigger('change.select2');

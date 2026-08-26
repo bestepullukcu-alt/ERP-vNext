@@ -5979,3 +5979,61 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - **Gelecek regresyon riski: 🔴** — sessiz başarısızlık sınıfı. Yanlış yapılandırılmış bir üretimde hata
   görünmez: outbox yazar, worker yayımlar, kimse tüketmez. Kiracı sağlama, yetkilendirme senkronu ve bildirim
   zinciri sessizce durur. Bir hazırlık (readiness) kontrolü bunu yakalamalı.
+
+### BL-273 — DCP-005 dilim 3 KURULDU: görev → doküman atfı (2026-08-26)
+- **Altı alan donuyor** — `document_uid · document_code · title · version · status · referenced_at` — artı
+  hangi liste sürümünden okundukları (`ListVersionId`). `TaskDocumentReference`'ın her özelliği `init`-only:
+  ayarlanabilir bir özellik davettir, ve buradaki davet tam olarak yapılmaması gereken şeydir.
+- **Dondurmanın tek yazma yeri** `TaskDocumentReferenceFreezer`. Var olan bir atfı ASLA yeniden çözümlemez:
+  el yordamına görevin MEVCUT atıfları verilir, değişmeyenler dokunulmadan geri döner. "Başlık donmuştur"u
+  temenni olmaktan çıkarıp doğru yapan şey bu — güncelleme, hiç çözümlemediği şeyi tazeleyemez.
+- **Bloke satır iki yerde birden reddediliyor**: seçici gösterir ve seçtirmez (okuyucu NEDEN'i görsün), sunucu
+  da reddeder (ekran bir sınır değildir; API çağıranı seçiciden geçmez).
+- **Canlı kanıt (asıl ölçüm):** atıf yapıldıktan sonra kütüğe aynı UID'i `GMG-QMS-SOP-9999 / YENIDEN
+  ADLANDIRILDI / V9.9` diye yazan yeni bir sürüm yüklendi. Eski görev hâlâ `GMG-QMS-SOP-0005 / Deviation and
+  Incident Management / V0.4` okuyor; aynı anda arama kutusu yeni adı buluyor. Aynı UID, iki cevap, tek ekran.
+- **Geri çekilmiş sürüme atıf okunmaya devam ediyor**, ama yeni atıf ondan alınamıyor — iki yarım ayrı ölçüldü.
+- **Gelecek regresyon riski: 🟢 katkısal** — `TaskItem`'a bir liste, iki isteğe bağlı sondaki alan; null "atıf
+  düzenlenmiyor" demek, yani eskiden yazılmış her yük aynen geçerli.
+
+### BL-274 — "31 türün 9'u" ölçümü tutmadı: on beş, ve üç ayrı sebep (2026-08-26)
+- CT'nin dokuz türlük listesi ölçüldüğünde **yedisi doğrulandı**, ikisi (DEV-GMP, DEV-GDP) yanlış çıktı: onlar
+  bir atıf yapılabilir + bir bloke doküman taşıyor, yani önerileri **boş değil, KISMİ**.
+- Kaynak kütükte (`GMG_ERP_Task_Type_Seed_2026-08-24.csv`, 31 satır) atıf yapılabilir yöneten dokümanı
+  olmayan tür sayısı **15**, ve boşluk üç farklı şey demek:
+  - **(1) hiçbir doküman belirtmiyor — 1 tür:** GEN-ADMIN. Eksik bir şey yok; bu iş yönetilen bir iş değil.
+  - **(2) belirttiği doküman kütükte HİÇ YOK — 7 tür:** DI-REVIEW · MGMT-REVIEW · PV-CASE · PV-PERIODIC ·
+    PV-QUALITY-IF · QAG · RECALL.
+  - **(3) belirttiği doküman kütükte var ama atıf yapılamıyor — 7 tür:** ARTWORK · BATCH-RELEASE · GDP-OPS ·
+    PQR · REG-VARIATION · SPEC-CONTROL · VAL-QUAL.
+- Ekran üçünü **ayrı cümlelerle** söylüyor. Tek bir boş kutu üçünde de aynı görünür ve hiçbirini yanıtlamaz.
+- ⚠ Geliştirme kiracısında yalnız 2 tür var (DEV-QMS, DEV-GMP); 31'i tohumlanmamış. CT'nin (d) adımı için
+  istediği BATCH-RELEASE **yok**, karşılığı olarak (1) durumu DEV-GMP ile canlı ölçüldü.
+
+### BL-275 — dilim 1'in kendi yolunda ÜÇ sessiz kayıp + bir DI tuzağı (2026-08-26, hepsi düzeltildi)
+Üçü de derleme yeşilken, test yeşilken, ekranda doğru görünürken kayıp veriyordu. Hepsi canlı bulundu.
+- **(a) `readForm` `taskTypeId`'yi hiç okumuyordu.** Yük oluşturucuda `taskTypeId: trimOrNull(draft.taskTypeId)`
+  zaten vardı; taslak onu hiç taşımıyordu. DEV-QMS görünür şekilde seçiliyken oluşturulan görev
+  `taskTypeId: null` olarak kaydedildi. GxP kaydında tür, kayıt sınıfını taşıyan alandır — yani hiç olmayan
+  bir sınıflandırma.
+- **(b) `writeForm` türü geri yazmıyordu.** Düzenleme formu türü olan bir görevde "Tür yok" açılıyordu ve
+  kaydetme tam değiştirme — başlığı düzelten biri sınıflandırmayı siliyordu. Değer, seçicinin seçenekleri
+  geldikten SONRA uygulanıyor: `<select>` tanımadığı değeri sessizce yutar, kusurun yarısı buydu.
+- **(c) `LoadApiModelAsync` yöneten dokümanları metin kutusuna doldurmuyordu.** API liste döner, form metin
+  düzenler, ikisini bağlayan bir şey yoktu. İki dokümanı olan bir tür boş formla açılıyordu; Kaydet ikisini de
+  siliyordu, başarı mesajıyla. BL-024'ün aynı şekli: yazma yolu doğru, OKUMA yolu ona korunacak şeyi hiç vermiyor.
+- **(d) DI tuzağı:** dondurucu el yordamlarında **isteğe bağlı** argüman (var olan test kurulumları bozulmasın
+  diye). Kaydı unutmak derlenir, 2392 testin hepsini geçer, ve çalışma zamanında her atfı sessizce düşürür —
+  ölçüldü: form iki doküman gösterdi, görev sıfır tane kaydetti. Kayıt artık testle çivili.
+- **Ders:** "isteğe bağlıya çevirerek geriye uyumluluk" ucuz görünür; bedeli, unutulduğunda HİÇBİR ŞEY
+  söylemeyen bir dikiş yeridir. Böyle her dikişin kendi kaydını doğrulayan bir testi olmalı.
+- **Gelecek regresyon riski: 🟡** — (a) ve (b) düzeltildi ama daha ÖNCE oluşturulmuş görevlerde tür `null`
+  kaldı; bu görevlerin kayıt sınıfı geriye dönük olarak doğmayacak.
+
+### BL-276 — seçici, zaten atıf yapılmış dokümanı arama sonucunda yine listeliyor (2026-08-26, kozmetik)
+- Ölçüldü: `GMG-QMS-SOP-0005` seçili çipken aynı doküman arama sonucunda da çıkıyor. Tıklamak zararsız
+  (`Map` aynı UID'i tek kayıt tutar), ama okuyucu iki satır görüyor.
+- Düzeltilmedi: bu turun kapsamı atıf sözleşmesiydi ve davranış yanlış değil, yalnız gereksiz.
+- Seçenek: seçilmiş satırı sonuçtan düşürmek yerine "zaten eklendi" diye işaretlemek — düşürmek, arayıp
+  bulamayan okuyucuya "bu doküman yok" dedirtir.
+- **Gelecek regresyon riski: 🟢**

@@ -352,6 +352,16 @@ public static class TaskReasonCodes
     public const string DocumentListAlreadyImported = "DOCUMENT_LIST_ALREADY_IMPORTED";
     public const string DocumentListWithdrawReasonRequired = "DOCUMENT_LIST_WITHDRAW_REASON_REQUIRED";
     public const string DocumentListAlreadyWithdrawn = "DOCUMENT_LIST_ALREADY_WITHDRAWN";
+
+    // ── DCP-005 slice 3: citing a document ───────────────────────────────────
+    /// <summary>The UID is not in the CURRENT list version. A state, not a fault — the register may simply not list it.</summary>
+    public const string DocumentReferenceNotFound = "DOCUMENT_REFERENCE_NOT_FOUND";
+
+    /// <summary>The row exists and says it may not be cited (<c>linkable_in_erp = no</c>), with the register's own reason.</summary>
+    public const string DocumentReferenceBlocked = "DOCUMENT_REFERENCE_BLOCKED";
+
+    /// <summary>Nothing has been imported yet, so there is no register to freeze a citation against.</summary>
+    public const string DocumentListNotImported = "DOCUMENT_LIST_NOT_IMPORTED";
 }
 
 /// <summary>
@@ -481,7 +491,16 @@ public sealed record CreateTaskItemRequest(
     /// <para>Composes with <see cref="ChecklistTemplateId"/> rather than competing: a template's items land
     /// first and these are appended after them, which is the order the author saw on screen.</para>
     /// </summary>
-    IReadOnlyList<CreateChecklistItemRequest>? ChecklistItems = null);
+    IReadOnlyList<CreateChecklistItemRequest>? ChecklistItems = null,
+    /// <summary>
+    /// Controlled-document UIDs this task cites (DCP-005 slice 3). Trailing and optional, so every earlier
+    /// caller and payload stays valid.
+    ///
+    /// <para>The six frozen fields are resolved SERVER-SIDE from the current register. The client sends UIDs and
+    /// nothing else on purpose: a client that sent titles and versions would be a second authority over what a
+    /// citation says, and the first stale tab would write a citation nobody could reproduce.</para>
+    /// </summary>
+    IReadOnlyList<string>? DocumentUids = null);
 
 /// <summary>
 /// One checklist item as the create form describes it. No <c>Code</c> and no <c>SortOrder</c>: the code is the
@@ -529,7 +548,18 @@ public sealed record UpdateTaskItemRequest(
     /// </summary>
     IReadOnlyList<string>? NotifyOnEvents = null,
     /// <summary>BL-065 — days before the due date to send the reminder. Null: no reminder.</summary>
-    int? ReminderLeadDays = null);
+    int? ReminderLeadDays = null,
+    /// <summary>
+    /// The task's citation list AFTER this edit (DCP-005 slice 3), as UIDs.
+    ///
+    /// <para>⚠ NULL and EMPTY are different answers. Null means "not choosing" and leaves the citations alone —
+    /// which is what every payload written before this field existed says. An empty list means "no documents"
+    /// and clears them.</para>
+    ///
+    /// <para>⚠ A UID already cited is NOT re-resolved. It keeps the values frozen when it was chosen, title and
+    /// code included; only UIDs new to this task are read from the register.</para>
+    /// </summary>
+    IReadOnlyList<string>? DocumentUids = null);
 
 public sealed record TaskWatcherRequest(Guid UserId, TaskWatcherRole Role, Guid? PositionId);
 
@@ -746,7 +776,15 @@ public sealed record TaskItemDetailDto(
     /// BL-023 — the UPWARD WORK REQUEST's MOD-0023 instance, when the assignee sits above the requester. The
     /// LINK only: whether the work was accepted is MOD-0023's answer, never a field here.
     /// </summary>
-    Guid? RequestWorkflowInstanceId = null);
+    Guid? RequestWorkflowInstanceId = null,
+    /// <summary>
+    /// DCP-005 slice 3 — the task's FROZEN citations, in the order they were added. Empty when it cites
+    /// nothing, and the screen draws no card at all in that case (DCP-004: a capability with no data is not a
+    /// capability worth announcing).
+    /// </summary>
+    IReadOnlyList<TaskDocumentReferenceDto>? DocumentReferences = null,
+    /// <summary>The task's TYPE, so an edit form can re-render it and ask that type for its governing documents.</summary>
+    Guid? TaskTypeId = null);
 
 public sealed record TaskWatcherDto(Guid Id, Guid UserId, string Role, Guid? PositionId);
 
@@ -1171,6 +1209,37 @@ public sealed record DocumentReferenceListVersionDto(
 public sealed record WithdrawDocumentListVersionRequest(string Reason);
 
 /// <summary>One row of the lookup, as the search returns it.</summary>
+/// <summary>
+/// One frozen citation as the reader sees it (DCP-005 §6.2). Every field here was written ONCE, when the
+/// document was chosen; nothing on the read path re-resolves any of it.
+/// </summary>
+public sealed record TaskDocumentReferenceDto(
+    string DocumentUid,
+    string DocumentCode,
+    string Title,
+    string? DocumentVersion,
+    string? Status,
+    DateTimeOffset ReferencedAt,
+    /// <summary>Which register version said this. Readable even after that version has been withdrawn.</summary>
+    Guid ListVersionId);
+
+/// <summary>
+/// A task type's governing documents, resolved against the CURRENT list (DCP-005 §6.4).
+///
+/// <para>⚠ <c>Suggestions</c> being empty is a state with a CAUSE, and the cause is carried rather than left
+/// for the screen to guess: a type may name nothing, or name documents the register does not list, or name
+/// documents the register refuses to link. Those read differently to the person choosing, and a single empty
+/// box would tell them nothing about which one they are looking at.</para>
+/// </summary>
+public sealed record TaskTypeGoverningDocumentsDto(
+    IReadOnlyList<DocumentReferenceEntryDto> Suggestions,
+    /// <summary>How many UIDs the type names in total — group plus the org's local layer.</summary>
+    int NamedCount,
+    /// <summary>Named UIDs the current register does not contain at all.</summary>
+    IReadOnlyList<string> UnresolvedUids,
+    /// <summary>Named UIDs the register contains but refuses to link, with the register's own reason.</summary>
+    IReadOnlyList<DocumentReferenceEntryDto> BlockedSuggestions);
+
 public sealed record DocumentReferenceEntryDto(
     string DocumentUid,
     string DocumentCode,

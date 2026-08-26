@@ -281,6 +281,12 @@ internal sealed class FakeDocumentReferenceListRepository : IDocumentReferenceLi
         Guid listVersionId, string? term, int limit, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<DocumentReferenceEntry>>(
             Entries.Where(e => e.ListVersionId == listVersionId).Take(limit).ToList());
+
+    public Task<IReadOnlyList<DocumentReferenceEntry>> GetEntriesByUidsAsync(
+        Guid listVersionId, IReadOnlyCollection<string> documentUids, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<DocumentReferenceEntry>>(
+            Entries.Where(e => e.ListVersionId == listVersionId
+                && documentUids.Contains(e.DocumentUid, StringComparer.OrdinalIgnoreCase)).ToList());
 }
 
 /// <summary>

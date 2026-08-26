@@ -12,6 +12,18 @@
   <data name="FieldTitle" xml:space="preserve"><value>عنوان المهمة</value></data>
   <data name="FieldTitlePlaceholder" xml:space="preserve"><value>مثال: إعداد الإقرار الربع سنوي</value></data>
   <data name="FieldDescription" xml:space="preserve"><value>الوصف</value></data>
+  <data name="FieldGoverningDocuments" xml:space="preserve"><value>الوثائق الحاكمة</value></data>
+  <data name="FieldGoverningDocumentsPlaceholder" xml:space="preserve"><value>ابحث بالرمز أو العنوان…</value></data>
+  <data name="DocRefSuggestedByType" xml:space="preserve"><value>اقتراح من نوع المهمة هذا. أزِل ما لا ينطبق.</value></data>
+  <data name="DocRefNoneNamed" xml:space="preserve"><value>لا يحدد نوع المهمة هذا أي وثيقة حاكمة.</value></data>
+  <data name="DocRefNotInRegister" xml:space="preserve"><value>يحدد نوع المهمة هذا {0} وثيقة غير مدرجة في السجل الحالي.</value></data>
+  <data name="DocRefAllBlocked" xml:space="preserve"><value>يحدد نوع المهمة هذا {0} وثيقة لا يسمح السجل بالاستشهاد بها.</value></data>
+  <data name="DocRefBlocked" xml:space="preserve"><value>لا يمكن الاستشهاد بها</value></data>
+  <data name="DocRefRemove" xml:space="preserve"><value>إزالة</value></data>
+  <data name="DocRefNoResults" xml:space="preserve"><value>لا توجد وثيقة تطابق هذا البحث.</value></data>
+  <data name="DocRefSectionTitle" xml:space="preserve"><value>وفقاً لـ</value></data>
+  <data name="DocRefReferencedAt" xml:space="preserve"><value>تاريخ الاستشهاد</value></data>
+  <data name="DocRefUnavailable" xml:space="preserve"><value>تعذّرت قراءة سجل الوثائق.</value></data>
   <data name="FieldTaskType" xml:space="preserve"><value>نوع المهمة</value></data>
   <data name="FieldTaskTypeNone" xml:space="preserve"><value>بلا نوع</value></data>
   <data name="FieldPriority" xml:space="preserve"><value>الأولوية</value></data>

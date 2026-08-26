@@ -21,6 +21,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
     private readonly ICurrentUserContext _currentUser;
     private readonly ITaskApprovalService _approvals;
     private readonly ITaskReviewService _reviews;
+    private readonly TaskDocumentReferenceFreezer? _documentFreezer;
     private readonly ILogger<UpdateTaskItemHandler> _logger;
 
     public UpdateTaskItemHandler(
@@ -30,7 +31,9 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
         ICurrentUserContext currentUser,
         ITaskApprovalService approvals,
         ITaskReviewService reviews,
-        ILogger<UpdateTaskItemHandler> logger)
+        ILogger<UpdateTaskItemHandler> logger,
+        // DCP-005 slice 3 — optional, so every payload and every existing construction behaves as before.
+        TaskDocumentReferenceFreezer? documentFreezer = null)
     {
         _tasks = tasks;
         _organizationUnits = organizationUnits;
@@ -38,6 +41,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
         _currentUser = currentUser;
         _approvals = approvals;
         _reviews = reviews;
+        _documentFreezer = documentFreezer;
         _logger = logger;
     }
 
@@ -206,6 +210,31 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
          * The kind is stated too, rather than left to the repository's `moved ? Unknown : Edited` fallback: this
          * writer knows it is an edit, and a declared intent is how every other handler says so.
          */
+        /*
+         * ── DCP-005 slice 3 — citations, and what this code deliberately does NOT do ───────────────────────
+         *
+         * It does not re-read a single document the task already cites. The freezer is handed the EXISTING
+         * objects and hands the unchanged ones straight back, so an edit cannot refresh a title, a version or a
+         * status — which is the whole of §6.2. There is no batch job and no "refresh" control anywhere in the
+         * product for the same reason: the first one written would cancel the freezing silently.
+         *
+         * Null means "not editing the citations" (every payload written before this field says exactly that);
+         * an empty list means "no citations" and clears them.
+         */
+        if (_documentFreezer is not null)
+        {
+            var frozen = await _documentFreezer.ResolveNewAsync(
+                task.DocumentReferences, request.DocumentUids, DateTimeOffset.UtcNow, ct);
+            if (!frozen.Success)
+            {
+                return Response<NoContent>.Fail(
+                    $"The document '{frozen.OffendingUid}' cannot be cited.",
+                    400, frozen.ReasonCode!, command.CorrelationId);
+            }
+
+            task.DocumentReferences = frozen.References;
+        }
+
         task.Declare(TaskTransitionKind.Edited, _currentUser.UserId);
 
         if (!await _tasks.UpdateAsync(task, request.ExpectedVersion, ct))

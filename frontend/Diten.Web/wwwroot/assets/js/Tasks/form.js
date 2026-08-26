@@ -167,6 +167,23 @@
      *   - plannedDate        → the output of the PLAN TRANSITION, which also moves the task to Planned. Writing
      *                          it here produced a task that has a planned date and is not Planned.
      */
+    /*
+     * The citation list, reduced to what the server accepts: distinct, trimmed UIDs.
+     *
+     * Returns UNDEFINED when the draft carries no citation field at all — that is how an edit form that never
+     * rendered the picker says "I am not editing this", instead of silently clearing a task's citations.
+     */
+    const normalizeDocumentUids = (uids) => {
+        if (uids == null) { return undefined; }
+        if (!Array.isArray(uids)) { return undefined; }
+        const seen = new Set();
+        uids.forEach((u) => {
+            const trimmed = String(u ?? '').trim();
+            if (trimmed) { seen.add(trimmed); }
+        });
+        return [...seen];
+    };
+
     const buildCreatePayload = (draft) => {
         const target = draft.assignmentTarget || TARGET.SELF;
         const visible = visibleFieldsFor(target);
@@ -235,6 +252,18 @@
              * "first" means.
              */
             checklistItems: normalizeChecklistItems(draft.checklistItems),
+            /*
+             * DCP-005 slice 3 — the citations, as UIDs and nothing else.
+             *
+             * ⚠ The form NEVER sends a title, a code or a version, even though it has all three on screen. The
+             * six frozen fields are resolved server-side from the register, because a client that sent them
+             * would be a second authority over what a citation says — and the first stale tab would write a
+             * citation nobody could reproduce.
+             *
+             * ⚠ NULL vs EMPTY is meaningful here and is NOT collapsed: undefined means "this form does not edit
+             * citations" and leaves them alone; an empty array means the author removed them all.
+             */
+            documentUids: normalizeDocumentUids(draft.documentUids),
             watchers: toWatcherRequests(draft.watchers)
         };
     };

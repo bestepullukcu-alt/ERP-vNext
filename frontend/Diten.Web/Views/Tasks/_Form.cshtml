@@ -88,6 +88,30 @@
                                 </select>
                             </div>
                         </div>
+                        @* ── DCP-005 slice 3 — which procedure this work follows ──────────────────────────
+                           The question the author is answering is "what am I doing this ACCORDING TO", and the
+                           auditor asks the same one later. Placed directly under the type because the type is
+                           what SUGGESTS the answer.
+
+                           ⚠ THE SUGGESTION IS PRE-TICKED AND REMOVABLE, and anything else may be added. A type
+                           knows the usual answer, not the only one. *@
+                        <div class="col-12" id="taskDocumentSection" data-task-document-section>
+                            <label class="form-label fw-medium" for="taskDocumentSearch">
+                                @Localizer["FieldGoverningDocuments"]
+                            </label>
+                            <div class="diten-field">
+                                <i class="bx bx-file diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" class="form-control" id="taskDocumentSearch"
+                                       autocomplete="off" role="combobox" aria-expanded="false"
+                                       aria-controls="taskDocumentResults"
+                                       placeholder="@Localizer["FieldGoverningDocumentsPlaceholder"]" />
+                            </div>
+                            @* The suggestion's own state line — empty is three different things and each one
+                               reads differently to the person choosing (§6.4). *@
+                            <p class="form-text mb-2" id="taskDocumentSuggestionNote" hidden></p>
+                            <ul class="list-unstyled mb-0" id="taskDocumentResults" role="listbox"></ul>
+                            <ul class="list-unstyled mb-0 mt-2" id="taskDocumentChosen"></ul>
+                        </div>
                         <div class="col-12">
                             <label class="form-label fw-medium" for="taskDescription">@Localizer["FieldDescription"]</label>
                             <div class="diten-field">

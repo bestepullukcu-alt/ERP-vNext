@@ -8336,3 +8336,79 @@ tags.diten-tags .tagify__input {
 @media (prefers-reduced-motion: reduce) {
     .wcn-subtask-flash { animation: none; background-color: color-mix(in sRGB, var(--bs-primary) 10%, transparent); }
 }
+
+/* ── DCP-005 slice 3 — citing a controlled document (FG-003: classes, never inline styles) ────────────────
+ *
+ * ⚠ `--bs-secondary-color` is NOT used for any text that carries meaning here. Measured on this product's own
+ * document-list precedent: 1.83:1 in light and 2.02:1 in dark, both under AA, and the register's own reason
+ * for refusing a citation is exactly the text a reader must be able to read. `--bs-body-color` throughout;
+ * the blocked row is distinguished by its own colour and its wording, not by being faded.
+ */
+.tasks-docref-result,
+.tasks-docref-frozen,
+.tasks-docref-chip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    padding: .45rem .6rem;
+    border-radius: .375rem;
+    color: var(--bs-body-color);
+}
+
+.tasks-docref-result + .tasks-docref-result,
+.tasks-docref-frozen + .tasks-docref-frozen,
+.tasks-docref-chip + .tasks-docref-chip { margin-top: .25rem; }
+
+.tasks-docref-code { font-weight: 600; white-space: nowrap; }
+.tasks-docref-title { flex: 1 1 12rem; min-width: 0; overflow-wrap: anywhere; }
+.tasks-docref-version,
+.tasks-docref-status,
+.tasks-docref-date { font-size: .85rem; white-space: nowrap; }
+
+.tasks-docref-pick {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    text-align: start;
+}
+
+/* A real control gets a real focus ring: this list is reachable by keyboard and a picker whose selection is
+ * invisible while tabbing is a picker that cannot be used without a mouse. */
+.tasks-docref-pick:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+    border-radius: .375rem;
+}
+
+.tasks-docref-result:hover { background: var(--bs-tertiary-bg, rgba(0, 0, 0, .04)); }
+
+/* ⚠ The blocked row is NOT a disabled button. It is inert text with the register's reason beside it, because
+ * the reader's question is "why can I not cite this", and a disabled control answers it with silence. */
+.tasks-docref-result--blocked { background: var(--bs-warning-bg-subtle, rgba(255, 171, 0, .12)); }
+.tasks-docref-result--blocked:hover { background: var(--bs-warning-bg-subtle, rgba(255, 171, 0, .12)); }
+.tasks-docref-blocked { font-size: .85rem; font-weight: 600; color: var(--bs-body-color); }
+
+/*
+ * ⚠ A BORDER, NOT A FILL — measured, not taste. The chip first carried `--bs-tertiary-bg`, and that tint
+ * dropped its text from 5.19:1 against the page to 4.31:1 against itself — under AA — measured live in the
+ * light theme on 2026-08-26. The token was not at fault: `--bs-body-color` (#646e78) passes on the page and
+ * fails on the tint. Removing the fill puts the text back on the surface whose contrast was already right,
+ * instead of hunting for a darker foreground in each theme.
+ */
+.tasks-docref-chip { border: 1px solid var(--bs-border-color); }
+.tasks-docref-remove { margin-inline-start: auto; }
+
+.tasks-docref-empty { color: var(--bs-body-color); }
+
+.tasks-docref-card {
+    padding: 1rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: .5rem;
+}

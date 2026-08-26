@@ -12,6 +12,18 @@
   <data name="FieldTitle" xml:space="preserve"><value>Título de la tarea</value></data>
   <data name="FieldTitlePlaceholder" xml:space="preserve"><value>p. ej. Preparar la declaración trimestral</value></data>
   <data name="FieldDescription" xml:space="preserve"><value>Descripción</value></data>
+  <data name="FieldGoverningDocuments" xml:space="preserve"><value>Documentos rectores</value></data>
+  <data name="FieldGoverningDocumentsPlaceholder" xml:space="preserve"><value>Buscar por código o título…</value></data>
+  <data name="DocRefSuggestedByType" xml:space="preserve"><value>Sugerido por este tipo de tarea. Quite los que no correspondan.</value></data>
+  <data name="DocRefNoneNamed" xml:space="preserve"><value>Este tipo de tarea no indica ningún documento rector.</value></data>
+  <data name="DocRefNotInRegister" xml:space="preserve"><value>Este tipo de tarea indica {0} documento(s) que el registro actual no contiene.</value></data>
+  <data name="DocRefAllBlocked" xml:space="preserve"><value>Este tipo de tarea indica {0} documento(s) que el registro no permite citar.</value></data>
+  <data name="DocRefBlocked" xml:space="preserve"><value>No se puede citar</value></data>
+  <data name="DocRefRemove" xml:space="preserve"><value>Quitar</value></data>
+  <data name="DocRefNoResults" xml:space="preserve"><value>Ningún documento coincide con esa búsqueda.</value></data>
+  <data name="DocRefSectionTitle" xml:space="preserve"><value>Conforme a</value></data>
+  <data name="DocRefReferencedAt" xml:space="preserve"><value>Citado el</value></data>
+  <data name="DocRefUnavailable" xml:space="preserve"><value>No se pudo leer el registro de documentos.</value></data>
   <data name="FieldTaskType" xml:space="preserve"><value>Tipo de tarea</value></data>
   <data name="FieldTaskTypeNone" xml:space="preserve"><value>Sin tipo</value></data>
   <data name="FieldPriority" xml:space="preserve"><value>Prioridad</value></data>
