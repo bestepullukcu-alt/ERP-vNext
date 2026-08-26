@@ -936,3 +936,28 @@ MOD-0355 contract-test readiness or a test-only fixture closes none of these blo
 - Reconcile MOD-0355, MOD-0018 and MOD-0021 bilateral packs before any executable adapter.
 - Until then no source DTO, provider/client, DI registration, persistence field, endpoint, configuration,
   credential, listener, route or positive runtime fixture may be created from this amendment.
+
+### 18.21 B-05b immutable bilateral fixture authority — NON-RUNTIME / CONTRACT-TEST ONLY
+
+The PSS owner/user has explicitly authorized the immutable **B-05b** bilateral fixture and contract-test
+evidence slice for the ProcessModelVersion profile. This authorization does not promote §18 from
+**DRAFT / NON-EXECUTABLE**, does not make any fixture a runtime input and grants no production or activation
+authority. For this evidence slice only, the final prohibition in §18.20 is narrowed to permit files in the
+following exact allowlist:
+
+- `execution/domains/platform-shared-services/module-packs/fixtures/MOD-0023/process-model-version-approval/v1/**`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/ProcessModelVersionApprovalFixtureContractTests.cs`
+
+The fixture root may contain only immutable JSON payloads, lowercase SHA-256 sidecars and one closed evidence
+manifest for the exact source reference, canonical submission request, source-attestation header/claims,
+tenant-scoped immutable template-version mapping/pin, terminal outcome binding and exact three-field
+`ApprovalOutcomeReferenceV1`. Contract tests may validate positive and negative tenant/source/version/hash,
+mapping/pin, no-copy and terminal behavior. All fixture identities are test-only and non-production.
+
+This authority explicitly forbids production DTOs, provider/client or adapter implementations, persistence,
+DI/composition, endpoints, configuration, production template mapping, signing/JWKS/key/secret material,
+credentials, listener/worker/broker behavior, migration, deployment, Gateway, frontend, WorkCenter and
+activation. The fixture/test slice must not claim signature verification, nonce persistence, transaction
+feasibility, live provider compatibility or runtime acceptance. Any need outside the exact allowlist fails
+closed and requires a later amendment. B-05b remains open until the immutable files and contract tests are
+green; even then runtime and activation blockers in §18.19 remain open.
