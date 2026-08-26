@@ -118,6 +118,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
      * That failure is silent and it points the wrong way: fields would vanish for the very people entitled to
      * them, and no error would say so.
      */
+    /// <summary>
+    /// The task-type catalogue (DCP-005 slice 1), read once per page and never per item.
+    /// </summary>
+    private readonly ITaskTypeRepository _taskTypes;
+
     private readonly IActorPermissionContext _permissions;
     private readonly IPositionRepository _positions;
     private readonly IOrganizationUnitRepository _organizationUnits;
@@ -140,6 +145,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         IOrganizationUnitRepository organizationUnits,
         IWorkItemSlaCalculator sla,
         ITaskFieldDefinitionRepository fieldDefinitions,
+        ITaskTypeRepository taskTypes,
         /*
          * BL-023 — resolves "my team" for the Ekibim scope. OPTIONAL on purpose: a caller that never asks for
          * that scope (every caller before this change, and every test that pins Self behaviour) is unaffected,
@@ -157,6 +163,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         _transitions = transitions;
         _personalOverlays = personalOverlays;
         _watchers = watchers;
+        _taskTypes = taskTypes;
         _permissions = permissions;
         _tasks = tasks;
         _seats = seats;
@@ -334,6 +341,16 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         var poolLabels = await ResolvePoolLabelsAsync(tasks, ct);
 
         /*
+         * DCP-005 slice 1 — the task types for the whole page in ONE read, batched exactly like the pool labels
+         * above and for the same reason: a per-item lookup would be an N+1 across every typed row.
+         *
+         * ⚠ `ListAllAsync`, not `ListActiveAsync`: a task keeps showing the type it was opened under even after
+         * that type is retired. Reading only the active ones would blank the type on historical work — which is
+         * the whole thing retiring-instead-of-deleting exists to prevent.
+         */
+        var taskTypes = (await _taskTypes.ListAllAsync(ct)).ToDictionary(type => type.Id);
+
+        /*
          * WC-1 — THIS reader's overlays for the whole page, in one read. The actor's user id is the second half of
          * the query, not a filter applied to the result: a batch read that fetched every overlay and then kept the
          * matching ones would put other people's private notes in this process's memory, one refactor away from
@@ -391,6 +408,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     commentsByTask.GetValueOrDefault(t.Id, []),
                     transitionsByTask.GetValueOrDefault(t.Id, []),
                     poolLabels,
+                    taskTypes,
                     fieldDefinitions,
                     personalByTask.GetValueOrDefault(t.Id),
                     watchersByTask.GetValueOrDefault(t.Id, []));
@@ -422,6 +440,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         IReadOnlyList<TaskComment>? comments = null,
         IReadOnlyList<TaskTransition>? transitions = null,
         IReadOnlyDictionary<Guid, string>? poolLabels = null,
+        IReadOnlyDictionary<Guid, TaskType>? taskTypes = null,
         IReadOnlyDictionary<string, TaskFieldDefinition>? fieldDefinitions = null,
         TaskPersonalOverlay? personal = null,
         IReadOnlyList<TaskWatcher>? watchers = null)
@@ -611,6 +630,15 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // Straight through — never DueAt. A plan write that stored the date but never showed it back would
             // be real on the server and invisible on the screen.
             PlannedDate: task.PlannedDate,
+            /*
+             * ⚠ ABSENT WHEN THE TYPE CANNOT BE RESOLVED, not fabricated. A task carrying an id whose type was
+             * hard-deleted out from under it (which this module refuses to do, but another tenant tool might)
+             * projects no type rather than an id with an empty name — a half-identity on screen is worse than
+             * none, and this repository has paid for that shape before.
+             */
+            TaskType: task.TaskTypeId is { } typeId && taskTypes?.TryGetValue(typeId, out var taskType) == true
+                ? new WorkItemTaskTypeDto(taskType.Id.ToString(), taskType.Code, taskType.Name)
+                : null,
             Pool: ToPool(task, poolLabels),
             BusinessContext: businessContext,
             /*

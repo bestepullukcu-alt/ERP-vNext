@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="TaskTypesTitle" xml:space="preserve"><value>أنواع المهام</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>الأنواع التي تصنّف العمل وتحمل وثائقه الحاكمة.</value></data>
+  <data name="Code" xml:space="preserve"><value>الرمز</value></data>
+  <data name="Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="RecordClass" xml:space="preserve"><value>فئة السجل</value></data>
+  <data name="GqmsDomain" xml:space="preserve"><value>مجال الجودة</value></data>
+  <data name="FunctionCode" xml:space="preserve"><value>الوظيفة</value></data>
+  <data name="QualityEvent" xml:space="preserve"><value>حدث جودة</value></data>
+  <data name="QualityEventYes" xml:space="preserve"><value>حدث جودة</value></data>
+  <data name="QualityEventNo" xml:space="preserve"><value>ليس حدث جودة</value></data>
+  <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>ليس سجلًا</value></data>
+  <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>سجل تشغيلي</value></data>
+  <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>سجل جودة GxP</value></data>
+  <data name="GqmsDomainNone" xml:space="preserve"><value>خارج أي مجال جودة</value></data>
+  <data name="GqmsDomainHint" xml:space="preserve"><value>مجال واحد فقط، وليس عدة مجالات: يُحسب مسار الحفظ منه.</value></data>
+  <data name="RecordClassHint" xml:space="preserve"><value>سجل جودة GxP يجب أن يسمّي مجال الجودة الحاكم له.</value></data>
+  <data name="FunctionCodeHint" xml:space="preserve"><value>نص حر حاليًا — لم تُسلَّم قائمة الوظائف المغلقة بعد.</value></data>
+  <data name="GroupDocuments" xml:space="preserve"><value>الوثائق الحاكمة</value></data>
+  <data name="GroupDocumentsPlaceholder" xml:space="preserve"><value>معرّف وثيقة واحد في كل سطر</value></data>
+  <data name="GroupDocumentsHint" xml:space="preserve"><value>ينطبق في كل المنظمات. أداة اختيار الوثائق تأتي مع قائمة الوثائق.</value></data>
+  <data name="GroupDocumentsEmpty" xml:space="preserve"><value>لا توجد وثيقة حاكمة مسجّلة</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>الهوية</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>التصنيف</value></data>
+  <data name="DocumentsSection" xml:space="preserve"><value>الوثائق</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>نوع مهمة جديد</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تحرير نوع المهمة</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>مثال DEV-QMS</value></data>
+  <data name="CodeImmutableHint" xml:space="preserve"><value>لا يمكن تغيير الرمز: المهام المفتوحة بهذا النوع تحمله كهويتها.</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>إلغاء التفعيل</value></data>
+  <data name="Activate" xml:space="preserve"><value>إعادة التفعيل</value></data>
+  <data name="DeactivateConfirm" xml:space="preserve"><value>لن يُعرض هذا النوع على المهام الجديدة. المهام التي تستخدمه لا تتأثر.</value></data>
+  <data name="RecordDeactivated" xml:space="preserve"><value>تم إلغاء تفعيل نوع المهمة.</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>تمت إعادة تفعيل نوع المهمة.</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>تحرير</value></data>
+  <data name="QuickView" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>لا توجد أنواع مهام بعد.</value></data>
+  <data name="CodeRequired" xml:space="preserve"><value>نوع المهمة يحتاج إلى رمز.</value></data>
+  <data name="NameRequired" xml:space="preserve"><value>نوع المهمة يحتاج إلى اسم.</value></data>
+  <data name="CodeTooLong" xml:space="preserve"><value>الرمز طويل جدًا.</value></data>
+  <data name="NameTooLong" xml:space="preserve"><value>الاسم طويل جدًا.</value></data>
+  <data name="FunctionCodeTooLong" xml:space="preserve"><value>رمز الوظيفة طويل جدًا.</value></data>
+  <data name="TaskTypeLabel" xml:space="preserve"><value>نوع المهمة</value></data>
+  <data name="TaskTypeNone" xml:space="preserve"><value>بلا نوع</value></data>
+  <data name="AddNewTaskType" xml:space="preserve"><value>نوع جديد</value></data>
+  <data name="ErrorCodeImmutable" xml:space="preserve"><value>لا يمكن تغيير الرمز بعد إنشاء النوع: المهام المفتوحة به تحمله كهويتها.</value></data>
+  <data name="ErrorCodeTaken" xml:space="preserve"><value>يستخدم نوع مهمة آخر هذا الرمز بالفعل.</value></data>
+  <data name="ErrorClassificationInvalid" xml:space="preserve"><value>سجل جودة GxP يجب أن يسمّي مجال الجودة، والنوع الذي له مجال لا يمكن أن يكون «ليس سجلًا».</value></data>
+</root>

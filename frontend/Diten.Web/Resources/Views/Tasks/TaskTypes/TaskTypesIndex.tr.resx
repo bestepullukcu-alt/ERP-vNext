@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="TaskTypesTitle" xml:space="preserve"><value>Görev Türleri</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>İşi sınıflandıran ve yöneten dokümanlarını taşıyan türler.</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="RecordClass" xml:space="preserve"><value>Kayıt sınıfı</value></data>
+  <data name="GqmsDomain" xml:space="preserve"><value>Kalite alanı</value></data>
+  <data name="FunctionCode" xml:space="preserve"><value>Fonksiyon</value></data>
+  <data name="QualityEvent" xml:space="preserve"><value>Kalite olayı</value></data>
+  <data name="QualityEventYes" xml:space="preserve"><value>Kalite olayı</value></data>
+  <data name="QualityEventNo" xml:space="preserve"><value>Kalite olayı değil</value></data>
+  <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>Kayıt değil</value></data>
+  <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>Operasyonel kayıt</value></data>
+  <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>GxP kalite kaydı</value></data>
+  <data name="GqmsDomainNone" xml:space="preserve"><value>Herhangi bir kalite alanı dışında</value></data>
+  <data name="GqmsDomainHint" xml:space="preserve"><value>Tek alan, asla birden çok: dosyalama yolu bu alandan hesaplanır.</value></data>
+  <data name="RecordClassHint" xml:space="preserve"><value>GxP kalite kaydı, kendisini yöneten kalite alanını adlandırmak zorundadır.</value></data>
+  <data name="FunctionCodeHint" xml:space="preserve"><value>Şimdilik serbest metin — kapalı fonksiyon listesi henüz verilmedi.</value></data>
+  <data name="GroupDocuments" xml:space="preserve"><value>Yöneten dokümanlar</value></data>
+  <data name="GroupDocumentsPlaceholder" xml:space="preserve"><value>Her satıra bir doküman UID’i</value></data>
+  <data name="GroupDocumentsHint" xml:space="preserve"><value>Her organizasyonda geçerlidir. Doküman seçici, doküman arama listesiyle birlikte gelir.</value></data>
+  <data name="GroupDocumentsEmpty" xml:space="preserve"><value>Kayıtlı yöneten doküman yok</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Sınıflandırma</value></data>
+  <data name="DocumentsSection" xml:space="preserve"><value>Dokümanlar</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni görev türü</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Görev türünü düzenle</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>örn. DEV-QMS</value></data>
+  <data name="CodeImmutableHint" xml:space="preserve"><value>Kod değiştirilemez: bu türle açılmış görevler onu kimlik olarak taşır.</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Pasifleştir</value></data>
+  <data name="Activate" xml:space="preserve"><value>Yeniden etkinleştir</value></data>
+  <data name="DeactivateConfirm" xml:space="preserve"><value>Bu tür yeni görevlerde artık sunulmayacak. Onu kullanan görevler etkilenmez.</value></data>
+  <data name="RecordDeactivated" xml:space="preserve"><value>Görev türü pasifleştirildi.</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Görev türü yeniden etkinleştirildi.</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Detay</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Henüz görev türü yok.</value></data>
+  <data name="CodeRequired" xml:space="preserve"><value>Görev türünün kodu gerekli.</value></data>
+  <data name="NameRequired" xml:space="preserve"><value>Görev türünün adı gerekli.</value></data>
+  <data name="CodeTooLong" xml:space="preserve"><value>Kod çok uzun.</value></data>
+  <data name="NameTooLong" xml:space="preserve"><value>Ad çok uzun.</value></data>
+  <data name="FunctionCodeTooLong" xml:space="preserve"><value>Fonksiyon kodu çok uzun.</value></data>
+  <data name="TaskTypeLabel" xml:space="preserve"><value>Görev türü</value></data>
+  <data name="TaskTypeNone" xml:space="preserve"><value>Tür yok</value></data>
+  <data name="AddNewTaskType" xml:space="preserve"><value>Yeni görev türü</value></data>
+  <data name="ErrorCodeImmutable" xml:space="preserve"><value>Tür oluşturulduktan sonra kod değiştirilemez: bu türle açılmış görevler onu kimlik olarak taşır.</value></data>
+  <data name="ErrorCodeTaken" xml:space="preserve"><value>Bu kodu başka bir görev türü zaten kullanıyor.</value></data>
+  <data name="ErrorClassificationInvalid" xml:space="preserve"><value>GxP kalite kaydı kalite alanını adlandırmak zorundadır; alanı olan bir tür de "kayıt değil" olamaz.</value></data>
+</root>

@@ -71,6 +71,23 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            @* ── DCP-005 slice 1: the task TYPE ────────────────────────────────────────────
+                               ⚠ OPTIONAL, AND PERMANENTLY SO. Every task already open has no type; an empty
+                               option is a legitimate answer rather than a prompt, so it says so in words.
+                               ⚠ A PICKER, NOT A TEXT BOX. Choosing a type is open to anyone who can create a
+                               task; MINTING one needs platform.tasks.task-types.manage. That split is what QA's
+                               control statement — "a manually created, unclassified task may not produce a GxP
+                               quality record" — actually rests on. *@
+                            <label class="form-label fw-medium" for="taskTypeId">@Localizer["FieldTaskType"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-purchase-tag diten-field-icon" aria-hidden="true"></i>
+                                <select class="select2 form-select" id="taskTypeId" name="taskTypeId"
+                                        data-wcn-task-type-picker>
+                                    <option value="">@Localizer["FieldTaskTypeNone"]</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="col-12">
                             <label class="form-label fw-medium" for="taskDescription">@Localizer["FieldDescription"]</label>
                             <div class="diten-field">

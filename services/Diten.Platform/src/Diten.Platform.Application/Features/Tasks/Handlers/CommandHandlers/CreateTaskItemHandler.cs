@@ -226,6 +226,15 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         {
             TenantId = _tenantContext.TenantId,
             ParentTaskItemId = request.ParentTaskItemId is { } p && p != Guid.Empty ? p : null,
+            /*
+             * DCP-005 slice 1 — stored, not yet interpreted. `Guid.Empty` is normalised to null the same way the
+             * parent above is: an empty guid arriving from a form means "none chosen", not "type zero".
+             *
+             * ⚠ NOT VALIDATED AGAINST THE CATALOGUE HERE, deliberately. The picker only offers ACTIVE types, and
+             * a type retired between the form opening and the save must not fail the save — the classification
+             * slice decides what a retired type means, and refusing here would guess at that answer.
+             */
+            TaskTypeId = request.TaskTypeId is { } tt && tt != Guid.Empty ? tt : null,
             Title = request.Title.Trim(),
             Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim(),
             // SYSTEM decides the initial lifecycle; the request has no say (pack §12 Y2).

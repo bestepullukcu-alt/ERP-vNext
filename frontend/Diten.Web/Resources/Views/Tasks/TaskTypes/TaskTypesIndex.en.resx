@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="TaskTypesTitle" xml:space="preserve"><value>Task Types</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>The types that classify work and carry its governing documents.</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="RecordClass" xml:space="preserve"><value>Record class</value></data>
+  <data name="GqmsDomain" xml:space="preserve"><value>Quality domain</value></data>
+  <data name="FunctionCode" xml:space="preserve"><value>Function</value></data>
+  <data name="QualityEvent" xml:space="preserve"><value>Quality event</value></data>
+  <data name="QualityEventYes" xml:space="preserve"><value>Quality event</value></data>
+  <data name="QualityEventNo" xml:space="preserve"><value>Not a quality event</value></data>
+  <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>Not a record</value></data>
+  <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>Operational record</value></data>
+  <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>GxP quality record</value></data>
+  <data name="GqmsDomainNone" xml:space="preserve"><value>Outside any quality domain</value></data>
+  <data name="GqmsDomainHint" xml:space="preserve"><value>One domain, never several: the filing path is computed from it.</value></data>
+  <data name="RecordClassHint" xml:space="preserve"><value>A GxP quality record must name its quality domain.</value></data>
+  <data name="FunctionCodeHint" xml:space="preserve"><value>Free text for now — the closed function list has not been supplied yet.</value></data>
+  <data name="GroupDocuments" xml:space="preserve"><value>Governing documents</value></data>
+  <data name="GroupDocumentsPlaceholder" xml:space="preserve"><value>One document UID per line</value></data>
+  <data name="GroupDocumentsHint" xml:space="preserve"><value>Applies in every organisation. The document picker arrives with the document lookup.</value></data>
+  <data name="GroupDocumentsEmpty" xml:space="preserve"><value>No governing document recorded</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identity</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Classification</value></data>
+  <data name="DocumentsSection" xml:space="preserve"><value>Documents</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>New task type</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit task type</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>e.g. DEV-QMS</value></data>
+  <data name="CodeImmutableHint" xml:space="preserve"><value>The code cannot be changed: tasks opened under this type carry it as their identity.</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="Activate" xml:space="preserve"><value>Reactivate</value></data>
+  <data name="DeactivateConfirm" xml:space="preserve"><value>This type will no longer be offered on new tasks. Tasks already using it are unaffected.</value></data>
+  <data name="RecordDeactivated" xml:space="preserve"><value>Task type deactivated.</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Task type reactivated.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Edit</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Details</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>No task type yet.</value></data>
+  <data name="CodeRequired" xml:space="preserve"><value>A task type needs a code.</value></data>
+  <data name="NameRequired" xml:space="preserve"><value>A task type needs a name.</value></data>
+  <data name="CodeTooLong" xml:space="preserve"><value>The code is too long.</value></data>
+  <data name="NameTooLong" xml:space="preserve"><value>The name is too long.</value></data>
+  <data name="FunctionCodeTooLong" xml:space="preserve"><value>The function code is too long.</value></data>
+  <data name="TaskTypeLabel" xml:space="preserve"><value>Task type</value></data>
+  <data name="TaskTypeNone" xml:space="preserve"><value>No type</value></data>
+  <data name="AddNewTaskType" xml:space="preserve"><value>New task type</value></data>
+  <data name="ErrorCodeImmutable" xml:space="preserve"><value>The code cannot be changed after the type is created: tasks opened under it carry it as their identity.</value></data>
+  <data name="ErrorCodeTaken" xml:space="preserve"><value>Another task type already uses this code.</value></data>
+  <data name="ErrorClassificationInvalid" xml:space="preserve"><value>A GxP quality record must name its quality domain, and a type with a domain cannot be "not a record".</value></data>
+</root>

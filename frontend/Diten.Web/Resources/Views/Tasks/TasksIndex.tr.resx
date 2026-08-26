@@ -12,6 +12,8 @@
   <data name="FieldTitle" xml:space="preserve"><value>Görev başlığı</value></data>
   <data name="FieldTitlePlaceholder" xml:space="preserve"><value>örn. Üç aylık beyanı hazırla</value></data>
   <data name="FieldDescription" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="FieldTaskType" xml:space="preserve"><value>Görev türü</value></data>
+  <data name="FieldTaskTypeNone" xml:space="preserve"><value>Tür yok</value></data>
   <data name="FieldPriority" xml:space="preserve"><value>Öncelik</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>Düşük</value></data>
   <data name="PriorityMedium" xml:space="preserve"><value>Orta</value></data>

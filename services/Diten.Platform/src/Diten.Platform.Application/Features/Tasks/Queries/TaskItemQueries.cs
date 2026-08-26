@@ -127,3 +127,20 @@ public sealed record GetTaskFieldOptionSourcesQuery(
     Domain.Enums.Tasks.TaskFieldOptionsSourceKind Kind,
     string CorrelationId)
     : IRequest<Response<IReadOnlyList<TaskFieldOptionSourceDto>>>;
+
+
+// ── DCP-005 slice 1: task types ─────────────────────────────────────────────
+
+/// <summary>Every type, retired ones included — the management screen.</summary>
+public sealed record GetTaskTypeListQuery(string CorrelationId)
+    : IRequest<Response<IReadOnlyList<TaskTypeDto>>>;
+
+/// <summary>
+/// Types a NEW task may be given. Read by anyone who can create a task — choosing a type is not an
+/// administrative act.
+/// </summary>
+public sealed record GetActiveTaskTypesQuery(string CorrelationId)
+    : IRequest<Response<IReadOnlyList<TaskTypeDto>>>;
+
+public sealed record GetTaskTypeByIdQuery(Guid Id, string CorrelationId)
+    : IRequest<Response<TaskTypeDto>>;

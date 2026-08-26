@@ -1,0 +1,47 @@
+@using Diten.Web.Views.Tasks.TaskTypes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskTypesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Filter Chip: Status (Multi-select) *@
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                            <option value="Active">@SharedLocalizer["Active"]</option>
+                            <option value="Passive">@SharedLocalizer["Passive"]</option>
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Record class — the classification axis, populated from the loaded rows so
+                       a class nobody uses is not offered. Same rule the list page's chips follow. *@
+                    <div class="filter-chip filter-record-class">
+                        <select id="filterRecordClass" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["RecordClass"]">
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Quality domain. Empty is a real value here too — work outside every domain —
+                       so the picker carries it as a named option rather than as a blank. *@
+                    <div class="filter-chip filter-gqms-domain">
+                        <select id="filterGqmsDomain" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["GqmsDomain"]">
+                        </select>
+                    </div>
+
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -850,3 +850,38 @@
         boot();
     }
 })(typeof window !== 'undefined' ? window : globalThis);
+
+
+/*
+ * ── DCP-005 slice 1: fill the task-type picker ────────────────────────────────────────────────────────
+ *
+ * ⚠ FAILS QUIETLY AND LEAVES "no type" SELECTABLE. The type is optional, so a catalogue that cannot be read
+ * must not block task creation — the reader loses a classification, not the ability to work. The failure is
+ * reported to the console rather than to the person, because there is nothing they can do about it and the
+ * form still does what they came for.
+ */
+(function (global) {
+    const select = document.getElementById('taskTypeId');
+    if (!select || !global.TasksApi) { return; }
+
+    global.TasksApi.activeTaskTypes()
+        .then((result) => {
+            if (!result.ok || !Array.isArray(result.data)) { return; }
+            result.data.forEach((type) => {
+                const option = document.createElement('option');
+                option.value = type.id;
+                // Code AND name: the code is what QA reads aloud and what the seed list is keyed by; the name
+                // is what makes it choosable by somebody who has not memorised the codes.
+                option.textContent = `${type.code} · ${type.name}`;
+                select.appendChild(option);
+            });
+            // The picker is a select2 like every other one on this form; it has to be told the list grew.
+            if (global.jQuery && global.jQuery(select).data('select2')) {
+                global.jQuery(select).trigger('change.select2');
+            }
+        })
+        .catch((error) => {
+            if (error?.authHandled) { return; }
+            console.warn('[Tasks] Task types could not be loaded; the picker stays at "no type".', error);
+        });
+})(typeof window !== 'undefined' ? window : globalThis);

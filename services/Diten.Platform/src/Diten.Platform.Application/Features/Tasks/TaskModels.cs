@@ -22,6 +22,16 @@ public static class TaskPermissions
     public const string FieldDefinitionsManage = "platform.tasks.field-definitions.manage";
 
     /// <summary>
+    /// Who may define TASK TYPES (DCP-005 slice 1).
+    ///
+    /// <para><b>Separate from creating tasks, and the control statement depends on it.</b> QA's commitment is
+    /// that "a manually created, unclassified task may not produce a GxP quality record" — which holds only
+    /// because a person who can open a task cannot also mint the type that classifies it. Reading types stays
+    /// open to anyone who can create a task; they have to be able to choose one.</para>
+    /// </summary>
+    public const string TaskTypesManage = "platform.tasks.task-types.manage";
+
+    /// <summary>
     /// Managing WHEN work gets created — the recurrence rules (BL-052).
     ///
     /// <para>Its own key rather than <see cref="Create"/>, and the reason is the same one that keeps
@@ -302,6 +312,17 @@ public static class TaskReasonCodes
     /// and would leave the reader believing they had parked the work.
     /// </summary>
     public const string SnoozeDateInvalid = "TASK_SNOOZE_DATE_INVALID";
+
+    // ── DCP-005 slice 1 — task types ─────────────────────────────────────
+    /*
+     * ⚠ STABLE CODES, NOT SENTENCES. The handler's message is English and always will be: a service has no
+     * business holding seven translations of a rule. The code is what crosses the wire, and the tenant surface
+     * turns it into the reader's language — the same bridge the password rules use, and for the same reason
+     * (a raw English sentence in a Turkish form is a defect this repository has already paid for).
+     */
+    public const string TaskTypeCodeImmutable = "TASK_TYPE_CODE_IMMUTABLE";
+    public const string TaskTypeCodeTaken = "TASK_TYPE_CODE_TAKEN";
+    public const string TaskTypeClassificationInvalid = "TASK_TYPE_CLASSIFICATION_INVALID";
 }
 
 /// <summary>
@@ -402,6 +423,10 @@ public sealed record CreateTaskItemRequest(
     Guid? ParentTaskItemId = null,
     /// <summary>Instantiate this checklist template onto the new task (pack §12 E1/E5).</summary>
     Guid? ChecklistTemplateId = null,
+    /// <summary>
+    /// The task TYPE (DCP-005 slice 1). Optional and trailing, so every existing caller and payload stays valid.
+    /// </summary>
+    Guid? TaskTypeId = null,
     /// <summary>
     /// Who the requester SUGGESTS should review — required whenever <c>ReviewRequired</c> is set, because
     /// MOD-0023 cannot start a review with nobody to route it to. A candidate hint, not a decision: MOD-0023 and
@@ -1029,3 +1054,52 @@ public sealed record SendDueSoonRemindersResponse(
     int NotDelivered,
     /// <summary>The send threw. Also released for a retry.</summary>
     int Failed);
+
+
+// ── DCP-005 slice 1: task types ─────────────────────────────────────────────
+
+/// <summary>
+/// Create a task type. <c>Code</c> is normalised and then frozen — see <c>TaskTypeRules.CodeImmutableMessage</c>.
+/// </summary>
+public sealed record CreateTaskTypeRequest(
+    string Code,
+    string Name,
+    string? Description,
+    TaskRecordClass RecordClass,
+    TaskGqmsDomain? GqmsDomain,
+    string? FunctionCode,
+    bool IsQualityEvent,
+    IReadOnlyList<string>? GroupDocuments,
+    IReadOnlyDictionary<string, IReadOnlyList<string>>? LocalDocuments);
+
+/// <summary>
+/// Update a task type. <c>Code</c> is accepted so the screen can round-trip what it displayed, and REFUSED if it
+/// differs — silently keeping the stored one would report success for a change that did not happen.
+/// </summary>
+public sealed record UpdateTaskTypeRequest(
+    string? Code,
+    string Name,
+    string? Description,
+    TaskRecordClass RecordClass,
+    TaskGqmsDomain? GqmsDomain,
+    string? FunctionCode,
+    bool IsQualityEvent,
+    IReadOnlyList<string>? GroupDocuments,
+    IReadOnlyDictionary<string, IReadOnlyList<string>>? LocalDocuments);
+
+/// <summary>Retire or restore a type. There is no delete — see <c>DeactivateTaskTypeHandler</c>.</summary>
+public sealed record SetTaskTypeActiveRequest(bool IsActive);
+
+/// <summary>One task type as the management screen and the task form read it.</summary>
+public sealed record TaskTypeDto(
+    Guid Id,
+    string Code,
+    string Name,
+    string? Description,
+    TaskRecordClass RecordClass,
+    TaskGqmsDomain? GqmsDomain,
+    string? FunctionCode,
+    bool IsQualityEvent,
+    IReadOnlyList<string> GroupDocuments,
+    IReadOnlyDictionary<string, IReadOnlyList<string>> LocalDocuments,
+    bool IsActive);

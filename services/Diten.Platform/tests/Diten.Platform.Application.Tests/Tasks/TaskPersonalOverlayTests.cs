@@ -364,7 +364,7 @@ public sealed class TaskPersonalOverlayTests
                 new FakePositionRepository(),
                 new FakeOrganizationUnitRepository(),
                 SlaForTests.Real(),
-                new FakeTaskFieldDefinitionRepository());
+                new FakeTaskFieldDefinitionRepository(), new FakeTaskTypeRepository());
 
             var actor = new WorkItemActor(asUser ?? TaskTestData.Me, IsPlatformActor: true, new HashSet<string>());
             var items = await provider.GetWorkItemsAsync(actor, CancellationToken.None);

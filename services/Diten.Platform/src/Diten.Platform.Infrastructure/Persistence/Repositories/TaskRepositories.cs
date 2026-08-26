@@ -495,6 +495,48 @@ public sealed class TaskFieldDefinitionRepository
     }
 }
 
+/// <summary>
+/// Task types (DCP-005 slice 1). Shaped after <see cref="TaskFieldDefinitionRepository"/> above — the sibling
+/// this whole slice is modelled on.
+/// </summary>
+public sealed class TaskTypeRepository : TenantRepository<TaskType>, ITaskTypeRepository
+{
+    public TaskTypeRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, "task_types")
+    {
+    }
+
+    public Task<TaskType?> GetByCodeAsync(string code, CancellationToken ct = default)
+    {
+        var filter = Builders<TaskType>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskType>.Filter.Eq(x => x.Code, code));
+        return Collection.Find(filter).FirstOrDefaultAsync(ct)!;
+    }
+
+    public async Task<IReadOnlyList<TaskType>> ListActiveAsync(CancellationToken ct = default)
+    {
+        var filter = Builders<TaskType>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskType>.Filter.Eq(x => x.IsActive, true),
+            // Same two-lock rule the field definitions use: DeletedAt is the stronger statement of the two.
+            Builders<TaskType>.Filter.Eq(x => x.DeletedAt, null));
+        return await Collection.Find(filter).SortBy(x => x.Code).ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<TaskType>> ListAllAsync(CancellationToken ct = default)
+        => await Collection.Find(ExecutionFilter).SortBy(x => x.Code).ToListAsync(ct);
+
+    public async Task UpdateAsync(TaskType type, CancellationToken ct = default)
+    {
+        type.UpdatedAt = DateTimeOffset.UtcNow;
+        var filter = Builders<TaskType>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskType>.Filter.Eq(x => x.Id, type.Id));
+        await Collection.ReplaceOneAsync(filter, type, new ReplaceOptions(), ct);
+    }
+}
+
 // ── Phase 2+ repositories. Registered now so the schema/collections exist and later phases are additive. ──
 
 public sealed class ChecklistTemplateRepository : TenantRepository<ChecklistTemplate>, IChecklistTemplateRepository

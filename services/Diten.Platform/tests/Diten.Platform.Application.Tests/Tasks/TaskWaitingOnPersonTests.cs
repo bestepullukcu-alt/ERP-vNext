@@ -268,7 +268,7 @@ public sealed class TaskWaitingOnPersonTests
                 new FakePositionRepository([.. _positions]),
                 new FakeOrganizationUnitRepository([.. _units]),
                 SlaForTests.Real(),
-                new FakeTaskFieldDefinitionRepository());
+                new FakeTaskFieldDefinitionRepository(), new FakeTaskTypeRepository());
 
             var items = await provider.GetWorkItemsAsync(
                 new WorkItemActor(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>()),

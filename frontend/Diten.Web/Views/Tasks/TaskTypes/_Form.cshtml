@@ -1,0 +1,141 @@
+@model Diten.Web.Models.TaskTypes.TaskTypeEditViewModel
+@using Diten.Web.Views.Tasks.TaskTypes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskTypesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var action = isEdit ? "Edit" : "Create";
+
+    // ⚠ CODE VALUES, NOT TRANSLATED. The enum member is the value that travels and is stored; the LABEL beside
+    // it is what the reader sees, and only that is localised. Conflating the two is how a classification ends up
+    // meaning different things in different languages.
+    var recordClasses = new[] { "NOT_A_RECORD", "OPERATIONAL_RECORD", "GXP_QUALITY_RECORD" };
+    var domains = new[] { "QMS", "GMP", "GDP", "PV", "RAF", "NUT", "CSV", "RND" };
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a asp-controller="TaskTypes" asp-action="Index">@Localizer["TaskTypesTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-controller="TaskTypes" asp-action="Index" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        <button type="submit" form="taskTypeForm" class="btn btn-primary">
+            @(isEdit ? SharedLocalizer["Update"] : SharedLocalizer["Save"])
+        </button>
+    </div>
+</div>
+
+<form id="taskTypeForm" asp-controller="TaskTypes" asp-action="@action" asp-route-id="@Model.Id" method="post"
+      class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label asp-for="Code" class="form-label fw-medium">@Localizer["Code"] <span class="text-danger">*</span></label>
+                            @if (isEdit)
+                            {
+                                @* ⚠ READ-ONLY ONCE CREATED. Tasks already opened under this type carry the code as
+                                   their identity; changing it rewrites what those records say they are. The value
+                                   still posts so the server can COMPARE it — and it refuses a different one rather
+                                   than quietly keeping the stored one. *@
+                                <input asp-for="Code" class="form-control" readonly />
+                                <div class="form-text">@Localizer["CodeImmutableHint"]</div>
+                            }
+                            else
+                            {
+                                <input asp-for="Code" class="form-control" maxlength="40" placeholder="@Localizer["CodePlaceholder"]" required />
+                                <span asp-validation-for="Code" class="text-danger small mt-1"></span>
+                            }
+                        </div>
+                        <div class="col-12 col-md-8">
+                            <label asp-for="Name" class="form-label fw-medium">@Localizer["Name"] <span class="text-danger">*</span></label>
+                            <input asp-for="Name" class="form-control" maxlength="160" required />
+                            <span asp-validation-for="Name" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label fw-medium">@Localizer["Description"]</label>
+                            <textarea asp-for="Description" class="form-control" rows="2" maxlength="1000"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ClassificationSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="RecordClass" class="form-label fw-medium">@Localizer["RecordClass"]</label>
+                            <select asp-for="RecordClass" class="form-select">
+                                @foreach (var value in recordClasses)
+                                {
+                                    <option value="@value" selected="@(Model.RecordClass == value)">@Localizer["RecordClass" + value]</option>
+                                }
+                            </select>
+                            <div class="form-text">@Localizer["RecordClassHint"]</div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="GqmsDomain" class="form-label fw-medium">@Localizer["GqmsDomain"]</label>
+                            <select asp-for="GqmsDomain" class="form-select">
+                                @* ⚠ ONE VALUE, AND THE EMPTY OPTION IS A REAL CHOICE — work outside every quality
+                                   domain. It is NOT a placeholder, so it says so in words. *@
+                                <option value="">@Localizer["GqmsDomainNone"]</option>
+                                @foreach (var value in domains)
+                                {
+                                    <option value="@value" selected="@(Model.GqmsDomain == value)">@value</option>
+                                }
+                            </select>
+                            <div class="form-text">@Localizer["GqmsDomainHint"]</div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="FunctionCode" class="form-label fw-medium">@Localizer["FunctionCode"]</label>
+                            <input asp-for="FunctionCode" class="form-control" maxlength="40" />
+                            @* ⚠ FREE TEXT TODAY, AND THE SCREEN SAYS SO. DCP-005 names a closed 19-value list and
+                               does not carry it; it is not in this repository either. A guessed list would reject
+                               the counterparty's real codes and accept invented ones. *@
+                            <div class="form-text">@Localizer["FunctionCodeHint"]</div>
+                        </div>
+                        <div class="col-12 col-md-6 d-flex align-items-end">
+                            <div class="form-check mb-2">
+                                <input asp-for="IsQualityEvent" class="form-check-input" type="checkbox" />
+                                <label asp-for="IsQualityEvent" class="form-check-label">@Localizer["QualityEvent"]</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["DocumentsSection"]</h6>
+                    <label asp-for="GroupDocumentsText" class="form-label fw-medium">@Localizer["GroupDocuments"]</label>
+                    @* One UID per line. The document PICKER is slice 2 — the controlled-document lookup does not
+                       exist yet, so there is nothing to pick from and a typed UID is the honest interim. *@
+                    <textarea asp-for="GroupDocumentsText" class="form-control" rows="5"
+                              placeholder="@Localizer["GroupDocumentsPlaceholder"]"></textarea>
+                    <div class="form-text">@Localizer["GroupDocumentsHint"]</div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

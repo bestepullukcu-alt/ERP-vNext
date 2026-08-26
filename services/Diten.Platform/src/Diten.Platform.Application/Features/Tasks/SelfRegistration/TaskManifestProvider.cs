@@ -36,6 +36,7 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
     private const string PageTaskDetail = "TASK_DETAIL";
     private const string PageTaskEdit = "TASK_EDIT";
     private const string PageTaskFieldDefinitions = "TASK_FIELD_DEFINITIONS";
+    private const string PageTaskTypes = "TASK_TYPES";
     private const string PageTaskRecurrenceRules = "TASK_RECURRENCE_RULES";
 
     public ModuleManifestDocument GetManifest() =>
@@ -150,6 +151,37 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                         new ModuleManifestAction("DELETE", "Delete Field Definition",
                             TaskPermissions.FieldDefinitionsManage, "Row", 30,
                             IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
+                    ]),
+
+                /*
+                 * The TASK TYPE catalogue (DCP-005 slice 1), registered here for the same reason the field
+                 * definitions above are: this area's menu is rendered from the module catalog, so a hard-coded
+                 * <li> would be a second, unmanaged entry Menu Settings could neither reorder nor hide.
+                 *
+                 * ⚠ NO DELETE ACTION, unlike its sibling. A type that has been used is part of the identity of
+                 * every task opened under it, so it is retired and never removed — the manifest says so too,
+                 * because an action declared here is an action the catalogue will offer.
+                 */
+                new ModuleManifestPage(
+                    PageCode: PageTaskTypes,
+                    DisplayName: "Task Types",
+                    RoutePath: "/Tasks/TaskTypes",
+                    RequiredPermission: TaskPermissions.TaskTypesManage,
+                    ParentPageCode: PageTasks,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 25,
+                    Actions:
+                    [
+                        new ModuleManifestAction("CREATE", "Create Task Type",
+                            TaskPermissions.TaskTypesManage, "Toolbar", 10,
+                            IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("EDIT", "Edit Task Type",
+                            TaskPermissions.TaskTypesManage, "Row", 20,
+                            IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("DEACTIVATE", "Deactivate Task Type",
+                            TaskPermissions.TaskTypesManage, "Row", 30,
+                            IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
                     ]),
 
                 /*

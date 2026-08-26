@@ -141,6 +141,12 @@ describe("the tag box's text starts on the same line as its neighbours'", () => 
 const ICON_MAP = {
   taskTitle: "bx-text",
   taskPriority: "bx-flag",
+  /*
+   * DCP-005 slice 1. `bx-purchase-tag` — a LABEL you attach to work, which is what a type is. Deliberately not
+   * `bx-purchase-tag-alt`, which the TAGS field already wears: tags are the reader's own free words, the type
+   * is a controlled classification, and two glyphs one pixel apart would say they are the same kind of thing.
+   */
+  taskTypeId: "bx-purchase-tag",
   taskDescription: "bx-align-left",
   taskAssignmentTarget: "bx-directions",
   taskAssignee: "bx-user",

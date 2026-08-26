@@ -335,6 +335,9 @@
         setSnooze: (taskId, payload) => request('PUT', `/${taskId}/personal/snooze`, payload),
         // Same overlay row, same shape — see the handler's note on why a pin lives beside the snooze.
         setPinned: (taskId, payload) => request('PUT', `/${taskId}/personal/pin`, payload),
+        // DCP-005 slice 1 — the types a NEW task may be given. Read permission, not manage: choosing is not
+        // an administrative act.
+        activeTaskTypes: () => request('GET', '/task-types/active'),
         createFromTemplate: (payload) => request('POST', '/from-template', payload)
     };
 })(typeof window !== 'undefined' ? window : globalThis);

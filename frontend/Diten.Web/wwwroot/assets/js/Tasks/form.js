@@ -173,6 +173,16 @@
 
         return {
             title: trimOrNull(draft.title),
+            /*
+             * DCP-005 slice 1 — the task TYPE, and it is optional in the strict sense: null is a legitimate,
+             * permanent answer. Every task already open has no type, so a form that insisted on one would be
+             * describing a rule the data does not obey.
+             *
+             * ⚠ The picker only offers ACTIVE types, and it is a picker rather than a text box for the reason
+             * QA's control statement rests on: a person who can create a task must be able to CHOOSE a type and
+             * must not be able to MINT one.
+             */
+            taskTypeId: trimOrNull(draft.taskTypeId),
             description: trimOrNull(draft.description),
             priority: draft.priority || 'Medium',
             assignmentTarget: target,

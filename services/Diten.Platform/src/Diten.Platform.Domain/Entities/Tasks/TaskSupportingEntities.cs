@@ -518,3 +518,74 @@ public sealed class TaskPersonalNote
     /// </summary>
     public Guid AuthorUserId { get; set; }
 }
+
+/// <summary>
+/// A TASK TYPE — the carrier for classification, quality domain, the quality-event flag and the governing
+/// documents (DCP-005 slice 1).
+///
+/// <para><b>Why this exists at all.</b> Every comparable system has one — order type in SAP, task type in
+/// Oracle, issue type elsewhere — because it is the thing that carries defaults, permissions and
+/// classification. This product had none: two rounds of design with QA failed because both assumed a
+/// classification master that does not exist here, and the third put it on a type this system would build.</para>
+///
+/// <para><b>Only the container is ours.</b> The 31 seed types arrive with <c>record_class</c>,
+/// <c>gqms_domain</c>, <c>is_quality_event</c> and <c>governing_documents</c> already decided by QA.</para>
+/// </summary>
+public sealed class TaskType : TenantScopedEntity
+{
+    /// <summary>
+    /// Tenant-unique and IMMUTABLE. Changing a code after tasks have been opened with it rewrites the identity
+    /// of those tasks — the same reason a folder code cannot be re-pointed. Read-only once created.
+    /// </summary>
+    public required string Code { get; set; }
+
+    /// <summary>What a person sees when choosing a type. The administrator's own words.</summary>
+    public required string Name { get; set; }
+
+    public string? Description { get; set; }
+
+    /// <summary>What kind of record work of this type produces. See <see cref="TaskRecordClass"/>.</summary>
+    public TaskRecordClass RecordClass { get; set; } = TaskRecordClass.NOT_A_RECORD;
+
+    /// <summary>
+    /// The single governing quality domain, or null for work outside any of them. NEVER a collection — see
+    /// <see cref="TaskGqmsDomain"/> for the counterparty's reasoning.
+    /// </summary>
+    public TaskGqmsDomain? GqmsDomain { get; set; }
+
+    /// <summary>
+    /// The business function this type belongs to.
+    ///
+    /// <para>⚠ <b>STORED, NOT YET CONSTRAINED.</b> DCP-005 names a closed 19-value list and does not contain it;
+    /// it is not in this repository either (measured 2026-08-25). Inventing nineteen values to make the field
+    /// look finished would put a guess where a counterparty's decision belongs, and every task typed with a
+    /// wrong code would have to be re-typed later. It is normalised and length-capped here, and
+    /// <c>TaskTypeRules</c> has the seam ready for the list the moment it is supplied.</para>
+    /// </summary>
+    public string? FunctionCode { get; set; }
+
+    /// <summary>Whether work of this type is itself a quality event (deviation, complaint, recall …).</summary>
+    public bool IsQualityEvent { get; set; }
+
+    /// <summary>
+    /// Controlled-document UIDs that govern this type in EVERY organisation (DCP-005 §6.4, the group layer).
+    ///
+    /// <para>UIDs, not records: the ERP holds a lookup of controlled documents and never a table of them, so
+    /// there is nothing here to correct and a refresh simply overwrites the list.</para>
+    /// </summary>
+    public List<string> GroupDocuments { get; set; } = [];
+
+    /// <summary>
+    /// Extra governing documents for ONE organisation (DCP-005 §6.4, the local layer). Sparse on purpose: 24
+    /// types × 5 orgs would be 120 cells, and the counterparty's own registers are split exactly this way.
+    /// </summary>
+    public Dictionary<string, List<string>> LocalDocuments { get; set; } = [];
+
+    /// <summary>
+    /// Whether this type may be chosen on a NEW task. Retiring one never removes it: tasks already opened with
+    /// it keep reading correctly, which is the same rule folders and documents follow.
+    /// </summary>
+    public bool IsActive { get; set; } = true;
+
+    public DateTimeOffset? DeletedAt { get; set; }
+}

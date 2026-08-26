@@ -254,3 +254,19 @@ public sealed record DeleteTaskFieldDefinitionCommand(Guid Id, string Correlatio
 public sealed record BulkDeleteTaskFieldDefinitionCommand(
     BulkDeleteTaskFieldDefinitionRequest Request, string CorrelationId)
     : IRequest<Response<BulkDeactivateFieldDefinitionsResponse>>;
+
+
+// ── DCP-005 slice 1: task types ─────────────────────────────────────────────
+
+public sealed record CreateTaskTypeCommand(
+    CreateTaskTypeRequest Request, string CorrelationId) : IRequest<Response<Guid>>;
+
+public sealed record UpdateTaskTypeCommand(
+    Guid Id, UpdateTaskTypeRequest Request, string CorrelationId) : IRequest<Response<NoContent>>;
+
+/// <summary>
+/// Retire or restore. NOT a delete: a type that has been used must stay readable, exactly as folders and
+/// documents do — see the handler.
+/// </summary>
+public sealed record SetTaskTypeActiveCommand(
+    Guid Id, SetTaskTypeActiveRequest Request, string CorrelationId) : IRequest<Response<NoContent>>;

@@ -1,0 +1,89 @@
+@model Diten.Web.Models.TaskTypes.TaskTypeEditViewModel
+@using Diten.Web.Views.Tasks.TaskTypes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskTypesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Model.Name;
+    Layout = "_LayoutTenantShell";
+}
+
+@* The golden compact detail pattern: breadcrumb, Back/Edit, one preview field per fact. *@
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@Model.Name</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a asp-controller="TaskTypes" asp-action="Index">@Localizer["TaskTypesTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@Model.Code</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-controller="TaskTypes" asp-action="Index" class="btn btn-label-secondary">@SharedLocalizer["Back"]</a>
+        <a asp-controller="TaskTypes" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">@SharedLocalizer["Edit"]</a>
+    </div>
+</div>
+
+<section class="card">
+    <div class="card-body p-4">
+        <div class="row g-4">
+            <div class="col-12 col-md-6 backbone-preview-field">
+                <span class="backbone-preview-label"><i class="bx bx-hash"></i> @Localizer["Code"]</span>
+                <span class="backbone-preview-value">@Model.Code</span>
+            </div>
+            <div class="col-12 col-md-6 backbone-preview-field">
+                <span class="backbone-preview-label"><i class="bx bx-label"></i> @Localizer["Name"]</span>
+                <span class="backbone-preview-value">@Model.Name</span>
+            </div>
+            <div class="col-12 backbone-preview-field">
+                <span class="backbone-preview-label"><i class="bx bx-text"></i> @Localizer["Description"]</span>
+                <span class="backbone-preview-value">@(string.IsNullOrWhiteSpace(Model.Description) ? "-" : Model.Description)</span>
+            </div>
+            <div class="col-12 col-md-6 backbone-preview-field">
+                <span class="backbone-preview-label"><i class="bx bx-shield-quarter"></i> @Localizer["RecordClass"]</span>
+                <span class="backbone-preview-value">@Localizer["RecordClass" + Model.RecordClass]</span>
+            </div>
+            <div class="col-12 col-md-6 backbone-preview-field">
+                <span class="backbone-preview-label"><i class="bx bx-category"></i> @Localizer["GqmsDomain"]</span>
+                @* Empty is a real answer — work outside every quality domain — so it reads as the sentence for
+                   that, not as a blank the reader has to interpret. *@
+                <span class="backbone-preview-value">
+                    @(string.IsNullOrWhiteSpace(Model.GqmsDomain) ? Localizer["GqmsDomainNone"].Value : Model.GqmsDomain)
+                </span>
+            </div>
+            <div class="col-12 col-md-6 backbone-preview-field">
+                <span class="backbone-preview-label"><i class="bx bx-sitemap"></i> @Localizer["FunctionCode"]</span>
+                <span class="backbone-preview-value">@(string.IsNullOrWhiteSpace(Model.FunctionCode) ? "-" : Model.FunctionCode)</span>
+            </div>
+            <div class="col-12 col-md-6 backbone-preview-field">
+                <span class="backbone-preview-label"><i class="bx bx-error-circle"></i> @Localizer["QualityEvent"]</span>
+                <span class="backbone-preview-value">@(Model.IsQualityEvent ? Localizer["QualityEventYes"].Value : Localizer["QualityEventNo"].Value)</span>
+            </div>
+            <div class="col-12 backbone-preview-field">
+                <span class="backbone-preview-label"><i class="bx bx-file"></i> @Localizer["GroupDocuments"]</span>
+                <span class="backbone-preview-value">
+                    @if (Model.GroupDocuments is { Count: > 0 })
+                    {
+                        @string.Join(" · ", Model.GroupDocuments)
+                    }
+                    else
+                    {
+                        @* DCP-005 §11 records this as a KNOWN consequence: 9 of the 31 seed types have governing
+                           SOPs with UIDs allocated but no row in the master register, so they legitimately have
+                           nothing to show. The empty state says "none recorded", not "none exists". *@
+                        <span class="text-muted">@Localizer["GroupDocumentsEmpty"]</span>
+                    }
+                </span>
+            </div>
+            <div class="col-12 col-md-6 backbone-preview-field">
+                <span class="backbone-preview-label"><i class="bx bx-toggle-left"></i> @SharedLocalizer["Status"]</span>
+                <span class="backbone-preview-value">
+                    <span class="badge @(Model.IsActive ? "bg-label-success" : "bg-label-secondary")">
+                        @(Model.IsActive ? SharedLocalizer["Active"].Value : SharedLocalizer["Passive"].Value)
+                    </span>
+                </span>
+            </div>
+        </div>
+    </div>
+</section>

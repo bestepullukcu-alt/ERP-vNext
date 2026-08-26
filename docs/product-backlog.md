@@ -5666,3 +5666,63 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - Kapanış gerekçesi: beş ardışık özdeş koşu, tekrarlamayan bir kararsızlığı açık tutmak için yeterli kanıt
   değil. Yeniden görülürse bu not ve BL-189 düzeltmesi başlangıç noktasıdır.
 - **Gelecek regresyon riski: 🟢**
+
+### BL-258 güncelleme (2026-08-25) — kapanış notu, liste sayfası
+- Liste sıralaması, sabitleme bantlaması ve Gelen Kutusu'nun kendi sıralayıcısı bu turda kapandı; ayrıntı
+  BL-255/258 kayıtlarında.
+
+### BL-259 — [KURULDU 2026-08-25] DCP-005 dilim 1: GÖREV TÜRÜ
+- Kardeşi `TaskFieldDefinition` kopyalandı, yeni desen icat edilmedi: aynı katman bölünmesi (Rules · Handlers ·
+  QueryHandlers · Repository), aynı controller rota deseni (`[Route("Tasks/TaskTypes")]`), aynı görünüm ailesi
+  (Index · Create · Edit · Details · _DataTable · _Filter · _Form · _IndexL10n), aynı izin adı deseni.
+- **Varlık:** `TaskType` — Code (tekil, değiştirilemez) · Name · Description · RecordClass · GqmsDomain (TEK
+  değer) · FunctionCode · IsQualityEvent · GroupDocuments[] · LocalDocuments (seyrek) · IsActive · DeletedAt.
+- **İzin:** `platform.tasks.task-types.manage` yazma için; okuma `platform.tasks.read`. Manifest'te sayfa ve üç
+  aksiyon kayıtlı — **DELETE aksiyonu YOK**, çünkü manifestte ilan edilen aksiyon katalogun sunacağı aksiyondur.
+- ⚠ **MongoDB olduğu için migration gerekmedi.** `TaskItem.TaskTypeId` nullable eklendi ve öyle kalacak: canlı
+  ölçüm — 77 görevin **76'sı türsüz**, projeksiyon bunu eksiklik değil normal durum olarak yansıtıyor.
+- **CANLI ZİNCİR (gerçek tıklama):** tür oluştur (`dev-qms` → **DEV-QMS** normalize) → listede gör → düzenle →
+  Code salt okunur → DOM'dan kurcalayıp gönder → **sunucu reddetti, kod korundu** → pasifleştir → onay diyaloğu
+  ürünün dilinde → oluşturma seçicisinden **düştü**, yönetim listesinde **kaldı** → türle görev oluştur →
+  projeksiyonda `taskType {code,name}` → yenile → duruyor.
+- Doküman temizliği canlı ölçüldü: çift UID ve boş satır sessizce ayıklandı (yazanın niyetini değiştirmiyor).
+
+#### ⚠ İKİ ŞEY VERİLDİĞİ SÖYLENDİ, DEPODA YOK — ÖLÇÜLDÜ
+1. **19 değerlik FUNCTION listesi DCP-005'te YOK.** Pakette yalnız "Department → FUNCTION mapping | template
+   supplied" satırı geçiyor; listenin kendisi hiçbir yerde yok. `FunctionCode` bu yüzden **normalize edilip
+   uzunluk sınırlı serbest metin** olarak kuruldu ve `TaskTypeRules` içinde üyelik kontrolü için dikiş yeri
+   hazır bırakıldı. **On dokuz değer uydurulmadı**: uydurulmuş bir liste karşı tarafın gerçek kodlarını
+   reddeder, uydurma olanları kabul eder ve yanlış kodlanmış her görev sonradan yeniden kodlanır.
+2. **`GMG_ERP_Task_Type_Seed_2026-08-24.csv` depoda YOK.** Aranan yerler: tüm depo (`*.csv` → yalnız
+   DocumentManagement fixture'ı), `DEV-QMS`/`BATCH-RELEASE`/`SPEC-CONTROL` metin araması → yalnız bu turda
+   yazdığım dosyalar. Bu yüzden **"31 satırın sütunları varlığa oturuyor mu"** sorusu **ÖLÇÜLEMEDİ**;
+   "doğrulandı" YAZILMADI. Dosya verildiğinde ölçüm on dakikalık iştir.
+   - Pakete göre sütunlar `record_class · gqms_domain · is_quality_event · governing_documents`; dördü de
+     varlıkta birebir karşılığını buluyor. Oturmama riski taşıyan tek sütun **`function`**: kapalı liste
+     bilinmediği için sınırlanmadı.
+- **MUTASYON (4, hepsi kırmızı):** Code değiştirilebilir → 1 kırmızı · tür silinebilir → 1 kırmızı ·
+  `GqmsDomain` liste alır → **derlenmiyor** (en güçlü hâli) · izinsiz kullanıcı tür açar → 1 kırmızı.
+- ⚠ **DÖRDÜNCÜ MUTASYON İLK SEFERİNDE YEŞİL KALDI** ve bu kayda değer: testim iki SABİTİ karşılaştırıyordu,
+  rotayı değil — POST rotası `Create`'e çevrildiğinde hiçbir şey kırmızıya dönmedi. Bu oturumda üçüncü kez aynı
+  sınıf: **iki sabitin tatmin edebildiği kural, hiçbir şeyin zorlamadığı kuraldır.** Test artık dört yazma
+  rotasının `[HasPermission]` niteliğini yansımayla okuyor, ve okuma rotasının `Read` istediğini de ayrıca
+  ölçüyor — kuralın iki yarısı da bağlandı.
+- **REGRESYON:** backend **2353/2353 yeşil** · frontend **1721 geçti / 9 kırmızı**, dokuzu da dokunulmayan
+  Enterprise Strategy. Bir muhafız yeni alanı yakaladı (`diten-field-icons`: 17. alan haritaya eklenmemişti) —
+  doğru yakalama, ikon haritaya eklendi.
+
+### BL-260 — [DÜZELTİLDİ 2026-08-25] Sunucu doğrulama mesajları İngilizce geliyordu
+- Canlı ölçüm: salt-okunur kod alanı kurcalanıp gönderildiğinde sunucu **doğru** reddetti ama cümle Türkçe
+  formda İngilizce çıktı — *"A task type's code cannot be changed after it is created…"*.
+- Şifre kurallarında kurulan köprünün aynısı: servis İngilizce mesajını KORUYOR (yedi çevirisini taşıyan bir
+  servis, kuralın ikinci evi olur) ve yanına **kararlı kod** koyuyor — `TASK_TYPE_CODE_IMMUTABLE` ·
+  `TASK_TYPE_CODE_TAKEN` · `TASK_TYPE_CLASSIFICATION_INVALID`. Kiracı yüzeyi kodu 7 dilde cümleye çeviriyor;
+  haritasız bir kod sunucunun kendi sözlerine düşüyor, sessizliğe değil.
+- Yeniden ölçüldü: *"Tür oluşturulduktan sonra kod değiştirilemez: bu türle açılmış görevler onu kimlik olarak
+  taşır."*
+- ⚠ Ara ölçümde bir kez yanıldım: köprü çalışmıyor sandım, oysa **platform servisini yeniden başlatmamıştım**;
+  gelen kod hâlâ `VALIDATION_FAILED`'di. Tanı kaydı ekleyip ölçtüm, sebebi gördüm, kaydı kaldırdım.
+- ⚠ İkinci bir ölçüm hatası: pasifleştirme onayının gövdesini okuyup "cümlem gelmedi" sandım. Ortak diyalog ilk
+  argümanı **başlık** sayıyor; cümle `options.subtext` ile geçilmeliydi. Dört başka çağrı yerinin aynı hatayı
+  yaptığı zaten o dosyanın yorumunda yazılıydı.
+- **Gelecek regresyon riski: 🟢**

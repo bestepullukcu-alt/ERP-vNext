@@ -434,6 +434,77 @@ public sealed class TasksController : CustomBaseController
     // Each route has to be listed on the Diten.Web proxy too: one that exists here and not there answers 404
     // before the request leaves the web tier, which is how `inquire` shipped unreachable.
 
+    // ── DCP-005 slice 1: task types ──────────────────────────────────────
+
+    /// <summary>
+    /// Every task type, retired ones included — the management screen. Guarded by the MANAGE permission because
+    /// it shows retired types and the fields behind them; the task form uses <see cref="GetActiveTaskTypes"/>.
+    /// </summary>
+    [HttpGet("task-types")]
+    [HasPermission(TaskPermissions.TaskTypesManage)]
+    public async Task<IActionResult> GetTaskTypes(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetTaskTypeListQuery(CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// Types a NEW task may be given.
+    ///
+    /// ⚠ Guarded by <c>Read</c> ON PURPOSE. Anyone who can create a task must be able to choose its type; what
+    /// they cannot do is create one. That split is what QA's control statement rests on — see
+    /// <c>TaskPermissions.TaskTypesManage</c>.
+    /// </summary>
+    [HttpGet("task-types/active")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> GetActiveTaskTypes(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetActiveTaskTypesQuery(CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("task-types/{id:guid}")]
+    [HasPermission(TaskPermissions.TaskTypesManage)]
+    public async Task<IActionResult> GetTaskType(Guid id, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetTaskTypeByIdQuery(id, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpPost("task-types")]
+    [HasPermission(TaskPermissions.TaskTypesManage)]
+    public async Task<IActionResult> CreateTaskType(
+        [FromBody] CreateTaskTypeRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new CreateTaskTypeCommand(request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>Edit a type. The code is read-only and a differing one is refused, never ignored.</summary>
+    [HttpPut("task-types/{id:guid}")]
+    [HasPermission(TaskPermissions.TaskTypesManage)]
+    public async Task<IActionResult> UpdateTaskType(
+        Guid id, [FromBody] UpdateTaskTypeRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new UpdateTaskTypeCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// Retire or restore a type.
+    ///
+    /// ⚠ THERE IS NO DELETE ROUTE, deliberately — a used type is part of the identity of every task opened under
+    /// it. See <c>SetTaskTypeActiveHandler</c>.
+    /// </summary>
+    [HttpPut("task-types/{id:guid}/active")]
+    [HasPermission(TaskPermissions.TaskTypesManage)]
+    public async Task<IActionResult> SetTaskTypeActive(
+        Guid id, [FromBody] SetTaskTypeActiveRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new SetTaskTypeActiveCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpGet("field-definitions")]
     [HasPermission(TaskPermissions.Read)]
     public async Task<IActionResult> GetFieldDefinitions(CancellationToken ct)

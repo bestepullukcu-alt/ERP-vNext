@@ -300,3 +300,52 @@ public enum TaskRecurrenceFrequency
     Quarterly = 4,
     Yearly = 5
 }
+
+/// <summary>
+/// What KIND OF RECORD work of this type produces (DCP-005 §6.3).
+///
+/// <para><b>The default is deliberately "not a record", not quarantine.</b> An earlier design classified
+/// everything and quarantined what it could not resolve; that collapses here, because manually created tasks are
+/// daily work — quarantine would become the main path instead of the exception.</para>
+///
+/// <para><b>String on the wire</b>, like every other enum this module ships to a client: a value that reaches
+/// the browser as a number is a defect this module has already shipped once.</para>
+/// </summary>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+public enum TaskRecordClass
+{
+    /// <summary>The default. Work that produces no controlled record at all.</summary>
+    NOT_A_RECORD = 0,
+
+    /// <summary>A record the business keeps, outside any GxP obligation.</summary>
+    OPERATIONAL_RECORD = 1,
+
+    /// <summary>
+    /// A GxP quality record. The control statement DCP-005 §6.3 commits to depends on this value only ever
+    /// arriving from a task TYPE — a manually created, unclassified task may not produce one.
+    /// </summary>
+    GXP_QUALITY_RECORD = 2
+}
+
+/// <summary>
+/// Which quality domain governs work of this type (DCP-005 §6.3).
+///
+/// <para><b>ONE VALUE, NEVER A LIST</b> — and the counterparty's reasoning is the reason, not ours: the folder
+/// path is computed from this field, and a type carrying several domains makes that rule unresolvable. A
+/// deviation is therefore four types (DEV-QMS · DEV-GMP · DEV-GDP · DEV-PV), not one type with four domains.</para>
+///
+/// <para><b>Empty is not "many".</b> Work outside any domain leaves this null and takes
+/// <see cref="TaskRecordClass.OPERATIONAL_RECORD"/>.</para>
+/// </summary>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+public enum TaskGqmsDomain
+{
+    QMS = 0,
+    GMP = 1,
+    GDP = 2,
+    PV = 3,
+    RAF = 4,
+    NUT = 5,
+    CSV = 6,
+    RND = 7
+}

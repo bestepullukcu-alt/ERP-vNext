@@ -12,6 +12,8 @@
   <data name="FieldTitle" xml:space="preserve"><value>Título de la tarea</value></data>
   <data name="FieldTitlePlaceholder" xml:space="preserve"><value>p. ej. Preparar la declaración trimestral</value></data>
   <data name="FieldDescription" xml:space="preserve"><value>Descripción</value></data>
+  <data name="FieldTaskType" xml:space="preserve"><value>Tipo de tarea</value></data>
+  <data name="FieldTaskTypeNone" xml:space="preserve"><value>Sin tipo</value></data>
   <data name="FieldPriority" xml:space="preserve"><value>Prioridad</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>Baja</value></data>
   <data name="PriorityMedium" xml:space="preserve"><value>Media</value></data>

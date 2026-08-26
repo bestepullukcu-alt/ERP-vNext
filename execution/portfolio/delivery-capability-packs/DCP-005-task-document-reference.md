@@ -164,6 +164,51 @@ procedure did you follow" without leaving:
 
 ---
 
+## 6.7 Closed lists the task type draws from
+
+⚠ **These were referenced by an earlier prompt as "in this pack" and were not.** The
+agent building the task type correctly refused to invent them and left a seam instead.
+They come from the counterparty's own template, so they are quoted rather than derived.
+
+### `function_code` — 19 values
+
+| Code | Name |
+|---|---|
+| `QUA` | Quality Administration |
+| `RA` | Regulatory Affairs (operational) |
+| `PV` | Pharmacovigilance (operational) |
+| `MFG` | Manufacturing Operations |
+| `SCM` | Supply Chain |
+| `RND` | Research and Development |
+| `COM` | Commercial and Marketing |
+| `FIN` | Finance and Accounting |
+| `HR` | Human Resources |
+| `LEG` | Legal and Contracts |
+| `PRC` | Procurement |
+| `ITG` | Information Technology |
+| `ISM` | Information Security |
+| `FAC` | Facilities and Assets |
+| `EHS` | Environment, Health and Safety |
+| `PPM` | Projects and Portfolios |
+| `CORP` | Corporate Communications |
+| `CTY` | Country Operations (residual) |
+| `MED` | Medical Affairs |
+
+### `org_code` — 5 values
+
+| Code | Entity | Country |
+|---|---|---|
+| `GMG` | Grand Medical Group AG | CH |
+| `STD` | Setonda S.L. | ES |
+| `MYG` | Miquel y Garriga, S.L. | ES |
+| `GPL` | Grand Medical Poland Sp. z o.o. | PL |
+| `GMT` | GMG Grand Medical Turkey LTD | TR |
+
+⚠ Third parties never receive an ORG code. Work belonging to one carries the ORG of the
+GMG entity holding the contract.
+
+---
+
 ## 7. Ordered delivery sequence
 
 ⚠ **Task type is first and is not optional.** It is the carrier for the classification, the

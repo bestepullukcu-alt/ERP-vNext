@@ -401,7 +401,7 @@ public sealed class TaskCommentTrailTests
                 new FakePositionRepository(),
                 new FakeOrganizationUnitRepository(),
                 SlaForTests.Real(),
-                new FakeTaskFieldDefinitionRepository());
+                new FakeTaskFieldDefinitionRepository(), new FakeTaskTypeRepository());
 
             var user = asUser ?? TaskTestData.Me;
             var previousAssignee = Task.AssigneeUserId;

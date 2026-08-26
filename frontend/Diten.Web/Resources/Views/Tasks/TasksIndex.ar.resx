@@ -12,6 +12,8 @@
   <data name="FieldTitle" xml:space="preserve"><value>عنوان المهمة</value></data>
   <data name="FieldTitlePlaceholder" xml:space="preserve"><value>مثال: إعداد الإقرار الربع سنوي</value></data>
   <data name="FieldDescription" xml:space="preserve"><value>الوصف</value></data>
+  <data name="FieldTaskType" xml:space="preserve"><value>نوع المهمة</value></data>
+  <data name="FieldTaskTypeNone" xml:space="preserve"><value>بلا نوع</value></data>
   <data name="FieldPriority" xml:space="preserve"><value>الأولوية</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>منخفضة</value></data>
   <data name="PriorityMedium" xml:space="preserve"><value>متوسطة</value></data>

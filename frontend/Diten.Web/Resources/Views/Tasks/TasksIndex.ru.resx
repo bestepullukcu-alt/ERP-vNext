@@ -12,6 +12,8 @@
   <data name="FieldTitle" xml:space="preserve"><value>Название задачи</value></data>
   <data name="FieldTitlePlaceholder" xml:space="preserve"><value>напр. Подготовить квартальную отчётность</value></data>
   <data name="FieldDescription" xml:space="preserve"><value>Описание</value></data>
+  <data name="FieldTaskType" xml:space="preserve"><value>Тип задачи</value></data>
+  <data name="FieldTaskTypeNone" xml:space="preserve"><value>Без типа</value></data>
   <data name="FieldPriority" xml:space="preserve"><value>Приоритет</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>Низкий</value></data>
   <data name="PriorityMedium" xml:space="preserve"><value>Средний</value></data>

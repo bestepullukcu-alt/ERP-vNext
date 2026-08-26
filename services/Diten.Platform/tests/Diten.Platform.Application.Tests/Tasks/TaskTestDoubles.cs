@@ -1671,7 +1671,7 @@ internal static class TaskWorkItemProviderHarness
             new FakePositionRepository(positions),
             new FakeOrganizationUnitRepository(units),
             SlaForTests.Real(),
-            new FakeTaskFieldDefinitionRepository(),
+            new FakeTaskFieldDefinitionRepository(), new FakeTaskTypeRepository(),
             new Diten.Platform.Application.Features.Tasks.Services.TaskTeamResolver(
                 scopeResolver, new FakePositionAssignmentRepository(assignments)));
     }
@@ -1689,5 +1689,53 @@ internal static class TaskWorkItemProviderHarness
             new EntitlementDataScope(EntitlementDataScopeKind.OrgUnit, unit.Id, unit.Code),
             new EntitlementDataScope(EntitlementDataScopeKind.LegalEntity, unit.LegalEntityId, "LE")
         ];
+    }
+}
+
+/// <summary>
+/// The task-type catalogue in memory (DCP-005 slice 1). Mirrors
+/// <see cref="FakeTaskFieldDefinitionRepository"/> above, including the two-lock active filter.
+/// </summary>
+internal sealed class FakeTaskTypeRepository : ITaskTypeRepository
+{
+    private readonly List<TaskType> _types = [];
+
+    public FakeTaskTypeRepository(params TaskType[] seed) => _types.AddRange(seed);
+
+    /// <summary>Everything stored, retired rows included — for assertions, never for the code under test.</summary>
+    public IReadOnlyList<TaskType> All => _types;
+
+    /// <summary>Batched reads issued — the N+1 assertion reads this.</summary>
+    public int ListAllCalls { get; private set; }
+
+    public Task<TaskType> CreateAsync(TaskType type, CancellationToken ct = default)
+    {
+        _types.Add(type);
+        return Task.FromResult(type);
+    }
+
+    public Task<TaskType?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => Task.FromResult(_types.FirstOrDefault(x => x.Id == id));
+
+    public Task<TaskType?> GetByCodeAsync(string code, CancellationToken ct = default)
+        => Task.FromResult(_types.FirstOrDefault(
+            x => string.Equals(x.Code, code, StringComparison.OrdinalIgnoreCase)));
+
+    /// <summary>Mirrors the real filter: retired beats IsActive, the stronger of the two statements.</summary>
+    public Task<IReadOnlyList<TaskType>> ListActiveAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<TaskType>>(
+            _types.Where(x => x.IsActive && x.DeletedAt is null).ToList());
+
+    public Task<IReadOnlyList<TaskType>> ListAllAsync(CancellationToken ct = default)
+    {
+        ListAllCalls++;
+        return Task.FromResult<IReadOnlyList<TaskType>>(_types.ToList());
+    }
+
+    public Task UpdateAsync(TaskType type, CancellationToken ct = default)
+    {
+        var at = _types.FindIndex(x => x.Id == type.Id);
+        if (at >= 0) { _types[at] = type; }
+        return Task.CompletedTask;
     }
 }

@@ -12,6 +12,8 @@
   <data name="FieldTitle" xml:space="preserve"><value>任务标题</value></data>
   <data name="FieldTitlePlaceholder" xml:space="preserve"><value>例如：准备季度申报</value></data>
   <data name="FieldDescription" xml:space="preserve"><value>说明</value></data>
+  <data name="FieldTaskType" xml:space="preserve"><value>任务类型</value></data>
+  <data name="FieldTaskTypeNone" xml:space="preserve"><value>无类型</value></data>
   <data name="FieldPriority" xml:space="preserve"><value>优先级</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>低</value></data>
   <data name="PriorityMedium" xml:space="preserve"><value>中</value></data>

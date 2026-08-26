@@ -445,7 +445,8 @@ public sealed class TaskFieldAuthorizationTests
             new FakePositionRepository(),
             new FakeOrganizationUnitRepository(),
             SlaForTests.Real(),
-            definitions);
+            definitions,
+            new FakeTaskTypeRepository());
 
         var workActor = new WorkItemActor(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>());
         return Assert.Single(await provider.GetWorkItemsAsync(workActor, CancellationToken.None));

@@ -332,6 +332,14 @@ public sealed record WorkItemProjectionDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     DateTimeOffset? PlannedDate = null,
     /// <summary>
+    /// The task TYPE this work was opened under (DCP-005 slice 1), or absent for the tasks that predate types.
+    ///
+    /// <para>⚠ ABSENT IS NORMAL AND STAYS NORMAL — every task open today has no type, and the field is nullable
+    /// for exactly that reason. A surface must render its absence, not treat it as a fault.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemTaskTypeDto? TaskType = null,
+    /// <summary>
     /// WHICH queue this work is waiting in. Present exactly when <c>assignmentMode</c> is <c>groupQueue</c>: the
     /// Pool tab's entire question is "which queue is this in", and an item that cannot answer it makes the tab
     /// meaningless — it was answered for a while with a fabricated team name (BL-031).
@@ -762,6 +770,15 @@ public sealed record WorkItemBlockedStateDto(
     bool Blocked,
     IReadOnlyList<string> AffectedActionCodes,
     IReadOnlyList<WorkItemBlockerDto> Blockers);
+
+/// <summary>
+/// The TASK TYPE a work item was opened under (DCP-005 slice 1), or absent.
+///
+/// <para>Code and name travel together for the reason the frozen document reference gives: an id alone is not
+/// something a person can read, and re-resolving it on the client would be a second authority over the same
+/// fact.</para>
+/// </summary>
+public sealed record WorkItemTaskTypeDto(string Id, string Code, string Name);
 
 /// <summary>
 /// One reason work cannot move. <c>Label</c> names the thing in the way (a task title, so a DISPLAY label);

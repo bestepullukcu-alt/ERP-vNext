@@ -342,7 +342,7 @@ public sealed class TaskWorkItemContractGuardTests
             TaskActors.PermitAll(), new FakePositionRepository(),
             new FakeOrganizationUnitRepository(),
             SlaForTests.Real(),
-            fieldDefinitions ?? new FakeTaskFieldDefinitionRepository());
+            fieldDefinitions ?? new FakeTaskFieldDefinitionRepository(), new FakeTaskTypeRepository());
 
     private static TaskItem SelfTask(string title) => new()
     {

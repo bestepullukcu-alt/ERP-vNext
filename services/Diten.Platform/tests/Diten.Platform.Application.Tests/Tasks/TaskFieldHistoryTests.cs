@@ -418,7 +418,7 @@ public sealed class TaskFieldHistoryTests
                 new FakePositionRepository(),
                 new FakeOrganizationUnitRepository(),
                 SlaForTests.Real(),
-                new FakeTaskFieldDefinitionRepository(_restricted));
+                new FakeTaskFieldDefinitionRepository(_restricted), new FakeTaskTypeRepository());
 
             var items = await provider.GetWorkItemsAsync(
                 new WorkItemActor(TaskTestData.Me, IsPlatformActor: false, new HashSet<string>()),

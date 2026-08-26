@@ -230,3 +230,23 @@ public interface ITaskRecurrenceRuleRepository
 
     Task<bool> UpdateAsync(TaskRecurrenceRule rule, int expectedVersion, CancellationToken ct = default);
 }
+
+/// <summary>
+/// Task types (DCP-005 slice 1). Shaped like <see cref="ITaskFieldDefinitionRepository"/> for the same reasons
+/// its comments give — including the important one: the management surface must be able to see a RETIRED type,
+/// or a type switched off could never be switched back on.
+/// </summary>
+public interface ITaskTypeRepository
+{
+    Task<TaskType> CreateAsync(TaskType type, CancellationToken ct = default);
+    Task<TaskType?> GetByIdAsync(Guid id, CancellationToken ct = default);
+    Task<TaskType?> GetByCodeAsync(string code, CancellationToken ct = default);
+
+    /// <summary>Types a NEW task may be given — active and not retired.</summary>
+    Task<IReadOnlyList<TaskType>> ListActiveAsync(CancellationToken ct = default);
+
+    /// <summary>Every type, retired ones included — the management screen and the uniqueness check.</summary>
+    Task<IReadOnlyList<TaskType>> ListAllAsync(CancellationToken ct = default);
+
+    Task UpdateAsync(TaskType type, CancellationToken ct = default);
+}

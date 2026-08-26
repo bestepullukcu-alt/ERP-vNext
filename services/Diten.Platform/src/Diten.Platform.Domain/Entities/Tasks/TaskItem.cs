@@ -249,6 +249,19 @@ public sealed class TaskItem : TenantScopedEntity
     /// </summary>
     public Guid? ParentTaskItemId { get; set; }
 
+    /// <summary>
+    /// The task TYPE this work was opened under (DCP-005 slice 1), or null.
+    ///
+    /// <para>⚠ <b>NULLABLE, AND IT STAYS THAT WAY.</b> Every task that exists today has no type; making the
+    /// field required would invalidate the live data in one deployment. Work carries a type going forward and
+    /// the ones already open simply do not have one.</para>
+    ///
+    /// <para>⚠ <b>The field only. The classification LOGIC is not here</b> — resolving a record class from the
+    /// type, and the folder rule that follows from it, are the next slice. Storing the link now is what lets
+    /// that slice be written without a migration.</para>
+    /// </summary>
+    public Guid? TaskTypeId { get; set; }
+
     // ── Recurrence (Phase 4 behaviour; schema now) ───────────────────────────
     public Guid? RecurrenceRuleId { get; set; }
 

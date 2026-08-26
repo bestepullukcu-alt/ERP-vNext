@@ -321,6 +321,33 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiSetPinned(Guid id)
         => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/tasks/{id}/personal/pin", readBody: true);
 
+    /// <summary>
+    /// The task TYPES a new task may be given (DCP-005 slice 1).
+    ///
+    /// ⚠ Named here because this controller is a PROXY with one method per endpoint — a route that exists on the
+    /// service is invisible to the browser until it is listed. That is not a guess: the pin endpoint returned 404
+    /// on its first live click for exactly this reason.
+    /// </summary>
+    [HttpGet("api/task-types/active")]
+    public Task<IActionResult> ApiActiveTaskTypes()
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/task-types/active", readBody: false);
+
+    /// <summary>Every type, retired ones included — the management grid reads this.</summary>
+    [HttpGet("api/task-types")]
+    public Task<IActionResult> ApiTaskTypes()
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/task-types", readBody: false);
+
+    /// <summary>
+    /// Retire or restore a type.
+    ///
+    /// ⚠ THERE IS NO DELETE ROUTE HERE EITHER, and its absence is deliberate rather than pending: a used type is
+    /// part of the identity of every task opened under it. The service exposes none, the grid offers none, and
+    /// adding one here would be the only door left.
+    /// </summary>
+    [HttpPut("api/task-types/{id:guid}/active")]
+    public Task<IActionResult> ApiSetTaskTypeActive(Guid id)
+        => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/tasks/task-types/{id}/active", readBody: true);
+
     // ── Dependencies (BL-028) ────────────────────────────────────────────────
     //
     // Not transitions, so they are NOT in TaskTransitionRoutes: these are their own resource under a task

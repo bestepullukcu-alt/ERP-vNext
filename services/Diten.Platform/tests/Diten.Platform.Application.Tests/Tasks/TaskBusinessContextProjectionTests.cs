@@ -312,7 +312,8 @@ public sealed class TaskBusinessContextProjectionTests
             TaskActors.PermitAll(), new FakePositionRepository(),
             new FakeOrganizationUnitRepository(),
             SlaForTests.Real(),
-            definitions);
+            definitions,
+            new FakeTaskTypeRepository());
 
     private static WorkItemActor Actor()
         => new(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>());
