@@ -6,6 +6,10 @@ using Diten.PpmService.Infrastructure.Audit;
 using Diten.PpmService.Infrastructure.Authorization;
 using Diten.PpmService.Infrastructure.Correlation;
 using Diten.PpmService.Infrastructure.Entitlements;
+using Diten.PpmService.Infrastructure.GateI;
+using Diten.PpmService.Application.Features.BenefitCommitments.GateI.BenefitRealization;
+using Diten.PpmService.Application.Features.InvestmentCases.GateI.DecisionTrace;
+using Diten.PpmService.Application.Features.InvestmentCases.GateI.FundingScenario;
 using Diten.Platform.Common.Authorization;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
@@ -28,6 +32,15 @@ public static class DependencyInjection
         services.AddSingleton<IPermissionClaimEvaluator, SignedJwtPermissionClaimEvaluator>();
         services.AddScoped<IEffectivePermissionEvaluator, SharedPermissionClaimEvaluatorAdapter>();
         services.AddHttpClient<IPpmEntitlementDecisionClient, PpmEntitlementDecisionClient>();
+        services.AddSingleton<GateICompositionGate>();
+        services.AddScoped<GateICompositionPreflight>();
+        services.AddScoped<IDecisionReferenceValidationPort, DefaultOffDecisionReferenceValidationPort>();
+        services.AddScoped<IBudgetVersionReferenceValidationPort, DefaultOffBudgetVersionReferenceValidationPort>();
+        services.AddScoped<IScenarioPlanningReferenceValidationPort, DefaultOffScenarioPlanningReferenceValidationPort>();
+        services.AddScoped<IOutcomeReferenceAuthorityPort, DefaultOffOutcomeReferenceAuthorityPort>();
+        services.AddScoped<DecisionTraceValidationService>();
+        services.AddScoped<FundingScenarioContractValidator>();
+        services.AddScoped<BenefitCommitmentOutcomeReferenceValidator>();
 
         var externalContextSection = configuration?.GetSection(ExternalContextProviderOptions.SectionName);
         services.AddSingleton<IValidateOptions<ExternalContextProviderOptions>, ExternalContextProviderOptionsValidator>();
