@@ -576,6 +576,9 @@
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>Tipos de tarea</value>
   </data>
+  <data name="Nav.Page.TASKDOCUMENTLIST" xml:space="preserve">
+    <value>Documentos controlados</value>
+  </data>
   <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
     <value>Definiciones de campos</value>
   </data>

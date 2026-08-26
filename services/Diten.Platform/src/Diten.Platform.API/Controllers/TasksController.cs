@@ -434,6 +434,55 @@ public sealed class TasksController : CustomBaseController
     // Each route has to be listed on the Diten.Web proxy too: one that exists here and not there answers 404
     // before the request leaves the web tier, which is how `inquire` shipped unreachable.
 
+    // ── DCP-005 slice 2: the controlled-document reference list ──────────
+
+    /// <summary>
+    /// Read the register WITHOUT storing it: how many rows, how many citable, which columns are unread, and
+    /// whether these exact bytes are already a stored version. Same two-step the folder taxonomy import uses.
+    /// </summary>
+    [HttpPost("document-list/dry-run")]
+    [HasPermission(TaskPermissions.DocumentListImport)]
+    public async Task<IActionResult> DryRunDocumentList(
+        [FromBody] ImportDocumentReferenceListRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new DryRunDocumentReferenceListCommand(request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>Store the register as a new list VERSION.</summary>
+    [HttpPost("document-list/import")]
+    [HasPermission(TaskPermissions.DocumentListImport)]
+    public async Task<IActionResult> ImportDocumentList(
+        [FromBody] ImportDocumentReferenceListRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new ImportDocumentReferenceListCommand(request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>Every import, newest first — "which list did this task resolve against".</summary>
+    [HttpGet("document-list/versions")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> GetDocumentListVersions(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetDocumentReferenceListVersionsQuery(CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// Search the current list.
+    ///
+    /// ⚠ Guarded by <c>Read</c>, like the task-type picker and for the same reason: citing a procedure is
+    /// ordinary work, importing the register is not.
+    /// </summary>
+    [HttpGet("document-list/search")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> SearchDocumentList(
+        [FromQuery] string? term, [FromQuery] int limit, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new SearchDocumentReferencesQuery(term, limit, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     // ── DCP-005 slice 1: task types ──────────────────────────────────────
 
     /// <summary>

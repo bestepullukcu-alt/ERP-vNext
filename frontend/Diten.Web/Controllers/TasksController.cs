@@ -328,6 +328,31 @@ public sealed class TasksController : Controller
     /// service is invisible to the browser until it is listed. That is not a guess: the pin endpoint returned 404
     /// on its first live click for exactly this reason.
     /// </summary>
+    // ── DCP-005 slice 2: the controlled-document reference list ──────────
+    //
+    // ⚠ Named one by one because this controller is a PROXY: a route that exists on the service is invisible to
+    // the browser until it is listed here. Measured the expensive way once already, on the pin endpoint.
+
+    [HttpPost("api/document-list/dry-run")]
+    public Task<IActionResult> ApiDocumentListDryRun()
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/document-list/dry-run", readBody: true);
+
+    [HttpPost("api/document-list/import")]
+    public Task<IActionResult> ApiDocumentListImport()
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/document-list/import", readBody: true);
+
+    [HttpGet("api/document-list/versions")]
+    public Task<IActionResult> ApiDocumentListVersions()
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/document-list/versions", readBody: false);
+
+    /// <summary>Search the current list. The query string travels; blocked rows come back and are shown.</summary>
+    [HttpGet("api/document-list/search")]
+    public Task<IActionResult> ApiDocumentListSearch([FromQuery] string? term, [FromQuery] int limit)
+        => ProxyAsync(
+            HttpMethod.Get,
+            $"{_gatewayUrl}/api/v1/tasks/document-list/search?term={Uri.EscapeDataString(term ?? string.Empty)}&limit={limit}",
+            readBody: false);
+
     [HttpGet("api/task-types/active")]
     public Task<IActionResult> ApiActiveTaskTypes()
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/task-types/active", readBody: false);

@@ -595,3 +595,106 @@ public sealed class TaskType : TenantScopedEntity
 
     public DateTimeOffset? DeletedAt { get; set; }
 }
+
+/// <summary>
+/// One IMPORT of the controlled-document reference list (DCP-005 slice 2) — the version, not the documents.
+///
+/// <para><b>Why a version at all.</b> The list is a snapshot, and snapshots age. When it is refreshed a title
+/// can change or a code can be reallocated; a task that resolved a reference against an earlier list has to be
+/// able to say WHICH list it saw, or a closed record's basis becomes unknowable. Same reason the folder
+/// taxonomy imports as a <c>BaselineRelease</c> rather than as loose rows.</para>
+///
+/// <para><b>The pattern is the taxonomy's, not a second one:</b> a semantic version supplied by the importer, a
+/// deterministic content hash, and a source key — see <see cref="DocumentManagement.BaselineRelease"/>.</para>
+/// </summary>
+public sealed class DocumentReferenceListVersion : TenantScopedEntity
+{
+    /// <summary>Stable source key for the register this list came from.</summary>
+    public required string SourceKey { get; set; }
+
+    /// <summary>The importer's semantic version — never the inherited technical one.</summary>
+    public required string ListVersion { get; set; }
+
+    /// <summary>
+    /// SHA-256 over the imported content. Two imports of the same bytes produce the same hash, which is what
+    /// lets a re-upload be RECOGNISED rather than silently duplicated.
+    /// </summary>
+    public required string ContentHash { get; set; }
+
+    public required string FileName { get; set; }
+
+    /// <summary>How many entries this version carries — the number the import result reports back.</summary>
+    public int EntryCount { get; set; }
+
+    /// <summary>How many of them a task may actually cite. The rest are visible and blocked.</summary>
+    public int LinkableCount { get; set; }
+
+    public DateTimeOffset ImportedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public DateTimeOffset? DeletedAt { get; set; }
+}
+
+/// <summary>
+/// One controlled document, as the ERP KNOWS OF it (DCP-005 slice 2).
+///
+/// <para><b>⚠ THIS IS A LOOKUP ROW, NOT A DOCUMENT RECORD, and the difference is the whole design.</b> The
+/// pack (§6.1) settles it: if the ERP holds a documents TABLE, somebody eventually corrects a title or a
+/// version in it, and at that moment a second authority over the document exists. A lookup has nothing to
+/// correct — a refresh overwrites it. That converts a discipline problem into an architectural one.</para>
+///
+/// <para><b>⚠ NOT <c>ControlledDocument</c>.</b> That entity requires a <c>CollectionInstanceId</c>, which
+/// would force every referenced document into a provisioned folder. There are no folders on the reference
+/// side — QA confirmed — so a row here has no folder and needs none.</para>
+///
+/// <para><b>⚠ NOTHING EDITS THIS.</b> There is no update command and no edit screen, deliberately. The write
+/// path is the import; the read path is the search. A row that could be edited here would be the second
+/// authority the pack exists to prevent.</para>
+/// </summary>
+public sealed class DocumentReferenceEntry : TenantScopedEntity
+{
+    /// <summary>Which imported version this row belongs to. Rows never move between versions.</summary>
+    public required Guid ListVersionId { get; set; }
+
+    /// <summary>The register's own identifier — the join key a task will freeze in slice 3.</summary>
+    public required string DocumentUid { get; set; }
+
+    /// <summary>The human-readable code (e.g. <c>GMG-QMS-SOP-0005</c>).</summary>
+    public required string DocumentCode { get; set; }
+
+    public required string Title { get; set; }
+
+    public string? GqmsDomain { get; set; }
+    public string? GqmsType { get; set; }
+    public string? ErpDocumentType { get; set; }
+    public string? DocumentVersion { get; set; }
+
+    /// <summary>The register's own status word, passed through unchanged — including "NOT REGISTERED".</summary>
+    public string? Status { get; set; }
+
+    public string? Criticality { get; set; }
+    public string? Owner { get; set; }
+    public string? EffectiveDate { get; set; }
+    public string? ReviewCycle { get; set; }
+
+    /// <summary>Register folder id/path. Carried for traceability; the ERP instantiates no folder from it.</summary>
+    public string? FolderId { get; set; }
+    public string? FolderPath { get; set; }
+
+    public bool IsMandatoryGroupSop { get; set; }
+
+    /// <summary>
+    /// Whether a task may cite this document.
+    ///
+    /// <para>⚠ A blocked row is IMPORTED AND SHOWN, never dropped. 36 of the 358 cannot be linked — 23 planned,
+    /// 7 void, 6 declared mandatory with a UID but absent from the master register (QA's own open finding).
+    /// Hiding them would leave the reader asking "where is that SOP" with nowhere to look; showing them with a
+    /// reason answers it. This is the OPPOSITE of the zero-count chip decision, and deliberately so: there the
+    /// population did not exist, here the document exists and cannot be cited.</para>
+    /// </summary>
+    public bool LinkableInErp { get; set; }
+
+    /// <summary>Why it cannot be cited — the register's own words.</summary>
+    public string? LinkBlockedReason { get; set; }
+
+    public DateTimeOffset? DeletedAt { get; set; }
+}

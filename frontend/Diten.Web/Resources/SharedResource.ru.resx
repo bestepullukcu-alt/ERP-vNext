@@ -576,6 +576,9 @@
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>Типы задач</value>
   </data>
+  <data name="Nav.Page.TASKDOCUMENTLIST" xml:space="preserve">
+    <value>Контролируемые документы</value>
+  </data>
   <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
     <value>Определения полей</value>
   </data>

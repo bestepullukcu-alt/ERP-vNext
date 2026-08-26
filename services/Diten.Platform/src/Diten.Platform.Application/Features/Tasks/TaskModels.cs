@@ -32,6 +32,14 @@ public static class TaskPermissions
     public const string TaskTypesManage = "platform.tasks.task-types.manage";
 
     /// <summary>
+    /// Who may IMPORT the controlled-document reference list (DCP-005 slice 2).
+    ///
+    /// <para>Separate from managing task types, and separate again from reading the list: importing replaces
+    /// what the whole tenant can cite, while SEARCHING it is something anyone linking a document has to do.</para>
+    /// </summary>
+    public const string DocumentListImport = "platform.tasks.document-list.import";
+
+    /// <summary>
     /// Managing WHEN work gets created — the recurrence rules (BL-052).
     ///
     /// <para>Its own key rather than <see cref="Create"/>, and the reason is the same one that keeps
@@ -324,6 +332,10 @@ public static class TaskReasonCodes
     public const string TaskTypeCodeTaken = "TASK_TYPE_CODE_TAKEN";
     public const string TaskTypeClassificationInvalid = "TASK_TYPE_CLASSIFICATION_INVALID";
     public const string TaskTypeFunctionCodeInvalid = "TASK_TYPE_FUNCTION_CODE_INVALID";
+
+    // ── DCP-005 slice 2 — the document reference list ────────────────────
+    public const string DocumentListInvalid = "DOCUMENT_LIST_INVALID";
+    public const string DocumentListAlreadyImported = "DOCUMENT_LIST_ALREADY_IMPORTED";
 }
 
 /// <summary>
@@ -1104,3 +1116,46 @@ public sealed record TaskTypeDto(
     IReadOnlyList<string> GroupDocuments,
     IReadOnlyDictionary<string, IReadOnlyList<string>> LocalDocuments,
     bool IsActive);
+
+
+// ── DCP-005 slice 2: the controlled-document reference list ────────────────
+
+/// <summary>
+/// One import of the register. Shaped after <c>QmsBaselineCommitRequest</c> — same file/version/source triple,
+/// because a second import shape would be a second thing to keep in step.
+/// </summary>
+public sealed record ImportDocumentReferenceListRequest(
+    string FileName,
+    string ContentBase64,
+    string SourceKey,
+    string ListVersion);
+
+/// <summary>What a dry run reports without writing anything.</summary>
+public sealed record DocumentReferenceListDryRunResult(
+    int EntryCount,
+    int LinkableCount,
+    int BlockedCount,
+    IReadOnlyList<string> Errors,
+    IReadOnlyList<string> MissingColumns,
+    /// <summary>Columns the register carries that this importer does not read — reported, never ignored.</summary>
+    IReadOnlyList<string> UnreadColumns,
+    string ContentHash,
+    /// <summary>Set when these exact bytes are already stored: the import would add nothing.</summary>
+    string? AlreadyImportedAsVersion);
+
+public sealed record DocumentReferenceListVersionDto(
+    Guid Id, string ListVersion, string SourceKey, string FileName,
+    string ContentHash, int EntryCount, int LinkableCount, DateTimeOffset ImportedAt);
+
+/// <summary>One row of the lookup, as the search returns it.</summary>
+public sealed record DocumentReferenceEntryDto(
+    string DocumentUid,
+    string DocumentCode,
+    string Title,
+    string? DocumentVersion,
+    string? Status,
+    string? GqmsDomain,
+    bool IsMandatoryGroupSop,
+    /// <summary>False means: SHOW it, and refuse to let it be chosen. Never hide it.</summary>
+    bool LinkableInErp,
+    string? LinkBlockedReason);

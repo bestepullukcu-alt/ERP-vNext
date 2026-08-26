@@ -576,6 +576,9 @@
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>أنواع المهام</value>
   </data>
+  <data name="Nav.Page.TASKDOCUMENTLIST" xml:space="preserve">
+    <value>الوثائق الخاضعة للرقابة</value>
+  </data>
   <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
     <value>تعريفات الحقول</value>
   </data>

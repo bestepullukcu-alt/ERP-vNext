@@ -144,3 +144,15 @@ public sealed record GetActiveTaskTypesQuery(string CorrelationId)
 
 public sealed record GetTaskTypeByIdQuery(Guid Id, string CorrelationId)
     : IRequest<Response<TaskTypeDto>>;
+
+
+// ── DCP-005 slice 2: the document reference list ────────────────────────────
+
+public sealed record GetDocumentReferenceListVersionsQuery(string CorrelationId)
+    : IRequest<Response<IReadOnlyList<DocumentReferenceListVersionDto>>>;
+
+/// <summary>
+/// Search the CURRENT list. Blocked rows come back like any other — the caller shows them and refuses them.
+/// </summary>
+public sealed record SearchDocumentReferencesQuery(string? Term, int Limit, string CorrelationId)
+    : IRequest<Response<IReadOnlyList<DocumentReferenceEntryDto>>>;

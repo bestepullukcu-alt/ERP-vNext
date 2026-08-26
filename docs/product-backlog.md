@@ -5796,3 +5796,48 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
   "103/103 geçti" **YAZILMADI**. Kural bunun yerine testle kilitlendi: `HR`·`RA`·`PV`·`QA` geçiyor, tek karakter
   reddediliyor, tavan hem 120'de geçip hem 121'de reddedilerek iki yönlü ölçülüyor.
 - **Gelecek regresyon riski: 🟢**
+
+### BL-265 — [KURULDU 2026-08-26] DCP-005 dilim 2: DOKÜMAN ARAMA LİSTESİ
+- **358 kontrollü doküman bir ARAMA LİSTESİ olarak yüklendi. Tablo kurulmadı.** `documents` diye
+  düzenlenebilir bir varlık yok: ne update komutu, ne edit ekranı, ne manifest'te bir EDIT aksiyonu — tek
+  aksiyon IMPORT. Gerekçe §6.1: tablo olursa birisi er geç bir başlığı düzeltir ve dokümana ikinci bir otorite
+  doğar; listede düzeltilecek kayıt yoktur.
+- `ControlledDocument` **kullanılmadı** — `CollectionInstanceId` zorunlu kılıyor ve referans tarafında klasör
+  yok. Yeni varlıklar: `DocumentReferenceListVersion` (sürüm) + `DocumentReferenceEntry` (satır).
+- **17 sütunun 17'si de okunuyor.** Okunmayan sütun raporlanıyor (`unreadColumns`), sessizce atlanmıyor —
+  canlı ölçümde **boş** döndü. Karşı tarafın dosyası **düzenlenmedi**.
+- ⚠ **Kendi CSV ayrıştırıcısı yazıldı ve sebebi ölçüldü:** kayıt defterinin kendi bulgu cümlesi
+  `link_blocked_reason` içinde **tırnak içinde virgül** taşıyor — yani naif bölme, tam da bir dokümanın neden
+  bağlanamadığını açıklayan sütunu bozuyor. Test bunu ayrıca ölçüyor.
+
+#### CANLI ÖLÇÜM (gerçek dosya, gerçek uç)
+| Ölçüm | Sonuç |
+|---|---|
+| prova (dry-run) | 358 satır · **322 seçilebilir** · **36 bloke** · 0 hata · 0 okunmayan sütun |
+| işle (1. yükleme) | **201**, sürüm `2026-08-24`, hash `a52205a8…` |
+| **aynı dosya 2. kez** | **409 `DOCUMENT_LIST_ALREADY_IMPORTED`** — *"already stored as list version '2026-08-24'"* |
+| saklanan sürüm sayısı | **1** (ikinci yükleme hiçbir şey yazmadı) |
+| arama `GMG-QMS-SOP-0005` | bulundu: *Deviation and Incident Management*, V0.4, Draft, zorunlu Grup SOP'u |
+| bloke satır | `GMG-GDP-SOP-0001` · `NOT REGISTERED` · gerekçesiyle **dönüyor**, gizlenmiyor |
+
+- **SÜRÜM DESENİ taksonomininki:** anlamsal sürüm + SHA-256 içerik hash'i + kaynak anahtarı — ikinci bir
+  sürümleme mekanizması yazılmadı. Satırlar sürümler arasında **taşınmıyor**; her yükleme kendi satırlarını
+  taşır, böylece "bu görev hangi listeyi gördü" sorusu cevaplanabilir kalıyor.
+- ⚠ **Aynı dosyanın ikinci kez yüklenmesi YENİ SÜRÜM ÜRETMİYOR, tanıyor.** Karar gerekçesi koda yazıldı: aynı
+  öğleden sonra iki kişinin kayıt defterini yüklemesi iki "güncel" liste üretmemeli, çünkü ardından gelen soru
+  hep "görev hangisine karşı çözümledi" olur ve iki cevap cevap değildir.
+- ⚠ **BLOKE SATIRLAR GİRİYOR, GÖRÜNÜYOR, SEÇİLEMİYOR.** 23 planlı · 7 geri çekilmiş · 6 kayıtsız (QA'nın kendi
+  açık bulgusu) — hepsi listede, hepsi gerekçesiyle. Bu, **sıfır sayaçlı çipleri gizleme kararının TERSİ** ve
+  bilerek öyle: orada topluluk yoktu, burada doküman var ve bağlanamıyor. Gerekçesiz bir bloke satır **içe
+  aktarma hatası** sayılıyor — "bunu kullanamazsın" cümlesinin "çünkü"süz hâli bu oturumun kaldırdığı sınıf.
+- İçe aktarma **hep ya da hiç**: ayrıştırma hatası varsa sürüm de satır da yazılmıyor.
+- İzin `platform.tasks.document-list.import` (yazma) · arama `platform.tasks.read` — dokümana atıf sıradan iş,
+  kayıt defterini değiştirmek değil. Manifest'te sayfa + tek aksiyon; `Nav.Page.TASKDOCUMENTLIST` 7 dilde.
+- ⚠ **BİR MUTASYON İLK SEFERİNDE YEŞİL KALDI (bu oturumda dördüncü kez).** Sürüm tanıma kontrolünü sildim,
+  hiçbir test kırmızıya dönmedi: parser testleri hash'in **kararlılığını** ölçüyordu, **karşılaştırıldığını**
+  değil. *Kimsenin karşılaştırmadığı bir hash, sürüm değil sağlama toplamıdır.* İçe aktarma katmanına dört test
+  eklendi; mutasyon tekrarlandı, kırmızıya döndü.
+- **REGRESYON:** backend **2375/2375** · frontend **1721 geçti / 9 kırmızı** (hepsi dokunulmayan Enterprise
+  Strategy) · **`Diten.Web.Tests` 46/46** (bu tur ayrıca koşuldu, CT'nin talimatı) · FG-003 0 · KNOWN_RAW 12.
+- **BU TURDA YAPILMAYANLAR (dilim 3/4):** göreve bağlama · dondurma altılısı · görev türünün
+  `governing_documents`'ını listeye bağlama · taksonominin commit'i.

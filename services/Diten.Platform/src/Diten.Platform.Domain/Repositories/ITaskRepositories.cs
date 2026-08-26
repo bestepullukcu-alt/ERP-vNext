@@ -250,3 +250,33 @@ public interface ITaskTypeRepository
 
     Task UpdateAsync(TaskType type, CancellationToken ct = default);
 }
+
+/// <summary>
+/// The controlled-document reference list (DCP-005 slice 2) — versions and their entries.
+///
+/// <para>⚠ <b>THERE IS NO UPDATE.</b> The write path is the import; the read path is the search. A row that
+/// could be edited here would be the second authority over a document that §6.1 exists to prevent.</para>
+/// </summary>
+public interface IDocumentReferenceListRepository
+{
+    Task<DocumentReferenceListVersion> CreateVersionAsync(
+        DocumentReferenceListVersion version, CancellationToken ct = default);
+
+    /// <summary>The version a re-upload of identical bytes would match, or null.</summary>
+    Task<DocumentReferenceListVersion?> FindVersionByHashAsync(string contentHash, CancellationToken ct = default);
+
+    /// <summary>Newest first — the list screen and "which version did this task resolve against".</summary>
+    Task<IReadOnlyList<DocumentReferenceListVersion>> ListVersionsAsync(CancellationToken ct = default);
+
+    /// <summary>The current version, or null before the first import.</summary>
+    Task<DocumentReferenceListVersion?> GetLatestVersionAsync(CancellationToken ct = default);
+
+    Task AddEntriesAsync(IReadOnlyList<DocumentReferenceEntry> entries, CancellationToken ct = default);
+
+    /// <summary>
+    /// Search WITHIN one version. Blocked rows are returned like any other — they are shown and refused, not
+    /// hidden (see <see cref="DocumentReferenceEntry.LinkableInErp"/>).
+    /// </summary>
+    Task<IReadOnlyList<DocumentReferenceEntry>> SearchAsync(
+        Guid listVersionId, string? term, int limit, CancellationToken ct = default);
+}

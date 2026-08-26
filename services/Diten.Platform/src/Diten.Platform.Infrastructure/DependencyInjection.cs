@@ -258,6 +258,7 @@ public static class DependencyInjection
         services.AddScoped<ITaskCommentRepository, TaskCommentRepository>();
         services.AddScoped<ITaskPersonalOverlayRepository, TaskPersonalOverlayRepository>();
         services.AddScoped<ITaskTypeRepository, TaskTypeRepository>();
+        services.AddScoped<IDocumentReferenceListRepository, DocumentReferenceListRepository>();
         services.AddScoped<ITaskFieldDefinitionRepository, TaskFieldDefinitionRepository>();
         services.AddScoped<IChecklistTemplateRepository, ChecklistTemplateRepository>();
         services.AddScoped<IChecklistRunRepository, ChecklistRunRepository>();

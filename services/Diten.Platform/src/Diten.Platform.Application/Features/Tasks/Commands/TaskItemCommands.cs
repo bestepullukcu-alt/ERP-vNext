@@ -270,3 +270,14 @@ public sealed record UpdateTaskTypeCommand(
 /// </summary>
 public sealed record SetTaskTypeActiveCommand(
     Guid Id, SetTaskTypeActiveRequest Request, string CorrelationId) : IRequest<Response<NoContent>>;
+
+
+// ── DCP-005 slice 2: the document reference list ────────────────────────────
+
+public sealed record DryRunDocumentReferenceListCommand(
+    ImportDocumentReferenceListRequest Request, string CorrelationId)
+    : IRequest<Response<DocumentReferenceListDryRunResult>>;
+
+public sealed record ImportDocumentReferenceListCommand(
+    ImportDocumentReferenceListRequest Request, string CorrelationId)
+    : IRequest<Response<DocumentReferenceListVersionDto>>;

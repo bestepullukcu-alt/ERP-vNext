@@ -37,6 +37,7 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
     private const string PageTaskEdit = "TASK_EDIT";
     private const string PageTaskFieldDefinitions = "TASK_FIELD_DEFINITIONS";
     private const string PageTaskTypes = "TASK_TYPES";
+    private const string PageDocumentList = "TASK_DOCUMENT_LIST";
     private const string PageTaskRecurrenceRules = "TASK_RECURRENCE_RULES";
 
     public ModuleManifestDocument GetManifest() =>
@@ -182,6 +183,36 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                         new ModuleManifestAction("DEACTIVATE", "Deactivate Task Type",
                             TaskPermissions.TaskTypesManage, "Row", 30,
                             IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
+                    ]),
+
+                /*
+                 * The controlled-document reference LIST (DCP-005 slice 2).
+                 *
+                 * ⚠ ONE ACTION, AND IT IS AN IMPORT. There is no create, no edit and no delete — the list is a
+                 * lookup, not a table, and a row that could be edited here would be the second authority over a
+                 * document that §6.1 exists to prevent. The manifest says so too, because an action declared
+                 * here is an action the catalogue will offer.
+                 */
+                new ModuleManifestPage(
+                    PageCode: PageDocumentList,
+                    DisplayName: "Controlled Documents",
+                    RoutePath: "/Tasks/DocumentList",
+                    RequiredPermission: TaskPermissions.DocumentListImport,
+                    ParentPageCode: PageTasks,
+                    /*
+                     * ⚠ HIDDEN UNTIL THE SCREEN EXISTS. The route is declared but `/Tasks/DocumentList` has no
+                     * action and no view yet, so a visible entry here is a sidebar link that 404s — the nav is
+                     * reconciled from this manifest, so "true" would publish it to real users on next startup.
+                     * Flip to true in the same round that adds the view, not before.
+                     */
+                    IsNavigationVisible: false,
+                    PageType: "List",
+                    SortOrder: 27,
+                    Actions:
+                    [
+                        new ModuleManifestAction("IMPORT", "Import Document List",
+                            TaskPermissions.DocumentListImport, "Toolbar", 10,
+                            IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
                     ]),
 
                 /*

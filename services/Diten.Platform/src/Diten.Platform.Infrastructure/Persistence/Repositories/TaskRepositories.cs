@@ -3,6 +3,7 @@ using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Domain.Repositories;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Diten.Platform.Infrastructure.Persistence.Repositories;
@@ -534,6 +535,76 @@ public sealed class TaskTypeRepository : TenantRepository<TaskType>, ITaskTypeRe
             ExecutionFilter,
             Builders<TaskType>.Filter.Eq(x => x.Id, type.Id));
         await Collection.ReplaceOneAsync(filter, type, new ReplaceOptions(), ct);
+    }
+}
+
+/// <summary>
+/// DCP-005 slice 2 — the document reference list. Two collections: one row per IMPORT, many rows per entry.
+/// </summary>
+public sealed class DocumentReferenceListRepository : TenantRepository<DocumentReferenceListVersion>, IDocumentReferenceListRepository
+{
+    private readonly IMongoCollection<DocumentReferenceEntry> _entries;
+    private readonly ITenantContext _tenants;
+
+    public DocumentReferenceListRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, "document_reference_list_versions")
+    {
+        _entries = dbContext.Database.GetCollection<DocumentReferenceEntry>("document_reference_entries");
+        _tenants = tenantContext;
+    }
+
+    private FilterDefinition<DocumentReferenceEntry> EntryScope =>
+        Builders<DocumentReferenceEntry>.Filter.And(
+            Builders<DocumentReferenceEntry>.Filter.Eq(x => x.TenantId, _tenants.TenantId),
+            Builders<DocumentReferenceEntry>.Filter.Eq(x => x.DeletedAt, null));
+
+    public Task<DocumentReferenceListVersion> CreateVersionAsync(
+        DocumentReferenceListVersion version, CancellationToken ct = default)
+        => CreateAsync(version, ct);
+
+    public Task<DocumentReferenceListVersion?> FindVersionByHashAsync(string contentHash, CancellationToken ct = default)
+    {
+        var filter = Builders<DocumentReferenceListVersion>.Filter.And(
+            ExecutionFilter,
+            Builders<DocumentReferenceListVersion>.Filter.Eq(x => x.ContentHash, contentHash));
+        return Collection.Find(filter).FirstOrDefaultAsync(ct)!;
+    }
+
+    public async Task<IReadOnlyList<DocumentReferenceListVersion>> ListVersionsAsync(CancellationToken ct = default)
+        => await Collection.Find(ExecutionFilter).SortByDescending(x => x.ImportedAt).ToListAsync(ct);
+
+    public async Task<DocumentReferenceListVersion?> GetLatestVersionAsync(CancellationToken ct = default)
+        => await Collection.Find(ExecutionFilter).SortByDescending(x => x.ImportedAt).FirstOrDefaultAsync(ct);
+
+    public async Task AddEntriesAsync(IReadOnlyList<DocumentReferenceEntry> entries, CancellationToken ct = default)
+    {
+        if (entries.Count == 0) { return; }
+        await _entries.InsertManyAsync(entries, cancellationToken: ct);
+    }
+
+    public async Task<IReadOnlyList<DocumentReferenceEntry>> SearchAsync(
+        Guid listVersionId, string? term, int limit, CancellationToken ct = default)
+    {
+        var filter = Builders<DocumentReferenceEntry>.Filter.And(
+            EntryScope,
+            Builders<DocumentReferenceEntry>.Filter.Eq(x => x.ListVersionId, listVersionId));
+
+        var trimmed = (term ?? string.Empty).Trim();
+        if (trimmed.Length > 0)
+        {
+            /*
+             * Code, title and UID — the three things a person actually types. Escaped, because a register code
+             * contains dashes and a raw regex would let a search box become an expression.
+             */
+            var escaped = System.Text.RegularExpressions.Regex.Escape(trimmed);
+            filter = Builders<DocumentReferenceEntry>.Filter.And(filter,
+                Builders<DocumentReferenceEntry>.Filter.Or(
+                    Builders<DocumentReferenceEntry>.Filter.Regex(x => x.DocumentCode, new BsonRegularExpression(escaped, "i")),
+                    Builders<DocumentReferenceEntry>.Filter.Regex(x => x.Title, new BsonRegularExpression(escaped, "i")),
+                    Builders<DocumentReferenceEntry>.Filter.Regex(x => x.DocumentUid, new BsonRegularExpression(escaped, "i"))));
+        }
+
+        return await _entries.Find(filter).SortBy(x => x.DocumentCode).Limit(limit).ToListAsync(ct);
     }
 }
 
