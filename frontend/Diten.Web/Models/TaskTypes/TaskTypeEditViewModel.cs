@@ -33,11 +33,9 @@ public sealed class TaskTypeEditViewModel
     public string? GqmsDomain { get; set; }
 
     /// <summary>
-    /// Free text today. DCP-005 names a closed 19-value list and does not carry it, and it is not in this
-    /// repository either — so the field is length-capped and normalised, and the closed list drops into
-    /// `TaskTypeRules` when it arrives rather than being guessed at here.
+    /// One of the nineteen codes in DCP-005 §6.7, or empty. A picker rather than a text box now that the list
+    /// exists; the server refuses anything outside it rather than storing null for it.
     /// </summary>
-    [StringLength(40, ErrorMessage = "FunctionCodeTooLong")]
     public string? FunctionCode { get; set; }
 
     public bool IsQualityEvent { get; set; }

@@ -207,6 +207,43 @@ They come from the counterparty's own template, so they are quoted rather than d
 ⚠ Third parties never receive an ORG code. Work belonging to one carries the ORG of the
 GMG entity holding the contract.
 
+### 6.8 Task types will be change-controlled — later, and deliberately later
+
+QA's condition is that type creation lives with them, **under change control**. Today it does not:
+the management screen writes straight through — no approval, no version, no evidence.
+
+**Decision:** task-type changes will pass through an approval gate, using `MOD-0023` with the
+pattern the reference-data engine already uses (`WorkflowTemplateCode`).
+
+**Not now, and the ordering is the reason.** QA has not yet adopted the 31-row seed. Putting a
+gate in front of an empty list means every one of those 31 rows arrives through an approval queue
+before anyone has agreed they are the right 31 — and a gate is far easier to add to a settled list
+than to a list still being argued about. The gate is scheduled with the seed's adoption, not before.
+
+⚠ Until it exists, the control statement rests on the PERMISSION alone:
+`platform.tasks.task-types.manage` is separate from creating a task, so an ordinary user cannot mint
+a classification. That is weaker than change control and is written down as weaker.
+
+### 6.9 Why the task type is NOT a reference-data code list
+
+The obvious question — the platform already has a reference-data engine with versioning, approval and
+consumers, so why build another table? Measured, twice:
+
+1. **The container cannot hold the payload.** `BusinessReferenceDataValue.Attributes` is
+   `Dictionary<string, string>`. A task type carries `group_documents[]` (a list) and
+   `local_documents[org][]` (a map of lists). Both fit there only by being SERIALISED INTO TEXT —
+   and squeezing information into a field that cannot represent it is the failure this programme has
+   refused repeatedly. A document list stored as a string is not a document list; it is a string that
+   somebody will eventually parse wrongly.
+2. **A code list carries a LABEL; a task type carries a DECISION.** `record_class` decides whether
+   work produces a GxP quality record. That is not a display value with a code beside it — it is a
+   rule other code reads. Reference data models the first; this models the second.
+
+⚠ **The cost is real and is recorded here rather than discovered later.** Had it fitted, the task
+type would have inherited versioning, an approval workflow, evidence, and a consumer registry for
+free. It does not fit, so all four are ours to build — 6.8 above is the first instalment of that
+bill, and it is a bill, not an oversight.
+
 ---
 
 ## 7. Ordered delivery sequence
@@ -228,7 +265,7 @@ built before it.
 
 | # | Prerequisite | Owner | Status |
 |---|---|---|---|
-| 1 | Our own folder-name minimum length raised from 3 | this repo | measured; 14 rows fail on `HR` today |
+| 1 | Our own folder-name minimum length raised from 3 | this repo | **DONE 2026-08-25** — floor is 2; one character still refused, ceiling untouched at 120. ⚠ The 103-row taxonomy CSV is not in this repository, so the import was NOT re-run: the rule is pinned by tests instead (`QmsFolderNameLengthTests`) |
 | 2 | Department → FUNCTION mapping filled | this repo | template supplied |
 | 3 | Task type list reviewed against the 31-row seed | this repo | seed is `PROPOSED — QA adoption required` |
 | 4 | Six unregistered mandatory SOPs entered in the register | QA | open finding on their side |

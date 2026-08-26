@@ -53,4 +53,25 @@
   <data name="ErrorCodeImmutable" xml:space="preserve"><value>Код нельзя изменить после создания типа: задачи, открытые с ним, несут его как свою идентичность.</value></data>
   <data name="ErrorCodeTaken" xml:space="preserve"><value>Другой тип задачи уже использует этот код.</value></data>
   <data name="ErrorClassificationInvalid" xml:space="preserve"><value>Запись качества GxP обязана называть свой домен, а тип с доменом не может быть «не записью».</value></data>
+  <data name="FunctionCodeNone" xml:space="preserve"><value>Без функции</value></data>
+  <data name="FunctionCodeQUA" xml:space="preserve"><value>Управление качеством</value></data>
+  <data name="FunctionCodeRA" xml:space="preserve"><value>Регуляторные вопросы (операционные)</value></data>
+  <data name="FunctionCodePV" xml:space="preserve"><value>Фармаконадзор (операционный)</value></data>
+  <data name="FunctionCodeMFG" xml:space="preserve"><value>Производственные операции</value></data>
+  <data name="FunctionCodeSCM" xml:space="preserve"><value>Цепочка поставок</value></data>
+  <data name="FunctionCodeRND" xml:space="preserve"><value>Исследования и разработки</value></data>
+  <data name="FunctionCodeCOM" xml:space="preserve"><value>Коммерция и маркетинг</value></data>
+  <data name="FunctionCodeFIN" xml:space="preserve"><value>Финансы и учёт</value></data>
+  <data name="FunctionCodeHR" xml:space="preserve"><value>Персонал</value></data>
+  <data name="FunctionCodeLEG" xml:space="preserve"><value>Юридические вопросы и договоры</value></data>
+  <data name="FunctionCodePRC" xml:space="preserve"><value>Закупки</value></data>
+  <data name="FunctionCodeITG" xml:space="preserve"><value>Информационные технологии</value></data>
+  <data name="FunctionCodeISM" xml:space="preserve"><value>Информационная безопасность</value></data>
+  <data name="FunctionCodeFAC" xml:space="preserve"><value>Объекты и активы</value></data>
+  <data name="FunctionCodeEHS" xml:space="preserve"><value>Экология, здоровье и безопасность</value></data>
+  <data name="FunctionCodePPM" xml:space="preserve"><value>Проекты и портфели</value></data>
+  <data name="FunctionCodeCORP" xml:space="preserve"><value>Корпоративные коммуникации</value></data>
+  <data name="FunctionCodeCTY" xml:space="preserve"><value>Страновые операции (остаточные)</value></data>
+  <data name="FunctionCodeMED" xml:space="preserve"><value>Медицинские вопросы</value></data>
+  <data name="ErrorFunctionCodeInvalid" xml:space="preserve"><value>Это не один из кодов функций, используемых этой организацией.</value></data>
 </root>

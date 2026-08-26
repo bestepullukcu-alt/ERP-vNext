@@ -29,6 +29,8 @@ public static class TaskTypeRules
         "A GxP quality record must name the quality domain that governs it.";
     public const string DomainNeedsQualityRecordMessage =
         "A task type with a quality domain records GxP work, so its record class cannot be NOT_A_RECORD.";
+    public const string FunctionCodeInvalidMessage =
+        "That is not one of the business function codes this organisation uses.";
 
     /// <summary>
     /// The code, normalised the way it will be stored and compared: trimmed and upper-cased. Codes are read
@@ -36,11 +38,27 @@ public static class TaskTypeRules
     /// </summary>
     public static string NormalizeCode(string? code) => (code ?? string.Empty).Trim().ToUpperInvariant();
 
-    /// <summary>Same normalisation for the function code, for the same reason.</summary>
-    public static string? NormalizeFunctionCode(string? functionCode)
+    /// <summary>
+    /// The function code, parsed from whatever the caller sent.
+    ///
+    /// <para>⚠ <b>THE SEAM IS CLOSED</b> (DCP-005 §6.7). This used to trim-and-uppercase a free string, because
+    /// the closed list did not exist yet. It now parses into <see cref="TaskFunctionCode"/> and REFUSES what is
+    /// not in it — an unrecognised code is returned as a refusal rather than dropped, because silently storing
+    /// null would report success for a classification the caller believed they had set.</para>
+    /// </summary>
+    public static (TaskFunctionCode? Value, (string ReasonCode, string Message)? Error) ParseFunctionCode(
+        string? functionCode)
     {
-        var trimmed = (functionCode ?? string.Empty).Trim().ToUpperInvariant();
-        return string.IsNullOrWhiteSpace(trimmed) ? null : trimmed;
+        var trimmed = (functionCode ?? string.Empty).Trim();
+        if (trimmed.Length == 0)
+        {
+            // Absent is legitimate: not every type belongs to a named function.
+            return (null, null);
+        }
+
+        return Enum.TryParse<TaskFunctionCode>(trimmed, ignoreCase: true, out var parsed)
+            ? (parsed, null)
+            : (null, (TaskReasonCodes.TaskTypeFunctionCodeInvalid, FunctionCodeInvalidMessage));
     }
 
     /// <summary>
@@ -72,17 +90,12 @@ public static class TaskTypeRules
                 $"A task type's name cannot be longer than {NameMaxLength} characters.");
         }
 
-        var normalizedFunction = NormalizeFunctionCode(functionCode);
         /*
-         * ⚠ LENGTH ONLY, AND THIS IS THE SEAM. DCP-005 names a closed 19-value FUNCTION list and does not carry
-         * it; it is absent from this repository too (measured 2026-08-25). A guessed list would reject the
-         * counterparty's real codes and accept invented ones, so the field is normalised and bounded and the
-         * membership test lands here the moment the list arrives.
+         * ⚠ MEMBERSHIP, NOT LENGTH. The seam left here for the closed list is now filled: a code outside
+         * DCP-005 §6.7 is refused rather than stored, so a type cannot claim a function the organisation does
+         * not have.
          */
-        return normalizedFunction is { Length: > FunctionCodeMaxLength }
-            ? (TaskReasonCodes.ValidationFailed,
-                $"A function code cannot be longer than {FunctionCodeMaxLength} characters.")
-            : null;
+        return ParseFunctionCode(functionCode).Error;
     }
 
     /// <summary>

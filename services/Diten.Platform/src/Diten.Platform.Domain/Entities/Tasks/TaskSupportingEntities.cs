@@ -554,13 +554,19 @@ public sealed class TaskType : TenantScopedEntity
     public TaskGqmsDomain? GqmsDomain { get; set; }
 
     /// <summary>
-    /// The business function this type belongs to.
+    /// The business function this type belongs to, or null. One of the nineteen codes in DCP-005 §6.7.
     ///
-    /// <para>⚠ <b>STORED, NOT YET CONSTRAINED.</b> DCP-005 names a closed 19-value list and does not contain it;
-    /// it is not in this repository either (measured 2026-08-25). Inventing nineteen values to make the field
-    /// look finished would put a guess where a counterparty's decision belongs, and every task typed with a
-    /// wrong code would have to be re-typed later. It is normalised and length-capped here, and
-    /// <c>TaskTypeRules</c> has the seam ready for the list the moment it is supplied.</para>
+    /// <para>⚠ <b>STORED AS A STRING, VALIDATED AS A CLOSED LIST — and the two halves are deliberate.</b>
+    /// It was briefly an enum, and that broke the screen: a row written before the list existed carried
+    /// <c>"QA"</c> (the pack's code is <c>QUA</c>), and the Mongo driver threw
+    /// <c>FormatException: Requested value 'QA' was not found</c> on DESERIALISATION — so ONE stale value took
+    /// the entire task-type list down with a 500, measured live 2026-08-26.</para>
+    ///
+    /// <para>A document store has no schema migration to lean on: whatever was written stays written. A type
+    /// that cannot REPRESENT what is already stored converts a data problem into an outage, and the two honest
+    /// alternatives — dropping the value on read, or refusing to load the row — are both silent data loss.
+    /// So the boundary that closes the list is the WRITE (<c>TaskTypeRules.ParseFunctionCode</c>): nothing new
+    /// enters outside the nineteen, and what is already there stays readable and visibly non-conforming.</para>
     /// </summary>
     public string? FunctionCode { get; set; }
 

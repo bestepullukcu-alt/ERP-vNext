@@ -561,6 +561,21 @@
   <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
     <value>قواعد المهام المتكررة</value>
   </data>
+  <data name="Nav.Page.TASKS" xml:space="preserve">
+    <value>المهام</value>
+  </data>
+  <data name="Nav.Page.TASKCREATE" xml:space="preserve">
+    <value>مهمة جديدة</value>
+  </data>
+  <data name="Nav.Page.TASKDETAIL" xml:space="preserve">
+    <value>تفاصيل المهمة</value>
+  </data>
+  <data name="Nav.Page.TASKEDIT" xml:space="preserve">
+    <value>تحرير المهمة</value>
+  </data>
+  <data name="Nav.Page.TASKTYPES" xml:space="preserve">
+    <value>أنواع المهام</value>
+  </data>
   <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
     <value>تعريفات الحقول</value>
   </data>

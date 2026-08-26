@@ -53,4 +53,25 @@
   <data name="ErrorCodeImmutable" xml:space="preserve"><value>The code cannot be changed after the type is created: tasks opened under it carry it as their identity.</value></data>
   <data name="ErrorCodeTaken" xml:space="preserve"><value>Another task type already uses this code.</value></data>
   <data name="ErrorClassificationInvalid" xml:space="preserve"><value>A GxP quality record must name its quality domain, and a type with a domain cannot be "not a record".</value></data>
+  <data name="FunctionCodeNone" xml:space="preserve"><value>No function</value></data>
+  <data name="FunctionCodeQUA" xml:space="preserve"><value>Quality Administration</value></data>
+  <data name="FunctionCodeRA" xml:space="preserve"><value>Regulatory Affairs (operational)</value></data>
+  <data name="FunctionCodePV" xml:space="preserve"><value>Pharmacovigilance (operational)</value></data>
+  <data name="FunctionCodeMFG" xml:space="preserve"><value>Manufacturing Operations</value></data>
+  <data name="FunctionCodeSCM" xml:space="preserve"><value>Supply Chain</value></data>
+  <data name="FunctionCodeRND" xml:space="preserve"><value>Research and Development</value></data>
+  <data name="FunctionCodeCOM" xml:space="preserve"><value>Commercial and Marketing</value></data>
+  <data name="FunctionCodeFIN" xml:space="preserve"><value>Finance and Accounting</value></data>
+  <data name="FunctionCodeHR" xml:space="preserve"><value>Human Resources</value></data>
+  <data name="FunctionCodeLEG" xml:space="preserve"><value>Legal and Contracts</value></data>
+  <data name="FunctionCodePRC" xml:space="preserve"><value>Procurement</value></data>
+  <data name="FunctionCodeITG" xml:space="preserve"><value>Information Technology</value></data>
+  <data name="FunctionCodeISM" xml:space="preserve"><value>Information Security</value></data>
+  <data name="FunctionCodeFAC" xml:space="preserve"><value>Facilities and Assets</value></data>
+  <data name="FunctionCodeEHS" xml:space="preserve"><value>Environment, Health and Safety</value></data>
+  <data name="FunctionCodePPM" xml:space="preserve"><value>Projects and Portfolios</value></data>
+  <data name="FunctionCodeCORP" xml:space="preserve"><value>Corporate Communications</value></data>
+  <data name="FunctionCodeCTY" xml:space="preserve"><value>Country Operations (residual)</value></data>
+  <data name="FunctionCodeMED" xml:space="preserve"><value>Medical Affairs</value></data>
+  <data name="ErrorFunctionCodeInvalid" xml:space="preserve"><value>That is not one of the business function codes this organisation uses.</value></data>
 </root>

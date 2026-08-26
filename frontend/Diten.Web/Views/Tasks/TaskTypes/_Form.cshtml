@@ -13,6 +13,12 @@
     // meaning different things in different languages.
     var recordClasses = new[] { "NOT_A_RECORD", "OPERATIONAL_RECORD", "GXP_QUALITY_RECORD" };
     var domains = new[] { "QMS", "GMP", "GDP", "PV", "RAF", "NUT", "CSV", "RND" };
+    // DCP-005 §6.7, quoted in the pack's own order — which is the counterparty's order, not alphabetical.
+    var functionCodes = new[]
+    {
+        "QUA", "RA", "PV", "MFG", "SCM", "RND", "COM", "FIN", "HR", "LEG",
+        "PRC", "ITG", "ISM", "FAC", "EHS", "PPM", "CORP", "CTY", "MED"
+    };
 }
 
 <div class="d-flex align-items-center justify-content-between mb-3">
@@ -106,12 +112,19 @@
                             <div class="form-text">@Localizer["GqmsDomainHint"]</div>
                         </div>
                         <div class="col-12 col-md-6">
+                            @* ⚠ A CLOSED LIST NOW (DCP-005 §6.7). This was a free-text box with a note saying so,
+                               because the nineteen values were claimed to be in the pack and were not. They are
+                               there now, quoted from the counterparty's own template, so the box became a picker
+                               and the note became unnecessary. *@
                             <label asp-for="FunctionCode" class="form-label fw-medium">@Localizer["FunctionCode"]</label>
-                            <input asp-for="FunctionCode" class="form-control" maxlength="40" />
-                            @* ⚠ FREE TEXT TODAY, AND THE SCREEN SAYS SO. DCP-005 names a closed 19-value list and
-                               does not carry it; it is not in this repository either. A guessed list would reject
-                               the counterparty's real codes and accept invented ones. *@
-                            <div class="form-text">@Localizer["FunctionCodeHint"]</div>
+                            <select asp-for="FunctionCode" class="form-select">
+                                @* Empty is legitimate: not every type belongs to a named function. *@
+                                <option value="">@Localizer["FunctionCodeNone"]</option>
+                                @foreach (var value in functionCodes)
+                                {
+                                    <option value="@value" selected="@(Model.FunctionCode == value)">@value · @Localizer["FunctionCode" + value]</option>
+                                }
+                            </select>
                         </div>
                         <div class="col-12 col-md-6 d-flex align-items-end">
                             <div class="form-check mb-2">

@@ -54,7 +54,7 @@
             </div>
             <div class="col-12 col-md-6 backbone-preview-field">
                 <span class="backbone-preview-label"><i class="bx bx-sitemap"></i> @Localizer["FunctionCode"]</span>
-                <span class="backbone-preview-value">@(string.IsNullOrWhiteSpace(Model.FunctionCode) ? "-" : Model.FunctionCode)</span>
+                <span class="backbone-preview-value">@(string.IsNullOrWhiteSpace(Model.FunctionCode) ? "-" : $"{Model.FunctionCode} · {Localizer["FunctionCode" + Model.FunctionCode].Value}")</span>
             </div>
             <div class="col-12 col-md-6 backbone-preview-field">
                 <span class="backbone-preview-label"><i class="bx bx-error-circle"></i> @Localizer["QualityEvent"]</span>

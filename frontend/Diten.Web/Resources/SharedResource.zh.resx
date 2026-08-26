@@ -561,6 +561,21 @@
   <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
     <value>重复任务规则</value>
   </data>
+  <data name="Nav.Page.TASKS" xml:space="preserve">
+    <value>任务</value>
+  </data>
+  <data name="Nav.Page.TASKCREATE" xml:space="preserve">
+    <value>新建任务</value>
+  </data>
+  <data name="Nav.Page.TASKDETAIL" xml:space="preserve">
+    <value>任务详情</value>
+  </data>
+  <data name="Nav.Page.TASKEDIT" xml:space="preserve">
+    <value>编辑任务</value>
+  </data>
+  <data name="Nav.Page.TASKTYPES" xml:space="preserve">
+    <value>任务类型</value>
+  </data>
   <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
     <value>字段定义</value>
   </data>

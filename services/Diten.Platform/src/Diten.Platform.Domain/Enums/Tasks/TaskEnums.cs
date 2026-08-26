@@ -349,3 +349,44 @@ public enum TaskGqmsDomain
     CSV = 6,
     RND = 7
 }
+
+/// <summary>
+/// The business FUNCTION a task type belongs to — DCP-005 §6.7, quoted from the counterparty's own template.
+///
+/// <para><b>A closed list, and it was NOT one until the values existed.</b> The first build of the task type
+/// left this as normalised free text with a documented seam, because an earlier prompt claimed the list was in
+/// the pack and it was not. Nineteen values were not invented to make the field look finished: a guessed list
+/// rejects the counterparty's real codes and accepts made-up ones, and every task typed with a wrong code has
+/// to be re-typed later.</para>
+///
+/// <para><b>Codes, not names.</b> The member IS the stored value; the human-readable name is a label keyed off
+/// it, so the counterparty's spelling of "Regulatory Affairs (operational)" is a translation question rather
+/// than a data question.</para>
+///
+/// <para>⚠ <c>RND</c> appears here AND in <see cref="TaskGqmsDomain"/>, deliberately: one is the function that
+/// owns the work, the other is the quality domain that governs it, and a type can legitimately carry the same
+/// three letters in both. They are separate axes, not a duplication.</para>
+/// </summary>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+public enum TaskFunctionCode
+{
+    QUA = 0,
+    RA = 1,
+    PV = 2,
+    MFG = 3,
+    SCM = 4,
+    RND = 5,
+    COM = 6,
+    FIN = 7,
+    HR = 8,
+    LEG = 9,
+    PRC = 10,
+    ITG = 11,
+    ISM = 12,
+    FAC = 13,
+    EHS = 14,
+    PPM = 15,
+    CORP = 16,
+    CTY = 17,
+    MED = 18
+}

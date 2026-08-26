@@ -53,4 +53,25 @@
   <data name="ErrorCodeImmutable" xml:space="preserve"><value>Le code ne peut plus changer après création : les tâches ouvertes sous ce type le portent comme identité.</value></data>
   <data name="ErrorCodeTaken" xml:space="preserve"><value>Un autre type de tâche utilise déjà ce code.</value></data>
   <data name="ErrorClassificationInvalid" xml:space="preserve"><value>Un enregistrement qualité GxP doit nommer son domaine, et un type avec domaine ne peut pas être « pas un enregistrement ».</value></data>
+  <data name="FunctionCodeNone" xml:space="preserve"><value>Aucune fonction</value></data>
+  <data name="FunctionCodeQUA" xml:space="preserve"><value>Administration qualité</value></data>
+  <data name="FunctionCodeRA" xml:space="preserve"><value>Affaires réglementaires (opérationnel)</value></data>
+  <data name="FunctionCodePV" xml:space="preserve"><value>Pharmacovigilance (opérationnel)</value></data>
+  <data name="FunctionCodeMFG" xml:space="preserve"><value>Opérations de production</value></data>
+  <data name="FunctionCodeSCM" xml:space="preserve"><value>Chaîne d’approvisionnement</value></data>
+  <data name="FunctionCodeRND" xml:space="preserve"><value>Recherche et développement</value></data>
+  <data name="FunctionCodeCOM" xml:space="preserve"><value>Commercial et marketing</value></data>
+  <data name="FunctionCodeFIN" xml:space="preserve"><value>Finance et comptabilité</value></data>
+  <data name="FunctionCodeHR" xml:space="preserve"><value>Ressources humaines</value></data>
+  <data name="FunctionCodeLEG" xml:space="preserve"><value>Juridique et contrats</value></data>
+  <data name="FunctionCodePRC" xml:space="preserve"><value>Achats</value></data>
+  <data name="FunctionCodeITG" xml:space="preserve"><value>Technologies de l’information</value></data>
+  <data name="FunctionCodeISM" xml:space="preserve"><value>Sécurité de l’information</value></data>
+  <data name="FunctionCodeFAC" xml:space="preserve"><value>Installations et actifs</value></data>
+  <data name="FunctionCodeEHS" xml:space="preserve"><value>Environnement, santé et sécurité</value></data>
+  <data name="FunctionCodePPM" xml:space="preserve"><value>Projets et portefeuilles</value></data>
+  <data name="FunctionCodeCORP" xml:space="preserve"><value>Communication d’entreprise</value></data>
+  <data name="FunctionCodeCTY" xml:space="preserve"><value>Opérations pays (résiduel)</value></data>
+  <data name="FunctionCodeMED" xml:space="preserve"><value>Affaires médicales</value></data>
+  <data name="ErrorFunctionCodeInvalid" xml:space="preserve"><value>Ce n'est pas l'un des codes de fonction utilisés par cette organisation.</value></data>
 </root>

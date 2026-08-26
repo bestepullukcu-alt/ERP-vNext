@@ -561,6 +561,21 @@
   <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
     <value>Правила повторяющихся задач</value>
   </data>
+  <data name="Nav.Page.TASKS" xml:space="preserve">
+    <value>Задачи</value>
+  </data>
+  <data name="Nav.Page.TASKCREATE" xml:space="preserve">
+    <value>Новая задача</value>
+  </data>
+  <data name="Nav.Page.TASKDETAIL" xml:space="preserve">
+    <value>Детали задачи</value>
+  </data>
+  <data name="Nav.Page.TASKEDIT" xml:space="preserve">
+    <value>Изменить задачу</value>
+  </data>
+  <data name="Nav.Page.TASKTYPES" xml:space="preserve">
+    <value>Типы задач</value>
+  </data>
   <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
     <value>Определения полей</value>
   </data>

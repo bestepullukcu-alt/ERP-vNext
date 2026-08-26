@@ -62,7 +62,8 @@ public sealed class CreateTaskTypeHandler : IRequestHandler<CreateTaskTypeComman
             Description = Trimmed(request.Description),
             RecordClass = request.RecordClass,
             GqmsDomain = request.GqmsDomain,
-            FunctionCode = TaskTypeRules.NormalizeFunctionCode(request.FunctionCode),
+            // Stored in the canonical spelling the closed list uses, so `mfg` and `MFG` are one value.
+            FunctionCode = TaskTypeRules.ParseFunctionCode(request.FunctionCode).Value?.ToString(),
             IsQualityEvent = request.IsQualityEvent,
             GroupDocuments = TaskTypeRules.NormalizeDocuments(request.GroupDocuments),
             LocalDocuments = TaskTypeRules.NormalizeLocalDocuments(request.LocalDocuments),
@@ -124,7 +125,7 @@ public sealed class UpdateTaskTypeHandler : IRequestHandler<UpdateTaskTypeComman
         type.Description = CreateTaskTypeHandler.Trimmed(request.Description);
         type.RecordClass = request.RecordClass;
         type.GqmsDomain = request.GqmsDomain;
-        type.FunctionCode = TaskTypeRules.NormalizeFunctionCode(request.FunctionCode);
+        type.FunctionCode = TaskTypeRules.ParseFunctionCode(request.FunctionCode).Value?.ToString();
         type.IsQualityEvent = request.IsQualityEvent;
         type.GroupDocuments = TaskTypeRules.NormalizeDocuments(request.GroupDocuments);
         type.LocalDocuments = TaskTypeRules.NormalizeLocalDocuments(request.LocalDocuments);

@@ -53,4 +53,25 @@
   <data name="ErrorCodeImmutable" xml:space="preserve"><value>类型创建后代码不可更改：以此类型创建的任务将其作为身份标识。</value></data>
   <data name="ErrorCodeTaken" xml:space="preserve"><value>另一个任务类型已使用此代码。</value></data>
   <data name="ErrorClassificationInvalid" xml:space="preserve"><value>GxP 质量记录必须指明其质量领域；已指定领域的类型不能是“非记录”。</value></data>
+  <data name="FunctionCodeNone" xml:space="preserve"><value>无职能</value></data>
+  <data name="FunctionCodeQUA" xml:space="preserve"><value>质量管理</value></data>
+  <data name="FunctionCodeRA" xml:space="preserve"><value>法规事务（运营）</value></data>
+  <data name="FunctionCodePV" xml:space="preserve"><value>药物警戒（运营）</value></data>
+  <data name="FunctionCodeMFG" xml:space="preserve"><value>生产运营</value></data>
+  <data name="FunctionCodeSCM" xml:space="preserve"><value>供应链</value></data>
+  <data name="FunctionCodeRND" xml:space="preserve"><value>研究与开发</value></data>
+  <data name="FunctionCodeCOM" xml:space="preserve"><value>商务与市场</value></data>
+  <data name="FunctionCodeFIN" xml:space="preserve"><value>财务与会计</value></data>
+  <data name="FunctionCodeHR" xml:space="preserve"><value>人力资源</value></data>
+  <data name="FunctionCodeLEG" xml:space="preserve"><value>法务与合同</value></data>
+  <data name="FunctionCodePRC" xml:space="preserve"><value>采购</value></data>
+  <data name="FunctionCodeITG" xml:space="preserve"><value>信息技术</value></data>
+  <data name="FunctionCodeISM" xml:space="preserve"><value>信息安全</value></data>
+  <data name="FunctionCodeFAC" xml:space="preserve"><value>设施与资产</value></data>
+  <data name="FunctionCodeEHS" xml:space="preserve"><value>环境、健康与安全</value></data>
+  <data name="FunctionCodePPM" xml:space="preserve"><value>项目与组合</value></data>
+  <data name="FunctionCodeCORP" xml:space="preserve"><value>企业传播</value></data>
+  <data name="FunctionCodeCTY" xml:space="preserve"><value>国家运营（其余）</value></data>
+  <data name="FunctionCodeMED" xml:space="preserve"><value>医学事务</value></data>
+  <data name="ErrorFunctionCodeInvalid" xml:space="preserve"><value>这不是本组织使用的职能代码之一。</value></data>
 </root>

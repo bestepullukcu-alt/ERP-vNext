@@ -5726,3 +5726,73 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
   argümanı **başlık** sayıyor; cümle `options.subtext` ile geçilmeliydi. Dört başka çağrı yerinin aynı hatayı
   yaptığı zaten o dosyanın yorumunda yazılıydı.
 - **Gelecek regresyon riski: 🟢**
+
+### BL-261 — [DÜZELTİLDİ 2026-08-25] Menüde Görevler modülünün sayfa adları
+- ⚠ **ÖLÇÜM CT'NİN VARSAYIMINDAN DAR ÇIKTI, ve bu iyi haber:** "modülün tamamı İngilizce" değildi. Nav-görünür
+  dört girdinin **ikisi zaten çeviriliydi** (`TASKFIELDDEFINITIONS`, `TASKRECURRENCERULES`), modül adı
+  (`Nav.Module.TASKS`) ve alan adı (`Nav.Domain.WORKSPACE`) de vardı. Eksik olan tek nav-görünür sayfa
+  **`TASKTYPES`**'tı — yani geçen turda benim eklediğim sayfa.
+- ⚠ **VE BUNU BİR MUHAFIZ ZATEN SÖYLÜYORDU:** `NavManifestL10nGuardTests` kırmızıydı ve geçen turda o süiti
+  koşmamıştım (`Diten.Web.Tests`, frontend vitest'ten ayrı bir proje). Muhafız manifestten anahtarları kendisi
+  türetiyor ve yedi dilde arıyor — yani kural zaten zorlanıyordu, ben bakmamıştım.
+- Yine de yedi sayfanın hepsine anahtar eklendi (**5 yeni × 7 dil**): nav-görünmez olanlar (`TASKS`,
+  `TASKCREATE`, `TASKDETAIL`, `TASKEDIT`) menüde çizilmiyor ama Ctrl+K ve başka yüzeyler aynı köprüden geçiyor.
+- ⚠ Manifest `DisplayName`'lerine **dokunulmadı** — onlar çeviri bulunamazsa görünecek geri düşüş.
+- **Olay adları (`FallbackDisplayName`) ÖLÇÜLDÜ: farklı bir aile.** Bildirim olayı tanımlarına ait
+  (`NotificationEventDefinition`), nav köprüsünden geçmiyor. Dokunulmadı; kapsamı ayrı bir iş.
+- **YEDİ DİLDE MENÜ (canlı, `.AspNetCore.Culture` çerezi ile ölçüldü):**
+
+  | | Görev Merkezi | Alan Tanımları | Görev Türleri | Yinelenen Kurallar |
+  |---|---|---|---|---|
+  | en | Task Center | Field Definitions | Task types | Recurring Task Rules |
+  | tr | Görev Merkezi | Alan Tanımları | Görev türleri | Yinelenen Görev Kuralları |
+  | fr | Centre des tâches | Définitions de champs | Types de tâche | Règles de tâches récurrentes |
+  | es | Centro de tareas | Definiciones de campos | Tipos de tarea | Reglas de tareas recurrentes |
+  | zh | 任务中心 | 字段定义 | 任务类型 | 重复任务规则 |
+  | ar | مركز المهام | تعريفات الحقول | أنواع المهام | قواعد المهام المتكررة |
+  | ru | Центр задач | Определения полей | Типы задач | Правила повторяющихся задач |
+
+- **Gelecek regresyon riski: 🟢** — muhafız her yeni nav-görünür sayfayı yedi dilde zorluyor.
+
+### BL-262 — [DÜZELTİLDİ 2026-08-26] `FunctionCode` kapalı listeye — ve bir KESİNTİ bulundu
+- 19 değer DCP-005 §6.7'den **birebir** alındı, uydurma yok. Form serbest metin kutusundan **seçiciye** döndü
+  (19 + "Fonksiyon yok"), 19 etiket × 7 dil eklendi. `TaskTypeRules`'taki dikiş yeri üyelik kontrolüyle kapandı.
+- ⚠ **CT'NİN "var olan kayıtları ÖLÇ" TALİMATI BİR KESİNTİYİ AÇIĞA ÇIKARDI.** Alanı gerçek bir `enum` yaptım;
+  ekran **500** verdi. Sebep: geçen turun canlı testinde `qa` yazmıştım, saklanan değer **`QA`** — pakette `QA`
+  yok, **`QUA`** var. Mongo sürücüsü DESERIALIZATION sırasında `FormatException: Requested value 'QA' was not
+  found` fırlattı: **tek bir eski değer, görev türü listesinin tamamını ve görev formundaki seçiciyi düşürdü.**
+- **Karar:** alan **string** kalır, **liste YAZMADA kapanır** (`ParseFunctionCode`). Gerekçe:
+  belge deposunda migration yok — yazılan yazılı kalır. Saklananı **temsil edemeyen** bir tip, veri sorununu
+  kesintiye çevirir; iki alternatif (okumada değeri düşürmek, satırı reddetmek) sessiz veri kaybıdır.
+  Böylece listeye uymayan yeni bir değer **giremiyor**, var olan **okunabilir ve görünür biçimde uyumsuz**
+  kalıyor — CT'nin "sessizce silme" şartı da karşılanıyor.
+- Canlı ölçüm sonrası: `DEV-GMP · fn=MFG` (yeni, geçti) · `DEV-QMS · fn=QA` (eski, duruyor);
+  listeye uymayan kodla yazma denemesi **reddedildi ve hiçbir şey yazılmadı**, mesaj Türkçe:
+  *"Bu, kurumun kullandığı fonksiyon kodlarından biri değil."*
+- ⚠ Kalan iş: `DEV-QMS`'in `QA` değeri **elle düzeltilmeli** (`QUA` olmalı). Otomatik dönüştürme yazmadım —
+  `QA` → `QUA` benim varsayımım olurdu; kaydı açan kişi karar vermeli.
+- **ORG listesi (5 değer) koda GİRMEDİ** — yerel doküman katmanı ertelendi, pakette duruyor.
+- **Gelecek regresyon riski: 🟢**
+
+### BL-263 — [PAKETE YAZILDI 2026-08-26] Tür değişikliği kontrolü + neden referans veri değil
+- `DCP-005` §6.8: görev türü değişiklikleri **MOD-0023 kapısıyla onaya tabi olacak**
+  (`WorkflowTemplateCode` deseni). **Şimdi değil:** QA'nın 31 türü kabul edilmedi; boş bir listeye kapı koymak,
+  31 satırın tamamını daha kimse doğru olduklarını kabul etmeden onay kuyruğundan geçirmek demek.
+  ⚠ O güne kadar kontrol beyanı **yalnız izne** dayanıyor ve bu, değişiklik kontrolünden **zayıftır** — pakete
+  zayıf olduğu yazıldı.
+- `DCP-005` §6.9: neden referans veri motoruna konmadı — iki ölçüm.
+  (1) `BusinessReferenceDataValue.Attributes` tipi `Dictionary<string,string>`; `group_documents[]` ve
+  `local_documents[org][]` oraya ancak **metne gömülerek** sığar. (2) Kod listesi **ETİKET**, görev türü
+  **KARAR** taşır (`record_class` başka kodun okuduğu bir kural).
+  ⚠ **Bedeli yazıldı:** sığsaydı sürümleme, onay iş akışı, kanıt ve tüketici kaydı bedava gelecekti; sığmadığı
+  için dördü de bizim yazacağımız iş. §6.8 bu faturanın ilk taksiti.
+
+### BL-264 — [DÜZELTİLDİ 2026-08-26] Klasör adı alt sınırı 3 → 2
+- `QmsFolderPathNormalizer`: `< 3` → `< 2`. Üst sınır **120 aynen** duruyor, tek karakter **hâlâ reddediliyor**.
+- Gerekçe koda yazıldı: `HR` · `RA` · `PV` · `QA` bu sektörün standart kısaltmaları ve ikisi QA'nın kendi
+  FUNCTION listesinde. Karşı tarafın kendi sözcüklerini reddeden bir kural dikkatli değil, katıdır.
+- ⚠ **103 SATIRLIK TAKSONOMİ CSV'Sİ DEPODA YOK** — arandı: `*.csv` içinde yalnız
+  `00_all_folders_2175.csv` (farklı bir fixture, 2176 satır) var. Bu yüzden prova ucu **koşulmadı** ve
+  "103/103 geçti" **YAZILMADI**. Kural bunun yerine testle kilitlendi: `HR`·`RA`·`PV`·`QA` geçiyor, tek karakter
+  reddediliyor, tavan hem 120'de geçip hem 121'de reddedilerek iki yönlü ölçülüyor.
+- **Gelecek regresyon riski: 🟢**

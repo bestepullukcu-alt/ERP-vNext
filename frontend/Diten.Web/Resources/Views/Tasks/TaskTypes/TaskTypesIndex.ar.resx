@@ -53,4 +53,25 @@
   <data name="ErrorCodeImmutable" xml:space="preserve"><value>لا يمكن تغيير الرمز بعد إنشاء النوع: المهام المفتوحة به تحمله كهويتها.</value></data>
   <data name="ErrorCodeTaken" xml:space="preserve"><value>يستخدم نوع مهمة آخر هذا الرمز بالفعل.</value></data>
   <data name="ErrorClassificationInvalid" xml:space="preserve"><value>سجل جودة GxP يجب أن يسمّي مجال الجودة، والنوع الذي له مجال لا يمكن أن يكون «ليس سجلًا».</value></data>
+  <data name="FunctionCodeNone" xml:space="preserve"><value>بلا وظيفة</value></data>
+  <data name="FunctionCodeQUA" xml:space="preserve"><value>إدارة الجودة</value></data>
+  <data name="FunctionCodeRA" xml:space="preserve"><value>الشؤون التنظيمية (تشغيلي)</value></data>
+  <data name="FunctionCodePV" xml:space="preserve"><value>التيقظ الدوائي (تشغيلي)</value></data>
+  <data name="FunctionCodeMFG" xml:space="preserve"><value>عمليات التصنيع</value></data>
+  <data name="FunctionCodeSCM" xml:space="preserve"><value>سلسلة التوريد</value></data>
+  <data name="FunctionCodeRND" xml:space="preserve"><value>البحث والتطوير</value></data>
+  <data name="FunctionCodeCOM" xml:space="preserve"><value>التجاري والتسويق</value></data>
+  <data name="FunctionCodeFIN" xml:space="preserve"><value>المالية والمحاسبة</value></data>
+  <data name="FunctionCodeHR" xml:space="preserve"><value>الموارد البشرية</value></data>
+  <data name="FunctionCodeLEG" xml:space="preserve"><value>الشؤون القانونية والعقود</value></data>
+  <data name="FunctionCodePRC" xml:space="preserve"><value>المشتريات</value></data>
+  <data name="FunctionCodeITG" xml:space="preserve"><value>تقنية المعلومات</value></data>
+  <data name="FunctionCodeISM" xml:space="preserve"><value>أمن المعلومات</value></data>
+  <data name="FunctionCodeFAC" xml:space="preserve"><value>المرافق والأصول</value></data>
+  <data name="FunctionCodeEHS" xml:space="preserve"><value>البيئة والصحة والسلامة</value></data>
+  <data name="FunctionCodePPM" xml:space="preserve"><value>المشاريع والمحافظ</value></data>
+  <data name="FunctionCodeCORP" xml:space="preserve"><value>الاتصال المؤسسي</value></data>
+  <data name="FunctionCodeCTY" xml:space="preserve"><value>عمليات الدولة (المتبقي)</value></data>
+  <data name="FunctionCodeMED" xml:space="preserve"><value>الشؤون الطبية</value></data>
+  <data name="ErrorFunctionCodeInvalid" xml:space="preserve"><value>هذا ليس أحد رموز الوظائف التي تستخدمها هذه المؤسسة.</value></data>
 </root>

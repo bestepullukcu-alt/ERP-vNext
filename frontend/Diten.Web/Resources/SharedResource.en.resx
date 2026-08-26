@@ -620,6 +620,21 @@
   <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
     <value>Recurring Task Rules</value>
   </data>
+  <data name="Nav.Page.TASKS" xml:space="preserve">
+    <value>Tasks</value>
+  </data>
+  <data name="Nav.Page.TASKCREATE" xml:space="preserve">
+    <value>New task</value>
+  </data>
+  <data name="Nav.Page.TASKDETAIL" xml:space="preserve">
+    <value>Task detail</value>
+  </data>
+  <data name="Nav.Page.TASKEDIT" xml:space="preserve">
+    <value>Edit task</value>
+  </data>
+  <data name="Nav.Page.TASKTYPES" xml:space="preserve">
+    <value>Task types</value>
+  </data>
   <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
     <value>Field Definitions</value>
   </data>

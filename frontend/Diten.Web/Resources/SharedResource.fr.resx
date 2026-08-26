@@ -561,6 +561,21 @@
   <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
     <value>Règles de tâches récurrentes</value>
   </data>
+  <data name="Nav.Page.TASKS" xml:space="preserve">
+    <value>Tâches</value>
+  </data>
+  <data name="Nav.Page.TASKCREATE" xml:space="preserve">
+    <value>Nouvelle tâche</value>
+  </data>
+  <data name="Nav.Page.TASKDETAIL" xml:space="preserve">
+    <value>Détail de la tâche</value>
+  </data>
+  <data name="Nav.Page.TASKEDIT" xml:space="preserve">
+    <value>Modifier la tâche</value>
+  </data>
+  <data name="Nav.Page.TASKTYPES" xml:space="preserve">
+    <value>Types de tâche</value>
+  </data>
   <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
     <value>Définitions de champs</value>
   </data>

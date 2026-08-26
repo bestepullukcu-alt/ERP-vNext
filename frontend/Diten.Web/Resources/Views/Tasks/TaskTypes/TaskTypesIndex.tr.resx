@@ -53,4 +53,25 @@
   <data name="ErrorCodeImmutable" xml:space="preserve"><value>Tür oluşturulduktan sonra kod değiştirilemez: bu türle açılmış görevler onu kimlik olarak taşır.</value></data>
   <data name="ErrorCodeTaken" xml:space="preserve"><value>Bu kodu başka bir görev türü zaten kullanıyor.</value></data>
   <data name="ErrorClassificationInvalid" xml:space="preserve"><value>GxP kalite kaydı kalite alanını adlandırmak zorundadır; alanı olan bir tür de "kayıt değil" olamaz.</value></data>
+  <data name="FunctionCodeNone" xml:space="preserve"><value>Fonksiyon yok</value></data>
+  <data name="FunctionCodeQUA" xml:space="preserve"><value>Kalite Yönetimi</value></data>
+  <data name="FunctionCodeRA" xml:space="preserve"><value>Ruhsatlandırma (operasyonel)</value></data>
+  <data name="FunctionCodePV" xml:space="preserve"><value>Farmakovijilans (operasyonel)</value></data>
+  <data name="FunctionCodeMFG" xml:space="preserve"><value>Üretim Operasyonları</value></data>
+  <data name="FunctionCodeSCM" xml:space="preserve"><value>Tedarik Zinciri</value></data>
+  <data name="FunctionCodeRND" xml:space="preserve"><value>Araştırma ve Geliştirme</value></data>
+  <data name="FunctionCodeCOM" xml:space="preserve"><value>Ticari ve Pazarlama</value></data>
+  <data name="FunctionCodeFIN" xml:space="preserve"><value>Finans ve Muhasebe</value></data>
+  <data name="FunctionCodeHR" xml:space="preserve"><value>İnsan Kaynakları</value></data>
+  <data name="FunctionCodeLEG" xml:space="preserve"><value>Hukuk ve Sözleşmeler</value></data>
+  <data name="FunctionCodePRC" xml:space="preserve"><value>Satın Alma</value></data>
+  <data name="FunctionCodeITG" xml:space="preserve"><value>Bilgi Teknolojileri</value></data>
+  <data name="FunctionCodeISM" xml:space="preserve"><value>Bilgi Güvenliği</value></data>
+  <data name="FunctionCodeFAC" xml:space="preserve"><value>Tesis ve Varlıklar</value></data>
+  <data name="FunctionCodeEHS" xml:space="preserve"><value>Çevre, Sağlık ve Güvenlik</value></data>
+  <data name="FunctionCodePPM" xml:space="preserve"><value>Projeler ve Portföyler</value></data>
+  <data name="FunctionCodeCORP" xml:space="preserve"><value>Kurumsal İletişim</value></data>
+  <data name="FunctionCodeCTY" xml:space="preserve"><value>Ülke Operasyonları (artık)</value></data>
+  <data name="FunctionCodeMED" xml:space="preserve"><value>Tıbbi İlişkiler</value></data>
+  <data name="ErrorFunctionCodeInvalid" xml:space="preserve"><value>Bu, kurumun kullandığı fonksiyon kodlarından biri değil.</value></data>
 </root>

@@ -244,7 +244,8 @@ public sealed class TaskTypesController : Controller
     {
         ["TASK_TYPE_CODE_IMMUTABLE"] = "ErrorCodeImmutable",
         ["TASK_TYPE_CODE_TAKEN"] = "ErrorCodeTaken",
-        ["TASK_TYPE_CLASSIFICATION_INVALID"] = "ErrorClassificationInvalid"
+        ["TASK_TYPE_CLASSIFICATION_INVALID"] = "ErrorClassificationInvalid",
+        ["TASK_TYPE_FUNCTION_CODE_INVALID"] = "ErrorFunctionCodeInvalid"
     };
 
     private async Task<List<string>> ExtractGatewayErrorsAsync(HttpResponseMessage response)

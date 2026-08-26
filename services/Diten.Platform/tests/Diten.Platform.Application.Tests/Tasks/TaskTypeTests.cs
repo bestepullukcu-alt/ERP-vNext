@@ -30,8 +30,79 @@ public sealed class TaskTypeTests
     {
         // Codes are read aloud, printed on records and typed into the counterparty's spreadsheets.
         Assert.Equal("DEV-QMS", TaskTypeRules.NormalizeCode("  dev-qms "));
-        Assert.Equal("QA", TaskTypeRules.NormalizeFunctionCode(" qa "));
-        Assert.Null(TaskTypeRules.NormalizeFunctionCode("   "));
+    }
+
+    [Fact]
+    public void Function_code_is_a_CLOSED_list_now_that_the_list_exists()
+    {
+        /*
+         * MUTATION GUARD: turn this back into free text and the refusal below disappears.
+         *
+         * It shipped as normalised free text with a documented seam, because an earlier prompt claimed the
+         * nineteen values were in the pack and they were not. They are there now (DCP-005 §6.7).
+         */
+        Assert.Equal(TaskFunctionCode.QUA, TaskTypeRules.ParseFunctionCode(" qua ").Value);
+        // Case is absorbed: codes are typed into spreadsheets and read aloud.
+        Assert.Equal(TaskFunctionCode.RA, TaskTypeRules.ParseFunctionCode("ra").Value);
+        // Absent stays absent — not every type belongs to a named function.
+        Assert.Null(TaskTypeRules.ParseFunctionCode("   ").Value);
+        Assert.Null(TaskTypeRules.ParseFunctionCode("   ").Error);
+
+        /*
+         * ⚠ REFUSED, NOT DROPPED. Storing null for an unrecognised code would report success for a
+         * classification the caller believed they had set.
+         */
+        var refusal = TaskTypeRules.ParseFunctionCode("NOPE").Error;
+        Assert.NotNull(refusal);
+        Assert.Equal(TaskReasonCodes.TaskTypeFunctionCodeInvalid, refusal!.Value.ReasonCode);
+    }
+
+    [Fact]
+    public void A_value_written_BEFORE_the_list_existed_must_still_be_readable()
+    {
+        /*
+         * ⚠ MEASURED LIVE (2026-08-26) AND IT WAS AN OUTAGE, NOT A BLEMISH.
+         *
+         * The field was briefly a real enum. A row written while it was still free text carried "QA" — the
+         * pack's code is "QUA" — and the Mongo driver threw on DESERIALISATION: `Requested value 'QA' was not
+         * found`. One stale value took the whole task-type list down with a 500, and the task form's picker
+         * with it.
+         *
+         * A document store has no migration to lean on. A stored type that cannot REPRESENT what is already
+         * stored turns a data problem into an outage, and the two alternatives — drop the value on read, or
+         * refuse the row — are both silent data loss. So the property stays a string and the LIST is closed at
+         * the write.
+         *
+         * MUTATION GUARD: make the property an enum again and this stops compiling.
+         */
+        var property = typeof(TaskType).GetProperty(nameof(TaskType.FunctionCode))!;
+        Assert.Equal(typeof(string), property.PropertyType);
+
+        // A non-conforming value round-trips rather than exploding…
+        var legacy = new TaskType { TenantId = Guid.NewGuid(), Code = "DEV-QMS", Name = "x", FunctionCode = "QA" };
+        Assert.Equal("QA", legacy.FunctionCode);
+        // …and is still recognisably not one of the nineteen, so a screen can say so.
+        Assert.NotNull(TaskTypeRules.ParseFunctionCode(legacy.FunctionCode).Error);
+    }
+
+    [Fact]
+    public void A_valid_code_is_stored_in_the_list_s_own_spelling()
+    {
+        // `mfg` and `MFG` must not become two values; the canonical form is what the enum names.
+        Assert.Equal("MFG", TaskTypeRules.ParseFunctionCode(" mfg ").Value?.ToString());
+    }
+
+    [Fact]
+    public void The_function_list_is_the_pack_s_nineteen__no_more_and_no_fewer()
+    {
+        // Quoted from DCP-005 §6.7. A twentieth value would be an invention; a missing one would be a silent
+        // narrowing of the counterparty's own vocabulary.
+        var codes = Enum.GetNames<TaskFunctionCode>();
+        Assert.Equal(19, codes.Length);
+        Assert.Equal(
+            ["QUA", "RA", "PV", "MFG", "SCM", "RND", "COM", "FIN", "HR", "LEG", "PRC", "ITG", "ISM", "FAC",
+             "EHS", "PPM", "CORP", "CTY", "MED"],
+            codes);
     }
 
     [Fact]
@@ -206,5 +277,58 @@ public sealed class TaskTypeTests
         Assert.Equal("platform.tasks.task-types.manage", TaskPermissions.TaskTypesManage);
         Assert.NotEqual(TaskPermissions.Create, TaskPermissions.TaskTypesManage);
         Assert.NotEqual(TaskPermissions.Read, TaskPermissions.TaskTypesManage);
+    }
+}
+
+/// <summary>
+/// DCP-005 prerequisite 1 — the folder-name floor.
+///
+/// <para>Not a task-type rule, but a task-type BLOCKER: the taxonomy import that the document slices depend on
+/// rejected 14 of 103 rows for one reason, and the reason was our own rule rather than their data.</para>
+/// </summary>
+public sealed class QmsFolderNameLengthTests
+{
+    [Theory]
+    // The four that started it — standard abbreviations in this industry, two of them in QA's own FUNCTION list.
+    [InlineData("HR")]
+    [InlineData("RA")]
+    [InlineData("PV")]
+    [InlineData("QA")]
+    public void Two_letter_folder_names_are_accepted(string name)
+    {
+        /*
+         * MUTATION GUARD: put the floor back to 3 and every one of these goes red — which is exactly the 14-row
+         * import failure, reproduced as a test instead of as a support ticket.
+         */
+        var ok = Diten.Platform.Application.Features.DocumentManagementQmsBaseline.Services
+            .QmsFolderPathNormalizer.TryNormalizeSegment(name, out var normalized, out var error);
+
+        Assert.True(ok, $"'{name}' was refused: {error}");
+        Assert.Equal(name, normalized);
+    }
+
+    [Fact]
+    public void One_character_is_still_refused__a_letter_is_not_a_folder_name()
+    {
+        // The floor moved; it did not disappear. A single letter carries no meaning to whoever reads the path.
+        var ok = Diten.Platform.Application.Features.DocumentManagementQmsBaseline.Services
+            .QmsFolderPathNormalizer.TryNormalizeSegment("H", out _, out var error);
+
+        Assert.False(ok);
+        Assert.Equal("folder_name_length_out_of_range", error);
+    }
+
+    [Fact]
+    public void The_ceiling_is_untouched()
+    {
+        var tooLong = new string('x', 121);
+        var ok = Diten.Platform.Application.Features.DocumentManagementQmsBaseline.Services
+            .QmsFolderPathNormalizer.TryNormalizeSegment(tooLong, out _, out var error);
+
+        Assert.False(ok);
+        Assert.Equal("folder_name_length_out_of_range", error);
+        // …and one below it still passes, so the assertion above is about the ceiling and not about anything else.
+        Assert.True(Diten.Platform.Application.Features.DocumentManagementQmsBaseline.Services
+            .QmsFolderPathNormalizer.TryNormalizeSegment(new string('x', 120), out _, out _));
     }
 }

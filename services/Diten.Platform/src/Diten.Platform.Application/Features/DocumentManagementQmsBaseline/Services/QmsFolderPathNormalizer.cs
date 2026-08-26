@@ -36,7 +36,20 @@ public static partial class QmsFolderPathNormalizer
             return false;
         }
 
-        if (collapsed.Length is < 3 or > 120)
+        /*
+         * ⚠ THE FLOOR IS 2, NOT 3 (DCP-005 prerequisite 1, 2026-08-25).
+         *
+         * MEASURED on the counterparty's taxonomy import: 14 of 103 rows were rejected for one reason — the
+         * folder is called `HR`. `HR`, `RA`, `PV` and `QA` are standard abbreviations in this industry, and two
+         * of them (`RA`, `PV`) are in QA's own FUNCTION list. A rule that refuses the counterparty's own
+         * vocabulary is too strict, not careful.
+         *
+         * ⚠ ONE CHARACTER IS STILL REFUSED. A single letter is not a folder name — it carries no meaning to
+         * anyone reading the path later, and the floor exists for exactly that.
+         *
+         * ⚠ THE CEILING IS UNTOUCHED at 120.
+         */
+        if (collapsed.Length is < 2 or > 120)
         {
             error = "folder_name_length_out_of_range";
             return false;

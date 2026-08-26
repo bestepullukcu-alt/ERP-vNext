@@ -323,6 +323,7 @@ public static class TaskReasonCodes
     public const string TaskTypeCodeImmutable = "TASK_TYPE_CODE_IMMUTABLE";
     public const string TaskTypeCodeTaken = "TASK_TYPE_CODE_TAKEN";
     public const string TaskTypeClassificationInvalid = "TASK_TYPE_CLASSIFICATION_INVALID";
+    public const string TaskTypeFunctionCodeInvalid = "TASK_TYPE_FUNCTION_CODE_INVALID";
 }
 
 /// <summary>
