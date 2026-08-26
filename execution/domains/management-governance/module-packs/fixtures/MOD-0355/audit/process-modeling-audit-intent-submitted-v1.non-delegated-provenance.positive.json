@@ -1,0 +1,15 @@
+{
+  "profile": "non-delegated",
+  "trustedTransportProvenance": {
+    "validatedTokenFamily": "diten-s2s+jwt",
+    "tenantId": "35000355-0000-4000-8000-000000000004",
+    "servicePrincipalId": "35000355-0000-4000-8000-000000000006",
+    "operationId": "process-modeling.architectures.create.v1",
+    "permissionKey": "management-governance.process-modeling.architectures.create",
+    "requestHash": "b5f27ecad3c18be1d35c41f36a595c106b1775b6a11fd1c9e66680e867979301"
+  },
+  "structurallyAbsent": ["delegatedActorId", "delegationId", "delegatedActorProof"],
+  "producerPayloadContainsTrustedProvenance": false,
+  "expected": {"accepted": true, "auditEvent": true},
+  "delegatedProfileWithSameAbsence": {"accepted": false, "terminalCode": "missing_delegated_proof", "auditEvent": false}
+}

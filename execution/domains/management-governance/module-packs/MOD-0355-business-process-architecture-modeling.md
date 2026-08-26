@@ -598,10 +598,12 @@ are explicit:
   evidence.
 - MOD-0023 has no executable ProcessModelVersion source profile, trusted attestation or bilateral MOD-0355
   approval fixture.
-- MOD-0021 has no producer-owned MOD-0355 event identity, schema, allowlist, signing fixture or consumer admission.
+- MOD-0021 has no MOD-0355 consumer admission, delivery adapter or runtime evidence. The producer-owned event
+  identity, schema, allowlist and test-only signing fixtures are governance-available under the non-runtime
+  fixture contract below; they do not establish consumer or runtime availability.
 
-No name, version, route, operation ID, event identity, template identity or transport value is inferred for any
-missing upstream contract. Until owner-approved bilateral amendments close all three gaps, the only executable
+No missing upstream name, version, route, operation ID, template identity or transport value is inferred.
+Until owner-approved bilateral amendments close all three gaps, the only executable
 publish behavior remains the existing fail-closed `503` contract; no successful application handler,
 persistence mutation or delivery adapter is authorized.
 
@@ -826,14 +828,81 @@ transaction:
 3. producer-local audit intent;
 4. producer-local outbox.
 
-Failure to persist any participant rolls back all four. MOD-0021 delivery, signed event schema, publisher
-credentials and delivery adapter remain in the Approval/Auth/Audit Runtime slice.
+Failure to persist any participant rolls back all four. MOD-0021 admission/delivery, runtime event type,
+publisher credentials and delivery adapter remain in the Approval/Auth/Audit Runtime slice.
+
+### Producer-owned audit event fixture contract — NON-RUNTIME
+
+This subsection authorizes governance and executable fixture validation only. It does not authorize a service
+event type, publisher, broker, listener, DI registration, credential, MOD-0021 admission or runtime delivery.
+
+Exact identity:
+
+- Event type: `ProcessModelingAuditIntentSubmittedV1`
+- Event name: `management-governance.process-modeling-audit-intent.submitted.v1`
+- Event version: JSON integer `1`
+- Schema identity: `urn:diten:management-governance:process-modeling-audit-intent-submitted:v1`
+- Producer: `Diten.ManagementGovernanceService`
+- Module code: `MOD-0355`
+- Audit category: `AuditCategory.Integration`
+- Signature algorithm: `HmacSha256`
+- Signature scheme: `management-governance-event-hmac-sha256.v1`
+- Reserved production signing identity: `diten.management-governance.process-modeling-audit-intent.v1`
+- Exact test-only signing identity:
+  `diten.management-governance.process-modeling-audit-intent.v1.test-only`
+- Exact test-only key ID: `mod-0355-process-modeling-audit-fixture-test-only-20260826`
+
+No production key, production key ID, active/previous slot or production authority is allocated. The public
+test-only key is fixture material only and production validators must reject its identity, key ID and signature
+in both active and previous slots.
+
+The canonical payload is minified UTF-8 without BOM or trailing newline and has exactly this property order:
+`auditIntentId`, `actorId`, `entityType`, `entityId`, `mutation`, `occurredAtUtc`. Producer payload fields never
+carry trusted transport provenance, signing identity, FU16 proof or permission state.
+
+The exact approved entity/mutation pairs are:
+
+| Entity type | Mutations |
+|---|---|
+| `ProcessArchitecture` | `Created`, `Updated`, `Archived` |
+| `ProcessDomain` | `Created`, `Updated`, `Archived` |
+| `ProcessFamily` | `Created`, `Updated`, `Archived` |
+| `ProcessDefinition` | `Created`, `Updated`, `Archived` |
+| `ProcessModel` | `Created`, `Updated` |
+| `ProcessModelVersion` | `DraftUpdated`, `ReviewRequested`, `ReturnedToDraft`, `Published`, `Retired`, `RevisionCreated` |
+
+The matrix contains exactly `20` positive pairs and all `34` remaining cross-pairs are terminal fail-closed.
+Projection is exact: source service `Diten.ManagementGovernanceService`, source module `MOD-0355`, category
+`AuditCategory.Integration`, entity type `ProcessModeling.<entityType>` and operation mapping:
+`Created|RevisionCreated → AuditOperation.Create`, `Updated|DraftUpdated → AuditOperation.Update`,
+`Archived|Retired → AuditOperation.Deactivate`, `Published → AuditOperation.Activate`, and
+`ReviewRequested|ReturnedToDraft → AuditOperation.LifecycleTransition`.
+
+Delegated provenance is trusted transport metadata, never producer payload. The fixture profile binds the
+exact operation `process-modeling.architectures.create.v1` to exact permission
+`management-governance.process-modeling.architectures.create`; missing, malformed, unverified, expired or
+request/tenant/actor/operation/permission-mismatched proof is terminal and produces no `AuditEvent`. The
+non-delegated profile requires structural absence of delegation fields; the same absence in a delegated profile
+is missing proof and fails closed.
+
+The fixture root is producer-owned:
+`execution/domains/management-governance/module-packs/fixtures/MOD-0355/audit/**`. Its canonical payload,
+checksum, schema, envelope, projection, allowlist, provenance, production-rejection, signing-vector and manifest
+files are one indivisible contract-test set. MOD-0021 admission remains deferred until this producer fixture set
+has an immutable checkpoint and a separate bilateral consumer amendment accepts that exact checkpoint.
 
 ## 5. Repo Scope
 
 Governance materialization scope was limited to:
 
 - `execution/domains/management-governance/module-packs/MOD-0355-business-process-architecture-modeling.md`
+
+The explicit 2026-08-26 producer-fixture authorization additionally permits only the pack above and:
+
+- `execution/domains/management-governance/module-packs/fixtures/MOD-0355/audit/**`
+
+That authority is governance/fixture-only and cannot create or modify service source, runtime composition,
+publisher code, transport, credential, frontend, Gateway, WorkCenter or deployment files.
 
 The explicit 2026-08-25 authorization permits the bounded Core Model & Contract-Test slice to create or
 update only:
@@ -951,10 +1020,11 @@ MOD-0031, MOD-0048, MOD-0059, MOD-0060, frontend or Gateway integration.
 ### Approval/Auth/Audit dependencies
 
 - MOD-0018 authoritative permission enforcement and, when required, eligibility/delegation decisions.
-- MOD-0021 signed/versioned audit event contract and runtime delivery adapter.
+- MOD-0021 bilateral consumer admission and runtime delivery adapter for the producer fixture contract in §4.
 - Promoted executable MOD-0023 ApprovalOutcome producer contract.
 - Approval-policy owner decision.
-- Bilateral exact serialization, tenancy, failure-mode and compatibility fixtures.
+- Bilateral consumer acceptance of the exact producer serialization, tenancy, failure-mode and compatibility
+  fixtures after an immutable producer checkpoint.
 
 ### Optional reference dependencies
 
@@ -1336,6 +1406,10 @@ decision unavailable (`503`), not denied, allowed or locally inferred.
       exist in Core, but no successful application handler or persistence mutation is authorized until the
       Approval/Auth/Audit Runtime slice is separately approved and executable.
 - [ ] MOD-0018, MOD-0021 and MOD-0023 integrations require separate approval and fixtures.
+- [x] Producer-owned MOD-0355 audit event identity, exact schema, `20/34` allowlist matrix, projection,
+      provenance and test-only HMAC fixtures are governance-available and executable only as fixture validation.
+- [ ] MOD-0021 bilateral admission, publisher composition, credentials, transport and live delivery remain
+      separately authorized runtime gates after an immutable producer checkpoint.
 
 ### Optional reference integrations
 
@@ -1566,8 +1640,10 @@ Frontend and runtime activation tests become mandatory only in their separately 
       template-version decision, trusted attestation, adapter and bilateral fixtures.
 - [ ] **B-06:** Executable approval-policy resolution, eligibility/delegation and bilateral fixtures for both
       A-04 branches.
-- [ ] **B-07:** Producer-owned MOD-0355 event identity/schema/allowlist/signing fixtures, MOD-0021 consumer
-      admission, publisher identity, delivery and replay evidence.
+- [x] **B-07a:** Producer-owned MOD-0355 event identity/schema/allowlist/provenance/test-only signing fixture
+      contract is closed as NON-RUNTIME governance evidence.
+- [ ] **B-07b:** Immutable producer checkpoint, MOD-0021 bilateral consumer admission, production signing/key
+      provisioning, publisher composition, delivery, retry/DLQ/replay and live evidence.
 - [ ] **B-08:** Classification producer contract.
 - [ ] **B-09:** KPI/Metric producer contracts.
 - [ ] **B-10:** Owner-reference producer contract and adapter.
@@ -1603,8 +1679,9 @@ Every successful Core mutation has exactly four atomic local Mongo transaction p
 4. producer-local outbox.
 
 Local audit intent and outbox are Core durability infrastructure. They do not establish MOD-0021 runtime
-availability. MOD-0021 signed event contract, publication adapter, publisher credentials, compatibility
-fixtures, retry, dead-letter, alarm and replay behavior remain in the Approval/Auth/Audit slice.
+availability. The producer event identity and compatibility fixtures are governance-available only; MOD-0021
+admission, publication adapter, production signing/key provisioning, retry, dead-letter, alarm and replay
+behavior remain in the Approval/Auth/Audit runtime slice.
 
 ### Archive and retention
 
@@ -1663,7 +1740,8 @@ Governance availability cannot become local fallback, hard-coded truth or inferr
   `PublishApprovalPolicyDecisionV1` contracts in that contract-test slice; do not infer an upstream provider,
   transport or runtime identity.
 - Add MOD-0018 permission/SoD enforcement through an owner-approved PSS slice.
-- Add MOD-0021 delivery only after its signed/versioned contract and operational evidence exist.
+- Seek MOD-0021 bilateral admission only after the producer fixture set has an immutable checkpoint; add
+  delivery only after production signing, transport and operational evidence exist.
 - Add classification, KPI/Metric, owner, interface, document, evidence and artifact references through
   separately approved producer contracts.
 - Define and approve tenant frontend and seven-language resources.
@@ -1693,6 +1771,10 @@ Governance availability cannot become local fallback, hard-coded truth or inferr
 - Error matrix: exact `400 / 401 / 403 / 404 / 409 / 503`
 - Core atomic participants: `4`
 - Normative hash vectors: `3`
+- Audit fixture identity: exact producer-owned `ProcessModelingAuditIntentSubmittedV1` / version integer `1`
+- Audit fixture allowlist: exact `20` positive and `34` terminal invalid cross-pairs
+- Audit fixture provenance: delegated/non-delegated structural profiles; producer payload/trusted metadata split
+- Audit fixture production authority: `none`; production signing key/KeyId provisioned: `0`
 - Non-empty normative graph vectors: `1`
 - Vector recomputations: `PASS / PASS / PASS`
 - Status: `ready-for-dev`

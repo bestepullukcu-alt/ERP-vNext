@@ -1,0 +1,18 @@
+{
+  "profile": "production-validator-terminal-rejection-v1",
+  "reservedProductionSigningIdentity": "diten.management-governance.process-modeling-audit-intent.v1",
+  "productionKeyProvisioned": false,
+  "productionKeyIdProvisioned": false,
+  "testOnlySigningIdentity": "diten.management-governance.process-modeling-audit-intent.v1.test-only",
+  "testOnlyKeyId": "mod-0355-process-modeling-audit-fixture-test-only-20260826",
+  "cases": [
+    {"id": "test-identity-active-slot", "slot": "active", "identity": "diten.management-governance.process-modeling-audit-intent.v1.test-only"},
+    {"id": "test-identity-previous-slot", "slot": "previous", "identity": "diten.management-governance.process-modeling-audit-intent.v1.test-only"},
+    {"id": "test-key-id-active-slot", "slot": "active", "keyId": "mod-0355-process-modeling-audit-fixture-test-only-20260826"},
+    {"id": "test-key-id-previous-slot", "slot": "previous", "keyId": "mod-0355-process-modeling-audit-fixture-test-only-20260826"},
+    {"id": "test-signature-under-production-identity", "slot": "active", "identity": "diten.management-governance.process-modeling-audit-intent.v1", "signatureSource": "test-only-vector"},
+    {"id": "unknown-signing-identity", "slot": "none", "identity": "unknown"},
+    {"id": "wrong-signature-scheme", "slot": "active", "scheme": "event-hmac-sha256.v0"}
+  ],
+  "disposition": {"terminal": true, "retry": false, "auditEvent": false}
+}

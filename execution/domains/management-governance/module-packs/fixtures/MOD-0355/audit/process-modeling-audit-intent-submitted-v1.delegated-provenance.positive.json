@@ -1,0 +1,16 @@
+{
+  "profile": "delegated",
+  "trustedTransportProvenance": {
+    "validatedTokenFamily": "diten-delegated-actor-proof+jwt",
+    "tenantId": "35000355-0000-4000-8000-000000000004",
+    "servicePrincipalId": "35000355-0000-4000-8000-000000000006",
+    "delegatedActorId": "35000355-0000-4000-8000-000000000002",
+    "operationId": "process-modeling.architectures.create.v1",
+    "permissionKey": "management-governance.process-modeling.architectures.create",
+    "requestHash": "b5f27ecad3c18be1d35c41f36a595c106b1775b6a11fd1c9e66680e867979301",
+    "proofValidated": true,
+    "proofExpiresAtUtc": "2026-08-26T12:39:56.0000000Z"
+  },
+  "producerPayloadContainsTrustedProvenance": false,
+  "expected": {"accepted": true, "auditEvent": true}
+}

@@ -1,0 +1,23 @@
+{
+  "algorithm": "HmacSha256",
+  "scheme": "management-governance-event-hmac-sha256.v1",
+  "signingIdentity": "diten.management-governance.process-modeling-audit-intent.v1.test-only",
+  "keyId": "mod-0355-process-modeling-audit-fixture-test-only-20260826",
+  "keyBase64": "OeHvwLr5saPBiNsHSGfc1AQL3yqTgsYI2l64zGSps+8=",
+  "fixtureOnly": true,
+  "productionAllowed": false,
+  "eventId": "35000355-0000-4000-8000-000000000001",
+  "eventName": "management-governance.process-modeling-audit-intent.submitted.v1",
+  "eventVersion": 1,
+  "tenantId": "35000355-0000-4000-8000-000000000004",
+  "correlationId": "35000355-0000-4000-8000-000000000005",
+  "producer": "Diten.ManagementGovernanceService",
+  "causationId": null,
+  "occurredAtUtc": "2026-08-26T12:34:56.0000000Z",
+  "payloadFile": "process-modeling-audit-intent-submitted-v1.canonical.json",
+  "payloadByteCount": 258,
+  "payloadSha256": "7ee7d2d6b19d832d71dbe89967b0964ce5932b872b8d2528fb2cf14918500f1a",
+  "signingInputByteCount": 548,
+  "signingInputSha256": "36d5ceffdf42676bef129b67c7fb8c872f7d3cda4d127784de64bf9708c133cf",
+  "expectedHmacSha256": "0824563cc89fa5f89dd5435f7d8f4771632aa07eb96a50bba4bde17cdc4f959f"
+}

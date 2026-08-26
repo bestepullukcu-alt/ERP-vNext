@@ -1,0 +1,39 @@
+{
+  "profile": "mod-0355-audit-allowlist-v1",
+  "positive": [
+    ["ProcessArchitecture", "Created"], ["ProcessArchitecture", "Updated"], ["ProcessArchitecture", "Archived"],
+    ["ProcessDomain", "Created"], ["ProcessDomain", "Updated"], ["ProcessDomain", "Archived"],
+    ["ProcessFamily", "Created"], ["ProcessFamily", "Updated"], ["ProcessFamily", "Archived"],
+    ["ProcessDefinition", "Created"], ["ProcessDefinition", "Updated"], ["ProcessDefinition", "Archived"],
+    ["ProcessModel", "Created"], ["ProcessModel", "Updated"],
+    ["ProcessModelVersion", "DraftUpdated"], ["ProcessModelVersion", "ReviewRequested"],
+    ["ProcessModelVersion", "ReturnedToDraft"], ["ProcessModelVersion", "Published"],
+    ["ProcessModelVersion", "Retired"], ["ProcessModelVersion", "RevisionCreated"]
+  ],
+  "invalidCrossPairs": [
+    ["ProcessArchitecture", "DraftUpdated"], ["ProcessArchitecture", "ReviewRequested"], ["ProcessArchitecture", "ReturnedToDraft"], ["ProcessArchitecture", "Published"], ["ProcessArchitecture", "Retired"], ["ProcessArchitecture", "RevisionCreated"],
+    ["ProcessDomain", "DraftUpdated"], ["ProcessDomain", "ReviewRequested"], ["ProcessDomain", "ReturnedToDraft"], ["ProcessDomain", "Published"], ["ProcessDomain", "Retired"], ["ProcessDomain", "RevisionCreated"],
+    ["ProcessFamily", "DraftUpdated"], ["ProcessFamily", "ReviewRequested"], ["ProcessFamily", "ReturnedToDraft"], ["ProcessFamily", "Published"], ["ProcessFamily", "Retired"], ["ProcessFamily", "RevisionCreated"],
+    ["ProcessDefinition", "DraftUpdated"], ["ProcessDefinition", "ReviewRequested"], ["ProcessDefinition", "ReturnedToDraft"], ["ProcessDefinition", "Published"], ["ProcessDefinition", "Retired"], ["ProcessDefinition", "RevisionCreated"],
+    ["ProcessModel", "Archived"], ["ProcessModel", "DraftUpdated"], ["ProcessModel", "ReviewRequested"], ["ProcessModel", "ReturnedToDraft"], ["ProcessModel", "Published"], ["ProcessModel", "Retired"], ["ProcessModel", "RevisionCreated"],
+    ["ProcessModelVersion", "Created"], ["ProcessModelVersion", "Updated"], ["ProcessModelVersion", "Archived"]
+  ],
+  "projection": {
+    "sourceService": "Diten.ManagementGovernanceService",
+    "sourceModule": "MOD-0355",
+    "category": "AuditCategory.Integration",
+    "entityTypePrefix": "ProcessModeling.",
+    "operationByMutation": {
+      "Created": "AuditOperation.Create",
+      "RevisionCreated": "AuditOperation.Create",
+      "Updated": "AuditOperation.Update",
+      "DraftUpdated": "AuditOperation.Update",
+      "Archived": "AuditOperation.Deactivate",
+      "Retired": "AuditOperation.Deactivate",
+      "Published": "AuditOperation.Activate",
+      "ReviewRequested": "AuditOperation.LifecycleTransition",
+      "ReturnedToDraft": "AuditOperation.LifecycleTransition"
+    }
+  },
+  "invalidDisposition": {"terminal": true, "retry": false, "auditEvent": false}
+}
