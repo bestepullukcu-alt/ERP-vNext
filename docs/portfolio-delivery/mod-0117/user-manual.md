@@ -1,9 +1,10 @@
 # MOD-0117 Phase 2A PPM Kullanıcı Kılavuzu
 
-> **İnceleme durumu — 29 Temmuz 2026:** Bu belge, hazırlanan Phase 2A ekranlarının hedef kullanımını
-> açıklar. Sayfalar henüz uçtan uca kullanıcı incelemesine hazır değildir: MOD-0018 yetkilendirme
-> entegrasyonu güvenli biçimde tüm istekleri reddetmektedir ve Gateway rota/runtime kanıtı
-> tamamlanmamıştır. Bu nedenle çalışan bir inceleme adresi veya çalışan CRUD iddiası sunulmaz.
+> **İnceleme durumu — 26 Ağustos 2026:** Phase 2A ile PPM-owned Gate L backend/frontend dilimleri ve
+> Gateway eşlemesi bu izole branch'te uygulanmıştır. Geçici tam zincir üzerinden gerçek CRUD tarayıcı kanıtı
+> ve ayrı PSS entegrasyon kanıtı vardır. Ancak üretim PPM grant/credential provisioning, normal `5000/5001`
+> composition/activation ve kullanıcı parity kabulü tamamlanmamıştır. Bu nedenle belge bir üretim URL'si,
+> production readiness veya uçtan uca tam 1.3 kabulü ilan etmez.
 
 ## Amaç ve kapsam
 
@@ -15,13 +16,16 @@ döngülerini izlemek içindir. Phase 2A kapsamındaki yüzeyler şunlardır:
 - Girişimler
 - Programlar
 - Projeler
+- Yatırım Vakaları (`InvestmentCase`)
+- Fayda Taahhütleri (`BenefitCommitment`)
 
-Yatırım kararları, fayda/değer bağlantıları, DWS entegrasyonu, görevler, iş akışları ve onaylar bu
-sürümün kapsamında değildir.
+Gate L yalnız PPM-owned yatırım planlama ve planlı fayda kayıtlarını kapsar. MOD-0007 karar,
+MOD-0023 onay sonucu, MOD-0136 bütçe, MOD-0138 senaryo ve MOD-0072 gerçekleşen sonuç bağlantıları ile DWS,
+görev, iş akışı ve onay davranışları henüz kullanıcıya açılmış değildir.
 
 ## Liste ekranları
 
-Dört kayıt ekranı aynı çalışma düzenini kullanır:
+Altı kayıt ekranı aynı çalışma düzenini kullanır:
 
 1. **Ara** alanıyla görünen kayıtları kod veya ad üzerinden daraltın.
 2. **Filtre** seçeneğinden Yaşam Döngüsü ve Referanslanabilirlik ölçütlerini seçip **Uygula**'ya basın.
@@ -50,6 +54,8 @@ vermez. Toplu onay veya herhangi bir **Onayla** işlemi de yoktur.
 | Girişim | Kod, Ad | Açıklama, Portföy | Önerildi |
 | Program | Kod, Ad | Açıklama, Portföy | Taslak |
 | Proje | Kod, Ad, Üst Tür, Üst Kayıt | Açıklama | Taslak |
+| Yatırım Vakası | Kod, Başlık, Portföy | Açıklama, Planlanan Başlangıç/Bitiş | Taslak |
+| Fayda Taahhüdü | Kod, Başlık, Yatırım Vakası, Hedef Açıklaması | Açıklama, Hedef Tarih | Taslak |
 
 Görünürlük politikası alanı, merkezi yetkilendirme kaynağı tamamlanıncaya kadar devre dışıdır.
 Yaşam döngüsü oluşturma/düzenleme formundan serbestçe değiştirilemez; yalnız izin verilen satır işlemleri
@@ -78,6 +84,10 @@ Panelde kod, ad, açıklama, üst kayıt, yaşam döngüsü ve referanslanabilir
 Portföylerde Taslak/Aktif; girişimlerde Önerildi/Aktif/Beklemede; programlarda
 Taslak/Aktif/Beklemede; projelerde Taslak/Planlandı/Aktif/Beklemede durumları yeni referansa açıktır.
 
+Yatırım Vakası yaşam döngüsü `Taslak → Analiz Altında → Kapalı` veya `Taslak|Analiz Altında → Geri
+Çekildi`; Fayda Taahhüdü yaşam döngüsü `Taslak → Planlandı → Aktif → Kapalı` veya aktif yol üzerindeki
+durumlardan `İptal Edildi` şeklindedir. Bu durumlar onay, fonlama veya gerçekleşmiş fayda anlamına gelmez.
+
 ## Yaşam döngüsü ve kaldırma işlemleri
 
 Satırın İşlemler menüsü yalnız o kaydın mevcut durumundan izin verilen sonraki adımları gösterir.
@@ -100,9 +110,24 @@ değildir.
 Geçersiz veya eksik alanlar form üzerinde gösterilir. Hata görüldüğünde sahte başarı ya da yerel örnek
 veri gösterilmez.
 
+## Dahili ExternalContextReference sağlayıcısı
+
+`ppm.external-context-reference` `1.0` sağlayıcısı bu branch'te uygulanmıştır. Yalnız dahili servis
+tüketicisidir; browser veya Gateway yüzeyi değildir ve varsayılan olarak kapalıdır. Production credential,
+activation ve MOD-0354/DWS tüketimi ayrıca yetkilendirilip kanıtlanmadan kullanıcı davranışı sayılmaz.
+
+## Eski ve yeni ekranların karşılaştırılması
+
+Eski Enterprise Strategy / Delivery Execution ekranları bu teslimatla silinmez veya emekliye ayrılmaz.
+Eski URL, entity, alan, komut, yaşam döngüsü, permission ve entegrasyonların yeni `/ppm/**` karşılıklarına
+sayfa sayfa bağlandığı parity matrisi; farklı portlarda yan yana browser kanıtı ve kullanıcı kabulü henüz
+tamamlanmamıştır. Bu kapılar kapanmadan “full parity complete” veya legacy retirement kararı verilemez.
+
 ## Mevcut teslimat sınırı
 
-Bu kılavuz ürün davranışını tarif eder; erişime hazır ortam ilanı değildir. MOD-0018 ortak
-yetkilendirme entegrasyonu ve Gateway rota/runtime kanıtı tamamlanıp gerçek tarayıcı testi yapılmadan
-sayfalar uçtan uca incelenebilir kabul edilmez. ExternalContextReference sağlayıcısı, DWS bağlantısı,
-Phase 2B özellikleri, toplu işlemler ve onay davranışları ayrıca yetkilendirilmedikçe kullanılamaz.
+Bu kılavuz ürün davranışını tarif eder; erişime hazır production ortam ilanı değildir. Phase 2A ve PPM-owned
+Gate L uygulaması ile geçici tarayıcı kanıtı mevcuttur. Buna karşılık Gate I-A Decision Trace, Gate I-B
+Funding & Scenario ve Gate I-C Benefit Realization adapterları NON-EXECUTABLE durumdadır. Üç lane için ayrı
+MOD-0117 consumer amendment/runtime yetkisi, ardından tek composition branch, gerçek grant/credential ve
+normal-port activation, cross-service güvenlik/uyumluluk, entegre browser ve legacy parity kabulü gerekir.
+Toplu işlemler, DWS tüketimi ve onay davranışları ayrıca yetkilendirilmedikçe kullanılamaz.

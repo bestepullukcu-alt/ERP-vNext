@@ -148,10 +148,10 @@ approval and Enterprise Architect approval.
 | Lane | Member | Delivery role | Identity state |
 |---|---|---|---|
 | P | MOD-0117 — Project & Portfolio Management (PPM) | Portfolio/investment/value and finite project baseline | Blueprint 8.1 canonical |
-| P | MOD-0007 — Decision & Rationale Log | Gate I-A governing/supporting decision producer | Blueprint 8.1 canonical; parent pack not yet authored |
-| P | MOD-0136 | Budget/version adapter | Blueprint 8.1 canonical |
-| P | MOD-0138 | Scenario/comparator adapter | Blueprint 8.1 canonical |
-| P | MOD-0072 | Outcome/value adapter | Blueprint 8.1 canonical |
+| P | MOD-0007 — Decision & Rationale Log | Gate I-A governing/supporting decision producer | Blueprint 8.1 canonical; parent pack ready-for-dev and bounded core checkpoint exists; PPM consumer authority open |
+| P | MOD-0136 | Budget/version adapter | Blueprint 8.1 canonical; parent pack ready-for-dev and bounded core checkpoint exists; PPM consumer authority open |
+| P | MOD-0138 | Scenario/comparator adapter | Blueprint 8.1 canonical; parent pack ready-for-dev and bounded core checkpoint exists; PPM consumer authority open |
+| P | MOD-0072 | Outcome/value adapter | Blueprint 8.1 canonical; parent pack ready-for-dev and bounded core checkpoint exists; PPM consumer authority open |
 | D | MOD-0354 | DWS Wave 1 structural mechanics | Blueprint 8.1 canonical; draft pack |
 | B | MOD-0355 | BPM Wave 1 process model/version/publish | Blueprint 8.1 canonical; pack not yet authored |
 | S | MOD-0023 | Conditional Gate I-A approval-outcome producer | Blueprint 8.1 canonical; separate PSS-owned amendment required |
@@ -249,6 +249,10 @@ hazard, wherever that hazard first occurs.
   BenefitCommitment carries `0..n` outcome/realization references; its planned target remains in PPM while
   actual measure, period, evidence and realized state remain in MOD-0072. `BenefitCommitment.Closed` does not
   mean realized.
+- **Parallel planning lanes (`NON-EXECUTABLE`):** I-A Decision Trace, I-B Funding & Scenario (two separate
+  atomic adapters under one coordinated lane), and I-C Benefit Realization may prepare contract-test handoffs
+  in parallel. Each still requires its own approved MOD-0117 consumer amendment and explicit runtime authority;
+  cross-lane composition, activation and legacy parity acceptance remain later gates.
 - Gate L lifecycles are neutral PPM planning lifecycles: InvestmentCase
   `Draft → UnderAnalysis → Closed` with `Draft|UnderAnalysis → Withdrawn`; BenefitCommitment
   `Draft → Planned → Active → Closed` with `Draft|Planned|Active → Cancelled`. Terminal states cannot imply
@@ -260,8 +264,9 @@ hazard, wherever that hazard first occurs.
   open.”** Only Gate L + Gate I-A + Gate I-B + Gate I-C + cross-service security/compatibility tests + the
   integrated browser flow may yield **“1.3 Portfolio, Investment & Value Management integrated business flow
   complete.”**
-- MOD-0117 pack is in `review` for Phase 2A only. ExternalContextReference provider endpoint/transport, DWS
-  runtime integration, Gate I-A/B/C integration, Gateway-file work beyond the exact mapping authorized below and WorkCenter
+- MOD-0117 pack is in `review`. The default-disabled ExternalContextReference provider is implemented at
+  PPM checkpoints `eddabab0` + `682b0afb`; production credential/activation, DWS consumer/runtime integration,
+  Gate I-A/B/C integration, Gateway-file work beyond the exact mapping authorized below and WorkCenter
   hazards remain unauthorized. Gate L or Gate I completion does not automatically make the Blueprint-wide
   MOD-0117 product `done`.
 - **Phase 2A PPM object API Gateway mapping authorized; integration-agent only.** Scope is exactly
@@ -317,8 +322,9 @@ references and tenant/audit/concurrency/failure evidence.
 9. `PASS — 2026-07-28:` OD-08 closed by the separate `management-governance` domain scaffold. DWS/BPM
    module-pack authoring still requires separate draft packs and human approval; this reconciliation grants
    no service or production authority.
-10. MOD-0007, MOD-0136, MOD-0138 and MOD-0072 first receive separate canonical parent packs with `draft`
-    status and their institutional business-owner review; physical service placement is decided in those packs.
+10. `PASS for parent-pack/core existence:` MOD-0007, MOD-0136, MOD-0138 and MOD-0072 have separate canonical
+    ready-for-dev parent packs and bounded core checkpoints. Their exact PPM bilateral contracts, branch
+    composition and runtime authority remain separate gates; physical service placement remains producer-owned.
 11. MOD-0023 receives a separate PSS-owned amendment for the PPM-facing approval-outcome contract and
     remediation scope; its existing pack/runtime grants no Gate I-A integration authority.
 12. A MOD-0117 Gate I consumer adapter remains non-executable until its named producer contract is approved,
@@ -676,9 +682,11 @@ Shared `EventEnvelope`, `IEventBus`, outbox and inbox mechanics are owned by
 `Diten.BuildingBlocks.Eventing`. MOD-0117 owns the logical PPM event; Platform is consumer-only.
 `Diten.Platform.Contracts` owns other Platform events where applicable, but not the PPM event.
 PSS-C1 supplies the shared canonical UTF-8 event, trusted allowlisted transport-metadata and reusable
-outbox-writer contracts plus Platform transport adapters. This infrastructure evidence does not supply the
-MOD-0117 event DTO/signer/producer worker, live RabbitMQ evidence, operational replay or external paging,
-and therefore does not close OD-04 or change any module/DCP status.
+outbox-writer contracts plus Platform transport adapters. This PSS infrastructure evidence alone does not
+supply the MOD-0117 event producer. The isolated PPM branch later supplied the logical event, transactional
+intent/outbox and delivery evidence at `b27cebf7`, `b8a5829e`, `c0620554` and audit checkpoint `c80fa550`.
+Production publisher credential/activation, operational replay, external paging and composed normal-port
+evidence remain open; therefore OD-04 and all module/DCP statuses remain unchanged.
 
 The final Minimal Mutation Audit v1 evidence is limited to actor, minimal mutation, PPM aggregate and time;
 it is not authorization/entitlement evidence, a business snapshot or lifecycle history. Delivery uses 5
@@ -845,8 +853,9 @@ and no deferred regression debt.
 - CAND-CAP-0007-FU01 remains conditional and must be reconciled to DCP-006 before any active-scope ES
   containment work.
 - DCP-004 remains authoritative for WorkCenter projection and provider integration.
-- MOD-0007, MOD-0136, MOD-0138 and MOD-0072 proceed as four separate canonical parent-pack authoring jobs,
-  each initially `draft`; this DCP does not decide physical service placement.
+- MOD-0007, MOD-0136, MOD-0138 and MOD-0072 now have separate immutable ready-for-dev parent-pack and bounded
+  core checkpoints. This DCP neither composes those branches nor decides physical placement or PPM runtime
+  adapter authority.
 - MOD-0023 requires a separate PSS-owned amendment before any PPM-facing approval-outcome integration.
 - MOD-0117 consumer amendments and adapters remain non-executable until each named producer contract is
   approved and explicit runtime authority is recorded.
@@ -858,7 +867,7 @@ and no deferred regression debt.
 | OD-01 | ✅ **CLOSED — 2026-07-28:** Master 8.1 is canonical and historical CAND-CAP-0008/0009 aliases resolve to MOD-0354/0355 | None | Enterprise Architect |
 | OD-02 | ✅ **CLOSED — 2026-07-28:** Initial modular-monolith placement with mandatory architecture tests and fail-closed split fallback | Module packs must prove isolation before service scaffold | Enterprise Architect |
 | OD-03 | ✅ **CLOSED — 2026-07-29:** Permanent owner role is Portfolio Governance Process Owner (PPM Business Owner); minimum Slice 2 Phase 2A/2B scope and future `Diten.PpmService` SoR placement are approved. This grants no scaffold or production authority | None; runtime gates remain under OD-04 | Portfolio Governance Process Owner |
-| OD-04 | 🔴 **OPEN / PARTIAL:** MOD-0117 pack is approved and Phase 2A object implementation is authorized. PPM's two-gate entitlement/permission policy, audit event identity and Minimal Mutation Audit v1 consumer contract are governance-locked. PSS-B1 fixes the provider-side `platform.ppm-entitlement-decision.v1` contract and every-instance invalidation behavior. The narrow MOD-0117 `ppm.external-context-reference` provider slice is authorized. Gate L is complete; Gate I-A, Gate I-B and Gate I-C, MOD-0354 consumer/DWS runtime and remaining PSS integration stay open | Four producer parent packs, separate MOD-0023 amendment, producer contracts, later MOD-0117 consumer amendments/adapters, provider/consumer/DWS evidence; does not block the already authorized Phase 2A object implementation | Named Gate I business owners + shared-module owners |
+| OD-04 | 🔴 **OPEN / PARTIAL:** MOD-0117 pack is in `review`; Phase 2A and Gate L are implemented in the isolated PPM branch. PPM's two-gate entitlement/permission policy, audit event identity and Minimal Mutation Audit v1 consumer contract are governance-locked. PSS-B1 fixes the provider-side `platform.ppm-entitlement-decision.v1` contract and every-instance invalidation behavior. The default-disabled MOD-0117 `ppm.external-context-reference` provider is implemented with isolated evidence. Gate I-A, Gate I-B and Gate I-C, MOD-0354 consumer/DWS runtime, production activation and remaining composition stay open | Existing producer pack/core checkpoints must be reconciled into exact bilateral PPM contracts; separate MOD-0023 amendment promotion; later MOD-0117 consumer amendments/adapters; composed activation, provider/consumer/DWS and parity evidence. Does not block the already implemented Phase 2A/Gate L local slices | Named Gate I business owners + shared-module owners |
 | OD-05 | ES containment/migration necessity | CAND-CAP-0007-FU01 participation | ESBP + EA |
 | OD-06 | DCP-005/DCP-006 formal successor relationship after approval | Portfolio governance | Enterprise Architect |
 | OD-07 | ✅ **CLOSED — scope partition, 2026-07-28.** DCP-006 is sole active 1.3/MOD-0117 orchestration; DCP-003 is deferred/non-executable and portfolio-delivery domain config is reconciled | None; draft MOD-0117 pack authoring is eligible after OD-03 closure and canonical preflight, while OD-04 still blocks ready-for-dev/runtime | Enterprise Architect technical/governance owner |
@@ -878,8 +887,8 @@ and no deferred regression debt.
   change.
 - Implement the approved DWS/BPM negative architecture-test design as delivery evidence before service
   completion; the absence of a test project is not a remaining design decision.
-- Author four canonical `draft` parent packs in parallel: MOD-0007, MOD-0136, MOD-0138 and MOD-0072; create
-  no new MOD/FU identity and defer physical placement to those packs.
+- Reconcile the existing immutable MOD-0007, MOD-0136, MOD-0138 and MOD-0072 ready-for-dev/core checkpoints
+  into the later bilateral PPM handoffs; create no new MOD/FU identity and keep physical placement producer-owned.
 - Amend the existing MOD-0023 pack separately in its PSS-owned worktree for the PPM-facing outcome contract
   and remediation scope; do not promote its status through this DCP.
 - After each producer contract is approved, prepare the matching MOD-0117 consumer amendment and only then
@@ -921,21 +930,23 @@ and no deferred regression debt.
 
 ### Audited governance checkpoint provenance
 
-These SHAs identify reviewed governance checkpoints only. They are not merge evidence, producer-pack approval,
-runtime authority, status promotion or permission to implement any adapter:
+The original audited SHAs remain provenance. Later immutable checkpoints prove that the four producer parent
+packs and bounded cores now exist, but they are not composed into this PPM branch and do not grant a PPM
+adapter, runtime, merge or production authority:
 
-| Producer governance checkpoint | Audited SHA |
-|---|---|
-| MOD-0007 | `e900bd09ebc78a5b2cb9d1c55a05b4fb0b4cd634` |
-| MOD-0136 | `37e6c82ee6e2e5f2b8e51829c1245f3a522b8365` |
-| MOD-0138 | `813e30b2a2e4a7e7873ca829bf4fc7695a7f435d` |
-| MOD-0072 | `86434bee75b24fe0976ca2156141517ef36d2dd6` |
-| MOD-0023 PPM amendment | `0ef0a517840d1d8c7d0bbd2fdb2d5d443f0d8470` |
+| Producer | Original audited governance SHA | Later immutable pack/core evidence |
+|---|---|---|
+| MOD-0007 | `e900bd09ebc78a5b2cb9d1c55a05b4fb0b4cd634` | ready-for-dev `ac6ca5e6ed194e640c933c3ccce82b8fac8608d6`; core `2d354a97bfbe09ed665e44dba8665181d2a56d78` |
+| MOD-0136 | `37e6c82ee6e2e5f2b8e51829c1245f3a522b8365` | ready-for-dev `c12110491abd353ced31cd5a51a0142ad6e99ef1`; core `1949b93ead3dc1ac3234673bbe00ed67e3615743` |
+| MOD-0138 | `813e30b2a2e4a7e7873ca829bf4fc7695a7f435d` | ready-for-dev `6bd456f68c43e5e73fcde52bcf6f15b9fceab42e`; core `acae87090f35e5e0a7f37ad66dd8e98fc69c07bb` |
+| MOD-0072 | `86434bee75b24fe0976ca2156141517ef36d2dd6` | ready-for-dev `79a71cf6aa14e637277258dbecc257dc30125c5a`; core `5e937d79d3c2824e1647e8cd105b45c53d19c74c` |
+| MOD-0023 PPM amendment | `0ef0a517840d1d8c7d0bbd2fdb2d5d443f0d8470` | unchanged: `DRAFT / NON-EXECUTABLE` |
 
 ### Change log
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-08-26 | Reconciled the isolated MOD-0117 Gate L/provider/audit checkpoints and later immutable producer ready-for-dev/core evidence. Recorded three parallel NON-EXECUTABLE I-A/I-B/I-C planning lanes while preserving OD-04 OPEN/PARTIAL, MOD-0117 `review`, MOD-0023 DRAFT/NON-EXECUTABLE and all composition/activation/parity gates. | Enterprise Strategy Control Tower governance reconciliation |
 | 2026-08-03 | Reconciled the conditional MOD-0023 approval-outcome consumer wrapper, non-selection validation modes, PPM-owned source-attestation baseline and audited producer checkpoint provenance. MOD-0117 remains `review`; MOD-0023 PPM amendment remains `DRAFT / NON-EXECUTABLE`; OD-04 remains `OPEN / PARTIAL`; no runtime authority or other producer status changed. | User / Portfolio Governance Process Owner |
 | 2026-08-02 | Closed the PPM-owned Gate I consumer profile decision only: exact `1.0` wrappers, shared InvestmentCase context, validation modes/error mapping and four independent future executable slices. No producer contract/status, MOD-0023 scope, runtime authority, MOD-0117 `review` status or OD-04 `OPEN / PARTIAL` status changed. | User / Portfolio Governance Process Owner |
 | 2026-08-02 | Amended the single Gate I into OPEN Gate I-A Decision Trace, Gate I-B Funding & Scenario and Gate I-C Benefit Realization without reducing full 1.3 scope. Recorded canonical logical routing, institutional owner roles, cardinalities, common fail-closed baseline, MOD-0023 hazards/remediation and conjunctive completion wording. This stages draft authoring only; no contract name/version, physical placement, runtime authority, status promotion or gate closure was created. | User / Enterprise Strategy Control Tower |
