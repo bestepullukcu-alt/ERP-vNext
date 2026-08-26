@@ -14,10 +14,17 @@ Design decisions that consume these files:
 
 ## Present
 
-| File | Rows | Status |
-|---|---|---|
-| `GMG_ERP_Task_Type_Seed_2026-08-24.csv` | 31 | current — every row `PROPOSED — QA adoption required` |
-| `SUPERSEDED_GMG_ERP_Folder_Taxonomy_v1_2026-08-11.csv` | 103 | **superseded by v2 — do not import** |
+| File | Rows | Cols | Status |
+|---|---|---|---|
+| `GMG_ERP_Task_Type_Seed_2026-08-24.csv` | 31 | 11 | current — every row `PROPOSED — QA adoption required` |
+| `GMG_ERP_Folder_Taxonomy_v2_2026-08-11.csv` | 103 | 18 | current — carries `folder_id` and `lifecycle_status` |
+| `GMG_ERP_Document_Reference_List_2026-08-24.csv` | 358 | 17 | current — 322 linkable, 36 not |
+| `SUPERSEDED_GMG_ERP_Folder_Taxonomy_v1_2026-08-11.csv` | 103 | 16 | **superseded by v2 — do not import** |
+
+Counted here rather than taken from the covering letter: 322 rows linkable, 23 planned,
+7 void, 6 mandatory-but-unregistered — which is the 36 the letter names. And exactly one
+folder name in v2 is two characters (`HR`), the case our own minimum was refusing until
+it was lowered.
 
 ### Why v1 is superseded
 
@@ -36,9 +43,11 @@ were refused by our own folder-name minimum before it was lowered to two.
 
 | File | Rows | Blocks |
 |---|---|---|
-| `GMG_ERP_Folder_Taxonomy_v2_2026-08-11.csv` | 103 | taxonomy import (slice 4) |
-| `GMG_ERP_Document_Reference_List_2026-08-24.csv` | 358 | the document lookup (slice 2) and the link (slice 3) |
 | `GMG_ERP_Department_to_FUNCTION_TEMPLATE.csv` | — | the department mapping we owe them |
+
+Not on any local disk — searched. Its content is known (seven columns plus the closed
+FUNCTION and ORG lists, both of which are quoted in DCP-005 §6.7), so it can be
+reconstructed rather than waited for.
 
 These live on a desktop this session cannot read — macOS refuses shell access to that
 directory, so a file reaches this repository only when it is attached to a message and
