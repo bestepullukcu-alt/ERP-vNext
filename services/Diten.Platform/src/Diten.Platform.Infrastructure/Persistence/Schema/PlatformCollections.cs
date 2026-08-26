@@ -95,4 +95,10 @@ public static class PlatformCollections
     public const string BusinessReferenceDataValidationResults = "business_reference_data_validation_results";
     public const string DocumentReferenceEntries = "document_reference_entries";
     public const string NotificationEventDefinitions = "notification_event_definitions";
+    public const string DocumentManagementCollectionProvisioningEvidence = "document_management_collection_provisioning_evidence";
+    public const string DocumentManagementCollectionDeviations = "document_management_collection_deviations";
+    public const string TaskComments = "task_comments";
+    public const string TaskTransitions = "task_transitions";
+    public const string TaskTypes = "task_types";
+    public const string DocumentReferenceListVersions = "document_reference_list_versions";
 }

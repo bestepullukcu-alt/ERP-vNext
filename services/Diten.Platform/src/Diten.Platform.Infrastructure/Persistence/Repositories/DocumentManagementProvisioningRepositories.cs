@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -15,7 +16,7 @@ public sealed class ProvisioningEvidenceRepository
     : TenantRepository<DocumentCollectionProvisioningEvidence>, IProvisioningEvidenceRepository
 {
     public ProvisioningEvidenceRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_collection_provisioning_evidence")
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementCollectionProvisioningEvidence)
     {
     }
 
@@ -51,7 +52,7 @@ public sealed class DocumentCollectionDeviationRepository
     : TenantRepository<DocumentCollectionDeviation>, IDocumentCollectionDeviationRepository
 {
     public DocumentCollectionDeviationRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_collection_deviations")
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementCollectionDeviations)
     {
     }
 

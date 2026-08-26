@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities;
@@ -9,7 +10,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 public sealed class TenantNavDomainPreferenceRepository : GlobalRepository<TenantNavDomainPreference>, ITenantNavDomainPreferenceRepository
 {
     public TenantNavDomainPreferenceRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "tenant_nav_domain_preferences")
+        : base(dbContext.Database, tenantContext, PlatformCollections.TenantNavDomainPreferences)
     {
     }
 

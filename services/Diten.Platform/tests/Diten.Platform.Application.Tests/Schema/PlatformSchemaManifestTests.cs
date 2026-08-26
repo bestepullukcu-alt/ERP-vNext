@@ -135,20 +135,12 @@ public class PlatformSchemaManifestTests
         // Lives in the AuthService database, reached through database.Client — not this schema's to own.
         var otherDatabase = new HashSet<string>(StringComparer.Ordinal) { "users" };
 
-        var pattern = new Regex(@"GetCollection<[^>]+>\(""([a-z_0-9]+)""\)", RegexOptions.Compiled);
         var offenders = new SortedSet<string>(StringComparer.Ordinal);
 
-        foreach (var file in Directory.EnumerateFiles(src, "*.cs", SearchOption.AllDirectories))
+        foreach (var (file, name) in CollectionNameLiterals(src))
         {
-            var normalized = file.Replace('\\', '/');
-            if (normalized.Contains("/obj/") || normalized.Contains("/bin/")) continue;
-
-            foreach (Match match in pattern.Matches(File.ReadAllText(file)))
-            {
-                var name = match.Groups[1].Value;
-                if (otherDatabase.Contains(name) || declared.Contains(name)) continue;
-                offenders.Add($"{name}  ({Path.GetRelativePath(src, file).Replace('\\', '/')})");
-            }
+            if (otherDatabase.Contains(name) || declared.Contains(name)) continue;
+            offenders.Add($"{name}  ({file})");
         }
 
         Assert.True(offenders.Count == 0,
@@ -167,26 +159,92 @@ public class PlatformSchemaManifestTests
         var root = RepoRoot();
         var src = Path.Combine(root, "services", "Diten.Platform", "src");
         var declared = PlatformSchemaManifest.All.Select(c => c.Name).ToHashSet(StringComparer.Ordinal);
-        var pattern = new Regex(@"GetCollection<[^>]+>\(""([a-z_0-9]+)""\)", RegexOptions.Compiled);
         var offenders = new SortedSet<string>(StringComparer.Ordinal);
 
-        foreach (var file in Directory.EnumerateFiles(src, "*.cs", SearchOption.AllDirectories))
+        foreach (var (file, name) in CollectionNameLiterals(src))
         {
-            var normalized = file.Replace('\\', '/');
-            if (normalized.Contains("/obj/") || normalized.Contains("/bin/")) continue;
-            if (normalized.Contains("/Persistence/Schema/")) continue; // the manifest is where the name lives
-
-            foreach (Match match in pattern.Matches(File.ReadAllText(file)))
-            {
-                if (!declared.Contains(match.Groups[1].Value)) continue;
-                offenders.Add($"{match.Groups[1].Value}  ({Path.GetRelativePath(src, file).Replace('\\', '/')})");
-            }
+            if (!declared.Contains(name)) continue;
+            offenders.Add($"{name}  ({file})");
         }
 
         Assert.True(offenders.Count == 0,
             "a collection name is typed out again outside the manifest — use the PlatformCollections "
             + "constant so a rename cannot half-land:\n" + string.Join("\n", offenders));
     }
+
+    [Fact]
+    public void NoCollectionNameShapedLiteralSurvivesOutsideItsDeclaration()
+    {
+        /*
+         * ⚠ THE SHAPE-INDEPENDENT BACKSTOP. The two checks above still hunt for CALL SHAPES, and a third
+         * spelling would slip past them the way `: base(…)` slipped past the first one. This one does not
+         * care how the name travels: in the persistence layer, a string literal that LOOKS like a collection
+         * name must not exist at all outside the one place that declares it.
+         *
+         * The exceptions are the six names whose single declaration predates PlatformCollections and lives
+         * next to its owner — AuditCollectionNames, SeedMarkerStore, PersonReferenceRepository. Those are
+         * still ONE declaration each, which is the property that matters; the manifest references the
+         * constant rather than re-typing the string.
+         *
+         * MUTATION GUARD: write "task_comments" anywhere in Persistence/ and this goes red with the file.
+         */
+        var persistence = Path.Combine(
+            RepoRoot(), "services", "Diten.Platform", "src",
+            "Diten.Platform.Infrastructure", "Persistence");
+
+        // snake_case with at least one underscore — the grammar every collection in this database follows.
+        var grammar = new Regex(@"^[a-z][a-z0-9]*(?:_[a-z0-9]+)+$", RegexOptions.Compiled);
+        var literal = new Regex(@"""([a-z][a-z0-9_]{3,})""", RegexOptions.Compiled);
+
+        // Each of these files DECLARES one name, once, and the manifest points at that declaration.
+        var declarationSites = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "AuditCollectionNames.cs", "SeedMarkerStore.cs", "PersonReferenceRepository.cs"
+        };
+
+        // A database name, not a collection: PositionAssignmentSeed reaches into the AuthService database.
+        var notACollection = new HashSet<string>(StringComparer.Ordinal) { "diten_auth_v3" };
+
+        var declared = PlatformSchemaManifest.All.Select(c => c.Name).ToHashSet(StringComparer.Ordinal);
+        var offenders = new SortedSet<string>(StringComparer.Ordinal);
+
+        foreach (var file in Directory.EnumerateFiles(persistence, "*.cs", SearchOption.AllDirectories))
+        {
+            var normalized = file.Replace('\\', '/');
+            if (normalized.Contains("/obj/") || normalized.Contains("/bin/")) continue;
+            if (normalized.Contains("/Persistence/Schema/")) continue;
+
+            var name = Path.GetFileName(file);
+            if (declarationSites.Contains(name)) continue;
+
+            foreach (Match match in literal.Matches(File.ReadAllText(file)))
+            {
+                var value = match.Groups[1].Value;
+                if (!grammar.IsMatch(value) || notACollection.Contains(value)) continue;
+                if (!declared.Contains(value) && !LooksLikeACollection(value)) continue;
+                offenders.Add($"{value}  ({name})");
+            }
+        }
+
+        Assert.True(offenders.Count == 0,
+            "a collection name is written out as a literal in the persistence layer — use the "
+            + "PlatformCollections constant, so the manifest stays the only place the name exists:\n"
+            + string.Join("\n", offenders));
+    }
+
+    /*
+     * A literal the manifest does not know, in the persistence layer, matching the collection grammar, is
+     * reported rather than ignored: it is either a collection nobody declared (the BL-279 defect) or a field
+     * name that reads like one. Both are worth a human look; neither should be silently dropped.
+     */
+    private static bool LooksLikeACollection(string value)
+        => value.StartsWith("task_", StringComparison.Ordinal)
+           || value.StartsWith("platform_", StringComparison.Ordinal)
+           || value.StartsWith("tenant_", StringComparison.Ordinal)
+           || value.StartsWith("workflow_", StringComparison.Ordinal)
+           || value.StartsWith("document_management_", StringComparison.Ordinal)
+           || value.StartsWith("business_reference_data_", StringComparison.Ordinal)
+           || value.StartsWith("notification_", StringComparison.Ordinal);
 
     // ── MEASURED, NOT PINNED ───────────────────────────────────────────────────────────────────────────────
 
@@ -211,6 +269,49 @@ public class PlatformSchemaManifestTests
             .Select(x => x.Name)
             .ToArray();
         Assert.True(unnamed.Length == 0, $"indexes with no resolvable name on: {string.Join(", ", unnamed)}");
+    }
+
+    /*
+     * ── HOW A COLLECTION NAME REACHES MONGO, ALL OF IT ────────────────────────────────────────────────────
+     *
+     * ⚠ THE FIRST VERSION OF THIS SCAN SAW ONE SHAPE AND MISSED SIX COLLECTIONS. It matched
+     * `GetCollection<T>("…")` only — but most repositories here never write that call. They derive from the
+     * generic base and hand the name to it as a CONSTRUCTOR ARGUMENT:
+     *
+     *     public TaskCommentRepository(...) : base(dbContext.Database, tenantContext, "task_comments")
+     *
+     * Seventy call sites take that form. task_comments, task_types, task_transitions,
+     * document_reference_list_versions, document_management_collection_deviations and
+     * document_management_collection_provisioning_evidence were all read by production code, indexed by
+     * nothing, and invisible to the check that existed to find exactly that (BL-279). A guard that covers
+     * one of two spellings is worse than none, because it is believed.
+     */
+    private static readonly Regex[] NamePassedToMongo =
+    {
+        new(@"GetCollection<[^>]+>\(\s*""([a-z_0-9]+)""\s*\)", RegexOptions.Compiled),
+        new(@":\s*base\([^)]*?,\s*""([a-z_0-9]+)""", RegexOptions.Compiled)
+    };
+
+    /// <summary>Every collection-name literal in production source, whichever way it is handed to Mongo.</summary>
+    private static IEnumerable<(string File, string Name)> CollectionNameLiterals(string src)
+    {
+        foreach (var file in Directory.EnumerateFiles(src, "*.cs", SearchOption.AllDirectories))
+        {
+            var normalized = file.Replace('\\', '/');
+            if (normalized.Contains("/obj/") || normalized.Contains("/bin/")) continue;
+            if (normalized.Contains("/Persistence/Schema/")) continue; // the manifest is where the name lives
+
+            var text = File.ReadAllText(file);
+            var relative = Path.GetRelativePath(src, file).Replace('\\', '/');
+
+            foreach (var pattern in NamePassedToMongo)
+            {
+                foreach (Match match in pattern.Matches(text))
+                {
+                    yield return (relative, match.Groups[1].Value);
+                }
+            }
+        }
     }
 
     private static string RepoRoot()

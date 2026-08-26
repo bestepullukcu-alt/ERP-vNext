@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities;
@@ -9,7 +10,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 public sealed class TenantLoginSettingsRepository : GlobalRepository<TenantLoginSettings>, ITenantLoginSettingsRepository
 {
     public TenantLoginSettingsRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "tenant_login_settings") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.TenantLoginSettings) { }
 
     public async Task<TenantLoginSettings?> GetByTenantRefIdAsync(Guid tenantRefId, CancellationToken ct = default)
     {

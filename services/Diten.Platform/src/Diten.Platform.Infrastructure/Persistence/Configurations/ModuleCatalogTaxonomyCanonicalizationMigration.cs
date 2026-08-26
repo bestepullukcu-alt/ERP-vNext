@@ -32,8 +32,8 @@ public static class ModuleCatalogTaxonomyCanonicalizationMigration
             return;
         }
 
-        var domainOptions = await LoadOptionsAsync<ModuleDomain>(database, "platform_module_domains", d => d.Code, d => d.DisplayName, ct);
-        var serviceOptions = await LoadOptionsAsync<ModuleService>(database, "platform_module_services", s => s.Code, s => s.DisplayName, ct);
+        var domainOptions = await LoadOptionsAsync<ModuleDomain>(database, PlatformCollections.ModuleDomains, d => d.Code, d => d.DisplayName, ct);
+        var serviceOptions = await LoadOptionsAsync<ModuleService>(database, PlatformCollections.ModuleServices, s => s.Code, s => s.DisplayName, ct);
 
         // 1) Convert catalog Domain/Service to canonical Code (typo'd DisplayName still present here so it resolves).
         var catalog = database.GetCollection<ModuleCatalogItem>(PlatformCollections.ModuleCatalog);

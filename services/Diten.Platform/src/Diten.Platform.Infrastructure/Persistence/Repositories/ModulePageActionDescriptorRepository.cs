@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities;
@@ -10,7 +11,7 @@ public sealed class ModulePageActionDescriptorRepository
     : TenantRepository<ModulePageActionDescriptor>, IModulePageActionDescriptorRepository
 {
     public ModulePageActionDescriptorRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "platform_module_page_action_descriptors")
+        : base(dbContext.Database, tenantContext, PlatformCollections.ModulePageActionDescriptors)
     {
     }
 

@@ -30,7 +30,7 @@ public sealed class BusinessReferenceDataStewardshipRepository : TenantRepositor
         IPlatformDbContext dbContext,
         ITenantContext tenantContext,
         IOptions<BusinessReferenceDataProviderOptions>? providerOptions = null)
-        : base(dbContext.Database, tenantContext, "business_reference_data_sets")
+        : base(dbContext.Database, tenantContext, PlatformCollections.BusinessReferenceDataSets)
     {
         _setDocuments = dbContext.Database.GetCollection<BsonDocument>(PlatformCollections.BusinessReferenceDataSets);
         _versionDocuments = dbContext.Database.GetCollection<BsonDocument>(PlatformCollections.BusinessReferenceDataVersions);

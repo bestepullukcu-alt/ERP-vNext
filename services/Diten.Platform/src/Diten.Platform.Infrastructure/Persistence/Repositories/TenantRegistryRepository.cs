@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities;
@@ -9,7 +10,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 public sealed class TenantRegistryRepository : GlobalRepository<Tenant>, ITenantRegistryRepository
 {
     public TenantRegistryRepository(IPlatformDbContext dbContext, ITenantContext tenantContext) 
-        : base(dbContext.Database, tenantContext, "tenants") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.Tenants) { }
 
     public async Task<Tenant?> GetByCodeAsync(string code, CancellationToken ct = default)
     {

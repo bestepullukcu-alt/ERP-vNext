@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Tests.Persistence;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Infrastructure.Persistence.Configurations;
 using Diten.Platform.Infrastructure.Persistence.Schema;
@@ -28,7 +29,15 @@ namespace Diten.Platform.Application.Tests.Schema;
 public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
 {
     private const string ConnectionString = "mongodb://localhost:27017";
-    private const string DatabaseName = "diten_platform_schema_contract";
+    /*
+     * ⚠ NAMED UNDER THE HARNESS'S OWNED PREFIX ON PURPOSE. This database is dropped at the end of every test,
+     * but "the end" never arrives if mongod dies mid-run — which is the failure this work exists to fix. A
+     * name inside MongoResidueSweeper.OwnedPrefix, plus the marker stamped below, means a later run will
+     * clean it up instead of leaving it on disk forever.
+     */
+    private const string DatabaseName = MongoResidueSweeper.OwnedPrefix + "_schema_contract";
+
+    private static readonly Guid RunId = Guid.NewGuid();
 
     private MongoClient _client = null!;
     private IMongoDatabase _database = null!;
@@ -53,6 +62,7 @@ public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
         await _client.GetDatabase(DatabaseName).RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
         await _client.DropDatabaseAsync(DatabaseName);
         _database = _client.GetDatabase(DatabaseName);
+        await MongoResidueSweeper.TouchAsync(_database, RunId, DateTime.UtcNow);
     }
 
     public Task DisposeAsync() => _client.DropDatabaseAsync(DatabaseName);
@@ -136,7 +146,7 @@ public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
             .Select(c => c.Name)
             .ToHashSet(StringComparer.Ordinal);
 
-        var actual = (await _database.ListCollectionNames().ToListAsync()).ToHashSet(StringComparer.Ordinal);
+        var actual = await CollectionNamesAsync();
 
         var strays = actual.Except(expected).OrderBy(n => n, StringComparer.Ordinal).ToArray();
         Assert.True(strays.Length == 0,
@@ -246,7 +256,7 @@ public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
         await MongoDbIndexConfigurations.EnsureIndexesAsync(_database);
 
         // (a) the whole manifest, not a slice
-        var actual = (await _database.ListCollectionNames().ToListAsync()).ToHashSet(StringComparer.Ordinal);
+        var actual = await CollectionNamesAsync();
         var missing = PlatformSchemaManifest.All
             .Where(c => c.Indexes.Count > 0)
             .Select(c => c.Name)
@@ -274,6 +284,15 @@ public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
     }
 
     // ── helpers ────────────────────────────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// The collections in the database, minus the harness ownership marker — that one is bookkeeping about
+    /// the database, not part of the schema, and item 3 asks what the SCHEMA created.
+    /// </summary>
+    private async Task<HashSet<string>> CollectionNamesAsync()
+        => (await _database.ListCollectionNames().ToListAsync())
+            .Where(n => !string.Equals(n, MongoResidueSweeper.MarkerCollection, StringComparison.Ordinal))
+            .ToHashSet(StringComparer.Ordinal);
 
     private async Task<Dictionary<string, BsonDocument>> ListIndexesAsync(string collectionName)
     {

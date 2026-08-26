@@ -13,7 +13,7 @@ public sealed class ModulePageDescriptorRepository : TenantRepository<ModulePage
     private readonly IMongoCollection<ModuleCatalogItem> _moduleCatalogCollection;
 
     public ModulePageDescriptorRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "platform_module_page_descriptors")
+        : base(dbContext.Database, tenantContext, PlatformCollections.ModulePageDescriptors)
     {
         _moduleCatalogCollection = dbContext.GetCollection<ModuleCatalogItem>(PlatformCollections.ModuleCatalog);
     }

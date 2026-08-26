@@ -6118,7 +6118,7 @@ Metodun adı "indexleri kur" diyordu; yaptığı üç işti ve ikisi satır yaz�
 - **Gelecek regresyon riski: 🟡** — üretim yolunun tamamı tek bir Mongo testine bağlı; o test atlanırsa (ör.
   mongod yokken) iki iş de sessizce düşebilir. Testin skip-if-unavailable kaçamağı YOK, kasıtlı olarak.
 
-### BL-279 — üç koleksiyon depoda okunuyordu, hiçbir index'i yoktu (2026-08-26, sahiplenildi; index'ler HÂLÂ yok)
+### BL-279 — depoda okunan ama manifestte olmayan koleksiyonlar (2026-08-26, kör nokta KAPANDI; index'ler HÂLÂ yok)
 Manifest'i kurarken kontrat maddesi 1 ("deponun dokunduğu her koleksiyon manifestte var") ilk gün üç tane buldu:
 | koleksiyon | okuyan | index |
 |---|---|---|
@@ -6131,10 +6131,36 @@ Manifest'i kurarken kontrat maddesi 1 ("deponun dokunduğu her koleksiyon manife
 - **Yapılacak:** her biri için doğru tenant-first index'i tasarlamak (DB-001). Bu tur boyutlandırma yapmadı.
 - ⚠ `business_reference_data_validation_results` BRD profilini **8/8**'e çıkardı — sahiplerinin verdiği
   koleksiyon tavanı tam dolu. Bir sonraki BRD koleksiyonu bütçeyi kıracak; bu bir kaza değil, kasıtlı sıkılık.
-- **Kontrat maddesi 1'in bilinen kör noktası:** tarama `GetCollection<T>("literal")` metnini arıyor. Jenerik,
-  konvansiyonla isim türeten depo tabanı (`TenantRepository<T>`) üzerinden yaratılan koleksiyonlar — ör.
-  `task_comments` — bu taramada görünmez, dolayısıyla manifestte de yoklar. Ölçülmedi; sayısı bilinmiyor.
-- **Gelecek regresyon riski: 🟡** — kör nokta kapanana kadar "manifest = tam kayıt" iddiası tam değil.
+**GÜNCELLEME (Aşama 4, 2026-08-26) — kör nokta ölçüldü ve kapatıldı.**
+Sanılan sebep yanlıştı: `TenantRepository<T>` adı **türetmiyor**, adı kurucu argümanı olarak alıyor. Yani ad
+yine bir literal — sadece `GetCollection<T>("…")` içinde değil, `: base(db, ctx, "…")` içinde yazılmış.
+**70 çağrı yeri** bu biçimde. Taramanın göremediği koleksiyon sayısı: **6** (CT'nin "12 dosya" girdisi dosya
+sayısıydı; eksik koleksiyon 6):
+
+| koleksiyon | okuyan | profil | index |
+|---|---|---|---|
+| `task_comments` | `TaskCommentRepository` | WorkflowWorkCenter | yok |
+| `task_types` | `TaskTypeRepository` | WorkflowWorkCenter | yok |
+| `task_transitions` | `TaskTransitionRepository` | WorkflowWorkCenter | yok |
+| `document_reference_list_versions` | `DocumentReferenceListRepository` | WorkflowWorkCenter | yok |
+| `document_management_collection_deviations` | `DocumentCollectionDeviationRepository` | DocumentManagement | yok |
+| `document_management_collection_provisioning_evidence` | `ProvisioningEvidenceRepository` | DocumentManagement | yok |
+
+- Altısı da manifeste eklendi (bilerek boş index listesiyle) ve depoları artık `PlatformCollections` sabitini
+  kullanıyor. **Manifestte olmayan koleksiyon kalmadı**; tek istisna `users` — o Auth'un veritabanında.
+- `AuditEventRepository` **temiz çıktı**: adı zaten `AuditCollectionNames.AuditEvents` sabitinden alıyor.
+- **Kontrat testi güçlendirildi, üç katmanlı:** (1) her iki çağrı biçimi (`GetCollection<T>("…")` **ve**
+  `: base(…, "…")`); (2) manifestteki bir adın dışarıda tekrar yazılmaması; (3) **biçimden bağımsız arka
+  durak** — `Persistence/` altında koleksiyon dilbilgisine uyan hiçbir literal, tek bildirim yeri dışında
+  bulunmasın. Üçüncüsü yazıldığı gün iki tane daha buldu: `ModuleCatalogTaxonomyCanonicalizationMigration`
+  `platform_module_domains` ve `platform_module_services` adlarını elle yazıyordu. Onlar da sabite bağlandı.
+- **Neden üç katman:** ilk tarama tek çağrı biçimi gördüğü için altı koleksiyonu kaçırdı. İkinci biçimi
+  eklemek aynı hatanın üçüncü biçimde tekrarlanmasını engellemiyor; (3) bu yüzden var.
+- **AÇIK KALAN:** altı koleksiyonun hiçbirinde index yok — üçü tenant-scoped ve tenant'a göre sorgulanıyor,
+  yani üretimde COLLSCAN. Doğru tenant-first index'in tasarımı (DB-001) yapılmadı, bu turun kapsamı değildi.
+  BL-279'un asıl borcu budur ve **kapanmadı**; kapanan yalnız görünürlük.
+- **Gelecek regresyon riski: 🟡** — yeni bir indexsiz koleksiyon artık sessizce giremez, ama var olan 9
+  indexsiz koleksiyon (bu 6 + önceki 3) duruyor.
 
 ### BL-280 — profil sertleştirmesi bir testi doğru sebeple kırmızıya çevirdi (2026-08-26, düzeltildi)
 `BusinessReferenceDataUsageLookupMongoTests` iki satırı AYNI `(TenantId, SetCode, ConsumerModule,
@@ -6172,3 +6198,67 @@ Bu makinede ölçüldü (`/opt/homebrew/var/mongodb` dosya sayısı, tek koşu d
   temizliği ayrı tur; temiz bir "ÖNCE/SONRA" o temizlikten sonra alınmalı.
 - **Gelecek regresyon riski: 🟡** — BRD taşınana kadar tam süit hâlâ mongod'u öldürüyor, yani "44 kırmızı"
   rakamı bir test kalitesi ölçüsü değil, çöküş sonrası artık.
+
+### BL-282 — test artıkları artık kendi kendini topluyor (2026-08-26, kuruldu + kanıtlandı)
+Harness bittiğinde kendi veritabanını düşürüyordu; ama "bittiğinde" hiç gelmiyor, çünkü bu işin tamamının
+sebebi mongod'un koşu ortasında ölmesi. Ölçüldü: bu makinede 19 veritabanının **6'sı test artığıydı**, üçü
+harness'ın iki aşama önce bıraktığı bir adlandırmadan kalma. Elle kimse temizlemezdi.
+
+**İkinci savunma hattı:** `MongoResidueSweeper` — koşunun BAŞINDA, terk edilmiş artıkları düşürür.
+- **Silmeye izin veren dört koşulun hepsi gerekli:** (1) ad, harness'ın üretebileceği dilbilgisine uyuyor
+  (`diten_platform_itest` **tam segment** olarak + isteğe bağlı `_token`'lar); (2) veritabanı **bizim
+  yazdığımız işareti** taşıyor (`__diten_harness_marker`); (3) işaretteki koşu kimliği ŞU ANKİ koşu değil;
+  (4) işaret yaş eşiğini (1 saat) aşmış.
+- ⚠ **Yük taşıyan kural ad değil, İŞARET.** Bu oturumda dizgi eşleşmesine dayanan muhafızların ne kadar
+  zayıf olduğunu iki kez ölçtük. Bu harness'ın yaratmadığı bir veritabanı işaret taşımaz ve adı ne olursa
+  olsun silinemez — üretim, `admin`/`config`/`local`, bir başkasının çalışma veritabanı, hepsi bu yüzden
+  erişilemez.
+- ⚠ **Önek parametre DEĞİL.** `SweepAsync` string parametre almıyor; çağıran öneki genişletemez. "Hangi
+  öneki sileyim?" diye soran bir temizleyici, geliştirme veritabanını düşürmekten bir yazım hatası uzaktır ve
+  o hata kimsenin dikkatle incelemediği bir test dosyasında yaşar. Bir test bunu refleksiyonla çiviliyor.
+- ⚠ **Temizlik hatası test hatası olamaz.** Süpürme koşunun en başında, herhangi bir assertion'dan önce
+  çalışır; fırlatsaydı ilk testi kendisiyle ilgisiz bir sebeple kırmızıya çevirir, altındaki gerçek kusur da
+  "temizlik flaky" diye elenirdi. Sorunlar **döndürülüyor** ve ayrıca stderr'e yazılıyor.
+- **İşaret her açılışta yeniden damgalanıyor**, bu yüzden aynı makinede paralel koşan ikinci bir süitin
+  veritabanları her zaman yaş penceresinin içinde kalır. Bu koşul olmasa bir süit diğerininkini test
+  ortasında silerdi ve kurbanın hataları tekrar üretilemez olurdu.
+- **Uçtan uca kanıt (ölçüldü):** üç veritabanı ekildi — (a) sahip önek + geçerli, bayat, başka koşuya ait
+  işaret; (b) aynı önek, işaret YOK; (c) `diten_platform_itestX` + geçerli bayat işaret. Koşu sonrası:
+  **yalnız (a) silindi**, (b) ve (c) yerinde. 19 → 18 veritabanı.
+- **Tek seferlik boşluk:** işaret mekanizmasından ÖNCE kalmış artıklar (bu makinedeki 3 GUID adlı) işaret
+  taşımadığı için asla süpürülmez; onlar elle kaldırıldı (bu turda, ölçüm için). Bundan sonrası otomatik.
+- **Gelecek regresyon riski: 🟢** — dört koşulun her biri ayrı bir mutasyonla çivili; birini kaldır, tam
+  karşılığı olan test kırmızıya döner.
+
+### BL-283 — BRD harness'ı kendi önekiyle artık bırakıyor; süpürücü ona DOKUNAMAZ (2026-08-26, GSKU'da)
+Aşama 4'ün süpürücüsü yalnız `diten_platform_itest` önekini sahipleniyor. BRD harness'ı kendi veritabanlarını
+`diten_brd_gsku_<guid>` / `diten_brd_pub_<guid>` diye adlandırıyor.
+
+**Ölçüldü (2026-08-26, tam Platform süiti):** mongod koşu ortasında öldü; geriye **6 BRD artığı** kaldı
+(`diten_brd_gsku_*` ×5, `diten_brd_pub_*` ×1) ve **bizim önekimizde sıfır artık**. Yani ikinci savunma hattı
+çalışıyor, sadece kapsamadığı bir önek var.
+
+- Tam süit hâlâ: **44 kırmızı · +9.485 dosya · mongod ÖLÜ**. BRD hariç: **2474/2474 · mongod AYAKTA**.
+- **Yapılacak (GSKU):** BRD harness'ı da (a) sabit adlı veya kiracıyla izole veritabanına geçsin,
+  (b) `MongoResidueSweeper` desenini kendi önekiyle uygulasın — işaret + yaş + koşu kimliği, aynı dört koşul.
+  Süpürücüyü "birden çok önek alacak" hale getirmek **önerilmiyor**: öneki parametre yapmak, BL-282'de
+  gerekçesiyle reddedilen tasarımdır.
+- **Gelecek regresyon riski: 🔴** — bu kapanana kadar tam süit her koşuda mongod'u öldürüyor ve "44 kırmızı"
+  bir kalite ölçüsü değil, çöküş artığı.
+
+### BL-284 — üst üste koşu artık büyümüyor (2026-08-26, ölçüm — bu turun asıl kanıtı)
+Sabit adlı veritabanı + doküman silme (veritabanı düşürme değil) + başlangıç süpürmesi birlikte, tekrar eden
+koşuların dosya sayısını sabit hale getiriyor. Temiz başlangıçtan (1.175 `.wt`, 16 veritabanı), Platform
+süiti BRD hariç arka arkaya üç kez:
+
+| koşu | `.wt` öncesi → sonrası | delta | veritabanı | mongod | sonuç |
+|---|---|---|---|---|---|
+| 1 | 1.185 → 1.826 | **+641** | 19 → 18 (artık silindi) | ayakta | 2474/2474 |
+| 2 | 1.826 → 1.822 | **−4** | 18 | ayakta | 2474/2474 |
+| 3 | 1.822 → 1.646 | **−176** | 18 | ayakta | 2474/2474 |
+
+- İlk koşu şemayı kurduğu için ödeme yapıyor; ikinci ve üçüncü koşu **hiç büyütmüyor**, WiredTiger geri
+  kazandıkça küçülüyor. Aranan özellik buydu: koşu başına doğrusal büyüme yerine durağan hâl.
+- Süre: 53 s (Aşama 2 öncesi ölçüm) → **10–13 s**.
+- ⚠ `.wt` sayısı WiredTiger'ın kendi zamanlamasına bağlı olarak gecikmeli düşer; tek bir koşunun deltası
+  değil, **arka arkaya koşuların eğilimi** anlamlıdır. Bu yüzden üç kez koşuldu.

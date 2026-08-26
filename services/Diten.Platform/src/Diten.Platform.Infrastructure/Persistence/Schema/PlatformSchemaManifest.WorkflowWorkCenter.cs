@@ -433,5 +433,49 @@ public static partial class PlatformSchemaManifest
             SchemaProfile.WorkflowWorkCenter,
             PlatformCollections.DocumentReferenceEntries,
             () => Array.Empty<CreateIndexModel<DocumentReferenceEntry>>()),
+        /*
+         * ⚠ NO DECLARED INDEX — a FINDING, not a decision. TaskCommentRepository reads this collection, and the index
+         * configuration never named it, so every query against it is a collection scan. It was invisible to
+         * the first contract check because the name is passed to the generic repository base as a
+         * constructor argument, not written inside a GetCollection<T>("…") call — see BL-279. Sizing the
+         * right tenant-first index is backlog; being in the registry is not.
+         */
+        Collection<TaskComment>(
+            SchemaProfile.WorkflowWorkCenter,
+            PlatformCollections.TaskComments,
+            () => Array.Empty<CreateIndexModel<TaskComment>>()),
+        /*
+         * ⚠ NO DECLARED INDEX — a FINDING, not a decision. TaskTransitionRepository reads this collection, and the index
+         * configuration never named it, so every query against it is a collection scan. It was invisible to
+         * the first contract check because the name is passed to the generic repository base as a
+         * constructor argument, not written inside a GetCollection<T>("…") call — see BL-279. Sizing the
+         * right tenant-first index is backlog; being in the registry is not.
+         */
+        Collection<TaskTransition>(
+            SchemaProfile.WorkflowWorkCenter,
+            PlatformCollections.TaskTransitions,
+            () => Array.Empty<CreateIndexModel<TaskTransition>>()),
+        /*
+         * ⚠ NO DECLARED INDEX — a FINDING, not a decision. TaskTypeRepository reads this collection, and the index
+         * configuration never named it, so every query against it is a collection scan. It was invisible to
+         * the first contract check because the name is passed to the generic repository base as a
+         * constructor argument, not written inside a GetCollection<T>("…") call — see BL-279. Sizing the
+         * right tenant-first index is backlog; being in the registry is not.
+         */
+        Collection<TaskType>(
+            SchemaProfile.WorkflowWorkCenter,
+            PlatformCollections.TaskTypes,
+            () => Array.Empty<CreateIndexModel<TaskType>>()),
+        /*
+         * ⚠ NO DECLARED INDEX — a FINDING, not a decision. DocumentReferenceListRepository reads this collection, and the index
+         * configuration never named it, so every query against it is a collection scan. It was invisible to
+         * the first contract check because the name is passed to the generic repository base as a
+         * constructor argument, not written inside a GetCollection<T>("…") call — see BL-279. Sizing the
+         * right tenant-first index is backlog; being in the registry is not.
+         */
+        Collection<DocumentReferenceListVersion>(
+            SchemaProfile.WorkflowWorkCenter,
+            PlatformCollections.DocumentReferenceListVersions,
+            () => Array.Empty<CreateIndexModel<DocumentReferenceListVersion>>()),
     };
 }

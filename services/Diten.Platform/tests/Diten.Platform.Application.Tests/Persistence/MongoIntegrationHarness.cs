@@ -39,6 +39,23 @@ public sealed class MongoIntegrationHarness : IAsyncDisposable
     private static readonly SemaphoreSlim SchemaGate = new(1, 1);
     private static readonly HashSet<string> AppliedSchemas = new(StringComparer.Ordinal);
 
+    /*
+     * ⚠ RESIDUE CLEANUP, AND WHY IT IS NOT ENOUGH TO DROP ON THE WAY OUT. A harness that tidies up when it
+     * finishes only tidies up when it FINISHES — and the failure this whole body of work is about is mongod
+     * dying mid-run, which is precisely the case where nothing finishes. Measured 2026-08-26: 6 test
+     * databases left on this machine, 3 of them named under a scheme the harness stopped using two stages
+     * ago. So there is a second line: at the start of a run, sweep what an earlier run abandoned.
+     *
+     * See MongoResidueSweeper for the four conditions. The short version: a name match alone never deletes
+     * anything — the database must carry a marker THIS harness wrote.
+     */
+    private static readonly Guid RunId = Guid.NewGuid();
+    private static int _sweepStarted;
+    private static SweepReport? _sweepReport;
+
+    /// <summary>What the start-of-run sweep did. Null until it has run.</summary>
+    public static SweepReport? LastSweep => _sweepReport;
+
     private readonly IMongoClient _client;
     private readonly string? _databaseToDropOnDispose;
 
@@ -107,7 +124,14 @@ public sealed class MongoIntegrationHarness : IAsyncDisposable
         // Fail fast and loudly when Mongo is not reachable, instead of skipping the test.
         await client.GetDatabase(databaseName).RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
 
+        await SweepResidueOnceAsync(client);
+
         var database = client.GetDatabase(databaseName);
+
+        // Stamp BEFORE anything else: from here on this database is visibly owned and visibly in use, so a
+        // sweep running in another process cannot mistake it for residue.
+        await MongoResidueSweeper.TouchAsync(database, RunId, DateTime.UtcNow);
+
         await EnsureSchemaAsync(database, databaseName, profiles);
 
         if (emptyFirst)
@@ -155,6 +179,38 @@ public sealed class MongoIntegrationHarness : IAsyncDisposable
         }
     }
 
+    /*
+     * Runs at most once per process, and never throws into a test.
+     *
+     * ⚠ A CLEANUP FAILURE MUST NOT BE REPORTED AS A TEST FAILURE. If this threw, the first test to construct
+     * a harness would go red for a reason that has nothing to do with it, and the real defect underneath
+     * would be attributed to housekeeping and waved away. Problems are collected and written to stderr, and
+     * MongoResidueSweeperTests asserts that a failing drop is reported rather than swallowed AND rather than
+     * propagated.
+     */
+    private static async Task SweepResidueOnceAsync(IMongoClient client)
+    {
+        if (Interlocked.Exchange(ref _sweepStarted, 1) == 1)
+        {
+            return;
+        }
+
+        var report = await MongoResidueSweeper.SweepAsync(client, RunId, DateTime.UtcNow);
+        _sweepReport = report;
+
+        if (report.Dropped.Count > 0)
+        {
+            Console.Error.WriteLine(
+                "[MongoIntegrationHarness] swept abandoned test databases: "
+                + string.Join(", ", report.Dropped));
+        }
+
+        foreach (var problem in report.Problems)
+        {
+            Console.Error.WriteLine($"[MongoIntegrationHarness] residue sweep problem (not a test failure): {problem}");
+        }
+    }
+
     /// <summary>
     /// Removes every document from this profile's collections, leaving the collections and their indexes
     /// intact. This is the blank slate — not a dropped database.
@@ -169,6 +225,13 @@ public sealed class MongoIntegrationHarness : IAsyncDisposable
          */
         foreach (var name in await database.ListCollectionNames().ToListAsync())
         {
+            // Everything except the ownership marker — clearing that would make this database look like
+            // somebody else's the moment a sweep looked at it.
+            if (string.Equals(name, MongoResidueSweeper.MarkerCollection, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
             await database.GetCollection<BsonDocument>(name)
                 .DeleteManyAsync(Builders<BsonDocument>.Filter.Empty);
         }

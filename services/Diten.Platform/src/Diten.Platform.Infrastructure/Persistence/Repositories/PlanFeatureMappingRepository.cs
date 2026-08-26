@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Features.SubscriptionFeatures;
@@ -9,7 +10,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 public sealed class PlanFeatureMappingRepository : GlobalRepository<PlanFeatureMapping>, IPlanFeatureMappingRepository
 {
     public PlanFeatureMappingRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "platform_plan_feature_mappings")
+        : base(dbContext.Database, tenantContext, PlatformCollections.PlanFeatureMappings)
     {
     }
 

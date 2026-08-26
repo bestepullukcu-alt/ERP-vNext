@@ -438,5 +438,27 @@ public static partial class PlatformSchemaManifest
                         })
 
             }),
+        /*
+         * ⚠ NO DECLARED INDEX — a FINDING, not a decision. ProvisioningEvidenceRepository reads this collection, and the index
+         * configuration never named it, so every query against it is a collection scan. It was invisible to
+         * the first contract check because the name is passed to the generic repository base as a
+         * constructor argument, not written inside a GetCollection<T>("…") call — see BL-279. Sizing the
+         * right tenant-first index is backlog; being in the registry is not.
+         */
+        Collection<DocumentCollectionProvisioningEvidence>(
+            SchemaProfile.DocumentManagement,
+            PlatformCollections.DocumentManagementCollectionProvisioningEvidence,
+            () => Array.Empty<CreateIndexModel<DocumentCollectionProvisioningEvidence>>()),
+        /*
+         * ⚠ NO DECLARED INDEX — a FINDING, not a decision. DocumentCollectionDeviationRepository reads this collection, and the index
+         * configuration never named it, so every query against it is a collection scan. It was invisible to
+         * the first contract check because the name is passed to the generic repository base as a
+         * constructor argument, not written inside a GetCollection<T>("…") call — see BL-279. Sizing the
+         * right tenant-first index is backlog; being in the registry is not.
+         */
+        Collection<DocumentCollectionDeviation>(
+            SchemaProfile.DocumentManagement,
+            PlatformCollections.DocumentManagementCollectionDeviations,
+            () => Array.Empty<CreateIndexModel<DocumentCollectionDeviation>>()),
     };
 }
