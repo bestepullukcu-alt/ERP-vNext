@@ -1,0 +1,27 @@
+{
+  "profile": "mod-0355-audit-contract-negatives-v1",
+  "cases": [
+    {"id": "missing-audit-intent-id", "stage": "schema", "patch": [{"op": "remove", "path": "/auditIntentId"}]},
+    {"id": "missing-actor-id", "stage": "schema", "patch": [{"op": "remove", "path": "/actorId"}]},
+    {"id": "missing-entity-type", "stage": "schema", "patch": [{"op": "remove", "path": "/entityType"}]},
+    {"id": "missing-entity-id", "stage": "schema", "patch": [{"op": "remove", "path": "/entityId"}]},
+    {"id": "missing-mutation", "stage": "schema", "patch": [{"op": "remove", "path": "/mutation"}]},
+    {"id": "missing-occurred-at", "stage": "schema", "patch": [{"op": "remove", "path": "/occurredAtUtc"}]},
+    {"id": "additional-payload-field", "stage": "schema", "patch": [{"op": "add", "path": "/signingIdentity", "value": "forbidden"}]},
+    {"id": "invalid-audit-intent-id", "stage": "schema", "patch": [{"op": "replace", "path": "/auditIntentId", "value": "not-a-uuid"}]},
+    {"id": "invalid-actor-id", "stage": "schema", "patch": [{"op": "replace", "path": "/actorId", "value": "not-a-uuid"}]},
+    {"id": "invalid-entity-id", "stage": "schema", "patch": [{"op": "replace", "path": "/entityId", "value": "not-a-uuid"}]},
+    {"id": "unknown-entity", "stage": "allowlist", "patch": [{"op": "replace", "path": "/entityType", "value": "Unknown"}]},
+    {"id": "unknown-mutation", "stage": "allowlist", "patch": [{"op": "replace", "path": "/mutation", "value": "Deleted"}]},
+    {"id": "invalid-cross-pair", "stage": "allowlist", "patch": [{"op": "replace", "path": "/mutation", "value": "Published"}]},
+    {"id": "non-scalar-occurred-at", "stage": "schema", "patch": [{"op": "replace", "path": "/occurredAtUtc", "value": {"$date": 0}}]},
+    {"id": "wrong-occurred-at-precision", "stage": "schema", "patch": [{"op": "replace", "path": "/occurredAtUtc", "value": "2026-08-26T12:34:56Z"}]},
+    {"id": "string-event-version", "stage": "envelope", "envelopePatch": [{"op": "replace", "path": "/eventVersion", "value": "1"}]},
+    {"id": "wrong-producer", "stage": "envelope", "envelopePatch": [{"op": "replace", "path": "/producer", "value": "Diten.Platform"}]},
+    {"id": "wrong-module", "stage": "envelope", "envelopePatch": [{"op": "replace", "path": "/moduleCode", "value": "MOD-0007"}]},
+    {"id": "wrong-event-name", "stage": "envelope", "envelopePatch": [{"op": "replace", "path": "/eventName", "value": "management-governance.process-modeling-audit-intent.submitted.v2"}]},
+    {"id": "wrong-event-type", "stage": "envelope", "envelopePatch": [{"op": "replace", "path": "/eventType", "value": "ProcessModelingAuditIntentSubmittedV2"}]},
+    {"id": "payload-digest-conflict", "stage": "envelope", "envelopePatch": [{"op": "replace", "path": "/payloadSha256", "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]}
+  ],
+  "disposition": {"terminal": true, "retry": false, "auditEvent": false}
+}

@@ -1,0 +1,21 @@
+{
+  "profile": "mod-0355-process-modeling-audit-fixture-v1",
+  "status": "NON-RUNTIME",
+  "productionAuthority": "none",
+  "mod0021Admission": "deferred-until-immutable-producer-checkpoint",
+  "files": {
+    "process-modeling-audit-intent-submitted-v1.allowlist-matrix.json": "86adf4fffe7f7745b038aea302a4861f30b4f1b36d8fc893f1142f9825467d0d",
+    "process-modeling-audit-intent-submitted-v1.canonical.json": "7ee7d2d6b19d832d71dbe89967b0964ce5932b872b8d2528fb2cf14918500f1a",
+    "process-modeling-audit-intent-submitted-v1.canonical.sha256": "00b1cb298ce933087321af924febfa23af434e75447fa08d300cad7d1e2a8faa",
+    "process-modeling-audit-intent-submitted-v1.contract-negative-matrix.json": "b2a00cacdfcc69725190f7da232b913902265f995e54cd4eee75a59a26e7e631",
+    "process-modeling-audit-intent-submitted-v1.delegated-provenance.negative.json": "641ccf63e5a2402e39f3615b15748f40520ed7a2d15d3d22b077d94e74047970",
+    "process-modeling-audit-intent-submitted-v1.delegated-provenance.positive.json": "eca444ddd2dee7514a4aec8a5af306b367e99fcb38d2da7614b089978e23c7c9",
+    "process-modeling-audit-intent-submitted-v1.envelope.json": "eec6b6cdaa4bcd1d86c905544aee3f864aa7242e6d75c15bbad2729252aa9ac2",
+    "process-modeling-audit-intent-submitted-v1.expected-audit-event.json": "74d682f701de260db5025d9a722bc2245232b383ed9f6f9d8c05ec8c7dcf00e4",
+    "process-modeling-audit-intent-submitted-v1.expected-signature.test-only.txt": "256547b6646456655879e12de9a77d7db861ee5b1f9dfa7a4140c11980305a9a",
+    "process-modeling-audit-intent-submitted-v1.non-delegated-provenance.positive.json": "c74442149f72ec4de1e588de62cb86e80d2885696b64b810dbf3001124414751",
+    "process-modeling-audit-intent-submitted-v1.production-validator-rejection.json": "4cdc25fc2c9f275314866f49e5e24f7f3228ac0589c7dfca3a1f4836785e190b",
+    "process-modeling-audit-intent-submitted-v1.schema.json": "d120a7d27366d60dad141dcf1934543fa2d6338ad2c16f8e880709ccfb11655e",
+    "process-modeling-audit-intent-submitted-v1.signing-vector.test-only.json": "8b82879e9a69331d393f72ddb8c50619a7e950c1c8567c75256ddb3f34ea93d3"
+  }
+}

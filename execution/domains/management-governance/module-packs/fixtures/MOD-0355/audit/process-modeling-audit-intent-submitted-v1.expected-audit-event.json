@@ -1,0 +1,11 @@
+{
+  "sourceService": "Diten.ManagementGovernanceService",
+  "sourceModule": "MOD-0355",
+  "category": "AuditCategory.Integration",
+  "entityType": "ProcessModeling.ProcessArchitecture",
+  "entityId": "35000355-0000-4000-8000-000000000003",
+  "operation": "AuditOperation.Create",
+  "actorId": "35000355-0000-4000-8000-000000000002",
+  "occurredAtUtc": "2026-08-26T12:34:56.0000000Z",
+  "payloadSha256": "7ee7d2d6b19d832d71dbe89967b0964ce5932b872b8d2528fb2cf14918500f1a"
+}

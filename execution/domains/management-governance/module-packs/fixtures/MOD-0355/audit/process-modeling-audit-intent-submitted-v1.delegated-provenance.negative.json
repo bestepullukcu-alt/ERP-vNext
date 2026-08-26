@@ -1,0 +1,16 @@
+{
+  "profile": "delegated",
+  "cases": [
+    {"id": "missing-proof", "patch": [{"op": "remove", "path": "/trustedTransportProvenance"}]},
+    {"id": "unvalidated-proof", "patch": [{"op": "replace", "path": "/trustedTransportProvenance/proofValidated", "value": false}]},
+    {"id": "expired-proof", "patch": [{"op": "replace", "path": "/trustedTransportProvenance/proofExpiresAtUtc", "value": "2026-08-26T12:34:55.0000000Z"}]},
+    {"id": "tenant-mismatch", "patch": [{"op": "replace", "path": "/trustedTransportProvenance/tenantId", "value": "35000355-0000-4000-8000-000000000099"}]},
+    {"id": "actor-mismatch", "patch": [{"op": "replace", "path": "/trustedTransportProvenance/delegatedActorId", "value": "35000355-0000-4000-8000-000000000099"}]},
+    {"id": "operation-mismatch", "patch": [{"op": "replace", "path": "/trustedTransportProvenance/operationId", "value": "process-modeling.architectures.update.v1"}]},
+    {"id": "permission-mismatch", "patch": [{"op": "replace", "path": "/trustedTransportProvenance/permissionKey", "value": "management-governance.process-modeling.architectures.update"}]},
+    {"id": "request-hash-mismatch", "patch": [{"op": "replace", "path": "/trustedTransportProvenance/requestHash", "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]},
+    {"id": "wrong-token-family", "patch": [{"op": "replace", "path": "/trustedTransportProvenance/validatedTokenFamily", "value": "user-session+jwt"}]},
+    {"id": "missing-service-principal", "patch": [{"op": "remove", "path": "/trustedTransportProvenance/servicePrincipalId"}]}
+  ],
+  "disposition": {"terminal": true, "retry": false, "auditEvent": false}
+}

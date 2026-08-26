@@ -1,0 +1,14 @@
+{
+  "eventId": "35000355-0000-4000-8000-000000000001",
+  "eventName": "management-governance.process-modeling-audit-intent.submitted.v1",
+  "eventType": "ProcessModelingAuditIntentSubmittedV1",
+  "eventVersion": 1,
+  "tenantId": "35000355-0000-4000-8000-000000000004",
+  "correlationId": "35000355-0000-4000-8000-000000000005",
+  "causationId": null,
+  "producer": "Diten.ManagementGovernanceService",
+  "moduleCode": "MOD-0355",
+  "occurredAtUtc": "2026-08-26T12:34:56.0000000Z",
+  "payloadFile": "process-modeling-audit-intent-submitted-v1.canonical.json",
+  "payloadSha256": "7ee7d2d6b19d832d71dbe89967b0964ce5932b872b8d2528fb2cf14918500f1a"
+}
