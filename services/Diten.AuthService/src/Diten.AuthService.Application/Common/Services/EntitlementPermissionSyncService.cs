@@ -19,6 +19,16 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
     private static readonly string[] TargetRoleNames =
         [DefaultRolePermissionTemplate.AdminRole, DefaultRolePermissionTemplate.ViewerRole];
 
+    private static readonly string[] ReconciliationRoleNames =
+    [
+        DefaultRolePermissionTemplate.AdminRole,
+        DefaultRolePermissionTemplate.ViewerRole,
+        ProductAbbreviationEntitlementGrantProfile.RequesterRole,
+        ProductAbbreviationEntitlementGrantProfile.StewardRole,
+        ProductAbbreviationEntitlementGrantProfile.ApproverRole,
+        ProductAbbreviationEntitlementGrantProfile.AuditorRole
+    ];
+
     private readonly IPermissionRepository _permissions;
     private readonly IRoleRepository _roles;
     private readonly IRolePermissionRepository _rolePermissions;
@@ -68,6 +78,13 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             .Select(k => k.Trim())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
+        var isProductAbbreviationProfile =
+            ProductAbbreviationEntitlementGrantProfile.AppliesTo(code, keySet);
+        if (isProductAbbreviationProfile)
+        {
+            ProductAbbreviationEntitlementGrantProfile.ValidateExactPermissionSet(keySet);
+        }
+
         // No declared keys (module ships no descriptors yet, or the catalog pull failed) → fall back to the
         // convention + allow-list resolver so workflow / goldencompact and friends still get granted.
         if (keySet.Count == 0)
@@ -84,6 +101,12 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             .Where(p => !p.IsDeleted && keySet.Contains(p.Key))
             .ToList();
 
+        if (isProductAbbreviationProfile)
+        {
+            ProductAbbreviationEntitlementGrantProfile.ValidateExactPermissionSet(
+                modulePermissions.Select(permission => permission.Key));
+        }
+
         await GrantPermissionsToRolesAsync(tenantId, code, modulePermissions, actor, ct);
     }
 
@@ -98,6 +121,21 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
     {
         if (modulePermissions.Count == 0)
         {
+            return;
+        }
+
+        if (ProductAbbreviationEntitlementGrantProfile.AppliesTo(
+                code,
+                modulePermissions.Select(permission => permission.Key)))
+        {
+            ProductAbbreviationEntitlementGrantProfile.ValidateExactPermissionSet(
+                modulePermissions.Select(permission => permission.Key));
+            await ReconcileProductAbbreviationProfileAsync(
+                tenantId,
+                code,
+                modulePermissions,
+                actor,
+                ct);
             return;
         }
 
@@ -144,14 +182,31 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             return;
         }
 
+        IReadOnlyList<Role> productAbbreviationRoles = Array.Empty<Role>();
+        if (string.Equals(
+                code,
+                ProductAbbreviationEntitlementGrantProfile.ModuleCode,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            productAbbreviationRoles = await ResolveProductAbbreviationRolesAsync(
+                tenantId,
+                createMissing: false,
+                ct);
+        }
+
+        var roles = new List<Role>();
         foreach (var roleName in TargetRoleNames)
         {
             var role = await _roles.GetByNameAndTenantAsync(roleName, tenantId, ct);
-            if (role is null)
+            if (role is not null)
             {
-                continue;
+                roles.Add(role);
             }
+        }
+        roles.AddRange(productAbbreviationRoles);
 
+        foreach (var role in roles.DistinctBy(item => item.Id))
+        {
             var existing = await _rolePermissions.GetByRoleAsync(role.Id, tenantId, ct);
 
             // Drop ONLY this module's grants. System (baseline) and Manual (operator) grants — and
@@ -190,6 +245,10 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             {
                 await GrantModuleAsync(tenantId, code, actor, ct);
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex,
@@ -226,6 +285,10 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             {
                 await GrantModuleWithKeysAsync(tenantId, module.ModuleCode, module.PermissionKeys, actor, ct);
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex,
@@ -246,7 +309,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         string actor,
         CancellationToken ct)
     {
-        foreach (var roleName in TargetRoleNames)
+        foreach (var roleName in ReconciliationRoleNames)
         {
             var role = await _roles.GetByNameAndTenantAsync(roleName, tenantId, ct);
             if (role is null)
@@ -268,6 +331,10 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
                 {
                     await RevokeModuleAsync(tenantId, stale, actor, ct);
                 }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    throw;
+                }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex,
@@ -286,4 +353,138 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
                 .ToList(),
             _ => Array.Empty<Permission>()
         };
+
+    private async Task ReconcileProductAbbreviationProfileAsync(
+        Guid tenantId,
+        string code,
+        IReadOnlyList<Permission> modulePermissions,
+        string actor,
+        CancellationToken ct)
+    {
+        var abbreviationPermissions = modulePermissions
+            .Where(permission => ProductAbbreviationEntitlementGrantProfile.IsProductAbbreviationKey(permission.Key))
+            .ToDictionary(permission => permission.Key, StringComparer.OrdinalIgnoreCase);
+        var nonAbbreviationPermissions = modulePermissions
+            .Where(permission => !ProductAbbreviationEntitlementGrantProfile.IsProductAbbreviationKey(permission.Key))
+            .ToList();
+
+        var dedicatedRoles = await ResolveProductAbbreviationRolesAsync(tenantId, createMissing: true, ct);
+        var plans = new List<(Role Role, IReadOnlyList<Permission> Permissions)>();
+
+        foreach (var roleName in TargetRoleNames)
+        {
+            var role = await _roles.GetByNameAndTenantAsync(roleName, tenantId, ct);
+            if (role is null)
+            {
+                continue;
+            }
+
+            IReadOnlyList<Permission> permissions = roleName switch
+            {
+                DefaultRolePermissionTemplate.AdminRole => nonAbbreviationPermissions
+                    .Append(abbreviationPermissions[ProductAbbreviationEntitlementGrantProfile.Read])
+                    .ToList(),
+                DefaultRolePermissionTemplate.ViewerRole => nonAbbreviationPermissions
+                    .Where(permission => string.Equals(
+                        permission.Action,
+                        DefaultRolePermissionTemplate.ReadAction,
+                        StringComparison.OrdinalIgnoreCase))
+                    .Append(abbreviationPermissions[ProductAbbreviationEntitlementGrantProfile.Read])
+                    .ToList(),
+                _ => Array.Empty<Permission>()
+            };
+            plans.Add((role, permissions));
+        }
+
+        foreach (var role in dedicatedRoles)
+        {
+            var template = ProductAbbreviationEntitlementGrantProfile.DedicatedRoles
+                .Single(item => string.Equals(item.RoleName, role.Name, StringComparison.Ordinal));
+            plans.Add((
+                role,
+                template.PermissionKeys.Select(key => abbreviationPermissions[key]).ToList()));
+        }
+
+        var abbreviationPermissionIds = abbreviationPermissions.Values
+            .Select(permission => permission.Id)
+            .ToHashSet();
+
+        foreach (var (role, desiredPermissions) in plans)
+        {
+            var existing = await _rolePermissions.GetByRoleAsync(role.Id, tenantId, ct);
+            var desiredIds = desiredPermissions.Select(permission => permission.Id).ToHashSet();
+
+            var staleAbbreviationGrants = existing
+                .Where(grant => grant.GrantSource == GrantSource.Module
+                                && string.Equals(
+                                    grant.SourceModuleCode,
+                                    code,
+                                    StringComparison.OrdinalIgnoreCase)
+                                && abbreviationPermissionIds.Contains(grant.PermissionId)
+                                && !desiredIds.Contains(grant.PermissionId))
+                .ToList();
+
+            foreach (var stale in staleAbbreviationGrants)
+            {
+                await _rolePermissions.RemoveByIdAsync(stale.Id, tenantId, ct);
+            }
+
+            foreach (var permission in desiredPermissions)
+            {
+                if (existing.Any(grant => grant.PermissionId == permission.Id))
+                {
+                    continue;
+                }
+
+                await _rolePermissions.AssignAsync(
+                    RolePermission.ModuleGrant(role.Id, permission.Id, tenantId, actor, code),
+                    ct);
+            }
+        }
+    }
+
+    private async Task<IReadOnlyList<Role>> ResolveProductAbbreviationRolesAsync(
+        Guid tenantId,
+        bool createMissing,
+        CancellationToken ct)
+    {
+        var existing = new Dictionary<string, Role?>(StringComparer.Ordinal);
+        foreach (var template in ProductAbbreviationEntitlementGrantProfile.DedicatedRoles)
+        {
+            var role = await _roles.GetByNameAndTenantAsync(template.RoleName, tenantId, ct);
+            if (role is not null && !role.IsSystem)
+            {
+                throw new InvalidOperationException(
+                    $"Product Abbreviation system role name collision: '{template.RoleName}'.");
+            }
+
+            existing[template.RoleName] = role;
+        }
+
+        if (!createMissing)
+        {
+            return existing.Values.Where(role => role is not null).Cast<Role>().ToList();
+        }
+
+        var resolved = new List<Role>();
+        foreach (var template in ProductAbbreviationEntitlementGrantProfile.DedicatedRoles)
+        {
+            var role = existing[template.RoleName]
+                       ?? await _roles.UpsertSystemRoleAsync(
+                           template.RoleName,
+                           template.DisplayName,
+                           template.Description,
+                           tenantId,
+                           ct);
+            if (!role.IsSystem)
+            {
+                throw new InvalidOperationException(
+                    $"Product Abbreviation system role name collision: '{template.RoleName}'.");
+            }
+
+            resolved.Add(role);
+        }
+
+        return resolved;
+    }
 }

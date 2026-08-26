@@ -573,6 +573,15 @@
   <data name="Nav.Page.TASKEDIT" xml:space="preserve">
     <value>Editar tarea</value>
   </data>
+  <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
+    <value>Maestro de Producto / Artículo / SKU</value>
+  </data>
+  <data name="Nav.Page.GLOBALPRODUCTS" xml:space="preserve">
+    <value>Productos globales</value>
+  </data>
+  <data name="Nav.Page.GSKUS" xml:space="preserve">
+    <value>GSKU</value>
+  </data>
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>Tipos de tarea</value>
   </data>

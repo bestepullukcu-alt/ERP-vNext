@@ -573,6 +573,15 @@
   <data name="Nav.Page.TASKEDIT" xml:space="preserve">
     <value>تحرير المهمة</value>
   </data>
+  <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
+    <value>البيانات الرئيسية للمنتج / الصنف / وحدة حفظ المخزون</value>
+  </data>
+  <data name="Nav.Page.GLOBALPRODUCTS" xml:space="preserve">
+    <value>المنتجات العالمية</value>
+  </data>
+  <data name="Nav.Page.GSKUS" xml:space="preserve">
+    <value>GSKU</value>
+  </data>
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>أنواع المهام</value>
   </data>

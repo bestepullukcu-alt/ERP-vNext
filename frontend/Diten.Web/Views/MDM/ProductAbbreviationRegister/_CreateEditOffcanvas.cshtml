@@ -1,0 +1,35 @@
+@using Diten.Web.Views.MDM.ProductAbbreviationRegister
+@model Diten.Web.Models.ProductAbbreviationRegister.RequestProductAbbreviationViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProductAbbreviationRegisterIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit"
+     aria-labelledby="offcanvasCreateEditLabel" style="width: 480px;">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">@Localizer["RequestTitle"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="formProductAbbreviationRequest" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="mb-4">
+                <label for="requestGlobalProduct" class="form-label">@Localizer["GlobalProduct"] <span class="text-danger">*</span></label>
+                <select id="requestGlobalProduct" name="GlobalProductId" class="form-select select2"
+                        data-placeholder="@Localizer["SelectGlobalProduct"]" required></select>
+                <div class="invalid-feedback">@Localizer["GlobalProductRequired"]</div>
+            </div>
+            <div class="mb-4">
+                <label for="requestAbbreviation" class="form-label">@Localizer["Abbreviation"] <span class="text-danger">*</span></label>
+                <input id="requestAbbreviation" name="Abbreviation" class="form-control text-uppercase"
+                       type="text" minlength="3" maxlength="3" autocomplete="off" required />
+                <div class="form-text">@Localizer["AbbreviationHelp"]</div>
+                <div class="invalid-feedback">@Localizer["AbbreviationRequired"]</div>
+            </div>
+        </form>
+    </div>
+    <div class="offcanvas-footer border-top p-4 d-flex gap-2">
+        <button type="button" class="btn btn-label-secondary flex-grow-1" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" class="btn btn-primary flex-grow-1" id="btnRequestAbbreviation">@Localizer["RequestAction"]</button>
+    </div>
+</div>

@@ -1,0 +1,31 @@
+@using Diten.Web.Views.MasterDataManagement.Gskus
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<GskusIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["GskusTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canCreate = ViewData["CanCreateGsku"] as bool? == true;
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/MasterDataManagement/Gskus/_Filter.cshtml" />
+
+<div class="mb-3" data-can-create="@canCreate.ToString().ToLowerInvariant()">
+    <h5 class="mb-0">@Localizer["GskusTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/MasterDataManagement/Gskus/_DataTable.cshtml" />
+@* Contract marker rendered by the partial: id="offcanvasDetailsPreview" *@
+<partial name="~/Views/MasterDataManagement/Gskus/_DetailsQuickView.cshtml" />
+@if (canCreate)
+{
+    <partial name="~/Views/MasterDataManagement/Gskus/_CreateEditOffcanvas.cshtml" />
+}
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/MasterDataManagement/Gskus/_IndexL10n.cshtml" />
+    <script src="~/assets/js/MasterDataManagement/Gskus/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/MasterDataManagement/Gskus/index.js" asp-append-version="true"></script>
+}

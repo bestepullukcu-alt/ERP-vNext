@@ -218,6 +218,22 @@ public static class BusinessReferenceDataGovernanceModeResolver
 }
 
 /// <summary>
+/// Runtime publication remains disabled until real workflow/evidence governance is delivered.
+/// Tests may replace this service through DI with an explicit test-only positive seam.
+/// </summary>
+public sealed class RuntimeBusinessReferenceDataPublicationEligibility : IBusinessReferenceDataPublicationEligibility
+{
+    public BusinessReferenceDataPublicationEligibilityDecision Evaluate()
+    {
+        var mode = BusinessReferenceDataGovernanceModeResolver.Resolve();
+        return new BusinessReferenceDataPublicationEligibilityDecision(
+            false,
+            "REFERENCE_GOVERNANCE_NOT_PRODUCTION_SAFE",
+            mode.ToString());
+    }
+}
+
+/// <summary>
 /// Disabled-mode workflow adapter. MOD-0023 is not wired, so the approval workflow step is
 /// skipped and the version proceeds, but the result is explicitly flagged (not mocked) so the
 /// governance audit trail records that the workflow was bypassed rather than silently succeeded.

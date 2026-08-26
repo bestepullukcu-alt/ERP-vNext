@@ -28,6 +28,12 @@ namespace Diten.Platform.Application.Features.ModuleRegistration;
 public sealed class RegisterModuleManifestCommandHandler
     : IRequestHandler<RegisterModuleManifestCommand, Response<ModuleManifestReconcileResult>>
 {
+    private const string ProtectedModuleCode = "PRODUCT-ITEM-SKU-MASTER";
+    private const string ProtectedModuleName = "ProductItemSkuMaster";
+    private const string ProtectedDomain = "MASTERDATAMANAGEMENT";
+    private const string ProtectedService = "DITENMDMSERVICE";
+    private const string ProtectedOwner = "DITENMDMSERVICE";
+
     private readonly IModuleCatalogRepository _catalogRepository;
     private readonly IModulePageDescriptorRepository _pageRepository;
     private readonly IModulePageActionDescriptorRepository _actionRepository;
@@ -63,7 +69,20 @@ public sealed class RegisterModuleManifestCommandHandler
             return Response<ModuleManifestReconcileResult>.Fail("ModuleCode is required.", 400);
         }
 
-        var catalogAction = await ReconcileCatalogItemAsync(manifest, moduleCode, ct);
+        if (string.Equals(moduleCode, ProtectedModuleCode, StringComparison.Ordinal))
+        {
+            var ownerGuardFailure = await ValidateProtectedOwnerIdentityAsync(request, moduleCode, ct);
+            if (ownerGuardFailure is not null)
+            {
+                return Response<ModuleManifestReconcileResult>.Fail(ownerGuardFailure, 409);
+            }
+        }
+
+        var catalogAction = await ReconcileCatalogItemAsync(
+            manifest,
+            moduleCode,
+            string.Equals(moduleCode, ProtectedModuleCode, StringComparison.Ordinal) ? ProtectedOwner : null,
+            ct);
 
         var pagesUpserted = 0;
         var actionsUpserted = 0;
@@ -195,7 +214,54 @@ public sealed class RegisterModuleManifestCommandHandler
                 moduleCode, catalogAction, pagesUpserted, actionsUpserted, permissionsSynced, pagesSkipped, pagesPruned, actionsPruned));
     }
 
-    private async Task<string> ReconcileCatalogItemAsync(ModuleManifestDocument manifest, string moduleCode, CancellationToken ct)
+    private async Task<string?> ValidateProtectedOwnerIdentityAsync(
+        RegisterModuleManifestCommand request,
+        string moduleCode,
+        CancellationToken ct)
+    {
+        var manifest = request.Manifest;
+        if (!string.Equals(
+                ModuleTaxonomyCanonicalizer.NormalizeKey(request.TrustedProducerOwnerCode),
+                ProtectedOwner,
+                StringComparison.Ordinal))
+        {
+            return "Trusted producer owner does not match the protected module owner.";
+        }
+
+        if (!string.Equals(manifest.ModuleName?.Trim(), ProtectedModuleName, StringComparison.Ordinal)
+            || !string.Equals(ModuleTaxonomyCanonicalizer.NormalizeKey(manifest.Domain), ProtectedDomain, StringComparison.Ordinal)
+            || !string.Equals(ModuleTaxonomyCanonicalizer.NormalizeKey(manifest.Service), ProtectedService, StringComparison.Ordinal))
+        {
+            return "Manifest identity does not match the protected module identity.";
+        }
+
+        var existing = await _catalogRepository.GetByCodeIncludingDeletedAsync(moduleCode, ct);
+        if (existing is null)
+        {
+            return null;
+        }
+
+        if (!string.Equals(ModuleCatalogCodeNormalizer.Normalize(existing.ModuleCode), ProtectedModuleCode, StringComparison.Ordinal)
+            || !string.Equals(existing.ModuleName?.Trim(), ProtectedModuleName, StringComparison.Ordinal)
+            || !string.Equals(existing.ProducerOwnerCode, ProtectedOwner, StringComparison.Ordinal)
+            || existing.Origin != ModuleCatalogOrigin.SelfRegistered)
+        {
+            return "Catalog owner identity conflicts with the protected module identity.";
+        }
+
+        if (existing.IsDeleted)
+        {
+            await _catalogRepository.RestoreAsync(existing, ct);
+        }
+
+        return null;
+    }
+
+    private async Task<string> ReconcileCatalogItemAsync(
+        ModuleManifestDocument manifest,
+        string moduleCode,
+        string? producerOwnerCode,
+        CancellationToken ct)
     {
         // FIX-SELFREG-DOMAIN-REGISTER — ensure the manifest's Domain exists in the operator lookup (auto-register an
         // unknown domain), on BOTH first-register and re-push, so Domain Management surfaces self-registered domains
@@ -216,6 +282,7 @@ public sealed class RegisterModuleManifestCommandHandler
                 DisplayName = manifest.DisplayName.Trim(),
                 Domain = seededDomain,
                 Service = seededService,
+                ProducerOwnerCode = producerOwnerCode,
                 Status = ModuleCatalogStatus.Active,
                 ModuleVersion = string.IsNullOrWhiteSpace(manifest.ModuleVersion) ? "1.0.0" : manifest.ModuleVersion.Trim(),
                 IsTenantAssignable = manifest.IsTenantAssignable,

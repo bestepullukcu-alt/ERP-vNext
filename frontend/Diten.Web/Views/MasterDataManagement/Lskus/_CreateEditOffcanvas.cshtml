@@ -1,0 +1,5 @@
+@using Diten.Web.Views.MasterDataManagement.Lskus
+@model Diten.Web.Models.Lskus.CreateLskuViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LskusIndex> Localizer
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit"><div class="offcanvas-header"><h5>@Localizer["CreateTitle"]</h5><button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button></div><div class="offcanvas-body"><form id="formLsku" novalidate>@Html.AntiForgeryToken()<input type="hidden" id="formAttemptToken" name="FormAttemptToken" value="@ViewData["LskuFormAttemptToken"]" /><div class="mb-3"><label for="gskuId" class="form-label">@Localizer["Gsku"] *</label><select id="gskuId" name="GskuId" class="form-select" required><option value=""></option></select></div><div class="mb-3"><label for="marketCode" class="form-label">@Localizer["Market"] *</label><select id="marketCode" name="MarketCode" class="form-select" required><option value=""></option></select></div><div id="requiredProgress">0/2</div><button id="btnSaveLsku" type="button" class="btn btn-primary">@Localizer["Save"]</button></form></div></div>

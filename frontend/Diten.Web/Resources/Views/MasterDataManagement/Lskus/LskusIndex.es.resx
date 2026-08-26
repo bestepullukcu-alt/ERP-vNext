@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Title"><value>SKU locales</value></data>
+  <data name="PageDescription"><value>Cree y revise SKU específicos del mercado</value></data>
+  <data name="CreateTitle"><value>Crear LSKU</value></data>
+  <data name="Gsku"><value>GSKU</value></data>
+  <data name="Market"><value>Mercado</value></data>
+  <data name="Save"><value>Guardar</value></data>
+  <data name="AddNew"><value>Agregar</value></data>
+  <data name="Unknown"><value>Desconocido</value></data>
+  <data name="Actions"><value>Acciones</value></data>
+  <data name="ViewDetails"><value>Ver detalles</value></data>
+  <data name="QuickView"><value>Vista rápida</value></data>
+  <data name="Cancel"><value>Cancelar</value></data>
+  <data name="Search"><value>Buscar</value></data>
+  <data name="Export"><value>Exportar</value></data>
+  <data name="Filter"><value>Filtrar</value></data>
+  <data name="Apply"><value>Aplicar</value></data>
+  <data name="Reset"><value>Restablecer</value></data>
+  <data name="SaveView"><value>Guardar vista</value></data>
+  <data name="ColumnVisibility"><value>Visibilidad de columnas</value></data>
+  <data name="Status"><value>Estado</value></data>
+  <data name="CanonicalCode"><value>Código canónico</value></data>
+  <data name="Version"><value>Versión</value></data>
+  <data name="CreatedAt"><value>Creado</value></data>
+  <data name="UpdatedAt"><value>Actualizado</value></data>
+  <data name="Loading"><value>Cargando</value></data>
+  <data name="CreateSuccess"><value>LSKU creado</value></data>
+  <data name="CreateReconciliationPending"><value>La creación está pendiente de conciliación.</value></data>
+  <data name="ErrorInvalidFormAttempt"><value>Intento de formulario no válido.</value></data>
+  <data name="ErrorValidation"><value>Revise los campos obligatorios.</value></data>
+  <data name="ErrorNotFound"><value>No se encontró el elemento referenciado.</value></data>
+  <data name="ErrorConflict"><value>La solicitud entra en conflicto con los datos existentes.</value></data>
+  <data name="ErrorProviderUnavailable"><value>El proveedor de referencia no está disponible.</value></data>
+  <data name="ErrorProviderTimeout"><value>El proveedor de referencia agotó el tiempo de espera.</value></data>
+  <data name="ErrorForbidden"><value>No tiene permiso.</value></data>
+  <data name="ErrorGateway"><value>No se pudo completar la solicitud.</value></data>
+</root>

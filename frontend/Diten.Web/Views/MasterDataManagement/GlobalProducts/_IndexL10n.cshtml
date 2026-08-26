@@ -1,0 +1,52 @@
+@using Diten.Web.Views.MasterDataManagement.GlobalProducts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<GlobalProductsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="globalproducts-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Actions = Localizer["Actions"].Value,
+        AddNew = Localizer["AddNew"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        ComingSoon = SharedLocalizer["ComingSoon"].Value,
+        Details = SharedLocalizer["Details"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        FormTitleCreate = Localizer["FormTitleCreate"].Value,
+        GlobalProductNameRequired = Localizer["GlobalProductNameRequired"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        QuickView = SharedLocalizer["ViewDetails"].Value,
+        LifecycleDraft = Localizer["LifecycleDraft"].Value,
+        LifecycleIdentityApproved = Localizer["LifecycleIdentityApproved"].Value,
+        LifecyclePendingIdentityApproval = Localizer["LifecyclePendingIdentityApproval"].Value,
+        LifecycleRetired = Localizer["LifecycleRetired"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        RecordCreated = SharedLocalizer["RecordCreated"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        CreateConfirmation = Localizer["CreateConfirmation"].Value,
+        CreateSuccessWithCode = Localizer["CreateSuccessWithCode"].Value,
+        ErrorUnauthorized = Localizer["ErrorUnauthorized"].Value,
+        ErrorForbidden = Localizer["ErrorForbidden"].Value,
+        ErrorNotFound = Localizer["ErrorNotFound"].Value,
+        ErrorConflict = Localizer["ErrorConflict"].Value,
+        ErrorValidation = Localizer["ErrorValidation"].Value,
+        ErrorGateway = Localizer["ErrorGateway"].Value,
+        ErrorDuplicateName = Localizer["ErrorDuplicateName"].Value,
+        ErrorReservationRequired = Localizer["ErrorReservationRequired"].Value
+    })
+</script>

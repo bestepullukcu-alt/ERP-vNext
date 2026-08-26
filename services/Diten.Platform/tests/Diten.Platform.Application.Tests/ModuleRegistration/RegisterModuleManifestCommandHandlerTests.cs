@@ -202,6 +202,98 @@ public sealed class RegisterModuleManifestCommandHandlerTests
         Assert.Single(pages.Items, p => !p.IsDeleted); // only RECORDS is live
     }
 
+    [Fact]
+    public async Task Protected_product_matching_owner_creates_binding_and_replays_idempotently()
+    {
+        var (handler, catalog, pages, _, _) = Build();
+        var command = new RegisterModuleManifestCommand(ProductManifest(), "DITENMDMSERVICE");
+
+        var first = await handler.Handle(command, CancellationToken.None);
+        var second = await handler.Handle(command, CancellationToken.None);
+
+        Assert.True(first.IsSuccessful);
+        Assert.True(second.IsSuccessful);
+        Assert.Equal("updated", second.Data!.CatalogAction);
+        Assert.Equal("DITENMDMSERVICE", Assert.Single(catalog.Items).ProducerOwnerCode);
+        Assert.Single(pages.Items);
+    }
+
+    [Fact]
+    public async Task Protected_product_body_service_mismatch_fails_before_mutation()
+    {
+        var (handler, catalog, pages, _, sync) = Build();
+        var manifest = ProductManifest() with { Service = "SomeOtherService" };
+
+        var result = await handler.Handle(new RegisterModuleManifestCommand(manifest, "DITENMDMSERVICE"), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Empty(catalog.Items);
+        Assert.Empty(pages.Items);
+        Assert.Empty(sync.SyncedKeys);
+    }
+
+    [Fact]
+    public async Task Protected_product_active_collision_fails_before_mutation()
+    {
+        var (handler, catalog, pages, _, sync) = Build();
+        catalog.Items.Add(new ModuleCatalogItem
+        {
+            ModuleCode = "PRODUCT-ITEM-SKU-MASTER",
+            ModuleName = "ProductItemSkuMaster",
+            ProducerOwnerCode = "SOMEOTHEROWNER",
+            Origin = ModuleCatalogOrigin.SelfRegistered
+        });
+
+        var result = await handler.Handle(new RegisterModuleManifestCommand(ProductManifest(), "DITENMDMSERVICE"), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Empty(pages.Items);
+        Assert.Empty(sync.SyncedKeys);
+    }
+
+    [Fact]
+    public async Task Protected_product_soft_deleted_collision_fails_without_restore()
+    {
+        var (handler, catalog, pages, _, sync) = Build();
+        var collision = new ModuleCatalogItem
+        {
+            ModuleCode = "PRODUCT-ITEM-SKU-MASTER",
+            ModuleName = "ProductItemSkuMaster",
+            ProducerOwnerCode = "SOMEOTHEROWNER",
+            Origin = ModuleCatalogOrigin.SelfRegistered,
+            IsDeleted = true
+        };
+        catalog.Items.Add(collision);
+
+        var result = await handler.Handle(new RegisterModuleManifestCommand(ProductManifest(), "DITENMDMSERVICE"), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.True(collision.IsDeleted);
+        Assert.Empty(pages.Items);
+        Assert.Empty(sync.SyncedKeys);
+    }
+
+    [Fact]
+    public async Task Protected_product_same_identity_soft_deleted_row_restores_after_guard()
+    {
+        var (handler, catalog, _, _, _) = Build();
+        var existing = new ModuleCatalogItem
+        {
+            ModuleCode = "PRODUCT-ITEM-SKU-MASTER",
+            ModuleName = "ProductItemSkuMaster",
+            ProducerOwnerCode = "DITENMDMSERVICE",
+            Origin = ModuleCatalogOrigin.SelfRegistered,
+            IsDeleted = true
+        };
+        catalog.Items.Add(existing);
+
+        var result = await handler.Handle(new RegisterModuleManifestCommand(ProductManifest(), "DITENMDMSERVICE"), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.False(existing.IsDeleted);
+        Assert.Equal("updated", result.Data!.CatalogAction);
+    }
+
     // ── manifest ──
     private static ModuleManifestDocument GoldenSlimManifest(string recordsRoute = "/GoldenReferenceSlim") =>
         new(
@@ -213,6 +305,16 @@ public sealed class RegisterModuleManifestCommandHandlerTests
                     new ModuleManifestAction("UPDATE", "Edit", "goldenslim.records.update", "RowAction", 20, false, false, true),
                     new ModuleManifestAction("DELETE", "Delete", "goldenslim.records.delete", "RowAction", 30, true, false, true)
                 ])
+            ]);
+
+    private static ModuleManifestDocument ProductManifest() =>
+        new(
+            "product-item-sku-master", "ProductItemSkuMaster", "Product", "MasterDataManagement", "DitenMdmService",
+            "1.0.0", true, 100,
+            [
+                new ModuleManifestPage(
+                    "GLOBAL_PRODUCTS", "Global Products", "/GlobalProducts", "mdm.global-products.read", null, true, "List", 10,
+                    [new ModuleManifestAction("CREATE", "Create", "mdm.global-products.create", "Toolbar", 10, false, true, false)])
             ]);
 
     // ── harness ──
@@ -302,6 +404,15 @@ public sealed class RegisterModuleManifestCommandHandlerTests
 
         public Task<ModuleCatalogItem?> GetByCodeAsync(string moduleCode, CancellationToken ct = default) =>
             Task.FromResult(Items.FirstOrDefault(x => x.ModuleCode == moduleCode && !x.IsDeleted));
+
+        public Task<ModuleCatalogItem?> GetByCodeIncludingDeletedAsync(string moduleCode, CancellationToken ct = default) =>
+            Task.FromResult(Items.FirstOrDefault(x => x.ModuleCode == moduleCode));
+
+        public Task RestoreAsync(ModuleCatalogItem item, CancellationToken ct = default)
+        {
+            item.IsDeleted = false;
+            return Task.CompletedTask;
+        }
 
         public Task UpdateAsync(ModuleCatalogItem item, CancellationToken ct = default) => Task.CompletedTask;
 

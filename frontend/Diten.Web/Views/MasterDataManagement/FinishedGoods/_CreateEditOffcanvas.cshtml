@@ -1,0 +1,35 @@
+@model Diten.Web.Models.FinishedGoods.CreateFinishedGoodViewModel
+@using Diten.Web.Views.MasterDataManagement.FinishedGoods
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<FinishedGoodsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">@Localizer["FormTitleCreate"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body border-top p-4">
+        <div id="formFinishedGoodAlert" class="alert alert-danger d-none" role="alert"></div>
+        <form id="formFinishedGood" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="gskuId" class="form-label fw-medium">
+                        @Localizer["Gsku"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="gskuId" name="GskuId" class="form-select select2" required
+                            data-placeholder="@Localizer["GskuPlaceholder"]">
+                        <option value=""></option>
+                    </select>
+                    <div class="invalid-feedback">@Localizer["GskuRequired"]</div>
+                    <div class="form-text">@Localizer["CanonicalCodeHelp"]</div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" id="btnSaveFinishedGood" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>

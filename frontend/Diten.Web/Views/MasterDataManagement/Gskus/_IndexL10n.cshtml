@@ -1,0 +1,47 @@
+@using Diten.Web.Views.MasterDataManagement.Gskus
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<GskusIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="gskus-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        AddNew = Localizer["AddNew"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        CreateConfirmation = Localizer["CreateConfirmation"].Value,
+        CreateReconciliationPending = Localizer["CreateReconciliationPending"].Value,
+        CreateSuccessWithIdentifiers = Localizer["CreateSuccessWithIdentifiers"].Value,
+        ErrorConflict = Localizer["ErrorConflict"].Value,
+        ErrorForbidden = Localizer["ErrorForbidden"].Value,
+        ErrorGateway = Localizer["ErrorGateway"].Value,
+        ErrorInvalidFormAttempt = Localizer["ErrorInvalidFormAttempt"].Value,
+        ErrorNotFound = Localizer["ErrorNotFound"].Value,
+        ErrorProviderTimeout = Localizer["ErrorProviderTimeout"].Value,
+        ErrorProviderUnavailable = Localizer["ErrorProviderUnavailable"].Value,
+        ErrorUnauthorized = Localizer["ErrorUnauthorized"].Value,
+        ErrorValidation = Localizer["ErrorValidation"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        GlobalProductRequired = Localizer["GlobalProductRequired"].Value,
+        LifecycleDraft = Localizer["LifecycleDraft"].Value,
+        LifecycleIdentityApproved = Localizer["LifecycleIdentityApproved"].Value,
+        LifecyclePendingIdentityApproval = Localizer["LifecyclePendingIdentityApproval"].Value,
+        LifecycleRetired = Localizer["LifecycleRetired"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        OptionsEmpty = Localizer["OptionsEmpty"].Value,
+        PackQuantityPrecision = Localizer["PackQuantityPrecision"].Value,
+        PackQuantityRequired = Localizer["PackQuantityRequired"].Value,
+        PackUomRequired = Localizer["PackUomRequired"].Value,
+        QuickView = SharedLocalizer["ViewDetails"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value
+    })
+</script>

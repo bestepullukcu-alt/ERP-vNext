@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Title"><value>本地 SKU</value></data>
+  <data name="PageDescription"><value>创建和查看市场专属 SKU</value></data>
+  <data name="CreateTitle"><value>创建 LSKU</value></data>
+  <data name="Gsku"><value>GSKU</value></data>
+  <data name="Market"><value>市场</value></data>
+  <data name="Save"><value>保存</value></data>
+  <data name="AddNew"><value>新增</value></data>
+  <data name="Unknown"><value>未知</value></data>
+  <data name="Actions"><value>操作</value></data>
+  <data name="ViewDetails"><value>查看详情</value></data>
+  <data name="QuickView"><value>快速查看</value></data>
+  <data name="Cancel"><value>取消</value></data>
+  <data name="Search"><value>搜索</value></data>
+  <data name="Export"><value>导出</value></data>
+  <data name="Filter"><value>筛选</value></data>
+  <data name="Apply"><value>应用</value></data>
+  <data name="Reset"><value>重置</value></data>
+  <data name="SaveView"><value>保存视图</value></data>
+  <data name="ColumnVisibility"><value>列可见性</value></data>
+  <data name="Status"><value>状态</value></data>
+  <data name="CanonicalCode"><value>规范代码</value></data>
+  <data name="Version"><value>版本</value></data>
+  <data name="CreatedAt"><value>创建时间</value></data>
+  <data name="UpdatedAt"><value>更新时间</value></data>
+  <data name="Loading"><value>正在加载</value></data>
+  <data name="CreateSuccess"><value>LSKU 已创建</value></data>
+  <data name="CreateReconciliationPending"><value>创建正在等待协调。</value></data>
+  <data name="ErrorInvalidFormAttempt"><value>表单尝试无效。</value></data>
+  <data name="ErrorValidation"><value>请检查必填字段。</value></data>
+  <data name="ErrorNotFound"><value>未找到引用的项目。</value></data>
+  <data name="ErrorConflict"><value>请求与现有数据冲突。</value></data>
+  <data name="ErrorProviderUnavailable"><value>参考数据提供程序不可用。</value></data>
+  <data name="ErrorProviderTimeout"><value>参考数据提供程序超时。</value></data>
+  <data name="ErrorForbidden"><value>您没有权限。</value></data>
+  <data name="ErrorGateway"><value>无法完成请求。</value></data>
+</root>

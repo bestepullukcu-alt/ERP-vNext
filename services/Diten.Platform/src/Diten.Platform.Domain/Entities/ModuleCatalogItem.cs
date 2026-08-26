@@ -11,6 +11,8 @@ public sealed class ModuleCatalogItem : GlobalEntity
     public string? Description { get; set; }
     public string Domain { get; set; } = string.Empty;
     public string Service { get; set; } = string.Empty;
+    // FU16: immutable producer binding. Registration may set this once from trusted server-side sender context only.
+    public string? ProducerOwnerCode { get; init; }
     public ModuleCatalogStatus Status { get; set; } = ModuleCatalogStatus.Draft;
     public string ModuleVersion { get; set; } = "1.0.0";
     public bool IsCoreModule { get; set; }

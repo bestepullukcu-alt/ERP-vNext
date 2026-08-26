@@ -46,6 +46,8 @@ public static class MongoDbIndexConfigurations
         var businessReferenceDataUsageRegistrationCollection = database.GetCollection<BusinessReferenceDataUsageRegistration>("business_reference_data_usage_registrations");
         var businessReferenceDataImportPreviewCollection = database.GetCollection<BusinessReferenceDataImportPreview>("business_reference_data_import_previews");
         var businessReferenceDataIntegrationEventCollection = database.GetCollection<BusinessReferenceDataIntegrationEvent>("business_reference_data_integration_events");
+        var businessReferenceDataTenantAssignmentCollection = database.GetCollection<BusinessReferenceDataTenantAssignment>("business_reference_data_tenant_assignments");
+        var businessReferenceDataPublishOperationCollection = database.GetCollection<BusinessReferenceDataPublishOperation>("business_reference_data_publish_operations");
         var interfaceDefinitionCollection = database.GetCollection<InterfaceDefinition>("platform_interface_definitions");
         var interfaceDiscoveryBatchCollection = database.GetCollection<InterfaceDiscoveryBatch>("platform_interface_discovery_batches");
         var interfaceDiscoveryDiffCollection = database.GetCollection<InterfaceDiscoveryDiffItem>("platform_interface_discovery_diff_items");
@@ -1654,6 +1656,35 @@ public static class MongoDbIndexConfigurations
                     Unique = true,
                     Name = "ux_business_reference_data_events_idempotency",
                     PartialFilterExpression = Builders<BusinessReferenceDataIntegrationEvent>.Filter.Eq(x => x.IsDeleted, false)
+                })
+        });
+
+        await businessReferenceDataTenantAssignmentCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<BusinessReferenceDataTenantAssignment>(
+                Builders<BusinessReferenceDataTenantAssignment>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.ConsumerTenantId)
+                    .Ascending(x => x.SetCode),
+                new CreateIndexOptions<BusinessReferenceDataTenantAssignment>
+                {
+                    Unique = true,
+                    Name = "ux_business_reference_data_tenant_assignments_active",
+                    PartialFilterExpression = Builders<BusinessReferenceDataTenantAssignment>.Filter.Eq(x => x.IsDeleted, false)
+                })
+        });
+
+        await businessReferenceDataPublishOperationCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<BusinessReferenceDataPublishOperation>(
+                Builders<BusinessReferenceDataPublishOperation>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions<BusinessReferenceDataPublishOperation>
+                {
+                    Unique = true,
+                    Name = "ux_business_reference_data_publish_operations_idempotency",
+                    PartialFilterExpression = Builders<BusinessReferenceDataPublishOperation>.Filter.Eq(x => x.IsDeleted, false)
                 })
         });
 

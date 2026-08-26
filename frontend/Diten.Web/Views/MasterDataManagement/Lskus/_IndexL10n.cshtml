@@ -1,0 +1,27 @@
+@using Diten.Web.Views.MasterDataManagement.Lskus
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LskusIndex> Localizer
+<script id="lskus-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        AddNew = Localizer["AddNew"].Value,
+        Apply = Localizer["Apply"].Value,
+        Cancel = Localizer["Cancel"].Value,
+        ColumnVisibility = Localizer["ColumnVisibility"].Value,
+        CreateReconciliationPending = Localizer["CreateReconciliationPending"].Value,
+        CreateSuccess = Localizer["CreateSuccess"].Value,
+        ErrorGateway = Localizer["ErrorGateway"].Value,
+        ErrorNotFound = Localizer["ErrorNotFound"].Value,
+        Export = Localizer["Export"].Value,
+        Filter = Localizer["Filter"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        Reset = Localizer["Reset"].Value,
+        Save = Localizer["Save"].Value,
+        SaveView = Localizer["SaveView"].Value,
+        Search = Localizer["Search"].Value,
+        Status = Localizer["Status"].Value,
+        Unknown = Localizer["Unknown"].Value,
+        ViewDetails = Localizer["ViewDetails"].Value
+    })
+</script>

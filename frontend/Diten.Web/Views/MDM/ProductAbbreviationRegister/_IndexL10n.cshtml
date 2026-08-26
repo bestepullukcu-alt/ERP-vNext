@@ -1,0 +1,50 @@
+@using Diten.Web.Views.MDM.ProductAbbreviationRegister
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProductAbbreviationRegisterIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="product-abbreviation-register-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        AddNew = Localizer["AddNewProductAbbreviation"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        ClearSelection = SharedLocalizer["ClearSelection"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        No = Localizer["No"].Value,
+        Yes = Localizer["Yes"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        DtNoRecords = SharedLocalizer["DtNoRecords"].Value,
+        RequestConfirmation = Localizer["RequestConfirmation"].Value,
+        RequestSuccess = Localizer["RequestSuccess"].Value,
+        RequestRetirement = Localizer["RequestRetirement"].Value,
+        SelectGlobalProduct = Localizer["SelectGlobalProduct"].Value,
+        SelectorLoadError = Localizer["SelectorLoadError"].Value,
+        ErrorForbidden = Localizer["ErrorForbidden"].Value,
+        ErrorNotFound = Localizer["ErrorNotFound"].Value,
+        ErrorConflict = Localizer["ErrorConflict"].Value,
+        ErrorValidation = Localizer["ErrorValidation"].Value,
+        ErrorGateway = Localizer["ErrorGateway"].Value,
+        LifecycleRequested = Localizer["LifecycleRequested"].Value,
+        LifecycleActive = Localizer["LifecycleActive"].Value,
+        LifecycleRejected = Localizer["LifecycleRejected"].Value,
+        LifecycleCancelled = Localizer["LifecycleCancelled"].Value,
+        LifecycleRetired = Localizer["LifecycleRetired"].Value,
+        AuditEmpty = Localizer["AuditEmpty"].Value,
+        AuditActor = Localizer["AuditActor"].Value,
+        AuditBefore = Localizer["AuditBefore"].Value,
+        AuditAfter = Localizer["AuditAfter"].Value,
+        AuditCorrelation = Localizer["AuditCorrelation"].Value,
+        AuditIdempotency = Localizer["AuditIdempotency"].Value,
+        AuditEvidenceHash = Localizer["AuditEvidenceHash"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value
+    })
+</script>

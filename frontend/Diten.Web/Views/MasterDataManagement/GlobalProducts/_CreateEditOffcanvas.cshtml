@@ -1,0 +1,40 @@
+@model Diten.Web.Models.GlobalProducts.CreateGlobalProductViewModel
+@using Diten.Web.Views.MasterDataManagement.GlobalProducts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<GlobalProductsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">@Localizer["FormTitleCreate"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="formGlobalProductAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formGlobalProduct" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="globalProductName" class="form-label fw-medium">
+                        @Localizer["GlobalProductName"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="globalProductName" name="GlobalProductName" class="form-control"
+                           maxlength="200" placeholder="@Localizer["GlobalProductNamePlaceholder"]" required />
+                    <div class="invalid-feedback">@Localizer["GlobalProductNameRequired"]</div>
+                    <div class="form-text">@Localizer["GlobalProductNameHelp"]</div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+            @SharedLocalizer["Cancel"]
+        </button>
+        <button type="button" id="btnSaveGlobalProduct" class="btn btn-primary">
+            @SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>

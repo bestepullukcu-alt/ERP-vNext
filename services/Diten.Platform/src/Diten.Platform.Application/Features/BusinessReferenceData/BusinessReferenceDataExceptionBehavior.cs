@@ -36,6 +36,20 @@ public sealed class BusinessReferenceDataExceptionBehavior<TRequest, TResponse> 
         {
             return await next();
         }
+        catch (OperationCanceledException) when (
+            request is Queries.ResolveVerifiedGskuReferenceDataQuery
+                or Queries.EnumerateVerifiedGskuUomsQuery
+                or Queries.ResolveVerifiedMarketReferenceDataQuery
+                or Queries.EnumerateVerifiedMarketsQuery)
+        {
+            var timeout = TryCreateFailureResponse("REFERENCE_PROVIDER_TIMEOUT", 504);
+            if (timeout is null)
+            {
+                throw;
+            }
+
+            return timeout;
+        }
         catch (Exception ex) when (TryMap(ex, out var error, out var statusCode))
         {
             var failure = TryCreateFailureResponse(error, statusCode);
@@ -51,6 +65,22 @@ public sealed class BusinessReferenceDataExceptionBehavior<TRequest, TResponse> 
             }
 
             throw;
+        }
+        catch (Exception ex) when (request is Queries.ResolveVerifiedGskuReferenceDataQuery
+                                   or Queries.EnumerateVerifiedGskuUomsQuery
+                                   or Queries.ResolveVerifiedMarketReferenceDataQuery
+                                   or Queries.EnumerateVerifiedMarketsQuery)
+        {
+            _logger.LogWarning(
+                "Verified GSKU resolver provider dependency failed with {ExceptionType}.",
+                ex.GetType().Name);
+            var unavailable = TryCreateFailureResponse("REFERENCE_PROVIDER_UNAVAILABLE", 503);
+            if (unavailable is null)
+            {
+                throw;
+            }
+
+            return unavailable;
         }
     }
 
@@ -84,6 +114,15 @@ public sealed class BusinessReferenceDataExceptionBehavior<TRequest, TResponse> 
                     return true;
                 }
 
+                if (message is "REFERENCE_PROVIDER_CONFIGURATION_INVALID"
+                    or "REFERENCE_PUBLICATION_NOT_VERIFIED"
+                    or "REFERENCE_GOVERNANCE_NOT_PRODUCTION_SAFE")
+                {
+                    error = message;
+                    statusCode = 503;
+                    return true;
+                }
+
                 // 404 — no published version is a not-found style condition in the consumer surface.
                 if (message == "no_published_version")
                 {
@@ -103,6 +142,15 @@ public sealed class BusinessReferenceDataExceptionBehavior<TRequest, TResponse> 
                     or "already_published_different_idempotency"
                     or "already_committed_different_idempotency"
                     or "reference_data_set_retired")
+                {
+                    error = message;
+                    statusCode = 409;
+                    return true;
+                }
+
+                if (message is "REFERENCE_ASSIGNMENT_CONFLICT"
+                    or "REFERENCE_CONTRACT_MISMATCH"
+                    or "REFERENCE_PUBLISH_OPERATION_STALE")
                 {
                     error = message;
                     statusCode = 409;
@@ -132,11 +180,15 @@ public sealed class BusinessReferenceDataExceptionBehavior<TRequest, TResponse> 
             return default;
         }
 
-        var failMethod = responseType.GetMethod(
-            "Fail",
-            BindingFlags.Public | BindingFlags.Static,
-            [typeof(string), typeof(int)]);
+        var failMethod = responseType.GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .SingleOrDefault(method => method.Name == "Fail"
+                && method.GetParameters() is var parameters
+                && parameters.Length == 4
+                && parameters[0].ParameterType == typeof(string)
+                && parameters[1].ParameterType == typeof(int));
 
-        return failMethod is null ? default : (TResponse?)failMethod.Invoke(null, [error, statusCode]);
+        return failMethod is null
+            ? default
+            : (TResponse?)failMethod.Invoke(null, [error, statusCode, error, null]);
     }
 }

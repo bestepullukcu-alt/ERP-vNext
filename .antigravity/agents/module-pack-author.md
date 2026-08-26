@@ -19,7 +19,7 @@ Sen ERP-vNext modül sözleşmesi hazırlama ajanısın. Görevin geliştirme ya
 5. **Golden Reference zorunluluğu:** DataTable modülü olan her pack `golden_reference: slim` veya `compact` belirler. Pack dosyası yazılırken **gerçek Golden Reference kodu** (frontend + backend) açılır, yapısı birebir taklit edilir. Folder/naming/partial sapması teknik borçtur.
 6. **Golden karar (alan sayımı):** Create/edit formundaki kullanıcı alanlarını say; `8 ve altı` → `slim`, `8'den fazla` → `compact`.
 7. **Layout açıkça:** Frontmatter `shell` alanı seçildikten sonra ilgili Razor layout adı pack'in "Layout & Shell Contract" bölümünde **AÇIKÇA** yazılır ve acceptance criteria'da test edilebilir madde olarak yer alır.
-8. **Module Registry Uyumu:** Yeni module pack oluşturmadan önce [execution/registries/module-id-registry.md](../../../execution/registries/module-id-registry.md) kontrol edilmelidir. Deprecated alias, replacement ID veya non-executable planning alias için standalone pack açılmamalıdır.
+8. **Module Registry Uyumu:** Yeni module pack oluşturmadan önce [execution/registries/module-id-registry.md](../../execution/registries/module-id-registry.md) kontrol edilmelidir. Deprecated alias, replacement ID veya non-executable planning alias için standalone pack açılmamalıdır.
 
 ## Zorunlu Bağlam Okuma (Sıra)
 
@@ -184,7 +184,7 @@ Module pack tamamlandığında kullanıcıya şunu söyle:
 
 ## Module ID Canonicalization Gate (DCP-002)
 
-The Blueprint (`docs/System Capability & Implementation Blueprint - master 7.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
+The Blueprint (`docs/System Capability & Implementation Blueprint - master 8.1.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Master 7 is historical predecessor evidence only. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
 
 1. **Blueprint lookup** — the ID + canonical name must exist in `Blueprint_Data`, or the ID must be an FU/child of an existing Blueprint MOD parent.
 2. **Registry collision** — it must not already map to a different capability in `execution/registries/module-id-registry.md`.

@@ -1,0 +1,39 @@
+@using Diten.Web.Views.MasterDataManagement.Gskus
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<GskusIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end backbone-preview-offcanvas" tabindex="-1" id="offcanvasDetailsPreview"
+     aria-labelledby="offcanvasDetailsPreviewLabel">
+    <div class="offcanvas-header p-4">
+        <div class="d-flex align-items-center min-w-0">
+            <div class="backbone-preview-avatar d-flex align-items-center justify-content-center me-3 flex-shrink-0">
+                <i class="bx bx-barcode-reader fs-4"></i>
+            </div>
+            <div class="min-w-0">
+                <h5 id="oc-title" class="offcanvas-title mb-0 text-truncate">-</h5>
+                <small id="oc-subtitle" class="text-muted d-block text-truncate">-</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["GeneralInformation"]</h6>
+            <div class="row g-4">
+                <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-fingerprint"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["Id"]</div><div id="oc-id" class="backbone-preview-value mt-1 text-break">-</div></div></div></div>
+                <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-barcode"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["CanonicalCode"]</div><div id="oc-code" class="backbone-preview-value mt-1">-</div></div></div></div>
+                <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-package"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["GlobalProduct"]</div><div id="oc-global-product" class="backbone-preview-value mt-1">-</div></div></div></div>
+                <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-git-branch"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["RevisionIdentifier"]</div><div id="oc-revision" class="backbone-preview-value mt-1">-</div></div></div></div>
+                <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-calculator"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["PackQuantity"]</div><div id="oc-pack" class="backbone-preview-value mt-1">-</div></div></div></div>
+                <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-pulse"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["LifecycleStatus"]</div><div class="mt-1"><span id="oc-status" class="badge bg-label-secondary">-</span></div></div></div></div>
+                <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-revision"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["Version"]</div><div id="oc-version" class="backbone-preview-value mt-1">-</div></div></div></div>
+                <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-calendar-plus"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["CreatedAt"]</div><div id="oc-created-at" class="backbone-preview-value mt-1">-</div></div></div></div>
+                <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-calendar-edit"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["UpdatedAt"]</div><div id="oc-updated-at" class="backbone-preview-value mt-1">-</div></div></div></div>
+            </div>
+        </section>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-end bg-white">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+    </div>
+</div>

@@ -11,9 +11,9 @@ namespace Diten.ApiGateway.Tests;
 public sealed class OcelotConfigurationTests
 {
     // Known downstream services as of this test's authoring: auth(5056), platform(5057), dev-enablement(5058),
-    // mdm(5059), esbp/delivery-execution/uploads(5004). Adding a new backend is a deliberate, reviewed change to
+    // mdm(5059), hcm(5060), pvg(5011), esbp/delivery-execution/uploads(5004). Adding a new backend is a deliberate, reviewed change to
     // this set — an unrecognized port is far more likely a typo than a new service.
-    private static readonly HashSet<int> KnownDownstreamPorts = new() { 5004, 5056, 5057, 5058, 5059 };
+    private static readonly HashSet<int> KnownDownstreamPorts = new() { 5004, 5011, 5056, 5057, 5058, 5059, 5060 };
 
     private static FileConfiguration LoadConfiguration()
     {
@@ -157,6 +157,12 @@ public sealed class OcelotConfigurationTests
         yield return new object[] { "/api/tenant-auth/{everything}", "POST" }; // covers tenant-auth login
         yield return new object[] { "/api/roles/{everything}", "GET" };
         yield return new object[] { "/api/permissions/{everything}", "GET" }; // internal permission sync surface
+        yield return new object[] { "/api/pv-case-intake-triage", "GET" };
+        yield return new object[] { "/api/pv-case-intake-triage", "POST" };
+        yield return new object[] { "/api/pv-case-intake-triage/{intakeDraftId}", "GET" };
+        yield return new object[] { "/api/pv-case-intake-triage/{intakeDraftId}", "PUT" };
+        yield return new object[] { "/api/pv-case-intake-triage/{intakeDraftId}/triage", "POST" };
+        yield return new object[] { "/api/pv-case-intake-triage/{intakeDraftId}/route", "POST" };
     }
 
     [Theory]
@@ -168,5 +174,87 @@ public sealed class OcelotConfigurationTests
         var route = config.Routes.FirstOrDefault(r => r.UpstreamPathTemplate == upstreamTemplate);
         Assert.True(route is not null, $"Expected route '{upstreamTemplate}' not found in ocelot.json.");
         Assert.Contains(requiredMethod, route!.UpstreamHttpMethod);
+    }
+
+    [Fact]
+    public void PvgCaseIntakeTriage_RouteFamilyMapsOnlyApprovedTemplates()
+    {
+        var config = LoadConfiguration();
+
+        var pvgRoutes = config.Routes
+            .Where(route => route.UpstreamPathTemplate.StartsWith("/api/pv-case-intake-triage", StringComparison.Ordinal))
+            .ToArray();
+
+        var expectedRoutes = new Dictionary<string, (string DownstreamTemplate, string[] Methods)>
+        {
+            ["/api/pv-case-intake-triage"] = ("/api/v1/pv-case-intake-triage", new[] { "GET", "POST" }),
+            ["/api/pv-case-intake-triage/{intakeDraftId}"] = ("/api/v1/pv-case-intake-triage/{intakeDraftId}", new[] { "GET", "PUT" }),
+            ["/api/pv-case-intake-triage/{intakeDraftId}/triage"] = ("/api/v1/pv-case-intake-triage/{intakeDraftId}/triage", new[] { "POST" }),
+            ["/api/pv-case-intake-triage/{intakeDraftId}/route"] = ("/api/v1/pv-case-intake-triage/{intakeDraftId}/route", new[] { "POST" })
+        };
+
+        Assert.Equal(expectedRoutes.Count, pvgRoutes.Length);
+
+        foreach (var route in pvgRoutes)
+        {
+            Assert.True(
+                expectedRoutes.TryGetValue(route.UpstreamPathTemplate, out var expectedRoute),
+                $"Unexpected PVG route template: {route.UpstreamPathTemplate}");
+            Assert.Equal(expectedRoute.DownstreamTemplate, route.DownstreamPathTemplate);
+            Assert.Equal(
+                expectedRoute.Methods.OrderBy(method => method, StringComparer.Ordinal),
+                route.UpstreamHttpMethod.OrderBy(method => method, StringComparer.Ordinal));
+            Assert.Single(route.DownstreamHostAndPorts);
+            Assert.Equal("localhost", route.DownstreamHostAndPorts[0].Host);
+            Assert.Equal(5011, route.DownstreamHostAndPorts[0].Port);
+            Assert.DoesNotContain("PATCH", route.UpstreamHttpMethod);
+            Assert.DoesNotContain("DELETE", route.UpstreamHttpMethod);
+            Assert.DoesNotContain("OPTIONS", route.UpstreamHttpMethod);
+            Assert.DoesNotContain("{everything}", route.UpstreamPathTemplate, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("{everything}", route.DownstreamPathTemplate, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("delete", route.UpstreamPathTemplate, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("bulk-delete", route.UpstreamPathTemplate, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("archive", route.UpstreamPathTemplate, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("void", route.UpstreamPathTemplate, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("export", route.UpstreamPathTemplate, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("meddra", route.UpstreamPathTemplate, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("ai", route.UpstreamPathTemplate, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    [Fact]
+    public void PvgCaseIntakeTriage_ForbiddenRoutesAreAbsent()
+    {
+        var config = LoadConfiguration();
+
+        var pvgRoutes = config.Routes
+            .Where(route => route.UpstreamPathTemplate.StartsWith("/api/pv-case-intake-triage", StringComparison.Ordinal))
+            .ToArray();
+
+        var forbiddenMethods = new[] { "PATCH", "DELETE", "OPTIONS" };
+        var forbiddenPathSegments = new[] { "{everything}", "export", "archive", "void", "bulk", "bulk-delete", "meddra", "ai" };
+
+        var violations = new List<string>();
+        foreach (var route in pvgRoutes)
+        {
+            foreach (var method in forbiddenMethods)
+            {
+                if (route.UpstreamHttpMethod.Contains(method))
+                {
+                    violations.Add($"{route.UpstreamPathTemplate}: forbidden method {method}");
+                }
+            }
+
+            foreach (var segment in forbiddenPathSegments)
+            {
+                if (route.UpstreamPathTemplate.Contains(segment, StringComparison.OrdinalIgnoreCase) ||
+                    route.DownstreamPathTemplate.Contains(segment, StringComparison.OrdinalIgnoreCase))
+                {
+                    violations.Add($"{route.UpstreamPathTemplate}: forbidden path segment {segment}");
+                }
+            }
+        }
+
+        Assert.True(violations.Count == 0, "Forbidden PVG Gateway routes:\n" + string.Join("\n", violations));
     }
 }

@@ -573,6 +573,15 @@
   <data name="Nav.Page.TASKEDIT" xml:space="preserve">
     <value>编辑任务</value>
   </data>
+  <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
+    <value>产品／物料／SKU 主数据</value>
+  </data>
+  <data name="Nav.Page.GLOBALPRODUCTS" xml:space="preserve">
+    <value>全球产品</value>
+  </data>
+  <data name="Nav.Page.GSKUS" xml:space="preserve">
+    <value>GSKU</value>
+  </data>
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>任务类型</value>
   </data>

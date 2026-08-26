@@ -3,6 +3,8 @@ using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Persistence;
+using Diten.Platform.Infrastructure.Persistence.Settings;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -19,8 +21,14 @@ public sealed class BusinessReferenceDataStewardshipRepository : TenantRepositor
     private readonly IMongoCollection<BusinessReferenceDataIntegrationEvent> _integrationEvents;
     private readonly IMongoCollection<BusinessReferenceDataUsageRegistration> _usageRegistrations;
     private readonly IMongoCollection<BusinessReferenceDataImportPreview> _importPreviews;
+    private readonly IMongoCollection<BusinessReferenceDataTenantAssignment> _tenantAssignments;
+    private readonly IMongoCollection<BusinessReferenceDataPublishOperation> _publishOperations;
+    private readonly IOptions<BusinessReferenceDataProviderOptions>? _providerOptions;
 
-    public BusinessReferenceDataStewardshipRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+    public BusinessReferenceDataStewardshipRepository(
+        IPlatformDbContext dbContext,
+        ITenantContext tenantContext,
+        IOptions<BusinessReferenceDataProviderOptions>? providerOptions = null)
         : base(dbContext.Database, tenantContext, "business_reference_data_sets")
     {
         _setDocuments = dbContext.Database.GetCollection<BsonDocument>("business_reference_data_sets");
@@ -30,6 +38,22 @@ public sealed class BusinessReferenceDataStewardshipRepository : TenantRepositor
         _integrationEvents = dbContext.GetCollection<BusinessReferenceDataIntegrationEvent>("business_reference_data_integration_events");
         _usageRegistrations = dbContext.GetCollection<BusinessReferenceDataUsageRegistration>("business_reference_data_usage_registrations");
         _importPreviews = dbContext.GetCollection<BusinessReferenceDataImportPreview>("business_reference_data_import_previews");
+        _tenantAssignments = dbContext.GetCollection<BusinessReferenceDataTenantAssignment>("business_reference_data_tenant_assignments");
+        _publishOperations = dbContext.GetCollection<BusinessReferenceDataPublishOperation>("business_reference_data_publish_operations");
+        // Deliberately retain the options wrapper. Invalid configuration is classified at request time so
+        // constructing the repository cannot escape an OptionsValidationException and take down host liveness.
+        _providerOptions = providerOptions;
+    }
+
+    public Guid GetRequiredReferenceTenantId()
+    {
+        var resolution = BusinessReferenceDataProviderOptionsResolver.Resolve(_providerOptions);
+        if (!resolution.IsValid)
+        {
+            throw new InvalidOperationException(BusinessReferenceDataProviderOptionsResolution.InvalidReasonCode);
+        }
+
+        return resolution.ReferenceTenantId;
     }
 
     public async Task<(IReadOnlyList<BusinessReferenceDataSet> Items, long TotalCount)> QuerySetsAsync(BusinessReferenceDataSetListQuery query, CancellationToken ct = default)
@@ -626,6 +650,405 @@ public sealed class BusinessReferenceDataStewardshipRepository : TenantRepositor
         return result.ModifiedCount > 0;
     }
 
+    public Task CreateTenantAssignmentAsync(BusinessReferenceDataTenantAssignment assignment, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(assignment);
+        EnsureReferenceTenantOwnership(assignment.TenantId);
+
+        if (assignment.BusinessReferenceDataTenantAssignmentId == Guid.Empty)
+        {
+            throw new ArgumentException("Assignment identity is required.", nameof(assignment));
+        }
+
+        if (assignment.ConsumerTenantId == Guid.Empty)
+        {
+            throw new ArgumentException("Consumer tenant identity is required.", nameof(assignment));
+        }
+
+        assignment.SetCode = NormalizeRequiredValue(assignment.SetCode, nameof(assignment.SetCode));
+        if (assignment.AssignmentStatus != BusinessReferenceDataTenantAssignmentStatus.ACTIVE
+            || assignment.IsDeleted
+            || assignment.Version != 1)
+        {
+            throw new ArgumentException("A new tenant assignment must be ACTIVE, non-deleted and at version 1.", nameof(assignment));
+        }
+
+        return _tenantAssignments.InsertOneAsync(assignment, cancellationToken: ct);
+    }
+
+    public async Task<BusinessReferenceDataTenantAssignment?> GetTenantAssignmentByIdAsync(
+        Guid assignmentId,
+        Guid consumerTenantId,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<BusinessReferenceDataTenantAssignment>.Filter.And(
+            Builders<BusinessReferenceDataTenantAssignment>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
+            Builders<BusinessReferenceDataTenantAssignment>.Filter.Eq(x => x.ConsumerTenantId, consumerTenantId),
+            Builders<BusinessReferenceDataTenantAssignment>.Filter.Eq(x => x.BusinessReferenceDataTenantAssignmentId, assignmentId),
+            Builders<BusinessReferenceDataTenantAssignment>.Filter.Eq(x => x.IsDeleted, false));
+
+        return await _tenantAssignments.Find(filter).FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<BusinessReferenceDataTenantAssignment?> GetActiveTenantAssignmentAsync(
+        Guid consumerTenantId,
+        string setCode,
+        CancellationToken ct = default)
+    {
+        var normalizedSetCode = NormalizeRequiredValue(setCode, nameof(setCode));
+        var filter = Builders<BusinessReferenceDataTenantAssignment>.Filter.And(
+            Builders<BusinessReferenceDataTenantAssignment>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
+            Builders<BusinessReferenceDataTenantAssignment>.Filter.Eq(x => x.ConsumerTenantId, consumerTenantId),
+            Builders<BusinessReferenceDataTenantAssignment>.Filter.Eq(x => x.SetCode, normalizedSetCode),
+            Builders<BusinessReferenceDataTenantAssignment>.Filter.Eq(x => x.AssignmentStatus, BusinessReferenceDataTenantAssignmentStatus.ACTIVE),
+            Builders<BusinessReferenceDataTenantAssignment>.Filter.Eq(x => x.IsDeleted, false));
+
+        return await _tenantAssignments.Find(filter).FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<BusinessReferenceDataTenantAssignment?> GetTenantAssignmentForReconciliationAsync(
+        Guid consumerTenantId,
+        string setCode,
+        CancellationToken ct = default)
+    {
+        var normalizedSetCode = NormalizeRequiredValue(setCode, nameof(setCode));
+        var filter = Builders<BusinessReferenceDataTenantAssignment>.Filter.And(
+            Builders<BusinessReferenceDataTenantAssignment>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
+            Builders<BusinessReferenceDataTenantAssignment>.Filter.Eq(x => x.ConsumerTenantId, consumerTenantId),
+            Builders<BusinessReferenceDataTenantAssignment>.Filter.Eq(x => x.SetCode, normalizedSetCode));
+
+        var matches = await _tenantAssignments.Find(filter)
+            .SortByDescending(x => x.CreatedAt)
+            .ToListAsync(ct);
+        return matches.FirstOrDefault(x => x.IsDeleted
+                                           || x.AssignmentStatus != BusinessReferenceDataTenantAssignmentStatus.ACTIVE)
+               ?? matches.FirstOrDefault();
+    }
+
+    public async Task<BusinessReferenceDataTenantAssignmentReconciliationResult> EnsureActiveTenantAssignmentAsync(
+        Guid consumerTenantId,
+        string setCode,
+        string actorId,
+        CancellationToken ct = default)
+    {
+        var normalizedSetCode = NormalizeRequiredValue(setCode, nameof(setCode));
+        var normalizedActor = NormalizeRequiredValue(actorId, nameof(actorId));
+        var existing = await GetTenantAssignmentForReconciliationAsync(consumerTenantId, normalizedSetCode, ct);
+        if (existing is not null)
+        {
+            var outcome = !existing.IsDeleted
+                          && existing.AssignmentStatus == BusinessReferenceDataTenantAssignmentStatus.ACTIVE
+                ? BusinessReferenceDataTenantAssignmentReconciliationOutcome.Replayed
+                : BusinessReferenceDataTenantAssignmentReconciliationOutcome.Conflict;
+            return new BusinessReferenceDataTenantAssignmentReconciliationResult(outcome, existing);
+        }
+
+        var assignment = new BusinessReferenceDataTenantAssignment
+        {
+            TenantId = TenantContext.TenantId,
+            ConsumerTenantId = consumerTenantId,
+            SetCode = normalizedSetCode,
+            AssignmentStatus = BusinessReferenceDataTenantAssignmentStatus.ACTIVE,
+            CreatedBy = normalizedActor
+        };
+
+        try
+        {
+            await CreateTenantAssignmentAsync(assignment, ct);
+            return new BusinessReferenceDataTenantAssignmentReconciliationResult(
+                BusinessReferenceDataTenantAssignmentReconciliationOutcome.Created,
+                assignment);
+        }
+        catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            existing = await GetTenantAssignmentForReconciliationAsync(consumerTenantId, normalizedSetCode, ct);
+            if (existing is null)
+            {
+                throw;
+            }
+
+            var outcome = !existing.IsDeleted
+                          && existing.AssignmentStatus == BusinessReferenceDataTenantAssignmentStatus.ACTIVE
+                ? BusinessReferenceDataTenantAssignmentReconciliationOutcome.Replayed
+                : BusinessReferenceDataTenantAssignmentReconciliationOutcome.Conflict;
+            return new BusinessReferenceDataTenantAssignmentReconciliationResult(outcome, existing);
+        }
+    }
+
+    public Task<bool> RevokeTenantAssignmentAsync(
+        Guid assignmentId,
+        Guid consumerTenantId,
+        int expectedVersion,
+        string actorId,
+        CancellationToken ct = default)
+    {
+        return TransitionTenantAssignmentAsync(
+            assignmentId,
+            consumerTenantId,
+            expectedVersion,
+            BusinessReferenceDataTenantAssignmentStatus.ACTIVE,
+            BusinessReferenceDataTenantAssignmentStatus.REVOKED,
+            actorId,
+            softDelete: false,
+            ct);
+    }
+
+    public Task<bool> ReactivateTenantAssignmentAsync(
+        Guid assignmentId,
+        Guid consumerTenantId,
+        int expectedVersion,
+        string actorId,
+        CancellationToken ct = default)
+    {
+        return TransitionTenantAssignmentAsync(
+            assignmentId,
+            consumerTenantId,
+            expectedVersion,
+            BusinessReferenceDataTenantAssignmentStatus.REVOKED,
+            BusinessReferenceDataTenantAssignmentStatus.ACTIVE,
+            actorId,
+            softDelete: false,
+            ct);
+    }
+
+    public Task<bool> SoftDeleteTenantAssignmentAsync(
+        Guid assignmentId,
+        Guid consumerTenantId,
+        int expectedVersion,
+        string actorId,
+        CancellationToken ct = default)
+    {
+        return TransitionTenantAssignmentAsync(
+            assignmentId,
+            consumerTenantId,
+            expectedVersion,
+            expectedStatus: null,
+            nextStatus: null,
+            actorId,
+            softDelete: true,
+            ct);
+    }
+
+    public async Task<BusinessReferenceDataPublishOperationCreateResult> CreateOrGetPublishOperationAsync(
+        BusinessReferenceDataPublishOperation operation,
+        CancellationToken ct = default)
+    {
+        ValidateNewPublishOperation(operation);
+        operation.IdempotencyKey = operation.IdempotencyKey.Trim();
+
+        var existing = await GetPublishOperationByIdempotencyKeyAsync(operation.IdempotencyKey, ct);
+        if (existing is not null)
+        {
+            return CreateReplayResult(existing, operation);
+        }
+
+        try
+        {
+            await _publishOperations.InsertOneAsync(operation, cancellationToken: ct);
+            return new BusinessReferenceDataPublishOperationCreateResult(
+                BusinessReferenceDataPublishOperationCreateOutcome.Created,
+                operation);
+        }
+        catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            existing = await GetPublishOperationByIdempotencyKeyAsync(operation.IdempotencyKey, ct);
+            if (existing is null)
+            {
+                throw;
+            }
+
+            return CreateReplayResult(existing, operation);
+        }
+    }
+
+    public async Task<BusinessReferenceDataPublishOperation?> GetPublishOperationByIdAsync(
+        Guid publishOperationId,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<BusinessReferenceDataPublishOperation>.Filter.And(
+            Builders<BusinessReferenceDataPublishOperation>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
+            Builders<BusinessReferenceDataPublishOperation>.Filter.Eq(x => x.PublishOperationId, publishOperationId),
+            Builders<BusinessReferenceDataPublishOperation>.Filter.Eq(x => x.IsDeleted, false));
+
+        return await _publishOperations.Find(filter).FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<BusinessReferenceDataPublishOperation?> GetPublishOperationByIdempotencyKeyAsync(
+        string idempotencyKey,
+        CancellationToken ct = default)
+    {
+        var normalizedKey = NormalizeRequiredValue(idempotencyKey, nameof(idempotencyKey));
+        var filter = Builders<BusinessReferenceDataPublishOperation>.Filter.And(
+            Builders<BusinessReferenceDataPublishOperation>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
+            Builders<BusinessReferenceDataPublishOperation>.Filter.Eq(x => x.IdempotencyKey, normalizedKey),
+            Builders<BusinessReferenceDataPublishOperation>.Filter.Eq(x => x.IsDeleted, false));
+
+        return await _publishOperations.Find(filter).FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<bool> IsPublishOperationVerifiedAsync(
+        Guid publishOperationId,
+        CancellationToken ct = default)
+    {
+        var operation = await GetPublishOperationByIdAsync(publishOperationId, ct);
+        return operation is not null
+               && operation.OperationState == BusinessReferenceDataPublishOperationState.COMPLETED
+               && operation.PublishCheckpoint == BusinessReferenceDataPublishCheckpoint.COMPLETION_VERIFIED
+               && operation.CompletedAt.HasValue
+               && await HasVerifiedPublicationPrerequisitesAsync(operation, ct);
+    }
+
+    public async Task<BusinessReferenceDataVerifiedPublication?> GetVerifiedPublicationAsync(
+        string setCode,
+        CancellationToken ct = default)
+    {
+        var set = await GetSetByCodeAsync(setCode, ct);
+        if (set is null
+            || set.Status != BusinessReferenceDataSetStatus.Active
+            || !set.PublishedVersionId.HasValue)
+        {
+            return null;
+        }
+
+        var version = await GetVersionByIdAsync(set.PublishedVersionId.Value, ct);
+        if (version is null
+            || version.IsDeleted
+            || version.Status != BusinessReferenceDataVersionStatus.Published
+            || !version.IsImmutable
+            || version.BusinessReferenceDataSetId != set.BusinessReferenceDataSetId
+            || string.IsNullOrWhiteSpace(version.LastPublishIdempotencyKey))
+        {
+            return null;
+        }
+
+        var operation = await GetPublishOperationByIdempotencyKeyAsync(version.LastPublishIdempotencyKey, ct);
+        if (operation is null
+            || operation.BusinessReferenceDataSetId != set.BusinessReferenceDataSetId
+            || operation.BusinessReferenceDataVersionId != version.BusinessReferenceDataVersionId
+            || string.IsNullOrWhiteSpace(operation.CatalogVersion)
+            || string.IsNullOrWhiteSpace(operation.CatalogFingerprint)
+            || !await IsPublishOperationVerifiedAsync(operation.PublishOperationId, ct))
+        {
+            return null;
+        }
+
+        return new BusinessReferenceDataVerifiedPublication(set, version, operation);
+    }
+
+    public async Task<BusinessReferenceDataVerifiedPublication?> GetVerifiedPublicationAsync(
+        string setCode,
+        string catalogVersion,
+        string catalogFingerprint,
+        CancellationToken ct = default)
+    {
+        var publication = await GetVerifiedPublicationAsync(setCode, ct);
+        if (publication is null
+            || !string.Equals(publication.Operation.CatalogVersion, catalogVersion, StringComparison.Ordinal)
+            || !string.Equals(publication.Operation.CatalogFingerprint, catalogFingerprint, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return publication;
+    }
+
+    public async Task<bool> TransitionPublishOperationAsync(
+        Guid publishOperationId,
+        int expectedVersion,
+        BusinessReferenceDataPublishOperationState nextState,
+        BusinessReferenceDataPublishCheckpoint nextCheckpoint,
+        string actorId,
+        string? errorCode = null,
+        CancellationToken ct = default)
+    {
+        var normalizedActor = NormalizeRequiredValue(actorId, nameof(actorId));
+        var current = await GetPublishOperationByIdAsync(publishOperationId, ct);
+        if (current is null || current.Version != expectedVersion)
+        {
+            return false;
+        }
+
+        if (!BusinessReferenceDataPublishStateMachine.IsValidTransition(
+                current.OperationState,
+                current.PublishCheckpoint,
+                nextState,
+                nextCheckpoint))
+        {
+            return false;
+        }
+
+        var requiresPreMutationVerification = nextState == BusinessReferenceDataPublishOperationState.RUNNING
+                                              && nextCheckpoint == BusinessReferenceDataPublishCheckpoint.INITIALIZED
+                                              && current.PublishCheckpoint == BusinessReferenceDataPublishCheckpoint.INITIALIZED
+                                              && !current.PreMutationContextVerifiedAt.HasValue;
+        if (requiresPreMutationVerification
+            && !await HasMatchingPreMutationContextAsync(current, ct))
+        {
+            await MarkPublishOperationStaleAsync(current, expectedVersion, normalizedActor, ct);
+            return false;
+        }
+
+        var recordsFailure = nextState is BusinessReferenceDataPublishOperationState.RECOVERY_REQUIRED
+            or BusinessReferenceDataPublishOperationState.FAILED_TERMINAL;
+        var normalizedError = string.IsNullOrWhiteSpace(errorCode) ? null : errorCode.Trim();
+        if (recordsFailure && normalizedError is null)
+        {
+            return false;
+        }
+
+        if ((nextCheckpoint == BusinessReferenceDataPublishCheckpoint.COMPLETION_VERIFIED
+             || nextState == BusinessReferenceDataPublishOperationState.COMPLETED)
+            && !await HasVerifiedPublicationPrerequisitesAsync(current, ct))
+        {
+            return false;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var filter = Builders<BusinessReferenceDataPublishOperation>.Filter.And(
+            Builders<BusinessReferenceDataPublishOperation>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
+            Builders<BusinessReferenceDataPublishOperation>.Filter.Eq(x => x.PublishOperationId, publishOperationId),
+            Builders<BusinessReferenceDataPublishOperation>.Filter.Eq(x => x.IsDeleted, false),
+            Builders<BusinessReferenceDataPublishOperation>.Filter.Eq(x => x.Version, expectedVersion),
+            Builders<BusinessReferenceDataPublishOperation>.Filter.Eq(x => x.OperationState, current.OperationState),
+            Builders<BusinessReferenceDataPublishOperation>.Filter.Eq(x => x.PublishCheckpoint, current.PublishCheckpoint));
+
+        var update = Builders<BusinessReferenceDataPublishOperation>.Update
+            .Set(x => x.OperationState, nextState)
+            .Set(x => x.PublishCheckpoint, nextCheckpoint)
+            .Set(x => x.Version, expectedVersion + 1)
+            .Set(x => x.UpdatedAt, now)
+            .Set(x => x.UpdatedBy, normalizedActor);
+
+        if (nextState == BusinessReferenceDataPublishOperationState.RUNNING)
+        {
+            update = update.Set(x => x.LastAttemptAt, now);
+            if (requiresPreMutationVerification)
+            {
+                update = update.Set(x => x.PreMutationContextVerifiedAt, now);
+            }
+
+            if (current.OperationState == BusinessReferenceDataPublishOperationState.RECOVERY_REQUIRED)
+            {
+                update = update.Inc(x => x.RetryCount, 1);
+            }
+        }
+
+        if (recordsFailure)
+        {
+            update = update
+                .Set(x => x.LastErrorCode, normalizedError)
+                .Set(x => x.LastErrorAt, now);
+        }
+
+        if (nextState == BusinessReferenceDataPublishOperationState.COMPLETED)
+        {
+            update = update.Set(x => x.CompletedAt, now);
+        }
+
+        var result = await _publishOperations.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.ModifiedCount == 1;
+    }
+
     public Task CreateImportPreviewAsync(BusinessReferenceDataImportPreview preview, CancellationToken ct = default)
     {
         return _importPreviews.InsertOneAsync(preview, cancellationToken: ct);
@@ -651,6 +1074,207 @@ public sealed class BusinessReferenceDataStewardshipRepository : TenantRepositor
 
         var result = await _importPreviews.ReplaceOneAsync(filter, preview, cancellationToken: ct);
         return result.ModifiedCount > 0;
+    }
+
+    private async Task<bool> TransitionTenantAssignmentAsync(
+        Guid assignmentId,
+        Guid consumerTenantId,
+        int expectedVersion,
+        BusinessReferenceDataTenantAssignmentStatus? expectedStatus,
+        BusinessReferenceDataTenantAssignmentStatus? nextStatus,
+        string actorId,
+        bool softDelete,
+        CancellationToken ct)
+    {
+        var normalizedActor = NormalizeRequiredValue(actorId, nameof(actorId));
+        if (assignmentId == Guid.Empty || consumerTenantId == Guid.Empty || expectedVersion < 1)
+        {
+            return false;
+        }
+
+        var filters = new List<FilterDefinition<BusinessReferenceDataTenantAssignment>>
+        {
+            Builders<BusinessReferenceDataTenantAssignment>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
+            Builders<BusinessReferenceDataTenantAssignment>.Filter.Eq(x => x.ConsumerTenantId, consumerTenantId),
+            Builders<BusinessReferenceDataTenantAssignment>.Filter.Eq(x => x.BusinessReferenceDataTenantAssignmentId, assignmentId),
+            Builders<BusinessReferenceDataTenantAssignment>.Filter.Eq(x => x.IsDeleted, false),
+            Builders<BusinessReferenceDataTenantAssignment>.Filter.Eq(x => x.Version, expectedVersion)
+        };
+
+        if (expectedStatus.HasValue)
+        {
+            filters.Add(Builders<BusinessReferenceDataTenantAssignment>.Filter.Eq(x => x.AssignmentStatus, expectedStatus.Value));
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var update = Builders<BusinessReferenceDataTenantAssignment>.Update
+            .Set(x => x.Version, expectedVersion + 1)
+            .Set(x => x.UpdatedAt, now)
+            .Set(x => x.UpdatedBy, normalizedActor);
+
+        if (softDelete)
+        {
+            update = update.Set(x => x.IsDeleted, true);
+        }
+        else if (nextStatus == BusinessReferenceDataTenantAssignmentStatus.REVOKED)
+        {
+            update = update
+                .Set(x => x.AssignmentStatus, BusinessReferenceDataTenantAssignmentStatus.REVOKED)
+                .Set(x => x.RevokedAt, now)
+                .Set(x => x.RevokedBy, normalizedActor);
+        }
+        else if (nextStatus == BusinessReferenceDataTenantAssignmentStatus.ACTIVE)
+        {
+            update = update
+                .Set(x => x.AssignmentStatus, BusinessReferenceDataTenantAssignmentStatus.ACTIVE)
+                .Set(x => x.RevokedAt, null)
+                .Set(x => x.RevokedBy, null);
+        }
+
+        var result = await _tenantAssignments.UpdateOneAsync(
+            Builders<BusinessReferenceDataTenantAssignment>.Filter.And(filters),
+            update,
+            cancellationToken: ct);
+        return result.ModifiedCount == 1;
+    }
+
+    private void ValidateNewPublishOperation(BusinessReferenceDataPublishOperation operation)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        EnsureReferenceTenantOwnership(operation.TenantId);
+
+        if (operation.PublishOperationId == Guid.Empty
+            || operation.BusinessReferenceDataSetId == Guid.Empty
+            || operation.BusinessReferenceDataVersionId == Guid.Empty)
+        {
+            throw new ArgumentException("Publish operation, set and target version identities are required.", nameof(operation));
+        }
+
+        _ = NormalizeRequiredValue(operation.IdempotencyKey, nameof(operation.IdempotencyKey));
+        _ = NormalizeRequiredValue(operation.ExpectedTargetVersionToken, nameof(operation.ExpectedTargetVersionToken));
+        if (string.IsNullOrWhiteSpace(operation.CatalogVersion) != string.IsNullOrWhiteSpace(operation.CatalogFingerprint))
+        {
+            throw new ArgumentException("Catalog version and fingerprint must be supplied together.", nameof(operation));
+        }
+        if (operation.ExpectedSetVersion < 1
+            || operation.Version != 1
+            || operation.RetryCount < 0
+            || operation.IsDeleted
+            || operation.OperationState != BusinessReferenceDataPublishOperationState.PENDING
+            || operation.PublishCheckpoint != BusinessReferenceDataPublishCheckpoint.INITIALIZED)
+        {
+            throw new ArgumentException("A new publish operation must have valid fencing context and begin PENDING/INITIALIZED at version 1.", nameof(operation));
+        }
+    }
+
+    private BusinessReferenceDataPublishOperationCreateResult CreateReplayResult(
+        BusinessReferenceDataPublishOperation existing,
+        BusinessReferenceDataPublishOperation replay)
+    {
+        var outcome = BusinessReferenceDataPublishStateMachine.IsSameReplayTarget(existing, replay)
+            ? BusinessReferenceDataPublishOperationCreateOutcome.Replayed
+            : BusinessReferenceDataPublishOperationCreateOutcome.Conflict;
+        return new BusinessReferenceDataPublishOperationCreateResult(outcome, existing);
+    }
+
+    private async Task<bool> HasVerifiedPublicationPrerequisitesAsync(
+        BusinessReferenceDataPublishOperation operation,
+        CancellationToken ct)
+    {
+        var setFilter = Builders<BusinessReferenceDataSet>.Filter.And(
+            Builders<BusinessReferenceDataSet>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
+            Builders<BusinessReferenceDataSet>.Filter.Eq(x => x.BusinessReferenceDataSetId, operation.BusinessReferenceDataSetId),
+            Builders<BusinessReferenceDataSet>.Filter.Eq(x => x.IsDeleted, false));
+        var versionFilter = Builders<BusinessReferenceDataVersion>.Filter.And(
+            Builders<BusinessReferenceDataVersion>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
+            Builders<BusinessReferenceDataVersion>.Filter.Eq(x => x.BusinessReferenceDataSetId, operation.BusinessReferenceDataSetId),
+            Builders<BusinessReferenceDataVersion>.Filter.Eq(x => x.BusinessReferenceDataVersionId, operation.BusinessReferenceDataVersionId),
+            Builders<BusinessReferenceDataVersion>.Filter.Eq(x => x.IsDeleted, false));
+
+        var set = await Collection.Find(setFilter).FirstOrDefaultAsync(ct);
+        var targetVersion = await _versions.Find(versionFilter).FirstOrDefaultAsync(ct);
+        if (set is null || targetVersion is null)
+        {
+            return false;
+        }
+
+        var targetHasOperationPublishEvidence = targetVersion.Status == BusinessReferenceDataVersionStatus.Published
+                                                && targetVersion.IsImmutable
+                                                && string.Equals(
+                                                    targetVersion.LastPublishIdempotencyKey,
+                                                    operation.IdempotencyKey,
+                                                    StringComparison.Ordinal);
+        return BusinessReferenceDataPublishStateMachine.HasVerifiedPostMutationContext(
+            operation,
+            set.PublishedVersionId,
+            set.RowVersion,
+            targetVersion.ConcurrencyToken,
+            targetHasOperationPublishEvidence);
+    }
+
+    private async Task<bool> HasMatchingPreMutationContextAsync(
+        BusinessReferenceDataPublishOperation operation,
+        CancellationToken ct)
+    {
+        var setFilter = Builders<BusinessReferenceDataSet>.Filter.And(
+            Builders<BusinessReferenceDataSet>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
+            Builders<BusinessReferenceDataSet>.Filter.Eq(x => x.BusinessReferenceDataSetId, operation.BusinessReferenceDataSetId),
+            Builders<BusinessReferenceDataSet>.Filter.Eq(x => x.PublishedVersionId, operation.ExpectedPublishedVersionId),
+            Builders<BusinessReferenceDataSet>.Filter.Eq(x => x.RowVersion, operation.ExpectedSetVersion),
+            Builders<BusinessReferenceDataSet>.Filter.Eq(x => x.IsDeleted, false));
+        var versionFilter = Builders<BusinessReferenceDataVersion>.Filter.And(
+            Builders<BusinessReferenceDataVersion>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
+            Builders<BusinessReferenceDataVersion>.Filter.Eq(x => x.BusinessReferenceDataSetId, operation.BusinessReferenceDataSetId),
+            Builders<BusinessReferenceDataVersion>.Filter.Eq(x => x.BusinessReferenceDataVersionId, operation.BusinessReferenceDataVersionId),
+            Builders<BusinessReferenceDataVersion>.Filter.Eq(x => x.ConcurrencyToken, operation.ExpectedTargetVersionToken),
+            Builders<BusinessReferenceDataVersion>.Filter.Eq(x => x.IsDeleted, false));
+
+        var setMatches = await Collection.Find(setFilter).Limit(1).AnyAsync(ct);
+        return setMatches && await _versions.Find(versionFilter).Limit(1).AnyAsync(ct);
+    }
+
+    private async Task MarkPublishOperationStaleAsync(
+        BusinessReferenceDataPublishOperation operation,
+        int expectedVersion,
+        string actorId,
+        CancellationToken ct)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var filter = Builders<BusinessReferenceDataPublishOperation>.Filter.And(
+            Builders<BusinessReferenceDataPublishOperation>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
+            Builders<BusinessReferenceDataPublishOperation>.Filter.Eq(x => x.PublishOperationId, operation.PublishOperationId),
+            Builders<BusinessReferenceDataPublishOperation>.Filter.Eq(x => x.IsDeleted, false),
+            Builders<BusinessReferenceDataPublishOperation>.Filter.Eq(x => x.Version, expectedVersion),
+            Builders<BusinessReferenceDataPublishOperation>.Filter.Eq(x => x.OperationState, operation.OperationState),
+            Builders<BusinessReferenceDataPublishOperation>.Filter.Eq(x => x.PublishCheckpoint, operation.PublishCheckpoint));
+        var update = Builders<BusinessReferenceDataPublishOperation>.Update
+            .Set(x => x.OperationState, BusinessReferenceDataPublishOperationState.FAILED_TERMINAL)
+            .Set(x => x.Version, expectedVersion + 1)
+            .Set(x => x.LastAttemptAt, now)
+            .Set(x => x.LastErrorCode, "REFERENCE_PUBLISH_OPERATION_STALE")
+            .Set(x => x.LastErrorAt, now)
+            .Set(x => x.UpdatedAt, now)
+            .Set(x => x.UpdatedBy, actorId);
+
+        await _publishOperations.UpdateOneAsync(filter, update, cancellationToken: ct);
+    }
+
+    private void EnsureReferenceTenantOwnership(Guid entityTenantId)
+    {
+        if (entityTenantId == Guid.Empty || entityTenantId != TenantContext.TenantId)
+        {
+            throw new InvalidOperationException("The entity must be owned by the active reference tenant context.");
+        }
+    }
+
+    private static string NormalizeRequiredValue(string value, string parameterName)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException("A non-empty value is required.", parameterName);
+        }
+
+        return value.Trim();
     }
 
     private static BsonDocument BuildSortDocument(string? sort)

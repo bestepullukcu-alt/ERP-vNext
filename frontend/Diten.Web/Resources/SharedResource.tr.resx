@@ -632,6 +632,15 @@
   <data name="Nav.Page.TASKEDIT" xml:space="preserve">
     <value>Görevi düzenle</value>
   </data>
+  <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
+    <value>Ürün / Kalem / SKU Ana Verisi</value>
+  </data>
+  <data name="Nav.Page.GLOBALPRODUCTS" xml:space="preserve">
+    <value>Küresel Ürünler</value>
+  </data>
+  <data name="Nav.Page.GSKUS" xml:space="preserve">
+    <value>GSKU’lar</value>
+  </data>
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>Görev türleri</value>
   </data>

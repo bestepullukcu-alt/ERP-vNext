@@ -1,0 +1,98 @@
+{
+  "catalog_version": "1.0.0",
+  "module": "BusinessReferenceData",
+  "note": "MOD-0290 initial GSKU reference catalog",
+  "sets": [
+    {
+      "set_code": "pack-applicability",
+      "set_name": "Pack Applicability",
+      "scope_type": "global",
+      "status": "Active",
+      "description": "Applicability rules for product and SKU pack quantities.",
+      "attribute_definitions": [],
+      "values": [
+        {
+          "value_code": "SCALAR_QUANTITY_APPLIES",
+          "display_name": "Scalar Quantity Applies",
+          "description": "A positive scalar pack quantity applies to the SKU presentation.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {}
+        }
+      ]
+    },
+    {
+      "set_code": "uom",
+      "set_name": "Unit of Measure",
+      "scope_type": "global",
+      "status": "Active",
+      "description": "Units of measure permitted for the initial GSKU pack quantity.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "DimensionCode",
+          "display_name": "Dimension Code",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "MaximumDecimalPrecision",
+          "display_name": "Maximum Decimal Precision",
+          "data_type": "integer",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "C62",
+          "display_name": "One",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "DimensionCode": "COUNT",
+            "MaximumDecimalPrecision": "0"
+          }
+        },
+        {
+          "value_code": "GRM",
+          "display_name": "Gram",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "DimensionCode": "MASS",
+            "MaximumDecimalPrecision": "3"
+          }
+        },
+        {
+          "value_code": "KGM",
+          "display_name": "Kilogram",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "DimensionCode": "MASS",
+            "MaximumDecimalPrecision": "3"
+          }
+        },
+        {
+          "value_code": "MLT",
+          "display_name": "Millilitre",
+          "is_active": true,
+          "sort_order": 40,
+          "attributes": {
+            "DimensionCode": "VOLUME",
+            "MaximumDecimalPrecision": "3"
+          }
+        },
+        {
+          "value_code": "LTR",
+          "display_name": "Litre",
+          "is_active": true,
+          "sort_order": 50,
+          "attributes": {
+            "DimensionCode": "VOLUME",
+            "MaximumDecimalPrecision": "3"
+          }
+        }
+      ]
+    }
+  ]
+}
