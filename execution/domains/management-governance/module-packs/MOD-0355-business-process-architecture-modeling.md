@@ -68,13 +68,14 @@ intentional. Frontend delivery is a separately authorized later slice.
 Historical `CAND-CAP-0009` is a deprecated governance alias only. It must never appear in runtime literals,
 permissions, routes, collections, events, jobs, configuration or persisted module identity.
 
-Delivery is divided into five independently gated slices:
+Delivery is divided into six independently gated slices:
 
 1. Core Model & Contract-Test
-2. Approval/Auth/Audit
-3. Optional reference integrations
-4. Frontend & Legacy Parity
-5. Runtime activation
+2. Approval Policy & Publish Authorization Contract-Test
+3. Approval/Auth/Audit Runtime
+4. Optional reference integrations
+5. Frontend & Legacy Parity
+6. Runtime activation
 
 Governance availability alone is not runtime or implementation availability. Present implementation authority
 exists only for the bounded Core Model & Contract-Test paths and guards recorded in frontmatter and §5;
@@ -239,7 +240,8 @@ Additional rules:
 - Parallel variants are not supported in Minimal Core v1.
 - Returning `Review → Draft` does not allocate a new revision.
 - `Published → Draft`, `Retired → Published` and `Retired → Draft` are forbidden.
-- Approval policy and ApprovalOutcome binding belong to the Approval/Auth/Audit second slice.
+- Approval policy and ApprovalOutcome contract binding belong to the non-runtime contract-test second slice;
+  executable enforcement and delivery belong to the later Approval/Auth/Audit Runtime slice.
 - Minimal Core v1 records no local approval truth.
 
 ### Exact permission inventory
@@ -499,6 +501,110 @@ decision payload, actor, time, reason, comment, task, route, assignee and workfl
 This shape belongs only to the Approval/Auth/Audit slice. It is not a Core entity field, Core command input,
 Core runtime dependency or Core runtime-availability claim.
 
+### A-04 publish policy closure — contract-test-only / non-runtime
+
+The accountable owner decision is closed as follows:
+
+- When the authoritative approval policy returns **approval not required**, direct publish is eligible only
+  after all of these independent gates allow: current tenant entitlement for `ModuleCode = MOD-0355`, the exact
+  `management-governance.process-modeling.models.publish` permission, and a fresh authoritative
+  Separation-of-Duties/eligibility decision.
+- When the authoritative approval policy returns **approval required**, publish additionally requires one exact
+  `ApprovalOutcomeReferenceV1` whose MOD-0023 authority resolves it as final and approved for the current trusted
+  tenant and the exact `ProcessModelId`, `ProcessModelVersionId` and `ContentHash` being published.
+- The effective publisher must differ from the model author/requester. When approval is required, the effective
+  publisher must also differ from the authoritative approval decision actor. Equality is a terminal SoD denial;
+  role names, local grants, cached guesses and client-supplied actor fields cannot override it.
+- Delegated execution requires the exact effective actor from a fresh, request-bound FU16
+  `DelegatedActorProofV1`. Missing, stale, replayed or invalid proof is never converted into local actor truth.
+- An explicit authoritative entitlement, permission, SoD, eligibility or approval denial returns `403`.
+  Unavailable, timed-out, malformed or indeterminate authority, including unresolved effective actor identity,
+  returns `503` and no publish mutation runs.
+
+#### PublishActorProvenanceV1 — module-local server-owned contract
+
+`PublishActorProvenanceV1` is a MOD-0355-owned, non-runtime value contract with exactly these fields:
+
+| Field | Type | Exact rule |
+|---|---|---|
+| `TenantId` | Guid | Required server-resolved tenant; never client input |
+| `ProcessModelId` | Guid | Required trusted MOD-0355 model identity |
+| `ProcessModelVersionId` | Guid | Required trusted MOD-0355 version identity |
+| `ContentHash` | string | Required exact current §4 canonical content hash |
+| `ModelAuthorActorId` | Guid | Required server-trusted effective actor that created this exact version |
+| `PublishRequesterActorId` | Guid | Required effective actor initiating this publish request |
+| `CapturedAtUtc` | scalar UTC DateTime | Required server timestamp for the composed publish-request provenance |
+| `ProvenanceVersion` | string | Required constant `1.0` |
+
+The server captures `ModelAuthorActorId` when the draft/version is created and keeps it immutable for that
+version. A later updater never becomes the author and latest-updater identity is never used for A-04 SoD.
+At publish-request receipt, the server resolves `PublishRequesterActorId` from the authenticated effective
+actor, binds the current trusted tenant/model/version/hash tuple, stamps `CapturedAtUtc` and composes the
+immutable provenance value. The requester is therefore exactly the actor initiating publish; it is not a
+client-selected owner, assignee or approver. No field is copied from request JSON, claims projected by the
+client, audit history or a prior attempt. Tenant, version or hash mismatch is terminal and the value cannot be
+rebound to another model/version.
+
+This provenance is an authorization input, not authorization truth. Audit may record a bounded decision
+result after evaluation, but an audit record, audit actor, latest updater or local history can never source or
+override author/requester identity.
+
+#### PublishApprovalPolicyDecisionV1 — MOD-0355 Approval Policy Owner contract
+
+The MOD-0355 Approval Policy Owner evaluates an exact module-local request tuple with these seven fields and
+no aliases or optional security inputs:
+
+| Field | Exact binding |
+|---|---|
+| `TenantId` | trusted `PublishActorProvenanceV1.TenantId` |
+| `ModelId` | trusted `PublishActorProvenanceV1.ProcessModelId` |
+| `VersionId` | trusted `PublishActorProvenanceV1.ProcessModelVersionId` |
+| `ContentHash` | trusted `PublishActorProvenanceV1.ContentHash` |
+| `PublisherActorId` | effective publisher resolved by authoritative authentication/delegation |
+| `RequesterActorId` | trusted `PublishActorProvenanceV1.PublishRequesterActorId` |
+| `AuthorActorId` | trusted `PublishActorProvenanceV1.ModelAuthorActorId` |
+
+`ModelId` and `VersionId` are policy-request field names only; they bind exactly to the established
+`ProcessModelId` and `ProcessModelVersionId` identities and do not create aliases or new model identities.
+The typed decision contains:
+
+- closed `AuthorityState`: `Available`, `Unavailable`, `Malformed` or `Indeterminate`;
+- closed `Requirement`: `Required` or `NotRequired`, present only when `AuthorityState = Available`;
+- monotonic positive `PolicyVersion`;
+- scalar UTC `ObservedAtUtc` and `ValidUntilUtc`, with `ValidUntilUtc > ObservedAtUtc`.
+
+Only a fresh `Available` decision for the exact tuple may continue to the independent entitlement,
+permission, SoD/eligibility and optional approval-outcome gates. Cache, last-known-good, local policy,
+default-not-required and stale allow are forbidden. The exact tuple, `Requirement` and `PolicyVersion` are
+revalidated immediately before the publish transaction would commit. A changed policy/version/requirement,
+changed trusted tuple, or a decision outside its freshness interval returns `409` with no mutation.
+`Unavailable`, `Malformed` or `Indeterminate` authority returns `503`; none may be translated into
+`Required`, `NotRequired`, `403` or a local guess.
+
+The effective publisher still must differ from `RequesterActorId` and `AuthorActorId`; when approval is
+required it must also differ from the authoritative approval decision actor. A fresh request-bound FU16 proof
+is mandatory for delegated execution. These module-local contracts allocate no external provider identity,
+transport, route, credential, event identity or production composition.
+
+The approval reference remains exactly three fields. The tenant/model/version/hash binding is trusted
+server-side validation context and is not added to `ApprovalOutcomeReferenceV1`. The upstream immutable workflow
+template-version identity and its eligibility rules remain a MOD-0023 producer decision; this pack does not invent
+or select a template identity.
+
+This closes the A-04 policy decision only. It does not make publish executable. The current authoritative gaps
+are explicit:
+
+- MOD-0018 FU16 has no accepted MOD-0355 onboarding profile, operation manifest, entitlement fixture or runtime
+  evidence.
+- MOD-0023 has no executable ProcessModelVersion source profile, trusted attestation or bilateral MOD-0355
+  approval fixture.
+- MOD-0021 has no producer-owned MOD-0355 event identity, schema, allowlist, signing fixture or consumer admission.
+
+No name, version, route, operation ID, event identity, template identity or transport value is inferred for any
+missing upstream contract. Until owner-approved bilateral amendments close all three gaps, the only executable
+publish behavior remains the existing fail-closed `503` contract; no successful application handler,
+persistence mutation or delivery adapter is authorized.
+
 ### Exact ContentHash canonicalization contract
 
 The exact contract is:
@@ -721,7 +827,7 @@ transaction:
 4. producer-local outbox.
 
 Failure to persist any participant rolls back all four. MOD-0021 delivery, signed event schema, publisher
-credentials and delivery adapter remain in the Approval/Auth/Audit second slice.
+credentials and delivery adapter remain in the Approval/Auth/Audit Runtime slice.
 
 ## 5. Repo Scope
 
@@ -777,6 +883,25 @@ Later slices require separate explicit scope activation:
 
 The exact Core paths above grant present bounded write authority only; every later-slice path remains
 unauthorized.
+
+### Approval Policy & Publish Authorization Contract-Test scope
+
+After a separate explicit implementation authorization, the non-runtime contract-test-only second slice may
+create files only under these exact module-local roots:
+
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Modules/ProcessModeling/Approval/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Modules/ProcessModeling/Approval/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/Modules/ProcessModeling/Approval/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Modules/ProcessModeling/Approval/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Modules/ProcessModeling/Approval/**`
+
+That future authorization is limited to policy/value contracts, strict parsing and serialization, provider
+ports, fail-closed orchestration contracts and test-owned fakes/fixtures. It does not authorize a successful
+publish handler, Mongo mutation, repository, DI activation, external adapter, controller, endpoint, listener,
+worker, broker, configuration, credential, port, route, frontend, WorkCenter, deployment or production change.
+Existing Core files and shared composition files remain unchanged unless a later exact allowlist explicitly
+names an additive hunk. Upstream producer fixture bytes remain owned by their producer checkpoints and cannot be
+copied, regenerated or approximated here.
 
 ## 6. Protected Paths
 
@@ -1071,6 +1196,14 @@ Additional required behavior:
 - Owner/interface reference input without an approved extension is rejected.
 - A required receipt, audit-intent or outbox persistence failure rolls back the complete transaction.
 - MOD-0021 post-commit delivery does not exist in Core and cannot rewrite Core business truth.
+- Approval-policy mode, entitlement, permission, SoD, eligibility and outcome validation are separate gates.
+- An authoritative negative entitlement/permission/SoD/eligibility or non-approved final outcome is `403`.
+- Missing, deleted, cross-tenant or non-disclosable model/version/outcome is `404` only after the owning
+  authenticated authority evaluates visibility; absence of an upstream profile is not `404`.
+- A reference whose authoritative model/version/ContentHash binding is stale or conflicts with current publish
+  state is `409` with no mutation.
+- A missing MOD-0355 onboarding/profile/admission, unresolved trusted actor, governance-only provider,
+  timeout, malformed authoritative response or indeterminate result is `503`, never local allow or deny.
 
 ## 14. Authorization Convention
 
@@ -1125,6 +1258,13 @@ Authorization rules:
 - Approval eligibility and delegation remain second-slice external concerns.
 - Core may define constants and tests but does not claim AuthService provisioning is runtime available.
 
+For the contract-test-only Approval Policy slice, the decision order is fail-closed and exact: authenticated
+trusted identity; current MOD-0355 entitlement; exact publish permission; fresh effective/delegated actor;
+authoritative approval-policy mode; SoD/eligibility; and, when required, authoritative final-approved outcome
+binding. A later successful implementation must complete every gate before idempotent outcome disclosure or
+business mutation. One allow cannot substitute for another. Missing MOD-0355 FU16 onboarding keeps the complete
+decision unavailable (`503`), not denied, allowed or locally inferred.
+
 ## 15. Gateway / API Routing Decision
 
 - Port: `TBD`.
@@ -1171,15 +1311,30 @@ Authorization rules:
 
 ### Approval/Auth/Audit
 
-- [ ] Approval policy and ApprovalOutcome binding remain second-slice work.
+- [ ] A-04 policy branches match the closed direct-publish and approval-required decision in §4.
+- [ ] `PublishActorProvenanceV1` has exactly eight fields; author is captured from the trusted effective actor
+      at version creation, requester is the effective actor initiating publish, latest updater is excluded,
+      and no client or audit value can supply or change the provenance.
+- [ ] `PublishApprovalPolicyDecisionV1` consumes exactly the seven-field policy tuple in §4 and returns only
+      the closed authority-state/requirement values with a monotonic version and fresh UTC validity interval.
+- [ ] Exact policy tuple and version are revalidated before commit; changed or stale evidence returns `409`,
+      while unavailable, malformed or indeterminate authority returns `503`, with no cache/LKG/local allow.
 - [ ] `ApprovalOutcomeReferenceV1` has exactly `ContractName`, `ContractVersion` and
       `ApprovalOutcomeId`.
 - [ ] `ApprovalOutcomeVersion` and additional outcome fields are rejected.
 - [ ] Approval outcome is absent from Core entity/request schemas.
 - [ ] Governance documentation does not claim runtime availability.
+- [ ] Approval-not-required still requires current MOD-0355 entitlement, exact publish permission and fresh
+      authoritative SoD/eligibility allow.
+- [ ] Approval-required additionally resolves one final-approved outcome bound server-side to exact trusted
+      TenantId, ProcessModelId, ProcessModelVersionId and ContentHash.
+- [ ] Effective publisher differs from model author/requester and, when approval is required, approval decision
+      actor; explicit equality denial is `403`.
+- [ ] Missing MOD-0355 FU16 onboarding, MOD-0023 ProcessModelVersion profile or MOD-0021 producer admission
+      remains non-executable and returns fail-closed `503` where authority is required.
 - [ ] `PublishProcessModelVersionCommand` contract, domain transition specification and fail-closed tests may
       exist in Core, but no successful application handler or persistence mutation is authorized until the
-      Approval/Auth/Audit second slice is separately approved and executable.
+      Approval/Auth/Audit Runtime slice is separately approved and executable.
 - [ ] MOD-0018, MOD-0021 and MOD-0023 integrations require separate approval and fixtures.
 
 ### Optional reference integrations
@@ -1315,6 +1470,32 @@ owner/runtime decisions. This fallback grants no runtime authority.
 - Owner/interface input fails closed without approved adapters.
 - Provider unavailable/indeterminate returns `503`.
 
+### Approval Policy & Publish Authorization contract tests
+
+- Exact eight-field `PublishActorProvenanceV1` serialization, required-field and unknown-field rejection.
+- Server-owned provenance tests prove author capture at version creation, requester capture at publish request,
+  latest-updater exclusion, immutable tenant/model/version/hash binding and rejection of every client-supplied
+  provenance field.
+- Exact seven-field `PublishApprovalPolicyDecisionV1` request binding and exact closed
+  `AuthorityState`/`Requirement` parsing; aliases, missing fields and unknown values fail closed.
+- Monotonic `PolicyVersion`, UTC observation/validity interval and pre-commit exact-tuple revalidation tests;
+  changed/stale decisions return `409`, while unavailable/malformed/indeterminate authority returns `503`.
+- Cache/LKG/default-not-required/local-policy mutation tests fail closed and produce no publish mutation.
+- Exact approval-not-required and approval-required branch matrix.
+- Entitlement, exact publish permission, SoD and eligibility are independent conjunctive gates.
+- Publisher-versus-author/requester and publisher-versus-decision-actor negative cases.
+- Exact three-field `ApprovalOutcomeReferenceV1` serialization and missing, duplicate, unknown-field,
+  unsupported-version and noncanonical-UUID rejection.
+- Trusted server-side TenantId, ProcessModelId, ProcessModelVersionId and ContentHash binding; no fourth
+  reference field.
+- Final-approved outcome acceptance shape; non-final or non-approved authoritative outcome denial.
+- Fresh delegated actor proof requirement and request/effective-actor binding.
+- Explicit deny `403`; missing/cross-tenant visible-resource boundary `404`; stale version/hash/lifecycle or
+  idempotency conflict `409`; unavailable/timeout/malformed/indeterminate authority `503`.
+- Missing upstream profile/fixture/runtime evidence proves no successful handler, persistence mutation, receipt,
+  audit intent, outbox record or external call.
+- Core `68/68` checkpoint regression, exact sibling isolation matrix and protected-path scan remain green.
+
 Frontend and runtime activation tests become mandatory only in their separately approved slices.
 
 ## 18. Ready-for-dev Checklist
@@ -1329,10 +1510,12 @@ Frontend and runtime activation tests become mandatory only in their separately 
       one open Draft/Review and no parallel variants.
 - [x] **A-03 — CLOSED FOR CORE:** `ModuleCode = MOD-0355`, exact 16 permissions and exact command/query
       mapping. ProcessModel has no archive command.
-- [ ] **A-04 — SECOND-SLICE OWNER DECISION / NOT A CORE CONTRACT BLOCKER:** Decide whether authoritative
-      `approval not required` permits direct publish by an authorized publisher. Until this closes,
-      `PublishProcessModelVersionCommand` may exist only as a contract/domain transition specification and
-      fail-closed test target; a successful application handler or persistence mutation is unauthorized.
+- [x] **A-04 — CLOSED FOR CONTRACT-TEST POLICY / NON-RUNTIME:** Authoritative `approval not required` permits
+      direct-publish eligibility only with current MOD-0355 entitlement, exact publish permission and fresh
+      authoritative SoD/eligibility allow. Approval-required additionally needs the exact three-field,
+      final-approved MOD-0023 reference bound server-side to tenant, model, version and ContentHash. Publisher
+      differs from author/requester and, when applicable, decision actor. Missing onboarding/profile/admission
+      evidence keeps successful publish unauthorized and fail-closed `503` as defined in §4.
 - [x] **A-05 — NOT APPLICABLE TO MINIMAL CORE V1:** Activity classification deferred to a future versioned
       amendment.
 - [x] **A-06 — NOT APPLICABLE TO MINIMAL CORE V1:** Control-point classification deferred to a future
@@ -1375,11 +1558,16 @@ Frontend and runtime activation tests become mandatory only in their separately 
 
 - [ ] **B-01:** Service port allocation.
 - [ ] **B-02:** Gateway route and transport topology.
-- [ ] **B-03:** AuthService module catalog, entitlement and 16-permission provisioning.
-- [ ] **B-04:** Reusable MOD-0018 permission/SoD enforcement.
-- [ ] **B-05:** MOD-0023 ApprovalOutcome amendment promotion and adapter.
-- [ ] **B-06:** Approval-policy resolution, eligibility/delegation and bilateral fixtures.
-- [ ] **B-07:** MOD-0021 signed/versioned event contract, publisher identity, delivery and replay evidence.
+- [ ] **B-03:** AuthService module catalog, entitlement and exact 16-permission provisioning; MOD-0355 FU16
+      onboarding profile and executable fixture are absent.
+- [ ] **B-04:** Reusable MOD-0018 permission/SoD enforcement, including fresh delegated-actor and actor-inequality
+      decisions for MOD-0355.
+- [ ] **B-05:** MOD-0023 ApprovalOutcome amendment promotion plus an exact ProcessModelVersion source profile,
+      template-version decision, trusted attestation, adapter and bilateral fixtures.
+- [ ] **B-06:** Executable approval-policy resolution, eligibility/delegation and bilateral fixtures for both
+      A-04 branches.
+- [ ] **B-07:** Producer-owned MOD-0355 event identity/schema/allowlist/signing fixtures, MOD-0021 consumer
+      admission, publisher identity, delivery and replay evidence.
 - [ ] **B-08:** Classification producer contract.
 - [ ] **B-09:** KPI/Metric producer contracts.
 - [ ] **B-10:** Owner-reference producer contract and adapter.
@@ -1399,7 +1587,8 @@ named later slice or runtime activation.
 | Slice | Scope | Readiness relationship |
 |---|---|---|
 | Core Model & Contract-Test | Minimal unclassified definition model, lifecycle, revision, topology, tenancy, concurrency, hashing, idempotency, local audit-intent/outbox and architecture tests | Independent of external producer integrations |
-| Approval/Auth/Audit | Permission/SoD runtime enforcement, approval policy, authoritative outcome binding and MOD-0021 delivery | Separate second slice |
+| Approval Policy & Publish Authorization Contract-Test | Closed A-04 branch semantics, exact three-field reference, trusted binding, SoD/eligibility and fail-closed provider contracts | Non-runtime second-slice foundation; successful publish remains blocked |
+| Approval/Auth/Audit Runtime | Permission/SoD runtime enforcement, executable outcome binding and MOD-0021 delivery | Separate later executable slice after bilateral amendments |
 | Optional reference integrations | Classification, KPI/Metric, owner, interface, document, evidence and artifact references | Independent later slices |
 | Frontend & Legacy Parity | Tenant UI, localization, parity inventory and approved disposition | Separate later slice |
 | Runtime activation | Port, Gateway, transport, credentials, deployment, observability and production authorization | Separate final gate |
@@ -1431,7 +1620,7 @@ retention, tenant offboarding, legal erasure or exceptional purge requires separ
 
 ### Approval boundary
 
-`ApprovalOutcomeReferenceV1` is documented only for the second slice. It is absent from Core entity and
+`ApprovalOutcomeReferenceV1` is documented only for the contract-test second slice. It is absent from Core entity and
 request schemas. Its documentation does not mean the producer amendment, endpoint, adapter or transport is
 runtime available.
 
@@ -1468,7 +1657,11 @@ Governance availability cannot become local fallback, hard-coded truth or inferr
 - Replace interim business, technical and legacy-parity accountable roles with permanent organizational
   assignees before production activation.
 - Introduce activity/control-point/relationship classification only through a future versioned amendment.
-- Resolve approval policy and ApprovalOutcome binding in the Approval/Auth/Audit slice.
+- Materialize the closed A-04 policy only through the exact contract-test scope in §5; keep successful publish
+  disabled until upstream bilateral amendments are executable.
+- Implement only the exact module-local `PublishActorProvenanceV1` and
+  `PublishApprovalPolicyDecisionV1` contracts in that contract-test slice; do not infer an upstream provider,
+  transport or runtime identity.
 - Add MOD-0018 permission/SoD enforcement through an owner-approved PSS slice.
 - Add MOD-0021 delivery only after its signed/versioned contract and operational evidence exist.
 - Add classification, KPI/Metric, owner, interface, document, evidence and artifact references through
@@ -1493,6 +1686,10 @@ Governance availability cannot become local fallback, hard-coded truth or inferr
 - ProcessModel catalog lifecycle field occurrence: `0`
 - Additional concurrency-field identifier occurrence: `0`
 - ApprovalOutcomeReference in Core schema: absent
+- PublishActorProvenanceV1 fields: exact `8`
+- PublishApprovalPolicyDecisionV1 request fields: exact `7`
+- PublishApprovalPolicyDecisionV1 authority states: exact `4`
+- PublishApprovalPolicyDecisionV1 requirements: exact `2`
 - Error matrix: exact `400 / 401 / 403 / 404 / 409 / 503`
 - Core atomic participants: `4`
 - Normative hash vectors: `3`
