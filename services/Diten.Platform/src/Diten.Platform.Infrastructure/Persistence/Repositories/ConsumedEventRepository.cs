@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Common.Tenancy;
 using MongoDB.Driver;
@@ -7,7 +8,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 public sealed class ConsumedEventRepository : RepositoryBase<ConsumedEvent>, IConsumedEventRepository
 {
     public ConsumedEventRepository(IPlatformDbContext platformDbContext, ITenantContext tenantContext)
-        : base(platformDbContext, tenantContext, "consumed_events")
+        : base(platformDbContext, tenantContext, PlatformCollections.ConsumedEvents)
     {
     }
 

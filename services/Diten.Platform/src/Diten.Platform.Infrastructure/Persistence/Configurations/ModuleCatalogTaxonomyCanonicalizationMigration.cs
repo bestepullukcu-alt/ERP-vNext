@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Domain.Catalog;
 using Diten.Platform.Domain.Entities;
@@ -31,11 +32,11 @@ public static class ModuleCatalogTaxonomyCanonicalizationMigration
             return;
         }
 
-        var domainOptions = await LoadOptionsAsync<ModuleDomain>(database, "platform_module_domains", d => d.Code, d => d.DisplayName, ct);
-        var serviceOptions = await LoadOptionsAsync<ModuleService>(database, "platform_module_services", s => s.Code, s => s.DisplayName, ct);
+        var domainOptions = await LoadOptionsAsync<ModuleDomain>(database, PlatformCollections.ModuleDomains, d => d.Code, d => d.DisplayName, ct);
+        var serviceOptions = await LoadOptionsAsync<ModuleService>(database, PlatformCollections.ModuleServices, s => s.Code, s => s.DisplayName, ct);
 
         // 1) Convert catalog Domain/Service to canonical Code (typo'd DisplayName still present here so it resolves).
-        var catalog = database.GetCollection<ModuleCatalogItem>("platform_module_catalog");
+        var catalog = database.GetCollection<ModuleCatalogItem>(PlatformCollections.ModuleCatalog);
         var items = await catalog
             .Find(Builders<ModuleCatalogItem>.Filter.Eq(x => x.IsDeleted, false))
             .ToListAsync(ct);
@@ -65,7 +66,7 @@ public static class ModuleCatalogTaxonomyCanonicalizationMigration
 
         // 2) Correct the 'Platform Shared Servicec' → 'Platform Shared Services' DisplayName typo on the domain
         //    lookup row(s). Catalog rows already store Codes, so this is presentation-only and never re-touches them.
-        var domains = database.GetCollection<ModuleDomain>("platform_module_domains");
+        var domains = database.GetCollection<ModuleDomain>(PlatformCollections.ModuleDomains);
         var typoRows = await domains
             .Find(Builders<ModuleDomain>.Filter.And(
                 Builders<ModuleDomain>.Filter.Eq(x => x.IsDeleted, false),

@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
@@ -21,7 +22,7 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
         IPlatformDbContext dbContext,
         ITenantContext tenantContext,
         ITaskTransitionRepository transitions)
-        : base(dbContext.Database, tenantContext, "task_items")
+        : base(dbContext.Database, tenantContext, PlatformCollections.TaskItems)
     {
         _transitions = transitions;
         _tenantContext = tenantContext;
@@ -258,7 +259,7 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
 public sealed class TaskTransitionRepository : TenantRepository<TaskTransition>, ITaskTransitionRepository
 {
     public TaskTransitionRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "task_transitions")
+        : base(dbContext.Database, tenantContext, PlatformCollections.TaskTransitions)
     {
     }
 
@@ -305,7 +306,7 @@ public sealed class TaskTransitionRepository : TenantRepository<TaskTransition>,
 public sealed class TaskAssignmentRepository : TenantRepository<TaskAssignment>, ITaskAssignmentRepository
 {
     public TaskAssignmentRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "task_assignments")
+        : base(dbContext.Database, tenantContext, PlatformCollections.TaskAssignments)
     {
     }
 
@@ -321,7 +322,7 @@ public sealed class TaskAssignmentRepository : TenantRepository<TaskAssignment>,
 public sealed class TaskDependencyRepository : TenantRepository<TaskDependency>, ITaskDependencyRepository
 {
     public TaskDependencyRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "task_dependencies")
+        : base(dbContext.Database, tenantContext, PlatformCollections.TaskDependencies)
     {
     }
 
@@ -358,7 +359,7 @@ public sealed class TaskDependencyRepository : TenantRepository<TaskDependency>,
 public sealed class TaskCommentRepository : TenantRepository<TaskComment>, ITaskCommentRepository
 {
     public TaskCommentRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "task_comments")
+        : base(dbContext.Database, tenantContext, PlatformCollections.TaskComments)
     {
     }
 
@@ -416,7 +417,7 @@ public sealed class TaskCommentRepository : TenantRepository<TaskComment>, ITask
 public sealed class TaskWatcherRepository : TenantRepository<TaskWatcher>, ITaskWatcherRepository
 {
     public TaskWatcherRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "task_watchers")
+        : base(dbContext.Database, tenantContext, PlatformCollections.TaskWatchers)
     {
     }
 
@@ -456,7 +457,7 @@ public sealed class TaskFieldDefinitionRepository
     : TenantRepository<TaskFieldDefinition>, ITaskFieldDefinitionRepository
 {
     public TaskFieldDefinitionRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "task_field_definitions")
+        : base(dbContext.Database, tenantContext, PlatformCollections.TaskFieldDefinitions)
     {
     }
 
@@ -503,7 +504,7 @@ public sealed class TaskFieldDefinitionRepository
 public sealed class TaskTypeRepository : TenantRepository<TaskType>, ITaskTypeRepository
 {
     public TaskTypeRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "task_types")
+        : base(dbContext.Database, tenantContext, PlatformCollections.TaskTypes)
     {
     }
 
@@ -547,9 +548,9 @@ public sealed class DocumentReferenceListRepository : TenantRepository<DocumentR
     private readonly ITenantContext _tenants;
 
     public DocumentReferenceListRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_reference_list_versions")
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentReferenceListVersions)
     {
-        _entries = dbContext.Database.GetCollection<DocumentReferenceEntry>("document_reference_entries");
+        _entries = dbContext.Database.GetCollection<DocumentReferenceEntry>(PlatformCollections.DocumentReferenceEntries);
         _tenants = tenantContext;
     }
 
@@ -651,7 +652,7 @@ public sealed class DocumentReferenceListRepository : TenantRepository<DocumentR
 public sealed class ChecklistTemplateRepository : TenantRepository<ChecklistTemplate>, IChecklistTemplateRepository
 {
     public ChecklistTemplateRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "checklist_templates")
+        : base(dbContext.Database, tenantContext, PlatformCollections.ChecklistTemplates)
     {
     }
 
@@ -667,7 +668,7 @@ public sealed class ChecklistTemplateRepository : TenantRepository<ChecklistTemp
 public sealed class ChecklistRunRepository : TenantRepository<ChecklistRun>, IChecklistRunRepository
 {
     public ChecklistRunRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "checklist_runs")
+        : base(dbContext.Database, tenantContext, PlatformCollections.ChecklistRuns)
     {
     }
 
@@ -710,7 +711,7 @@ public sealed class ChecklistRunRepository : TenantRepository<ChecklistRun>, ICh
 public sealed class TaskTemplateRepository : TenantRepository<TaskTemplate>, ITaskTemplateRepository
 {
     public TaskTemplateRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "task_templates")
+        : base(dbContext.Database, tenantContext, PlatformCollections.TaskTemplates)
     {
     }
 
@@ -727,7 +728,7 @@ public sealed class TaskRecurrenceRuleRepository
     : TenantRepository<TaskRecurrenceRule>, ITaskRecurrenceRuleRepository
 {
     public TaskRecurrenceRuleRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "task_recurrence_rules")
+        : base(dbContext.Database, tenantContext, PlatformCollections.TaskRecurrenceRules)
     {
     }
 
@@ -775,7 +776,7 @@ public sealed class TaskPersonalOverlayRepository
     : TenantRepository<TaskPersonalOverlay>, ITaskPersonalOverlayRepository
 {
     public TaskPersonalOverlayRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "task_personal_overlays")
+        : base(dbContext.Database, tenantContext, PlatformCollections.TaskPersonalOverlays)
     {
     }
 

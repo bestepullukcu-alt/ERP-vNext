@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Infrastructure.Persistence.Repositories.BusinessReferenceData;
 using MongoDB.Driver;
@@ -11,14 +12,13 @@ namespace Diten.Platform.Application.Tests.Persistence;
 public sealed class BusinessReferenceDataUsageLookupMongoTests : IAsyncLifetime
 {
     private const string SetCode = "COUNTRY";
-    private const string CollectionName = "business_reference_data_usage_registrations";
 
     private MongoIntegrationHarness _harness = null!;
     private BusinessReferenceDataStewardshipRepository _repository = null!;
 
     public async Task InitializeAsync()
     {
-        _harness = await MongoIntegrationHarness.CreateAsync();
+        _harness = await MongoIntegrationHarness.CreateAsync(SchemaProfile.BusinessReferenceData);
         _repository = new BusinessReferenceDataStewardshipRepository(_harness.DbContext, _harness.TenantContext);
     }
 
@@ -29,8 +29,8 @@ public sealed class BusinessReferenceDataUsageLookupMongoTests : IAsyncLifetime
     [Fact]
     public async Task Usage_registrations_are_listed_when_rows_have_been_updated()
     {
-        var older = await SeedAsync(createdAt: Now.AddHours(-5), updatedAt: Now.AddHours(-4));
-        var newer = await SeedAsync(createdAt: Now.AddHours(-3), updatedAt: Now.AddHours(-1));
+        var older = await SeedAsync(createdAt: Now.AddHours(-5), updatedAt: Now.AddHours(-4), consumerName: "Organization");
+        var newer = await SeedAsync(createdAt: Now.AddHours(-3), updatedAt: Now.AddHours(-1), consumerName: "LegalEntity");
 
         var rows = await _repository.GetUsageRegistrationsAsync(SetCode);
 
@@ -44,8 +44,8 @@ public sealed class BusinessReferenceDataUsageLookupMongoTests : IAsyncLifetime
     [Fact]
     public async Task Never_updated_registrations_sort_behind_updated_ones()
     {
-        var updated = await SeedAsync(createdAt: Now.AddDays(-9), updatedAt: Now.AddHours(-1));
-        var neverUpdated = await SeedAsync(createdAt: Now, updatedAt: null);
+        var updated = await SeedAsync(createdAt: Now.AddDays(-9), updatedAt: Now.AddHours(-1), consumerName: "Organization");
+        var neverUpdated = await SeedAsync(createdAt: Now, updatedAt: null, consumerName: "LegalEntity");
 
         var rows = await _repository.GetUsageRegistrationsAsync(SetCode);
 
@@ -56,9 +56,21 @@ public sealed class BusinessReferenceDataUsageLookupMongoTests : IAsyncLifetime
 
     private static DateTimeOffset Now => DateTimeOffset.UtcNow;
 
+    /*
+     * ⚠ EVERY SEEDED ROW NEEDS ITS OWN CONSUMER, AND THAT IS NOT COSMETIC. Production carries a unique index
+     * on (TenantId, SetCode, ConsumerModule, ConsumerName): one module registers one usage of one set, once.
+     * Both tests above used to seed two rows with the SAME consumer and pass — because the old harness built
+     * no indexes at all, so the constraint production enforces simply did not exist here. The moment the
+     * harness started building the BusinessReferenceData profile, Mongo rejected the second insert.
+     *
+     * That is the failure class this whole round is about, seen from the other side: a test can be green for
+     * years against a schema production does not have. The sort behaviour under test is unchanged — it needs
+     * two rows, not two identical consumers.
+     */
     private async Task<BusinessReferenceDataUsageRegistration> SeedAsync(
         DateTimeOffset createdAt,
-        DateTimeOffset? updatedAt)
+        DateTimeOffset? updatedAt,
+        string consumerName)
     {
         var registration = new BusinessReferenceDataUsageRegistration
         {
@@ -67,13 +79,13 @@ public sealed class BusinessReferenceDataUsageLookupMongoTests : IAsyncLifetime
             UpdatedAt = updatedAt,
             SetCode = SetCode,
             ConsumerModule = "MOD-0288",
-            ConsumerName = "Organization",
+            ConsumerName = consumerName,
             IsActive = true,
             IsDeleted = false
         };
 
         await _harness.Database
-            .GetCollection<BusinessReferenceDataUsageRegistration>(CollectionName)
+            .GetCollection<BusinessReferenceDataUsageRegistration>(PlatformCollections.BusinessReferenceDataUsageRegistrations)
             .InsertOneAsync(registration);
 
         return registration;

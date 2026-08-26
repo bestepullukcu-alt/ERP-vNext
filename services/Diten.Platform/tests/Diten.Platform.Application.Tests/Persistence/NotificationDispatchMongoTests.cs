@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Features.Notifications;
 using Diten.Platform.Application.Features.Notifications.Commands;
@@ -40,7 +41,11 @@ public sealed class NotificationDispatchMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;
 
-    public async Task InitializeAsync() => _harness = await MongoIntegrationHarness.CreateAsync();
+    public async Task InitializeAsync() => _harness = await MongoIntegrationHarness.CreateIsolatedAsync(
+        "notification_dispatch",
+        SchemaProfile.Notification,
+        SchemaProfile.WorkflowWorkCenter,
+        SchemaProfile.Core);
 
     public async Task DisposeAsync() => await _harness.DisposeAsync();
 

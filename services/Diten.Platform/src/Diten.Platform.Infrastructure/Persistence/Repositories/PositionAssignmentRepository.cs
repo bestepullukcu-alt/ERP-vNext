@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Organization;
@@ -9,7 +10,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 public sealed class PositionAssignmentRepository : TenantRepository<PositionAssignment>, IPositionAssignmentRepository
 {
     public PositionAssignmentRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "position_assignments")
+        : base(dbContext.Database, tenantContext, PlatformCollections.PositionAssignments)
     {
     }
 

@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Domain.Catalog;
 using Diten.Platform.Domain.Entities;
 using MongoDB.Bson;
@@ -122,7 +123,7 @@ public static class ModuleDomainDeduplicationMigration
 
     public static async Task MigrateAsync(IMongoDatabase database, CancellationToken ct = default)
     {
-        var collection = database.GetCollection<ModuleDomain>("platform_module_domains");
+        var collection = database.GetCollection<ModuleDomain>(PlatformCollections.ModuleDomains);
 
         var live = await collection
             .Find(Builders<ModuleDomain>.Filter.Eq(x => x.IsDeleted, false))
@@ -182,7 +183,7 @@ public static class ModuleDomainDeduplicationMigration
     /// </summary>
     private static async Task BackfillCodeKeysAsync(IMongoDatabase database, CancellationToken ct)
     {
-        var bson = database.GetCollection<BsonDocument>("platform_module_domains");
+        var bson = database.GetCollection<BsonDocument>(PlatformCollections.ModuleDomains);
         var liveFilter = Builders<BsonDocument>.Filter.Ne("IsDeleted", true); // absent or false → live
         var missingKeyFilter = Builders<BsonDocument>.Filter.Or(
             Builders<BsonDocument>.Filter.Exists("CodeKey", false),

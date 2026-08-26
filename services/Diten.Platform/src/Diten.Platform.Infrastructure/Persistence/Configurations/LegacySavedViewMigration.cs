@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -7,7 +8,7 @@ public static class LegacySavedViewMigration
 {
     public static async Task MigrateAsync(IMongoDatabase database, CancellationToken cancellationToken = default)
     {
-        var collection = database.GetCollection<BsonDocument>("saved_views");
+        var collection = database.GetCollection<BsonDocument>(PlatformCollections.SavedViews);
 
         var legacyFilter = Builders<BsonDocument>.Filter.Or(
             Builders<BsonDocument>.Filter.Exists("CreatedAt", true),

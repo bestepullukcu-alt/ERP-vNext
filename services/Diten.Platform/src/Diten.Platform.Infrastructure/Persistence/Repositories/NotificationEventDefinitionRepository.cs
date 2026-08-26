@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Domain.Entities.Notifications;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
@@ -13,7 +14,7 @@ public sealed class NotificationEventDefinitionRepository : INotificationEventDe
 
     public NotificationEventDefinitionRepository(IPlatformDbContext dbContext)
     {
-        _collection = dbContext.GetCollection<NotificationEventDefinition>("notification_event_definitions");
+        _collection = dbContext.GetCollection<NotificationEventDefinition>(PlatformCollections.NotificationEventDefinitions);
     }
 
     public async Task<NotificationEventDefinition> CreateAsync(NotificationEventDefinition definition, CancellationToken ct = default)

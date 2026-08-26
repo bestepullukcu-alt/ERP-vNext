@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities;
@@ -10,7 +11,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 public sealed class ModuleServiceRepository : GlobalRepository<ModuleService>, IModuleServiceRepository
 {
     public ModuleServiceRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "platform_module_services")
+        : base(dbContext.Database, tenantContext, PlatformCollections.ModuleServices)
     {
     }
 

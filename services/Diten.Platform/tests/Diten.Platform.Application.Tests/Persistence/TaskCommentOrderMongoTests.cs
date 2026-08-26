@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
 using Xunit;
@@ -28,7 +29,15 @@ public sealed class TaskCommentOrderMongoTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _harness = await MongoIntegrationHarness.CreateAsync();
+        /*
+         * ⚠ ISOLATED, NOT TENANT-SHARED, AND THE REASON IS IN THE TEST BELOW: the tie-break case asserts on
+         * FIXED ids (1111…, 2222…, 3333…) because the rule under test is "descending by id" and only constant,
+         * ordered ids can prove it. Constant ids cannot live in a shared database — the second run collides
+         * with the first on _id. The scope name is fixed, so this is one database reused, never one per run.
+         */
+        _harness = await MongoIntegrationHarness.CreateIsolatedAsync(
+            "task_comment_order",
+            SchemaProfile.WorkflowWorkCenter);
         _repository = new TaskCommentRepository(_harness.DbContext, _harness.TenantContext);
     }
 

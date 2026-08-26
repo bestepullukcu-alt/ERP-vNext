@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -12,7 +13,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 public sealed class DocumentAccessPolicyRepository : TenantRepository<DocumentAccessPolicyEntry>, IDocumentAccessPolicyRepository
 {
     public DocumentAccessPolicyRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_access_policies") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementAccessPolicies) { }
 
     public new Task<DocumentAccessPolicyEntry> CreateAsync(DocumentAccessPolicyEntry entry, CancellationToken ct = default) =>
         base.CreateAsync(entry, ct);

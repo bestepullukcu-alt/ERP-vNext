@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Domain.Entities.Notifications;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Infrastructure.Settings;
@@ -40,7 +41,7 @@ public static class NotificationMessagingSettingsSeed
         SmtpOptions smtp,
         CancellationToken ct = default)
     {
-        var collection = database.GetCollection<TenantMessagingSettings>("notification_tenant_messaging_settings");
+        var collection = database.GetCollection<TenantMessagingSettings>(PlatformCollections.TenantMessagingSettings);
 
         // Same predicate TenantMessagingSettingsRepository.GetPlatformDefaultAsync uses. Matching it exactly is
         // the point: seeding a row the resolver would not find is the same as seeding nothing.

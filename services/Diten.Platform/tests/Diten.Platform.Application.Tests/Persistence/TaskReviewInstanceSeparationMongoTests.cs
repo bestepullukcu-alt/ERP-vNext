@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Workflow;
@@ -29,7 +30,7 @@ public sealed class TaskReviewInstanceSeparationMongoTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _harness = await MongoIntegrationHarness.CreateAsync();
+        _harness = await MongoIntegrationHarness.CreateAsync(SchemaProfile.WorkflowWorkCenter);
         _repository = new WorkflowInstanceRepository(_harness.DbContext, _harness.TenantContext);
     }
 

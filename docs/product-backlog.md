@@ -6037,3 +6037,228 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
 - Seçenek: seçilmiş satırı sonuçtan düşürmek yerine "zaten eklendi" diye işaretlemek — düşürmek, arayıp
   bulamayan okuyucuya "bu doküman yok" dedirtir.
 - **Gelecek regresyon riski: 🟢**
+
+### BL-277 — Mongo test düzeneği: koşu başına veritabanı, ölçülen borç ve Bölüm B (2026-08-26, muhafız kuruldu, ihlaller DURUYOR)
+Bu tur yalnız **tespit** kurdu; tek bir test düzeltilmedi ve paylaşılan harness'lara kasıtla dokunulmadı.
+
+**Ölçüm (2026-08-26, `chore/mongo-test-database-guard`):**
+- Koşu başına veritabanı adı üreten test dosyası: **18**
+  (MDM 9 · Platform Application 5 · Platform Eventing 2 · Auth 1 · HCM 1)
+- Test tarafından `MongoDbIndexConfigurations.EnsureIndexesAsync` çağıran dosya: **6** (7 çağrı yeri:
+  BRD 3 dosya · Eventing 2 dosya/3 çağrı · Auth 1) → toplam benzersiz ihlalli dosya: **19**
+- Bir `EnsureIndexesAsync` çağrısının kurduğu şema (Platform): **76 benzersiz koleksiyon**, **218 indeks
+  modeli** (+ koleksiyon başına örtük `_id`). Auth: 9 koleksiyon / 21 indeks modeli.
+- İki paylaşılan harness tek başına 14 test sınıfı taşıyor: `BusinessReferenceDataTestHarness`
+  (`BusinessReferenceDataGskuCatalogLoadMongoTests.cs` içinde tanımlı, **7** sınıf; GUID veritabanı **ve**
+  `EnsureIndexesAsync`) · `MongoIntegrationHarness` (**7** sınıf; GUID veritabanı, `EnsureIndexesAsync` YOK).
+
+**CT'nin girdi sayılarıyla fark (ikisi de doğru, farklı şey sayıyor):**
+- CT "Eventing 3" dedi → 3 **çağrı yeri**, 2 **dosya**. Muhafız dosya sayar.
+- CT "bugünkü 14 ihlal" dedi → ölçülen 19 ihlalli dosya (18 + 6, kesişim 5). 14, iki harness'ın taşıdığı
+  **sınıf** sayısıyla örtüşüyor; ihlalli **dosya** sayısı değil.
+- CT "282 indeks" dedi → ölçülen 218 bildirilmiş model + 76 örtük `_id` = 294. Büyüklük mertebesi aynı,
+  tam sayı farklı; kaynak dosyada bazı modeller tek `CreateMany` içinde toplu.
+
+**Bölüm B (yapılmadı, GSKU ekibiyle ortak):** paylaşılan veritabanı + test başına `TenantId`. Sıra önerisi:
+önce iki harness (14 sınıfı bir hamlede taşır), sonra harness kullanmayan tekil dosyalar. Her düzeltilen
+dosya muhafızın listesinden **silinir**; silinmezse bayatlık testi kırmızı olur.
+
+**Muhafızın bilinen zayıflığı (Bölüm B'den bağımsız borç):** kaynak **metni** eşleştiriyor, sözdizim ağacı
+değil. Değişken adını değiştirmek (`var scratch = "x" + Guid.NewGuid()`) PER_RUN_DB'yi atlatır; iki ifadeye
+bölünmüş bir ihlal de atlatır. Yorumlar eşleştirmeden önce ayıklanıyor (dize sabitleri KASITLA korunuyor,
+çünkü ihlal genelde `$"..._{Guid.NewGuid():N}"` içinde yaşıyor). Dürüst yükseltme: `GetDatabase(...)`
+argümanını çözen bir Roslyn geçişi. Yapılmadı — yayılan şey bu iki jetonluk desen.
+
+**ERTELENDİ — kural metni ve komut kaydı (sahip kararı, 2026-08-26):** `.antigravity/**` ve `AGENTS.md`
+korumalı yol (`AGENTS.md:87`); kural bu turda YAZILMADI, merge sonrası ortak pakete kalıyor. Yazılacak metin,
+kaybolmasın diye burada duruyor — hedef: `.antigravity/rules/mongo-indexing.md` (DB-001'in devamı, çünkü o
+doküman zaten "izolasyon `TenantId` ile sağlanır" diyor) + `.antigravity/workflows/test.md` standart listesine
+tek satır atıf:
+> - Bir Mongo testi koşu başına yeni bir veritabanı yaratmaz. İzolasyon veritabanı adıyla değil, kiracı
+>   kimliğiyle sağlanır — üretimde nasıl sağlanıyorsa aynen öyle.
+> - Bir test `MongoDbIndexConfigurations.EnsureIndexesAsync` çağırmaz. Bu üretim bootstrap'idir; platformun
+>   tüm şemasını kurar. Şemayı paylaşılan test veritabanı bir kez taşır.
+> - Neden (mekanizma, sayı değil): her koleksiyon ve her indeks işletim sisteminde açık dosyadır. Test sınıfı
+>   başına bir veritabanı × platformun tam şeması = süreç başına dosya limiti. Limit aşılınca `mongod` fassert
+>   ile kendini öldürür; ölünce `DisposeAsync` hiç çalışmaz, atılacak veritabanları birikir ve sonraki koşu
+>   enkazın üstüne başlar. Testler yeşilken düzenek çöker — hata testte değil, altyapıda görünür.
+> - Doğru desen: paylaşılan bir veritabanı + test başına yeni `TenantId`.
+> - Kırmızıyı muhafızın listesine satır ekleyerek yeşile çevirmek yasaktır.
+
+**Gelecek regresyon riski: 🟡** — muhafız yeni ihlali durdurur ama mevcut 19 dosya duruyor, yani makine
+üzerindeki `mongod` çökmesi bu tur GEÇMEDİ. Ayrıca muhafız hiçbir toplu test komutunun içinde değil:
+`AGENTS.md` regresyon listesi `services/*` altını sayıyor, `tests/architecture` altını saymıyor — bu satırın
+eklenmesi de yukarıdaki ertelenmiş pakete dahil:
+```bash
+dotnet test tests/architecture/TenantArchitecture.ArchitectureTests
+```
+Kural yazılana kadar muhafızın gerekçesi yalnız kendi dosya başlığında yaşıyor.
+
+### BL-278 — "EnsureIndexesAsync" iki VERİ işi çalıştırıyordu; ayrıldı, kaybolmadı (2026-08-26, düzeltildi + çivilendi)
+Metodun adı "indexleri kur" diyordu; yaptığı üç işti ve ikisi satır yazıyordu.
+- **(a) `SoftDeleteDomainsForDeletedTenantsAsync`** (eski satır 1106) — silinmiş kiracıların `tenant_domains`
+  satırlarını soft-delete eden bir VERİ ONARIMI. Her açılışta koşuyordu.
+- **(b) `moduleCatalogDocuments.UpdateManyAsync(Unset("Category"))`** (eski satır 1214) — emekliye ayrılmış
+  `Category` alanını tüm modül kataloğundan silen bir VERİ GÖÇÜ. Her açılışta koşuyordu.
+- **Sınıflandırma:** ikisi de şema değil, açılış yükümlülüğü. Yeni yerleri
+  `Persistence/Schema/PlatformSchemaMigrations.cs`; manifest tamamen bildirimsel kaldı.
+- **Neden profile KOYULMADI:** bir test profili, kullandığı 4 koleksiyonu kursun diye çağrılır. O çağrı aynı
+  zamanda bir veri göçü çalıştırsaydı, "ucuz" yol dosyanın en pahalı ve en geri alınamaz davranışını, testin
+  kendisinin sandığı bir veritabanına taşırdı.
+- **Neden üretimden KAYBOLMADI:** ayırmak tam da bir açılış işinin sessizce düştüğü yoldur — yeni dosyaya
+  taşınır, yeni dosyayı kimse çağırmaz, hiçbir şey patlamaz, onarım sadece olmamaya başlar. Bu yüzden
+  `PlatformSchemaContractMongoTests.TheProductionPathStillBuildsEverythingAndRunsBothDataJobs` ikisinin de
+  DAVRANIŞINI ölçüyor (silinmiş kiracının domain'i soft-delete oldu mu; `Category` alanı silindi mi), metodun
+  varlığını değil. Mutasyon: iki çağrıdan birini yorum satırı yap → kırmızı, adını söyleyerek.
+- **Sıra değişikliği (bilinçli):** 13 `DropIndexIfExists` çağrısı artık manifest'ten ÖNCE topluca koşuyor,
+  eskisi gibi araya serpiştirilmiş değil. Korunan özellik aynı: tanımı değişen bir index yeniden kurulmadan
+  önce düşürülmeli (yoksa `IndexOptionsConflict`). Tek gerçek sıra bağımlılığı — unique `CodeKey` index'inin
+  `ModuleDomainDeduplicationMigration`'dan sonra gelmesi — etkilenmedi; o göç DI açılışında, bu metottan önce
+  koşuyor.
+- **Gelecek regresyon riski: 🟡** — üretim yolunun tamamı tek bir Mongo testine bağlı; o test atlanırsa (ör.
+  mongod yokken) iki iş de sessizce düşebilir. Testin skip-if-unavailable kaçamağı YOK, kasıtlı olarak.
+
+### BL-279 — depoda okunan ama manifestte olmayan koleksiyonlar (2026-08-26, kör nokta KAPANDI; index'ler HÂLÂ yok)
+Manifest'i kurarken kontrat maddesi 1 ("deponun dokunduğu her koleksiyon manifestte var") ilk gün üç tane buldu:
+| koleksiyon | okuyan | index |
+|---|---|---|
+| `business_reference_data_validation_results` | `BusinessReferenceDataStewardshipRepository` | yok |
+| `document_reference_entries` | `TaskRepositories` | yok |
+| `notification_event_definitions` | `NotificationEventDefinitionRepository` | yok |
+- Üçü de artık manifestte, **bilerek boş index listesiyle**: manifest "ne VAR"ın kaydı; dışarıda bırakmak
+  zaten bunların fark edilmeden indexsiz kalmasını sağlayan şeydi. Üretim davranışı değişmedi (hiçbir index
+  kurulmuyordu, kurulmuyor).
+- **Yapılacak:** her biri için doğru tenant-first index'i tasarlamak (DB-001). Bu tur boyutlandırma yapmadı.
+- ⚠ `business_reference_data_validation_results` BRD profilini **8/8**'e çıkardı — sahiplerinin verdiği
+  koleksiyon tavanı tam dolu. Bir sonraki BRD koleksiyonu bütçeyi kıracak; bu bir kaza değil, kasıtlı sıkılık.
+**GÜNCELLEME (Aşama 4, 2026-08-26) — kör nokta ölçüldü ve kapatıldı.**
+Sanılan sebep yanlıştı: `TenantRepository<T>` adı **türetmiyor**, adı kurucu argümanı olarak alıyor. Yani ad
+yine bir literal — sadece `GetCollection<T>("…")` içinde değil, `: base(db, ctx, "…")` içinde yazılmış.
+**70 çağrı yeri** bu biçimde. Taramanın göremediği koleksiyon sayısı: **6** (CT'nin "12 dosya" girdisi dosya
+sayısıydı; eksik koleksiyon 6):
+
+| koleksiyon | okuyan | profil | index |
+|---|---|---|---|
+| `task_comments` | `TaskCommentRepository` | WorkflowWorkCenter | yok |
+| `task_types` | `TaskTypeRepository` | WorkflowWorkCenter | yok |
+| `task_transitions` | `TaskTransitionRepository` | WorkflowWorkCenter | yok |
+| `document_reference_list_versions` | `DocumentReferenceListRepository` | WorkflowWorkCenter | yok |
+| `document_management_collection_deviations` | `DocumentCollectionDeviationRepository` | DocumentManagement | yok |
+| `document_management_collection_provisioning_evidence` | `ProvisioningEvidenceRepository` | DocumentManagement | yok |
+
+- Altısı da manifeste eklendi (bilerek boş index listesiyle) ve depoları artık `PlatformCollections` sabitini
+  kullanıyor. **Manifestte olmayan koleksiyon kalmadı**; tek istisna `users` — o Auth'un veritabanında.
+- `AuditEventRepository` **temiz çıktı**: adı zaten `AuditCollectionNames.AuditEvents` sabitinden alıyor.
+- **Kontrat testi güçlendirildi, üç katmanlı:** (1) her iki çağrı biçimi (`GetCollection<T>("…")` **ve**
+  `: base(…, "…")`); (2) manifestteki bir adın dışarıda tekrar yazılmaması; (3) **biçimden bağımsız arka
+  durak** — `Persistence/` altında koleksiyon dilbilgisine uyan hiçbir literal, tek bildirim yeri dışında
+  bulunmasın. Üçüncüsü yazıldığı gün iki tane daha buldu: `ModuleCatalogTaxonomyCanonicalizationMigration`
+  `platform_module_domains` ve `platform_module_services` adlarını elle yazıyordu. Onlar da sabite bağlandı.
+- **Neden üç katman:** ilk tarama tek çağrı biçimi gördüğü için altı koleksiyonu kaçırdı. İkinci biçimi
+  eklemek aynı hatanın üçüncü biçimde tekrarlanmasını engellemiyor; (3) bu yüzden var.
+- **AÇIK KALAN:** altı koleksiyonun hiçbirinde index yok — üçü tenant-scoped ve tenant'a göre sorgulanıyor,
+  yani üretimde COLLSCAN. Doğru tenant-first index'in tasarımı (DB-001) yapılmadı, bu turun kapsamı değildi.
+  BL-279'un asıl borcu budur ve **kapanmadı**; kapanan yalnız görünürlük.
+- **Gelecek regresyon riski: 🟡** — yeni bir indexsiz koleksiyon artık sessizce giremez, ama var olan 9
+  indexsiz koleksiyon (bu 6 + önceki 3) duruyor.
+
+### BL-280 — profil sertleştirmesi bir testi doğru sebeple kırmızıya çevirdi (2026-08-26, düzeltildi)
+`BusinessReferenceDataUsageLookupMongoTests` iki satırı AYNI `(TenantId, SetCode, ConsumerModule,
+ConsumerName)` ile ekliyordu. Üretimde bu kombinasyon **unique index** ile yasak. Test yıllarca yeşildi çünkü
+eski `MongoIntegrationHarness` HİÇ index kurmuyordu — yani test, üretimde var olmayan bir şemaya karşı
+koşuyordu. Harness profil kurmaya başladığı an Mongo ikinci insert'i reddetti.
+- Düzeltme: her satır kendi tüketicisini alıyor (`Organization` / `LegalEntity`). Test edilen sıralama
+  davranışı değişmedi — iki satır gerekiyordu, iki AYNI tüketici değil.
+- **Ders:** "index'siz test veritabanı" ucuz görünür; bedeli, üretimin reddedeceği veriyi kabul eden ve bunu
+  hiç söylemeyen bir süittir. Kaç testin daha bu durumda olduğu ÖLÇÜLMEDİ (BRD ve MDM tarafı taşınmadı).
+- **Gelecek regresyon riski: 🟢** — düzeltildi ve artık gerçek index altında koşuyor.
+
+### BL-281 — Mongo dosya patlaması: bizim yarımız bitti, BRD tarafı DURUYOR (2026-08-26, ölçüm)
+Bu makinede ölçüldü (`/opt/homebrew/var/mongodb` dosya sayısı, tek koşu deltası):
+
+| koşu | delta dosya | mongod | kırmızı |
+|---|---|---|---|
+| Platform, BRD hariç — ÖNCE (450167bd) | 4 | ayakta | 50 |
+| Platform, BRD hariç — SONRA | **621** | **ayakta** | **0** / 2445 |
+| Platform, TAMAMI — SONRA | **8.973** | **ÖLDÜ** | 44 |
+
+- ⚠ **"ÖNCE 4 dosya" bir başarı değil, teşhis:** eski `MongoIntegrationHarness` hiç index kurmadığı için o
+  testler neredeyse hiç dosya yaratmıyordu — ve BL-280'in gösterdiği gibi üretimin şemasını hiç görmüyorlardı.
+  621, testlerin ilk kez gerçek index'lerin altında koşmasının bedeli. Süre 53 s → 9 s.
+- **Kalan ölüm tamamen BRD:** 7 sınıf hâlâ GUID adlı kendi veritabanını açıp `EnsureIndexesAsync` ile 82
+  koleksiyonun tamamını kuruyor. Onların turu (sahipleri teyit etti). BRD hariç mongod AYAKTA KALIYOR.
+- **Ara bulgu — kendi testimiz de pahalıydı:** `IAsyncLifetime` TEST BAŞINA koşar, dolayısıyla "izole"
+  harness'ın veritabanını düşürüp yeniden kurması metod başına oluyordu: ölçülen 2.227 dosya. Veritabanını
+  düşürmek yerine **dokümanları silmek** aynı boş sayfayı veriyor: 2.227 → ~0, süre 49 s → 1 s.
+- **Ara bulgu — sırayla değişen Guid temsili:** harness süreç-genelinde `GuidSerializer(Standard)` kaydediyor;
+  kendi `MongoClient`'ını kuran iki test bunu ayarlamadığı için ÖNCE HANGİ SINIFIN KOŞTUĞUNA göre Guid'leri
+  farklı kodluyordu. "Tek başına geçer, süitte kalır" tam olarak buydu ve hata *veri kaybolmuş* gibi
+  görünüyordu. İkisi de artık üretimin temsilini sabitliyor.
+- **Aşama 4 (bu turda YOK):** `dbPath` bu oturumun ölçümleri sırasında 2.697 → 14.682 dosyaya çıktı. Artık
+  temizliği ayrı tur; temiz bir "ÖNCE/SONRA" o temizlikten sonra alınmalı.
+- **Gelecek regresyon riski: 🟡** — BRD taşınana kadar tam süit hâlâ mongod'u öldürüyor, yani "44 kırmızı"
+  rakamı bir test kalitesi ölçüsü değil, çöküş sonrası artık.
+
+### BL-282 — test artıkları artık kendi kendini topluyor (2026-08-26, kuruldu + kanıtlandı)
+Harness bittiğinde kendi veritabanını düşürüyordu; ama "bittiğinde" hiç gelmiyor, çünkü bu işin tamamının
+sebebi mongod'un koşu ortasında ölmesi. Ölçüldü: bu makinede 19 veritabanının **6'sı test artığıydı**, üçü
+harness'ın iki aşama önce bıraktığı bir adlandırmadan kalma. Elle kimse temizlemezdi.
+
+**İkinci savunma hattı:** `MongoResidueSweeper` — koşunun BAŞINDA, terk edilmiş artıkları düşürür.
+- **Silmeye izin veren dört koşulun hepsi gerekli:** (1) ad, harness'ın üretebileceği dilbilgisine uyuyor
+  (`diten_platform_itest` **tam segment** olarak + isteğe bağlı `_token`'lar); (2) veritabanı **bizim
+  yazdığımız işareti** taşıyor (`__diten_harness_marker`); (3) işaretteki koşu kimliği ŞU ANKİ koşu değil;
+  (4) işaret yaş eşiğini (1 saat) aşmış.
+- ⚠ **Yük taşıyan kural ad değil, İŞARET.** Bu oturumda dizgi eşleşmesine dayanan muhafızların ne kadar
+  zayıf olduğunu iki kez ölçtük. Bu harness'ın yaratmadığı bir veritabanı işaret taşımaz ve adı ne olursa
+  olsun silinemez — üretim, `admin`/`config`/`local`, bir başkasının çalışma veritabanı, hepsi bu yüzden
+  erişilemez.
+- ⚠ **Önek parametre DEĞİL.** `SweepAsync` string parametre almıyor; çağıran öneki genişletemez. "Hangi
+  öneki sileyim?" diye soran bir temizleyici, geliştirme veritabanını düşürmekten bir yazım hatası uzaktır ve
+  o hata kimsenin dikkatle incelemediği bir test dosyasında yaşar. Bir test bunu refleksiyonla çiviliyor.
+- ⚠ **Temizlik hatası test hatası olamaz.** Süpürme koşunun en başında, herhangi bir assertion'dan önce
+  çalışır; fırlatsaydı ilk testi kendisiyle ilgisiz bir sebeple kırmızıya çevirir, altındaki gerçek kusur da
+  "temizlik flaky" diye elenirdi. Sorunlar **döndürülüyor** ve ayrıca stderr'e yazılıyor.
+- **İşaret her açılışta yeniden damgalanıyor**, bu yüzden aynı makinede paralel koşan ikinci bir süitin
+  veritabanları her zaman yaş penceresinin içinde kalır. Bu koşul olmasa bir süit diğerininkini test
+  ortasında silerdi ve kurbanın hataları tekrar üretilemez olurdu.
+- **Uçtan uca kanıt (ölçüldü):** üç veritabanı ekildi — (a) sahip önek + geçerli, bayat, başka koşuya ait
+  işaret; (b) aynı önek, işaret YOK; (c) `diten_platform_itestX` + geçerli bayat işaret. Koşu sonrası:
+  **yalnız (a) silindi**, (b) ve (c) yerinde. 19 → 18 veritabanı.
+- **Tek seferlik boşluk:** işaret mekanizmasından ÖNCE kalmış artıklar (bu makinedeki 3 GUID adlı) işaret
+  taşımadığı için asla süpürülmez; onlar elle kaldırıldı (bu turda, ölçüm için). Bundan sonrası otomatik.
+- **Gelecek regresyon riski: 🟢** — dört koşulun her biri ayrı bir mutasyonla çivili; birini kaldır, tam
+  karşılığı olan test kırmızıya döner.
+
+### BL-283 — BRD harness'ı kendi önekiyle artık bırakıyor; süpürücü ona DOKUNAMAZ (2026-08-26, GSKU'da)
+Aşama 4'ün süpürücüsü yalnız `diten_platform_itest` önekini sahipleniyor. BRD harness'ı kendi veritabanlarını
+`diten_brd_gsku_<guid>` / `diten_brd_pub_<guid>` diye adlandırıyor.
+
+**Ölçüldü (2026-08-26, tam Platform süiti):** mongod koşu ortasında öldü; geriye **6 BRD artığı** kaldı
+(`diten_brd_gsku_*` ×5, `diten_brd_pub_*` ×1) ve **bizim önekimizde sıfır artık**. Yani ikinci savunma hattı
+çalışıyor, sadece kapsamadığı bir önek var.
+
+- Tam süit hâlâ: **44 kırmızı · +9.485 dosya · mongod ÖLÜ**. BRD hariç: **2474/2474 · mongod AYAKTA**.
+- **Yapılacak (GSKU):** BRD harness'ı da (a) sabit adlı veya kiracıyla izole veritabanına geçsin,
+  (b) `MongoResidueSweeper` desenini kendi önekiyle uygulasın — işaret + yaş + koşu kimliği, aynı dört koşul.
+  Süpürücüyü "birden çok önek alacak" hale getirmek **önerilmiyor**: öneki parametre yapmak, BL-282'de
+  gerekçesiyle reddedilen tasarımdır.
+- **Gelecek regresyon riski: 🔴** — bu kapanana kadar tam süit her koşuda mongod'u öldürüyor ve "44 kırmızı"
+  bir kalite ölçüsü değil, çöküş artığı.
+
+### BL-284 — üst üste koşu artık büyümüyor (2026-08-26, ölçüm — bu turun asıl kanıtı)
+Sabit adlı veritabanı + doküman silme (veritabanı düşürme değil) + başlangıç süpürmesi birlikte, tekrar eden
+koşuların dosya sayısını sabit hale getiriyor. Temiz başlangıçtan (1.175 `.wt`, 16 veritabanı), Platform
+süiti BRD hariç arka arkaya üç kez:
+
+| koşu | `.wt` öncesi → sonrası | delta | veritabanı | mongod | sonuç |
+|---|---|---|---|---|---|
+| 1 | 1.185 → 1.826 | **+641** | 19 → 18 (artık silindi) | ayakta | 2474/2474 |
+| 2 | 1.826 → 1.822 | **−4** | 18 | ayakta | 2474/2474 |
+| 3 | 1.822 → 1.646 | **−176** | 18 | ayakta | 2474/2474 |
+
+- İlk koşu şemayı kurduğu için ödeme yapıyor; ikinci ve üçüncü koşu **hiç büyütmüyor**, WiredTiger geri
+  kazandıkça küçülüyor. Aranan özellik buydu: koşu başına doğrusal büyüme yerine durağan hâl.
+- Süre: 53 s (Aşama 2 öncesi ölçüm) → **10–13 s**.
+- ⚠ `.wt` sayısı WiredTiger'ın kendi zamanlamasına bağlı olarak gecikmeli düşer; tek bir koşunun deltası
+  değil, **arka arkaya koşuların eğilimi** anlamlıdır. Bu yüzden üç kez koşuldu.

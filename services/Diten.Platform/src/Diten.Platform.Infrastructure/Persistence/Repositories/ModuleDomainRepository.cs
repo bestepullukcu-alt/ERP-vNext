@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Catalog;
@@ -11,7 +12,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 public sealed class ModuleDomainRepository : GlobalRepository<ModuleDomain>, IModuleDomainRepository
 {
     public ModuleDomainRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "platform_module_domains")
+        : base(dbContext.Database, tenantContext, PlatformCollections.ModuleDomains)
     {
     }
 

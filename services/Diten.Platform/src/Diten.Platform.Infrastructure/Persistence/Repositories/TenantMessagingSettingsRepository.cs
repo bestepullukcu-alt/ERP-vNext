@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Domain.Entities.Notifications;
 using Diten.Platform.Domain.Repositories;
 using MongoDB.Driver;
@@ -10,7 +11,7 @@ public sealed class TenantMessagingSettingsRepository : ITenantMessagingSettings
 
     public TenantMessagingSettingsRepository(IPlatformDbContext dbContext)
     {
-        _collection = dbContext.GetCollection<TenantMessagingSettings>("notification_tenant_messaging_settings");
+        _collection = dbContext.GetCollection<TenantMessagingSettings>(PlatformCollections.TenantMessagingSettings);
     }
 
     public async Task<TenantMessagingSettings> CreateAsync(TenantMessagingSettings settings, CancellationToken ct = default)

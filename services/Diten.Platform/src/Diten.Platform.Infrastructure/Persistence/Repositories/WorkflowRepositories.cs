@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Workflow;
@@ -14,7 +15,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 public sealed class WorkflowTemplateRepository : TenantRepository<WorkflowTemplate>, IWorkflowTemplateRepository
 {
     public WorkflowTemplateRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "workflow_templates")
+        : base(dbContext.Database, tenantContext, PlatformCollections.WorkflowTemplates)
     {
     }
 
@@ -48,7 +49,7 @@ public sealed class WorkflowTemplateVersionRepository
     : TenantRepository<WorkflowTemplateVersion>, IWorkflowTemplateVersionRepository
 {
     public WorkflowTemplateVersionRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "workflow_template_versions")
+        : base(dbContext.Database, tenantContext, PlatformCollections.WorkflowTemplateVersions)
     {
     }
 
@@ -140,7 +141,7 @@ public sealed class WorkflowTemplateVersionRepository
 public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstance>, IWorkflowInstanceRepository
 {
     public WorkflowInstanceRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "workflow_instances")
+        : base(dbContext.Database, tenantContext, PlatformCollections.WorkflowInstances)
     {
     }
 
@@ -212,7 +213,7 @@ public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstan
 public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IApprovalTaskRepository
 {
     public ApprovalTaskRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "approval_tasks")
+        : base(dbContext.Database, tenantContext, PlatformCollections.ApprovalTasks)
     {
     }
 
@@ -291,7 +292,7 @@ public sealed class RuntimeAssignmentSnapshotRepository
     : TenantRepository<RuntimeAssignmentSnapshot>, IRuntimeAssignmentSnapshotRepository
 {
     public RuntimeAssignmentSnapshotRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "workflow_runtime_assignment_snapshots")
+        : base(dbContext.Database, tenantContext, PlatformCollections.WorkflowRuntimeAssignmentSnapshots)
     {
     }
 
@@ -309,7 +310,7 @@ public sealed class RuntimeAssignmentSnapshotRepository
 public sealed class WorkflowTransitionLogRepository : TenantRepository<WorkflowTransitionLog>, IWorkflowTransitionLogRepository
 {
     public WorkflowTransitionLogRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "workflow_transition_logs")
+        : base(dbContext.Database, tenantContext, PlatformCollections.WorkflowTransitionLogs)
     {
     }
 
@@ -362,7 +363,7 @@ public sealed class WorkflowTransitionLogRepository : TenantRepository<WorkflowT
 public sealed class SlaEscalationRuleRepository : TenantRepository<SlaEscalationRule>, ISlaEscalationRuleRepository
 {
     public SlaEscalationRuleRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "workflow_sla_rules")
+        : base(dbContext.Database, tenantContext, PlatformCollections.WorkflowSlaRules)
     {
     }
 

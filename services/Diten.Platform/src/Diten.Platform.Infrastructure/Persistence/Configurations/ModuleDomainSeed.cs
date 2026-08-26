@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using Diten.Platform.Domain.Catalog;
@@ -26,7 +27,7 @@ public static class ModuleDomainSeed
             return;
         }
 
-        var collection = database.GetCollection<ModuleDomain>("platform_module_domains");
+        var collection = database.GetCollection<ModuleDomain>(PlatformCollections.ModuleDomains);
         var hasLive = await collection.Find(x => x.IsDeleted == false).AnyAsync(ct);
 
         if (BootstrapSeedPolicy.Decide(markerExists: false, hasLiveRecords: hasLive) == SeedDecision.SeedAndMark)

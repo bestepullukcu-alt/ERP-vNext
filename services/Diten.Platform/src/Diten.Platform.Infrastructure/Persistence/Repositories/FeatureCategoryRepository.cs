@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Features.SubscriptionFeatures;
@@ -9,7 +10,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 public sealed class FeatureCategoryRepository : GlobalRepository<FeatureCategory>, IFeatureCategoryRepository
 {
     public FeatureCategoryRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "platform_feature_categories")
+        : base(dbContext.Database, tenantContext, PlatformCollections.FeatureCategories)
     {
     }
 

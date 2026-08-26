@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Domain.Entities.InterfaceRegistry;
 using Diten.Platform.Domain.Repositories;
@@ -18,10 +19,10 @@ public sealed class InterfaceRegistryRepository : IInterfaceRegistryRepository
 
     public InterfaceRegistryRepository(IPlatformDbContext dbContext)
     {
-        _definitions = dbContext.Database.GetCollection<InterfaceDefinition>("platform_interface_definitions");
-        _batches = dbContext.Database.GetCollection<InterfaceDiscoveryBatch>("platform_interface_discovery_batches");
-        _diffItems = dbContext.Database.GetCollection<InterfaceDiscoveryDiffItem>("platform_interface_discovery_diff_items");
-        _activeSnapshots = dbContext.Database.GetCollection<InterfaceActiveSnapshot>("platform_interface_active_snapshots");
+        _definitions = dbContext.Database.GetCollection<InterfaceDefinition>(PlatformCollections.InterfaceDefinitions);
+        _batches = dbContext.Database.GetCollection<InterfaceDiscoveryBatch>(PlatformCollections.InterfaceDiscoveryBatches);
+        _diffItems = dbContext.Database.GetCollection<InterfaceDiscoveryDiffItem>(PlatformCollections.InterfaceDiscoveryDiffItems);
+        _activeSnapshots = dbContext.Database.GetCollection<InterfaceActiveSnapshot>(PlatformCollections.InterfaceActiveSnapshots);
         _definitionFilter = Builders<InterfaceDefinition>.Filter.Eq(x => x.IsDeleted, false);
         _batchFilter = Builders<InterfaceDiscoveryBatch>.Filter.Eq(x => x.IsDeleted, false);
         _diffFilter = Builders<InterfaceDiscoveryDiffItem>.Filter.Eq(x => x.IsDeleted, false);
