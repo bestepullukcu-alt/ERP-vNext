@@ -20,6 +20,7 @@ target: 2026-08-14
 form_field_count: 0
 port: TBD
 implementation_authority: explicit-user-control-tower-bounded-core-scaffold-contract-test
+b02_evidence_authority: explicit-user-control-tower-non-runtime-persistence-integration-evidence
 production_authority: none
 ---
 
@@ -31,6 +32,13 @@ production_authority: none
 > exact Core Scaffold & Contract-Test paths in §5. It does not authorize a listener, endpoint, route, port
 > binding, Gateway, frontend, WorkCenter, credential, external adapter, migration, deployment or production
 > activation.
+
+> **B-02 non-runtime evidence guard:** The explicit user decision dated 2026-08-26 additionally authorizes
+> only the B-02 Mongo Persistence & Integration Evidence slice recorded in §5. It permits a governance
+> checkpoint for this pack followed by unstaged implementation under the exact Dws Persistence and
+> IntegrationTests paths. It does not authorize a host, listener, endpoint, port binding, runtime DI,
+> configuration, production database, migration, deployment, credential, secret, frontend, Gateway,
+> WorkCenter, commit of implementation evidence or production activation.
 
 > **Planning date:** `target: 2026-08-14` is a provisional planning date, not a delivery commitment or
 > implementation authorization.
@@ -585,6 +593,23 @@ authorized.
 Security/provider adapters, audit delivery adapters, frontend, Gateway and runtime/deployment paths require
 separate explicit slice authority. The exact Core paths above grant no authority outside their bounded
 compile/test-only purpose.
+
+The explicit B-02 evidence authorization permits only:
+
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Diten.ManagementGovernanceService.Persistence.csproj`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/Dws/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Diten.ManagementGovernanceService.IntegrationTests.csproj`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Modules/Dws/**`
+
+This non-runtime slice may add Mongo driver dependencies, Dws-owned documents/repositories, a Dws-only
+session/transaction coordinator, manifest-driven index initialization and test-owned disposable replica-set
+evidence. Tests must allocate a dynamic loopback port `>=27022`; ports `27017`, `27018` and `27019` are
+protected. The test harness must terminate the process and remove its data/log/temp directory. No production
+connection string, second runtime composition, service activation or migration is authorized. The evidence
+must prove the exact eight collections, 14 tenant-first named indexes with no TTL, same-client/same-session
+transaction ownership, CAS, tenant isolation, participant-by-participant rollback, body-once commit-only
+retry and durable-receipt reconciliation. Implementation remains unstaged and cannot close B-02 until every
+required executable proof passes.
 
 ## 6. Protected Paths
 
@@ -1176,6 +1201,9 @@ not allocate a service port or change a route.
   compatibility and runtime/security evidence are approved and proven.
 - [ ] **B-02:** Replica-set environment/readiness and real Mongo crash/rollback tests prove the selected transaction
   strategy; no standalone fallback or partial commit exists.
+- [x] **B-02 authority:** The exact non-runtime Dws Persistence/Integration evidence paths and disposable
+  dynamic-port replica-set constraints received explicit user authorization on 2026-08-26. This checkbox is
+  authority only; the B-02 evidence checkbox above remains open until executable proof passes.
 - [ ] **B-03:** Exact versioned MOD-0021 semantic provider/consumer contract is approved and implemented.
 - [ ] **B-04:** Transactional producer-local audit-outbox and real Mongo crash/rollback evidence are proven.
 - [ ] **B-05:** Idempotent consumer duplicate-delivery and consumer-crash evidence are proven.
@@ -1204,6 +1232,7 @@ implementation and activation remain forbidden while `production_authority: none
 | Slice | Bounded scope | Readiness relationship |
 |---|---|---|
 | Core Scaffold & Contract-Test | Structural domain/application contracts, deterministic canonicalization, exact permission/persistence manifests, local transaction seams and architecture/contract tests | Present `ready-for-dev` authority |
+| B-02 Mongo Persistence & Integration Evidence | Dws-owned Mongo documents/repositories, index initialization, same-session transaction execution and disposable real-Mongo evidence under the exact §5 paths | Explicit non-runtime evidence authority; no implementation commit or runtime activation |
 | Security & MOD-0117 Provider Integration | Live context validator, S2S/delegated actor, MOD-0018 enforcement and permission provisioning | Separate later gate |
 | Audit Delivery | Signed/versioned event contract, MOD-0035 adapter, MOD-0021 consumer compatibility, retry/DLQ/alarm/replay | Separate later gate |
 | Frontend & Legacy Parity | Tenant UI, seven-language resources, page-by-page legacy matrix and user acceptance | Separate later gate |
