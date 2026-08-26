@@ -716,3 +716,223 @@ green tests from §17.18. Before promotion, the PPM slice must explicitly overri
 generic `ObjectRef`, local `RuntimeAssignmentSnapshot` authority and B05/B06 wording for this profile only;
 those earlier clauses remain unchanged for previously approved non-PPM scope but cannot authorize a PPM path.
 Parent `ready-for-dev` status closes none of these blockers.
+
+## 18. ProcessModelVersion ApprovalOutcome Amendment — DRAFT / NON-EXECUTABLE
+
+> **Amendment status boundary:** This section is a governance-only, **DRAFT / NON-EXECUTABLE** source-profile
+> contract. The parent pack remains `ready-for-dev` only for its previously approved slices. This amendment
+> authorizes no DTO, provider/client, repository, endpoint, route, configuration, signing key, secret, fixture,
+> migration, deployment, listener, worker, Gateway, frontend, WorkCenter or production activation. Promotion
+> requires separate bilateral fixture evidence and explicit PSS-owner/user runtime authority.
+
+### 18.1 Identity and authority
+
+- The amendment remains inside canonical parent `MOD-0023 — Workflow Designer
+  (Approvals/SLAs/Escalations)` and creates no MOD, FU, child or runtime module identity.
+- MOD-0023 remains the sole authority for workflow-template versions, workflow execution and immutable terminal
+  `ApprovalOutcome` truth.
+- `MOD-0355 — Business Process Architecture & Modeling` remains authoritative for
+  ProcessModel/ProcessModelVersion identity, lifecycle, content hash and source
+  visibility. MOD-0023 neither queries nor copies the ProcessModel aggregate.
+- MOD-0018 remains authoritative for authenticated S2S, effective/delegated actor and approver eligibility.
+  MOD-0021 remains the later audit-delivery authority.
+
+### 18.2 Purpose and non-authority
+
+The proposed profile lets an authenticated `Diten.ManagementGovernanceService` submit one exact, visible
+ProcessModelVersion to a tenant-owned MOD-0023 workflow and later retain only an opaque
+`ApprovalOutcomeReferenceV1`. It does not make MOD-0355 publish executable, select a production template, grant
+permission, provision a credential, activate a provider or widen the parent runtime batches.
+
+### 18.3 Exact source-reference contract
+
+The source profile is exact, ordinal and case-sensitive:
+
+| Item | Exact value |
+|---|---|
+| Contract name | `management-governance.process-model-version-context` |
+| Contract version | `1.0` |
+| Field allowlist | `ContractName`, `ContractVersion`, `ProcessModelId`, `ProcessModelVersionId`, `ContentHash` |
+
+`ProcessModelId` and `ProcessModelVersionId` are canonical non-empty opaque UUIDs. `ContentHash` is exactly
+`sha256:` followed by 64 lowercase hexadecimal characters and must equal the current authoritative MOD-0355
+version hash. Missing, duplicate, unknown, case-changed or aliased fields fail closed. Tenant, actor, author,
+requester, approver, template, task, route, comment, workflow payload and mutable model content are forbidden
+source-reference fields.
+
+### 18.4 Trusted source validation
+
+Before submission, MOD-0355 performs its authoritative tenant-scoped lookup and visibility/lifecycle checks for
+the exact model, version and hash. Missing, soft-deleted, cross-tenant or non-disclosable source returns `404`
+inside MOD-0355 and causes zero MOD-0023 calls. MOD-0023 never infers source existence from UUID syntax, a cache,
+an audit record or a previously accepted outcome. A source mismatch, stale hash or ineligible visible lifecycle
+is not converted into source-not-found.
+
+### 18.5 Tenant-scoped immutable template provenance
+
+MOD-0023 owns a tenant-scoped source-profile mapping keyed by the exact contract name/version above. The mapping
+resolves one exact, already-published immutable `WorkflowTemplateVersionId`. Mutable template identity,
+`latest`, current-version lookup, client choice, request-payload override and fallback to another profile or
+template are forbidden.
+
+The resolved UUID is trusted server context, not a sixth source-reference field. Before the submission
+transaction commits, MOD-0023 revalidates that the same mapping still resolves the same tenant-visible,
+published, immutable and profile-eligible version. A changed/stale mapping or template returns `409`; an
+unavailable, malformed or indeterminate mapping authority returns `503`. The accepted instance pins the exact
+UUID permanently, and later template publication cannot reinterpret it.
+
+### 18.6 Exact source-attestation identity
+
+The source attestation is a separate token/contract family:
+
+| Item | Exact value |
+|---|---|
+| Contract name | `management-governance.process-model-version-source-attestation` |
+| Contract version | `1.0` |
+| JWT `typ` | `diten-process-model-version-source-attestation+jwt` |
+| Algorithm | `RS256` only |
+| RSA size | minimum 3072 bits |
+| Issuer | `diten.management-governance` |
+| Audience | `diten-platform-service` |
+| Protected key selector | one exact non-empty trusted `kid` |
+
+`none`, HS256, other asymmetric algorithms, missing/unknown/duplicate/retired `kid`, algorithm negotiation and
+token-provided key locations are rejected. This governance decision allocates no production `kid`, public/private
+key, secret, JWKS endpoint, vault location or credential.
+
+### 18.7 Exact attestation claims
+
+The verified claim allowlist is exactly:
+
+`ContractName`, `ContractVersion`, `TenantId`, `SubmittingServiceId`, `EffectiveActorId`,
+`DelegatedActorChain`, `ProcessModelId`, `ProcessModelVersionId`, `ContentHash`,
+`WorkflowTemplateVersionId`, `SubmissionRequestDigest`, `IssuedAtUtc`, `ExpiresAtUtc`, `Nonce`.
+
+`SubmittingServiceId` is exact `diten.management-governance`. Tenant, effective actor and delegated chain come
+only from validated server context. `DelegatedActorChain` preserves the authoritative ordered chain and is empty
+only for a non-delegated request. The model/version/hash tuple equals the source reference byte-for-byte, and
+`WorkflowTemplateVersionId` equals the server-resolved mapping. Unknown, duplicate, missing, null, empty,
+case-changed or type-changed claims fail closed. No client payload/header can override a trusted claim.
+
+### 18.8 Hard freshness and replay contract
+
+`ExpiresAtUtc - IssuedAtUtc` is positive and at most exactly 30 seconds. Validation uses zero clock skew:
+future-issued or expired tokens are rejected without grace or last-known-good behavior. `Nonce` is non-empty,
+single-use and retained through exactly `ExpiresAtUtc + 30 seconds`; it cannot be purged or reused earlier.
+Replay, expired/future time, claim mismatch or request-digest mismatch creates no workflow instance, receipt,
+task, outcome or audit intent.
+
+### 18.9 Request binding
+
+`SubmissionRequestDigest` binds the exact immutable template-version UUID and exact five-field source reference
+under a versioned canonical request projection. Tenant, submitting service, effective actor and full delegated
+chain are trusted equality-bound receipt fields and must also match on replay. The digest is lowercase 64-hex
+SHA-256 over UTF-8 RFC 8785 canonical JSON; arbitrary DTO serialization, property aliases and client-supplied
+trusted context are forbidden. The normative byte fixture remains a bilateral-evidence blocker and is not
+invented by this amendment.
+
+### 18.10 MOD-0018 submission and decision authority
+
+Before instance creation, MOD-0023 consumes a fresh MOD-0018 decision bound to tenant, submitting service,
+effective/delegated actor, exact submit action, ProcessModelId, ProcessModelVersionId, ContentHash and pinned
+WorkflowTemplateVersionId. Approve/Reject separately requires a fresh actor-eligibility/delegation decision
+bound to the exact instance/action. Role names, local grants, cached allow and source visibility cannot replace
+either decision. Explicit denial is `403`; unavailable, timed-out, malformed or indeterminate authority is
+`503`.
+
+### 18.11 Submission idempotency and atomicity
+
+The exact source reference, pinned template-version identity, verified attestation provenance, workflow
+instance and idempotency receipt commit in one MOD-0023 local transaction. Same tenant/service/key plus equal
+digest and trusted provenance returns the original stable result. Changed digest, actor/delegation, source tuple,
+hash or template identity returns `409`. Unknown commit uses same-session commit-only retry and durable receipt
+reconciliation; blind body replay and partial commit are forbidden.
+
+### 18.12 Terminal outcome ownership and binding
+
+Only a valid final MOD-0023 transition can create one immutable terminal `ApprovalOutcome`. Server-private
+provenance binds it to the authenticated tenant, exact ProcessModelId, ProcessModelVersionId, ContentHash,
+pinned WorkflowTemplateVersionId, final state, decision actor and decision time. MOD-0355 consumes validation of
+that binding; it never manufactures, updates, reinterprets or locally restates approval truth. A renewed
+decision uses a new workflow instance and new outcome while historical outcomes remain immutable.
+
+### 18.13 ApprovalOutcomeReferenceV1 remains exact three fields
+
+The shared reference is unchanged:
+
+| Field | Exact value / meaning |
+|---|---|
+| `ContractName` | constant `platform.approval-outcome-reference` |
+| `ContractVersion` | constant `1.0` |
+| `ApprovalOutcomeId` | opaque canonical non-empty UUID allocated by MOD-0023 |
+
+There is no fourth field. Tenant, source tuple, hash, template version, decision actor/state/time and workflow
+payload remain producer-private validation context. Missing, duplicate, unknown or unsupported fields/versions
+are rejected. Same-tenant dereference returns indistinguishable `404` for missing, cross-tenant or
+non-disclosable outcomes.
+
+### 18.14 Exact failure matrix
+
+| HTTP | Exact failure classes |
+|---:|---|
+| `400` | malformed source/profile/request/attestation claims; invalid UUID/hash/digest; expired, future-issued, replayed or mismatched attestation |
+| `401` | missing/invalid authentication or trusted context; wrong issuer/audience/typ/alg/kid; bad signature |
+| `403` | authenticated submission/permission/eligibility/delegation denial; final outcome is not approved |
+| `404` | MOD-0355 source missing/invisible before any MOD-0023 call, or same-tenant MOD-0023 template/instance/outcome missing/invisible inside its authority |
+| `409` | stale/changed source hash or lifecycle; changed template mapping; ineligible visible template; idempotency/provenance conflict; incompatible terminal transition |
+| `503` | source/template/auth/key/freshness authority unavailable, timed out, malformed or indeterminate; unsupported authoritative version; local transaction/audit-intent failure |
+
+Uncertainty never becomes allow, deny, `404`, default template or cached truth. Every pre-commit failure leaves
+zero new workflow, receipt, task, outcome and audit-intent residue.
+
+### 18.15 Ownership and no-copy boundary
+
+MOD-0355 owns model/version/hash/lifecycle and whether its publish policy requires approval. MOD-0023 owns the
+tenant profile mapping, immutable template version, workflow execution, tasks and terminal outcome. MOD-0018
+owns S2S/effective actor/eligibility/delegation. MOD-0021 owns later immutable audit acceptance. Neither side
+copies the other's aggregate, mutable content, workflow graph, assignment list, comments, local approval state
+or permission truth.
+
+### 18.16 Profile isolation and PPM regression boundary
+
+This profile is distinct from `ppm.investment-case-context` / `1.0`. Source-reference names, fields,
+attestation family, issuer, request digest, template mapping, receipts and fixtures cannot be reused across the
+two profiles. The PPM amendment's exact three-field source reference and its unresolved signing/validity choices
+remain unchanged. Both profiles share only the exact three-field `ApprovalOutcomeReferenceV1` owned by
+MOD-0023. No PPM runtime status or authority is promoted by this amendment.
+
+### 18.17 Audit, Gate 2 and protected surfaces
+
+The terminal transition/outcome/receipt and producer-local audit intent remain one local transaction. MOD-0021
+delivery is asynchronous and separately approved; direct broker or remote audit calls inside the mutation are
+forbidden. This governance-only amendment does not itself invoke Gate 2. Gate 2 and explicit runtime authority
+are mandatory before protected approval runtime/UI/task/eligibility changes. WorkCenter, MOD-0024, MOD-0354,
+Gateway, frontend, Platform/AuthService runtime and `.antigravity/**` remain unchanged.
+
+### 18.18 Required bilateral fixtures before promotion
+
+Promotion requires producer-owned immutable fixtures proving the exact source bytes, five-field schema,
+ContentHash binding, template mapping/pin/revalidation, exact attestation header/claim set, issuer/audience,
+RS256/RSA-size/exact-kid enforcement, hard 30-second zero-skew boundary, nonce retention/replay, canonical
+request digest, tenant/effective/delegated actor binding, MOD-0018 deny/unavailable matrix, same-key replay and
+changed-provenance conflict, unknown-commit recovery, terminal approved/rejected outcomes, exact three-field
+reference serialization, renewed-decision immutability, audit-intent rollback and absence of direct broker
+calls. Test-only identities/keys must be rejected by production composition.
+
+### 18.19 Promotion blockers and readiness
+
+This amendment remains **DRAFT / NON-EXECUTABLE** until PSS and MOD-0355 owners approve immutable bilateral
+fixtures; MOD-0355 FU16 onboarding and exact submit/eligibility permissions are accepted; a production template
+mapping is provisioned without client choice; attestation and outcome adapters pass compatibility/security
+tests; local transaction feasibility is proven; MOD-0021 delivery is separately approved; Gate 2 is satisfied
+where required; and explicit runtime plus activation authority is recorded. Parent `ready-for-dev` status,
+MOD-0355 contract-test readiness or a test-only fixture closes none of these blockers.
+
+### 18.20 Follow-up and implementation prohibition
+
+- Author exact canonical source/request/attestation/outcome fixtures in owner worktrees after this governance
+  profile is approved; do not copy or regenerate another profile's bytes.
+- Record exact test-only signing identity and key ID separately; never create a production key/secret here.
+- Reconcile MOD-0355, MOD-0018 and MOD-0021 bilateral packs before any executable adapter.
+- Until then no source DTO, provider/client, DI registration, persistence field, endpoint, configuration,
+  credential, listener, route or positive runtime fixture may be created from this amendment.
