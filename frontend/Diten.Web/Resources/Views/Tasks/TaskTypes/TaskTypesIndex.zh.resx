@@ -106,4 +106,13 @@
   <data name="DocListSearchPlaceholder" xml:space="preserve"><value>按代码、标题或 UID 搜索…</value></data>
   <data name="DocListDocTitle" xml:space="preserve"><value>标题</value></data>
   <data name="DocListDocVersion" xml:space="preserve"><value>版本</value></data>
+  <data name="DocListActions" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="DocListWithdraw" xml:space="preserve"><value>撤回</value></data>
+  <data name="DocListWithdrawn" xml:space="preserve"><value>已撤回</value></data>
+  <data name="DocListWithdrawReason" xml:space="preserve"><value>为何撤回？</value></data>
+  <data name="DocListWithdrawReasonRequired" xml:space="preserve"><value>撤回需要理由。</value></data>
+  <data name="DocListWithdrawSubtext" xml:space="preserve"><value>版本 {0} 将不再是任务可引用的清单。它会被保留并标记，使先前的引用仍可读。</value></data>
+  <data name="DocListImportDenied" xml:space="preserve"><value>您可以查看此清单，但不能导入。</value></data>
 </root>

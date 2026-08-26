@@ -40,6 +40,20 @@ public static class TaskPermissions
     public const string DocumentListImport = "platform.tasks.document-list.import";
 
     /// <summary>
+    /// Who may READ the controlled-document reference list.
+    ///
+    /// <para><b>⚠ ITS OWN PERMISSION, and a guard is why.</b> The screen was first opened to
+    /// <see cref="Read"/> so a QA reader could see the register without being able to replace it — and
+    /// <c>TaskManifestProviderTests</c> refused it: <c>Read</c> is in
+    /// <see cref="PersonalWorkSurfaceScoped"/>, so a nav-VISIBLE page behind it would have become a second
+    /// answer to "where is my work" and fragmented the Task Center.</para>
+    ///
+    /// <para>The register is not personal work — it is reference data about the organisation's procedures. It
+    /// gets a permission that says so, and the guard keeps holding for everything that really is personal.</para>
+    /// </summary>
+    public const string DocumentListRead = "platform.tasks.document-list.read";
+
+    /// <summary>
     /// Managing WHEN work gets created — the recurrence rules (BL-052).
     ///
     /// <para>Its own key rather than <see cref="Create"/>, and the reason is the same one that keeps
@@ -336,6 +350,8 @@ public static class TaskReasonCodes
     // ── DCP-005 slice 2 — the document reference list ────────────────────
     public const string DocumentListInvalid = "DOCUMENT_LIST_INVALID";
     public const string DocumentListAlreadyImported = "DOCUMENT_LIST_ALREADY_IMPORTED";
+    public const string DocumentListWithdrawReasonRequired = "DOCUMENT_LIST_WITHDRAW_REASON_REQUIRED";
+    public const string DocumentListAlreadyWithdrawn = "DOCUMENT_LIST_ALREADY_WITHDRAWN";
 }
 
 /// <summary>
@@ -1145,7 +1161,14 @@ public sealed record DocumentReferenceListDryRunResult(
 
 public sealed record DocumentReferenceListVersionDto(
     Guid Id, string ListVersion, string SourceKey, string FileName,
-    string ContentHash, int EntryCount, int LinkableCount, DateTimeOffset ImportedAt);
+    string ContentHash, int EntryCount, int LinkableCount, DateTimeOffset ImportedAt,
+    /// <summary>Set when this version is no longer in service. The row still travels — it is marked, not gone.</summary>
+    DateTimeOffset? WithdrawnAt = null,
+    string? WithdrawnReason = null,
+    string? WithdrawnBy = null);
+
+/// <summary>Take a version out of service. The reason is required; see the handler.</summary>
+public sealed record WithdrawDocumentListVersionRequest(string Reason);
 
 /// <summary>One row of the lookup, as the search returns it.</summary>
 public sealed record DocumentReferenceEntryDto(

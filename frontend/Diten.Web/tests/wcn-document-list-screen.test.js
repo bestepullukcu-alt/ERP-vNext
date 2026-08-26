@@ -140,3 +140,73 @@ describe("the precedent's contrast defect was NOT copied", () => {
     expect(VIEW, "the deliberate omission is undocumented").toContain("DELIBERATELY NOT COPIED");
   });
 });
+
+
+describe("the write surfaces are hidden from a reader", () => {
+  const VIEW2 = fs.readFileSync(web("Views", "Tasks", "DocumentList.cshtml"), "utf8");
+
+  it("gates the upload form on the import permission", () => {
+    /*
+     * MEASURED before this round: the page was published behind the IMPORT permission while the search it
+     * exists for asks only a read permission — so a QA reader who could see every row could not open the screen
+     * showing them. And once inside, there was no check at all: the form was drawn for everyone and the button
+     * answered 403.
+     *
+     * MUTATION GUARD: drop the gate and this goes red.
+     */
+    expect(VIEW2).toContain('Perms.Has("platform.tasks.document-list.import")');
+    expect(VIEW2, "a reader is still shown the upload form").toContain("if (!canImport)");
+    expect(VIEW2).toContain("DocListImportDenied");
+  });
+
+  it("hides the withdraw button from a reader, and says the server is the guard", () => {
+    expect(JS).toContain("data-can-withdraw");
+    expect(JS).toContain("const canWithdraw =");
+    // Hiding is a courtesy; the endpoint is the rule. Written down so nobody mistakes one for the other.
+    expect(JS).toContain("The server enforces it");
+  });
+
+  it("keeps a withdrawn version VISIBLE, marked, with its reason", () => {
+    /*
+     * MUTATION GUARD: filter withdrawn rows out of the version list and this goes red. Hiding them would erase
+     * the record of what the tenant used to cite against — the one thing a withdrawal must not do.
+     */
+    expect(JS).toContain("v.withdrawnAt");
+    expect(JS).toContain("DocListWithdrawn");
+    expect(JS).toContain("v.withdrawnReason");
+    expect(JS, "withdrawn versions were filtered out").not.toMatch(/filter\([^)]*withdrawnAt\)/);
+  });
+
+  it("asks for the reason in the product's own dialog, not a page-local prompt", () => {
+    expect(JS).toContain("global.showConfirm?.(");
+    expect(JS, "a second dialog language appeared").not.toContain("window.prompt");
+    expect(JS).toContain("DocListWithdrawReasonRequired");
+  });
+
+  /*
+   * Sütun başlıklarından biri ("ACTİONS") ekranda ham İngilizce çıktı ve 14 testin arasından geçti: view
+   * `SharedLocalizer["Actions"]` diyordu, paylaşılan kaynakta öyle bir anahtar YOKTU, ve .NET karşılığı
+   * bulunmayan anahtarı sessizce anahtarın KENDİSİ olarak basar. Yani eksik çeviri hata vermez — okunur
+   * görünür. Bu yüzden muhafız "anahtar var mı"yı sorar, "çeviri doğru mu"yu değil.
+   */
+  it("every localizer key the screen names exists in all seven languages", () => {
+    // Her anahtar KENDİ kaynağına sorulur: `SharedLocalizer` ürünün ortak kümesine, çıplak `Localizer`
+    // ekranın kendi kümesine. İkisini tek dosyada aramak, meşru bir paylaşılan anahtarı sahte kırmızı yapar.
+    const keys = [...VIEW.matchAll(/@?(Shared)?Localizer\["([^"]+)"\]/g)].map((m) => ({
+      key: m[2], shared: m[1] === "Shared",
+    }));
+    expect(keys.length).toBeGreaterThan(15);
+    expect(keys.some((k) => k.shared)).toBe(true);
+
+    const missing = [];
+    LANGS.forEach((lang) => {
+      const own = fs.readFileSync(
+        web("Resources", "Views", "Tasks", "TaskTypes", `TaskTypesIndex.${lang}.resx`), "utf8");
+      const shared = fs.readFileSync(web("Resources", `SharedResource.${lang}.resx`), "utf8");
+      keys.forEach(({ key, shared: isShared }) => {
+        if (!(isShared ? shared : own).includes(`name="${key}"`)) { missing.push(`${lang}:${key}`); }
+      });
+    });
+    expect(missing).toEqual([]);
+  });
+});

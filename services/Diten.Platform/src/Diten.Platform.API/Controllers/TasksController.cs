@@ -459,9 +459,26 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// Take a list version out of service.
+    ///
+    /// ⚠ THERE IS NO DELETE ROUTE, deliberately: a closed task may have resolved against this version, so the
+    /// row and its history stay. Guarded by IMPORT, not Read — deciding what the tenant may cite is the same
+    /// authority as replacing it.
+    /// </summary>
+    [HttpPut("document-list/versions/{id:guid}/withdraw")]
+    [HasPermission(TaskPermissions.DocumentListImport)]
+    public async Task<IActionResult> WithdrawDocumentListVersion(
+        Guid id, [FromBody] WithdrawDocumentListVersionRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(
+            new WithdrawDocumentListVersionCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     /// <summary>Every import, newest first — "which list did this task resolve against".</summary>
     [HttpGet("document-list/versions")]
-    [HasPermission(TaskPermissions.Read)]
+    [HasPermission(TaskPermissions.DocumentListRead)]
     public async Task<IActionResult> GetDocumentListVersions(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetDocumentReferenceListVersionsQuery(CorrelationId), ct);
@@ -475,7 +492,7 @@ public sealed class TasksController : CustomBaseController
     /// ordinary work, importing the register is not.
     /// </summary>
     [HttpGet("document-list/search")]
-    [HasPermission(TaskPermissions.Read)]
+    [HasPermission(TaskPermissions.DocumentListRead)]
     public async Task<IActionResult> SearchDocumentList(
         [FromQuery] string? term, [FromQuery] int limit, CancellationToken ct)
     {

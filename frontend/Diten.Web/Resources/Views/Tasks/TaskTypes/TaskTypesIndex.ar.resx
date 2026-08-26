@@ -106,4 +106,13 @@
   <data name="DocListSearchPlaceholder" xml:space="preserve"><value>ابحث بالرمز أو العنوان أو المعرّف…</value></data>
   <data name="DocListDocTitle" xml:space="preserve"><value>العنوان</value></data>
   <data name="DocListDocVersion" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="DocListActions" xml:space="preserve">
+    <value>الإجراءات</value>
+  </data>
+  <data name="DocListWithdraw" xml:space="preserve"><value>سحب</value></data>
+  <data name="DocListWithdrawn" xml:space="preserve"><value>مسحوبة</value></data>
+  <data name="DocListWithdrawReason" xml:space="preserve"><value>لماذا يتم السحب؟</value></data>
+  <data name="DocListWithdrawReasonRequired" xml:space="preserve"><value>السحب يحتاج إلى سبب.</value></data>
+  <data name="DocListWithdrawSubtext" xml:space="preserve"><value>لن يعود الإصدار {0} القائمة التي يمكن للمهام الاستشهاد بها. يُحتفظ به مع علامة، لتبقى الإحالات السابقة مقروءة.</value></data>
+  <data name="DocListImportDenied" xml:space="preserve"><value>يمكنك قراءة هذه القائمة لكن لا يمكنك استيرادها.</value></data>
 </root>

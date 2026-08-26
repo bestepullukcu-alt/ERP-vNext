@@ -321,13 +321,6 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiSetPinned(Guid id)
         => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/tasks/{id}/personal/pin", readBody: true);
 
-    /// <summary>
-    /// The task TYPES a new task may be given (DCP-005 slice 1).
-    ///
-    /// ⚠ Named here because this controller is a PROXY with one method per endpoint — a route that exists on the
-    /// service is invisible to the browser until it is listed. That is not a guess: the pin endpoint returned 404
-    /// on its first live click for exactly this reason.
-    /// </summary>
     /// <summary>The document-list management screen (DCP-005 slice 2).</summary>
     [HttpGet("DocumentList")]
     public IActionResult DocumentList()
@@ -394,6 +387,20 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiDocumentListImport()
         => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/document-list/import", readBody: true);
 
+    /// <summary>
+    /// Take a list version out of service.
+    ///
+    /// ⚠ THIRD TIME THIS PROXY GAP HAS BITTEN (pin, task types, and now this). A route added to the SERVICE is
+    /// invisible to the browser until it is named here, and the symptom is always the same: the button appears
+    /// to do nothing. Measured again rather than assumed — the withdraw click 404'd with the handler in place.
+    /// </summary>
+    [HttpPut("api/document-list/versions/{id:guid}/withdraw")]
+    public Task<IActionResult> ApiWithdrawDocumentListVersion(Guid id)
+        => ProxyAsync(
+            HttpMethod.Put,
+            $"{_gatewayUrl}/api/v1/tasks/document-list/versions/{id}/withdraw",
+            readBody: true);
+
     [HttpGet("api/document-list/versions")]
     public Task<IActionResult> ApiDocumentListVersions()
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/document-list/versions", readBody: false);
@@ -406,6 +413,13 @@ public sealed class TasksController : Controller
             $"{_gatewayUrl}/api/v1/tasks/document-list/search?term={Uri.EscapeDataString(term ?? string.Empty)}&limit={limit}",
             readBody: false);
 
+    /// <summary>
+    /// The task TYPES a new task may be given (DCP-005 slice 1).
+    ///
+    /// ⚠ Named here because this controller is a PROXY with one method per endpoint — a route that exists on the
+    /// service is invisible to the browser until it is listed. That is not a guess: the pin endpoint returned 404
+    /// on its first live click for exactly this reason.
+    /// </summary>
     [HttpGet("api/task-types/active")]
     public Task<IActionResult> ApiActiveTaskTypes()
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/task-types/active", readBody: false);

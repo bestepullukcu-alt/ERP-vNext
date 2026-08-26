@@ -631,6 +631,30 @@ public sealed class DocumentReferenceListVersion : TenantScopedEntity
 
     public DateTimeOffset ImportedAt { get; set; } = DateTimeOffset.UtcNow;
 
+
+    /// <summary>
+    /// When this version was withdrawn, or null.
+    ///
+    /// <para><b>⚠ NOT <see cref="DeletedAt"/>, and the difference is the whole point.</b> Soft delete takes the
+    /// row out of every read through the repository's execution filter — which is exactly what a withdrawal
+    /// must NOT do: a closed task may have resolved its references against this version, and the answer to
+    /// "which list did it see" has to keep arriving. Same reasoning and same shape as
+    /// <c>TaskComment.WithdrawnAt</c>, the one reversal pattern this service already has.</para>
+    ///
+    /// <para><b>Why it exists:</b> measured live — importing a wrong file AFTER the right one stranded the real
+    /// register as an older version, because identical bytes are refused and the newest wins. Two correct rules
+    /// made an irreversible trap between them. Withdrawal is the way out that keeps both.</para>
+    /// </summary>
+    public DateTimeOffset? WithdrawnAt { get; set; }
+
+    /// <summary>
+    /// WHY it was withdrawn. Required — a version taken out of service without a reason leaves the same
+    /// unanswerable "why" the import already refuses for a blocked row with no explanation.
+    /// </summary>
+    public string? WithdrawnReason { get; set; }
+
+    public string? WithdrawnBy { get; set; }
+
     public DateTimeOffset? DeletedAt { get; set; }
 }
 

@@ -5894,3 +5894,40 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
   zaman (1)'in koruduğu şey kaybolur.
 - **Gelecek regresyon riski: 🔴 kısıtlı** — veri kaybı yok, ama yanlış yükleme yapan bir kiracı, dilim 3
   geldiğinde yanlış listeye karşı atıf yapar.
+
+### BL-268 — BL-267 KAPANDI: sürüm geri çekme kuruldu (2026-08-26)
+- **Durum: KURULDU.** CT (a) şıkkını seçti; `DocumentReferenceListVersion` artık `WithdrawnAt` /
+  `WithdrawnReason` / `WithdrawnBy` taşıyor ve emsali `TaskComment.WithdrawnAt`.
+- **Neden `DeletedAt` değil:** yumuşak silme satırı yürütme süzgecinden geçen HER okumadan düşürür — bir
+  işaretin yapmaması gereken tam olarak budur. Geri çekilen sürüm listede kalır, "geri çekildi" damgasıyla
+  görünür; yalnız "güncel" yarışından çıkar.
+- **İki yarım ayrı ayrı ölçüldü** (kuru çalıştırma ile, yan etkisiz): geri çekilen baytlar yeniden
+  yüklenebilir (`alreadyImportedAsVersion = null`), yaşayan baytlar hâlâ 409 verir. Yani (1) numaralı kuralın
+  koruduğu şey kaybolmadı.
+- **Gerekçe zorunlu**, ve ikinci bir geri çekme 409 ile reddedilir — ilk damganın üzerine yazılmasın diye.
+- **Geliştirme kiracısı düzeltildi:** `TEST-1` gerçek tıklamayla, "doğrulama artığı" gerekçesiyle geri
+  çekildi; 358/322/36 satırlık `2026-08-24` listesi yeniden güncel. Sahibin kuralına uyularak BAŞKA hiçbir
+  test artığına dokunulmadı.
+- **Gelecek regresyon riski: 🟢 katkısal** — üç alan eklendi, hiçbir okuma yolu daralmadı; eski satırlarda
+  alanlar `null` ve `null` "geri çekilmemiş" demek.
+
+### BL-269 — ortak onay kutusunun çağıran sayımı tavan değil nüfus sayımıydı (2026-08-26)
+- `global-confirm-input-type.test.js` ürünün tamamındaki `showInput:` çağrılarını **altı**ya sabitliyordu;
+  amacı doğru (bir modülün turu başka modülün diyaloğunu oynatmasın), sayıyı okuma biçimi eksikti.
+- Doküman listesi geri çekmesi meşru bir YEDİNCİ çağıran olarak geldi ve muhafız kırmızıya döndü.
+- **Çözüm ikili:** (a) sayım yediye taşındı ve yeni çağıran adıyla yazıldı — muhafızın koruduğu kural
+  (hiçbir ÖNCEDEN VAR OLAN çağıran değişmedi) hiç oynamadı; (b) yeni çağıran `inputType` **vermiyor** —
+  gerekçe düz yazıdır, bileşenin öntanımlısı da düz yazıdır; tip adlandırmak ürünün ikinci sapması olurdu.
+- **Ders:** büyüyemeyen bir nüfus sayımı, ortak bileşeni bir sonraki modül için kullanılamaz kılar. Muhafızın
+  yorumuna bu ayrım yazıldı ki gelecek tur sayıyı "düzeltmek" yerine anlasın.
+
+### BL-270 — doküman listesi ekranı GENİŞ ekranda daha dar (2026-08-26, ölçüldü, düzeltilmedi)
+- Ölçüm (canlı, iki genişlik): sürüm tablosunun kartı **900px'te 821px**, **1440px'te 611px**. Tablo 1027px
+  istiyor; yani geniş ekranda yatay kaydırma DAHA fazla.
+- Sebep: `col-lg-5` / `col-lg-7` — `lg` eşiğinin üstünde içe aktarma formu (üç kısa alan) ile yedi sütunlu
+  sürüm tablosu yan yana geçiyor ve tabloya yarımdan azı kalıyor.
+- Sayfa düzeyinde taşma YOK; kaydırma `.table-responsive` içinde, yani kırık değil — ama "ekran büyüdükçe
+  daha az görüyorum" okuyucu için ters bir davranış.
+- ⚠ Bu turda DÜZELTİLMEDİ: yerleşim kararı CT'nin. Seçenekler: (a) sürüm tablosunu tam genişliğe al, form
+  üstte kalsın; (b) `col-lg-4/8`; (c) dosya adı sütununu kısalt (353px ile en geniş sütun o).
+- **Gelecek regresyon riski: 🟢** — yalnız yerleşim; veri veya izin yolu etkilenmiyor.

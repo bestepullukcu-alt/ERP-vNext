@@ -197,14 +197,11 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                     PageCode: PageDocumentList,
                     DisplayName: "Controlled Documents",
                     RoutePath: "/Tasks/DocumentList",
-                    RequiredPermission: TaskPermissions.DocumentListImport,
+                    // ⚠ READ, NOT IMPORT. Measured: the page was published behind the import permission while the search it
+                    // exists for asks only Read — so a QA reader who could see every row could not open the screen
+                    // showing them. The WRITE surfaces inside are gated separately, in the view.
+                    RequiredPermission: TaskPermissions.DocumentListRead,
                     ParentPageCode: PageTasks,
-                    /*
-                     * ⚠ HIDDEN UNTIL THE SCREEN EXISTS. The route is declared but `/Tasks/DocumentList` has no
-                     * action and no view yet, so a visible entry here is a sidebar link that 404s — the nav is
-                     * reconciled from this manifest, so "true" would publish it to real users on next startup.
-                     * Flip to true in the same round that adds the view, not before.
-                     */
                     // ⚠ PUBLISHED VISIBLE ONLY NOW, in the round the screen was measured open. It shipped `true` once with no
                     // view and no route: the sidebar would have grown an entry pointing at a 404 on the next
                     // reconciliation. A manifest page is a promise the menu keeps — it is made when it can be kept.

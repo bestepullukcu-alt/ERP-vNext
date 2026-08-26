@@ -281,3 +281,8 @@ public sealed record DryRunDocumentReferenceListCommand(
 public sealed record ImportDocumentReferenceListCommand(
     ImportDocumentReferenceListRequest Request, string CorrelationId)
     : IRequest<Response<DocumentReferenceListVersionDto>>;
+
+
+public sealed record WithdrawDocumentListVersionCommand(
+    Guid Id, WithdrawDocumentListVersionRequest Request, string CorrelationId)
+    : IRequest<Response<NoContent>>;

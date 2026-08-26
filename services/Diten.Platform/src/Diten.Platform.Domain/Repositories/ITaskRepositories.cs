@@ -262,13 +262,28 @@ public interface IDocumentReferenceListRepository
     Task<DocumentReferenceListVersion> CreateVersionAsync(
         DocumentReferenceListVersion version, CancellationToken ct = default);
 
-    /// <summary>The version a re-upload of identical bytes would match, or null.</summary>
-    Task<DocumentReferenceListVersion?> FindVersionByHashAsync(string contentHash, CancellationToken ct = default);
+    /// <summary>
+    /// The LIVE version a re-upload of identical bytes would collide with, or null.
+    ///
+    /// <para>⚠ WITHDRAWN VERSIONS DO NOT COLLIDE. That is precisely how the trap is undone: the bytes of a
+    /// version taken out of service can be loaded again, while two people importing the same file into a live
+    /// list still get the 409 that stops two "current" lists existing.</para>
+    /// </summary>
+    Task<DocumentReferenceListVersion?> FindLiveVersionByHashAsync(
+        string contentHash, CancellationToken ct = default);
+
+    Task<DocumentReferenceListVersion?> GetVersionAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>Stamp a withdrawal. There is no delete — see <c>DocumentReferenceListVersion.WithdrawnAt</c>.</summary>
+    Task UpdateVersionAsync(DocumentReferenceListVersion version, CancellationToken ct = default);
 
     /// <summary>Newest first — the list screen and "which version did this task resolve against".</summary>
     Task<IReadOnlyList<DocumentReferenceListVersion>> ListVersionsAsync(CancellationToken ct = default);
 
-    /// <summary>The current version, or null before the first import.</summary>
+    /// <summary>
+    /// The current version: the newest one NOT withdrawn. Null before the first import, and null again if every
+    /// version has been withdrawn — an honest "there is no list" rather than a stale one.
+    /// </summary>
     Task<DocumentReferenceListVersion?> GetLatestVersionAsync(CancellationToken ct = default);
 
     Task AddEntriesAsync(IReadOnlyList<DocumentReferenceEntry> entries, CancellationToken ct = default);

@@ -48,10 +48,16 @@ describe("the callers that were already using the input box", () => {
    *   Platform/Tenants/details.js  ×2      Platform/Tenants/index.js      ×1
    *   Platform/AuditLog/index.js   ×1      DocumentManagement/TemplateMasters/index.js ×1
    *   WorkCenterNext/app.js        ×1  (the module seam, which forwards whatever its caller asked for)
+   *   Tasks/DocumentList/index.js  ×1  (added 2026-08-26 — the list-version withdrawal asks for a reason)
    * Not one of them names a type, so not one of them may change. This file is the whole product's shared
    * component: one module's round must not move another module's dialog.
+   *
+   * ⚠ THE COUNT IS A CENSUS, NOT A CEILING. It moved from six to seven when a legitimate new caller arrived,
+   * and the rule it protects did not move at all: no PRE-EXISTING caller changed, and the new one takes the
+   * default textarea like every other prose dialog rather than naming a type. A census that could never grow
+   * would make the shared component unusable by the next module — which is not what this guard is for.
    */
-  it("is still six, and none of them names a type", () => {
+  it("is still accounted for, and none of them names a type", () => {
     const roots = [path.join(repoRoot, "frontend", "Diten.Web", "wwwroot", "assets", "js")];
     const files = [];
     const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).forEach((e) => {
@@ -64,7 +70,7 @@ describe("the callers that were already using the input box", () => {
     const callers = files.filter((f) => /showInput\s*:/.test(fs.readFileSync(f, "utf8")));
     const occurrences = callers.reduce((n, f) =>
       n + (fs.readFileSync(f, "utf8").match(/showInput\s*:/g) || []).length, 0);
-    expect(occurrences).toBe(6);
+    expect(occurrences).toBe(7);
 
     // The one file that DOES pass a type is the WorkCenterNext seam, and it passes whatever its own caller said —
     // `undefined` for every prose dialog, which is what keeps them on the default.

@@ -106,4 +106,13 @@
   <data name="DocListSearchPlaceholder" xml:space="preserve"><value>Search by code, title or UID…</value></data>
   <data name="DocListDocTitle" xml:space="preserve"><value>Title</value></data>
   <data name="DocListDocVersion" xml:space="preserve"><value>Version</value></data>
+  <data name="DocListActions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="DocListWithdraw" xml:space="preserve"><value>Withdraw</value></data>
+  <data name="DocListWithdrawn" xml:space="preserve"><value>Withdrawn</value></data>
+  <data name="DocListWithdrawReason" xml:space="preserve"><value>Why is it being withdrawn?</value></data>
+  <data name="DocListWithdrawReasonRequired" xml:space="preserve"><value>A withdrawal needs a reason.</value></data>
+  <data name="DocListWithdrawSubtext" xml:space="preserve"><value>Version {0} stops being the list tasks may cite. It is kept, marked, so earlier references stay readable.</value></data>
+  <data name="DocListImportDenied" xml:space="preserve"><value>You can read this list but not import it.</value></data>
 </root>

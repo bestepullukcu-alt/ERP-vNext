@@ -40,7 +40,11 @@
     const searchInput = document.getElementById('docListSearch');
     const resultsBody = document.getElementById('docListResults');
 
-    if (!fileInput || !versionsBody) { return; }
+    // The page opens on Read; the write surfaces are the administrator's. The server enforces it — this only
+    // stops a reader being offered a button whose one possible outcome is a 403.
+    const canWithdraw = versionsBody.getAttribute('data-can-withdraw') === 'true';
+
+    if (!versionsBody) { return; }
 
     /*
      * The dry run is valid for ONE file. Name + size + last-modified is the same signature the precedent uses:
@@ -117,8 +121,21 @@
                 <td><button type="button" class="btn btn-sm btn-label-secondary js-copy-hash"
                         data-hash="${esc(v.contentHash)}" title="${esc(t('DocListCopyHash'))}"
                         aria-label="${esc(t('DocListCopyHash'))}"><code>${esc(v.contentHash.slice(0, 8))}</code></button></td>
+                <td class="text-end">${v.withdrawnAt
+                    /*
+                     * ⚠ A WITHDRAWN VERSION STAYS IN THE LIST, MARKED — never hidden. Removing it would erase
+                     * the record of what the tenant used to cite against, which is the one thing a withdrawal
+                     * must not do. The reason travels with the badge, so "why is this out of service" is
+                     * answered where the question is asked.
+                     */
+                    ? `<span class="badge bg-label-secondary">${esc(t('DocListWithdrawn'))}</span>
+                       <div class="small text-muted">${esc(v.withdrawnReason || '')}</div>`
+                    : (canWithdraw
+                        ? `<button type="button" class="btn btn-sm btn-label-warning js-withdraw"
+                                data-id="${esc(v.id)}" data-version="${esc(v.listVersion)}">${esc(t('DocListWithdraw'))}</button>`
+                        : '')}</td>
               </tr>`).join('')
-            : `<tr><td colspan="6" class="text-muted">${esc(t('DocListNoVersions'))}</td></tr>`;
+            : `<tr><td colspan="7" class="text-muted">${esc(t('DocListNoVersions'))}</td></tr>`;
     };
 
     const runSearch = async (term) => {
@@ -234,9 +251,62 @@
         summary.innerHTML = `<p class="text-muted mb-0">${esc(t('DocListDryRunFirst'))}</p>`;
     });
 
-    versionsBody.addEventListener('click', (event) => {
-        const btn = event.target.closest('.js-copy-hash');
-        if (btn) { global.navigator?.clipboard?.writeText(btn.getAttribute('data-hash') || ''); }
+    versionsBody.addEventListener('click', async (event) => {
+        const copy = event.target.closest('.js-copy-hash');
+        if (copy) { global.navigator?.clipboard?.writeText(copy.getAttribute('data-hash') || ''); return; }
+
+        const withdraw = event.target.closest('.js-withdraw');
+        if (!withdraw) { return; }
+
+        /*
+         * ⚠ THE REASON IS ASKED FOR, NOT OPTIONAL — the server refuses without one, and a dialog that lets the
+         * reader discover that by being rejected is a dialog that wasted their time. The product's own confirm
+         * carries the input; a page-local prompt would be a second dialog language.
+         */
+        const id = withdraw.getAttribute('data-id');
+        const version = withdraw.getAttribute('data-version');
+        global.showConfirm?.(
+            t('DocListWithdraw'),
+            async (reason) => {
+                if (!String(reason || '').trim()) { global.showToast?.(t('DocListWithdrawReasonRequired'), 'error'); return; }
+                try {
+                    const res = await fetch(`/Tasks/api/document-list/versions/${id}/withdraw`, {
+                        method: 'PUT',
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json', RequestVerificationToken: token() },
+                        body: JSON.stringify({ reason: String(reason).trim() })
+                    });
+                    if (!res.ok) { throw new Error('withdraw failed'); }
+                    global.showToast?.(t('DocListWithdrawn'), 'success');
+                    await loadVersions();
+                    await runSearch(searchInput?.value || '');
+                } catch (error) {
+                    console.error('[DocumentList] withdraw failed', error);
+                    global.showToast?.(t('ErrorOccurred'), 'error');
+                }
+            },
+            {
+                /*
+                 * ⚠ THE SHARED DIALOG'S OWN CONTRACT — `showInput` / `inputRequired` /
+                 * `inputValidationMessage`. The first version passed `input: { validate }`, which is the shape
+                 * WorkCenterNext's LOCAL wrapper uses, not this component's: measured live, the dialog closed on
+                 * an empty reason and said nothing at all. Nothing was withdrawn (the callback still guarded it),
+                 * but the reader was shown a dialog that vanished for no stated reason — a silent refusal, which
+                 * is the failure mode this session keeps removing.
+                 */
+                subtext: t('DocListWithdrawSubtext').replace('{0}', version),
+                showInput: true,
+                /*
+                 * ⚠ NO `inputType` — the default textarea is right and the guard is right to notice. A reason is
+                 * prose, and the shared component's default is prose; naming a type here would have made this the
+                 * SECOND caller in the product to deviate from it, for no gain.
+                 */
+                inputLabel: t('DocListWithdrawReason'),
+                inputRequired: true,
+                inputValidationMessage: t('DocListWithdrawReasonRequired'),
+                confirmButtonText: t('DocListWithdraw'),
+                type: 'warning'
+            });
     });
 
     let searchTimer = null;

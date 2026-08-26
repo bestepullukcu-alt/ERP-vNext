@@ -562,19 +562,43 @@ public sealed class DocumentReferenceListRepository : TenantRepository<DocumentR
         DocumentReferenceListVersion version, CancellationToken ct = default)
         => CreateAsync(version, ct);
 
-    public Task<DocumentReferenceListVersion?> FindVersionByHashAsync(string contentHash, CancellationToken ct = default)
+    public Task<DocumentReferenceListVersion?> FindLiveVersionByHashAsync(
+        string contentHash, CancellationToken ct = default)
     {
         var filter = Builders<DocumentReferenceListVersion>.Filter.And(
             ExecutionFilter,
-            Builders<DocumentReferenceListVersion>.Filter.Eq(x => x.ContentHash, contentHash));
+            Builders<DocumentReferenceListVersion>.Filter.Eq(x => x.ContentHash, contentHash),
+            // Withdrawn bytes may be loaded again — see the interface's note.
+            Builders<DocumentReferenceListVersion>.Filter.Eq(x => x.WithdrawnAt, null));
         return Collection.Find(filter).FirstOrDefaultAsync(ct)!;
+    }
+
+    public Task<DocumentReferenceListVersion?> GetVersionAsync(Guid id, CancellationToken ct = default)
+        => Collection.Find(Builders<DocumentReferenceListVersion>.Filter.And(
+            ExecutionFilter, Builders<DocumentReferenceListVersion>.Filter.Eq(x => x.Id, id)))
+            .FirstOrDefaultAsync(ct)!;
+
+    public async Task UpdateVersionAsync(DocumentReferenceListVersion version, CancellationToken ct = default)
+    {
+        version.UpdatedAt = DateTimeOffset.UtcNow;
+        await Collection.ReplaceOneAsync(
+            Builders<DocumentReferenceListVersion>.Filter.And(
+                ExecutionFilter, Builders<DocumentReferenceListVersion>.Filter.Eq(x => x.Id, version.Id)),
+            version, new ReplaceOptions(), ct);
     }
 
     public async Task<IReadOnlyList<DocumentReferenceListVersion>> ListVersionsAsync(CancellationToken ct = default)
         => await Collection.Find(ExecutionFilter).SortByDescending(x => x.ImportedAt).ToListAsync(ct);
 
     public async Task<DocumentReferenceListVersion?> GetLatestVersionAsync(CancellationToken ct = default)
-        => await Collection.Find(ExecutionFilter).SortByDescending(x => x.ImportedAt).FirstOrDefaultAsync(ct);
+        => await Collection
+            .Find(Builders<DocumentReferenceListVersion>.Filter.And(
+                ExecutionFilter,
+                // "Newest" means newest STILL IN SERVICE. A withdrawn version keeps its rows and its history;
+                // what it stops being is the answer to "what may a task cite today".
+                Builders<DocumentReferenceListVersion>.Filter.Eq(x => x.WithdrawnAt, null)))
+            .SortByDescending(x => x.ImportedAt)
+            .FirstOrDefaultAsync(ct);
 
     public async Task AddEntriesAsync(IReadOnlyList<DocumentReferenceEntry> entries, CancellationToken ct = default)
     {

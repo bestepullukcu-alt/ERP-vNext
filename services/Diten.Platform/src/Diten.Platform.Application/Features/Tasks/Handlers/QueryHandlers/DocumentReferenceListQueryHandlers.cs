@@ -20,7 +20,10 @@ public sealed class GetDocumentReferenceListVersionsHandler
         return Response<IReadOnlyList<DocumentReferenceListVersionDto>>.Success(
             versions.Select(v => new DocumentReferenceListVersionDto(
                 v.Id, v.ListVersion, v.SourceKey, v.FileName, v.ContentHash,
-                v.EntryCount, v.LinkableCount, v.ImportedAt)).ToList(),
+                v.EntryCount, v.LinkableCount, v.ImportedAt,
+                // Withdrawn versions stay in this list, marked. Hiding them would erase the record of what the
+                // tenant used to cite against.
+                v.WithdrawnAt, v.WithdrawnReason, v.WithdrawnBy)).ToList(),
             200, query.CorrelationId);
     }
 }

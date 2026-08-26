@@ -106,4 +106,13 @@
   <data name="DocListSearchPlaceholder" xml:space="preserve"><value>Buscar por código, título o UID…</value></data>
   <data name="DocListDocTitle" xml:space="preserve"><value>Título</value></data>
   <data name="DocListDocVersion" xml:space="preserve"><value>Versión</value></data>
+  <data name="DocListActions" xml:space="preserve">
+    <value>Acciones</value>
+  </data>
+  <data name="DocListWithdraw" xml:space="preserve"><value>Retirar</value></data>
+  <data name="DocListWithdrawn" xml:space="preserve"><value>Retirada</value></data>
+  <data name="DocListWithdrawReason" xml:space="preserve"><value>¿Por qué se retira?</value></data>
+  <data name="DocListWithdrawReasonRequired" xml:space="preserve"><value>Una retirada necesita un motivo.</value></data>
+  <data name="DocListWithdrawSubtext" xml:space="preserve"><value>La versión {0} deja de ser la lista citable. Se conserva y se marca, para que las referencias anteriores sigan siendo legibles.</value></data>
+  <data name="DocListImportDenied" xml:space="preserve"><value>Puede consultar esta lista pero no importarla.</value></data>
 </root>

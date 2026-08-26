@@ -106,4 +106,13 @@
   <data name="DocListSearchPlaceholder" xml:space="preserve"><value>Поиск по коду, названию или UID…</value></data>
   <data name="DocListDocTitle" xml:space="preserve"><value>Название</value></data>
   <data name="DocListDocVersion" xml:space="preserve"><value>Версия</value></data>
+  <data name="DocListActions" xml:space="preserve">
+    <value>Действия</value>
+  </data>
+  <data name="DocListWithdraw" xml:space="preserve"><value>Отозвать</value></data>
+  <data name="DocListWithdrawn" xml:space="preserve"><value>Отозвана</value></data>
+  <data name="DocListWithdrawReason" xml:space="preserve"><value>Почему отзывается?</value></data>
+  <data name="DocListWithdrawReasonRequired" xml:space="preserve"><value>Для отзыва нужна причина.</value></data>
+  <data name="DocListWithdrawSubtext" xml:space="preserve"><value>Версия {0} перестаёт быть списком, на который могут ссылаться задачи. Она сохраняется с отметкой, чтобы прежние ссылки оставались читаемыми.</value></data>
+  <data name="DocListImportDenied" xml:space="preserve"><value>Вы можете просматривать этот список, но не импортировать его.</value></data>
 </root>

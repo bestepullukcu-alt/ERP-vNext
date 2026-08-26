@@ -106,4 +106,13 @@
   <data name="DocListSearchPlaceholder" xml:space="preserve"><value>Koda, başlığa veya UID’e göre ara…</value></data>
   <data name="DocListDocTitle" xml:space="preserve"><value>Başlık</value></data>
   <data name="DocListDocVersion" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="DocListActions" xml:space="preserve">
+    <value>İşlemler</value>
+  </data>
+  <data name="DocListWithdraw" xml:space="preserve"><value>Geri çek</value></data>
+  <data name="DocListWithdrawn" xml:space="preserve"><value>Geri çekildi</value></data>
+  <data name="DocListWithdrawReason" xml:space="preserve"><value>Neden geri çekiliyor?</value></data>
+  <data name="DocListWithdrawReasonRequired" xml:space="preserve"><value>Geri çekme için gerekçe gerekli.</value></data>
+  <data name="DocListWithdrawSubtext" xml:space="preserve"><value>{0} sürümü artık görevlerin atıf yapabileceği liste olmaktan çıkar. Silinmez, işaretlenir; önceki atıflar okunur kalır.</value></data>
+  <data name="DocListImportDenied" xml:space="preserve"><value>Bu listeyi okuyabilirsiniz ama içe aktaramazsınız.</value></data>
 </root>

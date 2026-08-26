@@ -33,7 +33,7 @@ public sealed class DryRunDocumentReferenceListHandler
         }
 
         var parsed = DocumentReferenceListParser.Parse(csv);
-        var existing = await _lists.FindVersionByHashAsync(parsed.ContentHash, ct);
+        var existing = await _lists.FindLiveVersionByHashAsync(parsed.ContentHash, ct);
 
         return Response<DocumentReferenceListDryRunResult>.Success(
             new DocumentReferenceListDryRunResult(
@@ -120,7 +120,7 @@ public sealed class ImportDocumentReferenceListHandler
                 TaskReasonCodes.DocumentListInvalid, command.CorrelationId);
         }
 
-        var already = await _lists.FindVersionByHashAsync(parsed.ContentHash, ct);
+        var already = await _lists.FindLiveVersionByHashAsync(parsed.ContentHash, ct);
         if (already is not null)
         {
             /*
@@ -159,5 +159,66 @@ public sealed class ImportDocumentReferenceListHandler
                 version.Id, version.ListVersion, version.SourceKey, version.FileName,
                 version.ContentHash, version.EntryCount, version.LinkableCount, version.ImportedAt),
             201, command.CorrelationId);
+    }
+}
+
+
+/// <summary>
+/// Take a list version out of service.
+///
+/// <para><b>The row survives.</b> Modelled on <c>WithdrawTaskCommentHandler</c> — the one reversal pattern this
+/// service already has — because a closed task may have resolved its references against this version, and the
+/// answer to "which list did it see" has to keep arriving. Soft delete would remove it from every read, which
+/// is the opposite of a marker.</para>
+///
+/// <para><b>The reason is required.</b> A version pulled from service without one leaves the next reader with
+/// an unanswerable "why" — the same shape the import already refuses for a blocked row with no explanation.</para>
+/// </summary>
+public sealed class WithdrawDocumentListVersionHandler
+    : IRequestHandler<WithdrawDocumentListVersionCommand, Response<NoContent>>
+{
+    private readonly IDocumentReferenceListRepository _lists;
+    private readonly ICurrentUserContext _currentUser;
+
+    public WithdrawDocumentListVersionHandler(
+        IDocumentReferenceListRepository lists, ICurrentUserContext currentUser)
+    {
+        _lists = lists;
+        _currentUser = currentUser;
+    }
+
+    public async Task<Response<NoContent>> Handle(
+        WithdrawDocumentListVersionCommand command, CancellationToken ct)
+    {
+        var reason = command.Request?.Reason?.Trim();
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            return Response<NoContent>.Fail(
+                "Withdrawing a list version needs a reason.",
+                400, TaskReasonCodes.DocumentListWithdrawReasonRequired, command.CorrelationId);
+        }
+
+        var version = await _lists.GetVersionAsync(command.Id, ct);
+        if (version is null || version.DeletedAt is not null)
+        {
+            return Response<NoContent>.Fail(
+                "List version not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        if (version.WithdrawnAt is not null)
+        {
+            // Already out of service: the caller has the state they asked for, said as its own refusal rather
+            // than as a second stamp that would overwrite who withdrew it and when.
+            return Response<NoContent>.Fail(
+                "This list version is already withdrawn.",
+                409, TaskReasonCodes.DocumentListAlreadyWithdrawn, command.CorrelationId);
+        }
+
+        version.WithdrawnAt = DateTimeOffset.UtcNow;
+        version.WithdrawnReason = reason;
+        version.WithdrawnBy = _currentUser.ActorName;
+        await _lists.UpdateVersionAsync(version, ct);
+
+        return Response<NoContent>.Success(204, command.CorrelationId);
     }
 }

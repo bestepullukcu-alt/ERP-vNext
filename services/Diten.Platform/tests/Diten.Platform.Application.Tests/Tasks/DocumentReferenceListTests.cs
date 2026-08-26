@@ -251,15 +251,25 @@ internal sealed class FakeDocumentReferenceListRepository : IDocumentReferenceLi
         return Task.FromResult(version);
     }
 
-    public Task<DocumentReferenceListVersion?> FindVersionByHashAsync(string contentHash, CancellationToken ct = default)
-        => Task.FromResult(Versions.FirstOrDefault(v => v.ContentHash == contentHash));
+    public Task<DocumentReferenceListVersion?> FindLiveVersionByHashAsync(
+        string contentHash, CancellationToken ct = default)
+        // Mirrors the real filter: a WITHDRAWN version's bytes no longer collide.
+        => Task.FromResult(Versions.FirstOrDefault(v => v.ContentHash == contentHash && v.WithdrawnAt is null));
+
+    public Task<DocumentReferenceListVersion?> GetVersionAsync(Guid id, CancellationToken ct = default)
+        => Task.FromResult(Versions.FirstOrDefault(v => v.Id == id));
+
+    public Task UpdateVersionAsync(DocumentReferenceListVersion version, CancellationToken ct = default)
+        => Task.CompletedTask;
 
     public Task<IReadOnlyList<DocumentReferenceListVersion>> ListVersionsAsync(CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<DocumentReferenceListVersion>>(
             Versions.OrderByDescending(v => v.ImportedAt).ToList());
 
     public Task<DocumentReferenceListVersion?> GetLatestVersionAsync(CancellationToken ct = default)
-        => Task.FromResult(Versions.OrderByDescending(v => v.ImportedAt).FirstOrDefault());
+        // "Newest" means newest still IN SERVICE — the same rule the real repository applies.
+        => Task.FromResult(Versions.Where(v => v.WithdrawnAt is null)
+            .OrderByDescending(v => v.ImportedAt).FirstOrDefault());
 
     public Task AddEntriesAsync(IReadOnlyList<DocumentReferenceEntry> entries, CancellationToken ct = default)
     {
@@ -271,4 +281,132 @@ internal sealed class FakeDocumentReferenceListRepository : IDocumentReferenceLi
         Guid listVersionId, string? term, int limit, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<DocumentReferenceEntry>>(
             Entries.Where(e => e.ListVersionId == listVersionId).Take(limit).ToList());
+}
+
+/// <summary>
+/// DCP-005 slice 2 — withdrawing a list version.
+///
+/// <para>Exists because two individually correct rules made a trap between them: identical bytes are refused,
+/// and the newest version wins. Import a wrong file after the right one and the right one is stranded with no
+/// way back. Withdrawal is the way out that keeps both rules.</para>
+/// </summary>
+public sealed class DocumentReferenceListWithdrawTests
+{
+    private static DocumentReferenceListVersion Version(string version, string hash, DateTimeOffset at) => new()
+    {
+        TenantId = Guid.NewGuid(), SourceKey = "K", ListVersion = version, ContentHash = hash,
+        FileName = "f.csv", EntryCount = 1, LinkableCount = 1, ImportedAt = at
+    };
+
+    private static WithdrawDocumentListVersionHandler Handler(FakeDocumentReferenceListRepository repo)
+        => new(repo, new FakeCurrentUserContext(Guid.NewGuid()));
+
+    [Fact]
+    public async Task A_withdrawal_needs_a_reason()
+    {
+        /*
+         * MUTATION GUARD: accept a blank reason and this goes red.
+         *
+         * The same rule the import already applies to a blocked row: "this is out of service" without "because"
+         * leaves the next reader with an unanswerable why.
+         */
+        var repo = new FakeDocumentReferenceListRepository();
+        var v = Version("A", "h1", DateTimeOffset.UtcNow);
+        await repo.CreateVersionAsync(v);
+
+        var response = await Handler(repo).Handle(
+            new WithdrawDocumentListVersionCommand(v.Id, new WithdrawDocumentListVersionRequest("   "), "c1"),
+            CancellationToken.None);
+
+        Assert.Equal(400, response.StatusCode);
+        Assert.Equal(TaskReasonCodes.DocumentListWithdrawReasonRequired, response.ReasonCode);
+        Assert.Null(v.WithdrawnAt);
+    }
+
+    [Fact]
+    public async Task The_row_SURVIVES_a_withdrawal__it_is_marked_not_deleted()
+    {
+        /*
+         * ⚠ NOT `DeletedAt`. A closed task may have resolved its references against this version, so the answer
+         * to "which list did it see" has to keep arriving. Same shape as `TaskComment.WithdrawnAt`.
+         */
+        var repo = new FakeDocumentReferenceListRepository();
+        var v = Version("A", "h1", DateTimeOffset.UtcNow);
+        await repo.CreateVersionAsync(v);
+
+        await Handler(repo).Handle(
+            new WithdrawDocumentListVersionCommand(v.Id, new WithdrawDocumentListVersionRequest("test residue"), "c1"),
+            CancellationToken.None);
+
+        Assert.NotNull(v.WithdrawnAt);
+        Assert.Equal("test residue", v.WithdrawnReason);
+        Assert.Null(v.DeletedAt);
+        // Still listed — a withdrawal that hid the row would erase what the tenant used to cite against.
+        Assert.Single(await repo.ListVersionsAsync());
+    }
+
+    [Fact]
+    public async Task A_withdrawn_version_is_no_longer_CURRENT()
+    {
+        /*
+         * MUTATION GUARD: let a withdrawn version still count as newest and this goes red — which is exactly
+         * the trap, since the wrong file was the newest one.
+         */
+        var repo = new FakeDocumentReferenceListRepository();
+        var older = Version("real", "h-real", DateTimeOffset.UtcNow.AddHours(-1));
+        var newer = Version("TEST-1", "h-test", DateTimeOffset.UtcNow);
+        await repo.CreateVersionAsync(older);
+        await repo.CreateVersionAsync(newer);
+        Assert.Equal("TEST-1", (await repo.GetLatestVersionAsync())!.ListVersion);
+
+        await Handler(repo).Handle(
+            new WithdrawDocumentListVersionCommand(newer.Id, new WithdrawDocumentListVersionRequest("residue"), "c1"),
+            CancellationToken.None);
+
+        Assert.Equal("real", (await repo.GetLatestVersionAsync())!.ListVersion);
+    }
+
+    [Fact]
+    public async Task Withdrawn_BYTES_may_be_imported_again__while_live_bytes_still_collide()
+    {
+        /*
+         * The two halves of the fix, asserted separately because they pull in opposite directions:
+         * the guard has to stay alive for LIVE versions (two people, one afternoon, two "current" lists), and
+         * has to let go for WITHDRAWN ones (otherwise the trap is only half undone).
+         *
+         * MUTATION GUARD: make the hash lookup ignore `WithdrawnAt` and the first assertion goes red.
+         */
+        var repo = new FakeDocumentReferenceListRepository();
+        var live = Version("A", "same-bytes", DateTimeOffset.UtcNow);
+        await repo.CreateVersionAsync(live);
+
+        // Live: the bytes collide.
+        Assert.NotNull(await repo.FindLiveVersionByHashAsync("same-bytes"));
+
+        await Handler(repo).Handle(
+            new WithdrawDocumentListVersionCommand(live.Id, new WithdrawDocumentListVersionRequest("wrong file"), "c1"),
+            CancellationToken.None);
+
+        // Withdrawn: the same bytes are loadable again.
+        Assert.Null(await repo.FindLiveVersionByHashAsync("same-bytes"));
+    }
+
+    [Fact]
+    public async Task Withdrawing_twice_is_refused__the_first_stamp_is_not_overwritten()
+    {
+        // Who withdrew it and when is part of the record; a second stamp would quietly replace both.
+        var repo = new FakeDocumentReferenceListRepository();
+        var v = Version("A", "h1", DateTimeOffset.UtcNow);
+        await repo.CreateVersionAsync(v);
+        await Handler(repo).Handle(
+            new WithdrawDocumentListVersionCommand(v.Id, new WithdrawDocumentListVersionRequest("first"), "c1"),
+            CancellationToken.None);
+
+        var second = await Handler(repo).Handle(
+            new WithdrawDocumentListVersionCommand(v.Id, new WithdrawDocumentListVersionRequest("second"), "c2"),
+            CancellationToken.None);
+
+        Assert.Equal(409, second.StatusCode);
+        Assert.Equal("first", v.WithdrawnReason);
+    }
 }
