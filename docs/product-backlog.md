@@ -6093,3 +6093,82 @@ eklenmesi de yukarıdaki ertelenmiş pakete dahil:
 dotnet test tests/architecture/TenantArchitecture.ArchitectureTests
 ```
 Kural yazılana kadar muhafızın gerekçesi yalnız kendi dosya başlığında yaşıyor.
+
+### BL-278 — "EnsureIndexesAsync" iki VERİ işi çalıştırıyordu; ayrıldı, kaybolmadı (2026-08-26, düzeltildi + çivilendi)
+Metodun adı "indexleri kur" diyordu; yaptığı üç işti ve ikisi satır yazıyordu.
+- **(a) `SoftDeleteDomainsForDeletedTenantsAsync`** (eski satır 1106) — silinmiş kiracıların `tenant_domains`
+  satırlarını soft-delete eden bir VERİ ONARIMI. Her açılışta koşuyordu.
+- **(b) `moduleCatalogDocuments.UpdateManyAsync(Unset("Category"))`** (eski satır 1214) — emekliye ayrılmış
+  `Category` alanını tüm modül kataloğundan silen bir VERİ GÖÇÜ. Her açılışta koşuyordu.
+- **Sınıflandırma:** ikisi de şema değil, açılış yükümlülüğü. Yeni yerleri
+  `Persistence/Schema/PlatformSchemaMigrations.cs`; manifest tamamen bildirimsel kaldı.
+- **Neden profile KOYULMADI:** bir test profili, kullandığı 4 koleksiyonu kursun diye çağrılır. O çağrı aynı
+  zamanda bir veri göçü çalıştırsaydı, "ucuz" yol dosyanın en pahalı ve en geri alınamaz davranışını, testin
+  kendisinin sandığı bir veritabanına taşırdı.
+- **Neden üretimden KAYBOLMADI:** ayırmak tam da bir açılış işinin sessizce düştüğü yoldur — yeni dosyaya
+  taşınır, yeni dosyayı kimse çağırmaz, hiçbir şey patlamaz, onarım sadece olmamaya başlar. Bu yüzden
+  `PlatformSchemaContractMongoTests.TheProductionPathStillBuildsEverythingAndRunsBothDataJobs` ikisinin de
+  DAVRANIŞINI ölçüyor (silinmiş kiracının domain'i soft-delete oldu mu; `Category` alanı silindi mi), metodun
+  varlığını değil. Mutasyon: iki çağrıdan birini yorum satırı yap → kırmızı, adını söyleyerek.
+- **Sıra değişikliği (bilinçli):** 13 `DropIndexIfExists` çağrısı artık manifest'ten ÖNCE topluca koşuyor,
+  eskisi gibi araya serpiştirilmiş değil. Korunan özellik aynı: tanımı değişen bir index yeniden kurulmadan
+  önce düşürülmeli (yoksa `IndexOptionsConflict`). Tek gerçek sıra bağımlılığı — unique `CodeKey` index'inin
+  `ModuleDomainDeduplicationMigration`'dan sonra gelmesi — etkilenmedi; o göç DI açılışında, bu metottan önce
+  koşuyor.
+- **Gelecek regresyon riski: 🟡** — üretim yolunun tamamı tek bir Mongo testine bağlı; o test atlanırsa (ör.
+  mongod yokken) iki iş de sessizce düşebilir. Testin skip-if-unavailable kaçamağı YOK, kasıtlı olarak.
+
+### BL-279 — üç koleksiyon depoda okunuyordu, hiçbir index'i yoktu (2026-08-26, sahiplenildi; index'ler HÂLÂ yok)
+Manifest'i kurarken kontrat maddesi 1 ("deponun dokunduğu her koleksiyon manifestte var") ilk gün üç tane buldu:
+| koleksiyon | okuyan | index |
+|---|---|---|
+| `business_reference_data_validation_results` | `BusinessReferenceDataStewardshipRepository` | yok |
+| `document_reference_entries` | `TaskRepositories` | yok |
+| `notification_event_definitions` | `NotificationEventDefinitionRepository` | yok |
+- Üçü de artık manifestte, **bilerek boş index listesiyle**: manifest "ne VAR"ın kaydı; dışarıda bırakmak
+  zaten bunların fark edilmeden indexsiz kalmasını sağlayan şeydi. Üretim davranışı değişmedi (hiçbir index
+  kurulmuyordu, kurulmuyor).
+- **Yapılacak:** her biri için doğru tenant-first index'i tasarlamak (DB-001). Bu tur boyutlandırma yapmadı.
+- ⚠ `business_reference_data_validation_results` BRD profilini **8/8**'e çıkardı — sahiplerinin verdiği
+  koleksiyon tavanı tam dolu. Bir sonraki BRD koleksiyonu bütçeyi kıracak; bu bir kaza değil, kasıtlı sıkılık.
+- **Kontrat maddesi 1'in bilinen kör noktası:** tarama `GetCollection<T>("literal")` metnini arıyor. Jenerik,
+  konvansiyonla isim türeten depo tabanı (`TenantRepository<T>`) üzerinden yaratılan koleksiyonlar — ör.
+  `task_comments` — bu taramada görünmez, dolayısıyla manifestte de yoklar. Ölçülmedi; sayısı bilinmiyor.
+- **Gelecek regresyon riski: 🟡** — kör nokta kapanana kadar "manifest = tam kayıt" iddiası tam değil.
+
+### BL-280 — profil sertleştirmesi bir testi doğru sebeple kırmızıya çevirdi (2026-08-26, düzeltildi)
+`BusinessReferenceDataUsageLookupMongoTests` iki satırı AYNI `(TenantId, SetCode, ConsumerModule,
+ConsumerName)` ile ekliyordu. Üretimde bu kombinasyon **unique index** ile yasak. Test yıllarca yeşildi çünkü
+eski `MongoIntegrationHarness` HİÇ index kurmuyordu — yani test, üretimde var olmayan bir şemaya karşı
+koşuyordu. Harness profil kurmaya başladığı an Mongo ikinci insert'i reddetti.
+- Düzeltme: her satır kendi tüketicisini alıyor (`Organization` / `LegalEntity`). Test edilen sıralama
+  davranışı değişmedi — iki satır gerekiyordu, iki AYNI tüketici değil.
+- **Ders:** "index'siz test veritabanı" ucuz görünür; bedeli, üretimin reddedeceği veriyi kabul eden ve bunu
+  hiç söylemeyen bir süittir. Kaç testin daha bu durumda olduğu ÖLÇÜLMEDİ (BRD ve MDM tarafı taşınmadı).
+- **Gelecek regresyon riski: 🟢** — düzeltildi ve artık gerçek index altında koşuyor.
+
+### BL-281 — Mongo dosya patlaması: bizim yarımız bitti, BRD tarafı DURUYOR (2026-08-26, ölçüm)
+Bu makinede ölçüldü (`/opt/homebrew/var/mongodb` dosya sayısı, tek koşu deltası):
+
+| koşu | delta dosya | mongod | kırmızı |
+|---|---|---|---|
+| Platform, BRD hariç — ÖNCE (450167bd) | 4 | ayakta | 50 |
+| Platform, BRD hariç — SONRA | **621** | **ayakta** | **0** / 2445 |
+| Platform, TAMAMI — SONRA | **8.973** | **ÖLDÜ** | 44 |
+
+- ⚠ **"ÖNCE 4 dosya" bir başarı değil, teşhis:** eski `MongoIntegrationHarness` hiç index kurmadığı için o
+  testler neredeyse hiç dosya yaratmıyordu — ve BL-280'in gösterdiği gibi üretimin şemasını hiç görmüyorlardı.
+  621, testlerin ilk kez gerçek index'lerin altında koşmasının bedeli. Süre 53 s → 9 s.
+- **Kalan ölüm tamamen BRD:** 7 sınıf hâlâ GUID adlı kendi veritabanını açıp `EnsureIndexesAsync` ile 82
+  koleksiyonun tamamını kuruyor. Onların turu (sahipleri teyit etti). BRD hariç mongod AYAKTA KALIYOR.
+- **Ara bulgu — kendi testimiz de pahalıydı:** `IAsyncLifetime` TEST BAŞINA koşar, dolayısıyla "izole"
+  harness'ın veritabanını düşürüp yeniden kurması metod başına oluyordu: ölçülen 2.227 dosya. Veritabanını
+  düşürmek yerine **dokümanları silmek** aynı boş sayfayı veriyor: 2.227 → ~0, süre 49 s → 1 s.
+- **Ara bulgu — sırayla değişen Guid temsili:** harness süreç-genelinde `GuidSerializer(Standard)` kaydediyor;
+  kendi `MongoClient`'ını kuran iki test bunu ayarlamadığı için ÖNCE HANGİ SINIFIN KOŞTUĞUNA göre Guid'leri
+  farklı kodluyordu. "Tek başına geçer, süitte kalır" tam olarak buydu ve hata *veri kaybolmuş* gibi
+  görünüyordu. İkisi de artık üretimin temsilini sabitliyor.
+- **Aşama 4 (bu turda YOK):** `dbPath` bu oturumun ölçümleri sırasında 2.697 → 14.682 dosyaya çıktı. Artık
+  temizliği ayrı tur; temiz bir "ÖNCE/SONRA" o temizlikten sonra alınmalı.
+- **Gelecek regresyon riski: 🟡** — BRD taşınana kadar tam süit hâlâ mongod'u öldürüyor, yani "44 kırmızı"
+  rakamı bir test kalitesi ölçüsü değil, çöküş sonrası artık.

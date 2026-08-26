@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using System.Text.Json;
 using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Common;
@@ -43,12 +44,27 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
         var rabbitMq = RabbitMqTestSettings.FromEnvironment();
         var mongo = MongoTestSettings.FromEnvironment();
         var mongoClient = new MongoClient(mongo.ConnectionString);
-        var databaseName = mongo.DatabaseName + "_" + Guid.NewGuid().ToString("N");
+        /*
+         * ⚠ A FIXED NAME, AND ONLY THE PROFILES THIS TEST USES. This used to be
+         * `mongo.DatabaseName + "_" + Guid.NewGuid()` followed by MongoDbIndexConfigurations.EnsureIndexesAsync,
+         * which built all 82 collections and 218 indexes to reach the two this test reads. A fixed name cannot
+         * accumulate one database per run, and it is dropped in the finally below either way.
+         */
+        var databaseName = mongo.DatabaseName + "_tenant_lifecycle";
         var database = mongoClient.GetDatabase(databaseName);
 
         try
         {
-            await MongoDbIndexConfigurations.EnsureIndexesAsync(database);
+            await mongoClient.DropDatabaseAsync(databaseName);
+            await PlatformSchemaManifest.ApplyAsync(
+                database,
+                new[]
+                {
+                    SchemaProfile.Eventing,
+                    SchemaProfile.Core,
+                    SchemaProfile.Notification,
+                    SchemaProfile.AccessGovernance
+                });
 
             var tenantContext = new TenantContext();
             tenantContext.SetPlatformContext(Guid.NewGuid());

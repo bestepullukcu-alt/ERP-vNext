@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Domain.Entities.Notifications;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
@@ -11,7 +12,7 @@ public sealed class NotificationTemplateRepository : INotificationTemplateReposi
 
     public NotificationTemplateRepository(IPlatformDbContext dbContext)
     {
-        _collection = dbContext.GetCollection<NotificationTemplate>("notification_templates");
+        _collection = dbContext.GetCollection<NotificationTemplate>(PlatformCollections.NotificationTemplates);
     }
 
     public async Task<NotificationTemplate> CreateAsync(NotificationTemplate template, CancellationToken ct = default)

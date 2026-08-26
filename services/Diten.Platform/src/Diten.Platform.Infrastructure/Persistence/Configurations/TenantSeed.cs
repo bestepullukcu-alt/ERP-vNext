@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ public static class TenantSeed
 {
     public static async Task EnsureSeededAsync(IMongoDatabase database, CancellationToken ct = default)
     {
-        var collection = database.GetCollection<Tenant>("tenants");
+        var collection = database.GetCollection<Tenant>(PlatformCollections.Tenants);
 
         var platformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
 

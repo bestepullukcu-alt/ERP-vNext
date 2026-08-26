@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
@@ -11,7 +12,7 @@ public sealed class JobExecutionLogRepository : IJobExecutionLogRepository
 
     public JobExecutionLogRepository(IPlatformDbContext dbContext)
     {
-        _collection = dbContext.GetCollection<JobExecutionLog>("job_execution_logs");
+        _collection = dbContext.GetCollection<JobExecutionLog>(PlatformCollections.JobExecutionLogs);
     }
 
     public async Task<JobExecutionLog> CreateAsync(JobExecutionLog log, CancellationToken cancellationToken = default)

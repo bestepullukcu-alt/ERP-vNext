@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Domain.Entities.Notifications;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
@@ -13,7 +14,7 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
 
     public NotificationDispatchRepository(IPlatformDbContext dbContext)
     {
-        _collection = dbContext.GetCollection<NotificationDispatch>("notification_dispatches");
+        _collection = dbContext.GetCollection<NotificationDispatch>(PlatformCollections.NotificationDispatches);
     }
 
     public async Task<NotificationDispatch> CreateAsync(NotificationDispatch dispatch, CancellationToken ct = default)

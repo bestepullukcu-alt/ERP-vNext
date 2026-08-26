@@ -87,11 +87,7 @@ public class MongoTestDatabaseGuardTests
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductItemSkuMasterMongoTests.cs",
         "services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataGskuCatalogLoadMongoTests.cs",
         "services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataPublishOperationMongoTests.cs",
-        "services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataTenantAssignmentMongoTests.cs",
-        "services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/MongoIntegrationHarness.cs",
-        "services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowTransitionGateMongoRepositoryTests.cs",
-        "services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/RabbitMqEventingIntegrationTests.cs",
-        "services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/TenantLifecycleRabbitMqIntegrationTests.cs"
+        "services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataTenantAssignmentMongoTests.cs"
     };
 
     private static readonly string[] KnownTestSideIndexBuild =
@@ -100,8 +96,16 @@ public class MongoTestDatabaseGuardTests
         "services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataGskuCatalogLoadMongoTests.cs",
         "services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataPublishOperationMongoTests.cs",
         "services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataTenantAssignmentMongoTests.cs",
-        "services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/RabbitMqEventingIntegrationTests.cs",
-        "services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/TenantLifecycleRabbitMqIntegrationTests.cs"
+
+        /*
+         * ⚠ NOT A DEBT — THIS ONE IS THE TEST OF THE PRODUCTION PATH ITSELF. PlatformSchemaContractMongoTests
+         * calls MongoDbIndexConfigurations.EnsureIndexesAsync deliberately, to prove two things nothing else
+         * can: that the production path still builds the WHOLE manifest, and that both startup DATA jobs
+         * still run after being split out of it. It pays the full 82-collection cost exactly once, in a
+         * fixed-name database it drops itself. Removing this entry does not fix anything; it makes the guard
+         * red.
+         */
+        "services/Diten.Platform/tests/Diten.Platform.Application.Tests/Schema/PlatformSchemaContractMongoTests.cs"
     };
 
     [Fact]

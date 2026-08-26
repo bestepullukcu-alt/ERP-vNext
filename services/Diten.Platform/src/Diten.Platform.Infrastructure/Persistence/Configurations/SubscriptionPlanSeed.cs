@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Application.Features.Quotas;
 using Diten.Platform.Domain.Entities;
 using MongoDB.Driver;
@@ -12,7 +13,7 @@ public static class SubscriptionPlanSeed
         await RepairQuotaDataTypesAsync(database, ct);
 
         // Minimal, non-destructive seed called at startup (same pattern as LegacySavedViewMigration).
-        var collection = database.GetCollection<SubscriptionPlan>("platform_subscription_plans");
+        var collection = database.GetCollection<SubscriptionPlan>(PlatformCollections.SubscriptionPlans);
 
         var seeds = new[]
         {
@@ -131,7 +132,7 @@ public static class SubscriptionPlanSeed
 
     public static async Task RepairQuotaDataTypesAsync(IMongoDatabase database, CancellationToken ct = default)
     {
-        var collection = database.GetCollection<BsonDocument>("quota_usages");
+        var collection = database.GetCollection<BsonDocument>(PlatformCollections.QuotaUsages);
 
         // Find documents where CurrentValue or LimitValue is a string
         var filter = Builders<BsonDocument>.Filter.Or(

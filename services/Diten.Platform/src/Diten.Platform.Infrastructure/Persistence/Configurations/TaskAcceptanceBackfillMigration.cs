@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
 using MongoDB.Driver;
@@ -31,7 +32,7 @@ public static class TaskAcceptanceBackfillMigration
 {
     public static async Task MigrateAsync(IMongoDatabase database, CancellationToken ct = default)
     {
-        var collection = database.GetCollection<TaskItem>("task_items");
+        var collection = database.GetCollection<TaskItem>(PlatformCollections.TaskItems);
 
         var filter = Builders<TaskItem>.Filter.And(
             Builders<TaskItem>.Filter.Eq(x => x.IsDeleted, false),

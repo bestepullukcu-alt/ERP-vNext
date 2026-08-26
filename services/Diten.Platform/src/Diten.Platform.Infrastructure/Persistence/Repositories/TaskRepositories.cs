@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
@@ -549,7 +550,7 @@ public sealed class DocumentReferenceListRepository : TenantRepository<DocumentR
     public DocumentReferenceListRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
         : base(dbContext.Database, tenantContext, "document_reference_list_versions")
     {
-        _entries = dbContext.Database.GetCollection<DocumentReferenceEntry>("document_reference_entries");
+        _entries = dbContext.Database.GetCollection<DocumentReferenceEntry>(PlatformCollections.DocumentReferenceEntries);
         _tenants = tenantContext;
     }
 

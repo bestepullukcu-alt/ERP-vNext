@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Domain.Entities;
 using MongoDB.Driver;
 
@@ -16,7 +17,7 @@ public static class ModuleServiceDeduplicationMigration
 
     public static async Task MigrateAsync(IMongoDatabase database, CancellationToken ct = default)
     {
-        var collection = database.GetCollection<ModuleService>("platform_module_services");
+        var collection = database.GetCollection<ModuleService>(PlatformCollections.ModuleServices);
 
         var live = await collection
             .Find(Builders<ModuleService>.Filter.Eq(x => x.IsDeleted, false))

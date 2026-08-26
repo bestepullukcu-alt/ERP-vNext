@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Workflow;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
@@ -24,7 +25,7 @@ public sealed class WorkflowInstanceLookupMongoTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _harness = await MongoIntegrationHarness.CreateAsync();
+        _harness = await MongoIntegrationHarness.CreateAsync(SchemaProfile.WorkflowWorkCenter);
         _repository = new WorkflowInstanceRepository(_harness.DbContext, _harness.TenantContext);
     }
 

@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Domain.Entities.Notifications;
 using Diten.Platform.Domain.Enums;
 using MongoDB.Driver;
@@ -8,7 +9,7 @@ public static class NotificationTemplateSeed
 {
     public static async Task EnsureSeededAsync(IMongoDatabase database, CancellationToken ct = default)
     {
-        var collection = database.GetCollection<NotificationTemplate>("notification_templates");
+        var collection = database.GetCollection<NotificationTemplate>(PlatformCollections.NotificationTemplates);
 
         foreach (var template in CreatePlatformDefaults())
         {

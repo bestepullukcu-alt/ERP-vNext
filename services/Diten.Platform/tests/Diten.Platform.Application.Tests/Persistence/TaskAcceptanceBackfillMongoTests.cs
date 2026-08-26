@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
@@ -27,7 +28,7 @@ public sealed class TaskAcceptanceBackfillMongoTests : IAsyncLifetime
 
     private MongoIntegrationHarness _harness = null!;
 
-    public async Task InitializeAsync() => _harness = await MongoIntegrationHarness.CreateAsync();
+    public async Task InitializeAsync() => _harness = await MongoIntegrationHarness.CreateAsync(SchemaProfile.WorkflowWorkCenter);
 
     public async Task DisposeAsync() => await _harness.DisposeAsync();
 
