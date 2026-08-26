@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="TasksTitle" xml:space="preserve"><value>Görevler</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Kendiniz, bir iş arkadaşınız veya pozisyon havuzu için görev oluşturun ve takip edin.</value></data>
+  <data name="AddNewTask" xml:space="preserve"><value>Yeni Görev</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni Görev</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Görevi Düzenle</value></data>
+  <data name="FieldTitle" xml:space="preserve"><value>Görev başlığı</value></data>
+  <data name="FieldTitlePlaceholder" xml:space="preserve"><value>örn. Üç aylık beyanı hazırla</value></data>
+  <data name="FieldDescription" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="FieldGoverningDocuments" xml:space="preserve"><value>Yöneten dokümanlar</value></data>
+  <data name="FieldGoverningDocumentsPlaceholder" xml:space="preserve"><value>Kod ya da başlıkla ara…</value></data>
+  <data name="DocRefSuggestedByType" xml:space="preserve"><value>Bu görev türünün önerisi. Uymayanları çıkarın.</value></data>
+  <data name="DocRefNoneNamed" xml:space="preserve"><value>Bu görev türü hiçbir yöneten doküman belirtmiyor.</value></data>
+  <data name="DocRefNotInRegister" xml:space="preserve"><value>Bu görev türünün belirttiği {0} doküman güncel kütükte yok.</value></data>
+  <data name="DocRefAllBlocked" xml:space="preserve"><value>Bu görev türünün belirttiği {0} dokümana atıf yapılamıyor.</value></data>
+  <data name="DocRefBlocked" xml:space="preserve"><value>Atıf yapılamaz</value></data>
+  <data name="DocRefRemove" xml:space="preserve"><value>Çıkar</value></data>
+  <data name="DocRefNoResults" xml:space="preserve"><value>Bu aramaya uyan doküman yok.</value></data>
+  <data name="DocRefSectionTitle" xml:space="preserve"><value>Şuna göre</value></data>
+  <data name="DocRefReferencedAt" xml:space="preserve"><value>Atıf tarihi</value></data>
+  <data name="DocRefUnavailable" xml:space="preserve"><value>Doküman kütüğü okunamadı.</value></data>
+  <data name="FieldTaskType" xml:space="preserve"><value>Görev türü</value></data>
+  <data name="FieldTaskTypeNone" xml:space="preserve"><value>Tür yok</value></data>
+  <data name="FieldPriority" xml:space="preserve"><value>Öncelik</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Düşük</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Orta</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Yüksek</value></data>
+  <data name="FieldAssignmentTarget" xml:space="preserve"><value>Kime</value></data>
+  <data name="TargetSelf" xml:space="preserve"><value>Kendim</value></data>
+  <data name="TargetPerson" xml:space="preserve"><value>Bir kişi</value></data>
+  <data name="TargetPool" xml:space="preserve"><value>Bir havuz (pozisyon)</value></data>
+  <data name="FieldAssignee" xml:space="preserve"><value>Atanan kişi</value></data>
+  <data name="FieldPoolPosition" xml:space="preserve"><value>Pozisyon</value></data>
+  <data name="PoolPositionHint" xml:space="preserve"><value>Her pozisyonun yanında birimi görünür; böylece iş yanlış tesise düşmez.</value></data>
+  <data name="FieldDueAt" xml:space="preserve"><value>Bitiş tarihi</value></data>
+  <data name="FieldDueAtPlaceholder" xml:space="preserve"><value>YYYY-AA-GG</value></data>
+  <data name="FieldStartAt" xml:space="preserve"><value>Başlangıç tarihi</value></data>
+  <data name="FieldEstimateHours" xml:space="preserve"><value>Tahmin (saat)</value></data>
+  <data name="FieldEstimateHoursPlaceholder" xml:space="preserve"><value>örn. 8</value></data>
+  <data name="FieldRemainingHours" xml:space="preserve"><value>Kalan (saat)</value></data>
+  <data name="FieldSpentHours" xml:space="preserve"><value>Harcanan (saat)</value></data>
+  <data name="SpentHoursReadOnlyHint" xml:space="preserve"><value>İş yapılırken kaydedilir — yeni görevde her zaman sıfırdır.</value></data>
+  <data name="FieldTags" xml:space="preserve"><value>Etiketler</value></data>
+  <data name="FieldReviewRequired" xml:space="preserve"><value>Review gerekli</value></data>
+  <data name="ReviewRequiredHint" xml:space="preserve"><value>İşaretlendiğinde görev, tamamlanmadan önce bir inceleyene gider.</value></data>
+  <data name="FieldReviewer" xml:space="preserve"><value>İnceleyen</value></data>
+  <data name="ReviewerHint" xml:space="preserve"><value>İnceleme istendiğinde zorunludur — gönderilecek biri olmadan inceleme açılamaz. Kimin gerçekten inceleyebileceğine iş akışı karar verir.</value></data>
+  <data name="FieldApprovalRequired" xml:space="preserve"><value>Yönetici onayı gerekli</value></data>
+  <data name="FieldApprovalManager" xml:space="preserve"><value>Onay yöneticisi</value></data>
+  <data name="ApprovalHint" xml:space="preserve"><value>Onay, iş akışı motorunda yürür; onay verilmeden görev başlatılamaz.</value></data>
+  <data name="FieldEmailNotifications" xml:space="preserve"><value>E-posta bildirimleri</value></data>
+  <data name="FieldDelegationAllowed" xml:space="preserve"><value>Devir izni ver</value></data>
+  <data name="FieldWatchers" xml:space="preserve"><value>İzleyiciler</value></data>
+  <data name="WatchersHint" xml:space="preserve"><value>İzleyiciler görevi görebilir ancak üzerinde işlem yapamaz.</value></data>
+  <data name="SectionBasics" xml:space="preserve"><value>Temel bilgiler</value></data>
+  <data name="SectionAssignment" xml:space="preserve"><value>Atama</value></data>
+  <data name="SectionPlanning" xml:space="preserve"><value>Planlama</value></data>
+  <data name="SectionGovernance" xml:space="preserve"><value>Yönetişim</value></data>
+  <data name="SectionCustomFields" xml:space="preserve"><value>Ek alanlar</value></data>
+  <data name="ColumnTitle" xml:space="preserve"><value>Başlık</value></data>
+  <data name="ColumnStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="ColumnPriority" xml:space="preserve"><value>Öncelik</value></data>
+  <data name="ColumnAssignment" xml:space="preserve"><value>Atama</value></data>
+  <data name="ColumnDueAt" xml:space="preserve"><value>Bitiş</value></data>
+  <data name="ColumnActions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="LifecycleOpen" xml:space="preserve"><value>Açık</value></data>
+  <data name="LifecyclePlanned" xml:space="preserve"><value>Planlı</value></data>
+  <data name="LifecycleInProgress" xml:space="preserve"><value>Devam ediyor</value></data>
+  <data name="LifecycleWaiting" xml:space="preserve"><value>Bekliyor</value></data>
+  <data name="LifecyclePendingReview" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="LifecycleDone" xml:space="preserve"><value>Tamamlandı</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>İptal edildi</value></data>
+  <data name="ActionCreate" xml:space="preserve"><value>Oluştur</value></data>
+  <data name="ActionSave" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="ActionCancel" xml:space="preserve"><value>İptal</value></data>
+  <data name="ActionOpenDetailed" xml:space="preserve"><value>Ayrıntılı form</value></data>
+  <data name="ActionClaim" xml:space="preserve"><value>Üzerime al</value></data>
+  <data name="ActionAccept" xml:space="preserve"><value>Kabul et</value></data>
+  <data name="ActionStart" xml:space="preserve"><value>Başlat</value></data>
+  <data name="ActionComplete" xml:space="preserve"><value>Tamamla</value></data>
+  <data name="QuickCreateTitle" xml:space="preserve"><value>Hızlı görev</value></data>
+  <data name="ToastCreated" xml:space="preserve"><value>Görev oluşturuldu.</value></data>
+  <data name="ToastSaved" xml:space="preserve"><value>Görev kaydedildi.</value></data>
+  <data name="ToastClaimed" xml:space="preserve"><value>Görev üzerinize alındı.</value></data>
+  <data name="ErrorAlreadyClaimed" xml:space="preserve"><value>Bu görevi başka biri önce üzerine aldı.</value></data>
+  <data name="ErrorNoAccess" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="ErrorUnavailable" xml:space="preserve"><value>Görev servisine ulaşılamadı. Tekrar deneyin.</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>Henüz görev yok</value></data>
+  <data name="EmptyDescription" xml:space="preserve"><value>İlk görevinizi oluşturun; burada ve Görev Merkezi'nde görünecek.</value></data>
+  <data name="CustomFieldOptionPlaceholder" xml:space="preserve"><value>Seçiniz…</value></data>
+  <data name="CustomFieldBooleanYes" xml:space="preserve"><value>Evet</value></data>
+  <data name="CustomFieldBooleanNo" xml:space="preserve"><value>Hayır</value></data>
+  <data name="ErrorFieldValueInvalid" xml:space="preserve"><value>Ek alanlardan biri boş ya da alanın kabul etmediği bir değer taşıyor.</value></data>
+  <data name="ErrorFieldDefinitionUnknown" xml:space="preserve"><value>Bu form, artık tanımlı olmayan bir alan sunuyor. Sayfayı yenileyip yeniden deneyin.</value></data>
+  <data name="ErrorFieldLimitExceeded" xml:space="preserve"><value>Ek alanlar bir sınırı aşıyor: çok fazla bölüm, bir bölümde çok fazla alan ya da fazla uzun bir değer.</value></data>
+  <data name="RequiredFieldHint" xml:space="preserve"><value>Zorunlu</value></data>
+  <data name="RequiredFieldsMissing" xml:space="preserve"><value>Lütfen şu zorunlu alanları doldurun:</value></data>
+  <data name="ErrorOccurred" xml:space="preserve"><value>İşlem sırasında bir hata oluştu.</value></data>
+  <data name="ActionOk" xml:space="preserve"><value>Tamam</value></data>
+  <data name="ErrorOrganizationUnitUnresolved" xml:space="preserve"><value>Bu görev için organizasyon birimi belirlenemedi. Yöneticinizden size bir pozisyon atamasını veya bir kök organizasyon birimi tanımlamasını isteyin.</value></data>
+  <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>Seçilen pozisyon görev alamaz. Aktif bir pozisyon seçin.</value></data>
+  <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Bu görevi başka biri sizden önce değiştirdi. Ekran güncel durumla yenilendi.</value></data>
+  <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>Zorunlu bir kontrol listesi maddesi hâlâ işaretli değil, görev tamamlanamaz.</value></data>
+  <data name="ErrorDependencyBlocked" xml:space="preserve"><value>Bu görevin bağlı olduğu bir görev henüz bitmedi, bu yüzden ilerleyemez.</value></data>
+  <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>Bir alt görev hâlâ açık, bu yüzden bu görev henüz tamamlanamaz.</value></data>
+  <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>Bu görev kapandı, artık yorum yazılamaz.</value></data>
+  <data name="ErrorCommentTextInvalid" xml:space="preserve"><value>Yorum boş olamaz ve en fazla 2000 karakter olabilir.</value></data>
+  <data name="ErrorPlanDateRequired" xml:space="preserve"><value>Kişisel planınızı ayarlamak için bir tarih gerekli.</value></data>
+  <data name="ErrorDueDateRequired" xml:space="preserve"><value>Son tarih zorunludur.</value></data>
+  <data name="ErrorApprovalPending" xml:space="preserve"><value>Görev, onaylayan kişinin kararını bekliyor.</value></data>
+  <data name="ErrorReviewPending" xml:space="preserve"><value>Görev, incelemeyi yapan kişinin yanıtını bekliyor.</value></data>
+  <data name="ErrorTaskInvalidState" xml:space="preserve"><value>Bu görev bu durumdayken tamamlanamaz. Önce başlatın.</value></data>
+  <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Bu görevi yalnızca talep eden kişi iptal edebilir. İşi istemiyorsanız iade edin.</value></data>
+  <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Görevin neyi beklediğini yazın.</value></data>
+  <data name="ErrorTitleRequired" xml:space="preserve"><value>Başlık girin.</value></data>
+  <data name="ErrorTitleTooLong" xml:space="preserve"><value>Başlık en fazla 200 karakter olabilir.</value></data>
+  <data name="ErrorHandoverReasonRequired" xml:space="preserve"><value>Görevi neden devrettiğinizi yazın.</value></data>
+  <data name="ErrorReturnNotAssignee" xml:space="preserve"><value>Görevi yalnızca üzerine atanmış kişi iade edebilir.</value></data>
+  <data name="ErrorReassignNotPermitted" xml:space="preserve"><value>Bu görevi yalnızca mevcut atanan kişi veya talep eden yeniden atayabilir.</value></data>
+  <data name="ErrorAssigneeNotAssignable" xml:space="preserve"><value>Bu kişiye iş atanamaz. Listeden birini seçin.</value></data>
+  <data name="ErrorApprovalWaitingEvidence" xml:space="preserve"><value>Onaylayan kişi, karar vermeden önce destekleyici bilgi istedi.</value></data>
+  <data name="ErrorApprovalRejected" xml:space="preserve"><value>Onay reddedildi, bu görev devam edemez.</value></data>
+  <data name="ErrorApprovalCancelled" xml:space="preserve"><value>Onay iptal edildi, bu görev devam edemez.</value></data>
+  <data name="ErrorApprovalNotApproved" xml:space="preserve"><value>Onay henüz tamamlanmadı, bu adıma geçilemez.</value></data>
+  <data name="ErrorApprovalGateUnavailable" xml:space="preserve"><value>Onay şu anda kontrol edilemedi, işlem uygulanmadı. Kısa süre sonra tekrar deneyin.</value></data>
+  <data name="AssigneeHint" xml:space="preserve"><value>Yalnızca hâlihazırda bir pozisyonu olan kişilere görev atanabilir.</value></data>
+  <data name="ActionSendRequest" xml:space="preserve"><value>Talep gönder</value></data>
+  <data name="UpwardRequestHint" xml:space="preserve"><value>Bu kişi raporlama zincirinde sizin üstünüzde, bu yüzden iş atanmaz; TALEP olarak gönderilir. Kabul edip etmeyeceğine o karar verir.</value></data>
+  <data name="ExcludedHint" xml:space="preserve"><value>{0} kişi listelenmedi:</value></data>
+  <data name="ExcludedNoActivePosition" xml:space="preserve"><value>{0} kişinin aktif pozisyonu yok</value></data>
+  <data name="ExcludedPositionNotActive" xml:space="preserve"><value>{0} kişinin pozisyonu aktif değil</value></data>
+  <data name="ExcludedOutOfScope" xml:space="preserve"><value>{0} kişi kapsamınız dışında</value></data>
+  <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Kişi seçin…</value></data>
+  <data name="AssigneeEmpty" xml:space="preserve"><value>Henüz hiç kimsenin pozisyonu yok, bu yüzden atanacak kişi bulunmuyor. Önce yöneticinizden pozisyon ataması yapmasını isteyin.</value></data>
+  <data name="PersonNameUnavailable" xml:space="preserve"><value>Ad bilgisi yok</value></data>
+  <data name="PickerHolderCount" xml:space="preserve"><value>{0} kişi</value></data>
+  <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>Aramak için yazın…</value></data>
+  <data name="CustomFieldRecordUnavailable" xml:space="preserve"><value>Kayıt bulunamıyor</value></data>
+  <data name="ErrorFieldOptionSourceInvalid" xml:space="preserve"><value>Bu alan, hiçbir modülün sunmadığı bir kaynağı gösteriyor. Tanımını düzeltmesi için yöneticinize başvurun.</value></data>
+  <data name="CardReviewTitle" xml:space="preserve"><value>İnceleme ayarları</value></data>
+  <data name="CardApprovalTitle" xml:space="preserve"><value>Onay yöneticisi</value></data>
+  <data name="CardApprovalDescription" xml:space="preserve"><value>Bu göreve başlamadan önce onay verecek yöneticiyi seçin. Görev oluşturulduktan sonra yöneticiye onay talebi gönderilir.</value></data>
+  <data name="CardWatchersTitle" xml:space="preserve"><value>İzleyiciler</value></data>
+  <data name="CardChecklistTitle" xml:space="preserve"><value>Kontrol listesi</value></data>
+  <data name="CardChecklistDescription" xml:space="preserve"><value>Bu görevin adımları. Maddeler görev açıldıktan sonra işaretlenir; engelleyici bir madde tamamlanmadan görev kapanmaz.</value></data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Madde yaz ve Enter'a bas</value></data>
+  <data name="ChecklistAddButton" xml:space="preserve"><value>Ekle</value></data>
+  <data name="ChecklistAddHint" xml:space="preserve"><value>Seviyeyi değiştirmek için etikete tıklayın. Şablon listesi henüz yok.</value></data>
+  <data name="ChecklistLevelOptional" xml:space="preserve"><value>İsteğe bağlı</value></data>
+  <data name="ChecklistLevelRequired" xml:space="preserve"><value>Beklenen</value></data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve"><value>Engelleyici</value></data>
+  <data name="ChecklistLevelHint" xml:space="preserve"><value>Seviyeyi değiştir: İsteğe bağlı → Beklenen → Engelleyici</value></data>
+  <data name="ChecklistEvidenceToggle" xml:space="preserve"><value>Kanıt gereksin</value></data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Kanıt belgesi gerekiyor. Belge bağlantısı doküman modülü bağlandığında etkinleşecek.</value></data>
+  <data name="ChecklistRemove" xml:space="preserve"><value>Maddeyi kaldır</value></data>
+  <data name="ChecklistMoveUp" xml:space="preserve"><value>Yukarı taşı</value></data>
+  <data name="ChecklistMoveDown" xml:space="preserve"><value>Aşağı taşı</value></data>
+  <data name="CardEmailTitle" xml:space="preserve"><value>E-posta bildirimleri</value></data>
+  <data name="CardEmailDescription" xml:space="preserve"><value>Açıkken görev atandıkça, güncellendikçe ve tamamlandıkça ilgili kişilere e-posta gönderilir.</value></data>
+  <data name="CardDelegationTitle" xml:space="preserve"><value>Devir ayarları</value></data>
+  <data name="CardDelegationDescription" xml:space="preserve"><value>Açıkken görevi üstlenen kişi, size sormadan görevi bir başkasına devredebilir.</value></data>
+  <data name="ReviewTypeQuick" xml:space="preserve"><value>Hızlı inceleme</value></data>
+  <data name="ReviewTypeQuickHint" xml:space="preserve"><value>İnceleyen kişi işi doğrudan onaylar.</value></data>
+  <data name="ReviewTypeMeeting" xml:space="preserve"><value>Review toplantısı</value></data>
+  <data name="ReviewTypeMeetingHint" xml:space="preserve"><value>İş, bir toplantıda değerlendirilir.</value></data>
+  <data name="ReviewTypeMeetingDisabledReason" xml:space="preserve"><value>Henüz kullanılamıyor: toplantı modülü yapılmadı. Bu sürede hızlı inceleme uygulanır.</value></data>
+  <data name="NotifyEventsLabel" xml:space="preserve"><value>Şu durumlarda haber ver</value></data>
+  <data name="NotifyEventAssigned" xml:space="preserve"><value>Görev atandığında</value></data>
+  <data name="NotifyEventClaimed" xml:space="preserve"><value>Havuzdan üstlenilince</value></data>
+  <data name="NotifyEventDueSoon" xml:space="preserve"><value>Son tarih yaklaştığında</value></data>
+  <data name="NotifyEventCompleted" xml:space="preserve"><value>Görev tamamlandığında</value></data>
+  <data name="NotifyEventApprovalRequested" xml:space="preserve"><value>Onay talep edildiğinde</value></data>
+  <data name="ReminderLeadLabel" xml:space="preserve"><value>Son tarihten önce hatırlat</value></data>
+  <data name="ReminderLeadNone" xml:space="preserve"><value>Hatırlatma yok</value></data>
+  <data name="ReminderLeadSameDay" xml:space="preserve"><value>Aynı gün</value></data>
+  <data name="ReminderLead1" xml:space="preserve"><value>1 gün önce</value></data>
+  <data name="ReminderLead3" xml:space="preserve"><value>3 gün önce</value></data>
+  <data name="ReminderLead7" xml:space="preserve"><value>1 hafta önce</value></data>
+  <data name="ReminderLead14" xml:space="preserve"><value>2 hafta önce</value></data>
+  <data name="FieldReviewTypeLabel" xml:space="preserve"><value>İnceleme türü</value></data>
+  <data name="FieldDescriptionPlaceholder" xml:space="preserve"><value>Ne yapılacak ve görevi üstlenenin başlamadan önce bilmesi gerekenler.</value></data>
+  <data name="ErrorNoteTextInvalid" xml:space="preserve">
+    <value>Not boş olamaz ve 2000 karakteri aşamaz.</value>
+  </data>
+  <data name="ErrorNoteNotFound" xml:space="preserve">
+    <value>Not bulunamadı.</value>
+  </data>
+  <data name="ErrorSnoozeDateInvalid" xml:space="preserve">
+    <value>Erteleme tarihi gelecekte olmalı.</value>
+  </data>
+  <data name="ErrorCommentNotAuthor" xml:space="preserve">
+    <value>Yalnız yazarı bir yorumu düzenleyebilir veya kaldırabilir.</value>
+  </data>
+  <data name="ErrorCommentWithdrawn" xml:space="preserve">
+    <value>Bu yorum zaten kaldırılmış.</value>
+  </data>
+  <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
+    <value>Bu kişi burada belirtilemez.</value>
+  </data>
+</root>

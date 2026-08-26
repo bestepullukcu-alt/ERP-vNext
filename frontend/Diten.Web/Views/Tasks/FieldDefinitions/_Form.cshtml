@@ -1,0 +1,222 @@
+@model Diten.Web.Models.TaskFieldDefinitions.TaskFieldDefinitionEditViewModel
+@using Diten.Web.Views.Tasks.FieldDefinitions
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskFieldDefinitionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Microsoft.Extensions.Localization.IStringLocalizer<TaskFieldDefinitionsIndex> StringLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var action = isEdit ? "Edit" : "Create";
+
+    // Every source name this tenant's language has words for, keyed by the STABLE key the server sends. Read by
+    // PREFIX rather than from a list: a module that registers a source is translated by adding seven resx lines,
+    // and no file here has to learn its name. Same bridge the tenant navigation uses for module and page names.
+    const string sourceLabelPrefix = "OptionSource.";
+    var sourceLabels = StringLocalizer.GetAllStrings(includeParentCultures: true)
+        .Where(entry => entry.Name.StartsWith(sourceLabelPrefix, StringComparison.Ordinal)
+                        && !entry.ResourceNotFound)
+        .ToDictionary(entry => entry.Name, entry => entry.Value, StringComparer.Ordinal);
+}
+
+<script id="taskfielddefinitions-form-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        sourceLabels,
+        selectSourcePlaceholder = Localizer["OptionsSourceKeySelect"].Value,
+        noSources = Localizer["OptionsSourceKeyNone"].Value,
+        loadFailed = Localizer["OptionsSourceKeyLoadFailed"].Value
+    })
+</script>
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a asp-controller="TaskFieldDefinitions" asp-action="Index">@Localizer["FieldDefinitionsTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-controller="TaskFieldDefinitions" asp-action="Index" class="btn btn-label-secondary">
+            @SharedLocalizer["Cancel"]
+        </a>
+        <button type="submit" form="taskFieldDefinitionForm" class="btn btn-primary">
+            @(isEdit ? SharedLocalizer["Update"] : SharedLocalizer["Save"])
+        </button>
+    </div>
+</div>
+
+<form id="taskFieldDefinitionForm" asp-controller="TaskFieldDefinitions" asp-action="@action" asp-route-id="@Model.Id" method="post"
+    class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="ExpectedVersion" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Code" class="form-label fw-medium">@Localizer["Code"] <span class="text-danger">*</span></label>
+                            @if (isEdit)
+                            {
+                                @* Read-only on edit: stored values join to their definition by code, so changing
+                                   it orphans them. The value still posts, and the server refuses a change anyway. *@
+                                <input asp-for="Code" class="form-control" readonly />
+                                <div class="form-text">@Localizer["CodeImmutableHint"]</div>
+                            }
+                            else
+                            {
+                                <input asp-for="Code" class="form-control" maxlength="64" placeholder="@Localizer["CodePlaceholder"]" required />
+                                <span asp-validation-for="Code" class="text-danger small mt-1"></span>
+                            }
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Section" class="form-label fw-medium">@Localizer["Section"] <span class="text-danger">*</span></label>
+                            <input asp-for="Section" class="form-control" maxlength="64" placeholder="@Localizer["SectionPlaceholder"]" required />
+                            <div class="form-text">@Localizer["SectionLimitHint"]</div>
+                            <span asp-validation-for="Section" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="LabelText" class="form-label fw-medium">@Localizer["LabelText"]</label>
+                            <input asp-for="LabelText" class="form-control" maxlength="200" placeholder="@Localizer["LabelTextPlaceholder"]" />
+                            <div class="form-text">@Localizer["LabelTextHint"]</div>
+                            <span asp-validation-for="LabelText" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="LabelResourceKey" class="form-label fw-medium">@Localizer["LabelResourceKey"]</label>
+                            <input asp-for="LabelResourceKey" class="form-control" maxlength="200" placeholder="@Localizer["LabelResourceKeyPlaceholder"]" />
+                            <div class="form-text">@Localizer["LabelResourceKeyHint"]</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ValueSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="ValueType" class="form-label fw-medium">@Localizer["ValueType"] <span class="text-danger">*</span></label>
+                            <select asp-for="ValueType" class="select2 form-select" required>
+                                <option value="Text">@Localizer["ValueTypeText"]</option>
+                                <option value="Number">@Localizer["ValueTypeNumber"]</option>
+                                <option value="Currency">@Localizer["ValueTypeCurrency"]</option>
+                                <option value="Percentage">@Localizer["ValueTypePercentage"]</option>
+                                <option value="Date">@Localizer["ValueTypeDate"]</option>
+                                <option value="DateTime">@Localizer["ValueTypeDateTime"]</option>
+                                <option value="Boolean">@Localizer["ValueTypeBoolean"]</option>
+                                <option value="Status">@Localizer["ValueTypeStatus"]</option>
+                                <option value="Person">@Localizer["ValueTypePerson"]</option>
+                                <option value="Reference">@Localizer["ValueTypeReference"]</option>
+                                <option value="Link">@Localizer["ValueTypeLink"]</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="OptionsSourceKind" class="form-label fw-medium">@Localizer["OptionsSourceKind"]</label>
+                            <select asp-for="OptionsSourceKind" class="select2 form-select">
+                                <option value="None">@Localizer["OptionsSourceNone"]</option>
+                                <option value="PlatformLookup">@Localizer["OptionsSourcePlatformLookup"]</option>
+                                <option value="BusinessReferenceData">@Localizer["OptionsSourceBusinessReferenceData"]</option>
+                                <option value="ModuleRecord">@Localizer["OptionsSourceModuleRecord"]</option>
+                            </select>
+                            <div class="form-text">@Localizer["OptionsSourceHint"]</div>
+                        </div>
+                        <div class="col-12" data-options-source-key-group>
+                            @* CHOSEN, never typed. This box used to be free text, and a mistyped key produced a
+                               definition that saved cleanly and then never appeared on any form: the resolver
+                               refused the unknown source and the renderer — correctly — dropped the field. Both
+                               protections stay; what is removed is the way to reach them. *@
+                            <label asp-for="OptionsSourceKey" class="form-label fw-medium">@Localizer["OptionsSourceKey"]</label>
+                            @* The stored key travels on the element: the list is fetched after load, so without it an edit
+                               would render an empty control and save the field's source away. *@
+                            <select asp-for="OptionsSourceKey" class="form-select" data-options-source-key
+                                    data-selected="@Model.OptionsSourceKey"></select>
+                            <div class="form-text" data-options-source-key-hint>@Localizer["OptionsSourceKeyHint"]</div>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="AppliesToModuleCode" class="form-label fw-medium">@Localizer["AppliesToModuleCode"]</label>
+                            <input asp-for="AppliesToModuleCode" class="form-control" maxlength="64" placeholder="@Localizer["AppliesToModuleCodePlaceholder"]" />
+                            <div class="form-text">@Localizer["AppliesToModuleCodeHint"]</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["PresentationSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="Importance" class="form-label fw-medium">@Localizer["Importance"]</label>
+                            <select asp-for="Importance" class="select2 form-select">
+                                <option value="Secondary">@Localizer["ImportanceSecondary"]</option>
+                                <option value="Primary">@Localizer["ImportancePrimary"]</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="SortOrder" class="form-label fw-medium">@Localizer["SortOrder"]</label>
+                            <input asp-for="SortOrder" type="number" class="form-control" min="0" max="999" />
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch mt-2">
+                                <input type="hidden" name="IsRequired" value="false" />
+                                <input asp-for="IsRequired" class="form-check-input" role="switch" value="true" />
+                                <label asp-for="IsRequired" class="form-check-label ms-2">@Localizer["Required"]</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch mt-2">
+                                <input type="hidden" name="IsActive" value="false" />
+                                <input asp-for="IsActive" class="form-check-input" role="switch" value="true" />
+                                <label asp-for="IsActive" class="form-check-label ms-2">@SharedLocalizer["Active"]</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ClassificationSection"]</h6>
+                    @* Recorded, never enforced: field-level authorization is BL-024 and no access decision is
+                       made from these today. The hint says so, so nobody mistakes it for protection. *@
+                    <div class="alert alert-info" role="note">@Localizer["ClassificationNotEnforcedHint"]</div>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="Classification" class="form-label fw-medium">@Localizer["Classification"]</label>
+                            <select asp-for="Classification" class="select2 form-select">
+                                <option value="Normal">@Localizer["ClassificationNormal"]</option>
+                                <option value="Internal">@Localizer["ClassificationInternal"]</option>
+                                <option value="Confidential">@Localizer["ClassificationConfidential"]</option>
+                                <option value="Restricted">@Localizer["ClassificationRestricted"]</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="DefaultAccessState" class="form-label fw-medium">@Localizer["DefaultAccessState"]</label>
+                            <select asp-for="DefaultAccessState" class="select2 form-select">
+                                <option value="Visible">@Localizer["AccessStateVisible"]</option>
+                                <option value="Masked">@Localizer["AccessStateMasked"]</option>
+                                <option value="Hidden">@Localizer["AccessStateHidden"]</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+</form>

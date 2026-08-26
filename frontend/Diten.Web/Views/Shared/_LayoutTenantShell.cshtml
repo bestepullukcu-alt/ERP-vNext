@@ -182,83 +182,73 @@
                 <div class="menu-inner-shadow"></div>
 
                 <ul class="menu-inner py-1">
-                    <!-- Workspace Section -->
-                    <li class="menu-header small text-uppercase">
-                        <span class="menu-header-text">@SharedLocalizer["Workspace"]</span>
-                    </li>
-                    <li class="menu-item @(activeController == "WorkCenter" ? "active" : "")">
-                        <a href="/WorkCenter" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-briefcase-alt-2"></i>
-                            <div>@SharedLocalizer["WorkCenterMenu"]</div>
-                        </a>
-                    </li>
-                    @* WorkCenterNext — isolated mock-driven rebuild (docs/workcenter-rebuild-spec.md).
-                       Kept as a separate nav entry so the legacy /WorkCenter stays reachable for
-                       comparison + rollback until the swap. *@
-                    <li class="menu-item @(activeController == "WorkCenterNext" ? "active" : "")">
-                        <a href="/WorkCenterNext" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-been-here"></i>
-                            <div>@SharedLocalizer["WorkCenterNextMenu"]</div>
-                        </a>
-                    </li>
+                    @* BL-060 — the hand-written "Workspace" (Çalışma Alanı) header that used to open this list was
+                       REMOVED. Measured: it printed the SharedResource key `Workspace` = "Çalışma Alanı", the exact
+                       same text the dynamic menu prints for the Workspace domain (`Nav.Domain.WORKSPACE`), so the
+                       sidebar showed the section title twice and the two looked like two separate sections. After
+                       the four document-management duplicates below were deleted, the only item left under it was
+                       Reconciliation — a DOCUMENT-MANAGEMENT page, not a workspace one — so the header was not just
+                       duplicated, it was mislabelling its own content. It was not re-pointed at
+                       `Nav.Domain.DOCUMENTMANAGEMENT` either: that would only move the collision (the dynamic menu
+                       already prints "Doküman Yönetimi" for the catalogue pages). The single remaining hand-written
+                       document link renders headerless until it is catalogued, which is what it actually is — a
+                       stray entry, not a section. The `Workspace` resx key is left in place (harmless, still used
+                       by the dynamic domain map's sibling keys). *@
+                    @* WC-1b — the Task Center (Görev Merkezi) is rendered DATA-DRIVEN by the DynamicModuleMenu
+                       below, from the `work-aggregation` module catalog entry (page WORKCENTER → /WorkCenterNext,
+                       gated on platform.work-aggregation.inbox.view) — same migration Access Governance and
+                       Tenant Settings went through, so the sidebar shows exactly ONE Görev Merkezi link.
+                       The LEGACY /WorkCenter link was also removed from the menu by explicit decision
+                       (2026-07-25): the page, controller and views remain FROZEN and reachable by direct URL for
+                       comparison/rollback — only its navigation entry is gone. Its `WorkCenterMenu` /
+                       `WorkCenterNextMenu` resx keys are intentionally left in place (harmless).
+                       This "Workspace" header still labels the Document Management items below. *@
 
                     @* FEAT-BASELINE-MODULES-S2 — Security Settings (/TenantSecurity) and Menu Settings (/TenantNavigation)
                        are now rendered DATA-DRIVEN by the DynamicModuleMenu below (the `tenant-settings` BASELINE module,
                        "Settings" domain — same routes + same platform.tenant-security.manage per-item gate). The Work
                        Center block above stays hardcoded (Phase B / MOD-0024 will self-register it, entitlement-gated). *@
-                    @* MOD-0029-FU01 — Controlled Documents (TenantShell). FE-B UX guard: shown only with the
-                       view permission; backend (FU01 Layer 1 + Layer 2) is authoritative. The folder-share
-                       wizard and add-document/template flows are reached from this page. *@
-                    @if (Perms.Has("platform.document-management.controlled-documents.view"))
-                    {
-                        <li class="menu-item @(activeController == "DocumentManagementControlledDocuments" ? "active" : "")">
-                            <a href="/DocumentManagementControlledDocuments" class="menu-link">
-                                <i class="menu-icon tf-icons bx bx-file"></i>
-                                <div>@SharedLocalizer["ControlledDocuments"]</div>
-                            </a>
-                        </li>
-                    }
+                    @*
+                       ══ LEGACY-NAV — HAND-WRITTEN LINKS, NOT CATALOGUE-DRIVEN ═══════════════════════════════
+                       Everything from here to the LEGACY-NAV-END marker is typed by hand. It does NOT come from
+                       the module catalogue and the DynamicModuleMenu below knows nothing about it.
 
-                    @* MOD-0029-FU02 — Corporate Template Masters (TenantShell). FE-B UX guard: shown only with
-                       the view permission; backend (FU02 Layer 1) is authoritative. Publish-version, deprecate
-                       and adoption-impact actions are reached from this page. *@
-                    @if (Perms.Has("platform.document-management.template-masters.view"))
-                    {
-                        <li class="menu-item @(activeController == "DocumentManagementTemplateMasters" ? "active" : "")">
-                            <a href="/DocumentManagementTemplateMasters" class="menu-link">
-                                <i class="menu-icon tf-icons bx bx-copy"></i>
-                                <div>@SharedLocalizer["TemplateMasters"]</div>
-                            </a>
-                        </li>
-                    }
+                       WHY THIS MARKER EXISTS. When the dynamic menu produced ZERO groups for an entire session,
+                       the sidebar still looked populated — these six links were the only thing in it — so the
+                       outage read as "some modules are missing" when the truth was "none of them rendered". A
+                       hand-written link that is indistinguishable from a catalogue link masks the next outage the
+                       same way.
 
-                    @* MOD-0029-FU03 — Template Variant Drift (TenantShell). FE-B UX guard: shown only with the
-                       view permission; backend (FU03 Layer 1) is authoritative. Compare and rebase actions are
-                       reached from this page. *@
-                    @if (Perms.Has("platform.document-management.template-variants.view"))
-                    {
-                        <li class="menu-item @(activeController == "DocumentManagementTemplateVariants" ? "active" : "")">
-                            <a href="/DocumentManagementTemplateVariants" class="menu-link">
-                                <i class="menu-icon tf-icons bx bx-git-branch"></i>
-                                <div>@SharedLocalizer["TemplateVariants"]</div>
-                            </a>
-                        </li>
-                    }
+                       FOUR OF THESE WERE DUPLICATES AND ARE NOW DELETED (BL-060, 2026-08-10). Once BL-059 let the
+                       platform system tenant past the entitlement gate, the catalogue started serving these four
+                       routes itself and the sidebar showed each of them TWICE. Measured against
+                       platform_module_page_descriptors before deleting — every one of them nav-visible and Active:
+                         /DocumentManagementControlledDocuments → CONTROLLED_DOCUMENTS
+                         /DocumentManagementTemplateMasters     → TEMPLATE_MASTERS
+                         /DocumentManagementTemplateVariants    → TEMPLATE_VARIANTS
+                         /DocumentManagementAccessMatrix        → ACCESS_MATRIX
+                       Their @if (Perms.Has(...)) guards went with them — the catalogue carries the same per-page
+                       RequiredPermission, so no gate was lost. Their resx label keys (ControlledDocuments,
+                       TemplateMasters, TemplateVariants, AccessMatrix) are left in place, harmless.
 
-                    @* MOD-0029-FU04 — Document Access Matrix (TenantShell). FE-B UX guard: shown only with the
-                       access view permission; backend (FU04 Layer 1) is authoritative. *@
-                    @if (Perms.Has("platform.document-management.access.view"))
-                    {
-                        <li class="menu-item @(activeController == "DocumentManagementAccessMatrix" ? "active" : "")">
-                            <a href="/DocumentManagementAccessMatrix" class="menu-link">
-                                <i class="menu-icon tf-icons bx bx-lock-alt"></i>
-                                <div>@SharedLocalizer["AccessMatrix"]</div>
-                            </a>
-                        </li>
-                    }
-
+                       TWO REMAIN AND ARE STILL HAND-WRITTEN — see the removal condition on each below. This fence
+                       therefore STAYS: there is still hand-written content behind it, and that is exactly what the
+                       marker is for.
+                       ═══════════════════════════════════════════════════════════════════════════════════════
+                    *@
                     @* MOD-0028-FU10 — Reconciliation, Evidence & Deviations (TenantShell). FE-B UX guard: shown only
-                       with the QMS baseline view permission; backend (FU09 Layer 1) is authoritative. *@
+                       with the QMS baseline view permission; backend (FU09 Layer 1) is authoritative.
+
+                       BL-060 — STILL HAND-WRITTEN, and the last document-management link that is. The other four
+                       were deleted because the catalogue serves them; this one is not in the catalogue at all:
+                       DocumentManagementManifestProvider declares no page for /DocumentManagementReconciliation, so
+                       deleting this <li> would remove Mutabakat from the sidebar entirely (the route keeps working,
+                       nobody can find it). Owner: the document-management module owner, via the manifest.
+                       REMOVAL CONDITION (measurable, not a TODO): delete this block once
+                         rg -n "DocumentManagementReconciliation" \
+                           services/Diten.Platform/src/Diten.Platform.Application/Features/DocumentManagement/SelfRegistration/DocumentManagementManifestProvider.cs
+                       returns a page with IsNavigationVisible: true, AND that page is observed in the tenant
+                       sidebar under the Doküman Yönetimi group. Manifest alone is not enough — measure the menu. *@
                     @if (Perms.Has("platform.document-management.qms-baselines.view"))
                     {
                         <li class="menu-item @(activeController == "DocumentManagementReconciliation" ? "active" : "")">
@@ -273,11 +263,14 @@
                        Menu Settings /TenantNavigation) are now rendered DATA-DRIVEN by the DynamicModuleMenu below
                        (ACCESS-GOVERNANCE + TENANT-SETTINGS baseline modules, both permission-gated per descriptor).
                        The hardcoded Tenant Settings bridge <li>s were removed to stop the menu showing them twice. *@
-                    @* Controlled Documents / Template Masters / Template Variants / Access Matrix (document-management),
-                       plus Security Settings + Menu Settings (tenant-settings baseline) are now rendered DATA-DRIVEN by
-                       the DynamicModuleMenu below — their nav page-descriptors are self-registered in the module catalog.
-                       The previously-hardcoded copies were removed to avoid a duplicated menu section. *@
-
+                    @* BL-060 — STILL HAND-WRITTEN. Employee Drafts is not a duplicate: HCM has NO module row in the
+                       module catalogue at all (no manifest, therefore no page descriptor and no domain group), so
+                       this header + link are the only way the page is reachable from the sidebar. Owner: the HCM
+                       module owner — NOT this layout, and not the document-management manifest.
+                       REMOVAL CONDITION (measurable, not a TODO): delete this whole @if block once
+                         rg -rn "HCM/Employees/Create" --glob "*ManifestProvider.cs" services/
+                       returns a nav-visible page, AND that page is observed in the tenant sidebar under an HCM
+                       domain group. Until then, deleting it hides a working page from every user. *@
                     @if (canAccessHcmEmployeeDraft)
                     {
                         <li class="menu-header small text-uppercase">
@@ -289,6 +282,7 @@
                                 <div>@SharedLocalizer["EmployeeDraftsMenu"]</div>
                             </a>
                         </li>
+                    @* ══ LEGACY-NAV-END ═══════════════════════════════════════════════════════════════════ *@
                     }
 
                     @* MOD-0285 — dynamic "Modules" section (AUGMENT). Self-registered/entitled modules whose page
@@ -404,134 +398,25 @@
                                     data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                                     <span class="position-relative">
                                         <i class="icon-base bx bx-bell icon-md"></i>
-                                        <span
-                                            class="badge rounded-pill bg-danger badge-dot badge-notifications border"></span>
                                     </span>
                                 </a>
+                                @* WC-4: the badge and the notification rows were STATIC theme samples — a hard-coded "8"
+                                   and four invented sample records with no JS
+                                   behind them. Real task notifications now exist, so that "8" would have been read as a
+                                   real count and every genuine notification reported as missing. Wiring the bell to real
+                                   data is BL-025; until then it says plainly that it has nothing. *@
                                 <ul class="dropdown-menu dropdown-menu-end p-0">
                                     <li class="dropdown-menu-header border-bottom">
                                         <div class="dropdown-header d-flex align-items-center py-3">
                                             <h6 class="mb-0 me-auto">@SharedLocalizer["Notification"]</h6>
-                                            <div class="d-flex align-items-center h6 mb-0">
-                                                <span class="badge bg-label-primary me-2">@string.Format(SharedLocalizer["NewNotifications"].Value, 8)</span>
-                                                <a href="javascript:void(0)" class="dropdown-notifications-all p-2"
-                                                    data-bs-toggle="tooltip" data-bs-placement="top"
-                                                    title="@SharedLocalizer["MarkAllAsRead"]"><i
-                                                        class="icon-base bx bx-envelope-open text-heading"></i></a>
-                                            </div>
                                         </div>
                                     </li>
-                                    <li class="dropdown-notifications-list scrollable-container">
+                                    <li class="dropdown-notifications-list">
                                         <ul class="list-group list-group-flush">
-                                            <li
-                                                class="list-group-item list-group-item-action dropdown-notifications-item">
-                                                <div class="d-flex">
-                                                    <div class="flex-shrink-0 me-3">
-                                                        <div class="avatar">
-                                                            <img src="~/assets/img/avatars/1.png" alt
-                                                                class="rounded-circle" />
-                                                        </div>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <h6 class="small mb-0">Congratulation Lettie 🎉</h6>
-                                                        <small class="mb-1 d-block text-body">Won the monthly best
-                                                            seller gold badge</small>
-                                                        <small class="text-body-secondary">1h ago</small>
-                                                    </div>
-                                                    <div class="flex-shrink-0 dropdown-notifications-actions">
-                                                        <a href="javascript:void(0)"
-                                                            class="dropdown-notifications-read"><span
-                                                                class="badge badge-dot"></span></a>
-                                                        <a href="javascript:void(0)"
-                                                            class="dropdown-notifications-archive"><span
-                                                                class="icon-base bx bx-x"></span></a>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li
-                                                class="list-group-item list-group-item-action dropdown-notifications-item">
-                                                <div class="d-flex">
-                                                    <div class="flex-shrink-0 me-3">
-                                                        <div class="avatar">
-                                                            <span
-                                                                class="avatar-initial rounded-circle bg-label-danger">CF</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <h6 class="small mb-0">Charles Franklin</h6>
-                                                        <small class="mb-1 d-block text-body">Accepted your
-                                                            connection</small>
-                                                        <small class="text-body-secondary">12hr ago</small>
-                                                    </div>
-                                                    <div class="flex-shrink-0 dropdown-notifications-actions">
-                                                        <a href="javascript:void(0)"
-                                                            class="dropdown-notifications-read"><span
-                                                                class="badge badge-dot"></span></a>
-                                                        <a href="javascript:void(0)"
-                                                            class="dropdown-notifications-archive"><span
-                                                                class="icon-base bx bx-x"></span></a>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li
-                                                class="list-group-item list-group-item-action dropdown-notifications-item marked-as-read">
-                                                <div class="d-flex">
-                                                    <div class="flex-shrink-0 me-3">
-                                                        <div class="avatar">
-                                                            <img src="~/assets/img/avatars/2.png" alt
-                                                                class="rounded-circle" />
-                                                        </div>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <h6 class="small mb-0">New Message ✉️</h6>
-                                                        <small class="mb-1 d-block text-body">You have new message from
-                                                            Natalie</small>
-                                                        <small class="text-body-secondary">1h ago</small>
-                                                    </div>
-                                                    <div class="flex-shrink-0 dropdown-notifications-actions">
-                                                        <a href="javascript:void(0)"
-                                                            class="dropdown-notifications-read"><span
-                                                                class="badge badge-dot"></span></a>
-                                                        <a href="javascript:void(0)"
-                                                            class="dropdown-notifications-archive"><span
-                                                                class="icon-base bx bx-x"></span></a>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li
-                                                class="list-group-item list-group-item-action dropdown-notifications-item">
-                                                <div class="d-flex">
-                                                    <div class="flex-shrink-0 me-3">
-                                                        <div class="avatar">
-                                                            <span
-                                                                class="avatar-initial rounded-circle bg-label-success"><i
-                                                                    class="icon-base bx bx-cart"></i></span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <h6 class="small mb-0">Whoo! You have new order 🛒</h6>
-                                                        <small class="mb-1 d-block text-body">ACME Inc. made new order
-                                                            $1,154</small>
-                                                        <small class="text-body-secondary">1 day ago</small>
-                                                    </div>
-                                                    <div class="flex-shrink-0 dropdown-notifications-actions">
-                                                        <a href="javascript:void(0)"
-                                                            class="dropdown-notifications-read"><span
-                                                                class="badge badge-dot"></span></a>
-                                                        <a href="javascript:void(0)"
-                                                            class="dropdown-notifications-archive"><span
-                                                                class="icon-base bx bx-x"></span></a>
-                                                    </div>
-                                                </div>
+                                            <li class="list-group-item text-body-secondary text-center py-4">
+                                                <small>@SharedLocalizer["NoNotifications"]</small>
                                             </li>
                                         </ul>
-                                    </li>
-                                    <li class="border-top">
-                                        <div class="d-grid p-4">
-                                            <a class="btn btn-primary btn-sm d-flex" href="javascript:void(0);">
-                                                <small class="align-middle">@SharedLocalizer["ViewAllNotifications"]</small>
-                                            </a>
-                                        </div>
                                     </li>
                                 </ul>
                             </li>
@@ -634,6 +519,10 @@
     <script src="~/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
     <script src="~/assets/vendor/libs/datatables-buttons/buttons.colVis.js"></script>
     <script src="~/assets/vendor/libs/datatables-colreorder-bs5/dataTables.colReorder.min.js"></script>
+    @* BL-047b — the DataTable chrome's language, once for every table on the tenant side. *@
+    <partial name="~/Views/Shared/_DataTableL10n.cshtml" />
+    @* DitenTags chrome, same delivery reasoning as the line above. *@
+    <partial name="~/Views/Shared/_TagsL10n.cshtml" />
     <script src="~/assets/js/dt-defaults.js" asp-append-version="true"></script>
     <script src="~/assets/js/diten-datatable.js" asp-append-version="true"></script>
     <script src="~/assets/js/personalization-client.js" asp-append-version="true"></script>

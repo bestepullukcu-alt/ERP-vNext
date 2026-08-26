@@ -57,6 +57,17 @@ Documentation-only canonical alignment already applied to the working tree. Old 
 
 The unresolved items above have been mapped: `PSS-011 → MOD-0048`, `PSS-004 → MOD-0017-FU01`, `NEW-003 → MOD-0027-FU02`, `PSS-XCUT-SV → MOD-0287`; `MOD-0266`/`MOD-0008` name-aligned to Blueprint; `MOD-0169` retired; and the remainder to the temporary candidate namespace — `CAND-CAP-0001` (Tenant User / Identity Foundation ← MOD-0047), `CAND-CAP-0002` (SaaS Subscription, Plan & Entitlement ← MOD-0297, PSS-005/006/007/008, MOD-0298), `CAND-CAP-0003` (Platform Administration & Operations ← NEW-002, PSS-009/010), `CAND-CAP-0004` (Tenant Impersonation / Support Tooling ← NEW-004), `CAND-CAP-0005` (SaaS Billing & Invoicing ← MOD-0299). Candidate IDs are temporary governance identities pending Enterprise Architect canonical `MOD-xxxx` allocation; lifecycle: legacy → CAND-CAP alias → EA MOD-xxxx. Runtime literals `MOD-0297` / `MOD-0299` remain unchanged as legacy compatibility literals.
 
+### CAND-CAP-0006 reservation (Work Aggregation / Task Center — Görev Merkezi)
+
+`CAND-CAP-0006` is a **newly reserved** temporary candidate identity (not a legacy migration like
+`CAND-CAP-0001…0005`). It governs the cross-module personal work-aggregation surface (code name
+`WorkCenterNext`; user-facing product name "Görev Merkezi / Task Center", SAP Task Center line). The Blueprint
+(`Blueprint_Data`) has **no** matching MOD row — verified — so no `MOD-xxxx` is invented. Its governance charter
+is [DCP-004](delivery-capability-packs/DCP-004-work-aggregation-task-center.md). Lifecycle: candidate →
+pending-EA → future EA `MOD-xxxx`. The future canonical Blueprint `MOD-xxxx` allocation is a **separate
+Enterprise Architect decision** (EA follow-up); the candidate ID is never written into runtime literals.
+Identity gate: `verify_module_id.py --candidate CAND-CAP-0006 --name "Work Aggregation / Task Center (Görev Merkezi)"` → exit 0 (2026-07-24).
+
 ## Minimal SoR Reconciliation Records
 
 | Field | Value |

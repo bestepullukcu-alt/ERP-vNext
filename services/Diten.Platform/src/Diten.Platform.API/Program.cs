@@ -54,6 +54,17 @@ builder.Host.UseSerilog((context, services, loggerConfiguration) =>
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
+
+/*
+ * BL-024 Phase 2 — "does the caller hold permission P", answered from the request's claims.
+ *
+ * Registered HERE and not in Infrastructure because the implementation calls PermissionClaimEvaluator, which
+ * lives in this project and owns the canonical + legacy-alias matching the [HasPermission] filter uses.
+ * Answering the question anywhere else would mean a second, slightly-different matcher, and field authorization
+ * would then disagree with the endpoint guarding the same controller.
+ */
+builder.Services.AddScoped<Diten.Platform.Application.Contracts.IActorPermissionContext,
+    Diten.Platform.API.Security.ClaimsActorPermissionContext>();
 builder.Services.AddDitenObservability(
     builder.Configuration,
     builder.Environment,
@@ -115,10 +126,20 @@ builder.Services.AddScoped<Diten.Platform.API.Observability.ICorrelationContext,
 builder.Services.AddScoped<Diten.Platform.API.Authorization.Explain.ISelfAccessExplainService, Diten.Platform.API.Authorization.Explain.SelfAccessExplainService>();
 builder.Services.AddHostedService<BusinessReferenceDataCatalogLoadWorker>();
 builder.Services.AddHostedService<VerifiedGskuOperationalProvisioningRunner>();
-// A1 — auto-register every controller [HasPermission] key into AuthService at startup (best-effort, idempotent).
-builder.Services.AddHostedService<Diten.Platform.API.Services.Security.PlatformPermissionAutoRegistrationWorker>();
+// Startup ordering gate: the A1 permission worker must not sync until module self-registration has FINISHED,
+// otherwise A1 (which syncs moduleCode/scope = null) can create a key first and permanently stamp it
+// Module="platform" + Scope=PlatformAdmin — a scope AuthService cannot downgrade. Registration order alone is
+// NOT sufficient (the manifest walk is slower than the flat key sweep), so a real completion signal is used.
+//
+// ⚠ MERGE 2026-08-26: main registered the A1 worker HERE, immediately after the catalog worker. That line is
+// not dropped — it MOVED, to just below the self-registration worker, which is the whole point of the gate
+// above. Leaving both would register A1 twice and race the very ordering this exists to guarantee.
+builder.Services.AddSingleton<Diten.Platform.API.Services.ModuleRegistration.ModuleSelfRegistrationGate>();
 // MC-3b — self-register Platform-internal module manifests (workflow, …) into the catalog in-process at startup.
 builder.Services.AddHostedService<Diten.Platform.API.Services.ModuleRegistration.PlatformModuleSelfRegistrationWorker>();
+// A1 — auto-register every controller [HasPermission] key into AuthService at startup (best-effort, idempotent).
+// Gated on the signal above; falls back after a bounded timeout so a manifest failure cannot block it forever.
+builder.Services.AddHostedService<Diten.Platform.API.Services.Security.PlatformPermissionAutoRegistrationWorker>();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<Diten.Platform.API.Middleware.GlobalExceptionHandler>();
 

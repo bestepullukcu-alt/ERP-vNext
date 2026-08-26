@@ -1,0 +1,36 @@
+@using Diten.Web.Views.Tasks
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TasksIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleEdit"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "edit";
+}
+
+@* Title + breadcrumb + actions come from _Form.cshtml (golden reference pattern), shared with Create. *@
+<partial name="~/Views/Tasks/_Form.cshtml" />
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/tagify/tagify.css" />
+}
+
+@section Scripts {
+    @* The dates are flatpickr fields, like the golden reference: a native <input type="date"> takes its format
+       from the OPERATING SYSTEM's locale, so an Arabic page still rendered gg.aa.yyyy. *@
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    @* Tags are chips, using the same library as the tenant-security screen's IP/country lists. *@
+    <script src="~/assets/vendor/libs/tagify/tagify.js"></script>
+    <partial name="~/Views/Tasks/_IndexL10n.cshtml" />
+    @* form-page.js announces every save and every refusal through DitenModal, and this page never loaded it:
+       a successful create THREW before it could navigate, so the user saw nothing, clicked again, and made a
+       second task. Found by running the page, not by a test — 1500 of those were green. *@
+    <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-tags.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-checkitem.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/form.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/document-references.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/form-page.js" asp-append-version="true"></script>
+}

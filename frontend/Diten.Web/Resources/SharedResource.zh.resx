@@ -381,6 +381,9 @@
   <data name="ProductMaster" xml:space="preserve">
     <value>产品主数据</value>
   </data>
+  <data name="Edit" xml:space="preserve">
+    <value>编辑</value>
+  </data>
   <data name="Delete" xml:space="preserve">
     <value>删除</value>
   </data>
@@ -419,6 +422,9 @@
   </data>
   <data name="Notification" xml:space="preserve">
     <value>通知</value>
+  </data>
+  <data name="NoNotifications" xml:space="preserve">
+    <value>暂无通知</value>
   </data>
   <data name="NewNotifications" xml:space="preserve">
     <value>{0} 个新通知</value>
@@ -513,6 +519,7 @@
   <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>法律实体</value></data>
   <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>参考数据</value></data>
   <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>组织</value></data>
+  <data name="Nav.Module.TASKS" xml:space="preserve"><value>任务</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>工作流</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>用户</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>角色</value></data>
@@ -541,5 +548,56 @@
   </data>
   <data name="NoRecords" xml:space="preserve">
     <value>无记录</value>
+  </data>
+  <data name="Nav.Domain.WORKSPACE" xml:space="preserve">
+    <value>工作区</value>
+  </data>
+  <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
+    <value>任务中心</value>
+  </data>
+  <data name="Nav.Page.WORKCENTER" xml:space="preserve">
+    <value>任务中心</value>
+  </data>
+  <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
+    <value>重复任务规则</value>
+  </data>
+  <data name="Nav.Page.TASKS" xml:space="preserve">
+    <value>任务</value>
+  </data>
+  <data name="Nav.Page.TASKCREATE" xml:space="preserve">
+    <value>新建任务</value>
+  </data>
+  <data name="Nav.Page.TASKDETAIL" xml:space="preserve">
+    <value>任务详情</value>
+  </data>
+  <data name="Nav.Page.TASKEDIT" xml:space="preserve">
+    <value>编辑任务</value>
+  </data>
+  <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
+    <value>产品／物料／SKU 主数据</value>
+  </data>
+  <data name="Nav.Page.GLOBALPRODUCTS" xml:space="preserve">
+    <value>全球产品</value>
+  </data>
+  <data name="Nav.Page.GSKUS" xml:space="preserve">
+    <value>GSKU</value>
+  </data>
+  <data name="Nav.Page.TASKTYPES" xml:space="preserve">
+    <value>任务类型</value>
+  </data>
+  <data name="Nav.Page.TASKDOCUMENTLIST" xml:space="preserve">
+    <value>受控文件</value>
+  </data>
+  <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
+    <value>字段定义</value>
+  </data>
+  <data name="TagsPlaceholder" xml:space="preserve">
+    <value>输入标签后按回车</value>
+  </data>
+  <data name="TagsCount" xml:space="preserve">
+    <value>{0} 个标签</value>
+  </data>
+  <data name="TagsRemove" xml:space="preserve">
+    <value>移除 {0}</value>
   </data>
 </root>

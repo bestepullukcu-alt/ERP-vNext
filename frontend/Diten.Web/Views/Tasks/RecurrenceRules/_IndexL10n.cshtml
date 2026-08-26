@@ -1,0 +1,60 @@
+@using Diten.Web.Views.Tasks.RecurrenceRules
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskRecurrenceRulesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@*
+    This payload carries NO Dt* keys, deliberately.
+
+    The DataTable chrome now arrives from ONE place — Views/Shared/_DataTableL10n.cshtml, rendered by the layout
+    and read by dt-defaults (BL-047b). Re-seeding them here would be the per-page duplication that let this very
+    screen's sibling be born English.
+*@
+<script id="taskrecurrencerules-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Actions = Localizer["Actions"].Value,
+        Delete = SharedLocalizer["Delete"].Value,
+        Edit = SharedLocalizer["Edit"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Details = SharedLocalizer["Details"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        ComingSoon = SharedLocalizer["ComingSoon"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        AddNew = Localizer["AddNewRule"].Value,
+        EditItem = Localizer["EditItem"].Value,
+        Name = Localizer["Name"].Value,
+        Frequency = Localizer["Frequency"].Value,
+        FrequencyDaily = Localizer["FrequencyDaily"].Value,
+        FrequencyWeekly = Localizer["FrequencyWeekly"].Value,
+        FrequencyMonthly = Localizer["FrequencyMonthly"].Value,
+        FrequencyQuarterly = Localizer["FrequencyQuarterly"].Value,
+        FrequencyYearly = Localizer["FrequencyYearly"].Value,
+        Interval = Localizer["Interval"].Value,
+        StartsAt = Localizer["StartsAt"].Value,
+        EndsAt = Localizer["EndsAt"].Value,
+        OpenEnded = Localizer["OpenEnded"].Value,
+        AssignmentTarget = Localizer["AssignmentTarget"].Value,
+        AssignmentPerson = Localizer["AssignmentPerson"].Value,
+        AssignmentPool = Localizer["AssignmentPool"].Value,
+        LastGeneratedAt = Localizer["LastGeneratedAt"].Value,
+        NeverGenerated = Localizer["NeverGenerated"].Value
+    })
+</script>

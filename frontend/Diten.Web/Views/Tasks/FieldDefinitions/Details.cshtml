@@ -1,0 +1,203 @@
+@model Diten.Web.Models.TaskFieldDefinitions.TaskFieldDefinitionEditViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Tasks.FieldDefinitions.TaskFieldDefinitionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = SharedLocalizer["Details"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="task-field-definitions-details">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0">@SharedLocalizer["Details"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a asp-controller="TaskFieldDefinitions" asp-action="Index">@Localizer["FieldDefinitionsTitle"]</a>
+                    </li>
+                    <li class="breadcrumb-item active text-primary">@SharedLocalizer["Details"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a asp-controller="TaskFieldDefinitions" asp-action="Index" class="btn btn-label-secondary">
+                @SharedLocalizer["Back"]
+            </a>
+            <a asp-controller="TaskFieldDefinitions" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                @Localizer["EditBtn"]
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+    <!-- Main Column (Left) -->
+    <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+            <div class="row g-4">
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-purchase-tag-alt"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Code"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.Code) ? "-" : Model.Code)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-category-alt"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Section"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.Section) ? "-" : Model.Section)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    @* The LABEL, from whichever source this definition actually has. A tenant definition shows
+                       the administrator's own words; a system definition shows its resource key, which the
+                       localizer resolves. The CODE is never shown here as a stand-in — a raw key or code where a
+                       label belongs is the defect the two-source split exists to prevent. *@
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-text"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Label"]</div>
+                            <div class="backbone-preview-value mt-1">
+                                @if (!string.IsNullOrWhiteSpace(Model.LabelText))
+                                {
+                                    @Model.LabelText
+                                }
+                                else if (!string.IsNullOrWhiteSpace(Model.LabelResourceKey))
+                                {
+                                    @Localizer[Model.LabelResourceKey]
+                                }
+                                else
+                                {
+                                    @("-")
+                                }
+                            </div>
+                            <div class="backbone-preview-label mt-1">
+                                @(string.IsNullOrWhiteSpace(Model.LabelText) ? Localizer["LabelSourceSystem"] : Localizer["LabelSourceTenant"])
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ValueSection"]</h6>
+            <div class="row g-4">
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-shape-square"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["ValueType"]</div>
+                            <div class="backbone-preview-value mt-1">@Localizer["ValueType" + Model.ValueType]</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-list-ul"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["OptionsSourceKind"]</div>
+                            <div class="backbone-preview-value mt-1">@Localizer["OptionsSource" + Model.OptionsSourceKind]</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-key"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["OptionsSourceKey"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.OptionsSourceKey) ? "-" : Model.OptionsSourceKey)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-extension"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["AppliesToModuleCode"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.AppliesToModuleCode) ? "-" : Model.AppliesToModuleCode)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Sidebar Column (Right) -->
+    <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["PresentationSection"]</h6>
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-star"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Importance"]</div>
+                            <div class="backbone-preview-value mt-1">@Localizer["Importance" + Model.Importance]</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-sort"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["SortOrder"]</div>
+                            <div class="backbone-preview-value mt-1">@Model.SortOrder</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-check-square"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Required"]</div>
+                            <div class="backbone-preview-value mt-1">@(Model.IsRequired ? Localizer["Required"].Value : Localizer["Optional"].Value)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-toggle-left"></i>
+                        <div>
+                            <div class="backbone-preview-label">@SharedLocalizer["Status"]</div>
+                            <div class="backbone-preview-value mt-1">@(Model.IsActive ? SharedLocalizer["Active"].Value : SharedLocalizer["Passive"].Value)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ClassificationSection"]</h6>
+            @* Recorded, never enforced — BL-024. Stated here so nobody reads it as protection. *@
+            <div class="alert alert-info" role="note">@Localizer["ClassificationNotEnforcedHint"]</div>
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-shield-quarter"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Classification"]</div>
+                            <div class="backbone-preview-value mt-1">@Localizer["Classification" + Model.Classification]</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-low-vision"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["DefaultAccessState"]</div>
+                            <div class="backbone-preview-value mt-1">@Localizer["AccessState" + Model.DefaultAccessState]</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    </div>
+</div>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="FieldDefinitionsTitle" xml:space="preserve"><value>تعريفات حقول المهام</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>حقول قابلة للتهيئة يوفّرها محرك المهام. التعريف ليس عمودًا أبدًا: إضافته لا تغيّر أي مخطط.</value></data>
+  <data name="AddNewFieldDefinitions" xml:space="preserve"><value>إضافة تعريف</value></data>
+  <data name="EditItem" xml:space="preserve"><value>تعديل التعريف</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>إضافة تعريف</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل التعريف</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Code" xml:space="preserve"><value>الرمز</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>مثال: regulatory.phase</value></data>
+  <data name="CodeImmutableHint" xml:space="preserve"><value>لا يمكن تغيير الرمز: كل قيمة مخزّنة مرتبطة بهذا التعريف عبره.</value></data>
+  <data name="Label" xml:space="preserve"><value>التسمية</value></data>
+  <data name="LabelText" xml:space="preserve"><value>التسمية (بكلماتك)</value></data>
+  <data name="LabelTextPlaceholder" xml:space="preserve"><value>مثال: المرحلة التنظيمية</value></data>
+  <data name="LabelTextHint" xml:space="preserve"><value>للحقول التي تعرّفها بنفسك. بلغة واحدة، وتُعرض كما كُتبت.</value></data>
+  <data name="LabelResourceKey" xml:space="preserve"><value>مفتاح مورد التسمية</value></data>
+  <data name="LabelResourceKeyPlaceholder" xml:space="preserve"><value>مثال: Tasks_Field_RegulatoryPhase</value></data>
+  <data name="LabelResourceKeyHint" xml:space="preserve"><value>لحقول النظام التي نوفّر ترجماتها. اتركه فارغًا لحقولك الخاصة.</value></data>
+  <data name="LabelSourceSystem" xml:space="preserve"><value>حقل نظام</value></data>
+  <data name="LabelSourceTenant" xml:space="preserve"><value>حقلك الخاص</value></data>
+  <data name="ValueType" xml:space="preserve"><value>نوع القيمة</value></data>
+  <data name="Section" xml:space="preserve"><value>القسم</value></data>
+  <data name="SectionPlaceholder" xml:space="preserve"><value>مثال: الامتثال</value></data>
+  <data name="SectionLimitHint" xml:space="preserve"><value>يمكن للمهمة عرض ستة أقسام كحد أقصى.</value></data>
+  <data name="Required" xml:space="preserve"><value>مطلوب</value></data>
+  <data name="Optional" xml:space="preserve"><value>اختياري</value></data>
+  <data name="Importance" xml:space="preserve"><value>الأهمية</value></data>
+  <data name="ImportanceSecondary" xml:space="preserve"><value>ثانوية</value></data>
+  <data name="ImportancePrimary" xml:space="preserve"><value>أساسية</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>الترتيب</value></data>
+  <data name="OptionsSourceKind" xml:space="preserve"><value>مصدر الخيارات</value></data>
+  <data name="OptionsSourceNone" xml:space="preserve"><value>لا يوجد</value></data>
+  <data name="OptionsSourcePlatformLookup" xml:space="preserve"><value>قائمة المنصة</value></data>
+  <data name="OptionsSourceBusinessReferenceData" xml:space="preserve"><value>بيانات مرجعية للأعمال</value></data>
+  <data name="OptionsSourceHint" xml:space="preserve"><value>من أين تأتي قائمة الخيارات. القائمة المضمّنة في الشيفرة غير مقبولة أبدًا.</value></data>
+  <data name="OptionsSourceKey" xml:space="preserve"><value>مفتاح مصدر الخيارات</value></data>
+  <data name="OptionsSourceKeyPlaceholder" xml:space="preserve"><value>مثال: REGULATORY_PHASES</value></data>
+  <data name="AppliesToModuleCode" xml:space="preserve"><value>مقيَّد بوحدة</value></data>
+  <data name="AppliesToModuleCodePlaceholder" xml:space="preserve"><value>مثال: MOD-0220</value></data>
+  <data name="AppliesToModuleCodeHint" xml:space="preserve"><value>اتركه فارغًا لإتاحة الحقل لجميع الوحدات.</value></data>
+  <data name="Classification" xml:space="preserve"><value>التصنيف</value></data>
+  <data name="ClassificationNormal" xml:space="preserve"><value>عادي</value></data>
+  <data name="ClassificationInternal" xml:space="preserve"><value>داخلي</value></data>
+  <data name="ClassificationConfidential" xml:space="preserve"><value>سري</value></data>
+  <data name="ClassificationRestricted" xml:space="preserve"><value>مقيَّد</value></data>
+  <data name="ClassificationNotEnforcedHint" xml:space="preserve"><value>يُسجَّل للاستخدام لاحقًا. لا يُتخذ أي قرار وصول بناءً عليه اليوم.</value></data>
+  <data name="DefaultAccessState" xml:space="preserve"><value>حالة الوصول الافتراضية</value></data>
+  <data name="AccessStateVisible" xml:space="preserve"><value>ظاهر</value></data>
+  <data name="AccessStateMasked" xml:space="preserve"><value>مقنَّع</value></data>
+  <data name="AccessStateHidden" xml:space="preserve"><value>مخفي</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>الهوية</value></data>
+  <data name="ValueSection" xml:space="preserve"><value>القيمة</value></data>
+  <data name="PresentationSection" xml:space="preserve"><value>العرض</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>التصنيف</value></data>
+  <data name="ValueTypeText" xml:space="preserve"><value>نص</value></data>
+  <data name="ValueTypeNumber" xml:space="preserve"><value>رقم</value></data>
+  <data name="ValueTypeCurrency" xml:space="preserve"><value>عملة</value></data>
+  <data name="ValueTypePercentage" xml:space="preserve"><value>نسبة مئوية</value></data>
+  <data name="ValueTypeDate" xml:space="preserve"><value>تاريخ</value></data>
+  <data name="ValueTypeDateTime" xml:space="preserve"><value>تاريخ ووقت</value></data>
+  <data name="ValueTypeBoolean" xml:space="preserve"><value>نعم / لا</value></data>
+  <data name="ValueTypeStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="ValueTypePerson" xml:space="preserve"><value>شخص</value></data>
+  <data name="ValueTypeReference" xml:space="preserve"><value>مرجع</value></data>
+  <data name="ValueTypeLink" xml:space="preserve"><value>رابط</value></data>
+  <data name="EditBtn" xml:space="preserve">
+    <value>تعديل</value>
+  </data>
+  <data name="OptionsSourceModuleRecord" xml:space="preserve"><value>سجلات وحدة أخرى</value></data>
+  <data name="OptionsSourceKeyHint" xml:space="preserve"><value>اختر مصدرًا. تعتمد القائمة على النوع أعلاه، وتغيير النوع يمسح الاختيار.</value></data>
+  <data name="OptionsSourceKeySelect" xml:space="preserve"><value>اختر مصدرًا…</value></data>
+  <data name="OptionsSourceKeyNone" xml:space="preserve"><value>لا يوفّر هذا النوع أي مصدر في هذا المستأجر.</value></data>
+  <data name="OptionsSourceKeyLoadFailed" xml:space="preserve"><value>تعذّرت قراءة قائمة المصادر.</value></data>
+  <data name="OptionSource.organization-unit" xml:space="preserve"><value>الوحدات التنظيمية</value></data>
+  <data name="OptionSource.position" xml:space="preserve"><value>المناصب</value></data>
+  <data name="OptionSource.countries" xml:space="preserve"><value>البلدان</value></data>
+  <data name="OptionSource.currencies" xml:space="preserve"><value>العملات</value></data>
+  <data name="OptionSource.languages" xml:space="preserve"><value>اللغات</value></data>
+  <data name="OptionSource.timezones" xml:space="preserve"><value>المناطق الزمنية</value></data>
+</root>

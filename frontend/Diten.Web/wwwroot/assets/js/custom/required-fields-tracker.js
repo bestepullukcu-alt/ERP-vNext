@@ -81,6 +81,10 @@ document.addEventListener("DOMContentLoaded", function () {
         const trackerId = `unified-tracker-${++trackerSeq}`;
         const wrapper = document.createElement("div");
         wrapper.className = form.dataset?.requiredTrackerWrapperClass || "d-flex align-items-center me-4";
+        // Marks everything the tracker itself renders. updateProgress rewrites the badge's classes and text, so
+        // any mutation inside a marked element must never trigger a recount — otherwise the badge reacts to
+        // itself, and two badges on one page would bounce recounts off each other until the tab locks up.
+        wrapper.setAttribute("data-required-tracker", "");
 
         const badgeClass = form.dataset?.requiredTrackerBadgeClass || "badge bg-label-danger fs-6 px-3 py-2 d-flex align-items-center";
 
@@ -187,7 +191,10 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
 
-        tracked.forEach(el => {
+        const bound = new WeakSet();
+        const bindInput = (el) => {
+            if (bound.has(el)) return;
+            bound.add(el);
             el.addEventListener("input", updateProgress);
             el.addEventListener("change", updateProgress);
             el.addEventListener("focusout", updateProgress);
@@ -196,7 +203,43 @@ document.addEventListener("DOMContentLoaded", function () {
             if (el.tagName === "SELECT" && $(el).hasClass('select2-hidden-accessible')) {
                 $(el).on('select2:select select2:unselect select2:clear change.select2', updateProgress);
             }
+        };
+
+        tracked.forEach(bindInput);
+
+        /*
+         * Forms whose fields are BUILT AFTER LOAD (a tenant's configurable fields, a wizard step) used to be
+         * counted once and then never again: updateProgress re-scans, but nothing called it, because the new
+         * controls carried none of the listeners above. The badge then showed "2 / 2 complete" while a required
+         * field the user had not touched sat right below it. Watching the form for added controls binds them the
+         * moment they appear; a form with no dynamic fields sees no mutations and behaves exactly as before.
+         */
+        const additionObserver = new MutationObserver((mutations) => {
+            let dirty = false;
+            mutations.forEach((mutation) => {
+                // Anything the tracker rendered — this badge or another form's — is ignored: updateProgress
+                // rewrites badge classes and text, and reacting to that is a loop with no exit.
+                const target = mutation.target;
+                const owner = target.nodeType === 1 ? target : target.parentElement;
+                if (owner?.closest?.("[data-required-tracker]")) return;
+
+                if (mutation.type === "attributes") { dirty = true; return; }
+
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType !== 1) return;
+                    if (node.matches?.("input, select, textarea")) { bindInput(node); dirty = true; }
+                    node.querySelectorAll?.("input, select, textarea").forEach((child) => {
+                        bindInput(child);
+                        dirty = true;
+                    });
+                });
+            });
+            if (dirty) updateProgress();
         });
+        // `class` too, not only added nodes: a section that is rendered hidden and REVEALED afterwards (the task
+        // form's configurable-field card does exactly this) changes no children at the moment it becomes
+        // countable, and collectFormInputs skips anything inside a .d-none.
+        additionObserver.observe(form, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
 
         updateProgress();
     };

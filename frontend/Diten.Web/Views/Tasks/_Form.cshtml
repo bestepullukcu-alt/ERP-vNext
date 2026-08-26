@@ -1,0 +1,599 @@
+@using Diten.Web.Views.Tasks
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TasksIndex> Localizer
+@{
+    var mode = (ViewData["FormMode"] as string) ?? "create";
+    var taskId = ViewData["TaskId"] as string ?? string.Empty;
+    var isEdit = mode == "edit";
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+}
+
+@* MOD-0024 — the DETAILED form, shared by Create and Edit. Aligned to the Golden Reference Compact form
+   (DevEnablement/GoldenReferenceCompact/_Form.cshtml): header row with breadcrumb and the actions top-right, then
+   one <section class="card"> per logical group, select2 on every picker.
+   The quick-create offcanvas hands its draft to this same form, so switching depth loses nothing.
+   Field visibility is driven by data-task-field + the assignment target; all toggling is class-based (FG-003). *@
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/Tasks">@Localizer["TasksTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    @* The actions live HERE and nowhere else. The reference puts them beside the title, and a second copy at the
+       bottom of a long form only asks the user which of the two buttons is the real one.
+       The submit is bound to the form by id (reference pattern) — which is also what lets the shared
+       required-field tracker find this form's submit and render its badge next to it. *@
+    <div class="d-flex align-items-center gap-2">
+        <a class="btn btn-label-secondary" href="/Tasks">@Localizer["ActionCancel"]</a>
+        @* BL-023 — the label is REPLACED when the chosen assignee is above the requester: work that flows up
+           the reporting chain is a request the manager may refuse, not an order. A button that quietly behaves
+           differently from what it says is the defect this project keeps correcting, so the word changes with
+           the behaviour. *@
+        <button type="submit" form="taskForm" class="btn btn-primary" id="taskSubmit"
+                data-task-label-default="@(isEdit ? Localizer["ActionSave"] : Localizer["ActionCreate"])"
+                data-task-label-upward="@Localizer["ActionSendRequest"]">
+            @(isEdit ? Localizer["ActionSave"] : Localizer["ActionCreate"])
+        </button>
+    </div>
+</div>
+
+<form id="taskForm" data-task-mode="@mode" data-task-id="@taskId" novalidate>
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-info-circle dt-card-icon" aria-hidden="true"></i>@Localizer["SectionBasics"]</h6>
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-medium" for="taskTitle">
+                                @Localizer["FieldTitle"] <span class="text-danger">*</span>
+                            </label>
+                            <div class="diten-field">
+                                <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" class="form-control" id="taskTitle" name="title" maxlength="200"
+                                       placeholder="@Localizer["FieldTitlePlaceholder"]" required />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-medium" for="taskPriority">@Localizer["FieldPriority"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-flag diten-field-icon" aria-hidden="true"></i>
+                                <select class="select2 form-select" id="taskPriority" name="priority">
+                                    <option value="Low">@Localizer["PriorityLow"]</option>
+                                    <option value="Medium" selected>@Localizer["PriorityMedium"]</option>
+                                    <option value="High">@Localizer["PriorityHigh"]</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            @* ── DCP-005 slice 1: the task TYPE ────────────────────────────────────────────
+                               ⚠ OPTIONAL, AND PERMANENTLY SO. Every task already open has no type; an empty
+                               option is a legitimate answer rather than a prompt, so it says so in words.
+                               ⚠ A PICKER, NOT A TEXT BOX. Choosing a type is open to anyone who can create a
+                               task; MINTING one needs platform.tasks.task-types.manage. That split is what QA's
+                               control statement — "a manually created, unclassified task may not produce a GxP
+                               quality record" — actually rests on. *@
+                            <label class="form-label fw-medium" for="taskTypeId">@Localizer["FieldTaskType"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-purchase-tag diten-field-icon" aria-hidden="true"></i>
+                                <select class="select2 form-select" id="taskTypeId" name="taskTypeId"
+                                        data-wcn-task-type-picker>
+                                    <option value="">@Localizer["FieldTaskTypeNone"]</option>
+                                </select>
+                            </div>
+                        </div>
+                        @* ── DCP-005 slice 3 — which procedure this work follows ──────────────────────────
+                           The question the author is answering is "what am I doing this ACCORDING TO", and the
+                           auditor asks the same one later. Placed directly under the type because the type is
+                           what SUGGESTS the answer.
+
+                           ⚠ THE SUGGESTION IS PRE-TICKED AND REMOVABLE, and anything else may be added. A type
+                           knows the usual answer, not the only one. *@
+                        <div class="col-12" id="taskDocumentSection" data-task-document-section>
+                            <label class="form-label fw-medium" for="taskDocumentSearch">
+                                @Localizer["FieldGoverningDocuments"]
+                            </label>
+                            <div class="diten-field">
+                                <i class="bx bx-file diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" class="form-control" id="taskDocumentSearch"
+                                       autocomplete="off" role="combobox" aria-expanded="false"
+                                       aria-controls="taskDocumentResults"
+                                       placeholder="@Localizer["FieldGoverningDocumentsPlaceholder"]" />
+                            </div>
+                            @* The suggestion's own state line — empty is three different things and each one
+                               reads differently to the person choosing (§6.4). *@
+                            <p class="form-text mb-2" id="taskDocumentSuggestionNote" hidden></p>
+                            <ul class="list-unstyled mb-0" id="taskDocumentResults" role="listbox"></ul>
+                            <ul class="list-unstyled mb-0 mt-2" id="taskDocumentChosen"></ul>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="taskDescription">@Localizer["FieldDescription"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-align-left diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                                <textarea class="form-control" id="taskDescription" name="description" rows="3"
+                                          maxlength="4000"
+                                          placeholder="@Localizer["FieldDescriptionPlaceholder"]"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-user-pin dt-card-icon" aria-hidden="true"></i>@Localizer["SectionAssignment"]</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                                <label class="form-label fw-medium" for="taskAssignmentTarget">
+                                    @Localizer["FieldAssignmentTarget"] <span class="text-danger">*</span>
+                                </label>
+                                <div class="diten-field">
+                                    <i class="bx bx-directions diten-field-icon" aria-hidden="true"></i>
+                                    <select class="select2 form-select" id="taskAssignmentTarget" name="assignmentTarget">
+                                        <option value="SelfAssigned" selected>@Localizer["TargetSelf"]</option>
+                                        <option value="Person">@Localizer["TargetPerson"]</option>
+                                        <option value="PositionPool">@Localizer["TargetPool"]</option>
+                                    </select>
+                                </div>
+                        </div>
+
+                        @* Shown only for the Person target — a pool task has no assignee until it is claimed.
+                           A picker, not a text box: each option reads "Name — Position — Unit", and a user GUID is
+                           never shown or typed (pack §12 K6.4). *@
+                        <div class="col-md-6 d-none" data-task-field="assignee">
+                                <label class="form-label fw-medium" for="taskAssignee">
+                                    @Localizer["FieldAssignee"] <span class="text-danger">*</span>
+                                </label>
+                                <div class="diten-field">
+                                    <i class="bx bx-user diten-field-icon" aria-hidden="true"></i>
+                                    <select class="select2 form-select" id="taskAssignee" name="assigneeUserId"></select>
+                                </div>
+                                <div class="form-text">@Localizer["AssigneeHint"]</div>
+                                @* BL-072 — WHY the list is shorter than expected. Six reasons drop a candidate and
+                                   the picker used to report none of them; the server counts them by reason and this
+                                   is where that count is read out. Hidden until there IS something to say — an empty
+                                   explanation is its own kind of noise. Counts only, never names: the people held
+                                   back by the company scope must stay invisible (BL-057). *@
+                                <div class="form-text text-warning d-none" data-task-field="assigneeExcluded"
+                                     id="taskAssigneeExcluded"></div>
+                                @* BL-023 — says what will happen BEFORE the user presses the button. Hidden until
+                                   the chosen person is actually above them. *@
+                                <div class="alert alert-info mt-3 d-none" role="note"
+                                     data-task-field="upwardRequest" id="taskUpwardNotice">
+                                    @Localizer["UpwardRequestHint"]
+                                </div>
+                        </div>
+
+                        @* Shown only for the Pool target. Each option carries its unit so work cannot be pooled to
+                           the wrong facility. *@
+                        <div class="col-md-6 d-none" data-task-field="poolPosition">
+                                <label class="form-label fw-medium" for="taskPoolPosition">
+                                    @Localizer["FieldPoolPosition"] <span class="text-danger">*</span>
+                                </label>
+                                <div class="diten-field">
+                                    <i class="bx bx-group diten-field-icon" aria-hidden="true"></i>
+                                    <select class="select2 form-select" id="taskPoolPosition" name="poolPositionId"></select>
+                                </div>
+                                <div class="form-text">@Localizer["PoolPositionHint"]</div>
+                        </div>
+
+                        @* NOT here: the organization unit. The server's own rule is that every task HAS one and
+                           the user never picks it (pack §12 K6): the cascade runs request → the assignee's
+                           position's unit → the tenant root. A box on the form sat at step ONE of that cascade,
+                           so a typed value silently overrode the person's real unit — the task was filed
+                           somewhere the assignee does not work, with no warning. The information it asked for is
+                           already visible: every person and position option reads "Name — Position — Unit".
+                           The contract keeps OrganizationUnitId nullable, because an integration may genuinely
+                           know the unit; only the FORM withdraws the question. *@
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-calendar-event dt-card-icon" aria-hidden="true"></i>@Localizer["SectionPlanning"]</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                                <label class="form-label fw-medium" for="taskDueAt">
+                                    @Localizer["FieldDueAt"] <span class="text-danger">*</span>
+                                </label>
+                                @* LEADING ICON — information, not decoration: it says "this box opens a calendar".
+                                   Only the fields where typing is not the whole story get one (the two dates and the
+                                   tags); title, description and the estimate are plain typing and get none, because
+                                   an icon on every field says nothing about any of them.
+                                   aria-hidden: the label already names the field, so announcing the glyph would just
+                                   repeat it. Clicking it OPENS the picker — a dead icon is a dead button's sibling. *@
+                                <div class="diten-field">
+                                    <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                                    <input type="text" class="form-control flatpickr-date" id="taskDueAt" name="dueAt" placeholder="YYYY-MM-DD" required />
+                            </div>
+                        </div>
+                        @* PLANNING IS THE DOER'S, THE DEADLINE IS THE REQUESTER'S.
+                           The due date above is a commitment the requester owns ("when I need it by") and is
+                           required for every target. Start date and estimate answer a different question — "how
+                           will I fit this in" — and only the person doing the work can answer it. Filling them in
+                           on someone else's behalf puts you inside their week; the same split SAP and Oracle
+                           draw between the demand and the schedule.
+                           So they follow the assignment target, through the data-task-field mechanism the
+                           assignee and pool pickers already use. Visible by default because the default target
+                           is "Kendim". *@
+                        <div class="col-md-6" data-task-field="startAt">
+                            <label class="form-label fw-medium" for="taskStartAt">@Localizer["FieldStartAt"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" class="form-control flatpickr-date" id="taskStartAt" name="startAt" placeholder="YYYY-MM-DD" />
+                            </div>
+                        </div>
+                        @* NOT here: the planned date. It is the PLAN TRANSITION's output — PlanTaskItemCommand
+                           moves the task to Planned and requires the date — so writing it at create produced a
+                           task carrying a planned date while not being Planned: one fact in two places,
+                           contradicting itself at birth. It stays in the contract, because the transition uses
+                           it; an EDIT carries the stored value through rather than clearing it. *@
+                        <div class="col-md-6" data-task-field="estimateHours">
+                            <label class="form-label fw-medium" for="taskEstimateHours">@Localizer["FieldEstimateHours"]</label>
+                            @* A clock, and an example. A bare number box with no unit and no shape leaves the
+                               user choosing between 8, 8.5 and "1 gün" — the icon says the field is about time
+                               and the placeholder says what a value looks like. *@
+                            <div class="diten-field">
+                                <i class="bx bx-time-five diten-field-icon" aria-hidden="true"></i>
+                                <input type="number" min="0" step="0.25" class="form-control" id="taskEstimateHours"
+                                       name="estimateHours"
+                                       placeholder="@Localizer["FieldEstimateHoursPlaceholder"]" />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" for="taskTags">@Localizer["FieldTags"]</label>
+                            @* The tag icon says "Enter turns what you type into a chip". It opens nothing, so
+                               `.diten-tags-icon` switches its pointer events off — otherwise it would eat the
+                               click meant to focus the editor underneath it. *@
+                            <div class="diten-field">
+                                <i class="bx bx-purchase-tag-alt diten-field-icon diten-tags-icon" aria-hidden="true"></i>
+                                <input type="text" class="form-control" id="taskTags" name="tags" autocomplete="off" />
+                            </div>
+                        </div>
+
+                        @* Effort actuals are execution-only: a new task is always zero, so the field is read-only
+                           here. *@
+                        <div class="col-md-6 d-none" data-task-field="spentHours">
+                            <label class="form-label fw-medium" for="taskSpentHours">@Localizer["FieldSpentHours"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-time-five diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" class="form-control" id="taskSpentHours" readonly disabled />
+                            </div>
+                            <div class="form-text">@Localizer["SpentHoursReadOnlyHint"]</div>
+                        </div>
+                        <div class="col-md-6 d-none" data-task-field="remainingHours">
+                            <label class="form-label fw-medium" for="taskRemainingHours">@Localizer["FieldRemainingHours"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-hourglass diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" class="form-control" id="taskRemainingHours" readonly disabled />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* THE CHECKLIST — the steps of THIS task, and deliberately not its subtasks.
+
+               A checklist item is a step of this piece of work; a subtask is a separate task with its own
+               assignee, its own dates and its own lifecycle. Putting them in one card would teach the reader
+               they are the same thing, and the two behave differently at exactly the moment it matters: an open
+               BLOCKING item refuses `complete`, and an open subtask refuses it for a different reason with a
+               different fix. Subtasks are deliberately absent from the create form altogether (owner's call) —
+               a subtask needs a due date and an assignee, and there is no parent yet to inherit either from.
+
+               ALWAYS VISIBLE, never hidden-until-used, unlike the configurable-fields card below it. That card
+               hides because its content is tenant configuration the author cannot create from here; this one is
+               the only place the capability can be discovered, and a feature nobody can find is the state this
+               round exists to end. The empty state is the input's own placeholder rather than a sentence — a
+               card that says "there is nothing here" above a box for putting something there is noise. *@
+            @* CREATE ONLY — hidden on the edit page by form-page.js.
+
+               An edit's payload carries no checklist: the run is a separate document with its own version and
+               its own add/tick endpoints, and someone may be ticking it while this form is open. Rendering the
+               editor here would offer a wholesale rewrite of that list, which is the FULL-REPLACE hazard
+               TaskComment's own comment describes — pointed at work in progress. After creation, items are
+               added on the task's detail page, where the add is a single targeted write. *@
+            <section class="card mb-4" id="taskChecklistCard">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-1">
+                        <i class="bx bx-list-check"></i>@Localizer["CardChecklistTitle"]
+                        <span class="wcn-count-inline d-none" data-task-checklist-count></span>
+                    </h6>
+                    <p class="card-section-desc mb-4">@Localizer["CardChecklistDescription"]</p>
+
+                    <ul class="task-checklist" id="taskChecklistItems"></ul>
+
+                    @* THE ADD ROW IS RENDERED HERE, by assets/js/shared/diten-checkitem.js.
+
+                       It used to be written out in this file, and the task detail page wrote its own beside it:
+                       this one had the button and the hint but no level chip, so a level could only be set on
+                       the row AFTER adding it — one extra click per item; that one had the level chip but no
+                       button and no hint, so Enter was the only way to commit and the only thing saying so was a
+                       placeholder that vanishes as you type. Each was missing the other's half. One component
+                       now draws the union, and there is no second copy left to drift.
+
+                       AND IT IS BELOW THE LIST, as it already was on the task detail page. One component was
+                       being placed in two positions, which is the same drift the component was built to end,
+                       only moved up a layer. Below is the position both take:
+
+                         · PROXIMITY — with the box under the list, the item you just typed appears directly
+                           above the box you typed it in. With the box on top, it lands at the bottom of a list
+                           that grows away from you, and on a long list it lands off-screen entirely.
+                         · CONVENTION — Jira, Asana, Notion, Microsoft To Do and Fiori all put the add box at
+                           the foot of an editable list, without exception.
+
+                       NO "from a template" button, then or now. ChecklistTemplate exists in the model and
+                       IChecklistTemplateRepository.ListActiveAsync has ZERO callers — no query, no endpoint, no
+                       management screen — so the button would open a list that cannot be fetched. This project
+                       has removed that exact dead control more than once. Tracked as its own backlog item. *@
+                    <div id="taskChecklistAddRow"></div>
+
+                    @* THE PAPERCLIP'S PROMISE, said out loud.
+
+                       `EvidenceRequired` has been on the model since Phase 1 and nothing enforces it: there is
+                       no task↔document link at all yet (pack §12 Y4 keeps attachments out of MOD-0024, and the
+                       document module is live but unconnected). The flag is still STORED, so nothing a user
+                       records is lost — but a control that quietly promises "this cannot be ticked without
+                       evidence" and then lets it be ticked is worse than no control. So it says what it is and
+                       when it will start biting. Shown only once something on the list carries the flag. *@
+                    @* An ALERT, not body text — the same shape the completion gate and the history gap use.
+                       It reports a condition the reader did not create and cannot yet act on, and body text
+                       makes such a sentence read as description. Wording and condition are unchanged. *@
+                    @* The SAME spacing class the detail page uses. It was `mt-2` here and 1rem there, so one
+                       sentence sat 8px tighter on one of the two screens for no reason anybody chose. *@
+                    @* `data-diten-check-…`, which is what form-page.js has always queried. The row moved to the
+                       shared `diten-checkitem` vocabulary a round ago and this attribute was left behind as
+                       `data-task-checklist-evidence-hint` — so `refreshChecklistCount` looked for a hook nothing
+                       carried, and the sentence NEVER appeared on the create form no matter how many rows were
+                       flagged. Measured live: three rows, one flagged, `aria-pressed="true"`, `data-evidence="1"`,
+                       hint still `d-none`. Half a rename is how a control goes quiet without anything failing. *@
+                    <div class="alert alert-secondary dt-inline-alert diten-checkitem-evidencehint d-none" role="note"
+                         data-diten-check-evidence-hint>
+                        <i class="bx bx-paperclip"></i><span>@Localizer["ChecklistEvidenceHint"]</span>
+                    </div>
+                </div>
+            </section>
+
+            @* Configurable fields get a card of their own because their CONTENT is tenant-owned: the count, the
+               labels and the sections all change per tenant, so mixing them into a fixed card would make that
+               card's shape unpredictable. Hidden until at least one definition renders. *@
+            <section class="card mb-4 d-none" id="taskCustomFields" data-task-field="customFields">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-extension dt-card-icon" aria-hidden="true"></i>@Localizer["SectionCustomFields"]</h6>
+                    <div class="row g-3" id="taskCustomFieldsRow"></div>
+                </div>
+            </section>
+        </div>
+
+        @* Governance is FIVE decisions, and they were one card. Each is now its own card with an icon, a title
+           and one sentence saying what happens if it is on — a heading alone ("Onay yöneticisi") tells the user
+           the name of a field they are already looking at.
+           Deliberately NOT here: the consultant watcher role (BL-053) and the approval-flow diagram. *@
+        <div class="col-12 col-lg-4">
+
+            @* Phase 3b: review is implemented, so the switch is live and the sentence says what it DOES rather
+               than when it might arrive. *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-1"><i class="bx bx-search-alt"></i>@Localizer["CardReviewTitle"]</h6>
+                    <p class="card-section-desc mb-4">@Localizer["ReviewRequiredHint"]</p>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="taskReviewRequired" name="reviewRequired" />
+                        <label class="form-check-label" for="taskReviewRequired">@Localizer["FieldReviewRequired"]</label>
+                    </div>
+
+                    @* REVIEW TYPE — the place, not the feature. There is exactly ONE review type today ("quick":
+                       the reviewer approves directly), and it was nameless; naming it is what makes the second one
+                       legible when it arrives. The meeting option is DISABLED and says WHY (DEC-001: a dead
+                       control with no explanation gets reported as a bug), and nothing about this choice reaches
+                       the server — one value needs no field, and an unread property in the contract is a question
+                       every future reader has to answer. *@
+                    @* WHO first, then HOW — the order the decision is actually made in. The reviewer CANDIDATE is
+                       a PICKER, not a text box: its value goes to a Guid parameter, so a typed name produced a
+                       refusal and a typed GUID was the only thing that ever worked. Same people lookup as the
+                       assignee — one vocabulary for "which person?".
+                       Mandatory while the switch is on because MOD-0023 refuses to start a review with nobody to
+                       route it to. Who may ACTUALLY review is still MOD-0023's decision. *@
+                    <div class="d-none" data-task-field="reviewer">
+                        <div class="mb-3">
+                            <label class="form-label fw-medium" for="taskReviewer">
+                                @Localizer["FieldReviewer"] <span class="text-danger">*</span>
+                            </label>
+                            <div class="diten-field">
+                                <i class="bx bx-user-voice diten-field-icon" aria-hidden="true"></i>
+                                <select class="select2 form-select" id="taskReviewer" name="reviewerCandidateUserId"></select>
+                            </div>
+                        </div>
+
+                        @* Boxed choices, the shape the reference-data wizard already uses for "one of these, each
+                           with a subtitle". The selected box is marked by the stylesheet from the radio's own
+                           :checked state, so nothing has to keep a class in step with the value. *@
+                        <label class="form-label fw-medium">@Localizer["FieldReviewTypeLabel"]</label>
+                        <div class="form-check choice-box rounded mb-2">
+                            <input class="form-check-input" type="radio" name="reviewType" value="Quick"
+                                   id="taskReviewTypeQuick" checked />
+                            <div class="choice-box-body">
+                                <label class="form-check-label" for="taskReviewTypeQuick">
+                                    <span class="fw-medium d-block">@Localizer["ReviewTypeQuick"]</span>
+                                    <span class="choice-box-note d-block">@Localizer["ReviewTypeQuickHint"]</span>
+                                </label>
+                            </div>
+                        </div>
+                        @* Disabled, and it SAYS why (DEC-001): a dead control with no explanation gets filed as a
+                           bug. The reason stays inside the box it explains rather than floating below the group. *@
+                        <div class="form-check choice-box rounded mb-3">
+                            <input class="form-check-input" type="radio" name="reviewType" value="Meeting"
+                                   id="taskReviewTypeMeeting" disabled
+                                   aria-describedby="taskReviewTypeMeetingReason" />
+                            @* Label and reason share a column, so the reason lines up under the title instead of
+                               becoming a third item on the radio's row. *@
+                            <div class="choice-box-body">
+                                <label class="form-check-label text-muted" for="taskReviewTypeMeeting">
+                                    <span class="fw-medium d-block">@Localizer["ReviewTypeMeeting"]</span>
+                                    <span class="choice-box-note d-block">@Localizer["ReviewTypeMeetingHint"]</span>
+                                </label>
+                                <div class="choice-box-note mt-2" id="taskReviewTypeMeetingReason">
+                                    @Localizer["ReviewTypeMeetingDisabledReason"]
+                                </div>
+                            </div>
+                        </div>
+
+                        @* The rule behind the required reviewer, as a callout rather than four lines of grey
+                           form-text under a control — the same alert the field-definition screen uses for
+                           "here is how this behaves". *@
+                        <div class="alert alert-info mb-0" role="note">@Localizer["ReviewerHint"]</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-1"><i class="bx bx-user-check"></i>@Localizer["CardApprovalTitle"]</h6>
+                    <p class="card-section-desc mb-4">@Localizer["CardApprovalDescription"]</p>
+
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="taskApprovalRequired"
+                               name="approvalRequired" />
+                        <label class="form-check-label" for="taskApprovalRequired">
+                            @Localizer["FieldApprovalRequired"]
+                        </label>
+                    </div>
+                    <div class="d-none" data-task-field="approvalManager">
+                        <label class="form-label fw-medium" for="taskApprovalManager">
+                            @Localizer["FieldApprovalManager"] <span class="text-danger">*</span>
+                        </label>
+                        <div class="diten-field">
+                            <i class="bx bx-user diten-field-icon" aria-hidden="true"></i>
+                            <select class="select2 form-select" id="taskApprovalManager"
+                                    name="approvalManagerUserId"></select>
+                        </div>
+                        <div class="form-text">@Localizer["ApprovalHint"]</div>
+                    </div>
+                </div>
+            </section>
+
+            @* Watchers moved out of the assignment card: watching is not an assignment, and it belongs beside the
+               other decisions about who hears about this task. Multi-select, because the API takes a LIST of
+               watcher rows — the old comma-separated text box was thrown away by the payload builder entirely. *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-1"><i class="bx bx-show"></i>@Localizer["CardWatchersTitle"]</h6>
+                    <p class="card-section-desc mb-4">@Localizer["WatchersHint"]</p>
+
+                    <label class="form-label fw-medium" for="taskWatchers">@Localizer["FieldWatchers"]</label>
+                    <div class="diten-field">
+                        <i class="bx bx-group diten-field-icon" aria-hidden="true"></i>
+                        <select class="select2 form-select" id="taskWatchers" name="watchers" multiple></select>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-1"><i class="bx bx-envelope"></i>@Localizer["CardEmailTitle"]</h6>
+                    <p class="card-section-desc mb-4">@Localizer["CardEmailDescription"]</p>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="taskEmailNotifications"
+                               name="emailNotificationsEnabled" checked />
+                        <label class="form-check-label" for="taskEmailNotifications">
+                            @Localizer["FieldEmailNotifications"]
+                        </label>
+                    </div>
+
+                    @* BL-065 — WHICH events, and HOW LONG BEFORE.
+                       Only events something actually sends are listed. `duesoon` earns its place in this same
+                       change: until now it was a code in the manifest with no sender anywhere, so offering it
+                       would have been a checkbox promising an email nothing produces.
+                       The whole block hides with the master switch — nobody should tune a channel that is off. *@
+                    <div class="d-none" data-task-field="notificationPrefs">
+                        <label class="form-label fw-medium">@Localizer["NotifyEventsLabel"]</label>
+                        <div class="form-check choice-box choice-box--compact rounded mb-2">
+                            <input class="form-check-input" type="checkbox" id="taskNotifyAssigned"
+                                   name="notifyOnEvents" value="platform.tasks.assigned" checked />
+                            <i class="bx bx-user-plus choice-box-glyph text-primary"></i>
+                            <label class="form-check-label" for="taskNotifyAssigned">@Localizer["NotifyEventAssigned"]</label>
+                        </div>
+                        @* STRUCTURALLY impossible outside a pool: ClaimTaskItemHandler refuses to claim anything
+                           whose target is not PositionPool, so on a "Kendim"/"Bir kişi" task this box promises an
+                           email nothing can ever produce. Target-driven, so it rides the same visibleFieldsFor
+                           mechanism as the pickers. *@
+                        <div class="form-check choice-box choice-box--compact rounded mb-2 d-none"
+                             data-task-field="notifyClaimed">
+                            <input class="form-check-input" type="checkbox" id="taskNotifyClaimed"
+                                   name="notifyOnEvents" value="platform.tasks.claimed" checked />
+                            <i class="bx bx-log-in choice-box-glyph text-info"></i>
+                            <label class="form-check-label" for="taskNotifyClaimed">@Localizer["NotifyEventClaimed"]</label>
+                        </div>
+                        <div class="form-check choice-box choice-box--compact rounded mb-2">
+                            <input class="form-check-input" type="checkbox" id="taskNotifyDueSoon"
+                                   name="notifyOnEvents" value="platform.tasks.duesoon" checked />
+                            <i class="bx bx-time-five choice-box-glyph text-warning"></i>
+                            <label class="form-check-label" for="taskNotifyDueSoon">@Localizer["NotifyEventDueSoon"]</label>
+                        </div>
+                        <div class="form-check choice-box choice-box--compact rounded mb-2">
+                            <input class="form-check-input" type="checkbox" id="taskNotifyCompleted"
+                                   name="notifyOnEvents" value="platform.tasks.completed" checked />
+                            <i class="bx bx-check-circle choice-box-glyph text-success"></i>
+                            <label class="form-check-label" for="taskNotifyCompleted">@Localizer["NotifyEventCompleted"]</label>
+                        </div>
+                        @* Governed by ANOTHER CONTROL ON THIS PAGE: no approval is ever requested unless the
+                           approval switch above is on, so the event follows that switch — the same mechanism the
+                           reminder lead uses to follow the due-soon box.
+                           `assigned` and `completed` deliberately do NOT hide: on a self-assigned task they are
+                           quiet today (the actor is the recipient and the service excludes them), but both fire
+                           the moment the task is delegated or reassigned — which the delegation switch on this
+                           very page allows. Hiding them would silently opt the owner out of a real email. *@
+                        <div class="form-check choice-box choice-box--compact rounded mb-3 d-none"
+                             data-task-field="notifyApprovalRequested">
+                            <input class="form-check-input" type="checkbox" id="taskNotifyApprovalRequested"
+                                   name="notifyOnEvents" value="platform.tasks.approvalrequested" checked />
+                            <i class="bx bx-shield-quarter choice-box-glyph text-primary"></i>
+                            <label class="form-check-label" for="taskNotifyApprovalRequested">@Localizer["NotifyEventApprovalRequested"]</label>
+                        </div>
+
+                        @* The lead time only means something if the due-soon reminder is on, so it follows that
+                           checkbox rather than sitting there doing nothing. Days, never a date (BL-030). *@
+                        <div class="d-none" data-task-field="reminderLead">
+                            <label class="form-label fw-medium" for="taskReminderLeadDays">@Localizer["ReminderLeadLabel"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-bell diten-field-icon" aria-hidden="true"></i>
+                                <select class="select2 form-select" id="taskReminderLeadDays" name="reminderLeadDays">
+                                    <option value="">@Localizer["ReminderLeadNone"]</option>
+                                    <option value="0">@Localizer["ReminderLeadSameDay"]</option>
+                                    <option value="1">@Localizer["ReminderLead1"]</option>
+                                    <option value="3" selected>@Localizer["ReminderLead3"]</option>
+                                    <option value="7">@Localizer["ReminderLead7"]</option>
+                                    <option value="14">@Localizer["ReminderLead14"]</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-1"><i class="bx bx-transfer-alt"></i>@Localizer["CardDelegationTitle"]</h6>
+                    <p class="card-section-desc mb-4">@Localizer["CardDelegationDescription"]</p>
+
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="taskDelegationAllowed"
+                               name="delegationAllowed" />
+                        <label class="form-check-label" for="taskDelegationAllowed">
+                            @Localizer["FieldDelegationAllowed"]
+                        </label>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

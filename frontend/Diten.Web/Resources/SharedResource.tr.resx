@@ -402,6 +402,9 @@
   <data name="ProductMaster" xml:space="preserve">
     <value>Ürün Kartı</value>
   </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Düzenle</value>
+  </data>
   <data name="Delete" xml:space="preserve">
     <value>Sil</value>
   </data>
@@ -440,6 +443,9 @@
   </data>
   <data name="Notification" xml:space="preserve">
     <value>Bildirim</value>
+  </data>
+  <data name="NoNotifications" xml:space="preserve">
+    <value>Bildirim yok</value>
   </data>
   <data name="NewNotifications" xml:space="preserve">
     <value>{0} Yeni</value>
@@ -572,6 +578,7 @@
   <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>Tüzel Kişilik</value></data>
   <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>Referans Verileri</value></data>
   <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>Organizasyon</value></data>
+  <data name="Nav.Module.TASKS" xml:space="preserve"><value>Görevler</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>İş Akışı</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Kullanıcılar</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Roller</value></data>
@@ -600,5 +607,56 @@
   </data>
   <data name="NoRecords" xml:space="preserve">
     <value>Kayıt yok</value>
+  </data>
+  <data name="Nav.Domain.WORKSPACE" xml:space="preserve">
+    <value>Çalışma Alanı</value>
+  </data>
+  <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
+    <value>Görev Merkezi</value>
+  </data>
+  <data name="Nav.Page.WORKCENTER" xml:space="preserve">
+    <value>Görev Merkezi</value>
+  </data>
+  <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
+    <value>Yinelenen Görev Kuralları</value>
+  </data>
+  <data name="Nav.Page.TASKS" xml:space="preserve">
+    <value>Görevler</value>
+  </data>
+  <data name="Nav.Page.TASKCREATE" xml:space="preserve">
+    <value>Yeni görev</value>
+  </data>
+  <data name="Nav.Page.TASKDETAIL" xml:space="preserve">
+    <value>Görev detayı</value>
+  </data>
+  <data name="Nav.Page.TASKEDIT" xml:space="preserve">
+    <value>Görevi düzenle</value>
+  </data>
+  <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
+    <value>Ürün / Kalem / SKU Ana Verisi</value>
+  </data>
+  <data name="Nav.Page.GLOBALPRODUCTS" xml:space="preserve">
+    <value>Küresel Ürünler</value>
+  </data>
+  <data name="Nav.Page.GSKUS" xml:space="preserve">
+    <value>GSKU’lar</value>
+  </data>
+  <data name="Nav.Page.TASKTYPES" xml:space="preserve">
+    <value>Görev türleri</value>
+  </data>
+  <data name="Nav.Page.TASKDOCUMENTLIST" xml:space="preserve">
+    <value>Kontrollü dokümanlar</value>
+  </data>
+  <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
+    <value>Alan Tanımları</value>
+  </data>
+  <data name="TagsPlaceholder" xml:space="preserve">
+    <value>Etiket yazıp Enter'a basın</value>
+  </data>
+  <data name="TagsCount" xml:space="preserve">
+    <value>{0} etiket</value>
+  </data>
+  <data name="TagsRemove" xml:space="preserve">
+    <value>{0} etiketini kaldır</value>
   </data>
 </root>

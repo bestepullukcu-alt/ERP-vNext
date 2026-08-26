@@ -1,0 +1,54 @@
+@using Diten.Web.Views.Tasks
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TasksIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["TasksTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var taskId = ViewData["TaskId"] as string ?? string.Empty;
+}
+
+@* MOD-0024 — read-only detail. The Task Center remains the personal action surface; this page is the module's
+   own record view, reached from the list or a work-item deep link.
+
+   ⚠ THE HEADER IS RAZOR, THE BODY IS JS — and that split is the product's, not a choice made here. Measured on
+   `DevEnablement/GoldenReferenceCompact/Details.cshtml`, which is the golden reference: the title, the
+   breadcrumb and the Back/Edit pair are server-rendered, and only the record's fields are drawn client-side.
+   This page had NONE of it — no breadcrumb (0 matches in the Razor), no Back, and a button labelled "Kaydet"
+   that was an `<a href=".../Edit">`. A reader arriving from the Task Center changed products mid-click. *@
+<div class="tasks-details">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0">@SharedLocalizer["Details"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/Tasks">@Localizer["TasksTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@SharedLocalizer["Details"]</li>
+                </ol>
+            </nav>
+        </div>
+        @* ⚠ "Düzenle", NOT "Kaydet". The control has always navigated to the Edit page; only its label said
+           otherwise, and a button that says Save while saving nothing is the kind of thing a reader trusts
+           once. This page is READ-ONLY (see the note above) — the label now matches what the link does. *@
+        <div class="d-flex align-items-center gap-2">
+            <a href="/Tasks" class="btn btn-label-secondary">@SharedLocalizer["Back"]</a>
+            <a href="/Tasks/@taskId/Edit" class="btn btn-primary">@SharedLocalizer["Edit"]</a>
+        </div>
+    </div>
+
+    <div id="taskDetails" data-task-id="@taskId">
+        <section class="card backbone-preview-section p-4">
+            <div class="text-muted" id="taskDetailsLoading">@Localizer["TasksTitle"]</div>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Tasks/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Tasks/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-tags.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-checkitem.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/form.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/details-page.js" asp-append-version="true"></script>
+}

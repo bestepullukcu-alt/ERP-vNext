@@ -402,6 +402,9 @@
   <data name="ProductMaster" xml:space="preserve">
     <value>Product Master</value>
   </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
   <data name="Delete" xml:space="preserve">
     <value>Delete</value>
   </data>
@@ -440,6 +443,9 @@
   </data>
   <data name="Notification" xml:space="preserve">
     <value>Notification</value>
+  </data>
+  <data name="NoNotifications" xml:space="preserve">
+    <value>No notifications</value>
   </data>
   <data name="NewNotifications" xml:space="preserve">
     <value>{0} New</value>
@@ -572,6 +578,7 @@
   <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>Legal Entity</value></data>
   <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>Reference Data</value></data>
   <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>Organization</value></data>
+  <data name="Nav.Module.TASKS" xml:space="preserve"><value>Tasks</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>Workflow</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Users</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Roles</value></data>
@@ -600,5 +607,56 @@
   </data>
   <data name="NoRecords" xml:space="preserve">
     <value>No records</value>
+  </data>
+  <data name="Nav.Domain.WORKSPACE" xml:space="preserve">
+    <value>Workspace</value>
+  </data>
+  <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
+    <value>Task Center</value>
+  </data>
+  <data name="Nav.Page.WORKCENTER" xml:space="preserve">
+    <value>Task Center</value>
+  </data>
+  <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
+    <value>Recurring Task Rules</value>
+  </data>
+  <data name="Nav.Page.TASKS" xml:space="preserve">
+    <value>Tasks</value>
+  </data>
+  <data name="Nav.Page.TASKCREATE" xml:space="preserve">
+    <value>New task</value>
+  </data>
+  <data name="Nav.Page.TASKDETAIL" xml:space="preserve">
+    <value>Task detail</value>
+  </data>
+  <data name="Nav.Page.TASKEDIT" xml:space="preserve">
+    <value>Edit task</value>
+  </data>
+  <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
+    <value>Product / Item / SKU Master</value>
+  </data>
+  <data name="Nav.Page.GLOBALPRODUCTS" xml:space="preserve">
+    <value>Global Products</value>
+  </data>
+  <data name="Nav.Page.GSKUS" xml:space="preserve">
+    <value>GSKUs</value>
+  </data>
+  <data name="Nav.Page.TASKTYPES" xml:space="preserve">
+    <value>Task types</value>
+  </data>
+  <data name="Nav.Page.TASKDOCUMENTLIST" xml:space="preserve">
+    <value>Controlled documents</value>
+  </data>
+  <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
+    <value>Field Definitions</value>
+  </data>
+  <data name="TagsPlaceholder" xml:space="preserve">
+    <value>Type a tag and press Enter</value>
+  </data>
+  <data name="TagsCount" xml:space="preserve">
+    <value>{0} tags</value>
+  </data>
+  <data name="TagsRemove" xml:space="preserve">
+    <value>Remove {0}</value>
   </data>
 </root>

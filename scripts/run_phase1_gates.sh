@@ -32,4 +32,13 @@ dotnet test tests/tenancy/TenantArchitecture.TenancyTests/TenantArchitecture.Ten
 echo "[phase1] test architecture"
 dotnet test tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj -c Debug
 
+# Menü adlarının 7 dilde var olduğunu manifest kaynaklarından türeterek doğrulayan guard buradadır
+# (NavManifestL10nGuardTests). Hatta koşmazsa hiçbir şeyi korumaz: bir modülün Nav.Module/Nav.Page
+# anahtarı unutulduğunda menü sessizce HAM İNGİLİZCE basar — build geçer, testler yeşil kalır, kusur
+# yalnız ekrana bakınca görülür. 2026-08-10'da bu üç kez yaşandı (Edit · Recurring Task Rules ·
+# "Görevler / Tasks"), üçü de gözle bulundu. Guard yazıldı ama hat onu koşmuyordu; bu satır o boşluğu
+# kapatıyor. Proje ayrıca token bridge ve ekran sözleşmesi testlerini de taşır.
+echo "[phase1] test web (nav l10n guard + web contracts)"
+dotnet test frontend/Diten.Web.Tests/Diten.Web.Tests.csproj -c Debug
+
 echo "[phase1] gates passed"

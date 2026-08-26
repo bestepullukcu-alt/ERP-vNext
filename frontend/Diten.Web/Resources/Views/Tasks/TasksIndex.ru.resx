@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="TasksTitle" xml:space="preserve"><value>Задачи</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Создавайте и отслеживайте задачи для себя, коллеги или пула должностей.</value></data>
+  <data name="AddNewTask" xml:space="preserve"><value>Новая задача</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Новая задача</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить задачу</value></data>
+  <data name="FieldTitle" xml:space="preserve"><value>Название задачи</value></data>
+  <data name="FieldTitlePlaceholder" xml:space="preserve"><value>напр. Подготовить квартальную отчётность</value></data>
+  <data name="FieldDescription" xml:space="preserve"><value>Описание</value></data>
+  <data name="FieldGoverningDocuments" xml:space="preserve"><value>Регулирующие документы</value></data>
+  <data name="FieldGoverningDocumentsPlaceholder" xml:space="preserve"><value>Поиск по коду или названию…</value></data>
+  <data name="DocRefSuggestedByType" xml:space="preserve"><value>Предложено этим типом задачи. Уберите неподходящие.</value></data>
+  <data name="DocRefNoneNamed" xml:space="preserve"><value>Этот тип задачи не указывает ни одного регулирующего документа.</value></data>
+  <data name="DocRefNotInRegister" xml:space="preserve"><value>Этот тип задачи указывает {0} документ(ов), которых нет в текущем реестре.</value></data>
+  <data name="DocRefAllBlocked" xml:space="preserve"><value>Этот тип задачи указывает {0} документ(ов), на которые реестр не позволяет ссылаться.</value></data>
+  <data name="DocRefBlocked" xml:space="preserve"><value>Ссылка невозможна</value></data>
+  <data name="DocRefRemove" xml:space="preserve"><value>Убрать</value></data>
+  <data name="DocRefNoResults" xml:space="preserve"><value>Нет документов, соответствующих поиску.</value></data>
+  <data name="DocRefSectionTitle" xml:space="preserve"><value>В соответствии с</value></data>
+  <data name="DocRefReferencedAt" xml:space="preserve"><value>Дата ссылки</value></data>
+  <data name="DocRefUnavailable" xml:space="preserve"><value>Не удалось прочитать реестр документов.</value></data>
+  <data name="FieldTaskType" xml:space="preserve"><value>Тип задачи</value></data>
+  <data name="FieldTaskTypeNone" xml:space="preserve"><value>Без типа</value></data>
+  <data name="FieldPriority" xml:space="preserve"><value>Приоритет</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Низкий</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Средний</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Высокий</value></data>
+  <data name="FieldAssignmentTarget" xml:space="preserve"><value>Назначить</value></data>
+  <data name="TargetSelf" xml:space="preserve"><value>Себе</value></data>
+  <data name="TargetPerson" xml:space="preserve"><value>Сотруднику</value></data>
+  <data name="TargetPool" xml:space="preserve"><value>Пул должности</value></data>
+  <data name="FieldAssignee" xml:space="preserve"><value>Исполнитель</value></data>
+  <data name="FieldPoolPosition" xml:space="preserve"><value>Должность</value></data>
+  <data name="PoolPositionHint" xml:space="preserve"><value>Рядом с каждой должностью показано подразделение, чтобы работа не попала не на тот объект.</value></data>
+  <data name="FieldDueAt" xml:space="preserve"><value>Срок</value></data>
+  <data name="FieldDueAtPlaceholder" xml:space="preserve"><value>ГГГГ-ММ-ДД</value></data>
+  <data name="FieldStartAt" xml:space="preserve"><value>Дата начала</value></data>
+  <data name="FieldEstimateHours" xml:space="preserve"><value>Оценка (часы)</value></data>
+  <data name="FieldEstimateHoursPlaceholder" xml:space="preserve"><value>напр. 8</value></data>
+  <data name="FieldRemainingHours" xml:space="preserve"><value>Осталось (часы)</value></data>
+  <data name="FieldSpentHours" xml:space="preserve"><value>Затрачено (часы)</value></data>
+  <data name="SpentHoursReadOnlyHint" xml:space="preserve"><value>Фиксируется в процессе работы — у новой задачи всегда ноль.</value></data>
+  <data name="FieldTags" xml:space="preserve"><value>Теги</value></data>
+  <data name="FieldReviewRequired" xml:space="preserve"><value>Требуется проверка</value></data>
+  <data name="ReviewRequiredHint" xml:space="preserve"><value>Если включено, задача проходит проверку до завершения.</value></data>
+  <data name="FieldReviewer" xml:space="preserve"><value>Проверяющий</value></data>
+  <data name="ReviewerHint" xml:space="preserve"><value>Обязательно, если требуется проверка: без получателя её нельзя открыть. Кто действительно может проверять, решает рабочий процесс.</value></data>
+  <data name="FieldApprovalRequired" xml:space="preserve"><value>Требуется согласование руководителя</value></data>
+  <data name="FieldApprovalManager" xml:space="preserve"><value>Согласующий руководитель</value></data>
+  <data name="ApprovalHint" xml:space="preserve"><value>Согласование выполняется в движке процессов; до его получения задачу нельзя начать.</value></data>
+  <data name="FieldEmailNotifications" xml:space="preserve"><value>Уведомления по эл. почте</value></data>
+  <data name="FieldDelegationAllowed" xml:space="preserve"><value>Разрешить делегирование</value></data>
+  <data name="FieldWatchers" xml:space="preserve"><value>Наблюдатели</value></data>
+  <data name="WatchersHint" xml:space="preserve"><value>Наблюдатели видят задачу, но не выполняют по ней действий.</value></data>
+  <data name="SectionBasics" xml:space="preserve"><value>Основное</value></data>
+  <data name="SectionAssignment" xml:space="preserve"><value>Назначение</value></data>
+  <data name="SectionPlanning" xml:space="preserve"><value>Планирование</value></data>
+  <data name="SectionGovernance" xml:space="preserve"><value>Управление</value></data>
+  <data name="SectionCustomFields" xml:space="preserve"><value>Дополнительные поля</value></data>
+  <data name="ColumnTitle" xml:space="preserve"><value>Название</value></data>
+  <data name="ColumnStatus" xml:space="preserve"><value>Статус</value></data>
+  <data name="ColumnPriority" xml:space="preserve"><value>Приоритет</value></data>
+  <data name="ColumnAssignment" xml:space="preserve"><value>Назначение</value></data>
+  <data name="ColumnDueAt" xml:space="preserve"><value>Срок</value></data>
+  <data name="ColumnActions" xml:space="preserve"><value>Действия</value></data>
+  <data name="LifecycleOpen" xml:space="preserve"><value>Открыта</value></data>
+  <data name="LifecyclePlanned" xml:space="preserve"><value>Запланирована</value></data>
+  <data name="LifecycleInProgress" xml:space="preserve"><value>В работе</value></data>
+  <data name="LifecycleWaiting" xml:space="preserve"><value>Ожидает</value></data>
+  <data name="LifecyclePendingReview" xml:space="preserve"><value>На проверке</value></data>
+  <data name="LifecycleDone" xml:space="preserve"><value>Выполнена</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>Отменена</value></data>
+  <data name="ActionCreate" xml:space="preserve"><value>Создать</value></data>
+  <data name="ActionSave" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="ActionCancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="ActionOpenDetailed" xml:space="preserve"><value>Больше параметров</value></data>
+  <data name="ActionClaim" xml:space="preserve"><value>Взять себе</value></data>
+  <data name="ActionAccept" xml:space="preserve"><value>Принять</value></data>
+  <data name="ActionStart" xml:space="preserve"><value>Начать</value></data>
+  <data name="ActionComplete" xml:space="preserve"><value>Завершить</value></data>
+  <data name="QuickCreateTitle" xml:space="preserve"><value>Быстрая задача</value></data>
+  <data name="ToastCreated" xml:space="preserve"><value>Задача создана.</value></data>
+  <data name="ToastSaved" xml:space="preserve"><value>Задача сохранена.</value></data>
+  <data name="ToastClaimed" xml:space="preserve"><value>Задача закреплена за вами.</value></data>
+  <data name="ErrorAlreadyClaimed" xml:space="preserve"><value>Задачу раньше вас взял другой сотрудник.</value></data>
+  <data name="ErrorNoAccess" xml:space="preserve"><value>У вас нет прав на это действие.</value></data>
+  <data name="ErrorUnavailable" xml:space="preserve"><value>Служба задач недоступна. Повторите попытку.</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>Задач пока нет</value></data>
+  <data name="EmptyDescription" xml:space="preserve"><value>Создайте первую задачу — она появится здесь и в Центре задач.</value></data>
+  <data name="CustomFieldOptionPlaceholder" xml:space="preserve"><value>Выберите…</value></data>
+  <data name="CustomFieldBooleanYes" xml:space="preserve"><value>Да</value></data>
+  <data name="CustomFieldBooleanNo" xml:space="preserve"><value>Нет</value></data>
+  <data name="ErrorFieldValueInvalid" xml:space="preserve"><value>Одно из дополнительных полей пустое или содержит значение, которое поле не принимает.</value></data>
+  <data name="ErrorFieldDefinitionUnknown" xml:space="preserve"><value>Эта форма предлагает поле, которое больше не определено. Обновите страницу и повторите попытку.</value></data>
+  <data name="ErrorFieldLimitExceeded" xml:space="preserve"><value>Дополнительные поля превышают ограничение: слишком много разделов, слишком много полей в разделе или слишком длинное значение.</value></data>
+  <data name="RequiredFieldHint" xml:space="preserve"><value>Обязательно</value></data>
+  <data name="RequiredFieldsMissing" xml:space="preserve"><value>Заполните обязательные поля:</value></data>
+  <data name="ErrorOccurred" xml:space="preserve"><value>При обработке запроса произошла ошибка.</value></data>
+  <data name="ActionOk" xml:space="preserve"><value>ОК</value></data>
+  <data name="ErrorOrganizationUnitUnresolved" xml:space="preserve"><value>Не удалось определить организационную единицу для этой задачи. Попросите администратора назначить вам должность или создать корневую организационную единицу.</value></data>
+  <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>Выбранная должность не может получать задачи. Выберите активную должность.</value></data>
+  <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Задачу раньше вас изменил другой сотрудник. Экран обновлён до текущего состояния.</value></data>
+  <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>Обязательный пункт чек-листа ещё не отмечен, поэтому задачу нельзя завершить.</value></data>
+  <data name="ErrorDependencyBlocked" xml:space="preserve"><value>Задача, от которой зависит эта, ещё не завершена, поэтому продвинуться нельзя.</value></data>
+  <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>Подзадача ещё открыта, поэтому эту задачу пока нельзя завершить.</value></data>
+  <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>Задача закрыта, комментировать её больше нельзя.</value></data>
+  <data name="ErrorCommentTextInvalid" xml:space="preserve"><value>Комментарий не может быть пустым и должен быть не длиннее 2000 символов.</value></data>
+  <data name="ErrorPlanDateRequired" xml:space="preserve"><value>Чтобы задать личный план, укажите дату.</value></data>
+  <data name="ErrorDueDateRequired" xml:space="preserve"><value>Требуется срок выполнения.</value></data>
+  <data name="ErrorApprovalPending" xml:space="preserve"><value>Задача ожидает решения согласующего.</value></data>
+  <data name="ErrorReviewPending" xml:space="preserve"><value>Задача ожидает ответа проверяющего.</value></data>
+  <data name="ErrorTaskInvalidState" xml:space="preserve"><value>Задачу нельзя завершить в текущем состоянии. Сначала запустите её.</value></data>
+  <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Отменить эту задачу может только тот, кто её запросил. Если вы не хотите эту работу, верните её.</value></data>
+  <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Укажите, чего ожидает задача.</value></data>
+  <data name="ErrorTitleRequired" xml:space="preserve"><value>Укажите название.</value></data>
+  <data name="ErrorTitleTooLong" xml:space="preserve"><value>Название может содержать не более 200 символов.</value></data>
+  <data name="ErrorHandoverReasonRequired" xml:space="preserve"><value>Укажите, почему вы передаёте эту задачу.</value></data>
+  <data name="ErrorReturnNotAssignee" xml:space="preserve"><value>Вернуть задачу может только её текущий исполнитель.</value></data>
+  <data name="ErrorReassignNotPermitted" xml:space="preserve"><value>Переназначить задачу может только текущий исполнитель или её заказчик.</value></data>
+  <data name="ErrorAssigneeNotAssignable" xml:space="preserve"><value>Этому человеку нельзя назначить работу. Выберите из списка.</value></data>
+  <data name="ErrorApprovalWaitingEvidence" xml:space="preserve"><value>Согласующий запросил подтверждающие сведения до принятия решения.</value></data>
+  <data name="ErrorApprovalRejected" xml:space="preserve"><value>Согласование отклонено, поэтому задача не может продолжаться.</value></data>
+  <data name="ErrorApprovalCancelled" xml:space="preserve"><value>Согласование отменено, поэтому задача не может продолжаться.</value></data>
+  <data name="ErrorApprovalNotApproved" xml:space="preserve"><value>Согласование ещё не завершено, поэтому этот шаг недоступен.</value></data>
+  <data name="ErrorApprovalGateUnavailable" xml:space="preserve"><value>Сейчас не удалось проверить согласование, действие не выполнено. Повторите попытку чуть позже.</value></data>
+  <data name="AssigneeHint" xml:space="preserve"><value>Работу можно назначить только сотрудникам, занимающим должность.</value></data>
+  <data name="ActionSendRequest" xml:space="preserve"><value>Отправить запрос</value></data>
+  <data name="UpwardRequestHint" xml:space="preserve"><value>Этот человек выше вас в структуре подчинения, поэтому работа не назначается, а ОТПРАВЛЯЕТСЯ КАК ЗАПРОС. Решение о принятии — за ним.</value></data>
+  <data name="ExcludedHint" xml:space="preserve"><value>{0} чел. не показаны:</value></data>
+  <data name="ExcludedNoActivePosition" xml:space="preserve"><value>{0} не занимают действующую должность</value></data>
+  <data name="ExcludedPositionNotActive" xml:space="preserve"><value>{0} занимают неактивную должность</value></data>
+  <data name="ExcludedOutOfScope" xml:space="preserve"><value>{0} вне вашей области видимости</value></data>
+  <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Выберите сотрудника…</value></data>
+  <data name="AssigneeEmpty" xml:space="preserve"><value>Пока никто не занимает должность, назначить работу некому. Попросите администратора сначала назначить должности.</value></data>
+  <data name="PersonNameUnavailable" xml:space="preserve"><value>Имя недоступно</value></data>
+  <data name="PickerHolderCount" xml:space="preserve"><value>{0} чел.</value></data>
+  <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>Введите для поиска…</value></data>
+  <data name="CustomFieldRecordUnavailable" xml:space="preserve"><value>Запись недоступна</value></data>
+  <data name="ErrorFieldOptionSourceInvalid" xml:space="preserve"><value>Это поле указывает на источник, который не предоставляет ни один модуль. Попросите администратора исправить его определение.</value></data>
+  <data name="CardReviewTitle" xml:space="preserve"><value>Настройки проверки</value></data>
+  <data name="CardApprovalTitle" xml:space="preserve"><value>Согласующий руководитель</value></data>
+  <data name="CardApprovalDescription" xml:space="preserve"><value>Выберите руководителя, который согласует задачу до начала работы. Запрос на согласование отправляется ему сразу после создания задачи.</value></data>
+  <data name="CardWatchersTitle" xml:space="preserve"><value>Наблюдатели</value></data>
+  <data name="CardChecklistTitle" xml:space="preserve"><value>Контрольный список</value></data>
+  <data name="CardChecklistDescription" xml:space="preserve"><value>Шаги этой задачи. Пункты отмечаются после создания задачи; блокирующий пункт не даёт её закрыть.</value></data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Введите пункт и нажмите Enter</value></data>
+  <data name="ChecklistAddButton" xml:space="preserve"><value>Добавить</value></data>
+  <data name="ChecklistAddHint" xml:space="preserve"><value>Нажмите на метку, чтобы изменить уровень. Списка шаблонов пока нет.</value></data>
+  <data name="ChecklistLevelOptional" xml:space="preserve"><value>Необязательно</value></data>
+  <data name="ChecklistLevelRequired" xml:space="preserve"><value>Ожидается</value></data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve"><value>Блокирующий</value></data>
+  <data name="ChecklistLevelHint" xml:space="preserve"><value>Изменить уровень: Необязательно → Ожидается → Блокирующий</value></data>
+  <data name="ChecklistEvidenceToggle" xml:space="preserve"><value>Требовать подтверждение</value></data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Требуется подтверждающий документ. Привязка документа заработает после подключения модуля документов.</value></data>
+  <data name="ChecklistRemove" xml:space="preserve"><value>Удалить пункт</value></data>
+  <data name="ChecklistMoveUp" xml:space="preserve"><value>Вверх</value></data>
+  <data name="ChecklistMoveDown" xml:space="preserve"><value>Вниз</value></data>
+  <data name="CardEmailTitle" xml:space="preserve"><value>Уведомления по электронной почте</value></data>
+  <data name="CardEmailDescription" xml:space="preserve"><value>Когда включено, участникам приходит письмо при назначении, изменении и завершении задачи.</value></data>
+  <data name="CardDelegationTitle" xml:space="preserve"><value>Настройки передачи</value></data>
+  <data name="CardDelegationDescription" xml:space="preserve"><value>Когда включено, исполнитель может передать задачу другому человеку, не спрашивая вас.</value></data>
+  <data name="ReviewTypeQuick" xml:space="preserve"><value>Быстрая проверка</value></data>
+  <data name="ReviewTypeQuickHint" xml:space="preserve"><value>Проверяющий утверждает работу напрямую.</value></data>
+  <data name="ReviewTypeMeeting" xml:space="preserve"><value>Совещание по проверке</value></data>
+  <data name="ReviewTypeMeetingHint" xml:space="preserve"><value>Работа оценивается на совещании.</value></data>
+  <data name="ReviewTypeMeetingDisabledReason" xml:space="preserve"><value>Пока недоступно: модуль совещаний не создан. До тех пор применяется быстрая проверка.</value></data>
+  <data name="NotifyEventsLabel" xml:space="preserve"><value>Уведомлять меня, когда</value></data>
+  <data name="NotifyEventAssigned" xml:space="preserve"><value>Задача назначена</value></data>
+  <data name="NotifyEventClaimed" xml:space="preserve"><value>Задачу взяли из пула</value></data>
+  <data name="NotifyEventDueSoon" xml:space="preserve"><value>Приближается срок</value></data>
+  <data name="NotifyEventCompleted" xml:space="preserve"><value>Задача завершена</value></data>
+  <data name="NotifyEventApprovalRequested" xml:space="preserve"><value>Запрошено согласование</value></data>
+  <data name="ReminderLeadLabel" xml:space="preserve"><value>Напомнить до срока</value></data>
+  <data name="ReminderLeadNone" xml:space="preserve"><value>Без напоминания</value></data>
+  <data name="ReminderLeadSameDay" xml:space="preserve"><value>В тот же день</value></data>
+  <data name="ReminderLead1" xml:space="preserve"><value>За 1 день</value></data>
+  <data name="ReminderLead3" xml:space="preserve"><value>За 3 дня</value></data>
+  <data name="ReminderLead7" xml:space="preserve"><value>За неделю</value></data>
+  <data name="ReminderLead14" xml:space="preserve"><value>За 2 недели</value></data>
+  <data name="FieldReviewTypeLabel" xml:space="preserve"><value>Тип проверки</value></data>
+  <data name="FieldDescriptionPlaceholder" xml:space="preserve"><value>Что нужно сделать и что исполнителю важно знать до начала работы.</value></data>
+  <data name="ErrorNoteTextInvalid" xml:space="preserve">
+    <value>Заметка не может быть пустой и длиннее 2000 символов.</value>
+  </data>
+  <data name="ErrorNoteNotFound" xml:space="preserve">
+    <value>Заметка не найдена.</value>
+  </data>
+  <data name="ErrorSnoozeDateInvalid" xml:space="preserve">
+    <value>Дата отсрочки должна быть в будущем.</value>
+  </data>
+  <data name="ErrorCommentNotAuthor" xml:space="preserve">
+    <value>Изменять или отзывать комментарий может только автор.</value>
+  </data>
+  <data name="ErrorCommentWithdrawn" xml:space="preserve">
+    <value>Этот комментарий уже отозван.</value>
+  </data>
+  <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
+    <value>Этого человека здесь указать нельзя.</value>
+  </data>
+</root>

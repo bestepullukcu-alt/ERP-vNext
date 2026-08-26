@@ -1,0 +1,29 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    DitenTags — the ONE delivery path for the tag input's own chrome.
+
+    The strings describe the CONTROL ("type a tag and press Enter", "{0} tags", "Remove {0}"), not any screen's
+    subject matter, so they belong to SharedResource rather than to the three screen resources that use the
+    component. Three copies of one sentence drift the moment one of them is edited — which is the same reason
+    the component itself exists.
+
+    Rendered ONCE by each layout, beside _DataTableL10n and for its stated reason: a page that must remember to
+    include something is a page that will forget, and the failure mode here is silent English chrome inside a
+    Turkish form.
+*@
+@{
+    string[] tagKeys = ["TagsPlaceholder", "TagsCount", "TagsRemove"];
+    var tagPayload = new Dictionary<string, string>();
+    foreach (var key in tagKeys)
+    {
+        var localized = SharedLocalizer[key];
+        // A missing resource returns its own KEY as the value; writing that through would print "TagsCount" on
+        // screen. The component carries English fallbacks for exactly this case, so omitting is the better miss.
+        if (!localized.IsResourceNotFound)
+        {
+            tagPayload[key] = localized.Value;
+        }
+    }
+}
+<script id="tags-l10n" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(tagPayload))</script>

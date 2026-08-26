@@ -1,0 +1,25 @@
+@using Diten.Web.Views.Tasks.RecurrenceRules
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskRecurrenceRulesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["RecurrenceRulesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/Tasks/RecurrenceRules/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["RecurrenceRulesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-taskrecurrencerules" data-dt-standard="v2"> *@
+<partial name="~/Views/Tasks/RecurrenceRules/_DataTable.cshtml" />
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Tasks/RecurrenceRules/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Tasks/RecurrenceRules/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/RecurrenceRules/index.js" asp-append-version="true"></script>
+}

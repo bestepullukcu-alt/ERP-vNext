@@ -152,6 +152,19 @@ public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstan
         return Collection.Find(filter).FirstOrDefaultAsync(ct)!;
     }
 
+    // "Latest" is picked in memory, NOT by a server-side sort — and it must stay that way until BL-030 lands.
+    // No DateTimeOffsetSerializer is registered (see Diten.Platform.Infrastructure/DependencyInjection.cs), so the
+    // driver persists every DateTimeOffset as a BSON array [ticks, offsetMinutes]. Sorting on TWO such fields makes
+    // MongoDB fail the query outright with "cannot sort with keys that are parallel arrays" — that is how this
+    // lookup, and with it the whole MOD-0023 transition gate, was dead against a real database. Registering the
+    // serializer globally is the real cure but it changes the on-disk representation for every service and needs a
+    // data migration; it is tracked as BL-030. Until then, do NOT put .SortByDescending(...).ThenByDescending(...)
+    // back here. Same treatment as DocumentAccessPolicyRepository.ListAsync.
+    // The filter already pins tenant + objectRef + objectType + objectId, so the candidate set is one business
+    // object's instance history — small enough to order client-side.
+    // Ordering intent is unchanged (StartedAt desc, then CreatedAt desc), with nulls made explicit: an instance
+    // with no StartedAt sorts LAST, behind every started one, and ties break on CreatedAt descending. That is the
+    // same placement MongoDB would have given null in a descending sort.
     public async Task<WorkflowInstance?> GetLatestByObjectRefAsync(
         string objectRef,
         string objectType,
@@ -163,12 +176,11 @@ public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstan
             Builders<WorkflowInstance>.Filter.Eq(x => x.ObjectRef, objectRef),
             Builders<WorkflowInstance>.Filter.Eq(x => x.ObjectType, objectType),
             Builders<WorkflowInstance>.Filter.Eq(x => x.ObjectId, objectId));
-        var candidates = await Collection
-            .Find(filter)
-            .ToListAsync(ct);
 
+        var candidates = await Collection.Find(filter).ToListAsync(ct);
         return candidates
-            .OrderByDescending(x => x.StartedAt)
+            .OrderByDescending(x => x.StartedAt.HasValue)
+            .ThenByDescending(x => x.StartedAt ?? DateTimeOffset.MinValue)
             .ThenByDescending(x => x.CreatedAt)
             .FirstOrDefault();
     }

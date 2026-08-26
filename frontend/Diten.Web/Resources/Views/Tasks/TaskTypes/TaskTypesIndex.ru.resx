@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="TaskTypesTitle" xml:space="preserve"><value>Типы задач</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Типы, которые классифицируют работу и несут её управляющие документы.</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="Name" xml:space="preserve"><value>Название</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="RecordClass" xml:space="preserve"><value>Класс записи</value></data>
+  <data name="GqmsDomain" xml:space="preserve"><value>Домен качества</value></data>
+  <data name="FunctionCode" xml:space="preserve"><value>Функция</value></data>
+  <data name="QualityEvent" xml:space="preserve"><value>Событие качества</value></data>
+  <data name="QualityEventYes" xml:space="preserve"><value>Событие качества</value></data>
+  <data name="QualityEventNo" xml:space="preserve"><value>Не событие качества</value></data>
+  <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>Не запись</value></data>
+  <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>Операционная запись</value></data>
+  <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>Запись качества GxP</value></data>
+  <data name="GqmsDomainNone" xml:space="preserve"><value>Вне любого домена качества</value></data>
+  <data name="GqmsDomainHint" xml:space="preserve"><value>Один домен, никогда несколько: путь хранения вычисляется из него.</value></data>
+  <data name="RecordClassHint" xml:space="preserve"><value>Запись качества GxP обязана называть свой домен качества.</value></data>
+  <data name="FunctionCodeHint" xml:space="preserve"><value>Пока свободный текст — закрытый список функций ещё не предоставлен.</value></data>
+  <data name="GroupDocuments" xml:space="preserve"><value>Управляющие документы</value></data>
+  <data name="GroupDocumentsPlaceholder" xml:space="preserve"><value>По одному UID документа в строке</value></data>
+  <data name="GroupDocumentsHint" xml:space="preserve"><value>Действует во всех организациях. Выбор документов появится вместе со списком документов.</value></data>
+  <data name="GroupDocumentsEmpty" xml:space="preserve"><value>Управляющие документы не записаны</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Классификация</value></data>
+  <data name="DocumentsSection" xml:space="preserve"><value>Документы</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Новый тип задачи</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить тип задачи</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>напр. DEV-QMS</value></data>
+  <data name="CodeImmutableHint" xml:space="preserve"><value>Код изменить нельзя: задачи, открытые с этим типом, несут его как свою идентичность.</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Деактивировать</value></data>
+  <data name="Activate" xml:space="preserve"><value>Активировать снова</value></data>
+  <data name="DeactivateConfirm" xml:space="preserve"><value>Этот тип больше не будет предлагаться в новых задачах. Уже использующие его задачи не изменятся.</value></data>
+  <data name="RecordDeactivated" xml:space="preserve"><value>Тип задачи деактивирован.</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Тип задачи активирован.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Изменить</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Подробности</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Типов задач пока нет.</value></data>
+  <data name="CodeRequired" xml:space="preserve"><value>Типу задачи нужен код.</value></data>
+  <data name="NameRequired" xml:space="preserve"><value>Типу задачи нужно название.</value></data>
+  <data name="CodeTooLong" xml:space="preserve"><value>Код слишком длинный.</value></data>
+  <data name="NameTooLong" xml:space="preserve"><value>Название слишком длинное.</value></data>
+  <data name="FunctionCodeTooLong" xml:space="preserve"><value>Код функции слишком длинный.</value></data>
+  <data name="TaskTypeLabel" xml:space="preserve"><value>Тип задачи</value></data>
+  <data name="TaskTypeNone" xml:space="preserve"><value>Без типа</value></data>
+  <data name="AddNewTaskType" xml:space="preserve"><value>Новый тип</value></data>
+  <data name="ErrorCodeImmutable" xml:space="preserve"><value>Код нельзя изменить после создания типа: задачи, открытые с ним, несут его как свою идентичность.</value></data>
+  <data name="ErrorCodeTaken" xml:space="preserve"><value>Другой тип задачи уже использует этот код.</value></data>
+  <data name="ErrorClassificationInvalid" xml:space="preserve"><value>Запись качества GxP обязана называть свой домен, а тип с доменом не может быть «не записью».</value></data>
+  <data name="FunctionCodeNone" xml:space="preserve"><value>Без функции</value></data>
+  <data name="FunctionCodeQUA" xml:space="preserve"><value>Управление качеством</value></data>
+  <data name="FunctionCodeRA" xml:space="preserve"><value>Регуляторные вопросы (операционные)</value></data>
+  <data name="FunctionCodePV" xml:space="preserve"><value>Фармаконадзор (операционный)</value></data>
+  <data name="FunctionCodeMFG" xml:space="preserve"><value>Производственные операции</value></data>
+  <data name="FunctionCodeSCM" xml:space="preserve"><value>Цепочка поставок</value></data>
+  <data name="FunctionCodeRND" xml:space="preserve"><value>Исследования и разработки</value></data>
+  <data name="FunctionCodeCOM" xml:space="preserve"><value>Коммерция и маркетинг</value></data>
+  <data name="FunctionCodeFIN" xml:space="preserve"><value>Финансы и учёт</value></data>
+  <data name="FunctionCodeHR" xml:space="preserve"><value>Персонал</value></data>
+  <data name="FunctionCodeLEG" xml:space="preserve"><value>Юридические вопросы и договоры</value></data>
+  <data name="FunctionCodePRC" xml:space="preserve"><value>Закупки</value></data>
+  <data name="FunctionCodeITG" xml:space="preserve"><value>Информационные технологии</value></data>
+  <data name="FunctionCodeISM" xml:space="preserve"><value>Информационная безопасность</value></data>
+  <data name="FunctionCodeFAC" xml:space="preserve"><value>Объекты и активы</value></data>
+  <data name="FunctionCodeEHS" xml:space="preserve"><value>Экология, здоровье и безопасность</value></data>
+  <data name="FunctionCodePPM" xml:space="preserve"><value>Проекты и портфели</value></data>
+  <data name="FunctionCodeCORP" xml:space="preserve"><value>Корпоративные коммуникации</value></data>
+  <data name="FunctionCodeCTY" xml:space="preserve"><value>Страновые операции (остаточные)</value></data>
+  <data name="FunctionCodeMED" xml:space="preserve"><value>Медицинские вопросы</value></data>
+  <data name="ErrorFunctionCodeInvalid" xml:space="preserve"><value>Это не один из кодов функций, используемых этой организацией.</value></data>
+  <data name="DocListTitle" xml:space="preserve"><value>Контролируемые документы</value></data>
+  <data name="DocListDescription" xml:space="preserve"><value>Справочный список контролируемых документов, на которые может ссылаться задача. Это список, а не редактируемый реестр.</value></data>
+  <data name="DocListImportSection" xml:space="preserve"><value>Импорт</value></data>
+  <data name="DocListVersionsSection" xml:space="preserve"><value>Импортированные версии</value></data>
+  <data name="DocListSearchSection" xml:space="preserve"><value>Поиск</value></data>
+  <data name="DocListFile" xml:space="preserve"><value>Файл реестра (CSV)</value></data>
+  <data name="DocListSourceKey" xml:space="preserve"><value>Ключ источника</value></data>
+  <data name="DocListVersion" xml:space="preserve"><value>Версия списка</value></data>
+  <data name="DocListFileName" xml:space="preserve"><value>Файл</value></data>
+  <data name="DocListImportedAt" xml:space="preserve"><value>Импортировано</value></data>
+  <data name="DocListEntries" xml:space="preserve"><value>записей</value></data>
+  <data name="DocListLinkable" xml:space="preserve"><value>можно сослаться</value></data>
+  <data name="DocListBlocked" xml:space="preserve"><value>заблокировано</value></data>
+  <data name="DocListUnreadColumns" xml:space="preserve"><value>Непрочитанные столбцы</value></data>
+  <data name="DocListMissingColumns" xml:space="preserve"><value>Отсутствующие столбцы</value></data>
+  <data name="DocListNone" xml:space="preserve"><value>нет</value></data>
+  <data name="DocListHash" xml:space="preserve"><value>Содержимое</value></data>
+  <data name="DocListCopyHash" xml:space="preserve"><value>Скопировать полный хеш</value></data>
+  <data name="DocListDryRun" xml:space="preserve"><value>Проверить файл</value></data>
+  <data name="DocListImport" xml:space="preserve"><value>Импортировать</value></data>
+  <data name="DocListDryRunFirst" xml:space="preserve"><value>Проверьте файл перед импортом.</value></data>
+  <data name="DocListFileChanged" xml:space="preserve"><value>Файл изменился — проверьте его снова.</value></data>
+  <data name="DocListVersionRequired" xml:space="preserve"><value>Для импорта нужна версия списка.</value></data>
+  <data name="DocListFileRequired" xml:space="preserve"><value>Выберите файл реестра.</value></data>
+  <data name="DocListImported" xml:space="preserve"><value>Список импортирован.</value></data>
+  <data name="DocListAlreadyImported" xml:space="preserve"><value>Этот файл уже сохранён как версия {0}. Ничего не добавлено.</value></data>
+  <data name="DocListNotLinkable" xml:space="preserve"><value>Нельзя сослаться</value></data>
+  <data name="DocListNoVersions" xml:space="preserve"><value>Список ещё не импортирован.</value></data>
+  <data name="DocListNoResults" xml:space="preserve"><value>Нет подходящих документов.</value></data>
+  <data name="DocListSearchPlaceholder" xml:space="preserve"><value>Поиск по коду, названию или UID…</value></data>
+  <data name="DocListDocTitle" xml:space="preserve"><value>Название</value></data>
+  <data name="DocListDocVersion" xml:space="preserve"><value>Версия</value></data>
+  <data name="DocListActions" xml:space="preserve">
+    <value>Действия</value>
+  </data>
+  <data name="DocListWithdraw" xml:space="preserve"><value>Отозвать</value></data>
+  <data name="DocListWithdrawn" xml:space="preserve"><value>Отозвана</value></data>
+  <data name="DocListWithdrawReason" xml:space="preserve"><value>Почему отзывается?</value></data>
+  <data name="DocListWithdrawReasonRequired" xml:space="preserve"><value>Для отзыва нужна причина.</value></data>
+  <data name="DocListWithdrawSubtext" xml:space="preserve"><value>Версия {0} перестаёт быть списком, на который могут ссылаться задачи. Она сохраняется с отметкой, чтобы прежние ссылки оставались читаемыми.</value></data>
+  <data name="DocListImportDenied" xml:space="preserve"><value>Вы можете просматривать этот список, но не импортировать его.</value></data>
+</root>

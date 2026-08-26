@@ -1,5 +1,6 @@
 using Diten.BuildingBlocks.BackgroundJobs;
 using Diten.Platform.Application.Features.Notifications.BackgroundJobs;
+using Diten.Platform.Application.Features.Tasks.BackgroundJobs;
 using Diten.Platform.Application.Features.Workflow.BackgroundJobs;
 using Microsoft.Extensions.Options;
 
@@ -27,6 +28,8 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
             CreateDeferred("Diten.Platform.MOD-0021.AuditLogArchiveJob", "AuditLogArchiveJob", "MOD-0021", "0 4 * * 0"),
             CreateEmailDispatchSweepRegistration(),
             CreateWorkflowEscalationSweepRegistration(),
+            CreateTaskRecurrenceSweepRegistration(),
+            CreateTaskDueSoonSweepRegistration(),
             CreateDeferred("Diten.Platform.MOD-0009.ProvisioningRetryJob", "ProvisioningRetryJob", "MOD-0009", "*/2 * * * *")
         };
 
@@ -99,6 +102,101 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
             typeof(WorkflowEscalationSweepJob),
             typeof(WorkflowEscalationSweepJobArgs),
             new WorkflowEscalationSweepJobArgs(MaxItemsPerTenant: 100),
+            new BackgroundJobContext(
+                TriggerType: BackgroundJobTriggerTypes.Recurring,
+                TriggeredBy: nameof(PlatformRecurringJobRegistrar),
+                Metadata: new Dictionary<string, string>
+                {
+                    ["owner"] = owner,
+                    ["execution"] = "sweep"
+                }));
+    }
+
+    private RecurringJobRegistration CreateTaskRecurrenceSweepRegistration()
+    {
+        // The id is the CONFIGURATION KEY as well as the job's name — EnabledJobs is keyed by exactly this
+        // string, so a typo here is a job that silently never runs.
+        const string id = "Diten.Platform.MOD-0024.TaskRecurrenceSweepJob";
+        const string jobName = "TaskRecurrenceSweepJob";
+        const string owner = "MOD-0024";
+        // Hourly. Recurrence granularity is a day at the finest, so a minute-by-minute sweep would spend its
+        // whole life finding nothing; an hour still catches a daily rule on the day it is due.
+        const string cron = "0 * * * *";
+
+        // Two flags, but only ONE of them is really holding this job: RegisterStandardJobs ships TRUE in both
+        // appsettings.json and appsettings.Development.json, so the per-job entry below is the switch that keeps
+        // it off in Development. Production has a third, larger gate — BackgroundJobs:Enabled is false there, so
+        // the scheduler itself does not run. Check this before filing "recurrence doesn't work" as a defect.
+        var enabled = _options.RegisterStandardJobs
+                      && _options.EnabledJobs.TryGetValue(id, out var configuredEnabled)
+                      && configuredEnabled;
+
+        var descriptor = new BackgroundJobDescriptor(
+            Id: id,
+            ServiceName: ServiceName,
+            JobName: jobName,
+            Owner: owner,
+            CronExpression: cron,
+            // UTC, matching the schedule arithmetic. Nothing records a tenant's time zone, so anything else
+            // would be a guess — see TaskRecurrenceSchedule.
+            TimeZoneId: "UTC",
+            IsEnabled: enabled,
+            Queue: "platform",
+            MaxRetryAttempts: _options.DefaultRetryAttempts,
+            TriggerType: BackgroundJobTriggerTypes.Recurring);
+
+        return new RecurringJobRegistration(
+            descriptor,
+            typeof(TaskRecurrenceSweepJob),
+            typeof(TaskRecurrenceSweepJobArgs),
+            new TaskRecurrenceSweepJobArgs(MaxRulesPerTenant: 200),
+            new BackgroundJobContext(
+                TriggerType: BackgroundJobTriggerTypes.Recurring,
+                TriggeredBy: nameof(PlatformRecurringJobRegistrar),
+                Metadata: new Dictionary<string, string>
+                {
+                    ["owner"] = owner,
+                    ["execution"] = "sweep"
+                }));
+    }
+
+    private RecurringJobRegistration CreateTaskDueSoonSweepRegistration()
+    {
+        // The id is the CONFIGURATION KEY as well as the job's name — EnabledJobs is keyed by exactly this
+        // string, so a typo here is a job that silently never runs.
+        const string id = "Diten.Platform.MOD-0024.TaskDueSoonSweepJob";
+        const string jobName = "TaskDueSoonSweepJob";
+        const string owner = "MOD-0024";
+        // Hourly, like the recurrence sweep. A lead time is whole days, so a finer sweep would spend its life
+        // finding nothing; an hour still reaches a reminder on the day its window opens.
+        const string cron = "0 * * * *";
+
+        // Two flags, but only ONE of them is really holding this job: RegisterStandardJobs ships TRUE in both
+        // appsettings.json and appsettings.Development.json, so the per-job entry below is the switch that keeps
+        // it off in Development. Production has a third, larger gate — BackgroundJobs:Enabled is false there, so
+        // the scheduler itself does not run.
+        var enabled = _options.RegisterStandardJobs
+                      && _options.EnabledJobs.TryGetValue(id, out var configuredEnabled)
+                      && configuredEnabled;
+
+        var descriptor = new BackgroundJobDescriptor(
+            Id: id,
+            ServiceName: ServiceName,
+            JobName: jobName,
+            Owner: owner,
+            CronExpression: cron,
+            // UTC, matching the lead-day arithmetic; nothing records a tenant's time zone.
+            TimeZoneId: "UTC",
+            IsEnabled: enabled,
+            Queue: "platform",
+            MaxRetryAttempts: _options.DefaultRetryAttempts,
+            TriggerType: BackgroundJobTriggerTypes.Recurring);
+
+        return new RecurringJobRegistration(
+            descriptor,
+            typeof(TaskDueSoonSweepJob),
+            typeof(TaskDueSoonSweepJobArgs),
+            new TaskDueSoonSweepJobArgs(MaxTasksPerTenant: 200),
             new BackgroundJobContext(
                 TriggerType: BackgroundJobTriggerTypes.Recurring,
                 TriggeredBy: nameof(PlatformRecurringJobRegistrar),

@@ -51,5 +51,11 @@ public enum ModuleCatalogDomain
     // FEAT-ADMIN-DOMAIN — unified tenant-administration domain (Access Governance + Tenant Settings). The older
     // AccessGovernance/Settings values are retained (harmless — no module uses them now; operator may retire them).
     [Display(Name = "Administration")]
-    Administration
+    Administration,
+
+    // WC-1b (DCP-004 DEC-5) — domain for the personal work surface (Görev Merkezi / Task Center). This enum is the
+    // BOOTSTRAP seed source only (ModuleDomainSeed runs once per install); on an existing DB the domain row is
+    // operator-managed and an unresolved code falls back to the code itself, localized via Nav.Domain.WORKSPACE.
+    [Display(Name = "Workspace")]
+    Workspace
 }

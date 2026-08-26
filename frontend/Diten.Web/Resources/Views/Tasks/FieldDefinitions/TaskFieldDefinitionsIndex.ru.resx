@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="FieldDefinitionsTitle" xml:space="preserve"><value>Определения полей задач</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Настраиваемые поля, которые предлагает движок задач. Определение — это не столбец: добавление не меняет схему.</value></data>
+  <data name="AddNewFieldDefinitions" xml:space="preserve"><value>Добавить определение</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Изменить определение</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Добавить определение</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить определение</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>напр. regulatory.phase</value></data>
+  <data name="CodeImmutableHint" xml:space="preserve"><value>Код изменить нельзя: каждое сохранённое значение связано с этим определением через него.</value></data>
+  <data name="Label" xml:space="preserve"><value>Название</value></data>
+  <data name="LabelText" xml:space="preserve"><value>Название (вашими словами)</value></data>
+  <data name="LabelTextPlaceholder" xml:space="preserve"><value>напр. Регуляторный этап</value></data>
+  <data name="LabelTextHint" xml:space="preserve"><value>Для полей, которые вы задаёте сами. На одном языке, показывается как введено.</value></data>
+  <data name="LabelResourceKey" xml:space="preserve"><value>Ключ ресурса названия</value></data>
+  <data name="LabelResourceKeyPlaceholder" xml:space="preserve"><value>напр. Tasks_Field_RegulatoryPhase</value></data>
+  <data name="LabelResourceKeyHint" xml:space="preserve"><value>Для системных полей, переводы которых поставляем мы. Для своих полей оставьте пустым.</value></data>
+  <data name="LabelSourceSystem" xml:space="preserve"><value>Системное поле</value></data>
+  <data name="LabelSourceTenant" xml:space="preserve"><value>Ваше поле</value></data>
+  <data name="ValueType" xml:space="preserve"><value>Тип значения</value></data>
+  <data name="Section" xml:space="preserve"><value>Раздел</value></data>
+  <data name="SectionPlaceholder" xml:space="preserve"><value>напр. Комплаенс</value></data>
+  <data name="SectionLimitHint" xml:space="preserve"><value>Задача может показать не более шести разделов.</value></data>
+  <data name="Required" xml:space="preserve"><value>Обязательное</value></data>
+  <data name="Optional" xml:space="preserve"><value>Необязательное</value></data>
+  <data name="Importance" xml:space="preserve"><value>Важность</value></data>
+  <data name="ImportanceSecondary" xml:space="preserve"><value>Второстепенная</value></data>
+  <data name="ImportancePrimary" xml:space="preserve"><value>Основная</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Порядок</value></data>
+  <data name="OptionsSourceKind" xml:space="preserve"><value>Источник вариантов</value></data>
+  <data name="OptionsSourceNone" xml:space="preserve"><value>Нет</value></data>
+  <data name="OptionsSourcePlatformLookup" xml:space="preserve"><value>Справочник платформы</value></data>
+  <data name="OptionsSourceBusinessReferenceData" xml:space="preserve"><value>Бизнес-справочники</value></data>
+  <data name="OptionsSourceHint" xml:space="preserve"><value>Откуда берётся список вариантов. Жёстко заданный список недопустим.</value></data>
+  <data name="OptionsSourceKey" xml:space="preserve"><value>Ключ источника вариантов</value></data>
+  <data name="OptionsSourceKeyPlaceholder" xml:space="preserve"><value>напр. REGULATORY_PHASES</value></data>
+  <data name="AppliesToModuleCode" xml:space="preserve"><value>Ограничено модулем</value></data>
+  <data name="AppliesToModuleCodePlaceholder" xml:space="preserve"><value>напр. MOD-0220</value></data>
+  <data name="AppliesToModuleCodeHint" xml:space="preserve"><value>Оставьте пустым, чтобы поле было доступно всем модулям.</value></data>
+  <data name="Classification" xml:space="preserve"><value>Классификация</value></data>
+  <data name="ClassificationNormal" xml:space="preserve"><value>Обычное</value></data>
+  <data name="ClassificationInternal" xml:space="preserve"><value>Внутреннее</value></data>
+  <data name="ClassificationConfidential" xml:space="preserve"><value>Конфиденциальное</value></data>
+  <data name="ClassificationRestricted" xml:space="preserve"><value>Ограниченное</value></data>
+  <data name="ClassificationNotEnforcedHint" xml:space="preserve"><value>Записывается на будущее. Сегодня по нему не принимается никаких решений о доступе.</value></data>
+  <data name="DefaultAccessState" xml:space="preserve"><value>Состояние доступа по умолчанию</value></data>
+  <data name="AccessStateVisible" xml:space="preserve"><value>Видимое</value></data>
+  <data name="AccessStateMasked" xml:space="preserve"><value>Замаскированное</value></data>
+  <data name="AccessStateHidden" xml:space="preserve"><value>Скрытое</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="ValueSection" xml:space="preserve"><value>Значение</value></data>
+  <data name="PresentationSection" xml:space="preserve"><value>Представление</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Классификация</value></data>
+  <data name="ValueTypeText" xml:space="preserve"><value>Текст</value></data>
+  <data name="ValueTypeNumber" xml:space="preserve"><value>Число</value></data>
+  <data name="ValueTypeCurrency" xml:space="preserve"><value>Валюта</value></data>
+  <data name="ValueTypePercentage" xml:space="preserve"><value>Процент</value></data>
+  <data name="ValueTypeDate" xml:space="preserve"><value>Дата</value></data>
+  <data name="ValueTypeDateTime" xml:space="preserve"><value>Дата и время</value></data>
+  <data name="ValueTypeBoolean" xml:space="preserve"><value>Да / Нет</value></data>
+  <data name="ValueTypeStatus" xml:space="preserve"><value>Статус</value></data>
+  <data name="ValueTypePerson" xml:space="preserve"><value>Человек</value></data>
+  <data name="ValueTypeReference" xml:space="preserve"><value>Ссылка на запись</value></data>
+  <data name="ValueTypeLink" xml:space="preserve"><value>Ссылка</value></data>
+  <data name="EditBtn" xml:space="preserve">
+    <value>Изменить</value>
+  </data>
+  <data name="OptionsSourceModuleRecord" xml:space="preserve"><value>Записи другого модуля</value></data>
+  <data name="OptionsSourceKeyHint" xml:space="preserve"><value>Выберите источник. Список зависит от типа выше; смена типа сбрасывает выбор.</value></data>
+  <data name="OptionsSourceKeySelect" xml:space="preserve"><value>Выберите источник…</value></data>
+  <data name="OptionsSourceKeyNone" xml:space="preserve"><value>Для этого типа в данном тенанте нет источников.</value></data>
+  <data name="OptionsSourceKeyLoadFailed" xml:space="preserve"><value>Не удалось прочитать список источников.</value></data>
+  <data name="OptionSource.organization-unit" xml:space="preserve"><value>Организационные единицы</value></data>
+  <data name="OptionSource.position" xml:space="preserve"><value>Должности</value></data>
+  <data name="OptionSource.countries" xml:space="preserve"><value>Страны</value></data>
+  <data name="OptionSource.currencies" xml:space="preserve"><value>Валюты</value></data>
+  <data name="OptionSource.languages" xml:space="preserve"><value>Языки</value></data>
+  <data name="OptionSource.timezones" xml:space="preserve"><value>Часовые пояса</value></data>
+</root>

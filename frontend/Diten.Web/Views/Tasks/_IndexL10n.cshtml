@@ -1,0 +1,215 @@
+@using Diten.Web.Views.Tasks
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TasksIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* MOD-0024 — the single localization bridge. Every user-facing string in the Tasks JS resolves through this
+   payload, so nothing is hard-coded in English and all 7 tenant languages work from one source. *@
+<script id="tasks-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Title = Localizer["TasksTitle"].Value,
+        PageDescription = Localizer["PageDescription"].Value,
+        AddNewTask = Localizer["AddNewTask"].Value,
+        FormTitleCreate = Localizer["FormTitleCreate"].Value,
+        FormTitleEdit = Localizer["FormTitleEdit"].Value,
+
+        FieldGoverningDocuments = Localizer["FieldGoverningDocuments"].Value,
+        FieldGoverningDocumentsPlaceholder = Localizer["FieldGoverningDocumentsPlaceholder"].Value,
+        DocRefSuggestedByType = Localizer["DocRefSuggestedByType"].Value,
+        DocRefNoneNamed = Localizer["DocRefNoneNamed"].Value,
+        DocRefNotInRegister = Localizer["DocRefNotInRegister"].Value,
+        DocRefAllBlocked = Localizer["DocRefAllBlocked"].Value,
+        DocRefBlocked = Localizer["DocRefBlocked"].Value,
+        DocRefRemove = Localizer["DocRefRemove"].Value,
+        DocRefNoResults = Localizer["DocRefNoResults"].Value,
+        DocRefSectionTitle = Localizer["DocRefSectionTitle"].Value,
+        DocRefReferencedAt = Localizer["DocRefReferencedAt"].Value,
+        DocRefUnavailable = Localizer["DocRefUnavailable"].Value,
+
+        FieldTitle = Localizer["FieldTitle"].Value,
+        FieldTitlePlaceholder = Localizer["FieldTitlePlaceholder"].Value,
+        FieldDescription = Localizer["FieldDescription"].Value,
+        FieldPriority = Localizer["FieldPriority"].Value,
+        PriorityLow = Localizer["PriorityLow"].Value,
+        PriorityMedium = Localizer["PriorityMedium"].Value,
+        PriorityHigh = Localizer["PriorityHigh"].Value,
+
+        FieldAssignmentTarget = Localizer["FieldAssignmentTarget"].Value,
+        TargetSelf = Localizer["TargetSelf"].Value,
+        TargetPerson = Localizer["TargetPerson"].Value,
+        TargetPool = Localizer["TargetPool"].Value,
+        FieldAssignee = Localizer["FieldAssignee"].Value,
+        AssigneeHint = Localizer["AssigneeHint"].Value,
+        // BL-023 — work that flows UP is a request, and the button says so before it is pressed.
+        ActionSendRequest = Localizer["ActionSendRequest"].Value,
+        UpwardRequestHint = Localizer["UpwardRequestHint"].Value,
+        // BL-072 — why the picker is shorter than expected. Counts only; the people held back by the company
+        // scope (BL-057) must stay invisible, so no key here ever names anybody.
+        ExcludedHint = Localizer["ExcludedHint"].Value,
+        ExcludedNoActivePosition = Localizer["ExcludedNoActivePosition"].Value,
+        ExcludedPositionNotActive = Localizer["ExcludedPositionNotActive"].Value,
+        ExcludedOutOfScope = Localizer["ExcludedOutOfScope"].Value,
+        AssigneeSelectPlaceholder = Localizer["AssigneeSelectPlaceholder"].Value,
+        AssigneeEmpty = Localizer["AssigneeEmpty"].Value,
+        PersonNameUnavailable = Localizer["PersonNameUnavailable"].Value,
+        // The pool row says how many people would actually be offered the work. Zero is a real answer.
+        PickerHolderCount = Localizer["PickerHolderCount"].Value,
+        FieldPoolPosition = Localizer["FieldPoolPosition"].Value,
+        PoolPositionHint = Localizer["PoolPositionHint"].Value,
+
+        FieldDueAt = Localizer["FieldDueAt"].Value,
+        FieldStartAt = Localizer["FieldStartAt"].Value,
+        FieldEstimateHours = Localizer["FieldEstimateHours"].Value,
+        FieldRemainingHours = Localizer["FieldRemainingHours"].Value,
+        FieldSpentHours = Localizer["FieldSpentHours"].Value,
+        SpentHoursReadOnlyHint = Localizer["SpentHoursReadOnlyHint"].Value,
+        FieldTags = Localizer["FieldTags"].Value,
+
+        FieldReviewRequired = Localizer["FieldReviewRequired"].Value,
+        FieldApprovalRequired = Localizer["FieldApprovalRequired"].Value,
+        FieldApprovalManager = Localizer["FieldApprovalManager"].Value,
+        ApprovalHint = Localizer["ApprovalHint"].Value,
+        FieldEmailNotifications = Localizer["FieldEmailNotifications"].Value,
+        FieldDelegationAllowed = Localizer["FieldDelegationAllowed"].Value,
+        FieldWatchers = Localizer["FieldWatchers"].Value,
+        WatchersHint = Localizer["WatchersHint"].Value,
+
+        SectionBasics = Localizer["SectionBasics"].Value,
+        SectionAssignment = Localizer["SectionAssignment"].Value,
+        SectionPlanning = Localizer["SectionPlanning"].Value,
+        SectionGovernance = Localizer["SectionGovernance"].Value,
+        SectionCustomFields = Localizer["SectionCustomFields"].Value,
+
+        @* The checklist a new task is born with. The card's own heading and description stay in _Form.cshtml;
+           everything the JS builds lives here — and that now includes the ADD ROW's three strings, which moved
+           out of the view when the row itself did (one component draws it for this screen and the task detail
+           page both, so its labels have to reach JS on both). *@
+        ChecklistAddPlaceholder = Localizer["ChecklistAddPlaceholder"].Value,
+        ChecklistAddButton = Localizer["ChecklistAddButton"].Value,
+        ChecklistAddHint = Localizer["ChecklistAddHint"].Value,
+        ChecklistLevelOptional = Localizer["ChecklistLevelOptional"].Value,
+        ChecklistLevelRequired = Localizer["ChecklistLevelRequired"].Value,
+        ChecklistLevelBlocking = Localizer["ChecklistLevelBlocking"].Value,
+        ChecklistLevelHint = Localizer["ChecklistLevelHint"].Value,
+        ChecklistEvidenceToggle = Localizer["ChecklistEvidenceToggle"].Value,
+        ChecklistRemove = Localizer["ChecklistRemove"].Value,
+        ChecklistMoveUp = Localizer["ChecklistMoveUp"].Value,
+        ChecklistMoveDown = Localizer["ChecklistMoveDown"].Value,
+
+        // Phase 5 — the configurable fields the form renders from the tenant's own definitions. The field LABELS
+        // are tenant content and come from the definition itself; only the control's own furniture is translated
+        // here (a picker's placeholder, and the two words a yes/no field offers).
+        CustomFieldOptionPlaceholder = Localizer["CustomFieldOptionPlaceholder"].Value,
+        CustomFieldBooleanYes = Localizer["CustomFieldBooleanYes"].Value,
+        CustomFieldBooleanNo = Localizer["CustomFieldBooleanNo"].Value,
+        // A field backed by another module's records: the search box's prompt, and what a record the server
+        // could not resolve reads as — never its raw identity (BL-049).
+        CustomFieldRecordSearchPlaceholder = Localizer["CustomFieldRecordSearchPlaceholder"].Value,
+        CustomFieldRecordUnavailable = Localizer["CustomFieldRecordUnavailable"].Value,
+
+        ColumnTitle = Localizer["ColumnTitle"].Value,
+        ColumnStatus = Localizer["ColumnStatus"].Value,
+        ColumnPriority = Localizer["ColumnPriority"].Value,
+        ColumnAssignment = Localizer["ColumnAssignment"].Value,
+        ColumnDueAt = Localizer["ColumnDueAt"].Value,
+        ColumnActions = Localizer["ColumnActions"].Value,
+
+        LifecycleOpen = Localizer["LifecycleOpen"].Value,
+        LifecyclePlanned = Localizer["LifecyclePlanned"].Value,
+        LifecycleInProgress = Localizer["LifecycleInProgress"].Value,
+        LifecycleWaiting = Localizer["LifecycleWaiting"].Value,
+        LifecyclePendingReview = Localizer["LifecyclePendingReview"].Value,
+        LifecycleDone = Localizer["LifecycleDone"].Value,
+        LifecycleCancelled = Localizer["LifecycleCancelled"].Value,
+
+        ActionCreate = Localizer["ActionCreate"].Value,
+        ActionSave = Localizer["ActionSave"].Value,
+        ActionCancel = Localizer["ActionCancel"].Value,
+        ActionOpenDetailed = Localizer["ActionOpenDetailed"].Value,
+        ActionClaim = Localizer["ActionClaim"].Value,
+        ActionAccept = Localizer["ActionAccept"].Value,
+        ActionStart = Localizer["ActionStart"].Value,
+        ActionComplete = Localizer["ActionComplete"].Value,
+        QuickCreateTitle = Localizer["QuickCreateTitle"].Value,
+
+        ToastCreated = Localizer["ToastCreated"].Value,
+        ToastSaved = Localizer["ToastSaved"].Value,
+        ToastClaimed = Localizer["ToastClaimed"].Value,
+        ErrorAlreadyClaimed = Localizer["ErrorAlreadyClaimed"].Value,
+        ErrorNoAccess = Localizer["ErrorNoAccess"].Value,
+        ErrorUnavailable = Localizer["ErrorUnavailable"].Value,
+        EmptyTitle = Localizer["EmptyTitle"].Value,
+        EmptyDescription = Localizer["EmptyDescription"].Value,
+        RequiredFieldHint = Localizer["RequiredFieldHint"].Value,
+        // Names the empty fields rather than only asserting that some exist: "Zorunlu" alone, on a nine-card
+        // form, left the user reading the DOM to find which control was blank.
+        RequiredFieldsMissing = Localizer["RequiredFieldsMissing"].Value,
+
+        Save = SharedLocalizer["Save"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Actions = Localizer["ColumnActions"].Value,
+
+        // Owned by the Tasks resource, not SharedResource: these two are rendered by the Tasks JS itself, and a
+        // surface should not depend on another resource file for its own copy (that indirection is how
+        // "ErrorOccurred" reached the screen as a raw key).
+        ErrorOccurred = Localizer["ErrorOccurred"].Value,
+        ActionOk = Localizer["ActionOk"].Value,
+
+        // Keyed by the API's stable reason code, not by server-side text: the message is chosen in the browser so
+        // it lands in the user's language (the same code→resx bridge used for password validation).
+        ErrorOrganizationUnitUnresolved = Localizer["ErrorOrganizationUnitUnresolved"].Value,
+        ErrorPositionNotAssignable = Localizer["ErrorPositionNotAssignable"].Value,
+        // A REFUSED transition, one message per blocking reason MOD-0023's gate can answer with. These arrived as a
+        // bare 500 until Phase 3's HTTP contract fix, so none of them had a message before; a single generic
+        // "an error occurred" cannot tell a user waiting for their manager from one whose request was rejected.
+        ErrorConcurrencyRefreshed = Localizer["ErrorConcurrencyRefreshed"].Value,
+        ErrorChecklistIncomplete = Localizer["ErrorChecklistIncomplete"].Value,
+        ErrorDependencyBlocked = Localizer["ErrorDependencyBlocked"].Value,
+        ErrorSubtaskBlocked = Localizer["ErrorSubtaskBlocked"].Value,
+        ErrorCommentTaskClosed = Localizer["ErrorCommentTaskClosed"].Value,
+        ErrorCommentTextInvalid = Localizer["ErrorCommentTextInvalid"].Value,
+        // Comments became editable and withdrawable (2026-08-14); these are their two refusals. This bridge does
+        // NOT auto-enumerate its resx, so a code mapped in api.js without a line here reaches the reader as the
+        // generic "an error occurred".
+        ErrorCommentNotAuthor = Localizer["ErrorCommentNotAuthor"].Value,
+        ErrorCommentWithdrawn = Localizer["ErrorCommentWithdrawn"].Value,
+        // Naming an ineligible person when parking a task. This bridge does NOT auto-enumerate its resx.
+        ErrorWaitingOnNotAssignable = Localizer["ErrorWaitingOnNotAssignable"].Value,
+        ErrorPlanDateRequired = Localizer["ErrorPlanDateRequired"].Value,
+        // WC-1 — the personal overlay's three refusals. This bridge does NOT auto-enumerate its resx (unlike
+        // _L10n.cshtml, which does), so a code mapped in api.js without a line here reaches the reader as the
+        // generic "an error occurred" — twice already the missing half of exactly this pair.
+        ErrorNoteTextInvalid = Localizer["ErrorNoteTextInvalid"].Value,
+        ErrorNoteNotFound = Localizer["ErrorNoteNotFound"].Value,
+        ErrorSnoozeDateInvalid = Localizer["ErrorSnoozeDateInvalid"].Value,
+        // Create with no due date — the SAME rule on the main form and the subtask panel (measured on both:
+        // 400 VALIDATION_REQUEST_DUE_AT_NOT_NULL). Unmapped, it reached the reader as "an error occurred".
+        ErrorDueDateRequired = Localizer["ErrorDueDateRequired"].Value,
+        ErrorApprovalPending = Localizer["ErrorApprovalPending"].Value,
+        // 409 REVIEW_PENDING — the OTHER gate. Cleared by the reviewer, not the approver.
+        ErrorReviewPending = Localizer["ErrorReviewPending"].Value,
+        // 409 TASK_INVALID_STATE — measured live when the subtask checkbox met a not-started child.
+        ErrorTaskInvalidState = Localizer["ErrorTaskInvalidState"].Value,
+        ErrorCancelNotRequester = Localizer["ErrorCancelNotRequester"].Value,
+        ErrorWaitingReasonRequired = Localizer["ErrorWaitingReasonRequired"].Value,
+        ErrorTitleRequired = Localizer["ErrorTitleRequired"].Value,
+        ErrorTitleTooLong = Localizer["ErrorTitleTooLong"].Value,
+        ErrorHandoverReasonRequired = Localizer["ErrorHandoverReasonRequired"].Value,
+        ErrorReturnNotAssignee = Localizer["ErrorReturnNotAssignee"].Value,
+        ErrorReassignNotPermitted = Localizer["ErrorReassignNotPermitted"].Value,
+        ErrorAssigneeNotAssignable = Localizer["ErrorAssigneeNotAssignable"].Value,
+        ErrorApprovalWaitingEvidence = Localizer["ErrorApprovalWaitingEvidence"].Value,
+        ErrorApprovalRejected = Localizer["ErrorApprovalRejected"].Value,
+        ErrorApprovalCancelled = Localizer["ErrorApprovalCancelled"].Value,
+        ErrorApprovalNotApproved = Localizer["ErrorApprovalNotApproved"].Value,
+        ErrorApprovalGateUnavailable = Localizer["ErrorApprovalGateUnavailable"].Value,
+        // The server's refusals about configurable fields. It is the authority on requiredness — the form blocks
+        // the empty field first, and these are what the user reads when the server refuses anyway.
+        ErrorFieldValueInvalid = Localizer["ErrorFieldValueInvalid"].Value,
+        ErrorFieldOptionSourceInvalid = Localizer["ErrorFieldOptionSourceInvalid"].Value,
+        ErrorFieldDefinitionUnknown = Localizer["ErrorFieldDefinitionUnknown"].Value,
+        ErrorFieldLimitExceeded = Localizer["ErrorFieldLimitExceeded"].Value
+    })
+</script>
