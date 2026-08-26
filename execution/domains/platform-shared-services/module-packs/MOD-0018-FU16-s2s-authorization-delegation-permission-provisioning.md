@@ -37,7 +37,7 @@ execution_authority: none
 ## 1. Module Summary
 
 Gate I standardizes three related but separate controls for producer services associated with `MOD-0007`,
-`MOD-0136`, `MOD-0138` and `MOD-0072`:
+`MOD-0136`, `MOD-0138`, `MOD-0072` and `MOD-0355`, the fifth current Gate-I producer profile:
 
 1. authenticated service identity with lifecycle-managed credentials;
 2. tenant- and operation-bound proof when a service acts for a human tenant actor; and
@@ -338,7 +338,7 @@ insufficient for delegated actor proof.
 - [ ] Tokens, secrets, credentials, nonce and request bodies are redacted from logs/traces/errors.
 - [ ] MDM and every other legacy generic module retain current auto-grant/revoke behavior.
 - [ ] PPM retains `ExplicitOnlyPreserveOnEntitlementRemoval`, its exact 16-key contract and no default Admin/Viewer grant.
-- [ ] All four producer profiles pass governance closure with exact ModuleCodes and entitlement policies; executable
+- [ ] All five onboarding profiles pass governance closure with exact ModuleCodes and entitlement policies; executable
   onboarding remains blocked only until fixture/runtime evidence proves those decisions.
 - [ ] No runtime code/config/seed/gateway change is present in this governance promotion commit.
 
@@ -376,9 +376,11 @@ authorization, structured-log capture proving redaction, and no secret/token in 
 - [x] MOD-0136 owner pack supplies the exact fifteen-operation / fifteen-permission manifest at checkpoint `937aabf43683eac9a240f9101ee84c66db55423a`.
 - [x] MOD-0138 owner pack supplies the exact sixteen delegated mappings / sixteen permissions plus separate accepted-run worker authority at checkpoint `066d16c80b966a63aaa7430ee8dd14c120e7a4c2`.
 - [x] MOD-0072 owner pack supplies the exact nine-operation / seven-permission manifest at checkpoint `5e5088ef6a5298b09b1dfcece9cf10ad2375aa29`.
+- [x] MOD-0355 owner pack supplies the exact sixteen-operation / sixteen-permission governance-only manifest at
+  checkpoint `7e8fe7d45ce80cb09f28c0089415d4f40400bc37`; runtime fixture and provisioning evidence remain open.
 - [x] Producer owners approve the exact audiences and onboarding client identities recorded below.
-- [x] Exact ModuleCodes and mandatory entitlement posture are closed for all four producer profiles: `MOD-0007`,
-  `MOD-0136`, `MOD-0138` and `MOD-0072`; all are tenant-assignable, non-baseline, entitlement-gated and
+- [x] Exact ModuleCodes and mandatory entitlement posture are closed for all five onboarding profiles: `MOD-0007`,
+  `MOD-0136`, `MOD-0138`, `MOD-0072` and `MOD-0355`; all are tenant-assignable, non-baseline, entitlement-gated and
   explicit-grant-only.
 - [x] MDM/legacy and PPM regression boundaries and required executable suites are named in §§6, 16–17 and 19.
 - [x] Physical routes, mTLS/network controls, vault/HSM keys, deployment retention and operational runbooks are
@@ -423,11 +425,16 @@ Identity authority is [DCP-002](../../../portfolio/delivery-capability-packs/DCP
 with reservation in the [module ID registry](../../../registries/module-id-registry.md) and Blueprint reconciliation
 in the [ledger](../../../portfolio/blueprint-master-plan-reconciliation.md).
 
+This historical FU16 source branch intentionally does not materialize or cherry-pick a newer registry revision.
+Canonical `MOD-0355 — Business Process Architecture & Modeling` identity is proven by the immutable registry blob
+at checkpoint `7e8fe7d45ce80cb09f28c0089415d4f40400bc37`; materializing that registry row remains registry-owner/composition
+responsibility. This amendment creates no reservation and makes no registry change.
+
 ### Onboarding profiles
 
 | Service | Blueprint owner modules | Exact audience | Client ID reservation | Producer permission source | Bilateral manifest | Remaining gate |
 |---|---|---|---|---|---|---|
-| `Diten.ManagementGovernanceService` | `MOD-0007` | `diten-management-governance-service` | `diten.management-governance` | MOD-0007 checkpoint `7bdbd37e16c72cd80f081612a104cc3af7e2b4cd` | ACCEPTED — 8 operations / 7 permissions | **IMPLEMENTATION EVIDENCE OPEN:** fixture/runtime proof absent |
+| `Diten.ManagementGovernanceService` | `MOD-0007`, `MOD-0355` as separate owner manifests and entitlement gates | `diten-management-governance-service` | `diten.management-governance` | MOD-0007 checkpoint `7bdbd37e16c72cd80f081612a104cc3af7e2b4cd`; MOD-0355 governance checkpoint `7e8fe7d45ce80cb09f28c0089415d4f40400bc37` | MOD-0007 ACCEPTED — 8 operations / 7 permissions; MOD-0355 ACCEPTED GOVERNANCE-ONLY — 16 operations / 16 permissions | **IMPLEMENTATION EVIDENCE OPEN:** MOD-0007 fixture/runtime and MOD-0355 manifest/fixture/runtime proof absent |
 | `Diten.FpaService` / Budgeting | `MOD-0136` | `diten-fpa-service` | `diten.fpa` | MOD-0136 checkpoint `937aabf43683eac9a240f9101ee84c66db55423a` | ACCEPTED — 15 operations / 15 permissions | **IMPLEMENTATION EVIDENCE OPEN:** fixture/runtime proof absent |
 | `Diten.FpaService` / ScenarioPlanning | `MOD-0138` | `diten-fpa-service` | `diten.fpa` | MOD-0138 checkpoint `066d16c80b966a63aaa7430ee8dd14c120e7a4c2` | ACCEPTED — 16 delegated mappings / 16 permissions plus accepted-run worker authority | **IMPLEMENTATION EVIDENCE OPEN:** fixture/runtime proof absent |
 | `Diten.DecisionIntelligenceService` | `MOD-0072` | `diten-decision-intelligence-service` | `diten.decision-intelligence` | MOD-0072 checkpoint `5e5088ef6a5298b09b1dfcece9cf10ad2375aa29` | ACCEPTED — 9 operations / 7 permissions | **IMPLEMENTATION EVIDENCE OPEN:** fixture/runtime proof absent |
@@ -436,7 +443,7 @@ These client IDs and audiences identify workloads/receivers only. A ModuleCode i
 audience alias, and none of these values confers a producer permission. Shared FPA audience/client values do not merge
 entitlement gates or ownership: MOD-0136 owns only `budgeting.*` and MOD-0138 owns only
 `fpa.scenario-planning.*`. The producer manifests use disjoint operation and permission namespaces;
-no exact operation ID, permission key or owner-module collision was found across the four checkpoints. PSS accepts
+no exact operation ID, permission key or owner-module collision was found across the five owner checkpoints. PSS accepts
 the owner-authored values below verbatim and invents none.
 
 ### Bilaterally accepted owner manifests
@@ -537,12 +544,101 @@ Distinct permission set: exactly seven values represented above. The binding Mod
 tenant-assignable, non-baseline, entitlement-gated and explicit-grant-only for all nine operations. **Profile result:
 GOVERNANCE PASS / runtime execution BLOCKED:** fixture/runtime evidence must prove the closed entitlement policy.
 
+#### MOD-0355 — Business Process Architecture & Modeling
+
+`MOD-0355` reuses the existing `Diten.ManagementGovernanceService` workload only. Its exact audience is
+`diten-management-governance-service`, Client ID is `diten.management-governance` and delegated protocol
+scope is `diten.s2s.delegated.invoke`. Workload reuse does not merge owner authority: the ServicePrincipal
+`OwnerModuleIds` onboarding delta adds exact `MOD-0355` without removing `MOD-0007`; this amendment authorizes
+no other owner-module addition. `MOD-0007` remains a separate owner manifest, separate
+tenant entitlement and separate grant boundary. A `MOD-0007` entitlement or permission never authorizes
+`MOD-0355`, and the reverse is also forbidden.
+
+The ModuleCode is exact `MOD-0355`. It is tenant-assignable, non-baseline, entitlement-gated and
+explicit-grant-only. Enabling or reconciling the entitlement creates no Admin/Viewer or other automatic role
+grant. Removing or disabling entitlement preserves an existing explicit grant as dormant; it cannot become
+effective again without a current entitlement, current membership/grant state and the complete fresh FU16
+validation chain.
+
+The owner manifest has exactly sixteen ordinal entries. For this profile each exact `operation_id` is
+identical to its exact permission key; no seventeenth permission, worker permission, alias or generic
+process-modeling operation exists.
+
+| Exact `operation_id` | Exact permission |
+|---|---|
+| `management-governance.process-modeling.architectures.read` | `management-governance.process-modeling.architectures.read` |
+| `management-governance.process-modeling.architectures.create` | `management-governance.process-modeling.architectures.create` |
+| `management-governance.process-modeling.architectures.update` | `management-governance.process-modeling.architectures.update` |
+| `management-governance.process-modeling.architectures.archive` | `management-governance.process-modeling.architectures.archive` |
+| `management-governance.process-modeling.definitions.read` | `management-governance.process-modeling.definitions.read` |
+| `management-governance.process-modeling.definitions.create` | `management-governance.process-modeling.definitions.create` |
+| `management-governance.process-modeling.definitions.update` | `management-governance.process-modeling.definitions.update` |
+| `management-governance.process-modeling.definitions.archive` | `management-governance.process-modeling.definitions.archive` |
+| `management-governance.process-modeling.models.read` | `management-governance.process-modeling.models.read` |
+| `management-governance.process-modeling.models.create` | `management-governance.process-modeling.models.create` |
+| `management-governance.process-modeling.models.update` | `management-governance.process-modeling.models.update` |
+| `management-governance.process-modeling.models.request-review` | `management-governance.process-modeling.models.request-review` |
+| `management-governance.process-modeling.models.return-to-draft` | `management-governance.process-modeling.models.return-to-draft` |
+| `management-governance.process-modeling.models.publish` | `management-governance.process-modeling.models.publish` |
+| `management-governance.process-modeling.models.retire` | `management-governance.process-modeling.models.retire` |
+| `management-governance.process-modeling.models.create-revision` | `management-governance.process-modeling.models.create-revision` |
+
+The twenty command contracts bind to the manifest as follows:
+
+| Command family | Exact operation / permission |
+|---|---|
+| `CreateProcessArchitectureCommand`, `CreateProcessDomainCommand`, `CreateProcessFamilyCommand` | `management-governance.process-modeling.architectures.create` |
+| `UpdateProcessArchitectureCommand`, `UpdateProcessDomainCommand`, `UpdateProcessFamilyCommand` | `management-governance.process-modeling.architectures.update` |
+| `ArchiveProcessArchitectureCommand`, `ArchiveProcessDomainCommand`, `ArchiveProcessFamilyCommand` | `management-governance.process-modeling.architectures.archive` |
+| `CreateProcessDefinitionCommand` | `management-governance.process-modeling.definitions.create` |
+| `UpdateProcessDefinitionCommand` | `management-governance.process-modeling.definitions.update` |
+| `ArchiveProcessDefinitionCommand` | `management-governance.process-modeling.definitions.archive` |
+| `CreateProcessModelCommand` | `management-governance.process-modeling.models.create` |
+| `UpdateProcessModelCommand`, `UpdateDraftProcessModelVersionCommand` | `management-governance.process-modeling.models.update` |
+| `RequestProcessModelReviewCommand` | `management-governance.process-modeling.models.request-review` |
+| `ReturnProcessModelToDraftCommand` | `management-governance.process-modeling.models.return-to-draft` |
+| `PublishProcessModelVersionCommand` | `management-governance.process-modeling.models.publish` |
+| `RetireProcessModelVersionCommand` | `management-governance.process-modeling.models.retire` |
+| `CreateProcessModelRevisionCommand` | `management-governance.process-modeling.models.create-revision` |
+
+The three closed query families bind without adding permissions:
+
+| Query family | Exact operation / permission |
+|---|---|
+| Architecture, domain and family queries | `management-governance.process-modeling.architectures.read` |
+| Definition queries | `management-governance.process-modeling.definitions.read` |
+| Model, version, history, graph and validation queries | `management-governance.process-modeling.models.read` |
+
+This amendment is **GOVERNANCE-ONLY / NON-RUNTIME**. It authorizes no AuthService manifest code, seed,
+registration call, ServicePrincipal mutation, credential/key, signing/JWKS material, DI, endpoint, route,
+configuration, migration, deployment or production activation. Runtime execution remains blocked pending an
+explicit executable slice and the following owner-produced evidence:
+
+- canonical `PermissionCatalogManifestV1` bytes/hash with exact `OwnerModuleId = MOD-0355`, ModuleCode,
+  service identity, audience, Client ID, scope and all sixteen ordinal pairs;
+- exact 16-positive mapping matrix plus wrong owner/module/entitlement, cross-pair, missing/extra, duplicate,
+  case, trim, alias, wildcard and unknown-operation negatives;
+- proof that the twenty commands and three query families resolve only through the mappings above and that
+  no seventeenth permission or implicit operation is accepted;
+- tenant entitlement enable/disable/removal, zero Admin/Viewer auto-grant, explicit-grant-only and dormant
+  grant preservation/reactivation tests isolated from `MOD-0007`;
+- authenticated S2S family, exact audience/client/scope, tenant and actor binding, exact permission/current
+  explicit grant, current entitlement, principal version, credential generation, authorization version,
+  request hash, replay, cancellation and 401/403/409/503 evidence;
+- cross-module negatives proving a valid `MOD-0007` grant/entitlement cannot authorize `MOD-0355`, even
+  though both share the same workload identity.
+
+**Profile result: GOVERNANCE PASS / runtime execution BLOCKED.** No runtime fixture, credential or production
+authority is created by this amendment.
+
 ### Collision and regression disposition
 
-- Owner IDs are exact and distinct: MOD-0007, MOD-0136, MOD-0138 and MOD-0072.
-- Operation namespaces are disjoint: `decision-registry.*`, `budgeting.*`, `fpa.scenario-planning.*` and
-  `outcome-tracking.*`.
-- Permission namespaces/sets are disjoint. Shared FPA service identity does not merge MOD-0136 and MOD-0138
+- Owner IDs are exact and distinct: MOD-0007, MOD-0136, MOD-0138, MOD-0072 and MOD-0355. MOD-0007 and
+  MOD-0355 share one workload identity but remain separate owner manifests and entitlement/grant gates.
+- Operation namespaces are disjoint: `decision-registry.*`, `budgeting.*`, `fpa.scenario-planning.*`,
+  `outcome-tracking.*` and `management-governance.process-modeling.*`.
+- Permission namespaces/sets are disjoint. Shared FPA service identity does not merge MOD-0136 and MOD-0138;
+  shared Management Governance service identity does not merge MOD-0007 and MOD-0355
   manifests, ownership, permissions or entitlement decisions.
 - No exact operation ID or permission key is registered by two owner modules in these checkpoints.
 - PPM remains `ExplicitOnlyPreserveOnEntitlementRemoval`; its exact Phase 2A grant behavior is unchanged.
@@ -551,7 +647,7 @@ GOVERNANCE PASS / runtime execution BLOCKED:** fixture/runtime evidence must pro
 
 ## 20. Follow-up Items
 
-1. Executable owner/AuthService packs supply fixture/runtime evidence for the four closed ModuleCode profiles,
+1. Executable owner/AuthService packs supply fixture/runtime evidence for the five closed ModuleCode profiles,
    including independent `MOD-0136`/`MOD-0138` FPA gates, zero automatic grant on enable/reconcile, grant preservation
    on disable/removal, and current membership/grant/version checks before any dormant grant can become effective.
 2. Security Architecture carries the approved RS256/RSA >=3072, trusted JWKS, exact-kid and atomic-replay contract
