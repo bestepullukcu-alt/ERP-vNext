@@ -1,0 +1,119 @@
+@using Diten.Web.Views.Tasks.TaskTypes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskTypesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["DocListTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["DocListTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["DocListDescription"]</p>
+</div>
+
+@Html.AntiForgeryToken()
+
+<div class="row g-4">
+    <div class="col-12 col-lg-5">
+        <section class="card">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["DocListImportSection"]</h6>
+
+                @*
+                    ⚠ THE PRECEDENT'S THREE-STEP INDICATOR (`.qms-steps`) IS DELIBERATELY NOT COPIED.
+                    It carries a measured contrast defect (1.83 light / 2.02 dark, well under AA) that comes from
+                    `--bs-secondary-color`. Copying the markup would have copied the defect into a second screen,
+                    and fixing it locally would fork a product-wide token. The two steps are named in words
+                    instead, which needs no new colour at all.
+                *@
+                <div class="mb-3">
+                    <label class="form-label fw-medium" for="docListFile">@Localizer["DocListFile"]</label>
+                    <input type="file" class="form-control" id="docListFile" accept=".csv,text/csv" />
+                    <div class="form-text" id="docListFileInfo"></div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-medium" for="docListSourceKey">@Localizer["DocListSourceKey"]</label>
+                        <input type="text" class="form-control" id="docListSourceKey" value="GMG-QMS-DOCREG" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-medium" for="docListVersion">@Localizer["DocListVersion"]</label>
+                        <input type="text" class="form-control" id="docListVersion" placeholder="2026-08-24" />
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-label-primary" id="btnDocListDryRun">
+                        <span class="spinner-border spinner-border-sm me-1 d-none" id="docListDryRunSpinner" role="status" aria-hidden="true"></span>
+                        @Localizer["DocListDryRun"]
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btnDocListImport" disabled>
+                        <span class="spinner-border spinner-border-sm me-1 d-none" id="docListImportSpinner" role="status" aria-hidden="true"></span>
+                        @Localizer["DocListImport"]
+                    </button>
+                </div>
+
+                @* aria-live: the summary replaces itself in place, so a screen reader is told it changed. *@
+                <div id="docListSummary" class="mt-3" role="status" aria-live="polite"></div>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-lg-7">
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["DocListVersionsSection"]</h6>
+                @* Wide content scrolls inside its own container so the PAGE never scrolls sideways. *@
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>@Localizer["DocListVersion"]</th>
+                                <th>@Localizer["DocListFileName"]</th>
+                                <th>@Localizer["DocListImportedAt"]</th>
+                                <th class="text-end">@Localizer["DocListEntries"]</th>
+                                <th class="text-end">@Localizer["DocListLinkable"]</th>
+                                <th>@Localizer["DocListHash"]</th>
+                            </tr>
+                        </thead>
+                        <tbody id="docListVersions"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["DocListSearchSection"]</h6>
+                <div class="diten-field mb-3">
+                    <i class="bx bx-search diten-field-icon" aria-hidden="true"></i>
+                    <input type="search" class="form-control" id="docListSearch"
+                           placeholder="@Localizer["DocListSearchPlaceholder"]" />
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>@Localizer["Code"]</th>
+                                <th>@Localizer["DocListDocTitle"]</th>
+                                <th>@Localizer["DocListDocVersion"]</th>
+                                <th>@SharedLocalizer["Status"]</th>
+                                <th>@Localizer["GqmsDomain"]</th>
+                            </tr>
+                        </thead>
+                        <tbody id="docListResults"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Tasks/TaskTypes/_IndexL10n.cshtml" />
+    <partial name="~/Views/Tasks/_DocumentListL10n.cshtml" />
+    <script src="~/assets/js/Tasks/TaskTypes/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/DocumentList/index.js" asp-append-version="true"></script>
+}

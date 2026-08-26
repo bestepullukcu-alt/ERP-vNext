@@ -328,6 +328,59 @@ public sealed class TasksController : Controller
     /// service is invisible to the browser until it is listed. That is not a guess: the pin endpoint returned 404
     /// on its first live click for exactly this reason.
     /// </summary>
+    /// <summary>The document-list management screen (DCP-005 slice 2).</summary>
+    [HttpGet("DocumentList")]
+    public IActionResult DocumentList()
+    {
+        ViewBag.ActiveMenu = "tasks";
+        return View("~/Views/Tasks/DocumentList.cshtml");
+    }
+
+    /*
+     * ── THE UPLOAD HOP IS MULTIPART; THE GATEWAY HOP IS BASE64 ────────────────────────────────────────────
+     *
+     * MEASURED before choosing (the brief asked): the taxonomy wizard's browser posts `multipart/form-data` to
+     * ITS MVC controller, which base64s the bytes and forwards JSON to the gateway. So the two "different
+     * transports" were never in conflict — they are two hops of the same path, and our gateway endpoint already
+     * takes `ContentBase64` exactly as the precedent's does.
+     *
+     * The screen is aligned to the precedent rather than the endpoint changed, for two reasons: base64-ing a
+     * file in the browser doubles it in memory for no gain, and the gateway contract is already committed.
+     */
+    [HttpPost("DocumentList/dry-run")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> DocumentListDryRun(IFormFile? file, [FromForm] string? sourceKey, CancellationToken ct)
+        => ForwardDocumentListAsync("dry-run", file, sourceKey, listVersion: null, ct);
+
+    [HttpPost("DocumentList/import")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> DocumentListImport(
+        IFormFile? file, [FromForm] string? sourceKey, [FromForm] string? listVersion, CancellationToken ct)
+        => ForwardDocumentListAsync("import", file, sourceKey, listVersion, ct);
+
+    private async Task<IActionResult> ForwardDocumentListAsync(
+        string action, IFormFile? file, string? sourceKey, string? listVersion, CancellationToken ct)
+    {
+        if (file is null || file.Length == 0)
+        {
+            return UnprocessableEntity(new { isSuccessful = false, errors = new[] { "invalid_document_list_upload" } });
+        }
+
+        using var buffer = new MemoryStream();
+        await file.CopyToAsync(buffer, ct);
+
+        var payload = new
+        {
+            fileName = file.FileName,
+            contentBase64 = Convert.ToBase64String(buffer.ToArray()),
+            sourceKey = sourceKey ?? string.Empty,
+            listVersion = listVersion ?? string.Empty
+        };
+
+        return await ProxyAsync(
+            HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/document-list/{action}", readBody: false, body: payload);
+    }
+
     // ── DCP-005 slice 2: the controlled-document reference list ──────────
     //
     // ⚠ Named one by one because this controller is a PROXY: a route that exists on the service is invisible to
@@ -425,7 +478,15 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiDecisionMakers()
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/lookups/decision-makers", readBody: false);
 
-    private async Task<IActionResult> ProxyAsync(HttpMethod method, string targetUrl, bool readBody)
+    /// <summary>
+    /// Forward to the gateway.
+    ///
+    /// <para><c>body</c> is for calls whose payload this controller BUILDS rather than relays — the document
+    /// list's upload, where the browser sends a file and the gateway wants base64. `readBody` still relays the
+    /// incoming stream for everything else; passing both would be two sources for one body.</para>
+    /// </summary>
+    private async Task<IActionResult> ProxyAsync(
+        HttpMethod method, string targetUrl, bool readBody, object? body = null)
     {
         if (!TryCreateTenantRequest(method, targetUrl, out var request))
         {
@@ -436,12 +497,17 @@ public sealed class TasksController : Controller
         {
             using (request)
             {
-                if (readBody)
+                if (body is not null)
+                {
+                    request.Content = new StringContent(
+                        System.Text.Json.JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
+                }
+                else if (readBody)
                 {
                     using var reader = new StreamReader(Request.Body, Encoding.UTF8);
-                    var body = await reader.ReadToEndAsync(HttpContext.RequestAborted);
+                    var relayed = await reader.ReadToEndAsync(HttpContext.RequestAborted);
                     request.Content = new StringContent(
-                        body, Encoding.UTF8, Request.ContentType ?? "application/json");
+                        relayed, Encoding.UTF8, Request.ContentType ?? "application/json");
                 }
 
                 var client = _httpClientFactory.CreateClient();

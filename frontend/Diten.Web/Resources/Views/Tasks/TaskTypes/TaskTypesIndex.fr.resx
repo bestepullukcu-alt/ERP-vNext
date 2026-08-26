@@ -74,4 +74,36 @@
   <data name="FunctionCodeCTY" xml:space="preserve"><value>Opérations pays (résiduel)</value></data>
   <data name="FunctionCodeMED" xml:space="preserve"><value>Affaires médicales</value></data>
   <data name="ErrorFunctionCodeInvalid" xml:space="preserve"><value>Ce n'est pas l'un des codes de fonction utilisés par cette organisation.</value></data>
+  <data name="DocListTitle" xml:space="preserve"><value>Documents contrôlés</value></data>
+  <data name="DocListDescription" xml:space="preserve"><value>La liste de référence des documents contrôlés qu’une tâche peut citer. Une liste, pas un registre modifiable.</value></data>
+  <data name="DocListImportSection" xml:space="preserve"><value>Importer</value></data>
+  <data name="DocListVersionsSection" xml:space="preserve"><value>Versions importées</value></data>
+  <data name="DocListSearchSection" xml:space="preserve"><value>Rechercher</value></data>
+  <data name="DocListFile" xml:space="preserve"><value>Fichier du registre (CSV)</value></data>
+  <data name="DocListSourceKey" xml:space="preserve"><value>Clé source</value></data>
+  <data name="DocListVersion" xml:space="preserve"><value>Version de la liste</value></data>
+  <data name="DocListFileName" xml:space="preserve"><value>Fichier</value></data>
+  <data name="DocListImportedAt" xml:space="preserve"><value>Importé</value></data>
+  <data name="DocListEntries" xml:space="preserve"><value>entrées</value></data>
+  <data name="DocListLinkable" xml:space="preserve"><value>citables</value></data>
+  <data name="DocListBlocked" xml:space="preserve"><value>bloquées</value></data>
+  <data name="DocListUnreadColumns" xml:space="preserve"><value>Colonnes non lues</value></data>
+  <data name="DocListMissingColumns" xml:space="preserve"><value>Colonnes manquantes</value></data>
+  <data name="DocListNone" xml:space="preserve"><value>aucune</value></data>
+  <data name="DocListHash" xml:space="preserve"><value>Contenu</value></data>
+  <data name="DocListCopyHash" xml:space="preserve"><value>Copier l’empreinte complète</value></data>
+  <data name="DocListDryRun" xml:space="preserve"><value>Vérifier le fichier</value></data>
+  <data name="DocListImport" xml:space="preserve"><value>Importer</value></data>
+  <data name="DocListDryRunFirst" xml:space="preserve"><value>Vérifiez le fichier avant d’importer.</value></data>
+  <data name="DocListFileChanged" xml:space="preserve"><value>Le fichier a changé — vérifiez-le à nouveau.</value></data>
+  <data name="DocListVersionRequired" xml:space="preserve"><value>Une version de liste est requise.</value></data>
+  <data name="DocListFileRequired" xml:space="preserve"><value>Choisissez un fichier de registre.</value></data>
+  <data name="DocListImported" xml:space="preserve"><value>La liste a été importée.</value></data>
+  <data name="DocListAlreadyImported" xml:space="preserve"><value>Ce fichier exact est déjà stocké comme version {0}. Rien n’a été ajouté.</value></data>
+  <data name="DocListNotLinkable" xml:space="preserve"><value>Ne peut pas être citée</value></data>
+  <data name="DocListNoVersions" xml:space="preserve"><value>Aucune liste importée.</value></data>
+  <data name="DocListNoResults" xml:space="preserve"><value>Aucun document ne correspond.</value></data>
+  <data name="DocListSearchPlaceholder" xml:space="preserve"><value>Rechercher par code, titre ou UID…</value></data>
+  <data name="DocListDocTitle" xml:space="preserve"><value>Titre</value></data>
+  <data name="DocListDocVersion" xml:space="preserve"><value>Version</value></data>
 </root>

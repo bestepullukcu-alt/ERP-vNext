@@ -74,4 +74,36 @@
   <data name="FunctionCodeCTY" xml:space="preserve"><value>国家运营（其余）</value></data>
   <data name="FunctionCodeMED" xml:space="preserve"><value>医学事务</value></data>
   <data name="ErrorFunctionCodeInvalid" xml:space="preserve"><value>这不是本组织使用的职能代码之一。</value></data>
+  <data name="DocListTitle" xml:space="preserve"><value>受控文件</value></data>
+  <data name="DocListDescription" xml:space="preserve"><value>任务可引用的受控文件参考清单。这是查找清单，不是可编辑的登记册。</value></data>
+  <data name="DocListImportSection" xml:space="preserve"><value>导入</value></data>
+  <data name="DocListVersionsSection" xml:space="preserve"><value>已导入版本</value></data>
+  <data name="DocListSearchSection" xml:space="preserve"><value>搜索</value></data>
+  <data name="DocListFile" xml:space="preserve"><value>登记册文件（CSV）</value></data>
+  <data name="DocListSourceKey" xml:space="preserve"><value>来源键</value></data>
+  <data name="DocListVersion" xml:space="preserve"><value>清单版本</value></data>
+  <data name="DocListFileName" xml:space="preserve"><value>文件</value></data>
+  <data name="DocListImportedAt" xml:space="preserve"><value>导入时间</value></data>
+  <data name="DocListEntries" xml:space="preserve"><value>条</value></data>
+  <data name="DocListLinkable" xml:space="preserve"><value>可引用</value></data>
+  <data name="DocListBlocked" xml:space="preserve"><value>已阻止</value></data>
+  <data name="DocListUnreadColumns" xml:space="preserve"><value>未读取的列</value></data>
+  <data name="DocListMissingColumns" xml:space="preserve"><value>缺少的列</value></data>
+  <data name="DocListNone" xml:space="preserve"><value>无</value></data>
+  <data name="DocListHash" xml:space="preserve"><value>内容</value></data>
+  <data name="DocListCopyHash" xml:space="preserve"><value>复制完整哈希</value></data>
+  <data name="DocListDryRun" xml:space="preserve"><value>检查文件</value></data>
+  <data name="DocListImport" xml:space="preserve"><value>导入</value></data>
+  <data name="DocListDryRunFirst" xml:space="preserve"><value>导入前请先检查文件。</value></data>
+  <data name="DocListFileChanged" xml:space="preserve"><value>文件已更改——请重新检查后再导入。</value></data>
+  <data name="DocListVersionRequired" xml:space="preserve"><value>导入需要清单版本。</value></data>
+  <data name="DocListFileRequired" xml:space="preserve"><value>请选择登记册文件。</value></data>
+  <data name="DocListImported" xml:space="preserve"><value>清单已导入。</value></data>
+  <data name="DocListAlreadyImported" xml:space="preserve"><value>该文件已存储为版本 {0}。未添加任何内容。</value></data>
+  <data name="DocListNotLinkable" xml:space="preserve"><value>不可引用</value></data>
+  <data name="DocListNoVersions" xml:space="preserve"><value>尚未导入清单。</value></data>
+  <data name="DocListNoResults" xml:space="preserve"><value>没有匹配的文件。</value></data>
+  <data name="DocListSearchPlaceholder" xml:space="preserve"><value>按代码、标题或 UID 搜索…</value></data>
+  <data name="DocListDocTitle" xml:space="preserve"><value>标题</value></data>
+  <data name="DocListDocVersion" xml:space="preserve"><value>版本</value></data>
 </root>

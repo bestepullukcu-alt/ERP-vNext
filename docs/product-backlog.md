@@ -5841,3 +5841,56 @@ Listesi) `cardHead`'ini koruyor, ekleme satırını yerinde bırakıyor ve "hen�
   Strategy) · **`Diten.Web.Tests` 46/46** (bu tur ayrıca koşuldu, CT'nin talimatı) · FG-003 0 · KNOWN_RAW 12.
 - **BU TURDA YAPILMAYANLAR (dilim 3/4):** göreve bağlama · dondurma altılısı · görev türünün
   `governing_documents`'ını listeye bağlama · taksonominin commit'i.
+
+### BL-266 — [KURULDU 2026-08-26] Doküman listesi yönetim ekranı (DCP-005 dilim 2 tamamlama)
+- **TAŞIMA ÇELİŞKİSİ ÖLÇÜLDÜ VE YOKTU.** Emsal (taksonomi sihirbazı) tarayıcıdan **MVC'ye** `multipart`
+  gönderiyor; MVC base64'leyip gateway'e JSON yolluyor. Yani iki taşıma iki ayrı yüzey değil, **aynı yolun iki
+  adımı** — ve bizim ucumuz zaten emsalinkiyle aynı sözleşmede (`ContentBase64`). Karar: **ekran emsale
+  hizalandı**, uç değişmedi. Gerekçe: dosyayı tarayıcıda base64'lemek onu bellekte ikiye katlar ve dosya-imzası
+  hesabını zorlaştırır; ayrıca gateway sözleşmesi zaten commit edilmiş.
+- **Emsalin en önemli davranışı kopyalandı: dosya değişirse prova geçersiz olur, içe aktarma kilitlenir.**
+  Canlı ölçüm: başta kilitli → prova sonrası açık → dosya değişince **yeniden kilitli**. Sunucunun 409'u bu
+  hatayı ancak İŞ İŞTEN GEÇTİKTEN sonra yakalıyor; kilit onu ulaşılamaz kılıyor.
+- **409 HATA DEĞİL, BİLGİ.** Canlı: `alert alert-info`, gövde metni okuyucunun dilinde. İlk hâlinde sunucunun
+  İngilizce cümlesini basıyordu; görev türlerinde kurulan **kararlı kod köprüsü** buraya da uygulandı
+  (`DOCUMENT_LIST_ALREADY_IMPORTED` → 7 dil), haritasız bir kod sunucunun sözlerine düşüyor.
+- **Bloke satır görünür, seçilemez, gerekçesi okunur — ve bu RENKTEN FAZLASIYLA söyleniyor.** Canlı ölçüm
+  (`GMG-GDP-SOP-0001`): satırda `aria-disabled="true"`, gerekçe METİN olarak satırın içinde, soluk sınıf ancak
+  üçüncü sinyal. Yalnız griyle anlatılan bir "seçilemez", ekran okuyucu kullananın seçmeye çalışacağı satırdır.
+- **32 anahtar × 7 dil.** Manifest `DisplayName` İngilizce bırakıldı — nav köprüsü stabil koda göre çeviriyor.
+- ⚠ **MANİFEST GÖRÜNÜRLÜĞÜ ANCAK EKRAN AÇILDIĞI ÖLÇÜLDÜKTEN SONRA `true` YAPILDI.** CT'nin düzelttiği kusur:
+  sayfa görünür yayınlanmıştı ama ne görünüm ne rota vardı — kenar çubuğu bir sonraki uzlaştırmada 404'e giden
+  bir öğe kazanacaktı. Kural koda yazıldı: *manifestteki görünür bir sayfa, ekranı açıldığı ölçülen turda
+  yayınlanır.* Test bunu üç parça olarak ölçüyor: manifest `true` · görünüm dosyası var · `[HttpGet]` rotası var.
+- ⚠ **EMSALİN KONTRAST KUSURU KOPYALANMADI.** `.qms-steps` üç adımlı göstergesi ölçülmüş bir AA ihlali taşıyor
+  (1.83 açık / 2.02 koyu, `--bs-secondary-color`). İşaretlemeyi kopyalamak kusuru ikinci ekrana taşırdı; yerel
+  düzeltmek 197 kuralın bağlı olduğu bir ürün tokenını çatallardı. İki adım **kelimelerle** adlandırıldı, yeni
+  renk gerekmedi. Token düzeltmesi ayrı dal (CT talimatı).
+- **MUTASYON (3, ÖNCE koşuldu, üçü de kırmızı):** bloke satır seçilebilir · 409 hata olarak gösterildi ·
+  dosya-değişti kilidi kaldırıldı.
+- ⚠ Testimin kendi kusurunu yakaladım: 409 dalını **tam metne** çakmıştım; dala reason-code kontrolü eklenince
+  davranış bozulmadan test kırıldı. *Büyümesine izin verilen bir koda çakılı pencere, pencere değildir* —
+  koşulun kendisine bağlandı.
+- **İKİ GENİŞLİK × İKİ TEMA (900/1440 × açık/koyu):** sayfa yatay kaymıyor; **sürüm tablosu kendi kabında**
+  kayıyor; arama tablosu sığıyor; içe aktarma düğmesi doğru durumda.
+- **REGRESYON:** frontend **1731 geçti / 9 kırmızı** (dokuzu da dokunulmayan Enterprise Strategy — bu turdan
+  önce de kırmızıydı) · backend **2375/2375** · **`Diten.Web.Tests` 46/46** · FG-003 **0** · KNOWN_RAW **12**.
+
+### BL-267 — [ÖLÇÜLDÜ, AÇIK — TASARIM TUZAĞI] Yanlış bir liste yüklemesi geri alınamıyor
+- Doğrulama sırasında kendi kendine ortaya çıktı: ekranı sınamak için küçük bir `TEST-1` dosyası yükledim ve o
+  **güncel liste** oldu (arama en yeni sürümü okuyor). Gerçek 358 satırlık listeyi yeniden güncel yapmak için
+  tekrar yüklemeyi denedim → **409, "bu dosya zaten 2026-08-24 sürümü olarak duruyor"**.
+- **İki kural tek başına doğru, birlikte tuzak:**
+  (1) aynı baytlar tanınır, kopyalanmaz — iki kişinin aynı öğleden sonra yüklemesi iki "güncel" liste üretmesin
+  diye; (2) en yeni sürüm kazanır.
+  Birlikte: **yanlış bir dosya doğrunun ARDINDAN yüklenirse, doğru liste eski sürüm olarak mahsur kalır** ve
+  onu geri getirmenin yolu yoktur.
+- ⚠ Bu, geçen tur sorduğum sorunun canlı hâli ("sürüm silinemiyor — eski sürümü pasifleştirme gerekir mi?").
+  CT `WithdrawnAt`'i sahibin kararına bıraktı ve bu turda yapılmamasını söyledi; **yapılmadı**.
+- **Bugünkü durum dürüstçe:** geliştirme kiracısında güncel liste benim `TEST-1` satırım (1 kayıt), gerçek 358
+  satırlık liste `2026-08-24` sürümü olarak duruyor ama güncel değil. Elle düzeltilemez.
+- Seçenekler: (a) sürüm geri çekme (`WithdrawnAt`) — geri çekilen sürüm "en yeni" sayılmaz; (b) "güncel sürümü
+  seç" işlemi — en yeni kuralını elle geçersiz kılar; (c) aynı baytların yeniden yüklenmesine izin ver — ama o
+  zaman (1)'in koruduğu şey kaybolur.
+- **Gelecek regresyon riski: 🔴 kısıtlı** — veri kaybı yok, ama yanlış yükleme yapan bir kiracı, dilim 3
+  geldiğinde yanlış listeye karşı atıf yapar.

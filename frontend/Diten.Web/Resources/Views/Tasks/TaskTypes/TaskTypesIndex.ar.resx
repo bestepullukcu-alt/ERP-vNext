@@ -74,4 +74,36 @@
   <data name="FunctionCodeCTY" xml:space="preserve"><value>عمليات الدولة (المتبقي)</value></data>
   <data name="FunctionCodeMED" xml:space="preserve"><value>الشؤون الطبية</value></data>
   <data name="ErrorFunctionCodeInvalid" xml:space="preserve"><value>هذا ليس أحد رموز الوظائف التي تستخدمها هذه المؤسسة.</value></data>
+  <data name="DocListTitle" xml:space="preserve"><value>الوثائق الخاضعة للرقابة</value></data>
+  <data name="DocListDescription" xml:space="preserve"><value>قائمة مرجعية للوثائق الخاضعة للرقابة التي يمكن للمهمة الاستشهاد بها. قائمة بحث، لا سجل قابل للتحرير.</value></data>
+  <data name="DocListImportSection" xml:space="preserve"><value>استيراد</value></data>
+  <data name="DocListVersionsSection" xml:space="preserve"><value>الإصدارات المستوردة</value></data>
+  <data name="DocListSearchSection" xml:space="preserve"><value>بحث</value></data>
+  <data name="DocListFile" xml:space="preserve"><value>ملف السجل (CSV)</value></data>
+  <data name="DocListSourceKey" xml:space="preserve"><value>مفتاح المصدر</value></data>
+  <data name="DocListVersion" xml:space="preserve"><value>إصدار القائمة</value></data>
+  <data name="DocListFileName" xml:space="preserve"><value>الملف</value></data>
+  <data name="DocListImportedAt" xml:space="preserve"><value>تم الاستيراد</value></data>
+  <data name="DocListEntries" xml:space="preserve"><value>سجلات</value></data>
+  <data name="DocListLinkable" xml:space="preserve"><value>قابلة للاستشهاد</value></data>
+  <data name="DocListBlocked" xml:space="preserve"><value>محجوبة</value></data>
+  <data name="DocListUnreadColumns" xml:space="preserve"><value>أعمدة غير مقروءة</value></data>
+  <data name="DocListMissingColumns" xml:space="preserve"><value>أعمدة ناقصة</value></data>
+  <data name="DocListNone" xml:space="preserve"><value>لا شيء</value></data>
+  <data name="DocListHash" xml:space="preserve"><value>المحتوى</value></data>
+  <data name="DocListCopyHash" xml:space="preserve"><value>نسخ البصمة الكاملة</value></data>
+  <data name="DocListDryRun" xml:space="preserve"><value>فحص الملف</value></data>
+  <data name="DocListImport" xml:space="preserve"><value>استيراد</value></data>
+  <data name="DocListDryRunFirst" xml:space="preserve"><value>افحص الملف قبل الاستيراد.</value></data>
+  <data name="DocListFileChanged" xml:space="preserve"><value>تغيّر الملف — افحصه مرة أخرى قبل الاستيراد.</value></data>
+  <data name="DocListVersionRequired" xml:space="preserve"><value>الاستيراد يحتاج إلى إصدار للقائمة.</value></data>
+  <data name="DocListFileRequired" xml:space="preserve"><value>اختر ملف السجل.</value></data>
+  <data name="DocListImported" xml:space="preserve"><value>تم استيراد القائمة.</value></data>
+  <data name="DocListAlreadyImported" xml:space="preserve"><value>هذا الملف مخزّن بالفعل كإصدار {0}. لم يُضف شيء.</value></data>
+  <data name="DocListNotLinkable" xml:space="preserve"><value>لا يمكن الاستشهاد به</value></data>
+  <data name="DocListNoVersions" xml:space="preserve"><value>لم تُستورد أي قائمة بعد.</value></data>
+  <data name="DocListNoResults" xml:space="preserve"><value>لا توجد وثيقة مطابقة.</value></data>
+  <data name="DocListSearchPlaceholder" xml:space="preserve"><value>ابحث بالرمز أو العنوان أو المعرّف…</value></data>
+  <data name="DocListDocTitle" xml:space="preserve"><value>العنوان</value></data>
+  <data name="DocListDocVersion" xml:space="preserve"><value>الإصدار</value></data>
 </root>

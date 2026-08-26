@@ -74,4 +74,36 @@
   <data name="FunctionCodeCTY" xml:space="preserve"><value>Страновые операции (остаточные)</value></data>
   <data name="FunctionCodeMED" xml:space="preserve"><value>Медицинские вопросы</value></data>
   <data name="ErrorFunctionCodeInvalid" xml:space="preserve"><value>Это не один из кодов функций, используемых этой организацией.</value></data>
+  <data name="DocListTitle" xml:space="preserve"><value>Контролируемые документы</value></data>
+  <data name="DocListDescription" xml:space="preserve"><value>Справочный список контролируемых документов, на которые может ссылаться задача. Это список, а не редактируемый реестр.</value></data>
+  <data name="DocListImportSection" xml:space="preserve"><value>Импорт</value></data>
+  <data name="DocListVersionsSection" xml:space="preserve"><value>Импортированные версии</value></data>
+  <data name="DocListSearchSection" xml:space="preserve"><value>Поиск</value></data>
+  <data name="DocListFile" xml:space="preserve"><value>Файл реестра (CSV)</value></data>
+  <data name="DocListSourceKey" xml:space="preserve"><value>Ключ источника</value></data>
+  <data name="DocListVersion" xml:space="preserve"><value>Версия списка</value></data>
+  <data name="DocListFileName" xml:space="preserve"><value>Файл</value></data>
+  <data name="DocListImportedAt" xml:space="preserve"><value>Импортировано</value></data>
+  <data name="DocListEntries" xml:space="preserve"><value>записей</value></data>
+  <data name="DocListLinkable" xml:space="preserve"><value>можно сослаться</value></data>
+  <data name="DocListBlocked" xml:space="preserve"><value>заблокировано</value></data>
+  <data name="DocListUnreadColumns" xml:space="preserve"><value>Непрочитанные столбцы</value></data>
+  <data name="DocListMissingColumns" xml:space="preserve"><value>Отсутствующие столбцы</value></data>
+  <data name="DocListNone" xml:space="preserve"><value>нет</value></data>
+  <data name="DocListHash" xml:space="preserve"><value>Содержимое</value></data>
+  <data name="DocListCopyHash" xml:space="preserve"><value>Скопировать полный хеш</value></data>
+  <data name="DocListDryRun" xml:space="preserve"><value>Проверить файл</value></data>
+  <data name="DocListImport" xml:space="preserve"><value>Импортировать</value></data>
+  <data name="DocListDryRunFirst" xml:space="preserve"><value>Проверьте файл перед импортом.</value></data>
+  <data name="DocListFileChanged" xml:space="preserve"><value>Файл изменился — проверьте его снова.</value></data>
+  <data name="DocListVersionRequired" xml:space="preserve"><value>Для импорта нужна версия списка.</value></data>
+  <data name="DocListFileRequired" xml:space="preserve"><value>Выберите файл реестра.</value></data>
+  <data name="DocListImported" xml:space="preserve"><value>Список импортирован.</value></data>
+  <data name="DocListAlreadyImported" xml:space="preserve"><value>Этот файл уже сохранён как версия {0}. Ничего не добавлено.</value></data>
+  <data name="DocListNotLinkable" xml:space="preserve"><value>Нельзя сослаться</value></data>
+  <data name="DocListNoVersions" xml:space="preserve"><value>Список ещё не импортирован.</value></data>
+  <data name="DocListNoResults" xml:space="preserve"><value>Нет подходящих документов.</value></data>
+  <data name="DocListSearchPlaceholder" xml:space="preserve"><value>Поиск по коду, названию или UID…</value></data>
+  <data name="DocListDocTitle" xml:space="preserve"><value>Название</value></data>
+  <data name="DocListDocVersion" xml:space="preserve"><value>Версия</value></data>
 </root>

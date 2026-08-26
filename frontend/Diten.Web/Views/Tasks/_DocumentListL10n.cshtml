@@ -1,0 +1,29 @@
+@using Diten.Web.Views.Tasks.TaskTypes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskTypesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* Payload keys are camelCase (MVC's Json.Serialize policy) — the reader normalises them, same bridge the
+   task-type screen uses. *@
+<script id="doclist-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        DocListEntries = Localizer["DocListEntries"].Value,
+        DocListLinkable = Localizer["DocListLinkable"].Value,
+        DocListBlocked = Localizer["DocListBlocked"].Value,
+        DocListUnreadColumns = Localizer["DocListUnreadColumns"].Value,
+        DocListMissingColumns = Localizer["DocListMissingColumns"].Value,
+        DocListNone = Localizer["DocListNone"].Value,
+        DocListAlreadyImported = Localizer["DocListAlreadyImported"].Value,
+        DocListDryRunFirst = Localizer["DocListDryRunFirst"].Value,
+        DocListFileChanged = Localizer["DocListFileChanged"].Value,
+        DocListVersionRequired = Localizer["DocListVersionRequired"].Value,
+        DocListFileRequired = Localizer["DocListFileRequired"].Value,
+        DocListImported = Localizer["DocListImported"].Value,
+        DocListNotLinkable = Localizer["DocListNotLinkable"].Value,
+        DocListNoVersions = Localizer["DocListNoVersions"].Value,
+        DocListNoResults = Localizer["DocListNoResults"].Value,
+        DocListCopyHash = Localizer["DocListCopyHash"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value
+    })
+</script>

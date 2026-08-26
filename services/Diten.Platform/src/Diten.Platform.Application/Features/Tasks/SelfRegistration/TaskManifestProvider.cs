@@ -205,7 +205,10 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                      * reconciled from this manifest, so "true" would publish it to real users on next startup.
                      * Flip to true in the same round that adds the view, not before.
                      */
-                    IsNavigationVisible: false,
+                    // ⚠ PUBLISHED VISIBLE ONLY NOW, in the round the screen was measured open. It shipped `true` once with no
+                    // view and no route: the sidebar would have grown an entry pointing at a 404 on the next
+                    // reconciliation. A manifest page is a promise the menu keeps — it is made when it can be kept.
+                    IsNavigationVisible: true,
                     PageType: "List",
                     SortOrder: 27,
                     Actions:
