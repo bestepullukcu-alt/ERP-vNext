@@ -35,10 +35,11 @@ production_authority: none
 
 > **B-02 non-runtime evidence guard:** The explicit user decision dated 2026-08-26 additionally authorizes
 > only the B-02 Mongo Persistence & Integration Evidence slice recorded in §5. It permits a governance
-> checkpoint for this pack followed by unstaged implementation under the exact Dws Persistence and
+> checkpoint for this pack followed by implementation under the exact Dws Persistence and
 > IntegrationTests paths. It does not authorize a host, listener, endpoint, port binding, runtime DI,
 > configuration, production database, migration, deployment, credential, secret, frontend, Gateway,
-> WorkCenter, commit of implementation evidence or production activation.
+> WorkCenter or production activation. The separately approved non-runtime implementation checkpoint is
+> `6dfbaa5b1218a1d236360830db1e8c5db71bba87`; it grants no broader runtime authority.
 
 > **Planning date:** `target: 2026-08-14` is a provisional planning date, not a delivery commitment or
 > implementation authorization.
@@ -608,8 +609,8 @@ protected. The test harness must terminate the process and remove its data/log/t
 connection string, second runtime composition, service activation or migration is authorized. The evidence
 must prove the exact eight collections, 14 tenant-first named indexes with no TTL, same-client/same-session
 transaction ownership, CAS, tenant isolation, participant-by-participant rollback, body-once commit-only
-retry and durable-receipt reconciliation. Implementation remains unstaged and cannot close B-02 until every
-required executable proof passes.
+retry and durable-receipt reconciliation. These executable proofs passed and were recorded in checkpoint
+`6dfbaa5b1218a1d236360830db1e8c5db71bba87`; no runtime composition or activation was introduced.
 
 ## 6. Protected Paths
 
@@ -1199,11 +1200,15 @@ not allocate a service port or change a route.
   2026-07-29.
 - [ ] **B-01:** MOD-0117 authoritative provider/module pack/service/runtime, S2S identity/actor delegation,
   compatibility and runtime/security evidence are approved and proven.
-- [ ] **B-02:** Replica-set environment/readiness and real Mongo crash/rollback tests prove the selected transaction
-  strategy; no standalone fallback or partial commit exists.
+- [x] **B-02:** Replica-set environment/readiness and real Mongo crash/rollback tests prove the selected transaction
+  strategy; no standalone fallback or partial commit exists. Implementation checkpoint
+  `6dfbaa5b1218a1d236360830db1e8c5db71bba87` records exact eight collections, 14 tenant-first named indexes
+  with zero TTL, ten transaction families, 53 participant-boundary rollback points, CAS and tenant-isolation
+  failures, body-once commit-only retry, durable receipt reconciliation, standalone fail-closed behavior and
+  dynamic-port cleanup. Revalidation passed build with zero warnings/errors and `62/62` tests.
 - [x] **B-02 authority:** The exact non-runtime Dws Persistence/Integration evidence paths and disposable
-  dynamic-port replica-set constraints received explicit user authorization on 2026-08-26. This checkbox is
-  authority only; the B-02 evidence checkbox above remains open until executable proof passes.
+  dynamic-port replica-set constraints received explicit user authorization on 2026-08-26. The executable
+  evidence is closed by the checkpoint above; this authority does not extend to runtime activation.
 - [ ] **B-03:** Exact versioned MOD-0021 semantic provider/consumer contract is approved and implemented.
 - [ ] **B-04:** Transactional producer-local audit-outbox and real Mongo crash/rollback evidence are proven.
 - [ ] **B-05:** Idempotent consumer duplicate-delivery and consumer-crash evidence are proven.
@@ -1232,7 +1237,7 @@ implementation and activation remain forbidden while `production_authority: none
 | Slice | Bounded scope | Readiness relationship |
 |---|---|---|
 | Core Scaffold & Contract-Test | Structural domain/application contracts, deterministic canonicalization, exact permission/persistence manifests, local transaction seams and architecture/contract tests | Present `ready-for-dev` authority |
-| B-02 Mongo Persistence & Integration Evidence | Dws-owned Mongo documents/repositories, index initialization, same-session transaction execution and disposable real-Mongo evidence under the exact §5 paths | Explicit non-runtime evidence authority; no implementation commit or runtime activation |
+| B-02 Mongo Persistence & Integration Evidence | Dws-owned Mongo documents/repositories, index initialization, same-session transaction execution and disposable real-Mongo evidence under the exact §5 paths | Closed by `6dfbaa5b1218a1d236360830db1e8c5db71bba87`; non-runtime only, no activation authority |
 | Security & MOD-0117 Provider Integration | Live context validator, S2S/delegated actor, MOD-0018 enforcement and permission provisioning | Separate later gate |
 | Audit Delivery | Signed/versioned event contract, MOD-0035 adapter, MOD-0021 consumer compatibility, retry/DLQ/alarm/replay | Separate later gate |
 | Frontend & Legacy Parity | Tenant UI, seven-language resources, page-by-page legacy matrix and user acceptance | Separate later gate |
