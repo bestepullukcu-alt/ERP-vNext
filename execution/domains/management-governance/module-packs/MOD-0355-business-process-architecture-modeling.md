@@ -591,21 +591,21 @@ server-side validation context and is not added to `ApprovalOutcomeReferenceV1`.
 template-version identity and its eligibility rules remain a MOD-0023 producer decision; this pack does not invent
 or select a template identity.
 
-This closes the A-04 policy decision only. It does not make publish executable. The current authoritative gaps
-are explicit:
+This closes the A-04 policy decision only. It does not make publish executable. The approved non-runtime
+governance checkpoints are reconciled exactly as follows:
 
-- MOD-0018 FU16 has no accepted MOD-0355 onboarding profile, operation manifest, entitlement fixture or runtime
-  evidence.
-- MOD-0023 has no executable ProcessModelVersion source profile, trusted attestation or bilateral MOD-0355
-  approval fixture.
-- MOD-0021 has no MOD-0355 consumer admission, delivery adapter or runtime evidence. The producer-owned event
-  identity, schema, allowlist and test-only signing fixtures are governance-available under the non-runtime
-  fixture contract below; they do not establish consumer or runtime availability.
+| Boundary | Immutable checkpoint | Closed governance evidence | Still-open executable/runtime evidence |
+|---|---|---|---|
+| MOD-0018 FU16 | `eefcbc63691c92fbbf4d41977df70d751ad8744b` | Existing Management Governance workload reuse, exact `ModuleCode = MOD-0355`, separate tenant entitlement, explicit-grant-only posture and exact sixteen-operation/sixteen-permission onboarding manifest are accepted governance-only | Executable manifest fixtures, AuthService provisioning, current entitlement/grant/freshness enforcement, credentials and production composition |
+| MOD-0023 ProcessModelVersion source | `10b679baf3f9de83cf7069b9e5f8fb22a72c240e` | Exact `management-governance.process-model-version-context` / `1.0` source profile, pinned published template-version mapping and exact source-attestation family are defined DRAFT / NON-EXECUTABLE; `ApprovalOutcomeReferenceV1` remains exact three fields | Immutable bilateral source/attestation/outcome fixtures, production template mapping, provider/adapter implementation, signing/JWKS provisioning and executable outcome binding |
+| MOD-0355 producer fixture | `3e69577e787ac7ccca149b4065e83eeb97fd5146` | Exact producer event/schema/allowlist/projection/provenance/test-only signing fixture set is immutable NON-RUNTIME evidence | Production signing/key provisioning, publisher composition and live transport evidence |
+| MOD-0021 consumer admission | `58b8b0e766314a86314a888ec865bb01ed5bb54e` | The exact MOD-0355 producer checkpoint is accepted by the five-producer bilateral governance matrix | Executable consumer adapter, inbox/outbox transaction evidence, broker delivery, retry/DLQ/alarm/replay and live PPM regression evidence |
 
-No missing upstream name, version, route, operation ID, template identity or transport value is inferred.
-Until owner-approved bilateral amendments close all three gaps, the only executable
-publish behavior remains the existing fail-closed `503` contract; no successful application handler,
-persistence mutation or delivery adapter is authorized.
+No governance checkpoint above is runtime or production authority. No missing route, production credential,
+template mapping instance, adapter or transport value is inferred. Until the still-open executable/runtime
+evidence is separately authorized and passes, the only executable publish behavior remains the existing
+fail-closed `503` contract; no successful application handler, persistence mutation or delivery adapter is
+authorized.
 
 ### Exact ContentHash canonicalization contract
 
@@ -828,7 +828,8 @@ transaction:
 3. producer-local audit intent;
 4. producer-local outbox.
 
-Failure to persist any participant rolls back all four. MOD-0021 admission/delivery, runtime event type,
+Failure to persist any participant rolls back all four. MOD-0021 governance admission is recorded at
+`58b8b0e766314a86314a888ec865bb01ed5bb54e`; executable consumer/delivery composition, runtime event type,
 publisher credentials and delivery adapter remain in the Approval/Auth/Audit Runtime slice.
 
 ### Producer-owned audit event fixture contract — NON-RUNTIME
@@ -888,8 +889,10 @@ is missing proof and fails closed.
 The fixture root is producer-owned:
 `execution/domains/management-governance/module-packs/fixtures/MOD-0355/audit/**`. Its canonical payload,
 checksum, schema, envelope, projection, allowlist, provenance, production-rejection, signing-vector and manifest
-files are one indivisible contract-test set. MOD-0021 admission remains deferred until this producer fixture set
-has an immutable checkpoint and a separate bilateral consumer amendment accepts that exact checkpoint.
+files are one indivisible contract-test set. The producer fixture set is immutable at
+`3e69577e787ac7ccca149b4065e83eeb97fd5146` and MOD-0021 governance admission accepts that exact checkpoint at
+`58b8b0e766314a86314a888ec865bb01ed5bb54e`. This closes only the bilateral governance/design gate; it does not
+provide a consumer adapter, credential, publisher, transport or runtime authority.
 
 ## 5. Repo Scope
 
@@ -1019,12 +1022,15 @@ MOD-0031, MOD-0048, MOD-0059, MOD-0060, frontend or Gateway integration.
 
 ### Approval/Auth/Audit dependencies
 
-- MOD-0018 authoritative permission enforcement and, when required, eligibility/delegation decisions.
-- MOD-0021 bilateral consumer admission and runtime delivery adapter for the producer fixture contract in §4.
-- Promoted executable MOD-0023 ApprovalOutcome producer contract.
-- Approval-policy owner decision.
-- Bilateral consumer acceptance of the exact producer serialization, tenancy, failure-mode and compatibility
-  fixtures after an immutable producer checkpoint.
+- MOD-0018 executable authoritative permission enforcement and, when required, eligibility/delegation decisions;
+  the FU16 governance onboarding checkpoint alone is not enforcement.
+- MOD-0021 executable consumer/delivery adapter for the governance-admitted producer fixture contract in §4.
+- Executable MOD-0023 ProcessModelVersion source-attestation and ApprovalOutcome producer/adapter; the current
+  source-profile amendment is DRAFT / NON-EXECUTABLE.
+- Executable approval-policy provider, freshness/revalidation and SoD/eligibility evidence for the closed A-04
+  owner decision.
+- Runtime implementation evidence for the governance-accepted producer serialization, tenancy, failure-mode and
+  compatibility fixture contracts.
 
 ### Optional reference dependencies
 
@@ -1062,7 +1068,8 @@ Contract-Test `ready-for-dev`.
 - Parallel variants are forbidden in Minimal Core v1.
 - Every successful Core mutation atomically persists the four participants defined in §4.
 - Local audit intent/outbox persistence is Core infrastructure.
-- MOD-0021 delivery adapter, signed/event contract and publisher credentials remain second-slice work.
+- MOD-0021 executable delivery adapter, runtime event/publisher composition and publisher credentials remain
+  second-slice work; the producer fixture and consumer admission checkpoints are governance-only evidence.
 - No synchronous remote authorization, approval or audit call is implied by this draft.
 - No adapter may treat a governance-only contract as runtime available.
 - Candidate aliases cannot appear in runtime literals.
@@ -1400,16 +1407,19 @@ decision unavailable (`503`), not denied, allowed or locally inferred.
       TenantId, ProcessModelId, ProcessModelVersionId and ContentHash.
 - [ ] Effective publisher differs from model author/requester and, when approval is required, approval decision
       actor; explicit equality denial is `403`.
-- [ ] Missing MOD-0355 FU16 onboarding, MOD-0023 ProcessModelVersion profile or MOD-0021 producer admission
-      remains non-executable and returns fail-closed `503` where authority is required.
+- [ ] Governance-accepted MOD-0355 FU16 onboarding, the DRAFT / NON-EXECUTABLE MOD-0023 ProcessModelVersion
+      profile and MOD-0021 bilateral admission are not treated as runtime-available; missing executable
+      fixtures/providers/provisioning still returns fail-closed `503` where authority is required.
 - [ ] `PublishProcessModelVersionCommand` contract, domain transition specification and fail-closed tests may
       exist in Core, but no successful application handler or persistence mutation is authorized until the
       Approval/Auth/Audit Runtime slice is separately approved and executable.
-- [ ] MOD-0018, MOD-0021 and MOD-0023 integrations require separate approval and fixtures.
+- [ ] MOD-0018, MOD-0021 and MOD-0023 executable integrations still require separate implementation authority,
+      immutable runtime fixtures and operational evidence.
 - [x] Producer-owned MOD-0355 audit event identity, exact schema, `20/34` allowlist matrix, projection,
       provenance and test-only HMAC fixtures are governance-available and executable only as fixture validation.
-- [ ] MOD-0021 bilateral admission, publisher composition, credentials, transport and live delivery remain
-      separately authorized runtime gates after an immutable producer checkpoint.
+- [x] MOD-0021 governance admission binds the immutable MOD-0355 producer checkpoint exactly.
+- [ ] MOD-0021 executable consumer/publisher composition, credentials, transport and live delivery remain
+      separately authorized runtime gates.
 
 ### Optional reference integrations
 
@@ -1632,18 +1642,27 @@ Frontend and runtime activation tests become mandatory only in their separately 
 
 - [ ] **B-01:** Service port allocation.
 - [ ] **B-02:** Gateway route and transport topology.
-- [ ] **B-03:** AuthService module catalog, entitlement and exact 16-permission provisioning; MOD-0355 FU16
-      onboarding profile and executable fixture are absent.
+- [x] **B-03a — GOVERNANCE CLOSED / NON-RUNTIME:** MOD-0355 FU16 onboarding accepts the existing Management
+      Governance workload, exact ModuleCode, separate entitlement gate and exact 16-operation/16-permission
+      manifest at `eefcbc63691c92fbbf4d41977df70d751ad8744b`.
+- [ ] **B-03b:** Executable manifest fixtures, AuthService module/permission provisioning, entitlement/grant
+      enforcement, credentials and production composition.
 - [ ] **B-04:** Reusable MOD-0018 permission/SoD enforcement, including fresh delegated-actor and actor-inequality
       decisions for MOD-0355.
-- [ ] **B-05:** MOD-0023 ApprovalOutcome amendment promotion plus an exact ProcessModelVersion source profile,
-      template-version decision, trusted attestation, adapter and bilateral fixtures.
+- [x] **B-05a — GOVERNANCE PROFILE DEFINED / NON-EXECUTABLE:** Exact ProcessModelVersion source profile,
+      pinned-template semantics and trusted source-attestation family are defined at
+      `10b679baf3f9de83cf7069b9e5f8fb22a72c240e`; the amendment remains DRAFT / NON-EXECUTABLE.
+- [ ] **B-05b:** Immutable bilateral source/attestation/outcome fixtures, production template mapping,
+      provider/adapter implementation, signing/JWKS provisioning and executable ApprovalOutcome binding.
 - [ ] **B-06:** Executable approval-policy resolution, eligibility/delegation and bilateral fixtures for both
       A-04 branches.
 - [x] **B-07a:** Producer-owned MOD-0355 event identity/schema/allowlist/provenance/test-only signing fixture
       contract is closed as NON-RUNTIME governance evidence.
-- [ ] **B-07b:** Immutable producer checkpoint, MOD-0021 bilateral consumer admission, production signing/key
-      provisioning, publisher composition, delivery, retry/DLQ/replay and live evidence.
+- [x] **B-07b — GOVERNANCE ADMISSION CLOSED / NON-RUNTIME:** Producer fixture checkpoint
+      `3e69577e787ac7ccca149b4065e83eeb97fd5146` is immutable and MOD-0021 accepts it at
+      `58b8b0e766314a86314a888ec865bb01ed5bb54e`.
+- [ ] **B-07c:** Production signing/key provisioning, executable consumer/publisher composition, delivery,
+      inbox/outbox atomicity, retry/DLQ/alarm/replay and live evidence.
 - [ ] **B-08:** Classification producer contract.
 - [ ] **B-09:** KPI/Metric producer contracts.
 - [ ] **B-10:** Owner-reference producer contract and adapter.
@@ -1664,7 +1683,7 @@ named later slice or runtime activation.
 |---|---|---|
 | Core Model & Contract-Test | Minimal unclassified definition model, lifecycle, revision, topology, tenancy, concurrency, hashing, idempotency, local audit-intent/outbox and architecture tests | Independent of external producer integrations |
 | Approval Policy & Publish Authorization Contract-Test | Closed A-04 branch semantics, exact three-field reference, trusted binding, SoD/eligibility and fail-closed provider contracts | Non-runtime second-slice foundation; successful publish remains blocked |
-| Approval/Auth/Audit Runtime | Permission/SoD runtime enforcement, executable outcome binding and MOD-0021 delivery | Separate later executable slice after bilateral amendments |
+| Approval/Auth/Audit Runtime | Permission/SoD runtime enforcement, executable outcome binding and MOD-0021 delivery | Separate later executable slice after runtime fixtures, providers, provisioning and explicit authority |
 | Optional reference integrations | Classification, KPI/Metric, owner, interface, document, evidence and artifact references | Independent later slices |
 | Frontend & Legacy Parity | Tenant UI, localization, parity inventory and approved disposition | Separate later slice |
 | Runtime activation | Port, Gateway, transport, credentials, deployment, observability and production authorization | Separate final gate |
@@ -1739,9 +1758,10 @@ Governance availability cannot become local fallback, hard-coded truth or inferr
 - Implement only the exact module-local `PublishActorProvenanceV1` and
   `PublishApprovalPolicyDecisionV1` contracts in that contract-test slice; do not infer an upstream provider,
   transport or runtime identity.
-- Add MOD-0018 permission/SoD enforcement through an owner-approved PSS slice.
-- Seek MOD-0021 bilateral admission only after the producer fixture set has an immutable checkpoint; add
-  delivery only after production signing, transport and operational evidence exist.
+- Implement MOD-0018 permission/SoD enforcement only through a separately approved PSS executable slice; the
+  governance onboarding checkpoint is not provisioning or runtime evidence.
+- Preserve the closed MOD-0021 governance admission and add executable delivery only after production signing,
+  transport and operational evidence exist.
 - Add classification, KPI/Metric, owner, interface, document, evidence and artifact references through
   separately approved producer contracts.
 - Define and approve tenant frontend and seven-language resources.
