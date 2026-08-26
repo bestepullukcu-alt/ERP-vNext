@@ -52,3 +52,20 @@ reconstructed rather than waited for.
 These live on a desktop this session cannot read — macOS refuses shell access to that
 directory, so a file reaches this repository only when it is attached to a message and
 written from the message. Attaching them is the whole of what is needed.
+
+---
+
+## Dry-run result — v2, measured 2026-08-24
+
+```
+totalRows 103 · importedDefinitionsCount 103 · skippedRows 0
+errors [] · warnings [] · duplicatePathConflicts [] · invalidHierarchyFindings []
+isValid true
+```
+
+Run against the real importer through the web tier, with no edits to the file. The
+earlier attempt on version one refused fourteen rows on our own folder-name minimum;
+that rule now allows two characters and `HR` passes as sent.
+
+⚠ This is the DRY RUN only. Nothing was committed, published or instantiated — which is
+the intended stopping point (DCP-005 §6.5).
