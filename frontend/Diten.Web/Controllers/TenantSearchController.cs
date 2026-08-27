@@ -96,7 +96,20 @@ public sealed class TenantSearchController : Controller
             using var response = await _httpClient.SendAsync(request, ct);
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogDebug("Tenant search data resolve returned {StatusCode}.", (int)response.StatusCode);
+                /*
+                 * ⚠ WARNING, NOT DEBUG, AND THE REASON IS THAT THIS IS THE SAME EVENT AS THE MENU VANISHING.
+                 * Ctrl+K resolves its entries from /api/platform/navigation/menu — the very endpoint
+                 * DynamicModuleMenuViewComponent calls, which logs a failure at Warning because "the menu
+                 * disappeared" is not a debug-level event. When that call fails, BOTH surfaces empty out at
+                 * once; logging one at Warning and the other at Debug meant the second half of the symptom
+                 * was invisible in every environment where Debug is off, so the palette looked merely
+                 * unhelpful rather than broken.
+                 */
+                _logger.LogWarning(
+                    "Ctrl+K search returned NOTHING because the navigation endpoint answered {StatusCode} "
+                    + "({Reason}). This is the same failure that empties the sidebar menu.",
+                    (int)response.StatusCode,
+                    response.ReasonPhrase);
                 return Array.Empty<NavigationGroup>();
             }
 
@@ -107,7 +120,10 @@ public sealed class TenantSearchController : Controller
         catch (Exception ex)
         {
             // Best-effort: a broken nav endpoint must not break Ctrl+K (it just yields no dynamic results).
-            _logger.LogDebug(ex, "Tenant search data resolve failed; returning empty search set.");
+            // Warning for the same reason as above — an empty palette is a symptom, not a detail.
+            _logger.LogWarning(ex,
+                "Ctrl+K search returned NOTHING because the navigation call threw. This is the same failure "
+                + "that empties the sidebar menu.");
             return Array.Empty<NavigationGroup>();
         }
     }

@@ -60,6 +60,58 @@ public sealed class TokenBridgeTests
     }
 
     [Fact]
+    public async Task The_refreshed_token_is_readable_by_the_rest_of_THIS_request()
+    {
+        /*
+         * ⚠ THE HALF THE TEST ABOVE NEVER COVERED. "Pass 2 does not undo the refresh even though the request
+         * still holds the old token" names the defect exactly — and then solves it only INSIDE the bridge, by
+         * making pass 2 ignore the request cookie. Everything downstream of the bridge was left reading that
+         * same stale cookie: 57 call sites across 53 files, every one of them using the token that had just
+         * been replaced, for the whole of the request in which the refresh happened.
+         *
+         * This asserts the property the downstream actually needs: after the bridge refreshes, the ordinary
+         * accessor everybody goes through returns the NEW token, while the request still carries the old one.
+         *
+         * MUTATION GUARD: delete the RefreshedTokens.Record call in TokenBridge and this goes red — the
+         * accessor falls back to the cookie and hands back the expired token.
+         */
+        var expired = ExpiredToken();
+        var context = ContextWith(expired, "refresh-1");
+        var expected = SuccessResult();
+
+        await new TokenBridge().AuthenticateAsync(
+            context, ValidationParameters(), new FakeAuthGateway(expected), new RecordingCookieService(),
+            _ => TenantId);
+
+        Assert.NotEqual(expired, expected.AccessToken);
+
+        // What the browser sent is unchanged — that is production, not a test artefact.
+        Assert.Equal(expired, context.Request.Cookies[AuthTokenCookies.AccessTokenCookie]);
+
+        // What the rest of the request reads is the new one.
+        Assert.Equal(expected.AccessToken, AuthTokenCookies.GetAccessToken(context.Request));
+        Assert.True(RefreshedTokens.RefreshedInThisRequest(context));
+    }
+
+    [Fact]
+    public async Task A_request_that_did_NOT_refresh_reports_no_refresh()
+    {
+        /*
+         * Non-vacuity for the guard the fifteen proxy endpoints now rely on. If "this request refreshed" were
+         * true of every request, ClearAuthCookies would never clear anything and a genuinely dead session
+         * would never end — the user would loop through failing calls instead of being sent to sign in.
+         */
+        var live = Token(DateTime.UtcNow.AddMinutes(30));
+        var context = ContextWith(live, "refresh-1");
+
+        await new TokenBridge().AuthenticateAsync(
+            context, ValidationParameters(), Gateway(), new RecordingCookieService(), _ => TenantId);
+
+        Assert.False(RefreshedTokens.RefreshedInThisRequest(context));
+        Assert.Equal(live, AuthTokenCookies.GetAccessToken(context.Request));
+    }
+
+    [Fact]
     public async Task The_refreshed_session_still_carries_the_users_claims_for_the_next_API_call()
     {
         // "The page renders but the APIs are logged out" was the symptom; the principal must survive intact.

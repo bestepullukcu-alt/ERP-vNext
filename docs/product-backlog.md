@@ -6376,3 +6376,79 @@ Bu, BL-280'in aynı şekli: üretimin sahip olmadığı bir kodlamaya karşı y�
 - **Gelecek regresyon riski: 🟡** — taşıma sırasında `_id` korunmazsa Organization→LegalEntity
   bağları kopar ve bu ancak ekranda fark edilir. Taşıma turunun kabul koşulu, taşımadan
   sonra o 15 eşleşmenin hâlâ 15 olması olmalıdır.
+### BL-293 — yenilenen belirteç AYNI istekte görünmüyordu; iki hata, tek kök (2026-08-27, düzeltildi + CANLI kanıtlandı)
+`TokenBridge` belirteci yeniliyor ve yeni değeri **yalnız `HttpResponse.Cookies`**'e yazıyordu. Bu, dışarı
+giden bir başlıktır; `HttpRequest.Cookies` tarayıcının GÖNDERDİĞİNİN anlık görüntüsüdür ve **depoda ona yazan
+tek satır yok** (ölçüldü: sıfır). Aşağı akıştaki **57 çağrı yeri / 53 dosya** bu yüzden yenilemenin olduğu
+isteğin tamamında az önce değiştirilmiş belirteci kullanıyordu.
+
+**Kod tabanı bunu biliyordu ama yalnız köprünün içinde çözmüştü:** `TokenBridgeTests` içindeki
+`Pass_2_does_not_undo_the_refresh_even_though_the_request_still_holds_the_old_token` — kusurun adı, yazılmış
+ve öylece bırakılmış.
+
+**Tasarım kararı (b değil, a'nın daha iyi hâli):** `HttpRequest` zaten `HttpContext` taşıdığı için
+`AuthTokenCookies.GetAccessToken` **imzası değişmeden** tamponu okuyabiliyor — 57 çağrı yerinin hiçbirine
+dokunulmadı, aşırı yükleme de gerekmedi. `Request.Cookies`'i saran koleksiyonla değiştirmek (seçenek b)
+reddedildi: isteğin tarayıcının ne gönderdiği hakkında yalan söylemesi demek, başkalarının başka sebeplerle
+okuduğu bir şey ve depoda emsali yok. Bedeli açık yazıldı → BL-294.
+
+**HATA B — çıkış attıran (🔴):** 15 proxy denetleyici (23 çağrı yeri) 401'de çerezleri **köprünün taze çerezi
+yazdığı AYNI Response üzerinde** siliyordu. `Response.Cookies.Delete`, önceki `Append`'in yanına bir son
+kullanma eklemez — onu **başlıklardan çıkarır** (bağımsız olarak ölçüldü, `CookieOverwriteMeasurementTests`).
+Yani taze belirteç tarayıcıya hiç ulaşmıyor, sonraki istek boş geliyor ve kullanıcı **gerçekten** çıkışa
+atılıyor. Aylardır süren "veri sayfalarında çıkış atma" şikâyetinin en olası açıklaması.
+
+**CANLI KANIT (2026-08-27, tam yığın; kiracının `SessionTimeoutMinutes` değeri geçici olarak 45→1, sonra geri
+alındı). Aynı senaryo, düzeltmeli ve düzeltmesiz:**
+
+| ölçüm (erişim belirteci süresi dolmuş, exp+51 sn) | DÜZELTMESİZ | DÜZELTMELİ |
+|---|---|---|
+| `GET /OrganizationUnits/api` (proxy uç) | **401** | **200, veriyle** |
+| yanıttaki canlı `access_token` çerezi | **0** | **5** (chunks-4 + 4 parça) |
+| sol menü öğesi | **2** | **35** |
+| Ctrl+K girdisi | **0** | **31** |
+| `/OrganizationUnits` sayfası | 200 | 200 |
+| girişe yönlendirme | yok | yok |
+
+- ⚠ Düzeltmeli koşuda uç **401 bile dönmüyor**: birincil düzeltme sayesinde proxy artık TAZE belirteçle
+  gidiyor. İkinci savunma hattı (yenileme sonrası 401'de çerez silme) hiç devreye girmedi — istendiği gibi.
+- ⚠ **Belirteç PARÇALI çerez olarak taşınıyor** (`chunks-4` + 4 parça): canlı ölçümün ortaya çıkardığı bir
+  ayrıntı ve BL-294'ü doğrudan ilgilendiriyor.
+- ⚠ Ölçüm tuzağı: `ClockSkew` 30 sn. Süresi 25 sn önce dolmuş belirteçle yenileme TETİKLENMEZ; ilk denemem
+  bu yüzden hiçbir şey göstermedi. exp+50 sn'den sonra ölçün.
+- ⚠ Kiracı belirteç ömrü `JwtSettings:AccessTokenExpirationMinutes` DEĞİL, kiracının
+  `SessionTimeoutMinutes` ayarından geliyor (`LoginCommandHandler:174`). Ortam değişkeniyle kısaltmaya
+  çalışmak işe yaramaz.
+- **Gelecek regresyon riski: 🟡** — `AuthTokenCookies` dışından okuyan bir tüketici hâlâ bayat değeri görür;
+  bunu yasaklayan bir muhafız yok.
+
+### BL-294 — 6 yer belirteci doğrudan `Request.Cookies`'ten okuyor: bayat VE parçasız (2026-08-27, ölçüldü)
+`AuthTokenCookies`'i atlayıp `Request.Cookies["access_token"]` diye indeksleyen **6** yer:
+`UsersController:283` · `RolesController:165` · `PermissionsController:69` ·
+`RoleAssignmentsController:127` · `UserRoleAssignmentsController:124` · `GoldenReferenceSlimController:246`.
+
+İki ayrı kusur, aynı satırlarda:
+1. **Bayat** — BL-293'ün tamponunu görmezler, yenilemenin olduğu istekte eski belirteci kullanırlar.
+2. **Parçasız** — canlı ölçüm belirtecin `chunks-4` + 4 parça olarak taşındığını gösterdi. Bu satırlar
+   `access_token` çerezini okuyup literal `"chunks-4"` dizgisini belirteç sanır: yani bu 6 uç yalnız
+   yenilemede değil, **belirteç 3800 karakteri aştığı her durumda** kırık. Bugün her giriş bu durumda.
+- **Düzeltme:** hepsi `AuthTokenCookies.GetAccessToken(Request)` çağırsın. Tek satırlık değişiklikler; bu
+  turda yapılmadı çünkü kapsam merkezî düzeltmeydi.
+- **Gelecek regresyon riski: 🔴** — (2) ölçülmüş bir kırıklık, teorik değil.
+
+### BL-295 — `ShellAccessFilter` anahtar rotasyonunu tanımıyor (2026-08-27, ölçüldü, düzeltilmedi)
+- `Program.cs:196` → `IssuerSigningKeys = jwtRotationResolver.GetValidationKeys()` — **geçerli + önceki**
+  sırlar (`JwtSettings:Secret` + `JwtSettings:PreviousSecrets`).
+- `ShellAccessFilter.cs:139` → `IssuerSigningKey = new SymmetricSecurityKey(...jwtSecret)` — **tek** anahtar.
+- **Sonuç:** bir sır rotasyonundan sonra, önceki sırla imzalanmış geçerli bir belirteç köprüde doğrulanır ama
+  filtrede doğrulanmaz. Bağımsız, sessiz bir çıkış sebebi — BL-293'ten ayrı ve onun düzeltmesiyle kapanmıyor.
+- **Gelecek regresyon riski: 🟡** — yalnız rotasyon anında görünür, yani en kötü zamanda.
+
+### BL-296 — `ClockSkew.Zero` iki serviste, 30 sn diğerlerinde (2026-08-27, ölçüldü)
+`ClockSkew = TimeSpan.Zero`: `MdmService/Program.cs:37` · `DevEnablementService/Program.cs:51`
+(ayrıca `AuthService/TokenService.cs:170` ve `PlatformActorHangfireAuthorizationFilter.cs:84` — ikisi de
+doğrulama yardımcıları, ayrı değerlendirilmeli).
+`ClockSkew = 30 sn`: Web · Gateway · Platform · Auth · Hcm.
+- **Sonuç:** saatler birkaç saniye kayarsa MDM ve DevEnablement, diğer her servisin kabul ettiği bir belirteci
+  reddeder. Tutarsızlık kasıtlı mı, karar verilmedi.
+- **Gelecek regresyon riski: 🟢** — tek bir değere hizalamak ucuz; hangi değer olduğu ürün/güvenlik kararı.
