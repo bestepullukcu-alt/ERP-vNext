@@ -18,7 +18,7 @@ branch: feature/mg/mod-0355-business-process-architecture-modeling
 started: 2026-08-25
 target: 2026-09-15
 form_field_count: 0
-port: TBD
+port: 5017
 implementation_authority: explicit-user-control-tower-bounded-core-model-contract-test
 production_authority: none
 ---
@@ -53,7 +53,7 @@ Its exact provisional identity is:
 - Service: `Diten.ManagementGovernanceService`
 - Internal module: `Modules/ProcessModeling`
 - Shell: `tenant`
-- Port: `TBD`
+- Port: `5017` (canonical reservation; no binding or activation authority)
 
 Minimal Core v1 is a backend-only **Core Model & Contract-Test** slice. It models tenant-owned process
 architectures, domains, families, definitions, durable model identities, immutable published revisions,
@@ -1048,7 +1048,7 @@ Contract-Test `ready-for-dev`.
 - Runtime `ModuleCode` is exactly `MOD-0355`.
 - Service is `Diten.ManagementGovernanceService`.
 - Internal module is exactly `Modules/ProcessModeling`.
-- Service port is `TBD`; this draft allocates no port.
+- Service port reservation is `5017`; this pack grants no port binding, listener or activation authority.
 - No frontend or Gateway route is allocated.
 - Tenant identity comes only from authenticated server context.
 - Client-supplied tenant, actor, permission or approval authority is rejected.
@@ -1344,7 +1344,7 @@ decision unavailable (`503`), not denied, allowed or locally inferred.
 
 ## 15. Gateway / API Routing Decision
 
-- Port: `TBD`.
+- Port: `5017` (canonical reservation only).
 - No Gateway route is authorized.
 - No browser-to-service route is authorized.
 - No direct browser call to a future service port is permitted.
@@ -1640,7 +1640,9 @@ Frontend and runtime activation tests become mandatory only in their separately 
 
 ### B-class runtime blockers
 
-- [ ] **B-01:** Service port allocation.
+- [x] **B-01:** Service port `5017` is canonically reserved without collision; historical Management
+      Governance `5011` is superseded and `5011` remains exclusively assigned to `Diten.PvgService`.
+      Reservation is not port binding, listener, route, runtime or production authority.
 - [ ] **B-02:** Gateway route and transport topology.
 - [x] **B-03a — GOVERNANCE CLOSED / NON-RUNTIME:** MOD-0355 FU16 onboarding accepts the existing Management
       Governance workload, exact ModuleCode, separate entitlement gate and exact 16-operation/16-permission
