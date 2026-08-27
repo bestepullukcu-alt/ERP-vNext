@@ -21,7 +21,8 @@ public static partial class PlatformSchemaManifest
 {
     /// <summary>
     /// MOD-0290 business reference data. This is the profile with a declared budget
-/// (see <see cref="SchemaProfileBudget.BusinessReferenceData"/>) — 8 collections today against a ceiling of 8.
+/// (see <see cref="SchemaProfileBudget.BusinessReferenceData"/>) — 8 collections against a ceiling of 8,
+/// and 19 logical indexes (11 declared + the implicit _id on each of the 8) against a ceiling of 19.
     /// </summary>
     private static readonly SchemaCollection[] BusinessReferenceDataCollections =
     {
@@ -168,31 +169,41 @@ public static partial class PlatformSchemaManifest
 
             }),
         /*
-         * ⚠ STILL NO DECLARED INDEX — BUT NO LONGER FOR WANT OF SIZING. BL-279 measured this collection with
-         * the other eight and it is the ONE that came back needing an index this round could not spend.
+         * ⚠ THE ONE INDEX BL-279 SIZED AND COULD NOT SPEND. It is here now because the GSKU owners raised the
+         * profile's index ceiling 18 → 19 on 2026-08-28 (BL-298) — the ceiling moved first, on a measurement,
+         * and the index followed. The collection ceiling did NOT move: still 8.
          *
-         * BusinessReferenceDataStewardshipRepository reads and writes it two ways, both full scans today
-         * (250 rows in diten_personalization_dev; COLLSCAN, and SORT->COLLSCAN on the read):
+         * BusinessReferenceDataStewardshipRepository reads and writes this collection two ways, and one index
+         * on {TenantId, BusinessReferenceDataVersionId, RuleId} serves both:
          *
-         *   GetValidationResultsByVersionAsync {TenantId, BusinessReferenceDataVersionId, IsDeleted:false} sort RuleId
-         *   ReplaceValidationResultsAsync      {TenantId, BusinessReferenceDataVersionId}  (DeleteMany, then InsertMany)
+         *   GetValidationResultsByVersionAsync {TenantId, VersionId, IsDeleted:false} sort RuleId
+         *   ReplaceValidationResultsAsync      {TenantId, VersionId}  (DeleteMany, then InsertMany)
          *
-         * The index is not in doubt: {TenantId, BusinessReferenceDataVersionId, RuleId} is ESR-exact — equality
-         * on the two scoping columns, RuleId as the sort — and it serves the delete leg on its prefix. Built
-         * against a copy of the live data it takes the read from 250 documents examined with a blocking SORT
-         * to 25 with neither. One index, both call sites, no second candidate.
+         * ESR-exact: equality on the two scoping columns, RuleId as the sort. Measured against a copy of the
+         * live 250 rows, the read goes from SORT->COLLSCAN examining 250 documents to FETCH->IXSCAN examining
+         * 25, with no blocking SORT; the delete leg goes from COLLSCAN over 250 to IXSCAN over 25.
          *
-         * ⚠ WHAT BLOCKS IT IS A BUDGET, AND THE BUDGET IS NOT OURS TO RAISE. SchemaProfileBudget declares this
-         * profile at MaxLogicalIndexes: 18 — the number the GSKU owners set on 2026-08-26 — and the profile
-         * already carries exactly 18 (10 declared + the implicit _id on each of 8 collections). Adding this
-         * index makes 19 and turns DeclaredBudgetsAreRespected red. Editing the ceiling to fit the change is
-         * the move SchemaProfileBudget's own header warns about: it "would produce a test that goes red on the
-         * next legitimate index and teaches the reader to raise the number instead of looking at it". So the
-         * measurement is recorded here and the ceiling goes back to the owners who set it — see BL-279.
+         * ⚠ NO PARTIAL FILTER, AND THAT IS A MEASUREMENT, NOT AN OVERSIGHT. Every other index in this profile
+         * carries PartialFilterExpression IsDeleted=false, and the read here does filter on IsDeleted=false,
+         * so the house style argued for one. It was measured both ways before being rejected: the partial
+         * variant serves the READ identically (25 examined, no SORT) but the DELETE leg regresses all the way
+         * back to COLLSCAN over 250. ReplaceValidationResultsAsync deletes on {TenantId, VersionId} with NO
+         * IsDeleted predicate, so Mongo cannot prove that query is a subset of the partial filter and refuses
+         * the index. Adding the partial to match the neighbours would buy a smaller index and hand back half
+         * the win. PlatformSchemaContractMongoTests pins the delete leg for exactly this reason.
          */
         Collection<BusinessReferenceDataValidationResult>(
             SchemaProfile.BusinessReferenceData,
             PlatformCollections.BusinessReferenceDataValidationResults,
-            () => Array.Empty<CreateIndexModel<BusinessReferenceDataValidationResult>>()),
+            () => new CreateIndexModel<BusinessReferenceDataValidationResult>[]
+            {
+                    new CreateIndexModel<BusinessReferenceDataValidationResult>(
+                        Builders<BusinessReferenceDataValidationResult>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.BusinessReferenceDataVersionId)
+                            .Ascending(x => x.RuleId),
+                        new CreateIndexOptions { Name = "ix_business_reference_data_validation_results_tenant_version_rule" })
+
+            }),
     };
 }

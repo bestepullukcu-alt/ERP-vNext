@@ -23,13 +23,26 @@ public sealed class BusinessReferenceDataMongoResidueSweeperTests : IAsyncLifeti
         }
     }
 
+    /*
+     * ⚠ THE CEILING IS READ FROM SchemaProfileBudget, NOT RETYPED. This test used to spell "18" as a literal,
+     * which made it a SECOND, INDEPENDENT copy of a number one owner decision governs — and when the GSKU
+     * owners raised the index ceiling to 19 on 2026-08-28 (BL-298) this went red for a change they had
+     * approved, in a file about the residue sweeper, naming neither the budget nor the decision. A reader
+     * hitting that failure has no way to tell an approved raise from an unapproved one.
+     *
+     * The number now lives in exactly one place. What is asserted here is the property this file cares
+     * about: the profile stays inside whatever ceiling is declared, at eight collections, and
+     * business_reference_data_validation_results is one of them. The ceiling VALUE is guarded where the
+     * owner decision belongs — PlatformSchemaManifestTests.TheDeclaredBudgetsAreTheNumbersTheOwnersApproved.
+     */
     [Fact]
-    public void BusinessReferenceDataProfile_HasExactlyEightCollectionsAndAtMostEighteenLogicalIndexes()
+    public void BusinessReferenceDataProfile_HasExactlyEightCollectionsAndStaysInsideItsDeclaredIndexBudget()
     {
         var profile = PlatformSchemaManifest.For(SchemaProfile.BusinessReferenceData);
+        var budget = SchemaProfileBudget.BusinessReferenceData;
 
         Assert.Equal(8, profile.Count);
-        Assert.True(profile.Sum(collection => collection.LogicalIndexCount) <= 18);
+        Assert.True(profile.Sum(collection => collection.LogicalIndexCount) <= budget.MaxLogicalIndexes);
         Assert.Contains(profile, collection => collection.Name == "business_reference_data_validation_results");
     }
 

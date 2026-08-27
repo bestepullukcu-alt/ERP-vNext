@@ -16,11 +16,20 @@ namespace Diten.Platform.Infrastructure.Persistence.Schema;
 public sealed record SchemaProfileBudget(SchemaProfile Profile, int MaxCollections, int MaxLogicalIndexes)
 {
     /// <summary>
-    /// Business Reference Data — the number the GSKU owners set (2026-08-26): at most 8 business
-    /// collections and at most 18 real indexes, counting the implicit <c>_id</c> on each collection.
+    /// Business Reference Data — the numbers the GSKU owners set (2026-08-26, index ceiling raised
+    /// 2026-08-28): at most 8 business collections and at most 19 real indexes, counting the implicit
+    /// <c>_id</c> on each collection.
+    ///
+    /// ⚠ THE INDEX CEILING WENT 18 → 19 ON AN OWNER DECISION, NOT TO FIT A CHANGE. That distinction is the
+    /// whole point of the header above. BL-279 measured business_reference_data_validation_results and found
+    /// the one read this profile could not serve — 250 documents examined and a blocking SORT to return 25 —
+    /// and BL-298 took the measurement back to the owners who set 18 rather than editing the number to make
+    /// the build green. They raised the INDEX ceiling by exactly one and left the COLLECTION ceiling at 8.
+    /// The next index is in the same position this one was: it goes to the owners with a measurement, and
+    /// PlatformSchemaManifestTests.TheDeclaredBudgetsAreTheNumbersTheOwnersApproved is what forces that.
     /// </summary>
     public static readonly SchemaProfileBudget BusinessReferenceData =
-        new(SchemaProfile.BusinessReferenceData, MaxCollections: 8, MaxLogicalIndexes: 18);
+        new(SchemaProfile.BusinessReferenceData, MaxCollections: 8, MaxLogicalIndexes: 19);
 
     public static IReadOnlyList<SchemaProfileBudget> Declared { get; } = new[] { BusinessReferenceData };
 

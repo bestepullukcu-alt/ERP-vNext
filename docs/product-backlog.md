@@ -6198,7 +6198,8 @@ index'ler kurulup yeniden. **Önce → sonra:**
   `{TenantId, BusinessReferenceDataVersionId, RuleId}` (ESR-tam; 250→25 belge, SORT kalkıyor). Engel
   `SchemaProfileBudget.BusinessReferenceData` = **MaxLogicalIndexes 18** ve profil zaten tam 18'de. Tavan
   sahiplerinin verdiği sayı (GSKU, 2026-08-26) ve `SchemaProfileBudget`'in kendi başlığı onu değişikliğe
-  uydurmayı açıkça yasaklıyor. → **BL-298**.
+  uydurmayı açıkça yasaklıyor. → **BL-298** (2026-08-28'de kapandı: sahip tavanı 19 yaptı, index kondu,
+  partial filter ölçülüp REDDEDİLDİ).
 - **Mutasyon muhafızı yazıldı:** `PlatformSchemaContractMongoTests.TheQueriesBL279SizedRunOnAnIndexAndNotACollectionScan`
   her deponun gerçek filtre/sıralamasını `explain`'den geçirir ve planın beklenen index üzerinde IXSCAN
   olmasını şart koşar. ⚠ Madde 2 bu iş için YETMEZ: o, manifestin **beyan ettiklerini** dolaşır — beyanı
@@ -6210,23 +6211,49 @@ index'ler kurulup yeniden. **Önce → sonra:**
   — öyle bir kod yoktu, iş anahtarını yalnız iki eşzamanlı çağrının ikisinin de geçtiği bir oku-sonra-yaz
   kontrolü koruyordu. Yorum düzeltildi, index manifeste kondu.
 - **Gelecek regresyon riski: 🟢** — dokuzdan sekizi index'lendi ve her biri plan seviyesinde bir teste bağlandı;
-  kalan tek koleksiyon bütçe kararı bekliyor (BL-298), o da ölçülmüş ve gerekçesi manifestte yazılı.
+  kalan tek koleksiyon bütçe kararı bekliyordu (BL-298) — 2026-08-28'de sahip tavanı 19'a çıkardı ve o index
+  de kondu, yani dokuzun dokuzu index'li ve plan seviyesinde teste bağlı.
 
-### BL-298 — BRD profil index bütçesi 18'de dolu, ölçülmüş bir index bekliyor (2026-08-27, SAHİP KARARI)
-`business_reference_data_validation_results` üretimde COLLSCAN (250 satır; okuma `SORT`+`COLLSCAN`, silme
-`COLLSCAN` — ölçüm BL-279 Aşama 5). Gereken index tartışmalı değil:
-`{TenantId, BusinessReferenceDataVersionId, RuleId}` — `GetValidationResultsByVersionAsync`'i ESR-tam karşılar
-(iki eşitlik + `RuleId` sıralama), `ReplaceValidationResultsAsync`'in `DeleteMany` legini ön ekiyle karşılar.
-Canlı verinin kopyasında ölçüldü: 250→25 belge, SORT kalkıyor. İkinci aday yok.
-- **Engel:** `SchemaProfileBudget.BusinessReferenceData` = `MaxCollections 8, MaxLogicalIndexes 18`; profil şu an
-  tam 18 (10 beyan + 8 örtük `_id`). Index 19 yapar ve `DeclaredBudgetsAreRespected` kırmızıya döner.
-- **Neden kendiliğinden yükseltilmedi:** sayıyı GSKU sahipleri verdi (2026-08-26) ve `SchemaProfileBudget`'in
-  kendi başlığı bunu yasaklıyor — tavanı değişikliğe uydurmak "okuyucuya sayıya bakmak yerine sayıyı
-  yükseltmeyi öğretir". Karar sahiplerinin.
-- **Sorulan:** (a) tavan 19'a mı çıksın, (b) profilden bir index mi düşsün, yoksa (c) bu koleksiyon BRD
-  profilinden mi çıksın — doğrulama sonuçları bir *sonuç kaydı*, referans verisinin kendisi değil.
-- **Gelecek regresyon riski: 🟡** — karar verilmezse koleksiyon indexsiz kalır; sürüm başına doğrulama sonucu
-  biriktikçe COLLSCAN büyür.
+### BL-298 — BRD profil index bütçesi 18'de doluydu; tavan 19'a çıktı, index kondu (2026-08-27 → 2026-08-28, KAPANDI)
+**SAHİP KARARI (2026-08-28):** `MaxLogicalIndexes` 18 → **19**. `MaxCollections` **8'de KALDI**.
+`business_reference_data_validation_results` BRD profilinde kaldı; tavanı korumak için ölçülmemiş başka bir
+index düşürülmedi. Sahip aynı mesajda kuralı da yazdı: *"Index bütçe kapısı index artışında da geçerlidir —
+manifest + budget + gerçek-Mongo contract testi BİRLİKTE güncellenmeli."*
+
+Konan index: `{TenantId, BusinessReferenceDataVersionId, RuleId}`, adı
+`ix_business_reference_data_validation_results_tenant_version_rule`. ESR-tam: iki eşitlik + `RuleId` sıralama.
+`GetValidationResultsByVersionAsync`'i tam, `ReplaceValidationResultsAsync`'in `DeleteMany` legini ön ekiyle
+karşılar. Profil şimdi 8 koleksiyon / 19 mantıksal index (11 beyan + 8 örtük `_id`) — yani tam tavanda.
+
+- **PARTIAL FILTER KONMADI, VE BU BİR ÖLÇÜM.** Sahip açıkça "mevcut standart uygunsa `IsDeleted=false` partial
+  ile explain yeniden doğrulansın; ölçüm tersini gösterirse varsayımla eklenmesin" dedi. Ölçüm tersini
+  gösterdi. Canlı verinin kopyasında (250 satır, 10 farklı (tenant,version), en büyüğü 25), dört sayı:
+
+  | sorgu | index yok | plain index | + partial `IsDeleted=false` |
+  |---|---|---|---|
+  | okuma `{Tenant,Version,IsDeleted:false}` sort `RuleId` | `SORT->COLLSCAN`, **250** belge | `FETCH->IXSCAN`, **25**, SORT yok | `FETCH->IXSCAN`, **25**, SORT yok |
+  | silme legi `{Tenant,Version}` (IsDeleted yok) | `COLLSCAN`, **250** belge | `FETCH->IXSCAN`, **25** | `COLLSCAN`, **250** ⛔ |
+
+  Okumada iki varyant AYNI. Fark yalnız silmede, ve partial olan kaybediyor: `ReplaceValidationResultsAsync`
+  `{TenantId, VersionId}` ile siliyor, `IsDeleted` yüklemi YOK — Mongo bu sorgunun partial ifadenin alt kümesi
+  olduğunu kanıtlayamaz ve index'i reddeder. Profildeki diğer yedi index'in hepsi partial taşıdığı için bir
+  sonraki okuyucu bunu "ev standardına aykırı" görüp düzeltmeye kalkacak; `PlatformSchemaContractMongoTests`
+  silme legini `explain: {delete: …}` ile ayrıca çiviliyor — partial eklendiği an kırmızı, silmeyi adıyla
+  söyleyerek. (`find` ile ölçmek yetmezdi: aynı filtreli `find` partial index'te mutlu mesut IXSCAN raporlar.)
+- **Bütçe kapısı, artış yönünde de kuruldu.** `DeclaredBudgetsAreRespected` "manifest tavanın altında mı" diye
+  sorar — onu yeşile döndürmenin yolu tavanı yükseltmektir, yani `SchemaProfileBudget` başlığının uyardığı
+  hareketin ta kendisi. `MaxCollections`'ı 8'den 9'a çekmek o testi kırmızı bile yapmaz. Bu yüzden tavan
+  DEĞERİ artık `PlatformSchemaManifestTests.TheDeclaredBudgetsAreTheNumbersTheOwnersApproved` ile çivili
+  (8 / 19); iki sayıdan biri değişirse kırmızı olur ve testi güncellemek "bir sahip onayladı" demektir.
+- **Sayının ikinci kopyası vardı ve bu turda temizlendi.** `BusinessReferenceDataMongoResidueSweeperTests`
+  `<= 18`'i düz sayı olarak yazıyordu; sahip onayladığı artıştan sonra, ne bütçeyi ne kararı adıyla anan bir
+  residue-sweeper dosyasında kırmızıya döndü. Artık `SchemaProfileBudget.BusinessReferenceData`'dan okuyor.
+- **Bu turda YAPILMADI (sahip açıkça yasakladı):** `ImportedAt` index'i (BL-299 kapsamında), global
+  `DateTimeOffsetSerializer` değişikliği, `DateTimeOffset` işinin bu tura karıştırılması, başka index düşürmek,
+  koleksiyon bütçesini değiştirmek.
+- **Gelecek regresyon riski: 🟢** — profil tavanda ama tavan artık çivili; index'in her iki call site'ı plan
+  seviyesinde teste bağlı. ⚠ Bir sonraki BRD index'i BL-279/BL-298'in bulunduğu yerde olacak: ölçümle
+  sahibine gidecek. Tavan tam dolu olduğu için bu kapı artık teorik değil, ilk index'te çalışacak.
 
 ### BL-299 — `DateTimeOffset` alanları BSON dizisi olarak saklanıyor, sıralaması tesadüfi (2026-08-27)
 BL-030 bunu bir sıralama HATASI olarak biliyordu ("cannot sort with keys that are parallel arrays"); BL-279

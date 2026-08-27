@@ -235,7 +235,11 @@ public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
          */
         await PlatformSchemaManifest.ApplyAsync(
             _database,
-            new[] { SchemaProfile.WorkflowWorkCenter, SchemaProfile.DocumentManagement, SchemaProfile.Notification });
+            new[]
+            {
+                SchemaProfile.WorkflowWorkCenter, SchemaProfile.DocumentManagement, SchemaProfile.Notification,
+                SchemaProfile.BusinessReferenceData
+            });
 
         var tenant = new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard);
         var task = new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard);
@@ -261,6 +265,18 @@ public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
             { { "TenantId", tenant }, { "IsDeleted", false }, { "BaselineReleaseId", baseline }, { "Status", 0 } });
         await SeedAsync(PlatformCollections.NotificationEventDefinitions, i => new BsonDocument
             { { "IsDeleted", false }, { "EventCode", $"e.{i:D3}" }, { "Status", 1 } });
+
+        /*
+         * ⚠ THE TYPES HERE ARE THE ONES THE ENTITY SERIALIZES TO, NOT THE ONES THAT READ NATURALLY. TenantId
+         * is a plain Guid on TenantScopedEntity and lands as UUID binary; BusinessReferenceDataVersionId
+         * carries [BsonRepresentation(BsonType.String)] and lands as a string. Seed the version id as a
+         * binary Guid instead and the filters below stop matching their own rows — the collection reads as
+         * empty, the planner picks whatever it likes, and this test goes green while proving nothing.
+         */
+        var brdVersion = Guid.NewGuid().ToString();
+        await SeedAsync(PlatformCollections.BusinessReferenceDataValidationResults, i => new BsonDocument
+            { { "TenantId", tenant }, { "IsDeleted", false }, { "BusinessReferenceDataVersionId", brdVersion },
+              { "RuleId", $"RULE-{i:D3}" }, { "Message", $"m{i}" } });
 
         var failures = new List<string>();
 
@@ -331,6 +347,40 @@ public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
             "NotificationEventDefinitionRepository.GetByEventCodeAsync",
             new BsonDocument { { "IsDeleted", false }, { "EventCode", "e.000" } });
 
+        /*
+         * ── BL-298: THE INDEX THE INDEX BUDGET FINALLY PAID FOR ───────────────────────────────────────────
+         *
+         * business_reference_data_validation_results was the ONE collection BL-279 measured, sized, and could
+         * not spend — the profile sat at its 18-index ceiling, and raising a ceiling to fit a change is the
+         * move SchemaProfileBudget's header exists to stop. The GSKU owners raised it to 19 on 2026-08-28 and
+         * the index went in. Both of its call sites are pinned below, and the SECOND one matters most, for a
+         * reason no reader would guess from the manifest.
+         */
+        await ExpectIndexScanAsync(failures, PlatformCollections.BusinessReferenceDataValidationResults,
+            "ix_business_reference_data_validation_results_tenant_version_rule",
+            "BusinessReferenceDataStewardshipRepository.GetValidationResultsByVersionAsync (sorted)",
+            new BsonDocument { { "TenantId", tenant }, { "BusinessReferenceDataVersionId", brdVersion }, { "IsDeleted", false } },
+            sort: new BsonDocument("RuleId", 1),
+            forbidBlockingSort: true);
+
+        /*
+         * ⚠ THIS ONE PINS THE ABSENCE OF A PARTIAL FILTER, AND NOTHING ELSE CAN. Every other index in the
+         * BusinessReferenceData profile carries PartialFilterExpression IsDeleted=false, and the read above
+         * does filter on IsDeleted=false — so the next person to look at this manifest will see an index that
+         * breaks the house pattern and "fix" it. Measured, that fix costs half the win: the read is served
+         * identically either way (25 examined, no SORT), but ReplaceValidationResultsAsync deletes on
+         * {TenantId, VersionId} with NO IsDeleted predicate, so Mongo cannot prove the delete is a subset of
+         * the partial filter and refuses the index — straight back to a scan of the whole collection.
+         *
+         * MUTATION GUARD: add PartialFilterExpression to that index and this goes red naming the delete.
+         */
+        await ExpectIndexScanAsync(failures, PlatformCollections.BusinessReferenceDataValidationResults,
+            "ix_business_reference_data_validation_results_tenant_version_rule",
+            "BusinessReferenceDataStewardshipRepository.ReplaceValidationResultsAsync (the DeleteMany leg, "
+            + "which carries no IsDeleted predicate — a partial filter on the index would strand it)",
+            new BsonDocument { { "TenantId", tenant }, { "BusinessReferenceDataVersionId", brdVersion } },
+            shape: QueryShape.Delete);
+
         Assert.True(failures.Count == 0,
             "BL-279 sized these indexes from the repositories that read them, and Mongo is no longer using "
             + "them. A missing index does not raise an error here — the query silently scans the whole "
@@ -349,6 +399,15 @@ public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
         await _database.GetCollection<BsonDocument>(collectionName).InsertManyAsync(documents);
     }
 
+    /*
+     * ⚠ A DELETE IS PLANNED SEPARATELY FROM THE FIND THAT LOOKS IDENTICAL, AND THE DIFFERENCE IS THE WHOLE
+     * POINT FOR ONE INDEX HERE. Explaining `find {TenantId, VersionId}` and calling that "the delete leg"
+     * would be a lie in exactly the case that matters: a partial index is refused for a delete whose filter
+     * cannot be proved a subset of the partial expression, and the equivalent find would happily report an
+     * IXSCAN. So the delete is explained AS a delete.
+     */
+    private enum QueryShape { Find, Delete }
+
     private async Task ExpectIndexScanAsync(
         List<string> failures,
         string collectionName,
@@ -356,16 +415,31 @@ public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
         string callSite,
         BsonDocument filter,
         BsonDocument? sort = null,
-        bool forbidBlockingSort = false)
+        bool forbidBlockingSort = false,
+        QueryShape shape = QueryShape.Find)
     {
-        var find = new BsonDocument { { "find", collectionName }, { "filter", filter } };
-        if (sort is not null)
+        BsonDocument command;
+        if (shape == QueryShape.Delete)
         {
-            find["sort"] = sort;
+            command = new BsonDocument
+            {
+                { "delete", collectionName },
+                { "deletes", new BsonArray { new BsonDocument { { "q", filter }, { "limit", 0 } } } }
+            };
+        }
+        else
+        {
+            var find = new BsonDocument { { "find", collectionName }, { "filter", filter } };
+            if (sort is not null)
+            {
+                find["sort"] = sort;
+            }
+
+            command = find;
         }
 
         var explained = await _database.RunCommandAsync<BsonDocument>(
-            new BsonDocument { { "explain", find }, { "verbosity", "queryPlanner" } });
+            new BsonDocument { { "explain", command }, { "verbosity", "queryPlanner" } });
 
         var stages = new List<string>();
         var indexes = new List<string>();
