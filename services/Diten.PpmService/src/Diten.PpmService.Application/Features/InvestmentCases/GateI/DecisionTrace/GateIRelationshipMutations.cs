@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Diten.PpmService.Application.Common;
+using Diten.PpmService.Application.GateI;
 using Diten.PpmService.Domain.Entities;
 using Diten.PpmService.Domain.GateI.BenefitRealization;
 using Diten.PpmService.Domain.GateI.DecisionTrace;
@@ -45,7 +46,19 @@ public sealed record GateIAuthorityValidationRequest(
     Guid TenantId,
     Guid ActorId,
     string OperationId,
-    ReadOnlyMemory<byte> CanonicalWrapperUtf8);
+    ReadOnlyMemory<byte> CanonicalWrapperUtf8)
+{
+    public Fu16OutboundReceiverProfile Receiver => Kind switch
+    {
+        GateIRelationshipKind.GoverningDecision or GateIRelationshipKind.SupportingDecision =>
+            Fu16OutboundReceiverProfiles.DecisionRegistry,
+        GateIRelationshipKind.SelectedBudgetVersion => Fu16OutboundReceiverProfiles.Budgeting,
+        GateIRelationshipKind.ScenarioVersion or GateIRelationshipKind.ComparatorOutput
+            or GateIRelationshipKind.SelectedScenario => Fu16OutboundReceiverProfiles.ScenarioPlanning,
+        GateIRelationshipKind.BenefitOutcome => Fu16OutboundReceiverProfiles.OutcomeTracking,
+        _ => throw new ArgumentOutOfRangeException(nameof(Kind))
+    };
+}
 
 public sealed record GateIAuthorityValidationResult(
     int StatusCode,

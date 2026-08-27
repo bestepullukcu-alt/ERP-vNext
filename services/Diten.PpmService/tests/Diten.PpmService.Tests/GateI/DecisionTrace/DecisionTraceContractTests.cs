@@ -12,7 +12,7 @@ public sealed class DecisionTraceContractTests
     private static readonly Guid InvestmentCaseId = Guid.Parse("10000000-0000-4000-8000-000000000001");
     private static readonly Guid DecisionId = Guid.Parse("70000007-0000-4000-8000-000000000001");
     private static readonly Guid RevisionId = Guid.Parse("70000007-0000-4000-8000-000000000002");
-    private static readonly DecisionTraceRequestBindingInput Binding = new("TEST", "/test-owned/gate-i-a/decision-reference-validation");
+    private static readonly DecisionTraceRequestBindingInput Binding = new("POST", "/internal/v1/decision-registry/decision-references/validate");
 
     [Fact]
     public void Governing_wrapper_serializes_exact_order_and_roundtrips()
@@ -45,10 +45,11 @@ public sealed class DecisionTraceContractTests
     }
 
     [Fact]
-    public void Fu16_binding_is_base64url_and_sensitive_to_every_dimension()
+    public void Fu16_binding_is_lower_hex_and_sensitive_to_every_dimension()
     {
         var request = Request(); var original = DecisionTraceRequestBinding.Compute(Binding, TenantId, request);
-        Assert.Equal(43, original.Length); Assert.DoesNotContain('=', original);
+        Assert.Equal(64, original.Length);
+        Assert.All(original, character => Assert.True(character is >= '0' and <= '9' or >= 'a' and <= 'f'));
         Assert.NotEqual(original, DecisionTraceRequestBinding.Compute(Binding with { Method = "PUT" }, TenantId, request));
         Assert.NotEqual(original, DecisionTraceRequestBinding.Compute(Binding with { Path = Binding.Path + "/" }, TenantId, request));
         Assert.NotEqual(original, DecisionTraceRequestBinding.Compute(Binding, Guid.NewGuid(), request));
@@ -73,6 +74,22 @@ public sealed class DecisionTraceContractTests
         var request = Request(); var port = Port(); var context = Trusted(request) with { RequestHash = DecisionTraceRequestBinding.Compute(Binding with { Path = Binding.Path + "/wrong" }, TenantId, request) };
         var result = await new DecisionTraceValidationService(port).ValidateAsync(request, Binding, context, default);
         Assert.Equal(401, result.StatusCode); AssertZeroEffects(port);
+    }
+
+    [Fact]
+    public async Task Receiver_path_substitution_is_401_even_with_matching_hash()
+    {
+        var request = Request();
+        var port = Port();
+        var substituted = Binding with { Path = Binding.Path + "/substituted" };
+        var context = Trusted(request) with
+        {
+            RequestHash = DecisionTraceRequestBinding.Compute(substituted, TenantId, request)
+        };
+        var result = await new DecisionTraceValidationService(port)
+            .ValidateAsync(request, substituted, context, default);
+        Assert.Equal(401, result.StatusCode);
+        AssertZeroEffects(port);
     }
 
     [Theory]

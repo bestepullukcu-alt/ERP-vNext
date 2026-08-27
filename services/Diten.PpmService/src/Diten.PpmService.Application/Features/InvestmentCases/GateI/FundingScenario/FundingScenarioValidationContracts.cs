@@ -1,6 +1,6 @@
-using System.Buffers.Binary;
 using System.Security.Cryptography;
 using System.Text;
+using Diten.PpmService.Application.GateI;
 using Diten.PpmService.Domain.GateI.FundingScenario;
 
 namespace Diten.PpmService.Application.Features.InvestmentCases.GateI.FundingScenario;
@@ -97,7 +97,8 @@ public static class FundingScenarioContractEvaluator
         if(!Enum.IsDefined(context.AuthenticationState)||!Enum.IsDefined(context.EntitlementState)||!Enum.IsDefined(context.ExplicitGrantState)||!Enum.IsDefined(context.FreshnessState))return Fail(503,FundingScenarioFailureCodes.ProviderUnavailable);
         if(context.AuthenticationState==Fu16AuthenticationState.Invalid)return Fail(401,FundingScenarioFailureCodes.AuthenticationRequired);
         if(context.AuthenticationState is Fu16AuthenticationState.Unavailable or Fu16AuthenticationState.Malformed or Fu16AuthenticationState.Indeterminate)return Fail(503,FundingScenarioFailureCodes.ProviderUnavailable);
-        if(context.TenantId==Guid.Empty||context.EffectiveActorId==Guid.Empty||context.DelegatedActorId is null||context.DelegatedActorId==Guid.Empty||context.DelegatedActorId!=context.EffectiveActorId||!context.DelegatedProofValidated||!string.Equals(context.Audience,profile.Audience,StringComparison.Ordinal)||!string.Equals(context.ClientId,profile.ClientId,StringComparison.Ordinal)||!string.Equals(context.ProtocolScope,profile.ProtocolScope,StringComparison.Ordinal)||!FundingScenarioRequestBinding.IsWellFormed(context.Method,context.Path,context.RequestHash))return Fail(401,FundingScenarioFailureCodes.AuthenticationRequired);
+        var receiver=Fu16OutboundReceiverProfiles.ForOwner(profile.OwnerModule);
+        if(context.TenantId==Guid.Empty||context.EffectiveActorId==Guid.Empty||context.DelegatedActorId is null||context.DelegatedActorId==Guid.Empty||context.DelegatedActorId!=context.EffectiveActorId||!context.DelegatedProofValidated||!string.Equals(context.Audience,profile.Audience,StringComparison.Ordinal)||!string.Equals(context.ClientId,profile.ClientId,StringComparison.Ordinal)||!string.Equals(context.ProtocolScope,profile.ProtocolScope,StringComparison.Ordinal)||!string.Equals(context.Method,receiver.Method,StringComparison.Ordinal)||!string.Equals(context.Path,receiver.Path,StringComparison.Ordinal)||!FundingScenarioRequestBinding.IsWellFormed(context.Method,context.Path,context.RequestHash))return Fail(401,FundingScenarioFailureCodes.AuthenticationRequired);
         var actual=FundingScenarioRequestBinding.Compute(context.Method,context.Path,context.TenantId,context.OperationId,body);
         if(!CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(actual),Encoding.ASCII.GetBytes(context.RequestHash)))return Fail(401,FundingScenarioFailureCodes.AuthenticationRequired);
         if(context.EntitlementState==Fu16AuthorizationState.Denied||context.ExplicitGrantState==Fu16AuthorizationState.Denied)return Fail(403,FundingScenarioFailureCodes.Forbidden);
@@ -133,13 +134,10 @@ public sealed class FundingScenarioContractValidator(IBudgetVersionReferenceVali
 
 public static class FundingScenarioRequestBinding
 {
-    private static readonly byte[] DomainSeparator=Encoding.UTF8.GetBytes("DITEN-S2S-REQUEST-V1");
-    public static bool IsWellFormed(string method,string path,string hash)=>!string.IsNullOrEmpty(method)&&string.Equals(method,method.ToUpperInvariant(),StringComparison.Ordinal)&&!string.IsNullOrEmpty(path)&&path.StartsWith("/",StringComparison.Ordinal)&&!path.Contains('?',StringComparison.Ordinal)&&hash is not null&&hash.Length==43&&hash.All(c=>char.IsAsciiLetterOrDigit(c)||c is '-' or '_');
+    public static bool IsWellFormed(string method,string path,string hash)=>!string.IsNullOrEmpty(method)&&string.Equals(method,method.ToUpperInvariant(),StringComparison.Ordinal)&&!string.IsNullOrEmpty(path)&&path.StartsWith("/",StringComparison.Ordinal)&&!path.Contains('?',StringComparison.Ordinal)&&Fu16OutboundCanonicalRequestBinding.IsLowerHex64(hash);
     public static string Compute(string method,string path,Guid tenantId,string operation,ReadOnlySpan<byte> body)
     {
-        if(!IsWellFormed(method,path,new string('A',43))||tenantId==Guid.Empty||string.IsNullOrEmpty(operation)||!string.Equals(operation,operation.ToLowerInvariant(),StringComparison.Ordinal))throw new ArgumentException("invalid_request_binding_input");
-        using var stream=new MemoryStream();stream.Write(DomainSeparator);Write(stream,Encoding.UTF8.GetBytes(method));Write(stream,Encoding.UTF8.GetBytes(path));Write(stream,Encoding.UTF8.GetBytes(tenantId.ToString("D")));Write(stream,Encoding.UTF8.GetBytes(operation));Write(stream,SHA256.HashData(body));
-        return Convert.ToBase64String(SHA256.HashData(stream.ToArray())).TrimEnd('=').Replace('+','-').Replace('/','_');
+        var profile=FundingScenarioAtomicLane.RequiredProfiles.SingleOrDefault(candidate=>string.Equals(candidate.OperationId,operation,StringComparison.Ordinal))??throw new ArgumentException("invalid_request_binding_input");
+        return Fu16OutboundCanonicalRequestBinding.Compute(method,path,body,tenantId,operation,[profile.Permission]);
     }
-    private static void Write(Stream stream,ReadOnlySpan<byte> value){Span<byte> length=stackalloc byte[4];BinaryPrimitives.WriteInt32BigEndian(length,value.Length);stream.Write(length);stream.Write(value);}
 }
