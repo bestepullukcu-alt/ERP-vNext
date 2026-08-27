@@ -12,6 +12,7 @@ internal enum ProcessModelingMongoOperation
     Transition,
     CreateRevision,
     Retire,
+    Publish,
     Unavailable
 }
 
@@ -62,7 +63,7 @@ public static class ProcessModelingMongoCommandManifest
             ["UpdateDraftProcessModelVersionCommand"] = S("UpdateDraftProcessModelVersionCommand",ProcessModelingMongoOperation.DraftReplace,"mg_process_model_versions",["Title","Description","ContentHash","Activities","ControlPoints","Relationships"],"Draft"),
             ["RequestProcessModelReviewCommand"] = S("RequestProcessModelReviewCommand",ProcessModelingMongoOperation.Transition,"mg_process_model_versions",[],"Draft","Review"),
             ["ReturnProcessModelToDraftCommand"] = S("ReturnProcessModelToDraftCommand",ProcessModelingMongoOperation.Transition,"mg_process_model_versions",[],"Review","Draft"),
-            ["PublishProcessModelVersionCommand"] = S("PublishProcessModelVersionCommand",ProcessModelingMongoOperation.Unavailable,"mg_process_model_versions",[],"Review","Published"),
+            ["PublishProcessModelVersionCommand"] = S("PublishProcessModelVersionCommand",ProcessModelingMongoOperation.Publish,"mg_process_model_versions",[],"Review","Published"),
             ["RetireProcessModelVersionCommand"] = S("RetireProcessModelVersionCommand",ProcessModelingMongoOperation.Retire,"mg_process_model_versions",[],"Published","Retired"),
             ["CreateProcessModelRevisionCommand"] = S("CreateProcessModelRevisionCommand",ProcessModelingMongoOperation.CreateRevision,"mg_process_model_versions",["Title","Description","ContentHash"])
         };

@@ -15,7 +15,7 @@ public sealed class ClosedCommandManifestTests
         Assert.All(descriptors,x=>Assert.Contains(x.Collection,ProcessModelingPersistenceManifest.Collections,StringComparer.Ordinal));
 
         var publish=Assert.Single(descriptors,x=>x.Command=="PublishProcessModelVersionCommand");
-        Assert.Equal("Unavailable",publish.Operation);
+        Assert.Equal("Publish",publish.Operation);
         Assert.Equal("Review",publish.RequiredLifecycle);
         Assert.Equal("Published",publish.NextLifecycle);
 

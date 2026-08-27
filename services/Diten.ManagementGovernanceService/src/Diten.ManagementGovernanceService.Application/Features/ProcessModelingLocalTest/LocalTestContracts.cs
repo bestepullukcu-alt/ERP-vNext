@@ -13,13 +13,14 @@ public sealed record Response<T>(bool Succeeded,T? Data,int StatusCode,IReadOnly
     public static Response<T> Fail(string error,int status)=>new(false,default,status,[error]);
 }
 
-public sealed record LocalTestCommandContext(Guid TenantId,Guid ActorId,string Permission,string IdempotencyKey,string RequestHash);
+public sealed record LocalTestCommandContext(Guid TenantId,Guid ActorId,string Permission,string IdempotencyKey,string RequestHash,Guid ServicePrincipalId=default);
 
 public sealed record ProcessModelingLocalExecutionRequest(
     string CommandName,
     Guid? RouteId,
     byte[] RawBody,
-    LocalTestCommandContext Context);
+    LocalTestCommandContext Context,
+    int? ExpectedVersion = null);
 
 public sealed record ProcessModelingLocalExecutionResult(
     bool Succeeded,

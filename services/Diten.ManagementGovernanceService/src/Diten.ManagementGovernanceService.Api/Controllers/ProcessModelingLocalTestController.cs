@@ -131,7 +131,7 @@ public sealed class ProcessModelingLocalTestController(ISender sender):CustomBas
         var raw=await ReadBody(Request,HttpContext.RequestAborted);
         if(!TryDeserializeExact(raw,out TBody? body))
             return Prepared<TBody>.Rejected(BadRequest(Response<NoContent>.Fail("process_modeling_bad_request",400)));
-        if(!Guid.TryParse(User.FindFirstValue("tenant_id"),out var tenant)||!Guid.TryParse(User.FindFirstValue("sub"),out var actor))
+        if(!Guid.TryParse(User.FindFirstValue("tenant_id"),out var tenant)||!Guid.TryParse(User.FindFirstValue("sub"),out var actor)||!Guid.TryParse(User.FindFirstValue("service_principal_id"),out var servicePrincipalId))
             return Prepared<TBody>.Rejected(Unauthorized());
         if(!Request.Headers.TryGetValue("X-Tenant-Id",out var tenantHeader)||tenantHeader.Count!=1||!Guid.TryParse(tenantHeader[0],out var headerTenant)||headerTenant!=tenant)
             return Prepared<TBody>.Rejected(NotFound());
@@ -142,7 +142,7 @@ public sealed class ProcessModelingLocalTestController(ISender sender):CustomBas
             return Prepared<TBody>.Rejected(StatusCode(403,Response<NoContent>.Fail("process_model_permission_denied",403)));
         var path=Request.Path.Value??string.Empty;
         var hash=ProcessModelingLocalRequestHash.Compute(Request.Method,path,commandName,tenant,actor,permission,raw);
-        var execution=new ProcessModelingLocalExecutionRequest(commandName,routeId,raw,new(tenant,actor,permission,key[0]!,hash));
+        var execution=new ProcessModelingLocalExecutionRequest(commandName,routeId,raw,new(tenant,actor,permission,key[0]!,hash,servicePrincipalId));
         return Prepared<TBody>.Accepted(body!,execution);
     }
 

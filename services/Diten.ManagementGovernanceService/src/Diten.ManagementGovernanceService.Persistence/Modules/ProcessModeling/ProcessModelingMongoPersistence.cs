@@ -1,4 +1,5 @@
 using Diten.ManagementGovernanceService.Application.Modules.ProcessModeling;
+using Diten.ManagementGovernanceService.Application.Features.ProcessModelingLocalTest.Publish;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -72,7 +73,7 @@ public static class ProcessModelingMongoFailureMapper
 }
 
 public enum ProcessModelingMutationParticipant { Business=1,Receipt=2,AuditIntent=3,Outbox=4 }
-public sealed record MongoMutationEnvelope(CoreMutationRequest Request,BsonDocument Business,string Outcome,Guid AuditIntentId,Guid EventId,DateTime CreatedAtUtc,string ActorProvenance,int HttpStatus=200,Guid? OutcomeEntityId=null);
+public sealed record MongoMutationEnvelope(CoreMutationRequest Request,BsonDocument Business,string Outcome,Guid AuditIntentId,Guid EventId,DateTime CreatedAtUtc,string ActorProvenance,int HttpStatus=200,Guid? OutcomeEntityId=null,string? ExpectedContentHash=null);
 public sealed class ProcessModelingMongoMutationWriter(ProcessModelingMongoContext context,Action<ProcessModelingMutationParticipant>? testOnlyFault=null)
 {
     public const string AuditEventType = "management-governance.process-modeling-audit-intent.submitted.v1";
@@ -117,6 +118,9 @@ public sealed class ProcessModelingMongoMutationWriter(ProcessModelingMongoConte
                 if(version is null)throw new ProcessModelingNotFoundException(ProcessModelingErrors.MissingOrInvisible);
                 await CasAsync(session,spec.Collection,x.Request,prepared.Values,"Published","Retired",ct);
                 await ClearPublishedPointerAsync(session,x.Request.TenantId,ProcessModelingMongoGuidPolicy.Read(version["ProcessModelId"]),x.Request.AggregateId,ct);
+                break;
+            case ProcessModelingMongoOperation.Publish:
+                await PublishAsync(session,x,prepared,ct);
                 break;
             default: throw new InvalidOperationException("process_modeling_operation_forbidden");
         }
@@ -163,6 +167,45 @@ public sealed class ProcessModelingMongoMutationWriter(ProcessModelingMongoConte
         var update=new BsonDocument("$set",new BsonDocument("PublishedVersionId",BsonNull.Value)).Add("$inc",new BsonDocument("Version",1));
         if((await context.Collection("mg_process_models").UpdateOneAsync(session,filter,update,cancellationToken:ct)).ModifiedCount!=1)throw new ProcessModelingConflictException(ProcessModelingErrors.StaleVersion);
     }
+    private async Task PublishAsync(IClientSessionHandle session,MongoMutationEnvelope x,ProcessModelingPreparedMutation prepared,CancellationToken ct)
+    {
+        if(x.ExpectedContentHash is null||x.ExpectedContentHash.Length!=71||!x.ExpectedContentHash.StartsWith("sha256:",StringComparison.Ordinal)||
+           x.ExpectedContentHash.AsSpan(7).ContainsAnyExcept("0123456789abcdef"))
+            throw new ProcessModelingConflictException(ProcessModelingErrors.StaleVersion);
+        var versionFilter=Builders<BsonDocument>.Filter.And(
+            Builders<BsonDocument>.Filter.Eq("TenantId",G(x.Request.TenantId)),
+            Builders<BsonDocument>.Filter.Eq("_id",G(x.Request.AggregateId)),
+            Builders<BsonDocument>.Filter.Eq("Version",x.Request.ExpectedVersion),
+            Builders<BsonDocument>.Filter.Eq("ContentHash",x.ExpectedContentHash),
+            Builders<BsonDocument>.Filter.Eq("LifecycleState","Review"),
+            Builders<BsonDocument>.Filter.Eq("IsDeleted",false));
+        var version=await context.Collection("mg_process_model_versions").Find(session,versionFilter).FirstOrDefaultAsync(ct)
+            ??throw new ProcessModelingConflictException(ProcessModelingErrors.StaleVersion);
+        var modelId=ProcessModelingMongoGuidPolicy.Read(version["ProcessModelId"]);
+        var versionUpdate=new BsonDocument("$set",new BsonDocument
+        {
+            {"LifecycleState","Published"},
+            {"ValidFromUtc",x.CreatedAtUtc},
+            {"PublishedAtUtc",x.CreatedAtUtc},
+            {"UpdatedAtUtc",x.CreatedAtUtc}
+        }).Add("$inc",new BsonDocument("Version",1));
+        if((await context.Collection("mg_process_model_versions").UpdateOneAsync(session,versionFilter,versionUpdate,cancellationToken:ct)).ModifiedCount!=1)
+            throw new ProcessModelingConflictException(ProcessModelingErrors.StaleVersion);
+
+        var modelFilter=Builders<BsonDocument>.Filter.And(
+            Builders<BsonDocument>.Filter.Eq("TenantId",G(x.Request.TenantId)),
+            Builders<BsonDocument>.Filter.Eq("_id",G(modelId)),
+            Builders<BsonDocument>.Filter.Eq("OpenVersionId",G(x.Request.AggregateId)),
+            Builders<BsonDocument>.Filter.Eq("IsDeleted",false));
+        var modelUpdate=new BsonDocument("$set",new BsonDocument
+        {
+            {"PublishedVersionId",G(x.Request.AggregateId)},
+            {"OpenVersionId",BsonNull.Value},
+            {"UpdatedAtUtc",x.CreatedAtUtc}
+        }).Add("$inc",new BsonDocument("Version",1));
+        if((await context.Collection("mg_process_models").UpdateOneAsync(session,modelFilter,modelUpdate,cancellationToken:ct)).ModifiedCount!=1)
+            throw new ProcessModelingConflictException(ProcessModelingErrors.StaleVersion);
+    }
     private static BsonBinaryData G(Guid value)=>ProcessModelingMongoGuidPolicy.Write(value);
 }
 
@@ -170,7 +213,11 @@ public sealed class ProcessModelingMongoTransactionRunner(ProcessModelingMongoCo
 {
     public async Task<T> ExecuteAsync<T>(Func<IClientSessionHandle,CancellationToken,Task<T>> body,Func<CancellationToken,Task<T?>> reconcile,CancellationToken ct=default) where T:class
     {
-        using var session=await context.Client.StartSessionAsync(cancellationToken:ct); session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot,ReadPreference.Primary,WriteConcern.WMajority));
+        using var session=await context.Client.StartSessionAsync(cancellationToken:ct);
+        try { session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot,ReadPreference.Primary,WriteConcern.WMajority)); }
+        catch(OperationCanceledException){throw;}
+        catch(Exception ex) when(ex is MongoException or NotSupportedException)
+        {throw new ProcessModelingUnavailableException(ProcessModelingErrors.TransactionIndeterminate+":"+ex.GetType().Name);}
         T result; try { result=await body(session,ct); }
         catch(MongoWriteException ex) when(ex.WriteError?.Category==ServerErrorCategory.DuplicateKey)
         {
