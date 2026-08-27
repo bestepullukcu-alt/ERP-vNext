@@ -231,6 +231,36 @@ configuration remain later gates. Validation writes no mutation, cache, receipt,
 Cache/LKG/local truth, frontend, Gateway, WorkCenter, production key/secret/deployment/activation and push
 remain forbidden. This checkpoint alone is not Local API-Test Ready.
 
+### Gate I-C FU16 HTTP trusted-context adapter amendment — AUTHORIZED / DEFAULT-OFF / NON-PRODUCTION
+
+Control Tower authorizes the owner-local adapter from an authenticated shared `Fu16TrustedRequestContext`
+to `OutcomeGateIContext`. The internal controller must select exact named scheme
+`Diten.FU16.DelegatedActor`; default authentication and HS256 user/session fallback are forbidden. Exact
+ordinal Client ID, audience, protocol scope, operation and the single MOD-0072 permission are mandatory.
+Aliases, wildcard/prefix matching, normalization, extra permissions and payload-derived trusted identity are
+rejected before the snapshot reader.
+
+The existing local-provider registration remains disabled and unavailable. A separate additive evidence
+registration may add only the named scheme and adapter when explicit shared FU16 options and dependencies
+are supplied. It cannot register keys, authority clients, committed issuer/audience configuration,
+credentials, host, listener or activation.
+
+Exact additive implementation paths are:
+
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Api/Modules/OutcomeTracking/Fu16OutcomeGateIContextAccessor.cs`;
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Api/Modules/OutcomeTracking/OutcomeTrackingModule.cs`;
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Api/Modules/OutcomeTracking/InternalOutcomeReferenceValidationController.cs`;
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Api/Diten.DecisionIntelligenceService.Api.csproj`, only for the shared `Diten.Platform.Common` project reference;
+- `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.UnitTests/Modules/OutcomeTracking/GateI/Fu16OutcomeGateIContextTests.cs`;
+- `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.UnitTests/Diten.DecisionIntelligenceService.UnitTests.csproj`, only for the API project reference;
+- `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.ArchitectureTests/Modules/OutcomeTracking/GateI/Fu16OutcomeGateICompositionArchitectureTests.cs`;
+- `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.ArchitectureTests/Diten.DecisionIntelligenceService.ArchitectureTests.csproj`, only for the API project reference.
+
+Acceptance requires exact-profile projection, profile alias/extra-permission rejection, named-scheme
+evidence, preserved default-disabled composition, zero Program/listener mutation and physical expected-red
+proof for profile bypass, default-scheme fallback and tenant trusted-context substitution. Production
+authority and activation remain `none`; no Gateway, frontend or WorkCenter change is authorized.
+
 ## 5. Repo Scope
 
 This governance authoring job owns only:
