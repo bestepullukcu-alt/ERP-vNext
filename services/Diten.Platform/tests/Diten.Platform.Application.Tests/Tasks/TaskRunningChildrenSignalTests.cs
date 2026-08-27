@@ -62,9 +62,7 @@ public sealed class TaskRunningChildrenSignalTests
          * the mapping exists once. A second spelling drifts silently, and the browser's new "already running"
          * sentence counts children by that very value.
          */
-        var root = Path.GetFullPath(Path.Combine(
-            Path.GetDirectoryName(typeof(TaskRunningChildrenSignalTests).Assembly.Location)!,
-            "..", "..", "..", "..", "..", "src", "Diten.Platform.Application", "Features", "Tasks"));
+        var root = RepoPaths.ApplicationSource("Features", "Tasks");
 
         var spelling = Directory.GetFiles(root, "*.cs", SearchOption.AllDirectories)
             .Where(file => File.ReadAllText(file).Contains("=> \"in-progress\""))

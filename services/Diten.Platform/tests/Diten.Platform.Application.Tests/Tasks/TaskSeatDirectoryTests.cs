@@ -33,9 +33,7 @@ public sealed class TaskSeatDirectoryTests
     private static readonly Guid Position = Guid.Parse("31111111-1111-1111-1111-111111111111");
     private static readonly Guid OtherPosition = Guid.Parse("32222222-2222-2222-2222-222222222222");
 
-    private static string TasksRoot() => Path.GetFullPath(Path.Combine(
-        Path.GetDirectoryName(typeof(TaskSeatDirectoryTests).Assembly.Location)!,
-        "..", "..", "..", "..", "..", "src", "Diten.Platform.Application", "Features", "Tasks"));
+    private static string TasksRoot() => RepoPaths.ApplicationSource("Features", "Tasks");
 
     private static IReadOnlyList<string> TasksSources() =>
         Directory.GetFiles(TasksRoot(), "*.cs", SearchOption.AllDirectories);

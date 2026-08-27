@@ -197,23 +197,10 @@ public sealed class TaskDependencyEnforcementTests
         Assert.Equal(StatusCodes.Status204NoContent, status.StatusCode);
     }
 
+    // Walked up to the AGENTS.md marker, not to a `.git` DIRECTORY: in a git worktree `.git` is a FILE, so
+    // the old check never matched and this threw instead of finding the root. See RepoPaths.
     private static string RepositoryRoot()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null)
-        {
-            if (Directory.Exists(Path.Combine(directory.FullName, ".git"))
-                && Directory.Exists(Path.Combine(directory.FullName, "frontend")))
-            {
-                return directory.FullName;
-            }
-
-            directory = directory.Parent;
-        }
-
-        throw new InvalidOperationException(
-            $"Could not locate the repository root walking up from {AppContext.BaseDirectory}.");
-    }
+        => RepoPaths.Root();
 
     /// <summary>
     /// One dependent task, one predecessor, and the real controller in front of the real handler. The mediator is

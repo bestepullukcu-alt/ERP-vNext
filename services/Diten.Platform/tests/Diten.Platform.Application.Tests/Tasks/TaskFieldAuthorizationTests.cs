@@ -307,7 +307,8 @@ public sealed class TaskFieldAuthorizationTests
             new FakeCurrentUserContext(TaskTestData.Me),
             new FakeTaskApprovalService(),
             new FakeTaskReviewService(),
-            Microsoft.Extensions.Logging.Abstractions.NullLogger<UpdateTaskItemHandler>.Instance);
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<UpdateTaskItemHandler>.Instance,
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
 
         // Exactly what a browser sends back: everything it was given, which did NOT include the hidden value.
         var response = await handler.Handle(

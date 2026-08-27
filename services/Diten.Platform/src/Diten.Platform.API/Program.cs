@@ -15,6 +15,26 @@ using Serilog.Formatting.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
+/*
+ * ⚠ THE CONTAINER IS CHECKED WHEN THE APP BOOTS, NOT WHEN A USER HITS THE ENDPOINT.
+ *
+ * Without ValidateOnBuild, an unregistered dependency is discovered the first time somebody resolves the
+ * thing that needs it — which for a MediatR handler means the first request to that one endpoint, in
+ * whatever environment it happens to reach first. Measured 2026-08-26: the TaskDocumentReferenceFreezer seam
+ * was OPTIONAL precisely so this would not happen, and the price was that forgetting the registration
+ * silently discarded every document citation the author had entered. The fix was to make the argument
+ * required; this line is the other half, and without it "required" only moves the failure from silence to
+ * the first request.
+ *
+ * ValidateScopes is the companion rule: a singleton that captures a scoped service is a bug that shows up as
+ * stale tenant data under load, and nowhere earlier.
+ */
+builder.Host.UseDefaultServiceProvider((context, options) =>
+{
+    options.ValidateOnBuild = true;
+    options.ValidateScopes = true;
+});
+
 var observabilityOptions = builder.Configuration
     .GetSection(ObservabilityOptions.SectionName)
     .Get<ObservabilityOptions>() ?? new ObservabilityOptions();

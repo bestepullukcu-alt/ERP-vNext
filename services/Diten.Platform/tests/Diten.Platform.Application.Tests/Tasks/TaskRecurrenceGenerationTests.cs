@@ -517,7 +517,8 @@ public sealed class TaskRecurrenceGenerationTests
             new FakeTaskNotificationService(),
             new FakeCurrentUserContext(TaskTestData.Me),
             Tenant,
-            NullLogger<CreateTaskItemHandler>.Instance);
+            NullLogger<CreateTaskItemHandler>.Instance,
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
     }
 
     /// <summary>

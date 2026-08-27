@@ -693,7 +693,8 @@ public sealed class TaskNotificationPreferenceTests
             new FakeCurrentUserContext(TaskTestData.Me),
             new FakeTaskApprovalService(),
             new FakeTaskReviewService(),
-            NullLogger<UpdateTaskItemHandler>.Instance);
+            NullLogger<UpdateTaskItemHandler>.Instance,
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
         return (handler, tasks);
     }
 
