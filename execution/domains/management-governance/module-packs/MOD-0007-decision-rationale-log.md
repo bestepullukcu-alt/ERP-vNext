@@ -326,6 +326,37 @@ No fallback/LKG/local truth is allowed. Production keys, credentials, deployment
 WorkCenter, activation and push remain unauthorized. This is contract/provider-core evidence only and cannot
 be reported as Local API-Test Ready until the later transport/composition and full MOD-0117 R2 gates pass.
 
+### Gate I-A FU16 HTTP trusted-context adapter amendment — AUTHORIZED / DEFAULT-OFF / NON-PRODUCTION
+
+Control Tower authorizes the owner-local adapter that projects only a successfully authenticated shared
+`Fu16TrustedRequestContext` into the existing `GateITrustedContext`. The internal controller must select the
+exact named `Diten.FU16.DelegatedActor` scheme; plain/default authentication, HS256 user/session fallback and
+payload-derived tenant/actor/authority fields are forbidden. The adapter must require the exact ordinal
+Client ID, audience, protocol scope, operation and single permission already fixed by this pack. Missing,
+malformed or non-exact shared context remains unauthenticated and cannot reach the snapshot reader.
+
+This amendment remains default-off: it does not register a validation key provider, authority decision
+client, issuer, audience, key, credential, endpoint listener or host activation. The existing local-provider
+registration continues to compose the disabled provider and unavailable accessor. A separate additive test
+composition may register the named scheme and adapter only when its callers explicitly supply the shared
+FU16 options and dependencies. No Program, appsettings, launch profile, Gateway, frontend or WorkCenter
+change is authorized.
+
+The exact additive implementation allowlist is:
+
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/DecisionRegistry/Fu16GateITrustedContextAccessor.cs`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/DecisionRegistry/DecisionRegistryGateIModuleRegistration.cs`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/DecisionRegistry/InternalDecisionReferenceValidationController.cs`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Diten.ManagementGovernanceService.Api.csproj`, only for the shared `Diten.Platform.Common` project reference;
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/DecisionRegistry/GateI/Fu16GateITrustedContextTests.cs`;
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/Diten.ManagementGovernanceService.Tests.csproj`, only for the API project reference required by that test;
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/DecisionRegistry/GateI/Fu16GateICompositionArchitectureTests.cs`.
+
+Acceptance requires exact-profile positive projection, missing/wrong-profile fail-closed cases, controller
+named-scheme evidence, preservation of the disabled registration, zero Program/host/listener mutation and
+mutation evidence for at least profile bypass, default-scheme fallback and payload/trusted-context
+substitution. Production activation and production authority remain `none`.
+
 ## 5. Repo Scope
 
 This promotion milestone changes only:
