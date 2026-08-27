@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Diten.PpmService.Application.Features.InvestmentCases.GateI.FundingScenario;
+using Diten.PpmService.Application.GateI;
 using Diten.PpmService.Domain.GateI.FundingScenario;
 using Xunit;
 
@@ -84,7 +85,7 @@ public sealed class FundingScenarioArchitectureAndFixtureTests
         using var manifest=JsonDocument.Parse(File.ReadAllText(path));
         Assert.Equal("ppm.mod-0117.gate-i-b.mutation-evidence.v1",manifest.RootElement.GetProperty("schema").GetString());
         Assert.Equal("c954984d00ad43bc3127bbd0ada09da2b2721768",manifest.RootElement.GetProperty("baseCommit").GetString());
-        var source=Path.Combine(RepoRoot(),manifest.RootElement.GetProperty("sourcePath").GetString()!);Assert.True(File.Exists(source),source);var sha=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(source))).ToLowerInvariant();Assert.Equal(manifest.RootElement.GetProperty("restoredSha256").GetString(),sha);
+        var sourcePath=manifest.RootElement.GetProperty("sourcePath").GetString()!;var source=Path.Combine(RepoRoot(),sourcePath);Assert.True(File.Exists(source),source);var sha=Convert.ToHexString(SHA256.HashData(GitShowBytes(manifest.RootElement.GetProperty("sourceCheckpoint").GetString()!,sourcePath))).ToLowerInvariant();Assert.Equal(manifest.RootElement.GetProperty("restoredSha256").GetString(),sha);
         var entries=manifest.RootElement.GetProperty("entries").EnumerateArray().ToArray();Assert.Equal(6,entries.Length);Assert.Equal(entries.Length,entries.Select(x=>x.GetProperty("mutation").GetString()).Distinct(StringComparer.Ordinal).Count());Assert.Equal(entries.Length,entries.Select(x=>x.GetProperty("runId").GetString()).Distinct(StringComparer.Ordinal).Count());
         foreach(var entry in entries)
         {
@@ -120,7 +121,7 @@ public sealed class FundingScenarioSecurityMutationTests
     private static readonly InvestmentCaseScenarioVersionReferenceV1 Scenario=new(InvestmentCaseScenarioVersionReferenceV1.ExpectedContractName,"1.0",Context,ScenarioTuple);
     private static readonly byte[] BudgetBytes=Encoding.UTF8.GetBytes(Budget.ToExactJson()),ScenarioBytes=Encoding.UTF8.GetBytes(Scenario.ToExactJson());
 
-    [Fact] public void Request_hash_guard_rejects_well_formed_changed_hash()=>Assert.Equal(401,FundingScenarioContractEvaluator.EvaluateBudgetBytes(BudgetBytes,FundingScenarioValidationMode.HistoricalResolve,Security(FundingScenarioAtomicLane.Budgeting,BudgetBytes) with{RequestHash=new string('A',43)},new(ProducerReferenceState.Allowed)).HttpStatus);
+    [Fact] public void Request_hash_guard_rejects_well_formed_changed_hash()=>Assert.Equal(401,FundingScenarioContractEvaluator.EvaluateBudgetBytes(BudgetBytes,FundingScenarioValidationMode.HistoricalResolve,Security(FundingScenarioAtomicLane.Budgeting,BudgetBytes) with{RequestHash=new string('a',64)},new(ProducerReferenceState.Allowed)).HttpStatus);
     [Fact] public void Freshness_guard_rejects_stale_fence()=>Assert.Equal(409,FundingScenarioContractEvaluator.EvaluateBudgetBytes(BudgetBytes,FundingScenarioValidationMode.HistoricalResolve,Security(FundingScenarioAtomicLane.Budgeting,BudgetBytes) with{FreshnessState=Fu16FreshnessState.Stale},new(ProducerReferenceState.Allowed)).HttpStatus);
     [Fact] public void Current_selection_guard_rejects_analytical_scenario()=>Assert.Equal(400,FundingScenarioContractEvaluator.EvaluateScenarioBytes(ScenarioBytes,FundingScenarioReferenceKind.ScenarioVersion,FundingScenarioValidationMode.CurrentSelectionEligibility,Security(FundingScenarioAtomicLane.ScenarioPlanning,ScenarioBytes),new(ProducerReferenceState.Allowed)).HttpStatus);
     [Fact] public void Owner_guard_rejects_cross_module_context()=>Assert.Equal(403,FundingScenarioContractEvaluator.EvaluateBudgetBytes(BudgetBytes,FundingScenarioValidationMode.HistoricalResolve,Security(FundingScenarioAtomicLane.Budgeting,BudgetBytes) with{OwnerModule="MOD-0138"},new(ProducerReferenceState.Allowed)).HttpStatus);
@@ -129,6 +130,6 @@ public sealed class FundingScenarioSecurityMutationTests
 
     private static Fu16FundingScenarioContextV1 Security(FundingScenarioProducerProfile p,ReadOnlySpan<byte> body)
     {
-        var fence=new Fu16VersionFenceV1(1,1,1,"entitlement-v1");var observed=DateTimeOffset.Parse("2026-08-26T09:00:00Z");return new(Fu16AuthenticationState.AuthenticatedS2SFamilyValidated,Fu16AuthorizationState.Allowed,Fu16AuthorizationState.Allowed,Fu16FreshnessState.Current,Tenant,Actor,Actor,true,p.Audience,p.ClientId,p.OwnerModule,p.OperationId,p.Permission,p.ProtocolScope,"POST","/test-only/gate-i-b",FundingScenarioRequestBinding.Compute("POST","/test-only/gate-i-b",Tenant,p.OperationId,body),fence,fence,observed,observed.AddSeconds(15),observed.AddSeconds(1));
+        var fence=new Fu16VersionFenceV1(1,1,1,"entitlement-v1");var observed=DateTimeOffset.Parse("2026-08-26T09:00:00Z");var receiver=Fu16OutboundReceiverProfiles.ForOwner(p.OwnerModule);return new(Fu16AuthenticationState.AuthenticatedS2SFamilyValidated,Fu16AuthorizationState.Allowed,Fu16AuthorizationState.Allowed,Fu16FreshnessState.Current,Tenant,Actor,Actor,true,p.Audience,p.ClientId,p.OwnerModule,p.OperationId,p.Permission,p.ProtocolScope,receiver.Method,receiver.Path,FundingScenarioRequestBinding.Compute(receiver.Method,receiver.Path,Tenant,p.OperationId,body),fence,fence,observed,observed.AddSeconds(15),observed.AddSeconds(1));
     }
 }

@@ -11,6 +11,7 @@ using Diten.PpmService.Application.Features.BenefitCommitments.GateI.BenefitReal
 using Diten.PpmService.Application.Features.InvestmentCases.GateI.DecisionTrace;
 using Diten.PpmService.Application.Features.InvestmentCases.GateI.FundingScenario;
 using Diten.Platform.Common.Authorization;
+using Diten.PpmService.Application.GateI;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,11 +37,13 @@ public static class DependencyInjection
         services.AddSingleton<IGateIDecisionTraceLifecyclePolicy>(provider =>
             provider.GetRequiredService<GateICompositionGate>());
         services.AddScoped<GateICompositionPreflight>();
-        services.AddScoped<IDecisionReferenceValidationPort, DefaultOffDecisionReferenceValidationPort>();
-        services.AddScoped<IBudgetVersionReferenceValidationPort, DefaultOffBudgetVersionReferenceValidationPort>();
-        services.AddScoped<IScenarioPlanningReferenceValidationPort, DefaultOffScenarioPlanningReferenceValidationPort>();
-        services.AddScoped<IOutcomeReferenceAuthorityPort, DefaultOffOutcomeReferenceAuthorityPort>();
-        services.AddScoped<IGateIRelationshipAuthority, DefaultOffGateIRelationshipAuthority>();
+        services.AddSingleton<IFu16OutboundProofProvider, UnavailableFu16OutboundProofProvider>();
+        services.AddHttpClient<GateIOwnerReferenceHttpClients>();
+        services.AddScoped<IDecisionReferenceValidationPort>(provider => provider.GetRequiredService<GateIOwnerReferenceHttpClients>());
+        services.AddScoped<IBudgetVersionReferenceValidationPort>(provider => provider.GetRequiredService<GateIOwnerReferenceHttpClients>());
+        services.AddScoped<IScenarioPlanningReferenceValidationPort>(provider => provider.GetRequiredService<GateIOwnerReferenceHttpClients>());
+        services.AddScoped<IOutcomeReferenceAuthorityPort>(provider => provider.GetRequiredService<GateIOwnerReferenceHttpClients>());
+        services.AddScoped<IGateIRelationshipAuthority>(provider => provider.GetRequiredService<GateIOwnerReferenceHttpClients>());
         services.AddScoped<DecisionTraceValidationService>();
         services.AddScoped<FundingScenarioContractValidator>();
         services.AddScoped<BenefitCommitmentOutcomeReferenceValidator>();

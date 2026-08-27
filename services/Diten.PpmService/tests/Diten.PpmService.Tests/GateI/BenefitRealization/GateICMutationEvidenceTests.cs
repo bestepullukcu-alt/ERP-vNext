@@ -19,7 +19,8 @@ public sealed class GateICMutationEvidenceTests
         Assert.Equal("MOD-0117-GATE-I-C", evidence.GetProperty("lane").GetString());
 
         var source = evidence.GetProperty("source").GetString()!;
-        var actualHash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(root, source))))
+        var actualHash = Convert.ToHexString(SHA256.HashData(GitShow(
+                root, evidence.GetProperty("sourceCheckpoint").GetString()!, source)))
             .ToLowerInvariant();
         Assert.Equal(evidence.GetProperty("restoredSha256").GetString(), actualHash);
 
@@ -43,6 +44,24 @@ public sealed class GateICMutationEvidenceTests
             Assert.False(string.IsNullOrWhiteSpace(item.GetProperty("failureIdentity").GetString()));
             AssertCompiledTest(assembly, item.GetProperty("test").GetString()!);
         }
+    }
+
+    private static byte[] GitShow(string root, string checkpoint, string source)
+    {
+        using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("git")
+        {
+            WorkingDirectory = root,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            ArgumentList = { "show", $"{checkpoint}:{source}" }
+        }) ?? throw new InvalidOperationException("git_start_failed");
+        using var stream = new MemoryStream();
+        process.StandardOutput.BaseStream.CopyTo(stream);
+        var error = process.StandardError.ReadToEnd();
+        process.WaitForExit();
+        Assert.True(process.ExitCode == 0, error);
+        return stream.ToArray();
     }
 
     private static void AssertCompiledTest(Assembly assembly, string identity)

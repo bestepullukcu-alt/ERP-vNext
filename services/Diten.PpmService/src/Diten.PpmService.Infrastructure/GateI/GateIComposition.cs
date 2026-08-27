@@ -2,6 +2,9 @@ using Diten.PpmService.Application.Features.BenefitCommitments.GateI.BenefitReal
 using Diten.PpmService.Application.Features.InvestmentCases.GateI.DecisionTrace;
 using Diten.PpmService.Application.Features.InvestmentCases.GateI.FundingScenario;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Diten.PpmService.Application.GateI;
 
 namespace Diten.PpmService.Infrastructure.GateI;
 
@@ -58,6 +61,25 @@ public sealed class GateICompositionPreflight(GateICompositionGate gate)
 
     private static GateICompositionResult Fail(string code) =>
         new(503, code, 0, 0, 0, 0, 0);
+}
+
+public static class GateILocalEvidenceComposition
+{
+    public static IServiceCollection AddGateILocalEvidenceTestHost(
+        this IServiceCollection services,
+        Uri ownerBaseAddress,
+        TimeProvider? timeProvider = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(ownerBaseAddress);
+        if (!ownerBaseAddress.IsAbsoluteUri || ownerBaseAddress.Scheme is not ("http" or "https"))
+            throw new ArgumentException("The local-evidence owner base address must be absolute HTTP(S).", nameof(ownerBaseAddress));
+
+        services.RemoveAll<IFu16OutboundProofProvider>();
+        services.AddSingleton(Fu16OutboundLocalEvidenceTestHost.CreateEphemeralProvider(timeProvider));
+        services.AddHttpClient<GateIOwnerReferenceHttpClients>(client => client.BaseAddress = ownerBaseAddress);
+        return services;
+    }
 }
 
 internal sealed class DefaultOffDecisionReferenceValidationPort(GateICompositionGate gate)
