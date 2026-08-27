@@ -113,6 +113,38 @@ public class PlatformSchemaManifestTests
         }
     }
 
+    [Fact]
+    public void TheDeclaredBudgetsAreTheNumbersTheOwnersApproved()
+    {
+        /*
+         * ⚠ THE TEST ABOVE CANNOT CATCH THE FAILURE THIS ROUND WAS ABOUT. DeclaredBudgetsAreRespected asks
+         * "is the manifest inside the ceiling" — so the way to make it green is to raise the ceiling, which
+         * is precisely the move SchemaProfileBudget's own header warns against ("teaches the reader to raise
+         * the number instead of looking at it"). Raising MaxCollections from 8 to 9 does not turn that test
+         * red at all; it just widens the gate and nothing says so.
+         *
+         * So the ceiling itself is pinned here, to the numbers an owner actually signed off:
+         *
+         *   MaxCollections    8   — GSKU owners, 2026-08-26. NOT raised by BL-298.
+         *   MaxLogicalIndexes 19  — GSKU owners, 2026-08-28 (BL-298), raised from 18 by exactly one, on the
+         *                           BL-279 measurement for business_reference_data_validation_results.
+         *
+         * MUTATION GUARD: change either number and this goes red pointing at the owner decision, which is
+         * the conversation that has to happen before a ceiling moves. Editing this test to match a new
+         * number is not a workaround — it is the edit that says an owner approved it, and it shows up in
+         * review as exactly that.
+         */
+        var budget = SchemaProfileBudget.BusinessReferenceData;
+
+        Assert.Equal(8, budget.MaxCollections);
+        Assert.Equal(19, budget.MaxLogicalIndexes);
+
+        // And the profile really is at the ceiling, so the next index cannot slip in unnoticed either.
+        var collections = PlatformSchemaManifest.For(SchemaProfile.BusinessReferenceData);
+        Assert.Equal(8, collections.Count);
+        Assert.Equal(19, collections.Sum(c => c.LogicalIndexCount));
+    }
+
     // ── THE REPOSITORIES AND THE MANIFEST NAME THE SAME COLLECTIONS ────────────────────────────────────────
 
     [Fact]
