@@ -1,4 +1,5 @@
 using Diten.ManagementGovernanceService.Application.Modules.ProcessModeling;
+using Diten.ManagementGovernanceService.Application.Features.ProcessModelingLocalTest.Commands;
 using Diten.ManagementGovernanceService.Persistence.Modules.ProcessModeling;
 using MongoDB.Bson;
 
@@ -40,7 +41,12 @@ public sealed class ProcessModelingMongoGuidPolicyArchitectureTests
         Assert.Contains("if (!args.Contains(\"--local-test\",StringComparer.Ordinal)) return",program,StringComparison.Ordinal);
         Assert.Contains("http://127.0.0.1:5017",program,StringComparison.Ordinal);
         Assert.DoesNotContain("ILocalTestIdentitySource",program,StringComparison.Ordinal);
-        Assert.Equal(20,ProcessModelingPermissions.ExactCommandMap.Keys.Count(command=>controller.Contains($"Run(\"{command}\"",StringComparison.Ordinal)));
+        var commandTypes=typeof(CreateProcessArchitectureCommand).Assembly.GetTypes()
+            .Where(x=>x.Namespace==typeof(CreateProcessArchitectureCommand).Namespace&&x.Name.EndsWith("Command",StringComparison.Ordinal))
+            .ToArray();
+        Assert.Equal(20,commandTypes.Length);
+        Assert.Equal(20,ProcessModelingPermissions.ExactCommandMap.Keys.Count(command=>controller.Contains($"nameof({command})",StringComparison.Ordinal)));
+        Assert.DoesNotContain("ProcessModelingLocalCommand",controller,StringComparison.Ordinal);
         Assert.Contains("X-Tenant-Id",controller,StringComparison.Ordinal); Assert.Contains("Idempotency-Key",controller,StringComparison.Ordinal);
         Assert.Contains("Diten.MOD0355.LocalTest",auth,StringComparison.Ordinal);Assert.Contains("mod0355-local-evidence-v1",auth,StringComparison.Ordinal);
         Assert.DoesNotContain("RabbitMQ",program+controller+auth,StringComparison.OrdinalIgnoreCase);
