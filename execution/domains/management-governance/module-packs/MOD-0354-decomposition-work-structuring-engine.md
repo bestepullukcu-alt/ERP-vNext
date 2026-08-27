@@ -12,13 +12,18 @@ branch: feature/mg/mod-0354-decomposition-work-structuring-engine
 started: 2026-07-28
 target: 2026-08-14
 form_field_count: 0
+port: 5017
 ---
 
 # MOD-0354 — Decomposition & Work Structuring Engine
 
 > **Draft / no-code guard:** This pack is a planning contract for human review. It does not authorize
-> production code, service scaffolding, port allocation, gateway changes, migration, deletion or
+> production code, service scaffolding, port binding, gateway changes, migration, deletion or
 > deprecation. Implementation requires `approved` / `ready-for-dev` status and every open gate in §18.
+
+> **Port reservation:** `Diten.ManagementGovernanceService:5017` is the canonical governance reservation.
+> It supersedes the historical Management Governance `5011` assignment; `5011` belongs exclusively to
+> `Diten.PvgService`. The reservation grants no listener, route, scaffold, runtime or production authority.
 
 > **Planning date:** `target: 2026-08-14` is a provisional planning date, not a delivery commitment or
 > implementation authorization.
@@ -759,8 +764,8 @@ meaning. It rejects commands/actions for start, block, review, complete, close, 
 
 ## 15. Gateway / API Routing Decision
 
-Decision: a gateway integration decision is required, but this `draft` does not allocate a service port or
-change a route.
+Decision: the canonical service reservation is `Diten.ManagementGovernanceService:5017`; a separate gateway
+integration decision is still required and this `draft` does not authorize a port binding or route change.
 
 - `Diten.ManagementGovernanceService` does not yet exist.
 - Service scaffold requires this pack to be approved/ready-for-dev, explicit user approval, architecture-test
@@ -976,7 +981,8 @@ change a route.
 - [ ] Architecture test proves no direct Platform collection access or authoritative use of the shared-key
   internal audit endpoint.
 - [ ] `Diten.ManagementGovernanceService` scaffold receives explicit user approval.
-- [ ] Service port is allocated without collision.
+- [x] Service port `5017` is allocated without collision; `5011` remains exclusively assigned to
+  `Diten.PvgService`. This is reservation evidence only, not runtime binding authority.
 - [ ] Integration-agent approves and owns the gateway route task.
 - [ ] Exact future repo scope is revalidated after service placement/port decisions.
 - [ ] Gate 2 PASS exists before any implementation touches, removes, migrates or deprecates a legacy

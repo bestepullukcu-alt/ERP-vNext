@@ -64,12 +64,29 @@ module pack `approved` / `ready-for-dev` olduktan ve açık kullanıcı onayı v
 |--------|------|------------|
 | Gateway (Ocelot) | 5000 | `gateway/Diten.ApiGateway` |
 | Frontend (Diten.Web) | 5001 | `frontend/Diten.Web` |
+| Enterprise Strategy Service | 5004 | `services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.API` |
+| PVG Service | 5011 | Planned: `services/Diten.PvgService` |
+| FP&A Service | 5012 | Planned: `services/Diten.FpaService` |
+| Decision Intelligence Service | 5013 | Planned: `services/Diten.DecisionIntelligenceService` |
+| Budgeting Service (fallback) | 5014 | Planned fallback: `services/Diten.BudgetingService` |
+| Scenario Planning Service (fallback) | 5015 | Planned fallback: `services/Diten.ScenarioPlanningService` |
+| Enterprise Governance Service (fallback) | 5016 | Planned fallback: `services/Diten.EnterpriseGovernanceService` |
+| Management Governance Service | 5017 | Planned: `services/Diten.ManagementGovernanceService` |
 | Auth Service | 5056 | `services/Diten.AuthService/src/Diten.AuthService.Api` |
 | Platform Service | 5057 | `services/Diten.Platform/src/Diten.Platform.API` |
 | DevEnablement Service | 5058 | `services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api` |
+| MDM Service | 5059 | `services/Diten.MdmService/src/Diten.MdmService.Api` |
+| HCM Service | 5060 | `services/Diten.HcmService/src/Diten.HcmService.Api` |
+| PPM Service | 5061 | `services/Diten.PpmService/src/Diten.PpmService.Api` |
 | MongoDB | 27017 | yerel çalışmalı |
 
-**Kural:** Frontend (5001) asla doğrudan servis portlarına (5056/5057/5058) istek atmaz. Her istek Gateway (5000) üzerinden geçer.
+Bu tablo repo içindeki **canonical port registry**'dir. `Planned` ve `Planned fallback` satırları portu rezerve
+eder; tek başına service scaffold, route, runtime veya production authority oluşturmaz. Primary/fallback
+topology ve karşılıklı dışlama kuralları ilgili domain config ve module pack'lerde ayrıca uygulanır.
+
+**Kural:** Frontend (5001) asla doğrudan servis portlarına istek atmaz. Her istek Gateway (5000) üzerinden geçer.
+Yeni veya değişen Ocelot rotaları yalnız `integration-agent` tarafından ve ilgili runtime authority sonrasında
+eklenebilir.
 
 Detay: [.antigravity/rules/ports.md](.antigravity/rules/ports.md)
 
