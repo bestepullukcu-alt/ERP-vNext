@@ -687,8 +687,13 @@ all owner checkpoints pass. No committed true value, URI, credential or secret i
 
 In addition to the §4.9.2 allowlist, this amendment authorizes only:
 
+- `services/Diten.PpmService/src/Diten.PpmService.Application/Features/InvestmentCases/InvestmentCaseFeature.cs`,
+  only to preserve default-off Gate L closure while enforcing the governing-decision close guard when the
+  common Gate I composition and DecisionTrace lane are locally enabled;
 - `services/Diten.PpmService/src/Diten.PpmService.Api/Controllers/InvestmentCaseGateIReferencesController.cs`;
 - `services/Diten.PpmService/src/Diten.PpmService.Api/Controllers/BenefitCommitmentGateIReferencesController.cs`;
+- `services/Diten.PpmService/tests/Diten.PpmService.Tests/GateLDomainTests.cs`, only for the paired default-off
+  and Gate-I-enabled lifecycle regression;
 - minimum additive project references required by the already allowlisted Gate I source/test roots.
 
 It does not reopen the broader Phase 2A frontend/Gateway scope. `.antigravity/**`, other services, existing
