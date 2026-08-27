@@ -586,6 +586,36 @@ Budgeting persistence access, cache/LKG/local truth, frontend, Gateway, WorkCent
 key/secret/deployment/activation and push remain forbidden. This checkpoint alone does not complete atomic
 Gate I-B or make it Local API-Test Ready.
 
+### Gate I-B FU16 HTTP trusted-context adapter amendment — AUTHORIZED / DEFAULT-OFF / NON-PRODUCTION
+
+Control Tower authorizes the ScenarioPlanning owner-local projection from a successfully authenticated
+shared `Fu16TrustedRequestContext` into `ScenarioGateIContext`. The controller must select exact named scheme
+`Diten.FU16.DelegatedActor`; default authentication and HS256 user/session fallback are forbidden. The
+adapter requires exact ordinal `diten.fpa`, `diten-fpa-service`, `diten.s2s.delegated.invoke`,
+`fpa.scenario-planning.references.validate` and its single MOD-0138 permission. The shared FPA workload is
+not authority to accept Budgeting operation/permission, aliases, wildcards, case changes or extra claims.
+
+Existing contract-discovery composition remains provider-disabled with the unavailable accessor. An
+additive evidence registration may add only the named scheme and adapter when explicit shared FU16 options,
+key provider and authority client are supplied externally. No such dependencies, key, credential, issuer,
+audience, host, listener or committed activation are registered here.
+
+Exact additive implementation paths are:
+
+- `services/Diten.FpaService/src/Diten.FpaService.Api/Modules/ScenarioPlanning/Fu16ScenarioGateIContextAccessor.cs`;
+- `services/Diten.FpaService/src/Diten.FpaService.Api/Modules/ScenarioPlanning/ScenarioPlanningModuleRegistration.cs`;
+- `services/Diten.FpaService/src/Diten.FpaService.Api/Modules/ScenarioPlanning/InternalScenarioReferenceValidationController.cs`;
+- `services/Diten.FpaService/src/Diten.FpaService.Api/Diten.FpaService.Api.csproj`, only for the shared `Diten.Platform.Common` project reference;
+- `services/Diten.FpaService/tests/Diten.FpaService.UnitTests/Modules/ScenarioPlanning/GateI/Fu16ScenarioGateIContextTests.cs`;
+- `services/Diten.FpaService/tests/Diten.FpaService.UnitTests/Diten.FpaService.UnitTests.csproj`, only for the API project reference;
+- `services/Diten.FpaService/tests/Diten.FpaService.ArchitectureTests/Modules/ScenarioPlanning/GateI/Fu16ScenarioGateICompositionArchitectureTests.cs`;
+- `services/Diten.FpaService/tests/Diten.FpaService.ArchitectureTests/Topology/FpaPrimaryTopologyTests.cs`, only to reconcile API-to-shared-auth and UnitTests-to-API references while all module isolation guards remain exact.
+
+Acceptance requires exact-profile projection, Budgeting cross-profile rejection, named-scheme evidence,
+preserved default-disabled composition, no Program/listener mutation and physical expected-red proof for
+profile bypass, default-scheme fallback and trusted-context substitution. Production authority and
+activation remain `none`; no Gateway, frontend or WorkCenter change is authorized.
+
 ## 5. Repo Scope
 
 Current governance/fixture authoring scope is exactly:
