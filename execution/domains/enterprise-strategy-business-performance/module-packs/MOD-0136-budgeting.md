@@ -404,6 +404,7 @@ Exact additive paths are:
 - `services/Diten.FpaService/tests/Diten.FpaService.UnitTests/Modules/Budgeting/GateI/Fu16BudgetGateITrustedContextTests.cs`;
 - `services/Diten.FpaService/tests/Diten.FpaService.UnitTests/Diten.FpaService.UnitTests.csproj`, only for the API project reference;
 - `services/Diten.FpaService/tests/Diten.FpaService.ArchitectureTests/Modules/Budgeting/GateI/Fu16BudgetGateICompositionArchitectureTests.cs`.
+- `services/Diten.FpaService/tests/Diten.FpaService.ArchitectureTests/Topology/FpaPrimaryTopologyTests.cs`, only to reconcile the exact API-to-shared-auth and UnitTests-to-API project graph; Budgeting/ScenarioPlanning Domain, Application, Persistence and Infrastructure isolation remains unchanged.
 
 Acceptance requires exact positive projection, rejection of every wrong profile and MOD-0138 cross-profile,
 named-scheme evidence, preserved default-disabled composition, zero Program/listener mutation and physical
