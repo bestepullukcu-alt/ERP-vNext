@@ -7,5 +7,5 @@ public sealed class PublishProcessModelVersionHandler(IProcessModelingLocalComma
     : IRequestHandler<PublishProcessModelVersionCommand,Response<NoContent>>
 {
     public Task<Response<NoContent>> Handle(PublishProcessModelVersionCommand request,CancellationToken cancellationToken)
-        => ProcessModelingLocalHandlerResult.NoContentAsync(executor,request.Execution,cancellationToken);
+        => ProcessModelingLocalHandlerResult.NoContentAsync(executor,request.Execution with{ExpectedVersion=request.ExpectedVersion},cancellationToken);
 }

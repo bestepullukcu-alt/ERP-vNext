@@ -1,4 +1,5 @@
 using Diten.ManagementGovernanceService.Application.Modules.ProcessModeling.Approval;
+using Diten.ManagementGovernanceService.Application.Features.ProcessModelingLocalTest.Publish;
 using Diten.ManagementGovernanceService.Domain.Modules.ProcessModeling.Approval;
 
 namespace Diten.ManagementGovernanceService.IntegrationTests.Modules.ProcessModeling.Approval;
@@ -25,6 +26,34 @@ public sealed class PublishApprovalAuthorizationContractTests
         Assert.Equal(PublishApprovalFailureCodes.RuntimeUnavailable, result.StableCode);
         Assert.True(result.ContractGatesSatisfied);
         Assert.False(result.IsExecutable);
+    }
+
+    [Fact]
+    public void Local_test_gate_promotes_only_exact_not_required_contract_completion()
+    {
+        var allowed=LocalTestNotRequiredPublishGate.Evaluate(Evidence(Valid(PublishApprovalRequirement.NotRequired)),Now);
+        Assert.True(allowed.IsExecutable);Assert.Equal(204,allowed.HttpStatus);Assert.Equal(LocalTestNotRequiredPublishGate.Authorized,allowed.StableCode);
+
+        var required=LocalTestNotRequiredPublishGate.Evaluate(Evidence(Valid(PublishApprovalRequirement.Required)),Now);
+        Assert.False(required.IsExecutable);Assert.Equal(503,required.HttpStatus);Assert.Equal(PublishApprovalFailureCodes.RuntimeUnavailable,required.StableCode);
+    }
+
+    [Theory]
+    [InlineData(0,AuthoritativeDecisionState.Denied,403)]
+    [InlineData(1,AuthoritativeDecisionState.Denied,403)]
+    [InlineData(2,AuthoritativeDecisionState.Denied,403)]
+    [InlineData(3,AuthoritativeDecisionState.Denied,403)]
+    [InlineData(0,AuthoritativeDecisionState.Unavailable,503)]
+    [InlineData(1,AuthoritativeDecisionState.Unavailable,503)]
+    [InlineData(2,AuthoritativeDecisionState.Unavailable,503)]
+    [InlineData(3,AuthoritativeDecisionState.Unavailable,503)]
+    public void Local_test_gate_keeps_entitlement_permission_and_eligibility_independent(int selector,AuthoritativeDecisionState state,int status)
+    {
+        var gate=AuthorityPair(state);
+        var input=selector switch{0=>Valid() with{EntitlementDecision=gate},1=>Valid() with{PermissionDecision=gate},2=>Valid() with{EligibilityDecision=gate},_=>Valid()};
+        var evidence=selector==3?Evidence(input,gate):Evidence(input);
+        var result=LocalTestNotRequiredPublishGate.Evaluate(evidence,Now);
+        Assert.False(result.IsExecutable);Assert.Equal(status,result.HttpStatus);
     }
 
     [Theory]
@@ -161,6 +190,32 @@ public sealed class PublishApprovalAuthorizationContractTests
             new(Fu16PublishActorProofState.Available, Publisher, true, true), AuthorityPair(), AuthorityPair(), AuthorityPair(),
             requirement == PublishApprovalRequirement.Required ? Reference() : null,
             requirement == PublishApprovalRequirement.Required ? OutcomePair() : null);
+    }
+
+    [Fact]
+    public void Local_gate_uses_injected_time_and_revalidation_compares_full_authority_tuple()
+    {
+        var initial=Evidence(Valid());
+        var staleAtActualTime=initial with{Input=initial.Input with{EvaluatedAtUtc=Now.AddMinutes(-10)}};
+        Assert.Equal(409,LocalTestNotRequiredPublishGate.Evaluate(staleAtActualTime,Now.AddMinutes(2)).HttpStatus);
+
+        var changed=initial with{Input=initial.Input with{PermissionDecision=AuthorityPair(revalidatedVersion:8)}};
+        Assert.Equal(409,LocalTestNotRequiredPublishGate.Revalidate(initial,changed,Now).HttpStatus);
+        var changedTime=initial with{Input=initial.Input with{PermissionDecision=AuthorityPair(validUntil:Now.AddMinutes(2))}};
+        Assert.Equal(409,LocalTestNotRequiredPublishGate.Revalidate(initial,changedTime,Now).HttpStatus);
+        var changedGrant=initial with{ExplicitGrant=initial.ExplicitGrant with{Permission="mg.process-model.publish.other"}};
+        Assert.Equal(409,LocalTestNotRequiredPublishGate.Revalidate(initial,changedGrant,Now).HttpStatus);
+
+        var target=new LocalTestPublishTargetSnapshot(Tenant,Model,Version,Hash,Author,0,"Review");
+        var context=new Diten.ManagementGovernanceService.Application.Features.ProcessModelingLocalTest.LocalTestCommandContext(Tenant,Requester,"mg.process-model.publish","key",new string('a',64),Guid.NewGuid());
+        Assert.Equal(409,LocalTestNotRequiredPublishGate.ValidateBindings(initial,target,context).HttpStatus);
+    }
+
+    private static LocalTestPublishAuthorizationEvidence Evidence(PublishApprovalAuthorizationInput input,PublishAuthorityRevalidationV1? explicitGrant=null)
+    {
+        var requestHash=new string('a',64);
+        return new(input,new(Tenant,LocalTestExplicitGrantEvidence.ExpectedModuleCode,"mg.process-model.publish",Publisher,
+            Guid.Parse("50000000-0000-0000-0000-000000000005"),requestHash,explicitGrant??AuthorityPair()),"composite",requestHash);
     }
 
     private static PublishAuthorityRevalidationV1 AuthorityPair(AuthoritativeDecisionState state = AuthoritativeDecisionState.Allowed,

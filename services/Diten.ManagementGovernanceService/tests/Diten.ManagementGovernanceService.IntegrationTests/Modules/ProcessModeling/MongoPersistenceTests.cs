@@ -3,6 +3,10 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using Diten.ManagementGovernanceService.Application.Modules.ProcessModeling;
+using Diten.ManagementGovernanceService.Application.Features.ProcessModelingLocalTest;
+using Diten.ManagementGovernanceService.Application.Features.ProcessModelingLocalTest.Publish;
+using Diten.ManagementGovernanceService.Application.Modules.ProcessModeling.Approval;
+using Diten.ManagementGovernanceService.Domain.Modules.ProcessModeling.Approval;
 using Diten.ManagementGovernanceService.Persistence.Modules.ProcessModeling;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -171,7 +175,7 @@ public sealed class MongoPersistenceTests
             Assert.Equal("created",await durableRunner.ExecuteAsync(async(s,ct)=>{durableBody++;await new ProcessModelingMongoMutationWriter(context).WriteAsync(s,durableEnvelope,ct);return "created";},async ct=>(await receiptReader.ReconcileAsync(durableRequest,true,ct))?.StableCode));Assert.Equal(1,durableBody);
 
             var publishId=Guid.NewGuid();var publishRequest=request with{AggregateId=publishId,IdempotencyKey="publish",CommandFamily=PublishProcessModelVersionContract.CommandName};var publishEnvelope=envelope with{Request=publishRequest,Business=new BsonDocument{{"_id",G(publishId)},{"TenantId",G(tenant)},{"IsDeleted",false},{"Version",0}},AuditIntentId=Guid.NewGuid(),EventId=Guid.NewGuid()};
-            await Assert.ThrowsAsync<ProcessModelingUnavailableException>(()=>runner.ExecuteAsync<string>(async(s,ct)=>{await new ProcessModelingMongoMutationWriter(context).WriteAsync(s,publishEnvelope,ct);return "wrong";},_=>Task.FromResult<string?>(null)));Assert.Null(await new ProcessModelingMongoRepository(context).FindTenantAsync("mg_process_models",tenant,publishId));
+            await Assert.ThrowsAsync<ProcessModelingConflictException>(()=>runner.ExecuteAsync<string>(async(s,ct)=>{await new ProcessModelingMongoMutationWriter(context).WriteAsync(s,publishEnvelope,ct);return "wrong";},_=>Task.FromResult<string?>(null)));Assert.Null(await new ProcessModelingMongoRepository(context).FindTenantAsync("mg_process_models",tenant,publishId));
 
             var raceModelId=Guid.NewGuid();var raceTag="revision-race-"+Guid.NewGuid().ToString("N");
             await context.Collection("mg_process_models").InsertOneAsync(new BsonDocument{{"_id",G(raceModelId)},{"TenantId",G(tenant)},{"IsDeleted",false},{"Version",0},{"LatestRevisionNumber",1},{"OpenVersionId",BsonNull.Value}});
@@ -248,6 +252,166 @@ public sealed class MongoPersistenceTests
         }
         finally{await client.DropDatabaseAsync(db);}
     }
+
+    [Fact]
+    public async Task Local_test_not_required_publish_is_atomic_idempotent_and_revalidated_while_required_stays_zero_residue()
+    {
+        await using var mongo=await Replica.StartAsync();var client=C(mongo.Uri);var db="publish_"+Guid.NewGuid().ToString("N");var context=new ProcessModelingMongoContext(client,db);
+        try
+        {
+            await new ProcessModelingMongoIndexInitializer(context).InitializeAsync();
+            var tenant=Guid.NewGuid();var requester=Guid.NewGuid();var publisher=Guid.NewGuid();var author=Guid.NewGuid();
+            var modelId=Guid.NewGuid();var versionId=Guid.NewGuid();var hash="sha256:"+new string('a',64);
+            var G=(Guid x)=>new BsonBinaryData(x,GuidRepresentation.Standard);
+            await context.Collection("mg_process_models").InsertOneAsync(new BsonDocument{{"_id",G(modelId)},{"TenantId",G(tenant)},{"ProcessDefinitionId",G(Guid.NewGuid())},{"ModelCode","PUBLISH-A"},{"OpenVersionId",G(versionId)},{"PublishedVersionId",BsonNull.Value},{"IsDeleted",false},{"Version",0}});
+            await context.Collection("mg_process_model_versions").InsertOneAsync(new BsonDocument{{"_id",G(versionId)},{"TenantId",G(tenant)},{"ProcessModelId",G(modelId)},{"ModelAuthorActorId",G(author)},{"ContentHash",hash},{"LifecycleState","Review"},{"IsDeleted",false},{"Version",0}});
+            var time=new FixedTimeProvider(new DateTimeOffset(2026,8,28,12,0,0,TimeSpan.Zero));
+            var provider=new PublishEvidenceProvider(publisher,PublishApprovalRequirement.NotRequired);
+            var executor=new ProcessModelingLocalTestPublishExecutor(new ProcessModelingLocalTestPublishTargetReader(context),provider,
+                new ProcessModelingMongoMutationWriter(context),new ProcessModelingMongoReceiptReader(context),
+                new ProcessModelingMongoTransactionRunner(context),time);
+            var localHash=new string('b',64);
+            var command=new ProcessModelingLocalExecutionRequest("PublishProcessModelVersionCommand",versionId,[],
+                new(tenant,requester,ProcessModelingPermissions.ExactCommandMap["PublishProcessModelVersionCommand"],"publish-key",localHash,PublishEvidenceProvider.Principal),0);
+
+            var published=await executor.ExecuteAsync(command,default);
+            Assert.True(published.Succeeded);Assert.Equal(204,published.StatusCode);Assert.Equal(2,provider.Calls);
+            var version=await context.Collection("mg_process_model_versions").Find(Builders<BsonDocument>.Filter.Eq("_id",G(versionId))).SingleAsync();
+            Assert.Equal("Published",version["LifecycleState"].AsString);Assert.Equal(1,version["Version"].AsInt32);
+            Assert.Equal(time.GetUtcNow().UtcDateTime,version["PublishedAtUtc"].ToUniversalTime());
+            var model=await context.Collection("mg_process_models").Find(Builders<BsonDocument>.Filter.Eq("_id",G(modelId))).SingleAsync();
+            Assert.Equal(versionId,ProcessModelingMongoGuidPolicy.Read(model["PublishedVersionId"]));Assert.Equal(BsonNull.Value,model["OpenVersionId"]);Assert.Equal(1,model["Version"].AsInt32);
+            Assert.Equal(1,await Count("mg_process_modeling_idempotency_receipts"));Assert.Equal(1,await Count("mg_process_modeling_audit_intents"));Assert.Equal(1,await Count("mg_process_modeling_outbox_messages"));
+
+            var duplicate=await executor.ExecuteAsync(command,default);
+            Assert.True(duplicate.Succeeded);Assert.Equal(204,duplicate.StatusCode);
+            Assert.Equal(1,await Count("mg_process_modeling_idempotency_receipts"));Assert.Equal(1,await Count("mg_process_modeling_audit_intents"));Assert.Equal(1,await Count("mg_process_modeling_outbox_messages"));
+
+            var requiredModel=Guid.NewGuid();var requiredVersion=Guid.NewGuid();
+            await context.Collection("mg_process_models").InsertOneAsync(new BsonDocument{{"_id",G(requiredModel)},{"TenantId",G(tenant)},{"ProcessDefinitionId",G(Guid.NewGuid())},{"ModelCode","PUBLISH-B"},{"OpenVersionId",G(requiredVersion)},{"PublishedVersionId",BsonNull.Value},{"IsDeleted",false},{"Version",0}});
+            await context.Collection("mg_process_model_versions").InsertOneAsync(new BsonDocument{{"_id",G(requiredVersion)},{"TenantId",G(tenant)},{"ProcessModelId",G(requiredModel)},{"ModelAuthorActorId",G(author)},{"ContentHash",hash},{"LifecycleState","Review"},{"IsDeleted",false},{"Version",0}});
+            var requiredProvider=new PublishEvidenceProvider(publisher,PublishApprovalRequirement.Required);
+            var requiredExecutor=new ProcessModelingLocalTestPublishExecutor(new ProcessModelingLocalTestPublishTargetReader(context),requiredProvider,
+                new ProcessModelingMongoMutationWriter(context),new ProcessModelingMongoReceiptReader(context),new ProcessModelingMongoTransactionRunner(context),time);
+            var required=await requiredExecutor.ExecuteAsync(command with{RouteId=requiredVersion,Context=command.Context with{IdempotencyKey="required"}},default);
+            Assert.False(required.Succeeded);Assert.Equal(503,required.StatusCode);Assert.Equal(1,requiredProvider.Calls);
+            Assert.Equal("Review",(await context.Collection("mg_process_model_versions").Find(Builders<BsonDocument>.Filter.Eq("_id",G(requiredVersion))).SingleAsync())["LifecycleState"].AsString);
+            Assert.Equal(1,await Count("mg_process_modeling_idempotency_receipts"));Assert.Equal(1,await Count("mg_process_modeling_audit_intents"));Assert.Equal(1,await Count("mg_process_modeling_outbox_messages"));
+
+            async Task<long> Count(string collection)=>await context.Collection(collection).CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty);
+        }
+        finally{await client.DropDatabaseAsync(db);}
+    }
+
+    [Fact]
+    public async Task Changed_precommit_authority_fence_rolls_back_publish_and_every_participant()
+    {
+        await using var mongo=await Replica.StartAsync();var client=C(mongo.Uri);var db="publish_fence_"+Guid.NewGuid().ToString("N");var context=new ProcessModelingMongoContext(client,db);
+        try
+        {
+            await new ProcessModelingMongoIndexInitializer(context).InitializeAsync();
+            var tenant=Guid.NewGuid();var requester=Guid.NewGuid();var publisher=Guid.NewGuid();var author=Guid.NewGuid();var modelId=Guid.NewGuid();var versionId=Guid.NewGuid();
+            var G=(Guid x)=>new BsonBinaryData(x,GuidRepresentation.Standard);var hash="sha256:"+new string('c',64);
+            await context.Collection("mg_process_models").InsertOneAsync(new BsonDocument{{"_id",G(modelId)},{"TenantId",G(tenant)},{"ProcessDefinitionId",G(Guid.NewGuid())},{"ModelCode","FENCE-A"},{"OpenVersionId",G(versionId)},{"PublishedVersionId",BsonNull.Value},{"IsDeleted",false},{"Version",0}});
+            await context.Collection("mg_process_model_versions").InsertOneAsync(new BsonDocument{{"_id",G(versionId)},{"TenantId",G(tenant)},{"ProcessModelId",G(modelId)},{"ModelAuthorActorId",G(author)},{"ContentHash",hash},{"LifecycleState","Review"},{"IsDeleted",false},{"Version",0}});
+            var command=new ProcessModelingLocalExecutionRequest("PublishProcessModelVersionCommand",versionId,[],
+                new(tenant,requester,ProcessModelingPermissions.ExactCommandMap["PublishProcessModelVersionCommand"],"changed-fence",new string('d',64),PublishEvidenceProvider.Principal),0);
+            var wrongBindingExecutor=new ProcessModelingLocalTestPublishExecutor(new ProcessModelingLocalTestPublishTargetReader(context),
+                new PublishEvidenceProvider(publisher,PublishApprovalRequirement.NotRequired,false,true),new ProcessModelingMongoMutationWriter(context),
+                new ProcessModelingMongoReceiptReader(context),new ProcessModelingMongoTransactionRunner(context),new FixedTimeProvider(new DateTimeOffset(2026,8,28,12,0,0,TimeSpan.Zero)));
+            var wrongBinding=await wrongBindingExecutor.ExecuteAsync(command with{Context=command.Context with{IdempotencyKey="wrong-binding"}},default);
+            Assert.False(wrongBinding.Succeeded);Assert.Equal(409,wrongBinding.StatusCode);
+            foreach(var fault in new Exception[]{new TimeoutException("provider_timeout"),new InvalidOperationException("provider_failure")})
+            {
+                var failed=await Executor(new FaultingPublishEvidenceProvider(fault)).ExecuteAsync(command with{Context=command.Context with{IdempotencyKey=Guid.NewGuid().ToString("N")}},default);
+                Assert.False(failed.Succeeded);Assert.Equal(503,failed.StatusCode);Assert.Equal(PublishApprovalFailureCodes.AuthorityUnavailable,failed.StableCode);
+            }
+            await Assert.ThrowsAsync<OperationCanceledException>(()=>Executor(new FaultingPublishEvidenceProvider(new OperationCanceledException())).ExecuteAsync(command,default));
+            var malformed=await Executor(new NullPublishEvidenceProvider()).ExecuteAsync(command with{Context=command.Context with{IdempotencyKey="malformed"}},default);
+            Assert.False(malformed.Succeeded);Assert.Equal(503,malformed.StatusCode);
+
+            var sameFenceChangedTuple=await Executor(new PublishEvidenceProvider(publisher,PublishApprovalRequirement.NotRequired,false,false,true))
+                .ExecuteAsync(command with{Context=command.Context with{IdempotencyKey="same-fence-changed-tuple"}},default);
+            Assert.False(sameFenceChangedTuple.Succeeded);Assert.Equal(409,sameFenceChangedTuple.StatusCode);
+
+            var probeCalled=false;
+            var probe=await Executor(new PublishEvidenceProvider(publisher,PublishApprovalRequirement.NotRequired,false,false,false,async()=>
+            {
+                probeCalled=true;
+                foreach(var collection in new[]{"mg_process_modeling_idempotency_receipts","mg_process_modeling_audit_intents","mg_process_modeling_outbox_messages"})
+                    Assert.Equal(0,await context.Collection(collection).CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
+                Assert.Equal("Review",(await context.Collection("mg_process_model_versions").Find(Builders<BsonDocument>.Filter.Eq("_id",G(versionId))).SingleAsync())["LifecycleState"].AsString);
+            })).ExecuteAsync(command with{Context=command.Context with{IdempotencyKey="probe"}},default);
+            Assert.True(probe.Succeeded);Assert.True(probeCalled);
+
+            // Reset the probe publication so the changed-fence cases exercise the original Review snapshot.
+            await context.Collection("mg_process_model_versions").UpdateOneAsync(Builders<BsonDocument>.Filter.Eq("_id",G(versionId)),
+                new BsonDocument("$set",new BsonDocument{{"LifecycleState","Review"},{"Version",0}}));
+            await context.Collection("mg_process_models").UpdateOneAsync(Builders<BsonDocument>.Filter.Eq("_id",G(modelId)),
+                new BsonDocument("$set",new BsonDocument{{"OpenVersionId",G(versionId)},{"PublishedVersionId",BsonNull.Value},{"Version",0}}));
+            foreach(var collection in new[]{"mg_process_modeling_idempotency_receipts","mg_process_modeling_audit_intents","mg_process_modeling_outbox_messages"})
+                await context.Collection(collection).DeleteManyAsync(FilterDefinition<BsonDocument>.Empty);
+            var executor=new ProcessModelingLocalTestPublishExecutor(new ProcessModelingLocalTestPublishTargetReader(context),
+                new PublishEvidenceProvider(publisher,PublishApprovalRequirement.NotRequired,true),new ProcessModelingMongoMutationWriter(context),
+                new ProcessModelingMongoReceiptReader(context),new ProcessModelingMongoTransactionRunner(context),new FixedTimeProvider(new DateTimeOffset(2026,8,28,12,0,0,TimeSpan.Zero)));
+            var result=await executor.ExecuteAsync(command,default);
+            Assert.False(result.Succeeded);Assert.Equal(409,result.StatusCode);Assert.Equal(PublishApprovalFailureCodes.AuthorityStale,result.StableCode);
+            Assert.Equal("Review",(await context.Collection("mg_process_model_versions").Find(Builders<BsonDocument>.Filter.Eq("_id",G(versionId))).SingleAsync())["LifecycleState"].AsString);
+            Assert.Equal(versionId,ProcessModelingMongoGuidPolicy.Read((await context.Collection("mg_process_models").Find(Builders<BsonDocument>.Filter.Eq("_id",G(modelId))).SingleAsync())["OpenVersionId"]));
+            foreach(var collection in new[]{"mg_process_modeling_idempotency_receipts","mg_process_modeling_audit_intents","mg_process_modeling_outbox_messages"})
+                Assert.Equal(0,await context.Collection(collection).CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
+
+            var casRequest=new CoreMutationRequest(tenant,publisher,"PublishProcessModelVersionCommand","content-cas","sha256:"+new string('f',64),0,versionId);
+            var casEnvelope=new MongoMutationEnvelope(casRequest,new BsonDocument(),"published",Guid.NewGuid(),Guid.NewGuid(),DateTime.UtcNow,"subject:test",204,versionId,"sha256:"+new string('0',64));
+            await Assert.ThrowsAsync<ProcessModelingConflictException>(()=>new ProcessModelingMongoTransactionRunner(context).ExecuteAsync<string>(async(s,ct)=>
+            {await new ProcessModelingMongoMutationWriter(context).WriteAsync(s,casEnvelope,ct);return "wrong";},_=>Task.FromResult<string?>(null)));
+            foreach(var collection in new[]{"mg_process_modeling_idempotency_receipts","mg_process_modeling_audit_intents","mg_process_modeling_outbox_messages"})
+                Assert.Equal(0,await context.Collection(collection).CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
+
+            ProcessModelingLocalTestPublishExecutor Executor(ILocalTestPublishAuthorizationEvidenceProvider evidence)=>new(
+                new ProcessModelingLocalTestPublishTargetReader(context),evidence,new ProcessModelingMongoMutationWriter(context),
+                new ProcessModelingMongoReceiptReader(context),new ProcessModelingMongoTransactionRunner(context),
+                new FixedTimeProvider(new DateTimeOffset(2026,8,28,12,0,0,TimeSpan.Zero)));
+        }
+        finally{await client.DropDatabaseAsync(db);}
+    }
+
+    private sealed class PublishEvidenceProvider(Guid publisher,PublishApprovalRequirement requirement,bool changeFence=false,bool wrongRequestHash=false,bool changePermissionGate=false,Func<Task>? onRevalidate=null):ILocalTestPublishAuthorizationEvidenceProvider
+    {
+        public static readonly Guid Principal=Guid.Parse("50000000-0000-0000-0000-000000000005");
+        public int Calls { get; private set; }
+        public Task<LocalTestPublishAuthorizationEvidence> ResolveAsync(LocalTestPublishTargetSnapshot target,LocalTestCommandContext requestContext,CancellationToken cancellationToken)
+        {cancellationToken.ThrowIfCancellationRequested();Calls++;return Task.FromResult(Build(target,requestContext,"combined-1"));}
+        public async Task<LocalTestPublishAuthorizationEvidence> RevalidateAsync(LocalTestPublishTargetSnapshot target,LocalTestCommandContext requestContext,string expectedCompositeFence,CancellationToken cancellationToken)
+        {cancellationToken.ThrowIfCancellationRequested();Calls++;if(onRevalidate is not null)await onRevalidate();return Build(target,requestContext,changeFence?"combined-2":expectedCompositeFence);}
+        private LocalTestPublishAuthorizationEvidence Build(LocalTestPublishTargetSnapshot target,LocalTestCommandContext context,string composite)
+        {
+            var now=new DateTime(2026,8,28,12,0,0,DateTimeKind.Utc);
+            var provenance=new PublishActorProvenanceV1(target.TenantId,target.ProcessModelId,target.ProcessModelVersionId,target.ContentHash,target.ModelAuthorActorId,context.ActorId,now.AddMinutes(-1));
+            var request=provenance.BindPolicyRequest(publisher);
+            var decision=new PublishApprovalPolicyDecisionV1(PublishApprovalAuthorityState.Available,requirement,7,now.AddSeconds(-1),now.AddMinutes(1));
+            var gateVersion=changePermissionGate&&Calls>1?8:7;
+            var gate=new PublishAuthorityRevalidationV1(new(AuthoritativeDecisionState.Allowed,gateVersion,"gate",now.AddSeconds(-1),now.AddMinutes(1)),new(AuthoritativeDecisionState.Allowed,gateVersion,"gate",now.AddSeconds(-1),now.AddMinutes(1)));
+            var input=new PublishApprovalAuthorizationInput(true,true,now,provenance,request,decision,request,decision,
+                new(Fu16PublishActorProofState.Available,publisher,true,true),gate,gate,gate);
+            var bound=wrongRequestHash?new string('e',64):context.RequestHash;
+            return new(input,new(target.TenantId,LocalTestExplicitGrantEvidence.ExpectedModuleCode,context.Permission,publisher,
+                Principal,bound,gate),composite,bound);
+        }
+    }
+    private sealed class FaultingPublishEvidenceProvider(Exception error):ILocalTestPublishAuthorizationEvidenceProvider
+    {
+        public Task<LocalTestPublishAuthorizationEvidence> ResolveAsync(LocalTestPublishTargetSnapshot target,LocalTestCommandContext requestContext,CancellationToken cancellationToken)=>Task.FromException<LocalTestPublishAuthorizationEvidence>(error);
+        public Task<LocalTestPublishAuthorizationEvidence> RevalidateAsync(LocalTestPublishTargetSnapshot target,LocalTestCommandContext requestContext,string expectedCompositeFence,CancellationToken cancellationToken)=>Task.FromException<LocalTestPublishAuthorizationEvidence>(error);
+    }
+    private sealed class NullPublishEvidenceProvider:ILocalTestPublishAuthorizationEvidenceProvider
+    {
+        public Task<LocalTestPublishAuthorizationEvidence> ResolveAsync(LocalTestPublishTargetSnapshot target,LocalTestCommandContext requestContext,CancellationToken cancellationToken)=>Task.FromResult<LocalTestPublishAuthorizationEvidence>(null!);
+        public Task<LocalTestPublishAuthorizationEvidence> RevalidateAsync(LocalTestPublishTargetSnapshot target,LocalTestCommandContext requestContext,string expectedCompositeFence,CancellationToken cancellationToken)=>Task.FromResult<LocalTestPublishAuthorizationEvidence>(null!);
+    }
+    private sealed class FixedTimeProvider(DateTimeOffset now):TimeProvider
+    { public override DateTimeOffset GetUtcNow()=>now; }
+
     private sealed class InjectedFault:Exception;
     private static MongoClient C(string uri)=>new(ProcessModelingMongoGuidPolicy.ClientSettings(uri));
 

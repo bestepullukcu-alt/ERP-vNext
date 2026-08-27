@@ -21,6 +21,7 @@ public sealed class LocalTestHttpContractTests
 {
     private static readonly Guid TenantId=Guid.Parse("11111111-1111-4111-8111-111111111111");
     private static readonly Guid ActorId=Guid.Parse("22222222-2222-4222-8222-222222222222");
+    private static readonly Guid ServicePrincipalId=Guid.Parse("44444444-4444-4444-8444-444444444444");
 
     [Fact]
     public async Task Health_is_the_only_anonymous_success()
@@ -36,7 +37,7 @@ public sealed class LocalTestHttpContractTests
     public async Task Tenant_permission_and_idempotency_boundaries_fail_closed()
     {
         var permission="management-governance.process-modeling.architectures.create";
-        await using var host=await LocalHost.StartAsync(new LocalTestIdentity(ActorId,TenantId,[permission]),new SuccessfulExecutor());
+        await using var host=await LocalHost.StartAsync(new LocalTestIdentity(ActorId,TenantId,ServicePrincipalId,[permission]),new SuccessfulExecutor());
 
         using var wrongTenant=Request(HttpMethod.Post,"/internal/local-test/v1/process-modeling/architectures","""{"architectureCode":"EA","name":"Enterprise Architecture","sortOrder":1}""",Guid.NewGuid(),permission,true);
         Assert.Equal(HttpStatusCode.NotFound,(await host.Client.SendAsync(wrongTenant)).StatusCode);
@@ -44,7 +45,7 @@ public sealed class LocalTestHttpContractTests
         using var missingPermission=Request(HttpMethod.Post,"/internal/local-test/v1/process-modeling/architectures","""{"architectureCode":"EA","name":"Enterprise Architecture","sortOrder":1}""",TenantId,permission,false);
         Assert.Equal(HttpStatusCode.BadRequest,(await host.Client.SendAsync(missingPermission)).StatusCode);
 
-        await using var noPermission=await LocalHost.StartAsync(new LocalTestIdentity(ActorId,TenantId,[ProcessModelingPermissions.ExactPermissions.First(x=>x.EndsWith(".read",StringComparison.Ordinal))]),new SuccessfulExecutor());
+        await using var noPermission=await LocalHost.StartAsync(new LocalTestIdentity(ActorId,TenantId,ServicePrincipalId,[ProcessModelingPermissions.ExactPermissions.First(x=>x.EndsWith(".read",StringComparison.Ordinal))]),new SuccessfulExecutor());
         using var denied=Request(HttpMethod.Post,"/internal/local-test/v1/process-modeling/architectures","""{"architectureCode":"EA","name":"Enterprise Architecture","sortOrder":1}""",TenantId,permission,true);
         Assert.Equal(HttpStatusCode.Forbidden,(await noPermission.Client.SendAsync(denied)).StatusCode);
     }
@@ -57,7 +58,7 @@ public sealed class LocalTestHttpContractTests
     public async Task Strict_json_rejects_case_extra_duplicate_and_missing_fields(string body)
     {
         var permission="management-governance.process-modeling.architectures.create";
-        await using var host=await LocalHost.StartAsync(new LocalTestIdentity(ActorId,TenantId,[permission]),new SuccessfulExecutor());
+        await using var host=await LocalHost.StartAsync(new LocalTestIdentity(ActorId,TenantId,ServicePrincipalId,[permission]),new SuccessfulExecutor());
         using var request=Request(HttpMethod.Post,"/internal/local-test/v1/process-modeling/architectures",body,TenantId,permission,true);
         Assert.Equal(HttpStatusCode.BadRequest,(await host.Client.SendAsync(request)).StatusCode);
     }
@@ -67,7 +68,7 @@ public sealed class LocalTestHttpContractTests
     {
         var permission="management-governance.process-modeling.architectures.create";
         var executor=new SuccessfulExecutor();
-        await using var host=await LocalHost.StartAsync(new LocalTestIdentity(ActorId,TenantId,[permission]),executor);
+        await using var host=await LocalHost.StartAsync(new LocalTestIdentity(ActorId,TenantId,ServicePrincipalId,[permission]),executor);
         const string body="""{"architectureCode":"EA","name":"Enterprise Architecture","sortOrder":1}""";
         using var request=Request(HttpMethod.Post,"/internal/local-test/v1/process-modeling/architectures",body,TenantId,permission,true);
         var response=await host.Client.SendAsync(request);
@@ -80,6 +81,7 @@ public sealed class LocalTestHttpContractTests
         Assert.Equal(Encoding.UTF8.GetBytes(body),captured.RawBody);
         Assert.Equal(TenantId,captured.Context.TenantId);
         Assert.Equal(ActorId,captured.Context.ActorId);
+        Assert.Equal(ServicePrincipalId,captured.Context.ServicePrincipalId);
         Assert.Equal(permission,captured.Context.Permission);
         Assert.Equal("idem-1",captured.Context.IdempotencyKey);
     }
@@ -88,7 +90,7 @@ public sealed class LocalTestHttpContractTests
     public async Task Update_returns_empty_204()
     {
         var permission="management-governance.process-modeling.architectures.update";
-        await using var host=await LocalHost.StartAsync(new LocalTestIdentity(ActorId,TenantId,[permission]),new SuccessfulExecutor());
+        await using var host=await LocalHost.StartAsync(new LocalTestIdentity(ActorId,TenantId,ServicePrincipalId,[permission]),new SuccessfulExecutor());
         var id=Guid.NewGuid();
         using var request=Request(HttpMethod.Put,$"/internal/local-test/v1/process-modeling/architectures/{id:D}","""{"name":"Updated","sortOrder":2,"expectedVersion":0}""",TenantId,permission,true);
         var response=await host.Client.SendAsync(request);
