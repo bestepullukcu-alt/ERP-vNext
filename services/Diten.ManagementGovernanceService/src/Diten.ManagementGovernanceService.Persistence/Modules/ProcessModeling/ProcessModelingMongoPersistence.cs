@@ -8,7 +8,7 @@ public sealed class ProcessModelingMongoContext
 {
     private readonly IMongoDatabase _database;
     public ProcessModelingMongoContext(IMongoClient client, string databaseName)
-    { Client=client??throw new ArgumentNullException(nameof(client)); if(string.IsNullOrWhiteSpace(databaseName)) throw new ArgumentException(nameof(databaseName)); _database=client.GetDatabase(databaseName); }
+    { Client=client??throw new ArgumentNullException(nameof(client));if(!ProcessModelingMongoGuidPolicy.IsCanonical(client))throw new InvalidOperationException("process_modeling_uuid_policy_incompatible");if(string.IsNullOrWhiteSpace(databaseName)) throw new ArgumentException(nameof(databaseName)); _database=client.GetDatabase(databaseName); }
     public IMongoClient Client { get; }
     public IMongoCollection<BsonDocument> Collection(string name)
     { if(!ProcessModelingPersistenceManifest.Collections.Contains(name,StringComparer.Ordinal)) throw new InvalidOperationException("process_modeling_collection_forbidden"); return _database.GetCollection<BsonDocument>(name); }
@@ -38,7 +38,7 @@ public sealed class ProcessModelingMongoRepository(ProcessModelingMongoContext c
         var update=new BsonDocument("$set",values).Add("$inc",new BsonDocument("Version",1));
         if((await context.Collection(collection).UpdateOneAsync(session,filter,update,cancellationToken:ct)).ModifiedCount!=1) throw new ProcessModelingConflictException("process_model_stale_version");
     }
-    private static BsonBinaryData G(Guid value)=>new(value,GuidRepresentation.Standard);
+    private static BsonBinaryData G(Guid value)=>ProcessModelingMongoGuidPolicy.Write(value);
 }
 
 public sealed class ProcessModelingMongoReceiptReader(ProcessModelingMongoContext context)
@@ -48,10 +48,10 @@ public sealed class ProcessModelingMongoReceiptReader(ProcessModelingMongoContex
         if(!authorized) return new(false,403,"process_model_permission_denied");
         var filter=Builders<BsonDocument>.Filter.And(Builders<BsonDocument>.Filter.Eq("TenantId",G(request.TenantId)),Builders<BsonDocument>.Filter.Eq("CommandFamily",request.CommandFamily),Builders<BsonDocument>.Filter.Eq("IdempotencyKey",request.IdempotencyKey));
         var receipt=await context.Collection("mg_process_modeling_idempotency_receipts").Find(filter).FirstOrDefaultAsync(ct);if(receipt is null)return null;
-        if(receipt["SubjectId"].AsBsonBinaryData.ToGuid(GuidRepresentation.CSharpLegacy)!=request.SubjectId||receipt["PayloadHash"].AsString!=request.CanonicalPayloadHash)return new(false,409,ProcessModelingErrors.IdempotencyConflict);
-        return new(true,200,receipt["Outcome"].AsString,receipt["AggregateId"].AsGuid);
+        if(ProcessModelingMongoGuidPolicy.Read(receipt["SubjectId"])!=request.SubjectId||receipt["PayloadHash"].AsString!=request.CanonicalPayloadHash)return new(false,409,ProcessModelingErrors.IdempotencyConflict);
+        return new(true,200,receipt["Outcome"].AsString,ProcessModelingMongoGuidPolicy.Read(receipt["AggregateId"]));
     }
-    private static BsonBinaryData G(Guid value)=>new(value,GuidRepresentation.Standard);
+    private static BsonBinaryData G(Guid value)=>ProcessModelingMongoGuidPolicy.Write(value);
 }
 
 public static class ProcessModelingMongoFailureMapper
@@ -68,16 +68,31 @@ public enum ProcessModelingMutationParticipant { Business=1,Receipt=2,AuditInten
 public sealed record MongoMutationEnvelope(CoreMutationRequest Request,BsonDocument Business,string Outcome,Guid AuditIntentId,Guid EventId,DateTime CreatedAtUtc,string ActorProvenance);
 public sealed class ProcessModelingMongoMutationWriter(ProcessModelingMongoContext context,Action<ProcessModelingMutationParticipant>? testOnlyFault=null)
 {
+    public const string AuditEventType = "management-governance.process-modeling-audit-intent.submitted.v1";
     public async Task WriteAsync(IClientSessionHandle session,MongoMutationEnvelope x,CancellationToken ct)
     {
+        if(session is null||!session.IsInTransaction||!ReferenceEquals(session.Client,context.Client))throw new InvalidOperationException("process_modeling_session_required");
         if(string.Equals(x.Request.CommandFamily,PublishProcessModelVersionContract.CommandName,StringComparison.Ordinal)) throw new ProcessModelingUnavailableException("process_model_publish_second_slice_unavailable");
         if(x.CreatedAtUtc.Kind!=DateTimeKind.Utc||string.IsNullOrWhiteSpace(x.ActorProvenance)) throw new ArgumentException("invalid_provenance");
-        await context.Collection("mg_process_models").InsertOneAsync(session,x.Business,cancellationToken:ct); testOnlyFault?.Invoke(ProcessModelingMutationParticipant.Business);
+        var businessCollection=ProcessModelingCommandContract.BusinessCollection(x.Request.CommandFamily);
+        if(x.Request.CommandFamily.StartsWith("Create",StringComparison.Ordinal))
+            await context.Collection(businessCollection).InsertOneAsync(session,x.Business,cancellationToken:ct);
+        else
+        {
+            var filter=Builders<BsonDocument>.Filter.And(Builders<BsonDocument>.Filter.Eq("TenantId",G(x.Request.TenantId)),Builders<BsonDocument>.Filter.Eq("_id",G(x.Request.AggregateId)),Builders<BsonDocument>.Filter.Eq("Version",x.Request.ExpectedVersion),Builders<BsonDocument>.Filter.Eq("IsDeleted",false));
+            var values=new BsonDocument(x.Business.Where(e=>e.Name is not "_id" and not "TenantId" and not "Version" and not "IsDeleted"));
+            var update=new BsonDocument("$set",values).Add("$inc",new BsonDocument("Version",1));
+            if((await context.Collection(businessCollection).UpdateOneAsync(session,filter,update,cancellationToken:ct)).ModifiedCount!=1)throw new ProcessModelingConflictException(ProcessModelingErrors.StaleVersion);
+        }
+        testOnlyFault?.Invoke(ProcessModelingMutationParticipant.Business);
         await context.Collection("mg_process_modeling_idempotency_receipts").InsertOneAsync(session,new BsonDocument{{"TenantId",G(x.Request.TenantId)},{"SubjectId",G(x.Request.SubjectId)},{"CommandFamily",x.Request.CommandFamily},{"IdempotencyKey",x.Request.IdempotencyKey},{"PayloadHash",x.Request.CanonicalPayloadHash},{"Outcome",x.Outcome},{"AggregateId",G(x.Request.AggregateId)},{"CreatedAtUtc",x.CreatedAtUtc},{"CompletedAtUtc",x.CreatedAtUtc}},cancellationToken:ct); testOnlyFault?.Invoke(ProcessModelingMutationParticipant.Receipt);
-        await context.Collection("mg_process_modeling_audit_intents").InsertOneAsync(session,new BsonDocument{{"TenantId",G(x.Request.TenantId)},{"AuditIntentId",G(x.AuditIntentId)},{"AggregateId",G(x.Request.AggregateId)},{"CommandFamily",x.Request.CommandFamily},{"ActorProvenance",x.ActorProvenance},{"CreatedAtUtc",x.CreatedAtUtc}},cancellationToken:ct); testOnlyFault?.Invoke(ProcessModelingMutationParticipant.AuditIntent);
-        await context.Collection("mg_process_modeling_outbox_messages").InsertOneAsync(session,new BsonDocument{{"TenantId",G(x.Request.TenantId)},{"EventId",G(x.EventId)},{"AggregateId",G(x.Request.AggregateId)},{"EventType",x.Request.CommandFamily+".accepted"},{"CreatedAtUtc",x.CreatedAtUtc}},cancellationToken:ct); testOnlyFault?.Invoke(ProcessModelingMutationParticipant.Outbox);
+        var audit=ProcessModelingCommandContract.Audit(x.Request.CommandFamily);
+        var payload=new BsonDocument{{"auditIntentId",G(x.AuditIntentId)},{"actorId",G(x.Request.SubjectId)},{"entityType",audit.Entity},{"entityId",G(x.Request.AggregateId)},{"mutation",audit.Mutation},{"occurredAtUtc",x.CreatedAtUtc}};
+        var metadata=new BsonDocument{{"tenantId",G(x.Request.TenantId)},{"permission",ProcessModelingPermissions.ExactCommandMap[x.Request.CommandFamily]},{"actorProvenance",x.ActorProvenance}};
+        await context.Collection("mg_process_modeling_audit_intents").InsertOneAsync(session,new BsonDocument{{"TenantId",G(x.Request.TenantId)},{"AuditIntentId",G(x.AuditIntentId)},{"Payload",payload},{"TrustedMetadata",metadata},{"CreatedAtUtc",x.CreatedAtUtc}},cancellationToken:ct); testOnlyFault?.Invoke(ProcessModelingMutationParticipant.AuditIntent);
+        await context.Collection("mg_process_modeling_outbox_messages").InsertOneAsync(session,new BsonDocument{{"TenantId",G(x.Request.TenantId)},{"EventId",G(x.EventId)},{"AggregateId",G(x.Request.AggregateId)},{"EventType",AuditEventType},{"EventVersion",1},{"Payload",payload},{"TrustedMetadata",metadata},{"CreatedAtUtc",x.CreatedAtUtc}},cancellationToken:ct); testOnlyFault?.Invoke(ProcessModelingMutationParticipant.Outbox);
     }
-    private static BsonBinaryData G(Guid value)=>new(value,GuidRepresentation.Standard);
+    private static BsonBinaryData G(Guid value)=>ProcessModelingMongoGuidPolicy.Write(value);
 }
 
 public sealed class ProcessModelingMongoTransactionRunner(ProcessModelingMongoContext context,int maxCommitAttempts=3,Func<IClientSessionHandle,int,CancellationToken,Task>? testOnlyCommit=null)
