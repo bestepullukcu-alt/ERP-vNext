@@ -6652,3 +6652,29 @@ doğrulama yardımcıları, ayrı değerlendirilmeli).
     makine başına bir kez, tüm worktree'ler paylaşır. ⚠ Bu, mevcut altyapının kullanılmayan yarısı.
 - **Gelecek regresyon riski: 🟡** — kod değil kurulum; ama her paralel tur bir kez ödüyor ve
   belirti (`Platform açılmıyor`) sebebi (`sır yok`) göstermiyor. Kayıp zaman ölçüldü, tekrar edecek.
+
+### BL-301 — yeni worktree'de frontend testleri koşulamıyor; 49 worktree'nin 43'ünde `node_modules` boş (2026-08-28, ölçüldü, düzeltilmedi)
+- BL-297'nin ikinci yüzü. Orada yeni bir worktree'de **Platform açılmıyordu** (gizli anahtar yok);
+  burada **frontend testleri koşulmuyor** (`node_modules` yok). İkisi de kurulum, ikisi de sessiz değil,
+  ama ikisi de aramayan için görünmez.
+- Ölçüm (2026-08-28): 49 worktree'nin **43'ünde** `frontend/Diten.Web/node_modules` **0 girdi**.
+  Dolu olan 6: ana ağaç · cookie-nav · domain-norm · es · index · ppm-int — hepsi bu oturumda kuruldu
+  ya da bir tur tarafından `npm ci` ile düzeltildi.
+- ⚠ **SESSİZ GEÇİŞ YOK — ölçüldü.** `node_modules` boşken `npx vitest run`:
+  · çıkış kodu **1**
+  · `⎯ Startup Error ⎯` başlığı
+  · `Tests …` özet satırı **hiç üretilmiyor**
+  Yani bir tur "vitest N kırmızı" diye bir sayı raporladıysa o sayı **gerçekten koşulmuştur**;
+  bu çıktıdan uydurulamaz. Risk "yanlış yeşil" değil.
+- **Gerçek risk iki tane, ikisi de farklı:**
+  1. Bir tur bu hatayı görüp vitest'i **hiç raporlamamış** olabilir — "koştum, taban" demek yerine
+     sessizce atlamış olabilir. Geçmiş raporlar elde olmadığı için ölçülemedi.
+  2. O 43 worktree'de frontend'e dokunan her tur **kontrolsüz** — frontend regresyonu koşulamıyor.
+- ⚠ Bugünkü (2026-08-27/28) altı turun hepsi dolu olan ağaçlarda çalıştı; o raporlar bu boşluktan
+  etkilenmiyor. CT kendi doğrulamalarını ana ağaçta koştu.
+- Seçenekler (hiçbiri seçilmedi):
+  · (a) `git worktree add` sarmalayan betik — `npm ci` + dev sırrını birlikte kurar (BL-297 ile aynı betik)
+  · (b) `docs/dev-environment.md`'ye "yeni worktree kurunca `npm ci` koş" adımı — ucuz, disipline bağlı
+  · (c) `node_modules`'ü paylaşılan bir konumdan bağlamak (symlink) — hızlı ama sürüm sapması riski
+- **Gelecek regresyon riski: 🟡** — kod değil kurulum. Ama her paralel tur bir kez ödüyor ve
+  frontend'e dokunan turda regresyon boşluğu bırakıyor.
