@@ -6,6 +6,7 @@ using Diten.PpmService.Domain.GateI.DecisionTrace;
 using Diten.PpmService.Persistence;
 using Diten.PpmService.Persistence.GateI;
 using Diten.PpmService.Persistence.Mongo;
+using Diten.BuildingBlocks.Eventing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
@@ -37,6 +38,13 @@ public sealed class GateIRelationshipMutationMongoTests
         Assert.Equal(1, await fixture.Context.GateIMutationReceipts.CountDocumentsAsync(FilterDefinition<GateIMutationReceiptDocument>.Empty));
         Assert.Equal(1, await fixture.Context.AuditIntents.CountDocumentsAsync(FilterDefinition<AuditIntentDocument>.Empty));
         Assert.Equal(1, await fixture.Context.EventOutbox.CountDocumentsAsync(FilterDefinition<PpmEventOutboxDocument>.Empty));
+        var audit = await fixture.Context.AuditIntents.Find(FilterDefinition<AuditIntentDocument>.Empty).SingleAsync();
+        var outbox = await fixture.Context.EventOutbox.Find(FilterDefinition<PpmEventOutboxDocument>.Empty).SingleAsync();
+        Assert.NotNull(audit.OutboxEnqueuedAtUtc);
+        Assert.Equal("ppm-event-hmac-sha256.v1", audit.DispatchSignatureScheme);
+        Assert.Equal(3, outbox.TransportHeaders.Count);
+        Assert.Equal(audit.DispatchKeyId, outbox.TransportHeaders[TrustedTransportMetadata.KeyIdHeader]);
+        Assert.Equal(audit.DispatchSignature, outbox.TransportHeaders[TrustedTransportMetadata.SignatureHeader]);
 
         var indexes = await (await fixture.Context.GateIMutationReceipts.Indexes.ListAsync()).ToListAsync();
         var exact = Assert.Single(indexes, item => item["name"] == "ux_ppm_gate_i_receipt_scope");
@@ -115,6 +123,7 @@ public sealed class GateIRelationshipMutationMongoTests
             }).Build();
             var services = new ServiceCollection();
             services.AddPpmPersistence(configuration);
+            services.AddSingleton<IGateIRelationshipTransportMetadataProvider, TestTransportMetadataProvider>();
             if (failAfter is not null)
                 services.AddSingleton<IGateIRelationshipMutationFaultProbe>(new ThrowingProbe(failAfter));
             var provider = services.BuildServiceProvider();
@@ -154,5 +163,19 @@ public sealed class GateIRelationshipMutationMongoTests
             current == participant
                 ? throw new MongoClientException("test fault")
                 : Task.CompletedTask;
+    }
+
+    private sealed class TestTransportMetadataProvider : IGateIRelationshipTransportMetadataProvider
+    {
+        public ValueTask<TrustedTransportMetadata> CreateAsync(
+            EventMetadata metadata,
+            ReadOnlyMemory<byte> canonicalPayloadUtf8,
+            CancellationToken cancellationToken) =>
+            ValueTask.FromResult(new TrustedTransportMetadata(new Dictionary<string, string>
+            {
+                [TrustedTransportMetadata.SignatureSchemeHeader] = "ppm-event-hmac-sha256.v1",
+                [TrustedTransportMetadata.KeyIdHeader] = "ppm-gate-i-test-only",
+                [TrustedTransportMetadata.SignatureHeader] = new string('a', 64)
+            }));
     }
 }

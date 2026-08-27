@@ -59,6 +59,7 @@ public static class DependencyInjection
         services.AddScoped<IGateICompositionPersistenceBoundary, GateICompositionPersistenceBoundary>();
         services.AddScoped<IGateIRelationshipMutationPersistence, GateIRelationshipMutationPersistence>();
         services.AddSingleton<IGateIRelationshipMutationFaultProbe, NullGateIRelationshipMutationFaultProbe>();
+        services.AddSingleton<IGateIRelationshipTransportMetadataProvider, UnavailableGateIRelationshipTransportMetadataProvider>();
         services.AddHostedService<GateIMutationReceiptIndexInitializer>();
         services.AddHostedService<PpmMongoIndexInitializer>();
         services.AddHealthChecks()

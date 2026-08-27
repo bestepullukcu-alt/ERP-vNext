@@ -15,7 +15,8 @@ public sealed class GateIRelationshipMutationPersistence(
     PpmMongoContext context,
     IInvestmentCaseRepository investmentCases,
     IBenefitCommitmentRepository benefitCommitments,
-    IGateIRelationshipMutationFaultProbe faultProbe)
+    IGateIRelationshipMutationFaultProbe faultProbe,
+    IGateIRelationshipTransportMetadataProvider transportMetadataProvider)
     : IGateIRelationshipMutationPersistence
 {
     private const int MaximumCommitAttempts = 3;
@@ -106,6 +107,40 @@ public sealed class GateIRelationshipMutationPersistence(
 
         var auditIntentId = Guid.NewGuid();
         var occurredAtUtc = DateTime.UtcNow;
+        var auditPrototype = new AuditIntentDocument
+        {
+            Id = auditIntentId,
+            TenantId = scope.TenantId,
+            ActorId = scope.ActorId,
+            CorrelationId = scope.CorrelationId,
+            EntityType = "GateIRelationship",
+            EntityId = aggregateId,
+            Mutation = mutationName,
+            OccurredAtUtc = occurredAtUtc
+        };
+        var payload = CanonicalAuditPayload(auditPrototype);
+        var eventMetadata = new EventMetadata(
+            auditIntentId,
+            "ppm.audit-intent.submitted.v1",
+            1,
+            scope.CorrelationId,
+            null,
+            scope.TenantId,
+            "Diten.PpmService",
+            new DateTimeOffset(occurredAtUtc));
+        TrustedTransportMetadata transportMetadata;
+        try
+        {
+            transportMetadata = await transportMetadataProvider.CreateAsync(
+                eventMetadata, payload, cancellationToken);
+            ValidateTransportMetadata(transportMetadata);
+        }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception exception) when (exception is EventValidationException or GateIRelationshipUnavailableException)
+        {
+            throw new GateIRelationshipUnavailableException(
+                "Gate I signed transport metadata is unavailable.", exception);
+        }
         IClientSessionHandle? session = null;
         try
         {
@@ -164,13 +199,17 @@ public sealed class GateIRelationshipMutationPersistence(
                 EntityType = mutated.EntityType,
                 EntityId = aggregateId,
                 Mutation = mutationName,
-                OccurredAtUtc = occurredAtUtc
+                OccurredAtUtc = occurredAtUtc,
+                OutboxEnqueuedAtUtc = occurredAtUtc,
+                DispatchSignatureScheme = transportMetadata.Headers[TrustedTransportMetadata.SignatureSchemeHeader],
+                DispatchKeyId = transportMetadata.Headers[TrustedTransportMetadata.KeyIdHeader],
+                DispatchSignature = transportMetadata.Headers[TrustedTransportMetadata.SignatureHeader],
+                DispatchUpdatedAtUtc = occurredAtUtc
             };
             await context.AuditIntents.InsertOneAsync(
                 session, audit, cancellationToken: cancellationToken);
             await faultProbe.AfterParticipantAsync("audit-intent", cancellationToken);
 
-            var payload = CanonicalAuditPayload(audit);
             await context.EventOutbox.InsertOneAsync(
                 session,
                 new PpmEventOutboxDocument
@@ -184,7 +223,8 @@ public sealed class GateIRelationshipMutationPersistence(
                     Producer = "Diten.PpmService",
                     OccurredAtUtcTicks = occurredAtUtc.Ticks,
                     CanonicalPayloadUtf8 = payload,
-                    TransportHeaders = new Dictionary<string, string>(StringComparer.Ordinal),
+                    TransportHeaders = new Dictionary<string, string>(
+                        transportMetadata.Headers, StringComparer.Ordinal),
                     Status = EventOutboxDeliveryStatus.Pending,
                     CreatedAtUtc = occurredAtUtc,
                     UpdatedAtUtc = occurredAtUtc
@@ -272,6 +312,15 @@ public sealed class GateIRelationshipMutationPersistence(
     private static bool LowerHex64(string value) => value is { Length: 64 }
         && value.All(character => character is >= '0' and <= '9' or >= 'a' and <= 'f');
 
+    private static void ValidateTransportMetadata(TrustedTransportMetadata metadata)
+    {
+        if (metadata.Headers.Count != 3
+            || !metadata.Headers.ContainsKey(TrustedTransportMetadata.SignatureSchemeHeader)
+            || !metadata.Headers.ContainsKey(TrustedTransportMetadata.KeyIdHeader)
+            || !metadata.Headers.ContainsKey(TrustedTransportMetadata.SignatureHeader))
+            throw new EventValidationException("Gate I outbox requires complete signed transport metadata.");
+    }
+
     private static async Task Abort(IClientSessionHandle? session)
     {
         if (session?.IsInTransaction == true)
@@ -287,6 +336,26 @@ public interface IGateIRelationshipMutationFaultProbe
 public sealed class NullGateIRelationshipMutationFaultProbe : IGateIRelationshipMutationFaultProbe
 {
     public Task AfterParticipantAsync(string participant, CancellationToken cancellationToken) => Task.CompletedTask;
+}
+
+public interface IGateIRelationshipTransportMetadataProvider
+{
+    ValueTask<TrustedTransportMetadata> CreateAsync(
+        EventMetadata metadata,
+        ReadOnlyMemory<byte> canonicalPayloadUtf8,
+        CancellationToken cancellationToken);
+}
+
+public sealed class UnavailableGateIRelationshipTransportMetadataProvider
+    : IGateIRelationshipTransportMetadataProvider
+{
+    public ValueTask<TrustedTransportMetadata> CreateAsync(
+        EventMetadata metadata,
+        ReadOnlyMemory<byte> canonicalPayloadUtf8,
+        CancellationToken cancellationToken) =>
+        ValueTask.FromException<TrustedTransportMetadata>(
+            new GateIRelationshipUnavailableException(
+                "Gate I signed transport metadata is not composed."));
 }
 
 public sealed class GateIMutationReceiptIndexInitializer(PpmMongoContext context)
