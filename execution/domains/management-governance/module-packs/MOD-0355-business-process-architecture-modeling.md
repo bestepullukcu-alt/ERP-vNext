@@ -389,6 +389,7 @@ termination uses `RetireProcessModelVersionCommand`.
 |---|---|---:|---|
 | `ProcessModelId` | Guid | Yes | Same-tenant durable model |
 | `RevisionNumber` | int | Yes | Server-allocated, strictly monotonic |
+| `ModelAuthorActorId` | Guid | Yes | Server-resolved effective actor captured once at version creation; immutable and never accepted from client input |
 | `LifecycleState` | enum | Yes | Exactly `Draft`, `Review`, `Published`, `Retired` |
 | `Title` | string | Yes | NFC, trimmed, 1–200 |
 | `Description` | string? | No | Maximum 4000 |
@@ -403,6 +404,11 @@ later-slice extension.
 Unique index: `TenantId + ProcessModelId + RevisionNumber`.
 
 Partial unique index: one row per `TenantId + ProcessModelId` whose lifecycle is `Draft` or `Review`.
+
+`ModelAuthorActorId` is the authoritative source for `PublishActorProvenanceV1.ModelAuthorActorId`. It is
+security provenance, not an owner assignment or audit-derived field. Create/revision paths capture it from
+the fresh authenticated/FU16 effective actor in the same transaction as the new version; update paths cannot
+change it.
 
 ### ProcessActivity
 
@@ -464,6 +470,15 @@ ProcessModelVersionId + FromActivityId + ToActivityId + normalized ConditionLabe
 
 The relationship does not create or move a token, start work, schedule a job, select a route or invoke an
 external side effect.
+
+For `UpdateDraftProcessModelVersionCommand`, graph replacement is a single Draft-only transaction operation:
+after the tenant/lifecycle/version fence succeeds, the existing activity, control-point and relationship rows
+for that exact `TenantId + ProcessModelVersionId` are removed and the complete validated replacement sets are
+inserted in the same transaction. This internal `DeleteMany + InsertMany` composition is the sole scoped
+exception to the ordinary hard-delete prohibition: it is not an endpoint, purge, retention policy or delete
+capability; it cannot target Published/Retired, another tenant or any other version. A failure in any of the
+three replacement collections rolls back the version CAS and all graph changes. No tombstone or historical
+row is exposed as current graph state for a mutable Draft.
 
 ### ProcessInterfaceReference — governance shape only
 
