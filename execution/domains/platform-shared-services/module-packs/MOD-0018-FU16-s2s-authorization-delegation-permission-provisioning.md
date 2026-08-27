@@ -659,3 +659,82 @@ authority is created by this amendment.
 6. Integration owner defines internal routes/network policy only after service contracts are approved; no Gateway change is implied.
 7. Operations owner defines rotation, compromise response, redaction verification, audit retention and 503 alerting.
 8. PPM and MDM owners sign regression evidence before Gate I production rollout.
+
+## MOD-0117 R2 Local API-Test Prerequisite Amendment — EXECUTABLE / LOCAL-ONLY / DEFAULT-OFF
+
+> **Authority (2026-08-27).** The approved MOD-0117 Phase 1.5 Gate I R2 package authorizes this exact
+> PSS-owned prerequisite slice. It does not authorize production activation, production credentials, keys or
+> secrets, deployment, migration execution, a live broker/listener, frontend, Gateway, WorkCenter or push.
+> Existing HS256 user/session JWT behavior and every MDM/non-PPM entitlement path are protected regressions.
+
+### Exact PPM catalog and grant contract
+
+- Blueprint owner identity is exact `OwnerModuleId = MOD-0117`; commercial entitlement/catalog identity is
+  independently exact `ModuleEntitlementCode = PPM`. Equality, aliasing or case normalization between these
+  fields is forbidden.
+- The local service profile is exact `ServiceIdentity = Diten.PpmService`, `ClientId = diten.ppm`,
+  `Audience = diten-ppm-service`, and protocol scope `diten.s2s.delegated.invoke`.
+- Catalog registration contains exactly the following sixteen Phase 2A operation/permission pairs; for this
+  profile each operation ID equals its permission key ordinally:
+
+| Exact operation ID | Exact permission key |
+|---|---|
+| `ppm.portfolios.read` | `ppm.portfolios.read` |
+| `ppm.portfolios.create` | `ppm.portfolios.create` |
+| `ppm.portfolios.update` | `ppm.portfolios.update` |
+| `ppm.portfolios.change-lifecycle` | `ppm.portfolios.change-lifecycle` |
+| `ppm.initiatives.read` | `ppm.initiatives.read` |
+| `ppm.initiatives.create` | `ppm.initiatives.create` |
+| `ppm.initiatives.update` | `ppm.initiatives.update` |
+| `ppm.initiatives.change-lifecycle` | `ppm.initiatives.change-lifecycle` |
+| `ppm.programs.read` | `ppm.programs.read` |
+| `ppm.programs.create` | `ppm.programs.create` |
+| `ppm.programs.update` | `ppm.programs.update` |
+| `ppm.programs.change-lifecycle` | `ppm.programs.change-lifecycle` |
+| `ppm.projects.read` | `ppm.projects.read` |
+| `ppm.projects.create` | `ppm.projects.create` |
+| `ppm.projects.update` | `ppm.projects.update` |
+| `ppm.projects.change-lifecycle` | `ppm.projects.change-lifecycle` |
+
+- Registration is catalog-only and idempotent. It creates no role grant, entitlement, user, token or default
+  Admin/Viewer access. Wildcards, aliases, `.view`, `.archive`, uppercase variants and a seventeenth key fail
+  closed.
+- PPM remains `ExplicitOnlyPreserveOnEntitlementRemoval`. Only an explicitly authorized tenant-scoped
+  `ExplicitRoleGrantProvisioningV1` mutation may add/remove a grant. Entitlement disable/removal makes an
+  existing grant dormant and never deletes or reconstructs it; re-entitlement does not auto-grant.
+- Effective use requires all independent current gates: active `PPM` entitlement attestation, exact explicit
+  role grant and membership, non-stale authorization version, valid HS256 tenant-user session for the local API,
+  and complete FU16 trusted server context for delegated producer calls. A valid catalog row or entitlement is
+  never sufficient by itself.
+- The existing RS256 FU16 delegated proof validation remains the trusted-context source for tenant, effective
+  actor/delegation, service principal, audience, operation, permission, request hash and freshness. Payload or
+  free-form-header overrides, shared internal keys, role-name inference, cached allow and fallback identity are
+  forbidden.
+
+### Exact executable allowlist
+
+Only the following AuthService files may change for this amendment:
+
+- `services/Diten.AuthService/src/Diten.AuthService.Application/S2S/PermissionCatalogManifestV1.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/S2S/PermissionCatalogManifestV1Tests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/S2S/PermissionCatalogManifestMongoTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/S2S/ExplicitRoleGrantProvisioningMongoTests.cs`
+
+The already-checkpointed FU16 proof, explicit-grant and entitlement-attestation implementations are evidence
+surfaces only; they may be rerun but not widened. No controller, route, seed, appsettings, credential, key,
+secret, production config, MDM file or generic entitlement policy change is authorized.
+
+### Required evidence
+
+- Exact owner/module separation and exact 16-entry manifest/hash; missing, extra, reordered, duplicate,
+  case-changed, aliased and wildcard variants fail.
+- Mongo registration is atomic/idempotent; replay returns the same registration, changed payload conflicts,
+  and global permission rows bind to `Module = PPM` without tenant duplication.
+- PPM explicit grant/revoke proves tenant isolation, same-key replay, changed-payload conflict, current
+  entitlement attestation, dormant preservation and zero Admin/Viewer automatic grant.
+- Existing FU16 cryptographic/replay/freshness, entitlement-attestation, HS256 user/session, PPM policy and MDM
+  regression suites remain green. Mongo evidence uses only a disposable replica-set port `>=27022`; ports
+  `27017` and `27018` are forbidden for this slice.
+
+**Amendment result:** executable local prerequisite authority is granted only for the exact allowlist above.
+This is not production activation or a claim that Gate I, Phase 1.5 or MOD-0117 is complete.
