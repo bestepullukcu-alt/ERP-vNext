@@ -6343,3 +6343,36 @@ Bu, BL-280'in aynı şekli: üretimin sahip olmadığı bir kodlamaya karşı y�
   önce temizleyin.
 - **Gelecek regresyon riski: 🟡** — yeni bir test kendi `MongoClient`'ını kurarsa artık doğru varsayılanı
   devralır, ama açıkça `GuidRepresentation` ayarlayıp yanlış değer verirse hâlâ sapabilir. Muhafız yok.
+
+### BL-288 — veritabanı adları üç ayrı gelenekte, ikisi ne olduğunu söylemiyor, ikisi paylaşılıyor (2026-08-27, ölçüldü, ertelendi)
+- Sahibin tespiti: *"bunun adı çok yanlış."* Ölçüm doğruladı ve sorunun adlandırmadan
+  büyük olduğunu gösterdi.
+- **Üç ayrı gelenek aynı anda:**
+  `DitenEnterpriseDb` (PascalCase) · `DitenERP_Dev` (PascalCase+alt çizgi) ·
+  `diten_personalization_dev` (snake_case) · `diten_auth_v3` (snake_case+sürüm)
+- **İki ad yalan söylüyor:**
+  · `diten_personalization_dev` aslında **Platform'un tamamı** — 93 koleksiyon, 17.8 MB,
+    29.200 belge. "Kişiselleştirme" adı tek bir alt kümesinden kalmış.
+  · `DitenERP_Dev` içinde **yalnız MDM verisi** var (`mdm_legal_entities`, 19 belge).
+    "ERP" her şey demek, hiçbir şey söylemiyor.
+- ⚠ **ASIL SORUN AD DEĞİL, PAYLAŞIM:** `DitenERP_Dev`'i MDM **ve** HCM birlikte kullanıyor
+  (ikisinin de `appsettings.Development.json`'ı aynı adı gösteriyor). HCM bugüne kadar
+  hiçbir şey yazmamış, yani sorun henüz görünür değil — ama iki servisin tek veritabanını
+  paylaşması, servis sınırının veri katmanında olmaması demek.
+- Taşıma maliyeti ÖLÇÜLDÜ ve düşük: `DitenERP_Dev` = 1 koleksiyon · 19 belge · 0.01 MB.
+  Ad 5 yerde geçiyor (MDM ×2, HCM ×2 appsettings + süpürücünün "dokunma" test listesi).
+  ⚠ `organization_units`'in **15 kaydının 15'i de** bu belgelerin `_id`'lerine bağlı;
+    kopyalamada `_id` korunur, bağlar sağ kalır. Ama doğrulanmadan yapılmamalı.
+- ⚠ `diten_personalization_dev` aynı işin **büyük yarısı** — 93 koleksiyon. İkisini ayrı
+  ayrı planlamak aynı işi iki kez planlamaktır.
+- **Karar (sahip onayladı 2026-08-27): ŞİMDİ YAPILMAYACAK.** İsimlendirme standardıyla
+  BİRLİKTE yapılacak: kural (`diten_<servis>_<ortam>`) + yeni yanlış adı engelleyen muhafız
+  + mevcutların tek seferde taşınması + servis paylaşımının çözülmesi. GSKU ekibiyle de
+  bu şekilde mutabık kalınmıştı ("yeni adlar için standart evet, toplu yeniden adlandırma
+  ayrı ve planlı iş").
+- ⚠ `diten_mdm_dev` adı 2026-08-27'de boşaldı (terk edilmiş nesil silindi, BL-284). Yeni MDM
+  veritabanı için o ad kullanılacaksa GSKU'ya haber verilmeli — daha önce "incelenmeden
+  tekrar kullanılmasın" demişlerdi.
+- **Gelecek regresyon riski: 🟡** — taşıma sırasında `_id` korunmazsa Organization→LegalEntity
+  bağları kopar ve bu ancak ekranda fark edilir. Taşıma turunun kabul koşulu, taşımadan
+  sonra o 15 eşleşmenin hâlâ 15 olması olmalıdır.
