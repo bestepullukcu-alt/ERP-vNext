@@ -6,6 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="../Diten.ManagementGovernanceService.Application/Diten.ManagementGovernanceService.Application.csproj" />
     <ProjectReference Include="../Diten.ManagementGovernanceService.Persistence/Diten.ManagementGovernanceService.Persistence.csproj" />
     <ProjectReference Include="../Diten.ManagementGovernanceService.Infrastructure/Diten.ManagementGovernanceService.Infrastructure.csproj" />
