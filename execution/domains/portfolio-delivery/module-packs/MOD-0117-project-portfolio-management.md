@@ -610,6 +610,115 @@ normal-port delivery, deployment review and a new explicit Control Tower activat
 flags remain false, missing dependencies remain `503`, no migration runs, no live listener/worker starts and
 neither Gate I nor full 1.3 may be reported complete.
 
+#### 4.9.3 Gate I local API-test amendment R2 — OWNER-BOUNDED / LOCAL-ONLY / NON-PRODUCTION
+
+The user authorizes the owner-scoped work needed to make the first Gate I release **Local API-Test Ready**.
+This is one coordinated authorization, not a transfer of ownership between module packs. MOD-0117 may change
+only the PPM-owned relationships, commands, API, transaction participants and typed consumers below. MOD-0007,
+MOD-0136, MOD-0138, MOD-0072 and PSS each require their own owner-pack amendment and checkpoint before their
+runtime files may be composed. Production activation, production credentials/keys/secrets, deployment,
+migration execution, live broker/listener traffic, frontend, Gateway, WorkCenter, legacy deletion and parity
+or retirement decisions remain unauthorized.
+
+##### Exact local relationship and API surface
+
+No foreign aggregate is introduced. `InvestmentCase` and `BenefitCommitment` reuse their existing PPM entity
+base, technical `Version`, tenant isolation and soft-delete semantics. Only the exact no-copy references in
+§4.8 may be stored. The API is explicit; a generic kind/discriminator endpoint is forbidden:
+
+- `PUT|DELETE /api/v1/ppm/investment-cases/{id}/gate-i/governing-decision`;
+- `POST /api/v1/ppm/investment-cases/{id}/gate-i/supporting-decisions` and
+  `DELETE /api/v1/ppm/investment-cases/{id}/gate-i/supporting-decisions/{referenceId}`;
+- `PUT|DELETE /api/v1/ppm/investment-cases/{id}/gate-i/selected-budget-version`;
+- `POST /api/v1/ppm/investment-cases/{id}/gate-i/scenario-versions` and
+  `DELETE /api/v1/ppm/investment-cases/{id}/gate-i/scenario-versions/{referenceId}`;
+- `POST /api/v1/ppm/investment-cases/{id}/gate-i/comparator-outputs` and
+  `DELETE /api/v1/ppm/investment-cases/{id}/gate-i/comparator-outputs/{referenceId}`;
+- `PUT|DELETE /api/v1/ppm/investment-cases/{id}/gate-i/selected-scenario`;
+- `POST /api/v1/ppm/benefit-commitments/{id}/gate-i/outcomes` and
+  `DELETE /api/v1/ppm/benefit-commitments/{id}/gate-i/outcomes/{referenceId}`.
+
+Every route uses `[Authorize]`, MediatR and the existing `Response<T>` / `CustomBaseController` envelope.
+`TenantId`, actor, delegated actor and service identity are server-derived and are forbidden request fields.
+Every write requires the current aggregate `ExpectedVersion`. The exact local permission is
+`ppm.investment-cases.update` or `ppm.benefit-commitments.update`; no new permission, alias or wildcard is
+created. Producer validation completes before the local transaction, but its result is bound into the
+idempotency payload hash and is revalidated fail-closed when its authoritative freshness contract requires it.
+
+##### Exact idempotency, receipt and transaction contract
+
+Every relationship mutation requires one non-empty `Idempotency-Key` header. The authoritative V1 scope is
+`TenantId + OperationId + IdempotencyKey`; an ordinal unique tenant-first index enforces it. `OperationId` is
+the exact route/command identity and cannot be a user-supplied alias. The canonical payload hash is lowercase
+SHA-256 over exact canonical request bytes plus trusted tenant, actor/delegation, S2S principal, producer
+module/operation/permission, validation mode and authoritative reference/provenance binding. Same scope and
+same hash returns the stored stable result. The same scope with changed request bytes or provenance returns
+`409` without provider or mutation replay.
+
+V1 receipts are durable financial/governance evidence: TTL, delete, purge and key reuse are forbidden.
+Relationship mutation, receipt, local audit intent and event outbox are participants in one PPM-owned Mongo
+replica-set transaction. The command body executes once. `UnknownTransactionCommitResult` permits only
+same-session commit retry and majority-read receipt reconciliation; matching durable receipt returns its stored
+result, changed hash returns `409`, and absent or indeterminate evidence returns `503`. Cancellation propagates
+unchanged. Handlers/controllers never publish through RabbitMQ, MassTransit or `IEventBus` directly; only the
+existing post-commit outbox path may publish.
+
+##### Security, provider and release behavior
+
+All reads and writes use `TenantId + Id + IsDeleted=false`; cross-tenant, missing, soft-deleted, invisible or
+non-disclosable references return `404`. The independent gates are active `ModuleCode = PPM` entitlement,
+exact PPM mutation permission, FU16 trusted context and the exact producer operation/permission from §4.9.1.
+Cache/LKG allow, role-name inference, client-supplied context and direct producer persistence/session access are
+forbidden. Producer mappings preserve exact `400/401/403/404/409/503` semantics and never collapse dependency
+failure to absence.
+
+MOD-0023 remains exact `ExcludedV1`. No ApprovalOutcome field, DTO, serializer, client, DI registration,
+positive fixture or persistence participant may be created. Any path whose policy requires ApprovalOutcome
+returns `503` before producer lookup or transaction start with zero relationship, receipt, audit-intent and
+outbox residue.
+
+Local API testing uses canonical PPM port `5061`. Auth `5056` and Platform `5057` retain their canonical local
+ports. Producer URIs are environment-injected only after their canonical port-registry records and owner
+checkpoints are materialized; this amendment invents no producer port. The four Gate I flags remain committed
+as `false`. A later controlled local evidence run may set them only through process environment variables after
+all owner checkpoints pass. No committed true value, URI, credential or secret is allowed.
+
+##### Exact additive implementation allowlist
+
+In addition to the §4.9.2 allowlist, this amendment authorizes only:
+
+- `services/Diten.PpmService/src/Diten.PpmService.Api/Controllers/InvestmentCaseGateIReferencesController.cs`;
+- `services/Diten.PpmService/src/Diten.PpmService.Api/Controllers/BenefitCommitmentGateIReferencesController.cs`;
+- minimum additive project references required by the already allowlisted Gate I source/test roots.
+
+It does not reopen the broader Phase 2A frontend/Gateway scope. `.antigravity/**`, other services, existing
+non-Gate-I PPM handlers, frontend, Gateway, WorkCenter and deployment files remain protected.
+
+##### Local API-Test Ready evidence gate
+
+The exact claim **Local API-Test Ready** is permitted only when all owner amendments and exact-scope runtime
+checkpoints are composed and the following are green:
+
+1. exact producer fixture/checkpoint bytes, schema and operation/permission binding for I-A, atomic I-B and
+   I-C; MOD-0023 absence architecture tests;
+2. `400/401/403/404/409/503`, tenant non-disclosure, stale/revoked/expired authority, timeout/malformed and
+   no-copy matrices;
+3. real Mongo tenant isolation, CAS and concurrency; same-key replay/conflict; every participant rollback;
+   unknown-before/after durable commit, commit-only exhaustion, cancellation and standalone fail-closed;
+4. exact receipt/index snapshot with zero TTL and no purge/delete path;
+5. Auth FU16, Platform entitlement attestation, BuildingBlocks eventing and MOD-0021 audit bilateral evidence,
+   while existing HS256 user/session and PPM/MDM regression suites remain green;
+6. mutation evidence killing tenant, soft-delete, entitlement, permission, provider binding, no-copy, CAS,
+   payload hash, transaction participant, body-retry, direct-publish, ExcludedV1 and default-off guard mutants;
+7. all owner builds/tests, MOD preflights, repository architecture tests, diff/secret/artifact/protected-scope
+   scans and disposable test-process cleanup;
+8. local API smoke on `5061` using environment-only local evidence configuration and test identities that
+   production composition must reject.
+
+This wording does not mean browser-test ready, full Gate I, full 1.3, production-ready or parity-complete.
+Gateway/frontend browser work, WorkCenter integration and production provisioning/activation remain later
+separately authorized gates.
+
 ### 4.10 ExternalContextReference validation projection
 
 This is the authorized provider contract for the internal endpoint
