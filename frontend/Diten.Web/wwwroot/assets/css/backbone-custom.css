@@ -4868,15 +4868,36 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 /* ==========================================================================
    DitenField — a leading icon inside a form control
    --------------------------------------------------------------------------
-   THE RULE, and it is about information rather than decoration: an icon here
-   says "something other than typing happens in this box". So it marks the two
-   date fields (they open a calendar) and the tag field (Enter turns text into a
-   chip), and nothing else. Title, description, estimate and the tenant's own
-   text fields are plain typing; an icon on every field would say nothing about
-   any of them.
+   THE RULE — EVERY FIELD CARRIES ONE. A leading glyph is this product's form
+   vocabulary, not a per-field annotation: a form where some boxes are marked
+   and others are not reads as two kinds of field, and the reader spends the
+   difference working out which kind they are looking at. So the wrapper goes
+   around every control on the form, and the glyph names WHAT THE FIELD IS.
 
-   select2 controls are deliberately untouched — select2 renders its own
-   container, so those are a template change with their own decision.
+   ⚠ THIS REPLACED THE OPPOSITE RULE, and the old text is worth naming because
+   it stood here long enough to be copied. It said an icon marks only the boxes
+   where "something other than typing happens" — the dates and the tag field —
+   and nothing else. The owner decided against it. A developer reading the old
+   comment concluded that leaving icons OUT was the correct pattern, which is
+   why the pattern reached one form out of thirty.
+
+   WHERE THE RULE IS PINNED, not restated: tests/diten-field-icons.test.js —
+   "EVERY field carries an icon". The field->glyph map lives there too, so the
+   choice of glyph is reviewed as a decision rather than typed per screen.
+
+   TWO EXCEPTIONS, both structural rather than taste:
+     · a form-check SWITCH is a label with a control, not a box with a text
+       inset — there is no inline start to put a glyph on;
+     · configurable/tenant-defined fields, whose value type is not known at
+       author time, so there is no glyph to pick.
+
+   SHAPES the wrapper must handle: a plain .form-control, a TEXTAREA (which
+   needs .diten-field-icon--top), a select2 control (which renders its own
+   container — the rules below pad what select2 draws, not the <select>), and a
+   Tagify box. All four are covered here; a template only picks the glyph.
+
+   BEHAVIOUR travels with the markup: an icon over a picker must OPEN it. See
+   assets/js/shared/diten-datefield.js — a dead icon is a dead button's sibling.
    ========================================================================== */
 .diten-field {
     position: relative;

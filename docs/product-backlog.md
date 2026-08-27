@@ -6376,6 +6376,91 @@ Bu, BL-280'in aynı şekli: üretimin sahip olmadığı bir kodlamaya karşı y�
 - **Gelecek regresyon riski: 🟡** — taşıma sırasında `_id` korunmazsa Organization→LegalEntity
   bağları kopar ve bu ancak ekranda fark edilir. Taşıma turunun kabul koşulu, taşımadan
   sonra o 15 eşleşmenin hâlâ 15 olması olmalıdır.
+
+---
+
+### BL-289 — bölüm başlığı idiom A → B: 180 başlık, altın referans artık B'de (2026-08-27, ölçüldü, ertelendi)
+- **Ne:** Ürün aynı görüntüyü üreten **iki** başlık idiomu taşıyor. Bu tur altın referans
+  (`GoldenReferenceCompact/_Form.cshtml`, 4 başlık) **B**'ye çevrildi; kural dosyası da B'yi
+  gösteriyor. Kalan A'lar duruyor.
+- **Ölçüm (2026-08-27, `Views/` altı):**
+  · **A** — `<h6 class="text-uppercase text-heading fw-semibold …">` : **180 başlık**, 30+ dosya
+    (Organization · Tasks alt ekranları · Platform · DevEnablement Details …)
+  · **B** — `<h6 class="card-section-title …">` : **10 başlık** — 4'ü altın referans (bu tur),
+    6'sı `Tasks/_Form.cshtml` sağ kolon
+  · **C** — `<h5 class="card-title … me-2">` : **0**. Kural dosyasında yazıyordu, üründe hiç yoktu.
+    Bu tur kural dosyasından SİLİNDİ; ölü idiom artık kimseyi yanlış yönlendirmiyor.
+- **Neden B kazandı:** tek sınıf adı bütün tarifi taşıyor (uppercase + heading rengi + 600 +
+  glifi primary'ye boyama), açıklama satırı (`.card-section-desc`) hazır geliyor, ve A beş
+  yardımcı sınıfın dizilişi — sonraki bir düzenleme yarısını düşürebilir, düşürdüğü de
+  görülmez.
+- ⚠ **BU TUR TASKS'A DOKUNULMADI — bilinçli.** Sahip kararı: tur altın referans içindir.
+  `Tasks/_Form.cshtml` bugün **ikisini birden** taşıyor (sol kolonda 4 A, sağ kolonda 6 B).
+- ⚠ **Bir test bu ikiliğe bağlıydı ve bu tur GEVŞETİLDİ, kaybolmadı:**
+  `tests/tasks-form-select2-notification.test.js` başlık tarifini altın referanstan TÜRETİYOR
+  ve `text-uppercase` metnini birebir arıyordu. Referans B'ye geçince kırmızıya döndü. Testin
+  kendi gerekçesi zaten "hangi yol değil, HEPSİ AYNI kasada olsun" diyordu — referans kontrolü
+  de iki yolu birden kabul edecek şekilde düzeltildi, kasa ve paylaşılan kuralın uppercase
+  olduğu iddiası duruyor. **A→B turu bittiğinde bu gevşetme geri alınabilir** ve tek yol
+  yeniden çivilenebilir.
+- **Tetikleyici:** bir ekran ailesine (Organization, Platform, Tasks alt ekranları) zaten
+  dokunan bir tur — 180 başlığı ayrı bir "kozmetik süpürme" turu olarak yapmak, hiçbir
+  kullanıcı sorununu çözmeden 30+ dosyayı kirletir.
+- **Gelecek regresyon riski: 🟢 katkısal.** İki idiom aynı pikseli üretiyor; dönüşüm görüntüyü
+  değiştirmez. Tek gerçek risk, dönüşümü yarım bırakıp `.dt-card-icon`'u erken silmek — bkz.
+  [BL-291].
+
+### BL-290 — kural dosyası `row g-6` diyordu, ürün 340 yerde g-4/g-3 (2026-08-27, ölçüldü, DÜZELTİLDİ)
+- **Ne:** `.antigravity/rules/frontend-form-template.md` "Form sayfalarında `row g-6` boşluğu
+  standarttır" diyordu. Ürün bunu hiç uygulamamış.
+- **Ölçüm (2026-08-27, `Views/` altı):** `row g-4` **170** · `row g-3` **170** · `row g-2` 26 ·
+  `row g-6` **4** — ve o dördü de **form değil**, DocumentManagement'ın Details sayfaları.
+  Her iki altın referans da g-4 (kart satırı) + g-3 (kart içi alan satırı) kullanıyor.
+- **Karar: kural ürüne uyduruldu, ürün kurala değil.** Kuralı okuyup g-6 yazan tek bir form
+  sayfası çıkmadı; 340 satırı "kurala uysun" diye değiştirmek, hiç kimsenin şikâyet etmediği
+  bir boşluğu bütün ürün genelinde büyütmek olurdu. Kural artık g-4/g-3 diyor ve NEDEN
+  değiştiğini kendi içinde taşıyor.
+- **Açık kalan (küçük):** DocumentManagement'ın 4 `row g-6` Details sayfası artık hiçbir
+  kurala dayanmıyor. Form şablonu kuralı Details sayfalarını kapsamıyor, o yüzden ihlal
+  değiller — ama o modüle dokunan bir sonraki tur g-4'e almalı.
+- **Gelecek regresyon riski: 🟢** — düzeltilen bir belge satırı; kod değişmedi.
+
+### BL-291 — `.dt-card-icon` tek dosya için yaşayan bir sınıf, `.card-section-title .bx` ile aynı şeyi yapıyor (2026-08-27, ölçüldü, ertelendi)
+- **Ne:** `backbone-custom.css:6426` → `.dt-card-icon { flex: 0 0 auto; font-size: 1.125rem; color: var(--bs-primary); }`
+- **Ölçüm:** üründe **4 kullanım**, hepsi **tek dosyada** (`Views/Tasks/_Form.cshtml` sol kolon,
+  idiom A başlıkları). `.card-section-title .bx` kuralı (satır ~4552) `font-size: 1.125rem` +
+  `color: var(--bs-primary)` ile **aynı iki bildirimi** taşıyor; `flex: 0 0 auto` ise
+  `.card-section-title`'ın kendi `display:flex`'i altında zaten glifin doğal davranışı.
+- **Yani:** iki isim, tek kural — ve ikisinden biri yalnız dört satır için var.
+- ⚠ **Tek başına silinemez.** O dört kullanım idiom A başlıklarının içinde; sınıf ancak
+  [BL-289]'un A→B dönüşümü `Tasks/_Form.cshtml`'i B'ye taşıdığında sahipsiz kalır.
+  Erken silmek o dört başlığın glifini gri ve küçük bırakır — ve bu ancak ekranda fark edilir.
+- **Tetikleyici:** [BL-289] kapandığı anda, aynı turda.
+- **Gelecek regresyon riski: 🟢 katkısal** — ama sıra bağımlı: önce dönüşüm, sonra silme.
+
+### BL-292 — iki altın referansın DA select placeholder'ı bozuktu, iki ZIT şekilde (2026-08-27, canlıda bulundu, DÜZELTİLDİ)
+- **Nasıl bulundu:** sahip **ekrana bakarak**, ikon turunun canlı doğrulaması sırasında. 1850 testin
+  hiçbiri görmüyordu; ikisi de bu turda çivilendi
+  (`tests/golden-reference-form-icons.test.js`, "both references DECLARE the select placeholder").
+- **Tek sebep, iki zıt belirti — ikisi de "placeholder'ı select2 kendi çıkarsın" ihmali:**
+  · **Slim (offcanvas):** `placeholder: $el.data('placeholder') || ''` — markup'ta `data-placeholder`
+    yok, yani select2'ye **BOŞ** placeholder verildi. Boş placeholder "placeholder yok" demek
+    DEĞİL: select2 o zaman `<option value="">`in metni yerine
+    `<span class="select2-selection__placeholder"></span>` çiziyor. Yerelleştirilmiş
+    **"Seçiniz…" hiç ekrana çıkmadı** — oklu boş kutu.
+  · **Compact (tam sayfa):** placeholder **hiç verilmedi** — select2 boş option'ı sıradan bir
+    **SEÇİM** sanıp gövde rengiyle boyadı. Ölçüldü: `rgb(56,69,81)`, aynı karttaki her düz
+    input'un placeholder'ı ise `rgb(167,172,178)`. **Boş alan, dolu alandan ayırt edilemiyordu.**
+- **Düzeltme (ikisi de):** `placeholder: … || $el.find('option[value=""]').text() || ''`.
+  Metin OPTION'da kalıyor → tek yerelleştirme kaynağı (markup'ın arkasındaki resx), hiçbir dil
+  dosyasının güncellemeyeceği bir `data-` niteliğinde ikinci kopya değil.
+  Doğrulandı: ikisi de artık `rgb(167,172,178)`.
+- ⚠ **Kural dosyası bunu ZATEN doğru yazıyordu** (`create.js` şablonu, `initSelect2`:
+  `placeholder: $el.find('option[value=""]').text() || ''`). İki referans da kuraldan sapmıştı —
+  yani "kural doğru + referans yanlış" hâli, bu turun asıl teşhisinin (desenin kanalı boş) select2
+  tarafındaki ikinci örneği.
+- **Gelecek regresyon riski: 🟢** — davranış artık iki referansta da testle çivili.
+
 ### BL-293 — yenilenen belirteç AYNI istekte görünmüyordu; iki hata, tek kök (2026-08-27, düzeltildi + CANLI kanıtlandı)
 `TokenBridge` belirteci yeniliyor ve yeni değeri **yalnız `HttpResponse.Cookies`**'e yazıyordu. Bu, dışarı
 giden bir başlıktır; `HttpRequest.Cookies` tarayıcının GÖNDERDİĞİNİN anlık görüntüsüdür ve **depoda ona yazan
