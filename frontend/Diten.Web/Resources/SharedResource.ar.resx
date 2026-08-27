@@ -600,4 +600,10 @@
   <data name="TagsRemove" xml:space="preserve">
     <value>إزالة {0}</value>
   </data>
+  <data name="NavigationLoadFailed" xml:space="preserve">
+    <value>تعذّر تحميل القائمة</value>
+  </data>
+  <data name="NavigationLoadFailedHint" xml:space="preserve">
+    <value>حدّث الصفحة للمحاولة مرة أخرى.</value>
+  </data>
 </root>

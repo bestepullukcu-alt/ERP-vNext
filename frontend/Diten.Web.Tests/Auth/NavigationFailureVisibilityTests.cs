@@ -4,6 +4,7 @@ using Diten.Web.Services.Auth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -75,6 +76,7 @@ public class NavigationFailureVisibilityTests
             configuration,
             new PermitEverything(),
             new PassThroughNavLocalizer(),
+            new EchoSharedLocalizer(),
             logger);
 
         var context = new DefaultHttpContext();
@@ -108,6 +110,18 @@ public class NavigationFailureVisibilityTests
     {
         public bool Has(string permissionKey) => true;
         public IReadOnlyCollection<string> Keys => Array.Empty<string>();
+    }
+
+    /*
+     * MERGE REPAIR — the controller gained a shared localizer when the degraded-navigation warning landed.
+     * This test predates it and only cares about log level, so the stub echoes the key: a message that
+     * changed text would still be caught by the assertions, which read the log rather than the screen.
+     */
+    private sealed class EchoSharedLocalizer : IStringLocalizer<Diten.Web.SharedResource>
+    {
+        public LocalizedString this[string name] => new(name, name, resourceNotFound: false);
+        public LocalizedString this[string name, params object[] arguments] => new(name, name, resourceNotFound: false);
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => [];
     }
 
     private sealed class PassThroughNavLocalizer : Diten.Web.Services.Navigation.INavNameLocalizer

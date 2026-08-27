@@ -104,10 +104,27 @@ public sealed class PlatformProfileSnapshotProvider : IPlatformProfileSnapshotPr
         try
         {
             using var client = _httpClientFactory.CreateClient();
-            using var request = new HttpRequestMessage(HttpMethod.Get, $"{_gatewayUrl}/api/platform/account/me");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-            using var response = await client.SendAsync(request, ct);
+            HttpRequestMessage BuildRequest()
+            {
+                var message = new HttpRequestMessage(HttpMethod.Get, $"{_gatewayUrl}/api/platform/account/me");
+                message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                return message;
+            }
+
+            /*
+             * BL-294/nav — MEASURED DECISION: this consumer gets the silent retry, and NOT the warning.
+             *
+             * It falls over at the same moment the sidebar and Ctrl+K do, but it does not fail the same way. Its
+             * fallback is REAL data — display name, email, actor type and roles read straight off the JWT — so the
+             * profile card stays correct and merely loses the server-side extras. There is nothing for the user to
+             * act on, and a "could not load" banner on a card that is showing their own correct name would be noise.
+             * The sidebar and the palette fall back to NOTHING, which is why only they warn.
+             *
+             * The retry still earns its place here: a failed fetch is cached for five minutes (CacheTtl), so one
+             * momentary blip would otherwise degrade the card long after the endpoint recovered.
+             */
+            using var response = await Http.NavigationRetry.SendOnceMoreOnTransientAsync(client, BuildRequest, ct);
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogDebug(
