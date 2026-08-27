@@ -42,7 +42,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
     // BL-023 — is the assignee above me, and if so who carries the request. Neither decides anything.
     private readonly ITaskAssignmentDirection? _direction;
     private readonly ITaskUpwardRequestService? _upwardRequests;
-    private readonly TaskDocumentReferenceFreezer? _documentFreezer;
+    private readonly TaskDocumentReferenceFreezer _documentFreezer;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<CreateTaskItemHandler> _logger;
 
@@ -64,17 +64,26 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         ITenantContext tenantContext,
         ILogger<CreateTaskItemHandler> logger,
         /*
-         * BL-023 — OPTIONAL on purpose. A caller that supplies neither gets exactly the behaviour that shipped
-         * before this change (every assignment is a plain order), which is what the existing suites pin. An
-         * absent pair can only ever SKIP the request; it can never open one by accident.
+         * DCP-005 §6.1 — REQUIRED, and that word is the whole fix. It used to be optional (`= null`), which
+         * meant a missing DI registration compiled, passed every unit test, and dropped every citation at
+         * runtime with no error anywhere: measured live 2026-08-26, the form showed two documents and the
+         * saved task carried none. A seam that defaults to "do nothing" cannot be caught in review, so it
+         * was pinned instead by a test that grepped DependencyInjection.cs for a string — a discipline
+         * problem patched with a discipline check. Required makes it architectural: forget the registration
+         * and the container cannot build this handler, which ValidateOnBuild reports at STARTUP.
+         *
+         * ⚠ IT SITS BEFORE THE OPTIONAL PAIR BELOW because C# requires it to. That ordering is load-bearing:
+         * a required argument cannot hide behind a default, which is exactly the property being bought here.
+         */
+        TaskDocumentReferenceFreezer documentFreezer,
+        /*
+         * BL-023 — OPTIONAL on purpose, and NOT the same case. A caller that supplies neither gets exactly
+         * the behaviour that shipped before this change (every assignment is a plain order), which is what
+         * the existing suites pin. An absent pair can only ever SKIP the request; it can never open one by
+         * accident. The freezer was different: absent, it silently discarded data the author had entered.
          */
         ITaskAssignmentDirection? direction = null,
-        ITaskUpwardRequestService? upwardRequests = null,
-        /*
-         * DCP-005 slice 3 — also OPTIONAL, and for the same reason: a caller that supplies none behaves exactly
-         * as it did before citations existed. An absent freezer can only skip a citation; it can never write one.
-         */
-        TaskDocumentReferenceFreezer? documentFreezer = null)
+        ITaskUpwardRequestService? upwardRequests = null)
     {
         _tasks = tasks;
         _assignments = assignments;
@@ -285,7 +294,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
          * task that cites a document; a task saved without the citation, followed by an error, is the worst of
          * the three possible outcomes — it looks like a success and reads like a different request.
          */
-        if (_documentFreezer is not null && request.DocumentUids is { Count: > 0 })
+        if (request.DocumentUids is { Count: > 0 })
         {
             var frozen = await _documentFreezer.ResolveNewAsync(
                 task.DocumentReferences, request.DocumentUids, DateTimeOffset.UtcNow, ct);

@@ -1,3 +1,5 @@
+using System.Reflection;
+using Diten.Platform.Application.Features.Tasks.Handlers.CommandHandlers;
 using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Application.Features.Tasks.Handlers.QueryHandlers;
 using Diten.Platform.Application.Features.Tasks.Queries;
@@ -331,23 +333,60 @@ public sealed class TaskTypeGoverningDocumentsTests
 }
 
 /// <summary>
-/// The freezer is an OPTIONAL constructor argument on both write handlers, so a missing DI registration
-/// compiles, passes every unit test above, and drops every citation at runtime with no error anywhere.
+/// The freezer used to be an OPTIONAL constructor argument on both write handlers, so a missing DI
+/// registration compiled, passed every unit test, and dropped every citation at runtime with no error
+/// anywhere.
 ///
 /// <para>MEASURED LIVE on 2026-08-26: the form showed two documents, the task saved, and the stored record
-/// carried none. This is the same failure mode as BL-024 — a seam that defaults to "do nothing" is invisible in
-/// review, so the registration itself has to be pinned.</para>
+/// carried none. This is the same failure mode as BL-024 — a seam that defaults to "do nothing" is invisible
+/// in review.</para>
+///
+/// <para>⚠ HOW THIS USED TO BE PINNED, AND WHY THAT WAS WRONG. There was a test here that read
+/// <c>DependencyInjection.cs</c> off disk and searched it for the substring
+/// <c>"AddScoped&lt;…TaskDocumentReferenceFreezer&gt;()"</c>. Two things were wrong with it. It proved
+/// nothing about the container — a registration can be present as text and still be unreachable, and a
+/// working registration written any other way would have failed it. And it reached its own source tree by
+/// climbing five directories out of the build output, which is right in one checkout shape and wrong in a
+/// git worktree; measured 2026-08-27, that is what stopped the GSKU team running the full suite.</para>
+///
+/// <para>⚠ THE REAL FIX IS NOT A TEST (DCP-005 §6.1). The argument is now REQUIRED, and
+/// <c>Program.cs</c> builds the container with <c>ValidateOnBuild</c>. Delete the registration and the
+/// application does not start: "Some services are not able to be constructed … Unable to resolve service
+/// for type TaskDocumentReferenceFreezer". Verified by mutation on 2026-08-27 — the host never reached
+/// "Now listening on". A discipline problem became an architectural one, and no string search is
+/// involved.</para>
+///
+/// <para>What remains here is the cheap half nothing else covers: that the argument has not quietly been
+/// given a default again. Reflection, not file paths.</para>
 /// </summary>
 public sealed class TaskDocumentFreezerRegistrationTests
 {
-    [Fact]
-    public void The_freezer_is_registered_in_the_container()
+    [Theory]
+    [InlineData(typeof(CreateTaskItemHandler))]
+    [InlineData(typeof(UpdateTaskItemHandler))]
+    public void The_freezer_is_a_required_constructor_argument(Type handler)
     {
-        // MUTATION GUARD: delete the AddScoped line in DependencyInjection.cs and this goes red.
-        var source = File.ReadAllText(Path.Combine(
-            AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src",
-            "Diten.Platform.Application", "DependencyInjection.cs"));
+        /*
+         * MUTATION GUARD: write `= null` back onto the freezer parameter and this goes red — and it has to,
+         * because the startup check above is only as strong as the argument being required. An optional
+         * argument resolves to null instead of failing, and the container never notices.
+         */
+        var parameter = handler
+            .GetConstructors()
+            .Single()
+            .GetParameters()
+            .Single(p => p.ParameterType == typeof(TaskDocumentReferenceFreezer));
 
-        Assert.Contains("AddScoped<Features.Tasks.Services.TaskDocumentReferenceFreezer>()", source);
+        Assert.False(parameter.IsOptional,
+            $"{handler.Name} takes the freezer as an optional argument again. Optional means a missing DI "
+            + "registration resolves to null and silently discards every citation the author entered — which "
+            + "is the defect measured live on 2026-08-26.");
+
+        Assert.False(parameter.HasDefaultValue);
+
+        // Nullable annotation removed too: `TaskDocumentReferenceFreezer?` would compile and let a caller
+        // pass null explicitly, which is the same hole reached by a different door.
+        var nullability = new NullabilityInfoContext().Create(parameter);
+        Assert.Equal(NullabilityState.NotNull, nullability.WriteState);
     }
 }

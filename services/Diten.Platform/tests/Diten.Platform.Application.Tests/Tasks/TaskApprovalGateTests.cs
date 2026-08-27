@@ -274,7 +274,8 @@ public sealed class TaskApprovalGateTests
             new FakeChecklistTemplateRepository(), new FakeChecklistRunRepository(), new TaskChecklistService(),
             new FakeTaskNotificationService(),
             new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant),
-            Microsoft.Extensions.Logging.Abstractions.NullLogger<CreateTaskItemHandler>.Instance);
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<CreateTaskItemHandler>.Instance,
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
 
         var request = new CreateTaskItemRequest(
             Title: "Needs sign-off", Description: null, Priority: TaskPriority.High,

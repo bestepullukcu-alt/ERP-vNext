@@ -174,7 +174,8 @@ public sealed class TaskApprovalToggleTests
             new FakeCurrentUserContext(TaskTestData.Me),
             approvals,
             new FakeTaskReviewService(),
-            NullLogger<UpdateTaskItemHandler>.Instance);
+            NullLogger<UpdateTaskItemHandler>.Instance,
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
         return (handler, tasks, approvals);
     }
 

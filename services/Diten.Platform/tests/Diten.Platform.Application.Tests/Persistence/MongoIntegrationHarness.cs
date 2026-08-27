@@ -237,16 +237,16 @@ public sealed class MongoIntegrationHarness : IAsyncDisposable
         }
     }
 
-    // Mirrors Diten.Platform.Infrastructure.DependencyInjection so these tests see exactly the BSON
-    // representation production writes. Note what is deliberately ABSENT: no DateTimeOffsetSerializer.
-    // Production does not register one either, which is why every DateTimeOffset lands on disk as a BSON
-    // array [ticks, offsetMinutes]. Registering one here would make these tests pass against a
-    // representation that does not exist in production — see BL-030.
-    private static void RegisterProductionSerializers()
-    {
-        BsonSerializer.TryRegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
-        BsonSerializer.TryRegisterSerializer(new DecimalSerializer(BsonType.Decimal128));
-    }
+    /*
+     * ⚠ THIS IS NOW A NO-OP IN PRACTICE, AND ON PURPOSE. PlatformTestSerializers registers the production
+     * serializers from a [ModuleInitializer], so they are in place before the first test case in this
+     * assembly — whichever class that turns out to be. Calling it again here is idempotent and keeps the
+     * registration visible to anyone reading the harness, but the harness is NO LONGER the thing that
+     * establishes it. That distinction is the whole fix: while this call site was the only one, a class that
+     * built its own MongoClient got the production Guid encoding only if a harness-using class had already
+     * run, so tests passed alone and failed in the suite (measured 2026-08-27, 11 failures).
+     */
+    private static void RegisterProductionSerializers() => PlatformTestSerializers.Register();
 
     public async ValueTask DisposeAsync()
     {

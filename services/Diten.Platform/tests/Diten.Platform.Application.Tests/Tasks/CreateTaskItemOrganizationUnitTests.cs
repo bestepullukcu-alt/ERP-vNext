@@ -273,7 +273,8 @@ public sealed class CreateTaskItemOrganizationUnitTests
             new FakeTaskNotificationService(),
             new FakeCurrentUserContext(TaskTestData.Me),
             new FakeTenantContext(TaskTestData.Tenant),
-            NullLogger<CreateTaskItemHandler>.Instance);
+            NullLogger<CreateTaskItemHandler>.Instance,
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
 
     private static OrganizationUnit Unit(Guid id, string code) => new()
     {

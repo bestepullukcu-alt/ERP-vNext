@@ -352,7 +352,8 @@ public sealed class CreateWithChecklistTests
                 new FakeTaskNotificationService(),
                 new FakeCurrentUserContext(TaskTestData.Me),
                 new FakeTenantContext(TaskTestData.Tenant),
-                NullLogger<CreateTaskItemHandler>.Instance)
+                NullLogger<CreateTaskItemHandler>.Instance,
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister())
             .Handle(new CreateTaskItemCommand(request, "corr"), CancellationToken.None);
 
     private static CreateTaskItemRequest Request(

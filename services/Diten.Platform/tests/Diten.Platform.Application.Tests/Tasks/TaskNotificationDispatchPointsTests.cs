@@ -317,7 +317,8 @@ public sealed class TaskNotificationDispatchPointsTests
                     Notifications,
                     new FakeCurrentUserContext(Me),
                     new FakeTenantContext(TaskTestData.Tenant),
-                    NullLogger<CreateTaskItemHandler>.Instance)
+                    NullLogger<CreateTaskItemHandler>.Instance,
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister())
                 .Handle(
                     new CreateTaskItemCommand(
                         new CreateTaskItemRequest(

@@ -262,7 +262,8 @@ public sealed class TaskReviewerRequiredHttpTests
                 new FakeTaskNotificationService(),
                 new FakeCurrentUserContext(TaskTestData.Me),
                 new FakeTenantContext(TaskTestData.Tenant),
-                NullLogger<CreateTaskItemHandler>.Instance);
+                NullLogger<CreateTaskItemHandler>.Instance,
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
 
             var update = new UpdateTaskItemHandler(
                 Tasks,
@@ -278,7 +279,8 @@ public sealed class TaskReviewerRequiredHttpTests
                 new FakeCurrentUserContext(TaskTestData.Me),
                 new FakeTaskApprovalService(),
                 Reviews,
-                NullLogger<UpdateTaskItemHandler>.Instance);
+                NullLogger<UpdateTaskItemHandler>.Instance,
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
 
             var submit = new SubmitTaskForReviewHandler(
                 Tasks,

@@ -148,9 +148,9 @@ public sealed class TaskUpwardRequestTests
 
     // ── helpers ──────────────────────────────────────────────────────────────
 
-    private static string ServiceSourcePath() => System.IO.Path.Combine(
-        System.IO.Path.GetDirectoryName(typeof(TaskUpwardRequestTests).Assembly.Location)!,
-        "..", "..", "..", "..", "..", "src", "Diten.Platform.Application",
+    // Found by walking up to the repo marker, not by counting five directories out of the build output —
+    // see RepoPaths for why that count only holds in one checkout shape.
+    private static string ServiceSourcePath() => RepoPaths.ApplicationSource(
         "Features", "Tasks", "Services", "TaskUpwardRequestService.cs");
 
     private static async Task<bool> IsUpward(Guid targetUserId, EntitlementDataScope[]? scopes = null)

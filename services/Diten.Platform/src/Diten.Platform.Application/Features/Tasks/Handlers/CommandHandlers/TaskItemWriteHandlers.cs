@@ -21,7 +21,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
     private readonly ICurrentUserContext _currentUser;
     private readonly ITaskApprovalService _approvals;
     private readonly ITaskReviewService _reviews;
-    private readonly TaskDocumentReferenceFreezer? _documentFreezer;
+    private readonly TaskDocumentReferenceFreezer _documentFreezer;
     private readonly ILogger<UpdateTaskItemHandler> _logger;
 
     public UpdateTaskItemHandler(
@@ -32,8 +32,14 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
         ITaskApprovalService approvals,
         ITaskReviewService reviews,
         ILogger<UpdateTaskItemHandler> logger,
-        // DCP-005 slice 3 — optional, so every payload and every existing construction behaves as before.
-        TaskDocumentReferenceFreezer? documentFreezer = null)
+        // DCP-005 §6.1 — REQUIRED, and that word is the whole fix. This was optional (`= null`), which meant
+        // a missing DI registration compiled, passed every unit test, and dropped every citation at runtime
+        // with no error anywhere: measured live 2026-08-26, the form showed two documents and the saved task
+        // carried none. A seam that defaults to "do nothing" cannot be caught by review, so it was pinned by
+        // a test that grepped DependencyInjection.cs for a string — a discipline problem patched with a
+        // discipline check. Required turns it into an architectural one: forget the registration and the
+        // container refuses to build the handler, which ValidateOnBuild surfaces at STARTUP.
+        TaskDocumentReferenceFreezer documentFreezer)
     {
         _tasks = tasks;
         _organizationUnits = organizationUnits;
@@ -221,8 +227,10 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
          * Null means "not editing the citations" (every payload written before this field says exactly that);
          * an empty list means "no citations" and clears them.
          */
-        if (_documentFreezer is not null)
         {
+            // Unconditional now that the freezer is required. ResolveNewAsync itself distinguishes the two
+            // meanings of the payload: null DocumentUids is "not editing the citations" and returns them
+            // unchanged; an empty list is "no citations" and clears them.
             var frozen = await _documentFreezer.ResolveNewAsync(
                 task.DocumentReferences, request.DocumentUids, DateTimeOffset.UtcNow, ct);
             if (!frozen.Success)

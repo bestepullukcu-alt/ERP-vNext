@@ -706,7 +706,8 @@ public sealed class TaskTransitionLogTests
                 new FakeTaskNotificationService(),
                 new FakeCurrentUserContext(TaskTestData.Me),
                 new FakeTenantContext(TaskTestData.Tenant),
-                NullLogger<CreateTaskItemHandler>.Instance)
+                NullLogger<CreateTaskItemHandler>.Instance,
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister())
             .Handle(new CreateTaskItemCommand(NewTaskRequest(), "corr"), CancellationToken.None);
 
     private static UpdateTaskItemHandler UpdateHandler(FakeTaskItemRepository tasks)
@@ -717,7 +718,8 @@ public sealed class TaskTransitionLogTests
             new FakeCurrentUserContext(TaskTestData.Me),
             new FakeTaskApprovalService(),
             new FakeTaskReviewService(),
-            NullLogger<UpdateTaskItemHandler>.Instance);
+            NullLogger<UpdateTaskItemHandler>.Instance,
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
 
     /// <summary>An edit that switches the review requirement OFF — the one path that moves a task out of
     /// PendingReview without its holder doing anything.</summary>

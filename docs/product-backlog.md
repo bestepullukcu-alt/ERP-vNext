@@ -6262,3 +6262,84 @@ süiti BRD hariç arka arkaya üç kez:
 - Süre: 53 s (Aşama 2 öncesi ölçüm) → **10–13 s**.
 - ⚠ `.wt` sayısı WiredTiger'ın kendi zamanlamasına bağlı olarak gecikmeli düşer; tek bir koşunun deltası
   değil, **arka arkaya koşuların eğilimi** anlamlıdır. Bu yüzden üç kez koşuldu.
+
+### BL-285 — dondurucu kaydı artık dizgiyle değil, AÇILIŞLA korunuyor (2026-08-27, düzeltildi)
+`TaskDocumentReferenceFreezer`, iki görev yazma işleyicisinde **isteğe bağlı** (`= null`) argümandı. Kaydı
+unutmak derleniyor, her birim testini geçiyor ve çalışma zamanında her atfı sessizce düşürüyordu (canlı
+ölçüm 2026-08-26: form iki doküman gösterdi, kaydedilen görev sıfır taşıdı).
+
+Bu, `DependencyInjection.cs`'i diskten okuyup içinde `"AddScoped<…TaskDocumentReferenceFreezer>()"` dizgisi
+arayan bir testle çivilenmişti. İki ayrı kusur: (a) konteyner hakkında hiçbir şey kanıtlamıyor — kayıt metin
+olarak var olup erişilemez olabilir, başka türlü yazılmış çalışan bir kayıt ise testi düşürürdü; (b) kendi
+kaynak ağacına derleme çıktısından **beş dizin tırmanarak** ulaşıyordu.
+
+**Yapısal çözüm (DCP-005 §6.1), iki parça — ikisi de gerekli:**
+1. Argüman **zorunlu** yapıldı (`CreateTaskItemHandler`, `UpdateTaskItemHandler`). C# zorunlu argümanı
+   isteğe bağlıların önüne koymayı dayattığı için `documentFreezer`, `direction`/`upwardRequests` çiftinden
+   önce duruyor — bu sıra taşıyıcı, çünkü satın alınan özellik tam olarak "varsayılanın arkasına
+   saklanamaması".
+2. `Program.cs` konteyneri `ValidateOnBuild = true` + `ValidateScopes = true` ile kuruyor. Tek başına
+   "zorunlu" hatayı sessizlikten **ilk isteğe** taşırdı; asıl istenen açılış.
+
+**Mutasyon (2026-08-27, ölçüldü):** `AddScoped` satırı silindi → uygulama **başlamadı**:
+`"Some services are not able to be constructed … Unable to resolve service for type
+TaskDocumentReferenceFreezer"`, `"Now listening on"` hiç görünmedi. Hiçbir dizgi araması yok.
+- Dizgi testi silindi; yerine **refleksiyon** testi kondu: argüman yeniden isteğe bağlı/nullable yapılırsa
+  kırmızı. Açılış kontrolü ancak argüman zorunlu kaldığı sürece güçlü, o yüzden bu ikisi bir çift.
+- 15 test çağrı yeri (grep 11 buldu, doğru sayıyı **derleyici** verdi) tek bir ortak double'a bağlandı:
+  `TaskDocumentFreezerDoubles.OverAnEmptyRegister()` — **gerçek** dondurucu, boş bir kayıt üstünde. Stub
+  koymak, işleyicinin dondurmadan atıf yazmasına geri dönmesini görünmez kılardı.
+- ⚠ `ValidateOnBuild` tüm Platform konteynerini doğruluyor ve **açılış temiz** (ölçüldü: uygulama ayağa
+  kalktı, arka plan işleri koştu, 166 izin senkronize oldu). Yani başka çözülemeyen kayıt yok.
+- **Gelecek regresyon riski: 🟢**
+
+### BL-286 — worktree'de kırılan testler: `.git` bir DOSYA olabilir (2026-08-27, düzeltildi)
+GSKU ekibinin tam süiti koşamamasının sebebi. İki ayrı kalıp, aynı hata: **checkout biçimini tahmin etmek**.
+
+**(a) Beş dizin elle tırmanma** — `AppContext.BaseDirectory` + `".."×5`. 4 Platform testinde vardı
+(`TaskDocumentReference`, `TaskUpwardRequest`, `TaskSeatDirectory`, `TaskRunningChildrenSignal`). Sayı yalnız
+tek bir çıktı düzeninde doğru.
+
+**(b) `.git`'i DİZİN sanmak** — 6 test doğru şekilde yukarı yürüyordu ama durma koşulu
+`Directory.Exists(Path.Combine(dir, ".git"))` idi. Normal klonda `.git` bir dizindir; **git worktree'de bir
+DOSYADIR** (`gitdir:` işaretçisi içerir). Koşul hiç sağlanmıyor, yürüyüş dosya sisteminin tepesine çıkıyor ve
+"Could not locate the repository root" fırlatıyor. Etkilenen: `TaskCommentTests`,
+`TaskActionCodeReachabilityTests`, `TaskDependencyTests`, `TaskDependencyEnforcementTests`,
+`TaskSubtaskBlockingTests`, `DateTimeOffsetSortGuardTests`.
+- ⚠ **(b) ilk taramada bulunamadı.** `".."` araması yalnız (a)'yı görür; (b) ancak süit **ayrı bir
+  worktree'den** koşulunca ortaya çıktı. Bitirme koşulunun "depo kökünde geçmesi yetmez" demesinin sebebi bu.
+- Onu da hepsi tek bir `RepoPaths` yardımcısına bağlandı: **AGENTS.md** işaretçisine kadar yukarı yürür.
+  AGENTS.md izlenen bir dosya, yani her checkout biçiminde — worktree dahil — vardır.
+- **KANIT:** ayrı worktree'den Platform süiti (BRD hariç) **2475/2475 · mongod ayakta**. Aynı worktree'de
+  düzeltmeden önce 8 test kırmızıydı.
+- **Gelecek regresyon riski: 🟡** — kalıp yeniden yazılabilir; `.git`/`".."` desenini yasaklayan bir muhafız
+  YOK. Aşama 1'in Mongo muhafızı gibi bir kaynak taraması bunu kapatır, bu turda yapılmadı.
+
+### BL-287 — Guid temsili: BRD testleri üretimin KULLANMADIĞI kodlamaya karşı yeşildi (2026-08-27, düzeltildi)
+"Tek başına geçer, süitte kalır"ın kaynağı ölçüldü ve teşhis ilk sanılanın **tersi** çıktı.
+
+**Ölçüm:** `BusinessReferenceDataTenantAssignment` + `BusinessReferenceDataPublishOperation` sınıfları tek
+başına **13/13 geçiyor**; harness kullanan bir sınıf aynı sürece girince **11 kırmızı**. Hatalar veri
+kaybı gibi okunuyor (`Assert.NotNull() Failure: Value is null`) — satırlar bir Guid kodlamasıyla yazılıp
+diğeriyle sorgulandığı için. Mesajın hiçbir yerinde serileştirme geçmiyor; bu yüzden bir tur kaybettirdi.
+
+**Ters teşhis:** kayıt EKSİK olduğu için değil, VAR olduğu için kırılıyorlar. Üretim
+(`Infrastructure/DependencyInjection`) **ikisini birden** yapıyor:
+`BsonSerializer.RegisterSerializer(new GuidSerializer(Standard))` (süreç-geneli) **ve**
+`mongoClientSettings.GuidRepresentation = Standard` (istemci başına). BRD testleri kendi `MongoClient`'ını
+kuruyor ve **ikisini de** ayarlamıyor — yani yalnız hiçbir şey global serializer'ı kaydetmemişken geçiyorlardı.
+Bu, BL-280'in aynı şekli: üretimin sahip olmadığı bir kodlamaya karşı yıllarca yeşil.
+
+- **Cevap "istemci başına yap" DEĞİL:** kayıt sürücüde tasarım gereği süreç-geneli ve üretim de öyle yapıyor;
+  testte daraltmak, testleri üretimden ayırırdı. Kusur **kapsam** değil **zamanlama**ydı: kayıt harness'ın
+  içinden TEMBEL yapılıyordu, yani global durum ancak harness kullanan bir sınıf önce koşmuşsa vardı.
+- **Düzeltme:** `PlatformTestSerializers` + `[ModuleInitializer]` — assembly yüklenirken, ilk test vakasından
+  önce, hem iki serializer hem `MongoDefaults.GuidRepresentation = Standard` (her `MongoClientSettings`'in
+  devraldığı sürücü-geneli varsayılan). Böylece "hangi sınıf önce koştu" diye bir şey kalmıyor ve her istemci
+  üretimin şeklini alıyor — her testin hatırlamasına gerek kalmadan.
+- 11 kırmızı veren senaryo şimdi **17/17 yeşil**; sınıflar tek başına da yeşil.
+- ⚠ **Ölçüm tuzağı:** aynı senaryo bir ara 17 dk 31 sn sürdü. Sebep bu değişiklik değil, biriken BRD artığı
+  üzerinde boğulan mongod'du (BL-283); artık düşürülünce **1 dk 14 sn**. Süre ölçerken `dbPath` durumunu
+  önce temizleyin.
+- **Gelecek regresyon riski: 🟡** — yeni bir test kendi `MongoClient`'ını kurarsa artık doğru varsayılanı
+  devralır, ama açıkça `GuidRepresentation` ayarlayıp yanlış değer verirse hâlâ sapabilir. Muhafız yok.

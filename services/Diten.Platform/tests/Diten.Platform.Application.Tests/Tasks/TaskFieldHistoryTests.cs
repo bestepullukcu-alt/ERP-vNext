@@ -349,7 +349,8 @@ public sealed class TaskFieldHistoryTests
                     new FakeTaskReviewService(),
                     Microsoft.Extensions.Logging.Abstractions.NullLogger<
                         Diten.Platform.Application.Features.Tasks.Handlers.CommandHandlers
-                            .UpdateTaskItemHandler>.Instance);
+                            .UpdateTaskItemHandler>.Instance,
+                    TaskDocumentFreezerDoubles.OverAnEmptyRegister());
 
             var response = await handler.Handle(
                 new Diten.Platform.Application.Features.Tasks.Commands.UpdateTaskItemCommand(

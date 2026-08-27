@@ -119,21 +119,8 @@ public sealed class DateTimeOffsetSortGuardTests
         return builder.ToString();
     }
 
+    // Walked up to the AGENTS.md marker, not to a `.git` DIRECTORY: in a git worktree `.git` is a FILE, so
+    // the old check never matched and this threw instead of finding the root. See RepoPaths.
     private static string LocateServicesRoot()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null)
-        {
-            var candidate = Path.Combine(directory.FullName, "services");
-            if (Directory.Exists(candidate) && Directory.Exists(Path.Combine(directory.FullName, ".git")))
-            {
-                return candidate;
-            }
-
-            directory = directory.Parent;
-        }
-
-        throw new InvalidOperationException(
-            $"Could not locate the repository 'services' directory walking up from {AppContext.BaseDirectory}.");
-    }
+        => RepoPaths.Services();
 }
