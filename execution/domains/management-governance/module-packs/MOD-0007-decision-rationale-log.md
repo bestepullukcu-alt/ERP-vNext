@@ -286,6 +286,46 @@ intent. Withdrawal without a replacement appends a `DecisionPublicationHistory(W
 the affected exact revision; it never fabricates a source/target link. Same-Decision correction uses
 `DecisionRevisionReplacementProvenance`, not `DecisionSupersessionLink`.
 
+### Gate I-A local validation provider amendment R2 — AUTHORIZED / LOCAL-ONLY / NON-PRODUCTION
+
+Control Tower authorizes a bounded owner-side implementation of the read-only MOD-0007 validation provider
+required by MOD-0117 §4.9.1 and §4.9.3. The exact operation is
+`decision-registry.decision-references.validate.v1`, permission
+`management-governance.decision-references.validate`, audience `diten-management-governance-service`, Client ID
+`diten.management-governance`, owner `MOD-0007`, and protocol scope `diten.s2s.delegated.invoke`.
+
+The provider accepts only the exact governing/supporting wrapper, exact `InvestmentCaseContextV1`, exact
+five-field `DecisionRevisionReferenceV1`, and `HistoricalResolve|NewReferenceEligibility` modes.
+`CurrentSelectionEligibility` is `400`. Trusted tenant, actor, delegation, S2S identity, operation, permission
+and request hash are server-derived FU16 context and cannot be supplied or overridden by payload fields.
+Exact results remain `400/401/403/404/409/503`; cross-tenant, invisible, missing and technically deleted state
+are indistinguishable `404`. The response returns only the exact reference plus resolution, eligibility and
+disposition facts—never Decision text, result, rationale, evidence or trusted-context echo.
+
+The owner-local internal route is exact
+`POST /internal/v1/decision-registry/decision-references/validate`. It is service-network-only, decorated with
+`[Authorize]`, has no Gateway/browser route and remains default-off. Committed configuration cannot enable it
+or contain a provider URI, credential, key or secret. Local enablement is eligible only through process
+environment after every owner checkpoint and FU16 evidence gate passes.
+
+This amendment authorizes additive implementation only under:
+
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/DecisionRegistry/GateI/**`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/DecisionRegistry/InternalDecisionReferenceValidationController.cs`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/DecisionRegistry/DecisionRegistryGateIModuleRegistration.cs`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Diten.ManagementGovernanceService.Api.csproj`, only for the minimum ASP.NET framework reference required to compile the exact controller;
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/DecisionRegistry/GateI/**`;
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/DecisionRegistry/GateI/**`.
+
+An Application-owned authoritative snapshot-reader port may be supplied by a test fake; production persistence
+wiring remains a later exact amendment. The module registration composes only the default-disabled provider
+core and cannot build/start a host or listener. No Program change, Persistence, Infrastructure, listener or
+runtime activation is authorized in this slice. Validation is query-pure: zero mutation, cache, receipt, audit
+intent and outbox.
+No fallback/LKG/local truth is allowed. Production keys, credentials, deployment, Gateway, frontend,
+WorkCenter, activation and push remain unauthorized. This is contract/provider-core evidence only and cannot
+be reported as Local API-Test Ready until the later transport/composition and full MOD-0117 R2 gates pass.
+
 ## 5. Repo Scope
 
 This promotion milestone changes only:
