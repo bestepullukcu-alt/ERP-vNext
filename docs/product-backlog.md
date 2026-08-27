@@ -6747,3 +6747,37 @@ doğrulama yardımcıları, ayrı değerlendirilmeli).
   · (c) `node_modules`'ü paylaşılan bir konumdan bağlamak (symlink) — hızlı ama sürüm sapması riski
 - **Gelecek regresyon riski: 🟡** — kod değil kurulum. Ama her paralel tur bir kez ödüyor ve
   frontend'e dokunan turda regresyon boşluğu bırakıyor.
+
+### BL-302 — `AProfileBuildsItsOwnCollectionsAndNothingElse` sıraya bağımlı: aynı kod, farklı sonuç (2026-08-28, ölçüldü, AÇIKLANAMADI)
+- BRD index turu (`262997c5`) `integration/2026-08-27`'ye birleştirildikten sonra `PlatformSchemaContractMongoTests`
+  içinden 4-5 test kırmızıya döndü. **Her iki tur kendi dalında yeşildi** (BRD 2668, index 2667).
+- Gözlem dizisi — aynı kod, aynı makine, art arda:
+  | koşu | sonuç |
+  |---|---|
+  | birleşme sonrası tam süit | **4 kırmızı** |
+  | test veritabanları temizlendi, tam süit | **5 kırmızı** |
+  | yalnız `AProfileBuilds…` | **KIRMIZI** |
+  | yalnız `AProfileBuilds…`, tekrar | **YEŞİL** |
+  | tam süit ×2 | **YEŞİL (2668/2668)** |
+- Hata iletisi iki koşuda FARKLI koleksiyon listesi verdi:
+  · bir kez `document_management_*` + `document_reference_*` + `task_comments/types/transitions`
+  · bir kez `checklist_*` + `task_assignments/dependencies/field_definitions/items/…`
+  İkisi de WorkflowWorkCenter ve DocumentManagement profillerine ait — BRD'ye değil.
+- **Ne DEĞİL, ölçüldü:**
+  · profil etiketleri doğru — beş koleksiyon tek tek kontrol edildi, hepsi `SchemaProfile.WorkflowWorkCenter`
+  · `PlatformSchemaManifest.For()` `c.Profile`'a göre filtreliyor — kod okundu
+  · `SchemaCollection.ApplyAsync` yalnız kendi `Name`'ine index kuruyor — başka koleksiyon yaratmıyor
+  · `InitializeAsync` her testte `DropDatabaseAsync` çağırıyor → temiz başlamalı
+  · `MongoResidueSweeper.TouchAsync` yalnız işaret koleksiyonunu yazıyor
+  · `[Collection("platform-schema-contract")]` adını başka sınıf kullanmıyor
+  · sınıfın kendi veritabanı var: `diten_platform_itest_schema_contract`
+- ⚠ **SEBEP BULUNAMADI.** "Şimdi geçiyor" bir teşhis değildir. Sıraya bağımlı bir test, bugün yeşil
+  yarın kırmızı olur ve güveni aşındırır — bu oturumda tam olarak bu sınıftan bir hata (süreç-geneli
+  `GuidSerializer` zamanlaması) iki testi "tek başına geçer, süitte kalır" hâline sokmuştu.
+- **Şüpheliler (ölçülmedi):** `DropDatabaseAsync`'in Mongo tarafında eşzamansız tamamlanması ·
+  çalışan Platform servisinin (5057) aynı mongod üzerindeki yükü · xUnit'in aynı koleksiyon içinde
+  örnek yeniden kullanımı.
+- **Yapılacak:** testi kendi izole veritabanına al (`MongoIntegrationHarness.CreateIsolatedAsync` deseni
+  mevcut) ve düşürmenin tamamlandığını doğrula — ya da düşürme yerine koleksiyonları tek tek sil.
+- **Gelecek regresyon riski: 🟡** — kırmızı gürültülü, sessiz yanlış değil. Ama açıklanamayan bir
+  kırmızı, gerçek bir kırmızının yanında görünmez hâle gelir.
