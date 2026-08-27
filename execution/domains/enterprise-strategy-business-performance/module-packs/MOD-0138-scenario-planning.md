@@ -550,6 +550,42 @@ PPM stores no compared-scenario list, assumption, algorithm/version, normalizati
 digest, ranking, metric or output payload. MOD-0117 alone owns wrapper cardinality, attachment/detachment/storage,
 requiredness and InvestmentCase lifecycle effects; none of those consumer rules move into MOD-0138.
 
+### Gate I-B Scenario local validation provider amendment R2 — AUTHORIZED / LOCAL-ONLY / NON-PRODUCTION
+
+Control Tower authorizes the owner-side read-only validation provider required by MOD-0117 §4.9.1 and §4.9.3.
+The exact operation and permission are both `fpa.scenario-planning.references.validate`; audience is
+`diten-fpa-service`, Client ID `diten.fpa`, owner `MOD-0138`, and protocol scope
+`diten.s2s.delegated.invoke`. The shared workload identity never merges MOD-0138 with MOD-0136 authority.
+
+The provider accepts only exact five-field `ScenarioVersionReferenceV1` or
+`ComparatorOutputReferenceV1`, the three exact PPM wrapper identities fixed in this pack, and exact
+`ppm.investment-case-context/1.0`. `HistoricalResolve` and `NewReferenceEligibility` apply to all three
+wrappers; `CurrentSelectionEligibility` is valid only for the selected-scenario wrapper and is `400` for
+scenario-version and comparator-output wrappers. Exact results are `400/401/403/404/409/503`; non-disclosable
+state is `404`. Success returns only the exact reference plus lifecycle, disposition and current-selection
+facts; assumptions, comparator inputs/algorithm/ranking/metrics/output payload and selection history are
+forbidden.
+
+The exact owner-local route is `POST /internal/v1/fpa/scenario-planning/references/validate`. It is
+`[Authorize]`, service-network-only, has no Gateway/browser route and remains default-off. Committed
+configuration cannot enable it or contain URI/credential/key/secret material.
+
+Additive implementation authority is limited to:
+
+- `services/Diten.FpaService/src/Diten.FpaService.Application/Modules/ScenarioPlanning/GateI/**`;
+- `services/Diten.FpaService/src/Diten.FpaService.Api/Modules/ScenarioPlanning/InternalScenarioReferenceValidationController.cs`;
+- `services/Diten.FpaService/src/Diten.FpaService.Api/Modules/ScenarioPlanning/ScenarioPlanningModuleRegistration.cs`;
+- `services/Diten.FpaService/src/Diten.FpaService.Api/Program.cs`, only to add the compile-time/default-off ScenarioPlanning module registration beside Budgeting; no host/run/listener;
+- `services/Diten.FpaService/tests/Diten.FpaService.UnitTests/Modules/ScenarioPlanning/GateI/**`;
+- `services/Diten.FpaService/tests/Diten.FpaService.ContractTests/Modules/ScenarioPlanning/GateI/**`;
+- `services/Diten.FpaService/tests/Diten.FpaService.ArchitectureTests/Modules/ScenarioPlanning/GateI/**`.
+
+An Application snapshot-reader port may be supplied by a test fake. Production Mongo wiring and transport
+configuration remain later gates. Validation is query-pure: zero mutation/cache/receipt/audit/outbox. Direct
+Budgeting persistence access, cache/LKG/local truth, frontend, Gateway, WorkCenter, production
+key/secret/deployment/activation and push remain forbidden. This checkpoint alone does not complete atomic
+Gate I-B or make it Local API-Test Ready.
+
 ## 5. Repo Scope
 
 Current governance/fixture authoring scope is exactly:
