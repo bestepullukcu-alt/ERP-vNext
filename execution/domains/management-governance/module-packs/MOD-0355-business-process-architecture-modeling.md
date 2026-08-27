@@ -1775,7 +1775,8 @@ proves the roles of `eefcbc63691c92fbbf4d41977df70d751ad8744b` and
 
 The local surface is explicit and closed. `GET /internal/local-test/v1/process-modeling/health` is the only
 anonymous action and returns no database, credential or topology detail. All command routes require the
-test-only authentication scheme, exact tenant claim/header agreement, the mapped permission and a non-empty
+test-only authentication scheme, exact `tenant_id` claim agreement with the canonical `X-Tenant-Id` header,
+the mapped permission and a non-empty
 ordinal `Idempotency-Key`. `TenantId`, actor, permission, request hash and command identity are forbidden body
 fields. Every JSON body rejects duplicate, case-changed, unknown and extra properties.
 
