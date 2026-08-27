@@ -136,31 +136,20 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
                     var serverModuleName = g.ModuleDisplayName ?? g.ModuleCode ?? string.Empty;
 
                     // FEAT-NAV-L10N — localize DEFAULT names by stable code (overrides render as-typed via the flags).
-                    return new
-                    {
-                        Domain = domainCode,
-                        DomainDisplay = _navLocalizer.Domain(domainCode, serverDomainName, g.DomainDisplayNameIsOverride),
+                    return new NavDomainEntry(
+                        domainCode,
+                        _navLocalizer.Domain(domainCode, serverDomainName, g.DomainDisplayNameIsOverride),
                         // FEAT-NAVPREFS-DOMAINS — effective domain order (tenant override else implicit catalog rank).
-                        DomainSort = g.DomainSortOrder,
-                        Module = new NavModuleEntryView(
+                        g.DomainSortOrder,
+                        new NavModuleEntryView(
                             _navLocalizer.Module(g.ModuleCode, serverModuleName, g.ModuleDisplayNameIsOverride),
                             BuildTree(g.Items),
-                            g.Icon) // FIX-MODULE-ICON — module sidebar icon from the catalog (nav DTO carries the resolved value).
-                    };
+                            g.Icon)); // FIX-MODULE-ICON — module sidebar icon from the catalog (nav DTO carries the resolved value).
                 })
                 .Where(x => x.Module.Nodes.Count > 0)
                 .ToList();
 
-            // FEAT-NAVPREFS-DOMAINS — order DOMAIN groups by DomainSortOrder (all modules of a domain share it);
-            // modules within stay SortOrder-ordered. OrderBy is stable, so equal ranks keep first-seen order.
-            var domains = moduleEntries
-                .GroupBy(x => (x.Domain, x.DomainDisplay))
-                .Select(dg => new { dg.Key.DomainDisplay, Sort = dg.Min(x => x.DomainSort), Modules = dg.Select(x => x.Module).ToList() })
-                .OrderBy(d => d.Sort)
-                .Select(d => new NavDomainGroupView(d.DomainDisplay, d.Modules))
-                .ToList();
-
-            return new DynamicModuleMenuViewModel(domains);
+            return new DynamicModuleMenuViewModel(GroupByDomain(moduleEntries));
         }
         catch (Exception ex)
         {
@@ -212,6 +201,41 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
             item.IconHint,
             children);
     }
+
+    /// <summary>One module entry, already localized, tagged with the raw domain code it came from.</summary>
+    public sealed record NavDomainEntry(string DomainCode, string DomainDisplay, int DomainSort, NavModuleEntryView Module);
+
+    /// <summary>
+    /// FIX-DOMAIN-NORMALIZATION — group modules into DOMAIN sections by the NORMALIZED domain key, never by the raw
+    /// code. The catalog historically stored the same domain in two spellings ("MASTER-DATA-MANAGEMENT" vs
+    /// "MASTERDATAMANAGEMENT"); both localize to the SAME heading, so grouping on the raw string rendered the
+    /// heading TWICE with the modules split across the two sections. <see cref="NavNameLocalizer.Normalize"/> is the
+    /// one transform used for the l10n key, the platform nav handler's domain key and the domain lookup's CodeKey —
+    /// reuse it here so all four agree.
+    ///
+    /// <para>The catalog-side canonicalization migration removes the drift at the source; this is the render-side
+    /// guarantee that a future drifted row can never split a heading again.</para>
+    ///
+    /// <para>Display name is picked DETERMINISTICALLY within a key group (lowest DomainSort, then ordinal) so a
+    /// group whose members somehow carry different labels cannot flip between renders.</para>
+    /// </summary>
+    public static IReadOnlyList<NavDomainGroupView> GroupByDomain(IEnumerable<NavDomainEntry> entries) =>
+        entries
+            .GroupBy(x => NavNameLocalizer.Normalize(x.DomainCode ?? string.Empty), StringComparer.Ordinal)
+            .Select(dg => new
+            {
+                DomainDisplay = dg
+                    .OrderBy(x => x.DomainSort)
+                    .ThenBy(x => x.DomainDisplay, StringComparer.Ordinal)
+                    .First().DomainDisplay,
+                Sort = dg.Min(x => x.DomainSort),
+                Modules = dg.Select(x => x.Module).ToList()
+            })
+            // FEAT-NAVPREFS-DOMAINS — order DOMAIN groups by DomainSortOrder (all modules of a domain share it);
+            // modules within stay SortOrder-ordered. OrderBy is stable, so equal ranks keep first-seen order.
+            .OrderBy(d => d.Sort)
+            .Select(d => new NavDomainGroupView(d.DomainDisplay, d.Modules))
+            .ToList();
 
     private string? GetTenantId() =>
         UserClaimsPrincipal?.Claims.FirstOrDefault(x =>

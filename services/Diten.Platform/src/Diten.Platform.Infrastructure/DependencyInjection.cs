@@ -361,6 +361,10 @@ public static class DependencyInjection
         // FIX-DOMAIN-SERVICE-CANONICAL — must run AFTER the domain/service lookups are seeded: pins catalog
         // Domain/Service to canonical Codes and fixes the 'Servicec' DisplayName typo. Marker-gated + idempotent.
         ModuleCatalogTaxonomyCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+        // FIX-DOMAIN-NORMALIZATION — runs AFTER the marker-gated canonicalization above and is itself NOT
+        // marker-gated: re-runnable and idempotent, so catalog rows that drifted after that one-shot ran
+        // (two spellings of one domain → the sidebar heading rendered twice) are healed on every startup.
+        ModuleCatalogDomainCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
         PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
 
@@ -481,6 +485,10 @@ public static class DependencyInjection
             // FIX-DOMAIN-SERVICE-CANONICAL — after the lookups are seeded: canonicalize catalog Domain/Service and
             // fix the 'Servicec' DisplayName typo. Marker-gated + idempotent.
             ModuleCatalogTaxonomyCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            // FIX-DOMAIN-NORMALIZATION — runs AFTER the marker-gated canonicalization above and is itself NOT
+            // marker-gated: re-runnable and idempotent, so catalog rows that drifted after that one-shot ran
+            // (two spellings of one domain → the sidebar heading rendered twice) are healed on every startup.
+            ModuleCatalogDomainCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
             PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         }
