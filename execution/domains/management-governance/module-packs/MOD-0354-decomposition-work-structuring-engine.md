@@ -21,6 +21,7 @@ form_field_count: 0
 port: 5017
 implementation_authority: explicit-user-control-tower-bounded-core-scaffold-contract-test
 b02_evidence_authority: explicit-user-control-tower-non-runtime-persistence-integration-evidence
+backend_local_testability_authority: explicit-user-control-tower-non-production-default-off
 production_authority: none
 ---
 
@@ -40,6 +41,14 @@ production_authority: none
 > configuration, production database, migration, deployment, credential, secret, frontend, Gateway,
 > WorkCenter or production activation. The separately approved non-runtime implementation checkpoint is
 > `6dfbaa5b1218a1d236360830db1e8c5db71bba87`; it grants no broader runtime authority.
+
+> **Backend Local-Testability amendment:** The explicit user decision dated 2026-08-27 authorizes a
+> non-production, default-off local API host for this module under the exact paths in §5. This bounded slice
+> permits action-based CQRS through MediatR, the four mandatory pipeline behaviors, service-local
+> `Response<T>`/`CustomBaseController`, health and Dws endpoints bound only to loopback port `5017`, the
+> existing Dws Mongo persistence boundary, typed MOD-0117 and FU16 adapter ports, a test-only audit simulator
+> and a self-registration contract. It does not authorize Gateway routing, browser access, production
+> credentials/keys, live external providers, live broker delivery, deployment or production activation.
 
 > **Port reservation:** `Diten.ManagementGovernanceService:5017` is the canonical governance reservation.
 > It supersedes the historical Management Governance `5011` assignment; `5011` belongs exclusively to
@@ -595,6 +604,28 @@ activation; bind a port; expose an endpoint; start a listener/worker; or load ru
 `appsettings*`, `launchSettings.json`, controller, endpoint, worker, broker, migration or deployment file is
 authorized.
 
+The Backend Local-Testability amendment supersedes that `Program.cs` restriction only when the exact
+`--local-test` switch is present. In that mode the host binds only `http://127.0.0.1:5017`, exposes
+`GET /health` and the exact Dws resource family in §15, and composes only default-off/test-owned provider,
+authorization, audit and self-registration seams. Without `--local-test` the executable exits without
+starting a host. No `appsettings*`, launch profile, worker or external listener is authorized.
+
+The amendment additionally permits only these existing or additive service-local paths:
+
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Controllers/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/LocalTest/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Diten.ManagementGovernanceService.Api.csproj`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/DependencyInjection.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Features/Dws/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Modules/Dws/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Diten.ManagementGovernanceService.Application.csproj`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/DependencyInjection.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/Dws/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/DependencyInjection.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/Modules/Dws/**`
+- the three existing Dws test project files and their exact `Modules/Dws/**` roots already listed above.
+
 Security/provider adapters, audit delivery adapters, frontend, Gateway and runtime/deployment paths require
 separate explicit slice authority. The exact Core paths above grant no authority outside their bounded
 compile/test-only purpose.
@@ -994,6 +1025,29 @@ port binding or route change.
   `/api/dws/structures` and `/api/dws/structures/{everything}` mappings including `OPTIONS`.
 - `gateway/Diten.ApiGateway/**/ocelot.json` remains protected.
 
+The non-production Local-Testability host has no Gateway route and is callable only on loopback `5017`.
+Its exact action/query map is:
+
+| Method and path | CQRS request |
+|---|---|
+| `POST /api/dws/structures` | `CreateStructureCommand` |
+| `PUT /api/dws/structures/{id}/metadata` | `UpdateStructureMetadataCommand` |
+| `POST /api/dws/structures/{id}/nodes` | `AddStructureNodeCommand` |
+| `POST /api/dws/structures/{id}/nodes/{logicalNodeId}/move` | `MoveStructureNodeCommand` |
+| `POST /api/dws/structures/{id}/nodes/{logicalNodeId}/reorder` | `ReorderStructureNodeCommand` |
+| `DELETE /api/dws/structures/{id}/nodes/{logicalNodeId}` | `RemoveStructureNodeCommand` |
+| `POST /api/dws/structures/{id}/dependencies` | `AddStructuralDependencyCommand` |
+| `DELETE /api/dws/structures/{id}/dependencies` | `RemoveStructuralDependencyCommand` |
+| `POST /api/dws/structures/{id}/baselines` | `CreateStructureBaselineCommand` |
+| `POST /api/dws/structures/{id}/revisions` | `CreateNextStructureRevisionCommand` |
+| `GET /api/dws/structures/{id}` | `GetStructureByIdQuery` |
+| `GET /api/dws/structures/{id}/tree` | `GetStructureTreeQuery` |
+| `GET /api/dws/structures/{id}/validation` | `ValidateStructureQuery` |
+| `GET /api/dws/structures/{id}/revision-comparison` | `CompareStructureRevisionsQuery` |
+| `GET /api/dws/structures/{id}/baseline-comparison` | `CompareStructureBaselinesQuery` |
+
+This table is a local-test contract only. It does not reserve a Gateway path or activate a production API.
+
 ## 16. Acceptance Criteria
 
 - [ ] A tenant actor with `management-governance.dws.create` can create one structure whose tenant is taken
@@ -1227,6 +1281,10 @@ port binding or route change.
   explicit user approval; this is not runtime scaffold or host activation authority.
 - [x] **B-11:** Service port `5017` is allocated without collision; `5011` remains exclusively assigned to
   `Diten.PvgService`. This is reservation evidence only, not runtime binding authority.
+- [x] **B-11A:** Backend Local-Testability authority defines a loopback-only, `--local-test`-gated host on
+  `5017`, exact action/query routes, four pipeline behaviors, response envelope/base-controller, typed
+  default-off adapters, audit simulator, self-registration contract and executable local smoke/mutation
+  evidence. It grants no production or Gateway activation.
 - [ ] **B-12:** Integration-agent approves and owns the gateway route task.
 - [x] Exact bounded Core repo scope is recorded in §5; later runtime/frontend paths require revalidation.
 - [x] Gate 2 is not triggered by the isolated structural-only Core. A future implementation that touches,
@@ -1244,12 +1302,13 @@ implementation and activation remain forbidden while `production_authority: none
 |---|---|---|
 | Core Scaffold & Contract-Test | Structural domain/application contracts, deterministic canonicalization, exact permission/persistence manifests, local transaction seams and architecture/contract tests | Present `ready-for-dev` authority |
 | B-02 Mongo Persistence & Integration Evidence | Dws-owned Mongo documents/repositories, index initialization, same-session transaction execution and disposable real-Mongo evidence under the exact §5 paths | Closed by `6dfbaa5b1218a1d236360830db1e8c5db71bba87`; non-runtime only, no activation authority |
+| Backend Local-Testability | Exact 15 action/query endpoints, MediatR and four behaviors, response envelope/base controller, loopback health host, existing Dws Mongo composition, typed default-off MOD-0117/FU16 adapters, test-only audit simulator and module self-registration contract | Explicitly authorized non-production/default-off implementation slice; no Gateway or production activation |
 | Security & MOD-0117 Provider Integration | Live context validator, S2S/delegated actor, MOD-0018 enforcement and permission provisioning | Separate later gate |
 | Audit Delivery | Signed/versioned event contract, MOD-0035 adapter, MOD-0021 consumer compatibility, retry/DLQ/alarm/replay | Separate later gate |
 | Frontend & Legacy Parity | Tenant UI, seven-language resources, page-by-page legacy matrix and user acceptance | Separate later gate |
 | Runtime Activation | Port, Gateway, configuration, credentials, deployment, observability and production authority | Final separate gate |
 
-- Core `Program.cs` is compile/test-only and cannot activate a host.
+- Core `Program.cs` remains inactive by default; only exact `--local-test` starts the loopback `5017` host.
 - Test-only provider/security/audit fixtures cannot be accepted by production composition.
 - No missing live dependency can be replaced by local truth, cache/LKG allow, hard-coded permission,
   shared-key audit append or inferred MOD-0117 visibility.
