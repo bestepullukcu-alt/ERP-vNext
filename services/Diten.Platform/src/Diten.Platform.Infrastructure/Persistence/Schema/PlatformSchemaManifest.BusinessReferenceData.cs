@@ -168,10 +168,27 @@ public static partial class PlatformSchemaManifest
 
             }),
         /*
-         * ⚠ NO DECLARED INDEX — and that is a FINDING, not a decision. BusinessReferenceDataStewardshipRepository reads this collection, but the
-         * index configuration never named it, so every query against it is a collection scan. It is listed
-         * here because the manifest is the registry of what EXISTS; leaving it out is what let it go
-         * unindexed unnoticed in the first place. Sizing the right index is backlog, not this round.
+         * ⚠ STILL NO DECLARED INDEX — BUT NO LONGER FOR WANT OF SIZING. BL-279 measured this collection with
+         * the other eight and it is the ONE that came back needing an index this round could not spend.
+         *
+         * BusinessReferenceDataStewardshipRepository reads and writes it two ways, both full scans today
+         * (250 rows in diten_personalization_dev; COLLSCAN, and SORT->COLLSCAN on the read):
+         *
+         *   GetValidationResultsByVersionAsync {TenantId, BusinessReferenceDataVersionId, IsDeleted:false} sort RuleId
+         *   ReplaceValidationResultsAsync      {TenantId, BusinessReferenceDataVersionId}  (DeleteMany, then InsertMany)
+         *
+         * The index is not in doubt: {TenantId, BusinessReferenceDataVersionId, RuleId} is ESR-exact — equality
+         * on the two scoping columns, RuleId as the sort — and it serves the delete leg on its prefix. Built
+         * against a copy of the live data it takes the read from 250 documents examined with a blocking SORT
+         * to 25 with neither. One index, both call sites, no second candidate.
+         *
+         * ⚠ WHAT BLOCKS IT IS A BUDGET, AND THE BUDGET IS NOT OURS TO RAISE. SchemaProfileBudget declares this
+         * profile at MaxLogicalIndexes: 18 — the number the GSKU owners set on 2026-08-26 — and the profile
+         * already carries exactly 18 (10 declared + the implicit _id on each of 8 collections). Adding this
+         * index makes 19 and turns DeclaredBudgetsAreRespected red. Editing the ceiling to fit the change is
+         * the move SchemaProfileBudget's own header warns about: it "would produce a test that goes red on the
+         * next legitimate index and teaches the reader to raise the number instead of looking at it". So the
+         * measurement is recorded here and the ceiling goes back to the owners who set it — see BL-279.
          */
         Collection<BusinessReferenceDataValidationResult>(
             SchemaProfile.BusinessReferenceData,

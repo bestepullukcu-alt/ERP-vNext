@@ -6162,6 +6162,99 @@ sayısıydı; eksik koleksiyon 6):
 - **Gelecek regresyon riski: 🟡** — yeni bir indexsiz koleksiyon artık sessizce giremez, ama var olan 9
   indexsiz koleksiyon (bu 6 + önceki 3) duruyor.
 
+**GÜNCELLEME (Aşama 5, 2026-08-27) — asıl borç ölçüldü ve 9 koleksiyonun 8'inde ödendi.**
+Sayı **9** olarak doğrulandı (manifestte `Array.Empty` ile duran koleksiyonlar sayıldı — 6 değil; 6 bu turun
+bulduğu, 3 önceki turun). Her koleksiyonun deposu okundu, sorgu deseni çıkarıldı ve **explain ile ölçüldü**:
+önce canlı `diten_personalization_dev` üzerinde (yalnız okuma), sonra aynı verinin bir kopyası üzerinde
+index'ler kurulup yeniden. **Önce → sonra:**
+
+| koleksiyon | sorgu (deposundan) | önce | sonra | eklenen index |
+|---|---|---|---|---|
+| `task_comments` | `{TenantId, IsDeleted, TaskItemId}` (+`$in`) | COLLSCAN 44 | IXSCAN 2 | `ix_task_comments_tenant_task` |
+| `task_transitions` | `{TenantId, IsDeleted, TaskItemId}` (+`$in`) | COLLSCAN 102 | IXSCAN 6 | `ix_task_transitions_tenant_task` |
+| `task_types` | `{TenantId, IsDeleted, Code}` · `ListActive` sort `Code` | COLLSCAN + SORT | IXSCAN, SORT yok | `ux_task_types_tenant_code_active` (unique, partial) |
+| `document_reference_entries` | `{TenantId, DeletedAt, ListVersionId}` sort `DocumentCode` | SORT+COLLSCAN 717 | IXSCAN 50, SORT yok | `ix_…_tenant_version_code` |
+| `document_reference_entries` | `… + DocumentUid $in` | SORT+COLLSCAN 717 | IXSCAN 1 | `ix_…_tenant_version_uid` |
+| `document_reference_list_versions` | `{TenantId, IsDeleted, ContentHash, WithdrawnAt}` | COLLSCAN | IXSCAN 1 | `ix_…_tenant_hash` |
+| `notification_event_definitions` | `{IsDeleted, EventCode}` · liste sort `EventCode` | COLLSCAN + SORT | IXSCAN, SORT yok | `ux_…_event_code_active` (unique, partial) |
+| `document_management_collection_provisioning_evidence` | `{TenantId, IsDeleted, CollectionInstanceId}` / `…BaselineReleaseId` | COLLSCAN 3000\* | IXSCAN 1 / 100 | `ux_…_tenant_instance_active` + `ix_…_tenant_baseline` |
+| `document_management_collection_deviations` | `{TenantId, IsDeleted, BaselineReleaseId[, Status]}` | COLLSCAN 3000\* | IXSCAN 100 | `ix_…_tenant_baseline_status` |
+
+\* bu iki koleksiyon hiçbir canlı veritabanında YOK (henüz hiç yazılmadı); rakamlar tohumlanmış kopyadandır.
+
+- **Üç aday ölçülüp REDDEDİLDİ** — "manifest üyeliği ≠ index gereksinimi" şartının fiilî uygulanışı:
+  - `task_types` için ikinci `{TenantId, IsActive, Code}` index'i (kardeş `TaskFieldDefinition`'da var, simetri
+    onu isterdi): unique index tek başına `ListActive`'i aynı maliyetle ve SORT'suz karşılıyor. Planı
+    değiştirmeyen index, karşılığı olmayan bir yazma maliyetidir.
+  - `document_reference_list_versions` için `ImportedAt` index'i: alan bir **DateTimeOffset**, yani BSON
+    **dizi** `[ticks, offsetMinutes]` — üstündeki her index MULTIKEY olur. Karışık offset'le denendi: deponun
+    kullandığı **azalan** sıra doğru kalıyor, **artan** sıra yanlış (v3,v1,v5,v4,v2). Yanlışlık verinin
+    biçiminde ve index'siz COLLSCAN'de birebir aynı — yani index'in getirdiği bir gerileme değil, ama
+    sıralaması tesadüfi olan bir anahtarı kutsamak olurdu; üstelik içe aktarma başına tek satır tutan bir
+    koleksiyon için ölçülebilir hiçbir kazanç yok. → **BL-299**.
+  - `ContentHash` üzerinde unique: geri çekilmiş (withdrawn) sürüm silinmediği için aynı hash yasal olarak
+    tekrar edebilir; `IsDeleted:false` partial-unique meşru bir yeniden içe aktarmayı reddederdi.
+- **`business_reference_data_validation_results` ölçüldü ama EKLENEMEDİ.** Index belli:
+  `{TenantId, BusinessReferenceDataVersionId, RuleId}` (ESR-tam; 250→25 belge, SORT kalkıyor). Engel
+  `SchemaProfileBudget.BusinessReferenceData` = **MaxLogicalIndexes 18** ve profil zaten tam 18'de. Tavan
+  sahiplerinin verdiği sayı (GSKU, 2026-08-26) ve `SchemaProfileBudget`'in kendi başlığı onu değişikliğe
+  uydurmayı açıkça yasaklıyor. → **BL-298**.
+- **Mutasyon muhafızı yazıldı:** `PlatformSchemaContractMongoTests.TheQueriesBL279SizedRunOnAnIndexAndNotACollectionScan`
+  her deponun gerçek filtre/sıralamasını `explain`'den geçirir ve planın beklenen index üzerinde IXSCAN
+  olmasını şart koşar. ⚠ Madde 2 bu iş için YETMEZ: o, manifestin **beyan ettiklerini** dolaşır — beyanı
+  silersen döngü ona hiç bakmaz ve test yeşil kalır; dokuz koleksiyonun ilk etapta içinden düştüğü delik tam
+  olarak budur. On index'in **onu da** tek tek silinip testin kırmızıya döndüğü doğrulandı.
+- `WorkflowWorkCenter` ve `DocumentManagement` profilleri madde 2'nin `[InlineData]` listesine eklendi; o güne
+  kadar bu iki profilin beyan ettiği hiçbir index gerçek Mongo'ya karşı doğrulanmıyordu.
+- `NotificationEventDefinitionRepository`'deki "unique index kurucuda best-effort kuruluyor" yorumu **yalandı**
+  — öyle bir kod yoktu, iş anahtarını yalnız iki eşzamanlı çağrının ikisinin de geçtiği bir oku-sonra-yaz
+  kontrolü koruyordu. Yorum düzeltildi, index manifeste kondu.
+- **Gelecek regresyon riski: 🟢** — dokuzdan sekizi index'lendi ve her biri plan seviyesinde bir teste bağlandı;
+  kalan tek koleksiyon bütçe kararı bekliyor (BL-298), o da ölçülmüş ve gerekçesi manifestte yazılı.
+
+### BL-298 — BRD profil index bütçesi 18'de dolu, ölçülmüş bir index bekliyor (2026-08-27, SAHİP KARARI)
+`business_reference_data_validation_results` üretimde COLLSCAN (250 satır; okuma `SORT`+`COLLSCAN`, silme
+`COLLSCAN` — ölçüm BL-279 Aşama 5). Gereken index tartışmalı değil:
+`{TenantId, BusinessReferenceDataVersionId, RuleId}` — `GetValidationResultsByVersionAsync`'i ESR-tam karşılar
+(iki eşitlik + `RuleId` sıralama), `ReplaceValidationResultsAsync`'in `DeleteMany` legini ön ekiyle karşılar.
+Canlı verinin kopyasında ölçüldü: 250→25 belge, SORT kalkıyor. İkinci aday yok.
+- **Engel:** `SchemaProfileBudget.BusinessReferenceData` = `MaxCollections 8, MaxLogicalIndexes 18`; profil şu an
+  tam 18 (10 beyan + 8 örtük `_id`). Index 19 yapar ve `DeclaredBudgetsAreRespected` kırmızıya döner.
+- **Neden kendiliğinden yükseltilmedi:** sayıyı GSKU sahipleri verdi (2026-08-26) ve `SchemaProfileBudget`'in
+  kendi başlığı bunu yasaklıyor — tavanı değişikliğe uydurmak "okuyucuya sayıya bakmak yerine sayıyı
+  yükseltmeyi öğretir". Karar sahiplerinin.
+- **Sorulan:** (a) tavan 19'a mı çıksın, (b) profilden bir index mi düşsün, yoksa (c) bu koleksiyon BRD
+  profilinden mi çıksın — doğrulama sonuçları bir *sonuç kaydı*, referans verisinin kendisi değil.
+- **Gelecek regresyon riski: 🟡** — karar verilmezse koleksiyon indexsiz kalır; sürüm başına doğrulama sonucu
+  biriktikçe COLLSCAN büyür.
+
+### BL-299 — `DateTimeOffset` alanları BSON dizisi olarak saklanıyor, sıralaması tesadüfi (2026-08-27)
+BL-030 bunu bir sıralama HATASI olarak biliyordu ("cannot sort with keys that are parallel arrays"); BL-279
+Aşama 5 asıl kapsamını ölçtü. Sürücü bir `DateTimeOffset`'i `[ticks, offsetMinutes]` **dizisi** olarak yazıyor:
+- Üstündeki her index MULTIKEY olur; Mongo dizi ELEMANI başına anahtar üretir.
+- Karşılaştırma uç elemana bakar: **azalan** sıra doğru çıkar (ticks offset'i ezer), **artan** sıra YANLIŞ.
+  `document_reference_list_versions` üzerinde karışık offset'le kanıtlandı — gerçek sırası v1..v5 olan satırlar
+  artan sorguda v3,v1,v5,v4,v2 döndü, **index'siz COLLSCAN'de de aynı**. Yani hata index'te değil, veri
+  biçiminde; index onu yalnız görünmez kılardı.
+- Bugün kurtaran şey tesadüf: bu alanları okuyan depoların hepsi **azalan** sıralıyor, bazıları (BL-030)
+  bellekte sıralıyor. Yeni yazılacak bir artan sıralama sessizce yanlış sonuç verir.
+- **Yapılacak:** bu alanları `DateTime` (UTC) + ayrı offset alanı olarak saklayan bir serileştirici, ya da
+  `BsonRepresentation` ile tek skaler. Kapsam ÖLÇÜLMEDİ — kaç entity etkileniyor sayılmadı.
+- **Gelecek regresyon riski: 🔴** — sessiz yanlış sonuç sınıfı; hiçbir test artan sıralamayı korumuyor.
+
+### BL-300 — sapma (deviation) kaydının kimlik anahtarı adlandırılmamış (2026-08-27)
+`DocumentCollectionDeviation` "tespit idempotenttir — read-back tekrarı açık bir sapmayı çoğaltmaz, günceller"
+diyor, ama kimliğin hangi alanlara göre yargılandığını hiçbir yer söylemiyor ve uzlaştırma servisi bir anahtarla
+okumuyor. BL-279 bu yüzden bu koleksiyona unique index KOYMADI: anahtarı tahmin etmek (yol+tip? yol+tip+önem?)
+aynı klasör üzerindeki meşru ikinci sapmayı üretimde patlayan bir yazmaya çevirirdi.
+- **Yapılacak:** anahtarı sahibiyle adlandır, sonra `{TenantId, …}` partial-unique index ile bağla.
+- **Karşılaştırma:** kardeş `DocumentCollectionProvisioningEvidence`'ta anahtar belliydi (`CollectionInstanceId`
+  başına tek kanıt, servis oku-sonra-yaz upsert ediyor) ve bu turda unique index'e bağlandı — orada index
+  yalnız hızlandırmıyor, iki eşzamanlı read-back'in ikisinin de "yok" görüp ikisinin de eklemesi yarışını
+  kapatıyor. Sapmalarda aynı şey yapılamadı çünkü anahtar yazılı değil.
+- **Gelecek regresyon riski: 🟡** — anahtarsız kaldıkça yinelenen sapma satırları birikebilir ve "açık sapma
+  sayısı" raporu sessizce şişer.
+
 ### BL-280 — profil sertleştirmesi bir testi doğru sebeple kırmızıya çevirdi (2026-08-26, düzeltildi)
 `BusinessReferenceDataUsageLookupMongoTests` iki satırı AYNI `(TenantId, SetCode, ConsumerModule,
 ConsumerName)` ile ekliyordu. Üretimde bu kombinasyon **unique index** ile yasak. Test yıllarca yeşildi çünkü

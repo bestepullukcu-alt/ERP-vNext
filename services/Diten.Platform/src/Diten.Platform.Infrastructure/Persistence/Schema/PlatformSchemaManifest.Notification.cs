@@ -142,14 +142,37 @@ public static partial class PlatformSchemaManifest
 
             }),
         /*
-         * ⚠ NO DECLARED INDEX — and that is a FINDING, not a decision. NotificationEventDefinitionRepository reads this collection, but the
-         * index configuration never named it, so every query against it is a collection scan. It is listed
-         * here because the manifest is the registry of what EXISTS; leaving it out is what let it go
-         * unindexed unnoticed in the first place. Sizing the right index is backlog, not this round.
+         * BL-279 — ONE index, and it is the exception the tenant-first rule (DB-001) names rather than a
+         * violation of it. NotificationEventDefinition derives from BaseEntity and carries NO TenantId:
+         * "Global/platform record (no TenantId): tenants cannot create events." So the rule's platform-catalog
+         * clause applies — what is verified here is a global unique key and IsDeleted:false behaviour, not a
+         * TenantId prefix that does not exist on the document.
+         *
+         * The repository's four reads are {IsDeleted:false, EventCode}, {IsDeleted:false, Id}, and two list
+         * shapes that filter on IsDeleted (+ optional facets) and sort by EventCode. A single {EventCode} index
+         * serves all of them: the point lookup directly, and both lists as an in-order walk that drops the
+         * blocking SORT. Measured: COLLSCAN and SORT->COLLSCAN before, FETCH->IXSCAN on both after.
+         *
+         * ⚠ UNIQUE BECAUSE THE ENTITY SAYS SO AND NOTHING WAS ENFORCING IT. "EventCode is unique + immutable
+         * (rename = deprecate + new code)" — and both write paths (the repository's write-path guard and
+         * NotificationEventSeed's idempotent upsert) are read-then-write checks on that code, which two
+         * concurrent callers both pass. The repository's own comment claimed "a unique index on EventCode is
+         * created best-effort at construction"; that code does not exist. This is where it lives now.
+         * Partial on IsDeleted:false so a deprecated definition does not block re-registering its code.
          */
         Collection<NotificationEventDefinition>(
             SchemaProfile.Notification,
             PlatformCollections.NotificationEventDefinitions,
-            () => Array.Empty<CreateIndexModel<NotificationEventDefinition>>()),
+            () => new CreateIndexModel<NotificationEventDefinition>[]
+            {
+                    new CreateIndexModel<NotificationEventDefinition>(
+                        Builders<NotificationEventDefinition>.IndexKeys.Ascending(x => x.EventCode),
+                        new CreateIndexOptions<NotificationEventDefinition>
+                        {
+                            Unique = true,
+                            Name = "ux_notification_event_definitions_event_code_active",
+                            PartialFilterExpression = Builders<NotificationEventDefinition>.Filter.Eq(x => x.IsDeleted, false)
+                        })
+            }),
     };
 }
