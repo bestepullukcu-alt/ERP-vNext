@@ -26,6 +26,7 @@ internal sealed class GateIAuditAdapterRegistry
         AddBudgeting(mappings);
         AddScenarioPlanning(mappings);
         AddOutcomeTracking(mappings);
+        AddProcessModeling(mappings);
         _mappings = mappings.ToDictionary(
             item => (item.Producer, item.EventName, item.EventVersion, item.EntityType, item.Mutation),
             item => item);
@@ -120,6 +121,30 @@ internal sealed class GateIAuditAdapterRegistry
             [("Appended", AuditOperation.Create), ("Corrected", AuditOperation.Update)]);
     }
 
+    private static void AddProcessModeling(List<GateIAuditMapping> values)
+    {
+        const string producer = "Diten.ManagementGovernanceService";
+        const string name = "management-governance.process-modeling-audit-intent.submitted.v1";
+        const string scheme = "management-governance-event-hmac-sha256.v1";
+        AddSet(values, producer, "MOD-0355", name, scheme, AuditCategory.Integration, "ProcessArchitecture",
+            [("Created", AuditOperation.Create), ("Updated", AuditOperation.Update), ("Archived", AuditOperation.Deactivate)]);
+        AddSet(values, producer, "MOD-0355", name, scheme, AuditCategory.Integration, "ProcessDomain",
+            [("Created", AuditOperation.Create), ("Updated", AuditOperation.Update), ("Archived", AuditOperation.Deactivate)]);
+        AddSet(values, producer, "MOD-0355", name, scheme, AuditCategory.Integration, "ProcessFamily",
+            [("Created", AuditOperation.Create), ("Updated", AuditOperation.Update), ("Archived", AuditOperation.Deactivate)]);
+        AddSet(values, producer, "MOD-0355", name, scheme, AuditCategory.Integration, "ProcessDefinition",
+            [("Created", AuditOperation.Create), ("Updated", AuditOperation.Update), ("Archived", AuditOperation.Deactivate)]);
+        AddSet(values, producer, "MOD-0355", name, scheme, AuditCategory.Integration, "ProcessModel",
+            [("Created", AuditOperation.Create), ("Updated", AuditOperation.Update)]);
+        AddSet(values, producer, "MOD-0355", name, scheme, AuditCategory.Integration, "ProcessModelVersion",
+            [("DraftUpdated", AuditOperation.Update),
+             ("ReviewRequested", AuditOperation.LifecycleTransition),
+             ("ReturnedToDraft", AuditOperation.LifecycleTransition),
+             ("Published", AuditOperation.Activate),
+             ("Retired", AuditOperation.Deactivate),
+             ("RevisionCreated", AuditOperation.Create)]);
+    }
+
     private static void AddSet(
         List<GateIAuditMapping> values, string producer, string module, string name, string scheme,
         AuditCategory category, string entity, (string Mutation, AuditOperation Operation)[] pairs)
@@ -131,6 +156,7 @@ internal sealed class GateIAuditAdapterRegistry
                 "MOD-0136" => "Budgeting",
                 "MOD-0138" => "ScenarioPlanning",
                 "MOD-0072" => "OutcomeTracking",
+                "MOD-0355" => "ProcessModeling",
                 _ => throw new InvalidOperationException("Unknown Gate I module.")
             };
             Add(values, producer, module, name, scheme, category, entity, pair.Mutation,
