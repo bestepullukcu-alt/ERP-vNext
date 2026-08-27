@@ -1284,7 +1284,9 @@ This table is a local-test contract only. It does not reserve a Gateway path or 
 - [x] **B-11A:** Backend Local-Testability authority defines a loopback-only, `--local-test`-gated host on
   `5017`, exact action/query routes, four pipeline behaviors, response envelope/base-controller, typed
   default-off adapters, audit simulator, self-registration contract and executable local smoke/mutation
-  evidence. It grants no production or Gateway activation.
+  evidence. Implementation checkpoint `ef8ec9d0da8605213ac34e4a833d98b38ed18b75` records 24 exact-scope
+  service/test files, build with zero warnings/errors, `73/73` tests, disposable Mongo plus HTTP smoke and
+  `10/10` physically killed/restored non-equivalent mutants. It grants no production or Gateway activation.
 - [ ] **B-12:** Integration-agent approves and owns the gateway route task.
 - [x] Exact bounded Core repo scope is recorded in §5; later runtime/frontend paths require revalidation.
 - [x] Gate 2 is not triggered by the isolated structural-only Core. A future implementation that touches,
