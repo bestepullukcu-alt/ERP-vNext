@@ -19,7 +19,7 @@ started: 2026-08-25
 target: 2026-09-15
 form_field_count: 0
 port: 5017
-implementation_authority: explicit-user-control-tower-bounded-core-model-contract-test
+implementation_authority: explicit-user-control-tower-bounded-core-and-local-api-test
 production_authority: none
 ---
 
@@ -28,14 +28,17 @@ production_authority: none
 > **Canonical materialization provenance:** Canonical Master 8.1 promotion checkpoint
 > `ee1d7dc5766a67012df2af35d3eed1aa779da27d` was merged into the materialization base by merge commit
 > `e034c5fddd0d05e0dda6ef72ce88f41a36efa3d4`. This materialized file is ready-for-dev governance authority
-> only for the bounded Core Model & Contract-Test slice and grants no runtime or production authority.
+> for the bounded Core Model & Contract-Test slice. The later explicit Control Tower amendment separately
+> authorizes the exact non-production Local API-Test slice; neither authority grants production runtime.
 
 > **Ready-for-dev bounded implementation guard:** `status: ready-for-dev`,
-> `implementation_authority: explicit-user-control-tower-bounded-core-model-contract-test` and
-> `production_authority: none` are binding. The explicit user decision dated 2026-08-25 authorizes only the
-> exact Core scaffold, module and test paths in §5. It does not authorize a listener, endpoint, route, port
-> binding, Gateway, frontend, WorkCenter, credential, migration, deployment, external adapter, production
-> activation or modification of another internal module.
+> `implementation_authority: explicit-user-control-tower-bounded-core-and-local-api-test` and
+> `production_authority: none` are binding. The explicit user decision dated 2026-08-25 authorizes the exact
+> Core scaffold, module and test paths in §5. The later Local API-Test amendment is the sole scoped exception
+> to the listener/endpoint/port-binding prohibitions in this guard and §§5/8/15: it permits only the exact
+> `--local-test` loopback surface and paths named there. It grants no Gateway, frontend, WorkCenter,
+> credential, migration, deployment, external adapter, production activation or modification of another
+> internal module.
 
 > **Planning boundary:** `target` is provisional planning metadata, not a delivery commitment or authority.
 
@@ -53,7 +56,7 @@ Its exact provisional identity is:
 - Service: `Diten.ManagementGovernanceService`
 - Internal module: `Modules/ProcessModeling`
 - Shell: `tenant`
-- Port: `5017` (canonical reservation; no binding or activation authority)
+- Port: `5017` (canonical reservation; binding only under the exact non-production `--local-test` exception)
 
 Minimal Core v1 is a backend-only **Core Model & Contract-Test** slice. It models tenant-owned process
 architectures, domains, families, definitions, durable model identities, immutable published revisions,
@@ -68,18 +71,20 @@ intentional. Frontend delivery is a separately authorized later slice.
 Historical `CAND-CAP-0009` is a deprecated governance alias only. It must never appear in runtime literals,
 permissions, routes, collections, events, jobs, configuration or persisted module identity.
 
-Delivery is divided into six independently gated slices:
+Delivery is divided into seven independently gated slices:
 
 1. Core Model & Contract-Test
 2. Approval Policy & Publish Authorization Contract-Test
-3. Approval/Auth/Audit Runtime
-4. Optional reference integrations
-5. Frontend & Legacy Parity
-6. Runtime activation
+3. Local API-Test Runtime — NON-PRODUCTION / DEFAULT-OFF
+4. Approval/Auth/Audit Runtime
+5. Optional reference integrations
+6. Frontend & Legacy Parity
+7. Runtime activation
 
 Governance availability alone is not runtime or implementation availability. Present implementation authority
-exists only for the bounded Core Model & Contract-Test paths and guards recorded in frontmatter and §5;
-runtime, deployment and production authority remain absent.
+exists only for (a) the bounded Core Model & Contract-Test paths in §5 and (b) the exact NON-PRODUCTION /
+DEFAULT-OFF Local API-Test Runtime amendment in §19; runtime deployment, Gateway and production authority
+remain absent.
 
 ## 2. Ownership and Boundaries
 
@@ -1350,8 +1355,9 @@ decision unavailable (`503`), not denied, allowed or locally inferred.
 - No direct browser call to a future service port is permitted.
 - Future frontend requests must pass through Gateway port `5000`.
 - Any Ocelot change belongs only to `integration-agent` after separate explicit authorization.
-- Exact API route family, controller route, internal service port, health route and transport topology are
-  B-class runtime decisions.
+- Production API route family, Gateway/controller exposure and transport topology remain B-class runtime
+  decisions. The later Local API-Test amendment fixes only its loopback-only non-production routes and does
+  not close this production/Gateway decision.
 - Core domain and contract tests do not depend on an allocated HTTP route.
 - WorkCenter routes are prohibited.
 
@@ -1576,8 +1582,10 @@ owner/runtime decisions. This fallback grants no runtime authority.
 - Fresh delegated actor proof requirement and request/effective-actor binding.
 - Explicit deny `403`; missing/cross-tenant visible-resource boundary `404`; stale version/hash/lifecycle or
   idempotency conflict `409`; unavailable/timeout/malformed/indeterminate authority `503`.
-- Missing upstream profile/fixture/runtime evidence proves no successful handler, persistence mutation, receipt,
-  audit intent, outbox record or external call.
+- Missing upstream profile/fixture/runtime evidence proves no successful production/default handler,
+  persistence mutation, receipt, audit intent, outbox record or external call. The sole non-production
+  exception is the §19 `--local-test` path when the canonical policy result is `NotRequired` and every
+  independent authorization/freshness/CAS gate passes.
 - Core `68/68` checkpoint regression, exact sibling isolation matrix and protected-path scan remain green.
 
 Frontend and runtime activation tests become mandatory only in their separately approved slices.
@@ -1636,7 +1644,8 @@ Frontend and runtime activation tests become mandatory only in their separately 
 - [x] Ready-for-dev grants only the exact bounded implementation authority recorded in frontmatter and §5;
       no runtime or production authority is inferred.
 - [x] Explicit user authorization dated 2026-08-25 is recorded for the bounded Core scaffold and
-      Contract-Test slice only.
+      Contract-Test slice; the later exact §19 amendment separately records the bounded Local API-Test
+      authority and supersedes the earlier listener/endpoint prohibition only within that allowlist.
 
 ### B-class runtime blockers
 
@@ -1685,10 +1694,242 @@ named later slice or runtime activation.
 |---|---|---|
 | Core Model & Contract-Test | Minimal unclassified definition model, lifecycle, revision, topology, tenancy, concurrency, hashing, idempotency, local audit-intent/outbox and architecture tests | Independent of external producer integrations |
 | Approval Policy & Publish Authorization Contract-Test | Closed A-04 branch semantics, exact three-field reference, trusted binding, SoD/eligibility and fail-closed provider contracts | Non-runtime second-slice foundation; successful publish remains blocked |
+| Local API-Test Runtime — NON-PRODUCTION / DEFAULT-OFF | Exact loopback-only HTTP contract, test-host identity, CQRS composition and transaction evidence | Bounded local evidence only; no deployment, Gateway or production authority |
 | Approval/Auth/Audit Runtime | Permission/SoD runtime enforcement, executable outcome binding and MOD-0021 delivery | Separate later executable slice after runtime fixtures, providers, provisioning and explicit authority |
 | Optional reference integrations | Classification, KPI/Metric, owner, interface, document, evidence and artifact references | Independent later slices |
 | Frontend & Legacy Parity | Tenant UI, localization, parity inventory and approved disposition | Separate later slice |
 | Runtime activation | Port, Gateway, transport, credentials, deployment, observability and production authorization | Separate final gate |
+
+### Local API-Test Runtime amendment — NON-PRODUCTION / DEFAULT-OFF
+
+The Control Tower authorizes a bounded, executable local-test surface for MOD-0355. This amendment does not
+change `production_authority: none` and does not authorize deployment or production activation. The process
+starts no listener unless the exact `--local-test` switch is present. In that mode only, it may bind
+`http://127.0.0.1:5017`; wildcard, non-loopback and implicit port binding are forbidden.
+
+The exact implementation allowlist is limited to:
+
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs`, the API
+  project file and `Controllers/CustomBaseController.cs` plus
+  `Controllers/ProcessModelingLocalTestController.cs`;
+- the Application project file, `DependencyInjection.cs`, `Behaviors/**` and
+  `Features/ProcessModelingLocalTest/**`;
+- the existing ProcessModeling Domain, Persistence and Infrastructure paths, their project files and
+  dependency-injection files;
+- existing ProcessModeling unit/architecture/integration paths plus additive
+  `Modules/ProcessModeling/LocalTest/**` tests and mutation evidence.
+
+The API allowlist additionally names exactly
+`services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/LocalTestSecurity/LocalTestAuthenticationHandler.cs`.
+This handler accepts only a test-host-installed ephemeral identity when `--local-test` is present. It cannot be
+selected by configuration, request headers or production composition. The existing architecture test that
+forbids every `WebApplication`/`Run` call must be reconciled to the narrower invariant: no host or listener
+without `--local-test`; with the switch, exact loopback `127.0.0.1:5017` only.
+
+The exact scheme is `Diten.MOD0355.LocalTest`. Its identity source is an in-memory
+`ILocalTestIdentitySource` nested in the same allowlisted file. Default DI has no source; only the test-host
+composition installs one before host construction. HTTP headers, query/body values, configuration and
+environment variables cannot select or alter an identity. A resolved identity contains exactly these claims:
+`sub` = non-empty actor GUID, `tenant_id` = non-empty tenant GUID, `client_id` = exact
+`diten.management-governance.local-test`, `module_code` = exact `MOD-0355`, `test_identity` = exact
+`mod0355-local-evidence-v1`, and one or more ordinal `permission` values drawn only from the exact sixteen-value
+manifest. Duplicate permission claims, aliases, wildcards, case/trim drift and extra authority claims are
+rejected. `Program.cs` never registers `ILocalTestIdentitySource`. Spawned-process smoke is limited to the
+anonymous health route plus authenticated-command rejection. Successful command HTTP smoke runs only through
+an in-process test host that installs an explicit per-case `ILocalTestIdentitySource` before host construction.
+No process-host identity source exists. Production/default composition does not register the scheme or source
+and therefore cannot authenticate this identity.
+
+The persistence allowlist additionally names exactly
+`services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/ProcessModeling/ProcessModelingMongoGuidPolicy.cs`
+and the existing `ProcessModelingMongoPersistence.cs` plus its existing ProcessModeling integration tests.
+`ProcessModelingMongoGuidPolicy.Canonical` is the single authoritative value and is exact
+`GuidRepresentation.Standard`. The ProcessModeling client settings, every concrete member serializer, every
+raw BSON UUID write and every rendered tenant/identity/receipt predicate use that value. Receipt
+reconciliation decodes subtype-4 values with the same policy; `CSharpLegacy`, Java/Python legacy, dual-read,
+identity fallback and client-wide implicit conversion are forbidden. Evidence must prove raw subtype `4`,
+exact filter bytes, same-client/session ownership and that replacing the policy with `CSharpLegacy` is killed
+by an executable test.
+The exact new evidence files are
+`services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Modules/ProcessModeling/ProcessModelingMongoGuidPolicyTests.cs`
+and
+`services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Modules/ProcessModeling/LocalTest/ProcessModelingMongoGuidPolicyArchitectureTests.cs`.
+They assert the production-composed client policy, RFC 4122 Standard raw bytes/subtype `4`, rendered
+tenant/identity/receipt filter bytes, Standard receipt decoding, wrong-client/session rejection and the
+expected-red `Standard → CSharpLegacy` mutation. Dual-read or migration behavior is not authorized.
+
+The AuthService manifest provenance is also closed without reinterpretation. The immutable MOD-0355 manifest
+payload uses `ManifestVersion = 7e8fe7d45ce80cb09f28c0089415d4f40400bc37` and exact registration provenance
+`MOD-0355 checkpoint 7e8fe7d45ce80cb09f28c0089415d4f40400bc37`; this is the pack checkpoint whose exact
+sixteen operations and permissions the executable manifest materialized. FU16 governance onboarding remains
+the separate checkpoint `eefcbc63691c92fbbf4d41977df70d751ad8744b`, and executable Auth enforcement evidence
+remains `fb2745ea0cfcf3e918127d6e11ff725d7f4f225c`. These three identities have different roles and cannot be
+substituted, collapsed or synthesized.
+Executable evidence reads
+`fb2745ea0cfcf3e918127d6e11ff725d7f4f225c:services/Diten.AuthService/src/Diten.AuthService.Application/S2S/PermissionCatalogManifestV1.cs`
+and proves the exact MOD-0355 `ManifestVersion`, registration provenance and `16/16` map above. It separately
+proves the roles of `eefcbc63691c92fbbf4d41977df70d751ad8744b` and
+`fb2745ea0cfcf3e918127d6e11ff725d7f4f225c`; the Local API-Test slice changes no AuthService source.
+
+#### Exact local-only HTTP contract
+
+The local surface is explicit and closed. `GET /internal/local-test/v1/process-modeling/health` is the only
+anonymous action and returns no database, credential or topology detail. All command routes require the
+test-only authentication scheme, exact tenant claim/header agreement, the mapped permission and a non-empty
+ordinal `Idempotency-Key`. `TenantId`, actor, permission, request hash and command identity are forbidden body
+fields. Every JSON body rejects duplicate, case-changed, unknown and extra properties.
+
+| Command | Method and exact path | Exact body fields |
+|---|---|---|
+| `CreateProcessArchitectureCommand` | `POST /internal/local-test/v1/process-modeling/architectures` | `architectureCode`, `name`, optional `description`, `sortOrder` |
+| `UpdateProcessArchitectureCommand` | `PUT /internal/local-test/v1/process-modeling/architectures/{id}` | `name`, optional `description`, `sortOrder`, `expectedVersion` |
+| `ArchiveProcessArchitectureCommand` | `POST /internal/local-test/v1/process-modeling/architectures/{id}/archive` | `expectedVersion` |
+| `CreateProcessDomainCommand` | `POST /internal/local-test/v1/process-modeling/domains` | `processArchitectureId`, `domainCode`, `name`, optional `description`, `sortOrder` |
+| `UpdateProcessDomainCommand` | `PUT /internal/local-test/v1/process-modeling/domains/{id}` | `name`, optional `description`, `sortOrder`, `expectedVersion` |
+| `ArchiveProcessDomainCommand` | `POST /internal/local-test/v1/process-modeling/domains/{id}/archive` | `expectedVersion` |
+| `CreateProcessFamilyCommand` | `POST /internal/local-test/v1/process-modeling/families` | `processDomainId`, `familyCode`, `name`, optional `description`, `sortOrder` |
+| `UpdateProcessFamilyCommand` | `PUT /internal/local-test/v1/process-modeling/families/{id}` | `name`, optional `description`, `sortOrder`, `expectedVersion` |
+| `ArchiveProcessFamilyCommand` | `POST /internal/local-test/v1/process-modeling/families/{id}/archive` | `expectedVersion` |
+| `CreateProcessDefinitionCommand` | `POST /internal/local-test/v1/process-modeling/definitions` | `processFamilyId`, `processCode`, `name`, optional `purpose`, optional `description` |
+| `UpdateProcessDefinitionCommand` | `PUT /internal/local-test/v1/process-modeling/definitions/{id}` | `name`, optional `purpose`, optional `description`, `expectedVersion` |
+| `ArchiveProcessDefinitionCommand` | `POST /internal/local-test/v1/process-modeling/definitions/{id}/archive` | `expectedVersion` |
+| `CreateProcessModelCommand` | `POST /internal/local-test/v1/process-modeling/models` | `processDefinitionId`, `modelCode`, `name`, optional `description` |
+| `UpdateProcessModelCommand` | `PUT /internal/local-test/v1/process-modeling/models/{id}` | `name`, optional `description`, `expectedVersion` |
+| `UpdateDraftProcessModelVersionCommand` | `PUT /internal/local-test/v1/process-modeling/model-versions/{id}/draft-content` | `title`, optional `description`, `activities`, `controlPoints`, `relationships`, `expectedVersion` |
+| `RequestProcessModelReviewCommand` | `POST /internal/local-test/v1/process-modeling/model-versions/{id}/request-review` | `expectedVersion` |
+| `ReturnProcessModelToDraftCommand` | `POST /internal/local-test/v1/process-modeling/model-versions/{id}/return-to-draft` | `expectedVersion` |
+| `PublishProcessModelVersionCommand` | `POST /internal/local-test/v1/process-modeling/model-versions/{id}/publish` | `expectedVersion` |
+| `RetireProcessModelVersionCommand` | `POST /internal/local-test/v1/process-modeling/model-versions/{id}/retire` | `expectedVersion` |
+| `CreateProcessModelRevisionCommand` | `POST /internal/local-test/v1/process-modeling/models/{id}/revisions` | `title`, optional `description`, `expectedVersion` |
+
+Create IDs are server-generated and returned through `Response<Guid>` with `201`. Update/archive/lifecycle
+handlers return `Response<NoContent>`; `CustomBaseController` emits HTTP `204` with an intentionally empty
+wire body, as required by HTTP semantics. No response envelope body is asserted for `204`. `expectedVersion`
+is a non-negative technical fence. Codes,
+names, lengths, sort order and graph child shapes are exactly the §4 domain contract; API DTOs cannot widen or
+reinterpret them. Activity, control-point and relationship items use only their exact §4 fields and never
+accept tenant, actor, lifecycle, approval, task, route or execution data.
+
+The three draft graph item shapes are exact and exclude `ProcessModelVersionId`, every entity-base/audit field
+and lifecycle/approval data. The route `{id}` is injected server-side as `ProcessModelVersionId`:
+
+- activity item: `logicalActivityId`, `activityCode`, `name`, optional `description`, `sortOrder`;
+- control-point item: `logicalControlPointId`, `controlCode`, `name`, optional `description`, optional
+  `logicalActivityId`, `sortOrder`;
+- relationship item: `fromActivityId`, `toActivityId`, optional `conditionLabel`, `sortOrder`.
+
+The canonical mutation/request-binding hash is lowercase hexadecimal SHA-256. ASCII
+`DITEN-MOD0355-LOCAL-COMMAND-V1` is emitted verbatim first and has no length prefix. Exactly seven components
+follow in this order: UTF-8 method, exact resolved path (route GUID formatted lowercase `D`), exact command
+name, tenant GUID lowercase `D`, actor GUID lowercase `D`, exact permission and the unmodified raw request-body
+bytes. Each of these seven components, and only these seven, is emitted as its unsigned four-byte big-endian
+byte length followed by its exact bytes; no delimiter, whitespace normalization, JSON reserialization or
+property reordering occurs. Thus route ID and `expectedVersion` are bound, while the server-derived fields
+cannot be overridden. Same idempotency scope with any byte/provenance change is `409`.
+
+The normative vector is exact: method `POST`; path
+`/internal/local-test/v1/process-modeling/architectures`; command `CreateProcessArchitectureCommand`; tenant
+`11111111-1111-4111-8111-111111111111`; actor `22222222-2222-4222-8222-222222222222`; permission
+`management-governance.process-modeling.architectures.create`; and raw body
+`{"architectureCode":"EA","name":"Enterprise Architecture","sortOrder":1}`. The seven component byte lengths
+are `4, 54, 32, 36, 36, 59, 72`; the complete framed input is `351` bytes and its exact SHA-256 is
+`6bba6bff9291532f124c3b5087521b7e3ceb3c3725467236fe22f1e0c7f428f4`.
+
+Command identity is derived only from the matched action and is mapped through
+`ProcessModelingPermissions.ExactCommandMap`; it is not accepted from route, body or header. The persistence
+dispatcher is closed by command: architecture/domain/family/definition/model commands write their exact
+manifest collection; model-version commands write `mg_process_model_versions` and, where required, the
+same-transaction model pointer; draft graph replacement writes the three child collections in the same
+transaction. Parent/child reads are tenant-first and `IsDeleted=false`. Archive changes only business
+`LifecycleState`; it never changes technical deletion fields.
+
+`Idempotency-Key` header-name matching follows HTTP's case-insensitive header-name rules. Ordinal exactness
+applies only to the non-empty header value and its persisted scope; the value is never trimmed, normalized,
+case-folded or reused with different request/provenance bytes.
+
+The surface uses MediatR and the exact four pipeline behaviors (validation, logging, exception and
+performance), `Response<T>` and `CustomBaseController`. It exposes exactly the twenty command identities and
+sixteen permissions in `ProcessModelingPermissions`; aliases, wildcard permissions and case/trim
+normalization are rejected. Tenant, actor, permission and request-binding context are server-owned. The
+local-test composition uses a test-owned, environment-gated identity only; default and production
+composition reject that identity and remain fail-closed. No production key, secret, PEM, JWK, JWKS endpoint,
+Auth endpoint or fallback user/session JWT behavior is introduced.
+
+Every effective mutation uses the existing four-participant Mongo transaction: business state,
+idempotency receipt, audit intent and outbox. Same key/same canonical payload returns the durable result;
+same key/different payload returns `409`; unknown commit uses commit-only retry and receipt reconciliation,
+never a blind body retry. Cross-tenant and soft-deleted targets return non-disclosing `404`. Cancellation is
+propagated. Standalone Mongo and provider uncertainty fail closed with `503` and zero residue.
+
+The test-only direct-publish path is permitted only when the authoritative approval-policy result is
+`NotRequired`, current MOD-0355 entitlement is `Active`, the exact publish permission and explicit tenant grant
+are present, a request-bound FU16 proof resolves the effective actor, the actor differs from the immutable
+author and requester, the authoritative SoD/eligibility decision allows, and the initial policy tuple/version
+is revalidated unchanged immediately before commit. Any changed tuple, content hash, lifecycle/version fence,
+policy version or requirement returns `409` before the four-participant write. Explicit denial returns `403`;
+unavailable, malformed or indeterminate authority returns `503`. The
+`Required` path remains unavailable until the MOD-0023 runtime provider exists and must return exact
+`503` with zero business, receipt, audit-intent and outbox residue. No local approval truth or fallback is
+allowed.
+The local reconciliation may update only the existing
+`services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Modules/ProcessModeling/Approval/PublishApprovalAuthorizationContracts.cs`
+and its existing exact unit/integration/architecture Approval test roots, or add a local-only evaluator under
+the already allowlisted `Features/ProcessModelingLocalTest/**`. The default approval contract remains
+non-executable and `503`; local success cannot be inferred from `ContractGatesSatisfied` alone. `Required`
+never invokes or accepts MOD-0023 in this slice. Tests must independently kill entitlement, explicit-grant,
+permission, FU16 actor, author/requester inequality, SoD/eligibility, policy revalidation and pre-commit CAS
+bypasses.
+
+For every successful local-test mutation the producer-local audit intent and outbox use the one authoritative
+event identity `management-governance.process-modeling-audit-intent.submitted.v1`, version integer `1`, and
+the exact §4 producer fixture mapping: the twenty command identities map one-to-one to the twenty approved
+entity/mutation pairs. The canonical six-field payload order is `auditIntentId`, `actorId`, `entityType`,
+`entityId`, `mutation`, `occurredAtUtc`; trusted tenant, FU16 provenance, permission and signing identity remain
+transport metadata and never enter those six payload fields. `CommandFamily + ".accepted"`, aliases and local
+event-name invention are forbidden. The outbox is persisted in the same transaction; publication, if later
+activated, is post-commit only through the existing MOD-0035 boundary. No direct broker publish is permitted.
+
+| Command | Exact audit entity | Exact mutation | Exact entity ID source |
+|---|---|---|---|
+| `CreateProcessArchitectureCommand` | `ProcessArchitecture` | `Created` | server-generated created ID |
+| `UpdateProcessArchitectureCommand` | `ProcessArchitecture` | `Updated` | route target ID |
+| `ArchiveProcessArchitectureCommand` | `ProcessArchitecture` | `Archived` | route target ID |
+| `CreateProcessDomainCommand` | `ProcessDomain` | `Created` | server-generated created ID |
+| `UpdateProcessDomainCommand` | `ProcessDomain` | `Updated` | route target ID |
+| `ArchiveProcessDomainCommand` | `ProcessDomain` | `Archived` | route target ID |
+| `CreateProcessFamilyCommand` | `ProcessFamily` | `Created` | server-generated created ID |
+| `UpdateProcessFamilyCommand` | `ProcessFamily` | `Updated` | route target ID |
+| `ArchiveProcessFamilyCommand` | `ProcessFamily` | `Archived` | route target ID |
+| `CreateProcessDefinitionCommand` | `ProcessDefinition` | `Created` | server-generated created ID |
+| `UpdateProcessDefinitionCommand` | `ProcessDefinition` | `Updated` | route target ID |
+| `ArchiveProcessDefinitionCommand` | `ProcessDefinition` | `Archived` | route target ID |
+| `CreateProcessModelCommand` | `ProcessModel` | `Created` | server-generated created ID |
+| `UpdateProcessModelCommand` | `ProcessModel` | `Updated` | route target ID |
+| `UpdateDraftProcessModelVersionCommand` | `ProcessModelVersion` | `DraftUpdated` | route target ID |
+| `RequestProcessModelReviewCommand` | `ProcessModelVersion` | `ReviewRequested` | route target ID |
+| `ReturnProcessModelToDraftCommand` | `ProcessModelVersion` | `ReturnedToDraft` | route target ID |
+| `PublishProcessModelVersionCommand` | `ProcessModelVersion` | `Published` | route target ID |
+| `RetireProcessModelVersionCommand` | `ProcessModelVersion` | `Retired` | route target ID |
+| `CreateProcessModelRevisionCommand` | `ProcessModelVersion` | `RevisionCreated` | new server-generated version ID, never the route model ID |
+
+Each command emits exactly one audit intent/outbox event; model-pointer and graph-child participants emit no
+additional event. The exact additive audit source is
+`services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Features/ProcessModelingLocalTest/ProcessModelingLocalAuditContractV1.cs`;
+the persistence source is the existing `ProcessModelingMongoPersistence.cs`. Exact evidence files are
+`tests/Diten.ManagementGovernanceService.Tests/Modules/ProcessModeling/LocalTest/ProcessModelingLocalAuditContractTests.cs`,
+`tests/Diten.ManagementGovernanceService.IntegrationTests/Modules/ProcessModeling/LocalTest/ProcessModelingLocalAuditMongoTests.cs`
+and
+`tests/Diten.ManagementGovernanceService.ArchitectureTests/Modules/ProcessModeling/LocalTest/ProcessModelingLocalAuditArchitectureTests.cs`
+under the service root. They read the producer fixture from its immutable checkpoint without copying it and
+assert the exact event identity, integer version, six-field order, provenance exclusion, `20/34` matrix and
+rejection of `CommandFamily + ".accepted"`.
+
+Required evidence includes exact command/permission mapping, default-off and loopback-only composition,
+health and command HTTP smoke, tenant/auth/permission/idempotency/error matrices, real replica-set
+transaction rollback/concurrency/unknown-commit tests, audit/outbox exact-one behavior, production rejection
+of the local identity, mutation expected-red runs with byte-identical restore, and full relevant
+ManagementGovernance/Auth/Platform Eventing regressions. Gateway, frontend, WorkCenter, live broker,
+deployment, appsettings, launch profiles and legacy mutation remain outside this amendment.
 
 ### Core transaction boundary
 
@@ -1800,9 +2041,9 @@ Governance availability cannot become local fallback, hard-coded truth or inferr
 - Non-empty normative graph vectors: `1`
 - Vector recomputations: `PASS / PASS / PASS`
 - Status: `ready-for-dev`
-- Implementation authority: `explicit-user-control-tower-bounded-core-model-contract-test`
+- Implementation authority: `explicit-user-control-tower-bounded-core-and-local-api-test`
 - Production authority: `none`
 - Initial materialization scope: exact-one MOD-0355 module-pack file
 - Ready-for-dev promotion reconciliation scope: exact four governance files (this pack, DCP-005, DCP-006
   and the module registry)
-- Bounded implementation scope: only the exact shared-shell and ProcessModeling paths and guards in §5
+- Bounded implementation scope: exact §5 Core paths plus the exact §19 Local API-Test allowlist; no other later slice
