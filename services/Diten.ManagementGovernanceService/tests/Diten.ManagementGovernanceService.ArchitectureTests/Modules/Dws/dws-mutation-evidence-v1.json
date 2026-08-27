@@ -47,10 +47,10 @@
       "id": "G02-bind-live-mongo-27017",
       "disposition": "security-policy-forbidden",
       "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs",
-      "restoredSha256": "e447b3b3bb928c66d03fc7805418a40f612e86d11e8196378c65c6065758174c",
-      "failureText": "mutant would add a forbidden listener and protected developer Mongo binding",
+      "restoredSha256": "4736f7ca71c6dbeb66d9cf4737fccaa54e84dcf81cbc71c1177db5fcc1e97f63",
+      "failureText": "mutant would remove the exact local-test gate or bind protected developer Mongo",
       "testType": "Diten.ManagementGovernanceService.ArchitectureTests.Modules.Dws.DwsArchitectureTests",
-      "testMethod": "Compile_only_boundary_never_activates_runtime"
+      "testMethod": "Default_off_boundary_exits_without_runtime_activation"
     }
   ]
 }
