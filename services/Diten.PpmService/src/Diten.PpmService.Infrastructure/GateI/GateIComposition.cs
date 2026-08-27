@@ -22,11 +22,14 @@ public sealed record GateICompositionResult(
     int OutboxWrites);
 
 public sealed class GateICompositionGate(IConfiguration configuration)
+    : IGateIDecisionTraceLifecyclePolicy
 {
     public const string CommonFlag = "GateI:Composition:Enabled";
     public const string DecisionTraceFlag = "GateI:DecisionTrace:Enabled";
     public const string FundingScenarioFlag = "GateI:FundingScenario:Enabled";
     public const string BenefitRealizationFlag = "GateI:BenefitRealization:Enabled";
+
+    public bool RequiresGoverningDecision => IsEnabled(GateICompositionLane.DecisionTrace);
 
     public bool IsEnabled(GateICompositionLane lane)
     {
@@ -109,5 +112,32 @@ internal sealed class DefaultOffOutcomeReferenceAuthorityPort(GateICompositionGa
         cancellationToken.ThrowIfCancellationRequested();
         _ = gate.IsEnabled(GateICompositionLane.BenefitRealization);
         return Task.FromResult(new OutcomeReferenceAuthorityResult(OutcomeReferenceAuthorityDisposition.Unavailable));
+    }
+}
+
+internal sealed class DefaultOffGateIRelationshipAuthority(GateICompositionGate gate)
+    : IGateIRelationshipAuthority
+{
+    public Task<GateIAuthorityValidationResult> ValidateAsync(
+        GateIAuthorityValidationRequest request,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var lane = request.Kind switch
+        {
+            GateIRelationshipKind.GoverningDecision or GateIRelationshipKind.SupportingDecision =>
+                GateICompositionLane.DecisionTrace,
+            GateIRelationshipKind.SelectedBudgetVersion or GateIRelationshipKind.ScenarioVersion
+                or GateIRelationshipKind.ComparatorOutput or GateIRelationshipKind.SelectedScenario =>
+                GateICompositionLane.FundingScenario,
+            GateIRelationshipKind.BenefitOutcome => GateICompositionLane.BenefitRealization,
+            _ => throw new ArgumentOutOfRangeException(nameof(request.Kind))
+        };
+        _ = gate.IsEnabled(lane);
+        return Task.FromResult(new GateIAuthorityValidationResult(
+            503,
+            "ppm_gate_i_provider_not_composed",
+            new string('0', 64),
+            false));
     }
 }

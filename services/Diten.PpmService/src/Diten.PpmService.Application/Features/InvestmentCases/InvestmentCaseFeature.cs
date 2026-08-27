@@ -1,4 +1,5 @@
 using Diten.PpmService.Application.Common;
+using Diten.PpmService.Application.Features.InvestmentCases.GateI.DecisionTrace;
 using Diten.PpmService.Domain.Entities;
 using Diten.PpmService.Domain.Repositories;
 using Diten.Shared.Core;
@@ -47,7 +48,8 @@ public sealed class SoftDeleteInvestmentCaseValidator : AbstractValidator<SoftDe
 public sealed class InvestmentCaseService(IInvestmentCaseRepository repository, IPortfolioRepository portfolios,
     IBenefitCommitmentRepository benefitCommitments,
     IAuditIntentRepository audit, IPpmUnitOfWork unitOfWork, ITenantContext tenant, ICurrentActorContext actor,
-    ICorrelationContext correlation, IPpmAccessAuthorizer access)
+    ICorrelationContext correlation, IPpmAccessAuthorizer access,
+    IGateIDecisionTraceLifecyclePolicy? gateIDecisionTraceLifecycle = null)
 {
     public async Task<Response<InvestmentCaseDto>> Create(CreateInvestmentCaseCommand r, CancellationToken ct)
     {
@@ -93,6 +95,17 @@ public sealed class InvestmentCaseService(IInvestmentCaseRepository repository, 
         var entity = await repository.GetByIdAsync(tenant.TenantId, r.Id, ct);
         if (entity is null) return Response<InvestmentCaseDto>.Fail("Investment case was not found.", 404);
         if (!entity.CanTransitionTo(r.TargetState)) return Response<InvestmentCaseDto>.Fail("Invalid lifecycle transition.", 409);
+        try
+        {
+            GateIDecisionTraceLifecycleGuard.Validate(
+                entity,
+                r.TargetState,
+                gateIDecisionTraceLifecycle ?? DisabledGateIDecisionTraceLifecyclePolicy.Instance);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Response<InvestmentCaseDto>.Fail(exception.Message, 409);
+        }
         entity.Transition(actor.ActorId, r.TargetState);
         return await Persist(entity, r.ExpectedVersion, "lifecycle-changed", ct);
     }

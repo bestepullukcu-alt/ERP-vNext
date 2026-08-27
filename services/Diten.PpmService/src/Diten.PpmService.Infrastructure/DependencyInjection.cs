@@ -33,11 +33,14 @@ public static class DependencyInjection
         services.AddScoped<IEffectivePermissionEvaluator, SharedPermissionClaimEvaluatorAdapter>();
         services.AddHttpClient<IPpmEntitlementDecisionClient, PpmEntitlementDecisionClient>();
         services.AddSingleton<GateICompositionGate>();
+        services.AddSingleton<IGateIDecisionTraceLifecyclePolicy>(provider =>
+            provider.GetRequiredService<GateICompositionGate>());
         services.AddScoped<GateICompositionPreflight>();
         services.AddScoped<IDecisionReferenceValidationPort, DefaultOffDecisionReferenceValidationPort>();
         services.AddScoped<IBudgetVersionReferenceValidationPort, DefaultOffBudgetVersionReferenceValidationPort>();
         services.AddScoped<IScenarioPlanningReferenceValidationPort, DefaultOffScenarioPlanningReferenceValidationPort>();
         services.AddScoped<IOutcomeReferenceAuthorityPort, DefaultOffOutcomeReferenceAuthorityPort>();
+        services.AddScoped<IGateIRelationshipAuthority, DefaultOffGateIRelationshipAuthority>();
         services.AddScoped<DecisionTraceValidationService>();
         services.AddScoped<FundingScenarioContractValidator>();
         services.AddScoped<BenefitCommitmentOutcomeReferenceValidator>();
