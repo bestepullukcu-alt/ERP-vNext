@@ -724,6 +724,68 @@ This wording does not mean browser-test ready, full Gate I, full 1.3, production
 Gateway/frontend browser work, WorkCenter integration and production provisioning/activation remain later
 separately authorized gates.
 
+#### 4.9.4 FU16 outbound local-evidence reconciliation R3 — TEST-HOST-OWNED / DEFAULT-UNAVAILABLE
+
+The Control Tower closes the local-evidence transport ambiguity without inventing an AuthService endpoint.
+Production and default PPM composition have no proof issuer and return typed `503` before an owner HTTP call.
+Only a test host may inject an ephemeral-RSA proof provider; the provider, key and token never enter
+configuration, logs, persistence, receipts, audit intents or outbox documents. This amendment creates no Auth
+endpoint, production token service, credential, secret, JWKS route, cache, deployment or activation authority.
+
+The canonical HTTP request binding for this slice is the exact Platform.Common
+`Fu16CanonicalRequestBinding` checkpoint `acf5193a94f11926d9d7f3bc95975ee0d57e3bae`. Its output is exactly 64
+lowercase hexadecimal SHA-256 characters over the exact method, absolute path, raw body bytes, tenant,
+operation and ordinal permission sequence. The older lane-local 43-character Base64URL test bindings are not
+accepted as HTTP proof bindings and must be reconciled; dual-format acceptance, normalization and fallback are
+forbidden. This decision does not silently change AuthService's internal issuance contract. Production
+compatibility remains a later Auth-owner transport amendment.
+
+The local-evidence proof provider is an application port with typed `Issued`, `Unauthenticated`, `Forbidden`,
+`Conflict` and `Unavailable` outcomes. It receives only the exact receiver profile, trusted tenant/effective
+actor/delegation, HTTP method/path/raw body and requested operation/permission. It returns an opaque proof only
+to the Infrastructure HTTP handler. Application/domain code never receives the raw token. Default DI binds the
+port to `Unavailable`; the test-host binding is explicit and cannot be selected by configuration or a request.
+Proof reuse, refresh, retry after terminal failure, LKG/cache allow and forwarding an inbound HS256 user/session
+token are forbidden. Cancellation propagates unchanged.
+
+The receiver table is closed:
+
+| Owner | Method and exact path | Audience / client | Operation / permission |
+|---|---|---|---|
+| `MOD-0007` | `POST /internal/v1/decision-registry/decision-references/validate` | `diten-management-governance-service` / `diten.management-governance` | `decision-registry.decision-references.validate.v1` / `management-governance.decision-references.validate` |
+| `MOD-0136` | `POST /internal/v1/fpa/budgeting/budget-version-references/validate` | `diten-fpa-service` / `diten.fpa` | `budgeting.budget-version-references.validate` / `budgeting.budget-version-references.validate` |
+| `MOD-0138` | `POST /internal/v1/fpa/scenario-planning/references/validate` | `diten-fpa-service` / `diten.fpa` | `fpa.scenario-planning.references.validate` / `fpa.scenario-planning.references.validate` |
+| `MOD-0072` | `POST /internal/v1/decision-intelligence/outcome-tracking/outcome-references/validate` | `diten-decision-intelligence-service` / `diten.decision-intelligence` | `outcome-tracking.outcome-references.validate` / `decision-intelligence.outcome-references.validate` |
+
+MOD-0136 and MOD-0138 share a workload identity but never an owner, entitlement, operation, permission or
+request-binding profile. Any cross-profile substitution is terminal. The local owner URI is injected only by
+the test host after the corresponding owner checkpoint is composed; committed URI values remain forbidden.
+
+The additive source allowlist for this reconciliation is exact:
+
+- `services/Diten.PpmService/src/Diten.PpmService.Application/GateI/Fu16OutboundProofContracts.cs`;
+- `services/Diten.PpmService/src/Diten.PpmService.Infrastructure/GateI/Fu16OutboundProofProvider.cs`;
+- `services/Diten.PpmService/src/Diten.PpmService.Infrastructure/GateI/GateIOwnerReferenceHttpClients.cs`;
+- `services/Diten.PpmService/src/Diten.PpmService.Infrastructure/GateI/GateIComposition.cs`;
+- `services/Diten.PpmService/src/Diten.PpmService.Infrastructure/DependencyInjection.cs`;
+- the existing Application and Infrastructure project files only for the minimum Platform.Common/project
+  reference required by these exact files.
+
+Only these four existing reconciliation files may replace their lane-local HTTP binding/context projection:
+
+- `services/Diten.PpmService/src/Diten.PpmService.Application/Features/InvestmentCases/GateI/DecisionTrace/DecisionTraceValidation.cs`;
+- `services/Diten.PpmService/src/Diten.PpmService.Application/Features/InvestmentCases/GateI/FundingScenario/FundingScenarioValidationContracts.cs`;
+- `services/Diten.PpmService/src/Diten.PpmService.Application/Features/BenefitCommitments/GateI/BenefitRealization/OutcomeReferenceValidation.cs`;
+- `services/Diten.PpmService/src/Diten.PpmService.Application/Features/InvestmentCases/GateI/DecisionTrace/GateIRelationshipMutations.cs`.
+
+Tests are limited to the existing Gate I unit/integration/architecture roots in §4.9.1. Evidence must prove:
+default/provider-unavailable owner-call count zero; exact four-profile binding; raw-byte request hash; named
+FU16 bearer header only; test-identity production rejection; `400/401/403/404/409/503` preservation; terminal
+zero relationship/receipt/audit/outbox residue; receipt conflict and ExcludedV1 before proof acquisition;
+cancellation propagation; and expected-red mutations for every binding dimension, HS256 forwarding, default
+scheme fallback, cache/retry, status reclassification and producer-profile substitution. This closes a local
+evidence seam only; it does not make Gate I production-issuance or activation ready.
+
 ### 4.10 ExternalContextReference validation projection
 
 This is the authorized provider contract for the internal endpoint
