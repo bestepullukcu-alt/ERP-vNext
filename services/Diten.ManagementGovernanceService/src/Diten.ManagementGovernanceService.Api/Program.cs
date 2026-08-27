@@ -5,6 +5,8 @@ using Diten.ManagementGovernanceService.Domain.Modules.Dws;
 using Diten.ManagementGovernanceService.Infrastructure;
 using Diten.ManagementGovernanceService.Infrastructure.Modules.Dws;
 using Diten.ManagementGovernanceService.Persistence.Modules.Dws;
+using Diten.ManagementGovernanceService.Application.Features.ProcessModelingLocalTest;
+using Diten.ManagementGovernanceService.Api.LocalTestSecurity;
 using Microsoft.AspNetCore.Authentication;
 
 namespace Diten.ManagementGovernanceService.Api;
@@ -47,9 +49,15 @@ public static class Program
             .AddScheme<AuthenticationSchemeOptions, DwsLocalTestAuthenticationHandler>(
                 DwsLocalTestAuthenticationDefaults.Scheme,
                 _ => { });
+        builder.Services
+            .AddAuthentication()
+            .AddScheme<AuthenticationSchemeOptions,LocalTestAuthenticationHandler>(
+                LocalTestAuthenticationHandler.SchemeName,
+                _ => { });
         builder.Services.AddAuthorization();
         builder.Services.AddDwsApplication();
         builder.Services.AddDwsLocalTestInfrastructure(mongoUri,databaseName);
+        builder.Services.AddSingleton<IProcessModelingLocalCommandExecutor,DefaultUnavailableProcessModelingLocalCommandExecutor>();
         var app=builder.Build();
         app.UseMiddleware<DwsLocalTestExceptionBoundary>();
         app.MapGet("/health",()=>Results.Ok(new { status="healthy", mode="local-test", module="MOD-0354" }));

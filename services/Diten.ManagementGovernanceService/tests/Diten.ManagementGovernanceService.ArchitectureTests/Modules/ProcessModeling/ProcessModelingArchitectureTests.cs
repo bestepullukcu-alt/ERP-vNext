@@ -40,14 +40,16 @@ public sealed class ProcessModelingArchitectureTests
         foreach(var path in new[]{"Application/DecisionRegistry/","Domain/DecisionRegistry/","Persistence/DecisionRegistry/","Infrastructure/DependencyInjection.cs","ArchitectureTests/DecisionRegistry/","IntegrationTests/DecisionRegistry/","Tests/DecisionRegistry/"})Assert.Contains(path,tree,StringComparison.Ordinal);
         Assert.DoesNotContain("Modules/Dws",tree,StringComparison.Ordinal);var pack=File.ReadAllText(Path.Combine(root,"execution/domains/management-governance/module-packs/MOD-0355-business-process-architecture-modeling.md"));Assert.Contains("Modules/Dws",pack,StringComparison.Ordinal);Assert.Matches("(?is)before\\s+composition",pack);
     }
-    [Fact] public void Exact_project_graph_and_compile_only_program_are_preserved()
+    [Fact] public void Exact_project_graph_and_default_off_local_test_program_are_preserved()
     {
         var root = ServiceRoot();
         var projects = Directory.GetFiles(root, "*.csproj", SearchOption.AllDirectories).Select(Path.GetFileName).Order().ToArray();
         Assert.Equal(8, projects.Length);
         var program = File.ReadAllText(Path.Combine(root,"src","Diten.ManagementGovernanceService.Api","Program.cs"));
-        Assert.DoesNotContain("Run(", program, StringComparison.Ordinal); Assert.DoesNotContain("RunAsync", program, StringComparison.Ordinal);
-        Assert.DoesNotContain("WebApplication", program, StringComparison.Ordinal); Assert.DoesNotContain("Host.", program, StringComparison.Ordinal);
+        Assert.Contains("args.Contains(\"--local-test\",StringComparer.Ordinal)",program,StringComparison.Ordinal);
+        Assert.Contains("http://127.0.0.1:5017",program,StringComparison.Ordinal);
+        Assert.DoesNotContain("http://0.0.0.0",program,StringComparison.Ordinal); Assert.DoesNotContain("https://",program,StringComparison.Ordinal);
+        Assert.DoesNotContain("UseKestrel",program,StringComparison.Ordinal); Assert.DoesNotContain("Host.CreateDefaultBuilder",program,StringComparison.Ordinal);
         Assert.Empty(Directory.GetFiles(root,"appsettings*",SearchOption.AllDirectories));
         Assert.Empty(Directory.GetFiles(root,"launchSettings.json",SearchOption.AllDirectories));
     }
@@ -73,6 +75,7 @@ public sealed class ProcessModelingArchitectureTests
             var doc = XDocument.Load(path);
             var packages=doc.Descendants("PackageReference").Select(x=>(string?)x.Attribute("Include")).ToArray();
             if(path.Contains(".Persistence",StringComparison.Ordinal)) Assert.Equal(new[] { "MongoDB.Driver" },packages);
+            else if(path.Contains(".Application",StringComparison.Ordinal)) Assert.Equal(new[]{"FluentValidation.DependencyInjectionExtensions","MediatR","Microsoft.Extensions.Logging.Abstractions"},packages);
             else Assert.Empty(packages);
             foreach (var reference in doc.Descendants("ProjectReference").Select(x => (string?)x.Attribute("Include")))
                 Assert.DoesNotContain("DecisionRegistry", reference ?? string.Empty, StringComparison.Ordinal);

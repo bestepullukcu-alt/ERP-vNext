@@ -4,15 +4,22 @@ using Diten.ManagementGovernanceService.Application.Features.Dws;
 using Diten.ManagementGovernanceService.Application.Features.Dws.Commands;
 using Diten.ManagementGovernanceService.Application.Features.Dws.Queries;
 using Diten.ManagementGovernanceService.Application.Features.Dws.Validators;
+using FluentValidation;
 
 namespace Diten.ManagementGovernanceService.Application;
 
 public static class DependencyInjection
 {
+    public static IReadOnlyList<string> ProcessModelingRegistrations { get; } = ["MOD-0355:Modules/ProcessModeling:Application"];
+
+    public static IServiceCollection AddManagementGovernanceApplication(this IServiceCollection services)
+        => services.AddDwsApplication();
+
     public static IServiceCollection AddDwsApplication(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
         services.AddMediatR(configuration => configuration.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
+        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.ValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.LoggingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.ExceptionBehavior<,>));

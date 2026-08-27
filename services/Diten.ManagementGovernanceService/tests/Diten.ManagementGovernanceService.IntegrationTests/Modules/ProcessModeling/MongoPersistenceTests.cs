@@ -12,7 +12,7 @@ public sealed class MongoPersistenceTests
 {
     [Fact] public async Task Tenant_predicate_and_expected_version_CAS_guardians_are_executable()
     {
-        await using var mongo=await Replica.StartAsync();var client=new MongoClient(mongo.Uri);var db="guardians_"+Guid.NewGuid().ToString("N");var context=new ProcessModelingMongoContext(client,db);var tenant=Guid.NewGuid();var foreign=Guid.NewGuid();var id=Guid.NewGuid();var G=(Guid x)=>new BsonBinaryData(x,GuidRepresentation.Standard);
+        await using var mongo=await Replica.StartAsync();var client=C(mongo.Uri);var db="guardians_"+Guid.NewGuid().ToString("N");var context=new ProcessModelingMongoContext(client,db);var tenant=Guid.NewGuid();var foreign=Guid.NewGuid();var id=Guid.NewGuid();var G=(Guid x)=>new BsonBinaryData(x,GuidRepresentation.Standard);
         try
         {
             await context.Collection("mg_process_models").InsertOneAsync(new BsonDocument{{"_id",G(id)},{"TenantId",G(tenant)},{"IsDeleted",false},{"Version",0},{"Name","Original"}});
@@ -26,13 +26,13 @@ public sealed class MongoPersistenceTests
 
     [Fact] public async Task Dynamic_standalone_is_typed_unavailable_with_zero_residue()
     {
-        await using var mongo=await Replica.StartStandaloneAsync();var client=new MongoClient(mongo.Uri);var context=new ProcessModelingMongoContext(client,"standalone_"+Guid.NewGuid().ToString("N"));var tenant=Guid.NewGuid();var id=Guid.NewGuid();var G=(Guid x)=>new BsonBinaryData(x,GuidRepresentation.Standard);var request=new CoreMutationRequest(tenant,Guid.NewGuid(),"CreateProcessModelCommand","standalone","sha256:"+new string('a',64),0,id);var envelope=new MongoMutationEnvelope(request,new BsonDocument{{"_id",G(id)},{"TenantId",G(tenant)},{"IsDeleted",false},{"Version",0}},"created",Guid.NewGuid(),Guid.NewGuid(),DateTime.UtcNow,"subject:test");
+        await using var mongo=await Replica.StartStandaloneAsync();var client=C(mongo.Uri);var context=new ProcessModelingMongoContext(client,"standalone_"+Guid.NewGuid().ToString("N"));var tenant=Guid.NewGuid();var id=Guid.NewGuid();var G=(Guid x)=>new BsonBinaryData(x,GuidRepresentation.Standard);var request=new CoreMutationRequest(tenant,Guid.NewGuid(),"CreateProcessModelCommand","standalone","sha256:"+new string('a',64),0,id);var envelope=new MongoMutationEnvelope(request,new BsonDocument{{"_id",G(id)},{"TenantId",G(tenant)},{"IsDeleted",false},{"Version",0}},"created",Guid.NewGuid(),Guid.NewGuid(),DateTime.UtcNow,"subject:test");
         await Assert.ThrowsAsync<ProcessModelingUnavailableException>(()=>new ProcessModelingMongoTransactionRunner(context).ExecuteAsync<string>(async(s,ct)=>{await new ProcessModelingMongoMutationWriter(context).WriteAsync(s,envelope,ct);return "wrong";},_=>Task.FromResult<string?>(null)));Assert.Equal(0,await context.Collection("mg_process_models").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));Assert.Equal(0,await context.Collection("mg_process_modeling_idempotency_receipts").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));Assert.Equal(0,await context.Collection("mg_process_modeling_audit_intents").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));Assert.Equal(0,await context.Collection("mg_process_modeling_outbox_messages").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
     }
     [Fact]
     public async Task Dynamic_replica_set_proves_indexes_tenant_cas_and_atomic_participants()
     {
-        await using var mongo=await Replica.StartAsync(); var client=new MongoClient(mongo.Uri); var db="mod0355_"+Guid.NewGuid().ToString("N"); var context=new ProcessModelingMongoContext(client,db);
+        await using var mongo=await Replica.StartAsync(); var client=C(mongo.Uri); var db="mod0355_"+Guid.NewGuid().ToString("N"); var context=new ProcessModelingMongoContext(client,db);
         try
         {
             await new ProcessModelingMongoIndexInitializer(context).InitializeAsync();
@@ -51,7 +51,7 @@ public sealed class MongoPersistenceTests
             Assert.Equal(1,await context.Collection("mg_process_modeling_idempotency_receipts").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
             Assert.Equal(1,await context.Collection("mg_process_modeling_audit_intents").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
             Assert.Equal(1,await context.Collection("mg_process_modeling_outbox_messages").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
-            var rawReceipt=await context.Collection("mg_process_modeling_idempotency_receipts").Find(FilterDefinition<BsonDocument>.Empty).FirstAsync();Assert.Equal(request.SubjectId,rawReceipt["SubjectId"].AsBsonBinaryData.ToGuid(GuidRepresentation.CSharpLegacy));Assert.Equal(request.CanonicalPayloadHash,rawReceipt["PayloadHash"].AsString);
+            var rawReceipt=await context.Collection("mg_process_modeling_idempotency_receipts").Find(FilterDefinition<BsonDocument>.Empty).FirstAsync();Assert.Equal(BsonBinarySubType.UuidStandard,rawReceipt["SubjectId"].AsBsonBinaryData.SubType);Assert.Equal(request.SubjectId,ProcessModelingMongoGuidPolicy.Read(rawReceipt["SubjectId"]));Assert.Equal(request.CanonicalPayloadHash,rawReceipt["PayloadHash"].AsString);
             var receiptReader=new ProcessModelingMongoReceiptReader(context);Assert.Equal("created",(await receiptReader.ReconcileAsync(request,true))!.StableCode);Assert.Equal(403,(await receiptReader.ReconcileAsync(request,false))!.HttpStatus);Assert.Equal(409,(await receiptReader.ReconcileAsync(request with{SubjectId=Guid.NewGuid()},true))!.HttpStatus);Assert.Equal(409,(await receiptReader.ReconcileAsync(request with{CanonicalPayloadHash="sha256:"+new string('b',64)},true))!.HttpStatus);
             Assert.Equal(BsonType.DateTime,rawReceipt["CreatedAtUtc"].BsonType);Assert.Equal(now,rawReceipt["CreatedAtUtc"].ToUniversalTime());
 
@@ -109,6 +109,7 @@ public sealed class MongoPersistenceTests
         finally { await client.DropDatabaseAsync(db); }
     }
     private sealed class InjectedFault:Exception;
+    private static MongoClient C(string uri)=>new(ProcessModelingMongoGuidPolicy.ClientSettings(uri));
 
     private sealed class Replica(Process process,string directory,int port,bool replicaSet):IAsyncDisposable
     {
