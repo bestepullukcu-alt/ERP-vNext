@@ -1,4 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup>
-  <ItemGroup><FrameworkReference Include="Microsoft.AspNetCore.App" /><ProjectReference Include="../Diten.FpaService.Application/Diten.FpaService.Application.csproj" /><ProjectReference Include="../Diten.FpaService.Persistence/Diten.FpaService.Persistence.csproj" /><ProjectReference Include="../Diten.FpaService.Infrastructure/Diten.FpaService.Infrastructure.csproj" /></ItemGroup>
+  <ItemGroup><FrameworkReference Include="Microsoft.AspNetCore.App" /><ProjectReference Include="../Diten.FpaService.Application/Diten.FpaService.Application.csproj" /><ProjectReference Include="../Diten.FpaService.Persistence/Diten.FpaService.Persistence.csproj" /><ProjectReference Include="../Diten.FpaService.Infrastructure/Diten.FpaService.Infrastructure.csproj" /><ProjectReference Include="../../../Diten.Platform.Common/src/Diten.Platform.Common/Diten.Platform.Common.csproj" /></ItemGroup>
 </Project>
