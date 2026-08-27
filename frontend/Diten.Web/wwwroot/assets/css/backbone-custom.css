@@ -8412,3 +8412,60 @@ tags.diten-tags .tagify__input {
     border: 1px solid var(--bs-border-color);
     border-radius: .5rem;
 }
+
+/*
+ * BL-294/nav — the sidebar's "could not load" notice.
+ *
+ * It occupies the menu's own slot, so it borrows `.menu-link` for alignment and padding, then overrides the
+ * three things a menu link assumes and this is not: it is not clickable (no pointer, no hover lift), it is two
+ * lines rather than one (so the fixed link height has to go), and it must read as a warning rather than as a
+ * disabled nav item. Colours come from theme tokens, so it follows light/dark without a second rule.
+ */
+.nav-load-failed .nav-load-failed-body {
+    cursor: default;
+    height: auto;
+    align-items: flex-start;
+    white-space: normal;
+}
+
+.nav-load-failed .nav-load-failed-body:hover {
+    background: transparent;
+}
+
+.nav-load-failed .nav-load-failed-title {
+    font-weight: 600;
+    color: var(--bs-body-color);
+    line-height: 1.3;
+}
+
+/*
+ * MEASURED: the theme puts `white-space: nowrap` on sidebar menu text, and the hint is a whole sentence —
+ * "Yeniden denemek için sayfayı yenileyin." rendered 236px wide inside a 168px slot and was cut off mid-word.
+ * The title is short enough to fit, but it gets the same rule so a longer translation cannot silently clip.
+ */
+.nav-load-failed .nav-load-failed-title,
+.nav-load-failed .nav-load-failed-hint {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/*
+ * ⚠ NOT `text-body-secondary` — MEASURED, not taste. The hint first carried that class and came out at
+ * 2.29:1 against the sidebar in light and 3.49:1 in dark, at 13px: both fail WCAG AA (4.5:1 for text this
+ * size). `--bs-body-color` is the token the title already uses and measures 5.19:1 light / 6.54:1 dark on
+ * the same surface. A warning nobody can read is the silence this whole change exists to end.
+ */
+.nav-load-failed .nav-load-failed-hint {
+    display: block;
+    line-height: 1.3;
+    color: var(--bs-body-color);
+}
+
+/*
+ * BL-294/nav — the Ctrl+K palette's degraded notice occupies the same block as the theme's "No results found"
+ * state (.search-no-results-wrapper, core.css), so it gets the same height rather than collapsing the panel.
+ * Declared here, not in the vendor file, which is never edited.
+ */
+.search-degraded-wrapper {
+    block-size: 28.75rem;
+}

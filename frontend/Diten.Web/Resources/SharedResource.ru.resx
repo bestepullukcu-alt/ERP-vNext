@@ -600,4 +600,10 @@
   <data name="TagsRemove" xml:space="preserve">
     <value>Удалить {0}</value>
   </data>
+  <data name="NavigationLoadFailed" xml:space="preserve">
+    <value>Не удалось загрузить меню</value>
+  </data>
+  <data name="NavigationLoadFailedHint" xml:space="preserve">
+    <value>Обновите страницу, чтобы повторить попытку.</value>
+  </data>
 </root>

@@ -49,6 +49,9 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
      * problem, `http_401` is authentication, `empty_payload` is entitlement or catalogue data. They point at three
      * different teams.
      */
+    // The one reason that is NOT a failure: a successful call whose payload is empty by the server's decision.
+    private const string EmptyPayloadReason = "empty_payload";
+
     private DynamicModuleMenuViewModel EmptyBecause(string reason, string? detail = null)
     {
         _logger.LogWarning(
@@ -59,7 +62,19 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
             HttpContext?.TraceIdentifier ?? "<none>",
             detail ?? "-");
 
-        return DynamicModuleMenuViewModel.Empty;
+        /*
+         * BL-294/nav — the reason decides whether the USER is told, not just the log.
+         *
+         * `empty_payload` is a 200 with nothing in it: the request worked and the SERVER decided this tenant
+         * sees no module. Rendering "couldn't load, refresh" there would be a lie, and would nag every tenant
+         * that legitimately has no entitled module. It stays silent.
+         *
+         * Every other reason — no token, a non-2xx, a transport fault — is a genuine failure to load, and the
+         * menu's place must SAY so. Silence is what made the original outage take a whole session to find.
+         */
+        return reason == EmptyPayloadReason
+            ? DynamicModuleMenuViewModel.Empty
+            : DynamicModuleMenuViewModel.FailedToLoad;
     }
 
     private async Task<DynamicModuleMenuViewModel> ResolveAsync(CancellationToken ct)
@@ -72,15 +87,24 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
 
         try
         {
-            using var request = new HttpRequestMessage(HttpMethod.Get, $"{_gatewayUrl}/api/platform/navigation/menu");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var tenantId = GetTenantId();
-            if (!string.IsNullOrWhiteSpace(tenantId))
+
+            // Built per attempt: an HttpRequestMessage cannot be sent twice.
+            HttpRequestMessage BuildRequest()
             {
-                request.Headers.Add("X-Tenant-Id", tenantId);
+                var message = new HttpRequestMessage(HttpMethod.Get, $"{_gatewayUrl}/api/platform/navigation/menu");
+                message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                if (!string.IsNullOrWhiteSpace(tenantId))
+                {
+                    message.Headers.Add("X-Tenant-Id", tenantId);
+                }
+
+                return message;
             }
 
-            using var response = await _httpClient.SendAsync(request, ct);
+            // BL-294/nav — ONE silent retry on a transient fault, then give up and let the caller warn. See
+            // NavigationRetry for why it is exactly one attempt, with no delay, and only on transient failures.
+            using var response = await Services.Http.NavigationRetry.SendOnceMoreOnTransientAsync(_httpClient, BuildRequest, ct);
             if (!response.IsSuccessStatusCode)
             {
                 // 401 here is the live defect: the gateway rejects the token intermittently and the menu vanishes.
@@ -95,7 +119,7 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
             {
                 // 200 with nothing in it: the request was fine and the SERVER decided this tenant sees no module.
                 // Entitlement or catalogue data, never authentication — which is why it needs its own reason.
-                return EmptyBecause("empty_payload");
+                return EmptyBecause(EmptyPayloadReason);
             }
 
             // FIX-3 — DATA-DRIVEN: group modules by DOMAIN (display name resolved server-side). Each module is one
@@ -146,7 +170,7 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
             _logger.LogWarning(ex, "dynamic_module_menu.empty Reason=exception TenantId={TenantId} CorrelationId={CorrelationId}. "
                 + "The tenant's dynamic sidebar rendered NO groups.",
                 GetTenantId() ?? "<none>", HttpContext?.TraceIdentifier ?? "<none>");
-            return DynamicModuleMenuViewModel.Empty;
+            return DynamicModuleMenuViewModel.FailedToLoad;
         }
     }
 
@@ -219,9 +243,14 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
         int SortOrder);
 }
 
-public sealed record DynamicModuleMenuViewModel(IReadOnlyList<NavDomainGroupView> Domains)
+// LoadFailed separates "this tenant has no modules" (silent, legitimate) from "we could not load the menu"
+// (shown in the menu's place). Only the second is a defect the user can do something about.
+public sealed record DynamicModuleMenuViewModel(IReadOnlyList<NavDomainGroupView> Domains, bool LoadFailed = false)
 {
     public static readonly DynamicModuleMenuViewModel Empty = new(Array.Empty<NavDomainGroupView>());
+
+    public static readonly DynamicModuleMenuViewModel FailedToLoad =
+        new(Array.Empty<NavDomainGroupView>(), LoadFailed: true);
 
     public bool HasItems => Domains.Count > 0;
 }

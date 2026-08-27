@@ -659,4 +659,10 @@
   <data name="TagsRemove" xml:space="preserve">
     <value>Remove {0}</value>
   </data>
+  <data name="NavigationLoadFailed" xml:space="preserve">
+    <value>Menu could not be loaded</value>
+  </data>
+  <data name="NavigationLoadFailedHint" xml:space="preserve">
+    <value>Refresh the page to try again.</value>
+  </data>
 </root>

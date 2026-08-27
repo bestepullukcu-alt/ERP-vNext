@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace Diten.Web.Controllers;
 
@@ -22,14 +23,17 @@ public sealed class TenantSearchController : Controller
     private readonly Diten.Web.Services.IPermissionSnapshot _permissions;
     private readonly Diten.Web.Services.Navigation.INavNameLocalizer _navLocalizer;
     private readonly ILogger<TenantSearchController> _logger;
+    private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
 
     public TenantSearchController(
         HttpClient httpClient,
         IConfiguration configuration,
         Diten.Web.Services.IPermissionSnapshot permissions,
         Diten.Web.Services.Navigation.INavNameLocalizer navLocalizer,
+        IStringLocalizer<SharedResource> sharedLocalizer,
         ILogger<TenantSearchController> logger)
     {
+        _sharedLocalizer = sharedLocalizer;
         _httpClient = httpClient;
         _gatewayUrl = configuration["GatewayUrl"] ?? "http://localhost:5000";
         _permissions = permissions;
@@ -44,15 +48,30 @@ public sealed class TenantSearchController : Controller
     [HttpGet("data")]
     public async Task<IActionResult> Data()
     {
-        var groups = await FetchMenuAsync(HttpContext.RequestAborted);
-        var navigation = BuildSearchSections(groups);
+        var result = await FetchMenuAsync(HttpContext.RequestAborted);
+        var navigation = BuildSearchSections(result.Groups);
         // FIX-CTRLK-TENANT-SUGGESTIONS — main.js shows `suggestions` on Ctrl+K open (before typing) and filters
         // `navigation` once the user types. Feed BOTH from the same access-filtered nav so the palette isn't empty.
         var suggestions = BuildSuggestions(navigation, SuggestionsCap);
 
-        // Short private cache — the menu is per-tenant/per-user and changes rarely; mirrors the sidebar's freshness.
-        Response.Headers.CacheControl = "private, max-age=30";
-        return Json(new { navigation, suggestions });
+        /*
+         * BL-294/nav — a palette that came up empty because the nav endpoint is DOWN must not look like a palette
+         * that came up empty because the tenant has nothing. `degraded` carries that distinction to main.js, which
+         * renders the warning in the palette's body. The text is localized SERVER-side (7 languages) because
+         * main.js is a static asset with no access to the resx.
+         *
+         * Do NOT cache a degraded answer: a 30-second cache on a transient outage keeps showing the warning long
+         * after the endpoint came back.
+         */
+        Response.Headers.CacheControl = result.Degraded ? "no-store" : "private, max-age=30";
+        return Json(new
+        {
+            navigation,
+            suggestions,
+            degraded = result.Degraded,
+            degradedMessage = result.Degraded ? _sharedLocalizer["NavigationLoadFailed"].Value : null,
+            degradedHint = result.Degraded ? _sharedLocalizer["NavigationLoadFailedHint"].Value : null
+        });
     }
 
     // Section-grouped quick-nav preview: the same access-filtered items as `navigation`, in section order, capped to
@@ -74,41 +93,68 @@ public sealed class TenantSearchController : Controller
         return suggestions;
     }
 
-    private async Task<IReadOnlyList<NavigationGroup>> FetchMenuAsync(CancellationToken ct)
+    // Degraded=true means the fetch FAILED, as opposed to succeeding with nothing in it. Only the first is the
+    // user's problem, and only the first earns a warning in the palette.
+    private readonly record struct MenuFetchResult(IReadOnlyList<NavigationGroup> Groups, bool Degraded)
+    {
+        public static MenuFetchResult Failed => new(Array.Empty<NavigationGroup>(), true);
+    }
+
+    private async Task<MenuFetchResult> FetchMenuAsync(CancellationToken ct)
     {
         var token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request);
         if (string.IsNullOrWhiteSpace(token))
         {
             // No token → empty search (never force a logout here; consistent with the login-bridge resilience fix).
-            return Array.Empty<NavigationGroup>();
+            return MenuFetchResult.Failed;
         }
 
         try
         {
-            using var request = new HttpRequestMessage(HttpMethod.Get, $"{_gatewayUrl}/api/platform/navigation/menu");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var tenantId = GetTenantId();
-            if (!string.IsNullOrWhiteSpace(tenantId))
+
+            // Built per attempt: an HttpRequestMessage cannot be sent twice.
+            HttpRequestMessage BuildRequest()
             {
-                request.Headers.Add("X-Tenant-Id", tenantId);
+                var message = new HttpRequestMessage(HttpMethod.Get, $"{_gatewayUrl}/api/platform/navigation/menu");
+                message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                if (!string.IsNullOrWhiteSpace(tenantId))
+                {
+                    message.Headers.Add("X-Tenant-Id", tenantId);
+                }
+
+                return message;
             }
 
-            using var response = await _httpClient.SendAsync(request, ct);
+            // BL-294/nav — ONE silent retry on a transient fault, then give up and let the palette warn. See
+            // NavigationRetry for why it is exactly one attempt, with no delay, and only on transient failures.
+            using var response = await Diten.Web.Services.Http.NavigationRetry
+                .SendOnceMoreOnTransientAsync(_httpClient, BuildRequest, ct);
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogDebug("Tenant search data resolve returned {StatusCode}.", (int)response.StatusCode);
-                return Array.Empty<NavigationGroup>();
+                _logger.LogWarning(
+                    "tenant_search.degraded Reason=http_{StatusCode} CorrelationId={CorrelationId}. Ctrl+K returned NO items.",
+                    (int)response.StatusCode,
+                    HttpContext?.TraceIdentifier ?? "<none>");
+                return MenuFetchResult.Failed;
             }
 
             await using var stream = await response.Content.ReadAsStreamAsync(ct);
             var payload = await JsonSerializer.DeserializeAsync<NavigationResponse>(stream, JsonOptions, ct);
-            return payload?.Data ?? Array.Empty<NavigationGroup>();
+            // A successful call with an empty payload is NOT degraded: the server decided this tenant sees nothing.
+            return new MenuFetchResult(payload?.Data ?? Array.Empty<NavigationGroup>(), false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {
-            // Best-effort: a broken nav endpoint must not break Ctrl+K (it just yields no dynamic results).
-            _logger.LogDebug(ex, "Tenant search data resolve failed; returning empty search set.");
-            return Array.Empty<NavigationGroup>();
+            // Best-effort: a broken nav endpoint must not break Ctrl+K — but it must no longer do so in silence.
+            _logger.LogWarning(ex,
+                "tenant_search.degraded Reason=exception CorrelationId={CorrelationId}. Ctrl+K returned NO items.",
+                HttpContext?.TraceIdentifier ?? "<none>");
+            return MenuFetchResult.Failed;
         }
     }
 
