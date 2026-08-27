@@ -424,58 +424,158 @@ public static partial class PlatformSchemaManifest
                         new CreateIndexOptions { Name = "ix_task_recurrence_rules_tenant_active" })
             }),
         /*
-         * ⚠ NO DECLARED INDEX — and that is a FINDING, not a decision. TaskRepositories reads this collection, but the
-         * index configuration never named it, so every query against it is a collection scan. It is listed
-         * here because the manifest is the registry of what EXISTS; leaving it out is what let it go
-         * unindexed unnoticed in the first place. Sizing the right index is backlog, not this round.
+         * BL-279 — SIZED FROM THE REPOSITORY, NOT FROM THE MANIFEST MEMBERSHIP. DocumentReferenceListRepository
+         * reads this collection two ways, and BOTH were measured as full scans of the register (717 rows in
+         * diten_personalization_dev, COLLSCAN + blocking SORT on every call):
+         *
+         *   SearchAsync           {TenantId, DeletedAt:null, ListVersionId} [+ regex $or] sort DocumentCode limit N
+         *   GetEntriesByUidsAsync {TenantId, DeletedAt:null, ListVersionId, DocumentUid $in} sort DocumentCode
+         *
+         * ⚠ NOTE THE SOFT-DELETE COLUMN. This repository scopes on DeletedAt, NOT the inherited IsDeleted —
+         * it reaches the collection through a raw GetCollection, not through TenantRepository's ExecutionFilter.
+         * Putting IsDeleted in these keys would index a field the query never mentions.
+         *
+         * TWO indexes, and the second one is EARNED BY MEASUREMENT rather than by symmetry: with the code index
+         * alone the UID lookup still examined 358 documents; with its own index it examines 1. That is the join
+         * key a task freezes when it cites a document, so it is the path that must not scan.
          */
         Collection<DocumentReferenceEntry>(
             SchemaProfile.WorkflowWorkCenter,
             PlatformCollections.DocumentReferenceEntries,
-            () => Array.Empty<CreateIndexModel<DocumentReferenceEntry>>()),
+            () => new CreateIndexModel<DocumentReferenceEntry>[]
+            {
+                    // ESR: equality on tenant+version, then DocumentCode IS the sort — the blocking SORT
+                    // disappears and .Limit(n) can stop early instead of ordering the whole register.
+                    new CreateIndexModel<DocumentReferenceEntry>(
+                        Builders<DocumentReferenceEntry>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.ListVersionId)
+                            .Ascending(x => x.DocumentCode),
+                        new CreateIndexOptions { Name = "ix_document_reference_entries_tenant_version_code" }),
+                    new CreateIndexModel<DocumentReferenceEntry>(
+                        Builders<DocumentReferenceEntry>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.ListVersionId)
+                            .Ascending(x => x.DocumentUid),
+                        new CreateIndexOptions { Name = "ix_document_reference_entries_tenant_version_uid" })
+
+            }),
         /*
-         * ⚠ NO DECLARED INDEX — a FINDING, not a decision. TaskCommentRepository reads this collection, and the index
-         * configuration never named it, so every query against it is a collection scan. It was invisible to
-         * the first contract check because the name is passed to the generic repository base as a
-         * constructor argument, not written inside a GetCollection<T>("…") call — see BL-279. Sizing the
-         * right tenant-first index is backlog; being in the registry is not.
+         * BL-279 — ONE index, and deliberately no sort key. TaskCommentRepository reads exactly two shapes:
+         *
+         *   ListByTaskIdAsync   {TenantId, IsDeleted:false, TaskItemId}
+         *   ListByTaskIdsAsync  {TenantId, IsDeleted:false, TaskItemId $in}   (the list page's batch read)
+         *
+         * ⚠ NO SORT FIELD IN THE KEY, AND THAT IS NOT AN OVERSIGHT. Both callers order the result IN MEMORY on
+         * CreatedAt (BL-030): a DateTimeOffset is stored as the BSON ARRAY [ticks, offsetMinutes], and the
+         * Id tie-break makes a server-side sort a parallel-array sort, which fails at runtime. Adding
+         * CreatedAt to this key would index a sort the query is forbidden from asking Mongo to perform.
+         *
+         * Shape copied from ix_task_dependencies_tenant_task / ix_task_watchers_tenant_task above — the same
+         * "children of one task, tenant-scoped, soft-delete aware" read.
          */
         Collection<TaskComment>(
             SchemaProfile.WorkflowWorkCenter,
             PlatformCollections.TaskComments,
-            () => Array.Empty<CreateIndexModel<TaskComment>>()),
+            () => new CreateIndexModel<TaskComment>[]
+            {
+                    new CreateIndexModel<TaskComment>(
+                        Builders<TaskComment>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.TaskItemId)
+                            .Ascending(x => x.IsDeleted),
+                        new CreateIndexOptions { Name = "ix_task_comments_tenant_task" })
+            }),
         /*
-         * ⚠ NO DECLARED INDEX — a FINDING, not a decision. TaskTransitionRepository reads this collection, and the index
-         * configuration never named it, so every query against it is a collection scan. It was invisible to
-         * the first contract check because the name is passed to the generic repository base as a
-         * constructor argument, not written inside a GetCollection<T>("…") call — see BL-279. Sizing the
-         * right tenant-first index is backlog; being in the registry is not.
+         * BL-279 — the same shape as task_comments above, for the same reason: TaskTransitionRepository reads
+         * {TenantId, IsDeleted:false, TaskItemId} and its $in batch form, and orders in memory on CreatedAt.
+         * The two collections are merged into ONE feed, so they must be indexed identically — an index that
+         * made one half server-sortable and left the other in memory is how the halves start interleaving
+         * wrongly at the seams.
          */
         Collection<TaskTransition>(
             SchemaProfile.WorkflowWorkCenter,
             PlatformCollections.TaskTransitions,
-            () => Array.Empty<CreateIndexModel<TaskTransition>>()),
+            () => new CreateIndexModel<TaskTransition>[]
+            {
+                    new CreateIndexModel<TaskTransition>(
+                        Builders<TaskTransition>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.TaskItemId)
+                            .Ascending(x => x.IsDeleted),
+                        new CreateIndexOptions { Name = "ix_task_transitions_tenant_task" })
+            }),
         /*
-         * ⚠ NO DECLARED INDEX — a FINDING, not a decision. TaskTypeRepository reads this collection, and the index
-         * configuration never named it, so every query against it is a collection scan. It was invisible to
-         * the first contract check because the name is passed to the generic repository base as a
-         * constructor argument, not written inside a GetCollection<T>("…") call — see BL-279. Sizing the
-         * right tenant-first index is backlog; being in the registry is not.
+         * BL-279 — ONE index, which is the measured answer and not the symmetric one. TaskTypeRepository reads:
+         *
+         *   GetByCodeAsync   {TenantId, IsDeleted:false, Code}
+         *   ListActiveAsync  {TenantId, IsDeleted:false, IsActive:true, DeletedAt:null} sort Code
+         *   ListAllAsync     {TenantId, IsDeleted:false}                                sort Code
+         *
+         * ⚠ THE UNIQUENESS IS A CORRECTNESS FIX, NOT A PERFORMANCE ONE. TaskType.Code is documented as
+         * "Tenant-unique and IMMUTABLE" because changing a code rewrites the identity of every task opened
+         * under it — but nothing enforced that, and the write path is a read-then-insert that two concurrent
+         * callers both pass. Partial on IsDeleted:false so a retired type's code can be reused, matching
+         * ux_task_field_definitions_tenant_code_active on the sibling this slice is modelled on.
+         *
+         * ⚠ A SECOND INDEX {TenantId, IsActive, Code} WAS MEASURED AND REJECTED. It is what the sibling
+         * TaskFieldDefinition carries, so symmetry argued for it — but with the unique index alone ListActive
+         * already runs FETCH->IXSCAN with no blocking SORT at identical cost (docs=2, keys=2), because
+         * {TenantId, Code} is a sorted-by-Code walk of one tenant's types with IsActive/DeletedAt as cheap
+         * residuals. An index that changes no plan is a write cost with no read benefit.
          */
         Collection<TaskType>(
             SchemaProfile.WorkflowWorkCenter,
             PlatformCollections.TaskTypes,
-            () => Array.Empty<CreateIndexModel<TaskType>>()),
+            () => new CreateIndexModel<TaskType>[]
+            {
+                    new CreateIndexModel<TaskType>(
+                        Builders<TaskType>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.Code),
+                        new CreateIndexOptions<TaskType>
+                        {
+                            Unique = true,
+                            Name = "ux_task_types_tenant_code_active",
+                            PartialFilterExpression = Builders<TaskType>.Filter.Eq(x => x.IsDeleted, false)
+                        })
+            }),
         /*
-         * ⚠ NO DECLARED INDEX — a FINDING, not a decision. DocumentReferenceListRepository reads this collection, and the index
-         * configuration never named it, so every query against it is a collection scan. It was invisible to
-         * the first contract check because the name is passed to the generic repository base as a
-         * constructor argument, not written inside a GetCollection<T>("…") call — see BL-279. Sizing the
-         * right tenant-first index is backlog; being in the registry is not.
+         * BL-279 — ONE index, on the hash and NOT on the date. DocumentReferenceListRepository reads:
+         *
+         *   FindLiveVersionByHashAsync {TenantId, IsDeleted:false, ContentHash, WithdrawnAt:null}
+         *   ListVersionsAsync          {TenantId, IsDeleted:false}                    sort ImportedAt desc
+         *   GetLatestVersionAsync      {TenantId, IsDeleted:false, WithdrawnAt:null}  sort ImportedAt desc, limit 1
+         *
+         * The hash lookup runs on EVERY import and is the one that must not scan; it is now FETCH->IXSCAN.
+         * The two sorted reads keep a SORT stage, over a collection that holds ONE ROW PER IMPORT (three rows
+         * in diten_personalization_dev after months of use) — bounded work, so no index is earned for them.
+         *
+         * ⚠ AN {TenantId, IsDeleted, ImportedAt} INDEX WAS BUILT, MEASURED AND REJECTED — and the reason is
+         * the one this codebase already paid for once (BL-030). ImportedAt is a DateTimeOffset, stored as the
+         * BSON ARRAY [ticks, offsetMinutes], so any index over it is MULTIKEY: Mongo emits one key per array
+         * ELEMENT and compares documents by the extreme element. Probed with mixed offsets, the DESCENDING
+         * read this repository actually performs stays correct (ticks dominate the offset), but the ASCENDING
+         * order is wrong — v3,v1,v5,v4,v2 for rows whose true order is v1..v5. That wrongness is in the DATA
+         * SHAPE and reproduces identically on a COLLSCAN, so it is not a regression this index would cause —
+         * but declaring the index would silently bless a sort key whose ordering is accidental, and buy
+         * nothing measurable for three rows. Fixing the storage shape is backlog, not an index.
+         *
+         * ⚠ NOT UNIQUE ON ContentHash, ON PURPOSE. Identical bytes are refused only while a live version
+         * holds them: a WITHDRAWN version keeps its hash and is not soft-deleted, so the same hash may
+         * legitimately appear twice. A partial-unique on IsDeleted:false would reject that lawful re-import.
          */
         Collection<DocumentReferenceListVersion>(
             SchemaProfile.WorkflowWorkCenter,
             PlatformCollections.DocumentReferenceListVersions,
-            () => Array.Empty<CreateIndexModel<DocumentReferenceListVersion>>()),
+            () => new CreateIndexModel<DocumentReferenceListVersion>[]
+            {
+                    new CreateIndexModel<DocumentReferenceListVersion>(
+                        Builders<DocumentReferenceListVersion>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.ContentHash)
+                            .Ascending(x => x.IsDeleted),
+                        new CreateIndexOptions { Name = "ix_document_reference_list_versions_tenant_hash" })
+            }),
     };
 }
