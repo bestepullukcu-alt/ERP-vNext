@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
@@ -5,6 +6,7 @@ using Diten.ManagementGovernanceService.Application.Modules.ProcessModeling;
 using Diten.ManagementGovernanceService.Persistence.Modules.ProcessModeling;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Events;
 
 namespace Diten.ManagementGovernanceService.IntegrationTests.Modules.ProcessModeling;
 
@@ -26,8 +28,97 @@ public sealed class MongoPersistenceTests
 
     [Fact] public async Task Dynamic_standalone_is_typed_unavailable_with_zero_residue()
     {
-        await using var mongo=await Replica.StartStandaloneAsync();var client=C(mongo.Uri);var context=new ProcessModelingMongoContext(client,"standalone_"+Guid.NewGuid().ToString("N"));var tenant=Guid.NewGuid();var id=Guid.NewGuid();var G=(Guid x)=>new BsonBinaryData(x,GuidRepresentation.Standard);var request=new CoreMutationRequest(tenant,Guid.NewGuid(),"CreateProcessModelCommand","standalone","sha256:"+new string('a',64),0,id);var envelope=new MongoMutationEnvelope(request,new BsonDocument{{"_id",G(id)},{"TenantId",G(tenant)},{"IsDeleted",false},{"Version",0}},"created",Guid.NewGuid(),Guid.NewGuid(),DateTime.UtcNow,"subject:test");
+        await using var mongo=await Replica.StartStandaloneAsync();var client=C(mongo.Uri);var context=new ProcessModelingMongoContext(client,"standalone_"+Guid.NewGuid().ToString("N"));var tenant=Guid.NewGuid();var id=Guid.NewGuid();var G=(Guid x)=>new BsonBinaryData(x,GuidRepresentation.Standard);var request=new CoreMutationRequest(tenant,Guid.NewGuid(),"CreateProcessArchitectureCommand","standalone","sha256:"+new string('a',64),0,id);var envelope=new MongoMutationEnvelope(request,new BsonDocument{{"_id",G(id)},{"TenantId",G(tenant)},{"IsDeleted",false},{"Version",0}},"created",Guid.NewGuid(),Guid.NewGuid(),DateTime.UtcNow,"subject:test");
         await Assert.ThrowsAsync<ProcessModelingUnavailableException>(()=>new ProcessModelingMongoTransactionRunner(context).ExecuteAsync<string>(async(s,ct)=>{await new ProcessModelingMongoMutationWriter(context).WriteAsync(s,envelope,ct);return "wrong";},_=>Task.FromResult<string?>(null)));Assert.Equal(0,await context.Collection("mg_process_models").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));Assert.Equal(0,await context.Collection("mg_process_modeling_idempotency_receipts").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));Assert.Equal(0,await context.Collection("mg_process_modeling_audit_intents").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));Assert.Equal(0,await context.Collection("mg_process_modeling_outbox_messages").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
+    }
+
+    [Fact]
+    public async Task Durable_receipt_reconciliation_preserves_original_result_and_never_replays_transaction_body()
+    {
+        await using var mongo=await Replica.StartAsync();
+        var commands=new ConcurrentQueue<BsonDocument>();
+        var settings=ProcessModelingMongoGuidPolicy.ClientSettings(mongo.Uri);
+        var existingConfigurator=settings.ClusterConfigurator;
+        settings.ClusterConfigurator=builder=>
+        {
+            existingConfigurator?.Invoke(builder);
+            builder.Subscribe<CommandStartedEvent>(started=>
+            {
+                if(string.Equals(started.CommandName,"find",StringComparison.Ordinal))commands.Enqueue(started.Command.DeepClone().AsBsonDocument);
+            });
+        };
+        var client=new MongoClient(settings);var db="receipt_"+Guid.NewGuid().ToString("N");var context=new ProcessModelingMongoContext(client,db);
+        try
+        {
+            await new ProcessModelingMongoIndexInitializer(context).InitializeAsync();
+            var tenant=Guid.NewGuid();var subject=Guid.NewGuid();var aggregate=Guid.NewGuid();var outcomeEntityId=Guid.NewGuid();var definitionId=Guid.NewGuid();var G=(Guid value)=>new BsonBinaryData(value,GuidRepresentation.Standard);
+            await context.Collection("mg_process_definitions").InsertOneAsync(new BsonDocument{{"_id",G(definitionId)},{"TenantId",G(tenant)},{"LifecycleState","Active"},{"IsDeleted",false},{"Version",0}});
+            var request=new CoreMutationRequest(tenant,subject,"CreateProcessModelCommand","durable-key","sha256:"+new string('a',64),0,aggregate);
+            MongoMutationEnvelope Envelope(CoreMutationRequest x,int status=201,Guid? outcome=null)=>new(x,new BsonDocument{{"_id",G(x.AggregateId)},{"TenantId",G(x.TenantId)},{"IsDeleted",false},{"Version",0},{"ProcessDefinitionId",G(definitionId)},{"ModelCode","MODEL-"+x.AggregateId.ToString("N")}},"created",Guid.NewGuid(),Guid.NewGuid(),DateTime.UtcNow,"subject:test",status,outcome);
+            var writer=new ProcessModelingMongoMutationWriter(context);var reader=new ProcessModelingMongoReceiptReader(context);var runner=new ProcessModelingMongoTransactionRunner(context);
+
+            var first=await runner.ExecuteAsync(async(session,ct)=>
+            {
+                await writer.WriteAsync(session,Envelope(request,201,outcomeEntityId),ct);
+                return new CoreMutationResult(true,201,"created",outcomeEntityId);
+            },ct=>reader.ReconcileAsync(request,true,ct));
+            Assert.True(first.Accepted);Assert.Equal(201,first.HttpStatus);Assert.Equal(outcomeEntityId,first.AggregateId);
+
+            var retryRequest=request with{AggregateId=Guid.NewGuid()};var duplicateBody=0;
+            var duplicate=await runner.ExecuteAsync(async(session,ct)=>
+            {
+                duplicateBody++;
+                await writer.WriteAsync(session,Envelope(retryRequest,202,Guid.NewGuid()),ct);
+                return new CoreMutationResult(true,202,"wrong",retryRequest.AggregateId);
+            },ct=>reader.ReconcileAsync(retryRequest,true,ct));
+            Assert.Equal(1,duplicateBody);Assert.True(duplicate.Accepted);Assert.Equal(201,duplicate.HttpStatus);Assert.Equal("created",duplicate.StableCode);Assert.Equal(outcomeEntityId,duplicate.AggregateId);
+            Assert.Null(await new ProcessModelingMongoRepository(context).FindTenantAsync("mg_process_models",tenant,retryRequest.AggregateId));
+
+            var changedSubject=request with{SubjectId=Guid.NewGuid(),AggregateId=Guid.NewGuid()};
+            var subjectConflict=await runner.ExecuteAsync(async(session,ct)=>
+            {
+                await writer.WriteAsync(session,Envelope(changedSubject),ct);
+                return new CoreMutationResult(true,201,"wrong",changedSubject.AggregateId);
+            },ct=>reader.ReconcileAsync(changedSubject,true,ct));
+            Assert.False(subjectConflict.Accepted);Assert.Equal(409,subjectConflict.HttpStatus);Assert.Equal(ProcessModelingErrors.IdempotencyConflict,subjectConflict.StableCode);
+            Assert.Null(await new ProcessModelingMongoRepository(context).FindTenantAsync("mg_process_models",tenant,changedSubject.AggregateId));
+
+            var changedPayload=request with{CanonicalPayloadHash="sha256:"+new string('b',64),AggregateId=Guid.NewGuid()};
+            var payloadConflict=await runner.ExecuteAsync(async(session,ct)=>
+            {
+                await writer.WriteAsync(session,Envelope(changedPayload),ct);
+                return new CoreMutationResult(true,201,"wrong",changedPayload.AggregateId);
+            },ct=>reader.ReconcileAsync(changedPayload,true,ct));
+            Assert.False(payloadConflict.Accepted);Assert.Equal(409,payloadConflict.HttpStatus);Assert.Equal(ProcessModelingErrors.IdempotencyConflict,payloadConflict.StableCode);
+            Assert.Null(await new ProcessModelingMongoRepository(context).FindTenantAsync("mg_process_models",tenant,changedPayload.AggregateId));
+
+            var legacyRequest=request with{IdempotencyKey="legacy"};
+            await context.Collection("mg_process_modeling_idempotency_receipts").InsertOneAsync(new BsonDocument{{"TenantId",G(tenant)},{"SubjectId",G(subject)},{"CommandFamily",request.CommandFamily},{"IdempotencyKey",legacyRequest.IdempotencyKey},{"PayloadHash",request.CanonicalPayloadHash},{"Outcome","legacy"},{"AggregateId",G(aggregate)},{"CreatedAtUtc",DateTime.UtcNow},{"CompletedAtUtc",DateTime.UtcNow}});
+            var legacy=await reader.ReconcileAsync(legacyRequest,true);Assert.NotNull(legacy);Assert.False(legacy.Accepted);Assert.Equal(503,legacy.HttpStatus);Assert.Equal(ProcessModelingMongoReceiptReader.SchemaIncompatible,legacy.StableCode);
+
+            var rawAudit=await context.Collection("mg_process_modeling_audit_intents").Find(FilterDefinition<BsonDocument>.Empty).SingleAsync();
+            var rawOutbox=await context.Collection("mg_process_modeling_outbox_messages").Find(FilterDefinition<BsonDocument>.Empty).SingleAsync();
+            Assert.Equal(aggregate,ProcessModelingMongoGuidPolicy.Read(rawAudit["Payload"]["entityId"]));
+            Assert.Equal(aggregate,ProcessModelingMongoGuidPolicy.Read(rawOutbox["AggregateId"]));
+            Assert.Equal(ProcessModelingMongoMutationWriter.AuditEventType,rawOutbox["EventType"].AsString);Assert.Equal(1,rawOutbox["EventVersion"].AsInt32);
+            Assert.Equal(1,await context.Collection("mg_process_models").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
+            Assert.Equal(2,await context.Collection("mg_process_modeling_idempotency_receipts").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
+            Assert.Contains(commands,command=>command.TryGetValue("find",out var collection)&&collection=="mg_process_modeling_idempotency_receipts"&&command.TryGetValue("readConcern",out var readConcern)&&readConcern["level"]=="majority");
+
+            var unknownRequest=request with{IdempotencyKey="unknown-commit",AggregateId=Guid.NewGuid()};var unknownEnvelope=Envelope(unknownRequest,204,unknownRequest.AggregateId);var unknownBody=0;var commitAttempts=0;IClientSessionHandle? commitSession=null;
+            var unknownRunner=new ProcessModelingMongoTransactionRunner(context,3,async(session,attempt,ct)=>
+            {
+                commitAttempts++;if(commitSession is null)commitSession=session;else Assert.Same(commitSession,session);
+                if(attempt==1)await session.CommitTransactionAsync(ct);
+                throw new ProcessModelingUnknownCommitException();
+            });
+            var reconciled=await unknownRunner.ExecuteAsync(async(session,ct)=>
+            {
+                unknownBody++;await writer.WriteAsync(session,unknownEnvelope,ct);return new CoreMutationResult(true,204,"updated",unknownRequest.AggregateId);
+            },ct=>reader.ReconcileAsync(unknownRequest,true,ct));
+            Assert.Equal(1,unknownBody);Assert.Equal(3,commitAttempts);Assert.Equal(204,reconciled.HttpStatus);Assert.Equal(unknownRequest.AggregateId,reconciled.AggregateId);
+        }
+        finally { await client.DropDatabaseAsync(db); }
     }
     [Fact]
     public async Task Dynamic_replica_set_proves_indexes_tenant_cas_and_atomic_participants()
@@ -41,9 +132,10 @@ public sealed class MongoPersistenceTests
             Assert.Equal(16,snapshots.Count); Assert.All(snapshots,x=>{Assert.Equal("TenantId",x["key"].AsBsonDocument.GetElement(0).Name);Assert.False(x.Contains("expireAfterSeconds"));});
             var open=Assert.Single(snapshots,x=>x["name"]=="ux_pm_open_version"); Assert.Equal(2,open["key"].AsBsonDocument.ElementCount); Assert.True(open.Contains("partialFilterExpression"));
 
-            var tenant=Guid.NewGuid(); var foreign=Guid.NewGuid(); var aggregate=Guid.NewGuid(); var now=new DateTime(2026,8,26,0,0,0,DateTimeKind.Utc); var G=(Guid x)=>new BsonBinaryData(x,GuidRepresentation.Standard);
+            var tenant=Guid.NewGuid(); var foreign=Guid.NewGuid(); var aggregate=Guid.NewGuid(); var definitionId=Guid.NewGuid(); var now=new DateTime(2026,8,26,0,0,0,DateTimeKind.Utc); var G=(Guid x)=>new BsonBinaryData(x,GuidRepresentation.Standard);
+            await context.Collection("mg_process_definitions").InsertOneAsync(new BsonDocument{{"_id",G(definitionId)},{"TenantId",G(tenant)},{"LifecycleState","Active"},{"IsDeleted",false},{"Version",0}});
             var request=new CoreMutationRequest(tenant,Guid.NewGuid(),"CreateProcessModelCommand","key","sha256:"+new string('a',64),0,aggregate);
-            var business=new BsonDocument{{"_id",G(aggregate)},{"TenantId",G(tenant)},{"IsDeleted",false},{"Version",0},{"ProcessDefinitionId",G(Guid.NewGuid())},{"ModelCode","MODEL"}};
+            var business=new BsonDocument{{"_id",G(aggregate)},{"TenantId",G(tenant)},{"IsDeleted",false},{"Version",0},{"ProcessDefinitionId",G(definitionId)},{"ModelCode","MODEL"}};
             var envelope=new MongoMutationEnvelope(request,business,"created",Guid.NewGuid(),Guid.NewGuid(),now,"subject:test");
             var runner=new ProcessModelingMongoTransactionRunner(context); var body=0;
             await runner.ExecuteAsync(async(session,ct)=>{body++;await new ProcessModelingMongoMutationWriter(context).WriteAsync(session,envelope,ct);return "ok";},_=>Task.FromResult<string?>(null));
@@ -58,7 +150,7 @@ public sealed class MongoPersistenceTests
             var modelForOpen=Guid.NewGuid();BsonDocument Open(string state)=>new(){{"_id",G(Guid.NewGuid())},{"TenantId",G(tenant)},{"ProcessModelId",G(modelForOpen)},{"RevisionNumber",state=="Draft"?1:2},{"LifecycleState",state},{"IsDeleted",false}};await context.Collection("mg_process_model_versions").InsertOneAsync(Open("Draft"));await Assert.ThrowsAsync<MongoWriteException>(()=>context.Collection("mg_process_model_versions").InsertOneAsync(Open("Review")));
             foreach(var fault in Enum.GetValues<ProcessModelingMutationParticipant>())
             {
-                var failedId=Guid.NewGuid();var failedRequest=request with{AggregateId=failedId,IdempotencyKey="fault-"+fault};var failed=envelope with{Request=failedRequest,Business=new BsonDocument{{"_id",G(failedId)},{"TenantId",G(tenant)},{"IsDeleted",false},{"Version",0},{"ProcessDefinitionId",G(Guid.NewGuid())},{"ModelCode","FAULT-"+fault}},AuditIntentId=Guid.NewGuid(),EventId=Guid.NewGuid()};
+                var failedId=Guid.NewGuid();var failedRequest=request with{AggregateId=failedId,IdempotencyKey="fault-"+fault};var failed=envelope with{Request=failedRequest,Business=new BsonDocument{{"_id",G(failedId)},{"TenantId",G(tenant)},{"IsDeleted",false},{"Version",0},{"ProcessDefinitionId",G(definitionId)},{"ModelCode","FAULT-"+fault}},AuditIntentId=Guid.NewGuid(),EventId=Guid.NewGuid()};
                 await Assert.ThrowsAsync<InjectedFault>(()=>runner.ExecuteAsync<string>(async(s,ct)=>{await new ProcessModelingMongoMutationWriter(context,p=>{if(p==fault)throw new InjectedFault();}).WriteAsync(s,failed,ct);return "wrong";},_=>Task.FromResult<string?>(null)));
                 Assert.Null(await new ProcessModelingMongoRepository(context).FindTenantAsync("mg_process_models",tenant,failedId));
                 Assert.Equal(1,await context.Collection("mg_process_modeling_idempotency_receipts").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));Assert.Equal(1,await context.Collection("mg_process_modeling_audit_intents").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));Assert.Equal(1,await context.Collection("mg_process_modeling_outbox_messages").CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
@@ -66,15 +158,15 @@ public sealed class MongoPersistenceTests
             using var session=await client.StartSessionAsync(); session.StartTransaction(); await new ProcessModelingMongoRepository(context).CasAsync(session,"mg_process_models",tenant,aggregate,0,new BsonDocument("Name","Changed"),default); await session.CommitTransactionAsync();
             using var stale=await client.StartSessionAsync(); stale.StartTransaction(); await Assert.ThrowsAsync<ProcessModelingConflictException>(()=>new ProcessModelingMongoRepository(context).CasAsync(stale,"mg_process_models",tenant,aggregate,0,new BsonDocument("Name","Wrong"),default)); await stale.AbortTransactionAsync();
 
-            var retryId=Guid.NewGuid();var retryRequest=request with{AggregateId=retryId,IdempotencyKey="commit-retry"};var retryEnvelope=envelope with{Request=retryRequest,Business=new BsonDocument{{"_id",G(retryId)},{"TenantId",G(tenant)},{"IsDeleted",false},{"Version",0},{"ProcessDefinitionId",G(Guid.NewGuid())},{"ModelCode","RETRY"}},AuditIntentId=Guid.NewGuid(),EventId=Guid.NewGuid()};int attempts=0,retryBody=0;
+            var retryId=Guid.NewGuid();var retryRequest=request with{AggregateId=retryId,IdempotencyKey="commit-retry"};var retryEnvelope=envelope with{Request=retryRequest,Business=new BsonDocument{{"_id",G(retryId)},{"TenantId",G(tenant)},{"IsDeleted",false},{"Version",0},{"ProcessDefinitionId",G(definitionId)},{"ModelCode","RETRY"}},AuditIntentId=Guid.NewGuid(),EventId=Guid.NewGuid()};int attempts=0,retryBody=0;
             var retryRunner=new ProcessModelingMongoTransactionRunner(context,3,async(s,a,ct)=>{attempts++;if(a<3)throw new ProcessModelingUnknownCommitException();await s.CommitTransactionAsync(ct);});
             Assert.Equal("ok",await retryRunner.ExecuteAsync(async(s,ct)=>{retryBody++;await new ProcessModelingMongoMutationWriter(context).WriteAsync(s,retryEnvelope,ct);return "ok";},_=>Task.FromResult<string?>(null)));Assert.Equal(1,retryBody);Assert.Equal(3,attempts);
 
-            var uncertainId=Guid.NewGuid();var uncertainRequest=request with{AggregateId=uncertainId,IdempotencyKey="uncertain"};var uncertainEnvelope=envelope with{Request=uncertainRequest,Business=new BsonDocument{{"_id",G(uncertainId)},{"TenantId",G(tenant)},{"IsDeleted",false},{"Version",0},{"ProcessDefinitionId",G(Guid.NewGuid())},{"ModelCode","UNCERTAIN"}},AuditIntentId=Guid.NewGuid(),EventId=Guid.NewGuid()};var uncertainBody=0;
+            var uncertainId=Guid.NewGuid();var uncertainRequest=request with{AggregateId=uncertainId,IdempotencyKey="uncertain"};var uncertainEnvelope=envelope with{Request=uncertainRequest,Business=new BsonDocument{{"_id",G(uncertainId)},{"TenantId",G(tenant)},{"IsDeleted",false},{"Version",0},{"ProcessDefinitionId",G(definitionId)},{"ModelCode","UNCERTAIN"}},AuditIntentId=Guid.NewGuid(),EventId=Guid.NewGuid()};var uncertainBody=0;
             var uncertainRunner=new ProcessModelingMongoTransactionRunner(context,3,(_,_,_)=>Task.FromException(new ProcessModelingUnknownCommitException()));
             await Assert.ThrowsAsync<ProcessModelingUnavailableException>(()=>uncertainRunner.ExecuteAsync<string>(async(s,ct)=>{uncertainBody++;await new ProcessModelingMongoMutationWriter(context).WriteAsync(s,uncertainEnvelope,ct);return "wrong";},_=>Task.FromResult<string?>(null)));Assert.Equal(1,uncertainBody);Assert.Null(await new ProcessModelingMongoRepository(context).FindTenantAsync("mg_process_models",tenant,uncertainId));
 
-            var durableId=Guid.NewGuid();var durableRequest=request with{AggregateId=durableId,IdempotencyKey="durable"};var durableEnvelope=envelope with{Request=durableRequest,Business=new BsonDocument{{"_id",G(durableId)},{"TenantId",G(tenant)},{"IsDeleted",false},{"Version",0},{"ProcessDefinitionId",G(Guid.NewGuid())},{"ModelCode","DURABLE"}},AuditIntentId=Guid.NewGuid(),EventId=Guid.NewGuid()};var durableBody=0;
+            var durableId=Guid.NewGuid();var durableRequest=request with{AggregateId=durableId,IdempotencyKey="durable"};var durableEnvelope=envelope with{Request=durableRequest,Business=new BsonDocument{{"_id",G(durableId)},{"TenantId",G(tenant)},{"IsDeleted",false},{"Version",0},{"ProcessDefinitionId",G(definitionId)},{"ModelCode","DURABLE"}},AuditIntentId=Guid.NewGuid(),EventId=Guid.NewGuid()};var durableBody=0;
             var durableRunner=new ProcessModelingMongoTransactionRunner(context,3,async(s,a,ct)=>{if(a==1)await s.CommitTransactionAsync(ct);throw new ProcessModelingUnknownCommitException();});
             Assert.Equal("created",await durableRunner.ExecuteAsync(async(s,ct)=>{durableBody++;await new ProcessModelingMongoMutationWriter(context).WriteAsync(s,durableEnvelope,ct);return "created";},async ct=>(await receiptReader.ReconcileAsync(durableRequest,true,ct))?.StableCode));Assert.Equal(1,durableBody);
 
@@ -107,6 +199,54 @@ public sealed class MongoPersistenceTests
             Assert.Equal(1,await context.Collection("mg_process_modeling_outbox_messages").CountDocumentsAsync(Builders<BsonDocument>.Filter.Eq("EventType",raceTag)));
         }
         finally { await client.DropDatabaseAsync(db); }
+    }
+
+    [Fact]
+    public async Task Closed_dispatcher_enforces_active_parent_server_owned_graph_and_revision_identity()
+    {
+        await using var mongo=await Replica.StartAsync();var client=C(mongo.Uri);var db="closed_"+Guid.NewGuid().ToString("N");var context=new ProcessModelingMongoContext(client,db);
+        try
+        {
+            await new ProcessModelingMongoIndexInitializer(context).InitializeAsync();
+            var tenant=Guid.NewGuid();var foreign=Guid.NewGuid();var subject=Guid.NewGuid();var definition=Guid.NewGuid();var foreignDefinition=Guid.NewGuid();var modelId=Guid.NewGuid();var G=(Guid x)=>new BsonBinaryData(x,GuidRepresentation.Standard);var now=new DateTime(2026,8,28,12,0,0,DateTimeKind.Utc);
+            await context.Collection("mg_process_definitions").InsertManyAsync([
+                new BsonDocument{{"_id",G(definition)},{"TenantId",G(tenant)},{"LifecycleState","Active"},{"IsDeleted",false},{"Version",0}},
+                new BsonDocument{{"_id",G(foreignDefinition)},{"TenantId",G(foreign)},{"LifecycleState","Active"},{"IsDeleted",false},{"Version",0}}]);
+            var writer=new ProcessModelingMongoMutationWriter(context);var runner=new ProcessModelingMongoTransactionRunner(context);
+            MongoMutationEnvelope Envelope(CoreMutationRequest request,BsonDocument body,int status=201,Guid? outcome=null)=>new(request,body,"accepted",Guid.NewGuid(),Guid.NewGuid(),now,"subject:test",status,outcome);
+
+            var create=new CoreMutationRequest(tenant,subject,"CreateProcessModelCommand","closed-create","sha256:"+new string('1',64),0,modelId);
+            var createBody=new BsonDocument{{"_id",G(modelId)},{"TenantId",G(tenant)},{"ProcessDefinitionId",G(definition)},{"ModelCode","MODEL"},{"Name","Model"},{"IsDeleted",false},{"Version",0}};
+            await runner.ExecuteAsync(async(s,ct)=>{await writer.WriteAsync(s,Envelope(create,createBody),ct);return "ok";},_=>Task.FromResult<string?>(null));
+            var model=await context.Collection("mg_process_models").Find(Builders<BsonDocument>.Filter.Eq("_id",G(modelId))).SingleAsync();
+            Assert.Equal(tenant,ProcessModelingMongoGuidPolicy.Read(model["TenantId"]));Assert.Equal(1,model["LatestRevisionNumber"].AsInt32);Assert.Equal(BsonNull.Value,model["PublishedVersionId"]);Assert.False(model["IsDeleted"].AsBoolean);
+
+            var hiddenId=Guid.NewGuid();var hidden=create with{AggregateId=hiddenId,IdempotencyKey="hidden"};var hiddenBody=createBody.DeepClone().AsBsonDocument;hiddenBody["_id"]=G(hiddenId);hiddenBody["ProcessDefinitionId"]=G(foreignDefinition);
+            await Assert.ThrowsAsync<ProcessModelingNotFoundException>(()=>runner.ExecuteAsync<string>(async(s,ct)=>{await writer.WriteAsync(s,Envelope(hidden,hiddenBody),ct);return "wrong";},_=>Task.FromResult<string?>(null)));
+            Assert.Equal(0,await context.Collection("mg_process_models").CountDocumentsAsync(Builders<BsonDocument>.Filter.Eq("_id",G(hiddenId))));
+
+            var overrideId=Guid.NewGuid();var overridden=create with{AggregateId=overrideId,IdempotencyKey="override"};var overrideBody=createBody.DeepClone().AsBsonDocument;overrideBody["_id"]=G(overrideId);overrideBody["PublishedVersionId"]=G(Guid.NewGuid());
+            await Assert.ThrowsAsync<InvalidOperationException>(()=>runner.ExecuteAsync<string>(async(s,ct)=>{await writer.WriteAsync(s,Envelope(overridden,overrideBody),ct);return "wrong";},_=>Task.FromResult<string?>(null)));
+
+            var versionId=Guid.NewGuid();await context.Collection("mg_process_model_versions").InsertOneAsync(new BsonDocument{{"_id",G(versionId)},{"TenantId",G(tenant)},{"ProcessModelId",G(modelId)},{"RevisionNumber",1},{"ModelAuthorActorId",G(subject)},{"LifecycleState","Draft"},{"Title","Old"},{"ContentHash","sha256:"+new string('0',64)},{"IsDeleted",false},{"Version",0}});
+            var activity=Guid.NewGuid();var control=Guid.NewGuid();var update=new CoreMutationRequest(tenant,subject,"UpdateDraftProcessModelVersionCommand","graph","sha256:"+new string('2',64),0,versionId);
+            var graph=new BsonDocument{{"Title","Updated"},{"Description",BsonNull.Value},{"ContentHash","sha256:"+new string('3',64)},
+                {"Activities",new BsonArray{new BsonDocument{{"LogicalActivityId",G(activity)},{"ActivityCode","START"},{"Name","Start"},{"Description",BsonNull.Value},{"SortOrder",0}}}},
+                {"ControlPoints",new BsonArray{new BsonDocument{{"LogicalControlPointId",G(control)},{"ControlCode","CP"},{"Name","Check"},{"Description",BsonNull.Value},{"LogicalActivityId",G(activity)},{"SortOrder",0}}}},
+                {"Relationships",new BsonArray()}};
+            await runner.ExecuteAsync(async(s,ct)=>{await writer.WriteAsync(s,Envelope(update,graph,204),ct);return "ok";},_=>Task.FromResult<string?>(null));
+            var storedActivity=await context.Collection("mg_process_activities").Find(FilterDefinition<BsonDocument>.Empty).SingleAsync();
+            Assert.Equal(tenant,ProcessModelingMongoGuidPolicy.Read(storedActivity["TenantId"]));Assert.Equal(versionId,ProcessModelingMongoGuidPolicy.Read(storedActivity["ProcessModelVersionId"]));Assert.False(storedActivity.Contains("LifecycleState"));
+            await context.Collection("mg_process_model_versions").UpdateOneAsync(Builders<BsonDocument>.Filter.Eq("_id",G(versionId)),Builders<BsonDocument>.Update.Set("LifecycleState","Published"));
+
+            var revisionId=Guid.NewGuid();var revision=new CoreMutationRequest(tenant,subject,"CreateProcessModelRevisionCommand","revision","sha256:"+new string('4',64),0,modelId);
+            var revisionBody=new BsonDocument{{"Title","Revision 2"},{"Description",BsonNull.Value},{"ContentHash","sha256:"+new string('5',64)}};
+            await runner.ExecuteAsync(async(s,ct)=>{await writer.WriteAsync(s,Envelope(revision,revisionBody,201,revisionId),ct);return "ok";},_=>Task.FromResult<string?>(null));
+            var storedRevision=await context.Collection("mg_process_model_versions").Find(Builders<BsonDocument>.Filter.Eq("_id",G(revisionId))).SingleAsync();
+            Assert.Equal(modelId,ProcessModelingMongoGuidPolicy.Read(storedRevision["ProcessModelId"]));Assert.Equal(subject,ProcessModelingMongoGuidPolicy.Read(storedRevision["ModelAuthorActorId"]));Assert.Equal(2,storedRevision["RevisionNumber"].AsInt32);Assert.Equal("Draft",storedRevision["LifecycleState"].AsString);
+            var updatedModel=await context.Collection("mg_process_models").Find(Builders<BsonDocument>.Filter.Eq("_id",G(modelId))).SingleAsync();Assert.Equal(revisionId,ProcessModelingMongoGuidPolicy.Read(updatedModel["OpenVersionId"]));
+        }
+        finally{await client.DropDatabaseAsync(db);}
     }
     private sealed class InjectedFault:Exception;
     private static MongoClient C(string uri)=>new(ProcessModelingMongoGuidPolicy.ClientSettings(uri));
