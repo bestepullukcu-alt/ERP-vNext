@@ -1,5 +1,4 @@
 using Diten.ManagementGovernanceService.Application.Features.Dws;
-using ProcessModelingResponse = Diten.ManagementGovernanceService.Application.Features.ProcessModelingLocalTest.Response<object>;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Diten.ManagementGovernanceService.Api.Controllers;
@@ -19,9 +18,14 @@ public abstract class CustomBaseController : ControllerBase
         _ => StatusCode(response.StatusCode, response)
     };
 
-    protected IActionResult Result(ProcessModelingResponse response, bool create)
+    protected IActionResult Result<T>(Diten.ManagementGovernanceService.Application.Features.ProcessModelingLocalTest.Response<T> response)
     {
         if (!response.Succeeded) return StatusCode(response.StatusCode, response);
-        return create ? StatusCode(StatusCodes.Status201Created, response) : NoContent();
+        return response.StatusCode switch
+        {
+            StatusCodes.Status201Created => StatusCode(StatusCodes.Status201Created, response),
+            StatusCodes.Status204NoContent => NoContent(),
+            _ => StatusCode(response.StatusCode, response)
+        };
     }
 }

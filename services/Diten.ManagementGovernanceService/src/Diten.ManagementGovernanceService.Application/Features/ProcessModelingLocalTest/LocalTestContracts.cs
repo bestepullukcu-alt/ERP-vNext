@@ -2,7 +2,6 @@ using System.Buffers.Binary;
 using System.Security.Cryptography;
 using System.Text;
 using Diten.ManagementGovernanceService.Application.Modules.ProcessModeling;
-using MediatR;
 
 namespace Diten.ManagementGovernanceService.Application.Features.ProcessModelingLocalTest;
 
@@ -15,27 +14,56 @@ public sealed record Response<T>(bool Succeeded,T? Data,int StatusCode,IReadOnly
 }
 
 public sealed record LocalTestCommandContext(Guid TenantId,Guid ActorId,string Permission,string IdempotencyKey,string RequestHash);
-public sealed record ProcessModelingLocalCommand(string CommandName,Guid? RouteId,byte[] RawBody,LocalTestCommandContext Context)
-    : IRequest<Response<object>>;
+
+public sealed record ProcessModelingLocalExecutionRequest(
+    string CommandName,
+    Guid? RouteId,
+    byte[] RawBody,
+    LocalTestCommandContext Context);
+
+public sealed record ProcessModelingLocalExecutionResult(
+    bool Succeeded,
+    int StatusCode,
+    string StableCode,
+    Guid? CreatedId = null)
+{
+    public static ProcessModelingLocalExecutionResult Created(Guid id)=>new(true,201,"created",id);
+    public static ProcessModelingLocalExecutionResult NoContent()=>new(true,204,"no_content");
+    public static ProcessModelingLocalExecutionResult Fail(string code,int status)=>new(false,status,code);
+}
 
 public interface IProcessModelingLocalCommandExecutor
 {
-    Task<Response<object>> ExecuteAsync(ProcessModelingLocalCommand command,CancellationToken cancellationToken);
-}
-
-public sealed class ProcessModelingLocalCommandHandler(IProcessModelingLocalCommandExecutor executor)
-    : IRequestHandler<ProcessModelingLocalCommand,Response<object>>
-{
-    public Task<Response<object>> Handle(ProcessModelingLocalCommand request,CancellationToken cancellationToken)
-        => executor.ExecuteAsync(request,cancellationToken);
+    Task<ProcessModelingLocalExecutionResult> ExecuteAsync(ProcessModelingLocalExecutionRequest command,CancellationToken cancellationToken);
 }
 
 public sealed class DefaultUnavailableProcessModelingLocalCommandExecutor : IProcessModelingLocalCommandExecutor
 {
-    public Task<Response<object>> ExecuteAsync(ProcessModelingLocalCommand command,CancellationToken cancellationToken)
+    public Task<ProcessModelingLocalExecutionResult> ExecuteAsync(ProcessModelingLocalExecutionRequest command,CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        return Task.FromResult(Response<object>.Fail("process_modeling_local_test_executor_unavailable",503));
+        return Task.FromResult(ProcessModelingLocalExecutionResult.Fail("process_modeling_local_test_executor_unavailable",503));
+    }
+}
+
+internal static class ProcessModelingLocalHandlerResult
+{
+    internal static async Task<Response<Guid>> CreateAsync(IProcessModelingLocalCommandExecutor executor,ProcessModelingLocalExecutionRequest execution,CancellationToken cancellationToken)
+    {
+        var result=await executor.ExecuteAsync(execution,cancellationToken);
+        if(!result.Succeeded)return Response<Guid>.Fail(result.StableCode,result.StatusCode);
+        return result.StatusCode==201&&result.CreatedId is { } id&&id!=Guid.Empty
+            ? Response<Guid>.Success(id,201)
+            : Response<Guid>.Fail("process_modeling_invalid_create_result",503);
+    }
+
+    internal static async Task<Response<NoContent>> NoContentAsync(IProcessModelingLocalCommandExecutor executor,ProcessModelingLocalExecutionRequest execution,CancellationToken cancellationToken)
+    {
+        var result=await executor.ExecuteAsync(execution,cancellationToken);
+        if(!result.Succeeded)return Response<NoContent>.Fail(result.StableCode,result.StatusCode);
+        return result.StatusCode==204
+            ? Response<NoContent>.Success(default,204)
+            : Response<NoContent>.Fail("process_modeling_invalid_no_content_result",503);
     }
 }
 
