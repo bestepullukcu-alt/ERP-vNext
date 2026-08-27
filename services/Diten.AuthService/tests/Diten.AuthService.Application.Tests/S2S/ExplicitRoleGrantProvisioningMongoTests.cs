@@ -13,6 +13,25 @@ public sealed class ExplicitRoleGrantProvisioningMongoTests
     public static IEnumerable<object[]> Participants => Enum.GetValues<ExplicitRoleGrantTransactionParticipant>().Select(x => new object[] { x });
 
     [Fact]
+    public async Task Mod0355_explicit_grant_is_separate_idempotent_and_never_created_by_manifest_registration()
+    {
+        await using var fixture = await Fixture.CreateAsync(
+            ExplicitRoleGrantAuthorizationDecision.Allowed,
+            "MOD-0355",
+            "management-governance.process-modeling.models.publish");
+        Assert.Equal(0, await fixture.Count("rolePermissions"));
+        var granted = await fixture.Coordinator.ExecuteAsync(fixture.Request(ExplicitRoleGrantMutationV1.Grant, "mod0355-grant"), CancellationToken.None);
+        Assert.Equal(ExplicitRoleGrantProvisioningStatus.Applied, granted.Status);
+        Assert.Equal(1, await fixture.Count("rolePermissions"));
+        var duplicate = await fixture.Coordinator.ExecuteAsync(fixture.Request(ExplicitRoleGrantMutationV1.Grant, "mod0355-grant-replay"), CancellationToken.None);
+        Assert.Equal(ExplicitRoleGrantProvisioningStatus.NoOp, duplicate.Status);
+        Assert.Equal(1, await fixture.Count("rolePermissions"));
+        var revoked = await fixture.Coordinator.ExecuteAsync(fixture.Request(ExplicitRoleGrantMutationV1.Revoke, "mod0355-revoke"), CancellationToken.None);
+        Assert.Equal(ExplicitRoleGrantProvisioningStatus.Applied, revoked.Status);
+        Assert.Equal(0, await fixture.Count("rolePermissions"));
+    }
+
+    [Fact]
     public async Task Grant_replay_new_key_noop_revoke_and_absent_revoke_have_exact_version_semantics()
     {
         await using var fixture = await Fixture.CreateAsync();
@@ -257,26 +276,30 @@ public sealed class ExplicitRoleGrantProvisioningMongoTests
     private sealed class Fixture : IAsyncDisposable
     {
         private readonly MongoClient _client; private readonly string _name;
+        private readonly string _ownerModuleId; private readonly string _permissionKey;
         public IMongoDatabase Database { get; } public RecordingProbe Probe { get; } = new();
         public ExplicitRoleGrantProvisioningCoordinator Coordinator { get; }
         public Guid TenantId { get; } = Guid.NewGuid(); public Guid ActorId { get; } = Guid.NewGuid(); public Guid RoleId { get; } = Guid.NewGuid(); public Guid PermissionId { get; } = Guid.NewGuid();
-        private Fixture(MongoClient client, IMongoDatabase database, string name, ExplicitRoleGrantAuthorizationDecision decision)
-        { _client = client; Database = database; _name = name; Coordinator = new(client, database, new FixedAuthorizer(decision), Probe); }
-        public static async Task<Fixture> CreateAsync(ExplicitRoleGrantAuthorizationDecision decision = ExplicitRoleGrantAuthorizationDecision.Allowed)
+        private Fixture(MongoClient client, IMongoDatabase database, string name, ExplicitRoleGrantAuthorizationDecision decision,
+            string ownerModuleId, string permissionKey)
+        { _client = client; Database = database; _name = name; _ownerModuleId = ownerModuleId; _permissionKey = permissionKey; Coordinator = new(client, database, new FixedAuthorizer(decision), Probe); }
+        public static async Task<Fixture> CreateAsync(ExplicitRoleGrantAuthorizationDecision decision = ExplicitRoleGrantAuthorizationDecision.Allowed,
+            string ownerModuleId = "MOD-0007", string permissionKey = "management-governance.decisions.read")
         {
             var uri = Environment.GetEnvironmentVariable("MONGO_TEST_URI") ?? throw new InvalidOperationException("MONGO_TEST_URI required"); var url = new MongoUrl(uri);
             if (url.Servers.Any(x => x.Port is 27017 or 27018)) throw new InvalidOperationException("Protected Mongo ports are forbidden.");
             var policy = typeof(RoleAssignmentVersionRepository).Assembly.GetType("Diten.AuthService.Persistence.MongoGuidRepresentationPolicy", throwOnError: true)!;
             var createSettings = policy.GetMethod("CreateClientSettings", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!;
             var client = new MongoClient((MongoClientSettings)createSettings.Invoke(null, [uri])!); var name = "diten_auth_b2a2_" + Guid.NewGuid().ToString("N"); var db = client.GetDatabase(name); await db.RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
-            var fixture = new Fixture(client, db, name, decision); await fixture.SeedAsync(); return fixture;
+            var fixture = new Fixture(client, db, name, decision, ownerModuleId, permissionKey); await fixture.SeedAsync(); return fixture;
         }
         private async Task SeedAsync()
         {
             await Database.GetCollection<Role>("roles").InsertOneAsync(new Role("Operator", "Operator", null, TenantId) { Id = RoleId });
-            var permission = new Permission("management-governance", "decisions", "read", "read", null, "MOD-0007", PermissionScope.Tenant) { Id = PermissionId };
+            var parts = _permissionKey.Split('.');
+            var permission = new Permission(parts[0], string.Join('.', parts[1..^1]), parts[^1], _permissionKey, null, _ownerModuleId, PermissionScope.Tenant) { Id = PermissionId };
             await Database.GetCollection<Permission>("permissions").InsertOneAsync(permission);
-            await Database.GetCollection<PermissionOwnerDocument>("s2sPermissionCatalogPermissionOwners").InsertOneAsync(new() { RegistrationId = Guid.NewGuid(), PermissionId = PermissionId, OwnerModuleId = "MOD-0007", ModuleEntitlementCode = "MOD-0007", PermissionKey = permission.Key });
+            await Database.GetCollection<PermissionOwnerDocument>("s2sPermissionCatalogPermissionOwners").InsertOneAsync(new() { RegistrationId = Guid.NewGuid(), PermissionId = PermissionId, OwnerModuleId = _ownerModuleId, ModuleEntitlementCode = _ownerModuleId, PermissionKey = permission.Key });
         }
         public ExplicitRoleGrantProvisioningV1 Request(ExplicitRoleGrantMutationV1 mutation, string key, Guid? permissionId = null) => ExplicitRoleGrantProvisioningV1.Create(TenantId, ActorId, RoleId, permissionId ?? PermissionId, mutation, key, "trusted-test");
         public async Task<Guid> AddPermissionAsync(int index)

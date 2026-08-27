@@ -9,10 +9,10 @@ public sealed class PermissionCatalogManifestV1Tests
     public void Canonical_gate_i_manifests_have_exact_pack_cardinality_and_bindings()
     {
         var manifests = GateIPermissionCatalogManifests.All;
-        Assert.Equal(new[] { "MOD-0007", "MOD-0136", "MOD-0138", "MOD-0072" }, manifests.Select(x => x.OwnerModuleId));
-        Assert.Equal(new[] { 8, 15, 16, 9 }, manifests.Select(x => x.Entries.Count));
-        Assert.Equal(48, manifests.Sum(x => x.Entries.Count));
-        Assert.Equal(45, manifests.SelectMany(x => x.Entries).Select(x => x.PermissionKey).Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(new[] { "MOD-0007", "MOD-0136", "MOD-0138", "MOD-0072", "MOD-0355" }, manifests.Select(x => x.OwnerModuleId));
+        Assert.Equal(new[] { 8, 15, 16, 9, 16 }, manifests.Select(x => x.Entries.Count));
+        Assert.Equal(64, manifests.Sum(x => x.Entries.Count));
+        Assert.Equal(61, manifests.SelectMany(x => x.Entries).Select(x => x.PermissionKey).Distinct(StringComparer.Ordinal).Count());
         Assert.All(manifests, x =>
         {
             Assert.Equal(x.OwnerModuleId, x.ModuleEntitlementCode);
@@ -21,6 +21,47 @@ public sealed class PermissionCatalogManifestV1Tests
             PermissionCatalogManifestValidator.ValidateCanonical(x);
         });
         Assert.DoesNotContain(manifests.SelectMany(x => x.Entries), x => x.OperationId == "fpa.scenario-planning.comparators.execute");
+    }
+
+    [Fact]
+    public void Management_governance_workload_reuse_keeps_mod0355_owner_entitlement_and_permissions_separate()
+    {
+        var decisions = GateIPermissionCatalogManifests.Mod0007;
+        var modeling = GateIPermissionCatalogManifests.Mod0355;
+        Assert.Equal(decisions.ClientId, modeling.ClientId);
+        Assert.Equal(decisions.Audience, modeling.Audience);
+        Assert.Equal(decisions.ServiceIdentity, modeling.ServiceIdentity);
+        Assert.NotEqual(decisions.OwnerModuleId, modeling.OwnerModuleId);
+        Assert.NotEqual(decisions.ModuleEntitlementCode, modeling.ModuleEntitlementCode);
+        Assert.Equal(16, modeling.Entries.Count);
+        Assert.All(modeling.Entries, x => Assert.Equal(x.OperationId, x.PermissionKey));
+        Assert.Empty(decisions.Entries.Select(x => x.PermissionKey).Intersect(modeling.Entries.Select(x => x.PermissionKey), StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void Mod0355_manifest_has_exact_sixteen_ordinal_pairs_without_aliases()
+    {
+        var expected = new[]
+        {
+            "management-governance.process-modeling.architectures.read",
+            "management-governance.process-modeling.architectures.create",
+            "management-governance.process-modeling.architectures.update",
+            "management-governance.process-modeling.architectures.archive",
+            "management-governance.process-modeling.definitions.read",
+            "management-governance.process-modeling.definitions.create",
+            "management-governance.process-modeling.definitions.update",
+            "management-governance.process-modeling.definitions.archive",
+            "management-governance.process-modeling.models.read",
+            "management-governance.process-modeling.models.create",
+            "management-governance.process-modeling.models.update",
+            "management-governance.process-modeling.models.request-review",
+            "management-governance.process-modeling.models.return-to-draft",
+            "management-governance.process-modeling.models.publish",
+            "management-governance.process-modeling.models.retire",
+            "management-governance.process-modeling.models.create-revision"
+        };
+        Assert.Equal(expected, GateIPermissionCatalogManifests.Mod0355.Entries.Select(x => x.OperationId));
+        Assert.Equal(expected, GateIPermissionCatalogManifests.Mod0355.Entries.Select(x => x.PermissionKey));
     }
 
     [Fact]
