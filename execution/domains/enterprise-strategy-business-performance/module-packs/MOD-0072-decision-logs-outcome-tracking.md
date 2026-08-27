@@ -194,6 +194,43 @@ Decision reference lookup. Exact Mongo index definitions wait for topology appro
 `MetricVersionNumber` and `QualitativeScaleVersionNumber` are business ordinals; inherited `Version` remains
 exclusively the technical optimistic-concurrency token and never appears as a business version field.
 
+### Gate I-C local validation provider amendment R2 — AUTHORIZED / LOCAL-ONLY / NON-PRODUCTION
+
+Control Tower authorizes the owner-side read-only validation provider required by MOD-0117 §4.9.1 and §4.9.3.
+The exact operation is `outcome-tracking.outcome-references.validate`, permission
+`decision-intelligence.outcome-references.validate`, audience `diten-decision-intelligence-service`, Client
+ID `diten.decision-intelligence`, owner `MOD-0072`, and protocol scope
+`diten.s2s.delegated.invoke`.
+
+The provider accepts only exact five-field lower-camel
+`diten.decision-intelligence.outcome-reference/1.0`, exact
+`ppm.benefit-commitment-outcome-reference/1.0` and the exact typed BenefitCommitment context fixed by the
+bilateral profile. `HistoricalResolve` and `NewReferenceEligibility` are valid;
+`CurrentSelectionEligibility` is `400`. Exact results are `400/401/403/404/409/503`; missing,
+cross-tenant, invisible, soft-deleted and non-disclosable state is indistinguishable `404`. Success returns
+only the exact reference plus lifecycle/retirement/referenceability facts. Actual values, measurements,
+periods, evidence and realization state are forbidden.
+
+The exact owner-local route is
+`POST /internal/v1/decision-intelligence/outcome-tracking/outcome-references/validate`. It is `[Authorize]`,
+service-network-only, has no Gateway/browser route and remains default-off. Committed configuration cannot
+enable it or contain URI/credential/key/secret material.
+
+Additive implementation authority is limited to:
+
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Application/Modules/OutcomeTracking/GateI/**`;
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Api/Modules/OutcomeTracking/InternalOutcomeReferenceValidationController.cs`;
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Api/Modules/OutcomeTracking/OutcomeTrackingModule.cs`, additive default-off registration only;
+- `services/Diten.DecisionIntelligenceService/src/Diten.DecisionIntelligenceService.Api/Diten.DecisionIntelligenceService.Api.csproj`, only for the minimum ASP.NET framework reference;
+- `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.UnitTests/Modules/OutcomeTracking/GateI/**`;
+- `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.ContractTests/Modules/OutcomeTracking/GateI/**`;
+- `services/Diten.DecisionIntelligenceService/tests/Diten.DecisionIntelligenceService.ArchitectureTests/Modules/OutcomeTracking/GateI/**`.
+
+An Application snapshot-reader port may be supplied by a test fake. Production Mongo wiring and transport
+configuration remain later gates. Validation writes no mutation, cache, receipt, audit intent or outbox.
+Cache/LKG/local truth, frontend, Gateway, WorkCenter, production key/secret/deployment/activation and push
+remain forbidden. This checkpoint alone is not Local API-Test Ready.
+
 ## 5. Repo Scope
 
 This governance authoring job owns only:
