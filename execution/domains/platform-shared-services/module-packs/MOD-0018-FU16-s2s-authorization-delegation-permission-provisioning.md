@@ -707,3 +707,72 @@ secret, production config, MDM file or generic entitlement policy change is auth
 
 **Amendment result:** executable local prerequisite authority is granted only for the exact allowlist above.
 This is not production activation or a claim that Gate I, Phase 1.5 or MOD-0117 is complete.
+
+## FU16 HTTP Consumer Authentication / Trusted Context Model A — LOCAL EVIDENCE / DEFAULT-OFF
+
+> **Authority (2026-08-27).** Control Tower approves the bounded Model A shared consumer slice on top of
+> Auth manifest checkpoint `17d5434a2cbd22f7a0463d8e4c1a399e90d5195d` and Auth/Platform fence
+> `1f5c69a63faf3e973153bf5efc6d873d59acbd43`. This authority is local-test evidence only. It creates no Auth
+> endpoint, Gateway route, production scheme activation, production key/JWKS, deployment or shared secret.
+
+### Exact Platform.Common allowlist
+
+Only these new source files are authorized:
+
+- `services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/Fu16/Fu16TrustedRequestContext.cs`
+- `services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/Fu16/Fu16AuthenticationFailure.cs`
+- `services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/Fu16/IFu16TrustedRequestContextAccessor.cs`
+- `services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/Fu16/IFu16ValidationKeyProvider.cs`
+- `services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/Fu16/IFu16AuthorityDecisionClient.cs`
+- `services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/Fu16/Fu16CanonicalRequestBinding.cs`
+- `services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/Fu16/Fu16DelegatedActorAuthenticationHandler.cs`
+- `services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/Fu16/Fu16AuthenticationExtensions.cs`
+- `services/Diten.Platform.Common/src/Diten.Platform.Common/Diten.Platform.Common.csproj` only for exact
+  IdentityModel/JWT dependencies required by those files.
+
+Only these test files are authorized:
+
+- `services/Diten.Platform.Common/tests/Diten.Platform.Common.Tests/Authorization/Fu16/Fu16TrustedRequestContextTests.cs`
+- `services/Diten.Platform.Common/tests/Diten.Platform.Common.Tests/Authorization/Fu16/Fu16CanonicalRequestBindingTests.cs`
+- `services/Diten.Platform.Common/tests/Diten.Platform.Common.Tests/Authorization/Fu16/Fu16DelegatedActorAuthenticationHandlerTests.cs`
+- `services/Diten.Platform.Common/tests/Diten.Platform.Common.Tests/Authorization/Fu16/Fu16SchemeIsolationTests.cs`
+- `services/Diten.Platform.Common/tests/Diten.Platform.Common.Tests/Diten.Platform.Common.Tests.csproj` only if
+  an exact package/reference addition is required.
+
+No BuildingBlocks.Eventing or AuthService assembly reference is permitted. The shared component contains no
+owner-specific permission constants and performs no owner persistence access.
+
+### Closed validation and trusted-context contract
+
+The named consumer scheme is separate from the existing HS256 user/session family. It accepts only the exact
+FU16 delegated proof family with `typ = diten-delegated-actor-proof+jwt`, `alg = RS256`, exact `kid`, trusted
+issuer/audience, RSA key size at least 3072 bits, exact five-minute proof lifetime and the established
+30-second protocol clock tolerance. HS256↔RS256 fallback, algorithm negotiation, first-key fallback,
+`jku`/`jwk`/`x5c`, static keys and locally invented identities are forbidden.
+
+Canonical request binding covers exact HTTP method, path, raw body bytes, tenant, operation and permission.
+Duplicate/case-duplicate JWT headers, unknown claims, canonicalization drift and request mismatch fail before
+owner code. Replay protection binds both JTI and nonce and is consumed only after signature/claim validation.
+
+After identity, replay and independent entitlement/membership/explicit-grant/freshness gates pass, the scheme
+may publish one immutable `Fu16TrustedRequestContext` containing exactly: TenantId, EffectiveActorId,
+DelegatedActorId, DelegationId, ServicePrincipalId, CredentialId, ClientId, Issuer, Audience, TokenType,
+ProtocolScope, OperationId, ordinal exact Permissions, RequestHash, TenantGrantVersion,
+ServicePrincipalVersion, CredentialGeneration, IssuedAtUtc, NotBeforeUtc and ExpiresAtUtc. Raw token, key,
+`ClaimsPrincipal` and free-form headers are never exposed downstream.
+
+Failure order is exact: malformed payload `400`; identity/cryptographic/request-binding/replay failures `401`;
+authenticated scope, operation, permission, entitlement, membership or explicit-grant denial `403`; a changed
+accepted authorization fence before handler execution `409`; unavailable, timeout, malformed or indeterminate
+key/replay/authority/freshness dependencies `503`. Cancellation propagates unchanged. Every failure produces
+zero owner handler/repository effects.
+
+Model A uses only test-host-owned ephemeral RSA keys and test-owned authority/replay providers. Default and
+production composition remain unregistered or return typed `503`. Existing HS256 session JWT, PPM explicit
+grant/dormant-entitlement behavior and MDM paths remain byte/behavior regressions.
+
+Required evidence includes header/claim/family isolation, canonical request vectors, tenant/operation/
+permission separation, replay concurrency, all authority/fence results, zero downstream effects, production
+rejection of test identities and non-equivalent mutation expected-red runs with byte-identical restore.
+Disposable Mongo, if required by a test provider, uses only a dynamic port `>=27022`; `27017` and `27018` are
+forbidden.
