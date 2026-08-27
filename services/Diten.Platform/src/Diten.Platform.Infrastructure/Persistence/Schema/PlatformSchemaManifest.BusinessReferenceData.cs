@@ -21,7 +21,7 @@ public static partial class PlatformSchemaManifest
 {
     /// <summary>
     /// MOD-0290 business reference data. This is the profile with a declared budget
-/// (see <see cref="SchemaProfileBudget.BusinessReferenceData"/>) — 7 collections today against a ceiling of 8.
+/// (see <see cref="SchemaProfileBudget.BusinessReferenceData"/>) — 8 collections today against a ceiling of 8.
     /// </summary>
     private static readonly SchemaCollection[] BusinessReferenceDataCollections =
     {

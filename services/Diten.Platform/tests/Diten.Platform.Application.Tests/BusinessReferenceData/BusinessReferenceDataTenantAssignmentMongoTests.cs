@@ -1,7 +1,7 @@
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Infrastructure.Persistence;
-using Diten.Platform.Infrastructure.Persistence.Configurations;
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Infrastructure.Persistence.Repositories.BusinessReferenceData;
 using MongoDB.Driver;
 using Xunit;
@@ -10,7 +10,7 @@ namespace Diten.Platform.Application.Tests.BusinessReferenceData;
 
 public sealed class BusinessReferenceDataTenantAssignmentMongoTests : IAsyncLifetime
 {
-    private readonly string _databaseName = $"diten_brd_assignment_tests_{Guid.NewGuid():N}";
+    private string _databaseName = null!;
     private MongoClient _client = null!;
     private IMongoDatabase _database = null!;
 
@@ -19,9 +19,12 @@ public sealed class BusinessReferenceDataTenantAssignmentMongoTests : IAsyncLife
         var settings = MongoClientSettings.FromConnectionString("mongodb://127.0.0.1:27017");
         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
         _client = new MongoClient(settings);
+        _databaseName = await BusinessReferenceDataMongoResidueSweeper.CreateDatabaseAsync(_client, "asn");
         _database = _client.GetDatabase(_databaseName);
         await _database.RunCommandAsync<object>("{ ping: 1 }");
-        await MongoDbIndexConfigurations.EnsureIndexesAsync(_database);
+        await PlatformSchemaManifest.ApplyAsync(
+            _database,
+            new[] { SchemaProfile.BusinessReferenceData });
     }
 
     public Task DisposeAsync()

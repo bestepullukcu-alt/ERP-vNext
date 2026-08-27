@@ -2,8 +2,8 @@ using Diten.Platform.Application.Features.BusinessReferenceData.Services;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Infrastructure.Persistence;
-using Diten.Platform.Infrastructure.Persistence.Configurations;
 using Diten.Platform.Infrastructure.Persistence.Repositories.BusinessReferenceData;
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Infrastructure.Persistence.Settings;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -354,10 +354,12 @@ internal sealed class BusinessReferenceDataTestHarness : IAsyncDisposable
         var settings = MongoClientSettings.FromConnectionString("mongodb://127.0.0.1:27017");
         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
         var client = new MongoClient(settings);
-        var databaseName = $"diten_brd_gsku_{Guid.NewGuid():N}";
+        var databaseName = await BusinessReferenceDataMongoResidueSweeper.CreateDatabaseAsync(client, "gsku");
         var database = client.GetDatabase(databaseName);
         await database.RunCommandAsync<object>("{ ping: 1 }");
-        await MongoDbIndexConfigurations.EnsureIndexesAsync(database);
+        await PlatformSchemaManifest.ApplyAsync(
+            database,
+            new[] { SchemaProfile.BusinessReferenceData });
         return new BusinessReferenceDataTestHarness(client, databaseName, database, configureProvider);
     }
 
