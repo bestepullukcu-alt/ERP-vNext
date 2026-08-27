@@ -18,7 +18,7 @@ branch: feature/mg/mod-0354-decomposition-work-structuring-engine
 started: 2026-07-28
 target: 2026-08-14
 form_field_count: 0
-port: TBD
+port: 5017
 implementation_authority: explicit-user-control-tower-bounded-core-scaffold-contract-test
 b02_evidence_authority: explicit-user-control-tower-non-runtime-persistence-integration-evidence
 production_authority: none
@@ -40,6 +40,10 @@ production_authority: none
 > configuration, production database, migration, deployment, credential, secret, frontend, Gateway,
 > WorkCenter or production activation. The separately approved non-runtime implementation checkpoint is
 > `6dfbaa5b1218a1d236360830db1e8c5db71bba87`; it grants no broader runtime authority.
+
+> **Port reservation:** `Diten.ManagementGovernanceService:5017` is the canonical governance reservation.
+> It supersedes the historical Management Governance `5011` assignment; `5011` belongs exclusively to
+> `Diten.PvgService`. The reservation grants no listener, route, scaffold, runtime or production authority.
 
 > **Planning date:** `target: 2026-08-14` is a provisional planning date, not a delivery commitment or
 > implementation authorization.
@@ -977,8 +981,9 @@ actor-invisible owned resources use the same non-disclosing `dws_resource_not_fo
 
 ## 15. Gateway / API Routing Decision
 
-Decision: a gateway integration decision is required, but this bounded `ready-for-dev` Core authority does
-not allocate a service port or change a route.
+Decision: the canonical service reservation is `Diten.ManagementGovernanceService:5017`; a separate gateway
+integration decision is still required and this bounded `ready-for-dev` Core authority does not authorize a
+port binding or route change.
 
 - `Diten.ManagementGovernanceService` does not yet exist.
 - The compile/test-only shared shell and Dws Core module are authorized only under §5. Runtime host
@@ -1220,7 +1225,8 @@ not allocate a service port or change a route.
   internal audit endpoint.
 - [x] Bounded compile/test-only `Diten.ManagementGovernanceService` shared shell and Dws module paths received
   explicit user approval; this is not runtime scaffold or host activation authority.
-- [ ] **B-11:** Service port is allocated without collision.
+- [x] **B-11:** Service port `5017` is allocated without collision; `5011` remains exclusively assigned to
+  `Diten.PvgService`. This is reservation evidence only, not runtime binding authority.
 - [ ] **B-12:** Integration-agent approves and owns the gateway route task.
 - [x] Exact bounded Core repo scope is recorded in §5; later runtime/frontend paths require revalidation.
 - [x] Gate 2 is not triggered by the isolated structural-only Core. A future implementation that touches,

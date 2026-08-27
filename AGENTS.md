@@ -67,12 +67,20 @@ module pack `approved` / `ready-for-dev` olduktan ve açık kullanıcı onayı v
 |--------|------|------------|
 | Gateway (Ocelot) | 5000 | `gateway/Diten.ApiGateway` |
 | Frontend (Diten.Web) | 5001 | `frontend/Diten.Web` |
+| PVG Service | 5011 | Planned: `services/Diten.PvgService` |
+| Management Governance Service | 5017 | Planned: `services/Diten.ManagementGovernanceService` |
 | Auth Service | 5056 | `services/Diten.AuthService/src/Diten.AuthService.Api` |
 | Platform Service | 5057 | `services/Diten.Platform/src/Diten.Platform.API` |
 | DevEnablement Service | 5058 | `services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api` |
 | MongoDB | 27017 | yerel çalışmalı |
 
-**Kural:** Frontend (5001) asla doğrudan servis portlarına (5056/5057/5058) istek atmaz. Her istek Gateway (5000) üzerinden geçer.
+Bu tablo repo içindeki **canonical port registry**'dir. `Planned` satırları portu rezerve eder; tek başına
+service scaffold, route, runtime veya production authority oluşturmaz. `5011` yalnız `Diten.PvgService`,
+`5017` yalnız `Diten.ManagementGovernanceService` için ayrılmıştır.
+
+**Kural:** Frontend (5001) asla doğrudan servis portlarına istek atmaz. Her istek Gateway (5000) üzerinden geçer.
+Yeni veya değişen Ocelot rotaları yalnız `integration-agent` tarafından ve ilgili runtime authority sonrasında
+eklenebilir.
 
 Detay: [.antigravity/rules/ports.md](.antigravity/rules/ports.md)
 

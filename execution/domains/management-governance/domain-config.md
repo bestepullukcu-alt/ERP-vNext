@@ -12,7 +12,10 @@
 - Canonical capabilities: `MOD-0354`, `MOD-0355` (historical aliases `CAND-CAP-0008/0009`)
 - Planned service: `services/Diten.ManagementGovernanceService` — mevcut değil
 - Planned internal modules: `Dws`, `ProcessModeling`
-- Port ve gateway: `TBD`; bu scaffold karar vermez
+- Canonical reserved service port: `5017` (`AGENTS.md` §3). This reservation supersedes the historical
+  `5011` Management Governance assignment; `5011` remains exclusively reserved for `Diten.PvgService`.
+- Gateway route: `TBD`; the port reservation alone grants no scaffold, binding, route, runtime or production
+  authority.
 
 Candidate kimlikler governance-only'dir ve hiçbir runtime literal'da kullanılamaz.
 
