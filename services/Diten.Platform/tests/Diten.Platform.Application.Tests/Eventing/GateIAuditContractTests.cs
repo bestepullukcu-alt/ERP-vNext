@@ -11,7 +11,7 @@ public sealed class GateIAuditContractTests
 {
     internal const string MechanicsSigningIdentity = "gate-i-mechanics-fixture-identity";
     [Fact]
-    public void Registry_ContainsTheFourExplicitGovernanceProfilesAndExactMappings()
+    public void Registry_ContainsTheFiveExplicitGovernanceProfilesAndExactMappings()
     {
         var registry = new GateIAuditAdapterRegistry();
         Assert.NotEqual(PpmAuditAcceptanceRepository.ConsumerName, GateIAuditAcceptanceRepository.ConsumerName);
@@ -23,6 +23,14 @@ public sealed class GateIAuditContractTests
             "fpa.scenario-planning-audit-intent.submitted.v1", 1).Count);
         Assert.Equal(5, registry.ForProducer("Diten.DecisionIntelligenceService",
             "decision-intelligence.outcome-tracking-audit-intent.submitted.v1", 1).Count);
+        Assert.Equal(20, registry.ForProducer("Diten.ManagementGovernanceService",
+            "management-governance.process-modeling-audit-intent.submitted.v1", 1).Count);
+
+        var processModelPublished = registry.Resolve("Diten.ManagementGovernanceService",
+            "management-governance.process-modeling-audit-intent.submitted.v1", 1,
+            "ProcessModelVersion", "Published");
+        Assert.Equal(("MOD-0355", "ProcessModeling.ProcessModelVersion", AuditOperation.Activate),
+            (processModelPublished.ModuleCode, processModelPublished.AuditEntityType, processModelPublished.Operation));
 
         var failed = registry.Resolve("Diten.FpaService",
             "fpa.scenario-planning-audit-intent.submitted.v1", 1, "ComparatorRun", "Failed");

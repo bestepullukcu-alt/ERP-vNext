@@ -933,6 +933,7 @@ intents from these producer/module pairs:
 | `Diten.FpaService` | `MOD-0136` |
 | `Diten.FpaService` | `MOD-0138` |
 | `Diten.DecisionIntelligenceService` | `MOD-0072` |
+| `Diten.ManagementGovernanceService` | `MOD-0355` |
 
 This amendment standardizes only a versioned **Minimal Mutation Audit Profile**. It does not standardize,
 name or create a generic business event.
@@ -967,11 +968,12 @@ The producer-owned reconciliation checkpoints were reviewed read-only at these e
 | `Diten.FpaService` / `MOD-0136` | `711962a3fdc1226d947672dc9b48d29296c960a0` | `BudgetingAuditIntentSubmittedV1` / `fpa.budgeting-audit-intent.submitted.v1` | `urn:diten:fpa:budgeting-audit-intent-submitted:v1`; complete identity annotations | JSON integer `1` / `MOD-0136` | Fixture contract pass |
 | `Diten.FpaService` / `MOD-0138` | `3df680d6e006bfce19e382253ddd1f2f873c2295` | `ScenarioPlanningAuditIntentSubmittedV1` / `fpa.scenario-planning-audit-intent.submitted.v1` | `urn:diten:fpa:scenario-planning-audit-intent-submitted:v1`; complete identity annotations | JSON integer `1` / `MOD-0138` | Fixture contract pass |
 | `Diten.DecisionIntelligenceService` / `MOD-0072` | `b4589139e8c9db544de5b66300640b214db3acf4` | `OutcomeTrackingAuditIntentSubmittedV1` / `decision-intelligence.outcome-tracking-audit-intent.submitted.v1` | `urn:diten:decision-intelligence:outcome-tracking-audit-intent-submitted:v1`; complete identity annotations | JSON integer `1` / `MOD-0072` | Fixture contract pass |
+| `Diten.ManagementGovernanceService` / `MOD-0355` | `3e69577e787ac7ccca149b4065e83eeb97fd5146` | `ProcessModelingAuditIntentSubmittedV1` / `management-governance.process-modeling-audit-intent.submitted.v1` | `urn:diten:management-governance:process-modeling-audit-intent-submitted:v1`; complete identity annotations | JSON integer `1` / `MOD-0355` | Fixture contract pass |
 
 Event type and EventName are producer-owned and are accepted here exactly as supplied. Similar names,
 producers, modules or payloads must not be collapsed into one generic event. The `.v1` routing suffix and
 transport `EventVersion` both mean the numeric integer `1`; string/decimal `"1.0"`, aliases and normalization
-are unsupported. The four fixture checkpoints now use JSON numeric integer `1`; the earlier MOD-0007 and
+are unsupported. The five fixture checkpoints use JSON numeric integer `1`; the earlier MOD-0007 and
 MOD-0072 `1.0` drift is closed.
 
 ## 5. Versioned Minimal Mutation Audit Profile
@@ -1067,8 +1069,35 @@ All rows set `SourceService = Diten.DecisionIntelligenceService`, `SourceModule 
 | `OutcomeMeasurement` | `Appended` | `OutcomeTracking.OutcomeMeasurement` | `AuditOperation.Create` |
 | `OutcomeMeasurement` | `Corrected` | `OutcomeTracking.OutcomeMeasurement` | `AuditOperation.Update` |
 
-`DecisionOutcomeLink`, Metric and Scale events are not admitted by v1. Any pair not shown in these four
-tables is terminal contract failure and creates no AuditEvent projection.
+`DecisionOutcomeLink`, Metric and Scale events are not admitted by v1. Any pair not shown in the preceding
+four producer tables is terminal contract failure and creates no AuditEvent projection.
+
+### Process Modeling — `MOD-0355`
+
+All rows set `SourceService = Diten.ManagementGovernanceService`, `SourceModule = MOD-0355` and
+`Category = AuditCategory.Integration`.
+
+| Exact `entityType` | Exact allowed `mutation` values | AuditEvent `EntityType` | AuditEvent `Operation` |
+|---|---|---|---|
+| `ProcessArchitecture` | `Created`, `Updated`, `Archived` | `ProcessModeling.ProcessArchitecture` | `Create`, `Update`, `Deactivate` respectively |
+| `ProcessDomain` | `Created`, `Updated`, `Archived` | `ProcessModeling.ProcessDomain` | `Create`, `Update`, `Deactivate` respectively |
+| `ProcessFamily` | `Created`, `Updated`, `Archived` | `ProcessModeling.ProcessFamily` | `Create`, `Update`, `Deactivate` respectively |
+| `ProcessDefinition` | `Created`, `Updated`, `Archived` | `ProcessModeling.ProcessDefinition` | `Create`, `Update`, `Deactivate` respectively |
+| `ProcessModel` | `Created`, `Updated` | `ProcessModeling.ProcessModel` | `Create`, `Update` respectively |
+| `ProcessModelVersion` | `DraftUpdated`, `ReviewRequested`, `ReturnedToDraft`, `Published`, `Retired`, `RevisionCreated` | `ProcessModeling.ProcessModelVersion` | `Update`, `LifecycleTransition`, `LifecycleTransition`, `Activate`, `Deactivate`, `Create` respectively |
+
+These are exactly `20` positive pairs. All `34` remaining entity/mutation cross-pairs are terminal contract
+failures and create no AuditEvent. Any pair not shown in the five producer mapping tables is terminal.
+
+The trusted envelope is exact: producer `Diten.ManagementGovernanceService`, module `MOD-0355`, event type
+`ProcessModelingAuditIntentSubmittedV1`, EventName
+`management-governance.process-modeling-audit-intent.submitted.v1`, numeric EventVersion `1` and schema identity
+`urn:diten:management-governance:process-modeling-audit-intent-submitted:v1`. The HMAC scheme is
+`management-governance-event-hmac-sha256.v1`. Production signing identity reservation is exact
+`diten.management-governance.process-modeling-audit-intent.v1`; no production key or KeyId is provisioned.
+The test-only identity `diten.management-governance.process-modeling-audit-intent.v1.test-only` and test-only
+KeyId `mod-0355-process-modeling-audit-fixture-test-only-20260826` are fixture evidence only and are terminally
+rejected from active and previous production slots, including when the test HMAC is otherwise correct.
 
 ## 9. Compatibility Fixture Contract
 
@@ -1085,6 +1114,7 @@ The bilateral fixture artifact names are exact and case-sensitive:
 | `MOD-0136` | `budgeting-audit-intent-submitted-v1.canonical.json` | `budgeting-audit-intent-submitted-v1.expected-audit-event.json` | `budgeting-audit-intent-submitted-v1.schema.json` | `budgeting-audit-intent-submitted-v1.canonical.sha256` |
 | `MOD-0138` | `scenario-planning-audit-intent-submitted-v1.canonical.json` | `scenario-planning-audit-intent-submitted-v1.expected-audit-event.json` | `scenario-planning-audit-intent-submitted-v1.schema.json` | `scenario-planning-audit-intent-submitted-v1.canonical.sha256` |
 | `MOD-0072` | `outcome-tracking-audit-intent-submitted-v1.canonical.json` | `outcome-tracking-audit-intent-submitted-v1.expected-audit-event.json` | `outcome-tracking-audit-intent-submitted-v1.schema.json` | `outcome-tracking-audit-intent-submitted-v1.canonical.sha256` |
+| `MOD-0355` | `process-modeling-audit-intent-submitted-v1.canonical.json` | `process-modeling-audit-intent-submitted-v1.expected-audit-event.json` | `process-modeling-audit-intent-submitted-v1.schema.json` | `process-modeling-audit-intent-submitted-v1.canonical.sha256` |
 
 Each producer amendment must assign an exact producer-owned repository path to these basenames; MOD-0021
 consumer tests consume the same bytes without copying or regenerating them under a different name. The schema
@@ -1107,10 +1137,11 @@ different property order, BOM, CRLF, whitespace normalization or reserialization
 | `MOD-0136` | `254` | `de9534d5b6ce6f7ef7237e6bcf593dfaa460a79b63e6293495d0de25b5225fe8` | PASS: 64 lowercase hex + LF | PASS: common canonical order, complete identity, 14 positive/31 cross-pair negative mappings, 34 contract negatives and exact projection | PASS: `e4896c480405bebf25ba31732a1549136056f8addfc540bf4ac0b28fb9119579`; explicit production rejection; no PPM/MOD-0138 reuse | PASS |
 | `MOD-0138` | `247` | `db9385def75d885a581554e10ce38877408ed445ed3c4f62e17283b30830462b` | PASS: 64 lowercase hex + LF | PASS: complete identity, 14 positive/46 cross-pair negative mappings, 25 contract negatives, bound manifest and exact projection | PASS: `05c7cdee1fa8933f00502460178a2b76fa4d68819a5d2e1801c118e0e68b47df`; delegated/non-delegated and production rejection; no PPM/MOD-0136 reuse | PASS |
 | `MOD-0072` | `246` | `6e1e750ffddc6f65d45556e703b0aa282b8469dec00bcc516a7a0a5f823cc2a3` | PASS: 64 lowercase hex + LF | PASS: complete identity, 5 positive/10 cross-pair negative mappings, 31 contract negatives and exact projection | PASS: `0336b3630d4fa5e10c01cb7674681014d1a6e0d6df40ff3923b4555a9be3c07f`; delegated/non-delegated, production rejection including active/previous slots; no PPM/FP&A reuse | PASS |
+| `MOD-0355` | `258` | `7ee7d2d6b19d832d71dbe89967b0964ce5932b872b8d2528fb2cf14918500f1a` | PASS: 64 lowercase hex + LF | PASS: complete identity, 20 positive/34 cross-pair negative mappings, 21 contract negatives and exact projection | PASS: `0824563cc89fa5f89dd5435f7d8f4771632aa07eb96a50bba4bde17cdc4f959f`; delegated/non-delegated, 7 production rejections including active/previous slots; no PPM/other producer reuse | PASS |
 
-All four canonical blobs are minified UTF-8 without BOM/trailing LF, contain exactly the six profile fields,
+All five canonical blobs are minified UTF-8 without BOM/trailing LF, contain exactly the six profile fields,
 match their recorded payload byte length and computed digest, and bind JSON integer `EventVersion = 1` plus
-the correct ModuleCode in their envelope/schema/projection/signing evidence. All four producer-specific HMAC
+the correct ModuleCode in their envelope/schema/projection/signing evidence. All five producer-specific HMAC
 test vectors recompute to their committed expected signature. These cryptographic passes do not waive schema,
 checksum-record, projection or delegated-provenance fixture requirements.
 
@@ -1118,11 +1149,11 @@ MOD-0136 now uses the common canonical order without exception. Its 254 exact by
 replace the prior checkpoint evidence; MOD-0021 must neither accept nor document an earlier ordering or
 signature as compatible.
 
-All four checkpoints contain delegated positive/negative evidence, explicit non-delegated structural-absence
+All five checkpoints contain delegated positive/negative evidence, explicit non-delegated structural-absence
 evidence and complete allowlist/cross-pair coverage. Test signing identities, KeyIds and otherwise-correct
 test HMACs are production-rejected. The PSS-owned
 [Gate I bilateral consumer acceptance fixture](fixtures/MOD-0021/gate-i/gate-i-audit-intake-bilateral-acceptance-v1.json)
-binds the four immutable `checkpoint:path` artifact sets without copying or regenerating producer bytes. It
+binds the five immutable `checkpoint:path` artifact sets without copying or regenerating producer bytes. It
 also closes the consumer-side delegated-profile missing-proof and test identity/KeyId active/previous slot
 rejection cross-product. These are governance expectations; live validator and credential evidence remains a
 runtime gate.
@@ -1221,15 +1252,15 @@ each new mapping registration.
 
 ## 19. Acceptance and Verification Gates
 
-- [x] All four producer checkpoints were reviewed read-only and their producer-owned exact event identities
+- [x] All five producer checkpoints were reviewed read-only and their producer-owned exact event identities
       were reconciled without PSS generating or generalizing an event.
-- [x] All four event-specific entity/mutation allowlists, SourceService/SourceModule, AuditCategory,
+- [x] All five event-specific entity/mutation allowlists, SourceService/SourceModule, AuditCategory,
       AuditEvent entity/operation projection and delegated-actor mapping are closed in this amendment.
 - [x] Exact case-sensitive fixture basenames, schema identity tuple, canonical property order and SHA-256 file
       format are closed.
-- [x] All four fixture checkpoints use JSON numeric integer EventVersion `1`; the earlier MOD-0007/MOD-0072
+- [x] All five fixture checkpoints use JSON numeric integer EventVersion `1`; the earlier MOD-0007/MOD-0072
       `1.0` drift is closed.
-- [x] All four producers commit canonical/projection/schema/checksum and producer-specific signing evidence at
+- [x] All five producers commit canonical/projection/schema/checksum and producer-specific signing evidence at
       a producer-owned path; canonical byte lengths and computed SHA-256 values match.
 - [x] All checksum records comply with the exact lowercase 64-hex + one-LF/no-filename contract.
 - [x] All schemas encode the complete producer/module/event/version/profile identity tuple and exact valid
@@ -1241,7 +1272,7 @@ each new mapping registration.
       structural absence of delegation metadata for non-delegated delivery.
 - [x] Every test-only signing vector and bilateral consumer matrix prove production rejection of test signing
       identity, test KeyId and otherwise-correct test signature, including active/previous slot attempts.
-- [x] All four producer compatibility fixtures pass the MOD-0021 governance consumer acceptance matrix.
+- [x] All five producer compatibility fixtures pass the MOD-0021 governance consumer acceptance matrix.
 - [ ] Transaction test proves inbox + MOD-0021 audit outbox atomicity.
 - [ ] Duplicate/conflict tests prove the complete `ConsumerName + EventId` matrix.
 - [ ] Unsupported version, malformed canonical payload and security failures prove terminal disposition.
@@ -1261,9 +1292,9 @@ closed pre-development fixture/design gate or revoke ready-for-dev implementatio
   mapping implementation or fixture is added to PSS runtime scope.
 - An eventual implementation authorization must name exact repo paths and tests; this governance amendment
   alone authorizes no service, frontend, Gateway, schema or deployment change.
-- Track approval independently for `MOD-0007`, `MOD-0136`, `MOD-0138` and `MOD-0072`; one completed mapping
+- Track approval independently for `MOD-0007`, `MOD-0136`, `MOD-0138`, `MOD-0072` and `MOD-0355`; one completed mapping
   does not promote the remaining mappings or the amendment as a whole.
-- Reconciliation result is **FIXTURE PASS**. The four immutable producer fixture sets and the MOD-0021-owned
+- Reconciliation result is **FIXTURE PASS**. The five immutable producer fixture sets and the MOD-0021-owned
   bilateral consumer acceptance fixture close the Gate I pre-development contract/design gate.
 - Amendment 20 is **READY-FOR-DEV / NON-RUNTIME**. This is an implementation handoff for the exact MOD-0021
   consumer mappings and acceptance tests only; it does not change the parent status, promote producer packs,

@@ -302,6 +302,7 @@ internal static class FixtureCatalog
             : expectedSignatureRaw;
         var secret = vector.TryGetProperty("testKey", out var hex) ? Convert.FromHexString(hex.GetString()!)
             : vector.TryGetProperty("fixtureSecretBase64", out var b64) ? Convert.FromBase64String(b64.GetString()!)
+            : vector.TryGetProperty("keyBase64", out var keyBase64) ? Convert.FromBase64String(keyBase64.GetString()!)
             : Encoding.UTF8.GetBytes(vector.GetProperty("testOnlyKeyUtf8").GetString()!);
         var projection = Encoding.UTF8.GetString(Blob(Artifact("projection")));
         using var projectionJson = JsonDocument.Parse(projection);
@@ -332,6 +333,7 @@ internal static class FixtureCatalog
 
     private static bool IsTestOnly(JsonElement vector) =>
         (vector.TryGetProperty("testOnly", out var marker) && marker.GetBoolean())
+        || (vector.TryGetProperty("fixtureOnly", out var fixtureOnly) && fixtureOnly.GetBoolean())
         || (vector.TryGetProperty("classification", out var classification)
             && classification.GetString()!.Contains("TEST-ONLY", StringComparison.Ordinal))
         || (vector.TryGetProperty("fixturePurpose", out var purpose)
@@ -339,7 +341,9 @@ internal static class FixtureCatalog
 
     private static bool IsProductionReject(JsonElement vector) =>
         (vector.TryGetProperty("productionValidatorDisposition", out var disposition)
-            && disposition.GetString() == "REJECT") || IsTestOnly(vector);
+            && disposition.GetString() == "REJECT")
+        || (vector.TryGetProperty("productionAllowed", out var productionAllowed) && !productionAllowed.GetBoolean())
+        || IsTestOnly(vector);
 
     private static Guid? ParseNullableGuid(string value) => value == "-" ? null : Guid.Parse(value);
 
