@@ -23,7 +23,10 @@
                     <label for="slimCode" class="form-label fw-medium">
                         @Localizer["Code"] <span class="text-danger">*</span>
                     </label>
-                    <input type="text" id="slimCode" name="Code" class="form-control" maxlength="64" placeholder="@Localizer["CodePlaceholder"]" required />
+                    <div class="diten-field">
+                        <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="slimCode" name="Code" class="form-control" maxlength="64" placeholder="@Localizer["CodePlaceholder"]" required />
+                    </div>
                     <div class="invalid-feedback"></div>
                 </div>
 
@@ -31,28 +34,40 @@
                     <label for="slimName" class="form-label fw-medium">
                         @Localizer["Name"] <span class="text-danger">*</span>
                     </label>
-                    <input type="text" id="slimName" name="Name" class="form-control" maxlength="200" placeholder="@Localizer["NamePlaceholder"]" required />
+                    <div class="diten-field">
+                        <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="slimName" name="Name" class="form-control" maxlength="200" placeholder="@Localizer["NamePlaceholder"]" required />
+                    </div>
                     <div class="invalid-feedback"></div>
                 </div>
 
                 <div class="col-12">
                     <label for="slimReferenceType" class="form-label fw-medium">@Localizer["ReferenceType"]</label>
-                    <select id="slimReferenceType" name="ReferenceType" class="form-select select2-offcanvas">
-                        <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
-                        <option value="Standard">@Localizer["ReferenceTypeStandard"]</option>
-                        <option value="Custom">@Localizer["ReferenceTypeCustom"]</option>
-                        <option value="Pro">@Localizer["ReferenceTypePro"]</option>
-                    </select>
+                    <div class="diten-field">
+                        <i class="bx bx-purchase-tag diten-field-icon" aria-hidden="true"></i>
+                        <select id="slimReferenceType" name="ReferenceType" class="form-select select2-offcanvas">
+                            <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                            <option value="Standard">@Localizer["ReferenceTypeStandard"]</option>
+                            <option value="Custom">@Localizer["ReferenceTypeCustom"]</option>
+                            <option value="Pro">@Localizer["ReferenceTypePro"]</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="col-12">
                     <label for="slimPriority" class="form-label fw-medium">@Localizer["Priority"]</label>
-                    <input type="number" id="slimPriority" name="Priority" class="form-control" min="0" max="100" value="0" />
+                    <div class="diten-field">
+                        <i class="bx bx-flag diten-field-icon" aria-hidden="true"></i>
+                        <input type="number" id="slimPriority" name="Priority" class="form-control" min="0" max="100" value="0" />
+                    </div>
                 </div>
 
                 <div class="col-12">
                     <label for="slimDescription" class="form-label fw-medium">@SharedLocalizer["Description"]</label>
-                    <textarea id="slimDescription" name="Description" class="form-control" rows="4" placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
+                    <div class="diten-field">
+                        <i class="bx bx-align-left diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                        <textarea id="slimDescription" name="Description" class="form-control" rows="4" placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
+                    </div>
                 </div>
 
                 <div class="col-12">
