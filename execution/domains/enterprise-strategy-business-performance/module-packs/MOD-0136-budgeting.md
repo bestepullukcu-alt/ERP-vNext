@@ -344,6 +344,42 @@ Normative tests compare both complete closed-schema byte sequences before hashes
 order; NFD strings are NFC-normalized; numeric/short/exponent decimal input is invalid (`400`) rather than
 silently reformatted; unsorted lines canonicalize to the mandated sort. Extra/missing properties fail closed.
 
+### Gate I-B Budget local validation provider amendment R2 — AUTHORIZED / LOCAL-ONLY / NON-PRODUCTION
+
+Control Tower authorizes the owner-side read-only validation provider required by MOD-0117 §4.9.1 and §4.9.3.
+The exact operation and permission are both `budgeting.budget-version-references.validate`; audience is
+`diten-fpa-service`, Client ID `diten.fpa`, owner `MOD-0136`, and protocol scope
+`diten.s2s.delegated.invoke`. Shared FPA workload identity does not merge MOD-0136 and MOD-0138 entitlement,
+permission, fixture, signing or persistence ownership.
+
+The provider accepts only exact `BudgetVersionReferenceV1`, exact
+`ppm.investment-case-selected-budget-version-reference/1.0`, exact
+`ppm.investment-case-context/1.0`, and the three closed modes. `CurrentSelectionEligibility` is valid only
+for the selected-budget wrapper. Exact results are `400/401/403/404/409/503`; missing, cross-tenant,
+invisible and non-disclosable state is indistinguishable `404`. Success returns only the exact five-field
+reference plus resolution, certification/retirement and current-selection facts. Budget amount, currency,
+period, line, certification payload and selected-baseline payload are forbidden.
+
+The exact owner-local route is
+`POST /internal/v1/fpa/budgeting/budget-version-references/validate`. It is `[Authorize]`,
+service-network-only, has no Gateway/browser route and remains default-off. Committed configuration cannot
+enable it or contain a URI, credential, key or secret.
+
+Additive implementation authority is limited to:
+
+- `services/Diten.FpaService/src/Diten.FpaService.Application/Modules/Budgeting/GateI/**`;
+- `services/Diten.FpaService/src/Diten.FpaService.Api/Modules/Budgeting/InternalBudgetVersionValidationController.cs`;
+- `services/Diten.FpaService/src/Diten.FpaService.Api/Modules/Budgeting/BudgetingModuleRegistration.cs`, additive default-off registration only;
+- `services/Diten.FpaService/tests/Diten.FpaService.UnitTests/Modules/Budgeting/GateI/**`;
+- `services/Diten.FpaService/tests/Diten.FpaService.ContractTests/Modules/Budgeting/GateI/**`;
+- `services/Diten.FpaService/tests/Diten.FpaService.ArchitectureTests/Modules/Budgeting/GateI/**`.
+
+An Application-owned authoritative snapshot-reader port may be supplied by a test fake. Production Mongo
+wiring, host/listener activation and provider transport configuration remain later gates. Validation writes
+no mutation, cache, receipt, audit intent or outbox. Cache/LKG/local inference, direct ScenarioPlanning
+persistence access, frontend, Gateway, WorkCenter, production key/secret/deployment/activation and push remain
+forbidden. This checkpoint alone is not Local API-Test Ready and cannot activate atomic Gate I-B.
+
 ## 5. Repo Scope
 
 ### This governance promotion task
