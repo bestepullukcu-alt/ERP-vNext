@@ -9,7 +9,7 @@ public sealed class FpaPrimaryTopologyTests
 
     [Fact] public void Exact_project_reference_graph_and_shared_module_isolation()
     {
-        AssertRefs("Domain");AssertRefs("Application","Diten.FpaService.Domain");AssertRefs("Persistence","Diten.FpaService.Application","Diten.FpaService.Domain");AssertRefs("Infrastructure","Diten.FpaService.Application");AssertRefs("Api","Diten.FpaService.Application","Diten.FpaService.Persistence","Diten.FpaService.Infrastructure");
+        AssertRefs("Domain");AssertRefs("Application","Diten.FpaService.Domain");AssertRefs("Persistence","Diten.FpaService.Application","Diten.FpaService.Domain");AssertRefs("Infrastructure","Diten.FpaService.Application");AssertRefs("Api","Diten.FpaService.Application","Diten.FpaService.Persistence","Diten.FpaService.Infrastructure","Diten.Platform.Common");
         var source=Path.Combine(Root,"services","Diten.FpaService","src");var all=ReadSources(source);
         foreach(var forbidden in new[]{"Diten.EnterpriseStrategyService","Diten.PpmService","DecisionIntelligence","MongoClient","RabbitMQ","MassTransit","WebApplication.CreateBuilder",".Run("})Assert.DoesNotContain(forbidden,all,StringComparison.Ordinal);
         AssertModuleIsolation(source);
@@ -31,7 +31,7 @@ public sealed class FpaPrimaryTopologyTests
     {
         var service=Path.Combine(Root,"services","Diten.FpaService");var solution=File.ReadAllLines(Path.Combine(service,"Diten.FpaService.sln")).Where(x=>x.StartsWith("Project(",StringComparison.Ordinal)).Select(x=>x.Split('=')[1].Split(',')[0].Trim().Trim('"')).ToArray();
         Assert.Equal(new[]{"Diten.FpaService.Domain","Diten.FpaService.Application","Diten.FpaService.Persistence","Diten.FpaService.Infrastructure","Diten.FpaService.Api","Diten.FpaService.UnitTests","Diten.FpaService.ArchitectureTests","Diten.FpaService.ContractTests"},solution);
-        AssertTestProject("UnitTests",["Diten.FpaService.Application","Diten.FpaService.Domain","Diten.FpaService.Persistence"]);AssertTestProject("ArchitectureTests",["Diten.FpaService.Api","Diten.FpaService.Application","Diten.FpaService.Domain","Diten.FpaService.Infrastructure","Diten.FpaService.Persistence"]);AssertTestProject("ContractTests",["Diten.FpaService.Application","Diten.FpaService.Domain","Diten.FpaService.Persistence"]);
+        AssertTestProject("UnitTests",["Diten.FpaService.Api","Diten.FpaService.Application","Diten.FpaService.Domain","Diten.FpaService.Persistence"]);AssertTestProject("ArchitectureTests",["Diten.FpaService.Api","Diten.FpaService.Application","Diten.FpaService.Domain","Diten.FpaService.Infrastructure","Diten.FpaService.Persistence"]);AssertTestProject("ContractTests",["Diten.FpaService.Application","Diten.FpaService.Domain","Diten.FpaService.Persistence"]);
     }
 
     private static void AssertModuleIsolation(string sourceRoot)
