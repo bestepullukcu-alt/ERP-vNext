@@ -10,7 +10,7 @@ public sealed class InternalBudgetVersionValidationController(BudgetVersionRefer
     IBudgetGateITrustedContextAccessor context) : ControllerBase
 {
     [HttpPost("validate")]
-    public async Task<IActionResult> Validate([FromBody] BudgetVersionValidationRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Validate([FromBody] BudgetGateIRequest request, CancellationToken cancellationToken)
     {
         var result = await provider.ValidateAsync(request, context.Current, cancellationToken);
         return StatusCode(result.StatusCode, result);
