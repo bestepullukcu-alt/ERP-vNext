@@ -380,6 +380,36 @@ no mutation, cache, receipt, audit intent or outbox. Cache/LKG/local inference, 
 persistence access, frontend, Gateway, WorkCenter, production key/secret/deployment/activation and push remain
 forbidden. This checkpoint alone is not Local API-Test Ready and cannot activate atomic Gate I-B.
 
+### Gate I-B FU16 HTTP trusted-context adapter amendment — AUTHORIZED / DEFAULT-OFF / NON-PRODUCTION
+
+Control Tower authorizes an owner-local adapter that projects only a successfully authenticated shared
+`Fu16TrustedRequestContext` into `BudgetGateITrustedContext`. The internal controller must select the exact
+named `Diten.FU16.DelegatedActor` scheme. Plain/default authentication, HS256 user/session fallback,
+payload-derived tenant/actor and any alias, wildcard, case or whitespace normalization are forbidden. The
+adapter requires exact `diten.fpa`, `diten-fpa-service`, `diten.s2s.delegated.invoke`, the Budgeting validation
+operation and its single MOD-0136 permission. MOD-0138 permission or operation is never accepted through the
+shared FPA workload identity.
+
+The existing contract-discovery registration remains provider-disabled and keeps its unavailable accessor.
+A separate additive evidence registration may register only the named scheme and adapter when the caller
+explicitly supplies shared FU16 options and dependencies. It does not register keys, authority clients,
+issuer/audience values, credentials, a listener, host or runtime activation.
+
+Exact additive paths are:
+
+- `services/Diten.FpaService/src/Diten.FpaService.Api/Modules/Budgeting/Fu16BudgetGateITrustedContextAccessor.cs`;
+- `services/Diten.FpaService/src/Diten.FpaService.Api/Modules/Budgeting/BudgetingModuleRegistration.cs`;
+- `services/Diten.FpaService/src/Diten.FpaService.Api/Modules/Budgeting/InternalBudgetVersionValidationController.cs`;
+- `services/Diten.FpaService/src/Diten.FpaService.Api/Diten.FpaService.Api.csproj`, only for the shared `Diten.Platform.Common` project reference;
+- `services/Diten.FpaService/tests/Diten.FpaService.UnitTests/Modules/Budgeting/GateI/Fu16BudgetGateITrustedContextTests.cs`;
+- `services/Diten.FpaService/tests/Diten.FpaService.UnitTests/Diten.FpaService.UnitTests.csproj`, only for the API project reference;
+- `services/Diten.FpaService/tests/Diten.FpaService.ArchitectureTests/Modules/Budgeting/GateI/Fu16BudgetGateICompositionArchitectureTests.cs`.
+
+Acceptance requires exact positive projection, rejection of every wrong profile and MOD-0138 cross-profile,
+named-scheme evidence, preserved default-disabled composition, zero Program/listener mutation and physical
+expected-red evidence for profile bypass, default-scheme fallback and trusted-context substitution.
+Production authority and activation remain `none`; no Gateway, frontend or WorkCenter change is authorized.
+
 ## 5. Repo Scope
 
 ### This governance promotion task
