@@ -24,12 +24,12 @@ execution/
 ├── scripts/
 │   └── generate-dashboard.py
 └── domains/
-    ├── developer-enablement/        # mevcut: Golden Reference pack'leri
-    └── platform-shared-services/    # mevcut: PSS pack'leri
-
-Planned, not scaffolded yet:
-- master-data-management
-- enterprise-strategy-business-performance
+    ├── developer-enablement/                    # mevcut: Golden Reference pack'leri
+    ├── enterprise-strategy-business-performance/ # governance scaffold; DCP-005
+    ├── management-governance/                    # governance scaffold; DWS + BPM; DCP-006
+    ├── master-data-management/                  # governance scaffold
+    ├── platform-shared-services/                # mevcut: PSS pack'leri
+    └── portfolio-delivery/                      # governance scaffold; MOD-0117
 ```
 
 Her domain altinda:
@@ -60,7 +60,7 @@ En spesifik katman kazanir.
 {ID}-{slug}.md
 ```
 
-- `DOMAIN-KISA`: `MDM` | `PSS` | `ESBP`
+- `DOMAIN-KISA`: `DEVEN` | `MDM` | `PSS` | `ESBP` | `MG` | `PPM`
 - Yeni ERP product module ID: `MOD-NNNN`
 - Follow-up ID: `MOD-NNNN-FUxx`
 - Delivery Capability Pack ID: `DCP-NNN`
@@ -90,7 +90,7 @@ Bu tarihten sonraki yeni moduller veya major feature'lar module pack ile acilir.
 
 Yeni bir modul acilirken standard akisi:
 
-1. Domain sec (`MDM` / `PSS` / `DEVEN` / `ESBP`)
+1. Domain sec (`DEVEN` / `MDM` / `PSS` / `ESBP` / `MG` / `PPM`)
 2. Registry-controlled `{ID}-{slug}.md` module pack dosyasi olustur
 3. YAML frontmatter + acceptance criteria doldur
 4. Branch ac (`feature/{domain-short}/{id-lower}-{slug}`)
