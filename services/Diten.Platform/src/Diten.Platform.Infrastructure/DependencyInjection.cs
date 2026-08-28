@@ -20,6 +20,7 @@ using Diten.Platform.Infrastructure.Persistence.Settings;
 using Diten.Platform.Infrastructure.Services;
 using Diten.Platform.Infrastructure.Services.Audit;
 using Diten.Platform.Infrastructure.Services.Http;
+using Diten.Platform.Infrastructure.Services.WorkAggregation;
 using Diten.Platform.Infrastructure.Services.Mdm;
 using Diten.Platform.Infrastructure.Services.Notifications;
 using Diten.Platform.Infrastructure.Settings;
@@ -186,6 +187,20 @@ public static class DependencyInjection
             .AddHttpMessageHandler<TenantPropagationHandler>();
         services.AddHttpClient<IUserReferenceValidator, Diten.Platform.Infrastructure.Services.Auth.AuthServiceUserReferenceValidator>()
             .AddHttpMessageHandler<TenantPropagationHandler>();
+
+        /*
+         * WC-D1 (DCP-004 §2 D1) — THE GENERAL BRIDGE to modules that live in their own service.
+         *
+         * ONE provider class and ONE dispatcher class, multiplied by the rows in
+         * 'WorkAggregation:RemoteProviders'. Adding a module is adding a row; it is deliberately NOT adding a
+         * class, because N teams' bridge classes would mean N error-handling policies and N timeouts, and the
+         * first slow module would slow the whole board with nobody able to say which one.
+         *
+         * The ADDRESS is the operator's, written in configuration beside MdmService:BaseUrl. It is not read from
+         * the self-registration manifest: a manifest is client-supplied, and an address inside it is the party
+         * being called telling Platform where to send a caller's JWT.
+         */
+        services.AddRemoteWorkItemProviders(configuration);
 
         BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
         BsonSerializer.RegisterSerializer(new DecimalSerializer(BsonType.Decimal128));

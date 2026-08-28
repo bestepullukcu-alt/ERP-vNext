@@ -207,4 +207,5 @@
   <data name="ErrorWorkItemActionUnknown" xml:space="preserve"><value>Cette action n'est plus proposée pour cet élément. Actualisez la page pour voir les options actuelles.</value></data>
   <data name="ErrorWorkItemActionForbidden" xml:space="preserve"><value>Vous n'avez pas l'autorisation d'exécuter cette action.</value></data>
   <data name="ErrorWorkItemActionPayloadInvalid" xml:space="preserve"><value>Cette action nécessite plus d'informations que celles fournies. Veuillez remplir les champs obligatoires.</value></data>
+  <data name="ErrorWorkItemRemoteUnavailable" xml:space="preserve"><value>Le système propriétaire de cet élément n'a pas répondu ; on ignore si l'action a été effectuée. Actualisez la liste pour voir son état actuel, puis réessayez.</value></data>
 </root>

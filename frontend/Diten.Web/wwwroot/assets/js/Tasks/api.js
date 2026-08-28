@@ -109,6 +109,14 @@
         WORK_ITEM_ACTION_UNKNOWN: 'errorWorkItemActionUnknown',
         WORK_ITEM_ACTION_FORBIDDEN: 'errorWorkItemActionForbidden',
         WORK_ITEM_ACTION_PAYLOAD_INVALID: 'errorWorkItemActionPayloadInvalid',
+        /*
+         * WC-D1 — the module owning this item lives in ANOTHER SERVICE and did not answer. Its OWN sentence
+         * because it sends the reader somewhere else entirely: not to an administrator to fix wiring and not
+         * to a permission request, but to try again — and, crucially, to NOT assume the write landed. Every
+         * other code above is a permanent fact about the wiring; this one is transient and the outcome is
+         * genuinely unknown.
+         */
+        WORK_ITEM_REMOTE_UNAVAILABLE: 'errorWorkItemRemoteUnavailable',
         APPROVAL_PENDING: 'errorApprovalPending',
         /*
          * ⚠ A SEPARATE CODE ON PURPOSE, and it was missing here until it was measured live (2026-08-25): the

@@ -42,6 +42,22 @@ public static class WorkItemActionReasonCodes
 
     /// <summary>The action needs a field the request did not carry (a reason, a date, a person).</summary>
     public const string PayloadInvalid = "WORK_ITEM_ACTION_PAYLOAD_INVALID";
+
+    /// <summary>
+    /// WC-D1 — the module owning this item lives in ANOTHER SERVICE and did not answer: refused the connection,
+    /// exceeded its budget, or replied with something that is not a projection envelope.
+    ///
+    /// <para><b>ITS OWN CODE, and the whole point of the code is that it is not a 200.</b> Every other refusal
+    /// above is a permanent fact about the wiring — no such source, no dispatcher, no such verb, no permission.
+    /// This one is TRANSIENT and sends the reader somewhere else entirely: try again, or tell an operator that a
+    /// service is down. Folding it into <see cref="ProviderNotDispatchable"/> would tell a user whose network
+    /// blipped that an administrator must change a configuration.</para>
+    ///
+    /// <para><b>FAIL-CLOSED.</b> A write whose answer never arrived is reported as REFUSED, never as success. The
+    /// action MAY have been carried out on the far side — that is exactly why the caller must be told the outcome
+    /// is unknown rather than shown a green toast over a write nobody can confirm.</para>
+    /// </summary>
+    public const string RemoteUnavailable = "WORK_ITEM_REMOTE_UNAVAILABLE";
 }
 
 /// <summary>
