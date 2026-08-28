@@ -61,6 +61,15 @@ production_authority: none
 > activation, Gateway, frontend, WorkCenter, PVG, live MOD-0117/FU16/MOD-0021 provider, key, secret, broker,
 > deployment, migration or legacy-retirement authority.
 
+> **B-11B entitlement identity correction:** The explicit Control Tower decision dated 2026-08-28 binds
+> the two independent FU16 identity fields to the exact values `ModuleCode=MOD-0354` and
+> `ModuleEntitlementCode=MOD-0354`. Equality of their current values does not merge their semantics and does
+> not establish a general owner/module/entitlement equality convention. The shared
+> `management-governance` value, the descriptive `decomposition-work-structuring-engine` value and every
+> other alias are forbidden for this binding. This correction authorizes only local fixture/application-port
+> exact-value validation; it creates no entitlement, automatic grant, catalog registration, activation or
+> production authority.
+
 > **Port reservation:** `Diten.ManagementGovernanceService:5017` is the canonical governance reservation.
 > It supersedes the historical Management Governance `5011` assignment; `5011` belongs exclusively to
 > `Diten.PvgService`. The reservation grants no listener, route, scaffold, runtime or production authority.
@@ -1379,6 +1388,10 @@ This table is a local-test contract only. It does not reserve a Gateway path or 
 - [x] **B-11B authority:** The Functional Local DWS API / NON-PRODUCTION / DEFAULT-OFF amendment received
   explicit Control Tower approval on 2026-08-28 for the exact §5 paths and exact semantic decisions in §19.
   This authority permits typed local implementation and verified local checkpoint commits only.
+- [x] **B-11B entitlement identity correction:** FU16 consumes independent exact fields
+  `ModuleCode=MOD-0354` and `ModuleEntitlementCode=MOD-0354`. Neither `management-governance` nor
+  `decomposition-work-structuring-engine` is an allowed entitlement alias. The correction grants no catalog
+  registration, tenant grant, entitlement creation or activation authority.
 - [ ] **B-11B evidence:** Exact ten-command/five-query typed functional implementation, leaf-only removal,
   three-family zero-write no-op matrix, trusted actor split, MOD-0117/FU16 fixture matrices, typed persistence
   and full functional/mutation/regression evidence in §19 are implemented and proven.
@@ -1527,9 +1540,12 @@ name/version, context kind and context ID, plus its fixture version/fence. Its o
 
 The fixture cannot infer existence, visibility or ownership from the GUID and cannot use cache/LKG allow.
 
-The FU16 fixture validates exact `TenantId`, `SecuritySubjectId`, `EffectiveActorId`, optional
-`DelegatedActorId`, `ModuleCode=MOD-0354`, entitlement code, exact operation/permission pair, explicit
-tenant-scoped grant, principal/credential generation and authorization/entitlement freshness vectors. Its
+The FU16 fixture and its application port validate exact `TenantId`, `SecuritySubjectId`, `EffectiveActorId`,
+optional `DelegatedActorId`, independent `ModuleCode=MOD-0354` and
+`ModuleEntitlementCode=MOD-0354` fields, exact operation/permission pair, explicit tenant-scoped grant,
+principal/credential generation and authorization/entitlement freshness vectors. The fields remain
+semantically separate even though their bound values are equal. `management-governance`,
+`decomposition-work-structuring-engine`, normalized aliases and fallback values must fail closed. Its
 typed dispositions are authentication/proof invalid → `401 dws_authentication_required`; entitlement,
 explicit grant or exact permission denied → `403 dws_permission_denied`; and unavailable, timeout, malformed,
 indeterminate or stale freshness authority → `503 dws_authorization_authority_unavailable`. There is no
@@ -1550,6 +1566,11 @@ through B-09 remain open.
 tenant shell, the planned route and six permissions, and must have two-way completeness with the operation
 manifest. It cannot register against Platform/AuthService, seed grants, enable an entitlement or activate a
 route until a separately authorized cross-service implementation/activation slice exists.
+
+The B-11B entitlement correction does not add `ModuleEntitlementCode` to self-registration and cannot be
+used to infer an active Platform catalog row. Only the local FU16 fixture/application port owns the exact
+two-field assertion in this slice; any future registration or entitlement mutation requires a separately
+authorized bilateral Platform/AuthService implementation and activation gate.
 
 #### Functional evidence gate
 
