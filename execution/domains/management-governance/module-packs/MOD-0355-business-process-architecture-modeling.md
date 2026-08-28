@@ -19,7 +19,7 @@ started: 2026-08-25
 target: 2026-09-15
 form_field_count: 0
 port: 5017
-implementation_authority: explicit-user-control-tower-bounded-core-and-local-api-test
+implementation_authority: explicit-user-control-tower-bounded-core-local-api-test-and-performance-improvement-contract-test
 production_authority: none
 ---
 
@@ -32,7 +32,7 @@ production_authority: none
 > authorizes the exact non-production Local API-Test slice; neither authority grants production runtime.
 
 > **Ready-for-dev bounded implementation guard:** `status: ready-for-dev`,
-> `implementation_authority: explicit-user-control-tower-bounded-core-and-local-api-test` and
+> `implementation_authority: explicit-user-control-tower-bounded-core-local-api-test-and-performance-improvement-contract-test` and
 > `production_authority: none` are binding. The explicit user decision dated 2026-08-25 authorizes the exact
 > Core scaffold, module and test paths in §5. The later Local API-Test amendment is the sole scoped exception
 > to the listener/endpoint/port-binding prohibitions in this guard and §§5/8/15: it permits only the exact
@@ -80,6 +80,11 @@ Delivery is divided into seven independently gated slices:
 5. Optional reference integrations
 6. Frontend & Legacy Parity
 7. Runtime activation
+
+The Blueprint 8.1 Performance & Improvement Contract-Test amendment in §19 is an eighth independently
+gated, non-production/default-off slice. It authorizes only the exact improvement contract/persistence/test
+paths in §5. Process KPI Binding remains fail-closed because its certified metric/calculation reference
+contract is not allocated in executable form.
 
 Governance availability alone is not runtime or implementation availability. Present implementation authority
 exists only for (a) the bounded Core Model & Contract-Test paths in §5 and (b) the exact NON-PRODUCTION /
@@ -182,9 +187,9 @@ The following canonical objects are owned by MOD-0355, not by a new module or FU
 - `Process Improvement Opportunity` (`ProcessImprovementOpportunityID`)
 - `Process Improvement Outcome` (`ProcessImprovementOutcomeID`)
 
-This ownership declaration does not add them to Minimal Core v1 entity, request, persistence, permission,
-operation, audit or runtime schemas. Their bounded governance contract is defined in §19 and remains
-NON-PRODUCTION / NON-EXECUTABLE / DEFAULT-OFF until its explicit readiness blockers close.
+This ownership declaration does not add them to Minimal Core v1 schemas. The separate bounded executable
+contract in §19 authorizes only the exact default-off Improvement paths in §5; KPI Binding and every
+host-level authorization/delivery path remain dependency-blocked.
 
 ### Governance-only later-slice reference shapes
 
@@ -262,7 +267,7 @@ Additional rules:
   executable enforcement and delivery belong to the later Approval/Auth/Audit Runtime slice.
 - Minimal Core v1 records no local approval truth.
 
-### Exact permission inventory
+### Core exact permission inventory
 
 1. `management-governance.process-modeling.architectures.read`
 2. `management-governance.process-modeling.architectures.create`
@@ -283,6 +288,30 @@ Additional rules:
 
 No additional permission may be inferred from role names or introduced without a versioned pack amendment
 and owner approval.
+
+### Performance & Improvement additive permission/operation inventory — DEFAULT-OFF
+
+This versioned amendment owner-declares exactly nine additional ordinal operation/permission pairs. Each
+operation ID is identical to its permission key; aliases, wildcard, prefix, trim and case-fold matching are
+forbidden:
+
+| Exact operation ID | Exact permission |
+|---|---|
+| `management-governance.process-modeling.kpi-bindings.read` | `management-governance.process-modeling.kpi-bindings.read` |
+| `management-governance.process-modeling.kpi-bindings.create` | `management-governance.process-modeling.kpi-bindings.create` |
+| `management-governance.process-modeling.kpi-bindings.archive` | `management-governance.process-modeling.kpi-bindings.archive` |
+| `management-governance.process-modeling.improvements.read` | `management-governance.process-modeling.improvements.read` |
+| `management-governance.process-modeling.improvements.create` | `management-governance.process-modeling.improvements.create` |
+| `management-governance.process-modeling.improvements.update` | `management-governance.process-modeling.improvements.update` |
+| `management-governance.process-modeling.improvements.qualify` | `management-governance.process-modeling.improvements.qualify` |
+| `management-governance.process-modeling.improvements.close` | `management-governance.process-modeling.improvements.close` |
+| `management-governance.process-modeling.improvements.record-outcome` | `management-governance.process-modeling.improvements.record-outcome` |
+
+The resulting owner declaration is exactly twenty-five unique operations and twenty-five unique permissions:
+the existing sixteen plus these nine. The existing FU16 sixteen-entry manifest is not silently reinterpreted;
+the nine-entry delta requires a separate bilateral FU16 amendment and executable fixture before any local API,
+delegated invocation or authorization success. Until then every new operation is unavailable (`503`), never
+mapped to a Core permission by analogy.
 
 ## 4. Entity Fields
 
@@ -492,6 +521,78 @@ exception to the ordinary hard-delete prohibition: it is not an endpoint, purge,
 capability; it cannot target Published/Retired, another tenant or any other version. A failure in any of the
 three replacement collections rolls back the version CAS and all graph changes. No tombstone or historical
 row is exposed as current graph state for a mutable Draft.
+
+### Process KPI Binding — exact dependency-blocked contract
+
+The canonical object identity is `ProcessKPIBindingID`. A valid binding must contain the inherited tenant
+entity fields plus exactly these business meanings:
+
+- one required exact `ProcessModelVersionId`;
+- one required certified metric-definition reference;
+- one required calculation-contract reference;
+- one required lifecycle value `Active` or `Archived`.
+
+Create would require a same-tenant non-deleted `Published` ProcessModelVersion. Archive would be the only
+mutation after create; `Active → Archived` is terminal. Rebinding, update-in-place, delete, hard delete, TTL
+and cascade are forbidden. The future unique identity must be tenant-first and distinguish the exact process
+version plus both exact external references.
+
+MOD-0059/MOD-0060 have no executable pack in this materialized baseline that supplies the exact contract
+names, versions, reference fields, calculation identity or compatibility fixtures. Therefore the two
+reference meanings above are not serialized field names and no entity/request/schema/index is authorized for
+this subpath. Create, archive and read return unavailable (`503`) with zero residue until that producer
+contract and its bilateral fixture are approved. A free-text metric code, local formula, copied metric payload
+or opaque GUID guessed as metric truth is forbidden.
+
+### Process Improvement Opportunity — bounded executable contract
+
+`ProcessImprovementOpportunityID` maps to a tenant-owned entity with the inherited `EntityBase` fields and
+exactly these business fields:
+
+| Field | Type | Required | Exact rule |
+|---|---|---:|---|
+| `ProcessModelVersionId` | Guid | Yes | Same-tenant, non-deleted Published version at create |
+| `Title` | string | Yes | NFC, trimmed, 1–200 |
+| `ProblemStatement` | string | Yes | NFC, trimmed, 1–4000 |
+| `ExpectedOutcome` | string? | No at create; Yes at qualify | NFC, trimmed, 1–2000 when present |
+| `PriorityRank` | int? | No at create; Yes at qualify | Positive integer; ordinal priority only |
+| `LifecycleState` | enum | Yes | Exactly `Open`, `Qualified` or `Closed` |
+
+Lifecycle is exact and forward-only:
+
+```text
+Open → Qualified → Closed
+```
+
+Create produces `Open`. Only `Open` permits title/problem/expected-outcome/priority update. Qualify requires
+non-empty `ExpectedOutcome`, positive `PriorityRank`, current expected `EntityBase.Version` and the original
+same-tenant process-model version to remain referenceable. Closed is terminal and requires at least one
+same-tenant immutable outcome. Return-to-open, requalification, delete, archive, task/project creation,
+workflow/approval execution and process-instance behavior are absent.
+
+The tenant-first query index is
+`TenantId + ProcessModelVersionId + LifecycleState + PriorityRank + Id`; it is non-unique and has no TTL.
+Cross-tenant, deleted or non-disclosable records return `404`; stale CAS returns `409`.
+
+### Process Improvement Outcome — bounded executable contract
+
+`ProcessImprovementOutcomeID` maps to a tenant-owned immutable entity with the inherited `EntityBase` fields
+and exactly these business fields:
+
+| Field | Type | Required | Exact rule |
+|---|---|---:|---|
+| `ProcessImprovementOpportunityId` | Guid | Yes | Same-tenant Qualified opportunity |
+| `Summary` | string | Yes | NFC, trimmed, 1–4000; locally authored summary, not copied evidence truth |
+| `ObservedAtUtc` | scalar BSON UTC DateTime | Yes | Server-produced UTC; client values rejected |
+
+Outcome creation is append-only and idempotent. After creation no update, archive, delete, hard delete, TTL or
+lifecycle transition exists. Multiple outcomes may belong to one Qualified opportunity. The tenant-first
+query index is `TenantId + ProcessImprovementOpportunityId + ObservedAtUtc + Id`, with deterministic
+`ObservedAtUtc` then `Id` ordering.
+
+Decision, project, task, experiment and evidence references are not fields in this bounded contract because
+their exact producer contracts are absent here. Supplying any such member is unsupported input (`400`), not a
+free-text or opaque-ID fallback. Their absence does not block the local opportunity/outcome core above.
 
 ### ProcessInterfaceReference — governance shape only
 
@@ -966,6 +1067,25 @@ update only:
 - `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Modules/ProcessModeling/**`
 - `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Modules/ProcessModeling/**`
 
+The Blueprint 8.1 Performance & Improvement Contract-Test amendment narrows its additional implementation
+authority to these exact paths only:
+
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Modules/ProcessModeling/PerformanceImprovement/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Modules/ProcessModeling/PerformanceImprovement/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/ProcessModeling/PerformanceImprovement/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/Modules/ProcessModeling/PerformanceImprovement/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/Modules/ProcessModeling/PerformanceImprovement/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Modules/ProcessModeling/PerformanceImprovement/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Modules/ProcessModeling/PerformanceImprovement/**`
+- `execution/domains/management-governance/module-packs/fixtures/MOD-0355/performance-improvement-audit/**`
+
+Within that allowlist, executable source is authorized only for the local Improvement Opportunity/Outcome
+Domain, Application and Persistence contracts, owner-side permission/audit fixtures and tests. KPI Binding
+source is limited to fail-closed dependency-gate contracts/tests; no entity, collection or successful handler
+is authorized until the exact MOD-0059/MOD-0060 reference contract closes. Root DI files, shared Program,
+controllers, local-test routes, listeners, workers and AuthService/Platform source are not in this amendment.
+No allowlisted file may make the slice reachable from a running host.
+
 The solution, five source projects, compile/test-only `Program.cs` and three root composition files are shared
 service-shell artifacts. MOD-0355 may create an absent artifact or make an additive-only ProcessModeling
 composition change. It may not overwrite, replace, remove or weaken an existing artifact, registration,
@@ -1317,7 +1437,9 @@ Additional required behavior:
 
 ## 14. Authorization Convention
 
-The permission inventory is the exact 16-value closed set in §3.
+The Minimal Core and existing Local API-Test permission inventory remains the exact sixteen-value closed set
+below. The separate Performance & Improvement Contract-Test owner declaration adds exactly nine default-off
+operation/permission pairs in §3; no host may accept them until the FU16 bilateral gate closes.
 
 ### Exact command-to-permission mapping
 
@@ -1692,6 +1814,8 @@ Frontend and runtime activation tests become mandatory only in their separately 
       manifest at `eefcbc63691c92fbbf4d41977df70d751ad8744b`.
 - [ ] **B-03b:** Executable manifest fixtures, AuthService module/permission provisioning, entitlement/grant
       enforcement, credentials and production composition.
+- [ ] **B-03c:** FU16 bilateral acceptance and executable fixtures for the additive nine-entry delta and exact
+      twenty-five-entry MOD-0355 owner manifest.
 - [ ] **B-04:** Reusable MOD-0018 permission/SoD enforcement, including fresh delegated-actor and actor-inequality
       decisions for MOD-0355.
 - [x] **B-05a — GOVERNANCE PROFILE DEFINED / NON-EXECUTABLE:** Exact ProcessModelVersion source profile,
@@ -1708,10 +1832,13 @@ Frontend and runtime activation tests become mandatory only in their separately 
       `58b8b0e766314a86314a888ec865bb01ed5bb54e`.
 - [ ] **B-07c:** Production signing/key provisioning, executable consumer/publisher composition, delivery,
       inbox/outbox atomicity, retry/DLQ/alarm/replay and live evidence.
+- [ ] **B-07d:** Producer fixture checkpoint and MOD-0021 bilateral admission for the exact seven-positive /
+      eleven-negative Performance & Improvement event profile.
 - [ ] **B-08:** Classification producer contract.
-- [x] **B-09a — BLUEPRINT OWNERSHIP CLOSED / NON-EXECUTABLE:** MOD-0355 owns `Process KPI Binding` and
-      MOD-0059/MOD-0060 retain metric-definition, calculation and certified-value truth. No executable
-      producer contract, permission, operation, collection, route or event mapping is authorized.
+- [x] **B-09a — BLUEPRINT OWNERSHIP CLOSED / DEPENDENCY-BLOCKED:** MOD-0355 owns `Process KPI Binding` and
+      MOD-0059/MOD-0060 retain metric-definition, calculation and certified-value truth. Owner-side
+      permission/operation/audit names are reserved in §3/§19, but no entity, collection, successful handler,
+      route or provider contract is authorized.
 - [ ] **B-09b:** Exact certified metric/calculation reference contract, binding fields/lifecycle,
       compatibility fixtures and authoritative provider adapter.
 - [ ] **B-10:** Owner-reference producer contract and adapter.
@@ -1723,8 +1850,11 @@ Frontend and runtime activation tests become mandatory only in their separately 
 - [x] **B-16a — BLUEPRINT OWNERSHIP CLOSED / NON-EXECUTABLE:** MOD-0355 owns lightweight
       `Process Improvement Opportunity` and `Process Improvement Outcome` governance records without owning
       decisions, projects, tasks, experiments, evidence payloads or workflow execution.
-- [ ] **B-16b:** Exact opportunity/outcome fields, lifecycle, decision/execution/evidence reference contracts,
-      permissions, operations, persistence, audit mappings and bilateral fixtures.
+- [x] **B-16b — LOCAL CONTRACT READY / DEFAULT-OFF:** Exact local opportunity/outcome fields, lifecycle,
+      tenant/CAS rules, nine-entry additive owner operations/permissions, two collections and seven-pair
+      producer audit mapping are closed in §4/§19 for bounded implementation under §5.
+- [ ] **B-16c:** FU16 acceptance, producer fixture checkpoint, MOD-0021 admission and any exact
+      decision/PPM/task/experiment/evidence bilateral reference contracts.
 
 B-class items do not block Minimal Core v1 Core Model & Contract-Test `ready-for-dev`. They block only their
 named later slice or runtime activation.
@@ -1998,33 +2128,123 @@ No new MOD, FU or candidate identity may be minted for these records. The bounde
   authoritative decision/execution records. It does not copy evidence payloads or become decision, project,
   task, workflow, metric or audit truth.
 
-Master 8.1 does not define the exact field set, lifecycle, operation names, permission keys, producer contract
-names/versions or audit entity/mutation mapping for these objects. Those values therefore cannot be inferred
-or invented by this amendment. Until a later owner-approved executable amendment closes them:
+Master 8.1 does not itself define the exact field set, lifecycle, operation names, permission keys, producer
+contract names/versions or audit entity/mutation mapping. The owner decisions immediately below close only
+the locally owned Improvement core and additive protocol names. They do not invent the absent external
+reference contracts. Reusing a Core permission or operation by analogy remains forbidden.
 
-- the exact existing sixteen-value permission set in §3 remains unchanged;
-- the exact existing twenty command-to-permission mappings in §14 remain unchanged;
-- the FU16 sixteen-operation/sixteen-permission manifest remains unchanged and grants no access to these
-  three objects;
-- the MOD-0355 producer fixture and MOD-0021 `20/34` admission matrix remain unchanged and admit no event for
-  these three objects;
-- executable commands, queries, routes, controllers, entities, collections, indexes, handlers, provider
-  adapters, audit events and frontend surfaces for these objects are exactly zero;
-- reusing a Core permission or operation by analogy is forbidden because it would create unapproved
-  authority;
-- cache, last-known-good, free-text reference, copied upstream payload and local fallback truth are forbidden.
+### Performance & Improvement Contract-Test executable amendment — NON-PRODUCTION / DEFAULT-OFF
 
-The later executable amendment must atomically reconcile four contracts in one review: exact object
-fields/lifecycle and tenant/concurrency rules; exact operation-to-permission mappings; the additive FU16
-manifest/entitlement fixtures; and additive producer plus MOD-0021 bilateral audit mappings. It must also pin
-the MOD-0059/MOD-0060 metric/calculation reference contract and the canonical decision, PPM/task and evidence
-reference contracts it actually consumes. Partial activation is forbidden. Missing or indeterminate
-authority remains `503` with zero mutation; malformed/unsupported contract remains `400`; cross-tenant or
-non-disclosable authoritative reference remains `404`; stale version/reference conflict remains `409`.
+This amendment authorizes bounded code only under the exact §5 allowlist. It creates no host-reachable API,
+DI registration, listener, worker or production activation.
 
-This amendment grants governance reconciliation only. It creates no service, runtime code, persistence,
-fixture, endpoint, listener, broker, key, secret, deployment, frontend, Gateway, WorkCenter, migration or
-production authority. `production_authority: none` remains binding.
+#### Exact command/query mapping
+
+| Contract | Exact operation / permission | Availability |
+|---|---|---|
+| KPI binding queries | `management-governance.process-modeling.kpi-bindings.read` | `503` until exact MOD-0059/MOD-0060 reference contract |
+| `CreateProcessKpiBindingCommand` | `management-governance.process-modeling.kpi-bindings.create` | `503` until exact MOD-0059/MOD-0060 reference contract |
+| `ArchiveProcessKpiBindingCommand` | `management-governance.process-modeling.kpi-bindings.archive` | `503` until exact MOD-0059/MOD-0060 reference contract |
+| Opportunity/outcome queries | `management-governance.process-modeling.improvements.read` | Bounded contract/persistence tests only |
+| `CreateProcessImprovementOpportunityCommand` | `management-governance.process-modeling.improvements.create` | Bounded contract/persistence tests only |
+| `UpdateProcessImprovementOpportunityCommand` | `management-governance.process-modeling.improvements.update` | Bounded contract/persistence tests only |
+| `QualifyProcessImprovementOpportunityCommand` | `management-governance.process-modeling.improvements.qualify` | Bounded contract/persistence tests only |
+| `CloseProcessImprovementOpportunityCommand` | `management-governance.process-modeling.improvements.close` | Bounded contract/persistence tests only |
+| `RecordProcessImprovementOutcomeCommand` | `management-governance.process-modeling.improvements.record-outcome` | Bounded contract/persistence tests only |
+
+The implementation persists only `mg_process_improvement_opportunities` and
+`mg_process_improvement_outcomes`; a KPI-binding collection is forbidden while its mandatory reference
+contract is unresolved. Every effective improvement mutation uses the existing four-participant invariant:
+business mutation, idempotency receipt, producer-local audit intent and producer-local outbox in one
+replica-set transaction. Tenant-first predicates, `IsDeleted = false`, expected `EntityBase.Version`, body-once
+transaction execution, commit-only retry, receipt reconciliation, cancellation propagation and standalone
+Mongo `503` behavior are mandatory. No-op and every failure produce zero new participant residue.
+
+#### Additive FU16 impact — OWNER DECLARATION ONLY
+
+Checkpoint `eefcbc63691c92fbbf4d41977df70d751ad8744b` remains the immutable accepted sixteen-entry baseline.
+The exact nine-entry delta in §3 changes the prospective MOD-0355 owner manifest to twenty-five ordinal
+operation/permission pairs without changing ModuleCode, workload, audience, tenant entitlement, explicit
+grant or delegated-proof semantics. It does not modify AuthService and is not accepted by FU16 in this
+checkpoint. A separate FU16 bilateral amendment must prove exact 25/25 content, collision freedom, explicit
+grant/dormant-entitlement behavior, request binding, tenant/actor/freshness enforcement and cross-owner
+negative fixtures. Until then no new operation can be authorized and every host-level attempt returns `503`.
+
+#### Additive audit impact — PRODUCER FIXTURE ONLY
+
+The immutable `ProcessModelingAuditIntentSubmittedV1` `20/34` profile and MOD-0021 admission at
+`58b8b0e766314a86314a888ec865bb01ed5bb54e` remain byte-for-byte unchanged. New mutations use a separate
+producer-owned profile so the admitted v1 allowlist is never widened implicitly:
+
+- Event type: `ProcessPerformanceImprovementAuditIntentSubmittedV1`
+- Event name: `management-governance.process-performance-improvement-audit-intent.submitted.v1`
+- Event version: JSON integer `1`
+- Schema identity:
+  `urn:diten:management-governance:process-performance-improvement-audit-intent-submitted:v1`
+- Producer: `Diten.ManagementGovernanceService`
+- ModuleCode: `MOD-0355`
+- Audit category: `AuditCategory.Integration`
+
+The canonical payload retains the exact six-field order
+`auditIntentId`, `actorId`, `entityType`, `entityId`, `mutation`, `occurredAtUtc`. The closed mapping is:
+
+| Entity type | Exact mutation | MOD-0021 projection operation |
+|---|---|---|
+| `ProcessKpiBinding` | `Created` | `Create` |
+| `ProcessKpiBinding` | `Archived` | `Deactivate` |
+| `ProcessImprovementOpportunity` | `Created` | `Create` |
+| `ProcessImprovementOpportunity` | `Updated` | `Update` |
+| `ProcessImprovementOpportunity` | `Qualified` | `LifecycleTransition` |
+| `ProcessImprovementOpportunity` | `Closed` | `LifecycleTransition` |
+| `ProcessImprovementOutcome` | `Recorded` | `Create` |
+
+This is exactly seven positive pairs; the remaining eleven pairs in the 3-by-6 Cartesian matrix are
+terminal negatives. The producer fixture may be authored under the exact §5 root with test-only signing
+material and production-rejection evidence. No publisher, production signing identity/key, consumer adapter,
+broker or delivery is authorized. MOD-0021 must separately admit the exact producer checkpoint before any
+delivery; until then the local outbox is durable default-off evidence only.
+
+#### Dependency and activation result
+
+- Improvement Opportunity/Outcome Domain/Application/Persistence and owner fixtures are implementation-
+  authorized only inside §5 and cannot be composed into a host.
+- KPI Binding successful persistence is not authorized; missing exact MOD-0059/MOD-0060 contracts returns
+  `503` with zero residue.
+- Decision, PPM/project, task, experiment and evidence linking is not authorized; unexpected members return
+  `400` and no external provider is invoked.
+- FU16 authorization success and MOD-0021 delivery are not runtime-available until their separate bilateral
+  amendments close.
+- Production authority, migration, frontend, Gateway and WorkCenter remain absent.
+
+Missing or indeterminate authority is `503`; malformed/unsupported contract is `400`; cross-tenant or
+non-disclosable resource is `404`; stale version/reference conflict is `409`. Cache, last-known-good,
+free-text reference, copied upstream payload and local fallback truth are forbidden.
+
+#### Exact contract-test and mutation gates
+
+The bounded implementation is not a PASS until all of these executable gates pass:
+
+- exact field serialization and unknown-member rejection for Opportunity and Outcome;
+- `Open → Qualified → Closed`, terminal Closed, qualify prerequisites and outcome-before-close;
+- immutable Outcome and server-owned `ObservedAtUtc`;
+- same-tenant Published ProcessModelVersion create fence, cross-tenant non-disclosure and soft-delete guard;
+- expected-version CAS, duplicate idempotency and no-op behavior;
+- exact two-collection/two-index snapshots and explicit proof that no KPI-binding collection exists;
+- four-participant real replica-set commit plus participant-by-participant rollback, concurrent CAS,
+  cancellation residue, standalone fail-closed and unknown-commit body-once reconciliation;
+- exact nine-entry owner permission/operation fixture and proof that the currently accepted FU16 sixteen-entry
+  manifest rejects every new operation;
+- exact seven-positive/eleven-negative producer audit fixture, schema/checksum/provenance/production-reject
+  evidence and proof that current MOD-0021 v1 admission rejects the new event identity;
+- architecture proof of zero controller, route, root DI, listener, worker, direct broker, frontend, Gateway and
+  WorkCenter reachability;
+- full existing ProcessModeling and shared-host DWS regression.
+
+At minimum, physical non-equivalent mutants must remove: tenant predicate; Published-version create fence;
+Opportunity CAS; qualify ExpectedOutcome guard; qualify PriorityRank guard; outcome-before-close guard;
+Outcome immutability; business transaction participant; receipt participant; audit-intent participant; outbox
+participant; FU16-new-operation rejection; audit invalid-pair rejection; and KPI dependency `503`. Every
+mutant must compile, break its targeted test for the expected invariant and restore byte-identically.
 
 ### Core transaction boundary
 
@@ -2100,9 +2320,10 @@ Governance availability cannot become local fallback, hard-coded truth or inferr
   governance onboarding checkpoint is not provisioning or runtime evidence.
 - Preserve the closed MOD-0021 governance admission and add executable delivery only after production signing,
   transport and operational evidence exist.
-- Preserve the Blueprint-owned Process KPI Binding and lightweight Improvement Opportunity/Outcome amendment
-  as default-off until its exact schema, lifecycle, permission/operation, FU16, producer and MOD-0021
-  bilateral contracts are approved together.
+- Implement only the allowlisted local Improvement Opportunity/Outcome contract/persistence evidence while
+  keeping host composition default-off. KPI Binding stays `503` until MOD-0059/MOD-0060 exact reference
+  contracts exist; all nine new operations stay host-unavailable until FU16 acceptance; audit delivery stays
+  absent until the new producer fixture and MOD-0021 admission close.
 - Add classification, owner, interface, document, evidence and artifact references through separately
   approved producer contracts.
 - Define and approve tenant frontend and seven-language resources.
@@ -2116,8 +2337,8 @@ Governance availability cannot become local fallback, hard-coded truth or inferr
 
 - Exact numbered headings: `20`
 - Heading sequence: `## 1.` through `## 20.`
-- Exact unique permissions: `16`
-- Blueprint amendment owned objects: exact `3`; executable operations: `0`
+- Exact unique permissions: Core/Local API-Test `16`; owner-declared total `25`; FU16-accepted runtime `16`
+- Blueprint amendment owned objects: exact `3`; bounded local implementation `2`; dependency-blocked `1`
 - Markdown fences: balanced
 - ActivityKind occurrence: deferred/future-amendment explanation only
 - ControlKind occurrence: deferred/future-amendment explanation only
@@ -2140,7 +2361,7 @@ Governance availability cannot become local fallback, hard-coded truth or inferr
 - Non-empty normative graph vectors: `1`
 - Vector recomputations: `PASS / PASS / PASS`
 - Status: `ready-for-dev`
-- Implementation authority: `explicit-user-control-tower-bounded-core-and-local-api-test`
+- Implementation authority: `explicit-user-control-tower-bounded-core-local-api-test-and-performance-improvement-contract-test`
 - Production authority: `none`
 - Initial materialization scope: exact-one MOD-0355 module-pack file
 - Ready-for-dev promotion reconciliation scope: exact four governance files (this pack, DCP-005, DCP-006
