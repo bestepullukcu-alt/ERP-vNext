@@ -106,5 +106,38 @@ public static class MongoDbIndexConfigurations
                 Builders<MfaChallenge>.IndexKeys.Ascending(x => x.ExpiresAtUtc),
                 new CreateIndexOptions { ExpireAfter = TimeSpan.FromHours(1), Name = "ttl_mfa_challenge_expiry" })
         });
+
+        await EnsureServiceIdentityIndexesAsync(database);
+    }
+
+    public static async Task EnsureServiceIdentityIndexesAsync(IMongoDatabase database)
+    {
+        var serviceClients = database.GetCollection<ServiceClientIdentity>("serviceClientIdentities");
+        await serviceClients.Indexes.CreateOneAsync(new CreateIndexModel<ServiceClientIdentity>(
+            Builders<ServiceClientIdentity>.IndexKeys.Ascending(x => x.ClientCode),
+            new CreateIndexOptions<ServiceClientIdentity>
+            {
+                Unique = true,
+                Name = "ux_service_client_identity_code_active",
+                PartialFilterExpression = Builders<ServiceClientIdentity>.Filter.Eq(x => x.IsDeleted, false)
+            }));
+
+        var serviceGrants = database.GetCollection<ServiceClientTenantGrant>("serviceClientTenantGrants");
+        await serviceGrants.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<ServiceClientTenantGrant>(
+                Builders<ServiceClientTenantGrant>.IndexKeys
+                    .Ascending(x => x.TenantId).Ascending(x => x.ServiceClientIdentityId).Ascending(x => x.Audience),
+                new CreateIndexOptions<ServiceClientTenantGrant>
+                {
+                    Unique = true,
+                    Name = "ux_service_client_grant_tenant_client_audience_active",
+                    PartialFilterExpression = Builders<ServiceClientTenantGrant>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<ServiceClientTenantGrant>(
+                Builders<ServiceClientTenantGrant>.IndexKeys
+                    .Ascending(x => x.TenantId).Ascending(x => x.IsEnabled),
+                new CreateIndexOptions { Name = "ix_service_client_grant_tenant_enabled" })
+        });
     }
 }

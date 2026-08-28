@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Diten.AuthService.Infrastructure;
@@ -27,6 +28,7 @@ public static class DependencyInjection
 
         // Settings
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
+        services.AddServiceIdentityTokenIssuance(configuration);
         services.Configure<InternalEventAuthSettings>(configuration.GetSection("InternalEventAuth"));
         services.Configure<PlatformServiceOptions>(configuration.GetSection(PlatformServiceOptions.SectionName));
         services.Configure<MfaOptions>(configuration.GetSection(MfaOptions.SectionName));
@@ -104,6 +106,18 @@ public static class DependencyInjection
 
         AddEntitlementEventing(services, configuration);
 
+        return services;
+    }
+
+    public static IServiceCollection AddServiceIdentityTokenIssuance(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.Configure<ServiceIdentityTokenIssuerOptions>(
+            configuration.GetSection(ServiceIdentityTokenIssuerOptions.SectionName));
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddScoped<IServiceClientCredentialVerifier, ServiceClientCredentialVerifier>();
+        services.AddScoped<IServiceIdentityTokenIssuer, ServiceIdentityTokenIssuer>();
         return services;
     }
 
