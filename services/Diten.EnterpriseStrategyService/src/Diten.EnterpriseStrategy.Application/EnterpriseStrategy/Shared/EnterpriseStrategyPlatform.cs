@@ -177,81 +177,16 @@ public sealed class InMemoryCorrelationContextAccessor : ICorrelationContextAcce
 
 public sealed class DefaultEnterpriseStrategyAuthorizationService : IEnterpriseStrategyAuthorizationService
 {
-    private static readonly IReadOnlySet<string> KnownPermissions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-    {
-        EnterpriseStrategyPermissions.GoalView,
-        EnterpriseStrategyPermissions.GoalCreate,
-        EnterpriseStrategyPermissions.GoalEdit,
-        EnterpriseStrategyPermissions.GoalArchive,
-        EnterpriseStrategyPermissions.GoalActivate,
-        EnterpriseStrategyPermissions.ObjectiveView,
-        EnterpriseStrategyPermissions.ObjectiveCreate,
-        EnterpriseStrategyPermissions.ObjectiveEdit,
-        EnterpriseStrategyPermissions.ObjectiveArchive,
-        EnterpriseStrategyPermissions.ObjectiveActivate,
-        EnterpriseStrategyPermissions.ConnectionView,
-        EnterpriseStrategyPermissions.ConnectionCreate,
-        EnterpriseStrategyPermissions.ConnectionEdit,
-        EnterpriseStrategyPermissions.ConnectionDelete,
-        EnterpriseStrategyPermissions.ConnectionValidate,
-        EnterpriseStrategyPermissions.InitiativeView,
-        EnterpriseStrategyPermissions.InitiativeLink,
-        EnterpriseStrategyPermissions.InitiativeUnlink,
-        EnterpriseStrategyPermissions.InitiativeSync,
-        EnterpriseStrategyPermissions.ProjectView,
-        EnterpriseStrategyPermissions.ProjectLink,
-        EnterpriseStrategyPermissions.ProjectUnlink,
-        EnterpriseStrategyPermissions.ProjectSync,
-        EnterpriseStrategyPermissions.PlanningCycleView,
-        EnterpriseStrategyPermissions.PlanningCycleCreate,
-        EnterpriseStrategyPermissions.StrategyPeriodView,
-        EnterpriseStrategyPermissions.StrategyPeriodCreate,
-        EnterpriseStrategyPermissions.LibraryView,
-        EnterpriseStrategyPermissions.LibraryImport,
-        EnterpriseStrategyPermissions.LibraryEdit,
-        EnterpriseStrategyPermissions.LibraryApprove,
-        EnterpriseStrategyPermissions.LibraryPublish,
-        EnterpriseStrategyPermissions.LibraryRetire,
-        EnterpriseStrategyPermissions.LibraryInstantiate
-    };
-
     public Task<bool> HasPermissionAsync(string permission, ClaimsPrincipal user, CancellationToken cancellationToken = default)
     {
-        // Local dev bootstrap: enables end-to-end ES&BP testing when upstream auth/permission claims
-        // are not yet wired in this environment.
-        if (IsDevelopmentPermissionBootstrapEnabled() &&
-            KnownPermissions.Contains(permission))
-        {
-            return Task.FromResult(true);
-        }
-
         if (user?.Identity?.IsAuthenticated != true)
             return Task.FromResult(false);
 
         var hasPermissionClaim = user.Claims.Any(x =>
-            string.Equals(x.Type, "permission", StringComparison.OrdinalIgnoreCase) &&
-            string.Equals(x.Value, permission, StringComparison.OrdinalIgnoreCase));
+            string.Equals(x.Type, "permission", StringComparison.Ordinal) &&
+            string.Equals(x.Value, permission, StringComparison.Ordinal));
 
         return Task.FromResult(hasPermissionClaim);
-    }
-
-    private static bool IsDevelopmentPermissionBootstrapEnabled()
-    {
-        var enforcePermissions = Environment.GetEnvironmentVariable("DITEN_ESBP_ENFORCE_PERMISSIONS");
-        if (!string.IsNullOrWhiteSpace(enforcePermissions))
-        {
-            return !(string.Equals(enforcePermissions, "1", StringComparison.OrdinalIgnoreCase) ||
-                     string.Equals(enforcePermissions, "true", StringComparison.OrdinalIgnoreCase) ||
-                     string.Equals(enforcePermissions, "yes", StringComparison.OrdinalIgnoreCase));
-        }
-
-        var configured = Environment.GetEnvironmentVariable("DITEN_ESBP_DEV_PERMISSION_BOOTSTRAP");
-        if (string.IsNullOrWhiteSpace(configured))
-            return true;
-
-        return string.Equals(configured, "1", StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(configured, "true", StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(configured, "yes", StringComparison.OrdinalIgnoreCase);
     }
 }
 
