@@ -794,3 +794,329 @@ Protected/out-of-scope even after named-step code-start:
 Material, FPF, FPP and artwork controlled-code namespace scopes remain governed outside this follow-up. No follow-up may
 use this approved design/scope pack to authorize their issuance or to place those codes in `CanonicalCode` or
 `RevisionIdentifier`.
+
+### Named Step — ABB WorkCenter Remote Provider Onboarding & Live Acceptance
+
+#### Step identity and code-truth boundary
+
+This planning-only named step connects pending ABB allocation decisions to the generic remote-provider seam already
+owned by WorkCenter. It does not move ABB lifecycle authority into WorkCenter: MDM continues to decide and persist
+approve, reject and requester-owned cancellation through the existing ABB commands. WorkCenter remains a projection
+and dispatch surface.
+
+Code-truth measurement established these constraints:
+
+- Platform has exactly one generic remote pair, `HttpWorkItemProvider` and `HttpWorkItemActionDispatcher`; adding ABB is
+  an operator configuration row, never an ABB-specific Platform bridge class.
+- The shared remote contract is `1.0`, forwards the caller's own Bearer token plus trusted `X-Tenant-Id` and
+  `X-Correlation-Id`, and uses one `Response<T>` envelope in both directions.
+- ABB's persisted work candidate is a `ProductAbbreviationRegisterEntry` in `REQUESTED`. Correction replacements have
+  `ReplacesEntryId`; their approval also needs `ExpectedFormerVersion`, which the generic WorkCenter concurrency token
+  cannot carry. Retirement decisions likewise have their own request identity. Therefore this step projects only
+  initial allocation requests where `LifecycleStatus == REQUESTED && ReplacesEntryId == null`. Correction and
+  retirement decisions stay on the ABB Register surface.
+- The existing repository has no bounded pending-work query. The named step may add only the exact tenant-scoped,
+  soft-delete-aware query frozen below.
+- FU03 Product Legal Entity Scope enforcement is not present on this worktree's current main base. The measured FU03
+  implementation in the integration workspace exposes `ProductLegalEntityScopeConsumerGuard`; it must be merged and
+  re-read from the eventual code-start base before this named step can compile or claim scope enforcement.
+
+Stable remote identity:
+
+| Contract fact | Exact value |
+|---|---|
+| Provider code | `mdm-product-abbreviations` |
+| Provider contract version | `1.0` |
+| Projection endpoint | `GET /api/v1/work-items/product-abbreviations/projection?scope=self|team` |
+| Action endpoint | `POST /api/v1/work-items/product-abbreviations/{itemId:guid}/actions/{actionCode}` |
+| Source object type | `productAbbreviationAllocationRequest` |
+| Lifecycle owner | `mdm-product-abbreviations` |
+| Deep link | `/MDM/ProductAbbreviationRegister?globalProductId={GlobalProductId}` |
+
+The address is never written to the MDM manifest. `BaseUrl`, the two paths, contract version and action/permission map
+belong only to an operator-owned `WorkAggregation:RemoteProviders` row under Platform configuration.
+
+#### Exact 31-field projection mapping
+
+The table has exactly the three DCP-004 handoff columns: canonical WorkCenter field, ABB source-to-wire mapping, and
+the behavior when the ABB source fact is absent. Optional properties are omitted from JSON, never serialized as null.
+
+| WorkCenter field | ABB source -> exact projected value | If the ABB source fact is absent |
+|---|---|---|
+| `FixtureKind` | Constant `workItem`. | Contract defect; fail the provider response, do not emit a partial item. |
+| `Id` | `ProductAbbreviationRegisterEntry.Id` in `D` GUID format. | Entry cannot be a candidate; omit it before projection. |
+| `WorkIntent` | Constant `approval`. | Contract defect; fail the provider response. |
+| `AssignmentMode` | Constant `approval`; ABB has no named queue/assignee contract. | Contract defect; fail the provider response. |
+| `OwnershipState` | Constant `notApplicable`. | Contract defect; fail the provider response. |
+| `AdmissionState` | Constant `notApplicable`. | Contract defect; fail the provider response. |
+| `NormalizedStatus` | Eligible `REQUESTED` -> `Pending`. No terminal ABB row is projected. | Unknown lifecycle value is fail-closed and the item is omitted with a provider error, never guessed. |
+| `TaskLifecycle` | Constant `notApplicable`, because this is approval intent rather than a Task lifecycle. | Contract defect; fail the provider response. |
+| `ExecutionState` | Constant `notApplicable`. | Contract defect; fail the provider response. |
+| `TimerState` | Constant `notApplicable`; ABB stores no timer. | Contract defect; fail the provider response. |
+| `SystemState` | Constant `fresh` after authoritative repository and FU03 scope reads. | Inconsistent source/scope evidence fails the whole provider call; do not claim `fresh`. |
+| `ActionDepth` | Constant `inline`; all three actions terminate in existing MDM commands. | Contract defect; fail the provider response. |
+| `Title` | Display label formed only from business data: `{NormalizedAbbreviation} · {GlobalProduct.CanonicalCode}`. | Missing/non-referenceable same-tenant Global Product is `ABBREVIATION_WORK_ITEM_SOURCE_INCONSISTENT`/503; no row is emitted. |
+| `NativeStatus` | Code `REQUESTED`; resource label uses the existing WorkCenter pending-status vocabulary. | Unknown/missing status fails the provider response. |
+| `Source` | Provider `mdm-product-abbreviations`, version `1.0`, object type above, object ID = entry ID, same-origin deep link above. | Any identity mismatch fails the provider response; a foreign provider code is never emitted. |
+| `LifecycleOwner` | Constant `mdm-product-abbreviations`; ABB remains authoritative. | Contract defect; fail the provider response. |
+| `WorkItemCapabilities` | Empty list. ABB supplies no complete WorkCenter capability container in this step. | Empty remains empty; no placeholder card is declared. |
+| `Actions` | Exact domain-eligible subset of `approve`, `reject`, `cancel`, as frozen below. | Empty list is valid when the actor has no domain-eligible action; no fake disabled action is invented. |
+| `Concurrency` | `{ kind: "version", token: entry.Version.ToString(InvariantCulture) }`. | Missing/non-positive version is invalid source evidence; fail the provider response. |
+| `WaitingContext` | Omitted; ABB records no typed waiting context. | Omitted. Never synthesize a requester or approver wait. |
+| `Escalation` | Omitted; ABB records no escalation fact. | Omitted. Never emit `false` as an asserted tracked state. |
+| `DueAt` | Omitted; ABB allocation has no approved deadline/SLA field. | Omitted. Never use request time as a due date. |
+| `PrimaryActionCode` | `approve` only when approve is domain-eligible; otherwise `cancel` when requester-owned cancel is eligible; otherwise omitted. | Omitted; generic bridge also removes dangling placement after permission gating. |
+| `OverflowActionCodes` | Eligible non-primary codes in stable order `reject`, then `cancel`. | Omitted when empty. Never reference a code absent from `Actions`. |
+| `Assignee` | Omitted; no ABB approver assignment/directory seam exists. | Omitted. Never print a role name or GUID as a person. |
+| `Requester` | `RequestedByCanonicalSubjectId` as person `Id`; `IsCurrentUser` from exact ordinal comparison with the authenticated ABB actor; no display name. | Missing requester subject is source corruption and fails the provider response. |
+| `Checklist` | Omitted; capability is not declared. | Omitted. |
+| `Subtasks` | Omitted; capability is not declared. | Omitted. |
+| `ParentTaskItemId` | Omitted; an ABB request is not a WorkCenter subtask. | Omitted. |
+| `Gates` | Omitted; ABB maker-checker is enforced by ABB commands, not represented as a MOD-0023 gate. | Omitted. Never fabricate approved/rejected gate history. |
+| `Priority` | Omitted; ABB stores no `Low|Medium|High` priority. | Omitted. Never default to `Medium`. |
+
+The capability list is intentionally empty. `businessContext`, `activity`, `evidence` and `relatedRecords` are not
+declared merely because ABB has some adjacent data; none has a complete canonical WorkCenter container and localized
+field contract in this slice. ABB audit evidence remains on the audit-permission-gated ABB details surface.
+
+#### Projection eligibility and FU03 scope filter
+
+The pending-work repository query reads at most `101` entries per call, tenant-scoped and
+`IsDeleted == false`, filtered by `REQUESTED && ReplacesEntryId == null`, ordered by `RequestedAtUtc` ascending and
+then `Id` ordinal. The 101st row is an overflow sentinel, not a projectable item. If it exists, the provider returns
+`503 ABBREVIATION_WORK_ITEM_BOUND_EXCEEDED`; it must not scope-filter the first 100 and incorrectly claim that this is
+the complete visible set. It never returns ACTIVE/REJECTED/CANCELLED/RETIRED, correction replacements or retirement
+requests. This fail-closed foundation may later gain a separately designed continuation contract; it may not add an
+unbounded scan or silently starve in-scope work behind out-of-scope rows.
+Global Products are batch-read with existing `IGlobalProductRepository.GetByIdsAsync`; per-row Global Product reads are
+prohibited.
+
+Before any item is projected, the handler resolves FU03 context once through
+`ProductLegalEntityScopeConsumerGuard.ResolveContextAsync(ProductAbbreviationPermissions.Read, ct)` and evaluates each
+distinct Global Product through the existing guard:
+
+- `Preparation`: preserve existing same-tenant ABB visibility.
+- `Enforced`: emit only requests whose Global Product evaluation is allowed for the actor's trusted Legal Entity
+  candidates. Legacy-unclassified, no-current-period, empty GroupWide candidate and scoped non-match are omitted.
+- `FailClosedSuspended`: emit zero ABB items.
+- tenant/candidate/provider/rollout failure: return the guard's `400/403/503/504` stable failure rather than a confident
+  successful empty projection.
+
+No FU03 evaluator, policy, rollout, candidate, Mongo aggregation or trusted-scope algorithm is copied into ABB. The
+named step consumes it only. The code-start base must contain the accepted FU03 implementation and its tests.
+
+#### Exact actions and permission map
+
+The wire code for requester-owned cancellation is the existing generic `cancel`; `own-cancel` is its business
+description, not a new action or permission literal. In particular, `mdm.product-abbreviations.cancel-own` remains
+prohibited.
+
+| Business action / wire code | Offered when | Existing command and exact payload mapping | Config permission | Refusal behavior |
+|---|---|---|---|---|
+| Approve / `approve` | Initial allocation is `REQUESTED`, actor canonical subject differs ordinally from requester, FU03 allows the Global Product. | `ApproveProductAbbreviationAllocationCommand(itemId, expectedVersion, derivedIdempotencyKey, ExpectedFormerVersion: null, reason)`; `reason = payload.Reason ?? payload.Note`. | `mdm.product-abbreviations.approve` | Same-subject action is not projected. Command still enforces `403 ABBREVIATION_MAKER_CHECKER_VIOLATION`; stale version is `409 CONCURRENCY_CONFLICT`; evidence reconciliation remains `202`. |
+| Reject / `reject` | Same eligibility and maker-checker rule as approve. | `RejectProductAbbreviationAllocationCommand(itemId, expectedVersion, derivedIdempotencyKey, requiredReason)`; required reason reads `payload.Reason ?? payload.Note`. | `mdm.product-abbreviations.reject` | Missing reason is `400 WORK_ITEM_ACTION_PAYLOAD_INVALID`; command SoD/permission remains authoritative; stale version is `409`. |
+| Own-cancel / `cancel` | Initial allocation is `REQUESTED` and actor canonical subject exactly equals requester. | `CancelProductAbbreviationAllocationCommand(itemId, expectedVersion, derivedIdempotencyKey, reason)`; optional reason reads `payload.Reason ?? payload.Note`. | `mdm.product-abbreviations.cancel` | Non-owner action is not projected. A stale/tampered call still reaches the command's `403 ABBREVIATION_CANCEL_NOT_REQUEST_OWNER`; stale version is `409`. |
+
+Action labels reuse existing seven-locale WorkCenter resource keys `WorkAggregation_Action_Approve`,
+`WorkAggregation_Action_Reject` and `WorkAggregation_Action_Cancel`. Approve is confirmation-required/high risk;
+reject is reason-required/high risk; cancel is confirmation-required/high risk. Bulk is false for all three. Action
+source is `provider`.
+
+The operator action map must be exactly:
+
+```json
+{
+  "approve": "mdm.product-abbreviations.approve",
+  "reject": "mdm.product-abbreviations.reject",
+  "cancel": "mdm.product-abbreviations.cancel"
+}
+```
+
+The generic bridge derives `RequiredActionPermissions` from this same map and strips an unconfigured action. The MDM
+command layer rechecks permission, direct-human actor, tenant, ownership and maker-checker rules; Platform permission
+gating never replaces those checks.
+
+#### Expected version, idempotency and response contract
+
+`payload.expectedVersion` is mandatory and must equal the integer projection token; absent, zero, negative or overflow
+values return `400 WORK_ITEM_ACTION_PAYLOAD_INVALID` before MediatR dispatch. The endpoint does not accept tenant,
+actor, permission, target lifecycle or Global Product identity from the body.
+
+The generic browser currently does not mint an action idempotency key. MDM therefore derives the stable key
+`abb-wc:{itemId:N}:{actionCode}:v{expectedVersion}:{payloadHash}` after validating the exact provider, item and action.
+`payloadHash` is uppercase SHA-256 over the canonical UTF-8/LF payload containing the exact action code, invariant
+expected version and normalized reason (`null` and empty remain distinct). A timeout retry with the same payload
+reaches the existing ABB replay path and cannot become a second decision. Changed reason means a changed operation
+identity and, after the first durable decision advanced the version/state, deterministically fails stale-state
+reconciliation instead of replaying a different payload as success. Correlation ID is never operation identity and
+the browser cannot supply or override the derived key.
+
+Request body is the shared union only:
+
+```json
+{
+  "providerCode": "mdm-product-abbreviations",
+  "payload": {
+    "expectedVersion": 1,
+    "reason": "optional-or-required-by-action",
+    "note": "generic WorkCenter fallback field"
+  }
+}
+```
+
+Both endpoints return a dedicated remote-provider five-member envelope with `reason_code`; the existing MDM
+`Response<T>` type is not reused because code truth shows that it does not carry this required wire member. Projection success data is
+`{ contractVersion: "1.0", items: [...] }`; action success data is limited to `{ itemId, providerCode, actionCode }`
+and the browser then re-reads the projection. No action result is applied optimistically.
+
+| Condition | Exact outcome |
+|---|---|
+| Malformed scope/provider/action/payload or missing expected version/reject reason | `400` plus stable `WORK_ITEM_*`/ABB reason code; no mutation. |
+| Missing/invalid Bearer identity | `401`; no projection or mutation. |
+| Missing read/action permission, non-direct actor, maker-checker or own-cancel violation | `403`; MDM remains authoritative. |
+| Missing/deleted/cross-tenant work item or source Global Product | non-disclosing `404`, except a projection-wide broken source invariant is `503` so the provider is named unavailable. |
+| Expected-version conflict, non-REQUESTED state or idempotency/payload conflict | `409`; no optimistic UI mutation. |
+| Evidence reconciliation required after durable ABB state change | Existing non-success `202` is preserved; next read is authoritative. |
+| FU03 trusted-scope/provider/rollout unavailable or inconsistent | Existing `503/504` propagated; no out-of-scope row is emitted. |
+| MDM unreachable or provider budget exceeded | Generic Platform bridge returns `504 WORK_ITEM_REMOTE_UNAVAILABLE`; it never claims success. |
+| Cancellation token | Propagates; it is never translated into business success/failure. |
+
+#### Exact runtime/test allow-list
+
+Runtime code-start, if separately approved after blockers close, is limited to:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/ProductAbbreviationWorkItemsController.cs` — new;
+  exact remote GET/POST controller only.
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Contracts/ProductAbbreviationWorkItems/ProductAbbreviationWorkItemRequests.cs`
+  — new; strict shared action request plus dedicated five-member response envelope/parser contract with
+  `reason_code` and unmapped-field rejection.
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/ProductAbbreviationWorkItemModels.cs`
+  — new; the canonical 31-field wire projection and response models, without a Platform project reference.
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Queries/GetProductAbbreviationWorkItemsQuery.cs`
+  — new.
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Handlers/GetProductAbbreviationWorkItemsHandler.cs`
+  — new; bounded projection, batch Global Product join and FU03 consumer filter.
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Commands/DispatchProductAbbreviationWorkItemActionCommand.cs`
+  — new.
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Handlers/DispatchProductAbbreviationWorkItemActionHandler.cs`
+  — new; exact action-to-existing-command adapter and deterministic idempotency identity.
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Validators/GetProductAbbreviationWorkItemsValidator.cs`
+  — new; exact `self|team` and limit contract.
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Validators/DispatchProductAbbreviationWorkItemActionValidator.cs`
+  — new; provider/action/version/reason/body contract.
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IProductAbbreviationRegisterRepository.cs` — add
+  only the bounded initial-allocation pending-work read contract.
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductAbbreviationRegisterRepository.cs` —
+  implement only that tenant/soft-delete/status/replacement/sort/limit read; existing write paths and indexes unchanged.
+
+Exact new test allow-list:
+
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationWorkItemContractTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationWorkItemProjectionTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationWorkItemActionTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationWorkItemMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationWorkItemScopeIntegrationTests.cs`
+
+The implementation may read but must not modify FU03's `ProductLegalEntityScopeConsumerGuard`, evaluator, policy,
+rollout, candidate client, aggregation pipelines or tests. It may also read existing ABB commands, actor context,
+Global Product batch repository and shared `Response<T>` without changing them.
+
+#### Protected paths and prohibited designs
+
+- All `services/Diten.Platform/**`, including the generic provider/dispatcher/gateway and their tests.
+- All `frontend/**`, `gateway/**`, shared WorkCenter JavaScript/resources and every appsettings/environment file.
+- ABB entity, lifecycle enum, workflow, authorization, existing commands/handlers/validators, ledger/history repositories,
+  indexes and permission literals.
+- FU03 scope evaluator, rollout/policy/candidate implementations and every Legal Entity service/repository.
+- Auth catalog/grant/profile code, manifests, navigation, `.antigravity/**`, DCP files, registries and other packs.
+- A module-specific Platform bridge class, address in manifest, hosted polling worker, callback/webhook, direct Mongo
+  write, new permission, new lifecycle state, correction/retirement action, bulk action or optimistic browser mutation.
+- Config/data/process/credential mutation, service restart, operational provider row, Production/Staging, commit and
+  push are not authorized by this planning step.
+
+#### Runtime acceptance and test matrix
+
+- [ ] WC-ABB-01 — The GET endpoint returns the exact `1.0` object envelope and contract-valid 31-field items; optional
+  values are omitted, capability list is empty and no empty capability card can render.
+- [ ] WC-ABB-02 — Only bounded, same-tenant, non-deleted, initial `REQUESTED` allocations are projected in deterministic
+  order; correction, retirement and every terminal status are absent.
+- [ ] WC-ABB-03 — The Global Product join is one bounded batch and a missing/inconsistent product cannot yield a
+  confident partial board.
+- [ ] WC-ABB-04 — FU03 Preparation/Enforced/FailClosedSuspended, GroupWide/Scoped, legacy-unclassified and candidate
+  failure cases filter exactly like the existing product consumers; no scope algorithm is copied.
+- [ ] WC-ABB-05 — Every item claims `mdm-product-abbreviations`/`1.0` and the stable object/deep-link contract; foreign
+  provider, tenant or object identity is rejected.
+- [ ] WC-ABB-06 — Approve/reject is absent for the requester; cancel is present only for the exact requester. Platform
+  config permission gating and MDM command authorization both remain effective.
+- [ ] WC-ABB-07 — Approve, reject and cancel dispatch exactly one existing ABB command with exact expected version,
+  reason mapping and deterministic operation identity; no new ABB write path exists.
+- [ ] WC-ABB-08 — Same-key retry/replay returns the durable first outcome without a second lifecycle/history write;
+  stale version, double click, changed reason and timeout-then-retry are real-Mongo covered.
+- [ ] WC-ABB-09 — `400/401/403/404/409/202/503/504` and cancellation behavior match the matrix, preserve stable
+  `reason_code` and never translate failure into 2xx success.
+- [ ] WC-ABB-10 — Tenant A/B, mismatched tenant header, deleted entry/product, direct-human SoD, permission and FU03
+  scope tests prove non-disclosure and fail-closed behavior on real `localhost:27017` Mongo.
+- [ ] WC-ABB-11 — Contract tests pin exact GET/POST route, controller auth, two allowed request fields, three action
+  codes, three permission keys, 31 mapping fields and absence of Platform/frontend/config dependencies.
+- [ ] WC-ABB-12 — Existing ABB focused tests, FU03 consumer/security tests and the full non-skipped MDM suite remain
+  green; MDM API Release build has zero errors.
+- [ ] WC-ABB-13 — Architecture/guard scan proves no second `IWorkItemProvider`, `IWorkItemActionDispatcher` or remote
+  gateway implementation and no Platform-specific ABB bridge class.
+
+#### Separate operator configuration and live-acceptance gate
+
+Runtime code completion does not authorize the provider row. After runtime tests are green, an Integration/Platform
+operator must separately approve and supply one environment-owned row equivalent to:
+
+```jsonc
+{
+  "ProviderCode": "mdm-product-abbreviations",
+  "ContractVersion": "1.0",
+  "BaseUrl": "http://localhost:5059",
+  "ProjectionPath": "api/v1/work-items/product-abbreviations/projection",
+  "ActionPathTemplate": "api/v1/work-items/product-abbreviations/{itemId}/actions/{actionCode}",
+  "Actions": {
+    "approve": "mdm.product-abbreviations.approve",
+    "reject": "mdm.product-abbreviations.reject",
+    "cancel": "mdm.product-abbreviations.cancel"
+  }
+}
+```
+
+This value is secret-free but remains environment mutation. It is not committed to appsettings and is not written by
+the MDM module. Local Development live acceptance is a second explicit gate and must use real requester and distinct
+approver sessions plus an FU03-scope-allowed Global Product:
+
+1. project exactly one new initial ABB request and reconcile provider count = badge count = visible row count;
+2. prove requester sees own cancel but no approve/reject, distinct approver sees approve/reject but no cancel;
+3. exercise one denied same-subject decision, one denied non-owner cancel and one stale expected-version conflict;
+4. exercise one authorized decision, reload, and prove the terminal request disappears while the ABB Register shows
+   the same durable outcome and unchanged single ledger/history cardinality;
+5. disable/stop MDM and prove the board names `mdm-product-abbreviations` unavailable while other sources remain, and
+   action dispatch returns `504 WORK_ITEM_REMOTE_UNAVAILABLE` without green success;
+6. prove Enforced FU03 hides an out-of-scope Global Product's ABB request and permits an in-scope one without leaking
+   Legal Entity candidate/evidence data to the WorkCenter DTO;
+7. record console/network zero-error evidence, no direct browser `5059` call, no secret output and no new business data
+   beyond the explicitly approved ABB test requests.
+
+Production/Staging provider configuration and enablement remain separate approval gates.
+
+#### Code-start readiness and blockers
+
+- [x] Generic remote provider/dispatcher, canonical DTO, action union, permission gating and reference consumer measured
+  from code; no module-specific Platform class is planned.
+- [x] Existing ABB entity, repository, controller, commands, permissions, SoD/own-cancel and failure codes measured.
+- [x] Exact provider identity/version, endpoint pair, 31-field mapping, capabilities, eligibility, actions, deterministic
+  idempotency, failure matrix, runtime/test allow-list and protected paths are frozen by this named step.
+- [ ] FU03 accepted implementation, including `ProductLegalEntityScopeConsumerGuard`, is integrated into and re-verified on
+  the eventual runtime code-start base. It is absent from this planning worktree's current main base.
+- [x] Product Data Owner decision is frozen under the user's 2026-08-29 standing approval: only initial allocation
+  requests are projected; correction and retirement remain
+  on the ABB Register because the generic token lacks their extra concurrency identities.
+- [x] WorkCenter/Integration decision is frozen under the same standing approval: provider code
+  `mdm-product-abbreviations`, contract `1.0`, provider-specific
+  paths and exact three-action permission map.
+- [x] The user's 2026-08-29 standing authorization grants runtime/test code-start for this exact allow-list after the
+  FU03 integration prerequisite closes. Pack status remains `in-progress`; config/data/process mutation stays separate.
+- [ ] After runtime completion, operator configuration and live acceptance each receive separate explicit approval;
+  Production/Staging remains separately gated.
