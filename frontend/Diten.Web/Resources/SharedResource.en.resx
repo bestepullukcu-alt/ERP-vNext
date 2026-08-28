@@ -697,4 +697,58 @@
   <data name="NavigationLoadFailedHint" xml:space="preserve">
     <value>Refresh the page to try again.</value>
   </data>
+  <data name="Nav.Page.ACCOUNTS" xml:space="preserve">
+    <value>Accounts</value>
+  </data>
+  <data name="Nav.Page.CONTACTS" xml:space="preserve">
+    <value>Contacts</value>
+  </data>
+  <data name="Nav.Page.TERRITORYMANAGEMENT" xml:space="preserve">
+    <value>Territory Management</value>
+  </data>
+  <data name="Nav.Page.SEGMENTS" xml:space="preserve">
+    <value>Segments</value>
+  </data>
+  <data name="Nav.Page.STRATEGYTEMPLATES" xml:space="preserve">
+    <value>Strategy Templates</value>
+  </data>
+  <data name="Nav.Page.CAMPAIGNS" xml:space="preserve">
+    <value>Campaigns</value>
+  </data>
+  <data name="Nav.Page.CYCLEPERIODS" xml:space="preserve">
+    <value>Cycle Periods</value>
+  </data>
+  <data name="Nav.Page.CYCLECAPACITIES" xml:space="preserve">
+    <value>Cycle Capacity</value>
+  </data>
+  <data name="Nav.Page.CONSENTPREFERENCES" xml:space="preserve">
+    <value>Consent &amp; Preferences</value>
+  </data>
+  <data name="Nav.Page.KNOWLEDGE" xml:space="preserve">
+    <value>Knowledge</value>
+  </data>
+  <data name="Nav.Page.KNOWLEDGECONCEPTS" xml:space="preserve">
+    <value>Concepts</value>
+  </data>
+  <data name="Nav.Page.KNOWLEDGEPATHS" xml:space="preserve">
+    <value>Knowledge Paths</value>
+  </data>
+  <data name="Nav.Page.CONTENTENGAGEMENTJOURNEYS" xml:space="preserve">
+    <value>Content Engagement Journeys</value>
+  </data>
+  <data name="Nav.Module.CRM" xml:space="preserve">
+    <value>Customer Relationship Management</value>
+  </data>
+  <data name="Nav.Domain.SALES" xml:space="preserve">
+    <value>Sales</value>
+  </data>
+  <data name="Nav.Page.WORKINGCALENDARS" xml:space="preserve">
+    <value>Working Calendars</value>
+  </data>
+  <data name="Nav.Page.WORKINGCALENDARIMPORTS" xml:space="preserve">
+    <value>Working Calendar Imports</value>
+  </data>
+  <data name="Nav.Module.WORKINGCALENDARIMPORT" xml:space="preserve">
+    <value>Working Calendar Import</value>
+  </data>
 </root>

@@ -636,4 +636,58 @@
   <data name="NavigationLoadFailedHint" xml:space="preserve">
     <value>请刷新页面重试。</value>
   </data>
+  <data name="Nav.Page.ACCOUNTS" xml:space="preserve">
+    <value>客户账户</value>
+  </data>
+  <data name="Nav.Page.CONTACTS" xml:space="preserve">
+    <value>联系人</value>
+  </data>
+  <data name="Nav.Page.TERRITORYMANAGEMENT" xml:space="preserve">
+    <value>区域管理</value>
+  </data>
+  <data name="Nav.Page.SEGMENTS" xml:space="preserve">
+    <value>客户细分</value>
+  </data>
+  <data name="Nav.Page.STRATEGYTEMPLATES" xml:space="preserve">
+    <value>策略模板</value>
+  </data>
+  <data name="Nav.Page.CAMPAIGNS" xml:space="preserve">
+    <value>活动</value>
+  </data>
+  <data name="Nav.Page.CYCLEPERIODS" xml:space="preserve">
+    <value>周期</value>
+  </data>
+  <data name="Nav.Page.CYCLECAPACITIES" xml:space="preserve">
+    <value>周期产能</value>
+  </data>
+  <data name="Nav.Page.CONSENTPREFERENCES" xml:space="preserve">
+    <value>同意与偏好</value>
+  </data>
+  <data name="Nav.Page.KNOWLEDGE" xml:space="preserve">
+    <value>知识库</value>
+  </data>
+  <data name="Nav.Page.KNOWLEDGECONCEPTS" xml:space="preserve">
+    <value>Concepts</value>
+  </data>
+  <data name="Nav.Page.KNOWLEDGEPATHS" xml:space="preserve">
+    <value>知识路径</value>
+  </data>
+  <data name="Nav.Page.CONTENTENGAGEMENTJOURNEYS" xml:space="preserve">
+    <value>内容互动旅程</value>
+  </data>
+  <data name="Nav.Module.CRM" xml:space="preserve">
+    <value>客户关系管理</value>
+  </data>
+  <data name="Nav.Domain.SALES" xml:space="preserve">
+    <value>销售</value>
+  </data>
+  <data name="Nav.Page.WORKINGCALENDARS" xml:space="preserve">
+    <value>工作日历</value>
+  </data>
+  <data name="Nav.Page.WORKINGCALENDARIMPORTS" xml:space="preserve">
+    <value>工作日历导入</value>
+  </data>
+  <data name="Nav.Module.WORKINGCALENDARIMPORT" xml:space="preserve">
+    <value>工作日历导入</value>
+  </data>
 </root>

@@ -637,4 +637,58 @@
   <data name="NavigationLoadFailedHint" xml:space="preserve">
     <value>Actualisez la page pour réessayer.</value>
   </data>
+  <data name="Nav.Page.ACCOUNTS" xml:space="preserve">
+    <value>Comptes</value>
+  </data>
+  <data name="Nav.Page.CONTACTS" xml:space="preserve">
+    <value>Contacts</value>
+  </data>
+  <data name="Nav.Page.TERRITORYMANAGEMENT" xml:space="preserve">
+    <value>Gestion des territoires</value>
+  </data>
+  <data name="Nav.Page.SEGMENTS" xml:space="preserve">
+    <value>Segments</value>
+  </data>
+  <data name="Nav.Page.STRATEGYTEMPLATES" xml:space="preserve">
+    <value>Modèles de stratégie</value>
+  </data>
+  <data name="Nav.Page.CAMPAIGNS" xml:space="preserve">
+    <value>Campagnes</value>
+  </data>
+  <data name="Nav.Page.CYCLEPERIODS" xml:space="preserve">
+    <value>Périodes de cycle</value>
+  </data>
+  <data name="Nav.Page.CYCLECAPACITIES" xml:space="preserve">
+    <value>Capacité de cycle</value>
+  </data>
+  <data name="Nav.Page.CONSENTPREFERENCES" xml:space="preserve">
+    <value>Consentement et préférences</value>
+  </data>
+  <data name="Nav.Page.KNOWLEDGE" xml:space="preserve">
+    <value>Connaissances</value>
+  </data>
+  <data name="Nav.Page.KNOWLEDGECONCEPTS" xml:space="preserve">
+    <value>Concepts</value>
+  </data>
+  <data name="Nav.Page.KNOWLEDGEPATHS" xml:space="preserve">
+    <value>Parcours de connaissances</value>
+  </data>
+  <data name="Nav.Page.CONTENTENGAGEMENTJOURNEYS" xml:space="preserve">
+    <value>Parcours d'engagement de contenu</value>
+  </data>
+  <data name="Nav.Module.CRM" xml:space="preserve">
+    <value>Gestion de la relation client</value>
+  </data>
+  <data name="Nav.Domain.SALES" xml:space="preserve">
+    <value>Ventes</value>
+  </data>
+  <data name="Nav.Page.WORKINGCALENDARS" xml:space="preserve">
+    <value>Calendrier de travail</value>
+  </data>
+  <data name="Nav.Page.WORKINGCALENDARIMPORTS" xml:space="preserve">
+    <value>Imports de calendrier de travail</value>
+  </data>
+  <data name="Nav.Module.WORKINGCALENDARIMPORT" xml:space="preserve">
+    <value>Import de calendrier de travail</value>
+  </data>
 </root>

@@ -10,20 +10,33 @@ namespace Diten.Platform.Application.Features.Crm.SelfRegistration;
 /// IsTenantAssignable=true); pushing this manifest flips it to Origin=SelfRegistered while PRESERVING every SOFT
 /// operator field (Domain/Service/DisplayName/SortOrder/IsTenantAssignable) per the reconcile ownership rules — so
 /// tenant-assignability and the operator's taxonomy choices are untouched.</para>
-/// <para><b>Navigation:</b> the Accounts page is registered with <c>IsNavigationVisible = false</c> on purpose.
-/// The tenant shell still renders Accounts from the hardcoded <c>_LayoutTenantShell</c> block (gated by the same
-/// <c>crm.account.read</c> key); making the descriptor nav-visible while that static entry exists would double-render
-/// it under the MOD-0285 DynamicModuleMenu. Flipping this to <c>true</c> and removing the static &lt;li&gt; is the
-/// MOD-0285 data-driven-navigation migration (tracked as a follow-up). The descriptor itself — route + required
-/// permission — is correct and now exists, and its permission is synced to the AuthService catalog.</para>
+/// <para><b>Navigation (MOD-0285 data-driven, 2026-08-28):</b> the tenant shell no longer hand-writes CRM links —
+/// origin/main adopted the <c>DynamicModuleMenu</c> and its <c>_LayoutTenantShell</c> carries NO static CRM
+/// &lt;li&gt; entries. So every CRM page below is registered <c>IsNavigationVisible = true</c>: the descriptor is now
+/// the ONLY source of the sidebar entry (double-render is impossible — there is nothing static left to double).
+/// Each page's <c>Nav.Page.{code}</c> label is shipped in all seven tenant languages in SharedResource.*.resx
+/// (NavManifestL10nGuardTests enforces the key exists), and its RequiredPermission is the verbatim key the CRM page
+/// controller and CrmService <c>[HasPermission]</c> both enforce — the sidebar entry only renders for a tenant
+/// entitled to CRM and granted that permission.</para>
 /// <para>This provider lives in Platform.Application (like the Organization/Workflow cross-service providers); it does
 /// NOT add a manifest push inside CrmService, and it declares no Account business capability.</para>
 /// </summary>
 public sealed class CrmManifestProvider : IModuleManifestProvider
 {
-    // Verbatim MOD-0018 permission keys the tenant-shell UX guard and CrmService [HasPermission] both enforce.
+    // Verbatim read-permission keys the Diten.Web CRM controllers and CrmService [HasPermission] both enforce.
     private const string AccountsRead = "crm.account.read";
     private const string ContactsRead = "crm.contact.read";
+    private const string TerritoryRead = "crm.territory.read";
+    private const string SegmentsRead = "crm.segment.read";
+    private const string StrategyTemplatesRead = "crm.strategy-template.read";
+    private const string CampaignsRead = "crm.campaign.read";
+    private const string CyclePeriodsRead = "crm.cycle-period.read";
+    private const string CycleCapacityRead = "crm.cycle-capacity.read";
+    private const string ConsentRead = "crm.consent.read";
+    private const string KnowledgeRead = "crm.knowledge.read";
+    private const string KnowledgeConceptRead = "crm.knowledge.concept.read";
+    private const string KnowledgePathRead = "crm.knowledge.path.read";
+    private const string ContentEngagementJourneyRead = "crm.knowledge.content-engagement-journey.read";
 
     public ModuleManifestDocument GetManifest() =>
         new(
@@ -39,9 +52,18 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
             IsBaseline: false, // HARD: CRM is a licensed module — tenant entitlement required (never entitlement-free).
             Pages:
             [
-                // Not nav-visible yet — static tenant-shell menu owns the nav until the MOD-0285 migration (see class doc).
-                new ModuleManifestPage("ACCOUNTS", "Accounts", "/CRM/Accounts", AccountsRead, null, false, "List", 10, []),
-                // MOD-0150 FU02 — Contacts page descriptor (nav-visible=false; static menu owns nav until MOD-0285).
-                new ModuleManifestPage("CONTACTS", "Contacts", "/CRM/Contacts", ContactsRead, null, false, "List", 20, [])
+                new ModuleManifestPage("ACCOUNTS", "Accounts", "/CRM/Accounts", AccountsRead, null, true, "List", 10, []),
+                new ModuleManifestPage("CONTACTS", "Contacts", "/CRM/Contacts", ContactsRead, null, true, "List", 20, []),
+                new ModuleManifestPage("TERRITORY_MANAGEMENT", "Territory Management", "/CRM/TerritoryManagement", TerritoryRead, null, true, "List", 30, []),
+                new ModuleManifestPage("SEGMENTS", "Segments", "/CRM/Segments", SegmentsRead, null, true, "List", 40, []),
+                new ModuleManifestPage("STRATEGY_TEMPLATES", "Strategy Templates", "/CRM/StrategyTemplates", StrategyTemplatesRead, null, true, "List", 50, []),
+                new ModuleManifestPage("CAMPAIGNS", "Campaigns", "/CRM/Campaigns", CampaignsRead, null, true, "List", 60, []),
+                new ModuleManifestPage("CYCLE_PERIODS", "Cycle Periods", "/CRM/CyclePeriods", CyclePeriodsRead, null, true, "List", 70, []),
+                new ModuleManifestPage("CYCLE_CAPACITIES", "Cycle Capacity", "/CRM/CycleCapacities", CycleCapacityRead, null, true, "List", 80, []),
+                new ModuleManifestPage("CONSENT_PREFERENCES", "Consent & Preferences", "/CRM/ConsentPreferences", ConsentRead, null, true, "List", 90, []),
+                new ModuleManifestPage("KNOWLEDGE", "Knowledge", "/CRM/Knowledge", KnowledgeRead, null, true, "List", 100, []),
+                new ModuleManifestPage("KNOWLEDGE_CONCEPTS", "Concepts", "/CRM/KnowledgeConcepts", KnowledgeConceptRead, null, true, "List", 110, []),
+                new ModuleManifestPage("KNOWLEDGE_PATHS", "Knowledge Paths", "/CRM/KnowledgePaths", KnowledgePathRead, null, true, "List", 120, []),
+                new ModuleManifestPage("CONTENT_ENGAGEMENT_JOURNEYS", "Content Engagement Journeys", "/CRM/ContentEngagementJourneys", ContentEngagementJourneyRead, null, true, "List", 130, [])
             ]);
 }

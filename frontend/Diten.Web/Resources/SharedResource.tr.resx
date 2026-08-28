@@ -697,4 +697,58 @@
   <data name="NavigationLoadFailedHint" xml:space="preserve">
     <value>Yeniden denemek için sayfayı yenileyin.</value>
   </data>
+  <data name="Nav.Page.ACCOUNTS" xml:space="preserve">
+    <value>Hesaplar</value>
+  </data>
+  <data name="Nav.Page.CONTACTS" xml:space="preserve">
+    <value>Kişiler</value>
+  </data>
+  <data name="Nav.Page.TERRITORYMANAGEMENT" xml:space="preserve">
+    <value>Bölge Yönetimi</value>
+  </data>
+  <data name="Nav.Page.SEGMENTS" xml:space="preserve">
+    <value>Segmentler</value>
+  </data>
+  <data name="Nav.Page.STRATEGYTEMPLATES" xml:space="preserve">
+    <value>Strateji Şablonları</value>
+  </data>
+  <data name="Nav.Page.CAMPAIGNS" xml:space="preserve">
+    <value>Kampanyalar</value>
+  </data>
+  <data name="Nav.Page.CYCLEPERIODS" xml:space="preserve">
+    <value>Dönemler</value>
+  </data>
+  <data name="Nav.Page.CYCLECAPACITIES" xml:space="preserve">
+    <value>Dönem Kapasitesi</value>
+  </data>
+  <data name="Nav.Page.CONSENTPREFERENCES" xml:space="preserve">
+    <value>Onay ve Tercihler</value>
+  </data>
+  <data name="Nav.Page.KNOWLEDGE" xml:space="preserve">
+    <value>Bilgi Bankası</value>
+  </data>
+  <data name="Nav.Page.KNOWLEDGECONCEPTS" xml:space="preserve">
+    <value>Kavramlar</value>
+  </data>
+  <data name="Nav.Page.KNOWLEDGEPATHS" xml:space="preserve">
+    <value>Bilgi Yolları</value>
+  </data>
+  <data name="Nav.Page.CONTENTENGAGEMENTJOURNEYS" xml:space="preserve">
+    <value>İçerik Etkileşim Yolculukları</value>
+  </data>
+  <data name="Nav.Module.CRM" xml:space="preserve">
+    <value>Müşteri İlişkileri Yönetimi</value>
+  </data>
+  <data name="Nav.Domain.SALES" xml:space="preserve">
+    <value>Satış</value>
+  </data>
+  <data name="Nav.Page.WORKINGCALENDARS" xml:space="preserve">
+    <value>Çalışma Takvimleri</value>
+  </data>
+  <data name="Nav.Page.WORKINGCALENDARIMPORTS" xml:space="preserve">
+    <value>Çalışma Takvimi İçe Aktarımları</value>
+  </data>
+  <data name="Nav.Module.WORKINGCALENDARIMPORT" xml:space="preserve">
+    <value>Çalışma Takvimi İçe Aktarma</value>
+  </data>
 </root>
