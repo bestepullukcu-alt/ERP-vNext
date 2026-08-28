@@ -15,19 +15,16 @@ using Xunit;
 
 namespace Diten.PpmService.IntegrationTests.GateI.DecisionTrace;
 
-public sealed class GateIRelationshipMutationMongoTests
+[Collection(GateIDisposableMongoReplicaSet.CollectionName)]
+public sealed class GateIRelationshipMutationMongoTests(GateIDisposableMongoReplicaSet mongo)
 {
-    private static string Connection =>
-        Environment.GetEnvironmentVariable("PPM_GATE_I_TEST_MONGO_URI")
-        ?? throw new InvalidOperationException("PPM_GATE_I_TEST_MONGO_URI is required for Gate I Mongo evidence.");
-
     private static string Hash(string value) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
 
     [Fact]
     public async Task Relationship_receipt_audit_and_outbox_commit_once_and_reconcile()
     {
-        await using var fixture = await Fixture.Create();
+        await using var fixture = await Fixture.Create(mongo.ConnectionString);
         var entity = fixture.NewInvestmentCase();
         await fixture.Context.InvestmentCases.InsertOneAsync(entity);
         var scope = fixture.Scope("same-key", "request-a");
@@ -70,7 +67,7 @@ public sealed class GateIRelationshipMutationMongoTests
     [InlineData("event-outbox")]
     public async Task Every_participant_fault_rolls_back_all_state(string participant)
     {
-        await using var fixture = await Fixture.Create(participant);
+        await using var fixture = await Fixture.Create(mongo.ConnectionString, participant);
         var entity = fixture.NewInvestmentCase();
         await fixture.Context.InvestmentCases.InsertOneAsync(entity);
 
@@ -90,7 +87,7 @@ public sealed class GateIRelationshipMutationMongoTests
     [Fact]
     public async Task Cross_tenant_is_non_disclosing_and_has_zero_residue()
     {
-        await using var fixture = await Fixture.Create();
+        await using var fixture = await Fixture.Create(mongo.ConnectionString);
         var entity = fixture.NewInvestmentCase();
         await fixture.Context.InvestmentCases.InsertOneAsync(entity);
         var other = fixture.Scope("cross-tenant", "cross-request") with { TenantId = Guid.NewGuid() };
@@ -121,12 +118,12 @@ public sealed class GateIRelationshipMutationMongoTests
             Persistence = provider.GetRequiredService<IGateIRelationshipMutationPersistence>();
         }
 
-        public static async Task<Fixture> Create(string? failAfter = null)
+        public static async Task<Fixture> Create(string connectionString, string? failAfter = null)
         {
             var database = $"ppm_gate_i_{Guid.NewGuid():N}";
             var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Mongo:ConnectionString"] = Connection,
+                ["Mongo:ConnectionString"] = connectionString,
                 ["Mongo:DatabaseName"] = database
             }).Build();
             var services = new ServiceCollection();
