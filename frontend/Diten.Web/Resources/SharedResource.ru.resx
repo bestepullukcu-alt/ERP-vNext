@@ -690,4 +690,13 @@
   <data name="Nav.Module.WORKINGCALENDARIMPORT" xml:space="preserve">
     <value>Импорт рабочего календаря</value>
   </data>
+  <data name="Nav.Page.MASTERREGISTER" xml:space="preserve">
+    <value>Главный реестр документов</value>
+  </data>
+  <data name="Nav.Page.REPOSITORYASSESSMENT" xml:space="preserve">
+    <value>Оценки хранилищ</value>
+  </data>
+  <data name="Nav.Page.BRANDS" xml:space="preserve">
+    <value>Бренды</value>
+  </data>
 </root>

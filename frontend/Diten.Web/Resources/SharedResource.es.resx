@@ -691,4 +691,13 @@
   <data name="Nav.Module.WORKINGCALENDARIMPORT" xml:space="preserve">
     <value>Importación de calendario laboral</value>
   </data>
+  <data name="Nav.Page.MASTERREGISTER" xml:space="preserve">
+    <value>Registro Maestro de Documentos</value>
+  </data>
+  <data name="Nav.Page.REPOSITORYASSESSMENT" xml:space="preserve">
+    <value>Evaluaciones de Repositorios</value>
+  </data>
+  <data name="Nav.Page.BRANDS" xml:space="preserve">
+    <value>Marcas</value>
+  </data>
 </root>

@@ -363,6 +363,32 @@ public sealed class DocumentManagementManifestProvider : IModuleManifestProvider
                     Actions:
                     [
                         new ModuleManifestAction("SAVE", "Save Policy", DocumentManagementAccessPermissions.Manage, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
-                    ])
+                    ]),
+
+                // MOD-0029-FU24 Document Master Register + FU28A Repository Assessments — post main-sync catalogue
+                // registration (2026-08-28). The hand-written tenant-shell links these two had were removed with main's
+                // MOD-0285 DynamicModuleMenu adoption, so these descriptors are now the only source of their sidebar
+                // entry. RequiredPermission is the verbatim key the FU06/FU16 backend [HasPermission] enforces.
+                new ModuleManifestPage(
+                    PageCode: "MASTER_REGISTER",
+                    DisplayName: "Document Master Register",
+                    RoutePath: "/DocumentManagementMasterRegister",
+                    RequiredPermission: "platform.document-management.master-register.view",
+                    ParentPageCode: null,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 70,
+                    Actions: []),
+
+                new ModuleManifestPage(
+                    PageCode: "REPOSITORY_ASSESSMENT",
+                    DisplayName: "Repository Assessments",
+                    RoutePath: "/DocumentManagementRepositoryAssessments",
+                    RequiredPermission: "platform.document-management.repository-assessment.view",
+                    ParentPageCode: null,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 80,
+                    Actions: [])
             ]);
 }

@@ -690,4 +690,13 @@
   <data name="Nav.Module.WORKINGCALENDARIMPORT" xml:space="preserve">
     <value>استيراد تقويم العمل</value>
   </data>
+  <data name="Nav.Page.MASTERREGISTER" xml:space="preserve">
+    <value>سجل الوثائق الرئيسي</value>
+  </data>
+  <data name="Nav.Page.REPOSITORYASSESSMENT" xml:space="preserve">
+    <value>تقييمات المستودعات</value>
+  </data>
+  <data name="Nav.Page.BRANDS" xml:space="preserve">
+    <value>العلامات التجارية</value>
+  </data>
 </root>

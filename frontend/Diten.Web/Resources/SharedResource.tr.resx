@@ -751,4 +751,13 @@
   <data name="Nav.Module.WORKINGCALENDARIMPORT" xml:space="preserve">
     <value>Çalışma Takvimi İçe Aktarma</value>
   </data>
+  <data name="Nav.Page.MASTERREGISTER" xml:space="preserve">
+    <value>Doküman Ana Kayıt Defteri</value>
+  </data>
+  <data name="Nav.Page.REPOSITORYASSESSMENT" xml:space="preserve">
+    <value>Depo Değerlendirmeleri</value>
+  </data>
+  <data name="Nav.Page.BRANDS" xml:space="preserve">
+    <value>Markalar</value>
+  </data>
 </root>
