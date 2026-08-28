@@ -19,7 +19,15 @@ public abstract class DwsTenantEntity
     public int Version { get; private set; } = 1;
     public void RequireVersion(int expected) { if (expected != Version) throw new DwsConflictException(DwsErrors.ConcurrencyConflict); }
     protected void Touch(DateTime utcNow) { UpdatedAtUtc = RequireUtc(utcNow); checked { Version++; } }
-    internal static DateTime RequireUtc(DateTime value) => value.Kind == DateTimeKind.Utc ? value : throw new DwsValidationException(DwsErrors.InvalidRequest);
+    public void SoftDelete(int expectedVersion, DateTime utcNow)
+    {
+        RequireVersion(expectedVersion);
+        if (IsDeleted) throw new DwsNotFoundException();
+        IsDeleted = true;
+        DeletedAtUtc = RequireUtc(utcNow);
+        Touch(utcNow);
+    }
+    public static DateTime RequireUtc(DateTime value) => value.Kind == DateTimeKind.Utc ? value : throw new DwsValidationException(DwsErrors.InvalidRequest);
 }
 
 public enum ExternalContextKind { Portfolio, Initiative, Program, Project }
@@ -55,30 +63,70 @@ public sealed class StructureDefinition : DwsTenantEntity
 
 public sealed class StructureRevision : DwsTenantEntity
 {
+    private StructuralMetadata _structuralMetadata = null!;
     public required Guid StructureDefinitionId { get; init; }
     public required int RevisionNumber { get; init; }
-    public required StructuralMetadata StructuralMetadata { get; init; }
+    public required StructuralMetadata StructuralMetadata { get => _structuralMetadata; init => _structuralMetadata = value; }
     public bool IsSealed { get; private set; }
     public DateTime? SealedAtUtc { get; private set; }
     public void Seal(int expectedVersion, DateTime utcNow) { RequireVersion(expectedVersion); if (IsSealed) throw new DwsConflictException(DwsErrors.SealedRevisionImmutable); IsSealed = true; SealedAtUtc = RequireUtc(utcNow); Touch(utcNow); }
+    public bool UpdateMetadata(StructuralMetadata metadata, int expectedVersion, DateTime utcNow)
+    {
+        RequireMutable(expectedVersion);
+        if (StructuralMetadata == metadata) return false;
+        _structuralMetadata = metadata;
+        Touch(utcNow);
+        return true;
+    }
+    public void RecordStructuralMutation(int expectedVersion, DateTime utcNow)
+    {
+        RequireMutable(expectedVersion);
+        Touch(utcNow);
+    }
+    private void RequireMutable(int expectedVersion)
+    {
+        RequireVersion(expectedVersion);
+        if (IsSealed) throw new DwsConflictException(DwsErrors.SealedRevisionImmutable);
+    }
 }
 
 public sealed class StructureNode : DwsTenantEntity
 {
+    private Guid? _parentLogicalNodeId;
+    private int _siblingOrder;
     private StructureNode() { }
     public Guid StructureRevisionId { get; private init; }
     public Guid LogicalNodeId { get; private init; }
-    public Guid? ParentLogicalNodeId { get; private init; }
+    public Guid? ParentLogicalNodeId { get => _parentLogicalNodeId; private init => _parentLogicalNodeId = value; }
     public string Code { get; private init; } = null!;
     public string Title { get; private init; } = null!;
     public string? Description { get; private init; }
-    public int SiblingOrder { get; private init; }
+    public int SiblingOrder { get => _siblingOrder; private init => _siblingOrder = value; }
     public static StructureNode Create(Guid tenantId, Guid revisionId, Guid? parentId, string code, string title, string? description, int order, Guid? logicalNodeId = null)
     {
         var logical = logicalNodeId ?? Guid.NewGuid();
         if (tenantId == Guid.Empty || revisionId == Guid.Empty || logical == Guid.Empty || order < 0) throw new DwsValidationException(DwsErrors.InvalidStructure);
         if (parentId == logical) throw new DwsValidationException(DwsErrors.InvalidStructure);
         return new() { TenantId = tenantId, StructureRevisionId = revisionId, LogicalNodeId = logical, ParentLogicalNodeId = parentId, Code = DwsText.Required(code, 100), Title = DwsText.Required(title, 300), Description = DwsText.Optional(description, 4000), SiblingOrder = order };
+    }
+    public bool Move(Guid? parentLogicalNodeId, int siblingOrder, int expectedVersion, DateTime utcNow)
+    {
+        if (siblingOrder < 0 || parentLogicalNodeId == LogicalNodeId) throw new DwsValidationException(DwsErrors.InvalidStructure);
+        RequireVersion(expectedVersion);
+        if (ParentLogicalNodeId == parentLogicalNodeId && SiblingOrder == siblingOrder) return false;
+        _parentLogicalNodeId = parentLogicalNodeId;
+        _siblingOrder = siblingOrder;
+        Touch(utcNow);
+        return true;
+    }
+    public bool Reorder(int siblingOrder, int expectedVersion, DateTime utcNow)
+    {
+        if (siblingOrder < 0) throw new DwsValidationException(DwsErrors.InvalidStructure);
+        RequireVersion(expectedVersion);
+        if (SiblingOrder == siblingOrder) return false;
+        _siblingOrder = siblingOrder;
+        Touch(utcNow);
+        return true;
     }
 }
 
@@ -125,7 +173,7 @@ public static class DwsStructuralValidator
         if (nodes.Any(x => x.TenantId != ownerTenantId || x.StructureRevisionId != ownerRevisionId) || dependencies.Any(x => x.TenantId != ownerTenantId || x.StructureRevisionId != ownerRevisionId)) throw new DwsNotFoundException();
         var ids = nodes.Select(x => x.LogicalNodeId).ToHashSet();
         if (dependencies.Any(x => !ids.Contains(x.FromLogicalNodeId) || !ids.Contains(x.ToLogicalNodeId))) throw new DwsNotFoundException();
-        if (dependencies.GroupBy(x => (x.FromLogicalNodeId, x.ToLogicalNodeId)).Any(x => x.Count() > 1)) throw new DwsConflictException(DwsErrors.DependencyCycle);
+        if (dependencies.GroupBy(x => (x.FromLogicalNodeId, x.ToLogicalNodeId)).Any(x => x.Count() > 1)) throw new DwsConflictException(DwsErrors.DuplicateDependency);
         var outgoing = dependencies.GroupBy(x => x.FromLogicalNodeId).ToDictionary(x => x.Key, x => x.Select(y => y.ToLogicalNodeId).ToArray()); var done = new HashSet<Guid>();
         foreach (var id in ids) Visit(id, new HashSet<Guid>());
         void Visit(Guid id, HashSet<Guid> active) { if (done.Contains(id)) return; if (!active.Add(id)) throw new DwsConflictException(DwsErrors.DependencyCycle); if (outgoing.TryGetValue(id, out var next)) foreach (var target in next) Visit(target, active); active.Remove(id); done.Add(id); }
@@ -208,8 +256,8 @@ public static class DwsText
 
 public static class DwsErrors
 {
-    public const string InvalidRequest="dws_invalid_request",InvalidContextReference="dws_invalid_context_reference",InvalidUnicode="dws_invalid_unicode",InvalidStructure="dws_invalid_structure",UnsupportedContractVersion="dws_unsupported_contract_version",UnknownCanonicalizationVersion="dws_unknown_canonicalization_version",InvalidStableOutcome="dws_invalid_stable_outcome",AuthenticationRequired="dws_authentication_required",ConcurrencyConflict="dws_concurrency_conflict",HierarchyCycle="dws_hierarchy_cycle",DependencyCycle="dws_dependency_cycle",DuplicateSiblingOrder="dws_duplicate_sibling_order",DuplicateNodeCode="dws_duplicate_node_code",SealedRevisionImmutable="dws_sealed_revision_immutable",WorkingRevisionExists="dws_working_revision_exists",ExternalContextImmutable="dws_external_context_immutable",IdempotencyConflict="dws_idempotency_conflict",IdempotencySubjectConflict="idempotency_key_owned_by_different_subject",ComparisonRequiresSealedRevision="dws_comparison_requires_sealed_revision",ResourceNotFound="dws_resource_not_found",PermissionDenied="dws_permission_denied",ExternalContextAuthorityUnavailable="dws_external_context_authority_unavailable",TransactionUnavailable="dws_transaction_unavailable",CommitIndeterminate="dws_commit_indeterminate",AuditIntentUnavailable="dws_audit_intent_unavailable";
-    public static IReadOnlyDictionary<int,IReadOnlySet<string>> Matrix { get; }=new Dictionary<int,IReadOnlySet<string>>{[400]=new HashSet<string>([InvalidRequest,InvalidContextReference,InvalidUnicode,InvalidStructure,UnsupportedContractVersion,UnknownCanonicalizationVersion,InvalidStableOutcome]),[401]=new HashSet<string>([AuthenticationRequired]),[403]=new HashSet<string>([PermissionDenied]),[404]=new HashSet<string>([ResourceNotFound]),[409]=new HashSet<string>([ConcurrencyConflict,HierarchyCycle,DependencyCycle,DuplicateSiblingOrder,DuplicateNodeCode,SealedRevisionImmutable,WorkingRevisionExists,ExternalContextImmutable,IdempotencyConflict,IdempotencySubjectConflict,ComparisonRequiresSealedRevision]),[503]=new HashSet<string>([ExternalContextAuthorityUnavailable,TransactionUnavailable,CommitIndeterminate,AuditIntentUnavailable])};
+    public const string InvalidRequest="dws_invalid_request",InvalidContextReference="dws_invalid_context_reference",InvalidUnicode="dws_invalid_unicode",InvalidStructure="dws_invalid_structure",UnsupportedContractVersion="dws_unsupported_contract_version",UnknownCanonicalizationVersion="dws_unknown_canonicalization_version",InvalidStableOutcome="dws_invalid_stable_outcome",AuthenticationRequired="dws_authentication_required",ConcurrencyConflict="dws_concurrency_conflict",HierarchyCycle="dws_hierarchy_cycle",DependencyCycle="dws_dependency_cycle",DuplicateDependency="dws_duplicate_dependency",DuplicateSiblingOrder="dws_duplicate_sibling_order",DuplicateNodeCode="dws_duplicate_node_code",NodeHasChildren="dws_node_has_children",SealedRevisionImmutable="dws_sealed_revision_immutable",WorkingRevisionExists="dws_working_revision_exists",ExternalContextImmutable="dws_external_context_immutable",ExternalContextConflict="dws_external_context_conflict",IdempotencyConflict="dws_idempotency_conflict",IdempotencySubjectConflict="idempotency_key_owned_by_different_subject",ComparisonRequiresSealedRevision="dws_comparison_requires_sealed_revision",ResourceNotFound="dws_resource_not_found",PermissionDenied="dws_permission_denied",AuthorizationAuthorityUnavailable="dws_authorization_authority_unavailable",ExternalContextAuthorityUnavailable="dws_external_context_authority_unavailable",TransactionUnavailable="dws_transaction_unavailable",CommitIndeterminate="dws_commit_indeterminate",AuditIntentUnavailable="dws_audit_intent_unavailable";
+    public static IReadOnlyDictionary<int,IReadOnlySet<string>> Matrix { get; }=new Dictionary<int,IReadOnlySet<string>>{[400]=new HashSet<string>([InvalidRequest,InvalidContextReference,InvalidUnicode,InvalidStructure,UnsupportedContractVersion,UnknownCanonicalizationVersion,InvalidStableOutcome]),[401]=new HashSet<string>([AuthenticationRequired]),[403]=new HashSet<string>([PermissionDenied]),[404]=new HashSet<string>([ResourceNotFound]),[409]=new HashSet<string>([ConcurrencyConflict,HierarchyCycle,DependencyCycle,DuplicateDependency,DuplicateSiblingOrder,DuplicateNodeCode,NodeHasChildren,SealedRevisionImmutable,WorkingRevisionExists,ExternalContextImmutable,ExternalContextConflict,IdempotencyConflict,IdempotencySubjectConflict,ComparisonRequiresSealedRevision]),[503]=new HashSet<string>([AuthorizationAuthorityUnavailable,ExternalContextAuthorityUnavailable,TransactionUnavailable,CommitIndeterminate,AuditIntentUnavailable])};
 }
 public static class DwsTenantBoundary { public static T RequireVisible<T>(Guid tenant,T? entity) where T:DwsTenantEntity { if(tenant==Guid.Empty||entity is null||entity.IsDeleted||entity.TenantId!=tenant)throw new DwsNotFoundException(); return entity; } }
 public sealed class DwsValidationException(string code):Exception(code){public string Code{get;}=code;} public sealed class DwsConflictException(string code):Exception(code){public string Code{get;}=code;} public sealed class DwsNotFoundException():Exception(DwsErrors.ResourceNotFound){public string Code{get;}=DwsErrors.ResourceNotFound;}

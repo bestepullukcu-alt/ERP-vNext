@@ -145,6 +145,11 @@ public static class DwsLocalTestComposition
         services.AddSingleton<IFu16DwsAuthorizationAdapter, LocalTestFu16AuthorizationAdapter>();
         services.AddSingleton<IDwsAuditSimulator, LocalTestDwsAuditSimulator>();
         services.AddScoped<IDwsLocalActionExecutor, DwsMongoLocalActionExecutor>();
+        services.AddSingleton<DwsLocalMod0117Fixture>();
+        services.AddSingleton<IMod0117DwsContextValidator, LocalTestMod0117FunctionalContextValidator>();
+        services.AddSingleton<DwsLocalFu16Fixture>();
+        services.AddSingleton<IFu16DwsFunctionalAuthorization, LocalTestFu16FunctionalAuthorization>();
+        services.AddScoped<IDwsLocalAuditObserver, LocalTestDwsAuditObserver>();
         return services;
     }
 }

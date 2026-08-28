@@ -1,4 +1,5 @@
 using Diten.ManagementGovernanceService.Persistence.Modules.Dws;
+using Diten.ManagementGovernanceService.Application.Features.Dws;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 
@@ -24,6 +25,11 @@ public static class DependencyInjection
         services.AddSingleton(new DwsMongoContext(new MongoClient(mongoUri), databaseName));
         services.AddSingleton<DwsMongoIndexInitializer>();
         services.AddSingleton<DwsMongoAtomicWriter>();
+        services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<DwsFunctionalQueryStore>();
+        services.AddSingleton<IDwsStructureVisibilityPort, DwsStructureVisibilityPort>();
+        services.AddSingleton<IDwsFunctionalCommandPort, DwsFunctionalCommandPort>();
+        services.AddSingleton<IDwsFunctionalQueryPort, DwsFunctionalQueryPort>();
         return services;
     }
 }
