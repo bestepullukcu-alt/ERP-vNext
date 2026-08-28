@@ -2240,11 +2240,24 @@ The bounded implementation is not a PASS until all of these executable gates pas
   WorkCenter reachability;
 - full existing ProcessModeling and shared-host DWS regression.
 
-At minimum, physical non-equivalent mutants must remove: tenant predicate; Published-version create fence;
-Opportunity CAS; qualify ExpectedOutcome guard; qualify PriorityRank guard; outcome-before-close guard;
-Outcome immutability; business transaction participant; receipt participant; audit-intent participant; outbox
-participant; FU16-new-operation rejection; audit invalid-pair rejection; and KPI dependency `503`. Every
-mutant must compile, break its targeted test for the expected invariant and restore byte-identically.
+The executable mutation gate is closed by exactly eleven physical non-equivalent expected-red mutants plus
+exactly three security-policy-forbidden dispositions. The eleven physical mutants remove: tenant predicate;
+Published-version create fence; Opportunity CAS; qualify ExpectedOutcome guard; qualify PriorityRank guard;
+outcome-before-close guard; Outcome immutability; business transaction participant; receipt participant;
+audit-intent participant; and outbox participant. Every physical mutant must compile, break its targeted test
+for the expected invariant and restore byte-identically.
+
+The following three production-contract-weakening mutants must not be materialized, compiled or executed:
+
+1. reusing an existing FU16 permission for a new MOD-0355 operation;
+2. deleting an approved audit invalid-pair from the exact eleven-negative matrix;
+3. changing the missing KPI dependency result from fail-closed `503` to another status.
+
+Each forbidden disposition requires an executable invariant test against the unchanged baseline: every new
+operation is rejected by the currently accepted sixteen-entry FU16 manifest; the fixture remains exact seven
+positive/eleven negative and rejects every invalid pair; and the KPI dependency gate returns exact `503` with
+zero persistence invocation. Mutation evidence must record the eleven physical results and three dispositions
+separately and must never describe the dispositions as compiled or executed mutants.
 
 ### Core transaction boundary
 
