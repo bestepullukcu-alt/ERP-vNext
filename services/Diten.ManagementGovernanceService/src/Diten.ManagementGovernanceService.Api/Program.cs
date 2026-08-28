@@ -1,7 +1,7 @@
 using Diten.ManagementGovernanceService.Application;
+using Diten.ManagementGovernanceService.Infrastructure;
 using Diten.ManagementGovernanceService.Infrastructure.Modules.Dws;
 using Diten.ManagementGovernanceService.Persistence.Modules.Dws;
-using MongoDB.Driver;
 
 namespace Diten.ManagementGovernanceService.Api;
 
@@ -25,7 +25,7 @@ public static class Program
         builder.WebHost.UseUrls("http://127.0.0.1:5017");
         builder.Services.AddControllers().AddApplicationPart(typeof(Controllers.DwsStructuresController).Assembly);
         builder.Services.AddDwsApplication();
-        builder.Services.AddDwsLocalTestInfrastructure(new MongoClient(mongoUri),databaseName);
+        builder.Services.AddDwsLocalTestInfrastructure(mongoUri,databaseName);
         var app=builder.Build();
         app.MapGet("/health",()=>Results.Ok(new { status="healthy", mode="local-test", module="MOD-0354" }));
         app.MapControllers();
