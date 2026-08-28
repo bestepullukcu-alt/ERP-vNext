@@ -137,7 +137,7 @@ task, approval, demand or workflow systems.
 | Order | Member ID | Delivery role | Status in this DCP |
 |---:|---|---|---|
 | 0 | `CAND-CAP-0007-FU01` | ES security, tenancy and data-migration foundation | Pack authored; bounded SECURITY-PERIMETER ready-for-dev, non-migrating/default-deny; full migration remains blocked |
-| 1 | `MOD-0352` | Enterprise Strategy Management | Blueprint 8.1 canonical; subdomain 1.1 and outside active DCP-006 scope |
+| 1 | `MOD-0352` | Enterprise Strategy Management | Blueprint 8.1 canonical; bounded Slice 3 strategy-link contract reconciliation ready-for-dev; broader subdomain 1.1 remains outside active DCP-006 scope |
 | 2 | `MOD-0117` | Canonical Demand/PPM owner | Blueprint canonical; Demand FU/pack identity still required |
 | 3 | `MOD-0354` | Standalone DWS structural engine | Blueprint 8.1 canonical; draft pack; applicable Gate 2 + approval required |
 | 4 | `MOD-0355` | BPM process model/version | Blueprint 8.1 canonical; module pack not yet authored |
@@ -282,7 +282,10 @@ be separated; the first hazardous production change still cannot start before Ga
 
 ### Slice 3 — Enterprise Strategy & Performance
 
-- Any future MOD-0352 module pack requires a separate 1.1 scope decision.
+- The bounded [MOD-0352 module pack](../../domains/enterprise-strategy-business-performance/module-packs/MOD-0352-enterprise-strategy-management.md)
+  is the separate 1.1 scope decision only for planning-cycle fixture reconciliation, InitiativeId
+  identity/cardinality and trusted PPM Project link-only validation. It is application-contract-only,
+  non-activated and non-migrating; it does not activate the broader 1.1 scope or DCP-006.
 - Revalidate existing code logic; do not treat presence as correctness.
 - Prove goal→objective→initiative/project-reference lineage, planning-horizon rules, duplicate-alignment
   behavior, KPI/target semantics and review-period state.
