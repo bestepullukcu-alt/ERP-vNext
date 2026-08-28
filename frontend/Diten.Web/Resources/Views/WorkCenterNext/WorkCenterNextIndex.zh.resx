@@ -2160,4 +2160,25 @@
   <data name="EmptyPartialBoardDesc" xml:space="preserve">
     <value>至少有一个数据源未响应，因此此处显示的内容并不完整。请稍后重试。</value>
   </data>
+  <data name="ErrorCommentTextInvalid" xml:space="preserve">
+    <value>评论不能为空。</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>否</value>
+  </data>
+  <data name="BannerStale" xml:space="preserve">
+    <value>自上次读取后，来源记录已发生变更。</value>
+  </data>
+  <data name="BannerSourceUnavailable" xml:space="preserve">
+    <value>当前无法访问来源模块。</value>
+  </data>
+  <data name="BannerAuthorityEnded" xml:space="preserve">
+    <value>您对该条目的权限已结束。</value>
+  </data>
+  <data name="BannerReconciliationRequired" xml:space="preserve">
+    <value>需要与来源进行核对。</value>
+  </data>
 </root>

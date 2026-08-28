@@ -6849,3 +6849,35 @@ doğrulama yardımcıları, ayrı değerlendirilmeli).
 - **Yeniden bakılacak eşik:** `/Tasks` ekranları Görev Merkezi bileşenlerine geçtiğinde ya da üçüncü bir
   yazma yüzeyi çıktığında.
 - **Gelecek regresyon riski: 🟡** — sessiz değil (404 görünür), ama tek yönlü: yalnız `/Tasks` tarafında.
+
+### BL-308 — Tasks l10n köprüsü ELLE tutuluyor (157 satır); otomatik sayıma çevrilmedi (2026-08-28, ölçüldü, bilinçli ertelendi)
+- İki köprü iki farklı mekanizma kullanıyor:
+  · `Views/WorkCenterNext/_L10n.cshtml` → `Localizer.GetAllStrings(true)` — tüm resx otomatik sayılıyor,
+    resx'e eklenen anahtar köprüye **kendiliğinden** gelir, kayma **imkânsız**.
+  · `Views/Tasks/_IndexL10n.cshtml` → **elle tutulan 157 satır**. resx'te olup burada olmayan anahtar
+    **sessizce düşer** ve okuyucuya ham anahtar ya da genel hata mesajı olarak varır.
+- `Tasks/api.js`'in kendi yorumu bunun üç kez olduğunu yazıyor: *"a code mapped in api.js without a line here
+  reaches the reader as the generic error."* Yani bu teorik bir risk değil, üç kez ölçülmüş bir kusur sınıfı.
+- **Neden bu turda çevrilmedi (karar, unutma değil):** `GetAllStrings(true)` davranış değiştirir —
+  (a) yük büyür (TasksIndex resx'i 157 anahtardan çok daha geniş), (b) bugün `SharedLocalizer` ve `Localizer`
+  aynı isimde iki anahtar taşıyorsa hangisinin kazandığı elle yazılmış sırayla belirleniyor; otomatik sayımda
+  bu sıra değişir. Bu tur bir **muhafız** turuydu, davranış turu değil.
+- **Bugünkü kısmi koruma:** `workcenter-next-l10n-key-guard.test.js`, `quick-create.js`'in TASKS köprüsünden
+  okuduğu 7 anahtarı **hem** partial'da **hem** resx'te arıyor. Yani WorkCenterNext klasöründen Tasks köprüsüne
+  bağlanan dosyalar korunuyor; `Tasks/` klasörünün kendi JS'i (form-page, details-page, api.js, form.js)
+  **korunmuyor**.
+- **Yeniden bakılacak eşik:** Tasks yüzeyi Görev Merkezi bileşenlerine geçtiğinde ya da elle liste 200 satırı
+  aştığında.
+- **Gelecek regresyon riski: 🟡** — sessiz ve okuyucuya görünür. Yeni bir Tasks anahtarı ekleyen biri partial'a
+  satır yazmayı unutursa hiçbir test kırmızıya dönmez; kusur ancak ekranda görülür.
+
+### BL-309 — `task-detail-resolver.js` `sourceNavigation` üretiyor, hiçbir yüzey okumuyor (2026-08-28, ölçüldü)
+- Çözümleyici her fixture için `sourceNavigation: { label: { kind: 'resource', key: 'OpenInSource' }, deepLink }`
+  döndürüyor. `sourceNavigation` deposunda **başka hiçbir yerde geçmiyor** — üretilen çıktı okunmuyor.
+- Sonucu: `OpenInSource` anahtarı 7 dilde **yok** ve olmaması doğru — hiçbir yüzey onu çizmiyor, eklemek ölü
+  metin olurdu (aynı sebeple `WatcherRoleWatcher` de yok).
+- Muhafız testi bu istisnayı **gerekçesiyle** taşıyor ve gerekçenin geçerliliğini ayrıca ölçüyor: bir gün bir
+  render sitesi `sourceNavigation`'ı okursa test kırmızıya döner ve anahtar 7 dilde istenir.
+- **Karar gerektiren soru:** kaynak bağlantısı çizilecek mi (o zaman anahtar gerekir) yoksa çözümleyiciden
+  kaldırılacak mı? Bu bir ürün kararı; kod tarafı iki yönde de hazır.
+- **Gelecek regresyon riski: 🟢** — bugün hiçbir şey kırılmıyor; ölü çıktı.

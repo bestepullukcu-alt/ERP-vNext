@@ -2160,4 +2160,25 @@
   <data name="EmptyPartialBoardDesc" xml:space="preserve">
     <value>Хотя бы один источник не ответил, поэтому показанное здесь — не полная картина. Повторите попытку чуть позже.</value>
   </data>
+  <data name="ErrorCommentTextInvalid" xml:space="preserve">
+    <value>Комментарий не может быть пустым.</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Да</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="BannerStale" xml:space="preserve">
+    <value>Исходная запись изменилась после последнего чтения.</value>
+  </data>
+  <data name="BannerSourceUnavailable" xml:space="preserve">
+    <value>Исходный модуль сейчас недоступен.</value>
+  </data>
+  <data name="BannerAuthorityEnded" xml:space="preserve">
+    <value>Ваши полномочия по этой записи закончились.</value>
+  </data>
+  <data name="BannerReconciliationRequired" xml:space="preserve">
+    <value>Требуется сверка с источником.</value>
+  </data>
 </root>
