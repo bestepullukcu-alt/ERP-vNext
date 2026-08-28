@@ -6,6 +6,9 @@ using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Common.Observability;
 using Diten.Platform.API.Configuration;
 using Diten.Platform.API.Security;
+using Diten.BuildingBlocks.Security.Secrets;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 using Prometheus;
@@ -132,6 +135,27 @@ builder.Services.Configure<VerifiedMarketOperationalProvisioningOptions>(
     builder.Configuration.GetSection(VerifiedMarketOperationalProvisioningOptions.SectionName));
 builder.Services.Configure<AuditOutboxTemporalStorageMigrationOptions>(
     builder.Configuration.GetSection(AuditOutboxTemporalStorageMigrationOptions.SectionName));
+builder.Services.Configure<TrustedSourceAuditIntentCredentialOptions>(
+    builder.Configuration.GetSection(TrustedSourceAuditIntentCredentialOptions.SectionName));
+var trustedSourceJwtIssuer = builder.Configuration["JwtSettings:Issuer"]
+    ?? throw new InvalidOperationException("Configuration error: 'JwtSettings:Issuer' is missing in appsettings.json.");
+var trustedSourceJwtRotation = new JwtSecretRotationResolver(builder.Configuration);
+builder.Services.AddAuthentication()
+    .AddJwtBearer(TrustedSourceAuditIntentServiceIdentity.AuthenticationScheme, options =>
+    {
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = trustedSourceJwtIssuer,
+            ValidAudience = TrustedSourceAuditIntentCredentialAuthenticator.Audience,
+            IssuerSigningKeys = trustedSourceJwtRotation.GetValidationKeys(),
+            ClockSkew = TimeSpan.FromSeconds(30)
+        };
+    });
 builder.Services.AddScoped<
     Diten.Platform.Application.Features.BusinessReferenceData.Services.IBusinessReferenceDataVerifiedGskuOperationalEligibility,
     DevelopmentBusinessReferenceDataVerifiedGskuOperationalEligibility>();
@@ -142,6 +166,10 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<IModuleRegistrationCredentialAuthenticator, ModuleRegistrationCredentialAuthenticator>();
 builder.Services.AddSingleton<IVerifiedGskuResolverCredentialAuthenticator, VerifiedGskuResolverCredentialAuthenticator>();
 builder.Services.AddScoped<IVerifiedGskuResolverJwtTenantContext, VerifiedGskuResolverJwtTenantContext>();
+builder.Services.AddSingleton<ITrustedSourceAuditIntentCredentialAuthenticator, TrustedSourceAuditIntentCredentialAuthenticator>();
+builder.Services.AddScoped<ITrustedSourceAuditIntentServiceIdentity, TrustedSourceAuditIntentServiceIdentity>();
+builder.Services.AddSingleton<Diten.Platform.API.Models.Audit.TrustedSourceAuditIntentRequestParser>();
+builder.Services.AddScoped<ITrustedSourceAuditIntentRequestExecutor, TrustedSourceAuditIntentRequestExecutor>();
 
 // AG-STEP-011 / MOD-0018-FU14 Group B — self-explain observer (API-layer; reuses the API-layer PermissionClaimEvaluator).
 builder.Services.AddScoped<Diten.Platform.API.Observability.ICorrelationContext, Diten.Platform.API.Observability.CorrelationContext>();

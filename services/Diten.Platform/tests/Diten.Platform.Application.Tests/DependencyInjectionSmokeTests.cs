@@ -9,6 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Diten.Platform.API.Services.BusinessReferenceData;
 using Diten.Platform.Infrastructure.Persistence.Migrations;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
+using Diten.Platform.API.Security;
+using Diten.Platform.Application.Contracts.Audit;
 using Microsoft.Extensions.Hosting;
 using Xunit;
 
@@ -93,6 +95,27 @@ public sealed class DependencyInjectionSmokeTests
         Assert.False(temporalParameter.HasDefaultValue);
         Assert.Contains("AddScoped<AuditOutboxTemporalMigrationRepository>()", dependencyInjection, StringComparison.Ordinal);
         Assert.Contains("AddScoped<AuditOutboxRepository>()", dependencyInjection, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TrustedSourceAuditIntent_IsRegisteredAsRequestScopedAndNotHosted()
+    {
+        var root = FindRepositoryRoot();
+        var program = File.ReadAllText(Path.Combine(
+            root,
+            "services", "Diten.Platform", "src", "Diten.Platform.API", "Program.cs"));
+        var dependencyInjection = File.ReadAllText(Path.Combine(
+            root,
+            "services", "Diten.Platform", "src", "Diten.Platform.Infrastructure", "DependencyInjection.cs"));
+
+        Assert.Contains("ITrustedSourceAuditIntentRequestExecutor", program, StringComparison.Ordinal);
+        Assert.Contains("ITrustedSourceAuditIntentAcceptanceService", dependencyInjection, StringComparison.Ordinal);
+        Assert.Contains("ITrustedSourceAuditIntentOutbox", dependencyInjection, StringComparison.Ordinal);
+        Assert.Contains("TrustedSourceAuditIntent", program, StringComparison.Ordinal);
+        Assert.Contains("AddJwtBearer(TrustedSourceAuditIntentServiceIdentity.AuthenticationScheme", program, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddHostedService<TrustedSourceAuditIntent", program, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddHostedService<TrustedSourceAuditIntent", dependencyInjection, StringComparison.Ordinal);
+        Assert.False(typeof(IHostedService).IsAssignableFrom(typeof(TrustedSourceAuditIntentRequestExecutor)));
     }
 
     private static string FindRepositoryRoot()
