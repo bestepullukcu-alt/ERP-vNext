@@ -2136,4 +2136,49 @@
   <data name="SignalSnoozed" xml:space="preserve">
     <value>Reportés</value>
   </data>
+  <data name="PartialBoardBanner" xml:space="preserve">
+    <value>Certaines sources n'ont pas répondu — cette liste peut être incomplète.</value>
+  </data>
+  <data name="PartialCountHint" xml:space="preserve">
+    <value>Certaines sources n'ont pas répondu ; ce nombre peut donc être incomplet.</value>
+  </data>
+  <data name="SourceUnavailableTimeout" xml:space="preserve">
+    <value>n'a pas répondu à temps</value>
+  </data>
+  <data name="SourceUnavailableError" xml:space="preserve">
+    <value>a renvoyé une erreur</value>
+  </data>
+  <data name="SourceUnavailableUnsupportedVersion" xml:space="preserve">
+    <value>déclare une version de contrat non prise en charge</value>
+  </data>
+  <data name="SourceUnavailableUnknown" xml:space="preserve">
+    <value>indisponible, raison inconnue</value>
+  </data>
+  <data name="EmptyPartialBoardTitle" xml:space="preserve">
+    <value>Cette liste n'a pas pu être complétée</value>
+  </data>
+  <data name="EmptyPartialBoardDesc" xml:space="preserve">
+    <value>Au moins une source n'a pas répondu : ce qui s'affiche ici n'est pas l'ensemble. Réessayez dans un instant.</value>
+  </data>
+  <data name="ErrorCommentTextInvalid" xml:space="preserve">
+    <value>Un commentaire ne peut pas être vide.</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Oui</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Non</value>
+  </data>
+  <data name="BannerStale" xml:space="preserve">
+    <value>L'enregistrement source a changé depuis la dernière lecture.</value>
+  </data>
+  <data name="BannerSourceUnavailable" xml:space="preserve">
+    <value>Le module source est actuellement injoignable.</value>
+  </data>
+  <data name="BannerAuthorityEnded" xml:space="preserve">
+    <value>Votre autorité sur cet élément a pris fin.</value>
+  </data>
+  <data name="BannerReconciliationRequired" xml:space="preserve">
+    <value>Un rapprochement avec la source est nécessaire.</value>
+  </data>
 </root>

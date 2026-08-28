@@ -11,13 +11,36 @@ public static class AuthTokenCookies
     private const int MaxChunksToDelete = 20;
     private static readonly string[] CookiePaths = ["/", "/account", "/Account", "/platform", "/Platform", "/api"];
 
-    public static string? GetAccessToken(HttpRequest request) => GetChunkedCookie(request, AccessTokenCookie);
+    /*
+     * ⚠ THE BUFFER IS CONSULTED BEFORE THE COOKIE, AND THE ORDER IS THE POINT. When TokenBridge refreshes
+     * mid-request it writes new cookies to the RESPONSE; HttpRequest.Cookies still holds what the browser
+     * sent, which is now the expired token. Reading the request first would hand every caller a token that
+     * is known — right here, in this process, this millisecond — to be stale.
+     *
+     * HttpRequest carries HttpContext, so this is done without changing the signature: all 57 call sites
+     * across 53 files get the fresh token without one of them being edited.
+     *
+     * ⚠ KNOWN GAP, STATED RATHER THAN HIDDEN: six places index Request.Cookies["access_token"] directly
+     * instead of coming through here, and they still read the stale value. They also do not support chunked
+     * cookies, which is a second defect in the same six lines. Measured and recorded as backlog, not fixed
+     * in this round.
+     */
+    public static string? GetAccessToken(HttpRequest request)
+        => RefreshedTokens.AccessToken(request.HttpContext) ?? GetChunkedCookie(request, AccessTokenCookie);
 
-    public static string? GetRefreshToken(HttpRequest request) => GetChunkedCookie(request, RefreshTokenCookie);
+    public static string? GetRefreshToken(HttpRequest request)
+        => RefreshedTokens.RefreshToken(request.HttpContext) ?? GetChunkedCookie(request, RefreshTokenCookie);
 
     public static bool TryGet(HttpRequest request, string cookieName, out string value)
     {
-        value = GetChunkedCookie(request, cookieName) ?? string.Empty;
+        var refreshed = cookieName switch
+        {
+            AccessTokenCookie => RefreshedTokens.AccessToken(request.HttpContext),
+            RefreshTokenCookie => RefreshedTokens.RefreshToken(request.HttpContext),
+            _ => null
+        };
+
+        value = refreshed ?? GetChunkedCookie(request, cookieName) ?? string.Empty;
         return !string.IsNullOrWhiteSpace(value);
     }
 

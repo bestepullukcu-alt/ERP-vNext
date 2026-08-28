@@ -1191,6 +1191,22 @@
       "UpstreamScheme": "http"
     },
     {
+      "DownstreamPathTemplate": "/api/v1/work-items/{itemId}/actions/{actionCode}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5057
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/work-items/{itemId}/actions/{actionCode}",
+      "UpstreamHttpMethod": [
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
       "DownstreamPathTemplate": "/api/v1/work-items/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [

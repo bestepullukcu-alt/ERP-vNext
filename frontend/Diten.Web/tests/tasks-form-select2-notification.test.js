@@ -233,9 +233,19 @@ describe("the page's conditional fields open when the user picks, end to end", (
 describe("every card heading is styled the same way", () => {
   test("the governance headings match the reference's heading classes", () => {
     const golden = read("Views", "DevEnablement", "GoldenReferenceCompact", "_Form.cshtml");
-    // Take the reference's own heading recipe rather than restating one.
+    /*
+     * Take the reference's own heading recipe rather than restating one — by EITHER of the two routes to the
+     * same casing, exactly as the task form's headings are judged twelve lines below.
+     *
+     * ⚠ This line used to demand the `text-uppercase` utility specifically, which quietly made ONE of the two
+     * routes "the reference's" and the other merely tolerated. The reference has since moved to
+     * `.card-section-title` — one class name carrying the whole recipe instead of five helpers a later edit can
+     * half-drop — and the old line failed it. What this test is for is that every heading is cased ALIKE and
+     * that the rule doing it is proven uppercase; neither claim depends on which route the reference picked.
+     */
     const goldenHeading = /<h6 class="([^"]*)"/.exec(golden)[1];
-    expect(goldenHeading).toContain("text-uppercase");
+    expect(goldenHeading, "the reference's heading is cased by neither route")
+      .toMatch(/text-uppercase|card-section-title/);
 
     const headings = [...TASK_FORM().matchAll(/<h6 class="([^"]*)"/g)].map((m) => m[1]);
     expect(headings.length).toBeGreaterThanOrEqual(9);

@@ -74,6 +74,22 @@ public static class ModuleTaxonomyCanonicalizer
         return trimmed; // no match → preserve original (caller warns)
     }
 
+    /// <summary>
+    /// FIX-DOMAIN-NORMALIZATION — like <see cref="ResolveCode"/>, but a value that matches NO option falls back to
+    /// its normalized KEY (UPPERCASE, no separators) instead of the raw text. <paramref name="matched"/> reports
+    /// which happened so the caller can log the miss — the value is never silently dropped, only canonicalized.
+    ///
+    /// <para>Why: preserving the raw text let the SAME domain persist in two spellings
+    /// ("MASTER-DATA-MANAGEMENT" alongside "MASTERDATAMANAGEMENT"), which split one sidebar heading into two.
+    /// Collapsing an unmatched value onto its key keeps the module's domain (nothing is lost, and the lookup row
+    /// self-registration mints uses this exact key form) while making that split arithmetically impossible.</para>
+    /// </summary>
+    public static string ResolveCodeOrKey(string? rawValue, IReadOnlyCollection<TaxonomyOption> options, out bool matched)
+    {
+        matched = TryResolveCode(rawValue, options, out var code);
+        return matched ? code : NormalizeKey(code);
+    }
+
     /// <summary>True when <paramref name="rawValue"/> resolves to a known option Code; false when it falls through.</summary>
     public static bool TryResolveCode(string? rawValue, IReadOnlyCollection<TaxonomyOption> options, out string code)
     {

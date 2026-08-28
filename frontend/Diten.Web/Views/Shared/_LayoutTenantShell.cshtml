@@ -32,7 +32,11 @@
 
 <html lang="@currentCulture" class="layout-navbar-fixed layout-menu-fixed layout-compact" dir="@layoutDirection" data-skin="default"
     data-assets-path="/assets/" data-template="vertical-menu-template" data-bs-theme="light" data-semidark-menu="false"
-    data-shell="tenant">
+    data-shell="tenant"
+    @* BL-294/nav — main.js is a STATIC asset with no access to the resx, so the Ctrl+K palette's
+       "could not load" text is handed to it here, already localized in the request's culture. *@
+    data-nav-load-failed="@SharedLocalizer["NavigationLoadFailed"]"
+    data-nav-load-failed-hint="@SharedLocalizer["NavigationLoadFailedHint"]">
 
 <head>
     <meta charset="utf-8" />

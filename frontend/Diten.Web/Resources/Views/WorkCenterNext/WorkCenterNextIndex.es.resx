@@ -2136,4 +2136,49 @@
   <data name="SignalSnoozed" xml:space="preserve">
     <value>Pospuestos</value>
   </data>
+  <data name="PartialBoardBanner" xml:space="preserve">
+    <value>Algunas fuentes no respondieron: esta lista puede estar incompleta.</value>
+  </data>
+  <data name="PartialCountHint" xml:space="preserve">
+    <value>Algunas fuentes no respondieron, por lo que este recuento puede estar incompleto.</value>
+  </data>
+  <data name="SourceUnavailableTimeout" xml:space="preserve">
+    <value>no respondió a tiempo</value>
+  </data>
+  <data name="SourceUnavailableError" xml:space="preserve">
+    <value>devolvió un error</value>
+  </data>
+  <data name="SourceUnavailableUnsupportedVersion" xml:space="preserve">
+    <value>declara una versión de contrato no admitida</value>
+  </data>
+  <data name="SourceUnavailableUnknown" xml:space="preserve">
+    <value>no disponible, motivo desconocido</value>
+  </data>
+  <data name="EmptyPartialBoardTitle" xml:space="preserve">
+    <value>No se pudo completar esta lista</value>
+  </data>
+  <data name="EmptyPartialBoardDesc" xml:space="preserve">
+    <value>Al menos una fuente no respondió, así que lo que se muestra aquí no es el panorama completo. Inténtalo de nuevo en un momento.</value>
+  </data>
+  <data name="ErrorCommentTextInvalid" xml:space="preserve">
+    <value>Un comentario no puede estar vacío.</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Sí</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="BannerStale" xml:space="preserve">
+    <value>El registro de origen cambió después de la última lectura.</value>
+  </data>
+  <data name="BannerSourceUnavailable" xml:space="preserve">
+    <value>No se puede acceder al módulo de origen en este momento.</value>
+  </data>
+  <data name="BannerAuthorityEnded" xml:space="preserve">
+    <value>Su autoridad sobre este elemento ha finalizado.</value>
+  </data>
+  <data name="BannerReconciliationRequired" xml:space="preserve">
+    <value>Es necesaria una conciliación con el origen.</value>
+  </data>
 </root>

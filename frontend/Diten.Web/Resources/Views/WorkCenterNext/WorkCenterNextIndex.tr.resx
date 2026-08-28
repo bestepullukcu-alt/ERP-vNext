@@ -2136,4 +2136,49 @@
   <data name="SignalSnoozed" xml:space="preserve">
     <value>Ertelenmiş</value>
   </data>
+  <data name="PartialBoardBanner" xml:space="preserve">
+    <value>Bazı kaynaklar yanıt vermedi — liste eksik olabilir.</value>
+  </data>
+  <data name="PartialCountHint" xml:space="preserve">
+    <value>Bazı kaynaklar yanıt vermediği için bu sayı eksik olabilir.</value>
+  </data>
+  <data name="SourceUnavailableTimeout" xml:space="preserve">
+    <value>zamanında yanıt vermedi</value>
+  </data>
+  <data name="SourceUnavailableError" xml:space="preserve">
+    <value>hata döndürdü</value>
+  </data>
+  <data name="SourceUnavailableUnsupportedVersion" xml:space="preserve">
+    <value>desteklenmeyen bir sözleşme sürümü bildiriyor</value>
+  </data>
+  <data name="SourceUnavailableUnknown" xml:space="preserve">
+    <value>ulaşılamıyor, sebebi bilinmiyor</value>
+  </data>
+  <data name="EmptyPartialBoardTitle" xml:space="preserve">
+    <value>Bu liste tamamlanamadı</value>
+  </data>
+  <data name="EmptyPartialBoardDesc" xml:space="preserve">
+    <value>En az bir kaynak yanıt vermedi; burada görünen şey tablonun tamamı değil. Birazdan yeniden deneyin.</value>
+  </data>
+  <data name="ErrorCommentTextInvalid" xml:space="preserve">
+    <value>Yorum boş olamaz.</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Evet</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Hayır</value>
+  </data>
+  <data name="BannerStale" xml:space="preserve">
+    <value>Kaynak kayıt, bu satır en son okunduktan sonra değişti.</value>
+  </data>
+  <data name="BannerSourceUnavailable" xml:space="preserve">
+    <value>Kaynak modüle şu anda ulaşılamıyor.</value>
+  </data>
+  <data name="BannerAuthorityEnded" xml:space="preserve">
+    <value>Bu kayıt üzerindeki yetkiniz sona erdi.</value>
+  </data>
+  <data name="BannerReconciliationRequired" xml:space="preserve">
+    <value>Kaynakla mutabakat gerekiyor.</value>
+  </data>
 </root>

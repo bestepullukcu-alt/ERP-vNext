@@ -31,6 +31,60 @@ public static class WorkAggregationReasonCodes
     public const string SubtaskBlocked = "SUBTASK_BLOCKED";
 }
 
+// WC-D3 (DCP-004 §2 D3) — WHY a source is missing from the board.
+//
+// Codes only, never sentences. The same rule the password bridge established and the disabled-action reasons
+// above already follow: the server states a STABLE CODE and the browser resolves it against the 7-language resx.
+// A message composed here would be a Turkish string on an English screen, and untranslatable besides.
+public static class WorkAggregationUnavailableReasonCodes
+{
+    /// <summary>The provider did not answer inside its per-call budget. Its rows may or may not exist.</summary>
+    public const string Timeout = "TIMEOUT";
+
+    /// <summary>The provider threw. Whatever it holds, none of it reached this board.</summary>
+    public const string Error = "ERROR";
+
+    /// <summary>
+    /// The provider declares a contract version this projection generation cannot map (charter OD-WC-04).
+    ///
+    /// <para>This is not new behaviour — the skip has always been there. What is new is that it is SAID. The
+    /// silent <c>continue</c> it replaces was the small version of exactly the defect this slice closes: a
+    /// source vanishing from the board with the board looking complete.</para>
+    /// </summary>
+    public const string UnsupportedVersion = "UNSUPPORTED_VERSION";
+}
+
+/// <summary>
+/// WC-D3 — one source that is NOT represented in the board, and why.
+///
+/// <para><c>ProviderCode</c> is the provider's own stable identifier (the same one <c>WorkItemSourceDto</c>
+/// carries), so the screen can name the missing source without this envelope inventing a display name.</para>
+///
+/// <para><c>ReasonCode</c> is one of <see cref="WorkAggregationUnavailableReasonCodes"/>.</para>
+/// </summary>
+public sealed record WorkItemUnavailableSourceDto(string ProviderCode, string ReasonCode);
+
+/// <summary>
+/// WC-D3 (DCP-004 §2 D3) — the board, which is the item list AND the truth about how complete it is.
+///
+/// <para><b>Why a wrapper and not a warning on the envelope.</b> <see cref="Common.Response{T}"/> is shared by
+/// every feature in this service; widening it to carry warnings would change the wire shape of ~every endpoint
+/// to solve one endpoint's problem. The completeness of THIS read is a property of THIS read, so it lives in
+/// this read's payload.</para>
+///
+/// <para><b>Why not an empty list plus a 200.</b> That is what shipped before, and it is the defect: a provider
+/// that threw took the whole board with it, and a provider skipped for its contract version disappeared without
+/// a word. Either way the screen drew a confident, complete-looking list of the rows that happened to survive.
+/// <see cref="UnavailableSources"/> is what makes a partial answer legible as partial — to the shell, and to the
+/// tests.</para>
+///
+/// <para>Empty <see cref="UnavailableSources"/> is the load-bearing state: it means every bound provider
+/// answered, and only then is the list complete.</para>
+/// </summary>
+public sealed record WorkItemBoardDto(
+    IReadOnlyList<WorkItemProjectionDto> Items,
+    IReadOnlyList<WorkItemUnavailableSourceDto> UnavailableSources);
+
 // Mirror of the executable contract's enumerations (fixture-contract.js). Used by the projection AND by the
 // tests as the conformance oracle so the C# projection cannot drift from the JS contract silently.
 public static class WorkItemContract

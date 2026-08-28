@@ -49,6 +49,9 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
      * problem, `http_401` is authentication, `empty_payload` is entitlement or catalogue data. They point at three
      * different teams.
      */
+    // The one reason that is NOT a failure: a successful call whose payload is empty by the server's decision.
+    private const string EmptyPayloadReason = "empty_payload";
+
     private DynamicModuleMenuViewModel EmptyBecause(string reason, string? detail = null)
     {
         _logger.LogWarning(
@@ -59,7 +62,19 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
             HttpContext?.TraceIdentifier ?? "<none>",
             detail ?? "-");
 
-        return DynamicModuleMenuViewModel.Empty;
+        /*
+         * BL-294/nav — the reason decides whether the USER is told, not just the log.
+         *
+         * `empty_payload` is a 200 with nothing in it: the request worked and the SERVER decided this tenant
+         * sees no module. Rendering "couldn't load, refresh" there would be a lie, and would nag every tenant
+         * that legitimately has no entitled module. It stays silent.
+         *
+         * Every other reason — no token, a non-2xx, a transport fault — is a genuine failure to load, and the
+         * menu's place must SAY so. Silence is what made the original outage take a whole session to find.
+         */
+        return reason == EmptyPayloadReason
+            ? DynamicModuleMenuViewModel.Empty
+            : DynamicModuleMenuViewModel.FailedToLoad;
     }
 
     private async Task<DynamicModuleMenuViewModel> ResolveAsync(CancellationToken ct)
@@ -72,15 +87,24 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
 
         try
         {
-            using var request = new HttpRequestMessage(HttpMethod.Get, $"{_gatewayUrl}/api/platform/navigation/menu");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var tenantId = GetTenantId();
-            if (!string.IsNullOrWhiteSpace(tenantId))
+
+            // Built per attempt: an HttpRequestMessage cannot be sent twice.
+            HttpRequestMessage BuildRequest()
             {
-                request.Headers.Add("X-Tenant-Id", tenantId);
+                var message = new HttpRequestMessage(HttpMethod.Get, $"{_gatewayUrl}/api/platform/navigation/menu");
+                message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                if (!string.IsNullOrWhiteSpace(tenantId))
+                {
+                    message.Headers.Add("X-Tenant-Id", tenantId);
+                }
+
+                return message;
             }
 
-            using var response = await _httpClient.SendAsync(request, ct);
+            // BL-294/nav — ONE silent retry on a transient fault, then give up and let the caller warn. See
+            // NavigationRetry for why it is exactly one attempt, with no delay, and only on transient failures.
+            using var response = await Services.Http.NavigationRetry.SendOnceMoreOnTransientAsync(_httpClient, BuildRequest, ct);
             if (!response.IsSuccessStatusCode)
             {
                 // 401 here is the live defect: the gateway rejects the token intermittently and the menu vanishes.
@@ -95,7 +119,7 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
             {
                 // 200 with nothing in it: the request was fine and the SERVER decided this tenant sees no module.
                 // Entitlement or catalogue data, never authentication — which is why it needs its own reason.
-                return EmptyBecause("empty_payload");
+                return EmptyBecause(EmptyPayloadReason);
             }
 
             // FIX-3 — DATA-DRIVEN: group modules by DOMAIN (display name resolved server-side). Each module is one
@@ -112,31 +136,20 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
                     var serverModuleName = g.ModuleDisplayName ?? g.ModuleCode ?? string.Empty;
 
                     // FEAT-NAV-L10N — localize DEFAULT names by stable code (overrides render as-typed via the flags).
-                    return new
-                    {
-                        Domain = domainCode,
-                        DomainDisplay = _navLocalizer.Domain(domainCode, serverDomainName, g.DomainDisplayNameIsOverride),
+                    return new NavDomainEntry(
+                        domainCode,
+                        _navLocalizer.Domain(domainCode, serverDomainName, g.DomainDisplayNameIsOverride),
                         // FEAT-NAVPREFS-DOMAINS — effective domain order (tenant override else implicit catalog rank).
-                        DomainSort = g.DomainSortOrder,
-                        Module = new NavModuleEntryView(
+                        g.DomainSortOrder,
+                        new NavModuleEntryView(
                             _navLocalizer.Module(g.ModuleCode, serverModuleName, g.ModuleDisplayNameIsOverride),
                             BuildTree(g.Items),
-                            g.Icon) // FIX-MODULE-ICON — module sidebar icon from the catalog (nav DTO carries the resolved value).
-                    };
+                            g.Icon)); // FIX-MODULE-ICON — module sidebar icon from the catalog (nav DTO carries the resolved value).
                 })
                 .Where(x => x.Module.Nodes.Count > 0)
                 .ToList();
 
-            // FEAT-NAVPREFS-DOMAINS — order DOMAIN groups by DomainSortOrder (all modules of a domain share it);
-            // modules within stay SortOrder-ordered. OrderBy is stable, so equal ranks keep first-seen order.
-            var domains = moduleEntries
-                .GroupBy(x => (x.Domain, x.DomainDisplay))
-                .Select(dg => new { dg.Key.DomainDisplay, Sort = dg.Min(x => x.DomainSort), Modules = dg.Select(x => x.Module).ToList() })
-                .OrderBy(d => d.Sort)
-                .Select(d => new NavDomainGroupView(d.DomainDisplay, d.Modules))
-                .ToList();
-
-            return new DynamicModuleMenuViewModel(domains);
+            return new DynamicModuleMenuViewModel(GroupByDomain(moduleEntries));
         }
         catch (Exception ex)
         {
@@ -146,7 +159,7 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
             _logger.LogWarning(ex, "dynamic_module_menu.empty Reason=exception TenantId={TenantId} CorrelationId={CorrelationId}. "
                 + "The tenant's dynamic sidebar rendered NO groups.",
                 GetTenantId() ?? "<none>", HttpContext?.TraceIdentifier ?? "<none>");
-            return DynamicModuleMenuViewModel.Empty;
+            return DynamicModuleMenuViewModel.FailedToLoad;
         }
     }
 
@@ -189,6 +202,41 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
             children);
     }
 
+    /// <summary>One module entry, already localized, tagged with the raw domain code it came from.</summary>
+    public sealed record NavDomainEntry(string DomainCode, string DomainDisplay, int DomainSort, NavModuleEntryView Module);
+
+    /// <summary>
+    /// FIX-DOMAIN-NORMALIZATION — group modules into DOMAIN sections by the NORMALIZED domain key, never by the raw
+    /// code. The catalog historically stored the same domain in two spellings ("MASTER-DATA-MANAGEMENT" vs
+    /// "MASTERDATAMANAGEMENT"); both localize to the SAME heading, so grouping on the raw string rendered the
+    /// heading TWICE with the modules split across the two sections. <see cref="NavNameLocalizer.Normalize"/> is the
+    /// one transform used for the l10n key, the platform nav handler's domain key and the domain lookup's CodeKey —
+    /// reuse it here so all four agree.
+    ///
+    /// <para>The catalog-side canonicalization migration removes the drift at the source; this is the render-side
+    /// guarantee that a future drifted row can never split a heading again.</para>
+    ///
+    /// <para>Display name is picked DETERMINISTICALLY within a key group (lowest DomainSort, then ordinal) so a
+    /// group whose members somehow carry different labels cannot flip between renders.</para>
+    /// </summary>
+    public static IReadOnlyList<NavDomainGroupView> GroupByDomain(IEnumerable<NavDomainEntry> entries) =>
+        entries
+            .GroupBy(x => NavNameLocalizer.Normalize(x.DomainCode ?? string.Empty), StringComparer.Ordinal)
+            .Select(dg => new
+            {
+                DomainDisplay = dg
+                    .OrderBy(x => x.DomainSort)
+                    .ThenBy(x => x.DomainDisplay, StringComparer.Ordinal)
+                    .First().DomainDisplay,
+                Sort = dg.Min(x => x.DomainSort),
+                Modules = dg.Select(x => x.Module).ToList()
+            })
+            // FEAT-NAVPREFS-DOMAINS — order DOMAIN groups by DomainSortOrder (all modules of a domain share it);
+            // modules within stay SortOrder-ordered. OrderBy is stable, so equal ranks keep first-seen order.
+            .OrderBy(d => d.Sort)
+            .Select(d => new NavDomainGroupView(d.DomainDisplay, d.Modules))
+            .ToList();
+
     private string? GetTenantId() =>
         UserClaimsPrincipal?.Claims.FirstOrDefault(x =>
             x.Type == "tenantId" ||
@@ -219,9 +267,14 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
         int SortOrder);
 }
 
-public sealed record DynamicModuleMenuViewModel(IReadOnlyList<NavDomainGroupView> Domains)
+// LoadFailed separates "this tenant has no modules" (silent, legitimate) from "we could not load the menu"
+// (shown in the menu's place). Only the second is a defect the user can do something about.
+public sealed record DynamicModuleMenuViewModel(IReadOnlyList<NavDomainGroupView> Domains, bool LoadFailed = false)
 {
     public static readonly DynamicModuleMenuViewModel Empty = new(Array.Empty<NavDomainGroupView>());
+
+    public static readonly DynamicModuleMenuViewModel FailedToLoad =
+        new(Array.Empty<NavDomainGroupView>(), LoadFailed: true);
 
     public bool HasItems => Domains.Count > 0;
 }

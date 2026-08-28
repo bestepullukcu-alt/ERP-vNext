@@ -498,6 +498,62 @@ göremedi çünkü yedi dosya da eşit biçimde yinelenmişti — artık ayrı b
 - **Guard yerinde:** `DateTimeOffsetSortGuardTests` tüm `services/**` üretim kaynağını tarayıp iki `DateTimeOffset` anahtarlı `SortBy*/ThenBy*` zincirlerini reddediyor. BL-030 kapatılıp global serializer kaydedildiğinde bu guard ve koruduğu bellek-içi sıralamalar **birlikte** kaldırılmalı; `WorkflowInstanceLookupMongoTests.Server_side_sort_on_two_date_time_offset_keys_is_still_rejected_by_mongo` o anda kırılarak bunu hatırlatır.
 - **İlgili:** [[feedback_live_verification_gap]] deseni — katmanlar arası sözleşme (burada BSON temsili) test kapsamı dışında.
 
+- **EK BULGU — SESSİZ HÂLİ (2026-08-28, ölçüldü, sahip kararıyla buraya yazıldı):** Bu kayıt bugüne kadar
+  yalnız **gürültülü** hâli kapsıyordu — iki `DateTimeOffset` anahtarına birden sıralayan sorgu Mongo'da
+  `cannot sort with keys that are parallel arrays` ile patlar, yani **çalışma zamanında görünür**. Sessiz
+  hâli ölçüldü ve daha geniş: **tek anahtar + ARTAN sıralama hata vermez, yanlış sıra döndürür.**
+  · Kanıt (canlı Mongo, gerçek deney): gerçek zaman sırası `v3·v1·v2·v4` iken Mongo artan sıralaması
+    `v3·v2·v4·v1` döndü. Sebep: Mongo bir diziyi ARTAN sıralarken **en küçük** elemanı kullanır — o da
+    `offsetMinutes` (-300…180), `ticks` değil. Yani artan sıralama **zamana göre değil, saat dilimine göre**
+    yapılıyor. AZALAN ise **en büyük** elemanı alır (= `ticks`) → tesadüfen doğru.
+  · ⚠ Hata index'te değil, **veri biçiminde**: index'siz COLLSCAN'de de aynı. Bir index onu yalnız
+    *görünmez ve hızlı* yapardı — bu yüzden `ImportedAt` index'i BL-279 Aşama 5'te **kasten eklenmedi**.
+- **KAPSAM — ölçüldü 2026-08-28, 26 vakanın hepsi elle doğrulandı (entity okundu, miras zinciri izlendi):**
+  | | |
+  |---|---|
+  | Mongo'ya yazılan entity, kendi `DateTimeOffset` alanı taşıyan | **93** (221 alan) |
+  | `CreatedAt`/`UpdatedAt`'i **miras alan** entity | **107** |
+  | Etkilenen `BaseEntity` sınıfı | **3 / 5** (`Platform.Common.Persistence`, `DevEnablement.Domain`, `AuthService.GlobalEntityBase`) |
+  | Sunucu tarafı sıralama çağrısı (index tanımları hariç) | 226 → 121 ASC · 105 DESC |
+  | **`DateTimeOffset` üzerinde ARTAN** | **26** |
+  İkiye ayrılıyor ve ele geçirilebilirlikleri farklı:
+  · **1–15 API parametresiyle sürülüyor** — `descending ? Sort.Descending(...) : Sort.Ascending(...)`.
+    ⚠ Yani ARTAN dalı **istemci seçiyor**: dışarıdan `descending=false` gönderen bir çağrı, saat dilimine
+    göre sıralanmış bir liste alır. `FeatureDefinition` · `ModuleCatalogItem` · `ModuleDomain` ·
+    `ModuleService` · `PlatformAdministrator` · `SubscriptionPlan` · `Tenant`.
+  · **16–26 sabit ARTAN** — yön seçimi yok: `AuditOutboxMessage` · `TaskItem` (×4) · `TaskAssignment` ·
+    `ApprovalTask` (×2) · `NotificationDispatch` · `OutboxMessage` · `ProductAbbreviationHistoryEntry`.
+  · Yanıltıcı tek vaka: `OutboxEventRepository.cs:30,59` `CreatedAt` üzerinde ARTAN sıralıyor ama o alan
+    `DateTime` (skaler) → **etkilenmez**.
+  · Bugün kurtaran şey ikinci bir tesadüf: geliştirme ortamında tüm offsetler aynı (+03:00).
+    **Çok bölgeli veri geldiği gün bozulur** — ve hiçbir test bunu tutmaz.
+- ⚠ **MEVCUT MUHAFIZ BU 26 VAKANIN SIFIRINI GÖRÜYOR** (`DateTimeOffsetSortGuardTests`, ölçüldü):
+  · regex'i `Builders<T>.Sort.Ascending(...)` desenini **hiç tanımıyor** (0 eşleşme) → vaka 1–16 görünmez
+  · `(?<rest>…)+` niceleyicisi `.ThenBy` zincirini **zorunlu** kılıyor → tek anahtarlı vaka 17–26 eşleşmiyor
+  Yani muhafız var, yeşil, ve koruduğu şey bu değil. ⚠ Ayrıca çok anahtarlı
+  `Builders<T>.Sort.Ascending(a).Ascending(b)` zincirleri de kapsam dışı (üründe 11 tane; bugün hiçbirinde
+  iki tarih anahtarı yok, yani açık değil ama korumasız).
+- **Daha önce bulunmuştu ve genellenmemişti:** [[BL-078]] (2026-08-12) tam olarak bu sessiz hâli
+  `TaskAssignmentRepository.ListByTaskIdAsync` üzerinde ölçmüş ve doğru teşhis etmiş — *"ofsetler dev
+  ortamında aynı olduğu için sonuç doğru görünüyor; farklı saat dilimlerinden yazılmış iki kayıt geldiğinde
+  sıra sessizce bozulur."* Tek vaka olarak kaydedilmiş, sınıf olarak genellenmemiş. Bugünkü ölçüm 26 vaka
+  olduğunu gösterdi.
+- **Serileştirici kaydetmenin bedeli — ölçülmüş EMSAL var, ama bu alan için ölçülmedi:**
+  `PlatformTestSerializers.cs:50-62` `GuidSerializer` kaydedildiğinde ne olduğunu yazıyor: iki Mongo test
+  sınıfı **11 testle** kırılmış ve kırılma **sessiz** olmuş — *"gürültülü başarısız olmuyor; id ile sorgu
+  hiçbir şey bulmuyor ve test 'veri yok' diyor."* ⚠ `DateTimeOffset` için kanıt değildir, ama bu depoda
+  global serileştirici kaydının nasıl seyrettiğine dair **tek ölçülmüş örnektir**.
+  ⚠ Eski dizi belgelerinin serileştirici sonrası **okunabilir kalıp kalmayacağı ÖLÇÜLEMEDİ** — depoda bu
+  soruya cevap veren yazılı bir ifade yok.
+- **SAHİP KARARI (GSKU, 2026-08-28):** *"Global serializer'ı doğrudan değiştirmeyin; mevcut BSON verisi için
+  migration/compatibility riski var. Önce bütün tek-alan ascending kullanımlarını çıkarın; yanlış sıralamayı
+  kanıtlayan guard ekleyin ve ayrı migration/serializer planı hazırlayın. Bu iş BRD index değişikliğine
+  karıştırılmasın."* Ayrıca: *"Yeni backlog kimliği açmayın; mevcut BL-030'a ek bulgu ve guard genişletmesi
+  olarak yazın."* — BL-299 olarak açılan kayıt bu yüzden buraya taşındı ve kaldırıldı.
+- **Sıradaki iş (tek tur, ikisi ayrılamaz):** (1) muhafızı genişlet — `Builders<T>.Sort.Ascending` desenini
+  ve tek anahtarlı sıralamayı da tanısın; (2) 26 vakayı karara bağla (bellekte sırala · azalana çevir ·
+  kabul et). ⚠ (1)'i (2)'siz yapmak süiti kırmızıya döndürür.
+
 ### BL-031 — Havuz kimliği projeksiyonda yok; grup adı uydurma
 - **Nedir:** Havuz sekmesinin tüm anlamı "bu iş hangi kuyrukta bekliyor" sorusudur, ama WC-1 projeksiyonu havuz kimliğini **hiç taşımıyor** — kalemde yalnız `assignmentMode: "groupQueue"` var, havuz pozisyonunun adı/id'si yok. Frontend bu boşluğu **sabit bir Türkçe metinle** dolduruyor: `mock-data.js:197` her groupQueue kalemine `group = 'Operasyon Kuyruğu'` yazıyor, `app.js:2245` de `'Atanmadı — Operasyon Kuyruğu'` metnini gömüyor.
 - **Neden ciddi:** (a) ekranda **yanlış bilgi** var — CFO havuzundaki iş "Operasyon Kuyruğu" diye etiketleniyor; (b) birden fazla havuz varken (bugün CFO, Muhasebe Md, E2E Engineer) hepsi tek uydurma grupta çöküyor, yani kullanıcı işin hangi kuyrukta olduğunu **hiçbir şekilde** göremiyor; (c) sabit Türkçe metin l10n kuralını ihlal ediyor (resx'ten gelmiyor, 7 dil yok); (d) fixture-devri mantığının GERÇEK kalemlere uygulanması — `catalogVisible` hatasıyla aynı şekil (bkz [[feedback_live_verification_gap]]).
@@ -6162,6 +6218,112 @@ sayısıydı; eksik koleksiyon 6):
 - **Gelecek regresyon riski: 🟡** — yeni bir indexsiz koleksiyon artık sessizce giremez, ama var olan 9
   indexsiz koleksiyon (bu 6 + önceki 3) duruyor.
 
+**GÜNCELLEME (Aşama 5, 2026-08-27) — asıl borç ölçüldü ve 9 koleksiyonun 8'inde ödendi.**
+Sayı **9** olarak doğrulandı (manifestte `Array.Empty` ile duran koleksiyonlar sayıldı — 6 değil; 6 bu turun
+bulduğu, 3 önceki turun). Her koleksiyonun deposu okundu, sorgu deseni çıkarıldı ve **explain ile ölçüldü**:
+önce canlı `diten_personalization_dev` üzerinde (yalnız okuma), sonra aynı verinin bir kopyası üzerinde
+index'ler kurulup yeniden. **Önce → sonra:**
+
+| koleksiyon | sorgu (deposundan) | önce | sonra | eklenen index |
+|---|---|---|---|---|
+| `task_comments` | `{TenantId, IsDeleted, TaskItemId}` (+`$in`) | COLLSCAN 44 | IXSCAN 2 | `ix_task_comments_tenant_task` |
+| `task_transitions` | `{TenantId, IsDeleted, TaskItemId}` (+`$in`) | COLLSCAN 102 | IXSCAN 6 | `ix_task_transitions_tenant_task` |
+| `task_types` | `{TenantId, IsDeleted, Code}` · `ListActive` sort `Code` | COLLSCAN + SORT | IXSCAN, SORT yok | `ux_task_types_tenant_code_active` (unique, partial) |
+| `document_reference_entries` | `{TenantId, DeletedAt, ListVersionId}` sort `DocumentCode` | SORT+COLLSCAN 717 | IXSCAN 50, SORT yok | `ix_…_tenant_version_code` |
+| `document_reference_entries` | `… + DocumentUid $in` | SORT+COLLSCAN 717 | IXSCAN 1 | `ix_…_tenant_version_uid` |
+| `document_reference_list_versions` | `{TenantId, IsDeleted, ContentHash, WithdrawnAt}` | COLLSCAN | IXSCAN 1 | `ix_…_tenant_hash` |
+| `notification_event_definitions` | `{IsDeleted, EventCode}` · liste sort `EventCode` | COLLSCAN + SORT | IXSCAN, SORT yok | `ux_…_event_code_active` (unique, partial) |
+| `document_management_collection_provisioning_evidence` | `{TenantId, IsDeleted, CollectionInstanceId}` / `…BaselineReleaseId` | COLLSCAN 3000\* | IXSCAN 1 / 100 | `ux_…_tenant_instance_active` + `ix_…_tenant_baseline` |
+| `document_management_collection_deviations` | `{TenantId, IsDeleted, BaselineReleaseId[, Status]}` | COLLSCAN 3000\* | IXSCAN 100 | `ix_…_tenant_baseline_status` |
+
+\* bu iki koleksiyon hiçbir canlı veritabanında YOK (henüz hiç yazılmadı); rakamlar tohumlanmış kopyadandır.
+
+- **Üç aday ölçülüp REDDEDİLDİ** — "manifest üyeliği ≠ index gereksinimi" şartının fiilî uygulanışı:
+  - `task_types` için ikinci `{TenantId, IsActive, Code}` index'i (kardeş `TaskFieldDefinition`'da var, simetri
+    onu isterdi): unique index tek başına `ListActive`'i aynı maliyetle ve SORT'suz karşılıyor. Planı
+    değiştirmeyen index, karşılığı olmayan bir yazma maliyetidir.
+  - `document_reference_list_versions` için `ImportedAt` index'i: alan bir **DateTimeOffset**, yani BSON
+    **dizi** `[ticks, offsetMinutes]` — üstündeki her index MULTIKEY olur. Karışık offset'le denendi: deponun
+    kullandığı **azalan** sıra doğru kalıyor, **artan** sıra yanlış (v3,v1,v5,v4,v2). Yanlışlık verinin
+    biçiminde ve index'siz COLLSCAN'de birebir aynı — yani index'in getirdiği bir gerileme değil, ama
+    sıralaması tesadüfi olan bir anahtarı kutsamak olurdu; üstelik içe aktarma başına tek satır tutan bir
+    koleksiyon için ölçülebilir hiçbir kazanç yok. → **BL-030** (sessiz artan sıralama).
+  - `ContentHash` üzerinde unique: geri çekilmiş (withdrawn) sürüm silinmediği için aynı hash yasal olarak
+    tekrar edebilir; `IsDeleted:false` partial-unique meşru bir yeniden içe aktarmayı reddederdi.
+- **`business_reference_data_validation_results` ölçüldü ama EKLENEMEDİ.** Index belli:
+  `{TenantId, BusinessReferenceDataVersionId, RuleId}` (ESR-tam; 250→25 belge, SORT kalkıyor). Engel
+  `SchemaProfileBudget.BusinessReferenceData` = **MaxLogicalIndexes 18** ve profil zaten tam 18'de. Tavan
+  sahiplerinin verdiği sayı (GSKU, 2026-08-26) ve `SchemaProfileBudget`'in kendi başlığı onu değişikliğe
+  uydurmayı açıkça yasaklıyor. → **BL-298** (2026-08-28'de kapandı: sahip tavanı 19 yaptı, index kondu,
+  partial filter ölçülüp REDDEDİLDİ).
+- **Mutasyon muhafızı yazıldı:** `PlatformSchemaContractMongoTests.TheQueriesBL279SizedRunOnAnIndexAndNotACollectionScan`
+  her deponun gerçek filtre/sıralamasını `explain`'den geçirir ve planın beklenen index üzerinde IXSCAN
+  olmasını şart koşar. ⚠ Madde 2 bu iş için YETMEZ: o, manifestin **beyan ettiklerini** dolaşır — beyanı
+  silersen döngü ona hiç bakmaz ve test yeşil kalır; dokuz koleksiyonun ilk etapta içinden düştüğü delik tam
+  olarak budur. On index'in **onu da** tek tek silinip testin kırmızıya döndüğü doğrulandı.
+- `WorkflowWorkCenter` ve `DocumentManagement` profilleri madde 2'nin `[InlineData]` listesine eklendi; o güne
+  kadar bu iki profilin beyan ettiği hiçbir index gerçek Mongo'ya karşı doğrulanmıyordu.
+- `NotificationEventDefinitionRepository`'deki "unique index kurucuda best-effort kuruluyor" yorumu **yalandı**
+  — öyle bir kod yoktu, iş anahtarını yalnız iki eşzamanlı çağrının ikisinin de geçtiği bir oku-sonra-yaz
+  kontrolü koruyordu. Yorum düzeltildi, index manifeste kondu.
+- **Gelecek regresyon riski: 🟢** — dokuzdan sekizi index'lendi ve her biri plan seviyesinde bir teste bağlandı;
+  kalan tek koleksiyon bütçe kararı bekliyordu (BL-298) — 2026-08-28'de sahip tavanı 19'a çıkardı ve o index
+  de kondu, yani dokuzun dokuzu index'li ve plan seviyesinde teste bağlı.
+
+### BL-298 — BRD profil index bütçesi 18'de doluydu; tavan 19'a çıktı, index kondu (2026-08-27 → 2026-08-28, KAPANDI)
+**SAHİP KARARI (2026-08-28):** `MaxLogicalIndexes` 18 → **19**. `MaxCollections` **8'de KALDI**.
+`business_reference_data_validation_results` BRD profilinde kaldı; tavanı korumak için ölçülmemiş başka bir
+index düşürülmedi. Sahip aynı mesajda kuralı da yazdı: *"Index bütçe kapısı index artışında da geçerlidir —
+manifest + budget + gerçek-Mongo contract testi BİRLİKTE güncellenmeli."*
+
+Konan index: `{TenantId, BusinessReferenceDataVersionId, RuleId}`, adı
+`ix_business_reference_data_validation_results_tenant_version_rule`. ESR-tam: iki eşitlik + `RuleId` sıralama.
+`GetValidationResultsByVersionAsync`'i tam, `ReplaceValidationResultsAsync`'in `DeleteMany` legini ön ekiyle
+karşılar. Profil şimdi 8 koleksiyon / 19 mantıksal index (11 beyan + 8 örtük `_id`) — yani tam tavanda.
+
+- **PARTIAL FILTER KONMADI, VE BU BİR ÖLÇÜM.** Sahip açıkça "mevcut standart uygunsa `IsDeleted=false` partial
+  ile explain yeniden doğrulansın; ölçüm tersini gösterirse varsayımla eklenmesin" dedi. Ölçüm tersini
+  gösterdi. Canlı verinin kopyasında (250 satır, 10 farklı (tenant,version), en büyüğü 25), dört sayı:
+
+  | sorgu | index yok | plain index | + partial `IsDeleted=false` |
+  |---|---|---|---|
+  | okuma `{Tenant,Version,IsDeleted:false}` sort `RuleId` | `SORT->COLLSCAN`, **250** belge | `FETCH->IXSCAN`, **25**, SORT yok | `FETCH->IXSCAN`, **25**, SORT yok |
+  | silme legi `{Tenant,Version}` (IsDeleted yok) | `COLLSCAN`, **250** belge | `FETCH->IXSCAN`, **25** | `COLLSCAN`, **250** ⛔ |
+
+  Okumada iki varyant AYNI. Fark yalnız silmede, ve partial olan kaybediyor: `ReplaceValidationResultsAsync`
+  `{TenantId, VersionId}` ile siliyor, `IsDeleted` yüklemi YOK — Mongo bu sorgunun partial ifadenin alt kümesi
+  olduğunu kanıtlayamaz ve index'i reddeder. Profildeki diğer yedi index'in hepsi partial taşıdığı için bir
+  sonraki okuyucu bunu "ev standardına aykırı" görüp düzeltmeye kalkacak; `PlatformSchemaContractMongoTests`
+  silme legini `explain: {delete: …}` ile ayrıca çiviliyor — partial eklendiği an kırmızı, silmeyi adıyla
+  söyleyerek. (`find` ile ölçmek yetmezdi: aynı filtreli `find` partial index'te mutlu mesut IXSCAN raporlar.)
+- **Bütçe kapısı, artış yönünde de kuruldu.** `DeclaredBudgetsAreRespected` "manifest tavanın altında mı" diye
+  sorar — onu yeşile döndürmenin yolu tavanı yükseltmektir, yani `SchemaProfileBudget` başlığının uyardığı
+  hareketin ta kendisi. `MaxCollections`'ı 8'den 9'a çekmek o testi kırmızı bile yapmaz. Bu yüzden tavan
+  DEĞERİ artık `PlatformSchemaManifestTests.TheDeclaredBudgetsAreTheNumbersTheOwnersApproved` ile çivili
+  (8 / 19); iki sayıdan biri değişirse kırmızı olur ve testi güncellemek "bir sahip onayladı" demektir.
+- **Sayının ikinci kopyası vardı ve bu turda temizlendi.** `BusinessReferenceDataMongoResidueSweeperTests`
+  `<= 18`'i düz sayı olarak yazıyordu; sahip onayladığı artıştan sonra, ne bütçeyi ne kararı adıyla anan bir
+  residue-sweeper dosyasında kırmızıya döndü. Artık `SchemaProfileBudget.BusinessReferenceData`'dan okuyor.
+- **Bu turda YAPILMADI (sahip açıkça yasakladı):** `ImportedAt` index'i (BL-299 kapsamında), global
+  `DateTimeOffsetSerializer` değişikliği, `DateTimeOffset` işinin bu tura karıştırılması, başka index düşürmek,
+  koleksiyon bütçesini değiştirmek.
+- **Gelecek regresyon riski: 🟢** — profil tavanda ama tavan artık çivili; index'in her iki call site'ı plan
+  seviyesinde teste bağlı. ⚠ Bir sonraki BRD index'i BL-279/BL-298'in bulunduğu yerde olacak: ölçümle
+  sahibine gidecek. Tavan tam dolu olduğu için bu kapı artık teorik değil, ilk index'te çalışacak.
+
+### BL-300 — sapma (deviation) kaydının kimlik anahtarı adlandırılmamış (2026-08-27)
+`DocumentCollectionDeviation` "tespit idempotenttir — read-back tekrarı açık bir sapmayı çoğaltmaz, günceller"
+diyor, ama kimliğin hangi alanlara göre yargılandığını hiçbir yer söylemiyor ve uzlaştırma servisi bir anahtarla
+okumuyor. BL-279 bu yüzden bu koleksiyona unique index KOYMADI: anahtarı tahmin etmek (yol+tip? yol+tip+önem?)
+aynı klasör üzerindeki meşru ikinci sapmayı üretimde patlayan bir yazmaya çevirirdi.
+- **Yapılacak:** anahtarı sahibiyle adlandır, sonra `{TenantId, …}` partial-unique index ile bağla.
+- **Karşılaştırma:** kardeş `DocumentCollectionProvisioningEvidence`'ta anahtar belliydi (`CollectionInstanceId`
+  başına tek kanıt, servis oku-sonra-yaz upsert ediyor) ve bu turda unique index'e bağlandı — orada index
+  yalnız hızlandırmıyor, iki eşzamanlı read-back'in ikisinin de "yok" görüp ikisinin de eklemesi yarışını
+  kapatıyor. Sapmalarda aynı şey yapılamadı çünkü anahtar yazılı değil.
+- **Gelecek regresyon riski: 🟡** — anahtarsız kaldıkça yinelenen sapma satırları birikebilir ve "açık sapma
+  sayısı" raporu sessizce şişer.
+
 ### BL-280 — profil sertleştirmesi bir testi doğru sebeple kırmızıya çevirdi (2026-08-26, düzeltildi)
 `BusinessReferenceDataUsageLookupMongoTests` iki satırı AYNI `(TenantId, SetCode, ConsumerModule,
 ConsumerName)` ile ekliyordu. Üretimde bu kombinasyon **unique index** ile yasak. Test yıllarca yeşildi çünkü
@@ -6376,3 +6538,390 @@ Bu, BL-280'in aynı şekli: üretimin sahip olmadığı bir kodlamaya karşı y�
 - **Gelecek regresyon riski: 🟡** — taşıma sırasında `_id` korunmazsa Organization→LegalEntity
   bağları kopar ve bu ancak ekranda fark edilir. Taşıma turunun kabul koşulu, taşımadan
   sonra o 15 eşleşmenin hâlâ 15 olması olmalıdır.
+
+---
+
+### BL-289 — bölüm başlığı idiom A → B: 180 başlık, altın referans artık B'de (2026-08-27, ölçüldü, ertelendi)
+- **Ne:** Ürün aynı görüntüyü üreten **iki** başlık idiomu taşıyor. Bu tur altın referans
+  (`GoldenReferenceCompact/_Form.cshtml`, 4 başlık) **B**'ye çevrildi; kural dosyası da B'yi
+  gösteriyor. Kalan A'lar duruyor.
+- **Ölçüm (2026-08-27, `Views/` altı):**
+  · **A** — `<h6 class="text-uppercase text-heading fw-semibold …">` : **180 başlık**, 30+ dosya
+    (Organization · Tasks alt ekranları · Platform · DevEnablement Details …)
+  · **B** — `<h6 class="card-section-title …">` : **10 başlık** — 4'ü altın referans (bu tur),
+    6'sı `Tasks/_Form.cshtml` sağ kolon
+  · **C** — `<h5 class="card-title … me-2">` : **0**. Kural dosyasında yazıyordu, üründe hiç yoktu.
+    Bu tur kural dosyasından SİLİNDİ; ölü idiom artık kimseyi yanlış yönlendirmiyor.
+- **Neden B kazandı:** tek sınıf adı bütün tarifi taşıyor (uppercase + heading rengi + 600 +
+  glifi primary'ye boyama), açıklama satırı (`.card-section-desc`) hazır geliyor, ve A beş
+  yardımcı sınıfın dizilişi — sonraki bir düzenleme yarısını düşürebilir, düşürdüğü de
+  görülmez.
+- ⚠ **BU TUR TASKS'A DOKUNULMADI — bilinçli.** Sahip kararı: tur altın referans içindir.
+  `Tasks/_Form.cshtml` bugün **ikisini birden** taşıyor (sol kolonda 4 A, sağ kolonda 6 B).
+- ⚠ **Bir test bu ikiliğe bağlıydı ve bu tur GEVŞETİLDİ, kaybolmadı:**
+  `tests/tasks-form-select2-notification.test.js` başlık tarifini altın referanstan TÜRETİYOR
+  ve `text-uppercase` metnini birebir arıyordu. Referans B'ye geçince kırmızıya döndü. Testin
+  kendi gerekçesi zaten "hangi yol değil, HEPSİ AYNI kasada olsun" diyordu — referans kontrolü
+  de iki yolu birden kabul edecek şekilde düzeltildi, kasa ve paylaşılan kuralın uppercase
+  olduğu iddiası duruyor. **A→B turu bittiğinde bu gevşetme geri alınabilir** ve tek yol
+  yeniden çivilenebilir.
+- **Tetikleyici:** bir ekran ailesine (Organization, Platform, Tasks alt ekranları) zaten
+  dokunan bir tur — 180 başlığı ayrı bir "kozmetik süpürme" turu olarak yapmak, hiçbir
+  kullanıcı sorununu çözmeden 30+ dosyayı kirletir.
+- **Gelecek regresyon riski: 🟢 katkısal.** İki idiom aynı pikseli üretiyor; dönüşüm görüntüyü
+  değiştirmez. Tek gerçek risk, dönüşümü yarım bırakıp `.dt-card-icon`'u erken silmek — bkz.
+  [BL-291].
+
+### BL-290 — kural dosyası `row g-6` diyordu, ürün 340 yerde g-4/g-3 (2026-08-27, ölçüldü, DÜZELTİLDİ)
+- **Ne:** `.antigravity/rules/frontend-form-template.md` "Form sayfalarında `row g-6` boşluğu
+  standarttır" diyordu. Ürün bunu hiç uygulamamış.
+- **Ölçüm (2026-08-27, `Views/` altı):** `row g-4` **170** · `row g-3` **170** · `row g-2` 26 ·
+  `row g-6` **4** — ve o dördü de **form değil**, DocumentManagement'ın Details sayfaları.
+  Her iki altın referans da g-4 (kart satırı) + g-3 (kart içi alan satırı) kullanıyor.
+- **Karar: kural ürüne uyduruldu, ürün kurala değil.** Kuralı okuyup g-6 yazan tek bir form
+  sayfası çıkmadı; 340 satırı "kurala uysun" diye değiştirmek, hiç kimsenin şikâyet etmediği
+  bir boşluğu bütün ürün genelinde büyütmek olurdu. Kural artık g-4/g-3 diyor ve NEDEN
+  değiştiğini kendi içinde taşıyor.
+- **Açık kalan (küçük):** DocumentManagement'ın 4 `row g-6` Details sayfası artık hiçbir
+  kurala dayanmıyor. Form şablonu kuralı Details sayfalarını kapsamıyor, o yüzden ihlal
+  değiller — ama o modüle dokunan bir sonraki tur g-4'e almalı.
+- **Gelecek regresyon riski: 🟢** — düzeltilen bir belge satırı; kod değişmedi.
+
+### BL-291 — `.dt-card-icon` tek dosya için yaşayan bir sınıf, `.card-section-title .bx` ile aynı şeyi yapıyor (2026-08-27, ölçüldü, ertelendi)
+- **Ne:** `backbone-custom.css:6426` → `.dt-card-icon { flex: 0 0 auto; font-size: 1.125rem; color: var(--bs-primary); }`
+- **Ölçüm:** üründe **4 kullanım**, hepsi **tek dosyada** (`Views/Tasks/_Form.cshtml` sol kolon,
+  idiom A başlıkları). `.card-section-title .bx` kuralı (satır ~4552) `font-size: 1.125rem` +
+  `color: var(--bs-primary)` ile **aynı iki bildirimi** taşıyor; `flex: 0 0 auto` ise
+  `.card-section-title`'ın kendi `display:flex`'i altında zaten glifin doğal davranışı.
+- **Yani:** iki isim, tek kural — ve ikisinden biri yalnız dört satır için var.
+- ⚠ **Tek başına silinemez.** O dört kullanım idiom A başlıklarının içinde; sınıf ancak
+  [BL-289]'un A→B dönüşümü `Tasks/_Form.cshtml`'i B'ye taşıdığında sahipsiz kalır.
+  Erken silmek o dört başlığın glifini gri ve küçük bırakır — ve bu ancak ekranda fark edilir.
+- **Tetikleyici:** [BL-289] kapandığı anda, aynı turda.
+- **Gelecek regresyon riski: 🟢 katkısal** — ama sıra bağımlı: önce dönüşüm, sonra silme.
+
+### BL-292 — iki altın referansın DA select placeholder'ı bozuktu, iki ZIT şekilde (2026-08-27, canlıda bulundu, DÜZELTİLDİ)
+- **Nasıl bulundu:** sahip **ekrana bakarak**, ikon turunun canlı doğrulaması sırasında. 1850 testin
+  hiçbiri görmüyordu; ikisi de bu turda çivilendi
+  (`tests/golden-reference-form-icons.test.js`, "both references DECLARE the select placeholder").
+- **Tek sebep, iki zıt belirti — ikisi de "placeholder'ı select2 kendi çıkarsın" ihmali:**
+  · **Slim (offcanvas):** `placeholder: $el.data('placeholder') || ''` — markup'ta `data-placeholder`
+    yok, yani select2'ye **BOŞ** placeholder verildi. Boş placeholder "placeholder yok" demek
+    DEĞİL: select2 o zaman `<option value="">`in metni yerine
+    `<span class="select2-selection__placeholder"></span>` çiziyor. Yerelleştirilmiş
+    **"Seçiniz…" hiç ekrana çıkmadı** — oklu boş kutu.
+  · **Compact (tam sayfa):** placeholder **hiç verilmedi** — select2 boş option'ı sıradan bir
+    **SEÇİM** sanıp gövde rengiyle boyadı. Ölçüldü: `rgb(56,69,81)`, aynı karttaki her düz
+    input'un placeholder'ı ise `rgb(167,172,178)`. **Boş alan, dolu alandan ayırt edilemiyordu.**
+- **Düzeltme (ikisi de):** `placeholder: … || $el.find('option[value=""]').text() || ''`.
+  Metin OPTION'da kalıyor → tek yerelleştirme kaynağı (markup'ın arkasındaki resx), hiçbir dil
+  dosyasının güncellemeyeceği bir `data-` niteliğinde ikinci kopya değil.
+  Doğrulandı: ikisi de artık `rgb(167,172,178)`.
+- ⚠ **Kural dosyası bunu ZATEN doğru yazıyordu** (`create.js` şablonu, `initSelect2`:
+  `placeholder: $el.find('option[value=""]').text() || ''`). İki referans da kuraldan sapmıştı —
+  yani "kural doğru + referans yanlış" hâli, bu turun asıl teşhisinin (desenin kanalı boş) select2
+  tarafındaki ikinci örneği.
+- **Gelecek regresyon riski: 🟢** — davranış artık iki referansta da testle çivili.
+
+### BL-293 — yenilenen belirteç AYNI istekte görünmüyordu; iki hata, tek kök (2026-08-27, düzeltildi + CANLI kanıtlandı)
+`TokenBridge` belirteci yeniliyor ve yeni değeri **yalnız `HttpResponse.Cookies`**'e yazıyordu. Bu, dışarı
+giden bir başlıktır; `HttpRequest.Cookies` tarayıcının GÖNDERDİĞİNİN anlık görüntüsüdür ve **depoda ona yazan
+tek satır yok** (ölçüldü: sıfır). Aşağı akıştaki **57 çağrı yeri / 53 dosya** bu yüzden yenilemenin olduğu
+isteğin tamamında az önce değiştirilmiş belirteci kullanıyordu.
+
+**Kod tabanı bunu biliyordu ama yalnız köprünün içinde çözmüştü:** `TokenBridgeTests` içindeki
+`Pass_2_does_not_undo_the_refresh_even_though_the_request_still_holds_the_old_token` — kusurun adı, yazılmış
+ve öylece bırakılmış.
+
+**Tasarım kararı (b değil, a'nın daha iyi hâli):** `HttpRequest` zaten `HttpContext` taşıdığı için
+`AuthTokenCookies.GetAccessToken` **imzası değişmeden** tamponu okuyabiliyor — 57 çağrı yerinin hiçbirine
+dokunulmadı, aşırı yükleme de gerekmedi. `Request.Cookies`'i saran koleksiyonla değiştirmek (seçenek b)
+reddedildi: isteğin tarayıcının ne gönderdiği hakkında yalan söylemesi demek, başkalarının başka sebeplerle
+okuduğu bir şey ve depoda emsali yok. Bedeli açık yazıldı → BL-294.
+
+**HATA B — çıkış attıran (🔴):** 15 proxy denetleyici (23 çağrı yeri) 401'de çerezleri **köprünün taze çerezi
+yazdığı AYNI Response üzerinde** siliyordu. `Response.Cookies.Delete`, önceki `Append`'in yanına bir son
+kullanma eklemez — onu **başlıklardan çıkarır** (bağımsız olarak ölçüldü, `CookieOverwriteMeasurementTests`).
+Yani taze belirteç tarayıcıya hiç ulaşmıyor, sonraki istek boş geliyor ve kullanıcı **gerçekten** çıkışa
+atılıyor. Aylardır süren "veri sayfalarında çıkış atma" şikâyetinin en olası açıklaması.
+
+**CANLI KANIT (2026-08-27, tam yığın; kiracının `SessionTimeoutMinutes` değeri geçici olarak 45→1, sonra geri
+alındı). Aynı senaryo, düzeltmeli ve düzeltmesiz:**
+
+| ölçüm (erişim belirteci süresi dolmuş, exp+51 sn) | DÜZELTMESİZ | DÜZELTMELİ |
+|---|---|---|
+| `GET /OrganizationUnits/api` (proxy uç) | **401** | **200, veriyle** |
+| yanıttaki canlı `access_token` çerezi | **0** | **5** (chunks-4 + 4 parça) |
+| sol menü öğesi | **2** | **35** |
+| Ctrl+K girdisi | **0** | **31** |
+| `/OrganizationUnits` sayfası | 200 | 200 |
+| girişe yönlendirme | yok | yok |
+
+- ⚠ Düzeltmeli koşuda uç **401 bile dönmüyor**: birincil düzeltme sayesinde proxy artık TAZE belirteçle
+  gidiyor. İkinci savunma hattı (yenileme sonrası 401'de çerez silme) hiç devreye girmedi — istendiği gibi.
+- ⚠ **Belirteç PARÇALI çerez olarak taşınıyor** (`chunks-4` + 4 parça): canlı ölçümün ortaya çıkardığı bir
+  ayrıntı ve BL-294'ü doğrudan ilgilendiriyor.
+- ⚠ Ölçüm tuzağı: `ClockSkew` 30 sn. Süresi 25 sn önce dolmuş belirteçle yenileme TETİKLENMEZ; ilk denemem
+  bu yüzden hiçbir şey göstermedi. exp+50 sn'den sonra ölçün.
+- ⚠ Kiracı belirteç ömrü `JwtSettings:AccessTokenExpirationMinutes` DEĞİL, kiracının
+  `SessionTimeoutMinutes` ayarından geliyor (`LoginCommandHandler:174`). Ortam değişkeniyle kısaltmaya
+  çalışmak işe yaramaz.
+- **Gelecek regresyon riski: 🟡** — `AuthTokenCookies` dışından okuyan bir tüketici hâlâ bayat değeri görür;
+  bunu yasaklayan bir muhafız yok.
+
+### BL-294 — 6 yer belirteci doğrudan `Request.Cookies`'ten okuyor: bayat VE parçasız (2026-08-27, ölçüldü)
+`AuthTokenCookies`'i atlayıp `Request.Cookies["access_token"]` diye indeksleyen **6** yer:
+`UsersController:283` · `RolesController:165` · `PermissionsController:69` ·
+`RoleAssignmentsController:127` · `UserRoleAssignmentsController:124` · `GoldenReferenceSlimController:246`.
+
+İki ayrı kusur, aynı satırlarda:
+1. **Bayat** — BL-293'ün tamponunu görmezler, yenilemenin olduğu istekte eski belirteci kullanırlar.
+2. **Parçasız** — canlı ölçüm belirtecin `chunks-4` + 4 parça olarak taşındığını gösterdi. Bu satırlar
+   `access_token` çerezini okuyup literal `"chunks-4"` dizgisini belirteç sanır: yani bu 6 uç yalnız
+   yenilemede değil, **belirteç 3800 karakteri aştığı her durumda** kırık. Bugün her giriş bu durumda.
+- **Düzeltme:** hepsi `AuthTokenCookies.GetAccessToken(Request)` çağırsın. Tek satırlık değişiklikler; bu
+  turda yapılmadı çünkü kapsam merkezî düzeltmeydi.
+- **Gelecek regresyon riski: 🔴** — (2) ölçülmüş bir kırıklık, teorik değil.
+
+### BL-295 — `ShellAccessFilter` anahtar rotasyonunu tanımıyor (2026-08-27, ölçüldü, düzeltilmedi)
+- `Program.cs:196` → `IssuerSigningKeys = jwtRotationResolver.GetValidationKeys()` — **geçerli + önceki**
+  sırlar (`JwtSettings:Secret` + `JwtSettings:PreviousSecrets`).
+- `ShellAccessFilter.cs:139` → `IssuerSigningKey = new SymmetricSecurityKey(...jwtSecret)` — **tek** anahtar.
+- **Sonuç:** bir sır rotasyonundan sonra, önceki sırla imzalanmış geçerli bir belirteç köprüde doğrulanır ama
+  filtrede doğrulanmaz. Bağımsız, sessiz bir çıkış sebebi — BL-293'ten ayrı ve onun düzeltmesiyle kapanmıyor.
+- **Gelecek regresyon riski: 🟡** — yalnız rotasyon anında görünür, yani en kötü zamanda.
+
+### BL-296 — `ClockSkew.Zero` iki serviste, 30 sn diğerlerinde (2026-08-27, ölçüldü)
+`ClockSkew = TimeSpan.Zero`: `MdmService/Program.cs:37` · `DevEnablementService/Program.cs:51`
+(ayrıca `AuthService/TokenService.cs:170` ve `PlatformActorHangfireAuthorizationFilter.cs:84` — ikisi de
+doğrulama yardımcıları, ayrı değerlendirilmeli).
+`ClockSkew = 30 sn`: Web · Gateway · Platform · Auth · Hcm.
+- **Sonuç:** saatler birkaç saniye kayarsa MDM ve DevEnablement, diğer her servisin kabul ettiği bir belirteci
+  reddeder. Tutarsızlık kasıtlı mı, karar verilmedi.
+- **Gelecek regresyon riski: 🟢** — tek bir değere hizalamak ucuz; hangi değer olduğu ürün/güvenlik kararı.
+
+### BL-297 — yeni bir worktree'de Platform açılmıyor; sebebi görünmüyor ve 51 dakika yedi (2026-08-27, ölçüldü, düzeltilmedi)
+- Yaşandı: `fix/module-datain-normalization` turu ayrı bir worktree'de çalışıyordu ve canlı doğrulamayı
+  yapamadı. 51 dakika boyunca sebebi bulunamadı. Sebep koda değil kuruluma aitti.
+- **Ne oluyor:** `git worktree add … main` ile kurulan her yeni ağaçta
+  `Diten.Platform.API/appsettings.Development.json` main'deki hâliyle geliyor — yani
+  `ModuleRegistrationCredentials:Mdm:ActiveSecret` **BOŞ**. Platform bu sırrı açılışta zorunlu
+  doğruluyor (`Infrastructure/DependencyInjection.cs:551`) ve `SecretValidationException` ile ölüyor.
+  Platform ölünce: migration koşmaz · katalog değişmez · tarayıcı doğrulaması yapılamaz.
+- ⚠ Boş iskelet (`35370ace`, `17b2e867`) **yetmiyor**. Yapıyı görünür yaptı ama değeri vermiyor —
+  ve veremez, çünkü sır commit'lenemez. Yani her yeni worktree aynı duvara çarpacak.
+- Geliştirme değeri bugün YALNIZ ana çalışma ağacında, commit edilmemiş hâlde duruyor.
+  Yeni ağaç kuran kişinin onu nereden alacağı **hiçbir yerde yazılı değil**.
+- **Ölçülen maliyet:** bir tur × 51 dakika. Tekrarlanabilir — her worktree için bir kez.
+- Seçenekler (hiçbiri seçilmedi):
+  · (a) `docs/dev-environment.md`'ye "yeni worktree kurunca şunu kopyala" adımı — en ucuz, ama disiplin
+  · (b) `git worktree add` sarmalayan bir betik — sırrı ana ağaçtan kopyalar; disiplini mimariye çevirir
+  · (c) sırrı gerçekten isteğe bağlı yapmak — ama o zaman MDM kaydı sessizce çalışmaz, ki bu daha kötü
+  · (d) dotnet user-secrets (csproj'da `UserSecretsId` ZATEN VAR: 587d48b8-25d7-414f-a302-fe1078fb12ea) —
+    makine başına bir kez, tüm worktree'ler paylaşır. ⚠ Bu, mevcut altyapının kullanılmayan yarısı.
+- **Gelecek regresyon riski: 🟡** — kod değil kurulum; ama her paralel tur bir kez ödüyor ve
+  belirti (`Platform açılmıyor`) sebebi (`sır yok`) göstermiyor. Kayıp zaman ölçüldü, tekrar edecek.
+
+### BL-301 — yeni worktree'de frontend testleri koşulamıyor; 49 worktree'nin 43'ünde `node_modules` boş (2026-08-28, ölçüldü, düzeltilmedi)
+- BL-297'nin ikinci yüzü. Orada yeni bir worktree'de **Platform açılmıyordu** (gizli anahtar yok);
+  burada **frontend testleri koşulmuyor** (`node_modules` yok). İkisi de kurulum, ikisi de sessiz değil,
+  ama ikisi de aramayan için görünmez.
+- Ölçüm (2026-08-28): 49 worktree'nin **43'ünde** `frontend/Diten.Web/node_modules` **0 girdi**.
+  Dolu olan 6: ana ağaç · cookie-nav · domain-norm · es · index · ppm-int — hepsi bu oturumda kuruldu
+  ya da bir tur tarafından `npm ci` ile düzeltildi.
+- ⚠ **SESSİZ GEÇİŞ YOK — ölçüldü.** `node_modules` boşken `npx vitest run`:
+  · çıkış kodu **1**
+  · `⎯ Startup Error ⎯` başlığı
+  · `Tests …` özet satırı **hiç üretilmiyor**
+  Yani bir tur "vitest N kırmızı" diye bir sayı raporladıysa o sayı **gerçekten koşulmuştur**;
+  bu çıktıdan uydurulamaz. Risk "yanlış yeşil" değil.
+- **Gerçek risk iki tane, ikisi de farklı:**
+  1. Bir tur bu hatayı görüp vitest'i **hiç raporlamamış** olabilir — "koştum, taban" demek yerine
+     sessizce atlamış olabilir. Geçmiş raporlar elde olmadığı için ölçülemedi.
+  2. O 43 worktree'de frontend'e dokunan her tur **kontrolsüz** — frontend regresyonu koşulamıyor.
+- ⚠ Bugünkü (2026-08-27/28) altı turun hepsi dolu olan ağaçlarda çalıştı; o raporlar bu boşluktan
+  etkilenmiyor. CT kendi doğrulamalarını ana ağaçta koştu.
+- Seçenekler (hiçbiri seçilmedi):
+  · (a) `git worktree add` sarmalayan betik — `npm ci` + dev sırrını birlikte kurar (BL-297 ile aynı betik)
+  · (b) `docs/dev-environment.md`'ye "yeni worktree kurunca `npm ci` koş" adımı — ucuz, disipline bağlı
+  · (c) `node_modules`'ü paylaşılan bir konumdan bağlamak (symlink) — hızlı ama sürüm sapması riski
+- **Gelecek regresyon riski: 🟡** — kod değil kurulum. Ama her paralel tur bir kez ödüyor ve
+  frontend'e dokunan turda regresyon boşluğu bırakıyor.
+
+### BL-302 — `AProfileBuildsItsOwnCollectionsAndNothingElse` sıraya bağımlı: aynı kod, farklı sonuç (2026-08-28, ölçüldü, AÇIKLANAMADI)
+- BRD index turu (`262997c5`) `integration/2026-08-27`'ye birleştirildikten sonra `PlatformSchemaContractMongoTests`
+  içinden 4-5 test kırmızıya döndü. **Her iki tur kendi dalında yeşildi** (BRD 2668, index 2667).
+- Gözlem dizisi — aynı kod, aynı makine, art arda:
+  | koşu | sonuç |
+  |---|---|
+  | birleşme sonrası tam süit | **4 kırmızı** |
+  | test veritabanları temizlendi, tam süit | **5 kırmızı** |
+  | yalnız `AProfileBuilds…` | **KIRMIZI** |
+  | yalnız `AProfileBuilds…`, tekrar | **YEŞİL** |
+  | tam süit ×2 | **YEŞİL (2668/2668)** |
+- Hata iletisi iki koşuda FARKLI koleksiyon listesi verdi:
+  · bir kez `document_management_*` + `document_reference_*` + `task_comments/types/transitions`
+  · bir kez `checklist_*` + `task_assignments/dependencies/field_definitions/items/…`
+  İkisi de WorkflowWorkCenter ve DocumentManagement profillerine ait — BRD'ye değil.
+- **Ne DEĞİL, ölçüldü:**
+  · profil etiketleri doğru — beş koleksiyon tek tek kontrol edildi, hepsi `SchemaProfile.WorkflowWorkCenter`
+  · `PlatformSchemaManifest.For()` `c.Profile`'a göre filtreliyor — kod okundu
+  · `SchemaCollection.ApplyAsync` yalnız kendi `Name`'ine index kuruyor — başka koleksiyon yaratmıyor
+  · `InitializeAsync` her testte `DropDatabaseAsync` çağırıyor → temiz başlamalı
+  · `MongoResidueSweeper.TouchAsync` yalnız işaret koleksiyonunu yazıyor
+  · `[Collection("platform-schema-contract")]` adını başka sınıf kullanmıyor
+  · sınıfın kendi veritabanı var: `diten_platform_itest_schema_contract`
+- ⚠ **SEBEP BULUNAMADI.** "Şimdi geçiyor" bir teşhis değildir. Sıraya bağımlı bir test, bugün yeşil
+  yarın kırmızı olur ve güveni aşındırır — bu oturumda tam olarak bu sınıftan bir hata (süreç-geneli
+  `GuidSerializer` zamanlaması) iki testi "tek başına geçer, süitte kalır" hâline sokmuştu.
+- **Şüpheliler (ölçülmedi):** `DropDatabaseAsync`'in Mongo tarafında eşzamansız tamamlanması ·
+  çalışan Platform servisinin (5057) aynı mongod üzerindeki yükü · xUnit'in aynı koleksiyon içinde
+  örnek yeniden kullanımı.
+- **Yapılacak:** testi kendi izole veritabanına al (`MongoIntegrationHarness.CreateIsolatedAsync` deseni
+  mevcut) ve düşürmenin tamamlandığını doğrula — ya da düşürme yerine koleksiyonları tek tek sil.
+- **Gelecek regresyon riski: 🟡** — kırmızı gürültülü, sessiz yanlış değil. Ama açıklanamayan bir
+  kırmızı, gerçek bir kırmızının yanında görünmez hâle gelir.
+
+### BL-303 — sağlayıcı toplaması SIRALI: en kötü hâl N × zaman aşımı (2026-08-28, ölçüldü, bilinçli ertelendi)
+- DCP-004 §2 D3 kapatılırken her sağlayıcı **kendi** zaman aşımına alındı
+  (`WorkAggregation:Resilience:ProviderTimeout`, varsayılan 10 sn). Döngü **sıralı kaldı**.
+- **Sonuç, aritmetik:** N sağlayıcının hepsi asılırsa okuma **N × 10 sn** sürer. Bugün N=2 → 20 sn.
+  Bugün ikisi de süreç-içi Mongo okuması, ikisi de milisaniyelerde yanıtlıyor; yani bu tavan **bugün
+  görünmüyor**. İlk ağ tabanlı sağlayıcı onu görünür kılan sağlayıcıdır — D3'ün kendisinin sebebi de buydu.
+- **Neden paralelleştirilmedi (karar, unutma değil):** sağlayıcılar `Scoped` kayıtlı
+  (`DependencyInjection.cs:205` ve `:209`). Eşzamanlı çağrı **aynı DI kapsamını ve aynı Mongo oturumunu**
+  iki iş parçacığında paylaşır. Bu ayrı bir tehlike ve ayrı bir karar; bu tur **hata toleransını** değiştirdi,
+  altındaki eşzamanlılık modelini değil. İkisini tek turda değiştirmek, kırıldığında hangisinin kırdığını
+  söyleyemez hâle getirirdi.
+- **Yeniden bakılacak eşik:** sağlayıcı sayısı 2'yi geçtiğinde **ya da** ilk ağ tabanlı sağlayıcı bağlandığında
+  — hangisi önce olursa.
+- Seçenekler (hiçbiri seçilmedi):
+  · (a) her sağlayıcı için ayrı DI kapsamı açıp `Task.WhenAll` — doğru ama kapsam sahipliğini bu katmana taşır
+  · (b) toplam (aggregate) bir bütçe daha eklemek — sıralılığı korur, tavanı sabitler, ama son sağlayıcıyı
+    ilk sağlayıcının yavaşlığı yüzünden cezalandırır
+  · (c) olduğu gibi bırakmak — N küçük kaldığı sürece dürüst
+- **Gelecek regresyon riski: 🟢** — eklemeli. Bugünkü davranış (sıralı) zaten mevcut davranıştı; bu tur yalnız
+  tavanı **ölçülebilir** hâle getirdi. Sessiz yanlış üretmiyor: aşan sağlayıcı `UnavailableSources`'ta
+  `TIMEOUT` olarak görünür.
+
+### BL-304 — manifest aksiyon sözlüğü ile projeksiyon aksiyon kodları arasında eşleme YOK (2026-08-28, ölçüldü, ertelendi)
+- Modül manifestosu `CREATE · UPDATE · ASSIGN · CLAIM · COMPLETE · CANCEL · DELETE · BULK_DELETE` diyor;
+  projeksiyon `claim · accept · start · plan · inquire · submitReview · return · reassign · complete ·
+  cancel · release` yayınlıyor. **Aralarında hiçbir eşleme yok**, ve Görev Merkezi'nin kendi manifestosu
+  `Actions: []` bildiriyor.
+- WC-D2 bunu kapatmadı, kapatmak zorunda da değildi: dispatch, manifestoyu değil **sağlayıcının kendi
+  gönderici kaydını** okur. Ama iki sözlük yan yana durduğu sürece, birini okuyan bir okuyucu diğerinin
+  var olduğunu bilmez.
+- **Yeniden bakılacak eşik:** kataloğa dayalı bir yetkilendirme (entitlement) aksiyon düzeyine indiğinde.
+- **Gelecek regresyon riski: 🟢** — bugün hiçbir yol manifest aksiyonlarını okumuyor; eklemeli.
+
+### BL-305 — aksiyonun teldeki hâli hâlâ uç/metot/izin TAŞIMIYOR; üç kopya elle senkron (2026-08-28, ölçüldü, bilinçli)
+- `WorkItemActionDto` WC-D2'den sonra da yalnız kodu, etiketi ve etkinliği taşıyor. Uç, metot ve izin anahtarı
+  **sunucuda** çözülüyor (`IWorkItemActionDispatcher`), telde değil.
+- Yani bir aksiyonun üç tanımı hâlâ yan yana: sağlayıcının `BuildActions`'ı, göndericinin `Permissions`
+  haritası, ve `RequiredActionPermissions`. Bu tur bunları **muhafız testiyle** bağladı (her gönderici
+  anahtarı, eşleşen sağlayıcının bildirdiği kümede olmak zorunda) — ama tek bir bildirim hâline getirmedi.
+- **Neden bu tur yapılmadı:** teli genişletmek, projeksiyonu tüketen yürütülebilir sözleşmeyi (fixture-contract.js)
+  ve yedi dildeki fixture'ları da değiştirir. Ayrı bir karar, ayrı bir tur.
+- **Gelecek regresyon riski: 🟡** — muhafız testi kaymayı yakalar, ama yalnız *izin* boyutunda. Bir sağlayıcı
+  yeni bir aksiyon kodu yayınlayıp göndericiye eklemezse test kırmızı olur; kodu yayınlayıp **yanlış komuta**
+  bağlarsa hiçbir test bunu söylemez.
+
+### BL-306 — MOD-0023 dispatch'inde idempotency anahtarı sunucuda üretiliyor (2026-08-28, bilinçli, riski yazıldı)
+- MOD-0023'ün onay/ret/bilgi-isteme uçları `IdempotencyKey` zorunlu tutuyor. Görev Merkezi bugün bir anahtar
+  göndermiyor, bu yüzden `WorkflowApprovalWorkItemActionDispatcher` her çağrıda **yeni bir GUID** üretiyor.
+- **Sonuç:** aynı düğmeye iki kez basmak (yavaş ağ, sabırsız kullanıcı) MOD-0023 için iki AYRI karar denemesidir.
+  İkincisi bugün `WORKFLOW_TASK_INVALID_STATE` ile reddedilir — yani zarar görünmez, ama koruma **durum
+  makinesinden** geliyor, idempotency'den değil.
+- **Neden şimdi yapılmadı:** doğru anahtar istemcide üretilip aynı kullanıcı jestine bağlanmalı (aynı tıklama =
+  aynı anahtar). Bu, dialog/onay akışının kendi turudur; sunucuda uydurmak sorunu gizlerdi.
+- **Gelecek regresyon riski: 🟡** — MOD-0023 bir gün aynı durumdan iki geçişe izin verirse (örn. `requestInfo`
+  tekrarlanabilir hâle gelirse) koruma sessizce kaybolur.
+
+### BL-307 — /Tasks ve Görev Merkezi iki ayrı YAZMA yolu (2026-08-28, bilinçli, göç edilmedi)
+- WC-D2 tek bir adres ekledi: `POST /api/v1/work-items/{id}/actions/{code}`. `/Tasks` ekranları kendi
+  `/Tasks/api/{id}/{verb}` yolunu ve `TaskTransitionRoutes.cs` kısıtını **aynen** korudu.
+- Bu bir eksiklik değil, tur kuralıydı: çalışan bir yolu yenisi için bozmak takas değil kayıptır. Ama sonuç,
+  aynı geçişin iki kapısı olmasıdır ve ikisi de aynı komuta iner.
+- **Ölçülmüş bedel:** `TaskTransitionRoutes` regex'i hâlâ elle tutuluyor. Bir aksiyon kodu eklenip oraya
+  yazılmazsa `/Tasks` ekranlarında düğme çizilir, basılır, vekil 404 verir (dosyanın kendi yorumu bunu anlatıyor).
+  Görev Merkezi bu tuzağa artık düşmüyor; `/Tasks` düşüyor.
+- **Yeniden bakılacak eşik:** `/Tasks` ekranları Görev Merkezi bileşenlerine geçtiğinde ya da üçüncü bir
+  yazma yüzeyi çıktığında.
+- **Gelecek regresyon riski: 🟡** — sessiz değil (404 görünür), ama tek yönlü: yalnız `/Tasks` tarafında.
+
+### BL-308 — Tasks l10n köprüsü ELLE tutuluyor (157 satır); otomatik sayıma çevrilmedi (2026-08-28, ölçüldü, bilinçli ertelendi)
+- İki köprü iki farklı mekanizma kullanıyor:
+  · `Views/WorkCenterNext/_L10n.cshtml` → `Localizer.GetAllStrings(true)` — tüm resx otomatik sayılıyor,
+    resx'e eklenen anahtar köprüye **kendiliğinden** gelir, kayma **imkânsız**.
+  · `Views/Tasks/_IndexL10n.cshtml` → **elle tutulan 157 satır**. resx'te olup burada olmayan anahtar
+    **sessizce düşer** ve okuyucuya ham anahtar ya da genel hata mesajı olarak varır.
+- `Tasks/api.js`'in kendi yorumu bunun üç kez olduğunu yazıyor: *"a code mapped in api.js without a line here
+  reaches the reader as the generic error."* Yani bu teorik bir risk değil, üç kez ölçülmüş bir kusur sınıfı.
+- **Neden bu turda çevrilmedi (karar, unutma değil):** `GetAllStrings(true)` davranış değiştirir —
+  (a) yük büyür (TasksIndex resx'i 157 anahtardan çok daha geniş), (b) bugün `SharedLocalizer` ve `Localizer`
+  aynı isimde iki anahtar taşıyorsa hangisinin kazandığı elle yazılmış sırayla belirleniyor; otomatik sayımda
+  bu sıra değişir. Bu tur bir **muhafız** turuydu, davranış turu değil.
+- **Bugünkü kısmi koruma:** `workcenter-next-l10n-key-guard.test.js`, `quick-create.js`'in TASKS köprüsünden
+  okuduğu 7 anahtarı **hem** partial'da **hem** resx'te arıyor. Yani WorkCenterNext klasöründen Tasks köprüsüne
+  bağlanan dosyalar korunuyor; `Tasks/` klasörünün kendi JS'i (form-page, details-page, api.js, form.js)
+  **korunmuyor**.
+- **Yeniden bakılacak eşik:** Tasks yüzeyi Görev Merkezi bileşenlerine geçtiğinde ya da elle liste 200 satırı
+  aştığında.
+- **Gelecek regresyon riski: 🟡** — sessiz ve okuyucuya görünür. Yeni bir Tasks anahtarı ekleyen biri partial'a
+  satır yazmayı unutursa hiçbir test kırmızıya dönmez; kusur ancak ekranda görülür.
+
+### BL-309 — `task-detail-resolver.js` `sourceNavigation` üretiyor, hiçbir yüzey okumuyor (2026-08-28, ölçüldü)
+- Çözümleyici her fixture için `sourceNavigation: { label: { kind: 'resource', key: 'OpenInSource' }, deepLink }`
+  döndürüyor. `sourceNavigation` deposunda **başka hiçbir yerde geçmiyor** — üretilen çıktı okunmuyor.
+- Sonucu: `OpenInSource` anahtarı 7 dilde **yok** ve olmaması doğru — hiçbir yüzey onu çizmiyor, eklemek ölü
+  metin olurdu (aynı sebeple `WatcherRoleWatcher` de yok).
+- Muhafız testi bu istisnayı **gerekçesiyle** taşıyor ve gerekçenin geçerliliğini ayrıca ölçüyor: bir gün bir
+  render sitesi `sourceNavigation`'ı okursa test kırmızıya döner ve anahtar 7 dilde istenir.
+- **Karar gerektiren soru:** kaynak bağlantısı çizilecek mi (o zaman anahtar gerekir) yoksa çözümleyiciden
+  kaldırılacak mı? Bu bir ürün kararı; kod tarafı iki yönde de hazır.
+- **Gelecek regresyon riski: 🟢** — bugün hiçbir şey kırılmıyor; ölü çıktı.
+
+### BL-310 — Görev Merkezi köprüsünün referans tüketicisi GEÇİCİ; gerçek bir modül ucunu açınca SİLİNECEK (2026-08-28, bilinçli)
+- `Diten.DevEnablementService/…/Controllers/ReferenceWorkItemProviderController.cs` + Platform'un
+  `appsettings.Development.json` içindeki `dev-reference` satırı.
+- **Neden var:** WC-D1 köprüsü yazıldığı gün hiçbir modül `GET api/v1/work-items/projection` ucunu açmamıştı.
+  Gerçek modülü beklemek turu bloke ederdi; kanıtsız kapatmak ise DCP-004'ün kendi yazdığı hatayı — "tek
+  uygulama üzerinde kanıtlanan bir dikiş hiçbir şey kanıtlamaz" — tekrarlardı. İkisi de yapılmadı.
+- **Ne kanıtlıyor:** ayrı bir serviste, gerçek soket üzerinden, çağıranın kendi JWT'si ve kiracı başlığıyla;
+  okuma → düğme → uzak durum değişimi → yeniden okumada yeni durum. Simüle edilen hiçbir halka yok.
+- **Ne değil:** iş anlamı yok, veritabanı yok — durum statik bir sözlükte, süreçle birlikte ölüyor.
+  `WorkItemReferenceProvider:Enabled` olmadan kapalı ve yalnızca dev'de açık.
+- **Silme eşiği:** ilk gerçek modül (PVG ya da Global SKU) kendi projeksiyon ucunu açtığı gün. O gün hem
+  controller hem yapılandırma satırı silinir; köprü kodu değişmez.
+- **Gelecek regresyon riski: 🟢** — üretimde kapalı; riski unutulup "gerçek bir kaynakmış gibi" okunması,
+  bu yüzden `Temporary: true` bayrağı, dosya başlığı ve bu kayıt üçü birden var.
+
+### BL-311 — `TenantPropagationHandler` istek kapsamını GÖREMİYOR; MDM ve Auth istemcileri kiracı başlığını sessizce düşürüyor olabilir (2026-08-28, ÖLÇÜLDÜ)
+- **Ölçüm:** WC-D1 köprüsünün ilk hâli bu paylaşılan handler'ı yeniden kullandı ve uzak servise **hiç kiracı
+  başlığı göndermedi**. Birim testi yeşildi. Uzak servis aldığı kiracıyı ekrana geri yazdığı için görüldü:
+  "(no tenant header)".
+- **Sebep:** `IHttpClientFactory` handler zincirini KENDİ kapsamında kurar ve önbelleğe alır. Zincirdeki bir
+  `DelegatingHandler`, istek kapsamına ait `ITenantContext`'i çözemez; eline hiçbir isteğe ait olmayan bir
+  örnek geçer ve `IsResolved == false` döner. Başlık eklenmez ve hiçbir yerde bir şey söylenmez.
+- **Köprüde nasıl kapatıldı:** başlığı `RemoteWorkItemGateway` (Scoped) kendisi yazıyor; bu istemciden handler
+  kaldırıldı. Gerekçe sınıfın kendi yorumunda.
+- **Kapatılmayan:** `services.AddHttpClient<ILegalEntityReferenceValidator, …>()` ve
+  `AddHttpClient<IUserReferenceValidator, …>()` hâlâ aynı handler'ı taşıyor, ayrıca isimli `TenantAwareClient`.
+  Bu turda dokunulmadı: köprü turuydu, kiracılık turu değil — ve düzeltme, bu iki istemcinin bugün hangi
+  davranışa yaslandığının ayrıca ölçülmesini gerektirir (JWT içindeki `tenant_id` bugün başlığın yokluğunu
+  örtüyor olabilir).
+- **Yeniden bakılacak eşik:** kiracı başlığını zorunlu kılan bir uç eklendiğinde ya da bu iki istemciden biri
+  çapraz kiracı bir hata verdiğinde. Ondan önce de yapılabilir; ölçüm hazır.
+- **Gelecek regresyon riski: 🔴** — SESSİZ ve güvenlikle ilgili sınıfta. Yeşil test kanıt değil: bu kusur tam
+  olarak yeşil bir testin altında yaşıyordu.
+
+### BL-312 — Modül adresinin OTOMATİK gelmesi (D1'in manifest yarısı) hâlâ açık (2026-08-28, bilinçli)
+- WC-D1 adresi **operatörün** yazdığı yapılandırmaya bağladı ve bu bir sahip kararıydı. Kapanan yarı bu.
+- **Kapanmayan yarı:** kendini kaydeden bir modülün adresini Platform'a otomatik bildirmesi. Manifest
+  istemci tarafından üretilir; içindeki bir adres, çağrılan tarafın "beni şuradan ara" demesidir — çağıranın
+  JWT'sini nereye göndereceğini çağrılanın yazması. Depoda örneği yok ve eklemek bir güvenlik kararı.
+- **Karar gerektiren soru:** çağrılan tarafça bildirilen bir host nasıl doğrulanır (imzalı manifest? operatör
+  onayı kuyruğu? sabit host allow-list?). Bu soru cevaplanmadan otomatikleştirme yapılmamalı.
+- **Bugünkü bedel:** modül başına bir satır, elle. Yedi mevcut servis-arası adres zaten böyle duruyor.
+- **Gelecek regresyon riski: 🟢** — bugün hiçbir şey kırılmıyor; yalnızca bir kolaylık eksik.

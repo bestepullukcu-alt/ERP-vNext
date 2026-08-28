@@ -95,6 +95,28 @@
         // A field pointing at a module record source nobody registered. Its own sentence, because the reader
         // can do nothing about it themselves — the definition is an administrator's to correct.
         FIELD_OPTION_SOURCE_INVALID: 'errorFieldOptionSourceInvalid',
+        /*
+         * WC-D2 — the dispatch endpoint's own refusals. Mapped the moment the codes were written, not after a
+         * user read "İşlem sırasında bir hata oluştu": an unmapped code IS that sentence, and this map has been
+         * the missing half of exactly that pair three times already.
+         *
+         * ⚠ Each has its OWN message because each sends the reader to a different person. "This source cannot
+         * be written to" is an administrator's problem; "you may not do this" is a permission request; "this
+         * action is no longer offered" is solved by refreshing. One shared sentence would name none of them.
+         */
+        WORK_ITEM_PROVIDER_UNKNOWN: 'errorWorkItemProviderUnknown',
+        WORK_ITEM_PROVIDER_NOT_DISPATCHABLE: 'errorWorkItemProviderNotDispatchable',
+        WORK_ITEM_ACTION_UNKNOWN: 'errorWorkItemActionUnknown',
+        WORK_ITEM_ACTION_FORBIDDEN: 'errorWorkItemActionForbidden',
+        WORK_ITEM_ACTION_PAYLOAD_INVALID: 'errorWorkItemActionPayloadInvalid',
+        /*
+         * WC-D1 — the module owning this item lives in ANOTHER SERVICE and did not answer. Its OWN sentence
+         * because it sends the reader somewhere else entirely: not to an administrator to fix wiring and not
+         * to a permission request, but to try again — and, crucially, to NOT assume the write landed. Every
+         * other code above is a permanent fact about the wiring; this one is transient and the outcome is
+         * genuinely unknown.
+         */
+        WORK_ITEM_REMOTE_UNAVAILABLE: 'errorWorkItemRemoteUnavailable',
         APPROVAL_PENDING: 'errorApprovalPending',
         /*
          * ⚠ A SEPARATE CODE ON PURPOSE, and it was missing here until it was measured live (2026-08-25): the

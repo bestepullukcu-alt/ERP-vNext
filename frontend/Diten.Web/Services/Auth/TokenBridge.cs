@@ -185,6 +185,19 @@ public sealed class TokenBridge
                 refreshResult.ExpiresAt.Value);
 
             /*
+             * ⚠ THE COOKIE IS NOT ENOUGH, AND THIS IS THE WHOLE BUG. WriteTokens sets a Set-Cookie header:
+             * that reaches the BROWSER, on the way out, and changes nothing about the request now in flight.
+             * HttpRequest.Cookies is a snapshot of what the browser already sent, and nothing in this
+             * repository writes to it. So without the line below, every consumer downstream of this middleware
+             * — 57 call sites — spends the rest of THIS request using the token that was just replaced, and
+             * the refresh only takes effect on the next one.
+             *
+             * Recorded at exactly the same moment as the cookie write, because a request in which those two
+             * disagree is the failure this is fixing, wearing a different hat.
+             */
+            RefreshedTokens.Record(context, refreshResult.AccessToken, refreshResult.RefreshToken);
+
+            /*
              * ExpiresAt is the REFRESH token's expiry, not the access token's — it is what WriteTokens receives as
              * its refreshExpiresAtUtc argument. Calling it "the access token is valid until…" invited exactly the
              * wrong conclusion: a log reading "valid until 10 August" was about to be used to rule out expiry as

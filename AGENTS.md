@@ -117,8 +117,14 @@ dotnet build frontend/Diten.Web/Diten.Web.csproj -c Debug
 dotnet test services/Diten.AuthService
 dotnet test services/Diten.EnterpriseStrategyService
 dotnet test services/Diten.Platform
+dotnet test tests/architecture/TenantArchitecture.ArchitectureTests
 # Her servisin kendi test projeleri varsa onların yolu kullanılır
 ```
+
+> ⚠ `tests/architecture` **`services/*` altında değildir** ve bu yüzden yıllarca bu listede yer almadı.
+> İçindeki muhafızlar repo genelini tarar (Mongo test veritabanı deseni — [DB-010](.antigravity/rules/mongo-indexing.md),
+> `MongoClient` kurulum yeri). CI onu her push'ta koşuyor (`scripts/run_phase1_gates.sh`); yerelde de koşulmalı,
+> yoksa ihlal ancak PR açıldığında görünür.
 
 ### DataTable Kontrat Doğrulama (Frontend)
 ```bash

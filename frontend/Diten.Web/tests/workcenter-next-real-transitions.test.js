@@ -144,13 +144,33 @@ describe("work item actions reach the engine", () => {
     const app = fs.readFileSync(
       path.resolve(__dirname, "..", "wwwroot", "assets", "js", "WorkCenterNext", "app.js"), "utf8");
 
-    it("routes a real task action to TasksApi.transition, not to the mock state machine", () => {
-      expect(app).toContain("const isRealTaskItem");
-      expect(app).toMatch(/isRealTaskItem\(item\)\s*\)\s*\{\s*submitRealTransition/);
-      // Matched across newlines: BL-043 split this call over several lines so the body comes from the declared
-      // TRANSITION_BODIES vocabulary rather than a literal at the call site. The RULE is unchanged — a real task
-      // action still goes to the engine — so the assertion follows the refactor instead of pinning its formatting.
-      expect(app).toMatch(/global\.TasksApi\.transition\(\s*item\.id,\s*action\.code/);
+    /*
+     * WC-D2 — THE PROVIDER NAME IS NO LONGER PART OF THE ROUTING DECISION.
+     *
+     * This used to assert `const isRealTaskItem` and a call to `TasksApi.transition` — MOD-0024's own route,
+     * which is exactly why only MOD-0024's items could be acted on. The rule under test is unchanged and now
+     * stated in its general form: a real item, from ANY provider, is dispatched to the server; only a showcase
+     * fixture keeps the browser-side demonstration.
+     */
+    it("routes a real item's action to the dispatch endpoint, not to the mock state machine", () => {
+      expect(app).toContain("const isDispatchableItem");
+      expect(app).toMatch(/isDispatchableItem\(item\)\s*\)\s*\{\s*submitRealTransition/);
+      // Matched across newlines: the body comes from the declared TRANSITION_BODIES vocabulary rather than a
+      // literal at the call site, so the assertion follows the refactor instead of pinning its formatting.
+      expect(app).toMatch(/global\.WorkCenterNextApi\.dispatchAction\(\s*item\.id,\s*action\.code/);
+    });
+
+    it("keeps NO provider name in the action-routing decision — that was the defect", () => {
+      const gate = app.slice(app.indexOf("const isFixtureShowcase"), app.indexOf("const buildTransitionBody"));
+      expect(gate).not.toMatch(/providerCode\s*===\s*['"]tasks['"]/);
+      // Provenance is the only classification left, and it answers a different question: a fixture has no record
+      // on any server, so writing one would 404 on an id that was never stored.
+      expect(gate).toContain("item.provenance === 'fixture'");
+    });
+
+    it("names the provider only so the SERVER can look the item up", () => {
+      // Addressing, not authority: the permission is evaluated from claims server-side.
+      expect(app).toMatch(/dispatchAction\(\s*item\.id,\s*action\.code,\s*item\.source\?\.providerCode/);
     });
 
     it("sends the projection's concurrency token as the expected version", () => {

@@ -30,6 +30,12 @@ const CSS = () => read("wwwroot", "assets", "css", "backbone-custom.css");
 const THEME = () => read("wwwroot", "assets", "vendor", "css", "core.css");
 const FORM = () => read("Views", "Tasks", "_Form.cshtml");
 const FORM_JS = () => read("wwwroot", "assets", "js", "Tasks", "form.js");
+/*
+ * The icon->picker binding MOVED here. It used to live in Tasks/form.js and nowhere else, which is precisely
+ * why the pattern reached one form out of thirty: a screen that copied the golden reference's markup got the
+ * glyph and none of the wiring, and shipped an icon that opens nothing.
+ */
+const DATEFIELD_JS = () => read("wwwroot", "assets", "js", "shared", "diten-datefield.js");
 const ICONS = () => read("wwwroot", "assets", "vendor", "fonts", "iconify-icons.css");
 
 /** The theme's OWN background for a form control — read from the vendor rule, never restated. */
@@ -465,11 +471,26 @@ describe("clicking the calendar icon opens the calendar", () => {
      * A dead icon is a dead button's sibling, and this project shipped one of those once. The icon sits over the
      * field, so a user WILL aim at it.
      */
-    expect(FORM_JS(), "nothing opens the picker from the icon").toMatch(/diten-field-icon/);
+    expect(DATEFIELD_JS(), "nothing opens the picker from the icon").toMatch(/diten-field-icon/);
+    expect(DATEFIELD_JS(), "the icon is found but never bound").toMatch(/addEventListener\('click'/);
+
+    /*
+     * …and the page still REACHES it. Extracting the behaviour into a shared file is only an improvement while
+     * the callers actually call it; a task form that quietly stopped delegating would pass the assertion above
+     * and still ship a dead icon.
+     */
+    expect(FORM_JS(), "the task form no longer delegates to the shared date component")
+      .toMatch(/DitenDateField\.enhance/);
+    for (const page of ["Create.cshtml", "Edit.cshtml", "Details.cshtml"]) {
+      expect(read("Views", "Tasks", page), `Tasks/${page} does not load the shared date component`)
+        .toMatch(/shared\/diten-datefield\.js/);
+    }
   });
 
   test("the click reaches flatpickr's own open()", () => {
     delete global.TaskForm;
+    delete global.DitenDateField;
+    loadScript("wwwroot/assets/js/shared/diten-datefield.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
 
     document.body.innerHTML = `

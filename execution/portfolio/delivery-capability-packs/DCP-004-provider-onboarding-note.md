@@ -27,17 +27,20 @@ public interface IWorkItemProvider
 The aggregator takes `IEnumerable<IWorkItemProvider>`, so **the Task Center itself does
 not change when a module is added**. That is the whole design intent and it holds.
 
-⚠ **It is an in-process DI seam, not a network seam.** Registration is
+⚠ **For a module inside Platform it is an in-process DI seam.** Registration is
 `services.AddScoped<IWorkItemProvider, XProvider>()`, so the provider class is compiled
-into the Platform application and resolved from its container. Both providers that
-exist today live inside Platform and inject repositories.
+into the Platform application and resolved from its container. The two providers that
+predate this note (`workflow`, `tasks`) work that way and inject repositories.
 
-**A module running as its own service cannot register into that container.** It needs a
-provider *in Platform* that calls it — a thin client plus a projection class. There is
-no precedent for this yet; the first module to need it is writing the pattern.
+**A module running as its own service cannot register into that container** — and it no
+longer needs to. **UPDATED 2026-08-28 (WC-D1):** the general bridge exists. You do not
+write a provider class in Platform, and you must not: you open ONE endpoint pair, and an
+operator adds ONE configuration row. §7 is that contract, in full.
 
 ⚠ That adds a network hop to every Task Center load. The list page already fans out on
-open; a provider that answers slowly slows the whole page, not just its own rows.
+open; a provider that answers slowly slows the whole page, not just its own rows. What it
+can no longer do is take the page down with it — WC-D3's per-provider budget and
+`unavailableSources` were built for exactly this provider and are measured against it.
 
 **A provider is READ-ONLY.** It must never write business state. The module keeps its
 own write paths and its own screens; the provider only describes.
@@ -164,6 +167,162 @@ sort never reordered. Verify the thing the user sees, not the thing that is easy
 
 ---
 
+## 7. A module in its OWN SERVICE — the whole contract
+
+**UPDATED 2026-08-28 (WC-D1). This section is the one PVG and Global SKU need.**
+
+You do not write any C# in Platform. You open **two endpoints** in your own service and
+hand an operator **one configuration row**. Platform reaches every remote module through
+a single pair of classes (`HttpWorkItemProvider` / `HttpWorkItemActionDispatcher`), and a
+guard test refuses a second implementation of either — so there is one timeout, one
+fail-closed rule, one tenant propagation and one error dictionary for every module that
+will ever connect this way.
+
+⚠ **Do not write a bridge class for your module and do not ask for one.** N teams' bridge
+classes mean N error-handling policies; the first slow module then slows the whole board
+and nobody can say which one. That is the failure this design exists to prevent.
+
+### 7.1 The configuration row (written by an OPERATOR, not by you)
+
+```jsonc
+// Diten.Platform.API/appsettings.*.json
+"WorkAggregation": {
+  "RemoteProviders": [
+    {
+      "ProviderCode":       "pvg",                    // your stable code; also source.providerCode
+      "ContractVersion":    "1.0",
+      "BaseUrl":            "http://localhost:50xx",  // scheme+host+port, no path
+      "ProjectionPath":     "api/v1/work-items/projection",                 // default
+      "ActionPathTemplate": "api/v1/work-items/{itemId}/actions/{actionCode}", // default
+      "Actions": { "approve": "pvg.signals.approve", "reject": "pvg.signals.reject" }
+    }
+  ]
+}
+```
+
+⚠ **The address comes from configuration and NOT from your manifest** (decision D1, owner,
+2026-08-28). A manifest is client-supplied, so an address inside it would be the party
+being called telling Platform where to send a caller's JWT. Your self-registration
+manifest is unaffected and still does what it always did; it simply carries no host.
+
+⚠ **`Actions` is the whole permission story.** The key you name per action is published as
+your provider's `RequiredActionPermissions` *and* is the key the dispatcher checks — one
+list, so the §3 trap cannot happen to you. **An action your projection publishes that is
+absent from this map is STRIPPED before the reader sees it**, and a warning is logged. A
+button that reaches nothing is the defect this capability removes; a missing button is at
+least visibly missing.
+
+⚠ A malformed row **stops Platform at startup**. That is deliberate: a typo that only
+showed up as a permanently unavailable source on somebody's board would be reported as an
+outage, months later, to the wrong person.
+
+### 7.2 READ — `GET {BaseUrl}/{ProjectionPath}?scope=self|team`
+
+Answer the shared `Response<T>` envelope. `data` is an OBJECT, never a bare array — the
+version handshake needs somewhere to live:
+
+```jsonc
+{
+  "data": {
+    "contractVersion": "1.0",
+    "items": [ /* WorkItemProjectionDto — every field in §2 */ ]
+  },
+  "statusCode": 200,
+  "isSuccessful": true,
+  "errors": [],
+  "reason_code": null
+}
+```
+
+- `scope=team` asks for the caller's subordinates' work. A module with no team concept
+  ignores it, exactly as the in-process providers do.
+- **`source.providerCode` on every item MUST equal your row's `ProviderCode`.** Items
+  claiming another code are dropped and logged: that field is the address the browser
+  posts the next click to, so accepting a foreign one would let you route a write at a
+  module the operator never configured.
+- **`contractVersion` must equal the row's.** A disagreement is reported as an unavailable
+  source, never guessed at — a mis-projected item is worse than a missing one.
+- Everything in §2 applies unchanged, and the two rules that bite hardest are: **omit an
+  optional field rather than sending `null`** (the client checks for `undefined`, and an
+  item that fails validation is DROPPED WHOLE, taking its title and buttons with it), and
+  **declare a capability only when data backs it**.
+
+### 7.3 WRITE — `POST {BaseUrl}/{ActionPathTemplate}`
+
+The body is exactly what the browser posts to Platform — one wire shape for the whole
+chain:
+
+```jsonc
+{ "providerCode": "pvg", "payload": { "expectedVersion": 2, "reason": "…", /* … */ } }
+```
+
+Answer the same envelope. **Refusals must carry a stable `reason_code`, never a sentence
+the reader is expected to understand** — Platform hands the code through unchanged and the
+Task Center resolves it in seven languages. A module that answers prose gets that prose
+shown to somebody who may not read the language it is in.
+
+### 7.4 Who decides what
+
+| Decision | Who | Note |
+|---|---|---|
+| Is this caller signed in, and who are they | **your service**, from the bearer token | Platform forwards the CALLER's own JWT, never a service key |
+| Which tenant | **`X-Tenant-Id`**, written by Platform from the request scope | your own tenant middleware reads it as usual |
+| May this caller press this button | **Platform**, from CLAIMS + the row's `Actions` map | an action the caller lacks is disabled with `PERMISSION_DENIED` whatever your `enabled` said |
+| May this caller do this to THIS record | **your service**, underneath | being permitted to press `approve` is not being the assigned approver |
+| How long is too long | **Platform**, one budget, `WorkAggregation:Resilience:ProviderTimeout` | applied per provider on read and per action on write |
+
+### 7.5 What happens when you are down — read this before you ship
+
+- **Read:** your rows are absent, the rest of the board still draws, and your code appears
+  in `unavailableSources` with `ERROR` or `TIMEOUT`. The screen shows a warning strip
+  naming you.
+- **Write:** the action is **REFUSED** — HTTP 504, `WORK_ITEM_REMOTE_UNAVAILABLE` — and
+  never reported as success. ⚠ **It may in fact have landed on your side.** That is
+  precisely why the caller is told the outcome is unknown rather than shown a green toast,
+  and it is why `expectedVersion` matters: a retried click must not become a second write.
+  Support an idempotent or version-checked write, or accept that a retry after a timeout
+  can double.
+
+### 7.6 The working example you can read
+
+`Diten.DevEnablementService/…/Controllers/ReferenceWorkItemProviderController.cs` is a
+complete, running implementation of both endpoints — the exact envelope, the exact field
+names, a real state transition and a real refusal code.
+
+⚠ It is **TEMPORARY** (BL-310) and exists only because no real module had opened an
+endpoint on the day the bridge was written. Copy its SHAPE; do not copy its in-memory
+store, and expect it to be deleted.
+
+### 7.7 Verified live, 2026-08-28
+
+Not inferred from green tests. Platform (`:5057`) reaching DevEnablement (`:5058`):
+
+- the remote item appeared on `/api/v1/work-items/mine` beside 84 in-process items, and
+  its title showed the tenant id the far service actually received — the tenant header
+  travelling, read off the screen;
+- `accept` posted to Platform's one write address moved the item `Pending → InProgress`
+  and `version 1 → 2` on the far side, and the next read showed the new state;
+- a stale `expectedVersion` came back `409 REFERENCE_CONCURRENCY_CONFLICT` — the module's
+  own code, intact;
+- an action the row does not configure came back `400 WORK_ITEM_ACTION_UNKNOWN` without
+  leaving Platform;
+- with the far service STOPPED: the board still drew all 84 rows and named
+  `{providerCode: "dev-reference", reasonCode: "ERROR"}`, and the write was refused
+  `504 WORK_ITEM_REMOTE_UNAVAILABLE`.
+
+⚠ **One defect was found this way and only this way.** The first implementation reused the
+shared `TenantPropagationHandler` and sent **no tenant header at all**, while its unit test
+passed: `IHttpClientFactory` caches its handler chain in its own scope, so a
+`DelegatingHandler` resolving a request-scoped `ITenantContext` never sees a resolved one.
+It was visible only because the far service echoed back "(no tenant header)". The header is
+now written by the request-scoped gateway. The two other clients still using that handler
+are the same defect unfixed — **BL-311**.
+
+---
+
 *Written 2026-08-24 from the two providers that exist (`tasks`, `workflow`), the
 canonical DTO, and the defects found while walking a real task end to end. Companion to
 `DCP-004` (Work Aggregation / Task Center).*
+
+*§7 added 2026-08-28 (WC-D1) from the general HTTP bridge, verified end to end against a
+reference consumer running in a separate service. Companion to `DCP-004-provider-action-dispatch.md`.*

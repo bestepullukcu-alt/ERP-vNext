@@ -66,7 +66,18 @@ const loadRealMode = () => {
   delete global.WorkCenterNextApi;
   delete global.WorkCenterNextContract;
   delete global.WorkCenterNextFixtures;
-  global.WCN = { t: (key) => key, tn: (key) => key };
+  /*
+   * The REAL localization bridge, with the identity translator layered on top.
+   *
+   * It has to be loaded: WCN.moduleLabel lives there now, and mock-data.js's source chip calls it. A harness that
+   * hand-built the whole WCN object would silently exercise the raw-code fallback and report it as the answer —
+   * which is precisely the "no invented data" failure this file exists to catch.
+   *
+   * Object.assign, not reassignment: l10n.js's own t reads an empty store here, and the stub must win.
+   */
+  delete global.WCN;
+  loadScript(scriptRoot + "l10n.js");
+  Object.assign(global.WCN, { t: (key) => key, tn: (key) => key });
   // No data-wcn-fixtures → the real surface, exactly as production renders it.
   document.body.innerHTML = '<div id="wcnApp" data-wcn-fixtures=""></div>';
   loadScript(scriptRoot + "fixture-contract.js");
@@ -175,7 +186,8 @@ describe("module names come from the resx, in every language", () => {
   afterEach(() => global.WorkCenterNextData?.setNowProvider(null));
 
   it("resolves the provider code through a resource key", () => {
-    global.WCN = { t: (key) => (key === "ModuleTasks" ? "Tasks" : key), tn: (key) => key };
+    // Swap only the translator — moduleLabel reads global.WCN.t at call time, so it picks this up.
+    Object.assign(global.WCN, { t: (key) => (key === "ModuleTasks" ? "Tasks" : key), tn: (key) => key });
 
     const [item] = global.WorkCenterNextApi.mapPayload([realItem()]).items;
 

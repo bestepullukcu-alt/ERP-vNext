@@ -202,4 +202,10 @@
   <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
     <value>Этого человека здесь указать нельзя.</value>
   </data>
+  <data name="ErrorWorkItemProviderUnknown" xml:space="preserve"><value>Источник этой записи не подключён к Центру задач, поэтому действие не удалось выполнить.</value></data>
+  <data name="ErrorWorkItemProviderNotDispatchable" xml:space="preserve"><value>Источник этой записи показывает действия, но пока не может их выполнять. Обратитесь к администратору.</value></data>
+  <data name="ErrorWorkItemActionUnknown" xml:space="preserve"><value>Это действие больше не доступно для данной записи. Обновите страницу, чтобы увидеть текущие варианты.</value></data>
+  <data name="ErrorWorkItemActionForbidden" xml:space="preserve"><value>У вас нет прав на выполнение этого действия.</value></data>
+  <data name="ErrorWorkItemActionPayloadInvalid" xml:space="preserve"><value>Для этого действия требуется больше сведений, чем было отправлено. Заполните обязательные поля.</value></data>
+  <data name="ErrorWorkItemRemoteUnavailable" xml:space="preserve"><value>Система, которой принадлежит эта запись, не ответила, поэтому неизвестно, было ли действие выполнено. Обновите список, чтобы увидеть текущее состояние, и повторите попытку.</value></data>
 </root>

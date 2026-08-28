@@ -25,11 +25,22 @@
      */
     const SCOPE = { SELF: 'self', TEAM: 'team' };
 
+    /*
+     * The outcome of the REQUEST. One axis, and deliberately only one.
+     *
+     * ⚠ WC-D3 DID NOT ADD A STATUS, AND THAT IS THE DECISION. "The request failed" (UNAVAILABLE) and "the
+     * request succeeded but the board is missing a source" are different facts about different things, and
+     * folding the second into the first would tell the reader "no data" when there IS data — the opposite
+     * mistake to the one being fixed, and just as wrong on screen.
+     *
+     * So a partial board stays STATUS.OK, with rows, and carries `unavailableSources` ALONGSIDE the status.
+     * Completeness is a property of the ANSWER; these five are properties of the CALL.
+     */
     const STATUS = {
         OK: 'ok',
         UNAUTHORIZED: 'unauthorized',   // 401 — no/expired session
         FORBIDDEN: 'forbidden',         // 403 — permission not granted (expected until the MOD-0018 grant)
-        UNAVAILABLE: 'unavailable',     // 503 / network — gateway or Platform down
+        UNAVAILABLE: 'unavailable',     // 503 / network — gateway or Platform down; NOTHING arrived
         ERROR: 'error'
     };
 
@@ -136,11 +147,44 @@
         return { items, errors };
     };
 
-    /* Unwrap the Response<T> envelope the Platform API returns. */
+    /*
+     * Unwrap the Response<T> envelope the Platform API returns.
+     *
+     * ⚠ THE ENVELOPE'S `data` IS NO LONGER THE LIST. Since WC-D3 it is a BOARD — `{ items, unavailableSources }`
+     * — because a board that is missing a source has to be able to say so, and Response<T> carries no warning
+     * field (widening the shared envelope to fix one endpoint was the rejected alternative).
+     *
+     * The older shapes are still read: a bare array, and `data` as an array. Not defensive decoration — the
+     * fixture path and this module's own tests feed raw arrays, and a proxy answering an older Platform must not
+     * render an empty page.
+     */
     const unwrap = (payload) => {
         if (Array.isArray(payload)) { return payload; }
         if (payload && Array.isArray(payload.data)) { return payload.data; }
+        if (payload && payload.data && Array.isArray(payload.data.items)) { return payload.data.items; }
         return [];
+    };
+
+    /*
+     * WC-D3 — WHICH SOURCES ARE MISSING FROM THIS ANSWER, and why.
+     *
+     * Codes only on the wire (`{ providerCode, reasonCode }`); the sentence is resolved from the 7-language resx
+     * at the render site. An empty list is the load-bearing state: it means every bound provider answered.
+     *
+     * An entry without a `providerCode` is dropped rather than rendered as a blank name — but an entry with an
+     * unrecognised `reasonCode` is KEPT, because "a source is missing and we cannot say why" is still true and
+     * still worth showing. Dropping it would restore the silence this whole slice removes.
+     */
+    const unwrapUnavailable = (payload) => {
+        const raw = payload && payload.data && Array.isArray(payload.data.unavailableSources)
+            ? payload.data.unavailableSources
+            : [];
+        return raw
+            .filter((entry) => entry && entry.providerCode)
+            .map((entry) => ({
+                providerCode: String(entry.providerCode),
+                reasonCode: entry.reasonCode ? String(entry.reasonCode) : null
+            }));
     };
 
     const classify = (httpStatus) => {
@@ -170,22 +214,36 @@
             });
         } catch (_) {
             // Network-level failure: treat as dependency-unavailable so the shell shows Retry, not a crash.
-            return { status: STATUS.UNAVAILABLE, httpStatus: 0, items: [], errors: [] };
+            return { status: STATUS.UNAVAILABLE, httpStatus: 0, items: [], errors: [], unavailableSources: [] };
         }
 
         if (!response.ok) {
-            return { status: classify(response.status), httpStatus: response.status, items: [], errors: [] };
+            return {
+                status: classify(response.status), httpStatus: response.status,
+                items: [], errors: [], unavailableSources: []
+            };
         }
 
         let payload = null;
         try {
             payload = await response.json();
         } catch (_) {
-            return { status: STATUS.ERROR, httpStatus: response.status, items: [], errors: [] };
+            return {
+                status: STATUS.ERROR, httpStatus: response.status,
+                items: [], errors: [], unavailableSources: []
+            };
         }
 
         const mapped = mapPayload(unwrap(payload));
-        return { status: STATUS.OK, httpStatus: response.status, items: mapped.items, errors: mapped.errors };
+        return {
+            status: STATUS.OK,
+            httpStatus: response.status,
+            items: mapped.items,
+            errors: mapped.errors,
+            // Carried on the SUCCESS path on purpose: a partial board is a 200 with rows on it, not an error
+            // state. The shell keeps the list AND says what is missing from it.
+            unavailableSources: unwrapUnavailable(payload)
+        };
     };
 
     /*
@@ -217,6 +275,58 @@
         }
     };
 
+    /*
+     * ══ WC-D2 — THE ONE ADDRESS AN ACTION IS WRITTEN TO ═══════════════════════════════════════════════════════
+     *
+     * THE DEFECT (DCP-004 §2 D2). The projection's actions[] carries a code, a label and an enabled flag, and
+     * says NOTHING about where the write goes. So the shell had to know each provider's endpoint itself, and it
+     * knew exactly one — `providerCode === 'tasks'`. Every other provider's button ran a browser-side animation
+     * and logged "no backend owns it", MOD-0023's four live approval endpoints included.
+     *
+     * THE FIX IS AN ADDRESS, NOT A CASE. One URL for every provider:
+     *
+     *     POST /WorkCenterNext/api/work-items/{itemId}/actions/{actionCode}
+     *
+     * Platform resolves which module carries it out. The browser names the provider only so the SERVER can look
+     * the item up — item ids are per-module and nothing in a GUID says which table it came from. That is
+     * addressing, never authority: the permission is evaluated from the caller's claims server-side, and naming
+     * the wrong provider buys a 404 from a module that has never heard of the id.
+     *
+     * THE RESULT SHAPE IS TasksApi's ON PURPOSE — { ok, status, reasonCode, data, errors }. The surface already
+     * turns a reason code into a sentence in seven languages through TasksApi.failureMessage /
+     * isConcurrencyConflict / isTransitionBlocked, and a second result shape would mean a second copy of that
+     * bridge — which is how a code goes unmapped and the reader is shown "an error occurred".
+     */
+    const actionEndpoint = (itemId, actionCode) =>
+        `${ENDPOINT}/${encodeURIComponent(itemId)}/actions/${encodeURIComponent(actionCode)}`;
+
+    const dispatchAction = async (itemId, actionCode, providerCode, payload) => {
+        let response;
+        try {
+            response = await global.fetch(actionEndpoint(itemId, actionCode), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ providerCode: providerCode, payload: payload || {} })
+            });
+        } catch (_) {
+            // Same code TasksApi uses for a network-level failure, so failureMessage() answers "unavailable"
+            // rather than the generic error.
+            return { ok: false, status: 0, reasonCode: 'UNAVAILABLE', data: null, errors: [] };
+        }
+
+        let body = null;
+        try { body = await response.json(); } catch (_) { /* 204 and empty bodies are fine */ }
+
+        return {
+            ok: response.ok,
+            status: response.status,
+            reasonCode: body?.reason_code ?? body?.reasonCode ?? null,
+            data: body?.data ?? null,
+            errors: body?.errors ?? []
+        };
+    };
+
     global.WorkCenterNextApi = {
         ENDPOINT,
         TEAM_AVAILABILITY_ENDPOINT,
@@ -228,7 +338,10 @@
         adaptProjection,
         mapPayload,
         unwrap,
+        unwrapUnavailable,
         classify,
-        fetchWorkItems
+        fetchWorkItems,
+        actionEndpoint,
+        dispatchAction
     };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -55,4 +55,42 @@ public sealed class ModuleTaxonomyCanonicalizerTests
         Assert.False(ModuleTaxonomyCanonicalizer.TryResolveCode("nope", Domains, out var miss));
         Assert.Equal("nope", miss); // preserved
     }
+
+    // FIX-DOMAIN-NORMALIZATION — the write paths must not persist an unmatched value as free text (that is how
+    // "MASTER-DATA-MANAGEMENT" came to live beside "MASTERDATAMANAGEMENT" and split one sidebar heading in two).
+    [Fact]
+    public void ResolveCodeOrKey_collapses_an_unmatched_value_onto_its_key()
+    {
+        var code = ModuleTaxonomyCanonicalizer.ResolveCodeOrKey("  Field-Service Management  ", Domains, out var matched);
+
+        Assert.False(matched);
+        Assert.Equal("FIELDSERVICEMANAGEMENT", code); // canonicalized, not preserved as free text, not dropped
+    }
+
+    [Fact]
+    public void ResolveCodeOrKey_returns_the_lookup_code_on_a_match()
+    {
+        var code = ModuleTaxonomyCanonicalizer.ResolveCodeOrKey("PlatformSharedServices", Domains, out var matched);
+
+        Assert.True(matched);
+        Assert.Equal("PLATFORM-SHARED-SERVICES", code); // the option's Code wins, even when it carries separators
+    }
+
+    // Two drifted spellings of ONE unknown domain must converge — the property that makes a split heading impossible.
+    [Fact]
+    public void ResolveCodeOrKey_maps_two_spellings_of_one_unknown_domain_to_the_same_value()
+    {
+        var a = ModuleTaxonomyCanonicalizer.ResolveCodeOrKey("FIELD-SERVICE-MANAGEMENT", Domains, out _);
+        var b = ModuleTaxonomyCanonicalizer.ResolveCodeOrKey("FieldServiceManagement", Domains, out _);
+
+        Assert.Equal(a, b);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("   ")]
+    public void ResolveCodeOrKey_blank_returns_empty(string? raw)
+    {
+        Assert.Equal(string.Empty, ModuleTaxonomyCanonicalizer.ResolveCodeOrKey(raw, Domains, out _));
+    }
 }

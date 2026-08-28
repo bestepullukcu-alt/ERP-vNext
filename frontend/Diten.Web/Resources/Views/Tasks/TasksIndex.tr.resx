@@ -202,4 +202,10 @@
   <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
     <value>Bu kişi burada belirtilemez.</value>
   </data>
+  <data name="ErrorWorkItemProviderUnknown" xml:space="preserve"><value>Bu kaydın kaynağı Görev Merkezi'ne bağlı değil, bu nedenle işlem yapılamadı.</value></data>
+  <data name="ErrorWorkItemProviderNotDispatchable" xml:space="preserve"><value>Bu kaydın kaynağı işlem gösteriyor ancak henüz gerçekleştiremiyor. Lütfen yöneticinizle görüşün.</value></data>
+  <data name="ErrorWorkItemActionUnknown" xml:space="preserve"><value>Bu işlem artık bu kayıt için sunulmuyor. Güncel seçenekleri görmek için sayfayı yenileyin.</value></data>
+  <data name="ErrorWorkItemActionForbidden" xml:space="preserve"><value>Bu işlemi gerçekleştirme yetkiniz yok.</value></data>
+  <data name="ErrorWorkItemActionPayloadInvalid" xml:space="preserve"><value>Bu işlem, gönderilenden daha fazla bilgi gerektiriyor. Lütfen zorunlu alanları doldurun.</value></data>
+  <data name="ErrorWorkItemRemoteUnavailable" xml:space="preserve"><value>Bu kaydın bağlı olduğu sistem yanıt vermedi; işlemin gerçekleşip gerçekleşmediği bilinmiyor. Listeyi yenileyip güncel durumu görün, sonra yeniden deneyin.</value></data>
 </root>

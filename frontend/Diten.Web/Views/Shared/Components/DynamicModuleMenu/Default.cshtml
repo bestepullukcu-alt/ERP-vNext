@@ -26,6 +26,22 @@
     nodeActive = n => isActive(n.RoutePath) || n.Children.Any(c => nodeActive(c));
 }
 
+@* BL-294/nav — the menu no longer vanishes without a word. When the navigation endpoint could not be reached
+   (after one silent retry), a notice takes the menu's place instead of nothing at all. This renders ONLY on a
+   real load failure: a tenant that legitimately has no entitled module still sees a clean, silent sidebar. *@
+@if (Model.LoadFailed)
+{
+    <li class="menu-item nav-load-failed" role="status" aria-live="polite" data-nav-load-failed-notice="true">
+        <div class="menu-link nav-load-failed-body">
+            <i class="menu-icon tf-icons bx bx-error-circle text-warning"></i>
+            <div>
+                <div class="nav-load-failed-title">@SharedLocalizer["NavigationLoadFailed"]</div>
+                <small class="nav-load-failed-hint">@SharedLocalizer["NavigationLoadFailedHint"]</small>
+            </div>
+        </div>
+    </li>
+}
+
 @if (Model.HasItems)
 {
     @* DATA-DRIVEN: DOMAIN header → module entries. Single-page module links straight to its page (module name

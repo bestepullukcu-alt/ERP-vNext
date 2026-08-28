@@ -47,6 +47,13 @@ const PERSON_LABELS = { placeholder: "Kişi seçin…", empty: "Kimse yok", name
 
 const loadForm = () => {
   delete global.TaskForm;
+  /*
+   * The date behaviour MOVED to assets/js/shared/diten-datefield.js. It used to live inside Tasks/form.js and
+   * nowhere else, which is why every other form in the product copied the markup and got no picker and a dead
+   * icon. Loading it here is loading the real page's script set, not a convenience for the test.
+   */
+  delete global.DitenDateField;
+  loadScript("wwwroot/assets/js/shared/diten-datefield.js");
   loadScript("wwwroot/assets/js/Tasks/form.js");
   return global.TaskForm;
 };

@@ -69,8 +69,14 @@ describe("a real task reaches the Task Center", () => {
     delete global.WorkCenterNextData;
     delete global.WorkCenterNextApi;
     delete global.WorkCenterNextFixtures;
-    // The resx bridge is not loaded here; resource labels legitimately fall back to their key.
-    global.WCN = { t: (key) => key, tn: (key) => key };
+    /*
+     * The resx bridge IS loaded — WCN.moduleLabel lives in it and the source chip resolves through it — but its
+     * store is empty in jsdom and the identity translator sits on top, so resource labels still legitimately
+     * fall back to their key, which is what the rest of this file asserts against.
+     */
+    delete global.WCN;
+    loadScript("wwwroot/assets/js/WorkCenterNext/l10n.js");
+    Object.assign(global.WCN, { t: (key) => key, tn: (key) => key });
 
     document.body.innerHTML = '<div id="wcnApp" data-wcn-fixtures=""></div>';
     loadScript("wwwroot/assets/js/WorkCenterNext/fixture-contract.js");
@@ -116,7 +122,7 @@ describe("a real task reaches the Task Center", () => {
   it("names its owning module instead of leaking a provider code", () => {
     // The module name comes from the resx now, not a hardcoded Turkish map, so the l10n stub has to answer for
     // the derived key (tasks → ModuleTasks). The rest of this file leaves t() as identity on purpose.
-    global.WCN = { t: (key) => (key === "ModuleTasks" ? "Görevler" : key), tn: (key) => key };
+    Object.assign(global.WCN, { t: (key) => (key === "ModuleTasks" ? "Görevler" : key), tn: (key) => key });
 
     const [item] = global.WorkCenterNextApi.mapPayload([REAL_PROJECTION_ITEM]).items;
 

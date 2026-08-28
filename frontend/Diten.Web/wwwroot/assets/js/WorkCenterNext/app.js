@@ -104,6 +104,14 @@
         scope: 'mine',
         // Answered by the server at boot (org chart), never inferred from an empty list — see loadTeamAvailability.
         team: { hasTeam: false, memberCount: 0 },
+        /*
+         * WC-D3 — the sources that did NOT answer this read: [{ providerCode, reasonCode }].
+         *
+         * Empty is the load-bearing state and means the list is COMPLETE. Non-empty means every number on this
+         * screen is a floor, not a total — which is why it is read by the banner AND by the tab counts. A
+         * confident zero over a half-answered board has already been misread in this repo once.
+         */
+        unavailableSources: [],
         group: 'all',            // Havuz group-queue filter
         priorityFilter: 'all',
         modeFilter: 'all',
@@ -973,6 +981,56 @@
 
     // Prominent banner while in a delegation scope (spec v3 §6) — scoped grant, not
     // impersonation; every action is stamped "X adına". Combined view = lighter note.
+    /*
+     * WC-D3 (DCP-004 §2 D3) — THE BOARD SAYS WHAT IT IS MISSING.
+     *
+     * The server now answers a BOARD (`{ items, unavailableSources }`) instead of a bare list, because a provider
+     * that failed or timed out used to leave no trace: the reader saw a shorter list, drawn with exactly the same
+     * confidence as a complete one, and nothing on the page to suggest otherwise.
+     *
+     * ⚠ The reason arrives as a stable CODE and the sentence is resolved HERE, from the 7-language resx. The
+     * server never composes this text (project rule: the error-code bridge). An unknown code still names its
+     * source and falls back to the generic reason — "a source is missing and we cannot say why" is a worse
+     * answer than a specific one, but it is a far better answer than silence.
+     *
+     * ⚠ The SOURCE is named in the reader's language too. The banner used to print the raw provider code next
+     * to a translated reason, so an Arabic or Chinese screen read "workflow — <translated sentence>" — half the
+     * sentence in English. The name is resolved through WCN.moduleLabel (l10n.js), the same derived-key rule the
+     * source chips use, so one provider cannot be called two different things on one page. A code with no resx
+     * entry still falls back to the raw code — an identifier a reader can quote to whoever fixes it beats an
+     * invented name — and the board still draws.
+     */
+    const UNAVAILABLE_REASON_KEY = {
+        TIMEOUT: 'SourceUnavailableTimeout',
+        ERROR: 'SourceUnavailableError',
+        UNSUPPORTED_VERSION: 'SourceUnavailableUnsupportedVersion'
+    };
+
+    const hasUnavailableSources = () =>
+        Array.isArray(state.unavailableSources) && state.unavailableSources.length > 0;
+
+    const unavailableReasonText = (reasonCode) =>
+        t(UNAVAILABLE_REASON_KEY[reasonCode] || 'SourceUnavailableUnknown');
+
+    // Resolved at CALL time, not at module load: l10n.js installs it on WCN, and reading it lazily keeps the
+    // banner working on a host that swaps the translator after boot. Absent bridge → the raw code, never a throw.
+    const unavailableSourceName = (providerCode) =>
+        (global.WCN && global.WCN.moduleLabel ? global.WCN.moduleLabel(providerCode) : providerCode) || providerCode;
+
+    const buildPartialBoardBanner = () => {
+        if (!hasUnavailableSources()) { return ''; }
+        const detail = state.unavailableSources
+            .map((src) => `${unavailableSourceName(src.providerCode)} — ${unavailableReasonText(src.reasonCode)}`)
+            .join(' · ');
+        return `<div class="wcn-partial-board" role="status" aria-live="polite">
+            <i class="bx bx-cloud-snow"></i>
+            <span class="wcn-partial-board-text">
+                <strong>${esc(t('PartialBoardBanner'))}</strong>
+                <span class="wcn-partial-board-detail">${esc(detail)}</span>
+            </span>
+        </div>`;
+    };
+
     const buildDelegationBanner = () => {
         if (state.scope === 'mine') { return ''; }
         if (state.scope === 'all') {
@@ -1058,8 +1116,17 @@
         const tab = (key) => {
             const active = state.tab === key;
             const cnt = tabCount(key);
-            const countBadge = cnt > 0
-                ? `<span class="badge rounded-pill bg-danger wcn-tab-count position-absolute top-0 start-100 translate-middle">${cnt}</span>`
+            /*
+             * WC-D3 — A COUNT OVER A PARTIAL BOARD IS A FLOOR, AND SAYS SO.
+             *
+             * The banner alone was not enough: the badge is the number a reader actually acts on, and "0" next to
+             * a warning strip still reads as "nothing for me". While a source is missing the badge carries a "+"
+             * and is drawn EVEN AT ZERO — a zero that might not be a zero is the one number on this page that
+             * must never be printed confidently.
+             */
+            const partial = hasUnavailableSources();
+            const countBadge = (cnt > 0 || partial)
+                ? `<span class="badge rounded-pill ${partial ? 'bg-secondary wcn-tab-count-partial' : 'bg-danger'} wcn-tab-count position-absolute top-0 start-100 translate-middle" title="${partial ? esc(t('PartialCountHint')) : ''}">${cnt}${partial ? '+' : ''}</span>`
                 : '';
             return `<li class="nav-item" role="presentation">
                 <button type="button" id="wcn-tab-${key}" class="nav-link border shadow-none wc-tab-compact d-inline-flex align-items-center${active ? ' active' : ''}" data-wcn-tab="${key}" role="tab" aria-selected="${active}" aria-controls="wcn-main-panel" tabindex="${active ? '0' : '-1'}">
@@ -5807,6 +5874,24 @@
                 <button type="button" class="btn btn-sm btn-label-primary" data-wcn-clear-filters>${esc(t('EmptyClearFilters'))}</button>
             </div>`;
         }
+        /*
+         * WC-D3 — AN EMPTY LIST OVER A PARTIAL BOARD IS NOT "ALL CLEAR".
+         *
+         * MEASURED LIVE (2026-08-28, tasks provider deliberately broken): the strip said "Bazı kaynaklar yanıt
+         * vermedi" and the panel underneath it said "Her şey tamam · Şu anda ilgilenmeniz gereken bir iş öğesi
+         * yok" — a green tick, in the largest type on the page, over a board that had just lost a source. The
+         * banner and the tab badges were honest and the one element the reader actually looks at was not.
+         *
+         * So the "nothing here" states are answered BEFORE the per-tab ones while a source is missing: what is
+         * true is that this list could not be completed, not that there is nothing in it.
+         */
+        if (hasUnavailableSources()) {
+            return `<div class="wcn-empty">
+                <i class="bx bx-cloud-snow"></i>
+                <h5>${esc(t('EmptyPartialBoardTitle'))}</h5>
+                <p>${esc(t('EmptyPartialBoardDesc'))}</p>
+            </div>`;
+        }
         const byTab = {
             inbox: ['EmptyInboxZeroTitle', 'EmptyInboxZeroDesc', 'bx-check-circle'],
             havuz: ['EmptyPoolTitle', 'EmptyPoolDesc', 'bx-time'],
@@ -6104,8 +6189,8 @@
         const workspace = workspaceToolbar
             + `<div class="wcn-layout-wrap">${mainPanel}${sidePanel}</div>`;
 
-        root.innerHTML = buildHeader() + buildDelegationBanner() + buildTabs() + buildFilterRow()
-            + workspace;
+        root.innerHTML = buildHeader() + buildPartialBoardBanner() + buildDelegationBanner() + buildTabs()
+            + buildFilterRow() + workspace;
         setupTimerTick();
         mountPanelSelect2();
         if (state.view === 'table') { mountWorkCenterDataTable(renderedItems); }
@@ -6321,12 +6406,33 @@
     };
 
     /*
-     * A REAL work item owned by MOD-0024. Its actions must go to the engine; the browser-side transitions below
-     * are a fixture-era demonstration and would otherwise change the screen while the database keeps the old
-     * state — exactly what happened when "Başlat" moved a row to "Devam ediyor" while GET still returned Open.
+     * ══ WC-D2 — THE PROVIDER TEST IS GONE, AND THAT IS THE POINT ══════════════════════════════════════════════
+     *
+     * This predicate used to read:
+     *
+     *     const isRealTaskItem = (item) =>
+     *         item && item.provenance !== 'fixture' && item.source?.providerCode === 'tasks';
+     *
+     * The second clause was an ADDRESS BOOK with one entry. Actions on a `tasks` item went to the engine;
+     * everything else fell through to the browser-side transition below, which changes the screen and nothing
+     * else. MOD-0023's approval items have had four live endpoints behind them since WC-1 and not one button
+     * ever reached them — the console said "no backend owns it" while the backend sat there owning it.
+     *
+     * Since WC-D2 the browser writes every action to ONE address and Platform resolves the destination, so
+     * there is nothing left for a provider name to decide here. The clause did not need deleting so much as it
+     * stopped having a job.
+     *
+     * WHAT REMAINS IS PROVENANCE, and it is a different question with a different answer: a SHOWCASE fixture has
+     * no record anywhere, so writing one to the server would 404 on an id that was never stored. The
+     * demonstration transitions below exist for exactly those rows and for nothing else.
      */
-    const isRealTaskItem = (item) =>
-        item && item.provenance !== 'fixture' && item.source?.providerCode === 'tasks';
+    const isFixtureShowcase = (item) => !item || item.provenance === 'fixture';
+
+    /*
+     * A real item, from ANY provider. Its actions are the server's to carry out and its refusals are the
+     * server's to state — this shell decides neither.
+     */
+    const isDispatchableItem = (item) => !isFixtureShowcase(item);
 
     /*
      * Send the transition to the engine and re-read the projection. Nothing is applied optimistically: the server
@@ -6335,6 +6441,11 @@
     /*
      * ══ TRANSITION BODY VOCABULARY (BL-043) ═══════════════════════════════════════════════════════════════
      * The shape of the body each action sends, declared ONCE, here.
+     *
+     * ⚠ SINCE WC-D2 THIS MAP FILLS THE DISPATCH PAYLOAD, not a per-endpoint body. The browser posts one shape to
+     * one address and Platform builds the module's own DTO from it. The FIELD NAMES are deliberately unchanged —
+     * `reason`, `assigneeUserId`, `waitingOnUserId` are what the server's union payload calls them too, so the
+     * guard below still compares this map against the C# records it must agree with, one hop further away.
      *
      * THE DEFECT. Every transition used to post the same generic body — {expectedVersion, reasonCode, note} —
      * while three endpoints ask for something else entirely: InquireTaskItemRequest(ExpectedVersion, Reason),
@@ -6400,10 +6511,19 @@
 
         // The concurrency token from the projection — an expected-version write, so a stale screen loses cleanly.
         const expectedVersion = Number(item.concurrency?.token ?? 0);
-        // The body's shape comes from the vocabulary above, never from a guess at this call site.
-        const result = await global.TasksApi.transition(
+        /*
+         * WC-D2 — ONE ADDRESS, EVERY PROVIDER. This used to be TasksApi.transition(), which posts to
+         * /Tasks/api/{id}/{verb} — MOD-0024's own route, and the reason only MOD-0024's items could be acted on.
+         * The dispatch endpoint takes the item, the action and the provider that owns it, and Platform routes it
+         * to the module's existing command; MOD-0024 items reach exactly the handlers they always did.
+         *
+         * The body's shape still comes from the vocabulary above, never from a guess at this call site — the
+         * server now reads those same field names off one payload and builds the module's DTO itself.
+         */
+        const result = await global.WorkCenterNextApi.dispatchAction(
             item.id,
             action.code,
+            item.source?.providerCode,
             buildTransitionBody(action.code, { expectedVersion, reason, assigneeUserId, waitingOnUserId }));
 
         state.submittingItemId = null;
@@ -6474,7 +6594,7 @@
         const entry = (item?.activity || []).find((candidate) => String(candidate.id) === String(commentId));
         if (!item || !entry) { return; }
 
-        if (!isRealTaskItem(item)) {
+        if (!isDispatchableItem(item)) {
             console.warn(`[WorkCenterNext] Comment edit ignored for non-engine item ${taskId} `
                 + `(provider="${item.source?.providerCode || 'unknown'}") — no backend owns it.`);
             return;
@@ -6502,7 +6622,7 @@
 
     const withdrawComment = async (taskId, commentId) => {
         const item = itemById(taskId);
-        if (!isRealTaskItem(item)) {
+        if (!isDispatchableItem(item)) {
             console.warn(`[WorkCenterNext] Comment withdrawal ignored for non-engine item ${taskId} `
                 + `(provider="${item?.source?.providerCode || 'unknown'}") — no backend owns it.`);
             return;
@@ -6577,7 +6697,7 @@
 
     const toggleChecklistItem = async (taskId, itemCode, completed) => {
         const item = itemById(taskId);
-        if (!isRealTaskItem(item)) {
+        if (!isDispatchableItem(item)) {
             console.warn(`[WorkCenterNext] Checklist toggle ignored for non-engine item ${taskId} `
                 + `(provider="${item?.source?.providerCode || 'unknown'}") — no backend owns it.`);
             return;
@@ -6606,7 +6726,7 @@
         if (!trimmed) { return; }
 
         const item = itemById(taskId);
-        if (!isRealTaskItem(item)) {
+        if (!isDispatchableItem(item)) {
             console.warn(`[WorkCenterNext] Checklist add ignored for non-engine item ${taskId} `
                 + `(provider="${item?.source?.providerCode || 'unknown'}") — no backend owns it.`);
             return;
@@ -6640,7 +6760,7 @@
 
     const checklistWrite = async (taskId, run, toast) => {
         const item = itemById(taskId);
-        if (!isRealTaskItem(item)) {
+        if (!isDispatchableItem(item)) {
             console.warn(`[WorkCenterNext] Checklist write ignored for non-engine item ${taskId} `
                 + `(provider="${item?.source?.providerCode || 'unknown'}") — no backend owns it.`);
             return;
@@ -6840,7 +6960,7 @@
         if (value.length > COMMENT_MAX_LENGTH) { toast(tf('CommentTooLong', COMMENT_MAX_LENGTH), 'error'); return; }
 
         const item = itemById(taskId);
-        if (!isRealTaskItem(item)) {
+        if (!isDispatchableItem(item)) {
             /*
              * Showcase items have no engine behind them, so a comment on one is a demonstration and stays local.
              * Real items go to the server and nothing is applied optimistically — the refreshed projection is the
@@ -6870,7 +6990,7 @@
         if (!text) { toast(t('SubtaskTitleRequired'), 'error'); return; }
 
         const parent = itemById(parentId);
-        if (!isRealTaskItem(parent)) {
+        if (!isDispatchableItem(parent)) {
             console.warn(`[WorkCenterNext] Subtask add ignored for non-engine item ${parentId}.`);
             return;
         }
@@ -6941,13 +7061,16 @@
     };
 
     const applyAction = (item, action, reason, assigneeUserId, waitingOnUserId) => {
-        if (isRealTaskItem(item)) {
+        if (isDispatchableItem(item)) {
             submitRealTransition(item, action, reason, assigneeUserId, waitingOnUserId);
             return;
         }
 
-        // Everything below only ever simulates. Real items from other providers still land here (their engines
-        // are not wired yet) — say so rather than letting a fake transition look real.
+        /*
+         * Everything below only ever simulates, and since WC-D2 only SHOWCASE FIXTURES reach it: a real item from
+         * any provider is dispatched above. The warning stays because the branch is still reachable if a fixture
+         * is ever mis-marked, and a fake transition that looks real is the defect this whole slice removes.
+         */
         if (item && item.provenance !== 'fixture') {
             console.warn(`[WorkCenterNext] "${action.code}" on item ${item.id} `
                 + `(provider="${item.source?.providerCode || 'unknown'}") is a MOCK transition — no backend call is `
@@ -7000,7 +7123,9 @@
      * must leave the screen exactly as it was, or a rejected write would look identical to an accepted one.
      */
     const submitPlan = async (item, dateStr) => {
-        const result = await global.TasksApi.plan(item.id, {
+        // Through the SAME single address as every other action (WC-D2). `plan` is a projected action code like
+        // the rest; its own client method existed only because /Tasks/api was the only door.
+        const result = await global.WorkCenterNextApi.dispatchAction(item.id, 'plan', item.source?.providerCode, {
             expectedVersion: Number(item.concurrency?.token ?? 0),
             plannedDate: dateStr
         });
@@ -7009,7 +7134,7 @@
 
     const openDatePicker = (item, action) => {
         const label = actionLabel(action);
-        const real = isRealTaskItem(item);
+        const real = isDispatchableItem(item);
         if (!global.Swal) {
             if (real) { submitPlan(item, item.dueAt || data.todayIso).catch(reportSwalFailure); return; }
             applyPlan(item, item.dueAt || data.todayIso, label);
@@ -7431,7 +7556,7 @@
         if (!trimmed) { return; }
 
         const item = itemById(taskId);
-        if (!isRealTaskItem(item)) {
+        if (!isDispatchableItem(item)) {
             // The showcase keeps working, and it keeps working HONESTLY: the note is added to the fixture's own
             // list with a real instant, so it renders exactly as a stored one does.
             if (item) {
@@ -7456,7 +7581,7 @@
 
     const removePersonalNote = async (taskId, noteId) => {
         const item = itemById(taskId);
-        if (!isRealTaskItem(item)) {
+        if (!isDispatchableItem(item)) {
             if (item) {
                 item.notes = (item.notes || []).filter((note) => String(note.id) !== String(noteId));
                 render();
@@ -7487,7 +7612,7 @@
     const togglePin = async (item) => {
         if (!item) { return; }
         const next = !item.pinned;
-        if (isRealTaskItem(item)) {
+        if (isDispatchableItem(item)) {
             await afterPhase2Write(
                 await global.TasksApi.setPinned(item.id, { pinned: next }),
                 next ? 'ToastPinned' : 'ToastUnpinned',
@@ -7503,7 +7628,7 @@
 
     const toggleSnooze = async (item) => {
         if (!item) { return; }
-        const real = isRealTaskItem(item);
+        const real = isDispatchableItem(item);
 
         if (isSnoozed(item)) {
             if (real) {
@@ -8927,6 +9052,10 @@
         if (isStale()) { return; }
         if (result.status === api.STATUS.OK) {
             state.items = result.items;
+            // WC-D3 — a PARTIAL board is a success with rows on it, not an error state. The list is kept and the
+            // gap is stated; collapsing this into loadError would throw away rows that did arrive, which is the
+            // very failure the backend change stopped doing.
+            state.unavailableSources = result.unavailableSources || [];
             // Triggers/meetings/notes have no provider yet — they stay empty until one lands (DEC-1).
             state.triggers = [];
             state.meetings = [];
@@ -8934,6 +9063,9 @@
             state.loadState = 'ready';
         } else {
             state.items = [];
+            // Nothing arrived at all, so there is no partial board to qualify — the error state speaks for the
+            // whole read. A stale banner from the previous load would be describing data that is no longer here.
+            state.unavailableSources = [];
             state.loadState = 'error';
             state.loadError = result.status; // forbidden | unauthorized | unavailable | error
         }

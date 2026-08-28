@@ -600,4 +600,10 @@
   <data name="TagsRemove" xml:space="preserve">
     <value>移除 {0}</value>
   </data>
+  <data name="NavigationLoadFailed" xml:space="preserve">
+    <value>菜单加载失败</value>
+  </data>
+  <data name="NavigationLoadFailedHint" xml:space="preserve">
+    <value>请刷新页面重试。</value>
+  </data>
 </root>

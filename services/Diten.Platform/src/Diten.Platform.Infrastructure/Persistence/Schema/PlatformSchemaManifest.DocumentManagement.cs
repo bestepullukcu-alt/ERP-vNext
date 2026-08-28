@@ -439,26 +439,74 @@ public static partial class PlatformSchemaManifest
 
             }),
         /*
-         * ⚠ NO DECLARED INDEX — a FINDING, not a decision. ProvisioningEvidenceRepository reads this collection, and the index
-         * configuration never named it, so every query against it is a collection scan. It was invisible to
-         * the first contract check because the name is passed to the generic repository base as a
-         * constructor argument, not written inside a GetCollection<T>("…") call — see BL-279. Sizing the
-         * right tenant-first index is backlog; being in the registry is not.
+         * BL-279 — TWO indexes, sized from ProvisioningEvidenceRepository:
+         *
+         *   GetByCollectionInstanceAsync {TenantId, IsDeleted:false, CollectionInstanceId} -> FirstOrDefault
+         *   GetByBaselineAsync           {TenantId, IsDeleted:false, BaselineReleaseId}
+         *
+         * ⚠ THE UNIQUE INDEX CLOSES A RACE, IT DOES NOT JUST SPEED A LOOKUP. ProvisioningEvidenceService
+         * upserts a node's evidence as read-then-write: GetByCollectionInstance, and insert when nothing came
+         * back. Two concurrent read-backs of the same folder therefore both find nothing and both insert, and
+         * from then on FirstOrDefault silently returns whichever row Mongo reaches first — the entity's
+         * "the same node's evidence is upserted" stops being true and the QA trail forks. Partial on
+         * IsDeleted:false so a soft-deleted node can be provisioned again, matching every other ux_dm_*_active
+         * index in this profile.
+         *
+         * ⚠ THIS COLLECTION DOES NOT EXIST IN ANY LIVE DATABASE YET, so the evidence below is from a seeded
+         * copy (3,000 rows, 6 tenants x 10 baselines), not from production: 3,000 documents examined before,
+         * 1 (instance) and 100 (baseline) after.
          */
         Collection<DocumentCollectionProvisioningEvidence>(
             SchemaProfile.DocumentManagement,
             PlatformCollections.DocumentManagementCollectionProvisioningEvidence,
-            () => Array.Empty<CreateIndexModel<DocumentCollectionProvisioningEvidence>>()),
+            () => new CreateIndexModel<DocumentCollectionProvisioningEvidence>[]
+            {
+                    new CreateIndexModel<DocumentCollectionProvisioningEvidence>(
+                        Builders<DocumentCollectionProvisioningEvidence>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.CollectionInstanceId),
+                        new CreateIndexOptions<DocumentCollectionProvisioningEvidence>
+                        {
+                            Unique = true,
+                            Name = "ux_dm_collection_provisioning_evidence_tenant_instance_active",
+                            PartialFilterExpression = Builders<DocumentCollectionProvisioningEvidence>.Filter.Eq(x => x.IsDeleted, false)
+                        }),
+                    new CreateIndexModel<DocumentCollectionProvisioningEvidence>(
+                        Builders<DocumentCollectionProvisioningEvidence>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.BaselineReleaseId)
+                            .Ascending(x => x.IsDeleted),
+                        new CreateIndexOptions { Name = "ix_dm_collection_provisioning_evidence_tenant_baseline" })
+
+            }),
         /*
-         * ⚠ NO DECLARED INDEX — a FINDING, not a decision. DocumentCollectionDeviationRepository reads this collection, and the index
-         * configuration never named it, so every query against it is a collection scan. It was invisible to
-         * the first contract check because the name is passed to the generic repository base as a
-         * constructor argument, not written inside a GetCollection<T>("…") call — see BL-279. Sizing the
-         * right tenant-first index is backlog; being in the registry is not.
+         * BL-279 — ONE index serving BOTH reads of DocumentCollectionDeviationRepository:
+         *
+         *   GetByBaselineAsync     {TenantId, IsDeleted:false, BaselineReleaseId}
+         *   GetOpenByBaselineAsync {TenantId, IsDeleted:false, BaselineReleaseId, Status:Open}
+         *
+         * The {TenantId, BaselineReleaseId} prefix answers the first and the Status column narrows the second,
+         * so a second index would only duplicate a prefix this one already covers. Measured on the same seeded
+         * copy: 3,000 documents examined before, 100 after, on both reads.
+         *
+         * ⚠ NO UNIQUE INDEX, DELIBERATELY. The entity documents detection as idempotent — "re-running a
+         * read-back updates an existing OPEN deviation rather than duplicating it" — but it never names the
+         * key that identity is judged on, and the reconciliation service does not read by one. Guessing that
+         * key (path + type? path + type + severity?) and enforcing it would turn a lawful second deviation on
+         * the same folder into a write that throws in production. Naming it is backlog, not an index.
          */
         Collection<DocumentCollectionDeviation>(
             SchemaProfile.DocumentManagement,
             PlatformCollections.DocumentManagementCollectionDeviations,
-            () => Array.Empty<CreateIndexModel<DocumentCollectionDeviation>>()),
+            () => new CreateIndexModel<DocumentCollectionDeviation>[]
+            {
+                    new CreateIndexModel<DocumentCollectionDeviation>(
+                        Builders<DocumentCollectionDeviation>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.BaselineReleaseId)
+                            .Ascending(x => x.Status)
+                            .Ascending(x => x.IsDeleted),
+                        new CreateIndexOptions { Name = "ix_dm_collection_deviations_tenant_baseline_status" })
+            }),
     };
 }

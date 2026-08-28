@@ -2136,4 +2136,49 @@
   <data name="SignalSnoozed" xml:space="preserve">
     <value>Snoozed</value>
   </data>
+  <data name="PartialBoardBanner" xml:space="preserve">
+    <value>Some sources did not respond — this list may be incomplete.</value>
+  </data>
+  <data name="PartialCountHint" xml:space="preserve">
+    <value>Some sources did not respond, so this count may be incomplete.</value>
+  </data>
+  <data name="SourceUnavailableTimeout" xml:space="preserve">
+    <value>did not respond in time</value>
+  </data>
+  <data name="SourceUnavailableError" xml:space="preserve">
+    <value>returned an error</value>
+  </data>
+  <data name="SourceUnavailableUnsupportedVersion" xml:space="preserve">
+    <value>reports an unsupported contract version</value>
+  </data>
+  <data name="SourceUnavailableUnknown" xml:space="preserve">
+    <value>unavailable, reason unknown</value>
+  </data>
+  <data name="EmptyPartialBoardTitle" xml:space="preserve">
+    <value>This list could not be completed</value>
+  </data>
+  <data name="EmptyPartialBoardDesc" xml:space="preserve">
+    <value>At least one source did not respond, so nothing shown here is the whole picture. Try again shortly.</value>
+  </data>
+  <data name="ErrorCommentTextInvalid" xml:space="preserve">
+    <value>A comment cannot be empty.</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="BannerStale" xml:space="preserve">
+    <value>The source record changed after this was last read.</value>
+  </data>
+  <data name="BannerSourceUnavailable" xml:space="preserve">
+    <value>The source module cannot be reached right now.</value>
+  </data>
+  <data name="BannerAuthorityEnded" xml:space="preserve">
+    <value>Your authority for this item has ended.</value>
+  </data>
+  <data name="BannerReconciliationRequired" xml:space="preserve">
+    <value>Source reconciliation is required.</value>
+  </data>
 </root>

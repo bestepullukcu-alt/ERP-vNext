@@ -659,4 +659,10 @@
   <data name="TagsRemove" xml:space="preserve">
     <value>{0} etiketini kaldır</value>
   </data>
+  <data name="NavigationLoadFailed" xml:space="preserve">
+    <value>Menü yüklenemedi</value>
+  </data>
+  <data name="NavigationLoadFailedHint" xml:space="preserve">
+    <value>Yeniden denemek için sayfayı yenileyin.</value>
+  </data>
 </root>

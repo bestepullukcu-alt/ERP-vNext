@@ -600,4 +600,10 @@
   <data name="TagsRemove" xml:space="preserve">
     <value>Quitar {0}</value>
   </data>
+  <data name="NavigationLoadFailed" xml:space="preserve">
+    <value>No se pudo cargar el menú</value>
+  </data>
+  <data name="NavigationLoadFailedHint" xml:space="preserve">
+    <value>Actualiza la página para volver a intentarlo.</value>
+  </data>
 </root>

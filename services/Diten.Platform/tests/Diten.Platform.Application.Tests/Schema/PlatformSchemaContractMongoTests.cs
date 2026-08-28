@@ -69,11 +69,24 @@ public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
 
     // ── ITEM 2: EVERY DECLARED INDEX EXISTS, WITH ITS FULL PROPERTIES ──────────────────────────────────────
 
+    /*
+     * ⚠ WorkflowWorkCenter AND DocumentManagement ARE ON THIS LIST BECAUSE BL-279 PUT INDEXES IN THEM. Until
+     * then neither profile appeared here, so every index they declared was checked by nothing: the manifest
+     * could name an index Mongo never built and the suite stayed green. That is the same "green for the wrong
+     * reason" shape the key/unique/partial comparison below exists to stop, one level up. A profile that
+     * declares indexes belongs on this list; adding indexes to a profile that is missing from it is exactly
+     * how they go unverified.
+     *
+     * MUTATION GUARD: delete any declared index from PlatformSchemaManifest.* and the profile that owns it
+     * goes red here, naming "<collection>.<index>: NOT BUILT".
+     */
     [Theory]
     [InlineData(SchemaProfile.BusinessReferenceData)]
     [InlineData(SchemaProfile.Eventing)]
     [InlineData(SchemaProfile.Notification)]
     [InlineData(SchemaProfile.Organization)]
+    [InlineData(SchemaProfile.WorkflowWorkCenter)]
+    [InlineData(SchemaProfile.DocumentManagement)]
     public async Task EveryIndexTheManifestDeclaresIsBuiltWithItsFullProperties(SchemaProfile profile)
     {
         await PlatformSchemaManifest.ApplyAsync(_database, new[] { profile });
@@ -197,6 +210,264 @@ public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
         Assert.True(built.Count > 1,
             "workflow_transition_logs came back with only _id — the sort above passed unindexed, which is "
             + "precisely how this test would go green while the protection was gone.");
+    }
+
+    // ── BL-279: THE NINE UNINDEXED COLLECTIONS STAY INDEXED ────────────────────────────────────────────────
+
+    [Fact]
+    public async Task TheQueriesBL279SizedRunOnAnIndexAndNotACollectionScan()
+    {
+        /*
+         * ⚠ THIS IS THE MUTATION GUARD FOR BL-279, AND IT HAD TO BE WRITTEN AT THE PLAN LEVEL. The obvious
+         * place to guard "these collections have indexes" is item 2 above — but item 2 iterates over what the
+         * manifest DECLARES and checks Mongo built it. Delete a declaration and the loop simply stops looking
+         * at it: nothing is declared, nothing is missing, GREEN. That is precisely the hole these nine
+         * collections fell through in the first place, so re-using item 2 as their guard would re-open it.
+         *
+         * So the assertion here is the one Mongo cannot fake: run each repository's REAL filter and sort
+         * through explain, and demand the winning plan be an IXSCAN on the named index. Delete any index
+         * below from PlatformSchemaManifest.* and the plan degrades to COLLSCAN and this goes red naming the
+         * collection — which is the failure mode the whole round exists to stop, because a missing index
+         * raises no error in Mongo: the query just quietly scans.
+         *
+         * ⚠ THE ROWS ARE NOT DECORATION. An empty collection lets the planner pick anything, so each shape
+         * gets a handful of documents that match the filter's shape; the plan is then the one production gets.
+         */
+        await PlatformSchemaManifest.ApplyAsync(
+            _database,
+            new[]
+            {
+                SchemaProfile.WorkflowWorkCenter, SchemaProfile.DocumentManagement, SchemaProfile.Notification,
+                SchemaProfile.BusinessReferenceData
+            });
+
+        var tenant = new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard);
+        var task = new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard);
+        var listVersion = new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard);
+        var baseline = new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard);
+        var instance = new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard);
+
+        await SeedAsync(PlatformCollections.TaskComments, i => new BsonDocument
+            { { "TenantId", tenant }, { "IsDeleted", false }, { "TaskItemId", task }, { "Text", $"c{i}" } });
+        await SeedAsync(PlatformCollections.TaskTransitions, i => new BsonDocument
+            { { "TenantId", tenant }, { "IsDeleted", false }, { "TaskItemId", task }, { "Kind", i } });
+        await SeedAsync(PlatformCollections.TaskTypes, i => new BsonDocument
+            { { "TenantId", tenant }, { "IsDeleted", false }, { "Code", $"T{i:D3}" }, { "IsActive", true }, { "DeletedAt", BsonNull.Value } });
+        await SeedAsync(PlatformCollections.DocumentReferenceEntries, i => new BsonDocument
+            { { "TenantId", tenant }, { "DeletedAt", BsonNull.Value }, { "ListVersionId", listVersion },
+              { "DocumentCode", $"DOC-{i:D3}" }, { "DocumentUid", $"UID-{i:D3}" }, { "Title", $"t{i}" } });
+        await SeedAsync(PlatformCollections.DocumentReferenceListVersions, i => new BsonDocument
+            { { "TenantId", tenant }, { "IsDeleted", false }, { "ContentHash", $"h{i:D3}" }, { "WithdrawnAt", BsonNull.Value } });
+        await SeedAsync(PlatformCollections.DocumentManagementCollectionProvisioningEvidence, i => new BsonDocument
+            { { "TenantId", tenant }, { "IsDeleted", false }, { "BaselineReleaseId", baseline },
+              { "CollectionInstanceId", i == 0 ? instance : new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard) } });
+        await SeedAsync(PlatformCollections.DocumentManagementCollectionDeviations, i => new BsonDocument
+            { { "TenantId", tenant }, { "IsDeleted", false }, { "BaselineReleaseId", baseline }, { "Status", 0 } });
+        await SeedAsync(PlatformCollections.NotificationEventDefinitions, i => new BsonDocument
+            { { "IsDeleted", false }, { "EventCode", $"e.{i:D3}" }, { "Status", 1 } });
+
+        /*
+         * ⚠ THE TYPES HERE ARE THE ONES THE ENTITY SERIALIZES TO, NOT THE ONES THAT READ NATURALLY. TenantId
+         * is a plain Guid on TenantScopedEntity and lands as UUID binary; BusinessReferenceDataVersionId
+         * carries [BsonRepresentation(BsonType.String)] and lands as a string. Seed the version id as a
+         * binary Guid instead and the filters below stop matching their own rows — the collection reads as
+         * empty, the planner picks whatever it likes, and this test goes green while proving nothing.
+         */
+        var brdVersion = Guid.NewGuid().ToString();
+        await SeedAsync(PlatformCollections.BusinessReferenceDataValidationResults, i => new BsonDocument
+            { { "TenantId", tenant }, { "IsDeleted", false }, { "BusinessReferenceDataVersionId", brdVersion },
+              { "RuleId", $"RULE-{i:D3}" }, { "Message", $"m{i}" } });
+
+        var failures = new List<string>();
+
+        // Each row is one repository read, written exactly as the repository writes it.
+        await ExpectIndexScanAsync(failures, PlatformCollections.TaskComments, "ix_task_comments_tenant_task",
+            "TaskCommentRepository.ListByTaskIdAsync",
+            new BsonDocument { { "TenantId", tenant }, { "IsDeleted", false }, { "TaskItemId", task } });
+
+        await ExpectIndexScanAsync(failures, PlatformCollections.TaskTransitions, "ix_task_transitions_tenant_task",
+            "TaskTransitionRepository.ListByTaskIdAsync",
+            new BsonDocument { { "TenantId", tenant }, { "IsDeleted", false }, { "TaskItemId", task } });
+
+        await ExpectIndexScanAsync(failures, PlatformCollections.TaskTypes, "ux_task_types_tenant_code_active",
+            "TaskTypeRepository.GetByCodeAsync",
+            new BsonDocument { { "TenantId", tenant }, { "IsDeleted", false }, { "Code", "T000" } });
+
+        /*
+         * ⚠ THIS ONE ALSO PINS AN INDEX THAT WAS DELIBERATELY *NOT* ADDED. The sibling TaskFieldDefinition
+         * carries a second {TenantId, IsActive, SortOrder} index, and symmetry argued for one here — but the
+         * unique index alone already serves ListActive with no blocking SORT, so BL-279 rejected it as a write
+         * cost with no read benefit. Asserting "no SORT stage" is what makes that a measured decision instead
+         * of an opinion: if it ever stops holding, this says so rather than the index quietly being missed.
+         */
+        await ExpectIndexScanAsync(failures, PlatformCollections.TaskTypes, "ux_task_types_tenant_code_active",
+            "TaskTypeRepository.ListActiveAsync (sorted, and with NO second index)",
+            new BsonDocument { { "TenantId", tenant }, { "IsDeleted", false }, { "IsActive", true }, { "DeletedAt", BsonNull.Value } },
+            sort: new BsonDocument("Code", 1),
+            forbidBlockingSort: true);
+
+        await ExpectIndexScanAsync(failures, PlatformCollections.DocumentReferenceEntries,
+            "ix_document_reference_entries_tenant_version_code",
+            "DocumentReferenceListRepository.SearchAsync",
+            new BsonDocument { { "TenantId", tenant }, { "DeletedAt", BsonNull.Value }, { "ListVersionId", listVersion } },
+            sort: new BsonDocument("DocumentCode", 1),
+            forbidBlockingSort: true);
+
+        await ExpectIndexScanAsync(failures, PlatformCollections.DocumentReferenceEntries,
+            "ix_document_reference_entries_tenant_version_uid",
+            "DocumentReferenceListRepository.GetEntriesByUidsAsync",
+            new BsonDocument
+            {
+                { "TenantId", tenant }, { "DeletedAt", BsonNull.Value }, { "ListVersionId", listVersion },
+                { "DocumentUid", new BsonDocument("$in", new BsonArray { "UID-000" }) }
+            });
+
+        await ExpectIndexScanAsync(failures, PlatformCollections.DocumentReferenceListVersions,
+            "ix_document_reference_list_versions_tenant_hash",
+            "DocumentReferenceListRepository.FindLiveVersionByHashAsync",
+            new BsonDocument { { "TenantId", tenant }, { "IsDeleted", false }, { "ContentHash", "h000" }, { "WithdrawnAt", BsonNull.Value } });
+
+        await ExpectIndexScanAsync(failures, PlatformCollections.DocumentManagementCollectionProvisioningEvidence,
+            "ux_dm_collection_provisioning_evidence_tenant_instance_active",
+            "ProvisioningEvidenceRepository.GetByCollectionInstanceAsync",
+            new BsonDocument { { "TenantId", tenant }, { "IsDeleted", false }, { "CollectionInstanceId", instance } });
+
+        await ExpectIndexScanAsync(failures, PlatformCollections.DocumentManagementCollectionProvisioningEvidence,
+            "ix_dm_collection_provisioning_evidence_tenant_baseline",
+            "ProvisioningEvidenceRepository.GetByBaselineAsync",
+            new BsonDocument { { "TenantId", tenant }, { "IsDeleted", false }, { "BaselineReleaseId", baseline } });
+
+        await ExpectIndexScanAsync(failures, PlatformCollections.DocumentManagementCollectionDeviations,
+            "ix_dm_collection_deviations_tenant_baseline_status",
+            "DocumentCollectionDeviationRepository.GetOpenByBaselineAsync",
+            new BsonDocument { { "TenantId", tenant }, { "IsDeleted", false }, { "BaselineReleaseId", baseline }, { "Status", 0 } });
+
+        await ExpectIndexScanAsync(failures, PlatformCollections.NotificationEventDefinitions,
+            "ux_notification_event_definitions_event_code_active",
+            "NotificationEventDefinitionRepository.GetByEventCodeAsync",
+            new BsonDocument { { "IsDeleted", false }, { "EventCode", "e.000" } });
+
+        /*
+         * ── BL-298: THE INDEX THE INDEX BUDGET FINALLY PAID FOR ───────────────────────────────────────────
+         *
+         * business_reference_data_validation_results was the ONE collection BL-279 measured, sized, and could
+         * not spend — the profile sat at its 18-index ceiling, and raising a ceiling to fit a change is the
+         * move SchemaProfileBudget's header exists to stop. The GSKU owners raised it to 19 on 2026-08-28 and
+         * the index went in. Both of its call sites are pinned below, and the SECOND one matters most, for a
+         * reason no reader would guess from the manifest.
+         */
+        await ExpectIndexScanAsync(failures, PlatformCollections.BusinessReferenceDataValidationResults,
+            "ix_business_reference_data_validation_results_tenant_version_rule",
+            "BusinessReferenceDataStewardshipRepository.GetValidationResultsByVersionAsync (sorted)",
+            new BsonDocument { { "TenantId", tenant }, { "BusinessReferenceDataVersionId", brdVersion }, { "IsDeleted", false } },
+            sort: new BsonDocument("RuleId", 1),
+            forbidBlockingSort: true);
+
+        /*
+         * ⚠ THIS ONE PINS THE ABSENCE OF A PARTIAL FILTER, AND NOTHING ELSE CAN. Every other index in the
+         * BusinessReferenceData profile carries PartialFilterExpression IsDeleted=false, and the read above
+         * does filter on IsDeleted=false — so the next person to look at this manifest will see an index that
+         * breaks the house pattern and "fix" it. Measured, that fix costs half the win: the read is served
+         * identically either way (25 examined, no SORT), but ReplaceValidationResultsAsync deletes on
+         * {TenantId, VersionId} with NO IsDeleted predicate, so Mongo cannot prove the delete is a subset of
+         * the partial filter and refuses the index — straight back to a scan of the whole collection.
+         *
+         * MUTATION GUARD: add PartialFilterExpression to that index and this goes red naming the delete.
+         */
+        await ExpectIndexScanAsync(failures, PlatformCollections.BusinessReferenceDataValidationResults,
+            "ix_business_reference_data_validation_results_tenant_version_rule",
+            "BusinessReferenceDataStewardshipRepository.ReplaceValidationResultsAsync (the DeleteMany leg, "
+            + "which carries no IsDeleted predicate — a partial filter on the index would strand it)",
+            new BsonDocument { { "TenantId", tenant }, { "BusinessReferenceDataVersionId", brdVersion } },
+            shape: QueryShape.Delete);
+
+        Assert.True(failures.Count == 0,
+            "BL-279 sized these indexes from the repositories that read them, and Mongo is no longer using "
+            + "them. A missing index does not raise an error here — the query silently scans the whole "
+            + "collection in production:\n" + string.Join("\n", failures));
+    }
+
+    /// <summary>Eight documents is enough for the planner to prefer an index and cheap enough to be free.</summary>
+    private async Task SeedAsync(string collectionName, Func<int, BsonDocument> factory)
+    {
+        var documents = Enumerable.Range(0, 8).Select(i =>
+        {
+            var d = factory(i);
+            d["_id"] = new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard);
+            return d;
+        }).ToList();
+        await _database.GetCollection<BsonDocument>(collectionName).InsertManyAsync(documents);
+    }
+
+    /*
+     * ⚠ A DELETE IS PLANNED SEPARATELY FROM THE FIND THAT LOOKS IDENTICAL, AND THE DIFFERENCE IS THE WHOLE
+     * POINT FOR ONE INDEX HERE. Explaining `find {TenantId, VersionId}` and calling that "the delete leg"
+     * would be a lie in exactly the case that matters: a partial index is refused for a delete whose filter
+     * cannot be proved a subset of the partial expression, and the equivalent find would happily report an
+     * IXSCAN. So the delete is explained AS a delete.
+     */
+    private enum QueryShape { Find, Delete }
+
+    private async Task ExpectIndexScanAsync(
+        List<string> failures,
+        string collectionName,
+        string expectedIndex,
+        string callSite,
+        BsonDocument filter,
+        BsonDocument? sort = null,
+        bool forbidBlockingSort = false,
+        QueryShape shape = QueryShape.Find)
+    {
+        BsonDocument command;
+        if (shape == QueryShape.Delete)
+        {
+            command = new BsonDocument
+            {
+                { "delete", collectionName },
+                { "deletes", new BsonArray { new BsonDocument { { "q", filter }, { "limit", 0 } } } }
+            };
+        }
+        else
+        {
+            var find = new BsonDocument { { "find", collectionName }, { "filter", filter } };
+            if (sort is not null)
+            {
+                find["sort"] = sort;
+            }
+
+            command = find;
+        }
+
+        var explained = await _database.RunCommandAsync<BsonDocument>(
+            new BsonDocument { { "explain", command }, { "verbosity", "queryPlanner" } });
+
+        var stages = new List<string>();
+        var indexes = new List<string>();
+        for (var node = explained["queryPlanner"]["winningPlan"].AsBsonDocument; node is not null;)
+        {
+            stages.Add(node.GetValue("stage", "?").AsString);
+            if (node.TryGetValue("indexName", out var name))
+            {
+                indexes.Add(name.AsString);
+            }
+
+            node = node.TryGetValue("inputStage", out var next) ? next.AsBsonDocument
+                : node.TryGetValue("queryPlan", out var qp) ? qp.AsBsonDocument
+                : null;
+        }
+
+        var plan = string.Join("->", stages);
+        if (!indexes.Contains(expectedIndex))
+        {
+            failures.Add($"{collectionName}: {callSite} planned as [{plan}] — expected an IXSCAN on "
+                + $"'{expectedIndex}'. {(stages.Contains("COLLSCAN") ? "It is scanning the whole collection." : "")}");
+        }
+
+        if (forbidBlockingSort && stages.Contains("SORT"))
+        {
+            failures.Add($"{collectionName}: {callSite} planned as [{plan}] — the index no longer serves the "
+                + "sort, so Mongo is ordering in memory and will blow the 32MB sort limit as the data grows.");
+        }
     }
 
     // ── THE TWO DATA JOBS MUST SURVIVE THE SPLIT ───────────────────────────────────────────────────────────

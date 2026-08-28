@@ -27,9 +27,16 @@ public sealed class ModuleTaxonomyResolver : IModuleTaxonomyResolver
             .Select(d => new ModuleTaxonomyCanonicalizer.TaxonomyOption(d.Code, d.DisplayName))
             .ToList();
 
-        if (!ModuleTaxonomyCanonicalizer.TryResolveCode(rawDomain, options, out var code) && code.Length > 0)
+        // FIX-DOMAIN-NORMALIZATION — an unmatched domain is canonicalized to its normalized key rather than stored
+        // as free text. Storing the raw value was how "MASTER-DATA-MANAGEMENT" ended up living beside
+        // "MASTERDATAMANAGEMENT" in the catalog and split one sidebar heading in two. The value is still kept (the
+        // key is derived from it, and self-registration mints unknown lookup rows under this same key form) — the
+        // miss is only logged, never silently dropped.
+        var code = ModuleTaxonomyCanonicalizer.ResolveCodeOrKey(rawDomain, options, out var matched);
+        if (!matched && code.Length > 0)
         {
-            _logger.LogWarning("Module domain '{RawDomain}' did not match any active lookup; preserving as-is.", rawDomain);
+            _logger.LogWarning(
+                "Module domain '{RawDomain}' did not match any active lookup; canonicalized to '{Code}'.", rawDomain, code);
         }
 
         return code;

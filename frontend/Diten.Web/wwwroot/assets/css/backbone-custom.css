@@ -4868,15 +4868,36 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 /* ==========================================================================
    DitenField — a leading icon inside a form control
    --------------------------------------------------------------------------
-   THE RULE, and it is about information rather than decoration: an icon here
-   says "something other than typing happens in this box". So it marks the two
-   date fields (they open a calendar) and the tag field (Enter turns text into a
-   chip), and nothing else. Title, description, estimate and the tenant's own
-   text fields are plain typing; an icon on every field would say nothing about
-   any of them.
+   THE RULE — EVERY FIELD CARRIES ONE. A leading glyph is this product's form
+   vocabulary, not a per-field annotation: a form where some boxes are marked
+   and others are not reads as two kinds of field, and the reader spends the
+   difference working out which kind they are looking at. So the wrapper goes
+   around every control on the form, and the glyph names WHAT THE FIELD IS.
 
-   select2 controls are deliberately untouched — select2 renders its own
-   container, so those are a template change with their own decision.
+   ⚠ THIS REPLACED THE OPPOSITE RULE, and the old text is worth naming because
+   it stood here long enough to be copied. It said an icon marks only the boxes
+   where "something other than typing happens" — the dates and the tag field —
+   and nothing else. The owner decided against it. A developer reading the old
+   comment concluded that leaving icons OUT was the correct pattern, which is
+   why the pattern reached one form out of thirty.
+
+   WHERE THE RULE IS PINNED, not restated: tests/diten-field-icons.test.js —
+   "EVERY field carries an icon". The field->glyph map lives there too, so the
+   choice of glyph is reviewed as a decision rather than typed per screen.
+
+   TWO EXCEPTIONS, both structural rather than taste:
+     · a form-check SWITCH is a label with a control, not a box with a text
+       inset — there is no inline start to put a glyph on;
+     · configurable/tenant-defined fields, whose value type is not known at
+       author time, so there is no glyph to pick.
+
+   SHAPES the wrapper must handle: a plain .form-control, a TEXTAREA (which
+   needs .diten-field-icon--top), a select2 control (which renders its own
+   container — the rules below pad what select2 draws, not the <select>), and a
+   Tagify box. All four are covered here; a template only picks the glyph.
+
+   BEHAVIOUR travels with the markup: an icon over a picker must OPEN it. See
+   assets/js/shared/diten-datefield.js — a dead icon is a dead button's sibling.
    ========================================================================== */
 .diten-field {
     position: relative;
@@ -6247,6 +6268,21 @@ tags.diten-tags .tagify__input {
 .wcn-delegation-all { border-inline-start-color: var(--bs-primary);
     background: color-mix(in sRGB, var(--bs-primary) 12%, var(--bs-card-bg));
     color: color-mix(in sRGB, var(--bs-primary) 85%, var(--bs-body-color)); }
+
+/* WC-D3 partial-board banner ------------------------------------------------
+   The board is missing at least one source. Warning-toned like .wcn-delegation (same visual family, same
+   inline-start rule) but distinct: delegation says WHOSE work this is, this says the list is INCOMPLETE. */
+.wcn-partial-board {
+    display: flex; align-items: flex-start; gap: .5rem; margin-block-end: 1rem; padding: .625rem .875rem;
+    border-radius: .5rem; border-inline-start: 3px solid var(--bs-warning); font-size: .875rem;
+    background: color-mix(in sRGB, var(--bs-warning) 15%, var(--bs-card-bg));
+    color: color-mix(in sRGB, var(--bs-warning) 80%, #000);
+}
+.wcn-partial-board > i { font-size: 1.25rem; flex: 0 0 auto; }
+.wcn-partial-board-text { display: flex; flex-direction: column; gap: .125rem; }
+.wcn-partial-board-detail { font-size: .75rem; opacity: .85; }
+/* The tab badge over a partial board: a floor, not a total. Muted so it cannot be read as an urgency count. */
+.wcn-tab-count-partial { font-weight: 600; }
 
 /* System/stale-state banner ------------------------------------------------ */
 .wcn-sysstate { display: flex; align-items: center; gap: .5rem; margin-block: .75rem 0; padding: .5rem .75rem;
@@ -8411,4 +8447,61 @@ tags.diten-tags .tagify__input {
     padding: 1rem;
     border: 1px solid var(--bs-border-color);
     border-radius: .5rem;
+}
+
+/*
+ * BL-294/nav — the sidebar's "could not load" notice.
+ *
+ * It occupies the menu's own slot, so it borrows `.menu-link` for alignment and padding, then overrides the
+ * three things a menu link assumes and this is not: it is not clickable (no pointer, no hover lift), it is two
+ * lines rather than one (so the fixed link height has to go), and it must read as a warning rather than as a
+ * disabled nav item. Colours come from theme tokens, so it follows light/dark without a second rule.
+ */
+.nav-load-failed .nav-load-failed-body {
+    cursor: default;
+    height: auto;
+    align-items: flex-start;
+    white-space: normal;
+}
+
+.nav-load-failed .nav-load-failed-body:hover {
+    background: transparent;
+}
+
+.nav-load-failed .nav-load-failed-title {
+    font-weight: 600;
+    color: var(--bs-body-color);
+    line-height: 1.3;
+}
+
+/*
+ * MEASURED: the theme puts `white-space: nowrap` on sidebar menu text, and the hint is a whole sentence —
+ * "Yeniden denemek için sayfayı yenileyin." rendered 236px wide inside a 168px slot and was cut off mid-word.
+ * The title is short enough to fit, but it gets the same rule so a longer translation cannot silently clip.
+ */
+.nav-load-failed .nav-load-failed-title,
+.nav-load-failed .nav-load-failed-hint {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/*
+ * ⚠ NOT `text-body-secondary` — MEASURED, not taste. The hint first carried that class and came out at
+ * 2.29:1 against the sidebar in light and 3.49:1 in dark, at 13px: both fail WCAG AA (4.5:1 for text this
+ * size). `--bs-body-color` is the token the title already uses and measures 5.19:1 light / 6.54:1 dark on
+ * the same surface. A warning nobody can read is the silence this whole change exists to end.
+ */
+.nav-load-failed .nav-load-failed-hint {
+    display: block;
+    line-height: 1.3;
+    color: var(--bs-body-color);
+}
+
+/*
+ * BL-294/nav — the Ctrl+K palette's degraded notice occupies the same block as the theme's "No results found"
+ * state (.search-no-results-wrapper, core.css), so it gets the same height rather than collapsing the panel.
+ * Declared here, not in the vendor file, which is never edited.
+ */
+.search-degraded-wrapper {
+    block-size: 28.75rem;
 }

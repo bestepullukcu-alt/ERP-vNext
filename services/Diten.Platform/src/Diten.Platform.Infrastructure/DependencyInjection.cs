@@ -20,6 +20,7 @@ using Diten.Platform.Infrastructure.Persistence.Settings;
 using Diten.Platform.Infrastructure.Services;
 using Diten.Platform.Infrastructure.Services.Audit;
 using Diten.Platform.Infrastructure.Services.Http;
+using Diten.Platform.Infrastructure.Services.WorkAggregation;
 using Diten.Platform.Infrastructure.Services.Mdm;
 using Diten.Platform.Infrastructure.Services.Notifications;
 using Diten.Platform.Infrastructure.Settings;
@@ -138,6 +139,12 @@ public static class DependencyInjection
         services.Configure<Diten.Platform.Application.Features.WorkAggregation.Services.WorkItemSlaOptions>(
             configuration.GetSection(
                 Diten.Platform.Application.Features.WorkAggregation.Services.WorkItemSlaOptions.SectionName));
+        // WC-D3 (DCP-004 §2 D3) — the per-provider timeout the aggregation handler enforces. Bound here on the
+        // same terms as the SLA window above: an operator's judgement about how long a reader waits for ONE
+        // source, which differs between an in-process Mongo read and the first network-backed provider.
+        services.Configure<Diten.Platform.Application.Features.WorkAggregation.Services.WorkAggregationResilienceOptions>(
+            configuration.GetSection(
+                Diten.Platform.Application.Features.WorkAggregation.Services.WorkAggregationResilienceOptions.SectionName));
         services.Configure<MdmServiceOptions>(configuration.GetSection(MdmServiceOptions.SectionName));
         services.Configure<FakeMessagingProviderOptions>(configuration.GetSection(FakeMessagingProviderOptions.SectionName));
         services.AddOptions<SmtpProviderOptions>()
@@ -180,6 +187,20 @@ public static class DependencyInjection
             .AddHttpMessageHandler<TenantPropagationHandler>();
         services.AddHttpClient<IUserReferenceValidator, Diten.Platform.Infrastructure.Services.Auth.AuthServiceUserReferenceValidator>()
             .AddHttpMessageHandler<TenantPropagationHandler>();
+
+        /*
+         * WC-D1 (DCP-004 §2 D1) — THE GENERAL BRIDGE to modules that live in their own service.
+         *
+         * ONE provider class and ONE dispatcher class, multiplied by the rows in
+         * 'WorkAggregation:RemoteProviders'. Adding a module is adding a row; it is deliberately NOT adding a
+         * class, because N teams' bridge classes would mean N error-handling policies and N timeouts, and the
+         * first slow module would slow the whole board with nobody able to say which one.
+         *
+         * The ADDRESS is the operator's, written in configuration beside MdmService:BaseUrl. It is not read from
+         * the self-registration manifest: a manifest is client-supplied, and an address inside it is the party
+         * being called telling Platform where to send a caller's JWT.
+         */
+        services.AddRemoteWorkItemProviders(configuration);
 
         BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
         BsonSerializer.RegisterSerializer(new DecimalSerializer(BsonType.Decimal128));
@@ -361,6 +382,10 @@ public static class DependencyInjection
         // FIX-DOMAIN-SERVICE-CANONICAL — must run AFTER the domain/service lookups are seeded: pins catalog
         // Domain/Service to canonical Codes and fixes the 'Servicec' DisplayName typo. Marker-gated + idempotent.
         ModuleCatalogTaxonomyCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+        // FIX-DOMAIN-NORMALIZATION — runs AFTER the marker-gated canonicalization above and is itself NOT
+        // marker-gated: re-runnable and idempotent, so catalog rows that drifted after that one-shot ran
+        // (two spellings of one domain → the sidebar heading rendered twice) are healed on every startup.
+        ModuleCatalogDomainCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
         PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
 
@@ -481,6 +506,10 @@ public static class DependencyInjection
             // FIX-DOMAIN-SERVICE-CANONICAL — after the lookups are seeded: canonicalize catalog Domain/Service and
             // fix the 'Servicec' DisplayName typo. Marker-gated + idempotent.
             ModuleCatalogTaxonomyCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            // FIX-DOMAIN-NORMALIZATION — runs AFTER the marker-gated canonicalization above and is itself NOT
+            // marker-gated: re-runnable and idempotent, so catalog rows that drifted after that one-shot ran
+            // (two spellings of one domain → the sidebar heading rendered twice) are healed on every startup.
+            ModuleCatalogDomainCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
             PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         }

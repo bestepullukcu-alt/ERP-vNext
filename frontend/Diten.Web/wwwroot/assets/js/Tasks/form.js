@@ -1389,39 +1389,17 @@
     };
 
     /*
-     * The date fields, the way the golden reference does them.
+     * The date fields — delegated to assets/js/shared/diten-datefield.js.
      *
-     * A native <input type="date"> takes its display format from the OPERATING SYSTEM's locale, so an Arabic
-     * page still rendered gg.aa.yyyy — the page's own language never entered into it. flatpickr renders the
-     * calendar itself, and `dateFormat: 'Y-m-d'` keeps the value the input carries EXACTLY what the native
-     * control produced, so nothing about what the API receives changes.
+     * This function used to CONTAIN the flatpickr construction and the icon->open() binding. It was the only
+     * copy in the product, so every screen that copied this form's markup got the icon and none of the wiring.
+     * The behaviour moved to the shared component for the same reason the tag box's did: the markup contract is
+     * shared, so the behaviour it implies has to be too. This is now just "which inputs, on this page".
      */
     const enhanceDates = (root) => {
         const scope = root || global.document;
-        if (!scope) { return 0; }
-
-        const nodes = Array.from(scope.querySelectorAll('.flatpickr-date'))
-            .filter((node) => typeof node.flatpickr === 'function' && !node._flatpickr);
-
-        nodes.forEach((node) => {
-            node.flatpickr({ monthSelectorType: 'static', dateFormat: 'Y-m-d', allowInput: true });
-
-            /*
-             * THE LEADING ICON IS A CONTROL, NOT A PICTURE.
-             *
-             * It sits ON TOP of the field's inline start, so a user aiming at "the calendar" hits the glyph and
-             * not the input. Left unbound that is a dead icon — the same defect as a dead button, which this
-             * project shipped once and had reported as breakage. `allowInput: true` means the input itself does
-             * not open on focus either, so without this the icon would be the one obvious affordance that does
-             * nothing.
-             */
-            const icon = node.parentElement?.querySelector('.diten-field-icon');
-            if (icon) {
-                icon.addEventListener('click', () => node._flatpickr?.open());
-            }
-        });
-
-        return nodes.length;
+        if (!scope || !global.DitenDateField) { return 0; }
+        return global.DitenDateField.enhance(scope);
     };
 
     /* ── The checklist editor ─────────────────────────────────────────────────────────────────────────────

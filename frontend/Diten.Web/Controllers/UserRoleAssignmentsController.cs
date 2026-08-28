@@ -121,7 +121,12 @@ public sealed class UserRoleAssignmentsController : Controller
     private bool AddAuthHeaders()
     {
         _httpClient.DefaultRequestHeaders.Authorization = null;
-        var token = Request.Cookies["access_token"];
+        // BL-294 — read the token through AuthTokenCookies, NEVER Request.Cookies["access_token"] directly.
+        // The access token outgrows a single cookie (>3800 chars) and is written in chunks: the base cookie
+        // then holds the literal marker "chunks-N" and the token itself lives in access_tokenC1..CN. A direct
+        // read therefore sends `Bearer chunks-4` and the gateway 401s. GetAccessToken reassembles the chunks
+        // (and returns a short token unchanged), so this call site works in both shapes.
+        var token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request);
         if (!string.IsNullOrWhiteSpace(token))
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
