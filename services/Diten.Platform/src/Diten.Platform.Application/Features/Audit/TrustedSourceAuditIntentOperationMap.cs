@@ -1,0 +1,44 @@
+using Diten.Platform.Domain.Enums;
+
+namespace Diten.Platform.Application.Features.Audit;
+
+public static class TrustedSourceAuditIntentOperationMap
+{
+    private static readonly IReadOnlyDictionary<(string AggregateType, string Operation), (string EntityType, AuditOperation Operation)> Mappings =
+        new Dictionary<(string, string), (string, AuditOperation)>
+        {
+            [("CodeReservation", "CodeReserved")] = ("CodeReservation", AuditOperation.Create),
+            [("CodeReservation", "CodeConsumed")] = ("CodeReservation", AuditOperation.Update),
+            [("CodeReservation", "CodeBindingConfirmed")] = ("CodeReservation", AuditOperation.Update),
+            [("CodeReservation", "CodeBurned")] = ("CodeReservation", AuditOperation.Deactivate),
+            [("GlobalProduct", "GlobalProductDraftCreated")] = ("GlobalProduct", AuditOperation.Create),
+            [("ProductDefinitionRevision", "ProductDefinitionRevisionDraftCreated")] = ("ProductDefinitionRevision", AuditOperation.Create),
+            [("Gsku", "GskuDraftCreated")] = ("Gsku", AuditOperation.Create),
+            [("Gsku", "GskuDraftUpdated")] = ("Gsku", AuditOperation.Update),
+            [("FinishedGood", "FinishedGoodDraftCreated")] = ("FinishedGood", AuditOperation.Create),
+            [("Lsku", "LskuDraftCreated")] = ("Lsku", AuditOperation.Create),
+            [("ProductLegalEntityScopePolicy", "ProductLegalEntityScopePolicyCreated")] = ("ProductLegalEntityScopePolicy", AuditOperation.Create),
+            [("ProductLegalEntityScopePolicy", "ProductLegalEntityScopePolicyReplaced")] = ("ProductLegalEntityScopePolicy", AuditOperation.Update),
+            [("ProductLegalEntityScopePolicy", "ProductLegalEntityScopePolicyEnded")] = ("ProductLegalEntityScopePolicy", AuditOperation.Deactivate),
+            [("ProductLegalEntityScopeRolloutState", "ProductLegalEntityScopeEnforcementActivated")] = ("ProductLegalEntityScopeRolloutState", AuditOperation.Activate),
+            [("ProductLegalEntityScopeRolloutState", "ProductLegalEntityScopeEnforcementSuspended")] = ("ProductLegalEntityScopeRolloutState", AuditOperation.Suspend)
+        };
+
+    public static bool TryMap(
+        string aggregateType,
+        string operation,
+        out string entityType,
+        out AuditOperation mappedOperation)
+    {
+        if (Mappings.TryGetValue((aggregateType, operation), out var mapping))
+        {
+            entityType = mapping.EntityType;
+            mappedOperation = mapping.Operation;
+            return true;
+        }
+
+        entityType = string.Empty;
+        mappedOperation = AuditOperation.Unknown;
+        return false;
+    }
+}
