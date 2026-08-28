@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "moduleCode": "MOD-0355",
+  "physicalMutations": [
+    {
+      "id": "tenant-predicate-removal",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/ProcessModeling/PerformanceImprovement/PerformanceImprovementMongoPersistence.cs",
+      "expectedRedTest": "Tenant_CAS_idempotency_noop_and_cancellation_are_fail_closed",
+      "compileExitCode": 0,
+      "targetedExitCode": 1,
+      "expectedFailure": "cross-tenant request returned 200 instead of non-disclosing 404",
+      "restoredSha256": "066fcd1e4eb70369cbe40f5a103f2d4df5dcedd1b3ce92da52107560526ef02f"
+    },
+    {
+      "id": "published-version-create-fence-removal",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/ProcessModeling/PerformanceImprovement/PerformanceImprovementMongoPersistence.cs",
+      "expectedRedTest": "Create_requires_same_tenant_published_process_model_version",
+      "compileExitCode": 0,
+      "targetedExitCode": 1,
+      "expectedFailure": "non-Published ProcessModelVersion was accepted",
+      "restoredSha256": "066fcd1e4eb70369cbe40f5a103f2d4df5dcedd1b3ce92da52107560526ef02f"
+    },
+    {
+      "id": "opportunity-cas-removal",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/ProcessModeling/PerformanceImprovement/PerformanceImprovementMongoPersistence.cs",
+      "expectedRedTest": "Tenant_CAS_idempotency_noop_and_cancellation_are_fail_closed",
+      "compileExitCode": 0,
+      "targetedExitCode": 1,
+      "expectedFailure": "both concurrent stale-version writers succeeded",
+      "restoredSha256": "066fcd1e4eb70369cbe40f5a103f2d4df5dcedd1b3ce92da52107560526ef02f"
+    },
+    {
+      "id": "qualify-expected-outcome-guard-removal",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Modules/ProcessModeling/PerformanceImprovement/ProcessImprovementOpportunity.cs",
+      "expectedRedTest": "Qualify_requires_expected_outcome_and_positive_priority",
+      "compileExitCode": 0,
+      "targetedExitCode": 1,
+      "expectedFailure": "opportunity without ExpectedOutcome qualified",
+      "restoredSha256": "305730646e4ae7a2643e493b22328e046d3d131dcf7f309c1e8c188565c9e03c"
+    },
+    {
+      "id": "qualify-priority-rank-guard-removal",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Modules/ProcessModeling/PerformanceImprovement/ProcessImprovementOpportunity.cs",
+      "expectedRedTest": "Qualify_requires_expected_outcome_and_positive_priority",
+      "compileExitCode": 0,
+      "targetedExitCode": 1,
+      "expectedFailure": "opportunity without positive PriorityRank qualified",
+      "restoredSha256": "305730646e4ae7a2643e493b22328e046d3d131dcf7f309c1e8c188565c9e03c"
+    },
+    {
+      "id": "outcome-before-close-guard-removal",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Modules/ProcessModeling/PerformanceImprovement/ProcessImprovementOpportunity.cs",
+      "expectedRedTest": "Close_requires_outcome_and_expected_version",
+      "compileExitCode": 0,
+      "targetedExitCode": 1,
+      "expectedFailure": "opportunity without realized outcome closed",
+      "restoredSha256": "305730646e4ae7a2643e493b22328e046d3d131dcf7f309c1e8c188565c9e03c"
+    },
+    {
+      "id": "outcome-immutability-removal",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Modules/ProcessModeling/PerformanceImprovement/ProcessImprovementOutcome.cs",
+      "expectedRedTest": "Outcome_is_immutable_and_observed_time_is_server_utc",
+      "compileExitCode": 0,
+      "targetedExitCode": 1,
+      "expectedFailure": "Outcome Summary exposed a public setter",
+      "restoredSha256": "9db55bcf77bfc847f67b7821515511d3797a575062426c1355c30bf3400075b6"
+    },
+    {
+      "id": "business-participant-removal",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/ProcessModeling/PerformanceImprovement/PerformanceImprovementMongoPersistence.cs",
+      "expectedRedTest": "Every_four_participant_fault_rolls_back_then_succeeds_exactly_once",
+      "compileExitCode": 0,
+      "targetedExitCode": 1,
+      "expectedFailure": "success path contained zero business participant records",
+      "restoredSha256": "066fcd1e4eb70369cbe40f5a103f2d4df5dcedd1b3ce92da52107560526ef02f"
+    },
+    {
+      "id": "receipt-participant-removal",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/ProcessModeling/PerformanceImprovement/PerformanceImprovementMongoPersistence.cs",
+      "expectedRedTest": "Every_four_participant_fault_rolls_back_then_succeeds_exactly_once",
+      "compileExitCode": 0,
+      "targetedExitCode": 1,
+      "expectedFailure": "success path contained zero receipt participant records",
+      "restoredSha256": "066fcd1e4eb70369cbe40f5a103f2d4df5dcedd1b3ce92da52107560526ef02f"
+    },
+    {
+      "id": "audit-intent-participant-removal",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/ProcessModeling/PerformanceImprovement/PerformanceImprovementMongoPersistence.cs",
+      "expectedRedTest": "Every_four_participant_fault_rolls_back_then_succeeds_exactly_once",
+      "compileExitCode": 0,
+      "targetedExitCode": 1,
+      "expectedFailure": "success path contained zero audit-intent participant records",
+      "restoredSha256": "066fcd1e4eb70369cbe40f5a103f2d4df5dcedd1b3ce92da52107560526ef02f"
+    },
+    {
+      "id": "outbox-participant-removal",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/ProcessModeling/PerformanceImprovement/PerformanceImprovementMongoPersistence.cs",
+      "expectedRedTest": "Every_four_participant_fault_rolls_back_then_succeeds_exactly_once",
+      "compileExitCode": 0,
+      "targetedExitCode": 1,
+      "expectedFailure": "success path contained zero outbox participant records",
+      "restoredSha256": "066fcd1e4eb70369cbe40f5a103f2d4df5dcedd1b3ce92da52107560526ef02f"
+    }
+  ],
+  "securityPolicyForbiddenDispositions": [
+    {
+      "id": "fu16-permission-reuse",
+      "materialized": false,
+      "compiled": false,
+      "executed": false,
+      "reason": "Reusing an existing FU16 permission would silently authorize a new MOD-0355 operation.",
+      "testSourcePath": "services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/Modules/ProcessModeling/PerformanceImprovement/PerformanceImprovementFixtureTests.cs",
+      "executableInvariantTest": "Current_sixteen_entry_fu16_owner_manifest_rejects_every_additive_operation"
+    },
+    {
+      "id": "audit-invalid-pair-removal",
+      "materialized": false,
+      "compiled": false,
+      "executed": false,
+      "reason": "Deleting an approved negative pair would weaken the exact fail-closed audit matrix.",
+      "testSourcePath": "services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/Modules/ProcessModeling/PerformanceImprovement/PerformanceImprovementFixtureTests.cs",
+      "executableInvariantTest": "Producer_contract_is_exact_seven_positive_eleven_negative_and_closed_cartesian"
+    },
+    {
+      "id": "kpi-503-reclassification",
+      "materialized": false,
+      "compiled": false,
+      "executed": false,
+      "reason": "Reclassifying an unavailable authoritative KPI dependency would weaken the exact fail-closed 503 contract.",
+      "testSourcePath": "services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/Modules/ProcessModeling/PerformanceImprovement/PerformanceImprovementContractTests.cs",
+      "executableInvariantTest": "Kpi_dependency_gate_is_exact_503_with_zero_store_invocation"
+    }
+  ]
+}
