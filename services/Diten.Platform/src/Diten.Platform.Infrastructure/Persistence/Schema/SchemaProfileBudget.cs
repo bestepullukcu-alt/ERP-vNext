@@ -22,7 +22,11 @@ public sealed record SchemaProfileBudget(SchemaProfile Profile, int MaxCollectio
     public static readonly SchemaProfileBudget BusinessReferenceData =
         new(SchemaProfile.BusinessReferenceData, MaxCollections: 8, MaxLogicalIndexes: 18);
 
-    public static IReadOnlyList<SchemaProfileBudget> Declared { get; } = new[] { BusinessReferenceData };
+    public static readonly SchemaProfileBudget AccessGovernance =
+        new(SchemaProfile.AccessGovernance, MaxCollections: 5, MaxLogicalIndexes: 20);
+
+    public static IReadOnlyList<SchemaProfileBudget> Declared { get; } =
+        new[] { BusinessReferenceData, AccessGovernance };
 
     public static SchemaProfileBudget? ForOrDefault(SchemaProfile profile)
         => Declared.FirstOrDefault(b => b.Profile == profile);
