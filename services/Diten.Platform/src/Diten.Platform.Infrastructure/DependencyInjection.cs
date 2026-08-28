@@ -73,7 +73,7 @@ public static class DependencyInjection
                     ValidIssuer = jwtIssuer,
                     ValidAudience = jwtAudience,
                     IssuerSigningKeys = jwtRotationResolver.GetValidationKeys(),
-                    ClockSkew = TimeSpan.FromSeconds(30)
+                    ClockSkew = JwtValidationDefaults.ClockSkew
                 };
             });
 

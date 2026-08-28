@@ -42,7 +42,7 @@ public sealed class GatewayJwtAuthenticationHandler : AuthenticationHandler<Auth
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             IssuerSigningKeys = rotationResolver.GetValidationKeys(),
-            ClockSkew = TimeSpan.FromSeconds(30)
+            ClockSkew = JwtValidationDefaults.ClockSkew
         };
 
         try

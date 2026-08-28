@@ -1,6 +1,6 @@
 # Ürün Backlog — ARŞİV (kapanmış kayıtlar)
 
-> **98 kapanmış kayıt.** Buraya 2026-08-28'de `docs/product-backlog.md`'den TAŞINDILAR — silinmediler.
+> **99 kapanmış kayıt.** Buraya 2026-08-28'de `docs/product-backlog.md`'den TAŞINDILAR — silinmediler.
 > Kural K3: kayıt silinmez. Kapanmış bir kayıt, bir hatanın neden ve nasıl çözüldüğünü anlatan tek kaynak olabilir;
 > bu oturumda birkaç kez öyle oldu.
 >
@@ -2693,3 +2693,52 @@ kalan tek parça kendi kaydına taşındı, çünkü ayrı bir iştir.
   handler kaldırıldı. Commit `3ec9a340` + üstüne gelen tur.
 - **DEVRALAN KAYIT:** handler'ın kendisinin üç servisten silinmesi → **BL-316**. Bu blok kapandı,
   o iş orada açık. (Kural K4: aynı işe ikinci blok açılmıyor; devralan kaydın kendi numarası var.)
+### BL-297 — yeni bir worktree'de Platform açılmıyor; sebebi görünmüyor ve 51 dakika yedi (2026-08-27, ölçüldü, düzeltilmedi)
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ · kapanış 2026-08-28 (BL-296 turu)
+> *Geldiği bölüm:* Açık kararlar
+
+**KAPANIŞ GEREKÇESİ (2026-08-28, ölçüldü).** Kaydın dayandığı öncül artık DOĞRU DEĞİL. Kayıt "sır
+commit'lenemez, o yüzden her yeni worktree aynı duvara çarpacak" diyor. Ölçüm:
+
+```
+git show main:services/Diten.Platform/src/Diten.Platform.API/appsettings.Development.json
+  "ModuleRegistrationCredentials": { "Mdm": {
+      "Identifier": "ditenmdmservice",
+      "ActiveSecret": "local-development-internal-event-api-key-2026" } }
+```
+
+Değer main'de **commit'li**. `git worktree add … main` ile kurulan her yeni ağaç onu dosyayla birlikte
+alır; `Infrastructure/DependencyInjection.cs`'teki zorunlu sır doğrulaması geçer, Platform açılır. Kaydın
+tarif ettiği 51 dakikalık duvar bu ağaçlarda artık yok.
+
+- ⚠ **KAPSAM — bu yalnız GELİŞTİRME sırrıdır.** Değer bir yerel geliştirme sabiti (`…-2026`), üretim
+  kimlik bilgisi değil ve öyle muamele görmemeli. Kapanan şey "yeni worktree'de Platform açılmıyor";
+  "sırlar artık repoda saklanıyor" diye bir kural KAPANMADI.
+- ⚠ **BL-301 KAPANMIYOR.** BL-297'nin ikinci yüzü (`node_modules` 43 worktree'de boş) bu ölçümden
+  etkilenmiyor ve AÇIK kalıyor. Oradaki (a) seçeneği "BL-297 ile aynı betik" diyor — o gerekçe artık
+  yalnız `npm ci` tarafını kapsıyor.
+- Seçilmeyen seçenekler (a)–(d) tarihî metin olarak korundu; hiçbiri uygulanmadı, gerek kalmadı.
+- **Gelecek regresyon riski: 🟡** — koda değil dosyaya bağlı. `appsettings.Development.json` bir gün
+  `.gitignore`'a girerse ya da değer boşaltılırsa duvar aynen geri gelir ve bunu yasaklayan bir muhafız
+  YOK. Bugün doğru olan şey, doğru kaldığını kimseye söylemeyen bir dosya satırı.
+
+- Yaşandı: `fix/module-datain-normalization` turu ayrı bir worktree'de çalışıyordu ve canlı doğrulamayı
+  yapamadı. 51 dakika boyunca sebebi bulunamadı. Sebep koda değil kuruluma aitti.
+- **Ne oluyor:** `git worktree add … main` ile kurulan her yeni ağaçta
+  `Diten.Platform.API/appsettings.Development.json` main'deki hâliyle geliyor — yani
+  `ModuleRegistrationCredentials:Mdm:ActiveSecret` **BOŞ**. Platform bu sırrı açılışta zorunlu
+  doğruluyor (`Infrastructure/DependencyInjection.cs:551`) ve `SecretValidationException` ile ölüyor.
+  Platform ölünce: migration koşmaz · katalog değişmez · tarayıcı doğrulaması yapılamaz.
+- ⚠ Boş iskelet (`35370ace`, `17b2e867`) **yetmiyor**. Yapıyı görünür yaptı ama değeri vermiyor —
+  ve veremez, çünkü sır commit'lenemez. Yani her yeni worktree aynı duvara çarpacak.
+- Geliştirme değeri bugün YALNIZ ana çalışma ağacında, commit edilmemiş hâlde duruyor.
+  Yeni ağaç kuran kişinin onu nereden alacağı **hiçbir yerde yazılı değil**.
+- **Ölçülen maliyet:** bir tur × 51 dakika. Tekrarlanabilir — her worktree için bir kez.
+- Seçenekler (hiçbiri seçilmedi):
+  · (a) `docs/dev-environment.md`'ye "yeni worktree kurunca şunu kopyala" adımı — en ucuz, ama disiplin
+  · (b) `git worktree add` sarmalayan bir betik — sırrı ana ağaçtan kopyalar; disiplini mimariye çevirir
+  · (c) sırrı gerçekten isteğe bağlı yapmak — ama o zaman MDM kaydı sessizce çalışmaz, ki bu daha kötü
+  · (d) dotnet user-secrets (csproj'da `UserSecretsId` ZATEN VAR: 587d48b8-25d7-414f-a302-fe1078fb12ea) —
+    makine başına bir kez, tüm worktree'ler paylaşır. ⚠ Bu, mevcut altyapının kullanılmayan yarısı.
+- **Gelecek regresyon riski: 🟡** — kod değil kurulum; ama her paralel tur bir kez ödüyor ve
+  belirti (`Platform açılmıyor`) sebebi (`sır yok`) göstermiyor. Kayıp zaman ölçüldü, tekrar edecek.

@@ -4974,7 +4974,25 @@ süiti BRD hariç arka arkaya üç kez:
 - **Gelecek regresyon riski: 🟡** — yalnız rotasyon anında görünür, yani en kötü zamanda.
 
 ### BL-296 — `ClockSkew.Zero` iki serviste, 30 sn diğerlerinde (2026-08-27, ölçüldü)
-> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+> **DURUM:** DÜZELTİLDİ — dalda (`fix/clock-skew-consistency`, 2026-08-28) · merge sonrası KAPANDI'ya taşınacak
+> · **SAHİP:** SAHİPSİZ
+
+**DÜZELTME (2026-08-28).** Dokuz gelen-istek doğrulayıcısı tek bir sabite bağlandı:
+`Diten.BuildingBlocks.Security.Secrets.JwtValidationDefaults.ClockSkew` = **30 sn**.
+
+- **Neden 30 sn, neden Zero değil** — ölçüme göre: kütüphane varsayılanı 5 dk (yani 30 sn zaten on kat
+  sıkı) · erişim belirteci ömrü 15 dk (kod varsayılanı) / 120 dk (AuthService appsettings) — 30 sn,
+  kısasının %3,3'ü · dokuz doğrulayıcının **yedisi** zaten 30 sn'deydi · Zero'da hizalamak Gateway,
+  Platform, HCM ve web kabuğunu gerçek saat kaymasına karşı **sıkılaştırırdı**, oysa hata gevşeklik değil
+  **anlaşmazlık**.
+- **Davranışı DEĞİŞEN üç yüzey (hepsi gevşedi, hiçbiri sıkılaşmadı):** MdmService · DevEnablementService ·
+  `PlatformActorHangfireAuthorizationFilter`. Zero → 30 sn. Hepsi sistemin geri kalanıyla aynı hizada.
+- `AuthService/TokenService.cs:170` kaydın sandığı gibi çelişki değildi: orada `ValidateLifetime = false`,
+  yani kütüphane `ClockSkew`'e **hiç bakmıyor**. Ölü satır kaldırıldı, yerine sebebi yazıldı.
+- **MUHAFIZ:** `tests/architecture/…/JwtClockSkewGuardTests.cs` — üretim kodunda kendi `ClockSkew`
+  değerini yazan ya da `ValidateLifetime = true` deyip sabiti hiç anmayan dosyada test kırılır. İkisi de
+  kırdırılıp kırmızıya döndüğü ölçüldü, sonra geri alındı.
+- **Gelecek regresyon riski: 🟢** — değer tek satırda; ikinci bir yere yazmak muhafızı kırmızıya çevirir.
 
 `ClockSkew = TimeSpan.Zero`: `MdmService/Program.cs:37` · `DevEnablementService/Program.cs:51`
 (ayrıca `AuthService/TokenService.cs:170` ve `PlatformActorHangfireAuthorizationFilter.cs:84` — ikisi de
@@ -4983,30 +5001,6 @@ doğrulama yardımcıları, ayrı değerlendirilmeli).
 - **Sonuç:** saatler birkaç saniye kayarsa MDM ve DevEnablement, diğer her servisin kabul ettiği bir belirteci
   reddeder. Tutarsızlık kasıtlı mı, karar verilmedi.
 - **Gelecek regresyon riski: 🟢** — tek bir değere hizalamak ucuz; hangi değer olduğu ürün/güvenlik kararı.
-
-### BL-297 — yeni bir worktree'de Platform açılmıyor; sebebi görünmüyor ve 51 dakika yedi (2026-08-27, ölçüldü, düzeltilmedi)
-> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
-
-- Yaşandı: `fix/module-datain-normalization` turu ayrı bir worktree'de çalışıyordu ve canlı doğrulamayı
-  yapamadı. 51 dakika boyunca sebebi bulunamadı. Sebep koda değil kuruluma aitti.
-- **Ne oluyor:** `git worktree add … main` ile kurulan her yeni ağaçta
-  `Diten.Platform.API/appsettings.Development.json` main'deki hâliyle geliyor — yani
-  `ModuleRegistrationCredentials:Mdm:ActiveSecret` **BOŞ**. Platform bu sırrı açılışta zorunlu
-  doğruluyor (`Infrastructure/DependencyInjection.cs:551`) ve `SecretValidationException` ile ölüyor.
-  Platform ölünce: migration koşmaz · katalog değişmez · tarayıcı doğrulaması yapılamaz.
-- ⚠ Boş iskelet (`35370ace`, `17b2e867`) **yetmiyor**. Yapıyı görünür yaptı ama değeri vermiyor —
-  ve veremez, çünkü sır commit'lenemez. Yani her yeni worktree aynı duvara çarpacak.
-- Geliştirme değeri bugün YALNIZ ana çalışma ağacında, commit edilmemiş hâlde duruyor.
-  Yeni ağaç kuran kişinin onu nereden alacağı **hiçbir yerde yazılı değil**.
-- **Ölçülen maliyet:** bir tur × 51 dakika. Tekrarlanabilir — her worktree için bir kez.
-- Seçenekler (hiçbiri seçilmedi):
-  · (a) `docs/dev-environment.md`'ye "yeni worktree kurunca şunu kopyala" adımı — en ucuz, ama disiplin
-  · (b) `git worktree add` sarmalayan bir betik — sırrı ana ağaçtan kopyalar; disiplini mimariye çevirir
-  · (c) sırrı gerçekten isteğe bağlı yapmak — ama o zaman MDM kaydı sessizce çalışmaz, ki bu daha kötü
-  · (d) dotnet user-secrets (csproj'da `UserSecretsId` ZATEN VAR: 587d48b8-25d7-414f-a302-fe1078fb12ea) —
-    makine başına bir kez, tüm worktree'ler paylaşır. ⚠ Bu, mevcut altyapının kullanılmayan yarısı.
-- **Gelecek regresyon riski: 🟡** — kod değil kurulum; ama her paralel tur bir kez ödüyor ve
-  belirti (`Platform açılmıyor`) sebebi (`sır yok`) göstermiyor. Kayıp zaman ölçüldü, tekrar edecek.
 
 ### BL-301 — yeni worktree'de frontend testleri koşulamıyor; 49 worktree'nin 43'ünde `node_modules` boş (2026-08-28, ölçüldü, düzeltilmedi)
 > **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
