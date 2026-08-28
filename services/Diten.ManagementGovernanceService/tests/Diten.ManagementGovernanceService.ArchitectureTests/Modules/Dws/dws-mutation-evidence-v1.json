@@ -4,8 +4,9 @@
     {
       "id": "M01-canonical-property-order",
       "disposition": "expected-red",
+      "runId": "20260828-m01-canonical-property-order",
       "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Modules/Dws/DwsDomain.cs",
-      "restoredSha256": "a34d7da11f6f352ea556e68b09c7d76e1f4ff8d976d5c1bf95d0f1ed3504e6cb",
+      "restoredSha256": "4e742a348a869e76ed4ac0db9415a8bdaf4707b25ff5e40a1a9c61ec9698a6ed",
       "compileExit": 0,
       "targetedExit": 1,
       "failureText": "2 canonical byte-order failures",
@@ -15,8 +16,9 @@
     {
       "id": "M02-dependency-cycle-guard",
       "disposition": "expected-red",
+      "runId": "20260828-m02-dependency-cycle-guard",
       "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Modules/Dws/DwsDomain.cs",
-      "restoredSha256": "a34d7da11f6f352ea556e68b09c7d76e1f4ff8d976d5c1bf95d0f1ed3504e6cb",
+      "restoredSha256": "4e742a348a869e76ed4ac0db9415a8bdaf4707b25ff5e40a1a9c61ec9698a6ed",
       "compileExit": 0,
       "targetedExit": 1,
       "failureText": "expected DwsConflictException; no exception",
@@ -26,6 +28,7 @@
     {
       "id": "M03-atomic-participant",
       "disposition": "expected-red",
+      "runId": "20260828-m03-atomic-participant",
       "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/Dws/DwsPersistenceManifest.cs",
       "restoredSha256": "70374a2af3697852a5cf323224468e4da39d3f2f89734cec89fa328042a7c2ae",
       "compileExit": 0,
@@ -47,8 +50,8 @@
       "id": "G02-bind-live-mongo-27017",
       "disposition": "security-policy-forbidden",
       "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs",
-      "restoredSha256": "81dbf9eda082b698e200301d8bd419420514b4fc13f5444e363256b722d163ec",
-      "failureText": "mutant would remove the exact local-test gate or bind protected developer Mongo",
+      "restoredSha256": "934460a3a80b1476f0a46cf7938705487a9cbf8b4a69dacddf5df1b207a014d6",
+      "failureText": "mutant would bind or reuse protected Mongo ports 27017, 27018 or 27019",
       "testType": "Diten.ManagementGovernanceService.ArchitectureTests.Modules.Dws.DwsArchitectureTests",
       "testMethod": "Default_off_boundary_exits_without_runtime_activation"
     }

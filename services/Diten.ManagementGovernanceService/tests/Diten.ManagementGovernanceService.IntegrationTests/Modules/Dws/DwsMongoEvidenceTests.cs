@@ -1,5 +1,6 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Diten.ManagementGovernanceService.Domain.Modules.Dws;
 using Diten.ManagementGovernanceService.Persistence.Modules.Dws;
 using Xunit;
 
@@ -75,9 +76,11 @@ public sealed class DwsMongoEvidenceTests(DisposableDwsMongo mongo)
         Assert.Equal(2, revision["Version"].AsInt32);
 
         var stale = BuildMutation("UpdateStructureMetadata", tenant, expectedVersion: 1, existingId: replay.Participants[0].Id);
-        await Assert.ThrowsAsync<InvalidOperationException>(() => writer.ExecuteAsync(stale));
+        Assert.Equal(DwsErrors.ConcurrencyConflict,
+            (await Assert.ThrowsAsync<DwsConflictException>(() => writer.ExecuteAsync(stale))).Code);
         var foreign = BuildMutation("UpdateStructureMetadata", Guid.NewGuid(), expectedVersion: 2, existingId: replay.Participants[0].Id);
-        await Assert.ThrowsAsync<InvalidOperationException>(() => writer.ExecuteAsync(foreign));
+        Assert.Equal(DwsErrors.ConcurrencyConflict,
+            (await Assert.ThrowsAsync<DwsConflictException>(() => writer.ExecuteAsync(foreign))).Code);
         Assert.Equal(0, await CountTenantAsync(context, foreign.TenantId));
     }
 
@@ -111,8 +114,8 @@ public sealed class DwsMongoEvidenceTests(DisposableDwsMongo mongo)
         var context = Context("unknown_exhausted");
         await new DwsMongoIndexInitializer(context).InitializeAsync();
         var mutation = BuildMutation("CreateStructure", Guid.NewGuid());
-        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => new DwsMongoAtomicWriter(context, new UnknownBeforeCommitter(3)).ExecuteAsync(mutation));
-        Assert.Equal("dws_commit_indeterminate", error.Message);
+        var error = await Assert.ThrowsAsync<DwsValidationException>(() => new DwsMongoAtomicWriter(context, new UnknownBeforeCommitter(3)).ExecuteAsync(mutation));
+        Assert.Equal(DwsErrors.CommitIndeterminate, error.Code);
         Assert.Equal(0, await CountTenantAsync(context, mutation.TenantId));
     }
 
@@ -124,8 +127,8 @@ public sealed class DwsMongoEvidenceTests(DisposableDwsMongo mongo)
         var context = new DwsMongoContext(standalone.Client, "mod0354_b02_standalone");
         await new DwsMongoIndexInitializer(context).InitializeAsync();
         var mutation = BuildMutation("CreateStructure", Guid.NewGuid());
-        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => new DwsMongoAtomicWriter(context).ExecuteAsync(mutation));
-        Assert.Equal("dws_transaction_unavailable", error.Message);
+        var error = await Assert.ThrowsAsync<DwsValidationException>(() => new DwsMongoAtomicWriter(context).ExecuteAsync(mutation));
+        Assert.Equal(DwsErrors.TransactionUnavailable, error.Code);
         Assert.Equal(0, await CountTenantAsync(context, mutation.TenantId));
     }
 

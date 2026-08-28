@@ -15,7 +15,7 @@ public sealed class DwsMutationEvidenceTests
         foreach(var entry in entries)
         {
             var source=Path.Combine(root,entry.GetProperty("sourcePath").GetString()!);Assert.True(File.Exists(source));var hash=Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(source))).ToLowerInvariant();Assert.Equal(entry.GetProperty("restoredSha256").GetString(),hash);Assert.False(string.IsNullOrWhiteSpace(entry.GetProperty("failureText").GetString()));
-            if(entry.GetProperty("disposition").GetString()=="expected-red"){Assert.Equal(0,entry.GetProperty("compileExit").GetInt32());Assert.NotEqual(0,entry.GetProperty("targetedExit").GetInt32());}
+            if(entry.GetProperty("disposition").GetString()=="expected-red"){Assert.False(string.IsNullOrWhiteSpace(entry.GetProperty("runId").GetString()));Assert.Equal(0,entry.GetProperty("compileExit").GetInt32());Assert.NotEqual(0,entry.GetProperty("targetedExit").GetInt32());}
             var typeName=entry.GetProperty("testType").GetString()!;var project=typeName.Contains(".IntegrationTests.",StringComparison.Ordinal)?"Diten.ManagementGovernanceService.IntegrationTests":typeName.Contains(".ArchitectureTests.",StringComparison.Ordinal)?"Diten.ManagementGovernanceService.ArchitectureTests":"Diten.ManagementGovernanceService.Tests";var assembly=Assembly.LoadFrom(Path.Combine(root,"services/Diten.ManagementGovernanceService/tests",project,"bin",configuration,"net8.0",project+".dll"));var type=assembly.GetType(typeName,true)!;Assert.NotNull(type.GetMethod(entry.GetProperty("testMethod").GetString()!,BindingFlags.Public|BindingFlags.Instance));
         }
     }
