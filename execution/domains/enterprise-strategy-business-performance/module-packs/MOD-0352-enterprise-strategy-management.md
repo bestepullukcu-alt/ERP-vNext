@@ -27,6 +27,12 @@ authorized_slice: strategy-link-contract-reconciliation
 > Project link-only validation. It grants no persistence, API, frontend, Gateway, WorkCenter, migration,
 > deployment or production activation authority.
 
+> **WorkCenter onboarding amendment — DRAFT / NON-EXECUTABLE / DEFAULT-OFF (2026-08-28):** the DCP-004
+> field/capability/action/permission handoff is recorded in
+> `../workcenter-provider-onboarding-evidence.md`. Runtime provider/API/frontend configuration remains blocked:
+> existing Strategy records have no authoritative `TenantId`, and the approved work explicitly excludes schema
+> or data migration. The existing `TENANT_SAFETY_NOT_READY` 503 boundary must not be bypassed.
+
 ## 1. Module Summary
 
 MOD-0352 owns Enterprise Strategy goal, objective, cascade, planning-cycle and strategy-alignment semantics.
@@ -62,6 +68,7 @@ Governance authority is exact:
 - `execution/domains/enterprise-strategy-business-performance/module-packs/MOD-0352-enterprise-strategy-management.md`
 - `execution/domains/enterprise-strategy-business-performance/module-packs/README.md`
 - `execution/portfolio/delivery-capability-packs/DCP-005-management-governance-core.md`
+- `execution/domains/enterprise-strategy-business-performance/workcenter-provider-onboarding-evidence.md`
 
 Implementation authority is exact:
 
