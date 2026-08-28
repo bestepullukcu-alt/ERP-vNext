@@ -18,7 +18,7 @@ delivery_capability_pack: DCP-005
 gate_2: blocked-for-protected-hazards
 production_authority: none
 execution_activation: none
-authorized_slice: security-perimeter-only
+authorized_slice: security-perimeter-and-read-only-inventory
 ---
 
 # CAND-CAP-0007-FU01 — Enterprise Strategy Security, Tenancy & Data Migration Foundation
@@ -33,6 +33,14 @@ authorized_slice: security-perimeter-only
 > assignment, Gate-2 mutation, uploads, frontend, Gateway, WorkCenter, production activation, deployment or
 > secret/key authority. The broader migration foundation remains non-executable until its unchecked gates
 > close.
+
+> **Bounded amendment — READ-ONLY-INVENTORY / READY-FOR-DEV / NON-MIGRATING / NON-RUNTIME / NO-WRITE
+> (2026-08-29):** authority is limited to a manually invoked inventory reader, its offline contract tests and
+> the exact evidence artifacts listed in §5. The reader may inspect only a human-designated target data copy
+> after the explicit environment gate in §8 is satisfied. It grants no runtime DI, API, background job,
+> automatic test-database access, index creation, schema/data mutation, tenant assignment, migration,
+> activation, frontend, Gateway, deployment, credential or secret authority. An inventory run is evidence,
+> not a tenant-ownership decision and not permission to produce a WorkCenter row.
 
 ## 1. Module Summary
 
@@ -78,6 +86,10 @@ that code safe to inspect and migrate without creating a second Demand, task, ap
 - Real MongoDB and authenticated HTTP foundation tests.
 - BL-030 BSON date representation decision.
 
+The bounded read-only inventory amendment covers only collection-name discovery, exact document counts,
+existing index metadata, field-name/BSON-type prevalence and metadata digests. It does not inspect or export
+business values, infer tenant ownership, or classify an unknown collection without a named human owner.
+
 ### Out of scope
 
 - Schema/entity/data migration and any write to existing business documents.
@@ -102,6 +114,18 @@ this pack's security middleware. This override supplies executable contract evid
 the tenant migration gate.
 - Changes to MOD-0023, MOD-0024, MOD-0117, MOD-0288 or shared evidence systems.
 - Gateway route implementation.
+
+### Read-only inventory boundary — bounded and non-runtime
+
+The inventory tool is a manual evidence utility, not service runtime. It is not registered in `Program.cs`,
+dependency injection, a controller, a hosted service, a migration or the default test suite. It can run only
+when all manual target-copy variables in §8 are present and the explicit acknowledgement has the exact
+approved value. A missing, malformed or inconsistent gate stops before `MongoClient` construction.
+
+Permitted Mongo operations are limited to `listCollectionNames`, `countDocuments`, `listIndexes` and bounded
+schema-shape aggregation that emits only field names, BSON type names and counts. `find` results and business
+field values are never written to the evidence artifacts. Every unlisted collection is reported as
+`unreviewed` and blocks any later migration plan; it is never silently ignored or assigned to ES.
 
 ## 3. Owned Objects
 
@@ -172,6 +196,7 @@ Only these governance files are authorized:
 - `execution/domains/enterprise-strategy-business-performance/module-packs/CAND-CAP-0007-FU01-enterprise-strategy-security-tenancy-data-migration.md`
 - `execution/portfolio/blueprint-master-plan-reconciliation.md`
 - `execution/portfolio/delivery-capability-packs/DCP-005-management-governance-core.md`
+- `docs/audits/enterprise-strategy-security-tenancy-migration/README.md`
 
 ### Bounded SECURITY-PERIMETER implementation scope
 
@@ -186,6 +211,25 @@ Only these governance files are authorized:
 - `services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.Application/DeliveryExecutionManagement/Shared/DeliveryExecutionManagementPlatform.cs`
 - `services/Diten.EnterpriseStrategyService/tests/**` only for authentication, tenant-context, permission,
   action-inventory and default-deny evidence
+
+### Bounded READ-ONLY-INVENTORY implementation and evidence scope
+
+This governance-only checkpoint may create the evidence-directory `README.md` listed above. Only a later
+explicitly approved implementation may create or modify these exact paths:
+
+- `services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.Application/Common/Tenancy/EnterpriseStrategyCollectionInventoryContracts.cs`
+- `services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.Persistence/Evidence/ReadOnlyEnterpriseStrategyCollectionInventory.cs`
+- `services/Diten.EnterpriseStrategyService/tools/Diten.EnterpriseStrategy.ReadOnlyInventory/Diten.EnterpriseStrategy.ReadOnlyInventory.csproj`
+- `services/Diten.EnterpriseStrategyService/tools/Diten.EnterpriseStrategy.ReadOnlyInventory/Program.cs`
+- `services/Diten.EnterpriseStrategyService/tests/Diten.Application.Tests/Tenancy/EnterpriseStrategyCollectionInventoryContractTests.cs`
+- `docs/audits/enterprise-strategy-security-tenancy-migration/collection-inventory-v1.json`
+- `docs/audits/enterprise-strategy-security-tenancy-migration/collection-inventory-v1.md`
+
+The tool project may reference Application and Persistence, but it is not added to the service solution,
+runtime project graph or production composition. MongoDB Driver calls remain inside the exact Persistence
+reader. The contract test is offline and may validate evidence/schema invariants only; it must not connect to
+MongoDB. The generated JSON/Markdown evidence files are absent until a successful manual run; placeholders
+must not be presented as measured evidence.
 
 ### Future implementation scope
 
@@ -233,6 +277,8 @@ directory.
 - `execution/portfolio/**` and `execution/registries/**`
 - archive/frozen paths
 - Candidate identities in any runtime path or literal
+- for this read-only inventory amendment, all runtime/test/tool/evidence paths outside its exact allowlist
+  above
 
 Additional protected hazards pending Gate 2:
 
@@ -266,6 +312,21 @@ Additional protected hazards pending Gate 2:
 - Unknown tenant ownership is quarantined; default-tenant assignment is forbidden.
 - Frontend uses Gateway `5000`; ES canonical local port is `5102`.
 - Existing gateway port `5004` is AS-IS evidence, not an approved target.
+- Read-only inventory is manual and fail-closed. It requires all of:
+  `ESBP_INVENTORY_MONGO_URI`, `ESBP_INVENTORY_DATABASE`, `ESBP_INVENTORY_TARGET_COPY_ID`,
+  `ESBP_INVENTORY_RUN_ID`, and
+  `ESBP_INVENTORY_ACKNOWLEDGE_READ_ONLY_TARGET_COPY=I_ACKNOWLEDGE_READ_ONLY_TARGET_COPY`.
+- `ESBP_INVENTORY_MONGO_URI` is consumed in memory only. Connection strings, credentials, hosts and query
+  values are forbidden in committed evidence, console output and test snapshots.
+- The designated database must be a named target copy. A listening local MongoDB process, the configured
+  `DitenEnterpriseDb` name, or a developer database is not by itself proof that the target-copy gate is met.
+- The inventory path performs zero write commands and zero schema commands. `insert`, `update`, `replace`,
+  `delete`, `findAndModify`, `bulkWrite`, `create`, `drop`, `renameCollection`, `createIndexes`, `dropIndexes`,
+  `$out`, `$merge`, transactions and migration methods are forbidden.
+- `MongoDbIndexConfigurations.EnsureIndexesAsync`, every ES `*MongoMigration.EnsureAppliedAsync` method and
+  `DbInitializer` are forbidden in the inventory call graph.
+- The normal `dotnet test` path performs no Mongo connection for this slice, creates no database and calls no
+  production index initializer. Only the manually invoked tool may access the target copy.
 - Candidate identity strings are governance-only and forbidden at runtime.
 - JWT contract is exact: issuer `diten-auth-service`, audience `diten-erp`, tenant claim `tenant_id`, actor
   claim `sub`, actor type `actor_type`, and exact ordinal `permission` claims. Signing material comes from
@@ -334,6 +395,12 @@ None. No frontend controller, view, JavaScript, RESX, menu, permission manifest 
 | Verification count/checksum mismatch | Cutover blocked; rollback invoked |
 | Fake seed enabled in production | Startup fails or skips by explicit safe configuration; no demo writes |
 | BL-030 unsafe multi-date sort introduced | Real-Mongo guard fails |
+| Manual target-copy environment gate missing or malformed | Stop before `MongoClient` construction; evidence files remain absent |
+| Target database identity differs from the acknowledged target copy | Stop before collection enumeration |
+| Inventory command attempts a write/schema operation | Executable command allowlist rejects it; zero mutation |
+| Collection exists outside the reviewed matrix | Emit `unreviewed`; later migration remains blocked |
+| Evidence contains a connection string, credential, host or sampled business value | Evidence validation fails; artifact is not accepted |
+| Inventory is invoked from service startup, DI, API, hosted worker or automatic test discovery | Architecture/contract test fails |
 
 ## 14. Authorization Convention
 
@@ -394,6 +461,20 @@ Gateway work requires a separate, explicitly approved `integration-agent` task a
 27. Until tenant ownership is represented in persistence, the bounded perimeter does not claim tenant-safe
     business reads/writes; such endpoints remain unavailable/fail-closed.
 28. Uploads and all Gate-2 hazards remain unreachable through the bounded perimeter.
+29. The read-only inventory utility cannot construct a Mongo client unless all five exact manual target-copy
+    gate variables are present and the acknowledgement matches ordinally.
+30. An authorized inventory run records collection names, exact counts, existing index metadata,
+    field-name/BSON-type prevalence and deterministic metadata digests without exporting business values.
+31. The inventory call graph has zero write/schema commands, does not call `EnsureIndexesAsync`, any ES
+    `EnsureAppliedAsync` migration or `DbInitializer`, and does not start a transaction.
+32. Normal build/test execution creates no Mongo connection or database for this slice; the offline contract
+    test validates the evidence schema and prohibited-call invariants without a target-copy URI.
+33. Every collection is classified `es-owned`, `shared`, `unknown` or `migration-control`; `unknown` and
+    `shared` remain non-migratable until a named mapping owner/data steward records a disposition.
+34. A generated inventory artifact contains no Mongo URI, host, credential, raw document, sampled business
+    value or candidate runtime identity.
+35. Completing this inventory does not change the exact WorkCenter `TENANT_SAFETY_NOT_READY` 503/zero-read
+    boundary and grants no successful projection authority.
 
 ## 17. Test Expectations
 
@@ -433,6 +514,13 @@ Gateway work requires a separate, explicitly approved `integration-agent` task a
 - Candidate preflight and runtime-literal scan.
 - Targeted real-Mongo integration/E2E commands defined by the implementation test project.
 
+The read-only inventory amendment has a separate manual evidence command defined by the future tool project.
+It is never included in `dotnet test services/Diten.EnterpriseStrategyService`. Before a manual run, the
+operator records the target-copy identifier and run identifier without committing the Mongo URI. After the
+run, the offline contract test validates the two generated evidence artifacts. Repository-wide
+`tests/architecture/TenantArchitecture.ArchitectureTests` must prove that no per-run database, automatic
+Mongo access or `EnsureIndexesAsync` call was introduced.
+
 No DataTable verifier or RESX check applies because `shell: none`.
 
 ## 18. Ready-for-dev Checklist
@@ -444,6 +532,10 @@ No DataTable verifier or RESX check applies because `shell: none`.
 - [x] Exact bounded implementation file list is approved in §5.
 - [x] JWT issuer/audience/key source and permission claim contract are confirmed for the bounded slice.
 - [x] Tenant claim/header resolution and error semantics are approved for request gating.
+- [x] Human approved governance preparation for the bounded READ-ONLY-INVENTORY amendment on 2026-08-29.
+- [x] Exact future inventory implementation/evidence allowlist and manual environment gate are fixed in §5/§8.
+- [x] Explicit user authorization dated 2026-08-28 permits the bounded inventory implementation as part of
+  the Enterprise Strategy tenant/auth retrofit; the manual target-copy run remains separately gated by §8.
 - [ ] BaseEntity scalar UTC/BSON representation decision is approved.
 - [ ] Collection inventory has been executed read-only against the target data copy.
 - [ ] Every collection has a mapping owner and disposition.
@@ -465,6 +557,13 @@ schema/data migration, tenant-safe business endpoint activation and full-pack co
 Counts must be measured with exact collection-level `countDocuments`, existing indexes captured with
 `listIndexes`, representative schemas sampled without exporting sensitive values, and source checksums
 recorded before changes. The table is a planning contract; no count is guessed in this draft.
+
+For the bounded inventory slice, “representative schema” means field-name and BSON-type frequency only. Raw
+documents and field values are never exported. The generated evidence must identify the manual target copy by
+non-secret `TargetCopyId`, include the run ID and UTC instant, bind a deterministic digest of the allowed
+metadata, and record the named mapping owner/disposition separately from the machine measurement. The local
+`DitenEnterpriseDb` configuration is not assumed to be the target copy and its apparent ES ownership is not
+treated as proof because Diten.Web also references that database name.
 
 | Collection / aggregate | Count measurement | TenantId now | Tenant source / deterministic rule | Ambiguous behavior / quarantine | Index change | Retry / idempotency | Verification | Rollback | Gate 2 |
 |---|---|---:|---|---|---|---|---|---|---|
@@ -543,3 +642,5 @@ free-text identity is projected to WorkCenter.
 - Separate BPM process-model/version module pack.
 - Enterprise Architect allocation of the future canonical MOD identity.
 - Reconciliation of final migration evidence into DCP-005 §20 after implementation.
+- Execute the manually gated read-only collection inventory against a human-designated target copy and obtain
+  named mapping-owner/data-steward dispositions; governance preparation alone does not satisfy this item.
