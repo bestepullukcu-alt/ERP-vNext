@@ -7,7 +7,7 @@ shell: none
 golden_reference: none
 entity_base: BaseEntity
 entity_base_namespace: Diten.Domain.Common
-status: draft
+status: ready-for-dev
 owner: ali.tufanoglu / enterprise-architect
 branch: feature/esbp/cand-cap-0007-fu01-security-tenancy-data-migration
 started: 2026-07-27
@@ -16,6 +16,9 @@ form_field_count: 0
 parent: MOD-0352
 delivery_capability_pack: DCP-005
 gate_2: blocked-for-protected-hazards
+production_authority: none
+execution_activation: none
+authorized_slice: security-perimeter-only
 ---
 
 # CAND-CAP-0007-FU01 — Enterprise Strategy Security, Tenancy & Data Migration Foundation
@@ -24,10 +27,12 @@ gate_2: blocked-for-protected-hazards
 > written into runtime code, routes, permission prefixes, Mongo collection names, events, jobs or
 > configuration literals.
 
-> **Draft / no-code guard:** This module pack is planning-only. It authorizes no production code, migration
-> script, test implementation, gateway edit or data mutation. Production work requires DCP-005 execution
-> readiness, this pack's explicit promotion to `approved` / `ready-for-dev`, the correct implementation
-> branch and all applicable Control Tower gates.
+> **Bounded amendment — SECURITY-PERIMETER / READY-FOR-DEV / NON-MIGRATING / DEFAULT-DENY (2026-08-28):**
+> implementation authority is limited to ES API JWT authentication, trusted tenant-context resolution,
+> fail-closed permission enforcement and their tests. It grants no schema/data migration, default-tenant
+> assignment, Gate-2 mutation, uploads, frontend, Gateway, WorkCenter, production activation, deployment or
+> secret/key authority. The broader migration foundation remains non-executable until its unchecked gates
+> close.
 
 ## 1. Module Summary
 
@@ -61,9 +66,9 @@ that code safe to inspect and migrate without creating a second Demand, task, ap
 
 ### In scope
 
-- Authentication scheme and JWT claim validation inside the ES API.
-- Fail-closed permission evaluation.
-- Server-resolved tenant and current-actor contexts.
+- Authentication scheme and JWT claim validation inside the ES API for the bounded security-perimeter slice.
+- Fail-closed permission evaluation; missing or unmapped permission metadata never grants access.
+- Server-resolved tenant and current-actor contexts for request gating only; no entity or persistence mutation.
 - Tenant/audit/deletion/concurrency fields and tenant-enforcing persistence behavior.
 - Idempotent write-command contract.
 - Read-only collection inventory and collection-specific migration design.
@@ -75,6 +80,10 @@ that code safe to inspect and migrate without creating a second Demand, task, ap
 
 ### Out of scope
 
+- Schema/entity/data migration and any write to existing business documents.
+- Default-tenant assignment or inference from legacy records.
+- Enabling an endpoint whose tenant ownership cannot be proven by the current contract.
+- `UploadsController` execution or changes under `Data/uploads/**`.
 - New Strategy, Demand, DWS, BPM or WorkCenter business features.
 - Demand lifecycle changes; canonical Demand SoR remains MOD-0117.
 - TaskAggregate migration/deletion/deprecation before Gate 2 PASS.
@@ -147,11 +156,27 @@ Business semantic versions must use explicit names such as `TemplateVersionNumbe
 
 ## 5. Repo Scope
 
-### This authoring task
+### Governance reconciliation
 
-Only this module-pack file is authorized:
+Only these governance files are authorized:
 
 - `execution/domains/enterprise-strategy-business-performance/module-packs/CAND-CAP-0007-FU01-enterprise-strategy-security-tenancy-data-migration.md`
+- `execution/portfolio/blueprint-master-plan-reconciliation.md`
+- `execution/portfolio/delivery-capability-packs/DCP-005-management-governance-core.md`
+
+### Bounded SECURITY-PERIMETER implementation scope
+
+- `services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.API/Program.cs`
+- `services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.API/Diten.WebAPI.csproj`
+- `services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.API/appsettings.json`
+- `services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.API/Security/**`
+- `services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.API/Middleware/**`
+- `services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.API/Controllers/HealthController.cs`
+- `services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.Application/DependencyInjection.cs`
+- `services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.Application/EnterpriseStrategy/Shared/EnterpriseStrategyPlatform.cs`
+- `services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.Application/DeliveryExecutionManagement/Shared/DeliveryExecutionManagementPlatform.cs`
+- `services/Diten.EnterpriseStrategyService/tests/**` only for authentication, tenant-context, permission,
+  action-inventory and default-deny evidence
 
 ### Future implementation scope
 
@@ -233,6 +258,13 @@ Additional protected hazards pending Gate 2:
 - Frontend uses Gateway `5000`; ES canonical local port is `5102`.
 - Existing gateway port `5004` is AS-IS evidence, not an approved target.
 - Candidate identity strings are governance-only and forbidden at runtime.
+- JWT contract is exact: issuer `diten-auth-service`, audience `diten-erp`, tenant claim `tenant_id`, actor
+  claim `sub`, actor type `actor_type`, and exact ordinal `permission` claims. Signing material comes from
+  existing `JwtSettings`; no key or fallback identity is introduced.
+- Only `/health` and `/healthz` may be anonymous. Every other controller action is authenticated and then
+  subject to the explicit permission/tenant-ownership perimeter.
+- Actions lacking an authoritative permission mapping or tenant-ownership proof are disabled fail-closed;
+  role-only metadata does not substitute for an exact permission.
 
 ## 9. Layout & Shell Contract
 
@@ -343,6 +375,16 @@ Gateway work requires a separate, explicitly approved `integration-agent` task a
 20. `CAND-CAP-0007-FU01` has zero runtime literal hits.
 21. No frontend, gateway, Platform/Auth service or other-domain file changes occur in this slice.
 22. All scoped regression is green before the slice closes; failures are not deferred.
+23. All 147 HTTP actions are inventoried by executable tests; only health actions may be anonymous.
+24. Existing 80 permission-decorated actions deny without an exact ordinal permission claim; configuration
+    absence never enables a development bootstrap.
+25. Existing 67 actions without custom permission metadata (including health) are explicitly classified;
+    non-health role-only or open actions without a reviewed exact permission mapping remain fail-closed and
+    execute no controller/application/persistence body.
+26. Tenant endpoints require an exact GUID `X-Tenant-Id` matching the authenticated `tenant_id` claim.
+27. Until tenant ownership is represented in persistence, the bounded perimeter does not claim tenant-safe
+    business reads/writes; such endpoints remain unavailable/fail-closed.
+28. Uploads and all Gate-2 hazards remain unreachable through the bounded perimeter.
 
 ## 17. Test Expectations
 
@@ -386,13 +428,13 @@ No DataTable verifier or RESX check applies because `shell: none`.
 
 ## 18. Ready-for-dev Checklist
 
-- [ ] Human approves this draft and promotes it to `approved` / `ready-for-dev`.
-- [ ] Future implementation branch is
+- [x] Human approved the bounded SECURITY-PERIMETER amendment as ready-for-dev on 2026-08-28.
+- [x] Implementation branch is
   `feature/esbp/cand-cap-0007-fu01-security-tenancy-data-migration`.
-- [ ] Candidate preflight exit 0 is recorded.
-- [ ] Exact implementation file list is approved from §5.
-- [ ] JWT issuer/audience/key source and permission claim contract are confirmed.
-- [ ] Tenant claim/header resolution and error semantics are approved.
+- [x] Candidate preflight exit 0 recorded after ledger reconciliation on 2026-08-28.
+- [x] Exact bounded implementation file list is approved in §5.
+- [x] JWT issuer/audience/key source and permission claim contract are confirmed for the bounded slice.
+- [x] Tenant claim/header resolution and error semantics are approved for request gating.
 - [ ] BaseEntity scalar UTC/BSON representation decision is approved.
 - [ ] Collection inventory has been executed read-only against the target data copy.
 - [ ] Every collection has a mapping owner and disposition.
@@ -403,6 +445,9 @@ No DataTable verifier or RESX check applies because `shell: none`.
 - [ ] Written Gate 2 PASS exists before any protected-hazard change.
 - [ ] DCP-004 approval exists before any WC-5/ES provider work.
 - [ ] No open scoped regression is accepted as follow-up debt.
+
+Unchecked migration/Gate-2 items do not block the bounded security perimeter, but they continue to block
+schema/data migration, tenant-safe business endpoint activation and full-pack completion.
 
 ## 19. Implementation Notes
 
