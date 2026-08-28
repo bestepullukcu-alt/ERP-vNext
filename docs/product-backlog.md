@@ -6897,7 +6897,50 @@ doğrulama yardımcıları, ayrı değerlendirilmeli).
 - **Gelecek regresyon riski: 🟢** — üretimde kapalı; riski unutulup "gerçek bir kaynakmış gibi" okunması,
   bu yüzden `Temporary: true` bayrağı, dosya başlığı ve bu kayıt üçü birden var.
 
-### BL-311 — `TenantPropagationHandler` istek kapsamını GÖREMİYOR; MDM ve Auth istemcileri kiracı başlığını sessizce düşürüyor olabilir (2026-08-28, ÖLÇÜLDÜ)
+### BL-311 — 🟠 `TenantPropagationHandler` istek kapsamını GÖREMİYOR; başlık düşüyor ama SIZINTI DEĞİL (2026-08-28, ölçüldü; 2026-08-28 yeniden ölçülüp 🔴→🟠 düşürüldü)
+
+> **SAHİP: CONTROL TOWER (biz).** Codex'in "aynı güvenlik dalgasında paralel kapanacak"
+> kararının 2. maddesi; sahiplik 2026-08-28'de netleştirildi.
+
+**⚠ İLK DEĞERLENDİRME YANLIŞTI — düzeltmesi burada.** İlk kayıt "çapraz-kiracı veri
+görme riski" ihtimalini yazdı ve bunun ÖLÇÜLMEDİĞİNİ belirtti. Ölçüldü, öyle değil:
+
+- Her iki doğrulayıcı da **çağıranın kendi jetonunu iletiyor**
+  (`PropagateAuthorizationHeader`, her iki dosyada da mevcut).
+- `TenantResolutionMiddleware` (MDM): `var resolvedTenant = jwtTenant ?? headerTenant;`
+  → **JWT önce gelir.** İkisi de yoksa `400 Missing Tenant` — **fail-closed**.
+- AuthService'teki kontrol bir **uyuşmazlık dedektörü**: başlık yoksa "uyuşmazlık yok"
+  döner, kiracıyı yine JWT'den alır.
+- **Sonuç: kiracı doğru çözülüyor. Çapraz-kiracı sızıntısı YOK.**
+
+**Gerçekte kalan kusur — üç madde:**
+
+1. **MDM'in çapraz kontrolü SESSİZCE ÖLÜ.** `jwtTenant != headerTenant → 400 Tenant mismatch`
+   kontrolü hiç ateşlenemiyor, çünkü başlık hiç gönderilmiyor. Kodda duran bir savunma
+   hiçbir şey yapmıyor ve bunu kimse fark etmez.
+2. **Yorum yalan söylüyor.** `AuthServiceUserReferenceValidator.cs:15`:
+   *"X-Tenant-Id via the shared TenantPropagationHandler (registered in DI)"* —
+   ölçüm handler'ın onu teslim etmediğini söylüyor.
+3. **ÖLÇÜLMEDİ:** platform yöneticisi bir kiracı adına işlem yaptığında jetonunda
+   `tenant_id` claim'i var mı? Yoksa o akışlarda çağrı `400` alır — gürültülü hata,
+   sessiz zarar değil. **Düzeltmeden önce ilk ölçülecek şey budur.**
+
+**Sebep (değişmedi):** `IHttpClientFactory` handler zincirini KENDİ kapsamında kurup
+önbelleğe alıyor; zincirdeki `DelegatingHandler` istek kapsamına ait `ITenantContext`'i
+çözemiyor, `IsResolved == false` dönüyor, başlık eklenmiyor, hiçbir yerde bir şey denmiyor.
+
+**Doğru desen elimizde:** `RemoteWorkItemGateway` bunu bir kez çözdü — handler yerine
+çağıran sınıfa `ITenantContext` enjekte etmek. `RemoteWorkItemProviderRegistration.cs:75`
+handler'ın denendiğini ve ölçümle reddedildiğini yazıyor.
+
+**Etki alanı:** handler üç serviste kayıtlı (Platform, Auth, DevEnablement); Platform'da
+üç istemciye takılı — `TenantAwareClient` + iki referans doğrulayıcı.
+
+**İlk kaydın metni (2026-08-28, ÖLÇÜLDÜ) — yukarıdaki düzeltmenin neyi düzelttiği görünsün diye korunuyor.**
+
+> ⚠ Bu bir KAYIT DEĞİL, yukarıdaki BL-311'in ilk hâlidir. Ayrı bir `###` başlığı
+> olarak durursa aynı koda iki blok düşer ve biri "kapandı" diğeri "açık" görünür —
+> bu dosyada bunun 10 örneği ölçüldü. O yüzden başlık değil, alıntı.
 - **Ölçüm:** WC-D1 köprüsünün ilk hâli bu paylaşılan handler'ı yeniden kullandı ve uzak servise **hiç kiracı
   başlığı göndermedi**. Birim testi yeşildi. Uzak servis aldığı kiracıyı ekrana geri yazdığı için görüldü:
   "(no tenant header)".
@@ -6925,3 +6968,60 @@ doğrulama yardımcıları, ayrı değerlendirilmeli).
   onayı kuyruğu? sabit host allow-list?). Bu soru cevaplanmadan otomatikleştirme yapılmamalı.
 - **Bugünkü bedel:** modül başına bir satır, elle. Yedi mevcut servis-arası adres zaten böyle duruyor.
 - **Gelecek regresyon riski: 🟢** — bugün hiçbir şey kırılmıyor; yalnızca bir kolaylık eksik.
+
+### BL-313 — 🔴 ACİL · üretimde olay taşıyıcısı yok; mesajlar SESSİZCE SİLİNİYOR ve "gönderildi" işaretleniyor (2026-08-28, ölçüldü)
+
+> **SAHİP ATAMASI: Beste Pullukçu — ACİL.** Sahip kararı 2026-08-28.
+> Görev Merkezi ekibini **engellemiyor** (ölçüldü: WorkAggregation ve köprü
+> `IEventTransportPublisher`/`OutboxMessage`'ı hiç kullanmıyor, tamamı düz HTTP).
+
+- **Ölçüm — üretim ayarında `Eventing` bloğu YOK.** `appsettings.Development.json`
+  içinde var, `appsettings.json` içinde yok. Kod `Eventing:Transport` okuyor
+  (`Program.cs:98`) ve şu dala giriyor:
+
+  ```csharp
+  // DependencyInjection.cs:428 vs :433
+  if (Transport == "RabbitMQ")  → MassTransitRabbitMqEventPublisher
+  else                          → InMemoryEventBus
+  ```
+
+- **`InMemoryEventBus` ne yapıyor:** mesajı süreç-içi bir `ConcurrentQueue`'ya
+  ekliyor ve **başarılı dönüyor**. O kuyruğu kimse boşaltmıyor; süreç kapanınca
+  kuyruk yok oluyor.
+
+- **⚠ ASIL SORUN — mesaj beklemiyor, KAYBOLUYOR:**
+
+  ```
+  OutboxPublisherProcessor.cs:45   await _publisher.PublishAsync(...)   ← başarılı döner
+                            :46   outboxEvent.MarkPublished();          ← "teslim edildi"
+                            :47   await _outboxRepository.UpdateAsync() ← kalıcı yazılır
+  ```
+
+  Outbox kaydı kalıcı olarak kapatılıyor. **RabbitMQ'yu sonradan açmak geçmiş
+  mesajları geri getirmez.**
+
+- **⚠ Sağlık kontrolü de sessiz:** RabbitMQ sağlık kontrolü yalnız
+  `Transport == "RabbitMQ"` iken ekleniyor (`Program.cs:97-102`). Yani bugünkü
+  hâlde sistem **"sağlıklı"** raporluyor, hiçbir mesaj teslim edilmezken.
+
+- **Somut etki:** `Diten.AuthService` Platform'dan gelen yetki/abonelik
+  senkronizasyonunu dinliyor (`EntitlementSyncConsumer`). Bellek-içi taşıyıcıda
+  o mesaj AuthService'e **hiç ulaşmaz** → abonelikten doğan yetkiler kullanıcıya
+  yansımaz, hiçbir yerde hata görünmez.
+  ⚠ AuthService'te bir HTTP yolu da var (`internal/events`: `tenant-activated`,
+  `tenant-admin-invited`). Üretimde hangi akışın hangi yolu kullandığı
+  **ölçülmedi** — yapan kişi önce bunu ölçmeli.
+
+- **Taşıyıcı seçeneği tek:** pakette yalnız `MassTransit.RabbitMQ` var. Azure
+  Service Bus / AWS / Kafka paketi yok, kodda üçüncü dal yok. Başka bir broker
+  seçmek = yeni taşıyıcı adaptörü yazmak, ayrı bir iş.
+
+- **Yapılacak (Beste Pullukçu):**
+  1. Üretimde RabbitMQ sunucusu kurulsun; kimlik bilgileri sır yönetiminden gelsin
+  2. `Eventing:Transport = "RabbitMQ"` üretim ayarına yazılsın
+     (bu yazıldığı an sağlık kontrolü kendiliğinden devreye girer)
+  3. **Muhafız:** üretim profilinde `Transport` boşsa uygulama AÇILMASIN.
+     Sessizce bellek-içine düşmek bu kaydın sebebidir; ayar unutulunca
+     yine sessiz kalmamalı
+  4. Bugüne kadar "gönderildi" işaretlenmiş outbox kayıtlarının kaybı
+     **ölçülsün ve raporlansın** — telafi gerekiyorsa ayrı iş olarak açılsın
