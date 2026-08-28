@@ -2160,4 +2160,25 @@
   <data name="EmptyPartialBoardDesc" xml:space="preserve">
     <value>لم يستجب مصدر واحد على الأقل، لذا فإن ما يظهر هنا ليس الصورة الكاملة. أعد المحاولة بعد قليل.</value>
   </data>
+  <data name="ErrorCommentTextInvalid" xml:space="preserve">
+    <value>لا يمكن أن يكون التعليق فارغًا.</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>نعم</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>لا</value>
+  </data>
+  <data name="BannerStale" xml:space="preserve">
+    <value>تغيّر السجل المصدر بعد آخر قراءة لهذا العنصر.</value>
+  </data>
+  <data name="BannerSourceUnavailable" xml:space="preserve">
+    <value>تعذّر الوصول إلى الوحدة المصدر في الوقت الحالي.</value>
+  </data>
+  <data name="BannerAuthorityEnded" xml:space="preserve">
+    <value>انتهت صلاحيتك على هذا العنصر.</value>
+  </data>
+  <data name="BannerReconciliationRequired" xml:space="preserve">
+    <value>مطلوب تسوية مع المصدر.</value>
+  </data>
 </root>
