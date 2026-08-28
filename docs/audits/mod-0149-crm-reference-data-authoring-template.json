@@ -1,0 +1,140 @@
+{
+  "_meta": {
+    "purpose": "MOD-0149 CRM reference set/value authoring template (OPERATOR AID ONLY — NOT a runtime seed/migration).",
+    "engine": "PSS-012 Business Reference Data (BusinessReferenceDataSet/Version/Value; TenantScopedEntity; SetCode unique per tenant).",
+    "authoring_path": "MOD-0048/PSS-012 governance UI create-set -> add values -> validate -> submit -> approve -> publish; OR POST /imports/preview + POST /imports/{previewId}/commit (Idempotency-Key required).",
+    "value_schema": "BusinessReferenceDataValue { valueCode, displayName, sortOrder, isDeprecated, parentValueCode?, attributes{} }. 'description' is carried under attributes (not a first-class field). Exact field mapping follows the PSS-012 /imports contract.",
+    "json_naming": "camelCase (per MOD-0048 pack policy).",
+    "rules": [
+      "ValueCode stable, lowercase kebab-case, no magic numbers.",
+      "DisplayName localization-ready (7 locales: en, fr, es, zh, ar, ru, tr) — provided here in en; localize via UI/resx.",
+      "Referenced values are never hard-deleted -> set isDeprecated=true.",
+      "Deprecated values cannot be selected for new create/update; historical values remain displayable.",
+      "No CRM local seed / hardcoded fallback; MOD-0048/PSS-012 is the SoR.",
+      "scopeType tenant-scoped by default."
+    ],
+    "mod0149_required_sets": ["account-type", "account-status"],
+    "deferred_sets": ["city", "district"]
+  },
+  "sets": [
+    {
+      "setCode": "account-type",
+      "name": "Account Type",
+      "scopeType": "tenant",
+      "requiredForMod0149Mvp": true,
+      "values": [
+        { "valueCode": "organization",   "displayName": "Organization",   "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "General organization/customer account" } },
+        { "valueCode": "hospital",       "displayName": "Hospital",       "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Hospital account" } },
+        { "valueCode": "pharmacy",       "displayName": "Pharmacy",       "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Pharmacy account" } },
+        { "valueCode": "clinic",         "displayName": "Clinic",         "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Clinic or outpatient clinic" } },
+        { "valueCode": "distributor",    "displayName": "Distributor",    "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Distributor account" } },
+        { "valueCode": "wholesaler",     "displayName": "Wholesaler",     "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Wholesaler account" } },
+        { "valueCode": "corporate-group","displayName": "Corporate Group","sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Parent corporate group" } },
+        { "valueCode": "branch",         "displayName": "Branch",         "sortOrder": 80, "isDeprecated": false, "attributes": { "description": "Branch or subsidiary account" } },
+        { "valueCode": "other",          "displayName": "Other",          "sortOrder": 90, "isDeprecated": false, "attributes": { "description": "Other account type" } }
+      ]
+    },
+    {
+      "setCode": "account-status",
+      "name": "Account Status",
+      "scopeType": "tenant",
+      "requiredForMod0149Mvp": true,
+      "values": [
+        { "valueCode": "draft",     "displayName": "Draft",     "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Created but not fully activated" } },
+        { "valueCode": "active",    "displayName": "Active",    "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Active account" } },
+        { "valueCode": "inactive",  "displayName": "Inactive",  "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Temporarily inactive account" } },
+        { "valueCode": "suspended", "displayName": "Suspended", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Suspended due to business or compliance reason" } },
+        { "valueCode": "archived",  "displayName": "Archived",  "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Archived / no longer actively used" } }
+      ]
+    },
+    {
+      "setCode": "account-category",
+      "name": "Account Category",
+      "scopeType": "tenant",
+      "requiredForMod0149Mvp": false,
+      "values": [
+        { "valueCode": "strategic",   "displayName": "Strategic",   "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Strategic account" } },
+        { "valueCode": "key-account", "displayName": "Key Account", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "High-value / key account" } },
+        { "valueCode": "standard",    "displayName": "Standard",    "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Standard account" } },
+        { "valueCode": "prospect",    "displayName": "Prospect",    "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Potential account" } },
+        { "valueCode": "inactive",    "displayName": "Inactive",    "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Inactive category marker" } },
+        { "valueCode": "other",       "displayName": "Other",       "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Other category" } }
+      ]
+    },
+    {
+      "setCode": "workplace-type",
+      "name": "Workplace Type",
+      "scopeType": "tenant",
+      "requiredForMod0149Mvp": false,
+      "values": [
+        { "valueCode": "hospital",      "displayName": "Hospital",      "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Hospital workplace" } },
+        { "valueCode": "pharmacy",      "displayName": "Pharmacy",      "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Pharmacy workplace" } },
+        { "valueCode": "clinic",        "displayName": "Clinic",        "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Clinic workplace" } },
+        { "valueCode": "health-center", "displayName": "Health Center", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Health center" } },
+        { "valueCode": "warehouse",     "displayName": "Warehouse",     "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Warehouse workplace" } },
+        { "valueCode": "office",        "displayName": "Office",        "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Office workplace" } },
+        { "valueCode": "other",         "displayName": "Other",         "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Other workplace type" } }
+      ]
+    },
+    {
+      "setCode": "workplace-category",
+      "name": "Workplace Category",
+      "scopeType": "tenant",
+      "requiredForMod0149Mvp": false,
+      "values": [
+        { "valueCode": "public",      "displayName": "Public",      "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Public institution" } },
+        { "valueCode": "private",     "displayName": "Private",     "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Private institution" } },
+        { "valueCode": "university",  "displayName": "University",  "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "University institution" } },
+        { "valueCode": "chain",       "displayName": "Chain",       "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Chain organization" } },
+        { "valueCode": "independent", "displayName": "Independent", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Independent workplace" } },
+        { "valueCode": "specialty",   "displayName": "Specialty",   "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Specialty workplace" } },
+        { "valueCode": "other",       "displayName": "Other",       "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Other workplace category" } }
+      ]
+    },
+    {
+      "setCode": "address-type",
+      "name": "Address Type",
+      "scopeType": "tenant",
+      "requiredForMod0149Mvp": false,
+      "values": [
+        { "valueCode": "primary",    "displayName": "Primary",    "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Primary address" } },
+        { "valueCode": "billing",    "displayName": "Billing",    "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Billing address" } },
+        { "valueCode": "shipping",   "displayName": "Shipping",   "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Shipping address" } },
+        { "valueCode": "visiting",   "displayName": "Visiting",   "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Visiting / field visit address" } },
+        { "valueCode": "registered", "displayName": "Registered", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Registered official address" } },
+        { "valueCode": "other",      "displayName": "Other",      "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Other address type" } }
+      ]
+    },
+    {
+      "setCode": "status-reason",
+      "name": "Status Reason",
+      "scopeType": "tenant",
+      "requiredForMod0149Mvp": false,
+      "values": [
+        { "valueCode": "duplicate",        "displayName": "Duplicate",        "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Duplicate record" } },
+        { "valueCode": "closed",           "displayName": "Closed",           "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Account closed" } },
+        { "valueCode": "merged",           "displayName": "Merged",           "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Account merged into another account" } },
+        { "valueCode": "invalid-data",     "displayName": "Invalid Data",     "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Invalid or unreliable data" } },
+        { "valueCode": "out-of-scope",     "displayName": "Out of Scope",     "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Out of current business scope" } },
+        { "valueCode": "customer-request", "displayName": "Customer Request", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Changed due to customer request" } },
+        { "valueCode": "other",            "displayName": "Other",            "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Other reason" } }
+      ]
+    },
+    {
+      "setCode": "city",
+      "name": "City",
+      "scopeType": "tenant",
+      "requiredForMod0149Mvp": false,
+      "_deferNote": "Territory reference — MVP defer. Author as PSS-012 territory business set OR consume existing territory source if one exists. No CRM local seed. Values intentionally empty here.",
+      "values": []
+    },
+    {
+      "setCode": "district",
+      "name": "District",
+      "scopeType": "tenant",
+      "requiredForMod0149Mvp": false,
+      "_deferNote": "Territory reference — MVP defer. Depends on city; author as PSS-012 territory business set OR consume existing source. No CRM local seed. Values intentionally empty here.",
+      "values": []
+    }
+  ]
+}

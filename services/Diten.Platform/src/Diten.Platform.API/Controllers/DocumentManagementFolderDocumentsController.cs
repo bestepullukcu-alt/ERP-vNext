@@ -33,8 +33,11 @@ public sealed class DocumentManagementFolderDocumentsController : CustomBaseCont
 
     [HttpGet("folder-documents")]
     [HasPermission(DocumentManagementControlledDocumentsPermissions.ControlledDocumentsView)]
-    public async Task<IActionResult> FolderDocuments([FromQuery] Guid collectionInstanceId, CancellationToken ct) =>
-        CreateActionResultInstance(await _mediator.Send(new GetFolderDocumentsQuery(collectionInstanceId, CorrelationId), ct));
+    public async Task<IActionResult> FolderDocuments(
+        [FromQuery] Guid collectionInstanceId,
+        [FromQuery] bool includeNonEffective,
+        CancellationToken ct) =>
+        CreateActionResultInstance(await _mediator.Send(new GetFolderDocumentsQuery(collectionInstanceId, CorrelationId, includeNonEffective), ct));
 
     [HttpGet("folder-documents/access")]
     [HasPermission(DocumentManagementControlledDocumentsPermissions.FolderDocumentsAccessManage)]

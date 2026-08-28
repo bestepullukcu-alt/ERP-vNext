@@ -1,0 +1,66 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.CRM.Accounts.AccountIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* MOD-0150 FU04 — End (historical close) canvas for an Account↔Account relationship. Same Golden Slim canvas shape as
+   the create/edit surface, so the section has one interaction model instead of a canvas plus a standalone page.
+   An End NEVER deletes: it sets Status=ended + ValidTo through the existing PUT endpoint, so downstream
+   sales/visit/order/forecast context stays intact. The summary rows are filled from the projection row by details.js. *@
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRelationshipEnd" aria-labelledby="offcanvasRelationshipEndLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasRelationshipEndLabel" class="offcanvas-title">@Localizer["EndRelationship"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div class="alert alert-info d-flex align-items-start gap-2" role="alert">
+            <i class="bx bx-history mt-1"></i>
+            <div>@Localizer["RelationshipWillBeEndedNotDeleted"]</div>
+        </div>
+
+        @* Server-side validation errors (from the gateway) *@
+        <div id="formRelationshipEndAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <dl class="row mb-4">
+            <dt class="col-5 fw-medium text-heading mb-2">@Localizer["SelectAccount"]</dt>
+            <dd id="endTargetAccountName" class="col-7 mb-2">-</dd>
+            <dt class="col-5 fw-medium text-heading mb-2">@Localizer["RelationshipType"]</dt>
+            <dd id="endRelationshipType" class="col-7 mb-2">-</dd>
+            <dt class="col-5 fw-medium text-heading mb-2">@Localizer["ValidFrom"]</dt>
+            <dd id="endValidFrom" class="col-7 mb-2">-</dd>
+        </dl>
+
+        <form id="formRelationshipEnd" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="endDate" class="form-label fw-medium">
+                        @Localizer["EndDate"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="date" id="endDate" name="EndDate" class="form-control" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <div class="alert alert-warning d-flex align-items-start gap-2 mb-3" role="alert">
+                        <i class="icon-base ti tabler-alert-triangle mt-1"></i>
+                        <div>@Localizer["NotesSafetyNotice"]</div>
+                    </div>
+                    <label for="endNotes" class="form-label fw-medium">@Localizer["EndReason"]</label>
+                    <textarea id="endNotes" name="Notes" class="form-control" rows="3" maxlength="2000"></textarea>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+            @SharedLocalizer["Cancel"]
+        </button>
+        <button type="button" id="btnConfirmEndRelationship" class="btn btn-warning">
+            @Localizer["ConfirmEndRelationship"]
+        </button>
+    </div>
+</div>

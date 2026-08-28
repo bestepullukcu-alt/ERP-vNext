@@ -1,0 +1,167 @@
+@model Diten.Web.Models.MasterData.ProductEditViewModel
+@using Diten.Web.Views.MasterData.Products
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProductsIndex> Localizer
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+@if (!string.IsNullOrWhiteSpace(Model.ContractError))
+{
+    <div class="alert alert-danger">@Localizer[Model.ContractError]</div>
+}
+
+<section class="card mb-3">
+    <div class="card-header"><h6 class="mb-0">@Localizer["SummarySection"]</h6></div>
+    <div class="card-body row g-3">
+        @* ProductCode is immutable after create (FU01 §4) — the backend answers code_immutable if it changes. *@
+        <div class="col-md-4">
+            <label asp-for="ProductCode" class="form-label">@Localizer["ProductCode"] <span class="text-danger">*</span></label>
+            <input asp-for="ProductCode" class="form-control" readonly="@(Model.ProductId.HasValue)" required />
+            <span asp-validation-for="ProductCode" class="text-danger"></span>
+            @if (Model.ProductId.HasValue)
+            {
+                <small class="text-muted">@Localizer["ProductCodeImmutableHelp"]</small>
+            }
+        </div>
+        <div class="col-md-8">
+            <label asp-for="ProductName" class="form-label">@Localizer["ProductName"] <span class="text-danger">*</span></label>
+            <input asp-for="ProductName" class="form-control" required />
+            <span asp-validation-for="ProductName" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="ProductStatus" class="form-label">@Localizer["ProductStatus"] <span class="text-danger">*</span></label>
+            <select asp-for="ProductStatus" class="form-select" required>
+                <option value="">@Localizer["SelectOption"]</option>
+                @* From the capability contract. `archived` is excluded — it is set only by the archive endpoint.
+                   `discontinued` is intentionally not in the contract yet (FU01 §11 amendment pending). *@
+                @foreach (var status in Model.ProductStatuses.Where(x => !string.Equals(x, "archived", StringComparison.OrdinalIgnoreCase)))
+                {
+                    <option value="@status">@Localizer[$"Status_{status}"]</option>
+                }
+            </select>
+            <span asp-validation-for="ProductStatus" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="ProductType" class="form-label">@Localizer["ProductType"]</label>
+            <select asp-for="ProductType" class="form-select">
+                <option value="">@Localizer["SelectOption"]</option>
+                @foreach (var type in Model.ProductTypes)
+                {
+                    <option value="@type">@Localizer[$"ProductType_{type}"]</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="EffectiveFrom" class="form-label">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
+            <input asp-for="EffectiveFrom" type="date" class="form-control" required />
+            <span asp-validation-for="EffectiveFrom" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="EffectiveTo" class="form-label">@Localizer["EffectiveTo"]</label>
+            <input asp-for="EffectiveTo" type="date" class="form-control" />
+            <span asp-validation-for="EffectiveTo" class="text-danger"></span>
+        </div>
+        <div class="col-12">
+            <label asp-for="Description" class="form-label">@Localizer["Description"]</label>
+            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+        </div>
+    </div>
+</section>
+
+@* Mirrors the Brand reference section on the details page. Optional by design (FU01 §4.1). *@
+<section class="card mb-3">
+    <div class="card-header"><h6 class="mb-0">@Localizer["BrandReferenceSection"]</h6></div>
+    <div class="card-body row g-3">
+        <div class="col-md-6">
+            <label asp-for="BrandId" class="form-label">@Localizer["BrandId"]</label>
+            @* Only active, non-archived brands are offered, because an archived brand refuses new links (409). *@
+            <select asp-for="BrandId" class="form-select">
+                <option value="">@Localizer["NoBrand"]</option>
+                @foreach (var brand in Model.BrandOptions)
+                {
+                    <option value="@brand.BrandId">@brand.BrandCode — @brand.BrandName</option>
+                }
+            </select>
+            <small class="text-muted">@Localizer["BrandIdOptionalHelp"]</small>
+        </div>
+    </div>
+</section>
+
+<section class="card mb-3">
+    <div class="card-header"><h6 class="mb-0">@Localizer["PharmaMetadataSection"]</h6></div>
+    <div class="card-body row g-3">
+        <div class="col-md-4">
+            <label asp-for="DosageForm" class="form-label">@Localizer["DosageForm"]</label>
+            <select asp-for="DosageForm" class="form-select">
+                <option value="">@Localizer["SelectOption"]</option>
+                @foreach (var form in Model.DosageForms)
+                {
+                    <option value="@form">@form</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Strength" class="form-label">@Localizer["Strength"]</label>
+            <input asp-for="Strength" class="form-control" />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="PackSize" class="form-label">@Localizer["PackSize"]</label>
+            <input asp-for="PackSize" class="form-control" />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="UnitOfMeasure" class="form-label">@Localizer["UnitOfMeasure"]</label>
+            <select asp-for="UnitOfMeasure" class="form-select">
+                <option value="">@Localizer["SelectOption"]</option>
+                @foreach (var uom in Model.UnitsOfMeasure)
+                {
+                    <option value="@uom">@uom</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="ATCCode" class="form-label">@Localizer["ATCCode"]</label>
+            <input asp-for="ATCCode" class="form-control" />
+            <small class="text-muted" id="atcCodeHelp">@Localizer["ATCCodeHelp"]</small>
+            <span asp-validation-for="ATCCode" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="TherapeuticAreaId" class="form-label">@Localizer["TherapeuticAreaId"]</label>
+            <input asp-for="TherapeuticAreaId" class="form-control" />
+            <small class="text-muted" id="therapeuticAreaHelp">@Localizer["TherapeuticAreaHelp"]</small>
+        </div>
+        <div class="col-12">
+            <label asp-for="IndicationRefsRaw" class="form-label">@Localizer["IndicationRefs"]</label>
+            <input asp-for="IndicationRefsRaw" class="form-control" placeholder="00000000-0000-0000-0000-000000000000, ..." />
+            <small class="text-muted">@Localizer["IndicationRefsHelp"]</small>
+            <span asp-validation-for="IndicationRefsRaw" class="text-danger"></span>
+        </div>
+    </div>
+</section>
+
+@* FU01 §12 — external references are a legacy TRACE record, never a second master. At most one primary per
+   source system; a second one is refused by the backend with external_reference_primary_conflict. *@
+<section class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h6 class="mb-0">@Localizer["ExternalReferencesSection"]</h6>
+            <small class="text-muted">@Localizer["ExternalReferencesHelp"]</small>
+        </div>
+        <button type="button" id="addExternalReference" class="btn btn-sm btn-label-primary">@Localizer["AddReference"]</button>
+    </div>
+    <div class="card-body" id="externalReferencesHost">
+        @{ if (Model.ExternalReferences.Count == 0) { Model.ExternalReferences.Add(new()); } }
+        @for (var i = 0; i < Model.ExternalReferences.Count; i++)
+        {
+            <div class="external-reference-row row g-2 mb-2" data-index="@i">
+                <div class="col-md-2"><input asp-for="ExternalReferences[i].SourceSystem" class="form-control" placeholder="@Localizer["SourceSystem"]" /></div>
+                <div class="col-md-2"><input asp-for="ExternalReferences[i].ExternalId" class="form-control" placeholder="@Localizer["ExternalId"]" /></div>
+                <div class="col-md-2"><input asp-for="ExternalReferences[i].ExternalCode" class="form-control" placeholder="@Localizer["ExternalCode"]" /></div>
+                <div class="col-md-3"><input asp-for="ExternalReferences[i].ExternalName" class="form-control" placeholder="@Localizer["ExternalName"]" /></div>
+                <div class="col-md-2 form-check mt-3">
+                    <input asp-for="ExternalReferences[i].IsPrimary" class="form-check-input" />
+                    <label asp-for="ExternalReferences[i].IsPrimary" class="form-check-label">@Localizer["Primary"]</label>
+                </div>
+                <div class="col-md-1"><button type="button" class="btn btn-icon btn-label-danger remove-external-reference" aria-label="@Localizer["Remove"]"><i class="bx bx-x"></i></button></div>
+            </div>
+        }
+    </div>
+</section>

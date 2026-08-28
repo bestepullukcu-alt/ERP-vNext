@@ -518,4 +518,34 @@
   </data>
   <data name="Computing" xml:space="preserve">
     <value>Вычисление…</value>
-  </data></root>
+  </data>
+  <data name="MasterRegister" xml:space="preserve"><value>Главный реестр</value></data>
+  <data name="LinkedMasterRegister" xml:space="preserve"><value>Управляемая связь с главным реестром</value></data>
+  <data name="OpenMasterRegister" xml:space="preserve"><value>Открыть главный реестр</value></data>
+  <data name="MasterRegisterEntry" xml:space="preserve"><value>Запись главного реестра</value></data>
+  <data name="MasterRegisterEntryId" xml:space="preserve"><value>ID записи реестра</value></data>
+  <data name="MasterRegisterStatus" xml:space="preserve"><value>Статус реестра</value></data>
+  <data name="MasterRegisterLinkStatus" xml:space="preserve"><value>Совместимость связи</value></data>
+  <data name="DocumentScope" xml:space="preserve"><value>Область документа</value></data>
+  <data name="ScopeOwner" xml:space="preserve"><value>Владелец области</value></data>
+  <data name="DocumentClass" xml:space="preserve"><value>Класс документа</value></data>
+  <data name="LifecycleStatus" xml:space="preserve"><value>Статус жизненного цикла</value></data>
+  <data name="LinkedAt" xml:space="preserve"><value>Дата связи</value></data>
+  <data name="NoLinkedMasterRegisterLegacyHint" xml:space="preserve"><value>Связанная запись главного реестра не найдена. Это может быть устаревшая, миграционная или сверяемая запись.</value></data>
+  <data name="ReverseLookupFailed" xml:space="preserve"><value>Не удалось загрузить связь с главным реестром.</value></data>
+  <data name="ReverseLookupForbidden" xml:space="preserve"><value>У вас нет права просматривать связанную запись.</value></data>
+  <data name="ReadinessFailClosedDueToLink" xml:space="preserve"><value>Связь не проверена или несовместима. Готовность остается заблокированной.</value></data>
+  <data name="GovernedRegistrationComplete" xml:space="preserve"><value>Управляемая связь с реестром проверена.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="LifecycleDraftNotForUse" xml:space="preserve"><value>ЧЕРНОВИК — НЕ ИСПОЛЬЗОВАТЬ</value></data>
+  <data name="LifecycleInReviewNotEffective" xml:space="preserve"><value>НА ПРОВЕРКЕ — НЕ ДЕЙСТВУЕТ</value></data>
+  <data name="LifecycleApprovedPendingEffective" xml:space="preserve"><value>УТВЕРЖДЕН — ОЖИДАЕТ ВСТУПЛЕНИЯ В СИЛУ</value></data>
+  <data name="LifecycleEffective" xml:space="preserve"><value>ДЕЙСТВУЕТ</value></data>
+  <data name="LifecycleSuspendedDoNotUse" xml:space="preserve"><value>ПРИОСТАНОВЛЕН — НЕ ИСПОЛЬЗОВАТЬ</value></data>
+  <data name="LifecycleSuperseded" xml:space="preserve"><value>ЗАМЕНЕН</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>ВЫВЕДЕН ИЗ ОБРАЩЕНИЯ</value></data>
+  <data name="LifecycleUnderRevisionNotEffective" xml:space="preserve"><value>НА ПЕРЕСМОТРЕ — НЕ ДЕЙСТВУЕТ</value></data>
+  <data name="LegacyUnlinked" xml:space="preserve"><value>УСТАРЕВШАЯ ЗАПИСЬ — НЕ СВЯЗАНА</value></data>
+  <data name="ShowNonEffectiveDocuments" xml:space="preserve"><value>Показать черновики / недействующие</value></data>
+  <data name="ShowNonEffectiveDocumentsHint" xml:space="preserve"><value>Только для управления. Включает черновики, недействующие документы и несвязанные устаревшие записи.</value></data>
+</root>

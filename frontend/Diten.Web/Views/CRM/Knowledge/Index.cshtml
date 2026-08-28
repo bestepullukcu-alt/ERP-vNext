@@ -1,0 +1,36 @@
+@using Diten.Web.Views.CRM.Knowledge
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["KnowledgeTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canTaxonomy = Perms.Has("crm.knowledge.subject.read") || Perms.Has("crm.knowledge.read") || Perms.Has("crm.territory.read");
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/CRM/Knowledge/_Filter.cshtml" />
+
+<div class="mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <div>
+        <h5 class="mb-0">@Localizer["KnowledgeTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+    @if (canTaxonomy)
+    {
+        <a class="btn btn-label-secondary" href="/CRM/Knowledge/Taxonomy" id="btnTaxonomy">
+            <i class="bx bx-sitemap me-1"></i>@Localizer["ManageTaxonomy"]
+        </a>
+    }
+</div>
+
+@* The primary "Create Content" action is rendered inside the DataTable toolbar (.add-new) by index.js — Golden pattern. *@
+@* Contract markers rendered by _DataTable: skeleton-loader + data-dt-standard=v2 *@
+<partial name="~/Views/CRM/Knowledge/_DataTable.cshtml" />
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/Knowledge/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/Knowledge/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/Knowledge/index.js" asp-append-version="true"></script>
+}

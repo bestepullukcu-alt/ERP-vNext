@@ -127,6 +127,16 @@ public sealed class LocalFileSystemContentStorageGateway : IContentStorageGatewa
     private static string BuildObjectKey(ContentStoreRequest request, string safeFileName)
     {
         var scope = request.Scope == ContentStorageScope.Templates ? "templates" : "documents";
+        if (!string.IsNullOrWhiteSpace(request.StoragePartition))
+        {
+            var partition = request.StoragePartition.Trim().Replace('\\', '/').Trim('/');
+            if (partition.Contains("..", StringComparison.Ordinal)
+                || !partition.StartsWith($"tenant/{request.TenantId:D}/", StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException("Storage partition is invalid.");
+            }
+            return $"{partition}/{scope}/{request.ItemId:D}/versions/{request.VersionId:D}/{safeFileName}";
+        }
         return $"tenant-{request.TenantId:D}/company-{request.CompanyId:D}/{scope}/{request.ItemId:D}/versions/{request.VersionId:D}/{safeFileName}";
     }
 

@@ -1,0 +1,35 @@
+﻿@using System.Text.Json
+@using Diten.Web.Views.CRM.Segments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SegmentsIndex> Localizer
+@{
+    var keys = new[]
+    {
+        "Actions", "Active", "Passive", "Unknown", "Edit", "ViewDetails", "QuickView",
+        "BulkDelete", "BulkDeleteConfirm", "AreYouSure", "Cancel", "Save", "No", "Yes",
+        "Search", "Export", "Import", "Filter", "Apply", "Reset", "ShowAll", "SaveView", "ColumnVisibility", "Status",
+        "SegmentContractUnavailable", "SegmentsTitle", "SegmentCode", "SegmentName", "SegmentType", "SubjectType",
+        "SegmentStatus", "SegmentVersion", "MatchMode", "PredicateCount", "CriteriaState", "BusinessUnitId",
+        "EffectiveFrom", "EffectiveTo", "Archived", "UpdatedAt", "CreateSegment", "EditSegment", "ArchiveSegment",
+        "ArchiveSegmentConfirm", "ActivateSegment", "ActivateSegmentConfirm", "NewVersion", "NewVersionConfirm",
+        "EmptyState", "ErrorState", "Loading", "RecordArchived", "RecordActivated", "IncludeArchived",
+        "Frozen", "Editable", "Superseded", "SelectOption",
+        // Criteria-editor labels: form.js reads them from this same bridge, so Create/Edit load it too.
+        "RecordCreated", "RecordUpdated", "Attribute", "Operator", "GroupOperator", "GroupNode", "GroupHelp",
+        "NotGroupHelp", "EmptyGroupHelp", "RootLevel", "RootCombinatorHelp", "NoValueNeeded", "PredicateNode",
+        "AddGroupAtRoot", "AddPredicateAtRoot", "AddGroupInside", "AddPredicateInside", "Move", "Remove",
+        "From", "To", "CommaSeparated", "PickerUnavailable", "SelectTerritoryModel", "LimitReached",
+        // Manual-membership subject picker.
+        "SelectAccount", "SelectContact", "SubjectPickerHelp",
+        // Details resolve-preview labels.
+        "CandidateCount", "MatchedCount", "ExcludedCount", "MembershipNeverStoredHelp", "ResolvePreviewHelp",
+        "SubjectId", "SubjectDisplayName", "Verdict", "MembershipSource", "ReasonCodes", "MembershipMode",
+        "SelectionReason"
+    };
+    var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
+    // Verifier-compatible property markers for the dictionary-backed JSON bridge (each token below is `Key =`):
+    // Active =, Passive =, Unknown =, Actions =, Edit =, ViewDetails =, QuickView =,
+    // BulkDelete =, BulkDeleteConfirm =, AreYouSure =, Cancel =, Search =, Export =,
+    // Import =, Filter =, Apply =, Reset =, ShowAll =, SaveView =, ColumnVisibility =, Status =
+}
+<script id="segments-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>

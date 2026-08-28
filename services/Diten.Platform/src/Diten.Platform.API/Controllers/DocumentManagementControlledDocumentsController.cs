@@ -57,8 +57,11 @@ public sealed class DocumentManagementControlledDocumentsController : CustomBase
 
     [HttpGet("controlled-documents")]
     [HasPermission(DocumentManagementControlledDocumentsPermissions.ControlledDocumentsView)]
-    public async Task<IActionResult> List([FromQuery] Guid? collectionInstanceId, CancellationToken ct) =>
-        CreateActionResultInstance(await _mediator.Send(new GetControlledDocumentListQuery(collectionInstanceId, CorrelationId), ct));
+    public async Task<IActionResult> List(
+        [FromQuery] Guid? collectionInstanceId,
+        [FromQuery] bool includeNonEffective,
+        CancellationToken ct) =>
+        CreateActionResultInstance(await _mediator.Send(new GetControlledDocumentListQuery(collectionInstanceId, CorrelationId, includeNonEffective), ct));
 
     // Explorer: active instantiated Documentation Structures for the company (never raw published baselines).
     [HttpGet("documentation-structures")]
@@ -77,10 +80,11 @@ public sealed class DocumentManagementControlledDocumentsController : CustomBase
         [FromQuery] string? query,
         [FromQuery] string? documentType,
         [FromQuery] bool includeTemplates,
+        [FromQuery] bool includeNonEffective,
         [FromQuery] string? status,
         CancellationToken ct)
     {
-        var input = new ExplorerSearchInput(companyId, activeStructureId, collectionInstanceId, ParseScope(scope), query, documentType, includeTemplates, status);
+        var input = new ExplorerSearchInput(companyId, activeStructureId, collectionInstanceId, ParseScope(scope), query, documentType, includeTemplates, status, includeNonEffective);
         return CreateActionResultInstance(await _mediator.Send(new SearchControlledDocumentsQuery(input, CorrelationId), ct));
     }
 

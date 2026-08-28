@@ -518,4 +518,34 @@
   </data>
   <data name="Computing" xml:space="preserve">
     <value>Calcul…</value>
-  </data></root>
+  </data>
+  <data name="MasterRegister" xml:space="preserve"><value>Registre principal</value></data>
+  <data name="LinkedMasterRegister" xml:space="preserve"><value>Relation gouvernée avec le registre principal</value></data>
+  <data name="OpenMasterRegister" xml:space="preserve"><value>Ouvrir le registre principal</value></data>
+  <data name="MasterRegisterEntry" xml:space="preserve"><value>Entrée du registre principal</value></data>
+  <data name="MasterRegisterEntryId" xml:space="preserve"><value>ID de l’entrée du registre</value></data>
+  <data name="MasterRegisterStatus" xml:space="preserve"><value>Statut du registre</value></data>
+  <data name="MasterRegisterLinkStatus" xml:space="preserve"><value>Compatibilité du lien</value></data>
+  <data name="DocumentScope" xml:space="preserve"><value>Périmètre du document</value></data>
+  <data name="ScopeOwner" xml:space="preserve"><value>Propriétaire du périmètre</value></data>
+  <data name="DocumentClass" xml:space="preserve"><value>Classe du document</value></data>
+  <data name="LifecycleStatus" xml:space="preserve"><value>Statut du cycle de vie</value></data>
+  <data name="LinkedAt" xml:space="preserve"><value>Date de liaison</value></data>
+  <data name="NoLinkedMasterRegisterLegacyHint" xml:space="preserve"><value>Aucune entrée liée n’a été trouvée. Il peut s’agir d’un enregistrement hérité, migré ou en rapprochement.</value></data>
+  <data name="ReverseLookupFailed" xml:space="preserve"><value>La relation avec le registre principal n’a pas pu être chargée.</value></data>
+  <data name="ReverseLookupForbidden" xml:space="preserve"><value>Vous n’êtes pas autorisé à consulter l’entrée liée.</value></data>
+  <data name="ReadinessFailClosedDueToLink" xml:space="preserve"><value>Le lien n’est pas vérifié ou est incompatible. Les validations restent bloquées.</value></data>
+  <data name="GovernedRegistrationComplete" xml:space="preserve"><value>La relation gouvernée avec le registre est vérifiée.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Chargement…</value></data>
+  <data name="LifecycleDraftNotForUse" xml:space="preserve"><value>BROUILLON — NE PAS UTILISER</value></data>
+  <data name="LifecycleInReviewNotEffective" xml:space="preserve"><value>EN RÉVISION — NON EN VIGUEUR</value></data>
+  <data name="LifecycleApprovedPendingEffective" xml:space="preserve"><value>APPROUVÉ — EN ATTENTE D'ENTRÉE EN VIGUEUR</value></data>
+  <data name="LifecycleEffective" xml:space="preserve"><value>EN VIGUEUR</value></data>
+  <data name="LifecycleSuspendedDoNotUse" xml:space="preserve"><value>SUSPENDU — NE PAS UTILISER</value></data>
+  <data name="LifecycleSuperseded" xml:space="preserve"><value>REMPLACÉ</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>RETIRÉ</value></data>
+  <data name="LifecycleUnderRevisionNotEffective" xml:space="preserve"><value>EN COURS DE RÉVISION — NON EN VIGUEUR</value></data>
+  <data name="LegacyUnlinked" xml:space="preserve"><value>HISTORIQUE — NON LIÉ</value></data>
+  <data name="ShowNonEffectiveDocuments" xml:space="preserve"><value>Afficher les brouillons / non en vigueur</value></data>
+  <data name="ShowNonEffectiveDocumentsHint" xml:space="preserve"><value>Vue de gouvernance uniquement. Inclut les brouillons et les documents non en vigueur ou historiques non liés.</value></data>
+</root>

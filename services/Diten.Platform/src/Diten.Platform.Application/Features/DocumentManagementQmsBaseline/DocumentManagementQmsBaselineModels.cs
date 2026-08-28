@@ -54,7 +54,7 @@ public sealed record QmsFolderImportRow(
     bool? IsProtected,
     int? DisplayOrder,
     string? OutlineCode = null,
-    // MOD-0028-FU06 register-backed columns (additive; all optional so every existing XLSX/fixture
+    // QMS register import extension — governance identity pending. Columns are additive and optional so every XLSX/fixture
     // construction keeps compiling and behaving identically). Populated only by the CSV/flat-JSON parsers.
     string? FolderId = null,
     string? ParentFolderId = null,
@@ -93,7 +93,7 @@ public sealed record QmsCollectionDefinitionDraft(
     string FullPath,
     int DisplayOrder,
     string DefinitionHash,
-    // MOD-0028-FU06 register-backed governance metadata (additive; excluded from the structural
+    // QMS register import extension — governance identity pending. Metadata is additive and excluded from the structural
     // DefinitionHash on purpose — it is descriptive, not structural). Null for legacy path-hash imports.
     string? RegisterFolderId = null,
     string? RegisterParentFolderId = null,
@@ -232,7 +232,7 @@ public sealed record QmsCollectionDefinitionModel(
     string Status,
     string DefinitionHash,
     int VersionToken = 0,
-    // MOD-0028-FU06 register-backed governance metadata (additive projection; null for legacy path-hash imports).
+    // QMS register import extension — governance identity pending; additive projection, null for legacy path-hash imports.
     string? RegisterFolderId = null,
     string? RegisterParentFolderId = null,
     string? DepartmentDomain = null,

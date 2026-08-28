@@ -1,0 +1,276 @@
+@using Diten.Web.Views.CRM.Knowledge
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["TaxonomyTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = Perms.Has("crm.knowledge.subject.manage") || Perms.Has("crm.knowledge.manage") || Perms.Has("crm.territory.model.manage");
+}
+
+<div class="mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <div>
+        <h5 class="mb-0">@Localizer["TaxonomyTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+    <a href="/CRM/Knowledge" class="btn btn-label-secondary"><i class="bx bx-arrow-back me-1"></i>@Localizer["BackToList"]</a>
+</div>
+
+<div id="knowledgeTaxonomyContractError" class="alert alert-danger d-none" role="alert"></div>
+
+<div class="card mb-4">
+    <div class="card-header p-3">
+        <div class="nav-align-top">
+            <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap" role="tablist">
+                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                    <button type="button" class="nav-link active small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#tab-subjects" role="tab" aria-selected="true">
+                        <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-category me-1 wc-tab-icon"></i>@Localizer["SubjectsTab"]</span>
+                        <i class="bx bx-category d-sm-none wc-tab-icon"></i>
+                    </button>
+                </li>
+                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                    <button type="button" class="nav-link small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#tab-topics" role="tab" aria-selected="false" tabindex="-1">
+                        <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-sitemap me-1 wc-tab-icon"></i>@Localizer["TopicsTab"]</span>
+                        <i class="bx bx-sitemap d-sm-none wc-tab-icon"></i>
+                    </button>
+                </li>
+                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                    <button type="button" class="nav-link small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#tab-profiles" role="tab" aria-selected="false" tabindex="-1">
+                        <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-user-detail me-1 wc-tab-icon"></i>@Localizer["ProfilesTab"]</span>
+                        <i class="bx bx-user-detail d-sm-none wc-tab-icon"></i>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="tab-content p-0">
+    @* ---------------- Subjects ---------------- *@
+    @* Contract marker: <partial name="_Filter" /> — the inline filter host is relocated into the toolbar by taxonomy.js. *@
+    <div class="tab-pane fade show active" id="tab-subjects" role="tabpanel">
+        <div id="subjectsFilterHost" class="dt-inline-filter-host">
+            <div class="collapse" id="subjectsFilterCollapse">
+                <div class="pt-0 pb-3">
+                    <form class="m-0" id="subjectsFilterForm" data-no-tracker>
+                        <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                            <div class="filter-chip">
+                                <select id="filterSubjectsStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Status"]"></select>
+                            </div>
+                            <div class="filter-chip">
+                                <select id="filterSubjectsArchived" class="form-select form-select-sm select2" data-placeholder="@Localizer["IncludeArchived"]">
+                                    <option value="true">@Localizer["IncludeArchived"]</option>
+                                    <option value="false">@Localizer["Active"]</option>
+                                </select>
+                            </div>
+                            <div class="ms-auto d-flex gap-3">
+                                <button type="button" class="btn btn-sm btn-primary" data-tax-apply="subjects">@SharedLocalizer["Apply"]</button>
+                                <button type="reset" class="btn btn-sm btn-label-danger" data-tax-reset="subjects">@SharedLocalizer["Reset"]</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div id="skeleton-loader" class="backbone-skeleton p-4">
+                <div class="shimmer skeleton-row skeleton-row-lg"></div>
+                <div class="shimmer skeleton-row"></div>
+                <div class="shimmer skeleton-row"></div>
+                <div class="shimmer skeleton-row"></div>
+            </div>
+            <div class="card-datatable table-responsive">
+                <table id="dt-subjects" data-dt-standard="v2" class="datatables-subjects table border-top w-100">
+                    <thead><tr>
+                        <th></th>
+                        <th>@Localizer["Code"]</th>
+                        <th class="all">@Localizer["Name"]</th>
+                        <th>@Localizer["ParentSubjectId"]</th>
+                        <th>@Localizer["Status"]</th>
+                        <th>@Localizer["SortOrder"]</th>
+                        <th>@Localizer["Description"]</th>
+                        <th>@Localizer["EffectiveFrom"]</th>
+                        <th>@Localizer["EffectiveTo"]</th>
+                        <th>@Localizer["Archived"]</th>
+                        <th>@Localizer["UpdatedAt"]</th>
+                        <th class="all text-end">@Localizer["Actions"]</th>
+                    </tr></thead>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    @* ---------------- Topics ---------------- *@
+    <div class="tab-pane fade" id="tab-topics" role="tabpanel">
+        <div id="topicsFilterHost" class="dt-inline-filter-host">
+            <div class="collapse" id="topicsFilterCollapse">
+                <div class="pt-0 pb-3">
+                    <form class="m-0" id="topicsFilterForm" data-no-tracker>
+                        <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                            <div class="filter-chip">
+                                <select id="filterTopicsStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Status"]"></select>
+                            </div>
+                            <div class="filter-chip">
+                                <select id="filterTopicsSubjectId" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["SubjectId"]"></select>
+                            </div>
+                            <div class="filter-chip">
+                                <select id="filterTopicsArchived" class="form-select form-select-sm select2" data-placeholder="@Localizer["IncludeArchived"]">
+                                    <option value="true">@Localizer["IncludeArchived"]</option>
+                                    <option value="false">@Localizer["Active"]</option>
+                                </select>
+                            </div>
+                            <div class="ms-auto d-flex gap-3">
+                                <button type="button" class="btn btn-sm btn-primary" data-tax-apply="topics">@SharedLocalizer["Apply"]</button>
+                                <button type="reset" class="btn btn-sm btn-label-danger" data-tax-reset="topics">@SharedLocalizer["Reset"]</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div id="topics-skeleton-loader" class="backbone-skeleton p-4">
+                <div class="shimmer skeleton-row skeleton-row-lg"></div>
+                <div class="shimmer skeleton-row"></div>
+                <div class="shimmer skeleton-row"></div>
+                <div class="shimmer skeleton-row"></div>
+            </div>
+            <div class="card-datatable table-responsive">
+                <table id="dt-topics" data-dt-standard="v2" class="datatables-topics table border-top w-100">
+                    <thead><tr>
+                        <th></th>
+                        <th>@Localizer["Code"]</th>
+                        <th class="all">@Localizer["Name"]</th>
+                        <th>@Localizer["SubjectId"]</th>
+                        <th>@Localizer["ParentTopicId"]</th>
+                        <th>@Localizer["Status"]</th>
+                        <th>@Localizer["SortOrder"]</th>
+                        <th>@Localizer["EffectiveFrom"]</th>
+                        <th>@Localizer["EffectiveTo"]</th>
+                        <th>@Localizer["Archived"]</th>
+                        <th>@Localizer["UpdatedAt"]</th>
+                        <th class="all text-end">@Localizer["Actions"]</th>
+                    </tr></thead>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    @* ---------------- Audience profiles ---------------- *@
+    <div class="tab-pane fade" id="tab-profiles" role="tabpanel">
+        <div id="profilesFilterHost" class="dt-inline-filter-host">
+            <div class="collapse" id="profilesFilterCollapse">
+                <div class="pt-0 pb-3">
+                    <form class="m-0" id="profilesFilterForm" data-no-tracker>
+                        <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                            <div class="filter-chip">
+                                <select id="filterProfilesStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Status"]"></select>
+                            </div>
+                            <div class="filter-chip">
+                                <select id="filterProfilesProfileType" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["ProfileType"]"></select>
+                            </div>
+                            <div class="filter-chip">
+                                <select id="filterProfilesArchived" class="form-select form-select-sm select2" data-placeholder="@Localizer["IncludeArchived"]">
+                                    <option value="true">@Localizer["IncludeArchived"]</option>
+                                    <option value="false">@Localizer["Active"]</option>
+                                </select>
+                            </div>
+                            <div class="ms-auto d-flex gap-3">
+                                <button type="button" class="btn btn-sm btn-primary" data-tax-apply="audience-profiles">@SharedLocalizer["Apply"]</button>
+                                <button type="reset" class="btn btn-sm btn-label-danger" data-tax-reset="audience-profiles">@SharedLocalizer["Reset"]</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div id="profiles-skeleton-loader" class="backbone-skeleton p-4">
+                <div class="shimmer skeleton-row skeleton-row-lg"></div>
+                <div class="shimmer skeleton-row"></div>
+                <div class="shimmer skeleton-row"></div>
+                <div class="shimmer skeleton-row"></div>
+            </div>
+            <div class="card-datatable table-responsive">
+                <table id="dt-profiles" data-dt-standard="v2" class="datatables-profiles table border-top w-100">
+                    <thead><tr>
+                        <th></th>
+                        <th>@Localizer["Code"]</th>
+                        <th class="all">@Localizer["Name"]</th>
+                        <th>@Localizer["ProfileType"]</th>
+                        <th>@Localizer["Status"]</th>
+                        <th>@Localizer["SortOrder"]</th>
+                        <th>@Localizer["EffectiveFrom"]</th>
+                        <th>@Localizer["EffectiveTo"]</th>
+                        <th>@Localizer["Archived"]</th>
+                        <th>@Localizer["UpdatedAt"]</th>
+                        <th class="all text-end">@Localizer["Actions"]</th>
+                    </tr></thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* The required-fields tracker badge renders into #taxonomyRequiredTracker (header), not above the footer buttons. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="taxonomyCanvas">
+    <div class="offcanvas-header border-bottom">
+        <div class="d-flex align-items-center flex-wrap gap-2">
+            <h5 class="offcanvas-title mb-0" id="taxonomyCanvasTitle">@Localizer["CreateSubject"]</h5>
+            <span id="taxonomyRequiredTracker" class="d-flex align-items-center"></span>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="taxonomyForm"
+              data-required-tracker-target="#taxonomyRequiredTracker"
+              data-required-tracker-wrapper-class="d-flex align-items-center"
+              data-required-tracker-badge-class="badge bg-label-danger d-flex align-items-center">
+            <input type="hidden" id="taxKind" /><input type="hidden" id="taxId" />
+            <div class="mb-3">
+                <label class="form-label" for="taxCode">@Localizer["Code"] <span class="text-danger">*</span></label>
+                <input id="taxCode" class="form-control" required />
+                <div class="form-text" id="taxCodeHint">@Localizer["CodeAutoGenerated"]</div>
+            </div>
+            <div class="mb-3"><label class="form-label" for="taxName">@Localizer["Name"] <span class="text-danger">*</span></label><input id="taxName" class="form-control" required /></div>
+            <div class="mb-3 tax-only-subject d-none">
+                <label class="form-label" for="taxParentSubjectId">@Localizer["ParentSubjectId"]</label>
+                <select id="taxParentSubjectId" class="form-select tax-select2" data-placeholder="@Localizer["SelectOption"]"></select>
+            </div>
+            <div class="mb-3 tax-only-topic d-none">
+                <label class="form-label" for="taxSubjectId">@Localizer["SubjectId"] <span class="text-danger">*</span></label>
+                <select id="taxSubjectId" class="form-select tax-select2" data-placeholder="@Localizer["SelectOption"]"></select>
+            </div>
+            <div class="mb-3 tax-only-topic d-none">
+                <label class="form-label" for="taxParentTopicId">@Localizer["ParentTopicId"]</label>
+                <select id="taxParentTopicId" class="form-select tax-select2" data-placeholder="@Localizer["SelectOption"]"></select>
+            </div>
+            <div class="mb-3 tax-only-profile d-none">
+                <label class="form-label" for="taxProfileType">@Localizer["ProfileType"]</label>
+                <select id="taxProfileType" class="form-select tax-select2" data-placeholder="@Localizer["SelectOption"]"></select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="taxStatus">@Localizer["Status"]</label>
+                <select id="taxStatus" class="form-select tax-select2" data-placeholder="@Localizer["SelectOption"]"></select>
+            </div>
+            <div class="mb-3"><label class="form-label" for="taxSortOrder">@Localizer["SortOrder"]</label><input id="taxSortOrder" type="number" class="form-control" value="0" /></div>
+            <div class="mb-3"><label class="form-label" for="taxDescription">@Localizer["Description"]</label><textarea id="taxDescription" class="form-control" rows="2"></textarea></div>
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["Cancel"]</button>
+                <button type="submit" class="btn btn-primary" id="taxonomySubmit">@Localizer["Save"]</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/Knowledge/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/Knowledge/index.l10n.js" asp-append-version="true"></script>
+    <script>window.KnowledgeTaxonomyCanManage = @(canManage ? "true" : "false");</script>
+    <script src="~/assets/js/CRM/Knowledge/taxonomy.js" asp-append-version="true"></script>
+}

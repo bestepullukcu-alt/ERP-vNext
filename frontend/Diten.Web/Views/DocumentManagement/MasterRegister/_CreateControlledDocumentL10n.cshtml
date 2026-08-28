@@ -1,0 +1,44 @@
+@using System.Text.Json
+@using Diten.Web.Views.DocumentManagement.MasterRegister
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MasterRegisterIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var payload = new
+    {
+        Error = SharedLocalizer["Error"].Value,
+        ValidationFailed = SharedLocalizer["ValidationFailed"].Value,
+        RegistrationCompleted = Localizer["RegistrationCompleted"].Value,
+        RegistrationIncomplete = Localizer["RegistrationIncomplete"].Value,
+        RegistrationRetryStarted = Localizer["RegistrationRetryStarted"].Value,
+        OperationId = Localizer["OperationId"].Value,
+        CorrelationId = Localizer["CorrelationId"].Value,
+        SelectOption = Localizer["SelectOption"].Value,
+        NoFolders = Localizer["NoFolders"].Value,
+        UnifiedCreatePermissionRequired = Localizer["UnifiedCreatePermissionRequired"].Value,
+        DocumentScopeCompany = Localizer["DocumentScopeCompany"].Value,
+        DocumentScopeCorporate = Localizer["DocumentScopeCorporate"].Value,
+        CompanyScopeHelp = Localizer["CompanyScopeHelp"].Value,
+        CorporateScopeHelp = Localizer["CorporateScopeHelp"].Value,
+        CorporateCollectionInstance = Localizer["CorporateCollectionInstance"].Value,
+        CompanyCollectionInstance = Localizer["CompanyCollectionInstance"].Value,
+        CorporateFolder = Localizer["CorporateFolder"].Value,
+        CompanyFolder = Localizer["CompanyFolder"].Value,
+        SelectCorporateOwner = Localizer["SelectCorporateOwner"].Value,
+        SelectCorporateCollectionInstance = Localizer["SelectCorporateCollectionInstance"].Value,
+        SelectCorporateFolder = Localizer["SelectCorporateFolder"].Value,
+        SelectCompanyCollectionInstance = Localizer["SelectCompanyCollectionInstance"].Value,
+        SelectCompanyFolder = Localizer["SelectCompanyFolder"].Value,
+        NoCorporateCollectionInstancesAvailable = Localizer["NoCorporateCollectionInstancesAvailable"].Value,
+        GovernedLookupUnavailable = Localizer["GovernedLookupUnavailable"].Value,
+        IdempotencyScopeConflict = Localizer["IdempotencyScopeConflict"].Value,
+        DuplicateDocumentTitle = Localizer["DuplicateDocumentTitle"].Value,
+        DuplicateRecordCode = Localizer["DuplicateRecordCode"].Value,
+        VariantContentUnchanged = Localizer["VariantContentUnchanged"].Value,
+        VariantParentNotFound = Localizer["VariantParentNotFound"].Value,
+        ScopeMismatch = Localizer["ScopeMismatch"].Value,
+        CorporateAccessDenied = Localizer["CorporateAccessDenied"].Value,
+        CompanyAccessDenied = Localizer["CompanyAccessDenied"].Value
+    };
+}
+<script type="application/json" id="controlledDocumentRegistrationL10n">@Html.Raw(JsonSerializer.Serialize(payload))</script>

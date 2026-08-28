@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="ActivateCyclePeriod" xml:space="preserve"><value>Aktifleştir</value></data>
+  <data name="ActivateCyclePeriodConfirm" xml:space="preserve"><value>Bu dönem yayına alınsın mı? Aynı iş birimindeki aktif dönemler aynı günü paylaşamaz ve tarihleri salt okunur olur.</value></data>
+  <data name="ActivatedAt" xml:space="preserve"><value>Aktifleştirilme</value></data>
+  <data name="ActiveEditNotice" xml:space="preserve"><value>Bu dönem yayında: tarihleri, yılı, sırası ve iş birimi salt okunurdur. Değiştirmek için kapatıp yeni bir dönem açın.</value></data>
+  <data name="AmbiguousPeriod" xml:space="preserve"><value>Bugünü kapsayan birden fazla aktif dönem var</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>İş birimi</value></data>
+  <data name="BusinessUnitIdHint" xml:space="preserve"><value>Tenant geneli takvim için boş bırakın. Farklı iş birimleri çakışan dönemler işletebilir.</value></data>
+  <data name="BusinessUnitIdPlaceholder" xml:space="preserve"><value>Boşsa tenant geneli</value></data>
+  <data name="CloseCyclePeriod" xml:space="preserve"><value>Kapat</value></data>
+  <data name="CloseCyclePeriodConfirm" xml:space="preserve"><value>Bu dönem kapatılsın mı? Hiçbir şey silinmez, ancak kapatma kesindir: yeniden açma yoktur.</value></data>
+  <data name="ClosedAt" xml:space="preserve"><value>Kapatılma</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>Dönem servisi kullanılamıyor.</value></data>
+  <data name="CreateCyclePeriod" xml:space="preserve"><value>Yeni dönem</value></data>
+  <data name="CurrentPeriod" xml:space="preserve"><value>Bugün geçerli dönem</value></data>
+  <data name="CycleCode" xml:space="preserve"><value>Kod</value></data>
+  <data name="CycleCodeHint" xml:space="preserve"><value>Küçük harf, rakam, nokta, alt çizgi ve tire. Oluşturulduktan sonra değiştirilmez.</value></data>
+  <data name="CycleCodePlaceholder" xml:space="preserve"><value>c-2026-03</value></data>
+  <data name="CycleName" xml:space="preserve"><value>Ad</value></data>
+  <data name="CycleNamePlaceholder" xml:space="preserve"><value>2026 / 3. dönem</value></data>
+  <data name="CyclePeriodsTitle" xml:space="preserve"><value>Dönemler</value></data>
+  <data name="EndDate" xml:space="preserve"><value>Bitiş tarihi</value></data>
+  <data name="EndDateHint" xml:space="preserve"><value>Dâhildir: dönem bu günü kapsar.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni dönem</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Dönemi düzenle</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>Genel bilgiler</value></data>
+  <data name="Lifecycle" xml:space="preserve"><value>Yaşam döngüsü</value></data>
+  <data name="NoActivePeriod" xml:space="preserve"><value>Bugün için aktif dönem yok</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Adlandırılmış planlama dönemleri: bir planın hangi döneme ait olduğu. Çalışma günü ve tatiller ayrı bir takvimdir.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı görünüm</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Dönem aktifleştirildi.</value></data>
+  <data name="RecordClosed" xml:space="preserve"><value>Dönem kapatıldı.</value></data>
+  <data name="SequenceInYear" xml:space="preserve"><value>Sıra</value></data>
+  <data name="StartDate" xml:space="preserve"><value>Başlangıç tarihi</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Kapalı</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="TenantWide" xml:space="preserve"><value>Tenant geneli</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellenme</value></data>
+  <data name="Window" xml:space="preserve"><value>Aralık</value></data>
+  <data name="Year" xml:space="preserve"><value>Yıl</value></data>
+  <data name="YearHint" xml:space="preserve"><value>Planlama yılı. Bir dönem takvim yılını aşabilir.</value></data>
+  <data name="ActiveWindowImmutableHint" xml:space="preserve"><value>Bu dönem yayında: tarihleri, yılı, sırası ve kapsamı salt okunurdur. Değiştirmek için dönemi kapatıp yeni bir dönem açın.</value></data>
+  <data name="BusinessUnitCountryContext" xml:space="preserve"><value>Ülke bağlamı</value></data>
+  <data name="BusinessUnitCountryFilter" xml:space="preserve"><value>Ülke (filtre)</value></data>
+  <data name="BusinessUnitCountryFirstHint" xml:space="preserve"><value>Önce ülke seçin — iş birimleri, o ülkeyi bu dönem boyunca kapsayan territory planlarından listelenir.</value></data>
+  <data name="BusinessUnitFromTerritory" xml:space="preserve"><value>Eşleşen saha planlarının kapsadığı iş birimleri.</value></data>
+  <data name="BusinessUnitFromVocabulary" xml:space="preserve"><value>Yayınlanmış tüm iş birimleri — bu ülke ve tarih aralığıyla eşleşen saha planı yok.</value></data>
+  <data name="BusinessUnitNoPlan" xml:space="preserve"><value>Bu ülke ve tarih aralığını kapsayan etkin bir saha planı yok.</value></data>
+  <data name="BusinessUnitSourceLabel" xml:space="preserve"><value>İş birimi kaynağı</value></data>
+  <data name="BusinessUnitSource_manual" xml:space="preserve"><value>Elle girildi</value></data>
+  <data name="BusinessUnitSource_territory" xml:space="preserve"><value>Saha planından</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>Ülke</value></data>
+  <data name="CountrySetUnavailable" xml:space="preserve"><value>Ülke referans seti henüz yayınlanmadı:</value></data>
+  <data name="CycleStatus_active" xml:space="preserve"><value>Etkin</value></data>
+  <data name="CycleStatus_closed" xml:space="preserve"><value>Kapalı</value></data>
+  <data name="CycleStatus_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="EndDateInclusiveHint" xml:space="preserve"><value>Dâhil: dönem bu günü de kapsar.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Tüzel kişi</value></data>
+  <data name="LegalEntityListUnavailable" xml:space="preserve"><value>Tüzel kişi listesi yüklenemedi.</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Yaşam döngüsü</value></data>
+  <data name="NewCyclePeriod" xml:space="preserve"><value>Yeni dönem</value></data>
+  <data name="Scope" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="ScopeRef" xml:space="preserve"><value>Kapsam referansı</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="ScopeSectionHint" xml:space="preserve"><value>Bir dönem tam olarak tek bir adreste yaşar. Seçtiğiniz seviye hangi referansın geçerli olduğunu belirler.</value></data>
+  <data name="ScopeTenantHint" xml:space="preserve"><value>Bu dönem tenant genelinde geçerlidir.</value></data>
+  <data name="ScopeTenantWide" xml:space="preserve"><value>Tenant geneli</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Kapsam seviyesi</value></data>
+  <data name="ScopeTypeImmutableHint" xml:space="preserve"><value>Kapsam, dönemin kimliğinin parçasıdır ve değiştirilemez. Bunun yerine bu dönemi kapatıp yeni bir dönem açın.</value></data>
+  <data name="ScopeType_business-unit" xml:space="preserve"><value>İş birimi</value></data>
+  <data name="ScopeType_country" xml:space="preserve"><value>Ülke</value></data>
+  <data name="ScopeType_legal-entity" xml:space="preserve"><value>Tüzel kişi</value></data>
+  <data name="ScopeType_tenant" xml:space="preserve"><value>Tenant geneli</value></data>
+  <data name="Version" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="CycleCapacity" xml:space="preserve"><value>Dönem kapasitesi</value></data>
+</root>

@@ -465,6 +465,9 @@
   <data name="ReferenceDataMenu" xml:space="preserve"><value>Справочные данные</value></data>
   <data name="HumanCapitalManagement" xml:space="preserve"><value>Управление человеческим капиталом</value></data>
   <data name="EmployeeDraftsMenu" xml:space="preserve"><value>Черновики сотрудников</value></data>
+  <data name="CommercialSuite" xml:space="preserve"><value>Коммерческий пакет</value></data>
+  <data name="AccountsMenu" xml:space="preserve"><value>Клиенты</value></data>
+  <data name="ContactsMenu" xml:space="preserve"><value>Контакты</value></data>
   <data name="ModuleCodeInUse" xml:space="preserve"><value>Этот код модуля уже используется.</value></data>
   <data name="Organization" xml:space="preserve"><value>Организация</value></data>
   <data name="OrganizationUnits" xml:space="preserve"><value>Организационные единицы</value></data>
@@ -476,6 +479,8 @@
   <data name="DocumentationStructures" xml:space="preserve"><value>Структуры документации</value></data>
   <data name="ControlledDocuments" xml:space="preserve"><value>Управляемые документы</value></data>
   <data name="TemplateMasters" xml:space="preserve"><value>Корпоративные шаблоны</value></data>
+  <data name="DocumentMasterRegister" xml:space="preserve"><value>Главный реестр документов</value></data>
+  <data name="RepositoryAssessments" xml:space="preserve"><value>Оценки хранилищ</value></data>
   <data name="TemplateVariants" xml:space="preserve"><value>Варианты шаблонов</value></data>
   <data name="AccessMatrix" xml:space="preserve"><value>Матрица доступа</value></data>
   <data name="Reconciliation" xml:space="preserve"><value>Сверка</value></data>
@@ -505,6 +510,8 @@
   <data name="Nav.Domain.DOCUMENTMANAGEMENT" xml:space="preserve"><value>Управление документами</value></data>
   <data name="Nav.Domain.MASTERDATAMANAGEMENT" xml:space="preserve"><value>Управление основными данными</value></data>
   <data name="Nav.Domain.PLATFORMSHAREDSERVICES" xml:space="preserve"><value>Общие сервисы платформы</value></data>
+  <data name="Nav.Module.WORKINGCALENDAR" xml:space="preserve"><value>Рабочий календарь</value></data>
+  <data name="Nav.Page.WORKINGCALENDAROVERRIDES" xml:space="preserve"><value>Исключения календаря</value></data>
   <data name="Nav.Module.ACCESSGOVERNANCE" xml:space="preserve"><value>Управление доступом</value></data>
   <data name="Nav.Module.TENANTSETTINGS" xml:space="preserve"><value>Настройки арендатора</value></data>
   <data name="Nav.Module.GOLDENSLIM" xml:space="preserve"><value>Golden Slim</value></data>
@@ -541,5 +548,28 @@
   </data>
   <data name="NoRecords" xml:space="preserve">
     <value>Нет записей</value>
+  </data>
+  <data name="TerritoryManagementMenu" xml:space="preserve"><value>Управление территориями</value></data>
+  <data name="CampaignsMenu" xml:space="preserve"><value>Кампании</value></data>
+  <data name="KnowledgeMenu" xml:space="preserve"><value>База знаний</value></data>
+  <data name="BrandsMenu" xml:space="preserve"><value>Бренды</value></data>
+  <data name="ProductsMenu" xml:space="preserve"><value>Продукты</value></data>
+  <data name="ConsentPreferencesMenu" xml:space="preserve"><value>Согласие и предпочтения</value></data>
+  <data name="KnowledgeConceptsMenu" xml:space="preserve"><value>Concepts</value></data>
+  <data name="KnowledgePathsMenu" xml:space="preserve"><value>Пути знаний</value></data>
+  <data name="ContentEngagementJourneysMenu" xml:space="preserve">
+    <value>Маршруты вовлечения контента</value>
+  </data>
+  <data name="SegmentsMenu" xml:space="preserve">
+    <value>Сегменты</value>
+  </data>
+  <data name="StrategyTemplatesMenu" xml:space="preserve">
+    <value>Шаблоны стратегии</value>
+  </data>
+  <data name="CyclePeriodsMenu" xml:space="preserve">
+    <value>Периоды циклов</value>
+  </data>
+  <data name="CycleCapacitiesMenu" xml:space="preserve">
+    <value>Ёмкость цикла</value>
   </data>
 </root>

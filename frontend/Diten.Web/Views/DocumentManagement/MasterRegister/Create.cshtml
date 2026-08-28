@@ -1,0 +1,16 @@
+@using Diten.Web.Views.DocumentManagement.MasterRegister
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MasterRegisterIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["DocumentMasterRegisterCreate"].Value;
+    ViewData["FormMode"] = "create";
+    Layout = "_LayoutTenantShell";
+}
+
+<partial name="~/Views/DocumentManagement/MasterRegister/_Form.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/MasterRegister/_IndexL10n.cshtml" />
+    <script src="~/assets/js/DocumentManagement/MasterRegister/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/MasterRegister/index.js" asp-append-version="true"></script>
+}

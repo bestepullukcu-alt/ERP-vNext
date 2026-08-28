@@ -1,0 +1,20 @@
+@using Diten.Web.Views.MasterData.Brands
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<BrandsIndex> Localizer
+
+@* Brand → Products tab. READ-ONLY: products are never mutated from the brand surface, and archiving a brand
+   never cascades to them. Row links jump to the Product detail page, which owns those actions. *@
+<div class="card-datatable table-responsive">
+    <table id="dt-brand-products" data-dt-standard="v2" class="datatables-brand-products table border-top w-100">
+        <thead><tr>
+            <th></th>
+            <th>@Localizer["ProductCode"]</th>
+            <th class="all">@Localizer["ProductName"]</th>
+            <th>@Localizer["ProductStatus"]</th>
+            <th>@Localizer["ProductType"]</th>
+            <th>@Localizer["Archived"]</th>
+            <th>@Localizer["UpdatedAt"]</th>
+            <th class="all text-end">@Localizer["Actions"]</th>
+        </tr></thead>
+    </table>
+</div>

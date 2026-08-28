@@ -90,7 +90,12 @@ public sealed class CollectionInstanceReferenceReader : ICollectionInstanceRefer
         instance.InstanceStatus.ToString().ToUpperInvariant(),
         instance.InstanceStatus == CollectionInstanceStatus.Active,
         MapBindings(instance),
-        instance.DisplayOrder);
+        instance.DisplayOrder,
+        instance.CollectionScopeType.ToString().ToUpperInvariant(),
+        instance.ScopeOwnerId,
+        instance.CorporateOwnerId,
+        instance.StoragePartition,
+        instance.ProvisioningOperationId);
 
     private static IReadOnlyList<CollectionInstanceScopeBindingDto> MapBindings(CollectionInstance instance) =>
         instance.ScopeBindings

@@ -1,0 +1,351 @@
+@model Diten.Web.Models.CRM.CycleCapacityEditViewModel
+@using Diten.Web.Views.CRM.CycleCapacities
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CycleCapacitiesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var action = isEdit ? "Edit" : "Create";
+    // The pin is set once. On edit the period is shown, never offered — the API has no way to move it.
+    var pinLocked = isEdit || (Model.CyclePeriodId is not null && Model.CyclePeriod is not null);
+    // D-COUNTRY = B: a country-scoped period NAMES the country, so the control is read-only and the server derives it
+    // again on every write. On any other scope the author must choose one, because the calendar always needs a country.
+    var countryLocked = Model.CalendarCountryIsDerived;
+    // Cancel returns the author where they came from, exactly as Save does. Leaving Cancel pointing at the capacity
+    // list would make the two buttons disagree about what "done" means.
+    var backUrl = string.Equals(Model.ReturnTo, "cycleperiods", StringComparison.OrdinalIgnoreCase)
+        ? "/CRM/CyclePeriods"
+        : "/CRM/CycleCapacities";
+    var backLabel = string.Equals(Model.ReturnTo, "cycleperiods", StringComparison.OrdinalIgnoreCase)
+        ? Localizer["CyclePeriodsBreadcrumb"].Value
+        : Localizer["CycleCapacitiesTitle"].Value;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="@backUrl">@backLabel</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="@backUrl" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        <button type="submit" form="cycleCapacityForm" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>
+
+@* The estimate notice is PERMANENT and appears on Create, Edit and Details alike. The number this form produces is
+   built on authored averages and an interim configured FTE, and presenting it without that context would let a reader
+   treat a planning estimate as a quota. *@
+<div class="alert alert-warning d-flex align-items-start gap-2" role="alert">
+    <i class="bx bx-info-circle mt-1"></i>
+    <div>
+        <strong>@Localizer["EstimateNoticeTitle"]</strong>
+        <div class="small">@Localizer["EstimateNoticeBody"]</div>
+    </div>
+</div>
+
+<form id="cycleCapacityForm" asp-controller="CycleCapacities" asp-action="@action"
+      asp-route-cycleCapacityId="@Model.CycleCapacityId" method="post" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="CycleCapacityId" />
+    <input type="hidden" asp-for="ExpectedVersion" />
+    <input type="hidden" asp-for="CalendarCountryIsDerived" />
+    @* The origin, carried through the POST so a rejected save redisplays with it intact. *@
+    <input type="hidden" asp-for="ReturnTo" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    @* Round-2 layout. The monthly plan is a full-width row of its OWN: at thirteen columns it was being asked
+       to live in two thirds of the page, which is what made the horizontal scroll unreadable in the first
+       place. The pinned period moves up to the sidebar, which now carries three context cards — what this
+       capacity belongs to, who works it, and what was noted about it. *@
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8">
+
+            <!-- ② Activity minute budget -->
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ActivityBudgetSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="DailyWorkMinutes" class="form-label fw-medium">
+                                @Localizer["DailyWorkMinutes"] <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="DailyWorkMinutes" type="number" class="form-control" min="1" max="1440" required />
+                            <div class="form-text">@Localizer["DailyWorkMinutesHint"]</div>
+                            <span asp-validation-for="DailyWorkMinutes" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="PromoProductTime" class="form-label fw-medium">
+                                @Localizer["PromoProductTime"] <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="PromoProductTime" type="number" class="form-control js-visit-minute" min="0" max="480" required />
+                            <div class="form-text">@Localizer["PerVisitHint"]</div>
+                            <span asp-validation-for="PromoProductTime" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="NonPromoProductTime" class="form-label fw-medium">
+                                @Localizer["NonPromoProductTime"] <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="NonPromoProductTime" type="number" class="form-control js-visit-minute" min="0" max="480" required />
+                            <div class="form-text">@Localizer["PerVisitHint"]</div>
+                            <span asp-validation-for="NonPromoProductTime" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="TravelingTime" class="form-label fw-medium">
+                                @Localizer["TravelingTime"] <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="TravelingTime" type="number" class="form-control js-day-minute" min="0" max="1440" required />
+                            <div class="form-text">@Localizer["PerDayHint"]</div>
+                            <span asp-validation-for="TravelingTime" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="ReportDuration" class="form-label fw-medium">
+                                @Localizer["ReportDuration"] <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="ReportDuration" type="number" class="form-control js-day-minute" min="0" max="1440" required />
+                            <div class="form-text">@Localizer["PerDayHint"]</div>
+                            <span asp-validation-for="ReportDuration" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="QuizDuration" class="form-label fw-medium">
+                                @Localizer["QuizDuration"] <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="QuizDuration" type="number" class="form-control js-day-minute" min="0" max="1440" required />
+                            <div class="form-text">@Localizer["PerDayHint"]</div>
+                            <span asp-validation-for="QuizDuration" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            @* Live, advisory only. The runtime enforces both rules; this just stops an author saving a
+                               shape it will refuse. *@
+                            <div id="budgetWarning" class="alert alert-danger d-none py-2 mb-0" role="alert"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ⑤ Notes -->
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["NotesSection"]</h6>
+                    <label asp-for="Description" class="form-label fw-medium">@SharedLocalizer["Description"]</label>
+                    <textarea asp-for="Description" class="form-control" rows="5" maxlength="1000"></textarea>
+                    <span asp-validation-for="Description" class="text-danger small mt-1"></span>
+                </div>
+            </section>
+        </div>
+
+        <!-- Side Column (Right) — two context cards -->
+        <div class="col-12 col-lg-4">
+
+            <!-- ① Pinned period -->
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["PinnedPeriodSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="CyclePeriodId" class="form-label fw-medium">
+                                @Localizer["CyclePeriod"] <span class="text-danger">*</span>
+                            </label>
+                            @if (pinLocked)
+                            {
+                                @* Shown, never offered: a capacity belongs to one period for its whole life. *@
+                                <input type="text" class="form-control" readonly
+                                       value="@(Model.CyclePeriod is null ? Model.CyclePeriodId?.ToString() : $"{Model.CyclePeriod.CycleCode} · {Model.CyclePeriod.CycleName}")" />
+                                <input type="hidden" asp-for="CyclePeriodId" />
+                            }
+                            else
+                            {
+                                <select asp-for="CyclePeriodId" class="form-select" id="cyclePeriodSelect" required>
+                                    <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                    @foreach (var option in Model.PeriodOptions)
+                                    {
+                                        <option value="@option.CyclePeriodId" data-hint="@option.Hint">@option.Label</option>
+                                    }
+                                </select>
+                                @if (Model.PeriodOptions.Count == 0)
+                                {
+                                    <div class="form-text text-warning">@Localizer["NoPeriodsAvailable"]</div>
+                                }
+                            }
+                            <span asp-validation-for="CyclePeriodId" class="text-danger small mt-1"></span>
+                            @if (Model.CyclePeriod is { } period)
+                            {
+                                <div class="form-text">
+                                    @Localizer["PeriodWindow"]:
+                                    <span class="fw-medium">@period.StartDate.UtcDateTime.ToString("yyyy-MM-dd") – @period.EndDate.UtcDateTime.ToString("yyyy-MM-dd")</span>
+                                    <span class="badge bg-label-primary ms-2">@period.ScopeType</span>
+                                    @if (!string.IsNullOrWhiteSpace(period.ScopeRef))
+                                    {
+                                        <span class="ms-1">@period.ScopeRef</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label asp-for="CalendarCountryCode" class="form-label fw-medium">
+                                @Localizer["CalendarCountryCode"] <span class="text-danger">*</span>
+                            </label>
+                            @if (countryLocked)
+                            {
+                                <input type="text" class="form-control" readonly value="@Model.CalendarCountryCode" />
+                                <input type="hidden" asp-for="CalendarCountryCode" />
+                                <div class="form-text">@Localizer["CalendarCountryDerivedHint"]</div>
+                            }
+                            else
+                            {
+                                <select asp-for="CalendarCountryCode" class="form-select" required>
+                                    <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                    @foreach (var option in Model.CountryOptions)
+                                    {
+                                        <option value="@option.Value">@option.Label</option>
+                                    }
+                                </select>
+                                @if (!Model.CountryReady)
+                                {
+                                    @* Empty and NOT ready, never substituted: a hardcoded list would let an author pick
+                                       a value the platform does not know, and the save would be refused for a reason
+                                       the form never showed them. *@
+                                    <div class="form-text text-warning">@Localizer["CalendarCountryNotReady"]</div>
+                                }
+                                else
+                                {
+                                    <div class="form-text">@Localizer["CalendarCountryHint"]</div>
+                                }
+                            }
+                            <span asp-validation-for="CalendarCountryCode" class="text-danger small mt-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ④ Field force -->
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["FieldForceSection"]</h6>
+                    @* FU07 moved the FTE onto each month, so this card no longer holds a control. It is KEPT rather
+                       than deleted: _Form and Details must declare the same section/card map, and an empty card is
+                       worse than one that says where the number went. *@
+                    <p class="text-muted mb-0">@Localizer["FteMovedToMonthly"]</p>
+                    <p class="text-muted small mb-0 mt-2">@Localizer["FteInterimHint"]</p>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    @* The monthly plan, across the whole width. *@
+    <div class="row g-4">
+        <div class="col-12">
+
+            <!-- ③ Monthly deductions -->
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["MonthlyPlanSection"]</h6>
+                    @* The months come from the period's window and are NOT editable as a set: which months exist is a
+                       fact of the period, and letting a form add or remove one would let a capacity describe a month
+                       its period does not cover. Weekends and public holidays are NOT entered here — the working
+                       calendar has already excluded them. *@
+                    <p class="text-muted small mb-4">@Localizer["MonthlyDeductionsHint"]</p>
+
+                    @if (Model.Months.Count == 0)
+                    {
+                        <div class="alert alert-secondary mb-0">@Localizer["MonthsPendingPeriod"]</div>
+                    }
+                    else
+                    {
+                        @* ONE table. FU06 showed the author's inputs here and the resulting figures in a second table
+                           underneath, so the same month appeared twice on one page. The computed cells now live in the
+                           row they belong to and are refreshed in place by form.js — which updates ONLY the read-only
+                           cells, so an author's cursor is never taken out of the field they are typing in. *@
+                        <div id="livePreviewNotice" class="mb-3 d-none"></div>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0 dt-frozen-table" id="capacityMonthsTable">
+                                <thead>
+                                    @* Month and Working days are FROZEN: they are what a reader anchors on, and at
+                                       thirteen columns they were the first to scroll away. Everything from
+                                       "non-working days" rightwards scrolls under them. *@
+                                    <tr>
+                                        <th scope="col" class="dt-frozen dt-frozen-1">@Localizer["Month"]</th>
+                                        <th scope="col" class="text-end dt-frozen dt-frozen-2">@Localizer["WorkingDays"]</th>
+                                        <th scope="col" class="text-end">@Localizer["NonWorkingDays"]</th>
+                                        <th scope="col">@Localizer["MeetingDays"]</th>
+                                        <th scope="col">@Localizer["TrainingDays"]</th>
+                                        <th scope="col">@Localizer["VacationDays"]</th>
+                                        <th scope="col">@Localizer["MicroTargetingDayCount"]</th>
+                                        <th scope="col">@Localizer["MicroTargetingDuration"]</th>
+                                        <th scope="col" class="text-end">@Localizer["Fte"]</th>
+                                        @* The result block, pinned to the right edge — r1 is the rightmost column. *@
+                                        <th scope="col" class="text-end dt-frozen dt-frozen-r4">@Localizer["DeductedDays"]</th>
+                                        <th scope="col" class="text-end dt-frozen dt-frozen-r3">@Localizer["FieldDays"]</th>
+                                        <th scope="col" class="text-end dt-frozen dt-frozen-r2">@Localizer["VisitMinutes"]</th>
+                                        <th scope="col" class="text-end dt-frozen dt-frozen-r1">@Localizer["TotalVisitNumber"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (var i = 0; i < Model.Months.Count; i++)
+                                    {
+                                        var monthKey = $"{Model.Months[i].Year}-{Model.Months[i].MonthNumber:00}";
+                                        <tr data-month-key="@monthKey">
+                                            <td class="text-nowrap dt-frozen dt-frozen-1">
+                                                <span class="fw-medium">@Model.Months[i].MonthLabel</span>
+                                                <span class="badge bg-label-warning ms-2 d-none" data-cell="noFieldDays">@Localizer["NoFieldDays"]</span>
+                                                <input type="hidden" asp-for="Months[i].Year" />
+                                                <input type="hidden" asp-for="Months[i].MonthNumber" />
+                                                @* Server-stamped and rendered disabled, so it is posted by nobody. The
+                                                   hidden twin keeps the row's index intact for model binding. *@
+                                                <input type="hidden" asp-for="Months[i].Fte" />
+                                            </td>
+                                            <td class="text-end text-muted dt-frozen dt-frozen-2" data-cell="workingDays">—</td>
+                                            <td class="text-end text-muted" data-cell="nonWorkingDays">—</td>
+                                            <td><input asp-for="Months[i].MeetingDays" type="number" class="form-control form-control-sm js-month-input" min="0" max="31" /></td>
+                                            <td><input asp-for="Months[i].TrainingDays" type="number" class="form-control form-control-sm js-month-input" min="0" max="31" /></td>
+                                            <td><input asp-for="Months[i].VacationDays" type="number" class="form-control form-control-sm js-month-input" min="0" max="31" /></td>
+                                            <td><input asp-for="Months[i].MicroTargetingDayCount" type="number" class="form-control form-control-sm js-month-input" min="0" max="31" /></td>
+                                            <td><input asp-for="Months[i].MicroTargetingDuration" type="number" class="form-control form-control-sm js-month-input" min="0" max="1440" /></td>
+                                            <td class="text-end">
+                                                @* DISABLED, exactly as the capacity-wide FTE was in FU06 — only now it
+                                                   is per month, which is what a seasonal field force actually is. The
+                                                   server stamps it on every write; re-enabling this in a browser
+                                                   changes nothing (F-FTE-HR). *@
+                                                <input type="number" step="0.01" class="form-control form-control-sm text-end" disabled
+                                                       value="@(Model.Months[i].Fte?.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture))" />
+                                            </td>
+                                            <td class="text-end text-muted dt-frozen dt-frozen-r4" data-cell="deductedDays">—</td>
+                                            <td class="text-end text-muted dt-frozen dt-frozen-r3" data-cell="fieldDays">—</td>
+                                            <td class="text-end text-muted dt-frozen dt-frozen-r2" data-cell="visitMinutes">—</td>
+                                            <td class="text-end fw-medium dt-frozen dt-frozen-r1" data-cell="totalVisitNumber">—</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    @* The footer is split across the same frozen blocks rather than using one colspan:
+                                       a spanning cell cannot be sticky, and the cycle total belongs directly under the
+                                       column it totals. *@
+                                    <tr>
+                                        <th class="text-end dt-frozen dt-frozen-1">@Localizer["TotalVisitNumber"]</th>
+                                        <th class="dt-frozen dt-frozen-2"></th>
+                                        <th colspan="7"></th>
+                                        <th class="dt-frozen dt-frozen-r4"></th>
+                                        <th class="dt-frozen dt-frozen-r3"></th>
+                                        <th class="dt-frozen dt-frozen-r2"></th>
+                                        <th class="text-end dt-frozen dt-frozen-r1" id="livePreviewTotal">—</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <p class="text-muted small mt-3 mb-0">@Localizer["EstimateSectionHint"]</p>
+                    }
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

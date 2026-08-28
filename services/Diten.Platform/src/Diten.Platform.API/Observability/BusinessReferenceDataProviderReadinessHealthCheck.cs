@@ -31,6 +31,16 @@ public sealed class BusinessReferenceDataProviderReadinessHealthCheck : IHealthC
             var repository = scope.ServiceProvider.GetRequiredService<IBusinessReferenceDataStewardshipRepository>();
             var referenceTenantId = repository.GetRequiredReferenceTenantId();
             var options = _options.Value;
+
+            // The MOD-0290 Verified-GSKU pilot is opt-in and NO environment ships its config section. An entirely
+            // absent section is "not provisioned here", not "misconfigured": failing readiness for it puts the whole
+            // Platform service at /health 503 while every dependency is fine, which masks real outages. A PARTIALLY
+            // configured section still fails below — that genuinely is an invalid state someone meant to enable.
+            if (IsPilotUnconfigured(options))
+            {
+                return HealthCheckResult.Healthy("Verified GSKU operational pilot is not provisioned in this environment.");
+            }
+
             VerifiedStateFacts? stateFacts = null;
             if (options.Enabled)
             {
@@ -107,6 +117,14 @@ public sealed class BusinessReferenceDataProviderReadinessHealthCheck : IHealthC
             return HealthCheckResult.Unhealthy("Business reference data provider configuration or state is invalid.");
         }
     }
+
+    /// <summary>True only when the pilot section is wholly absent — both switches off and every value unset.</summary>
+    private static bool IsPilotUnconfigured(VerifiedGskuOperationalProvisioningOptions options) =>
+        !options.Enabled
+        && !options.EnumerationEnabled
+        && !options.ConsumerTenantId.HasValue
+        && string.IsNullOrWhiteSpace(options.ExpectedCatalogVersion)
+        && string.IsNullOrWhiteSpace(options.ExpectedCatalogFingerprint);
 
     private sealed record VerifiedStateFacts(
         string CatalogVersion,

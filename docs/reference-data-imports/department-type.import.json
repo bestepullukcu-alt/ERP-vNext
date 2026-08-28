@@ -1,0 +1,13 @@
+[
+  { "value_code": "purchasing", "display_name": "Purchasing", "sort_order": 10, "is_deprecated": false, "attributes": {} },
+  { "value_code": "pharmacy", "display_name": "Pharmacy", "sort_order": 20, "is_deprecated": false, "attributes": {} },
+  { "value_code": "admin", "display_name": "Administration", "sort_order": 30, "is_deprecated": false, "attributes": {} },
+  { "value_code": "clinical", "display_name": "Clinical", "sort_order": 40, "is_deprecated": false, "attributes": {} },
+  { "value_code": "medical-affairs", "display_name": "Medical Affairs", "sort_order": 50, "is_deprecated": false, "attributes": {} },
+  { "value_code": "nursing", "display_name": "Nursing", "sort_order": 60, "is_deprecated": false, "attributes": {} },
+  { "value_code": "laboratory", "display_name": "Laboratory", "sort_order": 70, "is_deprecated": false, "attributes": {} },
+  { "value_code": "finance-billing", "display_name": "Finance & Billing", "sort_order": 80, "is_deprecated": false, "attributes": {} },
+  { "value_code": "warehouse-logistics", "display_name": "Warehouse & Logistics", "sort_order": 90, "is_deprecated": false, "attributes": {} },
+  { "value_code": "quality", "display_name": "Quality", "sort_order": 100, "is_deprecated": false, "attributes": {} },
+  { "value_code": "other", "display_name": "Other", "sort_order": 110, "is_deprecated": false, "attributes": {} }
+]

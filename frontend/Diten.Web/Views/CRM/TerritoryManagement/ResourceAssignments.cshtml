@@ -1,0 +1,224 @@
+@model Diten.Web.Models.CRM.TerritoryModelDetailPageViewModel
+@using Diten.Web.Views.CRM.TerritoryManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TerritoryManagementResources> L
+@inject IHtmlLocalizer<Diten.Web.SharedResource> Shared
+@{
+    var m = Model.Model;
+    var isDraft = string.Equals(m.Status, "draft", StringComparison.OrdinalIgnoreCase);
+    ViewData["Title"] = $"{L["ResourceAssignments"].Value} — {m.Name}";
+    Layout = "_LayoutTenantShell";
+}
+
+@* Header follows the MOD-0029 Master Register Details convention: title → breadcrumb → description. *@
+<div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-3 gap-3">
+    <div>
+        <h5 class="mb-0 d-flex align-items-center gap-2">
+            @L["ResourceAssignments"]
+            <span class="badge bg-label-secondary">@(m.StoredStatus.Length > 0 ? m.StoredStatus : m.Status)</span>
+        </h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/TerritoryManagement">@L["TerritoryModels"]</a></li>
+                <li class="breadcrumb-item"><a href="/CRM/TerritoryManagement/Models/@m.Id">@m.ModelCode — @m.Name</a></li>
+                <li class="breadcrumb-item active text-primary">@L["ResourceAssignments"]</li>
+            </ol>
+        </nav>
+        <span class="text-muted small">@L["ResourceAssignmentsSubtitle"]</span>
+    </div>
+    <div class="d-flex align-items-center flex-wrap gap-2">
+        <div class="btn-group">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bx bx-navigation me-1"></i>@L["GoTo"]
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <a class="dropdown-item" href="/CRM/TerritoryManagement/Models/@m.Id/AssignmentRules">
+                        <i class="bx bx-filter-alt me-2"></i>@L["AssignmentRules"]
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="/CRM/TerritoryManagement/Models/@m.Id/AssignmentRules/Preview">
+                        <i class="bx bx-play-circle me-2"></i>@L["PreviewAllRules"]
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="/CRM/TerritoryManagement/Models/@m.Id/AssignmentRules/History">
+                        <i class="bx bx-history me-2"></i>@L["HistoryAllRules"]
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item" href="/CRM/TerritoryManagement/Models/@m.Id">
+                        <i class="bx bx-sitemap me-2"></i>@L["TerritoryHierarchy"]
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item" href="/CRM/TerritoryManagement">
+                        <i class="bx bx-arrow-back me-2"></i>@L["BackToList"]
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible" role="alert">@TempData["SuccessMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible" role="alert">@TempData["ErrorMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+
+<div class="card mb-4">
+    <div class="card-header p-3">
+        <div class="nav-align-top">
+            <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap" role="tablist">
+                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                    <button type="button" class="nav-link active small border shadow-none wc-tab-compact"
+                            id="tab-resourceassignments" data-bs-toggle="tab" data-bs-target="#pane-resourceassignments"
+                            role="tab" aria-controls="pane-resourceassignments" aria-selected="true">
+                        <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-group me-1 wc-tab-icon"></i>@L["ResourceAssignments"]</span>
+                        <i class="bx bx-group d-sm-none wc-tab-icon"></i>
+                    </button>
+                </li>
+                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                    <button type="button" class="nav-link small border shadow-none wc-tab-compact"
+                            id="tab-planvscurrent" data-bs-toggle="tab" data-bs-target="#pane-planvscurrent"
+                            role="tab" aria-controls="pane-planvscurrent" aria-selected="false" tabindex="-1">
+                        <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-git-compare me-1 wc-tab-icon"></i>@L["PlanVsCurrent"]</span>
+                        <i class="bx bx-git-compare d-sm-none wc-tab-icon"></i>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="tab-content p-0">
+    <div class="tab-pane fade show active" id="pane-resourceassignments" role="tabpanel" aria-labelledby="tab-resourceassignments">
+        <partial name="~/Views/CRM/TerritoryManagement/_ResourceAssignments.cshtml" model="Model" />
+    </div>
+    <div class="tab-pane fade" id="pane-planvscurrent" role="tabpanel" aria-labelledby="tab-planvscurrent">
+        <partial name="~/Views/CRM/TerritoryManagement/_PlanVsCurrent.cshtml" model="Model" />
+    </div>
+</div>
+
+<script id="territory-resource-data" type="application/json">
+    @Json.Serialize(new
+    {
+        modelId = m.Id,
+        canEdit = Model.CanManageModel && (isDraft || string.Equals(m.Status, "active", StringComparison.OrdinalIgnoreCase)),
+        modelStatus = m.Status,
+        modelEffectiveFrom = m.EffectiveFrom.UtcDateTime.ToString("yyyy-MM-dd"),
+        modelEffectiveTo = m.EffectiveTo?.UtcDateTime.ToString("yyyy-MM-dd"),
+        labels = new
+        {
+            assignResource = L["AssignResource"].Value,
+            editAssignment = L["EditAssignment"].Value,
+            deleteAssignment = L["DeleteAssignment"].Value,
+            endAssignment = L["EndAssignment"].Value,
+            endAssignmentConfirm = L["EndAssignmentConfirm"].Value,
+            replaceAssignment = L["ReplaceAssignment"].Value,
+            replaceAssignmentConfirm = L["ReplaceAssignmentConfirm"].Value,
+            transferAssignment = L["TransferAssignment"].Value,
+            transferAssignmentConfirm = L["TransferAssignmentConfirm"].Value,
+            effectiveDate = L["EffectiveDate"].Value,
+            selectUser = L["SelectUser"].Value,
+            resourceLookupNotReady = L["ResourceLookupNotReady"].Value,
+            fieldRequired = Shared["FieldRequired"].Value,
+            assignmentHistory = L["AssignmentHistory"].Value,
+            noAssignmentHistory = L["NoAssignmentHistory"].Value,
+            position = L["Position"].Value,
+            targetNode = L["TargetNode"].Value,
+            businessUnitScope = L["BusinessUnitScope"].Value,
+            validFrom = L["ValidFrom"].Value,
+            validTo = L["ValidTo"].Value,
+            changeReason = L["ChangeReason"].Value,
+            noAssignments = L["NoAssignments"].Value,
+            noConflictsFound = L["NoConflictsFound"].Value,
+            roleDefaultsCoverage = L["RoleDefaultsCoverage"].Value,
+            expired = L["Expired"].Value,
+            edit = L["Edit"].Value,
+            confirm = L["Confirm"].Value,
+            cancel = L["Cancel"].Value,
+            checkConflicts = L["CheckConflicts"].Value,
+            // DataTable v2 toolbar labels
+            actions = L["Actions"].Value,
+            filter = Shared["Filter"].Value,
+            saveView = Shared["SaveView"].Value,
+            recordSaved = Shared["RecordSaved"].Value,
+            recordCreated = Shared["RecordCreated"].Value,
+            recordUpdated = Shared["RecordUpdated"].Value,
+            recordDeleted = Shared["RecordDeleted"].Value,
+            gatewayError = Shared["GatewayError"].Value
+        }
+    })
+</script>
+
+<script id="territory-plan-vs-current-data" type="application/json">
+    @Json.Serialize(new
+    {
+        modelId = m.Id,
+        modelStatus = m.StoredStatus.Length > 0 ? m.StoredStatus : m.Status,
+        labels = new
+        {
+            planVsCurrent = L["PlanVsCurrent"].Value,
+            changeType = L["ChangeType"].Value,
+            territoryNode = L["TerritoryNode"].Value,
+            businessUnitScope = L["BusinessUnitScope"].Value,
+            position = L["Position"].Value,
+            plannedResource = L["PlannedResource"].Value,
+            currentResource = L["CurrentResource"].Value,
+            effectiveDate = L["EffectiveDate"].Value,
+            reason = L["Reason"].Value,
+            noComparison = L["NoPlanVsCurrentRows"].Value,
+            notYetActivated = L["PlanNotYetActivated"].Value,
+            notCaptured = L["PlanSnapshotNotCaptured"].Value,
+            historical = L["PlanVsCurrentHistorical"].Value,
+            planned = L["Planned"].Value,
+            current = L["Current"].Value,
+            replacementLink = L["ReplacementLink"].Value,
+            transferLink = L["TransferLink"].Value,
+            changedAt = L["ChangedAt"].Value,
+            changedBy = L["ChangedBy"].Value,
+            changedByUnavailable = L["ChangedByUnavailable"].Value,
+            correlationId = L["CorrelationId"].Value,
+            alsoDiffers = L["AlsoDiffers"].Value,
+            legacyRole = L["LegacyRoleDisplayOnly"].Value,
+            changed = L["ChangedRows"].Value,
+            plannedCount = L["PlannedCount"].Value,
+            currentCount = L["CurrentCount"].Value,
+            primary = L["Primary"].Value,
+            filter = Shared["Filter"].Value,
+            details = Shared["Details"].Value,
+            actions = L["Actions"].Value,
+            export = Shared["Export"].Value,
+            saveView = Shared["SaveView"].Value,
+            recordSaved = Shared["RecordSaved"].Value,
+            gatewayError = Shared["GatewayError"].Value,
+            diffTypes = new
+            {
+                Unchanged = L["DiffUnchanged"].Value,
+                Replaced = L["DiffReplaced"].Value,
+                TransferredOut = L["DiffTransferredOut"].Value,
+                TransferredIn = L["DiffTransferredIn"].Value,
+                AddedAfterActivation = L["DiffAddedAfterActivation"].Value,
+                EndedAfterActivation = L["DiffEndedAfterActivation"].Value,
+                MissingCurrent = L["DiffMissingCurrent"].Value,
+                DateChanged = L["DiffDateChanged"].Value,
+                ScopeChanged = L["DiffScopeChanged"].Value,
+                PositionChanged = L["DiffPositionChanged"].Value
+            }
+        }
+    })
+</script>
+
+@section Scripts {
+    <script src="~/assets/js/CRM/TerritoryManagement/territory-filter-chips.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/TerritoryManagement/resource-assignments.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/TerritoryManagement/plan-vs-current.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,18 @@
+@model Diten.Web.Models.CRM.CampaignEditViewModel
+@using Diten.Web.Views.CRM.Campaigns
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CampaignIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["EditCampaign"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "edit";
+}
+
+<partial name="~/Views/CRM/Campaigns/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <partial name="~/Views/CRM/Campaigns/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/Campaigns/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/Campaigns/form.js" asp-append-version="true"></script>
+}

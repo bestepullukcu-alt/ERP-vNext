@@ -69,6 +69,48 @@ public sealed class CollectionInstanceRepository : TenantRepository<CollectionIn
         return await Collection.Find(filter).SortBy(x => x.FullPath).ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<CollectionInstance>> GetCorporateAsync(
+        Guid? baselineReleaseId,
+        Guid? corporateOwnerId,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<CollectionInstance>.Filter.And(
+            ExecutionFilter,
+            Builders<CollectionInstance>.Filter.Eq(x => x.CollectionScopeType, CollectionScopeType.Corporate));
+        if (baselineReleaseId is { } baseline)
+        {
+            filter &= Builders<CollectionInstance>.Filter.Eq(x => x.BaselineReleaseId, baseline);
+        }
+        if (corporateOwnerId is { } owner)
+        {
+            filter &= Builders<CollectionInstance>.Filter.Eq(x => x.ScopeOwnerId, owner);
+        }
+
+        return await Collection.Find(filter).SortBy(x => x.FullPath).ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<CollectionInstance>> CreateCorporateTreeIfAbsentAsync(
+        Guid baselineReleaseId,
+        Guid corporateOwnerId,
+        IReadOnlyList<CollectionInstance> instances,
+        CancellationToken ct = default)
+    {
+        foreach (var instance in instances)
+        {
+            typeof(CollectionInstance).GetProperty(nameof(CollectionInstance.TenantId))?.SetValue(instance, TenantContext.TenantId);
+            var filter = Builders<CollectionInstance>.Filter.And(
+                ExecutionFilter,
+                Builders<CollectionInstance>.Filter.Eq(x => x.CollectionScopeType, CollectionScopeType.Corporate),
+                Builders<CollectionInstance>.Filter.Eq(x => x.ScopeOwnerId, corporateOwnerId),
+                Builders<CollectionInstance>.Filter.Eq(x => x.BaselineReleaseId, baselineReleaseId),
+                Builders<CollectionInstance>.Filter.Eq(x => x.CanonicalId, instance.CanonicalId),
+                Builders<CollectionInstance>.Filter.Ne(x => x.InstanceStatus, CollectionInstanceStatus.Archived));
+            await Collection.ReplaceOneAsync(filter, instance, new ReplaceOptions { IsUpsert = true }, ct);
+        }
+
+        return await GetCorporateAsync(baselineReleaseId, corporateOwnerId, ct);
+    }
+
     // Soft archive (no hard delete): flips InstanceStatus to Archived for the given ids, tenant-scoped.
     public async Task<long> ArchiveManyAsync(IReadOnlyList<Guid> ids, CancellationToken ct = default)
     {
@@ -105,6 +147,76 @@ public sealed class CollectionInstanceRepository : TenantRepository<CollectionIn
             .Inc(x => x.VersionToken, 1);
         var result = await Collection.UpdateManyAsync(filter, update, cancellationToken: ct);
         return result.ModifiedCount;
+    }
+}
+
+public sealed class CorporateCollectionProvisioningOperationRepository
+    : TenantRepository<CorporateCollectionInstanceProvisioningOperation>, ICorporateCollectionProvisioningOperationRepository
+{
+    public CorporateCollectionProvisioningOperationRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, "document_management_corporate_collection_provisioning_operations")
+    {
+    }
+
+    public async Task<CorporateCollectionInstanceProvisioningOperation> CreateOrGetAsync(
+        CorporateCollectionInstanceProvisioningOperation operation,
+        CancellationToken ct = default)
+    {
+        typeof(CorporateCollectionInstanceProvisioningOperation)
+            .GetProperty(nameof(CorporateCollectionInstanceProvisioningOperation.TenantId))
+            ?.SetValue(operation, TenantContext.TenantId);
+        var filter = Builders<CorporateCollectionInstanceProvisioningOperation>.Filter.And(
+            ExecutionFilter,
+            Builders<CorporateCollectionInstanceProvisioningOperation>.Filter.Eq(x => x.IdempotencyKey, operation.IdempotencyKey));
+        var update = Builders<CorporateCollectionInstanceProvisioningOperation>.Update
+            .SetOnInsert(x => x.Id, operation.Id)
+            .SetOnInsert(x => x.TenantId, TenantContext.TenantId)
+            .SetOnInsert(x => x.IdempotencyKey, operation.IdempotencyKey)
+            .SetOnInsert(x => x.BaselineReleaseId, operation.BaselineReleaseId)
+            .SetOnInsert(x => x.CorporateOwnerId, operation.CorporateOwnerId)
+            .SetOnInsert(x => x.ScopeType, CollectionScopeType.Corporate)
+            .SetOnInsert(x => x.ScopeOwnerId, operation.ScopeOwnerId)
+            .SetOnInsert(x => x.Status, CorporateCollectionProvisioningStatus.Pending)
+            .SetOnInsert(x => x.AttemptCount, operation.AttemptCount)
+            .SetOnInsert(x => x.LastAttemptAt, operation.LastAttemptAt)
+            .SetOnInsert(x => x.CorrelationId, operation.CorrelationId)
+            .SetOnInsert(x => x.DisplayName, operation.DisplayName)
+            .SetOnInsert(x => x.Description, operation.Description)
+            .SetOnInsert(x => x.IsDeleted, false);
+        return await Collection.FindOneAndUpdateAsync(
+            filter,
+            update,
+            new FindOneAndUpdateOptions<CorporateCollectionInstanceProvisioningOperation>
+            {
+                IsUpsert = true,
+                ReturnDocument = ReturnDocument.After
+            },
+            ct);
+    }
+
+    public Task<CorporateCollectionInstanceProvisioningOperation?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        var filter = Builders<CorporateCollectionInstanceProvisioningOperation>.Filter.And(
+            ExecutionFilter,
+            Builders<CorporateCollectionInstanceProvisioningOperation>.Filter.Eq(x => x.Id, id));
+        return Collection.Find(filter).FirstOrDefaultAsync(ct)!;
+    }
+
+    public Task<CorporateCollectionInstanceProvisioningOperation?> GetByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default)
+    {
+        var filter = Builders<CorporateCollectionInstanceProvisioningOperation>.Filter.And(
+            ExecutionFilter,
+            Builders<CorporateCollectionInstanceProvisioningOperation>.Filter.Eq(x => x.IdempotencyKey, idempotencyKey));
+        return Collection.Find(filter).FirstOrDefaultAsync(ct)!;
+    }
+
+    public async Task<bool> UpdateAsync(CorporateCollectionInstanceProvisioningOperation operation, CancellationToken ct = default)
+    {
+        var filter = Builders<CorporateCollectionInstanceProvisioningOperation>.Filter.And(
+            ExecutionFilter,
+            Builders<CorporateCollectionInstanceProvisioningOperation>.Filter.Eq(x => x.Id, operation.Id));
+        var result = await Collection.ReplaceOneAsync(filter, operation, cancellationToken: ct);
+        return result.ModifiedCount == 1;
     }
 }
 

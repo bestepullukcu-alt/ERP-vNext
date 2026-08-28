@@ -1,0 +1,127 @@
+@using Diten.Web.Views.CRM.Contacts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ContactIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["ImportTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManageLinks = (bool?)ViewData["CanManageLinks"] ?? false;
+}
+
+<div class="mb-3 d-flex flex-wrap justify-content-between align-items-start gap-2">
+    <div>
+        <h5 class="mb-0">@Localizer["ImportTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["ImportPageDescription"]</p>
+    </div>
+    <a class="btn btn-label-secondary" href="/CRM/Contacts">
+        <i class="icon-base bx bx-arrow-back me-1"></i>@SharedLocalizer["Back"]
+    </a>
+</div>
+
+@* ① Upload *@
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="alert alert-warning py-2 px-3" role="alert">@Localizer["ExportPiiWarning"]</div>
+        <div class="alert alert-info py-2 px-3" role="alert">@Localizer["ImportHistoricalNotice"]</div>
+        @if (!canManageLinks)
+        {
+            <div class="alert alert-secondary py-2 px-3" role="alert">@Localizer["ImportNoLinkPermission"]</div>
+        }
+
+        <div class="row g-3 align-items-end">
+            <div class="col-md-6">
+                <label class="form-label" for="import-file">@Localizer["ImportFileLabel"]</label>
+                <input class="form-control" type="file" id="import-file" accept=".xlsx">
+                <div class="form-text">@Localizer["ImportFileHelp"]</div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="import-strict">
+                    <label class="form-check-label" for="import-strict">@Localizer["ImportStrictMode"]</label>
+                </div>
+                <div class="form-text">@Localizer["ImportStrictModeHelp"]</div>
+            </div>
+            <div class="col-md-3 text-md-end">
+                <button type="button" class="btn btn-primary" id="import-validate">
+                    <i class="icon-base bx bx-search-alt me-1"></i>@Localizer["ImportValidate"]
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ② Preview *@
+<div class="card mb-4 d-none" id="import-preview-card">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <h6 class="mb-0" id="import-preview-title">@Localizer["ImportPreviewTitle"]</h6>
+        <div class="d-flex gap-2">
+            <select class="form-select form-select-sm" id="import-filter" style="min-width: 12rem;">
+                <option value="">@Localizer["ImportFilterAll"]</option>
+                <option value="create">@Localizer["ImportSummaryCreates"]</option>
+                <option value="update">@Localizer["ImportSummaryUpdates"]</option>
+                <option value="end">@Localizer["ImportSummaryEnds"]</option>
+                <option value="skip">@Localizer["ImportSummarySkips"]</option>
+                <option value="error">@Localizer["ImportSummaryErrors"]</option>
+                <option value="conflict">@Localizer["ImportSummaryConflicts"]</option>
+            </select>
+            <button type="button" class="btn btn-success btn-sm" id="import-apply" disabled>
+                <i class="icon-base bx bx-check me-1"></i>@Localizer["ImportApply"]
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div id="import-file-messages"></div>
+        <div class="row g-2 mb-3" id="import-summary"></div>
+        <div id="import-blocked" class="alert alert-danger py-2 px-3 d-none" role="alert"></div>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>@Localizer["ImportColumnSheet"]</th>
+                        <th>@Localizer["ImportColumnRow"]</th>
+                        <th>@Localizer["ImportColumnOperation"]</th>
+                        <th>@Localizer["ImportColumnEntity"]</th>
+                        <th>@Localizer["ImportColumnRecord"]</th>
+                        <th>@SharedLocalizer["Status"]</th>
+                        <th>@Localizer["ImportColumnChangedFields"]</th>
+                        <th>@Localizer["ImportColumnMessage"]</th>
+                    </tr>
+                </thead>
+                <tbody id="import-rows"></tbody>
+            </table>
+        </div>
+        <p class="text-muted small mb-0">@Localizer["ImportPiiSafeNotice"]</p>
+    </div>
+</div>
+
+@section Scripts {
+    <script id="contacts-import-l10n" type="application/json">
+        @Json.Serialize(new
+        {
+            importSelectFile = Localizer["ImportSelectFile"].Value,
+            importOnlyXlsx = Localizer["ImportOnlyXlsx"].Value,
+            importValidating = Localizer["ImportValidating"].Value,
+            importApplying = Localizer["ImportApplying"].Value,
+            importPreviewTitle = Localizer["ImportPreviewTitle"].Value,
+            importResultTitle = Localizer["ImportResultTitle"].Value,
+            importApplyConfirm = Localizer["ImportApplyConfirm"].Value,
+            importApplySuccess = Localizer["ImportApplySuccess"].Value,
+            importNothingToApply = Localizer["ImportNothingToApply"].Value,
+            importHasErrors = Localizer["ImportHasErrors"].Value,
+            summaryCreates = Localizer["ImportSummaryCreates"].Value,
+            summaryUpdates = Localizer["ImportSummaryUpdates"].Value,
+            summaryEnds = Localizer["ImportSummaryEnds"].Value,
+            summarySkips = Localizer["ImportSummarySkips"].Value,
+            summaryErrors = Localizer["ImportSummaryErrors"].Value,
+            summaryWarnings = Localizer["ImportSummaryWarnings"].Value,
+            summaryConflicts = Localizer["ImportSummaryConflicts"].Value,
+            apply = Localizer["ImportApply"].Value,
+            cancel = SharedLocalizer["Cancel"].Value,
+            errorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+            noRows = SharedLocalizer["NotAvailable"].Value,
+            previewUrl = Url.Action("ImportPreview", "Contacts"),
+            applyUrl = Url.Action("ImportApply", "Contacts")
+        })
+    </script>
+    <script src="~/assets/js/CRM/Contacts/import.js" asp-append-version="true"></script>
+}

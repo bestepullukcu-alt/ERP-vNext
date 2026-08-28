@@ -1,0 +1,98 @@
+@using Diten.Web.Views.CRM.KnowledgeConcepts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeConceptsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* MOD-0162-FU03 Tab 3 — ConceptRelationship create/edit (Golden Slim offcanvas).
+   RelationshipType is the FU01C canonical vocabulary served by the capability contract (leads-to / requires /
+   addresses / evidences / belongs-to / custom) rendered as a Select2 — never a text input. From/To pickers are
+   scoped to the chosen subject. Subject, both endpoints, the type and the code are fixed at creation: the update
+   contract does not carry them. Duplicate (From, To, Type) is a backend 409 and a cycle a backend 400 — this form
+   surfaces the reason and never pre-empts it. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRelationshipCreateEdit" aria-labelledby="offcanvasRelationshipCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <div class="d-flex align-items-center flex-wrap gap-2">
+            <h5 id="offcanvasRelationshipCreateEditLabel" class="offcanvas-title mb-0">@Localizer["CreateConnection"]</h5>
+            <span id="conceptRelationshipRequiredTracker" class="d-flex align-items-center"></span>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="conceptRelationshipFormAlert" class="alert alert-danger d-none" role="alert"></div>
+        @* V16 diagnostic: shown on edit when the stored edge matches no chain template. It informs, it never blocks. *@
+        <div id="conceptRelationshipConformanceNote" class="alert alert-warning d-none" role="status">@Localizer["NonConformingNote"]</div>
+
+        <form id="conceptRelationshipForm" class="pt-0" novalidate
+              data-required-tracker-target="#conceptRelationshipRequiredTracker"
+              data-required-tracker-wrapper-class="d-flex align-items-center"
+              data-required-tracker-badge-class="badge bg-label-danger d-flex align-items-center">
+            <input type="hidden" id="relationshipFormId" />
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="relSubjectId" class="form-label fw-medium">@Localizer["SubjectId"] <span class="text-danger">*</span></label>
+                    <select id="relSubjectId" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]" required></select>
+                    <div class="form-text">@Localizer["NodePickerSubjectFirst"]</div>
+                </div>
+
+                <div class="col-12">
+                    <label for="relFromNodeId" class="form-label fw-medium">@Localizer["FromConceptNode"] <span class="text-danger">*</span></label>
+                    <select id="relFromNodeId" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]" required></select>
+                </div>
+
+                <div class="col-12">
+                    <label for="relToNodeId" class="form-label fw-medium">@Localizer["ToConceptNode"] <span class="text-danger">*</span></label>
+                    <select id="relToNodeId" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]" required></select>
+                </div>
+
+                <div class="col-12">
+                    <label for="relRelationshipType" class="form-label fw-medium">@Localizer["RelationshipType"] <span class="text-danger">*</span></label>
+                    <select id="relRelationshipType" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]" required></select>
+                    <div class="form-text">@Localizer["ImmutableAfterCreate"]</div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="relRelationshipCode" class="form-label fw-medium">@Localizer["RelationshipCode"] <span class="text-danger">*</span></label>
+                    <input type="text" id="relRelationshipCode" class="form-control" maxlength="120" required />
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="relRelationshipName" class="form-label fw-medium">@Localizer["RelationshipName"] <span class="text-danger">*</span></label>
+                    <input type="text" id="relRelationshipName" class="form-control" maxlength="240" required />
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="relDirection" class="form-label fw-medium">@Localizer["Direction"]</label>
+                    <select id="relDirection" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]"></select>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="relPriority" class="form-label fw-medium">@Localizer["Priority"]</label>
+                    <input type="number" id="relPriority" class="form-control" min="0" step="1" value="0" />
+                    <div class="form-text">@Localizer["PriorityNote"]</div>
+                </div>
+
+                <div class="col-12">
+                    <label for="relStatus" class="form-label fw-medium">@Localizer["Status"]</label>
+                    <select id="relStatus" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]"></select>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="relEffectiveFrom" class="form-label fw-medium">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
+                    <input type="date" id="relEffectiveFrom" class="form-control" required />
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="relEffectiveTo" class="form-label fw-medium">@Localizer["EffectiveTo"]</label>
+                    <input type="date" id="relEffectiveTo" class="form-control" />
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="submit" form="conceptRelationshipForm" id="btnSaveConceptRelationship" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>

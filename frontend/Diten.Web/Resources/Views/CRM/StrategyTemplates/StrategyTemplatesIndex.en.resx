@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="ActivateStrategyTemplate" xml:space="preserve"><value>Activate</value></data>
+  <data name="ActivateStrategyTemplateConfirm" xml:space="preserve"><value>Activate this play? Its bindings are frozen and every bound segment must already be active.</value></data>
+  <data name="Active" xml:space="preserve"><value>Active</value></data>
+  <data name="AddContentBinding" xml:space="preserve"><value>Bind content</value></data>
+  <data name="AddProductLine" xml:space="preserve"><value>Add product line</value></data>
+  <data name="AddSegmentBinding" xml:space="preserve"><value>Bind segment</value></data>
+  <data name="AddSkuAllocation" xml:space="preserve"><value>Add SKU</value></data>
+  <data name="Apply" xml:space="preserve"><value>Apply</value></data>
+  <data name="ApplyIsMicroTargetHelp" xml:space="preserve"><value>Applying a play to a period (targets, plans) belongs to field planning, not to this page.</value></data>
+  <data name="ArchiveStrategyTemplate" xml:space="preserve"><value>Archive</value></data>
+  <data name="ArchiveStrategyTemplateConfirm" xml:space="preserve"><value>Archive this play? Nothing is deleted; it becomes read-only and stays explainable.</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archived</value></data>
+  <data name="ArchivedTemplateReadOnly" xml:space="preserve"><value>This strategy template is archived and read-only.</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Are you sure?</value></data>
+  <data name="BindingRole" xml:space="preserve"><value>Role</value></data>
+  <data name="BindingState" xml:space="preserve"><value>Bindings</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Bulk delete</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Delete the selected records?</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>Business unit</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Classification</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Columns</value></data>
+  <data name="ContainmentNotVerifiedHelp" xml:space="preserve"><value>Whether a SKU belongs to the selected product is not verified here — please check it yourself.</value></data>
+  <data name="ContentBindingCount" xml:space="preserve"><value>Content</value></data>
+  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Only published, non-archived content can be bound, pinned to that exact version.</value></data>
+  <data name="ContentRef" xml:space="preserve"><value>Content</value></data>
+  <data name="ContentRefType" xml:space="preserve"><value>Content type</value></data>
+  <data name="ContentSection" xml:space="preserve"><value>Which story — content</value></data>
+  <data name="CreateStrategyTemplate" xml:space="preserve"><value>Create strategy template</value></data>
+  <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>A declared rhythm records the author's intent. It is not binding and the frequency resolver does not read it.</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="EditStrategyTemplate" xml:space="preserve"><value>Edit strategy template</value></data>
+  <data name="Editable" xml:space="preserve"><value>editable</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Effective from</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Effective to</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>No strategy template found.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>The operation could not be completed.</value></data>
+  <data name="Export" xml:space="preserve"><value>Export</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="FrequencyIntentHelp" xml:space="preserve"><value>Reference an existing active policy, declare a non-binding rhythm, or choose none. No policy is ever written from here.</value></data>
+  <data name="FrequencyIntentMode" xml:space="preserve"><value>Frequency intent</value></data>
+  <data name="FrequencyPolicy" xml:space="preserve"><value>Visit frequency policy</value></data>
+  <data name="FrequencySection" xml:space="preserve"><value>How often — frequency intent</value></data>
+  <data name="FrequencyType" xml:space="preserve"><value>Frequency</value></data>
+  <data name="Frozen" xml:space="preserve"><value>frozen</value></data>
+  <data name="FrozenBindingsHelp" xml:space="preserve"><value>This play is live, so its bindings are frozen. Create a new version to change them; the name and notes stay editable.</value></data>
+  <data name="GlobalProduct" xml:space="preserve"><value>Global product</value></data>
+  <data name="Gsku" xml:space="preserve"><value>SKU (GSKU)</value></data>
+  <data name="GskuPickerUnavailable" xml:space="preserve"><value>You do not have permission to browse the SKU list.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identity</value></data>
+  <data name="Import" xml:space="preserve"><value>Import</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Include archived</value></data>
+  <data name="IntentNote" xml:space="preserve"><value>Why this rhythm</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Lifecycle</value></data>
+  <data name="LimitReached" xml:space="preserve"><value>The limit for this list has been reached.</value></data>
+  <data name="LineWeightPercentage" xml:space="preserve"><value>Line weight %</value></data>
+  <data name="Loading" xml:space="preserve"><value>Loading…</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>New version</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Create a new draft version of this play? The current version stays readable.</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="NoContentBindings" xml:space="preserve"><value>No content bound. The play then has no content dimension.</value></data>
+  <data name="NoMembersEverHelp" xml:space="preserve"><value>A play binds a segment's identity. It never lists or counts the people inside it.</value></data>
+  <data name="NoProductLines" xml:space="preserve"><value>No product line. The play then has no product dimension.</value></data>
+  <data name="NoSegmentBindings" xml:space="preserve"><value>No segment bound yet. A play without a segment does not answer "who?".</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notes</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Reusable playbooks that bind a segment, a frequency intent, a product/SKU mix and content. A template binds; it never produces.</value></data>
+  <data name="Passive" xml:space="preserve"><value>Passive</value></data>
+  <data name="Percentage" xml:space="preserve"><value>Share %</value></data>
+  <data name="PeriodType" xml:space="preserve"><value>Period</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>You do not have permission to browse this list.</value></data>
+  <data name="ProductLineCount" xml:space="preserve"><value>Product lines</value></data>
+  <data name="ProductSection" xml:space="preserve"><value>What — product and SKU mix</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Quick view</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Activated.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Archived.</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>Created.</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>Updated.</value></data>
+  <data name="Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="RequiredVisitCount" xml:space="preserve"><value>Visits per period</value></data>
+  <data name="Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Save view</value></data>
+  <data name="Search" xml:space="preserve"><value>Search</value></data>
+  <data name="Segment" xml:space="preserve"><value>Segment</value></data>
+  <data name="SegmentBindingCount" xml:space="preserve"><value>Segments</value></data>
+  <data name="SegmentBindingHelp" xml:space="preserve"><value>A bound segment is pinned to that exact version. The list is an enumeration — no union or exclusion is applied here.</value></data>
+  <data name="SegmentSection" xml:space="preserve"><value>Who — segments</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Select…</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>All</value></data>
+  <data name="SkuAllocationCount" xml:space="preserve"><value>SKU rows</value></data>
+  <data name="SkuAllocationMode" xml:space="preserve"><value>SKU mode</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Order</value></data>
+  <data name="Status" xml:space="preserve"><value>Status</value></data>
+  <data name="StatusSeparateEndpointHelp" xml:space="preserve"><value>The status changes only through Activate / Archive.</value></data>
+  <data name="StrategyTemplateContractUnavailable" xml:space="preserve"><value>The strategy template contract could not be read. The page stays read-only.</value></data>
+  <data name="StrategyTemplatesTitle" xml:space="preserve"><value>Strategy Templates</value></data>
+  <data name="SubjectType" xml:space="preserve"><value>Subject type</value></data>
+  <data name="SubjectTypeHelp" xml:space="preserve"><value>What the play targets. Immutable after create; every bound segment must match it.</value></data>
+  <data name="Superseded" xml:space="preserve"><value>superseded</value></data>
+  <data name="TemplateCode" xml:space="preserve"><value>Code</value></data>
+  <data name="TemplateCodeHelp" xml:space="preserve"><value>Stable business key. It is never renamed — change the name instead.</value></data>
+  <data name="TemplateName" xml:space="preserve"><value>Name</value></data>
+  <data name="TemplateStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="TemplateVersion" xml:space="preserve"><value>Version</value></data>
+  <data name="TotalMustBe100" xml:space="preserve"><value>The SKU shares of each allocated line must total exactly 100.00. Nothing is rounded or normalised for you.</value></data>
+  <data name="TotalPercentage" xml:space="preserve"><value>Total</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Updated at</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>View details</value></data>
+  <data name="Yes" xml:space="preserve"><value>Yes</value></data>
+</root>

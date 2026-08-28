@@ -1,3 +1,5 @@
+using Diten.Platform.Application.Features.DocumentManagementMasterRegister;
+
 namespace Diten.Platform.Application.Features.DocumentManagementControlledDocuments.Services;
 
 /// <summary>
@@ -15,11 +17,18 @@ public sealed record DocumentPrincipal(
     IReadOnlyCollection<string> RoleIds,
     IReadOnlyCollection<Guid> CompanyIds,
     bool IsPlatformAdmin = false,
-    bool IsTenantAdmin = false)
+    bool IsTenantAdmin = false,
+    IReadOnlyCollection<string>? Permissions = null)
 {
     public static readonly DocumentPrincipal Empty = new(Guid.Empty, [], []);
 
     public bool HasAdministrativeDocumentAccess => IsPlatformAdmin || IsTenantAdmin;
+
+    public bool HasMasterRegisterGovernanceAccess =>
+        HasAdministrativeDocumentAccess
+        || (Permissions ?? []).Any(p =>
+            string.Equals(p, DocumentMasterRegisterPermissions.View, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(p, DocumentMasterRegisterPermissions.Manage, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>Builds the set of typed grantee tokens (<c>user:{id}</c>, <c>role:{id}</c>, <c>company:{id}</c>)
     /// used for AccessPolicy matching.</summary>

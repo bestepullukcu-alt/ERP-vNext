@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CampaignsTitle" xml:space="preserve"><value>Kampanyalar</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Kampanyaları, hedef üyeliğini ve rıza duyarlı statik anlık görüntüleri yönetin.</value></data>
+  <data name="CreateCampaign" xml:space="preserve"><value>Kampanya Oluştur</value></data>
+  <data name="CampaignDetail" xml:space="preserve"><value>Kampanya Detayı</value></data>
+  <data name="EditCampaign" xml:space="preserve"><value>Kampanyayı Düzenle</value></data>
+  <data name="ArchiveCampaign" xml:space="preserve"><value>Kampanyayı Arşivle</value></data>
+  <data name="ArchiveCampaignConfirm" xml:space="preserve"><value>Bu kampanya arşivlensin mi? Bu yumuşak bir yaşam döngüsü işlemidir; geçmiş okunabilir kalır.</value></data>
+  <data name="CampaignContractUnavailable" xml:space="preserve"><value>Kampanya yetenek sözleşmesi kullanılamıyor. İşlemler devre dışı.</value></data>
+  <data name="CampaignCode" xml:space="preserve"><value>Kampanya Kodu</value></data>
+  <data name="CampaignName" xml:space="preserve"><value>Kampanya Adı</value></data>
+  <data name="CampaignType" xml:space="preserve"><value>Kampanya Tipi</value></data>
+  <data name="CampaignStatus" xml:space="preserve"><value>Kampanya Durumu</value></data>
+  <data name="ObjectiveType" xml:space="preserve"><value>Hedef Tipi</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>İş Birimi Kimliği</value></data>
+  <data name="DefaultConsentChannel" xml:space="preserve"><value>Varsayılan Rıza Kanalı</value></data>
+  <data name="DefaultConsentPurpose" xml:space="preserve"><value>Varsayılan Rıza Amacı</value></data>
+  <data name="StartDate" xml:space="preserve"><value>Başlangıç Tarihi</value></data>
+  <data name="EndDate" xml:space="preserve"><value>Bitiş Tarihi</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="SummarySection" xml:space="preserve"><value>Özet</value></data>
+  <data name="ConsentContextSection" xml:space="preserve"><value>Rıza Bağlamı</value></data>
+  <data name="ConsentDefaultsHelp" xml:space="preserve"><value>Bu değerler isteğe bağlı kampanya varsayılanlarıdır. Rıza filtreli bir anlık görüntü yine de görünür bir kanal ve amaç gerektirir.</value></data>
+  <data name="NoDefault" xml:space="preserve"><value>Varsayılan yok</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Kaynak Sistem</value></data>
+  <data name="ExternalId" xml:space="preserve"><value>Dış Kimlik</value></data>
+  <data name="ExternalCode" xml:space="preserve"><value>Dış Kod</value></data>
+  <data name="ExternalName" xml:space="preserve"><value>Dış Ad</value></data>
+  <data name="ImportedAt" xml:space="preserve"><value>İçe Aktarma Zamanı</value></data>
+  <data name="Primary" xml:space="preserve"><value>Birincil</value></data>
+  <data name="Remove" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="CampaignTargets" xml:space="preserve"><value>Kampanya Hedefleri</value></data>
+  <data name="CampaignTargetId" xml:space="preserve"><value>Kampanya Hedef Kimliği</value></data>
+  <data name="CreateTarget" xml:space="preserve"><value>Hedef Oluştur</value></data>
+  <data name="EditTarget" xml:space="preserve"><value>Hedefi Düzenle</value></data>
+  <data name="ArchiveTarget" xml:space="preserve"><value>Hedefi Arşivle</value></data>
+  <data name="ArchiveTargetConfirm" xml:space="preserve"><value>Bu hedef arşivlensin mi? Bu yumuşak bir yaşam döngüsü işlemidir; geçmiş okunabilir kalır.</value></data>
+  <data name="TargetType" xml:space="preserve"><value>Hedef Tipi</value></data>
+  <data name="TargetId" xml:space="preserve"><value>Hedef Kimliği</value></data>
+  <data name="TargetDisplayName" xml:space="preserve"><value>Hedef Görünen Adı</value></data>
+  <data name="DisplayLabelNotSourceOfTruth" xml:space="preserve"><value>Yalnızca görüntüleme etiketi; doğruluk kaynağı değildir.</value></data>
+  <data name="TargetStatus" xml:space="preserve"><value>Hedef Durumu</value></data>
+  <data name="TargetSource" xml:space="preserve"><value>Hedef Kaynağı</value></data>
+  <data name="SourceReferenceType" xml:space="preserve"><value>Kaynak Referans Tipi</value></data>
+  <data name="SourceReferenceId" xml:space="preserve"><value>Kaynak Referans Kimliği</value></data>
+  <data name="SnapshotBatchId" xml:space="preserve"><value>Anlık Görüntü Parti Kimliği</value></data>
+  <data name="SelectionReason" xml:space="preserve"><value>Seçim Gerekçesi</value></data>
+  <data name="ReasonCodes" xml:space="preserve"><value>Gerekçe Kodları</value></data>
+  <data name="ExclusionReason" xml:space="preserve"><value>Hariç Tutma Gerekçesi</value></data>
+  <data name="ConsentDecision" xml:space="preserve"><value>Rıza Kararı</value></data>
+  <data name="EligibilityStatus" xml:space="preserve"><value>Uygunluk Durumu</value></data>
+  <data name="EvaluatedAt" xml:space="preserve"><value>Değerlendirme Zamanı</value></data>
+  <data name="MatchedConsentId" xml:space="preserve"><value>Eşleşen Rıza Kimliği</value></data>
+  <data name="MatchedPreferenceIds" xml:space="preserve"><value>Eşleşen Tercih Kimlikleri</value></data>
+  <data name="EvaluatorVersion" xml:space="preserve"><value>Değerlendirici Sürümü</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Geçerlilik Başlangıcı</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Geçerlilik Bitişi</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>Geçerlilik Anı</value></data>
+  <data name="Archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="ArchivedAt" xml:space="preserve"><value>Arşivlenme Tarihi</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellenme Tarihi</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="CreateSnapshot" xml:space="preserve"><value>Statik Hedef Anlık Görüntüsü Oluştur</value></data>
+  <data name="ApplyConsentFilter" xml:space="preserve"><value>Rıza Filtresini Uygula</value></data>
+  <data name="ConsentChannel" xml:space="preserve"><value>Rıza Kanalı</value></data>
+  <data name="ConsentPurpose" xml:space="preserve"><value>Rıza Amacı</value></data>
+  <data name="ConsentFilterNotAppliedWarning" xml:space="preserve"><value>Rıza filtrelemesi kapalı. Anlık görüntü ciddi bir consent_filter_not_applied uyarısı taşıyacak.</value></data>
+  <data name="SourceType" xml:space="preserve"><value>Kaynak Tipi</value></data>
+  <data name="TargetItems" xml:space="preserve"><value>Hedef Öğeleri</value></data>
+  <data name="AddRow" xml:space="preserve"><value>Satır Ekle</value></data>
+  <data name="JsonPasteFallback" xml:space="preserve"><value>JSON yapıştırma seçeneği</value></data>
+  <data name="JsonFallbackHelp" xml:space="preserve"><value>Girildiğinde, geçerli JSON hedef öğeleri hafif manuel satırların yerini alır. Bu bir içe aktarma motoru değildir.</value></data>
+  <data name="CommaSeparated" xml:space="preserve"><value>Virgülle ayrılmış değerler.</value></data>
+  <data name="ExcludedTargetsVisibleHelp" xml:space="preserve"><value>Hariç tutulan, engellenen ve bilinmeyen hedefler gerekçeleriyle birlikte görünür kalır.</value></data>
+  <data name="TargetsUnavailable" xml:space="preserve"><value>Hedef yönetimi kullanılamıyor veya izin verilmiyor.</value></data>
+  <data name="UnsupportedFiltersNote" xml:space="preserve"><value>API arama, amaç, iş birimi veya tarih aralığı filtrelemesini desteklemiyor; sahte bir istemci filtresi uygulanmaz.</value></data>
+  <data name="UnsupportedFilters" xml:space="preserve"><value>Desteklenmeyen: Arama, Amaç Tipi, İş Birimi, Tarih Aralığı</value></data>
+  <data name="UnsupportedTargetFiltersNote" xml:space="preserve"><value>Hariç tutma gerekçesi ile rıza kararı/durumu yalnızca görüntülenir; API'de bunlar için sunucu filtresi yoktur.</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Arşivlenenleri dâhil et</value></data>
+  <data name="Apply" xml:space="preserve"><value>Uygula</value></data>
+  <data name="Reset" xml:space="preserve"><value>Sıfırla</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtre</value></data>
+  <data name="Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="Cancel" xml:space="preserve"><value>İptal</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Listeye dön</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seçin…</value></data>
+  <data name="RequiredProgress" xml:space="preserve"><value>Zorunlu alanlar: ilk açılışta 0/5 tamamlandı.</value></data>
+  <data name="ArchivedCampaignReadOnly" xml:space="preserve"><value>Bu kampanya arşivlenmiş. Kampanya düzenleme ve hedef değiştirme işlemleri devre dışıdır.</value></data>
+  <data name="DateWindow" xml:space="preserve"><value>Tarih Aralığı</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="View" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Kampanya kaydı bulunamadı.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>İşlem tamamlanamadı.</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>Tüm zorunlu alanları doldurun ve geçersiz tarih aralıklarını düzeltin.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Başarıyla arşivlendi.</value></data>
+  <data name="SnapshotCreated" xml:space="preserve"><value>Statik hedef anlık görüntüsü oluşturuldu.</value></data>
+  <data name="CreatedCount" xml:space="preserve"><value>Oluşturulan</value></data>
+  <data name="ReconciledCount" xml:space="preserve"><value>Mutabık Kılınan</value></data>
+  <data name="ExcludedCount" xml:space="preserve"><value>Hariç Tutulan</value></data>
+  <data name="DifferentSourceConflict" xml:space="preserve"><value>Anlık görüntü yazılmadı: bir hedef farklı bir kaynağa ait.</value></data>
+  <data name="Allowed" xml:space="preserve"><value>İzinli</value></data>
+  <data name="Blocked" xml:space="preserve"><value>Engellendi</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="NotApplicable" xml:space="preserve"><value>Uygulanamaz</value></data>
+  <data name="Excluded" xml:space="preserve"><value>Hariç Tutuldu</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Yeni Ekle</value></data>
+  <data name="EndDateBeforeStartDate" xml:space="preserve"><value>Bitiş tarihi başlangıç tarihinden önce olamaz.</value></data>
+  <data name="Active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Emin misiniz?</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Toplu sil</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Seçili kayıtlar silinsin mi?</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Sütunlar</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="Export" xml:space="preserve"><value>Dışa aktar</value></data>
+  <data name="Import" xml:space="preserve"><value>İçe aktar</value></data>
+  <data name="Passive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı bakış</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Görünümü kaydet</value></data>
+  <data name="Search" xml:space="preserve"><value>Ara</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Tümü</value></data>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Detayları gör</value></data>
+  <data name="CyclePeriod" xml:space="preserve">
+    <value>Dönem</value>
+  </data>
+  <data name="NoCyclePeriod" xml:space="preserve">
+    <value>Bir döneme bağlı değil</value>
+  </data>
+  <data name="CyclePeriodHelp" xml:space="preserve">
+    <value>Opsiyonel. Bağlıyken kampanya penceresi dönem penceresinin içinde kalmalıdır (iki uç dâhil).</value>
+  </data>
+  <data name="CyclePeriodWindow" xml:space="preserve">
+    <value>Dönem penceresi:</value>
+  </data>
+  <data name="CyclePeriodClosedBadge" xml:space="preserve">
+    <value>kapalı</value>
+  </data>
+  <data name="CampaignOutsideCycleWindow" xml:space="preserve">
+    <value>Kampanya penceresi bağlı dönemin penceresinin dışında.</value>
+  </data>
+  <data name="CyclePeriodNotActive" xml:space="preserve">
+    <value>Bir kampanyaya yalnızca aktif bir dönem bağlanabilir.</value>
+  </data>
+  <data name="CyclePeriodNotFound" xml:space="preserve">
+    <value>Seçilen dönem bulunamadı.</value>
+  </data>
+  <data name="EndDateRequiredWhenBound" xml:space="preserve">
+    <value>Bir döneme bağlı kampanya için bitiş tarihi zorunludur.</value>
+  </data>
+  <data name="ScopeSection" xml:space="preserve">
+    <value>Kapsam</value>
+  </data>
+  <data name="ScopeType" xml:space="preserve">
+    <value>Kapsam seviyesi</value>
+  </data>
+  <data name="ScopeReference" xml:space="preserve">
+    <value>Kapsam referansı</value>
+  </data>
+  <data name="ScopeType_tenant" xml:space="preserve">
+    <value>Tüm kiracı</value>
+  </data>
+  <data name="ScopeType_country" xml:space="preserve">
+    <value>Ülke</value>
+  </data>
+  <data name="ScopeType_legal-entity" xml:space="preserve">
+    <value>Tüzel kişi</value>
+  </data>
+  <data name="ScopeType_business-unit" xml:space="preserve">
+    <value>İş birimi</value>
+  </data>
+  <data name="CountryScope" xml:space="preserve">
+    <value>Ülke</value>
+  </data>
+  <data name="LegalEntity" xml:space="preserve">
+    <value>Tüzel kişi</value>
+  </data>
+  <data name="BusinessUnit" xml:space="preserve">
+    <value>İş birimi</value>
+  </data>
+  <data name="BusinessUnitCountryFilter" xml:space="preserve">
+    <value>İş birimlerini ülkeye göre filtrele</value>
+  </data>
+  <data name="ScopeHelp" xml:space="preserve">
+    <value>Kampanyanın adresi. Hangi dönemlere bağlanabileceğini belirler: kampanyanın kendi kapsamı ve tüm kiracıyı kapsayan dönemler.</value>
+  </data>
+  <data name="ScopeEditableHint" xml:space="preserve">
+    <value>Kapsam değiştirilebilir. Bağlı dönem yeni kapsama uygulanamıyorsa önce kaldırılmalıdır.</value>
+  </data>
+  <data name="CyclePeriodNotApplicable" xml:space="preserve">
+    <value>bu kapsama uygulanamaz</value>
+  </data>
+  <data name="CyclePeriodScopeMismatch" xml:space="preserve">
+    <value>Bağlı dönem bu kapsama uygulanamaz. Dönemi kaldırın veya kapsamı geri alın.</value>
+  </data>
+  <data name="ScopeReferenceRequired" xml:space="preserve">
+    <value>Bu kapsam seviyesi bir referans gerektirir.</value>
+  </data>
+  <data name="ScopeAmbiguous" xml:space="preserve">
+    <value>Yalnızca bir kapsam referansı verilebilir.</value>
+  </data>
+  <data name="CountryUnknown" xml:space="preserve">
+    <value>Bu ülke yayınlanmış bir değer değil.</value>
+  </data>
+  <data name="BusinessUnitUnknown" xml:space="preserve">
+    <value>Bu iş birimi yayınlanmış bir değer değil.</value>
+  </data>
+  <data name="LegalEntityNotReferenceable" xml:space="preserve">
+    <value>Bu tüzel kişi referanslanamaz.</value>
+  </data>
+  <data name="LegalEntityUnavailable" xml:space="preserve">
+    <value>Ana veri servisi cevap vermedi. Hiçbir şey kaydedilmedi — lütfen tekrar deneyin.</value>
+  </data>
+  <data name="ReferenceSetUnpublished" xml:space="preserve">
+    <value>Yönetişimli referans seti henüz yayınlanmadı. Bir operatörün yayınlaması gerekir.</value>
+  </data>
+  <data name="DependencyUnavailable" xml:space="preserve">
+    <value>Bağımlılık cevap vermedi, bu liste yüklenemedi.</value>
+  </data>
+  <data name="NoTerritoryPlanMatches" xml:space="preserve">
+    <value>Eşleşen bir saha planı yok, bu yüzden yayınlanmış tam liste gösteriliyor.</value>
+  </data>
+  <data name="TargetingSection" xml:space="preserve">
+    <value>Hedefleme</value>
+  </data>
+  <data name="TargetingMode" xml:space="preserve">
+    <value>Hedefleme modu</value>
+  </data>
+  <data name="TargetingMode_segment" xml:space="preserve">
+    <value>Segment ile</value>
+  </data>
+  <data name="TargetingMode_manual" xml:space="preserve">
+    <value>Manuel</value>
+  </data>
+  <data name="TargetingModeHelp" xml:space="preserve">
+    <value>Kitlenin nasıl seçildiği. Yalnız seçili mod kullanılır; diğer modun verisi saklanır ama uygulanmaz.</value>
+  </data>
+  <data name="TargetedSegments" xml:space="preserve">
+    <value>Hedeflenen segmentler</value>
+  </data>
+  <data name="TargetedSegmentsHelp" xml:space="preserve">
+    <value>En az bir aktif segment. Üyelik burada çözümlenmez — kampanya kime yöneldiğini kaydeder.</value>
+  </data>
+  <data name="SelectSegments" xml:space="preserve">
+    <value>Segment seçin</value>
+  </data>
+  <data name="SegmentSuperseded" xml:space="preserve">
+    <value>yeni sürümü var</value>
+  </data>
+  <data name="SegmentArchived" xml:space="preserve">
+    <value>arşivlenmiş</value>
+  </data>
+  <data name="SegmentRequired" xml:space="preserve">
+    <value>Segment hedeflemesi en az bir segment gerektirir.</value>
+  </data>
+  <data name="SegmentNotActive" xml:space="preserve">
+    <value>Yalnızca aktif bir segment eklenebilir.</value>
+  </data>
+  <data name="SegmentNotFound" xml:space="preserve">
+    <value>Seçilen segment bulunamadı.</value>
+  </data>
+  <data name="SegmentDuplicate" xml:space="preserve">
+    <value>Aynı segment birden fazla kez seçildi.</value>
+  </data>
+  <data name="SegmentLimitExceeded" xml:space="preserve">
+    <value>Çok fazla hedeflenen segment.</value>
+  </data>
+  <data name="SubjectType" xml:space="preserve">
+    <value>Özne tipi</value>
+  </data>
+  <data name="ManualTargetingHint" xml:space="preserve">
+    <value>Hedefler, kampanya kaydedildikten sonra kampanya detay sayfasından eklenir.</value>
+  </data>
+  <data name="TargetingTitle" xml:space="preserve">
+    <value>Hedefleme</value>
+  </data>
+  <data name="TargetingWhatToPromote" xml:space="preserve">
+    <value>Ne promote edilecek</value>
+  </data>
+  <data name="TargetingWhatToPromoteClosed" xml:space="preserve">
+    <value>Henüz açılmadı. Ne promote edileceği segment başına planlanır ve ayrı bir modelde yaşar.</value>
+  </data>
+  <data name="TargetingDormantData" xml:space="preserve">
+    <value>Bu kampanya diğer hedefleme modundan veri taşımaya devam ediyor. Saklanıyor, kullanılmıyor.</value>
+  </data>
+  <data name="NoTargetedSegments" xml:space="preserve">
+    <value>Hedeflenen segment yok</value>
+  </data>
+  <data name="CampaignCodeAutoHint" xml:space="preserve">
+    <value>Boş bırakırsanız kaydederken otomatik bir kod atanır.</value>
+  </data>
+  <data name="CampaignCodeAutoPlaceholder" xml:space="preserve">
+    <value>{0} (otomatik)</value>
+  </data>
+  <data name="PriorityLevel" xml:space="preserve">
+    <value>Öncelik</value>
+  </data>
+  <data name="PriorityLevel_low" xml:space="preserve">
+    <value>Düşük</value>
+  </data>
+  <data name="PriorityLevel_medium" xml:space="preserve">
+    <value>Orta</value>
+  </data>
+  <data name="PriorityLevel_high" xml:space="preserve">
+    <value>Yüksek</value>
+  </data>
+  <data name="TargetPicker" xml:space="preserve">
+    <value>Hedef</value>
+  </data>
+  <data name="TargetTypePickerHelp" xml:space="preserve">
+    <value>Bu ekran hesap ve kişi seçebilir. Diğer hedef tipleri API üzerinden kullanılmaya devam eder.</value>
+  </data>
+  <data name="SelectAccount" xml:space="preserve">
+    <value>Hesap seçin</value>
+  </data>
+  <data name="SelectContact" xml:space="preserve">
+    <value>Kişi seçin</value>
+  </data>
+  <data name="Notes" xml:space="preserve">
+    <value>Notlar</value>
+  </data>
+  <data name="ManualTargetDefaultsHint" xml:space="preserve">
+    <value>Kaynak, gerekçe ve başlangıç tarihi kaydederken doldurulur: hedef, bugün sizin tarafınızdan manuel seçilmiş olarak kaydedilir.</value>
+  </data>
+  <data name="TargetStatus_draft" xml:space="preserve">
+    <value>Taslak</value>
+  </data>
+  <data name="TargetStatus_active" xml:space="preserve">
+    <value>Aktif</value>
+  </data>
+  <data name="TargetStatus_inactive" xml:space="preserve">
+    <value>Pasif</value>
+  </data>
+  <data name="TargetStatus_completed" xml:space="preserve">
+    <value>Tamamlandı</value>
+  </data>
+</root>

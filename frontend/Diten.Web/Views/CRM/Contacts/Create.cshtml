@@ -1,0 +1,22 @@
+@model Diten.Web.Models.CRM.ContactEditViewModel
+@using Diten.Web.Views.CRM.Contacts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ContactIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleCreate"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "create";
+}
+
+<partial name="~/Views/CRM/Contacts/_Form.cshtml" model="Model" />
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/leaflet/leaflet.css" />
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/vendor/libs/leaflet/leaflet.js"></script>
+    <script src="~/assets/js/CRM/Contacts/form.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/Contacts/map.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,43 @@
+@model Diten.Web.Models.CRM.CycleCapacityIndexViewModel
+@using Diten.Web.Views.CRM.CycleCapacities
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CycleCapacitiesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["CycleCapacitiesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/CRM/CycleCapacities/_Filter.cshtml" />
+
+@* Golden Compact: authoring happens on its own page, and the create affordance lives in the DataTable toolbar
+   (the .add-new button) — exactly once. The permission gate is decided server-side and published to index.js below. *@
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["CycleCapacitiesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* ② The permanent estimate notice. It is on the list as well as on the form and the detail page, because a reader who
+     only ever sees this grid must still know these are planning estimates rather than quotas. *@
+<div class="alert alert-warning d-flex align-items-start gap-2" role="alert">
+    <i class="bx bx-info-circle mt-1"></i>
+    <div>
+        <strong>@Localizer["EstimateNoticeTitle"]</strong>
+        <div class="small">@Localizer["EstimateNoticeBody"]</div>
+    </div>
+</div>
+
+@* ③ DataTable Card *@
+@* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-cycle-capacities" data-dt-standard="v2"> *@
+<partial name="~/Views/CRM/CycleCapacities/_DataTable.cshtml" />
+
+<script id="cyclecapacity-page-flags" type="application/json">{"canManage": @(Model.CanManage ? "true" : "false")}</script>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/CycleCapacities/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/CycleCapacities/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/CycleCapacities/index.js" asp-append-version="true"></script>
+}

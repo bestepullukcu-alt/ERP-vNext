@@ -107,7 +107,16 @@
       "Bash(node --check frontend/Diten.Web/wwwroot/assets/js/DocumentManagement/ControlledDocuments/index.js)",
       "PowerShell(foreach \\($p in 5001,5000,5057\\) { \"{0} : {1}\" -f $p, \\($\\(if\\(Get-NetTCPConnection -LocalPort $p -State Listen -ErrorAction SilentlyContinue\\){'LISTENING'}else{'down'}\\)\\) })",
       "Bash(node --check frontend/Diten.Web/wwwroot/assets/js/DocumentManagement/AccessMatrix/index.js)",
-      "Bash(grep -nA6 -iE \"Seq|Serilog\")"
+      "Bash(grep -nA6 -iE \"Seq|Serilog\")",
+      "Read(//c/Users/user/Downloads/**)",
+      "Bash(python -c \"import docx; print\\('python-docx available'\\)\")",
+      "Bash(grep -iE \"kısa|\\\\`mdm\\\\`|short\")",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(rm -f services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/TempDumpTemplate.cs)",
+      "Bash(rm -rf /c/Users/user/AppData/Local/Temp/claude/tpl-dump.xlsx /c/Users/user/AppData/Local/Temp/claude/tpl-dump2.xlsx /c/Users/user/AppData/Local/Temp/claude/tpl-y)",
+      "PowerShell(Get-Process dotnet -ErrorAction SilentlyContinue)",
+      "PowerShell(py .antigravity/scripts/verify_module_id.py . --check-id MOD-0155-FU01 --name \"Visit Planning / Planned Visit\" --parent MOD-0155; Write-Output \"EXITCODE=$LASTEXITCODE\")"
     ]
   }
 }

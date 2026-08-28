@@ -1,0 +1,153 @@
+@using Diten.Web.Views.CRM.KnowledgeConcepts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeConceptsIndex> Localizer
+
+@* ConceptRelationship read-only field map inside the shared #offcanvasDetailsPreview shell.
+   IsTemplateConforming is shown as its own field: FU03 stores a non-conforming edge and keeps it visible, so the
+   quick view must not hide it either. *@
+<div class="d-flex flex-column gap-4 d-none" data-preview-kind="concept-relationships">
+    <section class="card backbone-preview-section p-4">
+        <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["IdentitySection"]</h6>
+        <div class="row g-4">
+            <div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-purchase-tag-alt"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["RelationshipCode"]</div>
+                        <div id="pv-rel-code" class="backbone-preview-value mt-1">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-git-merge"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["RelationshipName"]</div>
+                        <div id="pv-rel-name" class="backbone-preview-value mt-1">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-book-content"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["SubjectId"]</div>
+                        <div id="pv-rel-subject" class="backbone-preview-value mt-1">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="card backbone-preview-section p-4">
+        <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["ConnectionDetails"]</h6>
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-log-out-circle"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["FromConceptNode"]</div>
+                        <div id="pv-rel-from" class="backbone-preview-value mt-1">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-log-in-circle"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["ToConceptNode"]</div>
+                        <div id="pv-rel-to" class="backbone-preview-value mt-1">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-link"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["RelationshipType"]</div>
+                        <div class="mt-1"><span id="pv-rel-type" class="badge bg-label-info">-</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-right-arrow-alt"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["Direction"]</div>
+                        <div id="pv-rel-direction" class="backbone-preview-value mt-1">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-trending-up"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["Priority"]</div>
+                        <div id="pv-rel-priority" class="backbone-preview-value mt-1">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-check-shield"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["Status"]</div>
+                        <div class="mt-1"><span id="pv-rel-status" class="badge bg-label-secondary">-</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-shape-triangle"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["Conformance"]</div>
+                        <div class="mt-1"><span id="pv-rel-conformance" class="badge bg-label-secondary">-</span></div>
+                        <div id="pv-rel-conformance-note" class="form-text text-warning d-none">@Localizer["NonConformingNote"]</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="card backbone-preview-section p-4">
+        <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["ReferenceSection"]</h6>
+        <div class="row g-4">
+            <div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-calendar-check"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["EffectiveFrom"]</div>
+                        <div id="pv-rel-from-date" class="backbone-preview-value mt-1">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-calendar-x"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["EffectiveTo"]</div>
+                        <div id="pv-rel-to-date" class="backbone-preview-value mt-1">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-archive"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["Archived"]</div>
+                        <div class="mt-1"><span id="pv-rel-archived" class="badge bg-label-secondary">-</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-time-five"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["UpdatedAt"]</div>
+                        <div id="pv-rel-updated" class="backbone-preview-value mt-1">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

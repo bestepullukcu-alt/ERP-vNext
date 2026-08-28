@@ -13,7 +13,7 @@ using Xunit;
 namespace Diten.Platform.Application.Tests.DocumentManagement;
 
 /// <summary>
-/// MOD-0028-FU06/FU07 — register-backed CSV / flat-JSON import foundation. Verifies the GMG-QMS-LOG-0007 v0.8
+/// QMS register import extension — governance identity pending. Verifies the GMG-QMS-LOG-0007 v0.8 CSV / flat-JSON
 /// package parses into a governance-complete DRAFT baseline with a stable, rename-safe folder identity, without
 /// disturbing the legacy path-hash behaviour.
 /// </summary>

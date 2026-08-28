@@ -5,7 +5,9 @@ using Diten.Platform.Domain.Entities.Audit;
 using Diten.Platform.Domain.Entities.DocumentManagement;
 using Diten.Platform.Domain.Entities.InterfaceRegistry;
 using Diten.Platform.Domain.Entities.Organization;
+using Diten.Platform.Domain.Entities.WorkingCalendar;
 using Diten.Platform.Domain.Entities.Workflow;
+using Diten.Platform.Domain.Enums.DocumentManagement;
 using Diten.Platform.Domain.Features.SubscriptionFeatures;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Persistence.Models;
@@ -17,6 +19,44 @@ namespace Diten.Platform.Infrastructure.Persistence.Configurations;
 
 public static class MongoDbIndexConfigurations
 {
+    private const string CorporateActiveInstanceIndexName =
+        "ux_dm_collection_instances_corporate_owner_baseline_node_active";
+
+    public static async Task ReconcileDevelopmentIndexesAsync(IMongoDatabase database)
+    {
+        var collection = database.GetCollection<CollectionInstance>("document_management_collection_instances");
+        using var cursor = await collection.Indexes.ListAsync();
+        var indexes = await cursor.ToListAsync();
+        var existing = indexes.FirstOrDefault(index =>
+            index.TryGetValue("name", out var name)
+            && name.IsString
+            && string.Equals(name.AsString, CorporateActiveInstanceIndexName, StringComparison.Ordinal));
+
+        if (existing is null)
+        {
+            return;
+        }
+
+        var isCompatible = existing.TryGetValue("partialFilterExpression", out var filterValue)
+            && filterValue.IsBsonDocument
+            && filterValue.AsBsonDocument.TryGetValue(nameof(CollectionInstance.IsDeleted), out var isDeleted)
+            && isDeleted.IsBoolean
+            && !isDeleted.AsBoolean
+            && filterValue.AsBsonDocument.TryGetValue(nameof(CollectionInstance.CollectionScopeType), out var scopeType)
+            && scopeType.IsInt32
+            && scopeType.AsInt32 == (int)CollectionScopeType.Corporate
+            && filterValue.AsBsonDocument.TryGetValue(nameof(CollectionInstance.InstanceStatus), out var status)
+            && status.IsInt32
+            && status.AsInt32 == (int)CollectionInstanceStatus.Active;
+
+        if (!isCompatible)
+        {
+            // Development/test reconciliation only. The caller deliberately never invokes this in production.
+            // No documents are changed; only this exact, obsolete index definition is replaced at startup.
+            await collection.Indexes.DropOneAsync(CorporateActiveInstanceIndexName);
+        }
+    }
+
     public static async Task EnsureIndexesAsync(IMongoDatabase database)
     {
         var collection = database.GetCollection<SavedView>("saved_views");
@@ -71,6 +111,8 @@ public static class MongoDbIndexConfigurations
         var baselineSnapshotManifestCollection = database.GetCollection<BaselineSnapshotManifest>("document_management_baseline_snapshot_manifests");
         var collectionInstanceCollection = database.GetCollection<CollectionInstance>("document_management_collection_instances");
         var instantiationOperationCollection = database.GetCollection<InstantiationOperation>("document_management_instantiation_operations");
+        var corporateProvisioningOperationCollection = database.GetCollection<CorporateCollectionInstanceProvisioningOperation>(
+            "document_management_corporate_collection_provisioning_operations");
         var instantiationOutcomeCollection = database.GetCollection<InstantiationOutcome>("document_management_instantiation_outcomes");
         // MOD-0029-FU01 — controlled documents / templates / versions / shares.
         var controlledDocumentCollection = database.GetCollection<ControlledDocument>("document_management_controlled_documents");
@@ -86,6 +128,77 @@ public static class MongoDbIndexConfigurations
         var folderShareOperationCollection = database.GetCollection<FolderShareOperation>("document_management_folder_share_operations");
         var folderShareOutcomeCollection = database.GetCollection<FolderShareOutcome>("document_management_folder_share_outcomes");
         var documentFavoriteCollection = database.GetCollection<DocumentFavorite>("document_management_document_favorites");
+        // MOD-0029-FU36 — durable registration operation; references only, no content bytes.
+        var controlledDocumentRegistrationCollection =
+            database.GetCollection<ControlledDocumentRegistrationOperation>(
+                ControlledDocumentRegistrationRepository.CollectionName);
+        // MOD-0029-FU07 — identifier allocation ledger + sequence counter.
+        var documentIdentifierAllocationCollection = database.GetCollection<DocumentIdentifierAllocation>("document_management_identifier_allocations");
+        var documentIdentifierSequenceCounterCollection = database.GetCollection<DocumentIdentifierSequenceCounter>("document_management_identifier_sequence_counters");
+        // MOD-0029-FU08 — lifecycle transition records.
+        var documentLifecycleTransitionCollection = database.GetCollection<DocumentLifecycleTransitionRecord>("document_management_lifecycle_transitions");
+        // MOD-0029-FU09 — approval requirements + evidence.
+        var documentApprovalRequirementCollection = database.GetCollection<DocumentApprovalRequirement>("document_management_approval_requirements");
+        var documentApprovalEvidenceCollection = database.GetCollection<DocumentApprovalEvidence>("document_management_approval_evidence");
+        // MOD-0029-FU10 — release gate evaluations / results / manual evidence.
+        var documentReleaseGateEvaluationCollection = database.GetCollection<DocumentReleaseGateEvaluation>("document_management_release_gate_evaluations");
+        var documentReleaseGateResultCollection = database.GetCollection<DocumentReleaseGateResult>("document_management_release_gate_results");
+        var documentReleaseGateEvidenceCollection = database.GetCollection<DocumentReleaseGateEvidence>("document_management_release_gate_evidence");
+        // MOD-0029-FU11 — training matrix requirements + assignments.
+        var documentTrainingRequirementCollection = database.GetCollection<DocumentTrainingMatrixRequirement>("document_management_training_requirements");
+        var documentTrainingAssignmentCollection = database.GetCollection<DocumentTrainingAssignment>("document_management_training_assignments");
+        // MOD-0029-FU12 — periodic reviews / extensions / escalations.
+        var documentPeriodicReviewCollection = database.GetCollection<DocumentPeriodicReview>("document_management_periodic_reviews");
+        var documentPeriodicReviewExtensionCollection = database.GetCollection<DocumentPeriodicReviewExtension>("document_management_periodic_review_extensions");
+        var documentPeriodicReviewEscalationCollection = database.GetCollection<DocumentPeriodicReviewEscalation>("document_management_periodic_review_escalations");
+        // MOD-0029-FU13 — suspension / retirement cases + temporary-instruction control.
+        var documentSuspensionCaseCollection = database.GetCollection<DocumentSuspensionCase>("document_management_suspension_cases");
+        var documentRetirementCaseCollection = database.GetCollection<DocumentRetirementCase>("document_management_retirement_cases");
+        var temporaryInstructionControlCollection = database.GetCollection<TemporaryInstructionControl>("document_management_temporary_instruction_controls");
+        // MOD-0029-FU16 — repository assessments + findings.
+        var documentRepositoryAssessmentCollection = database.GetCollection<DocumentRepositoryAssessment>("document_management_repository_assessments");
+        var documentRepositoryAssessmentFindingCollection = database.GetCollection<DocumentRepositoryAssessmentFinding>("document_management_repository_assessment_findings");
+        // MOD-0029-FU17 — controlled copies / withdrawal plans / obsolete findings.
+        var documentControlledCopyCollection = database.GetCollection<DocumentControlledCopy>("document_management_controlled_copies");
+        var documentCopyWithdrawalPlanCollection = database.GetCollection<DocumentCopyWithdrawalPlan>("document_management_copy_withdrawal_plans");
+        var documentObsoleteCopyFindingCollection = database.GetCollection<DocumentObsoleteCopyFinding>("document_management_obsolete_copy_findings");
+        // MOD-0029-FU14 — external document register, monitoring checks, impact assessments, internal links.
+        var externalDocumentCollection = database.GetCollection<ExternalDocumentRegisterEntry>("document_management_external_documents");
+        var externalDocumentMonitoringCheckCollection = database.GetCollection<ExternalDocumentMonitoringCheck>("document_management_external_document_monitoring_checks");
+        var externalDocumentImpactAssessmentCollection = database.GetCollection<ExternalDocumentImpactAssessment>("document_management_external_document_impact_assessments");
+        var externalDocumentInternalLinkCollection = database.GetCollection<ExternalDocumentInternalLink>("document_management_external_document_internal_links");
+        // MOD-0029-FU15 — retention policies, retention subject snapshots, legal holds, hold membership, dispositions.
+        var retentionPolicyCollection = database.GetCollection<DocumentRetentionPolicy>("document_management_retention_policies");
+        var retentionSubjectCollection = database.GetCollection<DocumentRetentionSubject>("document_management_retention_subjects");
+        var legalHoldCollection = database.GetCollection<DocumentLegalHold>("document_management_legal_holds");
+        var legalHoldSubjectCollection = database.GetCollection<DocumentLegalHoldSubject>("document_management_legal_hold_subjects");
+        var dispositionRequestCollection = database.GetCollection<DocumentDispositionRequest>("document_management_disposition_requests");
+        // MOD-0029-FU18 — variant localization profiles, review evidence, parent change assessments.
+        var variantLocalizationProfileCollection = database.GetCollection<TemplateVariantLocalizationProfile>("document_management_variant_localization_profiles");
+        var variantReviewEvidenceCollection = database.GetCollection<TemplateVariantReviewEvidence>("document_management_variant_review_evidence");
+        var variantParentChangeAssessmentCollection = database.GetCollection<TemplateVariantParentChangeAssessment>("document_management_variant_parent_change_assessments");
+        // MOD-0029-FU20 — repository downtime events, temporary controlled issues, downtime escalations.
+        var downtimeEventCollection = database.GetCollection<DocumentRepositoryDowntimeEvent>("document_management_repository_downtime_events");
+        var temporaryIssueCollection = database.GetCollection<DocumentTemporaryControlledIssue>("document_management_temporary_controlled_issues");
+        var downtimeEscalationCollection = database.GetCollection<DocumentDowntimeEscalation>("document_management_downtime_escalations");
+        // MOD-0029-FU21 — GDocP correction records, policies, reviews.
+        var gdocpCorrectionRecordCollection = database.GetCollection<DocumentGDocPCorrectionRecord>("document_management_gdocp_correction_records");
+        var gdocpCorrectionPolicyCollection = database.GetCollection<DocumentGDocPCorrectionPolicy>("document_management_gdocp_correction_policies");
+        var gdocpCorrectionReviewCollection = database.GetCollection<DocumentGDocPCorrectionReview>("document_management_gdocp_correction_reviews");
+        // MOD-0029-FU22 — quality events, GxP deviations, CAPA actions, source links.
+        var qualityEventCollection = database.GetCollection<DocumentQualityEvent>("document_management_quality_events");
+        var qualityDeviationCollection = database.GetCollection<DocumentDeviation>("document_management_quality_deviations");
+        var capaActionCollection = database.GetCollection<DocumentCAPAAction>("document_management_capa_actions");
+        var qualityEventSourceLinkCollection = database.GetCollection<DocumentQualityEventSourceLink>("document_management_quality_event_source_links");
+        // MOD-0029-FU23 — signature policies, requests, records, signed-object fingerprints.
+        var signaturePolicyCollection = database.GetCollection<DocumentSignaturePolicy>("document_management_signature_policies");
+        var signatureRequestCollection = database.GetCollection<DocumentSignatureRequest>("document_management_signature_requests");
+        var signatureRecordCollection = database.GetCollection<DocumentSignatureRecord>("document_management_signature_records");
+        var signedObjectFingerprintCollection = database.GetCollection<DocumentSignedObjectFingerprint>("document_management_signed_object_fingerprints");
+        // MOD-0029-FU31A — governance policy pack application history (append-only).
+        var governancePolicyPackApplicationCollection = database.GetCollection<DocumentGovernancePolicyPackApplication>("document_management_governance_policy_pack_applications");
+        // MOD-0029-FU32 — governance sweep run history (append-only).
+        var governanceSweepRunCollection = database.GetCollection<DocumentGovernanceSweepRun>("document_management_governance_sweep_runs");
         var workflowTemplateCollection = database.GetCollection<WorkflowTemplate>("workflow_templates");
         var workflowTemplateVersionCollection = database.GetCollection<WorkflowTemplateVersion>("workflow_template_versions");
         var workflowInstanceCollection = database.GetCollection<WorkflowInstance>("workflow_instances");
@@ -93,6 +206,54 @@ public static class MongoDbIndexConfigurations
         var runtimeAssignmentSnapshotCollection = database.GetCollection<RuntimeAssignmentSnapshot>("workflow_runtime_assignment_snapshots");
         var workflowTransitionLogCollection = database.GetCollection<WorkflowTransitionLog>("workflow_transition_logs");
         var workflowSlaRuleCollection = database.GetCollection<SlaEscalationRule>("workflow_sla_rules");
+
+        await controlledDocumentRegistrationCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<ControlledDocumentRegistrationOperation>(
+                Builders<ControlledDocumentRegistrationOperation>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions<ControlledDocumentRegistrationOperation>
+                {
+                    Unique = true,
+                    Name = "ux_dm_registration_tenant_idempotency_active",
+                    PartialFilterExpression = Builders<ControlledDocumentRegistrationOperation>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<ControlledDocumentRegistrationOperation>(
+                Builders<ControlledDocumentRegistrationOperation>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.ControlledDocumentId),
+                new CreateIndexOptions<ControlledDocumentRegistrationOperation>
+                {
+                    Unique = true,
+                    Name = "ux_dm_registration_tenant_document_active",
+                    // Partial indexes don't support $ne/$not, so match on the GUID's BSON type
+                    // (subtype-4 binary) to include only rows where ControlledDocumentId is set.
+                    PartialFilterExpression = Builders<ControlledDocumentRegistrationOperation>.Filter.And(
+                        Builders<ControlledDocumentRegistrationOperation>.Filter.Eq(x => x.IsDeleted, false),
+                        Builders<ControlledDocumentRegistrationOperation>.Filter.Type(x => x.ControlledDocumentId, BsonType.Binary))
+                }),
+            new CreateIndexModel<ControlledDocumentRegistrationOperation>(
+                Builders<ControlledDocumentRegistrationOperation>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.MasterRegisterEntryId),
+                new CreateIndexOptions<ControlledDocumentRegistrationOperation>
+                {
+                    Unique = true,
+                    Name = "ux_dm_registration_tenant_register_active",
+                    // Partial indexes don't support $ne/$not, so match on the GUID's BSON type
+                    // (subtype-4 binary) to include only rows where MasterRegisterEntryId is set.
+                    PartialFilterExpression = Builders<ControlledDocumentRegistrationOperation>.Filter.And(
+                        Builders<ControlledDocumentRegistrationOperation>.Filter.Eq(x => x.IsDeleted, false),
+                        Builders<ControlledDocumentRegistrationOperation>.Filter.Type(x => x.MasterRegisterEntryId, BsonType.Binary))
+                }),
+            new CreateIndexModel<ControlledDocumentRegistrationOperation>(
+                Builders<ControlledDocumentRegistrationOperation>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.Status)
+                    .Descending(x => x.UpdatedAt),
+                new CreateIndexOptions { Name = "ix_dm_registration_tenant_status_updated" })
+        });
 
         await baselineReleaseCollection.Indexes.CreateManyAsync(new[]
         {
@@ -181,6 +342,46 @@ public static class MongoDbIndexConfigurations
                     .Ascending(x => x.InstanceToken)
                     .Ascending(x => x.FullPath),
                 new CreateIndexOptions { Name = "ix_dm_collection_instances_company_baseline_path" })
+            ,
+            new CreateIndexModel<CollectionInstance>(
+                Builders<CollectionInstance>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.CollectionScopeType)
+                    .Ascending(x => x.ScopeOwnerId)
+                    .Ascending(x => x.BaselineReleaseId)
+                    .Ascending(x => x.CanonicalId),
+                new CreateIndexOptions<CollectionInstance>
+                {
+                    Unique = true,
+                    Name = CorporateActiveInstanceIndexName,
+                    PartialFilterExpression = Builders<CollectionInstance>.Filter.And(
+                        Builders<CollectionInstance>.Filter.Eq(x => x.IsDeleted, false),
+                        Builders<CollectionInstance>.Filter.Eq(x => x.CollectionScopeType, CollectionScopeType.Corporate),
+                        // Only Active nodes belong to the unique active-tree constraint. Blocked, Superseded and
+                        // Archived nodes are lifecycle history and must not prevent a later Active tree.
+                        Builders<CollectionInstance>.Filter.Eq(x => x.InstanceStatus, CollectionInstanceStatus.Active))
+                })
+        });
+
+        await corporateProvisioningOperationCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<CorporateCollectionInstanceProvisioningOperation>(
+                Builders<CorporateCollectionInstanceProvisioningOperation>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions<CorporateCollectionInstanceProvisioningOperation>
+                {
+                    Unique = true,
+                    Name = "ux_dm_corporate_provisioning_tenant_idempotency_active",
+                    PartialFilterExpression = Builders<CorporateCollectionInstanceProvisioningOperation>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<CorporateCollectionInstanceProvisioningOperation>(
+                Builders<CorporateCollectionInstanceProvisioningOperation>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.CorporateOwnerId)
+                    .Ascending(x => x.BaselineReleaseId)
+                    .Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_dm_corporate_provisioning_owner_baseline_status" })
         });
 
         await instantiationOperationCollection.Indexes.CreateManyAsync(new[]
@@ -254,6 +455,667 @@ public static class MongoDbIndexConfigurations
                     Name = "ux_dm_controlled_document_versions_tenant_doc_number_active",
                     PartialFilterExpression = Builders<ControlledDocumentVersion>.Filter.Eq(x => x.IsDeleted, false)
                 })
+        });
+
+        // MOD-0029-FU07 — identifier allocation ledger. The unique index is DELIBERATELY NOT partial on IsDeleted:
+        // never-reuse (SOP §6.3) must see cancelled/abandoned/soft-deleted rows, so the DB enforces uniqueness across
+        // the full history of allocated values per tenant + identifier type.
+        await documentIdentifierAllocationCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentIdentifierAllocation>(
+                Builders<DocumentIdentifierAllocation>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.IdentifierType).Ascending(x => x.IdentifierValue),
+                new CreateIndexOptions
+                {
+                    Unique = true,
+                    Name = "ux_dm_identifier_allocations_tenant_type_value_never_reuse"
+                }),
+            new CreateIndexModel<DocumentIdentifierAllocation>(
+                Builders<DocumentIdentifierAllocation>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RegisterEntryId),
+                new CreateIndexOptions { Name = "ix_dm_identifier_allocations_register_entry" })
+        });
+
+        // MOD-0029-FU07 — one sequence counter per (tenant, type, prefix, domain, type-code) key.
+        await documentIdentifierSequenceCounterCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentIdentifierSequenceCounter>(
+                Builders<DocumentIdentifierSequenceCounter>.IndexKeys
+                    .Ascending(x => x.TenantId).Ascending(x => x.IdentifierType)
+                    .Ascending(x => x.Prefix).Ascending(x => x.DomainCode).Ascending(x => x.TypeCode),
+                new CreateIndexOptions
+                {
+                    Unique = true,
+                    Name = "ux_dm_identifier_sequence_counters_key"
+                })
+        });
+
+        // MOD-0029-FU08 — lifecycle transition history, queried by register entry.
+        await documentLifecycleTransitionCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentLifecycleTransitionRecord>(
+                Builders<DocumentLifecycleTransitionRecord>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RegisterEntryId).Ascending(x => x.PerformedAt),
+                new CreateIndexOptions { Name = "ix_dm_lifecycle_transitions_register_entry" })
+        });
+
+        // MOD-0029-FU09 — approval requirements (unique per entry+key for idempotent resolve) and evidence history.
+        await documentApprovalRequirementCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentApprovalRequirement>(
+                Builders<DocumentApprovalRequirement>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RegisterEntryId).Ascending(x => x.RequirementKey),
+                new CreateIndexOptions<DocumentApprovalRequirement>
+                {
+                    Unique = true,
+                    Name = "ux_dm_approval_requirements_entry_key_active",
+                    PartialFilterExpression = Builders<DocumentApprovalRequirement>.Filter.Eq(x => x.IsDeleted, false)
+                })
+        });
+
+        await documentApprovalEvidenceCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentApprovalEvidence>(
+                Builders<DocumentApprovalEvidence>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RegisterEntryId).Ascending(x => x.PerformedAt),
+                new CreateIndexOptions { Name = "ix_dm_approval_evidence_register_entry" }),
+            new CreateIndexModel<DocumentApprovalEvidence>(
+                Builders<DocumentApprovalEvidence>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RequirementId),
+                new CreateIndexOptions { Name = "ix_dm_approval_evidence_requirement" })
+        });
+
+        // MOD-0029-FU10 — release gate evaluations (latest by entry+time), results (by evaluation), manual evidence.
+        await documentReleaseGateEvaluationCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentReleaseGateEvaluation>(
+                Builders<DocumentReleaseGateEvaluation>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RegisterEntryId).Descending(x => x.EvaluatedAt),
+                new CreateIndexOptions { Name = "ix_dm_release_gate_evaluations_entry_time" })
+        });
+        await documentReleaseGateResultCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentReleaseGateResult>(
+                Builders<DocumentReleaseGateResult>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.EvaluationId).Ascending(x => x.GateNumber),
+                new CreateIndexOptions { Name = "ix_dm_release_gate_results_evaluation" })
+        });
+        await documentReleaseGateEvidenceCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentReleaseGateEvidence>(
+                Builders<DocumentReleaseGateEvidence>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RegisterEntryId).Ascending(x => x.GateKey).Descending(x => x.VerificationDate),
+                new CreateIndexOptions { Name = "ix_dm_release_gate_evidence_entry_gate_time" })
+        });
+
+        // MOD-0029-FU11 — training requirements (unique per entry+key for idempotent resolve) + assignments.
+        await documentTrainingRequirementCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentTrainingMatrixRequirement>(
+                Builders<DocumentTrainingMatrixRequirement>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RegisterEntryId).Ascending(x => x.RequirementKey),
+                new CreateIndexOptions<DocumentTrainingMatrixRequirement>
+                {
+                    Unique = true,
+                    Name = "ux_dm_training_requirements_entry_key_active",
+                    PartialFilterExpression = Builders<DocumentTrainingMatrixRequirement>.Filter.Eq(x => x.IsDeleted, false)
+                })
+        });
+        await documentTrainingAssignmentCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentTrainingAssignment>(
+                Builders<DocumentTrainingAssignment>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RegisterEntryId).Ascending(x => x.RequirementId),
+                new CreateIndexOptions { Name = "ix_dm_training_assignments_entry_requirement" })
+        });
+
+        // MOD-0029-FU12 — periodic reviews (unique cycle per entry), extensions, escalations. Overdue sweeps query by
+        // tenant + due date, so the due-date index carries the review status too.
+        await documentPeriodicReviewCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentPeriodicReview>(
+                Builders<DocumentPeriodicReview>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RegisterEntryId).Ascending(x => x.ReviewNumber),
+                new CreateIndexOptions<DocumentPeriodicReview>
+                {
+                    Unique = true,
+                    Name = "ux_dm_periodic_reviews_entry_number_active",
+                    PartialFilterExpression = Builders<DocumentPeriodicReview>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<DocumentPeriodicReview>(
+                Builders<DocumentPeriodicReview>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.ReviewStatus).Ascending(x => x.ReviewDueDate),
+                new CreateIndexOptions { Name = "ix_dm_periodic_reviews_status_due" })
+        });
+        await documentPeriodicReviewExtensionCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentPeriodicReviewExtension>(
+                Builders<DocumentPeriodicReviewExtension>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.PeriodicReviewId),
+                new CreateIndexOptions { Name = "ix_dm_periodic_review_extensions_review" })
+        });
+        await documentPeriodicReviewEscalationCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentPeriodicReviewEscalation>(
+                Builders<DocumentPeriodicReviewEscalation>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.PeriodicReviewId).Ascending(x => x.EscalationType),
+                new CreateIndexOptions { Name = "ix_dm_periodic_review_escalations_review_type" })
+        });
+
+        // MOD-0029-FU13 — suspension / retirement cases (unique case number per entry) + one temporary-instruction
+        // control per entry.
+        await documentSuspensionCaseCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentSuspensionCase>(
+                Builders<DocumentSuspensionCase>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RegisterEntryId).Ascending(x => x.CaseNumber),
+                new CreateIndexOptions<DocumentSuspensionCase>
+                {
+                    Unique = true,
+                    Name = "ux_dm_suspension_cases_entry_number_active",
+                    PartialFilterExpression = Builders<DocumentSuspensionCase>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<DocumentSuspensionCase>(
+                Builders<DocumentSuspensionCase>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.CaseStatus),
+                new CreateIndexOptions { Name = "ix_dm_suspension_cases_status" })
+        });
+        await documentRetirementCaseCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentRetirementCase>(
+                Builders<DocumentRetirementCase>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RegisterEntryId).Ascending(x => x.CaseNumber),
+                new CreateIndexOptions<DocumentRetirementCase>
+                {
+                    Unique = true,
+                    Name = "ux_dm_retirement_cases_entry_number_active",
+                    PartialFilterExpression = Builders<DocumentRetirementCase>.Filter.Eq(x => x.IsDeleted, false)
+                })
+        });
+        await temporaryInstructionControlCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<TemporaryInstructionControl>(
+                Builders<TemporaryInstructionControl>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RegisterEntryId),
+                new CreateIndexOptions<TemporaryInstructionControl>
+                {
+                    Unique = true,
+                    Name = "ux_dm_temporary_instruction_controls_entry_active",
+                    PartialFilterExpression = Builders<TemporaryInstructionControl>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<TemporaryInstructionControl>(
+                Builders<TemporaryInstructionControl>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.TemporaryInstructionStatus).Ascending(x => x.ValidUntil),
+                new CreateIndexOptions { Name = "ix_dm_temporary_instruction_controls_status_validity" })
+        });
+
+        // MOD-0029-FU16 — repository assessments (unique key per tenant) + findings (unique per assessment+key).
+        await documentRepositoryAssessmentCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentRepositoryAssessment>(
+                Builders<DocumentRepositoryAssessment>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RepositoryKey),
+                new CreateIndexOptions<DocumentRepositoryAssessment>
+                {
+                    Unique = true,
+                    Name = "ux_dm_repository_assessments_tenant_key_active",
+                    PartialFilterExpression = Builders<DocumentRepositoryAssessment>.Filter.Eq(x => x.IsDeleted, false)
+                })
+        });
+        await documentRepositoryAssessmentFindingCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentRepositoryAssessmentFinding>(
+                Builders<DocumentRepositoryAssessmentFinding>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RepositoryAssessmentId).Ascending(x => x.FindingKey),
+                new CreateIndexOptions<DocumentRepositoryAssessmentFinding>
+                {
+                    Unique = true,
+                    Name = "ux_dm_repository_assessment_findings_assessment_key_active",
+                    PartialFilterExpression = Builders<DocumentRepositoryAssessmentFinding>.Filter.Eq(x => x.IsDeleted, false)
+                })
+        });
+
+        // MOD-0029-FU17 — controlled copies (unique number per entry), withdrawal plans, obsolete findings (unique key).
+        await documentControlledCopyCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentControlledCopy>(
+                Builders<DocumentControlledCopy>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RegisterEntryId).Ascending(x => x.CopyNumber),
+                new CreateIndexOptions<DocumentControlledCopy>
+                {
+                    Unique = true,
+                    Name = "ux_dm_controlled_copies_entry_number_active",
+                    PartialFilterExpression = Builders<DocumentControlledCopy>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<DocumentControlledCopy>(
+                Builders<DocumentControlledCopy>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RegisterEntryId).Ascending(x => x.CopyStatus),
+                new CreateIndexOptions { Name = "ix_dm_controlled_copies_entry_status" })
+        });
+        await documentCopyWithdrawalPlanCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentCopyWithdrawalPlan>(
+                Builders<DocumentCopyWithdrawalPlan>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RegisterEntryId).Ascending(x => x.PlanStatus),
+                new CreateIndexOptions { Name = "ix_dm_copy_withdrawal_plans_entry_status" })
+        });
+        await documentObsoleteCopyFindingCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentObsoleteCopyFinding>(
+                Builders<DocumentObsoleteCopyFinding>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RegisterEntryId).Ascending(x => x.FindingKey),
+                new CreateIndexOptions<DocumentObsoleteCopyFinding>
+                {
+                    Unique = true,
+                    Name = "ux_dm_obsolete_copy_findings_entry_key_active",
+                    PartialFilterExpression = Builders<DocumentObsoleteCopyFinding>.Filter.Eq(x => x.IsDeleted, false)
+                })
+        });
+
+        // MOD-0029-FU14 — external document register. Monitoring-due and impact-overdue are the hot read paths.
+        await externalDocumentCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<ExternalDocumentRegisterEntry>(
+                Builders<ExternalDocumentRegisterEntry>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.ExternalDocumentStatus).Ascending(x => x.NextCheckDueDate),
+                new CreateIndexOptions { Name = "ix_dm_external_documents_status_next_check" }),
+            new CreateIndexModel<ExternalDocumentRegisterEntry>(
+                Builders<ExternalDocumentRegisterEntry>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.SourceStatus),
+                new CreateIndexOptions { Name = "ix_dm_external_documents_source_status" }),
+            new CreateIndexModel<ExternalDocumentRegisterEntry>(
+                Builders<ExternalDocumentRegisterEntry>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.MonitoringOwnerUserId),
+                new CreateIndexOptions { Name = "ix_dm_external_documents_owner" })
+        });
+        await externalDocumentMonitoringCheckCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<ExternalDocumentMonitoringCheck>(
+                Builders<ExternalDocumentMonitoringCheck>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.ExternalDocumentRegisterEntryId).Descending(x => x.CheckDate),
+                new CreateIndexOptions { Name = "ix_dm_external_document_checks_entry_date" })
+        });
+        await externalDocumentImpactAssessmentCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<ExternalDocumentImpactAssessment>(
+                Builders<ExternalDocumentImpactAssessment>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.ExternalDocumentRegisterEntryId),
+                new CreateIndexOptions { Name = "ix_dm_external_document_impact_entry" }),
+            new CreateIndexModel<ExternalDocumentImpactAssessment>(
+                Builders<ExternalDocumentImpactAssessment>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.AssessmentStatus).Ascending(x => x.DueDate),
+                new CreateIndexOptions { Name = "ix_dm_external_document_impact_status_due" })
+        });
+        await externalDocumentInternalLinkCollection.Indexes.CreateManyAsync(new[]
+        {
+            // One live link per (external, internal, type) triple — the link command is idempotent.
+            new CreateIndexModel<ExternalDocumentInternalLink>(
+                Builders<ExternalDocumentInternalLink>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.ExternalDocumentRegisterEntryId)
+                    .Ascending(x => x.InternalRegisterEntryId).Ascending(x => x.LinkType),
+                new CreateIndexOptions<ExternalDocumentInternalLink>
+                {
+                    Unique = true,
+                    Name = "ux_dm_external_document_links_pair_type_active",
+                    PartialFilterExpression = Builders<ExternalDocumentInternalLink>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<ExternalDocumentInternalLink>(
+                Builders<ExternalDocumentInternalLink>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.InternalRegisterEntryId),
+                new CreateIndexOptions { Name = "ix_dm_external_document_links_internal" })
+        });
+
+        // MOD-0029-FU15 — retention & litigation hold. The hot read paths are: active policies by subject type,
+        // the eligible-subject sweep, and the active-hold lookup that gates every disposition decision.
+        await retentionPolicyCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentRetentionPolicy>(
+                Builders<DocumentRetentionPolicy>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.PolicyKey),
+                new CreateIndexOptions<DocumentRetentionPolicy>
+                {
+                    Unique = true,
+                    Name = "ux_dm_retention_policies_key_active",
+                    PartialFilterExpression = Builders<DocumentRetentionPolicy>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<DocumentRetentionPolicy>(
+                Builders<DocumentRetentionPolicy>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.SubjectType).Ascending(x => x.PolicyStatus),
+                new CreateIndexOptions { Name = "ix_dm_retention_policies_subject_status" })
+        });
+        await retentionSubjectCollection.Indexes.CreateManyAsync(new[]
+        {
+            // One snapshot per governed record — re-evaluation overwrites it in place.
+            new CreateIndexModel<DocumentRetentionSubject>(
+                Builders<DocumentRetentionSubject>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.SubjectType).Ascending(x => x.SubjectId),
+                new CreateIndexOptions<DocumentRetentionSubject>
+                {
+                    Unique = true,
+                    Name = "ux_dm_retention_subjects_subject_active",
+                    PartialFilterExpression = Builders<DocumentRetentionSubject>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<DocumentRetentionSubject>(
+                Builders<DocumentRetentionSubject>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.IsDispositionEligible)
+                    .Ascending(x => x.IsBlockedByLegalHold).Ascending(x => x.RetentionDueDate),
+                new CreateIndexOptions { Name = "ix_dm_retention_subjects_eligibility" }),
+            new CreateIndexModel<DocumentRetentionSubject>(
+                Builders<DocumentRetentionSubject>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RegisterEntryId),
+                new CreateIndexOptions { Name = "ix_dm_retention_subjects_register_entry" })
+        });
+        await legalHoldCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentLegalHold>(
+                Builders<DocumentLegalHold>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.HoldKey),
+                new CreateIndexOptions<DocumentLegalHold>
+                {
+                    Unique = true,
+                    Name = "ux_dm_legal_holds_key_active",
+                    PartialFilterExpression = Builders<DocumentLegalHold>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<DocumentLegalHold>(
+                Builders<DocumentLegalHold>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.HoldStatus).Ascending(x => x.EffectiveFrom),
+                new CreateIndexOptions { Name = "ix_dm_legal_holds_status_effective" })
+        });
+        await legalHoldSubjectCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentLegalHoldSubject>(
+                Builders<DocumentLegalHoldSubject>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.LegalHoldId).Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_dm_legal_hold_subjects_hold_status" }),
+            new CreateIndexModel<DocumentLegalHoldSubject>(
+                Builders<DocumentLegalHoldSubject>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.SubjectType).Ascending(x => x.SubjectId),
+                new CreateIndexOptions { Name = "ix_dm_legal_hold_subjects_subject" })
+        });
+        await dispositionRequestCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentDispositionRequest>(
+                Builders<DocumentDispositionRequest>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RequestNumber),
+                new CreateIndexOptions<DocumentDispositionRequest>
+                {
+                    Unique = true,
+                    Name = "ux_dm_disposition_requests_number_active",
+                    PartialFilterExpression = Builders<DocumentDispositionRequest>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<DocumentDispositionRequest>(
+                Builders<DocumentDispositionRequest>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.SubjectType)
+                    .Ascending(x => x.SubjectId).Ascending(x => x.RequestStatus),
+                new CreateIndexOptions { Name = "ix_dm_disposition_requests_subject_status" })
+        });
+
+        // MOD-0029-FU18 — variant localization. One profile per variant; evidence and assessments are append-only
+        // histories read back per variant.
+        await variantLocalizationProfileCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<TemplateVariantLocalizationProfile>(
+                Builders<TemplateVariantLocalizationProfile>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.TemplateVariantId),
+                new CreateIndexOptions<TemplateVariantLocalizationProfile>
+                {
+                    Unique = true,
+                    Name = "ux_dm_variant_localization_profiles_variant_active",
+                    PartialFilterExpression = Builders<TemplateVariantLocalizationProfile>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<TemplateVariantLocalizationProfile>(
+                Builders<TemplateVariantLocalizationProfile>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.ParentTemplateMasterId),
+                new CreateIndexOptions { Name = "ix_dm_variant_localization_profiles_parent_master" }),
+            new CreateIndexModel<TemplateVariantLocalizationProfile>(
+                Builders<TemplateVariantLocalizationProfile>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.VariantLanguageCode).Ascending(x => x.LocalAdoptionStatus),
+                new CreateIndexOptions { Name = "ix_dm_variant_localization_profiles_language_adoption" })
+        });
+        await variantReviewEvidenceCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<TemplateVariantReviewEvidence>(
+                Builders<TemplateVariantReviewEvidence>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.TemplateVariantId).Ascending(x => x.EvidenceType).Ascending(x => x.CreatedAt),
+                new CreateIndexOptions { Name = "ix_dm_variant_review_evidence_variant_type_created" })
+        });
+        await variantParentChangeAssessmentCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<TemplateVariantParentChangeAssessment>(
+                Builders<TemplateVariantParentChangeAssessment>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.TemplateVariantId).Descending(x => x.AssessedAt),
+                new CreateIndexOptions { Name = "ix_dm_variant_parent_change_assessments_variant_assessed" })
+        });
+
+        // MOD-0029-FU20 — downtime. The hot read paths are the open-outage list, the issues of one event, and the
+        // outstanding-issue sweep that drives the 3-working-day overdue evaluation.
+        await downtimeEventCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentRepositoryDowntimeEvent>(
+                Builders<DocumentRepositoryDowntimeEvent>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.DowntimeNumber),
+                new CreateIndexOptions<DocumentRepositoryDowntimeEvent>
+                {
+                    Unique = true,
+                    Name = "ux_dm_downtime_events_number_active",
+                    PartialFilterExpression = Builders<DocumentRepositoryDowntimeEvent>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<DocumentRepositoryDowntimeEvent>(
+                Builders<DocumentRepositoryDowntimeEvent>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.DowntimeStatus).Descending(x => x.StartedAt),
+                new CreateIndexOptions { Name = "ix_dm_downtime_events_status_started" }),
+            new CreateIndexModel<DocumentRepositoryDowntimeEvent>(
+                Builders<DocumentRepositoryDowntimeEvent>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RepositoryAssessmentId),
+                new CreateIndexOptions { Name = "ix_dm_downtime_events_repository_assessment" })
+        });
+        await temporaryIssueCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentTemporaryControlledIssue>(
+                Builders<DocumentTemporaryControlledIssue>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.IssueNumber),
+                new CreateIndexOptions<DocumentTemporaryControlledIssue>
+                {
+                    Unique = true,
+                    Name = "ux_dm_temporary_controlled_issues_number_active",
+                    PartialFilterExpression = Builders<DocumentTemporaryControlledIssue>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<DocumentTemporaryControlledIssue>(
+                Builders<DocumentTemporaryControlledIssue>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.DowntimeEventId).Ascending(x => x.IssueStatus),
+                new CreateIndexOptions { Name = "ix_dm_temporary_controlled_issues_event_status" }),
+            new CreateIndexModel<DocumentTemporaryControlledIssue>(
+                Builders<DocumentTemporaryControlledIssue>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.IssueStatus).Ascending(x => x.ReconciliationDueDate),
+                new CreateIndexOptions { Name = "ix_dm_temporary_controlled_issues_status_due" }),
+            new CreateIndexModel<DocumentTemporaryControlledIssue>(
+                Builders<DocumentTemporaryControlledIssue>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RegisterEntryId),
+                new CreateIndexOptions { Name = "ix_dm_temporary_controlled_issues_register_entry" })
+        });
+        await downtimeEscalationCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentDowntimeEscalation>(
+                Builders<DocumentDowntimeEscalation>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.DowntimeEventId).Ascending(x => x.EscalationType).Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_dm_downtime_escalations_event_type_status" })
+        });
+
+        // MOD-0029-FU21 — GDocP correction trail. The hot read path is the correction history of one subject; the
+        // pending-review queue and the active-policy lookup follow.
+        await gdocpCorrectionRecordCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentGDocPCorrectionRecord>(
+                Builders<DocumentGDocPCorrectionRecord>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.CorrectionNumber),
+                new CreateIndexOptions<DocumentGDocPCorrectionRecord>
+                {
+                    Unique = true,
+                    Name = "ux_dm_gdocp_corrections_number_active",
+                    PartialFilterExpression = Builders<DocumentGDocPCorrectionRecord>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<DocumentGDocPCorrectionRecord>(
+                Builders<DocumentGDocPCorrectionRecord>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.SubjectType).Ascending(x => x.SubjectId).Ascending(x => x.CorrectedAt),
+                new CreateIndexOptions { Name = "ix_dm_gdocp_corrections_subject_corrected" }),
+            new CreateIndexModel<DocumentGDocPCorrectionRecord>(
+                Builders<DocumentGDocPCorrectionRecord>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.ReviewStatus).Ascending(x => x.CorrectedAt),
+                new CreateIndexOptions { Name = "ix_dm_gdocp_corrections_review_status" }),
+            new CreateIndexModel<DocumentGDocPCorrectionRecord>(
+                Builders<DocumentGDocPCorrectionRecord>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.IsHighRiskCorrection).Ascending(x => x.CorrectedAt),
+                new CreateIndexOptions { Name = "ix_dm_gdocp_corrections_high_risk" })
+        });
+        await gdocpCorrectionPolicyCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentGDocPCorrectionPolicy>(
+                Builders<DocumentGDocPCorrectionPolicy>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.PolicyKey),
+                new CreateIndexOptions<DocumentGDocPCorrectionPolicy>
+                {
+                    Unique = true,
+                    Name = "ux_dm_gdocp_correction_policies_key_active",
+                    PartialFilterExpression = Builders<DocumentGDocPCorrectionPolicy>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<DocumentGDocPCorrectionPolicy>(
+                Builders<DocumentGDocPCorrectionPolicy>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.SubjectType).Ascending(x => x.PolicyStatus),
+                new CreateIndexOptions { Name = "ix_dm_gdocp_correction_policies_subject_status" })
+        });
+        await gdocpCorrectionReviewCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentGDocPCorrectionReview>(
+                Builders<DocumentGDocPCorrectionReview>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.CorrectionRecordId).Ascending(x => x.ReviewedAt),
+                new CreateIndexOptions { Name = "ix_dm_gdocp_correction_reviews_correction_reviewed" })
+        });
+
+        // MOD-0029-FU22 — quality bridge. The hot read paths are the open-event queue, the deviation/CAPA of one
+        // event, and the source-link lookup that makes the bridge idempotent.
+        await qualityEventCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentQualityEvent>(
+                Builders<DocumentQualityEvent>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.QualityEventNumber),
+                new CreateIndexOptions<DocumentQualityEvent>
+                {
+                    Unique = true,
+                    Name = "ux_dm_quality_events_number_active",
+                    PartialFilterExpression = Builders<DocumentQualityEvent>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<DocumentQualityEvent>(
+                Builders<DocumentQualityEvent>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.EventStatus).Descending(x => x.DetectedAt),
+                new CreateIndexOptions { Name = "ix_dm_quality_events_status_detected" }),
+            new CreateIndexModel<DocumentQualityEvent>(
+                Builders<DocumentQualityEvent>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.RegisterEntryId),
+                new CreateIndexOptions { Name = "ix_dm_quality_events_register_entry" }),
+            new CreateIndexModel<DocumentQualityEvent>(
+                Builders<DocumentQualityEvent>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.SourceType).Ascending(x => x.SourceId),
+                new CreateIndexOptions { Name = "ix_dm_quality_events_source" })
+        });
+        await qualityDeviationCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentDeviation>(
+                Builders<DocumentDeviation>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.DeviationNumber),
+                new CreateIndexOptions<DocumentDeviation>
+                {
+                    Unique = true,
+                    Name = "ux_dm_quality_deviations_number_active",
+                    PartialFilterExpression = Builders<DocumentDeviation>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<DocumentDeviation>(
+                Builders<DocumentDeviation>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.QualityEventId).Ascending(x => x.DeviationStatus),
+                new CreateIndexOptions { Name = "ix_dm_quality_deviations_event_status" }),
+            new CreateIndexModel<DocumentDeviation>(
+                Builders<DocumentDeviation>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.DeviationSeverity).Ascending(x => x.DeviationStatus),
+                new CreateIndexOptions { Name = "ix_dm_quality_deviations_severity_status" })
+        });
+        await capaActionCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentCAPAAction>(
+                Builders<DocumentCAPAAction>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.CAPANumber),
+                new CreateIndexOptions<DocumentCAPAAction>
+                {
+                    Unique = true,
+                    Name = "ux_dm_capa_actions_number_active",
+                    PartialFilterExpression = Builders<DocumentCAPAAction>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<DocumentCAPAAction>(
+                Builders<DocumentCAPAAction>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.DeviationId).Ascending(x => x.ActionStatus),
+                new CreateIndexOptions { Name = "ix_dm_capa_actions_deviation_status" }),
+            new CreateIndexModel<DocumentCAPAAction>(
+                Builders<DocumentCAPAAction>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.QualityEventId).Ascending(x => x.ActionStatus),
+                new CreateIndexOptions { Name = "ix_dm_capa_actions_event_status" }),
+            new CreateIndexModel<DocumentCAPAAction>(
+                Builders<DocumentCAPAAction>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.ActionStatus).Ascending(x => x.DueDate),
+                new CreateIndexOptions { Name = "ix_dm_capa_actions_status_due" })
+        });
+        await qualityEventSourceLinkCollection.Indexes.CreateManyAsync(new[]
+        {
+            // The bridge idempotency lookup.
+            new CreateIndexModel<DocumentQualityEventSourceLink>(
+                Builders<DocumentQualityEventSourceLink>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.SourceType).Ascending(x => x.SourceId).Ascending(x => x.EventType),
+                new CreateIndexOptions { Name = "ix_dm_quality_event_source_links_source_type" }),
+            new CreateIndexModel<DocumentQualityEventSourceLink>(
+                Builders<DocumentQualityEventSourceLink>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.QualityEventId),
+                new CreateIndexOptions { Name = "ix_dm_quality_event_source_links_event" })
+        });
+
+        // MOD-0029-FU23 — electronic signature foundation. The hot read paths are the policy lookup during signing,
+        // the signature history for one subject, and the duplicate-signature check (subject + meaning + fingerprint).
+        await signaturePolicyCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentSignaturePolicy>(
+                Builders<DocumentSignaturePolicy>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.PolicyKey),
+                new CreateIndexOptions<DocumentSignaturePolicy>
+                {
+                    Unique = true,
+                    Name = "ux_dm_signature_policies_key_active",
+                    PartialFilterExpression = Builders<DocumentSignaturePolicy>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<DocumentSignaturePolicy>(
+                Builders<DocumentSignaturePolicy>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.SignableSubjectType).Ascending(x => x.PolicyStatus),
+                new CreateIndexOptions { Name = "ix_dm_signature_policies_subject_status" })
+        });
+        // MOD-0029-FU31A — pack application history. NO unique index on PackKey: the pack is idempotent and may be
+        // applied repeatedly, and every run is a separate append-only audit row.
+        await governancePolicyPackApplicationCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentGovernancePolicyPackApplication>(
+                Builders<DocumentGovernancePolicyPackApplication>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.PackKey).Descending(x => x.AppliedAt),
+                new CreateIndexOptions { Name = "ix_dm_governance_policy_pack_applications_pack_applied" }),
+            new CreateIndexModel<DocumentGovernancePolicyPackApplication>(
+                Builders<DocumentGovernancePolicyPackApplication>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.PackVersion),
+                new CreateIndexOptions { Name = "ix_dm_governance_policy_pack_applications_version" }),
+            new CreateIndexModel<DocumentGovernancePolicyPackApplication>(
+                Builders<DocumentGovernancePolicyPackApplication>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.ApplicationStatus),
+                new CreateIndexOptions { Name = "ix_dm_governance_policy_pack_applications_status" })
+        });
+        // MOD-0029-FU32 — sweep run history. No unique index on SweepKey: a sweep is meant to run repeatedly, and
+        // every run is a separate append-only evidence row.
+        await governanceSweepRunCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentGovernanceSweepRun>(
+                Builders<DocumentGovernanceSweepRun>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.SweepKey).Descending(x => x.StartedAt),
+                new CreateIndexOptions { Name = "ix_dm_governance_sweep_runs_key_started" }),
+            new CreateIndexModel<DocumentGovernanceSweepRun>(
+                Builders<DocumentGovernanceSweepRun>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_dm_governance_sweep_runs_status" }),
+            new CreateIndexModel<DocumentGovernanceSweepRun>(
+                Builders<DocumentGovernanceSweepRun>.IndexKeys.Ascending(x => x.TenantId)
+                    .Descending(x => x.StartedAt),
+                new CreateIndexOptions { Name = "ix_dm_governance_sweep_runs_started" })
+        });
+        await signatureRequestCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentSignatureRequest>(
+                Builders<DocumentSignatureRequest>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.SignatureRequestNumber),
+                new CreateIndexOptions<DocumentSignatureRequest>
+                {
+                    Unique = true,
+                    Name = "ux_dm_signature_requests_number_active",
+                    PartialFilterExpression = Builders<DocumentSignatureRequest>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<DocumentSignatureRequest>(
+                Builders<DocumentSignatureRequest>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.SubjectType).Ascending(x => x.SubjectId),
+                new CreateIndexOptions { Name = "ix_dm_signature_requests_subject" }),
+            new CreateIndexModel<DocumentSignatureRequest>(
+                Builders<DocumentSignatureRequest>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.RequestStatus).Ascending(x => x.DueDate),
+                new CreateIndexOptions { Name = "ix_dm_signature_requests_status_due" })
+        });
+        await signatureRecordCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentSignatureRecord>(
+                Builders<DocumentSignatureRecord>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.SignatureNumber),
+                new CreateIndexOptions<DocumentSignatureRecord>
+                {
+                    Unique = true,
+                    Name = "ux_dm_signature_records_number_active",
+                    PartialFilterExpression = Builders<DocumentSignatureRecord>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<DocumentSignatureRecord>(
+                Builders<DocumentSignatureRecord>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.SubjectType).Ascending(x => x.SubjectId).Descending(x => x.SignedAt),
+                new CreateIndexOptions { Name = "ix_dm_signature_records_subject_signed" }),
+            // The duplicate-signature guard on the sign path.
+            new CreateIndexModel<DocumentSignatureRecord>(
+                Builders<DocumentSignatureRecord>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.SubjectType).Ascending(x => x.SubjectId)
+                    .Ascending(x => x.SignatureMeaning).Ascending(x => x.ObjectFingerprint),
+                new CreateIndexOptions { Name = "ix_dm_signature_records_subject_meaning_fingerprint" }),
+            new CreateIndexModel<DocumentSignatureRecord>(
+                Builders<DocumentSignatureRecord>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.SignatureRequestId),
+                new CreateIndexOptions { Name = "ix_dm_signature_records_request" }),
+            new CreateIndexModel<DocumentSignatureRecord>(
+                Builders<DocumentSignatureRecord>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.SignatureStatus),
+                new CreateIndexOptions { Name = "ix_dm_signature_records_status" })
+        });
+        await signedObjectFingerprintCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<DocumentSignedObjectFingerprint>(
+                Builders<DocumentSignedObjectFingerprint>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.SubjectType).Ascending(x => x.SubjectId).Descending(x => x.GeneratedAt),
+                new CreateIndexOptions { Name = "ix_dm_signed_object_fingerprints_subject_generated" })
         });
 
         await templateDocumentCollection.Indexes.CreateManyAsync(new[]
@@ -665,6 +1527,87 @@ public static class MongoDbIndexConfigurations
                     .Ascending(x => x.IsDeleted)
                     .Ascending(x => x.IsArchived),
                 new CreateIndexOptions { Name = "ix_organization_units_tree_scope" })
+        });
+
+        // Working Calendar & Public Holidays.
+        // NOTE: the partial filter uses Eq(IsDeleted,false) — never Ne(...). A $ne/$not partial filter is unsupported
+        // and puts the service into a startup crash-loop.
+        // NOTE: there is deliberately no index spanning two date fields; Date/ObservedDate are DateOnly inside the
+        // embedded day list and are never sorted together at the collection level.
+        var workingCalendarCollection = database.GetCollection<WorkingCalendar>("working_calendars");
+
+        // The partial filter gained a CalendarStatus clause (archived rows release their code), and MongoDB refuses
+        // to recreate an existing index name with different options (IndexOptionsConflict, code 85) — which would
+        // crash-loop startup. Drop first; DropIndexIfExistsAsync swallows IndexNotFound so a fresh database is fine.
+        await DropIndexIfExistsAsync(workingCalendarCollection.Indexes, "ux_working_calendars_scope_country_year_code");
+
+        await workingCalendarCollection.Indexes.CreateManyAsync(new[]
+        {
+            // Scope + country + year + code is the business key. TenantId participates so a country row (null) and a
+            // tenant row can legitimately share a code.
+            new CreateIndexModel<WorkingCalendar>(
+                Builders<WorkingCalendar>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.CountryCode)
+                    .Ascending(x => x.CalendarYear)
+                    .Ascending(x => x.OrganizationUnitId)
+                    .Ascending(x => x.LegalEntityId)
+                    .Ascending(x => x.CalendarCode),
+                new CreateIndexOptions<WorkingCalendar>
+                {
+                    Unique = true,
+                    Name = "ux_working_calendars_scope_country_year_code",
+                    // Uniqueness holds among LIVE rows only: an archived calendar releases its code so the same
+                    // year can be re-entered (there is no delete endpoint). `$in` is used rather than "not
+                    // archived" because a partialFilterExpression cannot contain $ne/$not — verified supported on
+                    // this server (MongoDB 7.0). The list is shared with the repository guard so the two can never
+                    // disagree; a guard looser than this index would surface as an E11000 500 instead of a 409.
+                    PartialFilterExpression = Builders<WorkingCalendar>.Filter.And(
+                        Builders<WorkingCalendar>.Filter.Eq(x => x.IsDeleted, false),
+                        Builders<WorkingCalendar>.Filter.In(x => x.CalendarStatus, WorkingCalendarStatus.CodeHolding))
+                }),
+            // The provider's hot path: resolve the active calendar for a scope + country + year.
+            new CreateIndexModel<WorkingCalendar>(
+                Builders<WorkingCalendar>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.CountryCode)
+                    .Ascending(x => x.CalendarYear)
+                    .Ascending(x => x.CalendarStatus)
+                    .Ascending(x => x.IsDeleted),
+                new CreateIndexOptions { Name = "ix_working_calendars_resolution" }),
+            new CreateIndexModel<WorkingCalendar>(
+                Builders<WorkingCalendar>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.OrganizationUnitId)
+                    .Ascending(x => x.CalendarYear),
+                new CreateIndexOptions { Name = "ix_working_calendars_org_scope", Sparse = true }),
+            new CreateIndexModel<WorkingCalendar>(
+                Builders<WorkingCalendar>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.LegalEntityId)
+                    .Ascending(x => x.CalendarYear),
+                new CreateIndexOptions { Name = "ix_working_calendars_legal_entity_scope", Sparse = true })
+        });
+
+        var workingCalendarImportCollection = database.GetCollection<WorkingCalendarImportBatch>("working_calendar_import_batches");
+        await workingCalendarImportCollection.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<WorkingCalendarImportBatch>(
+                Builders<WorkingCalendarImportBatch>.IndexKeys.Ascending(x => x.BatchCode),
+                new CreateIndexOptions<WorkingCalendarImportBatch>
+                {
+                    Name = "ux_working_calendar_import_batch_code",
+                    Unique = true,
+                    PartialFilterExpression = Builders<WorkingCalendarImportBatch>.Filter.Eq(x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<WorkingCalendarImportBatch>(
+                Builders<WorkingCalendarImportBatch>.IndexKeys.Ascending(x => x.CountryCode)
+                    .Ascending(x => x.CalendarYear).Ascending(x => x.ImportStatus),
+                new CreateIndexOptions { Name = "ix_working_calendar_import_list" }),
+            new CreateIndexModel<WorkingCalendarImportBatch>(
+                Builders<WorkingCalendarImportBatch>.IndexKeys.Ascending(x => x.TargetCalendarId)
+                    .Ascending(x => x.ImportStatus),
+                new CreateIndexOptions { Name = "ix_working_calendar_import_target_status" })
         });
 
         await positionCollection.Indexes.CreateManyAsync(new[]

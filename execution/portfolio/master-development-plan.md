@@ -105,6 +105,42 @@ Below is the macro status catalog.
 | **PSS-XCUT-SV** | SavedViews / Personalization | Cross-cutting | Medium | partial | 55% | User grid saving options. |
 | **MOD-0117** | Project & Portfolio Management (PPM) | — | Medium | planned / reserved | 0% | portfolio-delivery domain; reserved via DCP-003; ilk dilim "PPM Work Records Core"; wave ataması yapılmadı. FU çocukları henüz numaralanmadı. |
 
+### Commercial Suite (CRM + O2C) — Reserved Inventory
+
+> Blueprint suite **"Commercial Suite (CRM + O2C)"**, owner domain `commercial-suite`. All 27 IDs Blueprint-canonical and reserved via DCP-002 (gate OK 2026-07-14) — see [module-id-registry.md](../registries/module-id-registry.md) and [execution/domains/commercial-suite/](../domains/commercial-suite/). Wave column = **Blueprint W-x** (distinct from the platform W1-x track scheme above). Build lanes: see [crm-build-lanes.md](../domains/commercial-suite/crm-build-lanes.md). No module pack / runtime service yet.
+>
+> **SoR boundary (applies to all rows below):** Reference Data → **MOD-0048** · RBAC/Permission → **MOD-0018** · Navigation → **MOD-0285** · Employee/Sales Rep master → **HR/Org (MOD-0288)** · Brand/Product/SKU → **MDM/Product**. CRM consumes, does not fork. Detail: [crm-sor-boundary.md](../domains/commercial-suite/crm-sor-boundary.md).
+
+| ID | Module Name | Wave | Priority | Lifecycle Status | Legacy Completeness % | Notes |
+|---|---|---|---|---|---|---|
+| **MOD-0149** | Customer 360 / Account Hierarchy | BP W-1 | High | planned / reserved | 0% | Lane crm-foundation. **Next candidate for `/prepare-module-pack`.** |
+| **MOD-0150** | Contact & Relationship Management | BP W-3 | Medium | planned / reserved | 0% | Lane crm-relationship-core. Consent → MOD-0164. |
+| **MOD-0151** | Territory Management | BP W-4 | Medium | planned / reserved | 0% | Lane crm-territory-core. Data scope gated by MOD-0018-FU15. |
+| **MOD-0152** | Lead Management | BP W-3 | Medium | planned / reserved | 0% | Lane crm-sales-core (greenfield). |
+| **MOD-0153** | Opportunity & Pipeline Management | BP W-3 | Medium | planned / reserved | 0% | Lane crm-sales-core (greenfield). |
+| **MOD-0154** | Forecasting & Quotas | BP W-4 | Medium | planned / reserved | 0% | Lane crm-forecasting. |
+| **MOD-0155** | Field Sales / Visit Planning | BP W-4 | Medium | planned / reserved | 0% | Lane crm-field-sales-extension. Highest legacy value; preservation pack early, impl W-4. |
+| **MOD-0156** | Price Lists & Discount Guardrails | BP W-3 | Medium | planned / reserved | 0% | Lane commercial-cpq. `commercial.*` namespace pending EA. |
+| **MOD-0157** | Quote Generation | BP W-3 | Medium | planned / reserved | 0% | Lane commercial-cpq. |
+| **MOD-0158** | Quote-to-Contract Handoff | BP W-3 | Medium | planned / reserved | 0% | Lane commercial-cpq. |
+| **MOD-0159** | Product Configuration | BP W-4 | Medium | planned / reserved | 0% | Lane commercial-cpq. Product SoR = MDM. |
+| **MOD-0160** | Case Management | BP W-1 | Medium | planned / reserved | 0% | Lane crm-service-core. |
+| **MOD-0161** | SLA Routing & Escalation | BP W-2 | Medium | planned / reserved | 0% | Lane commercial-service. |
+| **MOD-0162** | Knowledge Base | BP W-4 | Low | planned / reserved | 0% | Lane commercial-service. |
+| **MOD-0163** | Customer Satisfaction Loop | BP W-4 | Low | planned / reserved | 0% | Lane commercial-service. |
+| **MOD-0164** | Consent & Preference Management | BP W-2 | High | planned / reserved | 0% | Lane crm-consent-core (early). Owns Consent. |
+| **MOD-0165** | Campaign Management | BP W-4 | Medium | planned / reserved | 0% | Lane crm-campaign-core. Segment → MOD-0167. |
+| **MOD-0166** | Journeys & Automation | BP W-4 | Low | planned / reserved | 0% | Lane crm-automation. |
+| **MOD-0167** | Segmentation / CDP | BP W-4 | Medium | planned / reserved | 0% | Lane crm-targeting-core. |
+| **MOD-0168** | Order Capture | BP W-2 | Medium | planned / reserved | 0% | Lane commercial-o2c. SoR (Finance) EA-TBD. |
+| **MOD-0169** | Billing & Invoicing | BP W-2 | Medium | planned / reserved | 0% | Lane commercial-o2c. Fulfils Blueprint MOD-0169; retired stub retained. SoR EA-TBD. |
+| **MOD-0170** | Returns (RMA) | BP W-3 | Medium | planned / reserved | 0% | Lane commercial-o2c. SoR EA-TBD. |
+| **MOD-0171** | Disputes / Claims | BP W-3 | Medium | planned / reserved | 0% | Lane commercial-o2c. SoR EA-TBD. |
+| **MOD-0172** | Allocation & ATP/CTP | BP W-4 | Medium | planned / reserved | 0% | Lane commercial-o2c. SoR EA-TBD. |
+| **MOD-0282** | Partner & Alliance Management | BP W-4 | Low | planned / reserved | 0% | Lane commercial-bizdev. |
+| **MOD-0283** | Pursuit & Proposal Management (RFP/RFI) | BP W-4 | Low | planned / reserved | 0% | Lane commercial-bizdev. |
+| **MOD-0284** | Deal Desk & Commercial Approvals | BP W-4 | Low | planned / reserved | 0% | Lane commercial-bizdev. |
+
 ---
 
 ## Wave Roadmap Sequencing
@@ -169,6 +205,12 @@ Development work package sequencing follows a logical dependency track (Track A 
 * **Involved Module IDs**: `MOD-0034`, `MOD-0042`, `MOD-0041`, `MOD-0299`, `NEW-004`, `MOD-0038`, `MOD-0039`, `MOD-0003`
 * **Dependencies / Prerequisites**: Active tenant deployments must be stable.
 * **Notes**: Integrates SIEM monitors, OTLP Prometheus feeds, SaaS billing platforms, and HMAC webhook signing rules.
+
+### Track J — Commercial Suite (CRM + O2C) [Reserved; starts after CRM platform-readiness]
+* **Purpose**: Deliver the CRM/commercial verticals (generic enterprise CRM core + pharma field-force extension) on top of platform readiness.
+* **Involved Module IDs**: `MOD-0149`–`MOD-0172`, `MOD-0282`–`MOD-0284` (see the Commercial Suite reserved inventory above; Blueprint waves W-1…W-4).
+* **Dependencies / Prerequisites**: **crm-platform-readiness lane** — MOD-0018 permission integration, MOD-0048 reference-data readiness, MOD-0285 navigation, tenant isolation, audit readiness, and **MOD-0018-FU15 Real DataScopeResolver** (blocks territory/field-force data scoping). Individual module packs required per module before implementation.
+* **Notes**: Build-lane ordering in [crm-build-lanes.md](../domains/commercial-suite/crm-build-lanes.md); RBAC integration in [crm-rbac-integration-plan.md](../domains/commercial-suite/crm-rbac-integration-plan.md). First module pack: MOD-0149. MOD-0155 legacy preservation pack prepared early, implementation follows Blueprint W-4. `commercial.*` permission namespace reservation pending EA. This is a reserved planning track — no code authorized until packs are approved.
 
 ---
 

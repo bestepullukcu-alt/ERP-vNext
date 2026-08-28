@@ -689,10 +689,29 @@ window.DtDefaults = (function () {
             ]
         };
 
-        if (extraButtons && extraButtons.importBtn) {
-            var importAction = extraButtons.importBtn.action;
-            var importTitle = (extraButtons.importBtn.attr && extraButtons.importBtn.attr.title) || l.Import || 'Import';
+        // Module-supplied entries for the Action dropdown (e.g. MOD-0150 Contacts template download / server-side
+        // export). Additive and opt-in: a module that passes no `collectionBtns` gets exactly the dropdown it had
+        // before. They sit with Import, below the client-side print/CSV/Excel/PDF/copy group.
+        var moduleItems = (extraButtons && Array.isArray(extraButtons.collectionBtns))
+            ? extraButtons.collectionBtns.filter(Boolean)
+            : [];
+        var importBtn = extraButtons && extraButtons.importBtn;
+
+        if (moduleItems.length || importBtn) {
             exportBtn.buttons.push({ text: '<hr class="my-0">', className: 'dropdown-item p-0 pe-none bg-transparent border-0', action: function() {} });
+        }
+
+        moduleItems.forEach(function (item) {
+            exportBtn.buttons.push({
+                text: '<span class="d-flex align-items-center"><i class="icon-base bx ' + (item.icon || 'bx-file') + ' me-2"></i>' + (item.text || '') + '</span>',
+                className: 'dropdown-item' + (item.className ? ' ' + item.className : ''),
+                action: item.action || function() {}
+            });
+        });
+
+        if (importBtn) {
+            var importAction = importBtn.action;
+            var importTitle = (importBtn.attr && importBtn.attr.title) || l.Import || 'Import';
             exportBtn.buttons.push({
                 text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-import me-2"></i>' + importTitle + '</span>',
                 className: 'dropdown-item',

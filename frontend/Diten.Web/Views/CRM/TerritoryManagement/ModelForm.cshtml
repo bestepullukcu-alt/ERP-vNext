@@ -1,0 +1,119 @@
+@model Diten.Web.Models.CRM.TerritoryModelEditViewModel
+@using Diten.Web.Models.CRM
+@using Diten.Web.Views.CRM.TerritoryManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TerritoryManagementResources> L
+@{
+    ViewData["Title"] = Model.IsEdit ? L["EditModel"].Value : L["CreateModel"].Value;
+    Layout = "_LayoutTenantShell";
+    var action = Model.IsEdit
+        ? $"/CRM/TerritoryManagement/Models/{Model.Id}/Edit"
+        : "/CRM/TerritoryManagement/Models/Create";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">@(Model.IsEdit ? L["EditModel"] : L["CreateModel"])</h5>
+    <a href="/CRM/TerritoryManagement" class="btn btn-sm btn-label-secondary"><i class="bx bx-arrow-back me-1"></i>@L["BackToList"]</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" action="@action" novalidate>
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <h6 class="text-muted small text-uppercase">@L["ModelDetails"]</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label" asp-for="ModelCode">@L["ModelCode"] <span class="text-danger">*</span></label>
+                    <input class="form-control" asp-for="ModelCode" readonly="@Model.IsEdit" placeholder="TM-2027" />
+                    <span asp-validation-for="ModelCode" class="text-danger small"></span>
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label" asp-for="Name">@L["Name"] <span class="text-danger">*</span></label>
+                    <input class="form-control" asp-for="Name" />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+                @* FU02A: Country Scope — reference-driven single select (MOD-0048 published `country` values). *@
+                <div class="col-md-4">
+                    <label class="form-label" asp-for="CountryScope">@L["CountryScope"]</label>
+                    <select class="form-select" asp-for="CountryScope">
+                        <option value="">@L["SelectCountry"]</option>
+                        @foreach (var c in Model.CountryOptions)
+                        {
+                            <option value="@c.Value">@c.Text</option>
+                        }
+                    </select>
+                    @if (!Model.CountryReferenceReady)
+                    {
+                        <div class="form-text text-warning">@L["CountryReferenceNotReady"]</div>
+                    }
+                    <span asp-validation-for="CountryScope" class="text-danger small"></span>
+                </div>
+
+                @* FU02A: Business Unit Scope — reference-driven MULTI select (MOD-0048 published `business-unit`
+                   values, e.g. Alpha / Beta). Replaces the retired free-text "Division Scope". No hardcoded fallback. *@
+                <div class="col-md-4">
+                    <label class="form-label" for="BusinessUnitScopes">@L["BusinessUnitScope"]</label>
+                    <select class="form-select" id="BusinessUnitScopes" name="BusinessUnitScopes" multiple
+                            disabled="@(!Model.BusinessUnitReferenceReady)">
+                        @foreach (var b in Model.BusinessUnitOptions)
+                        {
+                            if (Model.BusinessUnitScopes.Contains(b.Value))
+                            {
+                                <option value="@b.Value" selected>@b.Text</option>
+                            }
+                            else
+                            {
+                                <option value="@b.Value">@b.Text</option>
+                            }
+                        }
+                    </select>
+                    @if (Model.BusinessUnitReferenceReady)
+                    {
+                        <div class="form-text">@L["BusinessUnitScopeHelp"]</div>
+                    }
+                    else
+                    {
+                        <div class="form-text text-warning">@L["BusinessUnitReferenceNotReady"]</div>
+                    }
+                </div>
+
+                @* FU02A: Brand Scope intentionally NOT selectable — planned for a later Brand/Marketing FU. *@
+                <div class="col-12">
+                    <div class="alert alert-light border mb-0 py-2 px-3 small text-muted">
+                        <i class="bx bx-info-circle me-1"></i>@L["BrandScopePlanned"]
+                    </div>
+                </div>
+            </div>
+
+            <h6 class="text-muted small text-uppercase">@L["EffectivePeriodSection"]</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <label class="form-label" asp-for="EffectiveFrom">@L["EffectiveFrom"] <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" asp-for="EffectiveFrom" />
+                    <span asp-validation-for="EffectiveFrom" class="text-danger small"></span>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" asp-for="EffectiveTo">@L["EffectiveTo"]</label>
+                    <input type="date" class="form-control" asp-for="EffectiveTo" />
+                    <span asp-validation-for="EffectiveTo" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" asp-for="ChangeReason">@L["ChangeReason"]</label>
+                    <input class="form-control" asp-for="ChangeReason" />
+                    <span asp-validation-for="ChangeReason" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">@L["Save"]</button>
+                <a href="/CRM/TerritoryManagement" class="btn btn-label-secondary">@L["Cancel"]</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,42 @@
+@using Diten.Web.Views.CRM.Campaigns
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CampaignIndex> Localizer
+
+<div class="card">
+    <div id="campaignContractError" class="alert alert-danger rounded-0 d-none mb-0" role="alert"></div>
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    @*
+        No select-all checkbox column: a campaign is ARCHIVED, never deleted, and the service exposes no
+        DELETE / bulk endpoint at all. A select-all header wired to nothing would be worse than none, so the
+        golden bulk-delete contract is intentionally N/A on this surface.
+    *@
+    <div class="card-datatable table-responsive">
+        <table id="dt-campaigns" data-dt-standard="v2" class="datatables-campaigns table border-top w-100">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>@Localizer["CampaignCode"]</th>
+                    <th class="all">@Localizer["CampaignName"]</th>
+                    <th>@Localizer["CampaignType"]</th>
+                    <th>@Localizer["CampaignStatus"]</th>
+                    <th>@Localizer["ObjectiveType"]</th>
+                    <th>@Localizer["ScopeSection"]</th>
+                    <th>@Localizer["TargetingMode"]</th>
+                    <th>@Localizer["StartDate"]</th>
+                    <th>@Localizer["EndDate"]</th>
+                    <th>@Localizer["CyclePeriod"]</th>
+                    <th>@Localizer["Archived"]</th>
+                    <th>@Localizer["UpdatedAt"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

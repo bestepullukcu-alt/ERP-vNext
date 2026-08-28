@@ -1,0 +1,13 @@
+@using Diten.Web.Views.Platform.WorkingCalendarImports
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkingCalendarImportsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost" class="px-3"><div class="collapse" id="inlineFilterCollapse"><div class="pt-0 pb-3"><div class="dt-filter-bar d-flex gap-3">
+ <select id="filterStatus" class="form-select form-select-sm select2" multiple aria-label="@SharedLocalizer["Status"]"></select>
+ <input id="filterCountry" class="form-control form-control-sm" maxlength="2" placeholder="@Localizer["Country"]" aria-label="@Localizer["Country"]" />
+ <input id="filterYear" class="form-control form-control-sm" type="number" placeholder="@Localizer["Year"]" aria-label="@Localizer["Year"]" />
+ <select id="filterTargetCalendarId" class="form-select form-select-sm select2" aria-label="@Localizer["Target"]"></select>
+ <select id="filterTriggerSource" class="form-select form-select-sm select2" aria-label="@Localizer["Trigger"]"></select>
+ <button id="btnFilterApply" class="btn btn-sm btn-primary" type="button">@Localizer["Apply"]</button>
+</div></div></div></div>

@@ -1,0 +1,142 @@
+@model Diten.Web.Models.CRM.TerritoryModelDetailPageViewModel
+@using Diten.Web.Models.CRM
+@using Diten.Web.Views.CRM.TerritoryManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TerritoryManagementResources> L
+@inject IHtmlLocalizer<Diten.Web.SharedResource> Shared
+@{
+    ViewData["Title"] = Model.Model.Name;
+    Layout = "_LayoutTenantShell";
+    var m = Model.Model;
+    var isDraft = string.Equals(m.Status, "draft", StringComparison.OrdinalIgnoreCase);
+    var isActive = string.Equals(m.Status, "active", StringComparison.OrdinalIgnoreCase);
+    var isInactive = string.Equals(m.Status, "inactive", StringComparison.OrdinalIgnoreCase);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h5 class="mb-0">@m.Name</h5>
+        <p class="mb-0 text-muted">@m.ModelCode</p>
+    </div>
+    <div class="d-flex gap-2">
+        @if (Model.CanManageModel && (isDraft || isInactive) && !m.IsExpired)
+        {
+            <button type="button" class="btn btn-sm btn-success js-model-lifecycle" data-action="activate"><i class="bx bx-play-circle me-1"></i>@L["Activate"]</button>
+        }
+        @if (Model.CanManageModel && isActive)
+        {
+            <button type="button" class="btn btn-sm btn-label-warning js-model-lifecycle" data-action="deactivate"><i class="bx bx-pause-circle me-1"></i>@L["Deactivate"]</button>
+        }
+        @if (Model.CanManageModel && (isInactive || m.IsExpired))
+        {
+            <button type="button" class="btn btn-sm btn-label-dark js-model-lifecycle" data-action="archive"><i class="bx bx-archive me-1"></i>@L["Archive"]</button>
+        }
+        @if (Model.CanManageModel && isDraft)
+        {
+            <button type="button" class="btn btn-sm btn-label-danger js-model-lifecycle" data-action="delete-draft"><i class="bx bx-trash me-1"></i>@L["DeleteDraft"]</button>
+        }
+        <a href="/CRM/TerritoryManagement/Models/@m.Id/AssignmentRules" class="btn btn-sm btn-label-primary"><i class="bx bx-filter-alt me-1"></i>@L["AssignmentRules"]</a>
+        <a href="/CRM/TerritoryManagement/Models/@m.Id/ResourceAssignments" class="btn btn-sm btn-label-primary"><i class="bx bx-group me-1"></i>@L["ResourceAssignments"]</a>
+        <a href="/CRM/TerritoryManagement/Models/@m.Id/ImportExport" class="btn btn-sm btn-label-primary"><i class="bx bx-transfer me-1"></i>@L["ImportExport"]</a>
+        <a href="/CRM/TerritoryManagement" class="btn btn-sm btn-label-secondary"><i class="bx bx-arrow-back me-1"></i>@L["BackToList"]</a>
+    </div>
+</div>
+
+@if (m.IsExpired)
+{
+    <div class="alert alert-warning"><i class="bx bx-time-five me-1"></i>@L["ExpiredWarning"]</div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible" role="alert">@TempData["SuccessMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible" role="alert">@TempData["ErrorMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+
+@* The model detail is the canonical tenant hierarchy viewer. Resource planning and comparison live together on
+   the Resource Assignments surface. *@
+<partial name="~/Views/CRM/TerritoryManagement/_HierarchyFilter.cshtml" />
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-territoryhierarchy" data-dt-standard="v2" class="datatables-territoryhierarchy table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>@L["TerritoryCode"]</th>
+                    <th class="all">@L["Name"]</th>
+                    <th>@L["TerritoryLevel"]</th>
+                    <th>@L["Status"]</th>
+                    <th>@L["EffectiveFrom"]</th>
+                    <th>@L["EffectiveTo"]</th>
+                    <th>@L["SortOrder"]</th>
+                    <th class="cell-fit text-end pe-3 all">@L["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+@if (Model.CanManageNode && isDraft)
+{
+    <partial name="~/Views/CRM/TerritoryManagement/_CreateNodeOffcanvas.cshtml" />
+}
+
+<script id="territory-hierarchy-data" type="application/json">
+    @Json.Serialize(new
+    {
+        modelId = m.Id,
+        nodes = Model.Nodes,
+        nodesUnavailable = Model.NodesUnavailable,
+        canManageNode = Model.CanManageNode && isDraft,
+        canManageModel = Model.CanManageModel,
+        modelStatus = m.StoredStatus.Length > 0 ? m.StoredStatus : m.Status,
+        modelIsExpired = m.IsExpired,
+        modelName = $"{m.ModelCode} — {m.Name}",
+        countryScope = m.CountryScope,
+        levelOptions = Model.NodeLevelOptions,
+        anchorAccountOptions = Model.AnchorAccountOptions,
+        planningCenterTypeOptions = Model.PlanningCenterTypeOptions,
+        parentOptions = Model.Nodes.Select(n => new { value = n.Id, text = $"{n.TerritoryCode} — {n.Name} ({n.TerritoryLevel})" }),
+        labels = new
+        {
+            actions = L["Actions"].Value,
+            createNode = L["CreateNode"].Value,
+            edit = L["Edit"].Value,
+            update = Shared["Update"].Value,
+            export = Shared["Export"].Value,
+            filter = Shared["Filter"].Value,
+            saveView = Shared["SaveView"].Value,
+            recordSaved = Shared["RecordSaved"].Value,
+            recordCreated = Shared["RecordCreated"].Value,
+            recordUpdated = Shared["RecordUpdated"].Value,
+            noNodes = L["NoNodes"].Value,
+            gatewayError = Shared["GatewayError"].Value,
+            activate = L["Activate"].Value,
+            deactivate = L["Deactivate"].Value,
+            archive = L["Archive"].Value,
+            deleteDraft = L["DeleteDraft"].Value,
+            deleteDraftNode = L["DeleteDraftNode"].Value,
+            lifecycleConfirmation = L["LifecycleConfirmation"].Value,
+            confirm = L["Confirm"].Value,
+            cancel = L["Cancel"].Value
+        }
+    })
+</script>
+
+@* FU03 Assignment Rules + Preview, FU04 Resource Assignments and the FU05 apply surface are their OWN pages
+   (pack §18 surfaces #6/#7/#8). This viewer keeps the hierarchy; the links above lead to them. *@
+
+@section Scripts {
+    <script src="~/assets/js/CRM/TerritoryManagement/hierarchy.js" asp-append-version="true"></script>
+}

@@ -41,6 +41,14 @@ public static class PlatformNavigationCatalog
             null, null, new[] { "audit", "log", "events", "trail" }),
         new("AuditRetention", "AuditRetentionMenu", "/Platform/AuditRetention", "bx-shield-quarter",
             null, null, new[] { "audit", "retention", "policy" }),
+        // Working Calendar — COUNTRY layer only. The tenant override screen is deliberately absent from this
+        // catalog: it is a tenant-shell page reached from the tenant menu, and listing it here would put a
+        // tenant-scoped screen in the platform-admin sidebar and Ctrl+K results.
+        new("WorkingCalendars", "WorkingCalendarsMenu", "/Platform/WorkingCalendars", "bx-calendar",
+            "/Platform/WorkingCalendars/Create", "AddWorkingCalendar",
+            new[] { "calendar", "working", "holiday", "holidays", "weekend", "takvim", "tatil" }),
+        new("WorkingCalendarImports", "WorkingCalendarsMenu", "/Platform/WorkingCalendarImports", "bx-cloud-download",
+            null, null, new[] { "calendar", "holiday", "import", "provider", "review", "staging" }),
         // MOD-0027-FU02 — Platform Admin notification management (templates / tenant messaging settings /
         // read-only dispatch monitoring). Backend authorizes every action via [HasPermission] on
         // platform.notifications.*; a restricted actor hitting a direct URL/action is fail-closed at the API.

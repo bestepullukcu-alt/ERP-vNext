@@ -465,6 +465,9 @@
   <data name="ReferenceDataMenu" xml:space="preserve"><value>参考数据</value></data>
   <data name="HumanCapitalManagement" xml:space="preserve"><value>人力资本管理</value></data>
   <data name="EmployeeDraftsMenu" xml:space="preserve"><value>员工草稿</value></data>
+  <data name="CommercialSuite" xml:space="preserve"><value>商务套件</value></data>
+  <data name="AccountsMenu" xml:space="preserve"><value>客户账户</value></data>
+  <data name="ContactsMenu" xml:space="preserve"><value>联系人</value></data>
   <data name="ModuleCodeInUse" xml:space="preserve"><value>此模块代码已被使用。</value></data>
   <data name="Organization" xml:space="preserve"><value>组织</value></data>
   <data name="OrganizationUnits" xml:space="preserve"><value>组织单元</value></data>
@@ -476,6 +479,8 @@
   <data name="DocumentationStructures" xml:space="preserve"><value>文档结构</value></data>
   <data name="ControlledDocuments" xml:space="preserve"><value>受控文档</value></data>
   <data name="TemplateMasters" xml:space="preserve"><value>企业模板主库</value></data>
+  <data name="DocumentMasterRegister" xml:space="preserve"><value>文件主登记簿</value></data>
+  <data name="RepositoryAssessments" xml:space="preserve"><value>存储库评估</value></data>
   <data name="TemplateVariants" xml:space="preserve"><value>模板变体</value></data>
   <data name="AccessMatrix" xml:space="preserve"><value>访问矩阵</value></data>
   <data name="Reconciliation" xml:space="preserve"><value>核对</value></data>
@@ -505,6 +510,8 @@
   <data name="Nav.Domain.DOCUMENTMANAGEMENT" xml:space="preserve"><value>文档管理</value></data>
   <data name="Nav.Domain.MASTERDATAMANAGEMENT" xml:space="preserve"><value>主数据管理</value></data>
   <data name="Nav.Domain.PLATFORMSHAREDSERVICES" xml:space="preserve"><value>平台共享服务</value></data>
+  <data name="Nav.Module.WORKINGCALENDAR" xml:space="preserve"><value>工作日历</value></data>
+  <data name="Nav.Page.WORKINGCALENDAROVERRIDES" xml:space="preserve"><value>工作日历例外</value></data>
   <data name="Nav.Module.ACCESSGOVERNANCE" xml:space="preserve"><value>访问治理</value></data>
   <data name="Nav.Module.TENANTSETTINGS" xml:space="preserve"><value>租户设置</value></data>
   <data name="Nav.Module.GOLDENSLIM" xml:space="preserve"><value>Golden Slim</value></data>
@@ -541,5 +548,28 @@
   </data>
   <data name="NoRecords" xml:space="preserve">
     <value>无记录</value>
+  </data>
+  <data name="TerritoryManagementMenu" xml:space="preserve"><value>区域管理</value></data>
+  <data name="CampaignsMenu" xml:space="preserve"><value>活动</value></data>
+  <data name="KnowledgeMenu" xml:space="preserve"><value>知识库</value></data>
+  <data name="BrandsMenu" xml:space="preserve"><value>品牌</value></data>
+  <data name="ProductsMenu" xml:space="preserve"><value>产品</value></data>
+  <data name="ConsentPreferencesMenu" xml:space="preserve"><value>同意与偏好</value></data>
+  <data name="KnowledgeConceptsMenu" xml:space="preserve"><value>Concepts</value></data>
+  <data name="KnowledgePathsMenu" xml:space="preserve"><value>知识路径</value></data>
+  <data name="ContentEngagementJourneysMenu" xml:space="preserve">
+    <value>内容互动旅程</value>
+  </data>
+  <data name="SegmentsMenu" xml:space="preserve">
+    <value>客户细分</value>
+  </data>
+  <data name="StrategyTemplatesMenu" xml:space="preserve">
+    <value>策略模板</value>
+  </data>
+  <data name="CyclePeriodsMenu" xml:space="preserve">
+    <value>周期</value>
+  </data>
+  <data name="CycleCapacitiesMenu" xml:space="preserve">
+    <value>周期产能</value>
   </data>
 </root>

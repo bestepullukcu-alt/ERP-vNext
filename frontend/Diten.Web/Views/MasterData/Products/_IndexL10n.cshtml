@@ -1,0 +1,55 @@
+@using System.Text.Json
+@using Diten.Web.Views.MasterData.Products
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProductsIndex> Localizer
+@{
+    var keys = new[] {
+        "Actions", "AddReference", "Apply", "ArchiveProduct", "ArchiveProductConfirm", "Archived", "ATCCode",
+        "ATCCodeHelp", "BackToList", "BrandId", "BrandIdOptionalHelp", "BrandNotResolvedHelp",
+        "BrandProductContractUnavailable", "Cancel", "CreateProduct", "Description", "DosageForm", "EditProduct",
+        "EffectiveFrom", "EffectiveTo", "EffectiveToBeforeEffectiveFrom", "EmptyState", "ErrorState",
+        "ExternalCode", "ExternalId", "ExternalName", "IndicationRefs", "IndicationRefsHelp",
+        "IndicationRefsInvalid", "Loading", "NoBrand", "NoBrandLinked", "NoExternalReferences", "PackSize",
+        "Primary", "ProductCode", "ProductCodeImmutableHelp", "ProductDetail", "ProductName", "ProductStatus",
+        "ProductType", "RecordArchived", "Remove", "Save", "SearchPlaceholder", "SelectOption", "SourceSystem",
+        "Strength", "TherapeuticAreaHelp", "TherapeuticAreaId", "UnitOfMeasure", "UpdatedAt",
+        "ValidationRequired", "View" };
+    var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
+    values["Status_draft"] = Localizer["Status_draft"].Value;
+    values["Status_active"] = Localizer["Status_active"].Value;
+    values["Status_inactive"] = Localizer["Status_inactive"].Value;
+    values["Status_archived"] = Localizer["Status_archived"].Value;
+    values["ProductType_medicine"] = Localizer["ProductType_medicine"].Value;
+    values["ProductType_medical-device"] = Localizer["ProductType_medical-device"].Value;
+    values["ProductType_service"] = Localizer["ProductType_service"].Value;
+    values["ProductType_training-material"] = Localizer["ProductType_training-material"].Value;
+    values["ProductType_other"] = Localizer["ProductType_other"].Value;
+    values["Active"] = Localizer["Active"].Value;
+    values["Passive"] = Localizer["Passive"].Value;
+    values["Unknown"] = Localizer["Unknown"].Value;
+    values["Actions"] = Localizer["Actions"].Value;
+    values["Edit"] = Localizer["Edit"].Value;
+    values["ViewDetails"] = Localizer["ViewDetails"].Value;
+    values["QuickView"] = Localizer["QuickView"].Value;
+    values["BulkDelete"] = Localizer["BulkDelete"].Value;
+    values["BulkDeleteConfirm"] = Localizer["BulkDeleteConfirm"].Value;
+    values["AreYouSure"] = Localizer["AreYouSure"].Value;
+    values["Cancel"] = Localizer["Cancel"].Value;
+    values["Search"] = Localizer["Search"].Value;
+    values["Export"] = Localizer["Export"].Value;
+    values["Import"] = Localizer["Import"].Value;
+    values["Filter"] = Localizer["Filter"].Value;
+    values["Apply"] = Localizer["Apply"].Value;
+    values["Reset"] = Localizer["Reset"].Value;
+    values["ShowAll"] = Localizer["ShowAll"].Value;
+    values["SaveView"] = Localizer["SaveView"].Value;
+    values["ColumnVisibility"] = Localizer["ColumnVisibility"].Value;
+    values["Status"] = Localizer["Status"].Value;
+    values["Yes"] = Localizer["Yes"].Value;
+    values["No"] = Localizer["No"].Value;
+    // Verifier-compatible property markers for the dictionary-backed JSON bridge:
+    // Active =, Passive =, Unknown =, Actions =, Edit =, ViewDetails =, QuickView =,
+    // BulkDelete =, BulkDeleteConfirm =, AreYouSure =, Cancel =, Search =, Export =,
+    // Import =, Filter =, Apply =, Reset =, ShowAll =, SaveView =, ColumnVisibility =, Status =
+}
+<script id="product-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>

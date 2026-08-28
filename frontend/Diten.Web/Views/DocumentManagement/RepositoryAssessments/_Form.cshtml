@@ -1,0 +1,188 @@
+@using Diten.Web.Views.DocumentManagement.RepositoryAssessments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<RepositoryAssessmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"] as string, "edit", StringComparison.OrdinalIgnoreCase);
+    var entryId = (Guid)(ViewData["RepositoryAssessmentId"] ?? Guid.Empty);
+    var title = isEdit ? Localizer["RepositoryAssessmentEdit"] : Localizer["RepositoryAssessmentCreate"];
+}
+
+@* MOD-0029-FU28A — assessment fields mirror RepositoryAssessmentFieldsInput exactly. Only RepositoryName and
+   RepositoryType are hard-required by the backend; the rest are optional at save time but the evaluator raises a
+   Critical finding for each missing SOP §11.1 control, and approval is refused while any Critical finding is open.
+   That is why the empty fields are surfaced as "assessment content", not as ignorable extras. *@
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h5 class="mb-1">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-style1 mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/DocumentManagementRepositoryAssessments">@Localizer["RepositoryAssessmentsTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="/DocumentManagementRepositoryAssessments" class="btn btn-label-secondary">
+            <i class="icon-base bx bx-x me-1"></i>@SharedLocalizer["Cancel"]
+        </a>
+        <button type="submit" form="repositoryAssessmentForm" class="btn btn-primary">
+            <i class="icon-base bx bx-save me-1"></i>@SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>
+
+<div class="alert alert-warning d-flex align-items-start" role="alert">
+    <i class="icon-base bx bx-shield-x me-2 mt-1"></i>
+    <span><strong>@Localizer["NoComplianceClaim"]</strong> — @Localizer["RepositoryBoundaryDisclaimer"]</span>
+</div>
+
+<div id="formAlert" class="alert alert-danger d-none" role="alert"></div>
+
+@* Repository-type specific boundary note, swapped by the script when the type changes. *@
+<div id="repositoryTypeNote" class="alert d-none" role="alert"></div>
+
+<form id="repositoryAssessmentForm" class="needs-validation" novalidate
+      data-form-mode="@(isEdit ? "edit" : "create")"
+      data-assessment-id="@(entryId == Guid.Empty ? string.Empty : entryId.ToString())">
+    @Html.AntiForgeryToken()
+    <div class="row g-4">
+        <div class="col-12 col-xl-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["BasicInformation"]</h6>
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label" for="repositoryName">@Localizer["RepositoryName"] <span class="text-danger">*</span></label>
+                            <input class="form-control" id="repositoryName" name="repositoryName" maxlength="256" required />
+                            <div class="invalid-feedback">@SharedLocalizer["ValidationFailed"]</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="repositoryType">@Localizer["RepositoryType"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="repositoryType" name="repositoryType" required>
+                                <option value="ValidatedDms">@Localizer["RepositoryTypeValidatedDms"]</option>
+                                <option value="ApprovedInterimRepository" selected>@Localizer["RepositoryTypeApprovedInterimRepository"]</option>
+                                <option value="SeparateApprovalMechanism">@Localizer["RepositoryTypeSeparateApprovalMechanism"]</option>
+                                <option value="UnapprovedRepository">@Localizer["RepositoryTypeUnapprovedRepository"]</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="repositoryOwnerRole">@Localizer["RepositoryOwner"]</label>
+                            <input class="form-control" id="repositoryOwnerRole" name="repositoryOwnerRole" maxlength="120" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="locationType">@Localizer["LocationType"]</label>
+                            <select class="form-select" id="locationType" name="locationType">
+                                <option value="InHouseSoftware">@Localizer["LocationTypeInHouseSoftware"]</option>
+                                <option value="GoogleDrive">@Localizer["LocationTypeGoogleDrive"]</option>
+                                <option value="SharePoint">@Localizer["LocationTypeSharePoint"]</option>
+                                <option value="NetworkShare">@Localizer["LocationTypeNetworkShare"]</option>
+                                <option value="Other">@Localizer["LocationTypeOther"]</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="exactLocation">@Localizer["RepositoryLocation"]</label>
+                            <input class="form-control" id="exactLocation" name="exactLocation" maxlength="512" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["AccessAndControl"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="accessModelDescription">@Localizer["AccessControlModel"]</label>
+                            <textarea class="form-control" id="accessModelDescription" name="accessModelDescription" rows="2" maxlength="1000"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="accessReviewFrequency">@Localizer["AccessReviewFrequency"]</label>
+                            <input class="form-control" id="accessReviewFrequency" name="accessReviewFrequency" maxlength="120" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="approvalMechanismDescription">@Localizer["ApprovalMechanism"]</label>
+                            <input class="form-control" id="approvalMechanismDescription" name="approvalMechanismDescription" maxlength="512" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="effectiveCopyControlDescription">@Localizer["EffectiveCopyControl"]</label>
+                            <textarea class="form-control" id="effectiveCopyControlDescription" name="effectiveCopyControlDescription" rows="2" maxlength="1000"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["TechnicalControls"]</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="backupMethodDescription">@Localizer["BackupPlan"]</label>
+                            <textarea class="form-control" id="backupMethodDescription" name="backupMethodDescription" rows="2" maxlength="1000"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="restoreTestFrequency">@Localizer["RestoreTestEvidence"]</label>
+                            <input class="form-control" id="restoreTestFrequency" name="restoreTestFrequency" maxlength="120" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="auditTrailDescription">@Localizer["AuditTrail"]</label>
+                            <textarea class="form-control" id="auditTrailDescription" name="auditTrailDescription" rows="2" maxlength="1000"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="changeControlDescription">@Localizer["ChangeControl"]</label>
+                            <textarea class="form-control" id="changeControlDescription" name="changeControlDescription" rows="2" maxlength="1000"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="validationEvidenceReference">@Localizer["ValidationEvidence"]</label>
+                            <input class="form-control" id="validationEvidenceReference" name="validationEvidenceReference" maxlength="256" />
+                            <div class="form-text">@Localizer["ValidationEvidenceHint"]</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["InterimRepositoryFields"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="maxInterimPeriodDays">@Localizer["MaxInterimPeriodDays"]</label>
+                            <input class="form-control" id="maxInterimPeriodDays" name="maxInterimPeriodDays" type="number" min="1" max="3650" step="1" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="interimCheckpointDueDate">@Localizer["InterimCheckpointDueDate"]</label>
+                            <input class="form-control" id="interimCheckpointDueDate" name="interimCheckpointDueDate" type="date" />
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="migrationReconciliationRequired" name="migrationReconciliationRequired" />
+                                <label class="form-check-label" for="migrationReconciliationRequired">@Localizer["MigrationReconciliationRequired"]</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="migrationReconciliationReference">@Localizer["MigrationReconciliationEvidence"]</label>
+                            <input class="form-control" id="migrationReconciliationReference" name="migrationReconciliationReference" maxlength="256" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["EvidenceAndNotes"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="assessmentEvidenceReference">@Localizer["EvidenceReference"]</label>
+                            <input class="form-control" id="assessmentEvidenceReference" name="assessmentEvidenceReference" maxlength="256" />
+                            <div class="form-text">@Localizer["EvidenceReferenceHint"]</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

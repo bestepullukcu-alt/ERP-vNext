@@ -1,0 +1,1131 @@
+C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Properties\launchSettings.json içindeki başlatma ayarları kullanılıyor...
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5001
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 719.8978ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 735.5375ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 105.8681ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 106.1655ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 51.9139ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 52.0355ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 76.8378ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 76.9622ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 300.5516ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 300.6982ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 48.0957ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 48.2385ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 15.6632ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 15.8168ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 54.1123ms - 500
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 54.2394ms - 500
+warn: Diten.Web.Controllers.CRM.TerritoryManagementController[0]
+      Reference set 'planning-center-type' returned InternalServerError; rendering without options.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 47.7879ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 47.9446ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 10047.8585ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 10047.9522ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 66.0438ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 66.1977ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 143.4428ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 143.6919ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 158.9356ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 159.1584ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 18.5771ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 18.7128ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 14.7934ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 14.908ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 213.2894ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 213.441ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 16.0243ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 16.1481ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 12.1105ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 12.2397ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 26.9455ms - 500
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 27.0366ms - 500
+warn: Diten.Web.Controllers.CRM.TerritoryManagementController[0]
+      Reference set 'planning-center-type' returned InternalServerError; rendering without options.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 17.6978ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 17.8ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 38.8102ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 38.9555ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 98.5226ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 98.7116ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 15.8745ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 16.0007ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 187.1118ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 187.2483ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 17.4247ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 17.521ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 17.2209ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 17.3069ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 29.9689ms - 500
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 30.0632ms - 500
+warn: Diten.Web.Controllers.CRM.TerritoryManagementController[0]
+      Reference set 'planning-center-type' returned InternalServerError; rendering without options.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 18.4137ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 18.5025ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 51.1047ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 51.2399ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 13.7862ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 13.9273ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 21.81ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 21.9425ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 238.7452ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 238.8596ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 247.9163ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 248.1089ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 21.6475ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 22.2253ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 18.4967ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 18.5723ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 16.9485ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 17.0548ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 25.9284ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 26.0378ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 44.023ms - 500
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 44.1166ms - 500
+warn: Diten.Web.Controllers.CRM.TerritoryManagementController[0]
+      Reference set 'planning-center-type' returned InternalServerError; rendering without options.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 38.4973ms - 500
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 38.5942ms - 500
+warn: Diten.Web.Controllers.CRM.TerritoryManagementController[0]
+      Reference set 'planning-center-type' returned InternalServerError; rendering without options.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 23.674ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 23.7609ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 21.7257ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 21.8255ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 55.3902ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 55.4612ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 14.1274ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 14.2658ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 180.1049ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 180.1687ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 16.2439ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 16.3084ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 14.6596ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 14.725ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 35.915ms - 500
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 35.9976ms - 500
+warn: Diten.Web.Controllers.CRM.TerritoryManagementController[0]
+      Reference set 'planning-center-type' returned InternalServerError; rendering without options.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 17.8183ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 17.9032ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 55.6705ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 55.7311ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 118.8015ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 118.8884ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 75.8883ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 76.0079ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 11.8688ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 11.9199ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/country/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/country/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 10.7434ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 10.7972ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/business-unit/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/business-unit/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 9.1509ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 9.209ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request PUT http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request PUT http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 259.8699ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 259.9238ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 12.8638ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 12.9325ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 12.8471ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 12.9001ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 171.7576ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 171.8181ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 15.6437ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 15.7085ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 13.4479ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 13.5161ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 33.3917ms - 500
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 33.4657ms - 500
+warn: Diten.Web.Controllers.CRM.TerritoryManagementController[0]
+      Reference set 'planning-center-type' returned InternalServerError; rendering without options.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 16.4004ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 16.4699ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 42.2353ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 42.3301ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 77.7117ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 77.7893ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 31.5903ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 31.6916ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 456.1789ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 456.2501ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 24.5598ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 24.6842ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 16.6397ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 16.7122ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 16.1272ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 16.2137ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 84.4591ms - 500
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 84.6863ms - 500
+warn: Diten.Web.Controllers.CRM.TerritoryManagementController[0]
+      Reference set 'planning-center-type' returned InternalServerError; rendering without options.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 121.9198ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 121.9989ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 415.7191ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 415.7878ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 22.9928ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 23.0579ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 30.329ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 30.4593ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 40.4225ms - 500
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 40.5933ms - 500
+warn: Diten.Web.Controllers.CRM.TerritoryManagementController[0]
+      Reference set 'planning-center-type' returned InternalServerError; rendering without options.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 23.5543ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 23.6281ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 116.2827ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 116.3815ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 293.1108ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 293.2113ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 354.5124ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 354.5806ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 80.7056ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 80.7849ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 13.4105ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 13.4814ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 192.171ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 192.2343ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 16.553ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 16.6089ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 14.727ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 14.7868ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 13.3842ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 13.4498ms - 404
+warn: Diten.Web.Controllers.CRM.TerritoryManagementController[0]
+      Reference set 'planning-center-type' returned NotFound; rendering without options.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 17.0998ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 17.175ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 59.1863ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 59.2509ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 19.1591ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 19.2318ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 20.7574ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 20.8209ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 185.2061ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 185.2662ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 184.6436ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 184.7091ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 16.5162ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 16.5693ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 12.8247ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 12.879ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 34.004ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 34.0553ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 12.5072ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 12.5699ms - 404
+warn: Diten.Web.Controllers.CRM.TerritoryManagementController[0]
+      Reference set 'planning-center-type' returned NotFound; rendering without options.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 13.9971ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 14.0433ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 13.6645ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 13.721ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 10.7363ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 10.7877ms - 404
+warn: Diten.Web.Controllers.CRM.TerritoryManagementController[0]
+      Reference set 'planning-center-type' returned NotFound; rendering without options.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 16.0995ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 16.153ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 47.911ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 47.9756ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 14.7348ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 14.8121ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 14.3621ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 14.4298ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 15.9348ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 15.996ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 220.9241ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 220.9872ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 222.9153ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 222.963ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 232.124ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 232.1614ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 23.3309ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 23.3557ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 23.3978ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 23.4082ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 25.6706ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 25.7239ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 13.5928ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 13.6729ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 13.7747ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 13.84ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 14.3049ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 14.3319ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 12.7352ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 12.8148ms - 404
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 13.1626ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 13.2049ms - 404
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 14.1321ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 14.1799ms - 404
+warn: Diten.Web.Controllers.CRM.TerritoryManagementController[0]
+      Reference set 'planning-center-type' returned NotFound; rendering without options.
+warn: Diten.Web.Controllers.CRM.TerritoryManagementController[0]
+      Reference set 'planning-center-type' returned NotFound; rendering without options.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+warn: Diten.Web.Controllers.CRM.TerritoryManagementController[0]
+      Reference set 'planning-center-type' returned NotFound; rendering without options.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 21.8342ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 21.8978ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 24.1752ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 24.2159ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 30.209ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 30.2586ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 47.7165ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 47.7637ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 71.8956ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 71.9959ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 12.2232ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 12.2713ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 17.558ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 17.6236ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-management/contract
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 186.4561ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 186.5147ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 187.0233ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 187.0839ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 12.4781ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 12.5399ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/territory-models/3618056f-99e5-4950-afdd-58357b790fcf/nodes
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 13.1835ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 13.2527ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 12.834ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 12.9507ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/territory-level/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 12.7107ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 12.8326ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 11.7327ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 11.7914ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/v1/reference-data/sets/planning-center-type/published-values?scope_key=97c59330-dbc4-4665-b29c-0c26dbb5cc93
+warn: Diten.Web.Controllers.CRM.TerritoryManagementController[0]
+      Reference set 'planning-center-type' returned NotFound; rendering without options.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 10.5779ms - 404
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 10.6386ms - 404
+warn: Diten.Web.Controllers.CRM.TerritoryManagementController[0]
+      Reference set 'planning-center-type' returned NotFound; rendering without options.
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/crm/accounts?page=1&pageSize=200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 15.7659ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 15.8197ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 14.3643ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 14.4171ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://localhost:5000/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 48.8985ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 48.9662ms - 200

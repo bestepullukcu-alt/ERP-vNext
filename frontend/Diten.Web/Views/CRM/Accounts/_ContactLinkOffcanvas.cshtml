@@ -1,0 +1,121 @@
+@model Diten.Web.Models.CRM.AccountContactLinkEditViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.CRM.Accounts.AccountIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* MOD-0150 FU03 — Golden Reference Slim create/edit canvas for Account↔Contact links (8 form fields ⇒ Slim: no
+   standalone Create/Edit page). Submits over AJAX to the existing Add/Edit endpoints; the contact picker is
+   edit-locked because the backend never re-points an existing link to another contact. *@
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasContactLink" aria-labelledby="offcanvasContactLinkLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasContactLinkLabel" class="offcanvas-title">@Localizer["AddContactLink"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        @if (!string.IsNullOrWhiteSpace(Model.ReferenceDependencyMessage))
+        {
+            <div class="alert alert-warning">@Model.ReferenceDependencyMessage</div>
+        }
+
+        @* Server-side validation errors (from the gateway) *@
+        <div id="formContactLinkAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formContactLink" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="linkId" value="" />
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="linkContactId" class="form-label fw-medium">
+                        @Localizer["SelectContact"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="linkContactId" name="ContactId" class="form-select select2-offcanvas" required
+                            data-placeholder="@Localizer["SelectContact"]">
+                        <option value="">@Localizer["SelectContact"]</option>
+                        @foreach (var c in Model.ContactOptions)
+                        {
+                            <option value="@c.Value">@c.Text</option>
+                        }
+                    </select>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="linkRoleCode" class="form-label fw-medium">
+                        @Localizer["RoleCode"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="linkRoleCode" name="RoleCode" class="form-select select2-offcanvas" required
+                            data-placeholder="@Localizer["RoleCode"]">
+                        <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                        @foreach (var r in Model.RoleOptions)
+                        {
+                            <option value="@r.Value">@r.Text</option>
+                        }
+                    </select>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                @* MOD-0150 in-account hierarchy: the manager is chosen from contacts ALREADY linked to this account.
+                   Self-report and cycles are rejected by the backend (400). Optional — empty = top of the tree. *@
+                <div class="col-12">
+                    <label for="linkReportsToContactId" class="form-label fw-medium">@Localizer["ReportsTo"]</label>
+                    <select id="linkReportsToContactId" name="ReportsToContactId" class="form-select select2-offcanvas"
+                            data-placeholder="@Localizer["ReportsToNone"]">
+                        <option value="">@Localizer["ReportsToNone"]</option>
+                        @foreach (var c in Model.ReportsToOptions)
+                        {
+                            <option value="@c.Value">@c.Text</option>
+                        }
+                    </select>
+                    <div class="form-text">@Localizer["ReportsToHelp"]</div>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input type="hidden" name="IsPrimary" value="false" />
+                        <input type="checkbox" id="linkIsPrimary" name="IsPrimary" class="form-check-input" role="switch" value="true" />
+                        <label for="linkIsPrimary" class="form-check-label ms-2">@Localizer["PrimaryContact"]</label>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6">
+                    <label for="linkValidFrom" class="form-label fw-medium">@Localizer["ValidFrom"]</label>
+                    <input type="date" id="linkValidFrom" name="ValidFrom" class="form-control" />
+                </div>
+
+                <div class="col-12 col-sm-6">
+                    <label for="linkValidTo" class="form-label fw-medium">@Localizer["ValidTo"]</label>
+                    <input type="date" id="linkValidTo" name="ValidTo" class="form-control" />
+                </div>
+
+                @* MOD-0150 hardening: business reason for a cross-country Contact↔Account link. The backend requires it
+                   only when both the contact and the account carry a known, different country. *@
+                <div class="col-12">
+                    <label for="linkCrossCountryReason" class="form-label fw-medium">@Localizer["CrossCountryReason"]</label>
+                    <textarea id="linkCrossCountryReason" name="CrossCountryReason" class="form-control" rows="2" maxlength="500"></textarea>
+                    <div class="form-text">@Localizer["CrossCountryHelp"]</div>
+                </div>
+
+                <div class="col-12">
+                    <div class="alert alert-warning d-flex align-items-start gap-2 mb-3" role="alert">
+                        <i class="icon-base ti tabler-alert-triangle mt-1"></i>
+                        <div>@Localizer["NotesSafetyNotice"]</div>
+                    </div>
+                    <label for="linkNotes" class="form-label fw-medium">@Localizer["Notes"]</label>
+                    <textarea id="linkNotes" name="Notes" class="form-control" rows="3" maxlength="2000"></textarea>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+            @SharedLocalizer["Cancel"]
+        </button>
+        <button type="button" id="btnSaveContactLink" class="btn btn-primary">
+            @SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>

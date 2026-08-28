@@ -2,10 +2,12 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<ControlledDocumentsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     ViewData["Title"] = SharedLocalizer["Details"].Value;
     Layout = "_LayoutTenantShell";
     var documentId = ViewData["DocumentId"]?.ToString();
+    var canViewMasterRegister = Perms.Has("platform.document-management.master-register.view");
 }
 
 <div class="controlleddocuments-details">
@@ -44,6 +46,27 @@
             </section>
         </div>
 
+        @if (canViewMasterRegister)
+        {
+            <div class="col-12">
+                <section class="card backbone-preview-section p-4" id="masterRegisterCard" aria-live="polite">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                        <div>
+                            <h5 class="card-title mb-1" id="mr_card_title">
+                                <i class="icon-base bx bx-book-content me-2"></i>@Localizer["MasterRegister"]
+                            </h5>
+                            <p class="text-muted mb-0">@Localizer["LinkedMasterRegister"]</p>
+                        </div>
+                        <div id="masterRegisterActions"></div>
+                    </div>
+                    <div class="alert alert-secondary mt-3 mb-0" id="masterRegisterState" role="status">
+                        @Localizer["Loading"]
+                    </div>
+                    <dl class="row mt-4 mb-0 d-none" id="masterRegisterDetails"></dl>
+                </section>
+            </div>
+        }
+
         @* ── Card 2: Classification ── *@
         <div class="col-12 col-md-6 col-lg-4">
             <section class="card backbone-preview-section h-100 p-4">
@@ -68,7 +91,7 @@
 
 @section Scripts {
     <partial name="~/Views/DocumentManagement/ControlledDocuments/_IndexL10n.cshtml" />
-    <script>window.ControlledDocumentContext = { documentId: '@documentId' };</script>
+    <script>window.ControlledDocumentContext = { documentId: '@documentId', canViewMasterRegister: @Json.Serialize(canViewMasterRegister) };</script>
     <script src="~/assets/js/DocumentManagement/ControlledDocuments/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/DocumentManagement/ControlledDocuments/detail.js" asp-append-version="true"></script>
 }

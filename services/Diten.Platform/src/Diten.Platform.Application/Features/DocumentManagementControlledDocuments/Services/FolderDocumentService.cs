@@ -43,7 +43,11 @@ public sealed class FolderDocumentService
         _tenantContext = tenantContext;
     }
 
-    public async Task<Response<FolderDocumentsModel>> GetFolderDocumentsAsync(Guid collectionInstanceId, string correlationId, CancellationToken ct)
+    public async Task<Response<FolderDocumentsModel>> GetFolderDocumentsAsync(
+        Guid collectionInstanceId,
+        bool includeNonEffective,
+        string correlationId,
+        CancellationToken ct)
     {
         var folder = await _reader.ResolveByIdAsync(collectionInstanceId, ct);
         if (folder is null)
@@ -63,9 +67,20 @@ public sealed class FolderDocumentService
         var documents = new List<ControlledDocumentListItemModel>();
         foreach (var document in await _documents.GetByCollectionInstanceAsync(collectionInstanceId, ct))
         {
-            if (await _access.CanViewControlledDocumentAsync(document, null, ct))
+            var lifecycle = await _access.GetControlledDocumentLifecycleVisibilityAsync(document, ct);
+            if ((!includeNonEffective || !lifecycle.CanViewNonEffective) && !lifecycle.IsOfficiallyEffective)
             {
-                documents.Add(ControlledDocumentMapping.ToListItem(document) with { IsFavorite = favoriteIds.Contains(document.Id) });
+                continue;
+            }
+
+            if (await _access.CanReadControlledDocumentAsync(document, ct))
+            {
+                documents.Add(ControlledDocumentMapping.ToListItem(document) with
+                {
+                    IsFavorite = favoriteIds.Contains(document.Id),
+                    MasterRegisterLifecycleStatus = lifecycle.MasterRegisterLifecycleStatus,
+                    IsOfficiallyEffective = lifecycle.IsOfficiallyEffective
+                });
             }
         }
 
@@ -84,6 +99,12 @@ public sealed class FolderDocumentService
         return Response<FolderDocumentsModel>.Success(
             new FolderDocumentsModel(collectionInstanceId, folder.FullPath, documents, templates), correlationId: correlationId);
     }
+
+    public Task<Response<FolderDocumentsModel>> GetFolderDocumentsAsync(
+        Guid collectionInstanceId,
+        string correlationId,
+        CancellationToken ct) =>
+        GetFolderDocumentsAsync(collectionInstanceId, false, correlationId, ct);
 
     public async Task<Response<IReadOnlyList<FolderAccessPolicyModel>>> GetFolderAccessAsync(Guid collectionInstanceId, string correlationId, CancellationToken ct)
     {

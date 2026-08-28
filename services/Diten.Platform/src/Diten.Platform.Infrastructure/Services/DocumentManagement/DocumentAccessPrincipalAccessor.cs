@@ -46,6 +46,14 @@ public sealed class DocumentAccessPrincipalAccessor : IDocumentAccessPrincipalAc
             .Where(g => g != Guid.Empty)
             .Distinct()
             .ToList();
+        var permissions = user.Claims
+            .Where(c => string.Equals(c.Type, "permission", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(c.Type, "permissions", StringComparison.OrdinalIgnoreCase)
+                || c.Type.EndsWith("/permission", StringComparison.OrdinalIgnoreCase)
+                || c.Type.EndsWith("/permissions", StringComparison.OrdinalIgnoreCase))
+            .SelectMany(c => c.Value.Split([' ', ',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
         var actorType = user.FindFirst("actor_type")?.Value?.Trim();
         var isPlatformAdmin = string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase);
@@ -57,6 +65,6 @@ public sealed class DocumentAccessPrincipalAccessor : IDocumentAccessPrincipalAc
                 || string.Equals(r, "TenantAdmin", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(r, "Admin", StringComparison.OrdinalIgnoreCase));
 
-        return new DocumentPrincipal(_currentUser.UserId, roles, companies, isPlatformAdmin, isTenantAdmin);
+        return new DocumentPrincipal(_currentUser.UserId, roles, companies, isPlatformAdmin, isTenantAdmin, permissions);
     }
 }

@@ -1,0 +1,129 @@
+@using Diten.Web.Views.CRM.KnowledgeConcepts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeConceptsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@*
+    MOD-0162-FU03 Tab 5 — Graph Preview. STRICTLY READ-ONLY (pack §7.1: no golden reference, no DataTable, verifier N/A).
+
+    This is an ADJACENCY read, not an engine. It consumes the three existing read endpoints exactly as they are:
+      · concept-graph?subjectId=…            the subject's node list + connection list + chain templates
+      · concept-graph/by-node/{id}           EXACTLY 1 hop around the anchor node
+      · concept-graph/by-content/{id}        EXACTLY 2 edge layers (content → its nodes → those nodes' 1-hop neighbours)
+
+    The depths above are FIXED by the FU03 contract (AC-GRAPH-DEPTH). There is deliberately NO depth / maxHops control
+    on this surface, no transitive closure, no scoring, no best-path, no recommendation and no best-next-content:
+    those are an engine (F4 / MOD-0058) and sit outside the FU01C boundary. Adding such a control here would be a
+    boundary breach, not a feature. Empty data renders as empty — no default graph is invented (MOD-0151 R11 spirit).
+*@
+<div class="card mb-4">
+    <div class="card-body p-4">
+        <div class="d-flex align-items-start gap-2 mb-4">
+            <i class="bx bx-lock-alt fs-5 text-muted"></i>
+            <div>
+                <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["GraphPreviewTab"]</h6>
+                <p class="mb-0 text-muted small">@Localizer["GraphReadOnlyNotice"]</p>
+            </div>
+        </div>
+
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-md-3">
+                <label for="graphScope" class="form-label fw-medium">@Localizer["GraphScope"]</label>
+                <select id="graphScope" class="form-select graph-select2" data-placeholder="@Localizer["SelectOption"]">
+                    <option value="subject">@Localizer["GraphScopeSubject"]</option>
+                    <option value="node">@Localizer["GraphScopeNode"]</option>
+                    <option value="content">@Localizer["GraphScopeContent"]</option>
+                </select>
+            </div>
+
+            <div class="col-12 col-md-3" data-graph-field="subject">
+                <label for="graphSubjectId" class="form-label fw-medium">@Localizer["SubjectId"]</label>
+                <select id="graphSubjectId" class="form-select graph-select2" data-placeholder="@Localizer["SelectOption"]"></select>
+            </div>
+
+            <div class="col-12 col-md-3 d-none" data-graph-field="node">
+                <label for="graphNodeId" class="form-label fw-medium">@Localizer["GraphNodeAnchor"]</label>
+                <select id="graphNodeId" class="form-select graph-select2" data-placeholder="@Localizer["SelectOption"]"></select>
+            </div>
+
+            <div class="col-12 col-md-3 d-none" data-graph-field="content">
+                <label for="graphContentId" class="form-label fw-medium">@Localizer["GraphContentAnchor"]</label>
+                <select id="graphContentId" class="form-select graph-select2" data-placeholder="@Localizer["SelectOption"]"></select>
+            </div>
+
+            @* effectiveAt is an effective-dating filter published by the contract (SupportedFilters.Graph) — it narrows
+               WHICH rows are in scope on a date. It is not a traversal depth and must never be presented as one. *@
+            <div class="col-12 col-md-3" data-graph-field="subject">
+                <label for="graphEffectiveAt" class="form-label fw-medium">@Localizer["GraphEffectiveAt"]</label>
+                <input type="date" id="graphEffectiveAt" class="form-control" />
+            </div>
+
+            <div class="col-12 col-md-2">
+                <div class="form-check form-switch mb-2">
+                    <input type="checkbox" id="graphIncludeArchived" class="form-check-input" role="switch" />
+                    <label for="graphIncludeArchived" class="form-check-label ms-2">@Localizer["IncludeArchived"]</label>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-2">
+                <button type="button" id="btnGraphLoad" class="btn btn-primary w-100">
+                    <i class="bx bx-search-alt me-1"></i>@Localizer["GraphLoad"]
+                </button>
+            </div>
+        </div>
+
+        @* The fixed-depth statement for the active scope. It is a contract fact, so it is always on screen. *@
+        <div id="graphDepthNotice" class="alert alert-info d-flex align-items-start gap-2 mt-4 mb-0" role="status">
+            <i class="bx bx-info-circle mt-1"></i><span id="graphDepthNoticeText"></span>
+        </div>
+    </div>
+</div>
+
+<div id="graphPreviewError" class="alert alert-danger d-none" role="alert"></div>
+
+<div id="graphPreviewPlaceholder" class="card">
+    <div class="card-body p-4 text-center text-muted">@Localizer["GraphPickScope"]</div>
+</div>
+
+<div id="graphPreviewResult" class="d-none">
+    <div class="row g-4">
+
+        @* ---- Nodes, grouped by concept type ---- *@
+        <div class="col-12 col-xl-5">
+            <section class="card backbone-preview-section p-4 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0 backbone-preview-section-title">@Localizer["GraphNodesSection"]</h6>
+                    <span class="badge bg-label-primary"><span id="graphNodeCount">0</span> @Localizer["GraphNodeCount"]</span>
+                </div>
+                <div id="graphNodes" class="d-flex flex-column gap-3"></div>
+            </section>
+        </div>
+
+        @* ---- Connections (deterministic order: Priority, then RelationshipCode) ---- *@
+        <div class="col-12 col-xl-7">
+            <section class="card backbone-preview-section p-4 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0 backbone-preview-section-title">@Localizer["GraphEdgesSection"]</h6>
+                    <span class="badge bg-label-primary"><span id="graphEdgeCount">0</span> @Localizer["GraphEdgeCount"]</span>
+                </div>
+                <p class="text-muted small mb-3">@Localizer["GraphEdgeOrderNote"]</p>
+                <div id="graphEdges" class="d-flex flex-column gap-2"></div>
+            </section>
+        </div>
+
+        @* ---- Chain templates: the expected TYPE sequence for the subject in scope ---- *@
+        <div class="col-12">
+            <section class="card backbone-preview-section p-4">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0 backbone-preview-section-title">@Localizer["GraphTemplatesSection"]</h6>
+                    <span class="badge bg-label-primary"><span id="graphTemplateCount">0</span> @Localizer["GraphTemplateCount"]</span>
+                </div>
+                <div id="graphTemplates" class="d-flex flex-column gap-3"></div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<div id="graphPreviewEmpty" class="card d-none">
+    <div class="card-body p-4 text-center text-muted"><span id="graphPreviewEmptyText"></span></div>
+</div>

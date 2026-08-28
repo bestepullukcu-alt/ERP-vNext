@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CampaignsTitle" xml:space="preserve"><value>Кампании</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Управление кампаниями, составом целей и статическими снимками с учётом согласия.</value></data>
+  <data name="CreateCampaign" xml:space="preserve"><value>Создать кампанию</value></data>
+  <data name="CampaignDetail" xml:space="preserve"><value>Сведения о кампании</value></data>
+  <data name="EditCampaign" xml:space="preserve"><value>Изменить кампанию</value></data>
+  <data name="ArchiveCampaign" xml:space="preserve"><value>Архивировать кампанию</value></data>
+  <data name="ArchiveCampaignConfirm" xml:space="preserve"><value>Архивировать эту кампанию? Это мягкое действие жизненного цикла; история остаётся доступной для чтения.</value></data>
+  <data name="CampaignContractUnavailable" xml:space="preserve"><value>Контракт возможностей кампании недоступен. Действия отключены.</value></data>
+  <data name="CampaignCode" xml:space="preserve"><value>Код кампании</value></data>
+  <data name="CampaignName" xml:space="preserve"><value>Название кампании</value></data>
+  <data name="CampaignType" xml:space="preserve"><value>Тип кампании</value></data>
+  <data name="CampaignStatus" xml:space="preserve"><value>Статус кампании</value></data>
+  <data name="ObjectiveType" xml:space="preserve"><value>Тип цели</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>Идентификатор бизнес-единицы</value></data>
+  <data name="DefaultConsentChannel" xml:space="preserve"><value>Канал согласия по умолчанию</value></data>
+  <data name="DefaultConsentPurpose" xml:space="preserve"><value>Цель согласия по умолчанию</value></data>
+  <data name="StartDate" xml:space="preserve"><value>Дата начала</value></data>
+  <data name="EndDate" xml:space="preserve"><value>Дата окончания</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="SummarySection" xml:space="preserve"><value>Сводка</value></data>
+  <data name="ConsentContextSection" xml:space="preserve"><value>Контекст согласия</value></data>
+  <data name="ConsentDefaultsHelp" xml:space="preserve"><value>Это необязательные значения по умолчанию для кампании. Для снимка с фильтром согласия всё равно нужны явные канал и цель.</value></data>
+  <data name="NoDefault" xml:space="preserve"><value>Нет значения по умолчанию</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Исходная система</value></data>
+  <data name="ExternalId" xml:space="preserve"><value>Внешний идентификатор</value></data>
+  <data name="ExternalCode" xml:space="preserve"><value>Внешний код</value></data>
+  <data name="ExternalName" xml:space="preserve"><value>Внешнее название</value></data>
+  <data name="ImportedAt" xml:space="preserve"><value>Время импорта</value></data>
+  <data name="Primary" xml:space="preserve"><value>Основной</value></data>
+  <data name="Remove" xml:space="preserve"><value>Удалить</value></data>
+  <data name="CampaignTargets" xml:space="preserve"><value>Цели кампании</value></data>
+  <data name="CampaignTargetId" xml:space="preserve"><value>Идентификатор цели кампании</value></data>
+  <data name="CreateTarget" xml:space="preserve"><value>Создать цель</value></data>
+  <data name="EditTarget" xml:space="preserve"><value>Изменить цель</value></data>
+  <data name="ArchiveTarget" xml:space="preserve"><value>Архивировать цель</value></data>
+  <data name="ArchiveTargetConfirm" xml:space="preserve"><value>Архивировать эту цель? Это мягкое действие жизненного цикла; история остаётся доступной для чтения.</value></data>
+  <data name="TargetType" xml:space="preserve"><value>Тип цели</value></data>
+  <data name="TargetId" xml:space="preserve"><value>Идентификатор цели</value></data>
+  <data name="TargetDisplayName" xml:space="preserve"><value>Отображаемое имя цели</value></data>
+  <data name="DisplayLabelNotSourceOfTruth" xml:space="preserve"><value>Только отображаемая метка; не является источником истины.</value></data>
+  <data name="TargetStatus" xml:space="preserve"><value>Статус цели</value></data>
+  <data name="TargetSource" xml:space="preserve"><value>Источник цели</value></data>
+  <data name="SourceReferenceType" xml:space="preserve"><value>Тип исходной ссылки</value></data>
+  <data name="SourceReferenceId" xml:space="preserve"><value>Идентификатор исходной ссылки</value></data>
+  <data name="SnapshotBatchId" xml:space="preserve"><value>Идентификатор пакета снимка</value></data>
+  <data name="SelectionReason" xml:space="preserve"><value>Причина выбора</value></data>
+  <data name="ReasonCodes" xml:space="preserve"><value>Коды причин</value></data>
+  <data name="ExclusionReason" xml:space="preserve"><value>Причина исключения</value></data>
+  <data name="ConsentDecision" xml:space="preserve"><value>Решение по согласию</value></data>
+  <data name="EligibilityStatus" xml:space="preserve"><value>Статус допустимости</value></data>
+  <data name="EvaluatedAt" xml:space="preserve"><value>Время оценки</value></data>
+  <data name="MatchedConsentId" xml:space="preserve"><value>Идентификатор найденного согласия</value></data>
+  <data name="MatchedPreferenceIds" xml:space="preserve"><value>Идентификаторы найденных предпочтений</value></data>
+  <data name="EvaluatorVersion" xml:space="preserve"><value>Версия оценщика</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Действует по</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>Действует на</value></data>
+  <data name="Archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="ArchivedAt" xml:space="preserve"><value>Дата архивации</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Дата обновления</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="CreateSnapshot" xml:space="preserve"><value>Создать статический снимок целей</value></data>
+  <data name="ApplyConsentFilter" xml:space="preserve"><value>Применить фильтр согласия</value></data>
+  <data name="ConsentChannel" xml:space="preserve"><value>Канал согласия</value></data>
+  <data name="ConsentPurpose" xml:space="preserve"><value>Цель согласия</value></data>
+  <data name="ConsentFilterNotAppliedWarning" xml:space="preserve"><value>Фильтрация по согласию отключена. Снимок будет отмечен серьёзным предупреждением consent_filter_not_applied.</value></data>
+  <data name="SourceType" xml:space="preserve"><value>Тип источника</value></data>
+  <data name="TargetItems" xml:space="preserve"><value>Элементы целей</value></data>
+  <data name="AddRow" xml:space="preserve"><value>Добавить строку</value></data>
+  <data name="JsonPasteFallback" xml:space="preserve"><value>Резервный вариант: вставка JSON</value></data>
+  <data name="JsonFallbackHelp" xml:space="preserve"><value>Если указаны, корректные JSON-элементы заменяют упрощённые ручные строки. Это не механизм импорта.</value></data>
+  <data name="CommaSeparated" xml:space="preserve"><value>Значения через запятую.</value></data>
+  <data name="ExcludedTargetsVisibleHelp" xml:space="preserve"><value>Исключённые, заблокированные и неизвестные цели остаются видимыми вместе с причинами.</value></data>
+  <data name="TargetsUnavailable" xml:space="preserve"><value>Управление целями недоступно или не разрешено.</value></data>
+  <data name="UnsupportedFiltersNote" xml:space="preserve"><value>API не поддерживает фильтрацию по поиску, цели, бизнес-единице и диапазону дат; поддельный клиентский фильтр не применяется.</value></data>
+  <data name="UnsupportedFilters" xml:space="preserve"><value>Не поддерживается: поиск, тип цели, бизнес-единица, диапазон дат</value></data>
+  <data name="UnsupportedTargetFiltersNote" xml:space="preserve"><value>Причина исключения и решение/статус согласия доступны только для просмотра: в API нет серверного фильтра для них.</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Включая архивные</value></data>
+  <data name="Apply" xml:space="preserve"><value>Применить</value></data>
+  <data name="Reset" xml:space="preserve"><value>Сбросить</value></data>
+  <data name="Filter" xml:space="preserve"><value>Фильтр</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Назад к списку</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Выберите…</value></data>
+  <data name="RequiredProgress" xml:space="preserve"><value>Обязательные поля: 0/5 заполнено при первом открытии.</value></data>
+  <data name="ArchivedCampaignReadOnly" xml:space="preserve"><value>Кампания в архиве. Редактирование кампании и изменение целей отключены.</value></data>
+  <data name="DateWindow" xml:space="preserve"><value>Период дат</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <data name="View" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Записи кампаний не найдены.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Не удалось выполнить операцию.</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>Заполните все обязательные поля и исправьте некорректные диапазоны дат.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Успешно архивировано.</value></data>
+  <data name="SnapshotCreated" xml:space="preserve"><value>Статический снимок целей создан.</value></data>
+  <data name="CreatedCount" xml:space="preserve"><value>Создано</value></data>
+  <data name="ReconciledCount" xml:space="preserve"><value>Согласовано</value></data>
+  <data name="ExcludedCount" xml:space="preserve"><value>Исключено</value></data>
+  <data name="DifferentSourceConflict" xml:space="preserve"><value>Снимок не записан: одна из целей принадлежит другому источнику.</value></data>
+  <data name="Allowed" xml:space="preserve"><value>Разрешено</value></data>
+  <data name="Blocked" xml:space="preserve"><value>Заблокировано</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="NotApplicable" xml:space="preserve"><value>Не применимо</value></data>
+  <data name="Excluded" xml:space="preserve"><value>Исключено</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Добавить</value></data>
+  <data name="EndDateBeforeStartDate" xml:space="preserve"><value>Дата окончания не может быть раньше даты начала.</value></data>
+  <data name="Active" xml:space="preserve"><value>Активные</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Вы уверены?</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Массовое удаление</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Удалить выбранные записи?</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Столбцы</value></data>
+  <data name="Edit" xml:space="preserve"><value>Изменить</value></data>
+  <data name="Export" xml:space="preserve"><value>Экспорт</value></data>
+  <data name="Import" xml:space="preserve"><value>Импорт</value></data>
+  <data name="Passive" xml:space="preserve"><value>Пассивный</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Сохранить вид</value></data>
+  <data name="Search" xml:space="preserve"><value>Поиск</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Показать все</value></data>
+  <data name="Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Подробнее</value></data>
+  <data name="CyclePeriod" xml:space="preserve">
+    <value>Период цикла</value>
+  </data>
+  <data name="NoCyclePeriod" xml:space="preserve">
+    <value>Не привязано к периоду цикла</value>
+  </data>
+  <data name="CyclePeriodHelp" xml:space="preserve">
+    <value>Необязательно. Пока привязано, окно кампании должно оставаться внутри окна периода (включая обе границы).</value>
+  </data>
+  <data name="CyclePeriodWindow" xml:space="preserve">
+    <value>Окно периода:</value>
+  </data>
+  <data name="CyclePeriodClosedBadge" xml:space="preserve">
+    <value>закрыт</value>
+  </data>
+  <data name="CampaignOutsideCycleWindow" xml:space="preserve">
+    <value>Окно кампании находится вне окна привязанного периода.</value>
+  </data>
+  <data name="CyclePeriodNotActive" xml:space="preserve">
+    <value>К кампании можно привязать только активный период цикла.</value>
+  </data>
+  <data name="CyclePeriodNotFound" xml:space="preserve">
+    <value>Выбранный период цикла не найден.</value>
+  </data>
+  <data name="EndDateRequiredWhenBound" xml:space="preserve">
+    <value>Кампании, привязанной к периоду цикла, требуется дата окончания.</value>
+  </data>
+  <data name="ScopeSection" xml:space="preserve">
+    <value>Область</value>
+  </data>
+  <data name="ScopeType" xml:space="preserve">
+    <value>Уровень области</value>
+  </data>
+  <data name="ScopeReference" xml:space="preserve">
+    <value>Ссылка области</value>
+  </data>
+  <data name="ScopeType_tenant" xml:space="preserve">
+    <value>Весь тенант</value>
+  </data>
+  <data name="ScopeType_country" xml:space="preserve">
+    <value>Страна</value>
+  </data>
+  <data name="ScopeType_legal-entity" xml:space="preserve">
+    <value>Юридическое лицо</value>
+  </data>
+  <data name="ScopeType_business-unit" xml:space="preserve">
+    <value>Бизнес-единица</value>
+  </data>
+  <data name="CountryScope" xml:space="preserve">
+    <value>Страна</value>
+  </data>
+  <data name="LegalEntity" xml:space="preserve">
+    <value>Юридическое лицо</value>
+  </data>
+  <data name="BusinessUnit" xml:space="preserve">
+    <value>Бизнес-единица</value>
+  </data>
+  <data name="BusinessUnitCountryFilter" xml:space="preserve">
+    <value>Фильтровать бизнес-единицы по стране</value>
+  </data>
+  <data name="ScopeHelp" xml:space="preserve">
+    <value>Адрес кампании. Определяет, какие периоды цикла можно привязать: собственная область кампании плюс общетенантные периоды.</value>
+  </data>
+  <data name="ScopeEditableHint" xml:space="preserve">
+    <value>Область можно изменить. Если привязанный период больше не применим к новой области, сначала удалите его.</value>
+  </data>
+  <data name="CyclePeriodNotApplicable" xml:space="preserve">
+    <value>неприменимо к этой области</value>
+  </data>
+  <data name="CyclePeriodScopeMismatch" xml:space="preserve">
+    <value>Привязанный период неприменим к этой области. Удалите его или верните прежнюю область.</value>
+  </data>
+  <data name="ScopeReferenceRequired" xml:space="preserve">
+    <value>Этому уровню области требуется ссылка.</value>
+  </data>
+  <data name="ScopeAmbiguous" xml:space="preserve">
+    <value>Можно указать только одну ссылку области.</value>
+  </data>
+  <data name="CountryUnknown" xml:space="preserve">
+    <value>Эта страна не является опубликованным значением.</value>
+  </data>
+  <data name="BusinessUnitUnknown" xml:space="preserve">
+    <value>Эта бизнес-единица не является опубликованным значением.</value>
+  </data>
+  <data name="LegalEntityNotReferenceable" xml:space="preserve">
+    <value>На это юридическое лицо нельзя сослаться.</value>
+  </data>
+  <data name="LegalEntityUnavailable" xml:space="preserve">
+    <value>Служба мастер-данных не ответила. Ничего не сохранено — попробуйте снова.</value>
+  </data>
+  <data name="ReferenceSetUnpublished" xml:space="preserve">
+    <value>Управляемый набор справочных данных ещё не опубликован. Его должен опубликовать оператор.</value>
+  </data>
+  <data name="DependencyUnavailable" xml:space="preserve">
+    <value>Зависимость не ответила, поэтому список не загружен.</value>
+  </data>
+  <data name="NoTerritoryPlanMatches" xml:space="preserve">
+    <value>Нет подходящего территориального плана, показан полный опубликованный список.</value>
+  </data>
+  <data name="TargetingSection" xml:space="preserve">
+    <value>Таргетинг</value>
+  </data>
+  <data name="TargetingMode" xml:space="preserve">
+    <value>Режим таргетинга</value>
+  </data>
+  <data name="TargetingMode_segment" xml:space="preserve">
+    <value>По сегменту</value>
+  </data>
+  <data name="TargetingMode_manual" xml:space="preserve">
+    <value>Вручную</value>
+  </data>
+  <data name="TargetingModeHelp" xml:space="preserve">
+    <value>Как выбирается аудитория. Используется только выбранный режим; данные другого режима сохраняются, но не применяются.</value>
+  </data>
+  <data name="TargetedSegments" xml:space="preserve">
+    <value>Целевые сегменты</value>
+  </data>
+  <data name="TargetedSegmentsHelp" xml:space="preserve">
+    <value>Минимум один активный сегмент. Состав здесь не вычисляется — кампания фиксирует, на кого она нацелена.</value>
+  </data>
+  <data name="SelectSegments" xml:space="preserve">
+    <value>Выберите сегменты</value>
+  </data>
+  <data name="SegmentSuperseded" xml:space="preserve">
+    <value>заменён</value>
+  </data>
+  <data name="SegmentArchived" xml:space="preserve">
+    <value>архивирован</value>
+  </data>
+  <data name="SegmentRequired" xml:space="preserve">
+    <value>Для таргетинга по сегментам нужен хотя бы один сегмент.</value>
+  </data>
+  <data name="SegmentNotActive" xml:space="preserve">
+    <value>Добавить можно только активный сегмент.</value>
+  </data>
+  <data name="SegmentNotFound" xml:space="preserve">
+    <value>Выбранный сегмент не найден.</value>
+  </data>
+  <data name="SegmentDuplicate" xml:space="preserve">
+    <value>Один и тот же сегмент выбран несколько раз.</value>
+  </data>
+  <data name="SegmentLimitExceeded" xml:space="preserve">
+    <value>Слишком много целевых сегментов.</value>
+  </data>
+  <data name="SubjectType" xml:space="preserve">
+    <value>Тип субъекта</value>
+  </data>
+  <data name="ManualTargetingHint" xml:space="preserve">
+    <value>Цели добавляются на странице кампании после её сохранения.</value>
+  </data>
+  <data name="TargetingTitle" xml:space="preserve">
+    <value>Таргетинг</value>
+  </data>
+  <data name="TargetingWhatToPromote" xml:space="preserve">
+    <value>Что продвигать</value>
+  </data>
+  <data name="TargetingWhatToPromoteClosed" xml:space="preserve">
+    <value>Пока недоступно. Что продвигать планируется по сегментам и живёт в отдельной модели.</value>
+  </data>
+  <data name="TargetingDormantData" xml:space="preserve">
+    <value>Кампания всё ещё хранит данные другого режима таргетинга. Они сохраняются, но не используются.</value>
+  </data>
+  <data name="NoTargetedSegments" xml:space="preserve">
+    <value>Целевых сегментов нет</value>
+  </data>
+  <data name="CampaignCodeAutoHint" xml:space="preserve">
+    <value>Оставьте пустым — код будет назначен автоматически при сохранении.</value>
+  </data>
+  <data name="CampaignCodeAutoPlaceholder" xml:space="preserve">
+    <value>{0} (автоматически)</value>
+  </data>
+  <data name="PriorityLevel" xml:space="preserve">
+    <value>Приоритет</value>
+  </data>
+  <data name="PriorityLevel_low" xml:space="preserve">
+    <value>Низкий</value>
+  </data>
+  <data name="PriorityLevel_medium" xml:space="preserve">
+    <value>Средний</value>
+  </data>
+  <data name="PriorityLevel_high" xml:space="preserve">
+    <value>Высокий</value>
+  </data>
+  <data name="TargetPicker" xml:space="preserve">
+    <value>Цель</value>
+  </data>
+  <data name="TargetTypePickerHelp" xml:space="preserve">
+    <value>На этом экране можно выбрать клиента или контакт. Остальные типы целей доступны через API.</value>
+  </data>
+  <data name="SelectAccount" xml:space="preserve">
+    <value>Выберите клиента</value>
+  </data>
+  <data name="SelectContact" xml:space="preserve">
+    <value>Выберите контакт</value>
+  </data>
+  <data name="Notes" xml:space="preserve">
+    <value>Заметки</value>
+  </data>
+  <data name="ManualTargetDefaultsHint" xml:space="preserve">
+    <value>Источник, причина и дата начала заполняются при сохранении: цель фиксируется как выбранная вручную вами сегодня.</value>
+  </data>
+  <data name="TargetStatus_draft" xml:space="preserve">
+    <value>Черновик</value>
+  </data>
+  <data name="TargetStatus_active" xml:space="preserve">
+    <value>Активна</value>
+  </data>
+  <data name="TargetStatus_inactive" xml:space="preserve">
+    <value>Неактивна</value>
+  </data>
+  <data name="TargetStatus_completed" xml:space="preserve">
+    <value>Завершена</value>
+  </data>
+</root>

@@ -1,0 +1,23 @@
+@model Diten.Web.Models.CRM.CampaignPageViewModel
+@using Diten.Web.Views.CRM.Campaigns
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CampaignIndex> Localizer
+<div class="offcanvas offcanvas-end" tabindex="-1" id="snapshotCanvas" aria-labelledby="snapshotCanvasTitle">
+    <div class="offcanvas-header p-4"><h5 id="snapshotCanvasTitle" class="offcanvas-title">@Localizer["CreateSnapshot"]</h5><button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button></div>
+    <div class="offcanvas-body border-top p-4"><form id="snapshotForm" novalidate>
+        <div id="snapshotValidation" class="alert alert-danger d-none"></div>
+        <div class="form-check form-switch mb-3"><input id="applyConsentFilter" class="form-check-input" type="checkbox" checked /><label class="form-check-label" for="applyConsentFilter">@Localizer["ApplyConsentFilter"]</label></div>
+        <div id="consentNotAppliedWarning" class="alert alert-warning d-none">@Localizer["ConsentFilterNotAppliedWarning"] <code>consent_filter_not_applied</code></div>
+        <div class="row g-2"><div class="col-6 mb-3"><label class="form-label fw-medium" for="consentChannel">@Localizer["ConsentChannel"]</label><select id="consentChannel" class="form-select"><option value="">@Localizer["SelectOption"]</option>@foreach (var x in Model.Contract.Vocabulary.ConsentChannels) { <option selected="@(x == Model.Campaign.DefaultConsentChannel)" value="@x">@x</option> }</select></div><div class="col-6 mb-3"><label class="form-label fw-medium" for="consentPurpose">@Localizer["ConsentPurpose"]</label><select id="consentPurpose" class="form-select"><option value="">@Localizer["SelectOption"]</option>@foreach (var x in Model.Contract.Vocabulary.ConsentPurposes) { <option selected="@(x == Model.Campaign.DefaultConsentPurpose)" value="@x">@x</option> }</select></div></div>
+        <div class="mb-3"><label class="form-label fw-medium" for="snapshotSourceType">@Localizer["SourceType"] *</label><select id="snapshotSourceType" class="form-select" required>@foreach (var x in Model.Contract.Vocabulary.TargetSources) { <option value="@x">@x</option> }</select></div>
+        <div class="row g-2"><div class="col-6 mb-3"><label class="form-label fw-medium" for="snapshotSourceReferenceType">@Localizer["SourceReferenceType"]</label><input id="snapshotSourceReferenceType" class="form-control" /></div><div class="col-6 mb-3"><label class="form-label fw-medium" for="snapshotSourceReferenceId">@Localizer["SourceReferenceId"]</label><input id="snapshotSourceReferenceId" class="form-control" /></div></div>
+        <div class="mb-3"><label class="form-label fw-medium" for="snapshotSelectionReason">@Localizer["SelectionReason"] *</label><textarea id="snapshotSelectionReason" class="form-control" required></textarea></div>
+        <div class="mb-3"><label class="form-label fw-medium" for="snapshotReasonCodes">@Localizer["ReasonCodes"]</label><input id="snapshotReasonCodes" class="form-control" /><div class="form-text">@Localizer["CommaSeparated"]</div></div>
+        <div class="mb-3"><label class="form-label fw-medium" for="snapshotEffectiveAt">@Localizer["EffectiveAt"]</label><input id="snapshotEffectiveAt" type="datetime-local" class="form-control" /></div>
+        <div class="d-flex justify-content-between align-items-center mb-2"><label class="form-label fw-medium mb-0">@Localizer["TargetItems"] *</label><button type="button" id="addSnapshotRow" class="btn btn-sm btn-label-primary">@Localizer["AddRow"]</button></div>
+        <div id="snapshotRows"></div>
+        <div class="mt-3"><label class="form-label fw-medium" for="snapshotJson">@Localizer["JsonPasteFallback"]</label><textarea id="snapshotJson" class="form-control font-monospace" rows="5" placeholder='[{"targetType":"contact","targetId":"00000000-0000-0000-0000-000000000000"}]'></textarea><div class="form-text">@Localizer["JsonFallbackHelp"]</div></div>
+        <div id="snapshotResult" class="alert alert-success d-none mt-3"></div>
+    </form></div>
+    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between"><button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["Cancel"]</button><button type="button" id="submitSnapshot" class="btn btn-primary">@Localizer["CreateSnapshot"]</button></div>
+</div>

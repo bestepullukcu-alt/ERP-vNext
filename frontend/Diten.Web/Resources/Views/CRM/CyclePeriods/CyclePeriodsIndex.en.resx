@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="ActivateCyclePeriod" xml:space="preserve"><value>Activate</value></data>
+  <data name="ActivateCyclePeriodConfirm" xml:space="preserve"><value>Put this period live? Active periods in the same business unit may not share a day, and its dates become read-only.</value></data>
+  <data name="ActivatedAt" xml:space="preserve"><value>Activated at</value></data>
+  <data name="ActiveEditNotice" xml:space="preserve"><value>This period is live: its dates, year, sequence and business unit are read-only. Close it and open a new period to change them.</value></data>
+  <data name="AmbiguousPeriod" xml:space="preserve"><value>More than one active period covers today</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>Business unit</value></data>
+  <data name="BusinessUnitIdHint" xml:space="preserve"><value>Leave empty for a tenant-wide calendar. Different business units may run overlapping periods.</value></data>
+  <data name="BusinessUnitIdPlaceholder" xml:space="preserve"><value>Tenant-wide when empty</value></data>
+  <data name="CloseCyclePeriod" xml:space="preserve"><value>Close</value></data>
+  <data name="CloseCyclePeriodConfirm" xml:space="preserve"><value>Close this period? Nothing is deleted, but closing is final: there is no reopen.</value></data>
+  <data name="ClosedAt" xml:space="preserve"><value>Closed at</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>The cycle period service is unavailable.</value></data>
+  <data name="CreateCyclePeriod" xml:space="preserve"><value>New period</value></data>
+  <data name="CurrentPeriod" xml:space="preserve"><value>Period in force today</value></data>
+  <data name="CycleCode" xml:space="preserve"><value>Code</value></data>
+  <data name="CycleCodeHint" xml:space="preserve"><value>Lowercase letters, digits, dot, underscore and hyphen. Never renamed after creation.</value></data>
+  <data name="CycleCodePlaceholder" xml:space="preserve"><value>c-2026-03</value></data>
+  <data name="CycleName" xml:space="preserve"><value>Name</value></data>
+  <data name="CycleNamePlaceholder" xml:space="preserve"><value>2026 / cycle 3</value></data>
+  <data name="CyclePeriodsTitle" xml:space="preserve"><value>Cycle Periods</value></data>
+  <data name="EndDate" xml:space="preserve"><value>End date</value></data>
+  <data name="EndDateHint" xml:space="preserve"><value>Inclusive: the period covers this day.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>New cycle period</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit cycle period</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>General information</value></data>
+  <data name="Lifecycle" xml:space="preserve"><value>Lifecycle</value></data>
+  <data name="NoActivePeriod" xml:space="preserve"><value>No active period today</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Named planning periods: which period a plan belongs to. Working days and holidays are a separate calendar.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Quick view</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Period activated.</value></data>
+  <data name="RecordClosed" xml:space="preserve"><value>Period closed.</value></data>
+  <data name="SequenceInYear" xml:space="preserve"><value>Sequence</value></data>
+  <data name="StartDate" xml:space="preserve"><value>Start date</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Active</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Closed</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="TenantWide" xml:space="preserve"><value>Tenant-wide</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Updated at</value></data>
+  <data name="Window" xml:space="preserve"><value>Window</value></data>
+  <data name="Year" xml:space="preserve"><value>Year</value></data>
+  <data name="YearHint" xml:space="preserve"><value>The planning year. A period may cross a calendar year.</value></data>
+  <data name="ActiveWindowImmutableHint" xml:space="preserve"><value>This period is live: its dates, year, sequence and scope are read-only. Close it and open a new period to change them.</value></data>
+  <data name="BusinessUnitCountryContext" xml:space="preserve"><value>Country context</value></data>
+  <data name="BusinessUnitCountryFilter" xml:space="preserve"><value>Country (filter)</value></data>
+  <data name="BusinessUnitCountryFirstHint" xml:space="preserve"><value>Choose a country first — business units are listed from the territory plans covering that country over this period.</value></data>
+  <data name="BusinessUnitFromTerritory" xml:space="preserve"><value>Units covered by the matching field plans.</value></data>
+  <data name="BusinessUnitFromVocabulary" xml:space="preserve"><value>All published business units — no field plan matches this country and date range.</value></data>
+  <data name="BusinessUnitNoPlan" xml:space="preserve"><value>No active field plan covers this country and date range.</value></data>
+  <data name="BusinessUnitSourceLabel" xml:space="preserve"><value>Business unit source</value></data>
+  <data name="BusinessUnitSource_manual" xml:space="preserve"><value>Entered manually</value></data>
+  <data name="BusinessUnitSource_territory" xml:space="preserve"><value>From a field plan</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>Country</value></data>
+  <data name="CountrySetUnavailable" xml:space="preserve"><value>The country reference set is not published yet:</value></data>
+  <data name="CycleStatus_active" xml:space="preserve"><value>Active</value></data>
+  <data name="CycleStatus_closed" xml:space="preserve"><value>Closed</value></data>
+  <data name="CycleStatus_draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="EndDateInclusiveHint" xml:space="preserve"><value>Inclusive: the period covers this day.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identity</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Legal entity</value></data>
+  <data name="LegalEntityListUnavailable" xml:space="preserve"><value>The legal entity list could not be loaded.</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Lifecycle</value></data>
+  <data name="NewCyclePeriod" xml:space="preserve"><value>New period</value></data>
+  <data name="Scope" xml:space="preserve"><value>Scope</value></data>
+  <data name="ScopeRef" xml:space="preserve"><value>Scope reference</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Scope</value></data>
+  <data name="ScopeSectionHint" xml:space="preserve"><value>A period lives at exactly one address. The level you choose decides which reference applies.</value></data>
+  <data name="ScopeTenantHint" xml:space="preserve"><value>This period applies to the whole tenant.</value></data>
+  <data name="ScopeTenantWide" xml:space="preserve"><value>Tenant-wide</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Scope level</value></data>
+  <data name="ScopeTypeImmutableHint" xml:space="preserve"><value>The scope is part of the period identity and cannot be changed. Close this period and open a new one instead.</value></data>
+  <data name="ScopeType_business-unit" xml:space="preserve"><value>Business unit</value></data>
+  <data name="ScopeType_country" xml:space="preserve"><value>Country</value></data>
+  <data name="ScopeType_legal-entity" xml:space="preserve"><value>Legal entity</value></data>
+  <data name="ScopeType_tenant" xml:space="preserve"><value>Tenant-wide</value></data>
+  <data name="Version" xml:space="preserve"><value>Version</value></data>
+  <data name="CycleCapacity" xml:space="preserve"><value>Cycle capacity</value></data>
+</root>

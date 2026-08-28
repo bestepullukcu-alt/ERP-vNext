@@ -1,0 +1,39 @@
+@using Diten.Web.Views.CRM.CycleCapacities
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CycleCapacitiesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* There is no select-all checkbox and no bulk action bar here on purpose: this module has NO bulk delete and no delete
+   at all (retiring a capacity is Archive), so a selection column would offer an action that does not exist.
+   There is no visit-number column either: the estimate costs one working-calendar call per month, so computing one per
+   row would turn a single grid draw into dozens of cross-service calls. It lives on the Details page. *@
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-cycle-capacities" data-dt-standard="v2" class="datatables-cyclecapacities table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>@Localizer["CycleCode"]</th>
+                    <th class="all">@Localizer["CycleName"]</th>
+                    <th>@Localizer["PeriodWindow"]</th>
+                    <th>@Localizer["CalendarCountryCode"]</th>
+                    <th>@Localizer["DailyWorkMinutes"]</th>
+                    <th>@Localizer["MinutesPerVisit"]</th>
+                    <th>@Localizer["Fte"]</th>
+                    <th>@Localizer["MonthCount"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th>@Localizer["UpdatedAt"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

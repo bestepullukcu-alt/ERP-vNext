@@ -465,6 +465,9 @@
   <data name="ReferenceDataMenu" xml:space="preserve"><value>Données de référence</value></data>
   <data name="HumanCapitalManagement" xml:space="preserve"><value>Gestion du capital humain</value></data>
   <data name="EmployeeDraftsMenu" xml:space="preserve"><value>Brouillons employés</value></data>
+  <data name="CommercialSuite" xml:space="preserve"><value>Suite commerciale</value></data>
+  <data name="AccountsMenu" xml:space="preserve"><value>Comptes</value></data>
+  <data name="ContactsMenu" xml:space="preserve"><value>Contacts</value></data>
   <data name="ModuleCodeInUse" xml:space="preserve"><value>Ce code de module est déjà utilisé.</value></data>
   <data name="Organization" xml:space="preserve"><value>Organisation</value></data>
   <data name="OrganizationUnits" xml:space="preserve"><value>Unités organisationnelles</value></data>
@@ -476,6 +479,8 @@
   <data name="DocumentationStructures" xml:space="preserve"><value>Structures de documentation</value></data>
   <data name="ControlledDocuments" xml:space="preserve"><value>Documents contrôlés</value></data>
   <data name="TemplateMasters" xml:space="preserve"><value>Modèles d'entreprise</value></data>
+  <data name="DocumentMasterRegister" xml:space="preserve"><value>Registre principal des documents</value></data>
+  <data name="RepositoryAssessments" xml:space="preserve"><value>Évaluations des référentiels</value></data>
   <data name="TemplateVariants" xml:space="preserve"><value>Variantes de modèle</value></data>
   <data name="AccessMatrix" xml:space="preserve"><value>Matrice d'accès</value></data>
   <data name="Reconciliation" xml:space="preserve"><value>Rapprochement</value></data>
@@ -505,6 +510,8 @@
   <data name="Nav.Domain.DOCUMENTMANAGEMENT" xml:space="preserve"><value>Gestion documentaire</value></data>
   <data name="Nav.Domain.MASTERDATAMANAGEMENT" xml:space="preserve"><value>Gestion des données de référence</value></data>
   <data name="Nav.Domain.PLATFORMSHAREDSERVICES" xml:space="preserve"><value>Services partagés de la plateforme</value></data>
+  <data name="Nav.Module.WORKINGCALENDAR" xml:space="preserve"><value>Calendrier de travail</value></data>
+  <data name="Nav.Page.WORKINGCALENDAROVERRIDES" xml:space="preserve"><value>Exceptions du calendrier</value></data>
   <data name="Nav.Module.ACCESSGOVERNANCE" xml:space="preserve"><value>Gouvernance des accès</value></data>
   <data name="Nav.Module.TENANTSETTINGS" xml:space="preserve"><value>Paramètres du locataire</value></data>
   <data name="Nav.Module.GOLDENSLIM" xml:space="preserve"><value>Golden Slim</value></data>
@@ -541,5 +548,29 @@
   </data>
   <data name="NoRecords" xml:space="preserve">
     <value>Aucun enregistrement</value>
+  </data>
+
+  <data name="TerritoryManagementMenu" xml:space="preserve"><value>Gestion des territoires</value></data>
+  <data name="CampaignsMenu" xml:space="preserve"><value>Campagnes</value></data>
+  <data name="KnowledgeMenu" xml:space="preserve"><value>Connaissances</value></data>
+  <data name="BrandsMenu" xml:space="preserve"><value>Marques</value></data>
+  <data name="ProductsMenu" xml:space="preserve"><value>Produits</value></data>
+  <data name="ConsentPreferencesMenu" xml:space="preserve"><value>Consentement et préférences</value></data>
+  <data name="KnowledgeConceptsMenu" xml:space="preserve"><value>Concepts</value></data>
+  <data name="KnowledgePathsMenu" xml:space="preserve"><value>Parcours de connaissances</value></data>
+  <data name="ContentEngagementJourneysMenu" xml:space="preserve">
+    <value>Parcours d'engagement de contenu</value>
+  </data>
+  <data name="SegmentsMenu" xml:space="preserve">
+    <value>Segments</value>
+  </data>
+  <data name="StrategyTemplatesMenu" xml:space="preserve">
+    <value>Modèles de stratégie</value>
+  </data>
+  <data name="CyclePeriodsMenu" xml:space="preserve">
+    <value>Périodes de cycle</value>
+  </data>
+  <data name="CycleCapacitiesMenu" xml:space="preserve">
+    <value>Capacité de cycle</value>
   </data>
 </root>

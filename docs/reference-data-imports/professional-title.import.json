@@ -1,0 +1,10 @@
+[
+  { "value_code": "dr", "display_name": "Dr.", "sort_order": 10, "is_deprecated": false, "attributes": {} },
+  { "value_code": "prof", "display_name": "Prof.", "sort_order": 20, "is_deprecated": false, "attributes": {} },
+  { "value_code": "assoc-prof", "display_name": "Assoc. Prof.", "sort_order": 30, "is_deprecated": false, "attributes": {} },
+  { "value_code": "asst-prof", "display_name": "Asst. Prof.", "sort_order": 40, "is_deprecated": false, "attributes": {} },
+  { "value_code": "specialist", "display_name": "Specialist", "sort_order": 50, "is_deprecated": false, "attributes": {} },
+  { "value_code": "pharm", "display_name": "Pharmacist", "sort_order": 60, "is_deprecated": false, "attributes": {} },
+  { "value_code": "nurse", "display_name": "Nurse", "sort_order": 70, "is_deprecated": false, "attributes": {} },
+  { "value_code": "other", "display_name": "Other", "sort_order": 80, "is_deprecated": false, "attributes": {} }
+]

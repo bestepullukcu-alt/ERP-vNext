@@ -1,0 +1,159 @@
+@using Diten.Web.Views.DocumentManagement.RepositoryAssessments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<RepositoryAssessmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["RepositoryAssessmentDetails"].Value;
+    Layout = "_LayoutTenantShell";
+    var id = (Guid)(ViewData["RepositoryAssessmentId"] ?? Guid.Empty);
+    var canManage = Perms.Has("platform.document-management.repository-assessment.manage");
+    var canApprove = Perms.Has("platform.document-management.repository-assessment.approve");
+}
+
+<div class="repository-assessment-details" data-assessment-id="@id">
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 row-gap-4">
+        <div class="d-flex flex-column justify-content-center">
+            <h4 class="mb-1" id="detailTitle">@Localizer["RepositoryAssessmentDetails"]</h4>
+            <span class="text-muted small" id="detailSubtitle"></span>
+            <nav aria-label="breadcrumb" class="text-muted mt-1">
+                <ol class="breadcrumb mb-0 py-0">
+                    <li class="breadcrumb-item"><a href="/DocumentManagementRepositoryAssessments">@Localizer["RepositoryAssessmentsTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@Localizer["RepositoryAssessmentDetails"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-content-center flex-wrap gap-2">
+            @if (canManage)
+            {
+                <button type="button" class="btn btn-label-info" id="btnEvaluateDetail">
+                    <i class="icon-base bx bx-play-circle me-1"></i>@Localizer["EvaluateRepository"]
+                </button>
+                <a href="/DocumentManagementRepositoryAssessments/Edit/@id" class="btn btn-primary" id="btnEditDetail">
+                    <i class="icon-base bx bx-edit me-1"></i>@SharedLocalizer["Edit"]
+                </a>
+            }
+            @if (canApprove)
+            {
+                <button type="button" class="btn btn-label-success d-none" id="btnApproveDetail">
+                    <i class="icon-base bx bx-check-circle me-1"></i>@Localizer["ApproveRepository"]
+                </button>
+                <button type="button" class="btn btn-label-danger d-none" id="btnRejectDetail">
+                    <i class="icon-base bx bx-x-circle me-1"></i>@Localizer["RejectRepository"]
+                </button>
+            }
+            <a href="/DocumentManagementRepositoryAssessments" class="btn btn-label-secondary border">
+                <i class="icon-base bx bx-arrow-back me-1"></i>@SharedLocalizer["BackToList"]
+            </a>
+        </div>
+    </div>
+
+    <div id="detailAlert" class="alert alert-danger d-none" role="alert"></div>
+
+    <div class="alert alert-warning d-flex align-items-start" role="alert">
+        <i class="icon-base bx bx-shield-x me-2 mt-1"></i>
+        <span><strong>@Localizer["NoComplianceClaim"]</strong> — @Localizer["RepositoryBoundaryDisclaimer"]</span>
+    </div>
+
+    <div class="alert alert-info d-flex align-items-start" role="alert">
+        <i class="icon-base bx bx-log-in-circle me-2 mt-1"></i>
+        <span>@Localizer["ReleaseGate2Note"]</span>
+    </div>
+
+    @* Repository-type specific boundary warning, filled by the script from the backend classification. *@
+    <div id="repositoryTypeWarning" class="alert d-none" role="alert"></div>
+
+    <div class="row g-4 mb-4" id="detailSummaryCards"></div>
+
+    <div class="row g-6">
+        <div class="col-12 col-lg-6">
+            <section class="card backbone-preview-section h-100 p-4">
+                <h5 class="card-title mb-4 d-flex align-items-center">
+                    <i class="icon-base bx bx-git-compare me-2"></i>@Localizer["BoundaryStatement"]
+                </h5>
+                <div id="boundaryPanel" class="text-muted">@Localizer["EvaluateToSeeBoundary"]</div>
+            </section>
+        </div>
+        <div class="col-12 col-lg-6">
+            <section class="card backbone-preview-section h-100 p-4">
+                <h5 class="card-title mb-4 d-flex align-items-center">
+                    <i class="icon-base bx bx-id-card me-2"></i>@Localizer["BasicInformation"]
+                </h5>
+                <dl class="row mb-0" id="detailBasicList">
+                    <dd class="col-12 text-muted mb-0">@SharedLocalizer["Loading"]</dd>
+                </dl>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-6">
+            <section class="card backbone-preview-section h-100 p-4">
+                <h5 class="card-title mb-4 d-flex align-items-center">
+                    <i class="icon-base bx bx-lock-alt me-2"></i>@Localizer["AccessAndControl"]
+                </h5>
+                <dl class="row mb-0" id="detailAccessList"></dl>
+            </section>
+        </div>
+        <div class="col-12 col-lg-6">
+            <section class="card backbone-preview-section h-100 p-4">
+                <h5 class="card-title mb-4 d-flex align-items-center">
+                    <i class="icon-base bx bx-server me-2"></i>@Localizer["TechnicalControls"]
+                </h5>
+                <dl class="row mb-0" id="detailTechnicalList"></dl>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-6">
+            <section class="card backbone-preview-section h-100 p-4">
+                <h5 class="card-title mb-4 d-flex align-items-center">
+                    <i class="icon-base bx bx-time-five me-2"></i>@Localizer["InterimRepositoryFields"]
+                </h5>
+                <dl class="row mb-0" id="detailInterimList"></dl>
+            </section>
+        </div>
+        <div class="col-12 col-lg-6">
+            <section class="card backbone-preview-section h-100 p-4">
+                <h5 class="card-title mb-4 d-flex align-items-center">
+                    <i class="icon-base bx bx-check-shield me-2"></i>@Localizer["EvidenceAndNotes"]
+                </h5>
+                <dl class="row mb-0" id="detailEvidenceList"></dl>
+            </section>
+        </div>
+
+        <div class="col-12">
+            <h5 class="mb-3 d-flex align-items-center">
+                <i class="icon-base bx bx-error-circle me-2"></i>@Localizer["Findings"]
+            </h5>
+            <section class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="assessmentFindingsTable">
+                        <thead>
+                            <tr>
+                                <th>@Localizer["FindingType"]</th>
+                                <th>@Localizer["FindingSeverity"]</th>
+                                <th>@Localizer["FindingStatus"]</th>
+                                <th>@Localizer["FindingMessage"]</th>
+                                <th>@Localizer["EvidenceReference"]</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assessmentFindingsBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<partial name="~/Views/DocumentManagement/RepositoryAssessments/_DecisionModals.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/RepositoryAssessments/_IndexL10n.cshtml" />
+    <script>
+        window.RepositoryAssessmentPerms = {
+            canManage: @Json.Serialize(canManage),
+            canApprove: @Json.Serialize(canApprove)
+        };
+    </script>
+    <script src="~/assets/js/DocumentManagement/RepositoryAssessments/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/RepositoryAssessments/index.js" asp-append-version="true"></script>
+}

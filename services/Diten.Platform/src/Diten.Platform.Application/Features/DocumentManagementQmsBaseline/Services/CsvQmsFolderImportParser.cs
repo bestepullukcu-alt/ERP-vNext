@@ -4,7 +4,8 @@ using Diten.Platform.Application.Features.DocumentManagementQmsBaseline;
 namespace Diten.Platform.Application.Features.DocumentManagementQmsBaseline.Services;
 
 /// <summary>
-/// MOD-0028-FU06 — parses the GMG-QMS-LOG-0007 register CSV package (<c>00_all_folders_2175.csv</c> and the per-wave
+/// QMS register import extension — governance identity pending. Parses the GMG-QMS-LOG-0007 register CSV package
+/// (<c>00_all_folders_2175.csv</c> and the per-wave
 /// CSVs) into raw import rows. UTF-8 BOM aware; slash-path hierarchy via the <c>full_path</c> column so the shared
 /// <see cref="QmsFolderTreeValidator"/> performs parent-before-child, level, and sibling-uniqueness validation
 /// unchanged. Governance columns (access_profile, retention_class, legacy_code, provisioning_wave, …) are carried onto

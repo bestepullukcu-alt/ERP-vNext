@@ -1,0 +1,39 @@
+@using Diten.Web.Views.CRM.ConsentPreferences
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ConsentPreferencesIndex> Localizer
+
+@* ConsentPreferenceSubjectPanel — reusable subject-scoped view. Given SubjectType + SubjectId it lists that subject's
+   consents and preferences and offers evaluate / create-prefilled quick actions. It NEVER mutates Contact /
+   AccountContactLink and NEVER writes a flat ConsentStatus onto the subject; consent & preference stay separate
+   aggregates. Embedding into a Contact / AccountContactLink parent screen is a documented follow-up. *@
+<div class="card" id="consentPreferenceSubjectPanel" data-subject-type="" data-subject-id="">
+    <div class="card-header"><h6 class="mb-0">@Localizer["SubjectPanelTitle"]</h6></div>
+    <div class="card-body">
+        <p class="text-muted">@Localizer["SubjectPanelHelp"]</p>
+        <form id="subjectPanelForm" class="row g-3" data-no-tracker>
+            <div class="col-md-5">
+                <label class="form-label" for="subjectPanelType">@Localizer["SubjectType"] <span class="text-danger">*</span></label>
+                <select id="subjectPanelType" class="form-select" required></select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label" for="subjectPanelId">@Localizer["SubjectId"] <span class="text-danger">*</span></label>
+                <input id="subjectPanelId" class="form-control" type="text" placeholder="00000000-0000-0000-0000-000000000000" required />
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" id="btnSubjectLoad" class="btn btn-primary w-100">@Localizer["Load"]</button>
+            </div>
+        </form>
+
+        <div id="subjectPanelResult" class="mt-4 d-none">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <a id="subjectCreateConsent" class="btn btn-sm btn-label-primary" href="#"><i class="bx bx-plus me-1"></i>@Localizer["CreateConsent"]</a>
+                <a id="subjectCreatePreference" class="btn btn-sm btn-label-primary" href="#"><i class="bx bx-plus me-1"></i>@Localizer["CreatePreference"]</a>
+                <a id="subjectEvaluate" class="btn btn-sm btn-label-secondary" href="/CRM/ConsentPreferences/Evaluate"><i class="bx bx-search-alt me-1"></i>@Localizer["EvaluateTab"]</a>
+            </div>
+            <h6 class="small text-uppercase text-muted">@Localizer["ConsentsTitle"]</h6>
+            <div class="table-responsive mb-3"><table class="table table-sm"><thead><tr><th>@Localizer["Channel"]</th><th>@Localizer["Purpose"]</th><th>@Localizer["ConsentStatus"]</th><th>@Localizer["EffectiveFrom"]</th><th>@Localizer["Archived"]</th></tr></thead><tbody id="subjectConsents"></tbody></table></div>
+            <h6 class="small text-uppercase text-muted">@Localizer["PreferencesTitle"]</h6>
+            <div class="table-responsive"><table class="table table-sm"><thead><tr><th>@Localizer["Channel"]</th><th>@Localizer["PreferenceType"]</th><th>@Localizer["PreferenceValue"]</th><th>@Localizer["Priority"]</th><th>@Localizer["Archived"]</th></tr></thead><tbody id="subjectPreferences"></tbody></table></div>
+        </div>
+    </div>
+</div>

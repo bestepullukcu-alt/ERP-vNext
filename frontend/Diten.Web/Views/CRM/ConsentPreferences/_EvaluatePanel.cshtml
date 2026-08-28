@@ -1,0 +1,52 @@
+@using Diten.Web.Views.CRM.ConsentPreferences
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ConsentPreferencesIndex> Localizer
+
+<div class="card">
+    <div class="card-header"><h6 class="mb-0">@Localizer["EvaluateTitle"]</h6></div>
+    <div class="card-body">
+        <div class="alert alert-info py-2"><i class="bx bx-info-circle me-1"></i>@Localizer["EvaluateReadOnlyHelp"]</div>
+        <form id="evaluateForm" class="row g-3" data-no-tracker>
+            <div class="col-md-4">
+                <label class="form-label" for="evalSubjectType">@Localizer["SubjectType"] <span class="text-danger">*</span></label>
+                <select id="evalSubjectType" class="form-select" required></select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="evalSubjectId">@Localizer["SubjectId"] <span class="text-danger">*</span></label>
+                <input id="evalSubjectId" class="form-control" type="text" placeholder="00000000-0000-0000-0000-000000000000" required />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="evalChannel">@Localizer["Channel"] <span class="text-danger">*</span></label>
+                <select id="evalChannel" class="form-select" required></select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="evalPurpose">@Localizer["Purpose"] <span class="text-danger">*</span></label>
+                <select id="evalPurpose" class="form-select" required></select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="evalScopeType">@Localizer["ScopeType"]</label>
+                <select id="evalScopeType" class="form-select"></select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="evalScopeId">@Localizer["ScopeId"]</label>
+                <input id="evalScopeId" class="form-control" type="text" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="evalEffectiveAt">@Localizer["EffectiveAt"]</label>
+                <input id="evalEffectiveAt" class="form-control" type="datetime-local" />
+            </div>
+            <div class="col-12">
+                <button type="submit" id="btnEvaluate" class="btn btn-primary"><i class="bx bx-search-alt me-1"></i>@Localizer["RunEvaluate"]</button>
+            </div>
+        </form>
+
+        <div id="evaluateResult" class="mt-4 d-none">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span id="evalBadge" class="badge fs-6"></span>
+                <span id="evalDecision" class="text-muted"></span>
+            </div>
+            <div id="evalUnknownNote" class="alert alert-secondary py-2 d-none">@Localizer["UnknownNotAllowed"]</div>
+            <partial name="~/Views/CRM/ConsentPreferences/_Provenance.cshtml" />
+        </div>
+    </div>
+</div>

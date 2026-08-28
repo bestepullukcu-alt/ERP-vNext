@@ -220,9 +220,14 @@ Fix/refactor işleri için: [.antigravity/rules/GEMINI.md](.antigravity/rules/GE
 feature/{domain-kısa}/{module-id}-{slug}
 ```
 
-- `domain-kısa`: `mdm` | `pss` | `deven` | `esbp` | `ppm` | `pvg`
+
+- `domain-kısa`: `mdm` | `pss` | `deven` | `esbp` | `ppm` | `crm`
 - `module-id`: `mdm-001`, `pss-002`, vb. (küçük harf)
 - `slug`: 2-4 kelimelik kısa isim
+
+> `crm` = Commercial Suite (CRM + O2C) domain'i (`execution/domains/commercial-suite/`). CRM core + Sales + Marketing +
+> Field Sales module pack branch'leri bu kısa kodu kullanır. CPQ / O2C / Service / Business Development adjacent modüllerin
+> ileride `crm` altında mı yoksa ayrı bir kısa kod altında mı ilerleyeceği EA-TBD'dir; MOD-0149 ve CRM core için `crm` kullanılır.
 
 Örnekler:
 - `feature/mdm/mdm-001-product-management`
@@ -230,6 +235,8 @@ feature/{domain-kısa}/{module-id}-{slug}
 - `feature/esbp/esbp-001-strategy-core`
 - `feature/ppm/mod-0117-work-records-core`
 - `feature/pvg/mod-0230-case-intake-triage`
+- `feature/crm/mod-0149-customer-360-account-hierarchy`
+
 
 Yedekleme branch'leri için ayrı kural: [.antigravity/rules/git-backup-policy.md](.antigravity/rules/git-backup-policy.md)
 

@@ -1,0 +1,18 @@
+@model Diten.Web.Models.CRM.CyclePeriodEditViewModel
+@using Diten.Web.Views.CRM.CyclePeriods
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CyclePeriodsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleCreate"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "create";
+}
+
+<partial name="~/Views/CRM/CyclePeriods/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="~/Views/CRM/CyclePeriods/_IndexL10n.cshtml" />
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/js/CRM/CyclePeriods/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/CyclePeriods/form.js" asp-append-version="true"></script>
+}

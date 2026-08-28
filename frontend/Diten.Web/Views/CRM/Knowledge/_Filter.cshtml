@@ -1,0 +1,60 @@
+@using Diten.Web.Views.CRM.Knowledge
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="knowledgeFilterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Content Status (multi-select) *@
+                    <div class="filter-chip">
+                        <select id="filterContentStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["ContentStatus"]"></select>
+                    </div>
+                    @* Content Type (multi-select) *@
+                    <div class="filter-chip">
+                        <select id="filterContentType" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["ContentType"]"></select>
+                    </div>
+                    @* Subject (multi-select) *@
+                    <div class="filter-chip">
+                        <select id="filterSubjectId" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["SubjectId"]"></select>
+                    </div>
+                    @* Topic (single-select) *@
+                    <div class="filter-chip">
+                        <select id="filterTopicId" class="form-select form-select-sm select2" data-placeholder="@Localizer["TopicId"]"><option value="">@SharedLocalizer["ShowAll"]</option></select>
+                    </div>
+                    @* Audience Profile (multi-select) *@
+                    <div class="filter-chip">
+                        <select id="filterAudienceProfileId" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["AudienceProfileId"]"></select>
+                    </div>
+                    @* Language (single-select) *@
+                    <div class="filter-chip">
+                        <select id="filterLanguageCode" class="form-select form-select-sm select2" data-placeholder="@Localizer["LanguageCode"]"><option value="">@SharedLocalizer["ShowAll"]</option></select>
+                    </div>
+                    @* Brand (single-select, raw IDs — no master lookup) *@
+                    <div class="filter-chip">
+                        <select id="filterBrandId" class="form-select form-select-sm select2" data-placeholder="@Localizer["BrandId"]"><option value="">@SharedLocalizer["ShowAll"]</option></select>
+                    </div>
+                    @* Product (single-select, raw IDs — no master lookup) *@
+                    <div class="filter-chip">
+                        <select id="filterProductId" class="form-select form-select-sm select2" data-placeholder="@Localizer["ProductId"]"><option value="">@SharedLocalizer["ShowAll"]</option></select>
+                    </div>
+                    @* Include archived (single-select) *@
+                    <div class="filter-chip">
+                        <select id="filterIncludeArchived" class="form-select form-select-sm select2" data-placeholder="@Localizer["IncludeArchived"]">
+                            <option value="true">@Localizer["IncludeArchived"]</option>
+                            <option value="false">@Localizer["Active"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -45,7 +45,15 @@ public sealed class DocumentManagementControlledDocumentsController : Controller
     public IActionResult Index() => View("~/Views/DocumentManagement/ControlledDocuments/Index.cshtml");
 
     [HttpGet("Create")]
-    public IActionResult Create() => View("~/Views/DocumentManagement/ControlledDocuments/Create.cshtml");
+    public IActionResult Create([FromQuery] string? kind)
+    {
+        if (string.Equals(kind, "template", StringComparison.OrdinalIgnoreCase))
+        {
+            return View("~/Views/DocumentManagement/ControlledDocuments/Create.cshtml");
+        }
+
+        return Redirect("/DocumentManagementMasterRegister/CreateControlledDocument");
+    }
 
     [HttpGet("Edit/{id:guid}")]
     public IActionResult Edit(Guid id)
@@ -87,21 +95,20 @@ public sealed class DocumentManagementControlledDocumentsController : Controller
     [HttpGet("detail/{id:guid}")]
     public Task<IActionResult> Detail(Guid id, CancellationToken ct) => ProxyGetAsync($"{ApiBase}/controlled-documents/{id}", ct);
 
+    [HttpGet("master-register/{controlledDocumentId:guid}")]
+    public Task<IActionResult> MasterRegister(Guid controlledDocumentId, CancellationToken ct) =>
+        ProxyGetAsync($"{ApiBase}/controlled-documents/{controlledDocumentId}/master-register", ct);
+
     [HttpGet("versions/{id:guid}")]
     public Task<IActionResult> Versions(Guid id, CancellationToken ct) => ProxyGetAsync($"{ApiBase}/controlled-documents/{id}/versions", ct);
 
     [HttpPost("create")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateDocument(IFormFile? file, [FromForm] string payloadJson, CancellationToken ct)
-    {
-        var payload = await BuildUploadPayloadAsync(file, payloadJson, ct);
-        if (payload is null)
-        {
-            return UnprocessableJson("invalid_upload");
-        }
-
-        return await ProxyPostAsync($"{ApiBase}/controlled-documents", payload, ct);
-    }
+    public IActionResult CreateDocument(IFormFile? file, [FromForm] string payloadJson, CancellationToken ct) =>
+        JsonFailure(
+            409,
+            "LEGACY_CREATE_RESTRICTED",
+            _sharedLocalizer["ValidationFailed"].Value);
 
     [HttpPost("edit/{id:guid}")]
     [ValidateAntiForgeryToken]
@@ -235,10 +242,11 @@ public sealed class DocumentManagementControlledDocumentsController : Controller
         [FromQuery] string? query,
         [FromQuery] string? documentType,
         [FromQuery] bool includeTemplates,
+        [FromQuery] bool includeNonEffective,
         [FromQuery] string? status,
         CancellationToken ct)
     {
-        var qs = $"?companyId={companyId:D}&activeStructureId={activeStructureId:D}&includeTemplates={includeTemplates.ToString().ToLowerInvariant()}";
+        var qs = $"?companyId={companyId:D}&activeStructureId={activeStructureId:D}&includeTemplates={includeTemplates.ToString().ToLowerInvariant()}&includeNonEffective={includeNonEffective.ToString().ToLowerInvariant()}";
         if (collectionInstanceId is { } ci && ci != Guid.Empty) qs += $"&collectionInstanceId={ci:D}";
         if (!string.IsNullOrWhiteSpace(scope)) qs += $"&scope={Uri.EscapeDataString(scope)}";
         if (!string.IsNullOrWhiteSpace(query)) qs += $"&query={Uri.EscapeDataString(query)}";
@@ -341,8 +349,13 @@ public sealed class DocumentManagementControlledDocumentsController : Controller
     // ----- Folder documents / access / shares -----
 
     [HttpGet("folder-documents")]
-    public Task<IActionResult> FolderDocuments([FromQuery] Guid collectionInstanceId, CancellationToken ct) =>
-        ProxyGetAsync($"{ApiBase}/folder-documents{Query("collectionInstanceId", collectionInstanceId)}", ct);
+    public Task<IActionResult> FolderDocuments(
+        [FromQuery] Guid collectionInstanceId,
+        [FromQuery] bool includeNonEffective,
+        CancellationToken ct) =>
+        ProxyGetAsync(
+            $"{ApiBase}/folder-documents{Query("collectionInstanceId", collectionInstanceId, ("includeNonEffective", includeNonEffective.ToString().ToLowerInvariant()))}",
+            ct);
 
     [HttpGet("folder-access")]
     public Task<IActionResult> FolderAccess([FromQuery] Guid collectionInstanceId, CancellationToken ct) =>

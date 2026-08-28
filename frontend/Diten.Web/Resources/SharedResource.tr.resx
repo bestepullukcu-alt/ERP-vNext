@@ -522,6 +522,9 @@
   <data name="ReferenceDataMenu" xml:space="preserve"><value>Referans Veri</value></data>
   <data name="HumanCapitalManagement" xml:space="preserve"><value>İnsan Sermayesi Yönetimi</value></data>
   <data name="EmployeeDraftsMenu" xml:space="preserve"><value>Çalışan Taslakları</value></data>
+  <data name="CommercialSuite" xml:space="preserve"><value>Ticari Paket</value></data>
+  <data name="AccountsMenu" xml:space="preserve"><value>Hesaplar</value></data>
+  <data name="ContactsMenu" xml:space="preserve"><value>Kişiler</value></data>
   <data name="ModuleCodeInUse" xml:space="preserve"><value>Bu modül kodu zaten kullanılıyor.</value></data>
   <data name="ModuleManagedByCode" xml:space="preserve"><value>Bu modül koddan yönetiliyor (otomatik kaydedildi); buradan değiştirilemez.</value></data>
   <data name="BaselineCannotBeDeactivated" xml:space="preserve"><value>Baseline modüller deaktive edilemez — her tenant'a otomatik gelir.</value></data>
@@ -535,6 +538,8 @@
   <data name="DocumentationStructures" xml:space="preserve"><value>Dokümantasyon Yapıları</value></data>
   <data name="ControlledDocuments" xml:space="preserve"><value>Kontrollü Belgeler</value></data>
   <data name="TemplateMasters" xml:space="preserve"><value>Kurumsal Şablonlar</value></data>
+  <data name="DocumentMasterRegister" xml:space="preserve"><value>Doküman Ana Kayıt Defteri</value></data>
+  <data name="RepositoryAssessments" xml:space="preserve"><value>Depo Değerlendirmeleri</value></data>
   <data name="TemplateVariants" xml:space="preserve"><value>Şablon Varyantları</value></data>
   <data name="AccessMatrix" xml:space="preserve"><value>Erişim Matrisi</value></data>
   <data name="Reconciliation" xml:space="preserve"><value>Mutabakat</value></data>
@@ -564,6 +569,10 @@
   <data name="Nav.Domain.DOCUMENTMANAGEMENT" xml:space="preserve"><value>Doküman Yönetimi</value></data>
   <data name="Nav.Domain.MASTERDATAMANAGEMENT" xml:space="preserve"><value>Ana Veri Yönetimi</value></data>
   <data name="Nav.Domain.PLATFORMSHAREDSERVICES" xml:space="preserve"><value>Platform Paylaşılan Hizmetler</value></data>
+  <data name="WorkingCalendarsMenu" xml:space="preserve"><value>Çalışma Takvimleri</value></data>
+  <data name="AddWorkingCalendar" xml:space="preserve"><value>Takvim Ekle</value></data>
+  <data name="Nav.Module.WORKINGCALENDAR" xml:space="preserve"><value>Çalışma Takvimi</value></data>
+  <data name="Nav.Page.WORKINGCALENDAROVERRIDES" xml:space="preserve"><value>Çalışma Takvimi İstisnaları</value></data>
   <data name="Nav.Module.ACCESSGOVERNANCE" xml:space="preserve"><value>Erişim Yönetişimi</value></data>
   <data name="Nav.Module.TENANTSETTINGS" xml:space="preserve"><value>Kiracı Ayarları</value></data>
   <data name="Nav.Module.GOLDENSLIM" xml:space="preserve"><value>Golden Slim</value></data>
@@ -600,5 +609,28 @@
   </data>
   <data name="NoRecords" xml:space="preserve">
     <value>Kayıt yok</value>
+  </data>
+  <data name="TerritoryManagementMenu" xml:space="preserve"><value>Bölge Yönetimi</value></data>
+  <data name="CampaignsMenu" xml:space="preserve"><value>Kampanyalar</value></data>
+  <data name="KnowledgeMenu" xml:space="preserve"><value>Bilgi Bankası</value></data>
+  <data name="BrandsMenu" xml:space="preserve"><value>Markalar</value></data>
+  <data name="ProductsMenu" xml:space="preserve"><value>Ürünler</value></data>
+  <data name="ConsentPreferencesMenu" xml:space="preserve"><value>Onay ve Tercihler</value></data>
+  <data name="KnowledgeConceptsMenu" xml:space="preserve"><value>Kavramlar</value></data>
+  <data name="KnowledgePathsMenu" xml:space="preserve"><value>Bilgi Yolları</value></data>
+  <data name="ContentEngagementJourneysMenu" xml:space="preserve">
+    <value>İçerik Etkileşim Yolculukları</value>
+  </data>
+  <data name="SegmentsMenu" xml:space="preserve">
+    <value>Segmentler</value>
+  </data>
+  <data name="StrategyTemplatesMenu" xml:space="preserve">
+    <value>Strateji Şablonları</value>
+  </data>
+  <data name="CyclePeriodsMenu" xml:space="preserve">
+    <value>Dönemler</value>
+  </data>
+  <data name="CycleCapacitiesMenu" xml:space="preserve">
+    <value>Dönem Kapasitesi</value>
   </data>
 </root>

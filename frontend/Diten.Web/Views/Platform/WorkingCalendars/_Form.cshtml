@@ -1,0 +1,154 @@
+@model Diten.Web.Models.WorkingCalendar.WorkingCalendarEditViewModel
+@using Diten.Web.Views.Platform.WorkingCalendars
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkingCalendarsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isCreate = string.Equals(ViewData["FormMode"] as string, "create", StringComparison.OrdinalIgnoreCase);
+    var title = isCreate ? Localizer["FormTitleCreate"].Value : Localizer["FormTitleEdit"].Value;
+}
+
+@*
+    Layout mirrors GoldenReferenceCompact/_Form.cshtml: header + breadcrumb + actions, then a two-column body.
+    The DATA path is unchanged and deliberately different from the reference — this form is No-ViewModel: it never
+    posts to MVC. Every option list is fetched by form.js and the save goes out as a fetch(), so there is no
+    asp-action/asp-controller and no validation summary to fill. The Save button reaches that same handler through
+    `form="workingCalendarForm"`, which is why it can live outside the <form>.
+*@
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/Platform/WorkingCalendars">@Localizer["WorkingCalendarsTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/Platform/WorkingCalendars" class="btn btn-label-secondary">
+            @SharedLocalizer["Cancel"]
+        </a>
+        <button type="submit" form="workingCalendarForm" class="btn btn-primary" id="btnSaveCalendar">
+            @SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>
+
+<form id="workingCalendarForm" method="post" novalidate>
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="ExpectedVersion" />
+    <input type="hidden" asp-for="Source" />
+    @* Platform surface = country layer, always. Posted, not selectable. *@
+    <input type="hidden" asp-for="ScopeType" value="country" />
+
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8">
+
+            @* Section 1 — Identity *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionIdentity"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label class="form-label fw-medium" asp-for="CalendarCode">
+                                @Localizer["CalendarCode"] <span class="text-danger">*</span>
+                            </label>
+                            <input class="form-control" asp-for="CalendarCode" required maxlength="64" />
+                            <span class="text-muted small">@Localizer["CalendarCodeHint"]</span>
+                        </div>
+                        <div class="col-12 col-md-8">
+                            <label class="form-label fw-medium" asp-for="CalendarName">
+                                @Localizer["CalendarName"] <span class="text-danger">*</span>
+                            </label>
+                            <input class="form-control" asp-for="CalendarName" required maxlength="200" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" asp-for="Description">@SharedLocalizer["Description"]</label>
+                            <textarea class="form-control" asp-for="Description" rows="4"
+                                      maxlength="1000" placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* Section 2 — Weekend *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionWeekend"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-medium" asp-for="WeekendDays">@Localizer["WeekendDays"]</label>
+                            @* Options arrive from the contract endpoint; form.js initialises Select2 only AFTER
+                               that fetch resolves, otherwise Select2 would snapshot an empty list. *@
+                            <select class="select2 form-select" asp-for="WeekendDays" id="WeekendDays" multiple="multiple"></select>
+                            @*
+                                D3 made visible: leaving this empty on an override means "inherit", which is NOT the same as
+                                "no weekend". Without this hint an inheriting override looks like an unconfigured one.
+                            *@
+                            <div id="weekendInheritanceHint" class="mt-2 small text-muted d-none">
+                                <i class="icon-base bx bx-link icon-xs me-1"></i>
+                                <span id="weekendInheritanceText"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="col-12 col-lg-4">
+
+            @*
+                Section 3 — Scope.
+                The platform surface authors the COUNTRY layer and nothing else, so there is deliberately no scope selector
+                and no organization-unit field here: both belong to the tenant override surface. ScopeType is posted as a
+                fixed hidden value and re-checked server-side (`platform_surface_is_country_only`) — removing the control
+                does not make the rule a UI convention.
+            *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionScope"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-medium" asp-for="CountryCode">
+                                @Localizer["CountryCode"] <span class="text-danger">*</span>
+                            </label>
+                            @* Options come from the shared platform country lookup (/api/lookups/countries) that
+                               Platform → Tenants → Create also binds to — never a hardcoded list in this page. *@
+                            <select class="select2 form-select" asp-for="CountryCode" id="CountryCode" required></select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" asp-for="CalendarYear">
+                                @Localizer["CalendarYear"] <span class="text-danger">*</span>
+                            </label>
+                            <input class="form-control" asp-for="CalendarYear" type="number" min="1900" max="2200" required />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* Section 4 — Lifecycle *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionLifecycle"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-medium" asp-for="CalendarStatus">
+                                @SharedLocalizer["Status"] <span class="text-danger">*</span>
+                            </label>
+                            <select class="select2 form-select" asp-for="CalendarStatus" id="CalendarStatus" required></select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" asp-for="Notes">@Localizer["Notes"]</label>
+                            <textarea class="form-control" asp-for="Notes" rows="4" maxlength="2000"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

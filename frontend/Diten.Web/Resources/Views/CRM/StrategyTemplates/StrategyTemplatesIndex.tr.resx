@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="ActivateStrategyTemplate" xml:space="preserve"><value>Aktifleştir</value></data>
+  <data name="ActivateStrategyTemplateConfirm" xml:space="preserve"><value>Bu plan canlıya alınsın mı? Bağları dondurulur ve bağlı her segmentin zaten aktif olması gerekir.</value></data>
+  <data name="Active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="AddContentBinding" xml:space="preserve"><value>İçerik bağla</value></data>
+  <data name="AddProductLine" xml:space="preserve"><value>Ürün hattı ekle</value></data>
+  <data name="AddSegmentBinding" xml:space="preserve"><value>Segment bağla</value></data>
+  <data name="AddSkuAllocation" xml:space="preserve"><value>SKU ekle</value></data>
+  <data name="Apply" xml:space="preserve"><value>Uygula</value></data>
+  <data name="ApplyIsMicroTargetHelp" xml:space="preserve"><value>Bir planın döneme uygulanması (hedefler, planlar) saha planlamasına aittir, bu sayfaya değil.</value></data>
+  <data name="ArchiveStrategyTemplate" xml:space="preserve"><value>Arşivle</value></data>
+  <data name="ArchiveStrategyTemplateConfirm" xml:space="preserve"><value>Bu plan arşivlensin mi? Hiçbir şey silinmez; salt-okunur olur ve açıklanabilir kalır.</value></data>
+  <data name="Archived" xml:space="preserve"><value>Arşivli</value></data>
+  <data name="ArchivedTemplateReadOnly" xml:space="preserve"><value>Bu strateji şablonu arşivli ve salt-okunur.</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Emin misiniz?</value></data>
+  <data name="BindingRole" xml:space="preserve"><value>Rol</value></data>
+  <data name="BindingState" xml:space="preserve"><value>Bağlar</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Toplu sil</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Seçili kayıtlar silinsin mi?</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>İş birimi</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Vazgeç</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Sınıflandırma</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Sütunlar</value></data>
+  <data name="ContainmentNotVerifiedHelp" xml:space="preserve"><value>Bir SKU'nun seçilen ürüne ait olup olmadığı burada doğrulanmaz — lütfen kendiniz kontrol edin.</value></data>
+  <data name="ContentBindingCount" xml:space="preserve"><value>İçerik</value></data>
+  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Yalnızca yayımlanmış ve arşivlenmemiş içerik bağlanabilir; tam o sürüme sabitlenir.</value></data>
+  <data name="ContentRef" xml:space="preserve"><value>İçerik</value></data>
+  <data name="ContentRefType" xml:space="preserve"><value>İçerik tipi</value></data>
+  <data name="ContentSection" xml:space="preserve"><value>Hangi sunum — içerik</value></data>
+  <data name="CreateStrategyTemplate" xml:space="preserve"><value>Strateji şablonu oluştur</value></data>
+  <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>Beyan edilen ritim yazarın niyetini kaydeder. Bağlayıcı değildir ve frekans çözümleyicisi onu okumaz.</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="EditStrategyTemplate" xml:space="preserve"><value>Strateji şablonunu düzenle</value></data>
+  <data name="Editable" xml:space="preserve"><value>düzenlenebilir</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Geçerlilik başlangıcı</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Geçerlilik bitişi</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Strateji şablonu bulunamadı.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>İşlem tamamlanamadı.</value></data>
+  <data name="Export" xml:space="preserve"><value>Dışa aktar</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtre</value></data>
+  <data name="FrequencyIntentHelp" xml:space="preserve"><value>Mevcut aktif bir politikayı referanslayın, bağlayıcı olmayan bir ritim beyan edin veya hiçbiri deyin. Buradan asla politika yazılmaz.</value></data>
+  <data name="FrequencyIntentMode" xml:space="preserve"><value>Frekans niyeti</value></data>
+  <data name="FrequencyPolicy" xml:space="preserve"><value>Ziyaret frekans politikası</value></data>
+  <data name="FrequencySection" xml:space="preserve"><value>Ne sıklıkta — frekans niyeti</value></data>
+  <data name="FrequencyType" xml:space="preserve"><value>Frekans</value></data>
+  <data name="Frozen" xml:space="preserve"><value>donmuş</value></data>
+  <data name="FrozenBindingsHelp" xml:space="preserve"><value>Bu plan canlıda olduğu için bağları donmuştur. Değiştirmek için yeni sürüm oluşturun; ad ve notlar düzenlenebilir kalır.</value></data>
+  <data name="GlobalProduct" xml:space="preserve"><value>Global ürün</value></data>
+  <data name="Gsku" xml:space="preserve"><value>SKU (GSKU)</value></data>
+  <data name="GskuPickerUnavailable" xml:space="preserve"><value>SKU listesini görüntüleme yetkiniz yok.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="Import" xml:space="preserve"><value>İçe aktar</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Arşivlileri dahil et</value></data>
+  <data name="IntentNote" xml:space="preserve"><value>Bu ritmin gerekçesi</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Yaşam döngüsü</value></data>
+  <data name="LimitReached" xml:space="preserve"><value>Bu liste için üst sınıra ulaşıldı.</value></data>
+  <data name="LineWeightPercentage" xml:space="preserve"><value>Hat ağırlığı %</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Yeni sürüm</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Bu planın yeni taslak sürümü oluşturulsun mu? Mevcut sürüm okunabilir kalır.</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="NoContentBindings" xml:space="preserve"><value>İçerik bağlanmadı. Bu durumda planın içerik boyutu yoktur.</value></data>
+  <data name="NoMembersEverHelp" xml:space="preserve"><value>Plan, segmentin kimliğini bağlar. İçindeki kişileri asla listelemez veya saymaz.</value></data>
+  <data name="NoProductLines" xml:space="preserve"><value>Ürün hattı yok. Bu durumda planın ürün boyutu yoktur.</value></data>
+  <data name="NoSegmentBindings" xml:space="preserve"><value>Henüz segment bağlanmadı. Segmentsiz bir plan "kim?" sorusunu cevaplamaz.</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notlar</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Segment, frekans niyeti, ürün/SKU karması ve içeriği bağlayan yeniden kullanılabilir oyun planları. Şablon bağlar; üretmez.</value></data>
+  <data name="Passive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="Percentage" xml:space="preserve"><value>Pay %</value></data>
+  <data name="PeriodType" xml:space="preserve"><value>Dönem</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>Bu listeyi görüntüleme yetkiniz yok.</value></data>
+  <data name="ProductLineCount" xml:space="preserve"><value>Ürün hatları</value></data>
+  <data name="ProductSection" xml:space="preserve"><value>Ne — ürün ve SKU karması</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı bakış</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Aktifleştirildi.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Arşivlendi.</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>Oluşturuldu.</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>Güncellendi.</value></data>
+  <data name="Remove" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="RequiredVisitCount" xml:space="preserve"><value>Dönem başına ziyaret</value></data>
+  <data name="Reset" xml:space="preserve"><value>Sıfırla</value></data>
+  <data name="Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Görünümü kaydet</value></data>
+  <data name="Search" xml:space="preserve"><value>Ara</value></data>
+  <data name="Segment" xml:space="preserve"><value>Segment</value></data>
+  <data name="SegmentBindingCount" xml:space="preserve"><value>Segmentler</value></data>
+  <data name="SegmentBindingHelp" xml:space="preserve"><value>Bağlanan segment tam o sürüme sabitlenir. Liste bir sayımdır — burada birleşim veya dışlama uygulanmaz.</value></data>
+  <data name="SegmentSection" xml:space="preserve"><value>Kim — segmentler</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seçiniz…</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Tümü</value></data>
+  <data name="SkuAllocationCount" xml:space="preserve"><value>SKU satırları</value></data>
+  <data name="SkuAllocationMode" xml:space="preserve"><value>SKU modu</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Sıra</value></data>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="StatusSeparateEndpointHelp" xml:space="preserve"><value>Durum yalnızca Aktifleştir / Arşivle ile değişir.</value></data>
+  <data name="StrategyTemplateContractUnavailable" xml:space="preserve"><value>Strateji şablonu sözleşmesi okunamadı. Sayfa salt-okunur kalıyor.</value></data>
+  <data name="StrategyTemplatesTitle" xml:space="preserve"><value>Strateji Şablonları</value></data>
+  <data name="SubjectType" xml:space="preserve"><value>Özne tipi</value></data>
+  <data name="SubjectTypeHelp" xml:space="preserve"><value>Planın neyi hedeflediği. Oluşturduktan sonra değişmez; bağlı her segment bununla eşleşmelidir.</value></data>
+  <data name="Superseded" xml:space="preserve"><value>geçersizleşti</value></data>
+  <data name="TemplateCode" xml:space="preserve"><value>Kod</value></data>
+  <data name="TemplateCodeHelp" xml:space="preserve"><value>Kararlı iş anahtarı. Yeniden adlandırılmaz — bunun yerine adı değiştirin.</value></data>
+  <data name="TemplateName" xml:space="preserve"><value>Ad</value></data>
+  <data name="TemplateStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="TemplateVersion" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="TotalMustBe100" xml:space="preserve"><value>SKU dağılımı olan her hattın payları tam 100.00 etmelidir. Hiçbir şey sizin için yuvarlanmaz veya normalize edilmez.</value></data>
+  <data name="TotalPercentage" xml:space="preserve"><value>Toplam</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellenme</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Detayları gör</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+</root>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="OverridesTitle" xml:space="preserve"><value>Working Calendar Overrides</value></data>
+  <data name="BreadcrumbOverrides" xml:space="preserve"><value>Working Calendar Overrides</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Your company holidays, closures and compensation working days. These layer on top of the country calendar, which you do not manage here.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Override Details</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Add Calendar Override</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit Calendar Override</value></data>
+  <data name="FormDescription" xml:space="preserve"><value>An override covers one country for one year. Leave the weekend days empty to inherit the country weekend.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Add Override</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Quick view</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>Identity</value></data>
+  <data name="SectionScope" xml:space="preserve"><value>Scope</value></data>
+  <data name="SectionWeekend" xml:space="preserve"><value>Weekend</value></data>
+  <data name="SectionLifecycle" xml:space="preserve"><value>Lifecycle</value></data>
+  <data name="SectionDays" xml:space="preserve"><value>Company Holidays and Closures</value></data>
+  <data name="SectionResolution" xml:space="preserve"><value>Working Day Check</value></data>
+  <data name="CalendarCode" xml:space="preserve"><value>Calendar Code</value></data>
+  <data name="CalendarCodeHint" xml:space="preserve"><value>Stable key, for example TR-2026. It is never renamed.</value></data>
+  <data name="CalendarName" xml:space="preserve"><value>Calendar Name</value></data>
+  <data name="CountryCode" xml:space="preserve"><value>Country</value></data>
+  <data name="CountryInherited" xml:space="preserve"><value>Country (inherited)</value></data>
+  <data name="CalendarYear" xml:space="preserve"><value>Year</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Scope</value></data>
+  <data name="OrganizationUnit" xml:space="preserve"><value>Organization Unit</value></data>
+  <data name="WeekendDays" xml:space="preserve"><value>Weekend Days</value></data>
+  <data name="DayCount" xml:space="preserve"><value>Days</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notes</value></data>
+  <data name="Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="ActivateConfirm" xml:space="preserve"><value>Activating this override applies it to your organization from now on. Continue?</value></data>
+  <data name="Archive" xml:space="preserve"><value>Archive</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>This calendar will be archived. It stays readable as history but no longer answers working-day questions.</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Include archived</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Active</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archived</value></data>
+  <data name="Inherited" xml:space="preserve"><value>inherited</value></data>
+  <data name="InheritedFromCountry" xml:space="preserve"><value>Inherited from the country calendar</value></data>
+  <data name="NoCalendarData" xml:space="preserve"><value>No calendar data</value></data>
+  <data name="ResolutionResolved" xml:space="preserve"><value>Resolved</value></data>
+  <data name="ResolutionCalendarMissing" xml:space="preserve"><value>No calendar entered for this country</value></data>
+  <data name="ResolutionYearMissing" xml:space="preserve"><value>No calendar for this year</value></data>
+  <data name="ResolutionCountryUnknown" xml:space="preserve"><value>Country is not in the reference data</value></data>
+  <data name="AddDay" xml:space="preserve"><value>Add Day</value></data>
+  <data name="EditDay" xml:space="preserve"><value>Edit Day</value></data>
+  <data name="DayDateHint" xml:space="preserve"><value>Must fall inside the calendar year.</value></data>
+  <data name="ObservedDateHint" xml:space="preserve"><value>Fill this in only when the day is observed on a different date.</value></data>
+  <data name="Recurrence" xml:space="preserve"><value>Recurrence</value></data>
+  <data name="RecurrenceHint" xml:space="preserve"><value>A declaration only. Nothing is generated automatically; next year is entered separately.</value></data>
+  <data name="IsHalfDayHint" xml:space="preserve"><value>A half day still counts as a working day, and the answer says so.</value></data>
+  <data name="WorkingDayOverrideHint" xml:space="preserve"><value>A compensation day forces work, so it cannot also be a half day.</value></data>
+  <data name="ArchiveDayConfirm" xml:space="preserve"><value>This day will be archived. It stops affecting working-day answers but stays in the record.</value></data>
+  <data name="DayCode" xml:space="preserve"><value>Code</value></data>
+  <data name="DayName" xml:space="preserve"><value>Name</value></data>
+  <data name="DayDate" xml:space="preserve"><value>Date</value></data>
+  <data name="ObservedDate" xml:space="preserve"><value>Observed</value></data>
+  <data name="DayType" xml:space="preserve"><value>Type</value></data>
+  <data name="DayTypePublicHoliday" xml:space="preserve"><value>Public holiday</value></data>
+  <data name="DayTypeReligiousHoliday" xml:space="preserve"><value>Religious holiday</value></data>
+  <data name="DayTypeMoveableHoliday" xml:space="preserve"><value>Moveable holiday</value></data>
+  <data name="DayTypeCompanyHoliday" xml:space="preserve"><value>Company holiday</value></data>
+  <data name="DayTypeCompanyClosure" xml:space="preserve"><value>Company closure</value></data>
+  <data name="DayTypeWorkingDayOverride" xml:space="preserve"><value>Compensation working day</value></data>
+  <data name="RecurrenceNone" xml:space="preserve"><value>None</value></data>
+  <data name="RecurrenceAnnualFixed" xml:space="preserve"><value>Annual, fixed date</value></data>
+  <data name="RecurrenceAnnualMoveable" xml:space="preserve"><value>Annual, moveable date</value></data>
+  <data name="IsHalfDay" xml:space="preserve"><value>Half Day</value></data>
+  <data name="ProbeDate" xml:space="preserve"><value>Check a date</value></data>
+  <data name="Probe" xml:space="preserve"><value>Check</value></data>
+  <data name="monday" xml:space="preserve"><value>Monday</value></data>
+  <data name="tuesday" xml:space="preserve"><value>Tuesday</value></data>
+  <data name="wednesday" xml:space="preserve"><value>Wednesday</value></data>
+  <data name="thursday" xml:space="preserve"><value>Thursday</value></data>
+  <data name="friday" xml:space="preserve"><value>Friday</value></data>
+  <data name="saturday" xml:space="preserve"><value>Saturday</value></data>
+  <data name="sunday" xml:space="preserve"><value>Sunday</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Legal entity</value></data>
+  <data name="ScopeTenant" xml:space="preserve"><value>Tenant</value></data>
+  <data name="ScopeOrganizationUnit" xml:space="preserve"><value>Organization unit</value></data>
+  <data name="SelectLegalEntity" xml:space="preserve"><value>Select a legal entity</value></data>
+  <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>Legal entities are unavailable</value></data>
+</root>

@@ -1,0 +1,178 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ContactTitle" xml:space="preserve"><value>Kişiler</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Hesaplarınızda çalışan veya ilişkili kişileri yönetin.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Kişi Ekle</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Kişiyi Düzenle</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Kişi Ekle</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Kişiyi Düzenle</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Back" xml:space="preserve"><value>Geri</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Oluşturulma Tarihi</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellenme Tarihi</value></data>
+  <data name="ReferenceDataUnavailable" xml:space="preserve"><value>Referans verilerine şu anda ulaşılamıyor; kişi tipi ve durumu seçilemez. Lütfen daha sonra tekrar deneyin veya yöneticinizle iletişime geçin.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>Notlar</value></data>
+  <data name="StatusSection" xml:space="preserve"><value>Durum</value></data>
+  <data name="ProfessionalSection" xml:space="preserve"><value>Mesleki</value></data>
+  <data name="ContactSection" xml:space="preserve"><value>İletişim</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>Entegrasyon</value></data>
+  <data name="LinkedAccountsSection" xml:space="preserve"><value>Bağlı Hesaplar</value></data>
+  <data name="TerritorySection" xml:space="preserve"><value>Bölge</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>Ülke Kapsamı</value></data>
+  <data name="TerritoryNode" xml:space="preserve"><value>Bölge Düğümü</value></data>
+  <data name="LinkedAccountsOwner" xml:space="preserve"><value>Sahip: MOD-0150-FU03</value></data>
+  <data name="ConsentSection" xml:space="preserve"><value>Onay / Tercihler</value></data>
+  <data name="ConsentOwner" xml:space="preserve"><value>Salt-okunur baglanti - Sahip: MOD-0164 / FU05</value></data>
+  <data name="ConsentNotAvailableYet" xml:space="preserve"><value>Onay ve tercih verileri henüz mevcut değil.</value></data>
+  <data name="ConsentNotAuthorized" xml:space="preserve"><value>Onay ve tercih verilerini görüntüleme yetkiniz yok.</value></data>
+  <data name="ConsentChannel" xml:space="preserve"><value>Kanal</value></data>
+  <data name="ConsentState" xml:space="preserve"><value>Onay</value></data>
+  <data name="PreferenceState" xml:space="preserve"><value>Tercih</value></data>
+  <data name="FirstName" xml:space="preserve"><value>Ad</value></data>
+  <data name="FirstNamePlaceholder" xml:space="preserve"><value>örn. Ahmet</value></data>
+  <data name="LastName" xml:space="preserve"><value>Soyad</value></data>
+  <data name="LastNamePlaceholder" xml:space="preserve"><value>örn. Yılmaz</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Görünen Ad</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>örn. Dr. Ahmet Yılmaz</value></data>
+  <data name="DisplayNameHelp" xml:space="preserve"><value>Ad ve soyaddan türetmek için boş bırakın.</value></data>
+  <data name="ContactType" xml:space="preserve"><value>Kişi Tipi</value></data>
+  <data name="ProfessionalTitle" xml:space="preserve"><value>Ünvan</value></data>
+  <data name="ProfessionalTitlePlaceholder" xml:space="preserve"><value>örn. Dr.</value></data>
+  <data name="Specialty" xml:space="preserve"><value>Uzmanlık</value></data>
+  <data name="SpecialtyPlaceholder" xml:space="preserve"><value>örn. Kardiyoloji</value></data>
+  <data name="Department" xml:space="preserve"><value>Departman</value></data>
+  <data name="DepartmentPlaceholder" xml:space="preserve"><value>örn. Satın Alma</value></data>
+  <data name="Phone" xml:space="preserve"><value>Telefon</value></data>
+  <data name="PhonePlaceholder" xml:space="preserve"><value>örn. +90 555 000 0000</value></data>
+  <data name="Email" xml:space="preserve"><value>E-posta</value></data>
+  <data name="EmailPlaceholder" xml:space="preserve"><value>örn. iletisim@ornek.com</value></data>
+  <data name="ExternalReference" xml:space="preserve"><value>Dış Referans</value></data>
+  <data name="ExternalReferencePlaceholder" xml:space="preserve"><value>örn. eski sistem kimliği</value></data>
+  <data name="ExternalReferenceHelp" xml:space="preserve"><value>Bu kişinin kaynak sistemdeki tanımlayıcısı.</value></data>
+  <data name="AccountName" xml:space="preserve"><value>Hesap</value></data>
+  <data name="AccountCode" xml:space="preserve"><value>Hesap Kodu</value></data>
+  <data name="Role" xml:space="preserve"><value>Rol</value></data>
+  <data name="Primary" xml:space="preserve"><value>Birincil</value></data>
+  <data name="LocationSection" xml:space="preserve"><value>Konum</value></data>
+  <data name="LocationIncompleteHelp" xml:space="preserve"><value>Konum referans verisi kullanılamıyor; ülke/şehir/ilçe seçimi sınırlı olabilir. Konum bilgisi zorunlu değildir.</value></data>
+  <data name="Country" xml:space="preserve"><value>Ülke</value></data>
+  <data name="City" xml:space="preserve"><value>Şehir</value></data>
+  <data name="District" xml:space="preserve"><value>İlçe</value></data>
+  <data name="AddressLine" xml:space="preserve"><value>Adres</value></data>
+  <data name="AddressLinePlaceholder" xml:space="preserve"><value>Cadde, bina, no</value></data>
+  <data name="PostalCode" xml:space="preserve"><value>Posta Kodu</value></data>
+  <data name="PhoneCountryCode" xml:space="preserve"><value>Telefon Ülke Kodu</value></data>
+  <data name="PreferredLanguage" xml:space="preserve"><value>Tercih Edilen Dil</value></data>
+  <data name="PiiKvkkNotice" xml:space="preserve"><value>Ad, telefon, e-posta ve adres kişisel veridir (PII/KVKK). Log, dışa aktarma ve denetim kayıtlarında korunur — yalnızca gerekli olanı girin.</value></data>
+  <data name="NotesSafetyNotice" xml:space="preserve"><value>Bu alana hasta verisi, sağlık verisi, teşhis, tedavi, reçete veya özel nitelikli kişisel veri girmeyin.</value></data>
+  <data name="LocationIncomplete" xml:space="preserve"><value>Konum eksik</value></data>
+  <data name="UseMyLocation" xml:space="preserve"><value>Konumumu kullan</value></data>
+  <data name="MapSearchPlaceholder" xml:space="preserve"><value>Mahalle, sokak veya adres ara</value></data>
+  <data name="MapHelp" xml:space="preserve"><value>Konumu belirlemek için haritaya tıklayın veya işaretçiyi sürükleyin; adres otomatik doldurulur. Alanları elle de düzenleyebilirsiniz.</value></data>
+  <data name="Gender" xml:space="preserve"><value>Cinsiyet</value></data>
+  <data name="Photo" xml:space="preserve"><value>Fotoğraf</value></data>
+  <data name="PhotoUpload" xml:space="preserve"><value>Yükle</value></data>
+  <data name="PhotoHelp" xml:space="preserve"><value>Kare görsel önerilir; 256px'e küçültülür. Kişisel veri — dışa aktarma ve denetim loglarında tutulmaz.</value></data>
+  <data name="DownloadTemplate" xml:space="preserve"><value>İçe aktarma şablonunu indir</value></data>
+  <data name="DownloadTemplateHint" xml:space="preserve"><value>Contacts ve AccountLinks sayfaları ile yayınlanmış referans değerlerini içeren boş Excel şablonunu indirir.</value></data>
+  <data name="ExportContacts" xml:space="preserve"><value>Kişileri dışa aktar</value></data>
+  <data name="ExportOptions" xml:space="preserve"><value>Dışa aktarma seçenekleri</value></data>
+  <data name="ExportIncludeLinks" xml:space="preserve"><value>İlişkili hesapları (kişi bağlantıları) dahil et</value></data>
+  <data name="ExportIncludeHistorical" xml:space="preserve"><value>Sonlandırılmış (geçmiş) bağlantıları da dahil et</value></data>
+  <data name="ExportIncludeNotes" xml:space="preserve"><value>Notları ve ülkeler arası gerekçeleri dahil et</value></data>
+  <data name="ExportIncludeAccounts" xml:space="preserve"><value>Hesap arama sayfasını ekle</value></data>
+  <data name="ExportPiiWarning" xml:space="preserve"><value>Bu dışa aktarım kişisel veri içerebilir. Yalnızca yetkiniz varsa indirin, dosyayı güvenli şekilde saklayın ve ihtiyaç kalmadığında silin.</value></data>
+  <data name="ExportNotesWarning" xml:space="preserve"><value>Notlar serbest metindir ve özel nitelikli kişisel veri içerebilir; bu nedenle siz istemedikçe dışa aktarılmaz.</value></data>
+  <data name="ExportStarted" xml:space="preserve"><value>Dosyanız hazırlanıyor.</value></data>
+  <data name="ImportComingSoon" xml:space="preserve"><value>Doldurulmuş şablonu yükleme bir sonraki sürümde gelecek. Şablonu indirip verilerinizi dışa aktarabilirsiniz.</value></data>
+  <data name="Download" xml:space="preserve"><value>İndir</value></data>
+  <data name="ImportTitle" xml:space="preserve"><value>Kişileri içe aktar</value></data>
+  <data name="ImportPageDescription" xml:space="preserve"><value>Doldurulmuş şablonu veya düzelttiğiniz dışa aktarım dosyasını yükleyin. Hiçbir şey kaydedilmeden önce neyin değişeceğini görürsünüz.</value></data>
+  <data name="ImportFileLabel" xml:space="preserve"><value>Excel dosyası (.xlsx)</value></data>
+  <data name="ImportFileHelp" xml:space="preserve"><value>Bu ekrandaki şablonu veya dışa aktarım dosyasını kullanın. En fazla 10 MB. İçe aktarımda CSV desteklenmez.</value></data>
+  <data name="ImportStrictMode" xml:space="preserve"><value>Katı mod</value></data>
+  <data name="ImportStrictModeHelp" xml:space="preserve"><value>Hatalı satır kaldığı sürece hiçbir satır uygulanmaz.</value></data>
+  <data name="ImportValidate" xml:space="preserve"><value>Dosyayı doğrula</value></data>
+  <data name="ImportValidating" xml:space="preserve"><value>Doğrulanıyor...</value></data>
+  <data name="ImportApplying" xml:space="preserve"><value>Uygulanıyor...</value></data>
+  <data name="ImportApply" xml:space="preserve"><value>İçe aktarımı uygula</value></data>
+  <data name="ImportApplyConfirm" xml:space="preserve"><value>Bu işlem kişi ve hesap ilişkilerini oluşturur, günceller ve sonlandırır. Sonlandırılan bağlantılar geçmiş olarak korunur, silinmez. Hatalı satırlar uygulanmaz.</value></data>
+  <data name="ImportApplySuccess" xml:space="preserve"><value>İçe aktarım uygulandı.</value></data>
+  <data name="ImportPreviewTitle" xml:space="preserve"><value>Önizleme (henüz hiçbir şey kaydedilmedi)</value></data>
+  <data name="ImportResultTitle" xml:space="preserve"><value>İçe aktarım sonucu</value></data>
+  <data name="ImportSelectFile" xml:space="preserve"><value>Önce bir .xlsx dosyası seçin.</value></data>
+  <data name="ImportOnlyXlsx" xml:space="preserve"><value>Yalnızca .xlsx dosyaları desteklenir.</value></data>
+  <data name="ImportNothingToApply" xml:space="preserve"><value>Uygulanacak bir şey yok.</value></data>
+  <data name="ImportHasErrors" xml:space="preserve"><value>Bazı satırlarda hata var ve bu satırlar uygulanmayacak.</value></data>
+  <data name="ImportHistoricalNotice" xml:space="preserve"><value>Bir hesap bağlantısını sonlandırmak onu silmez: kayıt ended durumu ve bitiş tarihiyle korunur; böylece geçmiş ziyaret, sipariş ve raporlar bağlamını kaybetmez.</value></data>
+  <data name="ImportNoLinkPermission" xml:space="preserve"><value>Hesap bağlantılarını yönetme yetkiniz yok; AccountLinks sayfasındaki satırlar yetki hatası olarak raporlanacak.</value></data>
+  <data name="ImportPiiSafeNotice" xml:space="preserve"><value>İsimler maskeli gösterilir ve mesajlar hatalı değeri tekrar etmez; bu önizleme güvenle paylaşılabilir.</value></data>
+  <data name="ImportFilterAll" xml:space="preserve"><value>Tüm satırlar</value></data>
+  <data name="ImportSummaryCreates" xml:space="preserve"><value>Oluşturulacak</value></data>
+  <data name="ImportSummaryUpdates" xml:space="preserve"><value>Güncellenecek</value></data>
+  <data name="ImportSummaryEnds" xml:space="preserve"><value>Sonlandırılacak</value></data>
+  <data name="ImportSummarySkips" xml:space="preserve"><value>Atlanan</value></data>
+  <data name="ImportSummaryErrors" xml:space="preserve"><value>Hata</value></data>
+  <data name="ImportSummaryWarnings" xml:space="preserve"><value>Uyarı</value></data>
+  <data name="ImportSummaryConflicts" xml:space="preserve"><value>Çakışma</value></data>
+  <data name="ImportColumnSheet" xml:space="preserve"><value>Sayfa</value></data>
+  <data name="ImportColumnRow" xml:space="preserve"><value>Satır</value></data>
+  <data name="ImportColumnOperation" xml:space="preserve"><value>İşlem</value></data>
+  <data name="ImportColumnEntity" xml:space="preserve"><value>Kayıt türü</value></data>
+  <data name="ImportColumnRecord" xml:space="preserve"><value>Kayıt</value></data>
+  <data name="ImportColumnChangedFields" xml:space="preserve"><value>Değişen alanlar</value></data>
+  <data name="ImportColumnMessage" xml:space="preserve"><value>Mesaj</value></data>
+  <data name="AvailabilitySection" xml:space="preserve"><value>Müsaitlik</value></data>
+  <data name="AvailabilityManage" xml:space="preserve"><value>Müsaitliği yönet</value></data>
+  <data name="AvailabilityLookup" xml:space="preserve"><value>Müsaitlik sorgusu</value></data>
+  <data name="AvailabilityCheck" xml:space="preserve"><value>Sorgula</value></data>
+  <data name="AvailabilityDate" xml:space="preserve"><value>Tarih</value></data>
+  <data name="AvailabilityWeekday" xml:space="preserve"><value>Gün</value></data>
+  <data name="AvailabilityWindow" xml:space="preserve"><value>Müsait aralık</value></data>
+  <data name="AvailabilityPreferredWindow" xml:space="preserve"><value>Tercih edilen aralık</value></data>
+  <data name="AvailabilityAvoidWindow" xml:space="preserve"><value>Kaçınılacak aralık</value></data>
+  <data name="AvailabilityAppointmentRequired" xml:space="preserve"><value>Randevu gerekli</value></data>
+  <data name="AvailabilityLeadTime" xml:space="preserve"><value>Randevu süresi (gün)</value></data>
+  <data name="AvailabilityAverageDuration" xml:space="preserve"><value>Ortalama ziyaret (dk)</value></data>
+  <data name="AvailabilityType" xml:space="preserve"><value>Müsaitlik tipi</value></data>
+  <data name="AvailabilitySource" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="AvailabilityEffective" xml:space="preserve"><value>Geçerlilik tarihleri</value></data>
+  <data name="AvailabilityStart" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="AvailabilityEnd" xml:space="preserve"><value>Bitiş</value></data>
+  <data name="AvailabilityPreferredStart" xml:space="preserve"><value>Tercih edilen başlangıç</value></data>
+  <data name="AvailabilityPreferredEnd" xml:space="preserve"><value>Tercih edilen bitiş</value></data>
+  <data name="AvailabilityAvoidStart" xml:space="preserve"><value>Kaçınılacak başlangıç</value></data>
+  <data name="AvailabilityAvoidEnd" xml:space="preserve"><value>Kaçınılacak bitiş</value></data>
+  <data name="AvailabilityAdd" xml:space="preserve"><value>Müsaitlik ekle</value></data>
+  <data name="AvailabilityExceptions" xml:space="preserve"><value>Tarihe özel istisnalar</value></data>
+  <data name="AvailabilityExceptionAdd" xml:space="preserve"><value>Tarihe özel istisna ekle</value></data>
+  <data name="AvailabilityExceptionApplied" xml:space="preserve"><value>İstisna uygulandı</value></data>
+  <data name="AvailabilityIsAvailable" xml:space="preserve"><value>Müsait</value></data>
+  <data name="AvailabilityReason" xml:space="preserve"><value>Gerekçe</value></data>
+  <data name="AvailabilityReasonCodes" xml:space="preserve"><value>Neden kodları</value></data>
+  <data name="AvailabilityDeactivate" xml:space="preserve"><value>Pasifleştir</value></data>
+  <data name="AvailabilityArchive" xml:space="preserve"><value>Arşivle</value></data>
+  <data name="AvailabilityLinkInactive" xml:space="preserve"><value>Bağlantı pasif</value></data>
+  <data name="AvailabilityNoLinks" xml:space="preserve"><value>Bu kişi henüz hiçbir hesaba bağlı değil; bu yüzden lokasyon bazlı müsaitlik kaydedilemez.</value></data>
+  <data name="AvailabilityUnknownHint" xml:space="preserve"><value>Müsaitlik verisi yoksa sonuç "bilinmiyor" döner; "uygun değil" sayılmaz.</value></data>
+  <data name="AvailabilityOwnerNote" xml:space="preserve"><value>Sahip: MOD-0150. MOD-0151 rota hazırlığı ve MOD-0155 ziyaret planlaması bu veriyi salt-okunur tüketir; burada rota veya ziyaret planı üretilmez.</value></data>
+  <data name="AvailabilitySelect" xml:space="preserve"><value>Seçiniz</value></data>
+  <data name="AvailabilityYes" xml:space="preserve"><value>Evet</value></data>
+  <data name="AvailabilityNo" xml:space="preserve"><value>Hayır</value></data>
+  <data name="AvailabilityStatus_available" xml:space="preserve"><value>Müsait</value></data>
+  <data name="AvailabilityStatus_unavailable" xml:space="preserve"><value>Müsait değil</value></data>
+  <data name="AvailabilityStatus_unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="Weekday_monday" xml:space="preserve"><value>Pazartesi</value></data>
+  <data name="Weekday_tuesday" xml:space="preserve"><value>Salı</value></data>
+  <data name="Weekday_wednesday" xml:space="preserve"><value>Çarşamba</value></data>
+  <data name="Weekday_thursday" xml:space="preserve"><value>Perşembe</value></data>
+  <data name="Weekday_friday" xml:space="preserve"><value>Cuma</value></data>
+  <data name="Weekday_saturday" xml:space="preserve"><value>Cumartesi</value></data>
+  <data name="Weekday_sunday" xml:space="preserve"><value>Pazar</value></data>
+</root>

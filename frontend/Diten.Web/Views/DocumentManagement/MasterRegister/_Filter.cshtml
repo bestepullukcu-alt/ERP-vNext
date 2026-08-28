@@ -1,0 +1,89 @@
+@using Diten.Web.Views.DocumentManagement.MasterRegister
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MasterRegisterIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* MOD-0029-FU24 — inline filter panel. Only filters whose source field is present on the FU06 list DTO are offered;
+   owner-function / flag / document-type filters are deferred until the list projection carries those fields. *@
+<div id="inlineFilterHost" class="px-3">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    <div class="filter-chip filter-document-class">
+                        <select id="filterDocumentClass" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["DocumentClass"]">
+                            <option value="PolicyGovernance">@Localizer["ClassPolicyGovernance"]</option>
+                            <option value="ManualSystemDescription">@Localizer["ClassManualSystemDescription"]</option>
+                            <option value="Sop">@Localizer["ClassSop"]</option>
+                            <option value="WorkInstruction">@Localizer["ClassWorkInstruction"]</option>
+                            <option value="FormTemplateRegisterMatrixPlanChecklist">@Localizer["ClassFormTemplateRegisterMatrixPlanChecklist"]</option>
+                            <option value="QualityTechnicalAgreementSdea">@Localizer["ClassQualityTechnicalAgreementSdea"]</option>
+                            <option value="UrgentTemporaryInstruction">@Localizer["ClassUrgentTemporaryInstruction"]</option>
+                            <option value="Other">@Localizer["ClassOther"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-criticality">
+                        <select id="filterCriticality" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Criticality"]">
+                            <option value="Critical">@Localizer["CriticalityCritical"]</option>
+                            <option value="Major">@Localizer["CriticalityMajor"]</option>
+                            <option value="Minor">@Localizer["CriticalityMinor"]</option>
+                            <option value="UrgentTemporary">@Localizer["CriticalityUrgentTemporary"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-lifecycle-status">
+                        <select id="filterLifecycleStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["LifecycleStatus"]">
+                            <option value="Draft">@Localizer["LifecycleDraft"]</option>
+                            <option value="InReview">@Localizer["LifecycleInReview"]</option>
+                            <option value="ApprovedPendingEffective">@Localizer["LifecycleApprovedPendingEffective"]</option>
+                            <option value="Effective">@Localizer["LifecycleEffective"]</option>
+                            <option value="UnderRevision">@Localizer["LifecycleUnderRevision"]</option>
+                            <option value="Suspended">@Localizer["LifecycleSuspended"]</option>
+                            <option value="Superseded">@Localizer["LifecycleSuperseded"]</option>
+                            <option value="Retired">@Localizer["LifecycleRetired"]</option>
+                            <option value="ObsoleteCopy">@Localizer["LifecycleObsoleteCopy"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-document-kind">
+                        <select id="filterDocumentKind" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["DocumentKind"]">
+                            <option value="ControlledDocument">@Localizer["KindControlledDocument"]</option>
+                            <option value="Record">@Localizer["KindRecord"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-register-status">
+                        <select id="filterRegisterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["RegisterStatus"]">
+                            <option value="Draft">@Localizer["RegisterDraft"]</option>
+                            <option value="Active">@Localizer["RegisterActive"]</option>
+                            <option value="Archived">@Localizer["RegisterArchived"]</option>
+                            <option value="CorrectionPending">@Localizer["RegisterCorrectionPending"]</option>
+                            <option value="Superseded">@Localizer["RegisterSuperseded"]</option>
+                            <option value="Retired">@Localizer["RegisterRetired"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-effective-from">
+                        <input id="filterEffectiveFrom" class="form-control form-control-sm" type="date" aria-label="@Localizer["EffectiveFrom"]" title="@Localizer["EffectiveFrom"]" />
+                    </div>
+                    <div class="filter-chip filter-effective-to">
+                        <input id="filterEffectiveTo" class="form-control form-control-sm" type="date" aria-label="@Localizer["EffectiveTo"]" title="@Localizer["EffectiveTo"]" />
+                    </div>
+                    <div class="filter-chip filter-review-from">
+                        <input id="filterReviewFrom" class="form-control form-control-sm" type="date" aria-label="@Localizer["NextReviewFrom"]" title="@Localizer["NextReviewFrom"]" />
+                    </div>
+                    <div class="filter-chip filter-review-to">
+                        <input id="filterReviewTo" class="form-control form-control-sm" type="date" aria-label="@Localizer["NextReviewTo"]" title="@Localizer["NextReviewTo"]" />
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

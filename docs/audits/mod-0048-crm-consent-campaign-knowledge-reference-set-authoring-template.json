@@ -1,0 +1,453 @@
+{
+  "_meta": {
+    "purpose": "MOD-0048 CRM Consent/Campaign/Frequency/Knowledge/Concept/BrandProduct reference set authoring template (OPERATOR AID ONLY — NOT a runtime seed/migration).",
+    "engine": "PSS-012 Business Reference Data (BusinessReferenceDataSet/Version/Value; TenantScopedEntity; SetCode unique per tenant).",
+    "authoring_path": "Gateway 5000 /api/v1/reference-data: create-set -> add values -> validate -> submit -> approve -> publish; OR POST /imports/preview + POST /imports/{previewId}/commit (Idempotency-Key required). MOD-0048 publish is OUT OF SCOPE for the plan that produced this file.",
+    "value_schema": "BusinessReferenceDataValue { valueCode, displayName, sortOrder, isDeprecated, parentValueCode?, attributes{} }. 'description' is carried under attributes (not a first-class field).",
+    "json_naming": "camelCase (MOD-0048 pack policy).",
+    "rules": [
+      "ValueCode stable, lowercase kebab-case, no magic numbers.",
+      "DisplayName here is en-US; MOD-0048 value model carries a single displayName — 7-locale display is consumer-side RESX (key: ReferenceValue.<setCode>.<valueCode>).",
+      "Referenced values are never hard-deleted -> set isDeprecated=true; deprecated values not selectable for new create/update; historical values remain displayable.",
+      "No CRM local seed / hardcoded fallback; MOD-0048/PSS-012 is the SoR. An unpublished runtime-required set is a fail-closed 400.",
+      "scopeType tenant-scoped by default.",
+      "Sets with _status 'blocked-pending-reconciliation' MUST NOT be published until the named follow-up (F1/F2) is resolved with the boundary owner/EA."
+    ],
+    "language_display_policy": {
+      "note": "Platform live locales are en, fr, es, zh, ar, ru, tr (SharedResource.*.resx). The task-requested set (tr,en,ru,az,ka,kk,uz) diverges — az/ka/kk/uz are not live; locale-set decision is follow-up F5.",
+      "resx_key_pattern": "ReferenceValue.<setCode>.<valueCode>"
+    },
+    "runtime_dependency": {
+      "runtime_required": ["consent-channel","consent-purpose","consent-legal-basis","consent-status","preference-type","campaign-status","campaign-target-type","campaign-target-source","knowledge-content-type","knowledge-content-status","knowledge-path-step-type","concept-relationship-type","concept-status"],
+      "visit_frequency_non_blocking": "Runtime validates in-domain (VisitFrequencyPolicyReferenceSets.Optional); these sets are MOD-0048 alignment only.",
+      "external_taxonomy_do_not_author": ["atc-code"],
+      "keep_as_conceptnode_do_not_author": ["therapeutic-area"]
+    },
+    "reconciliation_2026_08_03": {
+      "mod0164_fu02_publish_ready": ["consent-channel","consent-purpose","consent-legal-basis","consent-status","preference-type"],
+      "mod0164_fu02_optional_recommended": ["consent-source"],
+      "mod0164_fu02_non_blocking_deferred": ["preference-value"],
+      "resolved": { "consent-legal-basis": "F7 RESOLVED — RUNTIME = SoT: aligned to ConsentLegalBasis.All (explicit-consent/public-interest/other retained; consent/public-task NOT used); supersedes F1/boundary §12", "consent-source": "F8 RESOLVED — RUNTIME = SoT: aligned to ConsentSource.All (subject-declared/field-capture/portal/consent-center/legacy-import/contract-document/manual/other; removed import/external-consent-center/campaign/system)", "campaign-target-type": "7 boundary values, campaign-target dropped" },
+      "source_of_truth": "Runtime (shipped MOD-0164-FU02 in-domain constants) is canonical for consent vocabulary. MOD-0048 alignment publish is optional (authoring-UI/governance only) and is NEVER a FU02 runtime prerequisite.",
+      "blocked_for_other_owner": { "knowledge-content-type": "MOD-0162 owner reconciliation before Knowledge runtime — NOT a Consent blocker" },
+      "not_authored_as_reference_set": ["therapeutic-area (ConceptNode)","atc-code (external WHO taxonomy)"],
+      "future_followups": ["az/ka/kk/uz locale expansion (consumer RESX; platform live locales en/fr/es/zh/ar/ru/tr are canonical)"]
+    },
+    "publish_order": [
+      "consent-required (channel/purpose/legal-basis/status) [+source,+preference-type,+preference-value] -> unblocks MOD-0164-FU02",
+      "campaign-required (status/target-type/target-source) -> then type/target-status/objective-type",
+      "knowledge-required (content-type*/content-status/path-step-type) -> then path/journey status/source/pin/completion  (* after F2)",
+      "concept-required (relationship-type/status) -> then chain-template-status/external-ref-type",
+      "visit-frequency (alignment, any time)",
+      "brand/product (with MOD-0290 runtime)"
+    ]
+  },
+  "sets": [
+    {
+      "setCode": "consent-channel", "name": "Consent Channel", "scopeType": "tenant", "moduleOwner": "MOD-0164", "requiredLevel": "runtime-required",
+      "values": [
+        { "valueCode": "visit", "displayName": "Visit", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Face-to-face field visit channel" } },
+        { "valueCode": "email", "displayName": "Email", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Email channel" } },
+        { "valueCode": "sms", "displayName": "SMS", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "SMS channel" } },
+        { "valueCode": "phone", "displayName": "Phone", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Voice phone channel" } },
+        { "valueCode": "whatsapp", "displayName": "WhatsApp", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "WhatsApp channel" } },
+        { "valueCode": "portal", "displayName": "Portal", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Self-service portal channel" } },
+        { "valueCode": "digital-detailing", "displayName": "Digital Detailing", "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Digital detailing / remote engagement channel" } },
+        { "valueCode": "training", "displayName": "Training", "sortOrder": 80, "isDeprecated": false, "attributes": { "description": "Training / education channel" } },
+        { "valueCode": "other", "displayName": "Other", "sortOrder": 90, "isDeprecated": false, "attributes": { "description": "Other channel" } }
+      ]
+    },
+    {
+      "setCode": "consent-purpose", "name": "Consent Purpose", "scopeType": "tenant", "moduleOwner": "MOD-0164", "requiredLevel": "runtime-required",
+      "values": [
+        { "valueCode": "campaign", "displayName": "Campaign", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Campaign processing" } },
+        { "valueCode": "medical-visit", "displayName": "Medical Visit", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Medical / field visit" } },
+        { "valueCode": "product-information", "displayName": "Product Information", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Product information delivery" } },
+        { "valueCode": "training", "displayName": "Training", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Training / education" } },
+        { "valueCode": "marketing", "displayName": "Marketing", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Marketing communication" } },
+        { "valueCode": "service", "displayName": "Service", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Service communication" } },
+        { "valueCode": "compliance", "displayName": "Compliance", "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Compliance / regulatory" } },
+        { "valueCode": "research", "displayName": "Research", "sortOrder": 80, "isDeprecated": false, "attributes": { "description": "Research processing" } },
+        { "valueCode": "other", "displayName": "Other", "sortOrder": 90, "isDeprecated": false, "attributes": { "description": "Other purpose" } }
+      ]
+    },
+    {
+      "setCode": "consent-legal-basis", "name": "Consent Legal Basis", "scopeType": "tenant", "moduleOwner": "MOD-0164", "requiredLevel": "runtime-required",
+      "_status": "resolved-runtime-sot", "_resolution": "F7 RESOLVED (2026-08-03 SoT reconciliation): Runtime = Source of Truth. Values below are aligned BIREBIR to the shipped MOD-0164-FU02 runtime ConsentLegalBasis.All (ConsentRecord.cs:312-325). explicit-consent/public-interest/other RETAINED (runtime canonical). consent/public-task are NOT used by the shipped runtime and are NOT publish-ready. This supersedes the F1 boundary decision (MOD-0164-FU01 §12) — see mod-0164-mod-0048-consent-vocabulary-source-of-truth-reconciliation-2026-08-03.md.",
+      "values": [
+        { "valueCode": "explicit-consent", "displayName": "Explicit Consent", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Explicit data subject consent" } },
+        { "valueCode": "contract", "displayName": "Contract", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Performance of a contract" } },
+        { "valueCode": "legal-obligation", "displayName": "Legal Obligation", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Compliance with a legal obligation" } },
+        { "valueCode": "legitimate-interest", "displayName": "Legitimate Interest", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Legitimate interests pursued by the controller" } },
+        { "valueCode": "public-interest", "displayName": "Public Interest", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Task carried out in the public interest / official authority" } },
+        { "valueCode": "vital-interest", "displayName": "Vital Interest", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Protection of vital interests" } },
+        { "valueCode": "other", "displayName": "Other", "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Other legal basis" } }
+      ]
+    },
+    {
+      "setCode": "consent-status", "name": "Consent Status", "scopeType": "tenant", "moduleOwner": "MOD-0164", "requiredLevel": "runtime-required",
+      "values": [
+        { "valueCode": "granted", "displayName": "Granted", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Consent granted" } },
+        { "valueCode": "denied", "displayName": "Denied", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Consent denied" } },
+        { "valueCode": "withdrawn", "displayName": "Withdrawn", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Consent withdrawn (new state, prior record preserved)" } },
+        { "valueCode": "restricted", "displayName": "Restricted", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Consent restricted" } },
+        { "valueCode": "unknown", "displayName": "Unknown", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Unknown — never silently treated as granted" } },
+        { "valueCode": "expired", "displayName": "Expired", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Consent expired / out of effective window" } }
+      ]
+    },
+    {
+      "setCode": "consent-source", "name": "Consent Source", "scopeType": "tenant", "moduleOwner": "MOD-0164", "requiredLevel": "optional",
+      "_status": "resolved-runtime-sot", "_resolution": "F8 RESOLVED (2026-08-03 SoT reconciliation): Runtime = Source of Truth. Values below are aligned BIREBIR to the shipped runtime ConsentSource.All (ConsentRecord.cs:413-427). Retained: subject-declared, field-capture, portal, consent-center, legacy-import, contract-document, manual, other. Removed (not in shipped runtime, NOT publish-ready): import, external-consent-center (superseded by 'consent-center'), campaign, system. This supersedes the earlier template proposal.",
+      "values": [
+        { "valueCode": "subject-declared", "displayName": "Subject Declared", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Declared by the data subject" } },
+        { "valueCode": "field-capture", "displayName": "Field Capture", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Captured in the field (e.g. during a visit)" } },
+        { "valueCode": "portal", "displayName": "Portal", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Captured via a self-service portal" } },
+        { "valueCode": "consent-center", "displayName": "Consent Center", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Projected from a Consent Center (supersedes external-consent-center)" } },
+        { "valueCode": "legacy-import", "displayName": "Legacy Import", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Legacy system import" } },
+        { "valueCode": "contract-document", "displayName": "Contract Document", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Derived from a contract document" } },
+        { "valueCode": "manual", "displayName": "Manual", "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Manually entered" } },
+        { "valueCode": "other", "displayName": "Other", "sortOrder": 80, "isDeprecated": false, "attributes": { "description": "Other source" } }
+      ]
+    },
+    {
+      "setCode": "preference-type", "name": "Preference Type", "scopeType": "tenant", "moduleOwner": "MOD-0164", "requiredLevel": "runtime-required",
+      "values": [
+        { "valueCode": "preferred-channel", "displayName": "Preferred Channel", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Preferred contact channel (value references consent-channel)" } },
+        { "valueCode": "do-not-contact", "displayName": "Do Not Contact", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Do not contact (blocks even granted consent)" } },
+        { "valueCode": "do-not-visit", "displayName": "Do Not Visit", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Do not visit (blocks even granted consent)" } },
+        { "valueCode": "preferred-visit-window", "displayName": "Preferred Visit Window", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Preferred visit time window (preference, not availability)" } },
+        { "valueCode": "language-preference", "displayName": "Language Preference", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Preferred language (value references platform locale list)" } },
+        { "valueCode": "content-preference", "displayName": "Content Preference", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Preferred content type/topic" } },
+        { "valueCode": "frequency-cap", "displayName": "Frequency Cap", "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Upper-bound signal; does not change frequency SoR" } },
+        { "valueCode": "topic-interest", "displayName": "Topic Interest", "sortOrder": 80, "isDeprecated": false, "attributes": { "description": "Declared topic interest" } }
+      ]
+    },
+    {
+      "setCode": "preference-value", "name": "Preference Value", "scopeType": "tenant", "moduleOwner": "MOD-0164", "requiredLevel": "optional",
+      "_status": "design-open-non-blocker", "_resolution": "C RESOLVED (2026-08-03 reconciliation): NOT a MOD-0164-FU02 blocker. preference-type is sufficient for Consent runtime; PreferenceValue is typed at runtime (string/reference/numeric/boolean-like). A controlled split set is opened later only if needed. Hybrid design (plan §5): channel/language values reference consent-channel / platform locales via parentValueCode. Generic values below are placeholders only.",
+      "values": [
+        { "valueCode": "yes", "displayName": "Yes", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Generic affirmative preference value" } },
+        { "valueCode": "no", "displayName": "No", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Generic negative preference value" } }
+      ]
+    },
+    {
+      "setCode": "campaign-type", "name": "Campaign Type", "scopeType": "tenant", "moduleOwner": "MOD-0165", "requiredLevel": "ui-authoring",
+      "values": [
+        { "valueCode": "product-campaign", "displayName": "Product Campaign", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Product-focused campaign" } },
+        { "valueCode": "education-campaign", "displayName": "Education Campaign", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Education-focused campaign" } },
+        { "valueCode": "awareness-campaign", "displayName": "Awareness Campaign", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Awareness campaign" } },
+        { "valueCode": "service-campaign", "displayName": "Service Campaign", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Service campaign" } },
+        { "valueCode": "compliance-campaign", "displayName": "Compliance Campaign", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Compliance campaign" } },
+        { "valueCode": "training-campaign", "displayName": "Training Campaign", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Training campaign" } },
+        { "valueCode": "other", "displayName": "Other", "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Other campaign type" } }
+      ]
+    },
+    {
+      "setCode": "campaign-status", "name": "Campaign Status", "scopeType": "tenant", "moduleOwner": "MOD-0165", "requiredLevel": "runtime-required",
+      "values": [
+        { "valueCode": "draft", "displayName": "Draft", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Draft" } },
+        { "valueCode": "active", "displayName": "Active", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Active" } },
+        { "valueCode": "paused", "displayName": "Paused", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Paused" } },
+        { "valueCode": "completed", "displayName": "Completed", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Completed" } },
+        { "valueCode": "cancelled", "displayName": "Cancelled", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Cancelled" } },
+        { "valueCode": "archived", "displayName": "Archived", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Archived" } }
+      ]
+    },
+    {
+      "setCode": "campaign-target-status", "name": "Campaign Target Status", "scopeType": "tenant", "moduleOwner": "MOD-0165", "requiredLevel": "ui-authoring",
+      "values": [
+        { "valueCode": "draft", "displayName": "Draft", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Draft" } },
+        { "valueCode": "active", "displayName": "Active", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Active" } },
+        { "valueCode": "inactive", "displayName": "Inactive", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Inactive" } },
+        { "valueCode": "completed", "displayName": "Completed", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Completed" } },
+        { "valueCode": "excluded", "displayName": "Excluded", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Excluded (e.g. consent/preference blocked)" } },
+        { "valueCode": "archived", "displayName": "Archived", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Archived" } }
+      ]
+    },
+    {
+      "setCode": "campaign-target-type", "name": "Campaign Target Type", "scopeType": "tenant", "moduleOwner": "MOD-0165", "requiredLevel": "runtime-required",
+      "_status": "resolved", "_resolution": "F6 RESOLVED (2026-08-03 reconciliation): MOD-0165-FU02 boundary canonical — 7 values, 'campaign-target' DROPPED (self-referential loop risk). visit-frequency-target-type stays a SEPARATE set and may keep 'campaign-target'; the two sets are NOT merged. Not a MOD-0164-FU02 blocker.",
+      "values": [
+        { "valueCode": "account", "displayName": "Account", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Account target" } },
+        { "valueCode": "contact", "displayName": "Contact", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Contact target" } },
+        { "valueCode": "account-contact-link", "displayName": "Account-Contact Link", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Account-contact link (most specific)" } },
+        { "valueCode": "segment", "displayName": "Segment", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Segment target" } },
+        { "valueCode": "territory-node", "displayName": "Territory Node", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Territory node target" } },
+        { "valueCode": "concept-node", "displayName": "Concept Node", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Concept node target" } },
+        { "valueCode": "audience-profile", "displayName": "Audience Profile", "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Audience profile target" } }
+      ]
+    },
+    {
+      "setCode": "campaign-target-source", "name": "Campaign Target Source", "scopeType": "tenant", "moduleOwner": "MOD-0165", "requiredLevel": "runtime-required",
+      "values": [
+        { "valueCode": "manual", "displayName": "Manual", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Manually selected" } },
+        { "valueCode": "segment", "displayName": "Segment", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "From segment membership" } },
+        { "valueCode": "import", "displayName": "Import", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Imported" } },
+        { "valueCode": "legacy-import", "displayName": "Legacy Import", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Legacy import" } },
+        { "valueCode": "business-rule", "displayName": "Business Rule", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Derived from a business rule" } },
+        { "valueCode": "manager-selection", "displayName": "Manager Selection", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Selected by manager" } },
+        { "valueCode": "campaign-rule", "displayName": "Campaign Rule", "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Derived from a campaign rule" } },
+        { "valueCode": "other", "displayName": "Other", "sortOrder": 80, "isDeprecated": false, "attributes": { "description": "Other source" } }
+      ]
+    },
+    {
+      "setCode": "campaign-objective-type", "name": "Campaign Objective Type", "scopeType": "tenant", "moduleOwner": "MOD-0165", "requiredLevel": "optional",
+      "values": [
+        { "valueCode": "awareness", "displayName": "Awareness", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Awareness objective" } },
+        { "valueCode": "education", "displayName": "Education", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Education objective" } },
+        { "valueCode": "conversion", "displayName": "Conversion", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Conversion objective" } },
+        { "valueCode": "reinforcement", "displayName": "Reinforcement", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Reinforcement objective" } },
+        { "valueCode": "objection-handling", "displayName": "Objection Handling", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Objection-handling objective" } },
+        { "valueCode": "retention", "displayName": "Retention", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Retention objective" } },
+        { "valueCode": "compliance", "displayName": "Compliance", "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Compliance objective" } },
+        { "valueCode": "training", "displayName": "Training", "sortOrder": 80, "isDeprecated": false, "attributes": { "description": "Training objective" } },
+        { "valueCode": "other", "displayName": "Other", "sortOrder": 90, "isDeprecated": false, "attributes": { "description": "Other objective" } }
+      ]
+    },
+    {
+      "setCode": "visit-frequency-type", "name": "Visit Frequency Type", "scopeType": "tenant", "moduleOwner": "MOD-0165/MOD-0167", "requiredLevel": "alignment-non-blocking",
+      "_note": "Runtime validates in-domain (VisitFrequencyPolicyReferenceSets.Optional, expected count 5). Publishing does not change runtime behavior.",
+      "values": [
+        { "valueCode": "weekly", "displayName": "Weekly", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Weekly frequency" } },
+        { "valueCode": "biweekly", "displayName": "Biweekly", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Every two weeks" } },
+        { "valueCode": "monthly", "displayName": "Monthly", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Monthly frequency" } },
+        { "valueCode": "cycle-based", "displayName": "Cycle-based", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Call-cycle based frequency" } },
+        { "valueCode": "custom", "displayName": "Custom", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Custom frequency" } }
+      ]
+    },
+    {
+      "setCode": "visit-frequency-period-type", "name": "Visit Frequency Period Type", "scopeType": "tenant", "moduleOwner": "MOD-0165/MOD-0167", "requiredLevel": "alignment-non-blocking",
+      "_note": "Expected count 7.",
+      "values": [
+        { "valueCode": "day", "displayName": "Day", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Day period" } },
+        { "valueCode": "week", "displayName": "Week", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Week period" } },
+        { "valueCode": "month", "displayName": "Month", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Month period" } },
+        { "valueCode": "quarter", "displayName": "Quarter", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Quarter period" } },
+        { "valueCode": "cycle", "displayName": "Cycle", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Call-cycle period" } },
+        { "valueCode": "campaign-period", "displayName": "Campaign Period", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Campaign period" } },
+        { "valueCode": "custom", "displayName": "Custom", "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Custom period" } }
+      ]
+    },
+    {
+      "setCode": "visit-frequency-source", "name": "Visit Frequency Source", "scopeType": "tenant", "moduleOwner": "MOD-0165/MOD-0167", "requiredLevel": "alignment-non-blocking",
+      "_note": "Expected count 7.",
+      "values": [
+        { "valueCode": "campaign", "displayName": "Campaign", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "From campaign" } },
+        { "valueCode": "segmentation", "displayName": "Segmentation", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "From segmentation" } },
+        { "valueCode": "manual", "displayName": "Manual", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Manually set" } },
+        { "valueCode": "legacy-import", "displayName": "Legacy Import", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Legacy import" } },
+        { "valueCode": "business-rule", "displayName": "Business Rule", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "From business rule" } },
+        { "valueCode": "manager-override", "displayName": "Manager Override", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Manager override" } },
+        { "valueCode": "other", "displayName": "Other", "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Other source" } }
+      ]
+    },
+    {
+      "setCode": "visit-frequency-status", "name": "Visit Frequency Status", "scopeType": "tenant", "moduleOwner": "MOD-0165/MOD-0167", "requiredLevel": "alignment-non-blocking",
+      "_note": "Expected count 4.",
+      "values": [
+        { "valueCode": "draft", "displayName": "Draft", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Draft" } },
+        { "valueCode": "active", "displayName": "Active", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Active" } },
+        { "valueCode": "inactive", "displayName": "Inactive", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Inactive" } },
+        { "valueCode": "archived", "displayName": "Archived", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Archived" } }
+      ]
+    },
+    {
+      "setCode": "visit-frequency-target-type", "name": "Visit Frequency Target Type", "scopeType": "tenant", "moduleOwner": "MOD-0165/MOD-0167", "requiredLevel": "alignment-non-blocking",
+      "_note": "Expected count 8. Distinct from campaign-target-type: includes 'campaign-target'. Do NOT merge the two sets (plan §15-E).",
+      "values": [
+        { "valueCode": "account", "displayName": "Account", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Account target" } },
+        { "valueCode": "contact", "displayName": "Contact", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Contact target" } },
+        { "valueCode": "account-contact-link", "displayName": "Account-Contact Link", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Account-contact link" } },
+        { "valueCode": "segment", "displayName": "Segment", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Segment target" } },
+        { "valueCode": "territory-node", "displayName": "Territory Node", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Territory node target" } },
+        { "valueCode": "campaign-target", "displayName": "Campaign Target", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Campaign target (frequency Source=campaign)" } },
+        { "valueCode": "concept-node", "displayName": "Concept Node", "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Concept node target" } },
+        { "valueCode": "audience-profile", "displayName": "Audience Profile", "sortOrder": 80, "isDeprecated": false, "attributes": { "description": "Audience profile target" } }
+      ]
+    },
+    {
+      "setCode": "knowledge-content-type", "name": "Knowledge Content Type", "scopeType": "tenant", "moduleOwner": "MOD-0162", "requiredLevel": "runtime-required",
+      "_status": "blocked-for-knowledge-owner", "_resolution": "F2 DEFERRED (2026-08-03 reconciliation): boundary vocab kept canonical (8 values below). Task extras NOT published now; they stay in _proposedExtras for a SEPARATE MOD-0162 owner reconciliation before Knowledge runtime. This does NOT block MOD-0164-FU02 Consent runtime.",
+      "_proposedExtras": ["slide-deck","image","faq","clinical-summary","lesson","assignment","checklist","external-link","other"],
+      "values": [
+        { "valueCode": "knowledge-article", "displayName": "Knowledge Article", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Knowledge article" } },
+        { "valueCode": "pdf", "displayName": "PDF", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "PDF document" } },
+        { "valueCode": "html-detail", "displayName": "HTML Detail", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "HTML detailing content" } },
+        { "valueCode": "video", "displayName": "Video", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Video" } },
+        { "valueCode": "quiz", "displayName": "Quiz", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Quiz / assessment" } },
+        { "valueCode": "sop", "displayName": "SOP", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Standard operating procedure" } },
+        { "valueCode": "training-material", "displayName": "Training Material", "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Training material" } },
+        { "valueCode": "message-script", "displayName": "Message Script", "sortOrder": 80, "isDeprecated": false, "attributes": { "description": "Message / call script" } }
+      ]
+    },
+    {
+      "setCode": "knowledge-content-status", "name": "Knowledge Content Status", "scopeType": "tenant", "moduleOwner": "MOD-0162", "requiredLevel": "runtime-required",
+      "values": [
+        { "valueCode": "draft", "displayName": "Draft", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Draft" } },
+        { "valueCode": "review", "displayName": "Review", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "In review" } },
+        { "valueCode": "approved", "displayName": "Approved", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Approved" } },
+        { "valueCode": "published", "displayName": "Published", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Published" } },
+        { "valueCode": "inactive", "displayName": "Inactive", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Inactive" } },
+        { "valueCode": "archived", "displayName": "Archived", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Archived" } }
+      ]
+    },
+    {
+      "setCode": "knowledge-path-step-type", "name": "Knowledge Path Step Type", "scopeType": "tenant", "moduleOwner": "MOD-0162", "requiredLevel": "runtime-required",
+      "_note": "Multi-domain (pharma + language training). Keep generic; do not fork per subject.",
+      "values": [
+        { "valueCode": "intro", "displayName": "Intro", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Introduction step" } },
+        { "valueCode": "core-message", "displayName": "Core Message", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Core message" } },
+        { "valueCode": "clinical-evidence", "displayName": "Clinical Evidence", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Clinical evidence" } },
+        { "valueCode": "indication", "displayName": "Indication", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Indication" } },
+        { "valueCode": "brand-message", "displayName": "Brand Message", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Brand message" } },
+        { "valueCode": "objection-handling", "displayName": "Objection Handling", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Objection handling" } },
+        { "valueCode": "faq", "displayName": "FAQ", "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "FAQ" } },
+        { "valueCode": "practice", "displayName": "Practice", "sortOrder": 80, "isDeprecated": false, "attributes": { "description": "Practice" } },
+        { "valueCode": "quiz", "displayName": "Quiz", "sortOrder": 90, "isDeprecated": false, "attributes": { "description": "Quiz" } },
+        { "valueCode": "assignment", "displayName": "Assignment", "sortOrder": 100, "isDeprecated": false, "attributes": { "description": "Assignment" } },
+        { "valueCode": "summary", "displayName": "Summary", "sortOrder": 110, "isDeprecated": false, "attributes": { "description": "Summary" } },
+        { "valueCode": "closing", "displayName": "Closing", "sortOrder": 120, "isDeprecated": false, "attributes": { "description": "Closing" } },
+        { "valueCode": "lesson", "displayName": "Lesson", "sortOrder": 130, "isDeprecated": false, "attributes": { "description": "Lesson" } },
+        { "valueCode": "vocabulary", "displayName": "Vocabulary", "sortOrder": 140, "isDeprecated": false, "attributes": { "description": "Vocabulary" } },
+        { "valueCode": "grammar", "displayName": "Grammar", "sortOrder": 150, "isDeprecated": false, "attributes": { "description": "Grammar" } },
+        { "valueCode": "listening", "displayName": "Listening", "sortOrder": 160, "isDeprecated": false, "attributes": { "description": "Listening" } },
+        { "valueCode": "speaking", "displayName": "Speaking", "sortOrder": 170, "isDeprecated": false, "attributes": { "description": "Speaking" } },
+        { "valueCode": "reading", "displayName": "Reading", "sortOrder": 180, "isDeprecated": false, "attributes": { "description": "Reading" } },
+        { "valueCode": "homework", "displayName": "Homework", "sortOrder": 190, "isDeprecated": false, "attributes": { "description": "Homework" } }
+      ]
+    },
+    {
+      "setCode": "knowledge-path-status", "name": "Knowledge Path Status", "scopeType": "tenant", "moduleOwner": "MOD-0162", "requiredLevel": "ui-authoring",
+      "values": [
+        { "valueCode": "draft", "displayName": "Draft", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Draft" } },
+        { "valueCode": "review", "displayName": "Review", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "In review" } },
+        { "valueCode": "approved", "displayName": "Approved", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Approved" } },
+        { "valueCode": "published", "displayName": "Published", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Published" } },
+        { "valueCode": "inactive", "displayName": "Inactive", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Inactive" } },
+        { "valueCode": "archived", "displayName": "Archived", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Archived" } }
+      ]
+    },
+    {
+      "setCode": "knowledge-journey-status", "name": "Knowledge Journey Status", "scopeType": "tenant", "moduleOwner": "MOD-0162", "requiredLevel": "ui-authoring",
+      "values": [
+        { "valueCode": "draft", "displayName": "Draft", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Draft" } },
+        { "valueCode": "review", "displayName": "Review", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "In review" } },
+        { "valueCode": "approved", "displayName": "Approved", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Approved" } },
+        { "valueCode": "published", "displayName": "Published", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Published" } },
+        { "valueCode": "inactive", "displayName": "Inactive", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Inactive" } },
+        { "valueCode": "archived", "displayName": "Archived", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Archived" } }
+      ]
+    },
+    {
+      "setCode": "knowledge-content-source", "name": "Knowledge Content Source", "scopeType": "tenant", "moduleOwner": "MOD-0162", "requiredLevel": "optional",
+      "values": [
+        { "valueCode": "manual", "displayName": "Manual", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Manually created" } },
+        { "valueCode": "legacy-import", "displayName": "Legacy Import", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Legacy import" } },
+        { "valueCode": "document-management", "displayName": "Document Management", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "From MOD-0028/0029 document management" } },
+        { "valueCode": "campaign", "displayName": "Campaign", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "From campaign" } },
+        { "valueCode": "training", "displayName": "Training", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "From training" } },
+        { "valueCode": "external", "displayName": "External", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "External source" } },
+        { "valueCode": "other", "displayName": "Other", "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Other source" } }
+      ]
+    },
+    {
+      "setCode": "knowledge-version-pin-policy", "name": "Knowledge Version Pin Policy", "scopeType": "tenant", "moduleOwner": "MOD-0162", "requiredLevel": "optional",
+      "values": [
+        { "valueCode": "pinned", "displayName": "Pinned", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Pin to a specific version" } },
+        { "valueCode": "latest-published", "displayName": "Latest Published", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Always resolve latest published version" } }
+      ]
+    },
+    {
+      "setCode": "knowledge-completion-rule", "name": "Knowledge Completion Rule", "scopeType": "tenant", "moduleOwner": "MOD-0162", "requiredLevel": "optional",
+      "values": [
+        { "valueCode": "none", "displayName": "None", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "No completion rule" } },
+        { "valueCode": "viewed", "displayName": "Viewed", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Marked complete when viewed" } },
+        { "valueCode": "acknowledged", "displayName": "Acknowledged", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Requires acknowledgement" } },
+        { "valueCode": "assessment-passed", "displayName": "Assessment Passed", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Requires passing an assessment" } },
+        { "valueCode": "duration-met", "displayName": "Duration Met", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Requires minimum duration" } }
+      ]
+    },
+    {
+      "setCode": "concept-relationship-type", "name": "Concept Relationship Type", "scopeType": "tenant", "moduleOwner": "MOD-0162-FU01C", "requiredLevel": "runtime-required",
+      "_note": "Boundary carries a Direction field (default outbound); may live in attributes.direction or as a runtime field per MOD-0162-FU01C.",
+      "values": [
+        { "valueCode": "related-to", "displayName": "Related To", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Generic relation", "direction": "outbound" } },
+        { "valueCode": "depends-on", "displayName": "Depends On", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Dependency", "direction": "outbound" } },
+        { "valueCode": "supports", "displayName": "Supports", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Support relation", "direction": "outbound" } },
+        { "valueCode": "addresses", "displayName": "Addresses", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Addresses relation", "direction": "outbound" } },
+        { "valueCode": "requires", "displayName": "Requires", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Requirement", "direction": "outbound" } },
+        { "valueCode": "belongs-to", "displayName": "Belongs To", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Membership", "direction": "outbound" } },
+        { "valueCode": "targets", "displayName": "Targets", "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Targeting relation", "direction": "outbound" } },
+        { "valueCode": "maps-to", "displayName": "Maps To", "sortOrder": 80, "isDeprecated": false, "attributes": { "description": "Mapping", "direction": "outbound" } },
+        { "valueCode": "replaces", "displayName": "Replaces", "sortOrder": 90, "isDeprecated": false, "attributes": { "description": "Replacement", "direction": "outbound" } },
+        { "valueCode": "other", "displayName": "Other", "sortOrder": 100, "isDeprecated": false, "attributes": { "description": "Other relation", "direction": "outbound" } }
+      ]
+    },
+    {
+      "setCode": "concept-status", "name": "Concept Status", "scopeType": "tenant", "moduleOwner": "MOD-0162-FU01C", "requiredLevel": "runtime-required",
+      "values": [
+        { "valueCode": "draft", "displayName": "Draft", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Draft" } },
+        { "valueCode": "active", "displayName": "Active", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Active" } },
+        { "valueCode": "inactive", "displayName": "Inactive", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Inactive" } },
+        { "valueCode": "archived", "displayName": "Archived", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Archived" } }
+      ]
+    },
+    {
+      "setCode": "concept-chain-template-status", "name": "Concept Chain Template Status", "scopeType": "tenant", "moduleOwner": "MOD-0162-FU01C", "requiredLevel": "ui-authoring",
+      "values": [
+        { "valueCode": "draft", "displayName": "Draft", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Draft" } },
+        { "valueCode": "active", "displayName": "Active", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Active" } },
+        { "valueCode": "inactive", "displayName": "Inactive", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Inactive" } },
+        { "valueCode": "archived", "displayName": "Archived", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Archived" } }
+      ]
+    },
+    {
+      "setCode": "concept-external-ref-type", "name": "Concept External Reference Type", "scopeType": "tenant", "moduleOwner": "MOD-0162-FU01C", "requiredLevel": "optional",
+      "values": [
+        { "valueCode": "brand", "displayName": "Brand", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Brand reference (MOD-0290)" } },
+        { "valueCode": "product", "displayName": "Product", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Product reference (MOD-0290)" } },
+        { "valueCode": "document", "displayName": "Document", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Document reference (MOD-0028/0029)" } },
+        { "valueCode": "audience-profile", "displayName": "Audience Profile", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Audience profile reference" } },
+        { "valueCode": "reference-value", "displayName": "Reference Value", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "MOD-0048 reference value" } },
+        { "valueCode": "external-system", "displayName": "External System", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "External system reference" } },
+        { "valueCode": "other", "displayName": "Other", "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Other reference type" } }
+      ]
+    },
+    {
+      "setCode": "product-dosage-form", "name": "Product Dosage Form", "scopeType": "tenant", "moduleOwner": "MOD-0290", "requiredLevel": "optional",
+      "values": [
+        { "valueCode": "tablet", "displayName": "Tablet", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Tablet" } },
+        { "valueCode": "capsule", "displayName": "Capsule", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Capsule" } },
+        { "valueCode": "solution", "displayName": "Solution", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Solution" } },
+        { "valueCode": "suspension", "displayName": "Suspension", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Suspension" } },
+        { "valueCode": "injection", "displayName": "Injection", "sortOrder": 50, "isDeprecated": false, "attributes": { "description": "Injection" } },
+        { "valueCode": "cream", "displayName": "Cream", "sortOrder": 60, "isDeprecated": false, "attributes": { "description": "Cream" } },
+        { "valueCode": "gel", "displayName": "Gel", "sortOrder": 70, "isDeprecated": false, "attributes": { "description": "Gel" } },
+        { "valueCode": "spray", "displayName": "Spray", "sortOrder": 80, "isDeprecated": false, "attributes": { "description": "Spray" } },
+        { "valueCode": "other", "displayName": "Other", "sortOrder": 90, "isDeprecated": false, "attributes": { "description": "Other dosage form" } }
+      ]
+    },
+    {
+      "setCode": "product-status", "name": "Product Status", "scopeType": "tenant", "moduleOwner": "MOD-0290", "requiredLevel": "ui-authoring",
+      "values": [
+        { "valueCode": "draft", "displayName": "Draft", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Draft" } },
+        { "valueCode": "active", "displayName": "Active", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Active" } },
+        { "valueCode": "inactive", "displayName": "Inactive", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Inactive" } },
+        { "valueCode": "archived", "displayName": "Archived", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Archived" } }
+      ]
+    },
+    {
+      "setCode": "brand-status", "name": "Brand Status", "scopeType": "tenant", "moduleOwner": "MOD-0290", "requiredLevel": "ui-authoring",
+      "values": [
+        { "valueCode": "draft", "displayName": "Draft", "sortOrder": 10, "isDeprecated": false, "attributes": { "description": "Draft" } },
+        { "valueCode": "active", "displayName": "Active", "sortOrder": 20, "isDeprecated": false, "attributes": { "description": "Active" } },
+        { "valueCode": "inactive", "displayName": "Inactive", "sortOrder": 30, "isDeprecated": false, "attributes": { "description": "Inactive" } },
+        { "valueCode": "archived", "displayName": "Archived", "sortOrder": 40, "isDeprecated": false, "attributes": { "description": "Archived" } }
+      ]
+    }
+  ],
+  "notAuthoredAsReferenceSet": [
+    { "candidate": "therapeutic-area", "decision": "Keep as ConceptNode (MOD-0162-FU01C). Do NOT open as a flat MOD-0048 set. Follow-up F3 (owner: MOD-0162 vs MOD-0290)." },
+    { "candidate": "atc-code", "decision": "External WHO taxonomy. Do NOT open as a local MOD-0048 master. Consume via ExternalReferences seam. Follow-up F4." }
+  ]
+}

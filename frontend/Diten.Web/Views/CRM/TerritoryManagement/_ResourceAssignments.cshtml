@@ -1,0 +1,215 @@
+@model Diten.Web.Models.CRM.TerritoryModelDetailPageViewModel
+@using Diten.Web.Views.CRM.TerritoryManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TerritoryManagementResources> L
+@inject IHtmlLocalizer<Diten.Web.SharedResource> Shared
+@{
+    var m = Model.Model;
+    var isDraft = string.Equals(m.Status, "draft", StringComparison.OrdinalIgnoreCase);
+    var isArchived = string.Equals(m.Status, "archived", StringComparison.OrdinalIgnoreCase);
+    var isActive = string.Equals(m.Status, "active", StringComparison.OrdinalIgnoreCase);
+    var canEdit = Model.CanManageModel && (isDraft || isActive) && !isArchived;
+}
+
+@* Golden Reference Compact layout: ① inline filter, ② notices/explainer, ③ the DataTable card (skeleton + table
+   only — every grid action lives in the DataTable toolbar, so the card carries no header of its own). *@
+
+@* ① Inline Filter partial *@
+<partial name="~/Views/CRM/TerritoryManagement/_ResourceAssignmentsFilter.cshtml" />
+
+@* ② Notices — outside the card, mirroring Assignment Preview: a dismissible explainer, then state notices. *@
+<div class="alert alert-info alert-dismissible d-flex align-items-start" role="alert">
+    <i class="bx bx-info-circle me-2 mt-1"></i>
+    <div>
+        <div>@L["ResourceAssignmentsExplainer"]</div>
+        <small class="text-muted d-block">@L["AccountCoverageComesInFu05"]</small>
+        <small class="text-muted d-block">@L["EndingIsNotDeleting"]</small>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+@if (isDraft)
+{
+    <div class="alert alert-warning py-2" id="resource-planning-warning">
+        <i class="bx bx-calendar-edit me-1"></i>Planning only / Not operational
+    </div>
+}
+@if (isArchived)
+{
+    <div class="alert alert-secondary py-2"><i class="bx bx-archive me-1"></i>@L["ArchivedReadOnly"]</div>
+}
+
+@* Conflict-check results render here (advisory, outside the grid). *@
+<div id="resource-conflict-panel"></div>
+
+<div class="d-flex justify-content-end mb-3">
+    <button type="button"
+            class="btn btn-label-secondary"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#resource-history-offcanvas"
+            aria-controls="resource-history-offcanvas">
+        <i class="bx bx-history me-1"></i>@L["AssignmentHistory"]
+    </button>
+</div>
+
+<div class="offcanvas offcanvas-end"
+     tabindex="-1"
+     id="resource-history-offcanvas"
+     aria-labelledby="resource-history-offcanvas-title"
+     data-bs-scroll="true">
+    <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title" id="resource-history-offcanvas-title">
+            <i class="bx bx-history me-1"></i>@L["AssignmentHistory"]
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div id="resource-history-panel" aria-live="polite">
+            <div class="d-flex justify-content-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ③ DataTable card — contract markers: id="skeleton-loader", <table id="dt-resourceassignments" data-dt-standard="v2"> *@
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-resourceassignments" data-dt-standard="v2" class="datatables-resourceassignments table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="all">@L["Resource"]</th>
+                    <th>@L["Position"]</th>
+                    <th>@L["TargetNode"]</th>
+                    <th>@L["CoverageScope"]</th>
+                    <th>@L["BusinessUnitScope"]</th>
+                    <th>@L["Primary"]</th>
+                    <th>@L["Status"]</th>
+                    <th>@L["ValidPeriod"]</th>
+                    <th class="cell-fit text-end pe-3 all">@L["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+@if (canEdit)
+{
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="resource-assignment-offcanvas">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title" id="resource-assignment-offcanvas-title">@L["AssignResource"]</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <form id="resource-assignment-form" novalidate>
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" id="ra-id" />
+
+                <div class="alert alert-danger d-none" id="ra-form-errors"></div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="ra-position">@L["Position"] <span class="text-danger">*</span></label>
+                    <select class="form-select select2" id="ra-position" name="PositionId" required></select>
+                    <input type="hidden" id="ra-position-code" name="PositionCode" />
+                    <input type="hidden" id="ra-position-name" name="PositionName" />
+                    <input type="hidden" name="PositionType" value="person-position" />
+                    <input type="hidden" name="PositionSourceSystem" value="organization-directory" />
+                    <div class="alert alert-warning py-2 mt-2 d-none" id="ra-position-not-ready">
+                        <i class="bx bx-plug me-1"></i>Positions are not available. Activate the Organization module and add positions first.
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="ra-coverage">@L["CoverageScope"] <span class="text-danger">*</span></label>
+                    <select class="form-select select2" id="ra-coverage" name="CoverageScope" required></select>
+                    <small class="text-muted">@L["CoverageScopeHint"]</small>
+                </div>
+
+                <div class="mb-3" id="ra-node-group">
+                    <label class="form-label" for="ra-node">@L["TargetNode"]</label>
+                    <select class="form-select select2" id="ra-node" name="TerritoryId"></select>
+                </div>
+
+                <div class="mb-3" id="ra-bu-group">
+                    <label class="form-label" for="ra-business-units">@L["BusinessUnitScope"]</label>
+                    <select class="form-select select2" id="ra-business-units" name="BusinessUnitScopeCodes" multiple></select>
+                    <small class="text-muted">@L["BusinessUnitScopeAssignmentHint"]</small>
+                </div>
+
+                <hr />
+                <h6>@L["Resource"]</h6>
+
+                <div class="mb-3">
+                    <label class="form-label" for="ra-resource-type">@L["ResourceType"]</label>
+                    <select class="form-select select2" id="ra-resource-type" name="ResourceType" required>
+                        <option value="user" selected>@Shared["User"]</option>
+                        <option value="employee" disabled>@L["Employee"]</option>
+                    </select>
+                </div>
+
+                <div class="mb-3" id="ra-resource-picker-group">
+                    <label class="form-label" for="ra-resource-picker">@L["SelectUser"] <span class="text-danger">*</span></label>
+                    <select class="form-select select2" id="ra-resource-picker" required></select>
+                    <input type="hidden" id="ra-resource-id" name="ResourceId" />
+                    <input type="hidden" id="ra-resource-name" name="ResourceDisplayName" />
+                    <input type="hidden" id="ra-resource-email" name="ResourceEmail" />
+                </div>
+
+                <div class="alert alert-warning py-2 d-none" id="ra-resource-seam-note">
+                    <i class="bx bx-plug me-1"></i>@L["ResourceLookupNotReady"]
+                </div>
+
+                <hr />
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="ra-from">@L["ValidFrom"] <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="ra-from" name="ValidFrom" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="ra-to">@L["ValidTo"]</label>
+                        <input type="date" class="form-control" id="ra-to" name="ValidTo" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="ra-source">@L["AssignmentSource"]</label>
+                        <select class="form-select" id="ra-source" name="AssignmentSource">
+                            <option value="manual">manual</option>
+                            <option value="override">override</option>
+                        </select>
+                        <small class="text-muted">@L["AssignmentSourceHint"]</small>
+                    </div>
+                    <div class="col-md-6 mb-3 d-flex align-items-center">
+                        <div class="form-check form-switch mt-4">
+                            <input class="form-check-input" type="checkbox" id="ra-primary" name="IsPrimary" value="true" checked />
+                            <label class="form-check-label" for="ra-primary">@L["Primary"]</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="ra-reason">@L["ChangeReason"] <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="ra-reason" name="ChangeReason" maxlength="512" />
+                    <small class="text-muted">@L["ChangeReasonHint"]</small>
+                </div>
+
+                <div class="d-flex gap-2 pt-2">
+                    <button type="submit" class="btn btn-primary">@Shared["Save"]</button>
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@L["Cancel"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}

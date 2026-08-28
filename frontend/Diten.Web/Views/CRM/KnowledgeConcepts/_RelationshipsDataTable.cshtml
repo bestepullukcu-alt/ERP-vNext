@@ -1,0 +1,35 @@
+@using Diten.Web.Views.CRM.KnowledgeConcepts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeConceptsIndex> Localizer
+
+<div class="card">
+    <div id="relationships-skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+    </div>
+    <div class="card-datatable table-responsive">
+        <table id="dt-concept-relationships" data-dt-standard="v2" class="datatables-concept-relationships table border-top w-100">
+            <thead><tr>
+                <th></th>
+                <th>@Localizer["RelationshipCode"]</th>
+                <th class="all">@Localizer["RelationshipName"]</th>
+                <th>@Localizer["FromConceptNode"]</th>
+                <th>@Localizer["ToConceptNode"]</th>
+                <th>@Localizer["RelationshipType"]</th>
+                <th>@Localizer["Direction"]</th>
+                <th>@Localizer["Priority"]</th>
+                @* V16: a non-conforming edge is accepted and kept — this column makes it visible, it never hides a row. *@
+                <th>@Localizer["Conformance"]</th>
+                <th>@Localizer["Status"]</th>
+                <th>@Localizer["SubjectId"]</th>
+                <th>@Localizer["EffectiveFrom"]</th>
+                <th>@Localizer["EffectiveTo"]</th>
+                <th>@Localizer["Archived"]</th>
+                <th>@Localizer["UpdatedAt"]</th>
+                <th class="all text-end">@Localizer["Actions"]</th>
+            </tr></thead>
+        </table>
+    </div>
+</div>

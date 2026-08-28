@@ -1,0 +1,80 @@
+@model Diten.Web.Models.CRM.AccountOverviewViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.CRM.Accounts.AccountIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var now = DateTimeOffset.UtcNow;
+}
+
+@* MOD-0151 — Account 360 Territory coverage history, rendered as a read-only DataTable v2 (data-dt-standard="v2")
+   in the Golden detail-page shape: skeleton loader, control column, colReorder, export/colvis + inline filter toolbar.
+   Shows the current (active) assignment(s) AND every historical one; a "current" badge flags the effective rows.
+   Read-only: assignments are created/ended from MOD-0151 (Territory Management), never from this page. Gated by
+   crm.territory.model.read; fails soft to a message. Rows are projected server-side into the payload below. *@
+
+<div class="card" id="accountTerritoryCard">
+    <div class="card-header d-flex flex-column align-items-start pb-0">
+        <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["TerritorySection"]</h6>
+    </div>
+
+    @if (!Model.TerritoryCoverageAuthorized)
+    {
+        <div class="card-body text-muted">@Localizer["NotAuthorized"]</div>
+    }
+    else if (Model.TerritoryCoverageUnavailable)
+    {
+        <div class="card-body text-muted">@Localizer["DependencyUnavailable"]</div>
+    }
+    else
+    {
+        @* ① Inline Filter partial (mounted under the toolbar row by details-territory.js) *@
+        @* Contract marker: <partial name="_Filter" /> *@
+        <partial name="~/Views/CRM/Accounts/_TerritoryCoverageFilter.cshtml" />
+
+        <div id="territory-skeleton-loader" class="backbone-skeleton p-4">
+            <div class="shimmer skeleton-row skeleton-row-lg"></div>
+            <div class="shimmer skeleton-row"></div>
+            <div class="shimmer skeleton-row"></div>
+            <div class="shimmer skeleton-row skeleton-row-last"></div>
+        </div>
+
+        <div class="card-datatable table-responsive">
+            <table id="dt-account-territory" data-dt-standard="v2" class="datatables-account-territory table border-top">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th class="all">@Localizer["TerritoryNode"]</th>
+                        <th>@Localizer["TerritoryNodeCode"]</th>
+                        <th>@Localizer["AssignmentSource"]</th>
+                        <th>@SharedLocalizer["Status"]</th>
+                        <th>@Localizer["ValidFrom"]</th>
+                        <th>@Localizer["ValidTo"]</th>
+                    </tr>
+                </thead>
+                <tbody id="accountTerritoryBody"></tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<script id="account-territory-payload" type="application/json">
+    @Json.Serialize(new
+    {
+        accountId = Model.Account!.Id,
+        rows = Model.TerritoryAssignments.Select(a => new
+        {
+            territoryNodeName = a.TerritoryNodeName,
+            territoryNodeCode = a.TerritoryNodeCode,
+            assignmentSource = a.AssignmentSource,
+            status = a.AssignmentStatus,
+            effectiveFrom = a.EffectiveFrom.ToString("yyyy-MM-dd"),
+            effectiveTo = a.EffectiveTo?.ToString("yyyy-MM-dd"),
+            // "current" = active status, not ended, and the effective window covers now (mirrors the coverage-summary
+            // gate on the assignment row; the model-lifecycle gate stays a backend concern).
+            isCurrent = string.Equals(a.AssignmentStatus, "active", StringComparison.OrdinalIgnoreCase)
+                        && a.EndedAt is null
+                        && a.EffectiveFrom <= now
+                        && (a.EffectiveTo is null || a.EffectiveTo >= now)
+        })
+    })
+</script>

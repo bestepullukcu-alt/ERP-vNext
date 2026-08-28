@@ -1,0 +1,90 @@
+@using Diten.Web.Views.CRM.CycleCapacities
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CycleCapacitiesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="cyclecapacities-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Actions = Localizer["Actions"].Value,
+        Edit = SharedLocalizer["EditRecord"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Details = SharedLocalizer["Details"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        Description = SharedLocalizer["Description"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        Update = SharedLocalizer["Update"].Value,
+        RecordCreated = SharedLocalizer["RecordCreated"].Value,
+        RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        FormValidationError = SharedLocalizer["ValidationFailed"].Value,
+        EmptyState = SharedLocalizer["NoRecordsFound"].Value,
+        Loading = SharedLocalizer["Loading"].Value,
+        SelectPlaceholder = SharedLocalizer["SelectPlaceholder"].Value,
+
+        CycleCapacitiesTitle = Localizer["CycleCapacitiesTitle"].Value,
+        PageDescription = Localizer["PageDescription"].Value,
+        ContractUnavailable = Localizer["ContractUnavailable"].Value,
+        CreateCycleCapacity = Localizer["CreateCycleCapacity"].Value,
+        FormTitleCreate = Localizer["FormTitleCreate"].Value,
+        FormTitleEdit = Localizer["FormTitleEdit"].Value,
+
+        CyclePeriod = Localizer["CyclePeriod"].Value,
+        CycleCode = Localizer["CycleCode"].Value,
+        CycleName = Localizer["CycleName"].Value,
+        PeriodWindow = Localizer["PeriodWindow"].Value,
+        CalendarCountryCode = Localizer["CalendarCountryCode"].Value,
+        DailyWorkMinutes = Localizer["DailyWorkMinutes"].Value,
+        MinutesPerVisit = Localizer["MinutesPerVisit"].Value,
+        Fte = Localizer["Fte"].Value,
+        MonthCount = Localizer["MonthCount"].Value,
+        UpdatedAt = Localizer["UpdatedAt"].Value,
+
+        ArchiveCycleCapacity = Localizer["ArchiveCycleCapacity"].Value,
+        ArchiveCycleCapacityConfirm = Localizer["ArchiveCycleCapacityConfirm"].Value,
+        RecordArchived = Localizer["RecordArchived"].Value,
+        ArchivedFilter = Localizer["ArchivedFilter"].Value,
+        ArchivedHidden = Localizer["ArchivedHidden"].Value,
+        ArchivedOnly = Localizer["ArchivedOnly"].Value,
+        PeriodClosedLock = Localizer["PeriodClosedLock"].Value,
+
+        EstimateNoticeTitle = Localizer["EstimateNoticeTitle"].Value,
+        EstimateNoticeBody = Localizer["EstimateNoticeBody"].Value,
+        // MOD-0155 FU06 - the live preview renders the estimate CLIENT-side on the form, so the labels the Details
+        // page reads from Razor have to reach form.js through the bridge as well. Same resx keys, one source.
+        EstimateSectionHint = Localizer["EstimateSectionHint"].Value,
+        TotalVisitNumber = Localizer["TotalVisitNumber"].Value,
+        WorkingDays = Localizer["WorkingDays"].Value,
+        DeductedDays = Localizer["DeductedDays"].Value,
+        FieldDays = Localizer["FieldDays"].Value,
+        VisitMinutes = Localizer["VisitMinutes"].Value,
+        NoFieldDays = Localizer["NoFieldDays"].Value,
+        Month = Localizer["Month"].Value,
+        CalculationUnavailable = Localizer["CalculationUnavailable"].Value,
+        CalendarForbiddenTitle = Localizer["CalendarForbiddenTitle"].Value,
+        CalendarForbiddenBody = Localizer["CalendarForbiddenBody"].Value,
+        CalendarUnresolvedTitle = Localizer["CalendarUnresolvedTitle"].Value,
+        CalendarUnresolvedBody = Localizer["CalendarUnresolvedBody"].Value,
+        BudgetVisitMinutesZero = Localizer["BudgetVisitMinutesZero"].Value,
+        BudgetDailySpendExceedsDay = Localizer["BudgetDailySpendExceedsDay"].Value
+    })
+</script>

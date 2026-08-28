@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="OverridesTitle" xml:space="preserve"><value>استثناءات تقويم العمل</value></data>
+  <data name="BreadcrumbOverrides" xml:space="preserve"><value>استثناءات تقويم العمل</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>عطلات شركتك وأيام الإغلاق وأيام العمل التعويضية. تُضاف فوق تقويم الدولة الذي لا يُدار من هنا.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>تفاصيل الاستثناء</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>إضافة استثناء</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل الاستثناء</value></data>
+  <data name="FormDescription" xml:space="preserve"><value>يغطي الاستثناء دولة واحدة لسنة واحدة. اترك أيام نهاية الأسبوع فارغة ليتم توريثها من تقويم الدولة.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>إضافة استثناء</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>الهوية</value></data>
+  <data name="SectionScope" xml:space="preserve"><value>النطاق</value></data>
+  <data name="SectionWeekend" xml:space="preserve"><value>نهاية الأسبوع</value></data>
+  <data name="SectionLifecycle" xml:space="preserve"><value>دورة الحياة</value></data>
+  <data name="SectionDays" xml:space="preserve"><value>عطلات الشركة وأيام الإغلاق</value></data>
+  <data name="SectionResolution" xml:space="preserve"><value>فحص يوم العمل</value></data>
+  <data name="CalendarCode" xml:space="preserve"><value>رمز التقويم</value></data>
+  <data name="CalendarCodeHint" xml:space="preserve"><value>مفتاح ثابت، مثل TR-2026. لا يُعاد تسميته أبداً.</value></data>
+  <data name="CalendarName" xml:space="preserve"><value>اسم التقويم</value></data>
+  <data name="CountryCode" xml:space="preserve"><value>الدولة</value></data>
+  <data name="CountryInherited" xml:space="preserve"><value>الدولة (موروث)</value></data>
+  <data name="CalendarYear" xml:space="preserve"><value>السنة</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>النطاق</value></data>
+  <data name="OrganizationUnit" xml:space="preserve"><value>الوحدة التنظيمية</value></data>
+  <data name="WeekendDays" xml:space="preserve"><value>أيام نهاية الأسبوع</value></data>
+  <data name="DayCount" xml:space="preserve"><value>الأيام</value></data>
+  <data name="Notes" xml:space="preserve"><value>ملاحظات</value></data>
+  <data name="Activate" xml:space="preserve"><value>تفعيل</value></data>
+  <data name="ActivateConfirm" xml:space="preserve"><value>سيؤدي التفعيل إلى تطبيق هذا الاستثناء على مؤسستك. هل تريد المتابعة؟</value></data>
+  <data name="Archive" xml:space="preserve"><value>أرشفة</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>ستتم أرشفة هذا الاستثناء. سيبقى قابلاً للقراءة كسجل لكنه لن يجيب بعد الآن على أسئلة أيام العمل.</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>تضمين المؤرشفة</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>نشط</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="Inherited" xml:space="preserve"><value>موروث</value></data>
+  <data name="InheritedFromCountry" xml:space="preserve"><value>موروث من تقويم الدولة</value></data>
+  <data name="NoCalendarData" xml:space="preserve"><value>لا توجد بيانات تقويم</value></data>
+  <data name="ResolutionResolved" xml:space="preserve"><value>تم التحديد</value></data>
+  <data name="ResolutionCalendarMissing" xml:space="preserve"><value>لم يتم إدخال تقويم لهذه الدولة</value></data>
+  <data name="ResolutionYearMissing" xml:space="preserve"><value>لا يوجد تقويم لهذه السنة</value></data>
+  <data name="ResolutionCountryUnknown" xml:space="preserve"><value>الدولة غير موجودة في البيانات المرجعية</value></data>
+  <data name="AddDay" xml:space="preserve"><value>إضافة يوم</value></data>
+  <data name="EditDay" xml:space="preserve"><value>تعديل اليوم</value></data>
+  <data name="DayDateHint" xml:space="preserve"><value>يجب أن يقع ضمن سنة التقويم.</value></data>
+  <data name="ObservedDateHint" xml:space="preserve"><value>املأ هذا فقط إذا كان اليوم يُطبَّق في تاريخ آخر.</value></data>
+  <data name="Recurrence" xml:space="preserve"><value>التكرار</value></data>
+  <data name="RecurrenceHint" xml:space="preserve"><value>إعلان فقط. لا يتم إنشاء أي شيء تلقائياً؛ تُدخَل السنة التالية بشكل منفصل.</value></data>
+  <data name="IsHalfDayHint" xml:space="preserve"><value>نصف اليوم يُحتسب يوم عمل، والنتيجة توضّح ذلك.</value></data>
+  <data name="WorkingDayOverrideHint" xml:space="preserve"><value>اليوم التعويضي يفرض العمل، لذلك لا يمكن أن يكون نصف يوم.</value></data>
+  <data name="ArchiveDayConfirm" xml:space="preserve"><value>ستتم أرشفة هذا اليوم. سيتوقف عن التأثير في النتائج لكنه يبقى في السجل.</value></data>
+  <data name="DayCode" xml:space="preserve"><value>الرمز</value></data>
+  <data name="DayName" xml:space="preserve"><value>الاسم</value></data>
+  <data name="DayDate" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="ObservedDate" xml:space="preserve"><value>التاريخ المعتمد</value></data>
+  <data name="DayType" xml:space="preserve"><value>النوع</value></data>
+  <data name="DayTypePublicHoliday" xml:space="preserve"><value>عطلة رسمية</value></data>
+  <data name="DayTypeReligiousHoliday" xml:space="preserve"><value>عطلة دينية</value></data>
+  <data name="DayTypeMoveableHoliday" xml:space="preserve"><value>عطلة متغيرة</value></data>
+  <data name="DayTypeCompanyHoliday" xml:space="preserve"><value>عطلة الشركة</value></data>
+  <data name="DayTypeCompanyClosure" xml:space="preserve"><value>إغلاق الشركة</value></data>
+  <data name="DayTypeWorkingDayOverride" xml:space="preserve"><value>يوم عمل تعويضي</value></data>
+  <data name="RecurrenceNone" xml:space="preserve"><value>بلا</value></data>
+  <data name="RecurrenceAnnualFixed" xml:space="preserve"><value>سنوي بتاريخ ثابت</value></data>
+  <data name="RecurrenceAnnualMoveable" xml:space="preserve"><value>سنوي بتاريخ متغير</value></data>
+  <data name="IsHalfDay" xml:space="preserve"><value>نصف يوم</value></data>
+  <data name="ProbeDate" xml:space="preserve"><value>تحقق من تاريخ</value></data>
+  <data name="Probe" xml:space="preserve"><value>تحقق</value></data>
+  <data name="monday" xml:space="preserve"><value>الاثنين</value></data>
+  <data name="tuesday" xml:space="preserve"><value>الثلاثاء</value></data>
+  <data name="wednesday" xml:space="preserve"><value>الأربعاء</value></data>
+  <data name="thursday" xml:space="preserve"><value>الخميس</value></data>
+  <data name="friday" xml:space="preserve"><value>الجمعة</value></data>
+  <data name="saturday" xml:space="preserve"><value>السبت</value></data>
+  <data name="sunday" xml:space="preserve"><value>الأحد</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>الكيان القانوني</value></data>
+  <data name="ScopeTenant" xml:space="preserve"><value>المستأجر</value></data>
+  <data name="ScopeOrganizationUnit" xml:space="preserve"><value>الوحدة التنظيمية</value></data>
+  <data name="SelectLegalEntity" xml:space="preserve"><value>اختر كيانًا قانونيًا</value></data>
+  <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>الكيانات القانونية غير متاحة</value></data>
+</root>

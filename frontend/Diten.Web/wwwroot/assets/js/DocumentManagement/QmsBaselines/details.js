@@ -119,7 +119,7 @@
         return byParent;
     };
 
-    // MOD-0028-FU06 — access-profile → bootstrap label colour for the per-node governance badge.
+    // QMS register import extension — governance identity pending; access-profile → per-node badge colour.
     const accessProfileColor = (profile) => ({
         'GQMS-Controlled': 'primary',
         'Enterprise-Restricted': 'secondary',

@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>  <data name="Title" xml:space="preserve"><value>إدارة المناطق</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>إدارة خطط المناطق المُصدرة وتسلسلها الهرمي.</value></data>
+  <data name="ContractSection" xml:space="preserve"><value>جاهزية العقد</value></data>
+  <data name="ContractReady" xml:space="preserve"><value>العقد جاهز</value></data>
+  <data name="ReferenceDataNotReady" xml:space="preserve"><value>بيانات المرجع غير جاهزة</value></data>
+  <data name="MissingSets" xml:space="preserve"><value>مجموعات المرجع الناقصة</value></data>
+  <data name="TerritoryModels" xml:space="preserve"><value>نماذج المناطق</value></data>
+  <data name="TerritoryNodes" xml:space="preserve"><value>عُقد المناطق</value></data>
+  <data name="CreateModel" xml:space="preserve"><value>إنشاء نموذج</value></data>
+  <data name="EditModel" xml:space="preserve"><value>تعديل النموذج</value></data>
+  <data name="NoModels" xml:space="preserve"><value>لا توجد نماذج مناطق بعد.</value></data>
+  <data name="ModelCode" xml:space="preserve"><value>رمز النموذج</value></data>
+  <data name="Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="VersionNumber" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>نطاق الدولة</value></data>
+  <data name="DivisionScope" xml:space="preserve"><value>نطاق القسم</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>ساري من</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>ساري حتى</value></data>
+  <data name="ChangeReason" xml:space="preserve"><value>سبب التغيير</value></data>
+  <data name="Actions" xml:space="preserve"><value>إجراءات</value></data>
+  <data name="View" xml:space="preserve"><value>عرض</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="BackToList" xml:space="preserve"><value>العودة إلى القائمة</value></data>
+  <data name="Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="ModelDetails" xml:space="preserve"><value>تفاصيل النموذج</value></data>
+  <data name="TerritoryHierarchy" xml:space="preserve"><value>التسلسل الهرمي للمناطق</value></data>
+  <data name="NoNodes" xml:space="preserve"><value>لا توجد عُقد في هذا النموذج بعد.</value></data>
+  <data name="CreateNode" xml:space="preserve"><value>إنشاء عُقدة منطقة</value></data>
+  <data name="EditNode" xml:space="preserve"><value>تعديل عُقدة المنطقة</value></data>
+  <data name="TerritoryCode" xml:space="preserve"><value>رمز المنطقة</value></data>
+  <data name="TerritoryLevel" xml:space="preserve"><value>مستوى المنطقة</value></data>
+  <data name="ParentTerritory" xml:space="preserve"><value>المنطقة الأصل</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>ترتيب الفرز</value></data>
+  <data name="MicroZoneProfile" xml:space="preserve"><value>ملف المنطقة الدقيقة</value></data>
+  <data name="MicroZoneProfileHelp" xml:space="preserve"><value>متاح فقط عندما يكون المستوى microzone.</value></data>
+  <data name="AnchorAccountId" xml:space="preserve"><value>معرّف الحساب المرجعي</value></data>
+  <data name="ClusterNotes" xml:space="preserve"><value>ملاحظات المجموعة</value></data>
+  <data name="PlanningCenterType" xml:space="preserve"><value>نوع مركز التخطيط</value></data>
+  <data name="CountryCode" xml:space="preserve"><value>رمز الدولة</value></data>
+  <data name="DivisionCode" xml:space="preserve"><value>رمز القسم</value></data>
+  <data name="RegionCode" xml:space="preserve"><value>رمز الإقليم</value></data>
+  <data name="AreaCode" xml:space="preserve"><value>رمز المنطقة (Area)</value></data>
+  <data name="ZoneCode" xml:space="preserve"><value>رمز النطاق</value></data>
+  <data name="MicroZoneCode" xml:space="preserve"><value>رمز المنطقة الدقيقة</value></data>
+  <data name="ReferenceDataUnavailable" xml:space="preserve"><value>بيانات المرجع غير متاحة حاليًا، لذا لا يمكن اختيار المستويات. حاول لاحقًا.</value></data>
+  <data name="LimitationsSection" xml:space="preserve"><value>نطاق FU01 — غير متاح بعد</value></data>
+  <data name="LimAssignmentRules" xml:space="preserve"><value>قواعد التعيين غير متاحة في هذه المرحلة.</value></data>
+  <data name="LimResourceAssignment" xml:space="preserve"><value>تعيين الموارد غير متاح في هذه المرحلة.</value></data>
+  <data name="LimWorkflowActivation" xml:space="preserve"><value>تفعيل سير العمل غير متاح في هذه المرحلة.</value></data>
+  <data name="LimEvidencePack" xml:space="preserve"><value>حزمة الأدلة غير متاحة في هذه المرحلة.</value></data>
+  <data name="LimImportExport" xml:space="preserve"><value>الاستيراد/التصدير غير متاح في هذه المرحلة.</value></data>
+  <data name="SelectLevel" xml:space="preserve"><value>اختر مستوى</value></data>
+  <data name="SelectParent" xml:space="preserve"><value>(الجذر - بدون أصل)</value></data>
+  <data name="LiveSmokeReady" xml:space="preserve"><value>جاهز</value></data>
+  <data name="ModuleId" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="RuntimeScope" xml:space="preserve"><value>نطاق التشغيل</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>الهوية</value></data>
+  <data name="EffectivePeriodSection" xml:space="preserve"><value>فترة السريان</value></data>
+  <data name="GeoCodesSection" xml:space="preserve"><value>الرموز الجغرافية</value></data>
+  <data name="BusinessUnitScope" xml:space="preserve"><value>نطاق وحدة العمل</value></data>
+  <data name="BusinessUnitScopeHelp" xml:space="preserve"><value>وحدات العمل التي تنطبق عليها خطة المنطقة هذه (مثل Alpha وBeta).</value></data>
+  <data name="BrandScopePlanned" xml:space="preserve"><value>نطاق العلامة التجارية مخطط له في تكامل لاحق للعلامة التجارية/التسويق.</value></data>
+  <data name="CountryReferenceNotReady" xml:space="preserve"><value>لم يتم نشر بيانات مرجع الدولة بعد.</value></data>
+  <data name="BusinessUnitReferenceNotReady" xml:space="preserve"><value>لم يتم نشر بيانات مرجع وحدة العمل بعد.</value></data>
+  <data name="SelectCountry" xml:space="preserve"><value>اختر دولة</value></data>
+  <data name="Activate" xml:space="preserve"><value>تفعيل</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>إلغاء التفعيل</value></data>
+  <data name="Archive" xml:space="preserve"><value>أرشفة</value></data>
+  <data name="DeleteDraft" xml:space="preserve"><value>حذف المسودة</value></data>
+  <data name="DeleteDraftNode" xml:space="preserve"><value>حذف عقدة المسودة</value></data>
+  <data name="ExpiredWarning" xml:space="preserve"><value>انتهى تاريخ السريان. تبقى الحالة المخزنة كما هي ويُحسب السجل منتهي الصلاحية.</value></data>
+  <data name="ConfirmLifecycleAction" xml:space="preserve"><value>تأكيد إجراء دورة الحياة</value></data>
+  <data name="LifecycleConfirmation" xml:space="preserve"><value>سيغير هذا الإجراء الحالة التشغيلية. هل تريد المتابعة؟</value></data>
+  <data name="Confirm" xml:space="preserve"><value>تأكيد</value></data>
+  <data name="AssignmentRules" xml:space="preserve"><value>قواعد التخصيص</value></data>
+  <data name="AssignmentRulesSubtitle" xml:space="preserve"><value>تصف القواعد كيفية مطابقة الحسابات مع عقدة الإقليم. وهي لا تُخصّص أي شيء.</value></data>
+  <data name="RunPreview" xml:space="preserve"><value>تشغيل المعاينة</value></data>
+  <data name="CreateRule" xml:space="preserve"><value>إنشاء قاعدة</value></data>
+  <data name="EditRule" xml:space="preserve"><value>تعديل القاعدة</value></data>
+  <data name="DeleteRule" xml:space="preserve"><value>حذف القاعدة</value></data>
+  <data name="DeleteRuleConfirm" xml:space="preserve"><value>سيتم حذف هذه القاعدة منطقيًا (بدون حذف نهائي):</value></data>
+  <data name="PreviewDoesNotAssign" xml:space="preserve"><value>المعاينة لا تُخصّص الحسابات.</value></data>
+  <data name="ApplyComesInFu05" xml:space="preserve"><value>سيأتي التطبيق وسجل التخصيص في FU05.</value></data>
+  <data name="ResourceComesInFu04" xml:space="preserve"><value>سيأتي تخصيص الموارد / المندوبين في FU04.</value></data>
+  <data name="RulesEditableOnDraftOnly" xml:space="preserve"><value>يمكن تغيير قواعد التخصيص فقط عندما يكون النموذج مسودة.</value></data>
+  <data name="ArchivedReadOnly" xml:space="preserve"><value>هذا النموذج مؤرشف وللقراءة فقط.</value></data>
+  <data name="RuleCode" xml:space="preserve"><value>رمز القاعدة</value></data>
+  <data name="TargetNode" xml:space="preserve"><value>العقدة الهدف</value></data>
+  <data name="RuleType" xml:space="preserve"><value>نوع القاعدة</value></data>
+  <data name="Criteria" xml:space="preserve"><value>المعايير</value></data>
+  <data name="CriteriaHint" xml:space="preserve"><value>رموز مفصولة بفواصل. القيم في الحقل الواحد تُدمج بـ«أو»، والحقول المختلفة بـ«و».</value></data>
+  <data name="Priority" xml:space="preserve"><value>الأولوية</value></data>
+  <data name="PriorityHint" xml:space="preserve"><value>القيمة الأقل تفوز عند مطابقة عدة قواعد لنفس الحساب.</value></data>
+  <data name="ConflictPolicy" xml:space="preserve"><value>سياسة التعارض</value></data>
+  <data name="Enabled" xml:space="preserve"><value>مُفعّل</value></data>
+  <data name="Disabled" xml:space="preserve"><value>مُعطّل</value></data>
+  <data name="AssignmentPreview" xml:space="preserve"><value>معاينة التخصيص</value></data>
+  <data name="NoAssignmentsPersisted" xml:space="preserve"><value>لم يتم حفظ أي تخصيص.</value></data>
+  <data name="MatchedAccounts" xml:space="preserve"><value>الحسابات المطابقة</value></data>
+  <data name="Conflicts" xml:space="preserve"><value>التعارضات</value></data>
+  <data name="RuleSummary" xml:space="preserve"><value>ملخص القواعد</value></data>
+  <data name="AccountCode" xml:space="preserve"><value>رمز الحساب</value></data>
+  <data name="AccountName" xml:space="preserve"><value>اسم الحساب</value></data>
+  <data name="MatchReason" xml:space="preserve"><value>سبب المطابقة</value></data>
+  <data name="ConflictStatus" xml:space="preserve"><value>حالة التعارض</value></data>
+  <data name="CandidateNodes" xml:space="preserve"><value>العقد المرشحة</value></data>
+  <data name="ResolutionSuggestion" xml:space="preserve"><value>اقتراح الحل</value></data>
+  <data name="Evaluated" xml:space="preserve"><value>تم التقييم</value></data>
+  <data name="Matches" xml:space="preserve"><value>المطابقات</value></data>
+  <data name="CountryRefs" xml:space="preserve"><value>رموز الدول</value></data>
+  <data name="CityRefs" xml:space="preserve"><value>رموز المدن</value></data>
+  <data name="DistrictRefs" xml:space="preserve"><value>رموز المناطق</value></data>
+  <data name="AccountTypes" xml:space="preserve"><value>أنواع الحسابات</value></data>
+  <data name="AccountCategories" xml:space="preserve"><value>فئات الحسابات</value></data>
+  <data name="AccountStatuses" xml:space="preserve"><value>حالات الحسابات</value></data>
+  <data name="NoRules" xml:space="preserve"><value>لا توجد قواعد تخصيص بعد.</value></data>
+  <data name="NoMatches" xml:space="preserve"><value>لم يطابق أي حساب القواعد.</value></data>
+  <data name="NoConflicts" xml:space="preserve"><value>لم يتم اكتشاف تعارضات.</value></data>
+  <data name="Candidates" xml:space="preserve"><value>المرشحون</value></data>
+  <data name="ScannedAccounts" xml:space="preserve"><value>الحسابات المفحوصة</value></data>
+  <data name="EvaluatedRules" xml:space="preserve"><value>القواعد المقيَّمة</value></data>
+  <data name="GeneratedAt" xml:space="preserve"><value>أُنشئ في</value></data>
+  <data name="ConflictWinner" xml:space="preserve"><value>الفائز</value></data>
+  <data name="ConflictLoser" xml:space="preserve"><value>مُتجاوَز</value></data>
+  <data name="NoConflict" xml:space="preserve"><value>سليم</value></data>
+  <data name="MissingNode" xml:space="preserve"><value>العقدة مفقودة</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="EvaluatedAsOf" xml:space="preserve"><value>تم التقييم بتاريخ</value></data>
+  <data name="ResourceAssignments" xml:space="preserve"><value>تخصيصات الموارد</value></data>
+  <data name="ResourceAssignmentsSubtitle" xml:space="preserve"><value>من المسؤول عن عقدة الإقليم أو النطاق التجاري هذا.</value></data>
+  <data name="ResourceAssignmentsExplainer" xml:space="preserve"><value>تمنح هذه التخصيصات الأشخاص مسؤولية الأقاليم، ولا تُخصّص العملاء.</value></data>
+  <data name="AccountCoverageComesInFu05" xml:space="preserve"><value>ستأتي تغطية الحسابات في FU05.</value></data>
+  <data name="EndingIsNotDeleting" xml:space="preserve"><value>إنهاء التخصيص يحفظ سجله؛ ولا يُحذف أبدًا.</value></data>
+  <data name="ResourcesEditableOnDraftOnly" xml:space="preserve"><value>يمكن تغيير تخصيصات الموارد فقط عندما يكون النموذج مسودة.</value></data>
+  <data name="AssignResource" xml:space="preserve"><value>تخصيص مورد</value></data>
+  <data name="EditAssignment" xml:space="preserve"><value>تعديل التخصيص</value></data>
+  <data name="DeleteAssignment" xml:space="preserve"><value>حذف التخصيص</value></data>
+  <data name="EndAssignment" xml:space="preserve"><value>إنهاء التخصيص</value></data>
+  <data name="EndAssignmentConfirm" xml:space="preserve"><value>سيتم إنهاء هذا التخصيص وحفظه كسجل:</value></data>
+  <data name="CheckConflicts" xml:space="preserve"><value>فحص التعارضات</value></data>
+  <data name="NoConflictsFound" xml:space="preserve"><value>لم يتم العثور على تعارضات أو تحذيرات.</value></data>
+  <data name="NoAssignments" xml:space="preserve"><value>لا توجد تخصيصات موارد بعد.</value></data>
+  <data name="Resource" xml:space="preserve"><value>المورد</value></data>
+  <data name="Role" xml:space="preserve"><value>الدور</value></data>
+  <data name="CoverageScope" xml:space="preserve"><value>نطاق التغطية</value></data>
+  <data name="CoverageScopeHint" xml:space="preserve"><value>اتركه فارغًا لاستخدام القيمة الافتراضية للدور. وهو يحدد الحاجة إلى عقدة ووحدة أعمال.</value></data>
+  <data name="RoleDefaultsCoverage" xml:space="preserve"><value>اترك النطاق فارغًا لاستخدام القيمة الافتراضية للدور.</value></data>
+  <data name="Primary" xml:space="preserve"><value>أساسي</value></data>
+  <data name="ValidPeriod" xml:space="preserve"><value>فترة الصلاحية</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>صالح من</value></data>
+  <data name="ValidTo" xml:space="preserve"><value>صالح حتى</value></data>
+  <data name="Expired" xml:space="preserve"><value>منتهي</value></data>
+  <data name="ResourceId" xml:space="preserve"><value>معرّف المورد</value></data>
+  <data name="ResourceType" xml:space="preserve"><value>نوع المورد</value></data>
+  <data name="ResourceDisplayName" xml:space="preserve"><value>الاسم المعروض</value></data>
+  <data name="ResourceEmail" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="SelectResource" xml:space="preserve"><value>اختر شخصًا</value></data>
+  <data name="SelectUser" xml:space="preserve"><value>اختر مستخدمًا</value></data>
+  <data name="Employee" xml:space="preserve"><value>موظف</value></data>
+  <data name="ResourceLookupNotReady" xml:space="preserve"><value>دليل المستخدمين غير متاح. سيتم تفعيل اختيار الموظف بعد اكتمال تكامل الموارد البشرية.</value></data>
+  <data name="AssignmentSource" xml:space="preserve"><value>مصدر التخصيص</value></data>
+  <data name="AssignmentSourceHint" xml:space="preserve"><value>استخدم override للسماح باستثناء؛ يتطلب سببًا دائمًا.</value></data>
+  <data name="ChangeReasonHint" xml:space="preserve"><value>مطلوب للتخصيصات اليدوية و override.</value></data>
+  <data name="BusinessUnitScopeAssignmentHint" xml:space="preserve"><value>يمكن اختيار وحدات الأعمال الموجودة ضمن نطاق النموذج فقط.</value></data>
+  <data name="AssignmentHistory" xml:space="preserve"><value>سجل التعيينات</value></data>
+  <data name="RunPreviewHint" xml:space="preserve"><value>لم يتم تشغيل أي معاينة بعد. استخدم «تشغيل المعاينة» في تبويب قواعد التخصيص لعرض الحسابات المرشحة.</value></data>
+  <data name="RuleCodeHint" xml:space="preserve"><value>يُملأ تلقائيًا — يمكنك تغييره إذا كنت تفضّل رمزك الخاص. لا يمكن تغييره بعد إنشاء القاعدة.</value></data>
+  <data name="CriteriaNotReady" xml:space="preserve"><value>لم يتم نشر مجموعات المرجع التالية بعد، لذا لا يمكن اختيار معاييرها:</value></data>
+  <data name="PreviewThisRule" xml:space="preserve"><value>معاينة هذه القاعدة</value></data>
+  <data name="PreviewScopeAll" xml:space="preserve"><value>تم تقييم جميع قواعد هذا النموذج.</value></data>
+  <data name="PreviewScopeSingle" xml:space="preserve"><value>تم تقييم هذه القاعدة فقط:</value></data>
+  <data name="SingleRuleNoConflicts" xml:space="preserve"><value>القاعدة الواحدة لها عقدة هدف واحدة، لذا لن يظهر أي تعارض هنا. شغّل جميع القواعد لعرض التعارضات.</value></data>
+  <data name="HistoryThisRule" xml:space="preserve"><value>سجل تخصيص هذه القاعدة</value></data>
+  <data name="PreviewAllRules" xml:space="preserve"><value>معاينة كل القواعد</value></data>
+  <data name="HistoryAllRules" xml:space="preserve"><value>سجل كل القواعد</value></data>
+  <data name="PreviewScopeAllShort" xml:space="preserve"><value>كل القواعد</value></data>
+  <data name="HistoryScopeAllShort" xml:space="preserve"><value>كل القواعد</value></data>
+  <data name="HistoryScopeSingle" xml:space="preserve"><value>تُعرض فقط التخصيصات الناتجة عن هذه القاعدة:</value></data>
+  <data name="NoAssignmentHistory" xml:space="preserve"><value>لا يوجد سجل تخصيص بعد.</value></data>
+  <data name="RuleHasConflict" xml:space="preserve"><value>تتنافس هذه القاعدة مع قاعدة أخرى على حساب واحد على الأقل. افتح معاينة كل القواعد لعرض التفاصيل.</value></data>
+  <data name="GoTo" xml:space="preserve"><value>انتقل إلى</value></data>
+  <data name="ReplaceAssignment" xml:space="preserve"><value>استبدال التعيين</value></data>
+  <data name="TransferAssignment" xml:space="preserve"><value>نقل التعيين</value></data>
+  <data name="EffectiveDate" xml:space="preserve"><value>تاريخ السريان</value></data>
+  <data name="ReplaceAssignmentConfirm" xml:space="preserve"><value>سيتم استبدال هذا التعيين بمورد جديد:</value></data>
+  <data name="TransferAssignmentConfirm" xml:space="preserve"><value>سيتم نقل هذا التعيين إلى عقدة أخرى:</value></data>
+  <data name="PlanVsCurrent" xml:space="preserve"><value>الخطة مقابل الحالي</value></data>
+  <data name="PlanVsCurrentExplainer" xml:space="preserve"><value>يقارن خطة إسناد الموارد التي تم التقاطها عند تفعيل النموذج بالمسؤوليات السارية اليوم.</value></data>
+  <data name="PlanVsCurrentReadOnlyHint" xml:space="preserve"><value>هذه العلامة للقراءة فقط. تُعدَّل الإسنادات من صفحة إسنادات الموارد.</value></data>
+  <data name="PlanCapturedAt" xml:space="preserve"><value>وقت التقاط الخطة</value></data>
+  <data name="PlanCapturedBy" xml:space="preserve"><value>مُلتقِط الخطة</value></data>
+  <data name="PlanSnapshotVersion" xml:space="preserve"><value>إصدار الخطة</value></data>
+  <data name="CorrelationId" xml:space="preserve"><value>معرّف الارتباط</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>تاريخ السريان</value></data>
+  <data name="ChangeType" xml:space="preserve"><value>نوع التغيير</value></data>
+  <data name="TerritoryNode" xml:space="preserve"><value>عقدة الإقليم</value></data>
+  <data name="Position" xml:space="preserve"><value>الوظيفة</value></data>
+  <data name="PlannedResource" xml:space="preserve"><value>المورد المخطط</value></data>
+  <data name="CurrentResource" xml:space="preserve"><value>المورد الحالي</value></data>
+  <data name="Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="NoPlanVsCurrentRows" xml:space="preserve"><value>لا توجد فروق للعرض.</value></data>
+  <data name="PlanNotYetActivated" xml:space="preserve"><value>لم يتم تفعيل هذا النموذج بعد، لذا لا توجد خطة مرجعية. تعرض صفحة إسنادات الموارد معاينة تخطيط فقط.</value></data>
+  <data name="PlanSnapshotNotCaptured" xml:space="preserve"><value>لم يتم التقاط خطة مرجعية لهذا النموذج، لذا لا يمكن إنتاج المقارنة.</value></data>
+  <data name="PlanVsCurrentHistorical" xml:space="preserve"><value>لم يعد هذا النموذج نشطًا. تُعرض المقارنة كسجل للقراءة فقط.</value></data>
+  <data name="Planned" xml:space="preserve"><value>مخطط</value></data>
+  <data name="Current" xml:space="preserve"><value>حالي</value></data>
+  <data name="ReplacementLink" xml:space="preserve"><value>استبدال</value></data>
+  <data name="TransferLink" xml:space="preserve"><value>نقل</value></data>
+  <data name="ChangedAt" xml:space="preserve"><value>وقت التغيير</value></data>
+  <data name="ChangedBy" xml:space="preserve"><value>قام بالتغيير</value></data>
+  <data name="ChangedByUnavailable" xml:space="preserve"><value>غير مسجل في الإسناد</value></data>
+  <data name="AlsoDiffers" xml:space="preserve"><value>يختلف أيضًا</value></data>
+  <data name="LegacyRoleDisplayOnly" xml:space="preserve"><value>دور قديم (للعرض فقط)</value></data>
+  <data name="ChangedRows" xml:space="preserve"><value>متغيّر</value></data>
+  <data name="PlannedCount" xml:space="preserve"><value>مخطط</value></data>
+  <data name="CurrentCount" xml:space="preserve"><value>حالي</value></data>
+  <data name="DiffUnchanged" xml:space="preserve"><value>دون تغيير</value></data>
+  <data name="DiffReplaced" xml:space="preserve"><value>تم الاستبدال</value></data>
+  <data name="DiffTransferredOut" xml:space="preserve"><value>نقل خارج</value></data>
+  <data name="DiffTransferredIn" xml:space="preserve"><value>نقل إلى</value></data>
+  <data name="DiffAddedAfterActivation" xml:space="preserve"><value>أُضيف بعد التفعيل</value></data>
+  <data name="DiffEndedAfterActivation" xml:space="preserve"><value>انتهى بعد التفعيل</value></data>
+  <data name="DiffMissingCurrent" xml:space="preserve"><value>لا يوجد سجل حالي</value></data>
+  <data name="DiffDateChanged" xml:space="preserve"><value>تغيّرت التواريخ</value></data>
+  <data name="DiffScopeChanged" xml:space="preserve"><value>تغيّر النطاق</value></data>
+  <data name="DiffPositionChanged" xml:space="preserve"><value>تغيّرت الوظيفة</value></data>
+  <data name="ApplyRequiresActiveModel" xml:space="preserve"><value>لا يمكن تطبيق تعيينات الحسابات إلا على نموذج مناطق نشط. فعّل هذا النموذج أولاً.</value></data>
+  <data name="ImportExport" xml:space="preserve">
+    <value>استيراد / تصدير</value>
+  </data>
+  <data name="ExportXlsx" xml:space="preserve">
+    <value>تصدير (XLSX)</value>
+  </data>
+  <data name="DownloadImportTemplate" xml:space="preserve">
+    <value>تنزيل قالب الاستيراد</value>
+  </data>
+  <data name="ImportDryRunFirstNotice" xml:space="preserve">
+    <value>يبدأ الاستيراد دائمًا بتشغيل تجريبي. التشغيل التجريبي لا يكتب أي شيء — لا عقدة ولا قاعدة ولا تخصيص ولا سجل. الكتابة تتم فقط عبر إجراء "تطبيق" المنفصل.</value>
+  </data>
+  <data name="ImportResourceApplyNotSupported" xml:space="preserve">
+    <value>يمكن تصدير تخصيصات الموارد وإنشاء قالب لها والتحقق منها، لكن لا يمكن تطبيقها من ملف في هذا الإصدار.</value>
+  </data>
+  <data name="ImportReadModelsNotImportable" xml:space="preserve">
+    <value>Coverage Summary و Plan vs Current نماذج قراءة للتصدير فقط ولا يمكن استيرادها.</value>
+  </data>
+  <data name="UploadWorkbook" xml:space="preserve">
+    <value>رفع المصنف</value>
+  </data>
+  <data name="DryRunWritesNothing" xml:space="preserve">
+    <value>التشغيل التجريبي لا يكتب شيئًا</value>
+  </data>
+  <data name="SelectXlsxFile" xml:space="preserve">
+    <value>اختر ملف ‎.xlsx</value>
+  </data>
+  <data name="StrictMode" xml:space="preserve">
+    <value>الوضع الصارم</value>
+  </data>
+  <data name="StrictModeHint" xml:space="preserve">
+    <value>صف واحد معطِّل يوقف الملف بأكمله.</value>
+  </data>
+  <data name="RunDryRun" xml:space="preserve">
+    <value>تشغيل تجريبي</value>
+  </data>
+  <data name="ApplyImport" xml:space="preserve">
+    <value>تطبيق</value>
+  </data>
+  <data name="DryRunResult" xml:space="preserve">
+    <value>نتيجة التشغيل التجريبي</value>
+  </data>
+  <data name="ApplyResult" xml:space="preserve">
+    <value>نتيجة التطبيق</value>
+  </data>
+  <data name="Sheet" xml:space="preserve">
+    <value>ورقة</value>
+  </data>
+  <data name="Rows" xml:space="preserve">
+    <value>صفوف</value>
+  </data>
+  <data name="Blocking" xml:space="preserve">
+    <value>معطِّل</value>
+  </data>
+  <data name="Creates" xml:space="preserve">
+    <value>إنشاءات</value>
+  </data>
+  <data name="Updates" xml:space="preserve">
+    <value>تحديثات</value>
+  </data>
+  <data name="Ends" xml:space="preserve">
+    <value>إنهاءات</value>
+  </data>
+  <data name="Skips" xml:space="preserve">
+    <value>تم تخطيها</value>
+  </data>
+  <data name="Outcome" xml:space="preserve">
+    <value>النتيجة</value>
+  </data>
+  <data name="ShowOnlyBlocking" xml:space="preserve">
+    <value>إظهار الصفوف المعطِّلة فقط</value>
+  </data>
+  <data name="RowNumber" xml:space="preserve">
+    <value>الصف</value>
+  </data>
+  <data name="Severity" xml:space="preserve">
+    <value>الخطورة</value>
+  </data>
+  <data name="Operation" xml:space="preserve">
+    <value>العملية</value>
+  </data>
+  <data name="ResolvedKey" xml:space="preserve">
+    <value>السجل</value>
+  </data>
+  <data name="Message" xml:space="preserve">
+    <value>الرسالة</value>
+  </data>
+  <data name="SuggestedFix" xml:space="preserve">
+    <value>الإصلاح المقترح</value>
+  </data>
+  <data name="ImportRunHistory" xml:space="preserve">
+    <value>سجل عمليات الاستيراد</value>
+  </data>
+  <data name="AppendOnly" xml:space="preserve">
+    <value>إضافة فقط</value>
+  </data>
+  <data name="UploadedAt" xml:space="preserve">
+    <value>وقت الرفع</value>
+  </data>
+  <data name="FileName" xml:space="preserve">
+    <value>الملف</value>
+  </data>
+  <data name="UploadedBy" xml:space="preserve">
+    <value>رفعه</value>
+  </data>
+  <data name="RunStatus" xml:space="preserve">
+    <value>الحالة</value>
+  </data>
+  <data name="Errors" xml:space="preserve">
+    <value>أخطاء</value>
+  </data>
+  <data name="Warnings" xml:space="preserve">
+    <value>تحذيرات</value>
+  </data>
+  <data name="ImportSelectFile" xml:space="preserve">
+    <value>اختر ملف ‎.xlsx للاستيراد.</value>
+  </data>
+  <data name="ImportXlsxOnly" xml:space="preserve">
+    <value>تُدعم فقط ملفات ‎.xlsx الناتجة عن قالب الاستيراد أو التصدير.</value>
+  </data>
+  <data name="Applied" xml:space="preserve">
+    <value>تم التطبيق</value>
+  </data>
+  <data name="NotApplied" xml:space="preserve">
+    <value>لم يُطبَّق</value>
+  </data>
+  <data name="NothingToApply" xml:space="preserve">
+    <value>لا يوجد ما يمكن تطبيقه.</value>
+  </data>
+  <data name="ApplyBlocked" xml:space="preserve">
+    <value>شغِّل التشغيل التجريبي على هذا الملف أولًا ثم طبِّقه.</value>
+  </data>
+  <data name="ConfirmApply" xml:space="preserve">
+    <value>هل تريد تطبيق هذا الاستيراد؟</value>
+  </data>
+  <data name="NoImportRuns" xml:space="preserve">
+    <value>لم يُطبَّق أي استيراد على هذا النموذج بعد.</value>
+  </data>
+  <data name="FileAlreadyApplied" xml:space="preserve">
+    <value>طُبِّق سابقًا</value>
+  </data>
+  <data name="CreateDraftVersion" xml:space="preserve"><value>إنشاء إصدار مسودة</value></data>
+</root>

@@ -1,0 +1,48 @@
+@using Diten.Web.Views.CRM.KnowledgeConcepts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeConceptsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* Tab 3 inline filter host. Relationship type is the FU01C canonical set served by the capability contract —
+   never a free-text box. Conformance is a diagnostic filter: a non-conforming edge is stored and stays listable. *@
+<div id="relationshipsFilterHost" class="dt-inline-filter-host">
+    <div class="collapse" id="relationshipsFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="relationshipsFilterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    <div class="filter-chip">
+                        <select id="filterRelationshipsSubjectId" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["SubjectId"]"></select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterRelationshipsType" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["RelationshipType"]"></select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterRelationshipsDirection" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Direction"]"></select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterRelationshipsConformance" class="form-select form-select-sm select2" data-placeholder="@Localizer["Conformance"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="true">@Localizer["Conforming"]</option>
+                            <option value="false">@Localizer["NonConforming"]</option>
+                        </select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterRelationshipsStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Status"]"></select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterRelationshipsArchived" class="form-select form-select-sm select2" data-placeholder="@Localizer["IncludeArchived"]">
+                            <option value="true">@Localizer["IncludeArchived"]</option>
+                            <option value="false">@Localizer["Active"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" data-concept-apply="concept-relationships">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" data-concept-reset="concept-relationships">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,368 @@
+@model Diten.Web.Models.CRM.AccountOverviewViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.CRM.Accounts.AccountIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = SharedLocalizer["Details"].Value;
+    Layout = "_LayoutTenantShell";
+    var account = Model.Account!;
+    var externalReference = account.ExternalReferences.FirstOrDefault();
+
+    // The card sections below mirror _Form.cshtml's section map 1:1 (order + heading keys).
+    // The hierarchy/coverage panels are plain cards: they are read-only 360 projections with no form counterpart.
+}
+
+<div class="crm-account-details">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="d-flex align-items-center gap-3">
+            @if (!string.IsNullOrWhiteSpace(account.LogoDataUri))
+            {
+                <img src="@account.LogoDataUri" alt="@account.AccountName"
+                     class="rounded border object-fit-contain bg-lighter flex-shrink-0"
+                     style="width: 48px; height: 48px;" />
+            }
+            <div>
+                <h5 class="mb-0">@account.AccountName</h5>
+                <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="/CRM/Accounts">@Localizer["AccountTitle"]</a>
+                    </li>
+                    <li class="breadcrumb-item active text-primary">@SharedLocalizer["Details"]</li>
+                </ol>
+            </nav>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/CRM/Accounts" class="btn btn-label-secondary">
+                @Localizer["Back"]
+            </a>
+            <a href="/CRM/Accounts/Edit/@account.Id" class="btn btn-primary">
+                @SharedLocalizer["EditRecord"]
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-buildings"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["AccountName"]</div>
+                                <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(account.AccountName) ? "-" : account.AccountName)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-purchase-tag-alt"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["AccountCode"]</div>
+                                <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(account.AccountCode) ? "-" : account.AccountCode)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-category"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["AccountType"]</div>
+                                <div class="backbone-preview-value mt-1">
+                                    @if (string.IsNullOrWhiteSpace(account.AccountType))
+                                    {
+                                        <text>-</text>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-label-info">@account.AccountType</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-collection"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["AccountCategory"]</div>
+                                <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(account.AccountCategory) ? "-" : account.AccountCategory)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-sitemap"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["ParentAccount"]</div>
+                                <div class="backbone-preview-value mt-1">
+                                    @if (account.ParentAccountId is { } parentId)
+                                    {
+                                        <a href="/CRM/Accounts/Details/@parentId">@SharedLocalizer["ViewDetails"]</a>
+                                    }
+                                    else
+                                    {
+                                        <text>-</text>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LocationSection"]</h6>
+                <div class="row g-4">
+                    <div class="col-12 col-md-4">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-globe"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["CountryRef"]</div>
+                                <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(account.CountryRef) ? "-" : account.CountryRef)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-map"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["CityRef"]</div>
+                                <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(account.CityRef) ? "-" : account.CityRef)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-map-pin"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["DistrictRef"]</div>
+                                <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(account.DistrictRef) ? "-" : account.DistrictRef)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-home"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["AddressLine"]</div>
+                                <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(account.AddressLine) ? "-" : account.AddressLine)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-current-location"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["Latitude"]</div>
+                                <div class="backbone-preview-value mt-1">@(account.Latitude?.ToString() ?? "-")</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-current-location"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["Longitude"]</div>
+                                <div class="backbone-preview-value mt-1">@(account.Longitude?.ToString() ?? "-")</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* 360 projection — Territory coverage (MOD-0151 AccountTerritoryAssignment history). Read-only DataTable v2:
+               current (active) assignment(s) + full history; gated by crm.territory.model.read. Swapped into the main
+               column (was the Notes card) so the table has room; Notes moved to the sidebar. *@
+            <partial name="~/Views/CRM/Accounts/_TerritoryCoverageDataTable.cshtml" model="Model" />
+
+            @* 360 projection — child accounts (MOD-0149 hierarchy). Not a form section. *@
+            <div class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["ChildAccountsSection"]</h6>
+                @if (Model.Children.Count == 0)
+                {
+                    <div class="text-muted">@SharedLocalizer["NotAvailable"]</div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>@Localizer["AccountCode"]</th>
+                                    <th>@Localizer["AccountName"]</th>
+                                    <th>@Localizer["AccountType"]</th>
+                                    <th>@SharedLocalizer["Status"]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var child in Model.Children)
+                                {
+                                    <tr>
+                                        <td>@child.AccountCode</td>
+                                        <td><a href="/CRM/Accounts/Details/@child.Id">@child.AccountName</a></td>
+                                        <td>@child.AccountType</td>
+                                        <td>@child.Status</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+
+            @* 360 projection — Related Contacts (MOD-0150 FU03 AccountContactLink read model). Rendered as a
+               DataTable v2 with Golden Slim create/edit + End canvases; gated by crm.account-contact.read / .manage. *@
+            <partial name="~/Views/CRM/Accounts/_RelatedContactsDataTable.cshtml" model="Model" />
+
+            @* 360 projection — Related Accounts (MOD-0150 FU04 AccountRelationship read model). EffectiveLabelCode is the
+               label from THIS account's perspective (direct type or inverse). Rendered as a Golden DataTable v2 with a
+               Golden Slim create/edit canvas; gated by crm.account-relationship.read / .manage. *@
+            <partial name="~/Views/CRM/Accounts/_RelatedAccountsDataTable.cshtml" model="Model" />
+
+            @* 360 projection — this account's consent & preference records (read-only, owned by MOD-0164 / FU03). *@
+            <partial name="~/Views/CRM/ConsentPreferences/_ConsentPreferenceEmbed.cshtml"
+                     model="@(new Diten.Web.Models.CRM.ConsentPreferenceEmbedViewModel { SubjectType = "account", SubjectId = account.Id })" />
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["StatusSection"]</h6>
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-check-shield"></i>
+                            <div>
+                                <div class="backbone-preview-label">@SharedLocalizer["Status"]</div>
+                                <div class="mt-1">
+                                    @if (string.IsNullOrWhiteSpace(account.Status))
+                                    {
+                                        <text>-</text>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-label-primary">@account.Status</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-calendar-plus"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["CreatedAt"]</div>
+                                <div class="backbone-preview-value mt-1">@account.CreatedAt.ToString("yyyy-MM-dd HH:mm")</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-calendar-edit"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["UpdatedAt"]</div>
+                                <div class="backbone-preview-value mt-1">@(account.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ContactSection"]</h6>
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-user"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["ResponsiblePersonName"]</div>
+                                <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(account.ResponsiblePersonName) ? "-" : account.ResponsiblePersonName)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-phone"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["ResponsiblePersonPhone"]</div>
+                                <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(account.ResponsiblePersonPhone) ? "-" : account.ResponsiblePersonPhone)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-envelope"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["ResponsiblePersonEmail"]</div>
+                                <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(account.ResponsiblePersonEmail) ? "-" : account.ResponsiblePersonEmail)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IntegrationSection"]</h6>
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-link-external"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["ExternalReference"]</div>
+                                <div class="backbone-preview-value mt-1">
+                                    @if (externalReference is null)
+                                    {
+                                        <text>-</text>
+                                    }
+                                    else
+                                    {
+                                        <span>@externalReference.ExternalId</span>
+                                        <span class="text-muted small ms-1">(@externalReference.SourceSystem)</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* Notes moved here from the main column (swapped with the Territory section). *@
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["NotesSection"]</h6>
+                <div class="backbone-preview-description">@(string.IsNullOrWhiteSpace(account.Notes) ? "-" : account.Notes)</div>
+            </section>
+        </div>
+    </div>
+</div>
+
+@if (Model.ContactLinkForm is not null)
+{
+    @* Golden Slim create/edit surface for Related Contacts (8 form fields ⇒ canvas, not a separate page). *@
+    <partial name="~/Views/CRM/Accounts/_ContactLinkOffcanvas.cshtml" model="Model.ContactLinkForm" />
+    @* Historical close (End) uses the same canvas shape — one interaction model for the whole section. *@
+    <partial name="~/Views/CRM/Accounts/_ContactLinkEndOffcanvas.cshtml" />
+}
+
+@if (Model.RelationshipForm is not null)
+{
+    @* Golden Slim create/edit surface for Related Accounts (7 form fields ⇒ canvas, not a separate page). *@
+    <partial name="~/Views/CRM/Accounts/_RelationshipOffcanvas.cshtml" model="Model.RelationshipForm" />
+    @* Historical close (End) uses the same canvas shape — one interaction model for the whole section. *@
+    <partial name="~/Views/CRM/Accounts/_RelationshipEndOffcanvas.cshtml" />
+}
+
+@section Scripts {
+    <partial name="~/Views/CRM/Accounts/_DetailsL10n.cshtml" />
+    <script src="~/assets/js/CRM/Accounts/details.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/Accounts/details-dt-section.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/Accounts/details-contacts.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/Accounts/details-territory.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/Accounts/details.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/ConsentPreferences/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/ConsentPreferences/consent-preference-embed.js" asp-append-version="true"></script>
+}

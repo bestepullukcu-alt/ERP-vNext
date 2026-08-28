@@ -1,0 +1,270 @@
+@model Diten.Web.Models.CRM.ContentEngagementJourneyEditViewModel
+@using Diten.Web.Views.CRM.ContentEngagementJourneys
+@using Microsoft.AspNetCore.Mvc.Localization
+@using System.Text.Json
+@inject IHtmlLocalizer<ContentEngagementJourneysIndex> Localizer
+@{
+    var archivedTag = Localizer["Archived"].Value;
+    var subjectValue = Model.SubjectId?.ToString() ?? string.Empty;
+    var topicValue = Model.TopicId?.ToString() ?? string.Empty;
+    var jsonOpts = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+}
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+@if (!string.IsNullOrWhiteSpace(Model.ContractError))
+{
+    <div class="alert alert-danger" role="alert">@Localizer[Model.ContractError]</div>
+}
+
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <label asp-for="JourneyCode" class="form-label fw-medium">@Localizer["JourneyCode"] <span class="text-danger">*</span></label>
+                        <input asp-for="JourneyCode" class="form-control" readonly="@(Model.JourneyId.HasValue)" maxlength="100" required />
+                        <span asp-validation-for="JourneyCode" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-8">
+                        <label asp-for="JourneyName" class="form-label fw-medium">@Localizer["JourneyName"] <span class="text-danger">*</span></label>
+                        <input asp-for="JourneyName" class="form-control" maxlength="200" required />
+                        <span asp-validation-for="JourneyName" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Objective" class="form-label fw-medium">@Localizer["Objective"] <span class="text-danger">*</span></label>
+                        <input asp-for="Objective" class="form-control" maxlength="500" required />
+                        <span asp-validation-for="Objective" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label fw-medium">@Localizer["Description"]</label>
+                        <textarea asp-for="Description" class="form-control" rows="3" maxlength="2000"></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ClassificationSection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label asp-for="SubjectId" class="form-label fw-medium">@Localizer["SubjectId"] <span class="text-danger">*</span></label>
+                        <select asp-for="SubjectId" class="select2 form-select" required>
+                            <option value="">@Localizer["SelectOption"]</option>
+                            @foreach (var o in Model.SubjectOptions)
+                            {
+                                <option value="@o.Value">@o.Label@(o.IsInactive ? $" ({archivedTag})" : "")</option>
+                            }
+                        </select>
+                        <span asp-validation-for="SubjectId" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="TopicId" class="form-label fw-medium">@Localizer["TopicId"]</label>
+                        <select asp-for="TopicId" class="select2 form-select" data-topic-cascade data-archived-label="@archivedTag">
+                            <option value="">@Localizer["SelectOption"]</option>
+                            @foreach (var o in Model.TopicOptions.Where(o => o.Group == subjectValue || o.Value == topicValue))
+                            {
+                                <option value="@o.Value" data-subject="@o.Group">@o.Label@(o.IsInactive ? $" ({archivedTag})" : "")</option>
+                            }
+                        </select>
+                        <script type="application/json" id="contentEngagementJourneyTopicOptions">@Html.Raw(JsonSerializer.Serialize(Model.TopicOptions, jsonOpts))</script>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="AudienceProfileId" class="form-label fw-medium">@Localizer["AudienceProfileId"]</label>
+                        <select asp-for="AudienceProfileId" class="select2 form-select">
+                            <option value="">@Localizer["SelectOption"]</option>
+                            @foreach (var o in Model.AudienceProfileOptions) { <option value="@o.Value">@o.Label@(o.IsInactive ? $" ({archivedTag})" : "")</option> }
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="LanguageCode" class="form-label fw-medium">@Localizer["LanguageCode"]</label>
+                        @{
+                            var languageValues = new List<string>(Model.LanguageOptions);
+                            if (!string.IsNullOrWhiteSpace(Model.LanguageCode) && !languageValues.Contains(Model.LanguageCode))
+                            {
+                                languageValues.Insert(0, Model.LanguageCode);
+                            }
+                        }
+                        <select asp-for="LanguageCode" class="select2 form-select">
+                            <option value="">@Localizer["SelectOption"]</option>
+                            @foreach (var c in languageValues) { <option value="@c">@c</option> }
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["StagesSection"]</h6>
+                @if (!Model.JourneyId.HasValue)
+                {
+                    <div class="alert alert-info mb-0"><i class="bx bx-info-circle me-1"></i>@Localizer["SaveBeforeStages"]</div>
+                }
+                else if (Model.IsStageSetFrozen)
+                {
+                    <div class="alert alert-warning mb-0"><i class="bx bx-lock-alt me-1"></i>@Localizer["FrozenStagesHelp"]</div>
+                }
+                else
+                {
+                    <div id="stageEditor"
+                         data-journey-id="@Model.JourneyId"
+                         data-endpoint="/CRM/ContentEngagementJourneys/api"
+                         data-subject-id="@subjectValue"
+                         data-max-stages="@Model.MaxStagesPerJourney"
+                         data-max-branches="@Model.MaxBranchConditionsPerStage">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <small class="text-muted">@Localizer["StagesHelp"]</small>
+                            <button type="button" id="btnAddStage" class="btn btn-sm btn-primary"><i class="bx bx-plus me-1"></i>@Localizer["AddStage"]</button>
+                        </div>
+                        <div id="stageList" class="d-flex flex-column gap-2"></div>
+                        <div id="stageEmpty" class="text-muted d-none">@Localizer["NoStages"]</div>
+                    </div>
+                }
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SchedulingSection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label asp-for="JourneyVersion" class="form-label fw-medium">@Localizer["JourneyVersion"] <span class="text-danger">*</span></label>
+                        <input asp-for="JourneyVersion" class="form-control" readonly="@(Model.IsStageSetFrozen)" maxlength="40" required />
+                        <span asp-validation-for="JourneyVersion" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="JourneyStatus" class="form-label fw-medium">@Localizer["JourneyStatus"] <span class="text-danger">*</span></label>
+                        <select asp-for="JourneyStatus" class="select2 form-select" required>
+                            <option value="">@Localizer["SelectOption"]</option>
+                            @foreach (var x in Model.JourneyStatuses) { <option value="@x">@x</option> }
+                        </select>
+                        <span asp-validation-for="JourneyStatus" class="text-danger small mt-1"></span>
+                        <small class="text-muted">@Localizer["PublishSeparatelyHelp"]</small>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Source" class="form-label fw-medium">@Localizer["Source"] <span class="text-danger">*</span></label>
+                        <select asp-for="Source" class="select2 form-select" required>
+                            <option value="">@Localizer["SelectOption"]</option>
+                            @foreach (var x in Model.Sources) { <option value="@x">@x</option> }
+                        </select>
+                        <span asp-validation-for="Source" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="EffectiveFrom" class="form-label fw-medium">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
+                        <input asp-for="EffectiveFrom" type="text" class="form-control flatpickr-date" value="@(Model.EffectiveFrom?.ToString("yyyy-MM-dd"))" placeholder="YYYY-MM-DD" autocomplete="off" required />
+                        <span asp-validation-for="EffectiveFrom" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="EffectiveTo" class="form-label fw-medium">@Localizer["EffectiveTo"]</label>
+                        <input asp-for="EffectiveTo" type="text" class="form-control flatpickr-date" value="@(Model.EffectiveTo?.ToString("yyyy-MM-dd"))" placeholder="YYYY-MM-DD" autocomplete="off" />
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+@* Contract vocabularies consumed by the stage sub-editor (form.js). No hardcoded lists. *@
+<script id="contentEngagementJourneyVocab" type="application/json">@Html.Raw(JsonSerializer.Serialize(new {
+    stageTypes = Model.StageTypes,
+    advancementRules = Model.AdvancementRules,
+    pathVersionPinPolicies = Model.PathVersionPinPolicies,
+    maxStagesPerJourney = Model.MaxStagesPerJourney,
+    maxBranchConditionsPerStage = Model.MaxBranchConditionsPerStage
+}, jsonOpts))</script>
+
+@* The stage sub-editor + its branch repeater live entirely inside this Compact page (S2/S5). *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="stageCanvas" aria-labelledby="stageCanvasLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title" id="stageCanvasLabel">@Localizer["AddStage"]</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div id="stageCanvasError" class="alert alert-danger d-none" role="alert"></div>
+        <input type="hidden" id="stageEditId" />
+        <div class="row g-3">
+            <div class="col-6">
+                <label class="form-label fw-medium" for="stageOrder">@Localizer["StageOrder"] <span class="text-danger">*</span></label>
+                <input type="number" id="stageOrder" class="form-control" min="1" />
+            </div>
+            <div class="col-6">
+                <label class="form-label fw-medium" for="stageCode">@Localizer["StageCode"] <span class="text-danger">*</span></label>
+                <input type="text" id="stageCode" class="form-control" maxlength="100" />
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium" for="stageName">@Localizer["StageName"] <span class="text-danger">*</span></label>
+                <input type="text" id="stageName" class="form-control" maxlength="200" />
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium" for="stageObjective">@Localizer["StageObjective"] <span class="text-danger">*</span></label>
+                <input type="text" id="stageObjective" class="form-control" maxlength="500" />
+            </div>
+            <div class="col-6">
+                <label class="form-label fw-medium" for="stageType">@Localizer["StageType"]</label>
+                <select id="stageType" class="form-select"></select>
+            </div>
+            <div class="col-6">
+                <label class="form-label fw-medium" for="stagePathPin">@Localizer["PathVersionPinPolicy"]</label>
+                <select id="stagePathPin" class="form-select"></select>
+                <small class="text-muted">@Localizer["PathPinHelp"]</small>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium" for="stageKnowledgePathId">@Localizer["RecommendedKnowledgePathId"] <span class="text-danger">*</span></label>
+                <select id="stageKnowledgePathId" class="form-select" data-placeholder="@Localizer["SelectOption"].Value"></select>
+                <small class="text-muted" id="stagePathMeta"></small>
+            </div>
+            <div class="col-6">
+                <label class="form-label fw-medium" for="stageMinVisit">@Localizer["MinVisitNumber"]</label>
+                <input type="number" id="stageMinVisit" class="form-control" min="1" />
+            </div>
+            <div class="col-6">
+                <label class="form-label fw-medium" for="stageMaxVisit">@Localizer["MaxVisitNumber"]</label>
+                <input type="number" id="stageMaxVisit" class="form-control" min="1" />
+            </div>
+            <div class="col-6">
+                <label class="form-label fw-medium" for="stageAdvancementRule">@Localizer["AdvancementRule"]</label>
+                <select id="stageAdvancementRule" class="form-select"></select>
+            </div>
+            <div class="col-6">
+                <label class="form-label fw-medium" for="stageFallback">@Localizer["FallbackStageId"]</label>
+                <select id="stageFallback" class="form-select"></select>
+            </div>
+            @* AC-UI-7 — the never-evaluated contract, stated where the author sets it. *@
+            <div class="col-12">
+                <div class="alert alert-info mb-0 py-2"><i class="bx bx-info-circle me-1"></i>@Localizer["DeclaredNotEvaluatedHelp"]</div>
+            </div>
+            <div class="col-6 form-check form-switch ms-1">
+                <input id="stageRequired" class="form-check-input" type="checkbox" role="switch" />
+                <label class="form-check-label ms-2" for="stageRequired">@Localizer["IsRequired"]</label>
+            </div>
+            <div class="col-6 form-check form-switch ms-1">
+                <input id="stageRepeatable" class="form-check-input" type="checkbox" role="switch" />
+                <label class="form-check-label ms-2" for="stageRepeatable">@Localizer["Repeatable"]</label>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium" for="stageNotes">@Localizer["Notes"]</label>
+                <textarea id="stageNotes" class="form-control" rows="2" maxlength="2000"></textarea>
+            </div>
+
+            @* S5 — BranchCondition repeater (authorable, data-only; never evaluated). *@
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label fw-medium mb-0">@Localizer["BranchConditions"]</label>
+                    <button type="button" id="btnAddBranch" class="btn btn-sm btn-label-secondary"><i class="bx bx-plus"></i> @Localizer["AddBranchCondition"]</button>
+                </div>
+                <small class="text-muted d-block mb-2">@Localizer["BranchConditionsHelp"]</small>
+                <div id="branchList" class="d-flex flex-column gap-2"></div>
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-4">
+            <button type="button" id="stageSaveBtn" class="btn btn-primary"><i class="bx bx-check me-1"></i>@Localizer["Save"]</button>
+            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["Cancel"]</button>
+        </div>
+    </div>
+</div>

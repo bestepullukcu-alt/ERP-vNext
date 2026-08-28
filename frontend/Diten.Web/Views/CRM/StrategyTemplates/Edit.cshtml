@@ -1,0 +1,43 @@
+@model Diten.Web.Models.CRM.StrategyTemplateEditViewModel
+@using Diten.Web.Views.CRM.StrategyTemplates
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StrategyTemplatesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["EditStrategyTemplate"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["EditStrategyTemplate"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/StrategyTemplates">@Localizer["StrategyTemplatesTitle"]</a></li>
+                <li class="breadcrumb-item"><a href="/CRM/StrategyTemplates/Details/@Model.TemplateId">@Model.TemplateCode</a></li>
+                <li class="breadcrumb-item active text-primary">@Localizer["EditStrategyTemplate"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/CRM/StrategyTemplates/Details/@Model.TemplateId" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
+        <button type="submit" form="strategyTemplateForm" class="btn btn-primary">@Localizer["Save"]</button>
+    </div>
+</div>
+
+<form asp-action="Edit" asp-route-id="@Model.TemplateId" method="post" id="strategyTemplateForm" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <partial name="~/Views/CRM/StrategyTemplates/_Form.cshtml" model="Model" />
+</form>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+}
+
+@section Scripts {
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    @* Contract marker: <partial name="_IndexL10n" /> - the binding editor labels come from the same bridge. *@
+    <partial name="~/Views/CRM/StrategyTemplates/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/StrategyTemplates/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/StrategyTemplates/form.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,1793 @@
+@using Diten.Web.Views.DocumentManagement.MasterRegister
+@using Microsoft.AspNetCore.Mvc.Localization
+@using System.Security.Claims
+@inject IHtmlLocalizer<MasterRegisterIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["DocumentMasterRegisterDetails"].Value;
+    Layout = "_LayoutTenantShell";
+    var id = (Guid)(ViewData["MasterRegisterEntryId"] ?? Guid.Empty);
+    var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value ?? string.Empty;
+    var currentUserDisplayName = User.Identity?.Name ?? User.FindFirst(ClaimTypes.Email)?.Value ?? currentUserId;
+    var canManage = Perms.Has("platform.document-management.master-register.manage");
+    var canLinkControlledDocument = Perms.Has("platform.document-management.master-register.link")
+        && Perms.Has("platform.document-management.master-register.registration.reconcile");
+    var canViewControlledDocument = Perms.Has("platform.document-management.controlled-documents.view");
+
+    // MOD-0029-FU25 — UX guards only; the FU07/FU08 backends ([HasPermission]) stay authoritative. Keys are the
+    // EXACT seeded ones: note the lifecycle keys live under master-register.lifecycle.*, and the backend has no
+    // separate mark-effective/supersede/retire key — every transition is gated by lifecycle.manage.
+    var canViewIdentifiers = Perms.Has("platform.document-management.identifiers.view");
+    var canAllocate = Perms.Has("platform.document-management.identifiers.allocate");
+    var canReserve = Perms.Has("platform.document-management.identifiers.reserve");
+    var canCancelAllocation = Perms.Has("platform.document-management.identifiers.cancel");
+    var canViewLifecycle = Perms.Has("platform.document-management.master-register.lifecycle.view");
+    var canManageLifecycle = Perms.Has("platform.document-management.master-register.lifecycle.manage");
+
+    // MOD-0029-FU26 — approval (FU09) and release gate (FU10) keys. Note the real seeded names: they live under
+    // master-register.approval.* / master-register.release-gate.* (singular "release-gate"), and there is NO separate
+    // reject key — the backend gates both record and reject on approval.evidence.record.
+    var canViewApproval = Perms.Has("platform.document-management.master-register.approval.view");
+    var canRecordApprovalEvidence = Perms.Has("platform.document-management.master-register.approval.evidence.record");
+    var canViewGates = Perms.Has("platform.document-management.master-register.release-gate.view");
+    var canEvaluateGates = Perms.Has("platform.document-management.master-register.release-gate.evaluate");
+    var canRecordGateEvidence = Perms.Has("platform.document-management.master-register.release-gate.evidence.record");
+
+    // MOD-0029-FU27 — training (FU11) keys. Real seeded names sit under master-register.training.* and there are only
+    // THREE: view (read), manage (resolve / assign / restrict) and verify (complete / effectiveness). There is no
+    // separate assign/complete/effectiveness/restrict key.
+    var canViewTraining = Perms.Has("platform.document-management.master-register.training.view");
+    var canManageTraining = Perms.Has("platform.document-management.master-register.training.manage");
+    var canVerifyTraining = Perms.Has("platform.document-management.master-register.training.verify");
+
+    // MOD-0029-FU28 — repository assessment (FU16) and controlled copy (FU17) keys. Real seeded names: repository
+    // assessments sit directly under document-management (they are tenant-global master data), while controlled
+    // copies sit under master-register.controlled-copy.*. Three keys each; there is no separate issue/withdraw key.
+    var canViewRepository = Perms.Has("platform.document-management.repository-assessment.view");
+    var canManageRepository = Perms.Has("platform.document-management.repository-assessment.manage");
+    var canApproveRepository = Perms.Has("platform.document-management.repository-assessment.approve");
+    var canViewCopies = Perms.Has("platform.document-management.master-register.controlled-copy.view");
+    var canManageCopies = Perms.Has("platform.document-management.master-register.controlled-copy.manage");
+    var canReconcileCopies = Perms.Has("platform.document-management.master-register.controlled-copy.reconcile");
+    var canOpenRepositoryTab = canViewRepository || canViewCopies;
+
+    // MOD-0029-FU29 — Retention (FU15), Signatures (FU23) and Quality Events (FU22) keys. Real seeded names: retention
+    // and legal-hold/disposition sit directly under document-management (tenant-global master data); signatures sit
+    // under document-management.signatures.*; quality events fan out to quality-events/deviations/capa. These are the
+    // EXACT AuthService-seeded keys (platform-scoped, SuperAdmin-only) — no unseeded key is invented.
+    var canViewRetention = Perms.Has("platform.document-management.retention.view");
+    var canManageRetention = Perms.Has("platform.document-management.retention.manage");
+    var canViewLegalHold = Perms.Has("platform.document-management.legal-hold.view");
+    var canViewSignatures = Perms.Has("platform.document-management.signatures.view");
+    var canVerifySignatures = Perms.Has("platform.document-management.signatures.verify");
+    var canViewQualityEvents = Perms.Has("platform.document-management.quality-events.view");
+    var canViewDeviations = Perms.Has("platform.document-management.deviations.view");
+    var canViewCapa = Perms.Has("platform.document-management.capa.view");
+    var canOpenQualityTab = canViewQualityEvents || canViewDeviations || canViewCapa;
+}
+
+<div class="master-register-details"
+     data-master-register-id="@id"
+     data-current-user-id="@currentUserId"
+     data-current-user-display-name="@currentUserDisplayName">
+
+    <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-3 gap-3">
+        <div>
+            <h5 class="mb-0" id="detailTitle">@Localizer["DocumentMasterRegisterDetails"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/DocumentManagementMasterRegister">@Localizer["DocumentMasterRegisterTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@Localizer["DocumentMasterRegisterDetails"]</li>
+                </ol>
+            </nav>
+            <span class="text-muted small" id="detailSubtitle"></span>
+        </div>
+        <div class="d-flex align-items-center flex-wrap gap-2">
+            <a href="/DocumentManagementMasterRegister" class="btn btn-label-secondary">
+                <i class="icon-base bx bx-arrow-back me-1"></i>@SharedLocalizer["Back"]
+            </a>
+            @if (canManage)
+            {
+                <a href="/DocumentManagementMasterRegister/Edit/@id" class="btn btn-primary">
+                    <i class="icon-base bx bx-edit me-1"></i>@SharedLocalizer["Edit"]
+                </a>
+            }
+        </div>
+    </div>
+
+    <div id="detailAlert" class="alert alert-danger d-none" role="alert"></div>
+
+    <div class="card mb-4">
+        <div class="card-header p-3">
+            <div class="nav-align-top">
+                <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap" role="tablist">
+        <li class="nav-item mb-1 mb-sm-0" role="presentation">
+            <button class="nav-link active small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#tab-general" type="button" role="tab" aria-selected="true">
+                <span class="d-none d-sm-inline-flex align-items-center"><i class="icon-base bx bx-detail me-1 wc-tab-icon"></i>@Localizer["TabGeneral"]</span>
+                <i class="icon-base bx bx-detail d-sm-none wc-tab-icon"></i>
+            </button>
+        </li>
+        @if (canViewIdentifiers)
+        {
+            <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                <button class="nav-link small border shadow-none wc-tab-compact" id="tabBtn-identifiers" data-bs-toggle="tab" data-bs-target="#tab-identifiers" type="button" role="tab" aria-selected="false">
+                    <span class="d-none d-sm-inline-flex align-items-center"><i class="icon-base bx bx-barcode me-1 wc-tab-icon"></i>@Localizer["IdentifiersTabTitle"]</span>
+                    <i class="icon-base bx bx-barcode d-sm-none wc-tab-icon"></i>
+                </button>
+            </li>
+        }
+        @if (canViewLifecycle)
+        {
+            <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                <button class="nav-link small border shadow-none wc-tab-compact" id="tabBtn-lifecycle" data-bs-toggle="tab" data-bs-target="#tab-lifecycle" type="button" role="tab" aria-selected="false">
+                    <span class="d-none d-sm-inline-flex align-items-center"><i class="icon-base bx bx-refresh me-1 wc-tab-icon"></i>@Localizer["LifecycleTabTitle"]</span>
+                    <i class="icon-base bx bx-refresh d-sm-none wc-tab-icon"></i>
+                </button>
+            </li>
+        }
+        @if (canViewApproval)
+        {
+            <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                <button class="nav-link small border shadow-none wc-tab-compact" id="tabBtn-approval" data-bs-toggle="tab" data-bs-target="#tab-approval" type="button" role="tab" aria-selected="false">
+                    <span class="d-none d-sm-inline-flex align-items-center"><i class="icon-base bx bx-check-shield me-1 wc-tab-icon"></i>@Localizer["ApprovalTabTitle"]</span>
+                    <i class="icon-base bx bx-check-shield d-sm-none wc-tab-icon"></i>
+                </button>
+            </li>
+        }
+        @if (canViewGates)
+        {
+            <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                <button class="nav-link small border shadow-none wc-tab-compact" id="tabBtn-gates" data-bs-toggle="tab" data-bs-target="#tab-gates" type="button" role="tab" aria-selected="false">
+                    <span class="d-none d-sm-inline-flex align-items-center"><i class="icon-base bx bx-log-in-circle me-1 wc-tab-icon"></i>@Localizer["ReleaseGatesTabTitle"]</span>
+                    <i class="icon-base bx bx-log-in-circle d-sm-none wc-tab-icon"></i>
+                </button>
+            </li>
+        }
+        @if (canViewTraining)
+        {
+            <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                <button class="nav-link small border shadow-none wc-tab-compact" id="tabBtn-training" data-bs-toggle="tab" data-bs-target="#tab-training" type="button" role="tab" aria-selected="false">
+                    <span class="d-none d-sm-inline-flex align-items-center"><i class="icon-base bx bx-book-reader me-1 wc-tab-icon"></i>@Localizer["TrainingTabTitle"]</span>
+                    <i class="icon-base bx bx-book-reader d-sm-none wc-tab-icon"></i>
+                </button>
+            </li>
+        }
+        @if (canOpenRepositoryTab)
+        {
+            <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                <button class="nav-link small border shadow-none wc-tab-compact" id="tabBtn-repository" data-bs-toggle="tab" data-bs-target="#tab-repository" type="button" role="tab" aria-selected="false">
+                    <span class="d-none d-sm-inline-flex align-items-center"><i class="icon-base bx bx-folder-open me-1 wc-tab-icon"></i>@Localizer["RepositoryTabTitle"]</span>
+                    <i class="icon-base bx bx-folder-open d-sm-none wc-tab-icon"></i>
+                </button>
+            </li>
+        }
+        @if (canViewRetention)
+        {
+            <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                <button class="nav-link small border shadow-none wc-tab-compact" id="tabBtn-retention" data-bs-toggle="tab" data-bs-target="#tab-retention" type="button" role="tab" aria-selected="false">
+                    <span class="d-none d-sm-inline-flex align-items-center"><i class="icon-base bx bx-archive me-1 wc-tab-icon"></i>@Localizer["RetentionTabTitle"]</span>
+                    <i class="icon-base bx bx-archive d-sm-none wc-tab-icon"></i>
+                </button>
+            </li>
+        }
+        @if (canViewSignatures)
+        {
+            <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                <button class="nav-link small border shadow-none wc-tab-compact" id="tabBtn-signatures" data-bs-toggle="tab" data-bs-target="#tab-signatures" type="button" role="tab" aria-selected="false">
+                    <span class="d-none d-sm-inline-flex align-items-center"><i class="icon-base bx bx-pen me-1 wc-tab-icon"></i>@Localizer["SignaturesTabTitle"]</span>
+                    <i class="icon-base bx bx-pen d-sm-none wc-tab-icon"></i>
+                </button>
+            </li>
+        }
+        @if (canOpenQualityTab)
+        {
+            <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                <button class="nav-link small border shadow-none wc-tab-compact" id="tabBtn-quality" data-bs-toggle="tab" data-bs-target="#tab-quality" type="button" role="tab" aria-selected="false">
+                    <span class="d-none d-sm-inline-flex align-items-center"><i class="icon-base bx bx-error-circle me-1 wc-tab-icon"></i>@Localizer["QualityEventsTabTitle"]</span>
+                    <i class="icon-base bx bx-error-circle d-sm-none wc-tab-icon"></i>
+                </button>
+            </li>
+        }
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content p-0">
+        <div class="tab-pane fade show active" id="tab-general" role="tabpanel">
+            <div class="row g-4">
+                <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+                    <section class="card backbone-preview-section p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["Identification"]</h6>
+                        <div class="row g-4" id="detailIdentificationList"></div>
+                    </section>
+
+                    <section class="card backbone-preview-section p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["Classification"]</h6>
+                        <div class="row g-4" id="detailClassificationList"></div>
+                    </section>
+
+                    <section class="card backbone-preview-section p-4" id="controlledDocumentRelationshipCard">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                            <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["LinkedControlledDocument"]</h6>
+                            <div class="d-flex flex-wrap gap-2" id="controlledDocumentActions"></div>
+                        </div>
+                        <div class="alert alert-danger d-none mt-3 mb-0" id="controlledDocumentAlert" role="alert"></div>
+                        <div id="controlledDocumentRelationship">
+                            <div class="text-muted">@Localizer["ControlledDocumentLoading"]</div>
+                        </div>
+                    </section>
+                </div>
+
+                <aside class="col-12 col-lg-4 d-flex flex-column gap-4">
+                    <section class="card backbone-preview-section p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["Ownership"]</h6>
+                        <div class="row g-4" id="detailOwnershipList"></div>
+                    </section>
+
+                    <section class="card backbone-preview-section p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["GovernanceMetadata"]</h6>
+                        <div class="row g-4" id="detailGovernanceList"></div>
+                    </section>
+
+                    <section class="card backbone-preview-section p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["Flags"]</h6>
+                        <div class="row g-4" id="detailFlagsList"></div>
+                    </section>
+
+                    <section class="card backbone-preview-section p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["Provenance"]</h6>
+                        <div class="row g-4" id="detailProvenanceList"></div>
+                    </section>
+                </aside>
+            </div>
+        </div>
+
+        @* ── MOD-0029-FU25 — Identifiers (FU07). Lazy-loaded on first tab activation. ── *@
+        @if (canViewIdentifiers)
+        {
+            <div class="tab-pane fade" id="tab-identifiers" role="tabpanel" data-tab-key="identifiers">
+                <div id="identifiersAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                <div class="alert alert-info alert-dismissible fade show d-flex align-items-start" role="alert">
+                    <i class="icon-base bx bx-info-circle me-2 mt-1"></i>
+                    <span>@Localizer["IdentifierNeverReusedNote"]</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="@SharedLocalizer["Close"]"></button>
+                </div>
+
+                <div class="card">
+                    <div id="identifierLedgerSkeleton" class="backbone-skeleton p-4">
+                        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+                        <div class="shimmer skeleton-row"></div>
+                        <div class="shimmer skeleton-row"></div>
+                        <div class="shimmer skeleton-row"></div>
+                        <div class="shimmer skeleton-row skeleton-row-last"></div>
+                    </div>
+
+                    <div class="card-datatable table-responsive">
+                        <table id="identifierLedgerTable" data-dt-standard="v2" class="datatables-identifier-ledger table border-top">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>@Localizer["IdentifierType"]</th>
+                                    <th class="all">@Localizer["IdentifierValue"]</th>
+                                    <th>@Localizer["AllocationStatus"]</th>
+                                    <th>@Localizer["AllocationSource"]</th>
+                                    <th>@Localizer["AllocationReasonLabel"]</th>
+                                    <th>@Localizer["AllocatedAt"]</th>
+                                    <th>@Localizer["AllocatedBy"]</th>
+                                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                                </tr>
+                            </thead>
+                            <tbody id="identifierLedgerBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @* ── MOD-0029-FU25 — Lifecycle (FU08 / FU08A). Lazy-loaded on first tab activation. ── *@
+        @if (canViewLifecycle)
+        {
+            <div class="tab-pane fade" id="tab-lifecycle" role="tabpanel" data-tab-key="lifecycle">
+                <div id="lifecycleAlert" class="alert alert-danger d-none" role="alert"></div>
+                <div id="lifecycleWarnings" class="alert alert-warning d-none" role="alert"></div>
+
+                <div class="card mb-4" id="lifecycleStateSummary">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-4">
+                            <span class="text-muted small">@Localizer["AvailableTransitions"]:</span>
+                            <div id="lifecycleAllowedTargets" class="d-flex flex-wrap justify-content-end gap-2">
+                                <span class="text-muted small">@SharedLocalizer["Loading"]</span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-column flex-xl-row align-items-start align-items-xl-center justify-content-between gap-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="avatar bg-primary-subtle text-primary rounded d-flex align-items-center justify-content-center">
+                                    <i class="icon-base bx bx-revision fs-3"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted text-uppercase d-block mb-1">@Localizer["CurrentLifecycleStatus"]</small>
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <div id="lifecycleCurrentStatus">@SharedLocalizer["Loading"]</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3 gap-md-4">
+                                <div>
+                                    <small class="text-muted text-uppercase d-block mb-1">@Localizer["OperationalUseAllowed"]</small>
+                                    <div class="fw-medium" id="lifecycleOperationalUse">@SharedLocalizer["Loading"]</div>
+                                </div>
+                                <div class="border-start d-none d-md-block align-self-stretch"></div>
+                                <div>
+                                    <small class="text-muted text-uppercase d-block mb-1">@Localizer["LastTransition"]</small>
+                                    <div class="fw-medium" id="lifecycleLastTransition">@SharedLocalizer["Loading"]</div>
+                                </div>
+                                <div class="border-start d-none d-md-block align-self-stretch"></div>
+                                <div>
+                                    <small class="text-muted text-uppercase d-block mb-1">@Localizer["TransitionedBy"]</small>
+                                    <div class="fw-medium text-truncate" id="lifecycleTransitionedBy">@SharedLocalizer["Loading"]</div>
+                                </div>
+                                <div class="border-start d-none d-md-block align-self-stretch"></div>
+                                <div>
+                                    <small class="text-muted text-uppercase d-block mb-1">@Localizer["LastTransitionReason"]</small>
+                                    <div class="fw-medium text-break" id="lifecycleLastTransitionReason">@SharedLocalizer["Loading"]</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <section class="card">
+                    <div id="lifecycleHistorySkeleton" class="backbone-skeleton p-4">
+                        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+                        <div class="shimmer skeleton-row"></div>
+                        <div class="shimmer skeleton-row"></div>
+                        <div class="shimmer skeleton-row skeleton-row-last"></div>
+                    </div>
+
+                    <div class="card-datatable table-responsive">
+                        <table id="lifecycleHistoryTable" data-dt-standard="v2"
+                               class="datatables-lifecycle-history table border-top">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>@Localizer["FromStatus"]</th>
+                                    <th>@Localizer["ToStatus"]</th>
+                                    <th>@Localizer["TransitionedAt"]</th>
+                                    <th>@Localizer["TransitionedBy"]</th>
+                                    <th>@Localizer["TransitionReason"]</th>
+                                    <th>@Localizer["TransitionComment"]</th>
+                                    <th>@Localizer["EvidenceReference"]</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lifecycleHistoryBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        }
+
+        @* ── MOD-0029-FU26 — Approval route, segregation & evidence (FU09). Lazy-loaded. ── *@
+        @if (canViewApproval)
+        {
+            <div class="tab-pane fade" id="tab-approval" role="tabpanel" data-tab-key="approval">
+                <div id="approvalAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                <div class="row g-4 mb-4" id="approvalSummaryCards"></div>
+
+                <div id="approvalSegregationAlert" class="alert d-none" role="alert"></div>
+
+                <div id="approvalBlockingAlert"
+                     class="alert alert-warning alert-dismissible d-none mb-4"
+                     role="alert">
+                    <strong class="d-block mb-2">
+                        <i class="icon-base bx bx-error-circle me-2"></i>@Localizer["BlockingIssues"]
+                    </strong>
+                    <div id="approvalBlockingList"></div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"
+                            aria-label="@SharedLocalizer["Close"]"></button>
+                </div>
+
+                <div id="approvalRequirementsFilterHost" class="dt-inline-filter-host">
+                    <div class="collapse" id="approvalRequirementsFilterCollapse">
+                        <div class="pt-0 pb-3">
+                            <form class="m-0" id="approvalRequirementsFilterForm" data-no-tracker>
+                                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                                    <div class="filter-chip filter-reference-type">
+                                        <select id="approvalFilterType" class="form-select form-select-sm select2"
+                                                multiple="multiple" data-placeholder="@Localizer["RequirementType"]"></select>
+                                    </div>
+                                    <div class="filter-chip filter-priority">
+                                        <select id="approvalFilterMandatory" class="form-select form-select-sm select2"
+                                                data-placeholder="@Localizer["Mandatory"]">
+                                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                                            <option value="true">@Localizer["Mandatory"]</option>
+                                            <option value="false">@Localizer["Optional"]</option>
+                                        </select>
+                                    </div>
+                                    <div class="filter-chip filter-status">
+                                        <select id="approvalFilterStatus" class="form-select form-select-sm select2"
+                                                multiple="multiple" data-placeholder="@SharedLocalizer["Status"]"></select>
+                                    </div>
+                                    <div class="ms-auto d-flex gap-3">
+                                        <button type="button" class="btn btn-sm btn-primary" id="btnApprovalFilterApply">
+                                            @SharedLocalizer["Apply"]
+                                        </button>
+                                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnApprovalFilterReset">
+                                            @SharedLocalizer["Reset"]
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <section class="card">
+                    <div id="approvalRequirementsSkeleton" class="backbone-skeleton p-4">
+                        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+                        <div class="shimmer skeleton-row"></div>
+                        <div class="shimmer skeleton-row"></div>
+                        <div class="shimmer skeleton-row skeleton-row-last"></div>
+                    </div>
+                    <div class="card-datatable table-responsive">
+                        <table class="datatables-approval-requirements table border-top"
+                               data-dt-standard="v2" id="approvalRequirementsTable">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>@Localizer["RequirementRole"]</th>
+                                    <th>@Localizer["RequirementType"]</th>
+                                    <th>@Localizer["Mandatory"]</th>
+                                    <th>@Localizer["SourceRule"]</th>
+                                    <th>@SharedLocalizer["Status"]</th>
+                                    <th>@Localizer["CompletedBy"]</th>
+                                    <th>@Localizer["EvidenceReference"]</th>
+                                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        }
+
+        @* ── MOD-0029-FU26 — Six non-waivable release gates (FU10). Lazy-loaded on readiness (no persistence). ── *@
+        @if (canViewGates)
+        {
+            <div class="tab-pane fade" id="tab-gates" role="tabpanel" data-tab-key="gates">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                    <h5 class="mb-0">@Localizer["ReleaseGateSummary"]</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-sm btn-label-secondary" id="btnRefreshGates">
+                            <i class="icon-base bx bx-refresh me-1"></i>@Localizer["RefreshReleaseGates"]
+                        </button>
+                        @if (canEvaluateGates)
+                        {
+                            <button type="button" class="btn btn-sm btn-primary" id="btnEvaluateGates">
+                                <i class="icon-base bx bx-play-circle me-1"></i>@Localizer["EvaluateReleaseGates"]
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <div id="gatesAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                <div class="alert alert-warning d-flex align-items-start" role="alert">
+                    <i class="icon-base bx bx-lock me-2 mt-1"></i>
+                    <span><strong>@Localizer["NoWaiverAllowed"]</strong> — @Localizer["NonWaivableExplanation"]</span>
+                </div>
+
+                <div class="row g-4 mb-4" id="gatesSummaryCards"></div>
+
+                <div class="row g-4" id="gatesCardList"></div>
+
+                <div class="mt-4">
+                    <h5 class="mb-3 d-flex align-items-center">
+                        <i class="icon-base bx bx-history me-2"></i>@Localizer["GateEvaluationHistory"]
+                    </h5>
+                    <section class="card">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="gateHistoryTable">
+                                <thead>
+                                    <tr>
+                                        <th>@Localizer["EvaluatedAt"]</th>
+                                        <th>@Localizer["EvaluatedBy"]</th>
+                                        <th>@Localizer["ReleaseGateResult"]</th>
+                                        <th>@Localizer["GatesPassed"]</th>
+                                        <th>@Localizer["GatesBlocked"]</th>
+                                        <th>@Localizer["GatesWarning"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="gateHistoryBody"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        }
+
+        @* ── MOD-0029-FU27 — Training matrix & effective-release readiness (FU11). Lazy-loaded. ── *@
+        @if (canViewTraining)
+        {
+            <div class="tab-pane fade" id="tab-training" role="tabpanel" data-tab-key="training">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                    <h5 class="mb-0">@Localizer["TrainingSummary"]</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-sm btn-label-secondary" id="btnRefreshTraining">
+                            <i class="icon-base bx bx-refresh me-1"></i>@Localizer["RefreshTraining"]
+                        </button>
+                        @if (canManageTraining)
+                        {
+                            <button type="button" class="btn btn-sm btn-primary" id="btnResolveTrainingMatrix">
+                                <i class="icon-base bx bx-sitemap me-1"></i>@Localizer["ResolveTrainingMatrix"]
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <div id="trainingAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                <div class="alert alert-info d-flex align-items-start" role="alert">
+                    <i class="icon-base bx bx-log-in-circle me-2 mt-1"></i>
+                    <span id="releaseGateTrainingNote">@Localizer["ReleaseGateTrainingNote"]</span>
+                </div>
+
+                <div class="row g-4 mb-4" id="trainingSummaryCards"></div>
+
+                <div class="row g-6">
+                    <div class="col-12 col-lg-5">
+                        <section class="card backbone-preview-section h-100 p-4">
+                            <h5 class="card-title mb-4 d-flex align-items-center">
+                                <i class="icon-base bx bx-check-double me-2"></i>@Localizer["TrainingReadiness"]
+                            </h5>
+                            <dl class="row mb-0" id="trainingReadinessList">
+                                <dd class="col-12 text-muted mb-0">@SharedLocalizer["Loading"]</dd>
+                            </dl>
+                        </section>
+                    </div>
+                    <div class="col-12 col-lg-7">
+                        <section class="card backbone-preview-section h-100 p-4">
+                            <h5 class="card-title mb-4 d-flex align-items-center">
+                                <i class="icon-base bx bx-error-circle me-2"></i>@Localizer["BlockingIssues"]
+                            </h5>
+                            <div id="trainingBlockingList"></div>
+                        </section>
+                    </div>
+
+                    <div class="col-12">
+                        <h5 class="mb-3 d-flex align-items-center">
+                            <i class="icon-base bx bx-list-check me-2"></i>@Localizer["TrainingRequirements"]
+                        </h5>
+                        <section class="card">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0" id="trainingRequirementsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>@Localizer["TrainingAudience"]</th>
+                                            <th>@Localizer["TrainingType"]</th>
+                                            <th>@Localizer["Mandatory"]</th>
+                                            <th>@Localizer["CriticalProcess"]</th>
+                                            <th>@Localizer["EffectivenessRequired"]</th>
+                                            <th>@Localizer["SourceRule"]</th>
+                                            <th>@SharedLocalizer["Status"]</th>
+                                            <th class="text-end pe-3">@Localizer["Actions"]</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="trainingRequirementsBody"></tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="col-12">
+                        <h5 class="mb-3 d-flex align-items-center">
+                            <i class="icon-base bx bx-user-check me-2"></i>@Localizer["TrainingAssignments"]
+                        </h5>
+                        @* FU11 exposes no GET for assignments — only the aggregate readiness counters above are
+                           listable. This table therefore shows only assignments this browser session created or
+                           changed, and says so plainly rather than pretending to be the full register. *@
+                        <div class="alert alert-secondary d-flex align-items-start" role="alert">
+                            <i class="icon-base bx bx-info-circle me-2 mt-1"></i>
+                            <span>@Localizer["AssignmentListNotAvailableNote"]</span>
+                        </div>
+                        <section class="card">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0" id="trainingAssignmentsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>@Localizer["AssignedTo"]</th>
+                                            <th>@Localizer["TrainingType"]</th>
+                                            <th>@Localizer["AssignmentStatus"]</th>
+                                            <th>@Localizer["CompletedAt"]</th>
+                                            <th>@Localizer["CompletionEvidence"]</th>
+                                            <th>@Localizer["EffectivenessStatus"]</th>
+                                            <th>@Localizer["RestrictionStatus"]</th>
+                                            <th class="text-end pe-3">@Localizer["Actions"]</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="trainingAssignmentsBody"></tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @* ── MOD-0029-FU28 — Repository assessment (FU16) + Controlled copy (FU17). Lazy-loaded. ── *@
+        @if (canOpenRepositoryTab)
+        {
+            <div class="tab-pane fade" id="tab-repository" role="tabpanel" data-tab-key="repository">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                    <h5 class="mb-0">@Localizer["RepositorySummary"]</h5>
+                    <button type="button" class="btn btn-sm btn-label-secondary" id="btnRefreshRepository">
+                        <i class="icon-base bx bx-refresh me-1"></i>@Localizer["RefreshRepository"]
+                    </button>
+                </div>
+
+                <div id="repositoryAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                <ul class="nav nav-tabs mb-4" role="tablist">
+                    @if (canViewRepository)
+                    {
+                        <li class="nav-item">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#sub-repository" type="button" role="tab">
+                                <i class="icon-base bx bx-server me-1"></i>@Localizer["RepositoryAssessments"]
+                            </button>
+                        </li>
+                    }
+                    @if (canViewCopies)
+                    {
+                        <li class="nav-item">
+                            <button class="nav-link @(canViewRepository ? "" : "active")" data-bs-toggle="tab" data-bs-target="#sub-copies" type="button" role="tab">
+                                <i class="icon-base bx bx-copy me-1"></i>@Localizer["ControlledCopies"]
+                            </button>
+                        </li>
+                    }
+                </ul>
+
+                <div class="tab-content p-0">
+                    @* ── Gate 2: repository assessment / DMS boundary ── *@
+                    @if (canViewRepository)
+                    {
+                        <div class="tab-pane fade show active" id="sub-repository" role="tabpanel">
+                            <div class="alert alert-info d-flex align-items-start" role="alert">
+                                <i class="icon-base bx bx-log-in-circle me-2 mt-1"></i>
+                                <span id="releaseGateRepositoryNote">@Localizer["ReleaseGateRepositoryNote"]</span>
+                            </div>
+                            <div class="alert alert-warning d-flex align-items-start" role="alert">
+                                <i class="icon-base bx bx-shield-x me-2 mt-1"></i>
+                                <span><strong>@Localizer["NoComplianceClaim"]</strong> — @Localizer["NoValidatedDmsClaim"]</span>
+                            </div>
+
+                            <div class="row g-4 mb-4" id="repositorySummaryCards"></div>
+
+                            <div class="row g-6 mb-4">
+                                <div class="col-12 col-lg-6">
+                                    <section class="card backbone-preview-section h-100 p-4">
+                                        <h5 class="card-title mb-4 d-flex align-items-center">
+                                            <i class="icon-base bx bx-link me-2"></i>@Localizer["LinkedRepository"]
+                                        </h5>
+                                        <dl class="row mb-0" id="linkedRepositoryList">
+                                            <dd class="col-12 text-muted mb-0">@SharedLocalizer["Loading"]</dd>
+                                        </dl>
+                                    </section>
+                                </div>
+                                <div class="col-12 col-lg-6">
+                                    <section class="card backbone-preview-section h-100 p-4">
+                                        <h5 class="card-title mb-4 d-flex align-items-center">
+                                            <i class="icon-base bx bx-git-compare me-2"></i>@Localizer["BoundaryStatement"]
+                                        </h5>
+                                        <div id="repositoryBoundaryPanel" class="text-muted">@Localizer["EvaluateToSeeBoundary"]</div>
+                                    </section>
+                                </div>
+                            </div>
+
+                            <h5 class="mb-3 d-flex align-items-center">
+                                <i class="icon-base bx bx-server me-2"></i>@Localizer["RepositoryAssessments"]
+                            </h5>
+                            <section class="card">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0" id="repositoryAssessmentsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>@Localizer["RepositoryName"]</th>
+                                                <th>@Localizer["RepositoryType"]</th>
+                                                <th>@Localizer["AssessmentStatus"]</th>
+                                                <th>@Localizer["RepositoryLocation"]</th>
+                                                <th>@Localizer["RepositoryOwner"]</th>
+                                                <th>@Localizer["ApprovedAt"]</th>
+                                                <th>@Localizer["ValidUntil"]</th>
+                                                <th class="text-end pe-3">@Localizer["Actions"]</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="repositoryAssessmentsBody"></tbody>
+                                    </table>
+                                </div>
+                            </section>
+
+                            <h5 class="mt-4 mb-3 d-flex align-items-center">
+                                <i class="icon-base bx bx-error-circle me-2"></i>@Localizer["RepositoryFindings"]
+                            </h5>
+                            <section class="card">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0" id="repositoryFindingsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>@Localizer["FindingType"]</th>
+                                                <th>@Localizer["FindingSeverity"]</th>
+                                                <th>@Localizer["FindingStatus"]</th>
+                                                <th>@Localizer["Description"]</th>
+                                                <th>@Localizer["EvidenceReference"]</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="repositoryFindingsBody"></tbody>
+                                    </table>
+                                </div>
+                            </section>
+                        </div>
+                    }
+
+                    @* ── Gate 6: controlled copy / obsolete copy reconciliation ── *@
+                    @if (canViewCopies)
+                    {
+                        <div class="tab-pane fade @(canViewRepository ? "" : "show active")" id="sub-copies" role="tabpanel">
+                            <div class="alert alert-info d-flex align-items-start" role="alert">
+                                <i class="icon-base bx bx-log-in-circle me-2 mt-1"></i>
+                                <span id="releaseGateCopyNote">@Localizer["ReleaseGateCopyNote"]</span>
+                            </div>
+
+                            <div class="d-flex flex-wrap justify-content-end gap-2 mb-3">
+                                @if (canManageCopies)
+                                {
+                                    <button type="button" class="btn btn-sm btn-primary" id="btnRegisterCopy">
+                                        <i class="icon-base bx bx-plus me-1"></i>@Localizer["RegisterCopy"]
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-label-primary" id="btnGeneratePlan">
+                                        <i class="icon-base bx bx-list-plus me-1"></i>@Localizer["GenerateWithdrawalPlan"]
+                                    </button>
+                                }
+                                @if (canReconcileCopies)
+                                {
+                                    <button type="button" class="btn btn-sm btn-label-info" id="btnEvaluateReconciliation">
+                                        <i class="icon-base bx bx-play-circle me-1"></i>@Localizer["EvaluateReconciliation"]
+                                    </button>
+                                }
+                            </div>
+
+                            <div class="row g-4 mb-4" id="copySummaryCards"></div>
+
+                            <div id="copyBlockingPanel" class="alert d-none" role="alert"></div>
+
+                            <h5 class="mb-3 d-flex align-items-center">
+                                <i class="icon-base bx bx-copy me-2"></i>@Localizer["ControlledCopyLog"]
+                            </h5>
+                            <section class="card">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0" id="controlledCopiesTable">
+                                        <thead>
+                                            <tr>
+                                                <th>@Localizer["CopyNumber"]</th>
+                                                <th>@Localizer["CopyType"]</th>
+                                                <th>@Localizer["CopyStatus"]</th>
+                                                <th>@Localizer["Holder"]</th>
+                                                <th>@Localizer["CopyLocation"]</th>
+                                                <th>@Localizer["IssuedAt"]</th>
+                                                <th>@Localizer["WithdrawnAt"]</th>
+                                                <th>@Localizer["ReconciledAt"]</th>
+                                                <th class="text-end pe-3">@Localizer["Actions"]</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="controlledCopiesBody"></tbody>
+                                    </table>
+                                </div>
+                            </section>
+
+                            <h5 class="mt-4 mb-3 d-flex align-items-center">
+                                <i class="icon-base bx bx-task me-2"></i>@Localizer["WithdrawalPlans"]
+                            </h5>
+                            <section class="card">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0" id="withdrawalPlansTable">
+                                        <thead>
+                                            <tr>
+                                                <th>@Localizer["TriggerType"]</th>
+                                                <th>@Localizer["PlanStatus"]</th>
+                                                <th>@Localizer["RequiredCopies"]</th>
+                                                <th>@Localizer["WithdrawnCopies"]</th>
+                                                <th>@Localizer["MissingCopies"]</th>
+                                                <th>@Localizer["TrainingDueDate"]</th>
+                                                <th>@Localizer["CompletedAt"]</th>
+                                                <th class="text-end pe-3">@Localizer["Actions"]</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="withdrawalPlansBody"></tbody>
+                                    </table>
+                                </div>
+                            </section>
+
+                            <h5 class="mt-4 mb-3 d-flex align-items-center">
+                                <i class="icon-base bx bx-error me-2"></i>@Localizer["ObsoleteCopyFindings"]
+                            </h5>
+                            <section class="card">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0" id="obsoleteFindingsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>@Localizer["FindingType"]</th>
+                                                <th>@Localizer["FindingSeverity"]</th>
+                                                <th>@Localizer["FindingStatus"]</th>
+                                                <th>@Localizer["Description"]</th>
+                                                <th>@Localizer["CopyLocation"]</th>
+                                                <th>@Localizer["DeviationReference"]</th>
+                                                <th class="text-end pe-3">@Localizer["Actions"]</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="obsoleteFindingsBody"></tbody>
+                                    </table>
+                                </div>
+                            </section>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @* ── MOD-0029-FU29 — Retention schedule / legal hold / disposition (FU15). Lazy-loaded. ── *@
+        @if (canViewRetention)
+        {
+            <div class="tab-pane fade" id="tab-retention" role="tabpanel" data-tab-key="retention">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                    <h5 class="mb-0">@Localizer["RetentionSummary"]</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-sm btn-label-secondary" id="btnReloadRetention">
+                            <i class="icon-base bx bx-refresh me-1"></i>@Localizer["ReloadTab"]
+                        </button>
+                        @if (canManageRetention)
+                        {
+                            <button type="button" class="btn btn-sm btn-primary" id="btnEvaluateRetention">
+                                <i class="icon-base bx bx-calculator me-1"></i>@Localizer["EvaluateRetention"]
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <div id="retentionAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                <div class="alert alert-warning d-flex align-items-start" role="alert">
+                    <i class="icon-base bx bx-lock-alt me-2 mt-1"></i>
+                    <span><strong>@Localizer["LegalHoldBlocksDisposition"]</strong> — @Localizer["NoDispositionOverride"]</span>
+                </div>
+
+                <div class="row g-4 mb-4" id="retentionSummaryCards"></div>
+
+                <div class="row g-6 mb-4">
+                    <div class="col-12 col-lg-6">
+                        <section class="card backbone-preview-section h-100 p-4">
+                            <h5 class="card-title mb-4 d-flex align-items-center">
+                                <i class="icon-base bx bx-calendar-check me-2"></i>@Localizer["RetentionSchedule"]
+                            </h5>
+                            <dl class="row mb-0" id="retentionScheduleList">
+                                <dd class="col-12 text-muted mb-0">@SharedLocalizer["Loading"]</dd>
+                            </dl>
+                        </section>
+                    </div>
+                    <div class="col-12 col-lg-6">
+                        <section class="card backbone-preview-section h-100 p-4">
+                            <h5 class="card-title mb-4 d-flex align-items-center">
+                                <i class="icon-base bx bx-task me-2"></i>@Localizer["DispositionReadiness"]
+                            </h5>
+                            <dl class="row mb-0" id="retentionDispositionList"></dl>
+                        </section>
+                    </div>
+                </div>
+
+                @if (canViewLegalHold)
+                {
+                    <h5 class="mb-3 d-flex align-items-center">
+                        <i class="icon-base bx bx-shield-quarter me-2"></i>@Localizer["LegalHolds"]
+                    </h5>
+                    <div class="alert alert-info py-2 px-3 small" role="alert">@Localizer["ReleaseHoldDoesNotDispose"]</div>
+                    <section class="card mb-4">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="retentionLegalHoldsTable">
+                                <thead>
+                                    <tr>
+                                        <th>@Localizer["HoldTitle"]</th>
+                                        <th>@Localizer["HoldStatus"]</th>
+                                        <th>@Localizer["HoldReason"]</th>
+                                        <th>@Localizer["IssuedAt"]</th>
+                                        <th>@Localizer["LegalCaseReference"]</th>
+                                        <th>@Localizer["ReleasedAt"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="retentionLegalHoldsBody"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                }
+
+                <h5 class="mb-3 d-flex align-items-center">
+                    <i class="icon-base bx bx-file-blank me-2"></i>@Localizer["DispositionRequestsTitle"]
+                </h5>
+                <section class="card">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="retentionDispositionsTable">
+                            <thead>
+                                <tr>
+                                    <th>@Localizer["DispositionRequestNumber"]</th>
+                                    <th>@Localizer["DispositionStatus"]</th>
+                                    <th>@Localizer["EligibilityResult"]</th>
+                                    <th>@Localizer["RequestedAt"]</th>
+                                    <th>@Localizer["EvidenceReference"]</th>
+                                    <th>@Localizer["ExecutedAt"]</th>
+                                </tr>
+                            </thead>
+                            <tbody id="retentionDispositionsBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        }
+
+        @* ── MOD-0029-FU29 — Electronic signature policies / requests / records / fingerprint (FU23). Lazy-loaded. ── *@
+        @if (canViewSignatures)
+        {
+            <div class="tab-pane fade" id="tab-signatures" role="tabpanel" data-tab-key="signatures">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                    <h5 class="mb-0">@Localizer["SignatureSummary"]</h5>
+                    <button type="button" class="btn btn-sm btn-label-secondary" id="btnReloadSignatures">
+                        <i class="icon-base bx bx-refresh me-1"></i>@Localizer["ReloadTab"]
+                    </button>
+                </div>
+
+                <div id="signaturesAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                <div class="alert alert-warning d-flex align-items-start" role="alert">
+                    <i class="icon-base bx bx-shield-x me-2 mt-1"></i>
+                    <span><strong>@Localizer["MetadataFingerprintOnly"]</strong> — @Localizer["NoESignComplianceClaim"] @Localizer["NoCertificateValidationClaim"]</span>
+                </div>
+
+                <div class="row g-4 mb-4" id="signaturesSummaryCards"></div>
+
+                <h5 class="mb-3 d-flex align-items-center">
+                    <i class="icon-base bx bx-file me-2"></i>@Localizer["SignaturePolicies"]
+                </h5>
+                <section class="card mb-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="signaturePoliciesTable">
+                            <thead>
+                                <tr>
+                                    <th>@Localizer["SignaturePolicy"]</th>
+                                    <th>@Localizer["SignatureSubjectType"]</th>
+                                    <th>@Localizer["SignatureMeaning"]</th>
+                                    <th>@Localizer["ReAuthenticationRequired"]</th>
+                                    <th>@Localizer["TwoFactorRequired"]</th>
+                                    <th>@SharedLocalizer["Status"]</th>
+                                </tr>
+                            </thead>
+                            <tbody id="signaturePoliciesBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <h5 class="mb-3 d-flex align-items-center">
+                    <i class="icon-base bx bx-envelope me-2"></i>@Localizer["SignatureRequests"]
+                </h5>
+                <section class="card mb-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="signatureRequestsTable">
+                            <thead>
+                                <tr>
+                                    <th>@Localizer["SignatureRequestNumber"]</th>
+                                    <th>@Localizer["SignatureMeaning"]</th>
+                                    <th>@Localizer["SignerRole"]</th>
+                                    <th>@SharedLocalizer["Status"]</th>
+                                    <th>@Localizer["RequestedAt"]</th>
+                                    <th>@Localizer["SignatureDueDate"]</th>
+                                </tr>
+                            </thead>
+                            <tbody id="signatureRequestsBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <h5 class="mb-3 d-flex align-items-center">
+                    <i class="icon-base bx bx-pen me-2"></i>@Localizer["SignatureRecords"]
+                </h5>
+                <section class="card">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="signatureRecordsTable">
+                            <thead>
+                                <tr>
+                                    <th>@Localizer["SignatureMeaning"]</th>
+                                    <th>@Localizer["SignerUser"]</th>
+                                    <th>@Localizer["SignedAt"]</th>
+                                    <th>@SharedLocalizer["Status"]</th>
+                                    <th>@Localizer["SignatureFingerprint"]</th>
+                                    <th class="text-end pe-3">@Localizer["Actions"]</th>
+                                </tr>
+                            </thead>
+                            <tbody id="signatureRecordsBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        }
+
+        @* ── MOD-0029-FU29 — Quality events / deviations / CAPA (FU22). Lazy-loaded. ── *@
+        @if (canOpenQualityTab)
+        {
+            <div class="tab-pane fade" id="tab-quality" role="tabpanel" data-tab-key="quality">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                    <h5 class="mb-0">@Localizer["QualityEventSummary"]</h5>
+                    <button type="button" class="btn btn-sm btn-label-secondary" id="btnReloadQuality">
+                        <i class="icon-base bx bx-refresh me-1"></i>@Localizer["ReloadTab"]
+                    </button>
+                </div>
+
+                <div id="qualityAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                <div class="alert alert-info d-flex align-items-start" role="alert">
+                    <i class="icon-base bx bx-info-circle me-2 mt-1"></i>
+                    <span>@Localizer["LinkDoesNotCloseEvent"] @Localizer["NoExternalQmsCall"]</span>
+                </div>
+
+                <div class="row g-4 mb-4" id="qualitySummaryCards"></div>
+
+                @if (canViewQualityEvents)
+                {
+                    <h5 class="mb-3 d-flex align-items-center">
+                        <i class="icon-base bx bx-error-circle me-2"></i>@Localizer["QualityEventLinks"]
+                    </h5>
+                    <section class="card mb-4">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="qualityEventsTable">
+                                <thead>
+                                    <tr>
+                                        <th>@Localizer["EventReference"]</th>
+                                        <th>@Localizer["EventType"]</th>
+                                        <th>@Localizer["EventSeverity"]</th>
+                                        <th>@Localizer["EventStatus"]</th>
+                                        <th>@Localizer["QualityBlockingStatus"]</th>
+                                        <th>@Localizer["DetectedAt"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="qualityEventsBody"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                }
+
+                @if (canViewDeviations)
+                {
+                    <h5 class="mb-3 d-flex align-items-center">
+                        <i class="icon-base bx bx-git-repo-forked me-2"></i>@Localizer["OpenDeviations"]
+                    </h5>
+                    <section class="card mb-4">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="qualityDeviationsTable">
+                                <thead>
+                                    <tr>
+                                        <th>@Localizer["DeviationReference"]</th>
+                                        <th>@Localizer["EventSeverity"]</th>
+                                        <th>@Localizer["DeviationStatus"]</th>
+                                        <th>@Localizer["ReportedBy"]</th>
+                                        <th>@Localizer["QualityBlockingStatus"]</th>
+                                        <th>@Localizer["ClosedAt"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="qualityDeviationsBody"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                }
+
+                @if (canViewCapa)
+                {
+                    <h5 class="mb-3 d-flex align-items-center">
+                        <i class="icon-base bx bx-wrench me-2"></i>@Localizer["OpenCapas"]
+                    </h5>
+                    <section class="card">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="qualityCapaTable">
+                                <thead>
+                                    <tr>
+                                        <th>@Localizer["CapaReference"]</th>
+                                        <th>@Localizer["CapaStatus"]</th>
+                                        <th>@Localizer["ActionOwner"]</th>
+                                        <th>@Localizer["CapaDueDate"]</th>
+                                        <th>@Localizer["EffectivenessStatus"]</th>
+                                        <th>@Localizer["QualityBlockingStatus"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="qualityCapaBody"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@* ── MOD-0029-FU25 governance overlays ── *@
+@if (canReserve)
+{
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="reserveIdentifierOffcanvas"
+         aria-labelledby="reserveIdentifierOffcanvasLabel">
+        <div class="offcanvas-header p-4">
+            <h5 class="offcanvas-title" id="reserveIdentifierOffcanvasLabel">@Localizer["ReserveIdentifier"]</h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                    aria-label="@SharedLocalizer["Cancel"]"></button>
+        </div>
+
+        <div class="offcanvas-body border-top p-4">
+            <div id="reserveIdentifierAlert" class="alert alert-danger d-none" role="alert"></div>
+            <p class="text-muted small mb-4">@Localizer["ReserveIdentifierHint"]</p>
+
+            <form id="reserveIdentifierForm" class="pt-0" novalidate>
+                @Html.AntiForgeryToken()
+                <div class="row g-4">
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="reserveIdentifierType">
+                            @Localizer["IdentifierType"] <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="reserveIdentifierType" required>
+                            <option value="PermanentUid">@Localizer["PermanentUid"]</option>
+                            <option value="DocumentCode">@Localizer["DocumentCode"]</option>
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="reserveIdentifierValue">
+                            @Localizer["IdentifierValue"] <span class="text-danger">*</span>
+                        </label>
+                        <input class="form-control" id="reserveIdentifierValue" maxlength="120" required />
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="reserveAllocationReason">
+                            @Localizer["AllocationReasonLabel"] <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="reserveAllocationReason" required>
+                            <option value="ManualImport">@Localizer["ManualReserve"]</option>
+                            <option value="Migration">@Localizer["MigrationReserve"]</option>
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="reserveLegacyCode">@Localizer["LegacyCode"]</label>
+                        <input class="form-control" id="reserveLegacyCode" maxlength="120" />
+                    </div>
+
+                    <div class="col-12" id="reserveMigrationFields">
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <label class="form-label fw-medium" for="reserveSourceSystem">@Localizer["SourceSystem"]</label>
+                                <input class="form-control" id="reserveSourceSystem" maxlength="120" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-medium" for="reserveSourceLegacyId">@Localizer["SourceLegacyId"]</label>
+                                <input class="form-control" id="reserveSourceLegacyId" maxlength="120" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+                @SharedLocalizer["Cancel"]
+            </button>
+            <button type="submit" form="reserveIdentifierForm" class="btn btn-primary">
+                @Localizer["ReserveIdentifier"]
+            </button>
+        </div>
+    </div>
+}
+
+@if (canCancelAllocation)
+{
+    <form id="cancelAllocationAntiforgery" class="d-none" aria-hidden="true">
+        @Html.AntiForgeryToken()
+    </form>
+}
+
+@if (canManageLifecycle)
+{
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="lifecycleTransitionOffcanvas"
+        aria-labelledby="lifecycleModalTitle">
+        <div class="offcanvas-header p-4">
+            <h5 class="offcanvas-title" id="lifecycleModalTitle">@Localizer["TransitionLifecycle"]</h5>
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                <div id="lifecycleRequiredTrackerHeader" class="d-flex align-items-center"></div>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                        aria-label="@SharedLocalizer["Cancel"]"></button>
+            </div>
+        </div>
+
+        <div class="offcanvas-body border-top p-4">
+            <div class="alert alert-warning d-none" id="lifecycleModalWarning" role="alert"></div>
+
+            <form id="lifecycleTransitionForm" class="pt-0" novalidate
+                  data-required-tracker-target="#lifecycleRequiredTrackerHeader"
+                  data-required-tracker-wrapper-class="d-flex align-items-center">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="lifecycleModalMode" />
+
+                <div class="row g-4">
+                    <div class="col-12" id="lifecycleTargetWrapper">
+                        <label class="form-label fw-medium" for="lifecycleTargetStatus">
+                            @Localizer["TargetStatus"] <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="lifecycleTargetStatus" required></select>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="lifecycleReason">
+                            @Localizer["TransitionReason"] <span class="text-danger" id="lifecycleReasonRequiredMark">*</span>
+                        </label>
+                        <textarea class="form-control" id="lifecycleReason" rows="3" maxlength="1000" required></textarea>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="lifecycleComment">@Localizer["TransitionComment"]</label>
+                        <textarea class="form-control" id="lifecycleComment" rows="3" maxlength="2000"></textarea>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="lifecycleEvidenceReference">@Localizer["EvidenceReference"]</label>
+                        <input class="form-control" id="lifecycleEvidenceReference" maxlength="256" />
+                    </div>
+
+                    <div class="col-12 d-none" id="lifecycleEffectiveDateWrapper">
+                        <label class="form-label fw-medium" for="lifecycleEffectiveDate">@Localizer["EffectiveDate"]</label>
+                        <input class="form-control" id="lifecycleEffectiveDate" type="date" />
+                        <div class="form-text">@Localizer["EffectiveDateNotRetroactive"]</div>
+                    </div>
+
+                    <div class="col-12 d-none" id="lifecycleReplacementWrapper">
+                        <label class="form-label fw-medium" for="lifecycleReplacementEntryId">@Localizer["ReplacementRegisterEntry"]</label>
+                        <select class="form-select select2-offcanvas" id="lifecycleReplacementEntryId"
+                                data-placeholder="@Localizer["ReplacementRegisterEntry"]">
+                            <option value=""></option>
+                        </select>
+                        <div class="form-text">@Localizer["ReplacementRegisterEntryHint"]</div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+                @SharedLocalizer["Cancel"]
+            </button>
+            <button type="submit" form="lifecycleTransitionForm" class="btn btn-primary" id="lifecycleModalSubmit">
+                @Localizer["TransitionLifecycle"]
+            </button>
+        </div>
+    </div>
+}
+
+@* ── MOD-0029-FU26 modals ── *@
+@if (canRecordApprovalEvidence)
+{
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="approvalEvidenceOffcanvas"
+         aria-labelledby="approvalEvidenceModalTitle">
+        <div class="offcanvas-header p-4">
+            <h5 class="offcanvas-title" id="approvalEvidenceModalTitle">@Localizer["RecordEvidence"]</h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                    aria-label="@SharedLocalizer["Close"]"></button>
+        </div>
+
+        <div class="offcanvas-body border-top p-4">
+            <div class="alert alert-info mb-4" id="approvalEvidenceModalNote"></div>
+            <form class="pt-0" id="approvalEvidenceForm" novalidate>
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="approvalRequirementId" />
+                <input type="hidden" id="approvalEvidenceMode" />
+                <input type="hidden" id="approvalPerformedByRoleValue" />
+
+                <div class="row g-4">
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="approvalRequirementLabel">@Localizer["ApprovalRequirement"]</label>
+                        <input class="form-control" id="approvalRequirementLabel" readonly disabled />
+                    </div>
+                    <div class="col-12" id="approvalActionWrapper">
+                        <label class="form-label fw-medium" for="approvalAction">@Localizer["EvidenceAction"] <span class="text-danger">*</span></label>
+                        <select class="form-select" id="approvalAction" required>
+                            <option value="Reviewed">@Localizer["ActionReviewed"]</option>
+                            <option value="Approved">@Localizer["ActionApproved"]</option>
+                            <option value="Endorsed">@Localizer["ActionEndorsed"]</option>
+                            <option value="Returned">@Localizer["ActionReturned"]</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="approvalPerformedByUserId">@Localizer["PerformedBy"] <span class="text-danger">*</span></label>
+                        <select class="form-select" id="approvalPerformedByUserId" required>
+                            <option value=""></option>
+                        </select>
+                        <div class="form-text">@Localizer["SegregationCheckedServerSide"]</div>
+                    </div>
+                    <div class="col-12" id="approvalPerformedByRoleWrapper">
+                        <label class="form-label fw-medium" for="approvalPerformedByRole">@Localizer["PerformedByRole"] <span class="text-danger">*</span></label>
+                        <select class="form-select" id="approvalPerformedByRole" disabled></select>
+                    </div>
+                    <div class="col-12" id="approvalRejectionReasonWrapper">
+                        <label class="form-label fw-medium" for="approvalRejectionReason">@Localizer["RejectionReason"] <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="approvalRejectionReason" rows="2" maxlength="1000"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="approvalEvidenceReference">@Localizer["EvidenceReference"]</label>
+                        <input class="form-control" id="approvalEvidenceReference" maxlength="256" />
+                        <div class="form-text">@Localizer["EvidenceReferenceHint"]</div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="approvalEvidenceComment">@Localizer["EvidenceComment"]</label>
+                        <textarea class="form-control" id="approvalEvidenceComment" rows="4" maxlength="2000"></textarea>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+                @SharedLocalizer["Cancel"]
+            </button>
+            <button type="submit" form="approvalEvidenceForm" class="btn btn-primary" id="approvalEvidenceSubmit">
+                @Localizer["RecordEvidence"]
+            </button>
+        </div>
+    </div>
+}
+
+@if (canRecordGateEvidence)
+{
+    <div class="modal fade" id="gateEvidenceModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" id="gateEvidenceForm" novalidate>
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">@Localizer["RecordGateEvidence"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning mb-3">@Localizer["GateEvidenceDoesNotForcePass"]</div>
+                    <input type="hidden" id="gateEvidenceKey" />
+                    <div class="mb-3">
+                        <label class="form-label" for="gateEvidenceGateName">@Localizer["ReleaseGate"]</label>
+                        <input class="form-control" id="gateEvidenceGateName" readonly disabled />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="gateEvidenceReference">@Localizer["EvidenceReference"] <span class="text-danger">*</span></label>
+                        <input class="form-control" id="gateEvidenceReference" maxlength="256" required />
+                        <div class="form-text">@Localizer["EvidenceReferenceHint"]</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="gateVerifiedByUserId">@Localizer["VerifiedBy"]</label>
+                        <select class="form-select" id="gateVerifiedByUserId">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="gateVerifiedByRole">@Localizer["VerifiedByRole"]</label>
+                        <input class="form-control" id="gateVerifiedByRole" maxlength="120" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="gateVerificationDate">@Localizer["VerificationDate"]</label>
+                        <input class="form-control" id="gateVerificationDate" type="date" />
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label" for="gateEvidenceComment">@Localizer["EvidenceComment"]</label>
+                        <textarea class="form-control" id="gateEvidenceComment" rows="2" maxlength="2000"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="submit" class="btn btn-primary">@Localizer["RecordGateEvidence"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@* ── MOD-0029-FU27 modals ── *@
+@if (canManageTraining)
+{
+    <div class="modal fade" id="trainingAssignModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" id="trainingAssignForm" novalidate>
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">@Localizer["AssignTraining"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">@Localizer["AssignDoesNotCompleteTraining"]</div>
+                    <input type="hidden" id="trainingRequirementId" />
+                    <div class="mb-3">
+                        <label class="form-label" for="trainingRequirementLabel">@Localizer["TrainingRequirement"]</label>
+                        <input class="form-control" id="trainingRequirementLabel" readonly disabled />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="trainingAssignedToUserId">@Localizer["AssignedUser"]</label>
+                        <select class="form-select" id="trainingAssignedToUserId"><option value=""></option></select>
+                        <div class="form-text">@Localizer["AssignTargetHint"]</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="trainingAssignedToRole">@Localizer["AssignedRole"]</label>
+                        <input class="form-control" id="trainingAssignedToRole" maxlength="120" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="trainingAssignedToDepartment">@Localizer["AssignedDepartment"]</label>
+                        <input class="form-control" id="trainingAssignedToDepartment" maxlength="120" />
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label" for="trainingDueDate">@Localizer["TrainingDueDate"]</label>
+                        <input class="form-control" id="trainingDueDate" type="date" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="submit" class="btn btn-primary">@Localizer["AssignTraining"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="trainingRestrictModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" id="trainingRestrictForm" novalidate>
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">@Localizer["RestrictTraining"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning mb-3">@Localizer["RestrictionDoesNotDelete"]</div>
+                    <input type="hidden" id="restrictAssignmentId" />
+                    <div class="mb-3">
+                        <label class="form-label" for="restrictAssignmentLabel">@Localizer["TrainingAssignment"]</label>
+                        <input class="form-control" id="restrictAssignmentLabel" readonly disabled />
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label" for="trainingRestrictionReason">@Localizer["RestrictionReason"] <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="trainingRestrictionReason" rows="3" maxlength="1000" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="submit" class="btn btn-warning">@Localizer["RestrictTraining"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@if (canVerifyTraining)
+{
+    <div class="modal fade" id="trainingCompleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" id="trainingCompleteForm" novalidate>
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">@Localizer["CompleteTraining"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="completeAssignmentId" />
+                    <div class="mb-3">
+                        <label class="form-label" for="completeAssignmentLabel">@Localizer["TrainingAssignment"]</label>
+                        <input class="form-control" id="completeAssignmentLabel" readonly disabled />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="trainingCompletionEvidence">@Localizer["CompletionEvidence"] <span class="text-danger">*</span></label>
+                        <input class="form-control" id="trainingCompletionEvidence" maxlength="256" required />
+                        <div class="form-text">@Localizer["EvidenceReferenceHint"]</div>
+                    </div>
+                    <div class="form-check mb-0">
+                        <input class="form-check-input" type="checkbox" id="completionAcknowledge" required />
+                        <label class="form-check-label" for="completionAcknowledge">@Localizer["CompletionDoesNotMarkEffective"]</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="submit" class="btn btn-primary">@Localizer["CompleteTraining"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="trainingEffectivenessModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" id="trainingEffectivenessForm" novalidate>
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">@Localizer["RecordEffectiveness"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">@Localizer["EffectivenessIsRecordedNotComputed"]</div>
+                    <input type="hidden" id="effectivenessAssignmentId" />
+                    <div class="mb-3">
+                        <label class="form-label" for="effectivenessAssignmentLabel">@Localizer["TrainingAssignment"]</label>
+                        <input class="form-control" id="effectivenessAssignmentLabel" readonly disabled />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="effectivenessResult">@Localizer["EffectivenessResult"] <span class="text-danger">*</span></label>
+                        <select class="form-select" id="effectivenessResult" required>
+                            <option value="true">@Localizer["EffectivenessPassed"]</option>
+                            <option value="false">@Localizer["EffectivenessFailed"]</option>
+                        </select>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label" for="effectivenessEvidence">@Localizer["EffectivenessEvidence"] <span class="text-danger">*</span></label>
+                        <input class="form-control" id="effectivenessEvidence" maxlength="256" required />
+                        <div class="form-text">@Localizer["EvidenceReferenceHint"]</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="submit" class="btn btn-primary">@Localizer["RecordEffectiveness"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@* ── MOD-0029-FU28 modals ── *@
+@if (canApproveRepository)
+{
+    <div class="modal fade" id="repositoryDecisionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" id="repositoryDecisionForm" novalidate>
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="repositoryDecisionTitle">@Localizer["ApproveRepository"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning mb-3" id="repositoryDecisionNote"></div>
+                    <input type="hidden" id="repositoryDecisionAssessmentId" />
+                    <input type="hidden" id="repositoryDecisionMode" />
+                    <div class="mb-3">
+                        <label class="form-label" for="repositoryDecisionLabel">@Localizer["RepositoryAssessment"]</label>
+                        <input class="form-control" id="repositoryDecisionLabel" readonly disabled />
+                    </div>
+                    <div class="mb-3" id="repositoryApproveFields">
+                        <label class="form-label" for="repositoryApprovedByRole">@Localizer["ApprovedByRole"] <span class="text-danger">*</span></label>
+                        <select class="form-select" id="repositoryApprovedByRole">
+                            <option value="GQD">@Localizer["ApprovalRoleGQD"]</option>
+                            <option value="GQDDeputy">@Localizer["ApprovalRoleGQDDeputy"]</option>
+                            <option value="ITCSVOwner">@Localizer["ApprovalRoleITCSVOwner"]</option>
+                        </select>
+                        <div class="form-text">@Localizer["RepositoryApproverRoleHint"]</div>
+                        <label class="form-label mt-3" for="repositoryValidUntil">@Localizer["ValidUntil"]</label>
+                        <input class="form-control" id="repositoryValidUntil" type="date" />
+                    </div>
+                    <div class="mb-0 d-none" id="repositoryRejectFields">
+                        <label class="form-label" for="repositoryRejectionReason">@Localizer["RejectionReason"] <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="repositoryRejectionReason" rows="3" maxlength="1000"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="submit" class="btn btn-primary" id="repositoryDecisionSubmit">@Localizer["ApproveRepository"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@if (canManageRepository)
+{
+    <div class="modal fade" id="repositoryLinkModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" id="repositoryLinkForm" novalidate>
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">@Localizer["LinkRepository"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">@Localizer["LinkDoesNotApproveRepository"]</div>
+                    <div class="mb-0">
+                        <label class="form-label" for="repositoryLinkAssessmentId">@Localizer["RepositoryAssessment"] <span class="text-danger">*</span></label>
+                        <select class="form-select" id="repositoryLinkAssessmentId" required><option value=""></option></select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="submit" class="btn btn-primary">@Localizer["LinkRepository"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@if (canManageCopies)
+{
+    <div class="modal fade" id="registerCopyModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" id="registerCopyForm" novalidate>
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">@Localizer["RegisterCopy"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">@Localizer["IssueDoesNotMarkEffective"]</div>
+                    <div class="mb-3">
+                        <label class="form-label" for="copyType">@Localizer["CopyType"] <span class="text-danger">*</span></label>
+                        <select class="form-select" id="copyType" required>
+                            <option value="DigitalEffectiveCopy">@Localizer["CopyTypeDigitalEffectiveCopy"]</option>
+                            <option value="DigitalControlledCopy">@Localizer["CopyTypeDigitalControlledCopy"]</option>
+                            <option value="PrintedControlledCopy">@Localizer["CopyTypePrintedControlledCopy"]</option>
+                            <option value="TrainingCopy">@Localizer["CopyTypeTrainingCopy"]</option>
+                            <option value="ReferenceCopy">@Localizer["CopyTypeReferenceCopy"]</option>
+                            <option value="ExternalSharedCopy">@Localizer["CopyTypeExternalSharedCopy"]</option>
+                            <option value="TemporaryControlledIssue">@Localizer["CopyTypeTemporaryControlledIssue"]</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="copyLocationDescription">@Localizer["CopyLocation"]</label>
+                        <input class="form-control" id="copyLocationDescription" maxlength="256" />
+                        <div class="form-text">@Localizer["HolderOrLocationRequiredHint"]</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="copyHolderRole">@Localizer["HolderRole"]</label>
+                        <input class="form-control" id="copyHolderRole" maxlength="120" />
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label" for="copyHolderDepartment">@Localizer["HolderDepartment"]</label>
+                        <input class="form-control" id="copyHolderDepartment" maxlength="120" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="submit" class="btn btn-primary">@Localizer["RegisterCopy"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@if (canManageCopies || canReconcileCopies)
+{
+    @* One modal drives withdraw / reconcile / mark-missing / mark-obsolete / plan-complete / finding-resolve: they
+       differ only in which evidence or reason field the backend requires. *@
+    <div class="modal fade" id="copyActionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" id="copyActionForm" novalidate>
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="copyActionTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning mb-3" id="copyActionNote"></div>
+                    <input type="hidden" id="copyActionMode" />
+                    <input type="hidden" id="copyActionTargetId" />
+                    <div class="mb-3">
+                        <label class="form-label" for="copyActionLabel">@Localizer["ControlledCopy"]</label>
+                        <input class="form-control" id="copyActionLabel" readonly disabled />
+                    </div>
+                    <div class="mb-3" id="copyActionEvidenceWrapper">
+                        <label class="form-label" for="copyActionEvidence">@Localizer["EvidenceReference"] <span class="text-danger" id="copyActionEvidenceRequiredMark">*</span></label>
+                        <input class="form-control" id="copyActionEvidence" maxlength="256" />
+                        <div class="form-text">@Localizer["EvidenceReferenceHint"]</div>
+                    </div>
+                    <div class="mb-3 d-none" id="copyActionReasonWrapper">
+                        <label class="form-label" for="copyActionReason">@Localizer["ObsoleteReason"] <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="copyActionReason" rows="2" maxlength="1000"></textarea>
+                    </div>
+                    <div class="mb-3 d-none" id="copyActionLocationWrapper">
+                        <label class="form-label" for="copyActionLocation">@Localizer["CopyLocation"]</label>
+                        <input class="form-control" id="copyActionLocation" maxlength="256" />
+                    </div>
+                    <div class="mb-3 d-none" id="copyActionCommentWrapper">
+                        <label class="form-label" for="copyActionComment">@Localizer["EvidenceComment"]</label>
+                        <textarea class="form-control" id="copyActionComment" rows="2" maxlength="1000"></textarea>
+                    </div>
+                    <div class="mb-0 d-none" id="copyActionDeviationWrapper">
+                        <label class="form-label" for="copyActionDeviation">@Localizer["DeviationReference"]</label>
+                        <input class="form-control" id="copyActionDeviation" maxlength="256" />
+                        <div class="form-text">@Localizer["DeviationReferenceHint"]</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="submit" class="btn btn-primary" id="copyActionSubmit"></button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@if (canLinkControlledDocument && canViewControlledDocument)
+{
+    <div class="modal fade" id="linkControlledDocumentModal" tabindex="-1" aria-labelledby="linkControlledDocumentModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="linkControlledDocumentModalTitle">@Localizer["LinkControlledDocument"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">@Localizer["LinkControlledDocumentHint"]</p>
+                    <div class="alert alert-warning" role="alert">
+                        @Localizer["ManualLinkReconciliationOnly"]
+                    </div>
+                    <label class="form-label" for="controlledDocumentSelect">@Localizer["SelectControlledDocument"]</label>
+                    <select class="form-select" id="controlledDocumentSelect" data-placeholder="@Localizer["SelectControlledDocument"]">
+                        <option value=""></option>
+                    </select>
+                    <label class="form-label mt-3" for="controlledDocumentLinkReason">@Localizer["ReconciliationReason"]</label>
+                    <textarea class="form-control" id="controlledDocumentLinkReason" rows="3" maxlength="1000"
+                              placeholder="@Localizer["ReconciliationReasonHint"]"></textarea>
+                    <div class="alert alert-danger d-none mt-3 mb-0" id="linkControlledDocumentAlert" role="alert"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="button" class="btn btn-primary" id="btnConfirmControlledDocumentLink" disabled>
+                        <i class="icon-base bx bx-link me-1"></i>@Localizer["LinkControlledDocument"]
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/MasterRegister/_IndexL10n.cshtml" />
+    <script>
+        window.MasterRegisterDetailPerms = {
+            canManage: @Json.Serialize(canManage),
+            canLinkControlledDocument: @Json.Serialize(canLinkControlledDocument),
+            canViewControlledDocument: @Json.Serialize(canViewControlledDocument),
+            canViewIdentifiers: @Json.Serialize(canViewIdentifiers),
+            canAllocate: @Json.Serialize(canAllocate),
+            canReserve: @Json.Serialize(canReserve),
+            canCancelAllocation: @Json.Serialize(canCancelAllocation),
+            canViewLifecycle: @Json.Serialize(canViewLifecycle),
+            canManageLifecycle: @Json.Serialize(canManageLifecycle),
+            canViewApproval: @Json.Serialize(canViewApproval),
+            canRecordApprovalEvidence: @Json.Serialize(canRecordApprovalEvidence),
+            canViewGates: @Json.Serialize(canViewGates),
+            canEvaluateGates: @Json.Serialize(canEvaluateGates),
+            canRecordGateEvidence: @Json.Serialize(canRecordGateEvidence),
+            canViewTraining: @Json.Serialize(canViewTraining),
+            canManageTraining: @Json.Serialize(canManageTraining),
+            canVerifyTraining: @Json.Serialize(canVerifyTraining),
+            canViewRepository: @Json.Serialize(canViewRepository),
+            canManageRepository: @Json.Serialize(canManageRepository),
+            canApproveRepository: @Json.Serialize(canApproveRepository),
+            canViewCopies: @Json.Serialize(canViewCopies),
+            canManageCopies: @Json.Serialize(canManageCopies),
+            canReconcileCopies: @Json.Serialize(canReconcileCopies),
+            canViewRetention: @Json.Serialize(canViewRetention),
+            canManageRetention: @Json.Serialize(canManageRetention),
+            canViewLegalHold: @Json.Serialize(canViewLegalHold),
+            canViewSignatures: @Json.Serialize(canViewSignatures),
+            canVerifySignatures: @Json.Serialize(canVerifySignatures),
+            canViewQualityEvents: @Json.Serialize(canViewQualityEvents),
+            canViewDeviations: @Json.Serialize(canViewDeviations),
+            canViewCapa: @Json.Serialize(canViewCapa)
+        };
+    </script>
+    <script src="~/assets/js/DocumentManagement/MasterRegister/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/MasterRegister/index.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/MasterRegister/details.js" asp-append-version="true"></script>
+}

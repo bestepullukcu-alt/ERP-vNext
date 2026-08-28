@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="ActivateSegment" xml:space="preserve"><value>Aktifleştir</value></data>
+  <data name="ActivateSegmentConfirm" xml:space="preserve"><value>Bu segment aktifleştirilsin mi? Kriterleri bundan sonra dondurulur; kuralı değiştirmek yeni sürüm gerektirir.</value></data>
+  <data name="ActivatedAt" xml:space="preserve"><value>Aktifleştirilme</value></data>
+  <data name="Active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="AddGroup" xml:space="preserve"><value>Grup ekle</value></data>
+  <data name="AddGroupAtRoot" xml:space="preserve"><value>Kök gruba ekle</value></data>
+  <data name="AddGroupInside" xml:space="preserve"><value>İçine grup</value></data>
+  <data name="AddMember" xml:space="preserve"><value>Üye ekle</value></data>
+  <data name="AddPredicate" xml:space="preserve"><value>Yüklem ekle</value></data>
+  <data name="AddPredicateAtRoot" xml:space="preserve"><value>Koşul ekle</value></data>
+  <data name="AddPredicateInside" xml:space="preserve"><value>İçine koşul</value></data>
+  <data name="Apply" xml:space="preserve"><value>Uygula</value></data>
+  <data name="ArchiveSegment" xml:space="preserve"><value>Segmenti arşivle</value></data>
+  <data name="ArchiveSegmentConfirm" xml:space="preserve"><value>Bu segment arşivlensin mi? Hiçbir şey silinmez; salt-okunur olur ve açıklanabilir kalır.</value></data>
+  <data name="Archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="ArchivedSegmentReadOnly" xml:space="preserve"><value>Bu segment arşivlenmiş ve salt-okunurdur.</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Emin misiniz?</value></data>
+  <data name="Attribute" xml:space="preserve"><value>Nitelik</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Listeye dön</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Toplu sil</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Seçili kayıtlar silinsin mi?</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>İş birimi</value></data>
+  <data name="Cancel" xml:space="preserve"><value>İptal</value></data>
+  <data name="CandidateCount" xml:space="preserve"><value>Aday</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Sınıflandırma</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Sütunlar</value></data>
+  <data name="CommaSeparated" xml:space="preserve"><value>Değerleri virgülle ayırın</value></data>
+  <data name="CreateSegment" xml:space="preserve"><value>Segment oluştur</value></data>
+  <data name="CriteriaHelp" xml:space="preserve"><value>Kural, segmentle birlikte saklanan tiplenmiş bir yüklem ağacıdır. Nitelikler, operatörler ve parametreler yayınlanan katalogdan gelir.</value></data>
+  <data name="CriteriaSection" xml:space="preserve"><value>Kriterler</value></data>
+  <data name="CriteriaState" xml:space="preserve"><value>Kriter</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="DynamicForbidsManualHelp" xml:space="preserve"><value>Dinamik segment manuel satır kabul etmez. Manuel istisna gerekiyorsa hybrid'e geçin; böylece etiket, üyenin nereden geldiği konusunda yalan söylemez.</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="EditSegment" xml:space="preserve"><value>Segmenti düzenle</value></data>
+  <data name="Editable" xml:space="preserve"><value>Düzenlenebilir</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Geçerlilik başlangıcı</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Geçerlilik bitişi</value></data>
+  <data name="EmptyGroupHelp" xml:space="preserve"><value>Bu grupta henüz koşul yok. Bir koşul ekleyin ya da grubu kaldırın; boş grup kaydedilemez.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Segment bulunamadı.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Bir hata oluştu.</value></data>
+  <data name="ExcludedCount" xml:space="preserve"><value>Elenen</value></data>
+  <data name="Export" xml:space="preserve"><value>Dışa aktar</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtre</value></data>
+  <data name="From" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="Frozen" xml:space="preserve"><value>Donduruldu</value></data>
+  <data name="FrozenCriteriaHelp" xml:space="preserve"><value>Bu sürüm aktif ve kriterleri dondurulmuştur. Kuralı değiştirmek için yeni sürüm oluşturun; böylece geçmiş seçimler açıklanabilir kalır.</value></data>
+  <data name="GroupHelp" xml:space="preserve"><value>Grup, çocuklarını birleştirir; NOT grubunun tam olarak bir çocuğu olur.</value></data>
+  <data name="GroupNode" xml:space="preserve"><value>Grup</value></data>
+  <data name="GroupOperator" xml:space="preserve"><value>Grup operatörü</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="Import" xml:space="preserve"><value>İçe aktar</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Arşivlenenler dâhil</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Yaşam döngüsü</value></data>
+  <data name="LimitReached" xml:space="preserve"><value>Sınıra ulaşıldı</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor...</value></data>
+  <data name="MatchMode" xml:space="preserve"><value>Eşleşme modu</value></data>
+  <data name="MatchedCount" xml:space="preserve"><value>Üye</value></data>
+  <data name="MembersHelp" xml:space="preserve"><value>Burada yalnızca bir insanın elle yazdığı satırlar bulunur: dâhil et veya hariç tut. Türetilmiş üyelik asla yazılmaz.</value></data>
+  <data name="MembersSection" xml:space="preserve"><value>Manuel üyelik</value></data>
+  <data name="MembershipMode" xml:space="preserve"><value>Üyelik modu</value></data>
+  <data name="MembershipNeverStoredHelp" xml:space="preserve"><value>Üyelik asla saklanmaz: segmentte üye listesi, üye sayısı veya son çözümleme zamanı diye bir alan yoktur.</value></data>
+  <data name="MembershipSource" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="Move" xml:space="preserve"><value>Taşı</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Yeni sürüm</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Yeni bir taslak sürüm oluşturulsun mu? Kriterler yeni düğüm kimlikleriyle klonlanır ve mevcut sürüm çalışmaya devam eder.</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="NoCriteria" xml:space="preserve"><value>Henüz kriter yok.</value></data>
+  <data name="NoMembers" xml:space="preserve"><value>Manuel üyelik satırı yok.</value></data>
+  <data name="NoValueNeeded" xml:space="preserve"><value>Değer gerekmez</value></data>
+  <data name="NotGroupHelp" xml:space="preserve"><value>NOT tam olarak bir koşul alır.</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notlar</value></data>
+  <data name="Operator" xml:space="preserve"><value>Operatör</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Segment, bir kümeye kimin dâhil olduğunun TANIMIDIR; saklanan bir liste değildir. Üyelik her soruluşta yeniden türetilir.</value></data>
+  <data name="ParentGroup" xml:space="preserve"><value>Üst grup</value></data>
+  <data name="Passive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>Bu listeyi görüntüleme yetkiniz yok; değeri kimlik olarak elle girmeniz gerekir.</value></data>
+  <data name="PredicateCount" xml:space="preserve"><value>Yüklem sayısı</value></data>
+  <data name="PredicateNode" xml:space="preserve"><value>Koşul</value></data>
+  <data name="ProductPickerUnavailable" xml:space="preserve"><value>Global ürünleri listeleme yetkiniz yok; bu değer burada seçilemez.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı bakış</value></data>
+  <data name="ReasonCodes" xml:space="preserve"><value>Gerekçeler</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Segment aktifleştirildi.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Kayıt arşivlendi.</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>Kayıt oluşturuldu.</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>Kayıt güncellendi.</value></data>
+  <data name="Remove" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="Reset" xml:space="preserve"><value>Sıfırla</value></data>
+  <data name="ResolvePreviewHelp" xml:space="preserve"><value>İstek üzerine hesaplanır ve hiçbir yere kaydedilmez. Elenen adaylar, elenme gerekçesiyle birlikte listelenir.</value></data>
+  <data name="ResolvePreviewSection" xml:space="preserve"><value>Üyelik önizlemesi</value></data>
+  <data name="RootCombinatorHelp" xml:space="preserve"><value>üst düzey düğümlerin nasıl birleştiği</value></data>
+  <data name="RootLevel" xml:space="preserve"><value>Kök seviye</value></data>
+  <data name="RunResolve" xml:space="preserve"><value>Önizlemeyi çalıştır</value></data>
+  <data name="Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="SaveBeforeMembers" xml:space="preserve"><value>Önce segmenti kaydedin; manuel üyelik satırları sonrasında eklenir.</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Görünümü kaydet</value></data>
+  <data name="Search" xml:space="preserve"><value>Ara</value></data>
+  <data name="SegmentCode" xml:space="preserve"><value>Segment kodu</value></data>
+  <data name="SegmentCodeHelp" xml:space="preserve"><value>Kararlı iş anahtarı. Yeniden adlandırılmaz; bunun yerine adı değiştirin.</value></data>
+  <data name="SegmentContractUnavailable" xml:space="preserve"><value>Segment yetenek sözleşmesi kullanılamıyor. İşlemler devre dışı.</value></data>
+  <data name="SegmentName" xml:space="preserve"><value>Segment adı</value></data>
+  <data name="SegmentStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="SegmentType" xml:space="preserve"><value>Segment tipi</value></data>
+  <data name="SegmentTypeHelp" xml:space="preserve"><value>static = yalnız manuel liste. dynamic = yalnız kural (manuel satır kabul edilmez). hybrid = kural + manuel dâhil/hariç.</value></data>
+  <data name="SegmentVersion" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="SegmentsMenu" xml:space="preserve"><value>Segmentler</value></data>
+  <data name="SegmentsTitle" xml:space="preserve"><value>Segmentler</value></data>
+  <data name="SelectAccount" xml:space="preserve"><value>Hesap seçin</value></data>
+  <data name="SelectContact" xml:space="preserve"><value>Kişi seçin</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seçiniz...</value></data>
+  <data name="SelectTerritoryModel" xml:space="preserve"><value>Önce bir bölge modeli seçin</value></data>
+  <data name="SelectionReason" xml:space="preserve"><value>Seçim gerekçesi</value></data>
+  <data name="SelectionReasonHelp" xml:space="preserve"><value>Zorunlu: gerekçesiz manuel üyelik yazılamaz.</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Tümü</value></data>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="StatusSeparateEndpointHelp" xml:space="preserve"><value>Durum burada değişmez: aktifleştirme ve arşivleme kendi yetkileri olan ayrı işlemlerdir.</value></data>
+  <data name="SubjectDisplayName" xml:space="preserve"><value>Görünen ad</value></data>
+  <data name="SubjectDisplayNameHelp" xml:space="preserve"><value>Yalnız görüntü ve denetim için. Açıkça doğruluk kaynağı DEĞİLDİR.</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>Konu kimliği</value></data>
+  <data name="SubjectIdHelp" xml:space="preserve"><value>Kimlik verildiği gibi alınır; referans edilen master burada ne okunur ne değiştirilir.</value></data>
+  <data name="SubjectPickerHelp" xml:space="preserve"><value>Seçim yapınca aşağıdaki kimlik ve görünen ad dolar. Kimlik alanı esas alandır ve elle de yazılabilir.</value></data>
+  <data name="SubjectType" xml:space="preserve"><value>Konu tipi</value></data>
+  <data name="SubjectTypeHelp" xml:space="preserve"><value>Segmentin neyi kümelediği. Oluşturmadan sonra DEĞİŞMEZ: bir segment sessizce başka bir soruyu cevaplamaya başlayamaz.</value></data>
+  <data name="Superseded" xml:space="preserve"><value>Geçersizleşti</value></data>
+  <data name="SupersededHelp" xml:space="preserve"><value>Bunu daha yeni bir sürüm geçersizleştirdi. Yine de çözümlenir; çünkü geçmiş bir seçimi açıklamak, o gün yürürlükte olan kuralı gerektirir.</value></data>
+  <data name="To" xml:space="preserve"><value>Bitiş</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellenme</value></data>
+  <data name="Verdict" xml:space="preserve"><value>Sonuç</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Detayları gör</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+</root>

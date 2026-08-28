@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Apply" xml:space="preserve"><value>Appliquer</value></data>
+  <data name="Reset" xml:space="preserve"><value>Réinitialiser</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtrer</value></data>
+  <data name="Search" xml:space="preserve"><value>Rechercher</value></data>
+  <data name="Export" xml:space="preserve"><value>Exporter</value></data>
+  <data name="Import" xml:space="preserve"><value>Importer</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Tout afficher</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Enregistrer la vue</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Colonnes</value></data>
+  <data name="Status" xml:space="preserve"><value>Statut</value></data>
+  <data name="Yes" xml:space="preserve"><value>Oui</value></data>
+  <data name="No" xml:space="preserve"><value>Non</value></data>
+  <data name="View" xml:space="preserve"><value>Afficher</value></data>
+  <data name="Edit" xml:space="preserve"><value>Modifier</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Voir les détails</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Aperçu rapide</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Suppression groupée</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Supprimer les enregistrements sélectionnés ?</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Êtes-vous sûr ?</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Annuler</value></data>
+  <data name="Save" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="Remove" xml:space="preserve"><value>Supprimer</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Sélectionner…</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Inclure les archivés</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Retour à la liste</value></data>
+  <data name="RequiredFieldsHint" xml:space="preserve"><value>Les champs marqués d’un * sont obligatoires.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Aucun enregistrement trouvé.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Les enregistrements n’ont pas pu être chargés.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Chargement…</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>Ce champ est obligatoire.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Enregistrement archivé.</value></data>
+  <data name="EffectiveToBeforeEffectiveFrom" xml:space="preserve"><value>La date de fin ne peut pas précéder la date de début.</value></data>
+  <data name="Active" xml:space="preserve"><value>Actif</value></data>
+  <data name="Passive" xml:space="preserve"><value>Passif</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Inconnu</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="ArchivedAt" xml:space="preserve"><value>Archivé le</value></data>
+  <data name="ArchivedBy" xml:space="preserve"><value>Archivé par</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Créé le</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>Créé par</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Mis à jour le</value></data>
+  <data name="UpdatedBy" xml:space="preserve"><value>Mis à jour par</value></data>
+  <data name="SummarySection" xml:space="preserve"><value>Résumé</value></data>
+  <data name="AuditSection" xml:space="preserve"><value>Audit et provenance</value></data>
+  <data name="ExternalReferencesSection" xml:space="preserve"><value>Références externes</value></data>
+  <data name="ExternalReferencesHelp" xml:space="preserve"><value>Enregistrements de traçabilité hérités. Un seul principal par système source.</value></data>
+  <data name="AddReference" xml:space="preserve"><value>Ajouter une référence</value></data>
+  <data name="NoExternalReferences" xml:space="preserve"><value>Aucune référence externe.</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Système source</value></data>
+  <data name="ExternalId" xml:space="preserve"><value>ID externe</value></data>
+  <data name="ExternalCode" xml:space="preserve"><value>Code externe</value></data>
+  <data name="ExternalName" xml:space="preserve"><value>Nom externe</value></data>
+  <data name="ImportedAt" xml:space="preserve"><value>Importé le</value></data>
+  <data name="Primary" xml:space="preserve"><value>Principal</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Valide à partir du</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Valide jusqu’au</value></data>
+  <data name="TherapeuticAreaId" xml:space="preserve"><value>Aire thérapeutique</value></data>
+  <data name="TherapeuticAreaHelp" xml:space="preserve"><value>L’aire thérapeutique est un concept/une référence, pas un jeu de références local plat.</value></data>
+  <data name="BrandProductContractUnavailable" xml:space="preserve"><value>Le contrat de capacité Marque/Produit est indisponible. Les actions sont désactivées.</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Actif</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Inactif</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="BrandCode" xml:space="preserve"><value>Code de marque</value></data>
+  <data name="BrandName" xml:space="preserve"><value>Nom de marque</value></data>
+  <data name="ProductCode" xml:space="preserve"><value>Code produit</value></data>
+  <data name="ProductName" xml:space="preserve"><value>Nom du produit</value></data>
+  <data name="ProductStatus" xml:space="preserve"><value>Statut du produit</value></data>
+  <data name="ProductType" xml:space="preserve"><value>Type de produit</value></data>
+  <data name="ProductsTitle" xml:space="preserve"><value>Produits</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Données de référence des produits. Les modules campagne, connaissance et fréquence les consomment par référence uniquement.</value></data>
+  <data name="CreateProduct" xml:space="preserve"><value>Créer un produit</value></data>
+  <data name="EditProduct" xml:space="preserve"><value>Modifier le produit</value></data>
+  <data name="ProductDetail" xml:space="preserve"><value>Détail du produit</value></data>
+  <data name="ArchiveProduct" xml:space="preserve"><value>Archiver le produit</value></data>
+  <data name="ArchiveProductConfirm" xml:space="preserve"><value>Archiver ce produit ? Les références campagne, connaissance et fréquence sont conservées.</value></data>
+  <data name="ArchivedProductReadOnly" xml:space="preserve"><value>Ce produit est archivé et en lecture seule. Les références historiques restent intactes.</value></data>
+  <data name="ProductCodeImmutableHelp" xml:space="preserve"><value>Le code produit est permanent. Renommez le produit via le nom du produit.</value></data>
+  <data name="BrandId" xml:space="preserve"><value>Marque</value></data>
+  <data name="NoBrand" xml:space="preserve"><value>Aucune marque</value></data>
+  <data name="NoBrandLinked" xml:space="preserve"><value>Ce produit n’est lié à aucune marque.</value></data>
+  <data name="BrandIdOptionalHelp" xml:space="preserve"><value>Facultatif. Les produits génériques et non pharmaceutiques peuvent ne pas avoir de marque. Les marques archivées ne sont pas proposées.</value></data>
+  <data name="BrandNotResolvedHelp" xml:space="preserve"><value>La marque n’a pas pu être lue ; seul son identifiant est affiché.</value></data>
+  <data name="BrandReferenceSection" xml:space="preserve"><value>Référence de marque</value></data>
+  <data name="PharmaMetadataSection" xml:space="preserve"><value>Métadonnées pharmaceutiques</value></data>
+  <data name="DosageForm" xml:space="preserve"><value>Forme galénique</value></data>
+  <data name="Strength" xml:space="preserve"><value>Dosage</value></data>
+  <data name="PackSize" xml:space="preserve"><value>Conditionnement</value></data>
+  <data name="UnitOfMeasure" xml:space="preserve"><value>Unité de mesure</value></data>
+  <data name="ATCCode" xml:space="preserve"><value>Code ATC</value></data>
+  <data name="ATCCodeHelp" xml:space="preserve"><value>Le code ATC est une référence de taxonomie externe ; aucun référentiel ATC local n’est tenu ici.</value></data>
+  <data name="IndicationRefs" xml:space="preserve"><value>Références d’indication</value></data>
+  <data name="IndicationRefsHelp" xml:space="preserve"><value>Identifiants de référence séparés par des virgules. Aucun référentiel d’indications n’est ouvert ici.</value></data>
+  <data name="IndicationRefsInvalid" xml:space="preserve"><value>Les références d’indication doivent être des identifiants valides.</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Code ou nom…</value></data>
+  <data name="ProductType_medicine" xml:space="preserve"><value>Médicament</value></data>
+  <data name="ProductType_medical-device" xml:space="preserve"><value>Dispositif médical</value></data>
+  <data name="ProductType_service" xml:space="preserve"><value>Service</value></data>
+  <data name="ProductType_training-material" xml:space="preserve"><value>Support de formation</value></data>
+  <data name="ProductType_other" xml:space="preserve"><value>Autre</value></data>
+</root>

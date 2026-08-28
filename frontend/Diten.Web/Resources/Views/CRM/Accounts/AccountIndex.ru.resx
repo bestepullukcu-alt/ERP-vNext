@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="AccountTitle" xml:space="preserve"><value>Клиенты</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Управление клиентскими счетами, их иерархией и данными о местоположении.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Добавить клиента</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Изменить клиента</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Добавить клиента</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить клиента</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Back" xml:space="preserve"><value>Назад</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Создано</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="ReferenceDataUnavailable" xml:space="preserve"><value>Справочные данные сейчас недоступны, поэтому тип и статус клиента выбрать нельзя. Повторите попытку позже или обратитесь к администратору.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="LogoSection" xml:space="preserve"><value>Логотип</value></data>
+  <data name="LogoHelp" xml:space="preserve"><value>PNG, JPG, GIF, WEBP или SVG. До 256 КБ.</value></data>
+  <data name="LogoSelect" xml:space="preserve"><value>Выбрать изображение</value></data>
+  <data name="LogoRemove" xml:space="preserve"><value>Удалить</value></data>
+  <data name="LogoInvalidType" xml:space="preserve"><value>Недопустимый тип файла. Выберите изображение (PNG, JPG, GIF, WEBP, SVG).</value></data>
+  <data name="LogoTooLarge" xml:space="preserve"><value>Изображение слишком большое. Оно не должно превышать 256 КБ.</value></data>
+  <data name="LocationSection" xml:space="preserve"><value>Местоположение</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>Примечания</value></data>
+  <data name="StatusSection" xml:space="preserve"><value>Статус</value></data>
+  <data name="ContactSection" xml:space="preserve"><value>Контакт</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>Интеграция</value></data>
+  <data name="ChildAccountsSection" xml:space="preserve"><value>Дочерние клиенты</value></data>
+  <data name="CoverageSection" xml:space="preserve"><value>Покрытие</value></data>
+  <data name="CoverageStatus" xml:space="preserve"><value>Статус покрытия</value></data>
+  <data name="TerritorySection" xml:space="preserve"><value>Территория</value></data>
+  <data name="TerritoryNode" xml:space="preserve"><value>Узел территории</value></data>
+  <data name="AssignmentSource" xml:space="preserve"><value>Источник назначения</value></data>
+  <data name="NoTerritoryAssignment" xml:space="preserve"><value>Нет текущего назначения территории.</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>Страновой охват</value></data>
+  <data name="TerritoryNodeCode" xml:space="preserve"><value>Код узла</value></data>
+  <data name="CurrentBadge" xml:space="preserve"><value>Текущий</value></data>
+  <data name="AccountName" xml:space="preserve"><value>Название</value></data>
+  <data name="AccountNamePlaceholder" xml:space="preserve"><value>напр. Центральная больница</value></data>
+  <data name="AccountCode" xml:space="preserve"><value>Код клиента</value></data>
+  <data name="AccountCodePlaceholder" xml:space="preserve"><value>напр. ACC-2026-000001</value></data>
+  <data name="AccountCodeHelp" xml:space="preserve"><value>Оставьте пустым для автоматической генерации.</value></data>
+  <data name="AccountType" xml:space="preserve"><value>Тип клиента</value></data>
+  <data name="AccountCategory" xml:space="preserve"><value>Категория клиента</value></data>
+  <data name="ParentAccount" xml:space="preserve"><value>Родительский клиент</value></data>
+  <data name="ParentAccountHelp" xml:space="preserve"><value>Выберите родителя, чтобы поместить этого клиента в иерархию.</value></data>
+  <data name="CountryRef" xml:space="preserve"><value>Страна</value></data>
+  <data name="CountryRefPlaceholder" xml:space="preserve"><value>напр. Турция</value></data>
+  <data name="CityRef" xml:space="preserve"><value>Город</value></data>
+  <data name="CityRefPlaceholder" xml:space="preserve"><value>напр. Стамбул</value></data>
+  <data name="DistrictRef" xml:space="preserve"><value>Район</value></data>
+  <data name="DistrictRefPlaceholder" xml:space="preserve"><value>напр. Кадыкёй</value></data>
+  <data name="AddressLine" xml:space="preserve"><value>Адрес</value></data>
+  <data name="AddressLinePlaceholder" xml:space="preserve"><value>Улица, здание, этаж</value></data>
+  <data name="Latitude" xml:space="preserve"><value>Широта</value></data>
+  <data name="Longitude" xml:space="preserve"><value>Долгота</value></data>
+  <data name="ResponsiblePersonName" xml:space="preserve"><value>Ответственное лицо</value></data>
+  <data name="ResponsiblePersonNamePlaceholder" xml:space="preserve"><value>напр. Анна Иванова</value></data>
+  <data name="ResponsiblePersonPhone" xml:space="preserve"><value>Телефон</value></data>
+  <data name="ResponsiblePersonPhonePlaceholder" xml:space="preserve"><value>напр. +90 555 000 0000</value></data>
+  <data name="ResponsiblePersonEmail" xml:space="preserve"><value>Эл. почта</value></data>
+  <data name="ResponsiblePersonEmailPlaceholder" xml:space="preserve"><value>напр. contact@example.com</value></data>
+  <data name="ExternalReference" xml:space="preserve"><value>Внешняя ссылка</value></data>
+  <data name="ExternalReferencePlaceholder" xml:space="preserve"><value>напр. идентификатор старой системы</value></data>
+  <data name="ExternalReferenceHelp" xml:space="preserve"><value>Идентификатор этого клиента в системе-источнике.</value></data>
+  <data name="MapSearchPlaceholder" xml:space="preserve"><value>Поиск района, улицы или адреса</value></data>
+  <data name="MapHelp" xml:space="preserve"><value>Щёлкните по карте или перетащите маркер, чтобы задать местоположение; адрес заполняется автоматически. Поля также можно редактировать вручную.</value></data>
+  <data name="UseMyLocation" xml:space="preserve"><value>Использовать моё местоположение</value></data>
+  <data name="RelatedContacts" xml:space="preserve"><value>Связанные контакты</value></data>
+  <data name="NoRelatedContacts" xml:space="preserve"><value>Связанных контактов пока нет.</value></data>
+  <data name="RelatedAccounts" xml:space="preserve"><value>Связанные организации</value></data>
+  <data name="NoRelatedAccounts" xml:space="preserve"><value>Связанных организаций пока нет.</value></data>
+  <data name="Primary" xml:space="preserve"><value>Основной</value></data>
+  <data name="RelationshipType" xml:space="preserve"><value>Связь</value></data>
+  <data name="RelationshipDirection" xml:space="preserve"><value>Направление</value></data>
+  <data name="NotAuthorized" xml:space="preserve"><value>У вас нет прав для просмотра этого раздела.</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>Эта информация временно недоступна.</value></data>
+  <data name="ViewContact" xml:space="preserve"><value>Просмотреть контакт</value></data>
+  <data name="ViewAccount" xml:space="preserve"><value>Просмотреть организацию</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Имя</value></data>
+  <data name="ContactType" xml:space="preserve"><value>Тип контакта</value></data>
+  <data name="Role" xml:space="preserve"><value>Роль</value></data>
+  <data name="Phone" xml:space="preserve"><value>Телефон</value></data>
+  <data name="Email" xml:space="preserve"><value>Эл. почта</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="ValidTo" xml:space="preserve"><value>Действует по</value></data>
+  <data name="Notes" xml:space="preserve"><value>Примечания</value></data>
+  <data name="AddContactLink" xml:space="preserve"><value>Добавить связь с контактом</value></data>
+  <data name="EditContactLink" xml:space="preserve"><value>Изменить связь с контактом</value></data>
+  <data name="EndContactLink" xml:space="preserve"><value>Завершить связь с контактом</value></data>
+  <data name="AddRelatedAccount" xml:space="preserve"><value>Добавить связанную организацию</value></data>
+  <data name="EditRelationship" xml:space="preserve"><value>Изменить связь</value></data>
+  <data name="EndRelationship" xml:space="preserve"><value>Завершить связь</value></data>
+  <data name="SelectContact" xml:space="preserve"><value>Выбрать контакт</value></data>
+  <data name="SelectAccount" xml:space="preserve"><value>Выбрать организацию</value></data>
+  <data name="RoleCode" xml:space="preserve"><value>Роль</value></data>
+  <data name="RelationshipStatus" xml:space="preserve"><value>Статус связи</value></data>
+  <data name="PrimaryContact" xml:space="preserve"><value>Основной контакт</value></data>
+  <data name="EndDate" xml:space="preserve"><value>Дата окончания</value></data>
+  <data name="EndReason" xml:space="preserve"><value>Причина завершения / Примечания</value></data>
+  <data name="HistoricalLinkNotice" xml:space="preserve"><value>Связи с контактами историчны: завершение связи сохраняет её историю — она никогда не удаляется.</value></data>
+  <data name="HistoricalRelationshipNotice" xml:space="preserve"><value>Связи историчны: завершение связи сохраняет её историю — она никогда не удаляется.</value></data>
+  <data name="LinkWillBeEndedNotDeleted" xml:space="preserve"><value>Эта связь не будет удалена из истории. Она станет неактивной только с указанной вами даты.</value></data>
+  <data name="RelationshipWillBeEndedNotDeleted" xml:space="preserve"><value>Эта связь не будет удалена из истории. Она станет неактивной только с указанной вами даты.</value></data>
+  <data name="SaveLink" xml:space="preserve"><value>Сохранить связь</value></data>
+  <data name="SaveRelationship" xml:space="preserve"><value>Сохранить связь</value></data>
+  <data name="ConfirmEndLink" xml:space="preserve"><value>Подтвердить завершение связи</value></data>
+  <data name="ConfirmEndRelationship" xml:space="preserve"><value>Подтвердить завершение связи</value></data>
+  <data name="ManagedFromSource" xml:space="preserve"><value>Управляется из исходной организации</value></data>
+  <data name="LinkEndedMessage" xml:space="preserve"><value>Связь с контактом завершена и сохранена в истории.</value></data>
+  <data name="RelationshipEndedMessage" xml:space="preserve"><value>Связь завершена и сохранена в истории.</value></data>
+  <data name="CrossCountryReason" xml:space="preserve"><value>Деловое обоснование для разных стран</value></data>
+  <data name="CrossCountryHelp" xml:space="preserve"><value>Требуется только если данный контакт/аккаунт и связанная сторона находятся в разных странах. Коды стран аудируются; это обоснование не записывается в журналы.</value></data>
+  <data name="NotesSafetyNotice" xml:space="preserve"><value>Не вводите в это поле данные пациентов, медицинские данные, диагнозы, лечение, рецепты или чувствительные персональные данные.</value></data>
+  <data name="ReportsTo" xml:space="preserve"><value>Подчиняется</value></data>
+  <data name="ReportsToNone" xml:space="preserve"><value>— Нет (высший уровень) —</value></data>
+  <data name="ReportsToHelp" xml:space="preserve"><value>Выберите контакт, уже связанный с этим аккаунтом. Иерархия внутри аккаунта; самоподчинение и циклы запрещены.</value></data>
+  <data name="FormValidationError" xml:space="preserve"><value>Пожалуйста, правильно заполните обязательные поля.</value></data>
+</root>

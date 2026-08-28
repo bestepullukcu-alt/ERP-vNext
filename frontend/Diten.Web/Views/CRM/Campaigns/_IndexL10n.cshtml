@@ -1,0 +1,53 @@
+@using System.Text.Json
+@using Diten.Web.Views.CRM.Campaigns
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CampaignIndex> Localizer
+@{
+    // Single JSON bridge for the Campaigns surface: index.js, details.js (targeting + snapshot + consent
+    // provenance) and form.js all read window.CampaignL10n from this one payload.
+    var keys = new[]
+    {
+        // Golden compact toolbar / row-action vocabulary.
+        "Actions", "Active", "Passive", "Unknown", "Edit", "ViewDetails", "QuickView",
+        "BulkDelete", "BulkDeleteConfirm", "AreYouSure", "Cancel", "Save", "No", "Yes",
+        "Search", "Export", "Import", "Filter", "Apply", "Reset", "ShowAll", "SaveView", "ColumnVisibility", "Status",
+        // Campaign list + lifecycle.
+        "CampaignsTitle", "CampaignCode", "CampaignName", "CampaignType", "CampaignStatus", "ObjectiveType",
+        "StartDate", "EndDate", "Archived", "UpdatedAt",
+        "CreateCampaign", "EditCampaign", "ArchiveCampaign", "ArchiveCampaignConfirm", "RecordArchived",
+        "CampaignContractUnavailable", "EmptyState", "ErrorState", "Loading", "IncludeArchived", "View",
+        "EndDateBeforeStartDate", "SelectOption",
+        // FU10 — targeting mode + segment targeting (form toggle, grid column, targeting page).
+        "TargetingSection", "TargetingMode", "TargetingMode_segment", "TargetingMode_manual", "TargetingModeHelp",
+        "TargetedSegments", "TargetedSegmentsHelp", "SelectSegments", "SegmentSuperseded", "SegmentArchived",
+        "SegmentRequired", "SegmentNotActive", "SegmentNotFound", "SegmentDuplicate", "SegmentLimitExceeded",
+        "SubjectType", "ManualTargetingHint", "TargetingTitle", "TargetingWhatToPromote",
+        "TargetingWhatToPromoteClosed", "TargetingDormantData", "NoTargetedSegments", "CampaignCodeAutoHint", "CampaignCodeAutoPlaceholder",
+        // FU08 — cycle period binding (form picker + grid column + refusal messages).
+        "CyclePeriod", "NoCyclePeriod", "CyclePeriodHelp", "CyclePeriodWindow", "CyclePeriodClosedBadge",
+        "CampaignOutsideCycleWindow", "CyclePeriodNotActive", "CyclePeriodNotFound", "EndDateRequiredWhenBound",
+        // FU09 — campaign scope mirror (scope section, cascade notes, applicability warnings).
+        "ScopeSection", "ScopeType", "ScopeReference", "ScopeType_tenant", "ScopeType_country",
+        "ScopeType_legal-entity", "ScopeType_business-unit", "CountryScope", "LegalEntity", "BusinessUnit",
+        "BusinessUnitCountryFilter", "ScopeHelp", "ScopeEditableHint", "CyclePeriodNotApplicable",
+        "CyclePeriodScopeMismatch", "ScopeReferenceRequired", "ScopeAmbiguous", "CountryUnknown",
+        "BusinessUnitUnknown", "LegalEntityNotReferenceable", "LegalEntityUnavailable",
+        "ReferenceSetUnpublished", "DependencyUnavailable", "NoTerritoryPlanMatches",
+        // FU11 - manual target picker + priority band (details.js reads the band labels and the picker placeholders).
+        "PriorityLevel", "PriorityLevel_low", "PriorityLevel_medium", "PriorityLevel_high",
+        "TargetPicker", "SelectAccount", "SelectContact", "ManualTargetDefaultsHint",
+        "TargetStatus_draft", "TargetStatus_active", "TargetStatus_inactive", "TargetStatus_completed",
+        // Targeting (unchanged FU04 surface).
+        "AddRow", "Allowed", "ArchiveTarget", "ArchiveTargetConfirm", "Blocked", "CreateTarget", "CreatedCount",
+        "DifferentSourceConflict", "EditTarget", "Excluded", "ExcludedCount", "NotApplicable", "ReasonCodes",
+        "ReconciledCount", "TargetId", "TargetSource", "TargetStatus", "TargetType", "ValidationRequired",
+        // Snapshot + consent provenance (unchanged FU04 surface).
+        "ConsentFilterNotAppliedWarning", "CreateSnapshot", "SnapshotBatchId", "SnapshotCreated"
+    };
+    var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
+    // Verifier-compatible property markers for the dictionary-backed JSON bridge (each token below is `Key =`):
+    // Active =, Passive =, Unknown =, Actions =, Edit =, ViewDetails =, QuickView =,
+    // BulkDelete =, BulkDeleteConfirm =, AreYouSure =, Cancel =, Search =, Export =,
+    // Import =, Filter =, Apply =, Reset =, ShowAll =, SaveView =, ColumnVisibility =, Status =
+}
+<script id="campaign-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>

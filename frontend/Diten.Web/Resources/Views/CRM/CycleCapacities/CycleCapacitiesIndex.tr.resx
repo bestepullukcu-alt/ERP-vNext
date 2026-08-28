@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı görünüm</value></data>
+  <data name="CycleCapacitiesTitle" xml:space="preserve"><value>Dönem Kapasitesi</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Bir dönemde kaç ziyaret sığar. Yayınlanmış çalışma takvimi ve girilen aktivite bütçesi üzerinden kurulan bir tahmindir.</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>Dönem kapasitesi servisi kullanılamıyor.</value></data>
+  <data name="CreateCycleCapacity" xml:space="preserve"><value>Yeni kapasite</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni dönem kapasitesi</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Dönem kapasitesini düzenle</value></data>
+  <data name="CyclePeriod" xml:space="preserve"><value>Dönem</value></data>
+  <data name="CycleCode" xml:space="preserve"><value>Dönem kodu</value></data>
+  <data name="CycleName" xml:space="preserve"><value>Dönem adı</value></data>
+  <data name="PeriodWindow" xml:space="preserve"><value>Dönem aralığı</value></data>
+  <data name="CalendarCountryCode" xml:space="preserve"><value>Takvim ülkesi</value></data>
+  <data name="DailyWorkMinutes" xml:space="preserve"><value>Çalışma günü (dakika)</value></data>
+  <data name="MinutesPerVisit" xml:space="preserve"><value>Ziyaret başına dakika</value></data>
+  <data name="Fte" xml:space="preserve"><value>FTE</value></data>
+  <data name="MonthCount" xml:space="preserve"><value>Ay sayısı</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellenme</value></data>
+  <data name="ArchiveCycleCapacity" xml:space="preserve"><value>Arşivle</value></data>
+  <data name="ArchiveCycleCapacityConfirm" xml:space="preserve"><value>Bu kapasite arşivlensin mi? Hiçbir şey silinmez ve dönem yeni bir kapasite için serbest kalır.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Kapasite arşivlendi.</value></data>
+  <data name="ArchivedFilter" xml:space="preserve"><value>Arşiv</value></data>
+  <data name="ArchivedHidden" xml:space="preserve"><value>Arşiv gizli</value></data>
+  <data name="ArchivedOnly" xml:space="preserve"><value>Arşivlenmiş</value></data>
+  <data name="PeriodClosedLock" xml:space="preserve"><value>Dönem kapalı</value></data>
+  <data name="EstimateNoticeTitle" xml:space="preserve"><value>Bu bir tahmindir, kota değildir.</value></data>
+  <data name="EstimateNoticeBody" xml:space="preserve"><value>Sayı, ortalama aktivite süreleri ve geçici olarak yapılandırılmış bir FTE üzerine kuruludur; bir İK kadrosuna dayanmaz. Çalışma günleri yayınlanmış takvimden gelir ve değişebilir.</value></data>
+  <data name="BudgetVisitMinutesZero" xml:space="preserve"><value>Promo ve non-promo ürün süresi aynı anda sıfır olamaz.</value></data>
+  <data name="BudgetDailySpendExceedsDay" xml:space="preserve"><value>Yol, raporlama ve quiz süresi çalışma gününde ziyarete yer bırakmıyor.</value></data>
+  <data name="PinnedPeriodSection" xml:space="preserve"><value>Bağlı dönem</value></data>
+  <data name="ActivityBudgetSection" xml:space="preserve"><value>Aktivite dakika bütçesi</value></data>
+  <data name="MonthlyPlanSection" xml:space="preserve"><value>Aylık plan</value></data>
+  <data name="FieldForceSection" xml:space="preserve"><value>Saha ekibi</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>Notlar</value></data>
+  <data name="EstimateSectionHint" xml:space="preserve"><value>Çalışma günleri platform takviminden gelir ve hafta sonu, resmî tatil ve kapanışları zaten dışlar. Burada yalnız kendi düşümleriniz çıkarılır.</value></data>
+  <data name="CyclePeriodsBreadcrumb" xml:space="preserve"><value>Dönemler</value></data>
+  <data name="NonWorkingDays" xml:space="preserve"><value>Çalışılmayan gün</value></data>
+  <data name="FteMovedToMonthly" xml:space="preserve"><value>FTE artık aylık plan tablosunda, ay bazında tutuluyor.</value></data>
+  <data name="NoPeriodsAvailable" xml:space="preserve"><value>Henüz bir dönem yok. Önce bir dönem oluşturun.</value></data>
+  <data name="CalendarCountryHint" xml:space="preserve"><value>Yalnız çalışma takvimini okumak için kullanılır. Dönemin kapsamını değiştirmez.</value></data>
+  <data name="CalendarCountryDerivedHint" xml:space="preserve"><value>Ülke kapsamlı dönemden türetildi; burada değiştirilemez.</value></data>
+  <data name="CalendarCountryNotReady" xml:space="preserve"><value>Henüz seçilebilir ülke yok: ülke kapsamlı bir dönem bulunmuyor.</value></data>
+  <data name="CalendarCountryDerived" xml:space="preserve"><value>Türetildi</value></data>
+  <data name="CalendarCountryIsNotScope" xml:space="preserve"><value>Bir çalışma takvimi parametresidir, kapsam değildir.</value></data>
+  <data name="DailyWorkMinutesHint" xml:space="preserve"><value>Bir saha çalışma gününün dakikası (8 sa = 480).</value></data>
+  <data name="PerVisitHint" xml:space="preserve"><value>Ziyaret başına dakika.</value></data>
+  <data name="PerDayHint" xml:space="preserve"><value>Saha günü başına dakika.</value></data>
+  <data name="PromoProductTime" xml:space="preserve"><value>Promo ürün süresi</value></data>
+  <data name="NonPromoProductTime" xml:space="preserve"><value>Non-promo ürün süresi</value></data>
+  <data name="TravelingTime" xml:space="preserve"><value>Yol süresi</value></data>
+  <data name="ReportDuration" xml:space="preserve"><value>Raporlama süresi</value></data>
+  <data name="QuizDuration" xml:space="preserve"><value>Quiz süresi</value></data>
+  <data name="MonthlyDeductionsHint" xml:space="preserve"><value>Aylar dönemin aralığından gelir; eklenip çıkarılamaz. Hafta sonu ve resmî tatilleri düşmeyin: çalışma takvimi onları zaten dışlamıştır.</value></data>
+  <data name="MonthsPendingPeriod" xml:space="preserve"><value>Önce bir dönem seçin; hangi ayların görüneceğine onun aralığı karar verir.</value></data>
+  <data name="Month" xml:space="preserve"><value>Ay</value></data>
+  <data name="MeetingDays" xml:space="preserve"><value>Toplantı günü</value></data>
+  <data name="TrainingDays" xml:space="preserve"><value>Eğitim günü</value></data>
+  <data name="VacationDays" xml:space="preserve"><value>İzin günü</value></data>
+  <data name="MicroTargetingDayCount" xml:space="preserve"><value>Mikro-hedefleme günü</value></data>
+  <data name="MicroTargetingDuration" xml:space="preserve"><value>Mikro-hedefleme dk/gün</value></data>
+  <data name="FteInterimHint" xml:space="preserve"><value>Geçici olarak yapılandırılmış bir ortalamadır. İK entegrasyonu geldiğinde iş birimi ve yıl bazında otomatik gelecektir.</value></data>
+  <data name="CalculationUnavailable" xml:space="preserve"><value>Tahmin okunamadı.</value></data>
+  <data name="CalendarForbiddenTitle" xml:space="preserve"><value>Çalışma takvimini okuma yetkisi yok</value></data>
+  <data name="CalendarForbiddenBody" xml:space="preserve"><value>Takvim pekâlâ var olabilir; bu hesapta platform çalışma takvimi yetkisi bulunmuyor. Bir yöneticiden yetki isteyin.</value></data>
+  <data name="CalendarUnresolvedTitle" xml:space="preserve"><value>Çalışma takvimi cevap vermedi</value></data>
+  <data name="CalendarUnresolvedBody" xml:space="preserve"><value>Tahmin edilmiş bir sayı yerine hiçbir sayı gösterilmiyor. Bu ülke ve yıl için bir çalışma takvimi yayınlayıp tekrar deneyin.</value></data>
+  <data name="TotalVisitNumber" xml:space="preserve"><value>Ziyaret</value></data>
+  <data name="WorkingDays" xml:space="preserve"><value>Çalışma günü</value></data>
+  <data name="DeductedDays" xml:space="preserve"><value>Düşülen</value></data>
+  <data name="FieldDays" xml:space="preserve"><value>Saha günü</value></data>
+  <data name="VisitMinutes" xml:space="preserve"><value>Ziyaret dakikası</value></data>
+  <data name="NoFieldDays" xml:space="preserve"><value>Saha günü yok</value></data>
+</root>

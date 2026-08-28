@@ -522,6 +522,9 @@
   <data name="ReferenceDataMenu" xml:space="preserve"><value>Reference Data</value></data>
   <data name="HumanCapitalManagement" xml:space="preserve"><value>Human Capital Management</value></data>
   <data name="EmployeeDraftsMenu" xml:space="preserve"><value>Employee Drafts</value></data>
+  <data name="CommercialSuite" xml:space="preserve"><value>Commercial Suite</value></data>
+  <data name="AccountsMenu" xml:space="preserve"><value>Accounts</value></data>
+  <data name="ContactsMenu" xml:space="preserve"><value>Contacts</value></data>
   <data name="ModuleCodeInUse" xml:space="preserve"><value>This module code is already in use.</value></data>
   <data name="ModuleManagedByCode" xml:space="preserve"><value>This module is managed by code (self-registered) and cannot be changed here.</value></data>
   <data name="BaselineCannotBeDeactivated" xml:space="preserve"><value>Baseline modules cannot be deactivated — they are automatically available to every tenant.</value></data>
@@ -535,6 +538,8 @@
   <data name="DocumentationStructures" xml:space="preserve"><value>Documentation Structures</value></data>
   <data name="ControlledDocuments" xml:space="preserve"><value>Controlled Documents</value></data>
   <data name="TemplateMasters" xml:space="preserve"><value>Corporate Template Masters</value></data>
+  <data name="DocumentMasterRegister" xml:space="preserve"><value>Document Master Register</value></data>
+  <data name="RepositoryAssessments" xml:space="preserve"><value>Repository Assessments</value></data>
   <data name="TemplateVariants" xml:space="preserve"><value>Template Variants</value></data>
   <data name="AccessMatrix" xml:space="preserve"><value>Access Matrix</value></data>
   <data name="Reconciliation" xml:space="preserve"><value>Reconciliation</value></data>
@@ -564,6 +569,10 @@
   <data name="Nav.Domain.DOCUMENTMANAGEMENT" xml:space="preserve"><value>Document Management</value></data>
   <data name="Nav.Domain.MASTERDATAMANAGEMENT" xml:space="preserve"><value>Master Data Management</value></data>
   <data name="Nav.Domain.PLATFORMSHAREDSERVICES" xml:space="preserve"><value>Platform Shared Services</value></data>
+  <data name="WorkingCalendarsMenu" xml:space="preserve"><value>Working Calendars</value></data>
+  <data name="AddWorkingCalendar" xml:space="preserve"><value>Add Calendar</value></data>
+  <data name="Nav.Module.WORKINGCALENDAR" xml:space="preserve"><value>Working Calendar</value></data>
+  <data name="Nav.Page.WORKINGCALENDAROVERRIDES" xml:space="preserve"><value>Working Calendar Overrides</value></data>
   <data name="Nav.Module.ACCESSGOVERNANCE" xml:space="preserve"><value>Access Governance</value></data>
   <data name="Nav.Module.TENANTSETTINGS" xml:space="preserve"><value>Tenant Settings</value></data>
   <data name="Nav.Module.GOLDENSLIM" xml:space="preserve"><value>Golden Slim</value></data>
@@ -600,5 +609,28 @@
   </data>
   <data name="NoRecords" xml:space="preserve">
     <value>No records</value>
+  </data>
+  <data name="TerritoryManagementMenu" xml:space="preserve"><value>Territory Management</value></data>
+  <data name="CampaignsMenu" xml:space="preserve"><value>Campaigns</value></data>
+  <data name="KnowledgeMenu" xml:space="preserve"><value>Knowledge</value></data>
+  <data name="BrandsMenu" xml:space="preserve"><value>Brands</value></data>
+  <data name="ProductsMenu" xml:space="preserve"><value>Products</value></data>
+  <data name="ConsentPreferencesMenu" xml:space="preserve"><value>Consent &amp; Preferences</value></data>
+  <data name="KnowledgeConceptsMenu" xml:space="preserve"><value>Concepts</value></data>
+  <data name="KnowledgePathsMenu" xml:space="preserve"><value>Knowledge Paths</value></data>
+  <data name="ContentEngagementJourneysMenu" xml:space="preserve">
+    <value>Content Engagement Journeys</value>
+  </data>
+  <data name="SegmentsMenu" xml:space="preserve">
+    <value>Segments</value>
+  </data>
+  <data name="StrategyTemplatesMenu" xml:space="preserve">
+    <value>Strategy Templates</value>
+  </data>
+  <data name="CyclePeriodsMenu" xml:space="preserve">
+    <value>Cycle Periods</value>
+  </data>
+  <data name="CycleCapacitiesMenu" xml:space="preserve">
+    <value>Cycle Capacity</value>
   </data>
 </root>

@@ -1,0 +1,10 @@
+Module,Blueprint Name,Registry Status,Actual State,Domain,Persistence,Application,API,Gateway,RBAC,Audit,Events,Frontend,Tests,Runtime Smoke,Overall %,Match Verdict,Key Evidence Path
+MOD-0004,Metric & Semantic Registry,Not in registry,SPECIFICATION_ONLY,NI,NI,NI,NI,NI,NI,NI,NI,NI,NI,NI,5-10,NO_MATCH,Blueprint_Data only
+MOD-0018,RBAC / ABAC Authorization,ready-for-dev,PARTIALLY_IMPLEMENTED,PASS,PASS,PASS,PASS,PASS,PASS,PARTIAL,PARTIAL,PARTIAL,PASS,PARTIAL,62-75,PARTIAL_MATCH,services/Diten.AuthService + HasPermissionAttribute
+MOD-0019,Data Masking & Row/Field Security,Not in registry,NOT_IMPLEMENTED,NI,NI,NI,NI,NI,NA,PARTIAL,NI,NI,PARTIAL,NI,8-15,NO_MATCH,CrmService/Common/PiiMasking.cs (log redaction)
+MOD-0021,Audit Trail Service,ready-for-dev/implemented,IMPLEMENTED_BUT_RUNTIME_NOT_PROVEN,PASS,PASS,PASS,PASS,PASS,PARTIAL,PASS,PASS,PARTIAL,PASS,PARTIAL,70-80,PARTIAL_MATCH,Diten.Platform/.../Entities/Audit/AuditEvent.cs
+MOD-0023,Workflow Designer,review/ready-for-dev,PARTIALLY_IMPLEMENTED,PASS,PASS,PASS,PASS,PASS,PASS,PARTIAL,PARTIAL,PARTIAL,PASS,PARTIAL,60-72,PARTIAL_MATCH,Diten.Platform/.../WorkflowDefinitionsController.cs
+MOD-0028,Documentation Management,review/approved,PARTIALLY_IMPLEMENTED,PASS,PARTIAL,PASS,PASS,PASS,PASS,PARTIAL,PARTIAL,PASS,PASS,PARTIAL,68-78,PARTIAL_MATCH,Diten.Platform/.../DocumentManagement*Controller.cs; FU06 blocked
+MOD-0031,Evidence Linking Service,review/planned,SPECIFICATION_ONLY,NI,NI,NI,NI,NI,NI,NI,NI,NI,NI,NI,8-12,NO_MATCH,MOD-0031-evidence-linking-service.md (pack only)
+MOD-0040,Canonical ID & Correlation Standard,deprecated alias to MOD-0288 (WRONG),FOUNDATION_ONLY,NI,NI,PARTIAL,NI,PARTIAL,NA,PARTIAL,PARTIAL,NA,PARTIAL,PARTIAL,25-35,PARTIAL_MATCH,gateway/.../CorrelationPropagationDelegatingHandler.cs
+MOD-0063,Data Warehouse / Lakehouse,Not in registry,SPECIFICATION_ONLY,NI,NI,NI,NI,NI,NI,NI,NI,NI,NI,NI,5,NO_MATCH,Blueprint_Data only

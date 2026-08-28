@@ -1,0 +1,14 @@
+[
+  { "value_code": "tr", "display_name": "Türkçe", "sort_order": 10, "is_deprecated": false, "attributes": {} },
+  { "value_code": "en", "display_name": "English", "sort_order": 20, "is_deprecated": false, "attributes": {} },
+  { "value_code": "de", "display_name": "Deutsch", "sort_order": 30, "is_deprecated": false, "attributes": {} },
+  { "value_code": "fr", "display_name": "Français", "sort_order": 40, "is_deprecated": false, "attributes": {} },
+  { "value_code": "es", "display_name": "Español", "sort_order": 50, "is_deprecated": false, "attributes": {} },
+  { "value_code": "it", "display_name": "Italiano", "sort_order": 60, "is_deprecated": false, "attributes": {} },
+  { "value_code": "pt", "display_name": "Português", "sort_order": 70, "is_deprecated": false, "attributes": {} },
+  { "value_code": "ru", "display_name": "Русский", "sort_order": 80, "is_deprecated": false, "attributes": {} },
+  { "value_code": "ar", "display_name": "العربية", "sort_order": 90, "is_deprecated": false, "attributes": {} },
+  { "value_code": "zh", "display_name": "中文", "sort_order": 100, "is_deprecated": false, "attributes": {} },
+  { "value_code": "fa", "display_name": "فارسی", "sort_order": 110, "is_deprecated": false, "attributes": {} },
+  { "value_code": "az", "display_name": "Azərbaycanca", "sort_order": 120, "is_deprecated": false, "attributes": {} }
+]

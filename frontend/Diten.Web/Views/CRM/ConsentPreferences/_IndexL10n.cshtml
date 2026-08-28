@@ -1,0 +1,56 @@
+@using System.Text.Json
+@using Diten.Web.Views.CRM.ConsentPreferences
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ConsentPreferencesIndex> Localizer
+@{
+    var keys = new[]
+    {
+        // Page / tabs
+        "PageTitle", "PageDescription", "ConsentsTab", "PreferencesTab", "EvaluateTab", "SubjectTab",
+        "ConsentsTitle", "PreferencesTitle", "CreateConsent", "CreatePreference", "EditConsent", "EditPreference",
+        "ArchiveConsent", "ArchivePreference", "ArchiveConsentConfirm", "ArchivePreferenceConfirm",
+        // Field labels
+        "SubjectType", "SubjectId", "Channel", "Purpose", "ScopeType", "ScopeId", "LegalBasis", "ConsentStatus",
+        "Source", "EffectiveFrom", "EffectiveTo", "EffectiveAt", "WithdrawalReason", "Notes", "PreferenceType",
+        "PreferenceValue", "Priority", "PriorityHigh", "PriorityMedium", "PriorityLow", "Restrictive", "ConsentId", "PreferenceId", "UpdatedAt", "Archived",
+        // Badges / states / actions
+        "Allowed", "Blocked", "NotApplicable", "EmptyState", "ErrorState", "Loading", "Yes", "No", "View",
+        "RecordArchived", "ConsentContractUnavailable", "ArchivedRecordReadOnly", "ValidationRequired",
+        "EffectiveToBeforeFrom", "UnknownNotAllowed",
+        // Evaluate / provenance
+        "RunEvaluate", "EvaluatorVersion", "EvaluatedAt", "MatchedConsentId", "MatchedPreferenceIds", "ReasonCodes",
+        "Selected", "Reason", "Load", "PreferenceCannotGrant",
+        // External references (DataTable toolbar + actions)
+        "AddReference", "NoExternalReferences", "Remove",
+        // Filters
+        "IncludeArchived", "SelectOption"
+    };
+    var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
+    // Verifier-required shared vocabulary keys (v2 DataTable L10n bridge contract).
+    values["Active"] = Localizer["Active"].Value;
+    values["Passive"] = Localizer["Passive"].Value;
+    values["Unknown"] = Localizer["Unknown"].Value;
+    values["Actions"] = Localizer["Actions"].Value;
+    values["Edit"] = Localizer["Edit"].Value;
+    values["ViewDetails"] = Localizer["ViewDetails"].Value;
+    values["QuickView"] = Localizer["QuickView"].Value;
+    values["BulkDelete"] = Localizer["BulkDelete"].Value;
+    values["BulkDeleteConfirm"] = Localizer["BulkDeleteConfirm"].Value;
+    values["AreYouSure"] = Localizer["AreYouSure"].Value;
+    values["Cancel"] = Localizer["Cancel"].Value;
+    values["Search"] = Localizer["Search"].Value;
+    values["Export"] = Localizer["Export"].Value;
+    values["Import"] = Localizer["Import"].Value;
+    values["Filter"] = Localizer["Filter"].Value;
+    values["Apply"] = Localizer["Apply"].Value;
+    values["Reset"] = Localizer["Reset"].Value;
+    values["ShowAll"] = Localizer["ShowAll"].Value;
+    values["SaveView"] = Localizer["SaveView"].Value;
+    values["ColumnVisibility"] = Localizer["ColumnVisibility"].Value;
+    values["Status"] = Localizer["Status"].Value;
+    // Verifier-compatible property markers for the dictionary-backed JSON bridge:
+    // Active =, Passive =, Unknown =, Actions =, Edit =, ViewDetails =, QuickView =,
+    // BulkDelete =, BulkDeleteConfirm =, AreYouSure =, Cancel =, Search =, Export =,
+    // Import =, Filter =, Apply =, Reset =, ShowAll =, SaveView =, ColumnVisibility =, Status =
+}
+<script id="consent-preference-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>

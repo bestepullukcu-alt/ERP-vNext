@@ -1,0 +1,1084 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="DocumentMasterRegister" xml:space="preserve"><value>Registre principal des documents</value></data>
+  <data name="DocumentMasterRegisterTitle" xml:space="preserve"><value>Registre principal des documents</value></data>
+  <data name="DocumentMasterRegisterCreate" xml:space="preserve"><value>Nouvelle entrée de registre</value></data>
+  <data name="DocumentMasterRegisterEdit" xml:space="preserve"><value>Modifier l&apos;entrée de registre</value></data>
+  <data name="DocumentMasterRegisterDetails" xml:space="preserve"><value>Détails de l&apos;entrée</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Registre de référence des documents contrôlés, identifiants et métadonnées de gouvernance</value></data>
+  <data name="UID" xml:space="preserve"><value>UID</value></data>
+  <data name="DocumentCode" xml:space="preserve"><value>Code du document</value></data>
+  <data name="DocumentTitle" xml:space="preserve"><value>Titre du document</value></data>
+  <data name="DocumentClass" xml:space="preserve"><value>Classe du document</value></data>
+  <data name="DocumentType" xml:space="preserve"><value>Type de document</value></data>
+  <data name="Criticality" xml:space="preserve"><value>Criticité</value></data>
+  <data name="LifecycleStatus" xml:space="preserve"><value>Statut du cycle de vie</value></data>
+  <data name="RegisterStatus" xml:space="preserve"><value>Statut du registre</value></data>
+  <data name="OwnerFunction" xml:space="preserve"><value>Fonction propriétaire</value></data>
+  <data name="OwnerCompany" xml:space="preserve"><value>Société propriétaire</value></data>
+  <data name="ProcessOwnerRole" xml:space="preserve"><value>Rôle du propriétaire de processus</value></data>
+  <data name="ProcessOwnerUser" xml:space="preserve"><value>Propriétaire de processus</value></data>
+  <data name="GoverningLanguage" xml:space="preserve"><value>Langue de référence</value></data>
+  <data name="EffectiveDate" xml:space="preserve"><value>Date d&apos;entrée en vigueur</value></data>
+  <data name="NextReviewDueDate" xml:space="preserve"><value>Prochaine revue</value></data>
+  <data name="LastPeriodicReviewDate" xml:space="preserve"><value>Dernière revue périodique</value></data>
+  <data name="IsControlledDocument" xml:space="preserve"><value>Document contrôlé</value></data>
+  <data name="IsRecord" xml:space="preserve"><value>Enregistrement</value></data>
+  <data name="IsExternalDocument" xml:space="preserve"><value>Document externe</value></data>
+  <data name="IsTemplate" xml:space="preserve"><value>Modèle</value></data>
+  <data name="IsVariant" xml:space="preserve"><value>Variante</value></data>
+  <data name="ParentDocument" xml:space="preserve"><value>Document parent</value></data>
+  <data name="ParentDocumentUid" xml:space="preserve"><value>UID du document parent</value></data>
+  <data name="ParentDocumentCode" xml:space="preserve"><value>Code du document parent</value></data>
+  <data name="RetentionClass" xml:space="preserve"><value>Classe de conservation</value></data>
+  <data name="ReviewCycleMonths" xml:space="preserve"><value>Cycle de revue (mois)</value></data>
+  <data name="ApprovedRepository" xml:space="preserve"><value>Référentiel approuvé</value></data>
+  <data name="ApprovedRepositoryId" xml:space="preserve"><value>ID du référentiel</value></data>
+  <data name="ApprovedRepositoryName" xml:space="preserve"><value>Nom du référentiel</value></data>
+  <data name="ApprovedRepositoryPath" xml:space="preserve"><value>Chemin du référentiel</value></data>
+  <data name="LegacyCode" xml:space="preserve"><value>Ancien code</value></data>
+  <data name="PermanentUid" xml:space="preserve"><value>UID permanent</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Système source</value></data>
+  <data name="SourceLegacyId" xml:space="preserve"><value>ID hérité de la source</value></data>
+  <data name="Allocation" xml:space="preserve"><value>Attribution</value></data>
+  <data name="AllocationSystem" xml:space="preserve"><value>Attribué par le système</value></data>
+  <data name="AllocationManual" xml:space="preserve"><value>Saisi manuellement</value></data>
+  <data name="AllocationHint" xml:space="preserve"><value>Laissez vide pour que le moteur d&apos;attribution attribue l&apos;identifiant ultérieurement.</value></data>
+  <data name="CurrentVersionLabel" xml:space="preserve"><value>Version actuelle</value></data>
+  <data name="ApprovalEvidenceStatus" xml:space="preserve"><value>Preuve d&apos;approbation</value></data>
+  <data name="LastReleaseGateEvaluationStatus" xml:space="preserve"><value>Dernier résultat du contrôle de publication</value></data>
+  <data name="LinkedControlledDocument" xml:space="preserve"><value>Document contrôlé lié</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Créé le</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>Créé par</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Mis à jour le</value></data>
+  <data name="UpdatedBy" xml:space="preserve"><value>Mis à jour par</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Identification" xml:space="preserve"><value>Identification</value></data>
+  <data name="Classification" xml:space="preserve"><value>Classification</value></data>
+  <data name="Ownership" xml:space="preserve"><value>Propriété</value></data>
+  <data name="Flags" xml:space="preserve"><value>Indicateurs</value></data>
+  <data name="GovernanceMetadata" xml:space="preserve"><value>Métadonnées de gouvernance</value></data>
+  <data name="Provenance" xml:space="preserve"><value>Provenance</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>En vigueur à partir du</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>En vigueur jusqu&apos;au</value></data>
+  <data name="NextReviewFrom" xml:space="preserve"><value>Revue à partir du</value></data>
+  <data name="NextReviewTo" xml:space="preserve"><value>Revue jusqu&apos;au</value></data>
+  <data name="ClassPolicyGovernance" xml:space="preserve"><value>Politique / Gouvernance</value></data>
+  <data name="ClassManualSystemDescription" xml:space="preserve"><value>Manuel / Description du système</value></data>
+  <data name="ClassSop" xml:space="preserve"><value>MON</value></data>
+  <data name="ClassWorkInstruction" xml:space="preserve"><value>Instruction de travail</value></data>
+  <data name="ClassFormTemplateRegisterMatrixPlanChecklist" xml:space="preserve"><value>Formulaire / Modèle / Registre / Matrice / Plan / Liste</value></data>
+  <data name="ClassQualityTechnicalAgreementSdea" xml:space="preserve"><value>Accord qualité / technique (SDEA)</value></data>
+  <data name="ClassUrgentTemporaryInstruction" xml:space="preserve"><value>Instruction temporaire urgente</value></data>
+  <data name="ClassOther" xml:space="preserve"><value>Autre</value></data>
+  <data name="CriticalityCritical" xml:space="preserve"><value>Critique</value></data>
+  <data name="CriticalityMajor" xml:space="preserve"><value>Majeur</value></data>
+  <data name="CriticalityMinor" xml:space="preserve"><value>Mineur</value></data>
+  <data name="CriticalityUrgentTemporary" xml:space="preserve"><value>Urgent / Temporaire</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="LifecycleInReview" xml:space="preserve"><value>En revue</value></data>
+  <data name="LifecycleApprovedPendingEffective" xml:space="preserve"><value>Approuvé (en attente d&apos;effet)</value></data>
+  <data name="LifecycleEffective" xml:space="preserve"><value>En vigueur</value></data>
+  <data name="LifecycleUnderRevision" xml:space="preserve"><value>En cours de révision</value></data>
+  <data name="LifecycleSuspended" xml:space="preserve"><value>Suspendu</value></data>
+  <data name="LifecycleSuperseded" xml:space="preserve"><value>Remplacé</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>Retiré</value></data>
+  <data name="LifecycleObsoleteCopy" xml:space="preserve"><value>Copie obsolète</value></data>
+  <data name="RegisterDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="RegisterActive" xml:space="preserve"><value>Actif</value></data>
+  <data name="RegisterArchived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="RegisterCorrectionPending" xml:space="preserve"><value>Correction en attente</value></data>
+  <data name="RegisterSuperseded" xml:space="preserve"><value>Remplacé</value></data>
+  <data name="RegisterRetired" xml:space="preserve"><value>Retiré</value></data>
+  <data name="TypeSop" xml:space="preserve"><value>MON</value></data>
+  <data name="TypeWorkInstruction" xml:space="preserve"><value>Instruction de travail</value></data>
+  <data name="TypePolicy" xml:space="preserve"><value>Politique</value></data>
+  <data name="TypeForm" xml:space="preserve"><value>Formulaire</value></data>
+  <data name="TypeTemplate" xml:space="preserve"><value>Modèle</value></data>
+  <data name="TypeOther" xml:space="preserve"><value>Autre</value></data>
+  <data name="TabGeneral" xml:space="preserve"><value>Général</value></data>
+  <data name="TabIdentifiers" xml:space="preserve"><value>Identifiants</value></data>
+  <data name="TabLifecycle" xml:space="preserve"><value>Cycle de vie</value></data>
+  <data name="TabApproval" xml:space="preserve"><value>Approbation</value></data>
+  <data name="TabReleaseGates" xml:space="preserve"><value>Contrôles de publication</value></data>
+  <data name="TabTraining" xml:space="preserve"><value>Formation</value></data>
+  <data name="TabRepository" xml:space="preserve"><value>Référentiel</value></data>
+  <data name="TabRetention" xml:space="preserve"><value>Conservation</value></data>
+  <data name="TabSignatures" xml:space="preserve"><value>Signatures</value></data>
+  <data name="TabQualityEvents" xml:space="preserve"><value>Événements qualité</value></data>
+  <data name="DeferredSectionMessage" xml:space="preserve"><value>Cette section sera implémentée dans le prochain lot d&apos;interface.</value></data>
+  <data name="DeferredActionTooltip" xml:space="preserve"><value>Disponible dans le prochain lot d&apos;interface</value></data>
+  <data name="NoDocumentsFound" xml:space="preserve"><value>Aucune entrée de registre trouvée</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Le registre n&apos;a pas pu être chargé</value></data>
+  <data name="SaveSucceeded" xml:space="preserve"><value>Entrée de registre enregistrée</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>L&apos;entrée de registre n&apos;a pas pu être enregistrée</value></data>
+  <data name="Forbidden" xml:space="preserve"><value>Vous n&apos;êtes pas autorisé à effectuer cette opération</value></data>
+  <data name="VariantParentRequired" xml:space="preserve"><value>Une variante nécessite une référence au document parent</value></data>
+  <data name="RecordControlledConflict" xml:space="preserve"><value>Un enregistrement ne peut pas être aussi un document contrôlé</value></data>
+  <data name="ProtectedFieldsReadOnly" xml:space="preserve"><value>Les champs identifiant, cycle de vie et publication sont gérés par le moteur de gouvernance et ne sont pas modifiables ici.</value></data>
+  <data name="Yes" xml:space="preserve"><value>Oui</value></data>
+  <data name="No" xml:space="preserve"><value>Non</value></data>
+  <data name="Back" xml:space="preserve"><value>Retour</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Ajouter</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Aperçu rapide</value></data>
+  <data name="IdentifiersTabTitle" xml:space="preserve"><value>Identifiants</value></data>
+  <data name="LifecycleTabTitle" xml:space="preserve"><value>Cycle de vie</value></data>
+  <data name="IdentifierSummary" xml:space="preserve"><value>Attribution des identifiants</value></data>
+  <data name="CurrentIdentity" xml:space="preserve"><value>Identité actuelle</value></data>
+  <data name="AllocationReadiness" xml:space="preserve"><value>État d&apos;attribution</value></data>
+  <data name="IdentifierLedger" xml:space="preserve"><value>Journal des identifiants</value></data>
+  <data name="IdentifierType" xml:space="preserve"><value>Type d&apos;identifiant</value></data>
+  <data name="IdentifierValue" xml:space="preserve"><value>Valeur de l&apos;identifiant</value></data>
+  <data name="IdentifierTypePermanentUid" xml:space="preserve"><value>UID permanent</value></data>
+  <data name="IdentifierTypeDocumentCode" xml:space="preserve"><value>Code du document</value></data>
+  <data name="AllocationStatus" xml:space="preserve"><value>Statut d&apos;attribution</value></data>
+  <data name="AllocationStatusReserved" xml:space="preserve"><value>Réservé</value></data>
+  <data name="AllocationStatusAssigned" xml:space="preserve"><value>Attribué</value></data>
+  <data name="AllocationStatusCancelled" xml:space="preserve"><value>Annulé</value></data>
+  <data name="AllocationStatusAbandoned" xml:space="preserve"><value>Abandonné</value></data>
+  <data name="AllocationStatusSupersededByCorrection" xml:space="preserve"><value>Remplacé par correction</value></data>
+  <data name="AllocationSource" xml:space="preserve"><value>Source d&apos;attribution</value></data>
+  <data name="SystemAllocated" xml:space="preserve"><value>Attribué par le système</value></data>
+  <data name="ManualReserve" xml:space="preserve"><value>Réservation manuelle</value></data>
+  <data name="MigrationReserve" xml:space="preserve"><value>Réservation de migration</value></data>
+  <data name="AllocationReasonLabel" xml:space="preserve"><value>Motif d&apos;attribution</value></data>
+  <data name="AllocationReasonNewDocument" xml:space="preserve"><value>Nouveau document</value></data>
+  <data name="AllocationReasonMigration" xml:space="preserve"><value>Migration</value></data>
+  <data name="AllocationReasonManualImport" xml:space="preserve"><value>Import manuel</value></data>
+  <data name="AllocationReasonCorrection" xml:space="preserve"><value>Correction</value></data>
+  <data name="AllocatedAt" xml:space="preserve"><value>Attribué le</value></data>
+  <data name="AllocatedBy" xml:space="preserve"><value>Attribué par</value></data>
+  <data name="IdentifierOperations" xml:space="preserve"><value>Opérations d’identification</value></data>
+  <data name="AllocateUid" xml:space="preserve"><value>Attribuer un UID</value></data>
+  <data name="AllocateCode" xml:space="preserve"><value>Attribuer un code</value></data>
+  <data name="AllocateBoth" xml:space="preserve"><value>Attribuer les deux</value></data>
+  <data name="ReserveIdentifier" xml:space="preserve"><value>Réserver un identifiant</value></data>
+  <data name="ReserveIdentifierHint" xml:space="preserve"><value>Réservez un UID ou un code d&apos;origine externe (saisie manuelle ou migration). La valeur est liée à cette entrée.</value></data>
+  <data name="CancelAllocation" xml:space="preserve"><value>Annuler l&apos;attribution</value></data>
+  <data name="CancelAllocationReason" xml:space="preserve"><value>Motif d&apos;annulation</value></data>
+  <data name="ConfirmCancelAllocation" xml:space="preserve"><value>Ceci annule uniquement l&apos;ATTRIBUTION de l&apos;identifiant. Rien n&apos;est supprimé : la valeur reste au journal et n&apos;est jamais réutilisée.</value></data>
+  <data name="IdentifierNeverReusedNote" xml:space="preserve"><value>Le journal des identifiants est en ajout seul. Une valeur annulée ou abandonnée est conservée définitivement et jamais réutilisée ; les ruptures de numérotation sont admises (MON §6.3).</value></data>
+  <data name="RelatedRegisterEntry" xml:space="preserve"><value>Entrée de registre</value></data>
+  <data name="UidAllocated" xml:space="preserve"><value>UID attribué</value></data>
+  <data name="CodeAllocated" xml:space="preserve"><value>Code attribué</value></data>
+  <data name="EffectiveReadiness" xml:space="preserve"><value>Aptitude à l&apos;entrée en vigueur</value></data>
+  <data name="IdentifiersComplete" xml:space="preserve"><value>UID et code complets</value></data>
+  <data name="ActiveAllocations" xml:space="preserve"><value>Attributions actives</value></data>
+  <data name="LedgerRowCount" xml:space="preserve"><value>Lignes du journal</value></data>
+  <data name="NoIdentifierLedgerFound" xml:space="preserve"><value>Aucune attribution d&apos;identifiant enregistrée</value></data>
+  <data name="AllocationSucceeded" xml:space="preserve"><value>Identifiant attribué</value></data>
+  <data name="AllocationFailed" xml:space="preserve"><value>L&apos;identifiant n&apos;a pas pu être attribué</value></data>
+  <data name="ReservationSucceeded" xml:space="preserve"><value>Identifiant réservé</value></data>
+  <data name="ReservationFailed" xml:space="preserve"><value>L&apos;identifiant n&apos;a pas pu être réservé</value></data>
+  <data name="CancellationSucceeded" xml:space="preserve"><value>Attribution annulée</value></data>
+  <data name="CancellationFailed" xml:space="preserve"><value>L&apos;attribution n&apos;a pas pu être annulée</value></data>
+  <data name="UidAlreadyAllocated" xml:space="preserve"><value>Un UID permanent est déjà attribué</value></data>
+  <data name="CodeAlreadyAllocated" xml:space="preserve"><value>Un code de document est déjà attribué</value></data>
+  <data name="IdentifiersAlreadyAllocated" xml:space="preserve"><value>Au moins un identifiant est déjà attribué</value></data>
+  <data name="DuplicateIdentifier" xml:space="preserve"><value>Cette valeur d&apos;identifiant est déjà utilisée</value></data>
+  <data name="ManualIdentifierExists" xml:space="preserve"><value>Un identifiant manuel existe déjà pour cette entrée</value></data>
+  <data name="TypeMappingMissing" xml:space="preserve"><value>Aucun code de type déterministe pour cette combinaison</value></data>
+  <data name="RecordNotEligible" xml:space="preserve"><value>Un enregistrement n&apos;est pas éligible à l&apos;attribution</value></data>
+  <data name="ExternalNotEligible" xml:space="preserve"><value>Un document externe n&apos;est pas éligible à l&apos;attribution</value></data>
+  <data name="VariantInheritsParent" xml:space="preserve"><value>Une variante hérite de l&apos;identifiant de son parent</value></data>
+  <data name="EntryNotAllocatable" xml:space="preserve"><value>Cette entrée n&apos;est pas dans un état permettant l&apos;attribution</value></data>
+  <data name="LifecycleSummary" xml:space="preserve"><value>État du cycle de vie</value></data>
+  <data name="AvailableTransitions" xml:space="preserve"><value>Transitions disponibles</value></data>
+  <data name="NoTransitionAvailable" xml:space="preserve"><value>Aucune transition disponible depuis le statut actuel</value></data>
+  <data name="OperationalUseAllowed" xml:space="preserve"><value>Utilisation opérationnelle autorisée</value></data>
+  <data name="LastTransition" xml:space="preserve"><value>Dernière transition</value></data>
+  <data name="LastTransitionReason" xml:space="preserve"><value>Motif de la dernière transition</value></data>
+  <data name="LifecycleHistory" xml:space="preserve"><value>Historique du cycle de vie</value></data>
+  <data name="NoLifecycleHistoryFound" xml:space="preserve"><value>Aucune transition enregistrée</value></data>
+  <data name="FromStatus" xml:space="preserve"><value>Depuis</value></data>
+  <data name="ToStatus" xml:space="preserve"><value>Vers</value></data>
+  <data name="TransitionedAt" xml:space="preserve"><value>Transition le</value></data>
+  <data name="TransitionedBy" xml:space="preserve"><value>Effectué par</value></data>
+  <data name="TransitionLifecycle" xml:space="preserve"><value>Changer de statut</value></data>
+  <data name="TransitionReason" xml:space="preserve"><value>Motif</value></data>
+  <data name="TransitionComment" xml:space="preserve"><value>Commentaire</value></data>
+  <data name="EvidenceReference" xml:space="preserve"><value>Référence de preuve</value></data>
+  <data name="TargetStatus" xml:space="preserve"><value>Statut cible</value></data>
+  <data name="MarkEffective" xml:space="preserve"><value>Mettre en vigueur</value></data>
+  <data name="Supersede" xml:space="preserve"><value>Remplacer</value></data>
+  <data name="Retire" xml:space="preserve"><value>Retirer</value></data>
+  <data name="ReplacementRegisterEntry" xml:space="preserve"><value>Entrée de registre de remplacement</value></data>
+  <data name="ReplacementRegisterEntryHint" xml:space="preserve"><value>Facultatif. Sélectionnez l&apos;entrée de registre opérationnelle précédente que ce document remplace.</value></data>
+  <data name="EffectiveDateNotRetroactive" xml:space="preserve"><value>La date d&apos;entrée en vigueur ne peut être antérieure (MON §4). Laissez vide pour aujourd&apos;hui.</value></data>
+  <data name="LifecycleTransitionSucceeded" xml:space="preserve"><value>Statut du cycle de vie mis à jour</value></data>
+  <data name="LifecycleTransitionFailed" xml:space="preserve"><value>Le statut du cycle de vie n&apos;a pas pu être modifié</value></data>
+  <data name="MarkEffectiveWarning" xml:space="preserve"><value>Le backend impose UID/code, preuve d&apos;approbation, contrôles de publication et date non rétroactive. Cet écran ne les contourne pas.</value></data>
+  <data name="BackendEnforcesReleaseGates" xml:space="preserve"><value>Le moteur de gouvernance applique toutes les règles. Les boutons reflètent ce que le backend autorise ; il reste l&apos;autorité finale.</value></data>
+  <data name="BackendWarnings" xml:space="preserve"><value>Avertissements de gouvernance</value></data>
+  <data name="ConfirmMarkEffective" xml:space="preserve"><value>Ceci met le document en vigueur. Non annulable par une modification de métadonnées.</value></data>
+  <data name="ConfirmSupersede" xml:space="preserve"><value>Marque le document comme remplacé par une version plus récente. Le motif est obligatoire.</value></data>
+  <data name="ConfirmRetire" xml:space="preserve"><value>Ceci met fin à la vie opérationnelle du document. Rien n&apos;est supprimé ; l&apos;enregistrement est conservé. Le motif est obligatoire.</value></data>
+  <data name="InvalidTransition" xml:space="preserve"><value>Ce changement n&apos;est pas autorisé depuis le statut actuel</value></data>
+  <data name="ReasonRequiredError" xml:space="preserve"><value>Un motif est requis pour ce changement de statut</value></data>
+  <data name="MissingUidOrCode" xml:space="preserve"><value>Un UID permanent et un code sont d&apos;abord requis</value></data>
+  <data name="RetroactiveEffectiveDate" xml:space="preserve"><value>La date d&apos;entrée en vigueur ne peut être rétroactive</value></data>
+  <data name="ReleaseGateBlocked" xml:space="preserve"><value>Bloqué par les contrôles de publication non dérogeables</value></data>
+  <data name="ApprovalEvidenceBlocked" xml:space="preserve"><value>Bloqué car la preuve d&apos;approbation est incomplète</value></data>
+  <data name="TrainingReadinessBlocked" xml:space="preserve"><value>Bloqué car la préparation de la formation est incomplète</value></data>
+  <data name="DuplicateEffective" xml:space="preserve"><value>Une autre entrée avec le même UID est déjà en vigueur</value></data>
+  <data name="StaleVersion" xml:space="preserve"><value>L&apos;entrée a été modifiée par une autre opération — rechargez et réessayez</value></data>
+  <data name="RegisterEntryNotFound" xml:space="preserve"><value>Entrée de registre introuvable</value></data>
+  <data name="ConflictOccurred" xml:space="preserve"><value>L&apos;opération entre en conflit avec l&apos;état actuel</value></data>
+  <data name="ReloadTab" xml:space="preserve"><value>Recharger</value></data>
+  <data name="ActionNotAvailable" xml:space="preserve"><value>Non disponible</value></data>
+  <data name="PermissionRequired" xml:space="preserve"><value>Vous n&apos;avez pas la permission pour cette action</value></data>
+  <data name="OwnerFunctionFallbackHint" xml:space="preserve"><value>Aucune liste de référence publiée pour ce champ, le texte libre est accepté. Gardez une orthographe cohérente.</value></data>
+  <data name="LegacyValue" xml:space="preserve"><value>valeur héritée</value></data>
+  <data name="ApprovalTabTitle" xml:space="preserve"><value>Approbation</value></data>
+  <data name="ReleaseGatesTabTitle" xml:space="preserve"><value>Contrôles de publication</value></data>
+  <data name="ApprovalSummary" xml:space="preserve"><value>Circuit d&apos;approbation et preuves</value></data>
+  <data name="ApprovalRoute" xml:space="preserve"><value>Circuit d&apos;approbation</value></data>
+  <data name="ResolveApprovalRoute" xml:space="preserve"><value>Calculer le circuit d&apos;approbation</value></data>
+  <data name="ResolveRouteIsNotApproval" xml:space="preserve"><value>Le calcul du circuit détermine seulement les approbations requises. Il n&apos;approuve rien et ne change aucun statut.</value></data>
+  <data name="ApprovalRouteResolved" xml:space="preserve"><value>Circuit d&apos;approbation calculé</value></data>
+  <data name="ApprovalReadiness" xml:space="preserve"><value>Aptitude à l&apos;approbation</value></data>
+  <data name="ApprovalRequirement" xml:space="preserve"><value>Exigence</value></data>
+  <data name="ApprovalRequirements" xml:space="preserve"><value>Exigences d&apos;approbation</value></data>
+  <data name="NoApprovalRequirementsFound" xml:space="preserve"><value>Aucune exigence d&apos;approbation calculée</value></data>
+  <data name="RequirementRole" xml:space="preserve"><value>Rôle requis</value></data>
+  <data name="RequirementType" xml:space="preserve"><value>Type d&apos;exigence</value></data>
+  <data name="Mandatory" xml:space="preserve"><value>Obligatoire</value></data>
+  <data name="Optional" xml:space="preserve"><value>Facultatif</value></data>
+  <data name="NonDelegable" xml:space="preserve"><value>Non délégable</value></data>
+  <data name="SourceRule" xml:space="preserve"><value>Règle source</value></data>
+  <data name="CompletedBy" xml:space="preserve"><value>Réalisé par</value></data>
+  <data name="CompletedCount" xml:space="preserve"><value>Réalisés</value></data>
+  <data name="PendingCount" xml:space="preserve"><value>En attente</value></data>
+  <data name="RejectedCount" xml:space="preserve"><value>Rejetés</value></data>
+  <data name="RequiredApprovers" xml:space="preserve"><value>Approbations requises</value></data>
+  <data name="BlockingIssues" xml:space="preserve"><value>Problèmes bloquants</value></data>
+  <data name="NoBlockingIssues" xml:space="preserve"><value>Aucun problème bloquant</value></data>
+  <data name="Ready" xml:space="preserve"><value>Prêt</value></data>
+  <data name="NotReady" xml:space="preserve"><value>Non prêt</value></data>
+  <data name="EvidenceStatus" xml:space="preserve"><value>Statut de la preuve</value></data>
+  <data name="EvidenceAction" xml:space="preserve"><value>Action</value></data>
+  <data name="RecordEvidence" xml:space="preserve"><value>Enregistrer la preuve</value></data>
+  <data name="RecordEvidenceNote" xml:space="preserve"><value>Enregistre une décision d&apos;approbation. La séparation des tâches est vérifiée côté serveur et peut refuser.</value></data>
+  <data name="RejectEvidence" xml:space="preserve"><value>Rejeter</value></data>
+  <data name="RejectEvidenceNote" xml:space="preserve"><value>Rejette cette exigence. Le motif est obligatoire et conservé dans la piste d&apos;audit.</value></data>
+  <data name="RejectionReason" xml:space="preserve"><value>Motif de rejet</value></data>
+  <data name="EvidenceComment" xml:space="preserve"><value>Commentaire</value></data>
+  <data name="EvidenceReferenceHint" xml:space="preserve"><value>Référence de la preuve conservée ailleurs (ticket, procès-verbal, enregistrement signé). Aucun fichier ici.</value></data>
+  <data name="PerformedBy" xml:space="preserve"><value>Réalisé par</value></data>
+  <data name="PerformedByRole" xml:space="preserve"><value>Rôle de l&apos;exécutant</value></data>
+  <data name="SegregationCheckedServerSide" xml:space="preserve"><value>Le backend applique la séparation des tâches ; une combinaison interdite sera refusée.</value></data>
+  <data name="SegregationStatus" xml:space="preserve"><value>Séparation des tâches</value></data>
+  <data name="SegregationPassed" xml:space="preserve"><value>Séparation des tâches respectée</value></data>
+  <data name="SegregationFailed" xml:space="preserve"><value>Séparation des tâches non respectée</value></data>
+  <data name="SegregationFailedError" xml:space="preserve"><value>Cette action viole la séparation des tâches</value></data>
+  <data name="AuthorSoleApproverBlocked" xml:space="preserve"><value>L&apos;auteur ne peut être le seul approbateur de son document (MON §5).</value></data>
+  <data name="SameUserCannotCompleteAllMandatory" xml:space="preserve"><value>Un seul utilisateur ne peut réaliser toutes les approbations obligatoires</value></data>
+  <data name="MissingAuthorWarning" xml:space="preserve"><value>Aucun auteur enregistré sur cette entrée</value></data>
+  <data name="DocumentAuthor" xml:space="preserve"><value>Auteur du document</value></data>
+  <data name="MissingMandatoryEvidence" xml:space="preserve"><value>Approbation obligatoire manquante</value></data>
+  <data name="ApprovalEvidenceComplete" xml:space="preserve"><value>Preuve d&apos;approbation complète</value></data>
+  <data name="ApprovalEvidenceIncomplete" xml:space="preserve"><value>Preuve d&apos;approbation incomplète</value></data>
+  <data name="RequirementNotFound" xml:space="preserve"><value>Exigence d&apos;approbation introuvable</value></data>
+  <data name="WrongApproverRole" xml:space="preserve"><value>Cet utilisateur n&apos;a pas le rôle d&apos;approbateur requis</value></data>
+  <data name="RequirementStatusPending" xml:space="preserve"><value>En attente</value></data>
+  <data name="RequirementStatusCompleted" xml:space="preserve"><value>Réalisé</value></data>
+  <data name="RequirementStatusRejected" xml:space="preserve"><value>Rejeté</value></data>
+  <data name="RequirementStatusWaived" xml:space="preserve"><value>Levée</value></data>
+  <data name="RequirementStatusBlocked" xml:space="preserve"><value>Bloqué</value></data>
+  <data name="ApprovalStateNotRequired" xml:space="preserve"><value>Non requis</value></data>
+  <data name="ApprovalStatePending" xml:space="preserve"><value>En attente</value></data>
+  <data name="ApprovalStateComplete" xml:space="preserve"><value>Complet</value></data>
+  <data name="ApprovalStateRejected" xml:space="preserve"><value>Rejeté</value></data>
+  <data name="ApprovalStateBlocked" xml:space="preserve"><value>Bloqué</value></data>
+  <data name="ActionReviewed" xml:space="preserve"><value>Revu</value></data>
+  <data name="ActionApproved" xml:space="preserve"><value>Approuvé</value></data>
+  <data name="ActionEndorsed" xml:space="preserve"><value>Avalisé</value></data>
+  <data name="ActionReturned" xml:space="preserve"><value>Retourné</value></data>
+  <data name="RequirementTypeApproval" xml:space="preserve"><value>Approbation</value></data>
+  <data name="RequirementTypeReview" xml:space="preserve"><value>Revue</value></data>
+  <data name="RequirementTypeEndorsement" xml:space="preserve"><value>Aval</value></data>
+  <data name="RequirementTypeTechnicalReview" xml:space="preserve"><value>Revue technique</value></data>
+  <data name="RequirementTypeQualityConcurrence" xml:space="preserve"><value>Accord qualité</value></data>
+  <data name="RequirementTypeLegalReview" xml:space="preserve"><value>Revue juridique</value></data>
+  <data name="RequirementTypeTrainingReadinessVerification" xml:space="preserve"><value>Vérification de la formation</value></data>
+  <data name="SourceRuleCriticality" xml:space="preserve"><value>Criticité</value></data>
+  <data name="SourceRuleDocumentClass" xml:space="preserve"><value>Classe du document</value></data>
+  <data name="SourceRuleRegulatoryOverlay" xml:space="preserve"><value>Surcouche réglementaire</value></data>
+  <data name="SourceRulePVOverlay" xml:space="preserve"><value>Surcouche pharmacovigilance</value></data>
+  <data name="SourceRuleBatchReleaseOverlay" xml:space="preserve"><value>Surcouche libération de lot</value></data>
+  <data name="SourceRuleAgreementOverlay" xml:space="preserve"><value>Surcouche accord</value></data>
+  <data name="SourceRuleDmsCsvOverlay" xml:space="preserve"><value>Surcouche DMS / CSV</value></data>
+  <data name="SourceRuleGroupGovernanceOverlay" xml:space="preserve"><value>Surcouche gouvernance groupe</value></data>
+  <data name="SourceRuleSegregationOverlay" xml:space="preserve"><value>Surcouche séparation des tâches</value></data>
+  <data name="SourceRuleManualOverride" xml:space="preserve"><value>Dérogation manuelle</value></data>
+  <data name="ApprovalRoleGQD" xml:space="preserve"><value>Directeur Qualité Groupe</value></data>
+  <data name="ApprovalRoleGQDDeputy" xml:space="preserve"><value>Directeur Qualité Groupe adjoint</value></data>
+  <data name="ApprovalRoleGRA" xml:space="preserve"><value>Affaires réglementaires Groupe</value></data>
+  <data name="ApprovalRoleQPPV" xml:space="preserve"><value>QPPV</value></data>
+  <data name="ApprovalRoleQP" xml:space="preserve"><value>Personne qualifiée</value></data>
+  <data name="ApprovalRoleLegal" xml:space="preserve"><value>Juridique</value></data>
+  <data name="ApprovalRoleITCSVOwner" xml:space="preserve"><value>Responsable IT / CSV</value></data>
+  <data name="ApprovalRoleQADocumentation" xml:space="preserve"><value>Documentation AQ</value></data>
+  <data name="ApprovalRoleDocumentOwner" xml:space="preserve"><value>Propriétaire du document</value></data>
+  <data name="ApprovalRoleLocalQA" xml:space="preserve"><value>AQ locale</value></data>
+  <data name="ApprovalRoleCEO" xml:space="preserve"><value>Directeur Général</value></data>
+  <data name="ApprovalRoleIndependentQASenior" xml:space="preserve"><value>AQ senior indépendante</value></data>
+  <data name="ApprovalRoleTrainingCoordinator" xml:space="preserve"><value>Coordinateur formation</value></data>
+  <data name="ReleaseGateSummary" xml:space="preserve"><value>Contrôles de publication non dérogeables</value></data>
+  <data name="NonWaivableExplanation" xml:space="preserve"><value>Les six contrôles sont non dérogeables. Aucune voie de contournement, dérogation ou exception, ici ou ailleurs.</value></data>
+  <data name="EvaluateReleaseGates" xml:space="preserve"><value>Évaluer les contrôles</value></data>
+  <data name="ReleaseGate" xml:space="preserve"><value>Contrôle de publication</value></data>
+  <data name="ReleaseGateResult" xml:space="preserve"><value>Résultat</value></data>
+  <data name="NonWaivable" xml:space="preserve"><value>Non dérogeable</value></data>
+  <data name="NoWaiverAllowed" xml:space="preserve"><value>Sans dérogation</value></data>
+  <data name="GatePassed" xml:space="preserve"><value>Réussi</value></data>
+  <data name="GateBlocked" xml:space="preserve"><value>Bloqué</value></data>
+  <data name="GateWarning" xml:space="preserve"><value>Avertissement</value></data>
+  <data name="GateNotApplicable" xml:space="preserve"><value>Non applicable</value></data>
+  <data name="GateEvidence" xml:space="preserve"><value>Preuve du contrôle</value></data>
+  <data name="RecordGateEvidence" xml:space="preserve"><value>Enregistrer la preuve</value></data>
+  <data name="GateEvidenceDoesNotForcePass" xml:space="preserve"><value>Enregistrer une preuve ne force pas la réussite. Le moteur réévalue ; le contrôle peut rester bloqué.</value></data>
+  <data name="BlockingReason" xml:space="preserve"><value>Motif du blocage</value></data>
+  <data name="GateSource" xml:space="preserve"><value>Source</value></data>
+  <data name="VerifiedBy" xml:space="preserve"><value>Vérifié par</value></data>
+  <data name="VerifiedByRole" xml:space="preserve"><value>Rôle du vérificateur</value></data>
+  <data name="VerificationDate" xml:space="preserve"><value>Date de vérification</value></data>
+  <data name="GatesPassed" xml:space="preserve"><value>Contrôles réussis</value></data>
+  <data name="GatesBlocked" xml:space="preserve"><value>Contrôles bloqués</value></data>
+  <data name="GatesWarning" xml:space="preserve"><value>Avertissements</value></data>
+  <data name="EvidenceMissingCount" xml:space="preserve"><value>Preuves manquantes</value></data>
+  <data name="EvaluatedAt" xml:space="preserve"><value>Évalué le</value></data>
+  <data name="EvaluatedBy" xml:space="preserve"><value>Évalué par</value></data>
+  <data name="GateEvaluationHistory" xml:space="preserve"><value>Historique des évaluations</value></data>
+  <data name="GateEvaluationComplete" xml:space="preserve"><value>Complet</value></data>
+  <data name="GateEvaluationIncomplete" xml:space="preserve"><value>Incomplet</value></data>
+  <data name="NoGateEvaluationFound" xml:space="preserve"><value>Aucune évaluation enregistrée</value></data>
+  <data name="MasterRegisterGate" xml:space="preserve"><value>Registre actif et document enregistré avec UID</value></data>
+  <data name="ApprovedRepositoryGate" xml:space="preserve"><value>Référentiel approuvé ou GED validée avec circuit autorisé</value></data>
+  <data name="MandatoryApprovalEvidenceGate" xml:space="preserve"><value>Preuves des approbateurs obligatoires ; auteur non seul approbateur</value></data>
+  <data name="RequiredExecutionMaterialsGate" xml:space="preserve"><value>Tout formulaire/modèle/registre requis est en vigueur et disponible</value></data>
+  <data name="TrainingReadinessGate" xml:space="preserve"><value>Formation attribuée ; utilisateurs critiques formés ou restreints</value></data>
+  <data name="SupersededCopyWithdrawalGate" xml:space="preserve"><value>Une méthode existe pour retirer les copies remplacées du point d&apos;usage</value></data>
+  <data name="TrainingDetailsDeferred" xml:space="preserve"><value>Les détails de formation arriveront dans le prochain lot. Le motif de blocage vient du moteur de formation.</value></data>
+  <data name="RepositoryDetailsDeferred" xml:space="preserve"><value>Les détails d&apos;évaluation du référentiel arriveront dans le prochain lot.</value></data>
+  <data name="ControlledCopyDetailsDeferred" xml:space="preserve"><value>Les détails de réconciliation des copies contrôlées arriveront dans le prochain lot.</value></data>
+  <data name="GateEvaluationSucceeded" xml:space="preserve"><value>Contrôles de publication évalués</value></data>
+  <data name="GateEvaluationFailed" xml:space="preserve"><value>Les contrôles n&apos;ont pas pu être évalués</value></data>
+  <data name="EvidenceRecordSucceeded" xml:space="preserve"><value>Preuve enregistrée</value></data>
+  <data name="EvidenceRecordFailed" xml:space="preserve"><value>La preuve n&apos;a pas pu être enregistrée</value></data>
+  <data name="EvidenceRejectSucceeded" xml:space="preserve"><value>Approbation rejetée</value></data>
+  <data name="EvidenceRejectFailed" xml:space="preserve"><value>Le rejet n&apos;a pas pu être enregistré</value></data>
+  <data name="ReleaseGateIncomplete" xml:space="preserve"><value>Les contrôles ne sont pas complets</value></data>
+  <data name="InvalidGateKey" xml:space="preserve"><value>Contrôle de publication inconnu</value></data>
+  <data name="TrainingNotReady" xml:space="preserve"><value>La préparation de la formation n&apos;est pas satisfaite</value></data>
+  <data name="RepositoryNotApproved" xml:space="preserve"><value>Aucun référentiel approuvé disponible</value></data>
+  <data name="RequiredExecutionMaterialsMissing" xml:space="preserve"><value>Les supports d&apos;exécution requis ne sont pas en vigueur</value></data>
+  <data name="SupersededCopyWithdrawalMissing" xml:space="preserve"><value>Aucune méthode de retrait des copies remplacées</value></data>
+  <data name="MasterRegisterInactive" xml:space="preserve"><value>L&apos;entrée du registre principal n&apos;est pas active</value></data>
+  <data name="UidCodeMissing" xml:space="preserve"><value>Un UID permanent et un code sont requis</value></data>
+  <data name="EvidenceReferenceRequired" xml:space="preserve"><value>Une référence de preuve est requise</value></data>
+  <data name="GateEvidenceRequired" xml:space="preserve"><value>Ce contrôle exige une preuve enregistrée</value></data>
+  <data name="RefreshApproval" xml:space="preserve"><value>Actualiser</value></data>
+  <data name="RefreshReleaseGates" xml:space="preserve"><value>Actualiser</value></data>
+  <data name="TrainingTabTitle" xml:space="preserve"><value>Formation</value></data>
+  <data name="TrainingSummary" xml:space="preserve"><value>Matrice de formation et aptitude</value></data>
+  <data name="TrainingReadiness" xml:space="preserve"><value>Aptitude de la formation</value></data>
+  <data name="ReleaseGateTrainingNote" xml:space="preserve"><value>Le contrôle 5 utilise ce résultat d&apos;aptitude. Cet écran affiche et enregistre les preuves ; il ne valide pas le contrôle et ne met rien en vigueur.</value></data>
+  <data name="ResolveTrainingMatrix" xml:space="preserve"><value>Calculer la matrice de formation</value></data>
+  <data name="TrainingRequirement" xml:space="preserve"><value>Exigence de formation</value></data>
+  <data name="TrainingRequirements" xml:space="preserve"><value>Exigences de formation</value></data>
+  <data name="NoTrainingRequirementsFound" xml:space="preserve"><value>Aucune exigence de formation calculée</value></data>
+  <data name="TrainingAssignment" xml:space="preserve"><value>Affectation de formation</value></data>
+  <data name="TrainingAssignments" xml:space="preserve"><value>Affectations de formation</value></data>
+  <data name="NoTrainingAssignmentsFound" xml:space="preserve"><value>Aucune affectation créée ou modifiée dans cette session</value></data>
+  <data name="AssignmentListNotAvailableNote" xml:space="preserve"><value>Le backend n&apos;expose pas encore la liste des affectations ; ce tableau ne montre que celles créées ou modifiées dans cette session. Les compteurs ci-dessus viennent du serveur et reflètent toujours l&apos;ensemble.</value></data>
+  <data name="TrainingAudience" xml:space="preserve"><value>Public</value></data>
+  <data name="TrainingAudienceRole" xml:space="preserve"><value>Rôle</value></data>
+  <data name="TrainingAudienceUser" xml:space="preserve"><value>Utilisateur</value></data>
+  <data name="TrainingAudienceDepartment" xml:space="preserve"><value>Service</value></data>
+  <data name="TrainingAudienceThirdParty" xml:space="preserve"><value>Tiers</value></data>
+  <data name="TrainingType" xml:space="preserve"><value>Type de formation</value></data>
+  <data name="TrainingTypeFullSopCompetencyAssessment" xml:space="preserve"><value>Évaluation complète de compétence</value></data>
+  <data name="TrainingTypeScenarioAssessment" xml:space="preserve"><value>Évaluation par scénario</value></data>
+  <data name="TrainingTypeReadAndUnderstand" xml:space="preserve"><value>Lire et comprendre</value></data>
+  <data name="TrainingTypeThirdPartyVerifiedTraining" xml:space="preserve"><value>Formation vérifiée par un tiers</value></data>
+  <data name="CriticalProcess" xml:space="preserve"><value>Processus critique</value></data>
+  <data name="EffectivenessRequired" xml:space="preserve"><value>Vérification d&apos;efficacité requise</value></data>
+  <data name="EffectivenessStatus" xml:space="preserve"><value>Efficacité</value></data>
+  <data name="EffectivenessResult" xml:space="preserve"><value>Résultat d&apos;efficacité</value></data>
+  <data name="EffectivenessNotRequired" xml:space="preserve"><value>Non requise</value></data>
+  <data name="EffectivenessPending" xml:space="preserve"><value>En attente</value></data>
+  <data name="EffectivenessPassed" xml:space="preserve"><value>Réussie</value></data>
+  <data name="EffectivenessFailed" xml:space="preserve"><value>Échouée</value></data>
+  <data name="EffectivenessIsRecordedNotComputed" xml:space="preserve"><value>Le résultat d&apos;efficacité est une preuve enregistrée, pas un calcul. Enregistrer une réussite ne rend pas l&apos;aptitude verte à elle seule.</value></data>
+  <data name="AssignmentStatus" xml:space="preserve"><value>Statut de l&apos;affectation</value></data>
+  <data name="TrainingAssignmentStatusAssigned" xml:space="preserve"><value>Affectée</value></data>
+  <data name="TrainingAssignmentStatusCompleted" xml:space="preserve"><value>Terminée</value></data>
+  <data name="TrainingAssignmentStatusFailed" xml:space="preserve"><value>Échouée</value></data>
+  <data name="TrainingAssignmentStatusRestricted" xml:space="preserve"><value>Restreinte</value></data>
+  <data name="TrainingAssignmentStatusCancelled" xml:space="preserve"><value>Annulée</value></data>
+  <data name="TrainingRequirementStatusPending" xml:space="preserve"><value>En attente</value></data>
+  <data name="TrainingRequirementStatusAssigned" xml:space="preserve"><value>Affecté</value></data>
+  <data name="TrainingRequirementStatusCompleted" xml:space="preserve"><value>Terminé</value></data>
+  <data name="TrainingRequirementStatusRestricted" xml:space="preserve"><value>Restreint</value></data>
+  <data name="TrainingRequirementStatusWaivedNotAllowed" xml:space="preserve"><value>Dérogation tentée — non permise</value></data>
+  <data name="TrainingRequirementStatusOverdue" xml:space="preserve"><value>En retard</value></data>
+  <data name="TrainingRequirementStatusBlocked" xml:space="preserve"><value>Bloqué</value></data>
+  <data name="TrainingSourceRuleCriticality" xml:space="preserve"><value>Criticité</value></data>
+  <data name="TrainingSourceRuleDocumentClass" xml:space="preserve"><value>Classe du document</value></data>
+  <data name="TrainingSourceRuleManual" xml:space="preserve"><value>Manuel</value></data>
+  <data name="TrainingSourceRuleImpactAssessment" xml:space="preserve"><value>Évaluation d&apos;impact</value></data>
+  <data name="TrainingSourceRuleThirdPartyAgreement" xml:space="preserve"><value>Accord avec un tiers</value></data>
+  <data name="AssignTraining" xml:space="preserve"><value>Affecter</value></data>
+  <data name="AssignDoesNotCompleteTraining" xml:space="preserve"><value>Affecter crée une obligation de formation. Cela ne termine pas la formation et n&apos;enregistre aucune preuve.</value></data>
+  <data name="AssignTargetHint" xml:space="preserve"><value>Indiquez un utilisateur, un rôle ou un service selon l&apos;exigence.</value></data>
+  <data name="AssignedUser" xml:space="preserve"><value>Utilisateur affecté</value></data>
+  <data name="AssignedRole" xml:space="preserve"><value>Rôle affecté</value></data>
+  <data name="AssignedDepartment" xml:space="preserve"><value>Service affecté</value></data>
+  <data name="AssignedTo" xml:space="preserve"><value>Affecté à</value></data>
+  <data name="TrainingDueDate" xml:space="preserve"><value>Échéance</value></data>
+  <data name="CompleteTraining" xml:space="preserve"><value>Terminer la formation</value></data>
+  <data name="CompletionEvidence" xml:space="preserve"><value>Preuve de réalisation</value></data>
+  <data name="CompletionDoesNotMarkEffective" xml:space="preserve"><value>Je comprends que ceci enregistre seulement la preuve de réalisation : cela ne met pas le document en vigueur et ne valide pas le contrôle 5.</value></data>
+  <data name="RecordEffectiveness" xml:space="preserve"><value>Enregistrer l&apos;efficacité</value></data>
+  <data name="EffectivenessEvidence" xml:space="preserve"><value>Preuve d&apos;efficacité</value></data>
+  <data name="RestrictTraining" xml:space="preserve"><value>Restreindre</value></data>
+  <data name="RestrictionStatus" xml:space="preserve"><value>Restriction</value></data>
+  <data name="Restricted" xml:space="preserve"><value>Restreint</value></data>
+  <data name="NotRestricted" xml:space="preserve"><value>Non restreint</value></data>
+  <data name="RestrictionDoesNotDelete" xml:space="preserve"><value>La restriction est un contrôle d&apos;accès et d&apos;aptitude, pas une suppression. L&apos;affectation est conservée et reste auditable.</value></data>
+  <data name="RequiredCount" xml:space="preserve"><value>Requis</value></data>
+  <data name="AssignedCount" xml:space="preserve"><value>Affectés</value></data>
+  <data name="RestrictedCount" xml:space="preserve"><value>Restreints</value></data>
+  <data name="EffectivenessPendingCount" xml:space="preserve"><value>Efficacité en attente</value></data>
+  <data name="TrainingReady" xml:space="preserve"><value>Prêt</value></data>
+  <data name="TrainingBlocked" xml:space="preserve"><value>Bloqué</value></data>
+  <data name="TrainingMatrixMissing" xml:space="preserve"><value>Aucune matrice de formation calculée</value></data>
+  <data name="MissingTrainingAssignments" xml:space="preserve"><value>Affectations manquantes</value></data>
+  <data name="TrainingAssignmentMissing" xml:space="preserve"><value>Affectation de formation introuvable</value></data>
+  <data name="TrainingCompletionRequired" xml:space="preserve"><value>La formation doit d&apos;abord être terminée</value></data>
+  <data name="TrainingEffectivenessRequired" xml:space="preserve"><value>Vérification d&apos;efficacité requise</value></data>
+  <data name="TrainingEffectivenessFailed" xml:space="preserve"><value>La vérification d&apos;efficacité a échoué</value></data>
+  <data name="TrainingRestrictionRequired" xml:space="preserve"><value>Une restriction formelle est requise pour les non-formés</value></data>
+  <data name="InvalidTrainingStatus" xml:space="preserve"><value>Action non valide pour le statut actuel</value></data>
+  <data name="TrainingResolveSucceeded" xml:space="preserve"><value>Matrice de formation calculée</value></data>
+  <data name="TrainingResolveFailed" xml:space="preserve"><value>La matrice n&apos;a pas pu être calculée</value></data>
+  <data name="TrainingAssignSucceeded" xml:space="preserve"><value>Formation affectée</value></data>
+  <data name="TrainingAssignFailed" xml:space="preserve"><value>La formation n&apos;a pas pu être affectée</value></data>
+  <data name="TrainingCompleteSucceeded" xml:space="preserve"><value>Réalisation enregistrée</value></data>
+  <data name="TrainingCompleteFailed" xml:space="preserve"><value>La réalisation n&apos;a pas pu être enregistrée</value></data>
+  <data name="TrainingEffectivenessSucceeded" xml:space="preserve"><value>Efficacité enregistrée</value></data>
+  <data name="TrainingEffectivenessFailedMessage" xml:space="preserve"><value>Le résultat n&apos;a pas pu être enregistré</value></data>
+  <data name="TrainingRestrictSucceeded" xml:space="preserve"><value>Restriction enregistrée</value></data>
+  <data name="TrainingRestrictFailed" xml:space="preserve"><value>La restriction n&apos;a pas pu être enregistrée</value></data>
+  <data name="RefreshTraining" xml:space="preserve"><value>Actualiser</value></data>
+  <data name="RepositoryTabTitle" xml:space="preserve"><value>Référentiel et copies</value></data>
+  <data name="RepositorySummary" xml:space="preserve"><value>Évaluation du référentiel et copies contrôlées</value></data>
+  <data name="RefreshRepository" xml:space="preserve"><value>Actualiser</value></data>
+  <data name="RepositoryAssessment" xml:space="preserve"><value>Évaluation du référentiel</value></data>
+  <data name="RepositoryAssessments" xml:space="preserve"><value>Évaluations des référentiels</value></data>
+  <data name="NoRepositoryAssessmentsFound" xml:space="preserve"><value>Aucune évaluation de référentiel enregistrée</value></data>
+  <data name="RepositoryName" xml:space="preserve"><value>Nom du référentiel</value></data>
+  <data name="RepositoryStatus" xml:space="preserve"><value>Statut d&apos;évaluation</value></data>
+  <data name="RepositoryStatusDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="RepositoryStatusUnderReview" xml:space="preserve"><value>En cours d&apos;examen</value></data>
+  <data name="RepositoryStatusApproved" xml:space="preserve"><value>Approuvé</value></data>
+  <data name="RepositoryStatusRejected" xml:space="preserve"><value>Rejeté</value></data>
+  <data name="RepositoryStatusExpired" xml:space="preserve"><value>Expiré</value></data>
+  <data name="RepositoryStatusSuperseded" xml:space="preserve"><value>Remplacé</value></data>
+  <data name="RepositoryTypeValidatedDms" xml:space="preserve"><value>GED validée</value></data>
+  <data name="RepositoryTypeApprovedInterimRepository" xml:space="preserve"><value>Référentiel intérimaire approuvé</value></data>
+  <data name="RepositoryTypeSeparateApprovalMechanism" xml:space="preserve"><value>Mécanisme d&apos;approbation distinct</value></data>
+  <data name="RepositoryTypeUnapprovedRepository" xml:space="preserve"><value>Référentiel non approuvé</value></data>
+  <data name="LinkedRepository" xml:space="preserve"><value>Référentiel lié</value></data>
+  <data name="NoRepositoryLinked" xml:space="preserve"><value>Aucune évaluation de référentiel liée</value></data>
+  <data name="NotLinked" xml:space="preserve"><value>Non lié</value></data>
+  <data name="LinkRepository" xml:space="preserve"><value>Lier le référentiel</value></data>
+  <data name="LinkDoesNotApproveRepository" xml:space="preserve"><value>Lier pointe ce document vers une évaluation existante. Cela n&apos;approuve pas le référentiel et ne change pas son classement.</value></data>
+  <data name="ReleaseGateRepositoryNote" xml:space="preserve"><value>Le contrôle 2 utilise ce classement. Cet écran affiche et enregistre l&apos;évaluation ; il ne valide pas le contrôle et ne met rien en vigueur.</value></data>
+  <data name="NoComplianceClaim" xml:space="preserve"><value>Aucune déclaration de conformité</value></data>
+  <data name="NoValidatedDmsClaim" xml:space="preserve"><value>Cet écran classe un référentiel selon la limite du MON. Il ne revendique ni validation de système, ni conformité de signature électronique, ni certificat.</value></data>
+  <data name="InterimRepositoryWarning" xml:space="preserve"><value>Un référentiel intérimaire approuvé n&apos;est pas une GED validée. Il ne peut être présenté comme conformité de signature électronique réglementée.</value></data>
+  <data name="BoundaryStatement" xml:space="preserve"><value>Déclaration de limites</value></data>
+  <data name="EvaluateToSeeBoundary" xml:space="preserve"><value>Évaluez pour afficher la déclaration de limites</value></data>
+  <data name="CanSupportReleaseGate" xml:space="preserve"><value>Peut satisfaire le contrôle de publication</value></data>
+  <data name="CanSupportRegulatedESignature" xml:space="preserve"><value>Peut supporter la signature électronique réglementée</value></data>
+  <data name="RepositoryLocation" xml:space="preserve"><value>Emplacement</value></data>
+  <data name="RepositoryOwner" xml:space="preserve"><value>Propriétaire</value></data>
+  <data name="AccessControlModel" xml:space="preserve"><value>Modèle de contrôle d&apos;accès</value></data>
+  <data name="BackupRestorePlan" xml:space="preserve"><value>Plan de sauvegarde / restauration</value></data>
+  <data name="ApprovalMechanism" xml:space="preserve"><value>Mécanisme d&apos;approbation</value></data>
+  <data name="EffectiveCopyControl" xml:space="preserve"><value>Contrôle de la copie en vigueur</value></data>
+  <data name="AuditTrail" xml:space="preserve"><value>Piste d&apos;audit</value></data>
+  <data name="ChangeControl" xml:space="preserve"><value>Maîtrise des changements</value></data>
+  <data name="ValidationEvidence" xml:space="preserve"><value>Preuve de validation</value></data>
+  <data name="CriticalFindings" xml:space="preserve"><value>Constats critiques</value></data>
+  <data name="RepositoryFindings" xml:space="preserve"><value>Constats du référentiel</value></data>
+  <data name="NoRepositoryFindingsFound" xml:space="preserve"><value>Aucun constat enregistré</value></data>
+  <data name="EvaluateRepository" xml:space="preserve"><value>Évaluer</value></data>
+  <data name="ApproveRepository" xml:space="preserve"><value>Approuver</value></data>
+  <data name="RejectRepository" xml:space="preserve"><value>Rejeter</value></data>
+  <data name="ApproveDoesNotClaimValidation" xml:space="preserve"><value>Approuver enregistre une décision de gouvernance. Cela n&apos;affirme ni validation de système ni conformité de signature électronique.</value></data>
+  <data name="RejectRepositoryNote" xml:space="preserve"><value>Rejeter enregistre une décision de gouvernance. Le motif est obligatoire et conservé.</value></data>
+  <data name="RepositoryApproverRoleHint" xml:space="preserve"><value>Le MON §11.2 n&apos;autorise que le GQD, son adjoint ou le responsable IT/CSV à approuver.</value></data>
+  <data name="ApprovedByRole" xml:space="preserve"><value>Rôle approbateur</value></data>
+  <data name="ValidUntil" xml:space="preserve"><value>Valide jusqu&apos;au</value></data>
+  <data name="ApprovedRepositoryAvailable" xml:space="preserve"><value>Référentiel approuvé</value></data>
+  <data name="RepositoryEvaluateSucceeded" xml:space="preserve"><value>Référentiel évalué</value></data>
+  <data name="RepositoryEvaluateFailed" xml:space="preserve"><value>Le référentiel n&apos;a pas pu être évalué</value></data>
+  <data name="RepositoryApproveSucceeded" xml:space="preserve"><value>Évaluation approuvée</value></data>
+  <data name="RepositoryApproveFailed" xml:space="preserve"><value>L&apos;évaluation n&apos;a pas pu être approuvée</value></data>
+  <data name="RepositoryRejectSucceeded" xml:space="preserve"><value>Évaluation rejetée</value></data>
+  <data name="RepositoryLinkSucceeded" xml:space="preserve"><value>Référentiel lié</value></data>
+  <data name="RepositoryLinkFailed" xml:space="preserve"><value>Le référentiel n&apos;a pas pu être lié</value></data>
+  <data name="RepositoryAssessmentNotFound" xml:space="preserve"><value>Évaluation de référentiel introuvable</value></data>
+  <data name="RepositoryNameAndTypeRequired" xml:space="preserve"><value>Le nom et le type du référentiel sont requis</value></data>
+  <data name="RepositoryRequiredFieldsMissing" xml:space="preserve"><value>Des champs d&apos;évaluation requis sont manquants</value></data>
+  <data name="RepositoryAlreadyDecided" xml:space="preserve"><value>Cette évaluation a déjà été tranchée</value></data>
+  <data name="RepositoryApproverRoleInvalid" xml:space="preserve"><value>Ce rôle ne peut approuver l&apos;évaluation</value></data>
+  <data name="RepositoryLinkStatusInvalid" xml:space="preserve"><value>Cette évaluation n&apos;est pas dans un état liable</value></data>
+  <data name="RepositoryBoundaryBlocked" xml:space="preserve"><value>La limite du référentiel bloque cette action</value></data>
+  <data name="UnapprovedRepositoryError" xml:space="preserve"><value>Ce référentiel n&apos;est pas approuvé</value></data>
+  <data name="ValidatedDmsEvidenceRequired" xml:space="preserve"><value>Une preuve de GED validée est requise</value></data>
+  <data name="InterimRepositoryLimitation" xml:space="preserve"><value>Une limitation de référentiel intérimaire s&apos;applique</value></data>
+  <data name="ControlledCopies" xml:space="preserve"><value>Copies contrôlées</value></data>
+  <data name="ControlledCopy" xml:space="preserve"><value>Copie contrôlée</value></data>
+  <data name="ControlledCopyLog" xml:space="preserve"><value>Journal des copies contrôlées</value></data>
+  <data name="NoControlledCopiesFound" xml:space="preserve"><value>Aucune copie contrôlée enregistrée</value></data>
+  <data name="NoControlledCopyDataYet" xml:space="preserve"><value>Aucune copie contrôlée n&apos;a encore été enregistrée.</value></data>
+  <data name="CopyWithdrawalReady" xml:space="preserve"><value>Le retrait des copies est terminé pour ce document.</value></data>
+  <data name="ReleaseGateCopyNote" xml:space="preserve"><value>Le contrôle 6 utilise cette aptitude au retrait. Cet écran affiche et enregistre les preuves ; il ne valide pas le contrôle.</value></data>
+  <data name="CopyNumber" xml:space="preserve"><value>N° de copie</value></data>
+  <data name="CopyType" xml:space="preserve"><value>Type de copie</value></data>
+  <data name="CopyTypeDigitalEffectiveCopy" xml:space="preserve"><value>Copie numérique en vigueur</value></data>
+  <data name="CopyTypeDigitalControlledCopy" xml:space="preserve"><value>Copie numérique contrôlée</value></data>
+  <data name="CopyTypePrintedControlledCopy" xml:space="preserve"><value>Copie papier contrôlée</value></data>
+  <data name="CopyTypeTrainingCopy" xml:space="preserve"><value>Copie de formation</value></data>
+  <data name="CopyTypeReferenceCopy" xml:space="preserve"><value>Copie de référence</value></data>
+  <data name="CopyTypeExternalSharedCopy" xml:space="preserve"><value>Copie partagée externe</value></data>
+  <data name="CopyTypeTemporaryControlledIssue" xml:space="preserve"><value>Émission contrôlée temporaire</value></data>
+  <data name="CopyStatus" xml:space="preserve"><value>Statut de la copie</value></data>
+  <data name="CopyStatusActive" xml:space="preserve"><value>Active</value></data>
+  <data name="CopyStatusPendingWithdrawal" xml:space="preserve"><value>Retrait en attente</value></data>
+  <data name="CopyStatusWithdrawn" xml:space="preserve"><value>Retirée</value></data>
+  <data name="CopyStatusReconciled" xml:space="preserve"><value>Réconciliée</value></data>
+  <data name="CopyStatusMissing" xml:space="preserve"><value>Manquante</value></data>
+  <data name="CopyStatusObsolete" xml:space="preserve"><value>Obsolète</value></data>
+  <data name="CopyStatusDestroyed" xml:space="preserve"><value>Détruite</value></data>
+  <data name="Holder" xml:space="preserve"><value>Détenteur</value></data>
+  <data name="HolderRole" xml:space="preserve"><value>Rôle du détenteur</value></data>
+  <data name="HolderDepartment" xml:space="preserve"><value>Service du détenteur</value></data>
+  <data name="HolderOrLocationRequiredHint" xml:space="preserve"><value>Indiquez un détenteur ou un emplacement — le backend en exige au moins un.</value></data>
+  <data name="HolderOrLocationRequired" xml:space="preserve"><value>Un détenteur ou un emplacement est requis</value></data>
+  <data name="CopyLocation" xml:space="preserve"><value>Emplacement</value></data>
+  <data name="IssuedAt" xml:space="preserve"><value>Émise le</value></data>
+  <data name="RegisterCopy" xml:space="preserve"><value>Enregistrer une copie</value></data>
+  <data name="IssueDoesNotMarkEffective" xml:space="preserve"><value>Enregistrer une copie l&apos;inscrit au journal. Cela ne met pas le document en vigueur et ne valide aucun contrôle.</value></data>
+  <data name="WithdrawCopy" xml:space="preserve"><value>Retirer</value></data>
+  <data name="WithdrawalDoesNotDelete" xml:space="preserve"><value>Le retrait change le statut et conserve la ligne. Rien n&apos;est supprimé ; la copie reste visible.</value></data>
+  <data name="ReconcileCopy" xml:space="preserve"><value>Réconcilier</value></data>
+  <data name="ReconcileDoesNotDelete" xml:space="preserve"><value>La réconciliation atteste que la copie a été prise en compte. Elle ne supprime rien.</value></data>
+  <data name="MarkCopyMissing" xml:space="preserve"><value>Marquer manquante</value></data>
+  <data name="MarkMissingDoesNotDelete" xml:space="preserve"><value>Marquer manquante consigne le fait pour la réconciliation. L&apos;enregistrement est conservé.</value></data>
+  <data name="MarkCopyObsolete" xml:space="preserve"><value>Marquer obsolète</value></data>
+  <data name="MarkObsoleteDoesNotDelete" xml:space="preserve"><value>Marquer obsolète crée un constat de réconciliation. L&apos;enregistrement est conservé.</value></data>
+  <data name="ObsoleteReason" xml:space="preserve"><value>Motif d&apos;obsolescence</value></data>
+  <data name="WithdrawnAt" xml:space="preserve"><value>Retirée le</value></data>
+  <data name="ReconciledAt" xml:space="preserve"><value>Réconciliée le</value></data>
+  <data name="ActiveCopies" xml:space="preserve"><value>Copies actives</value></data>
+  <data name="PendingWithdrawal" xml:space="preserve"><value>En attente de retrait</value></data>
+  <data name="WithdrawnCopies" xml:space="preserve"><value>Retirées</value></data>
+  <data name="CopyRegisterSucceeded" xml:space="preserve"><value>Copie contrôlée enregistrée</value></data>
+  <data name="CopyWithdrawSucceeded" xml:space="preserve"><value>Copie retirée</value></data>
+  <data name="CopyReconcileSucceeded" xml:space="preserve"><value>Copie réconciliée</value></data>
+  <data name="CopyMarkMissingSucceeded" xml:space="preserve"><value>Copie marquée manquante</value></data>
+  <data name="CopyMarkObsoleteSucceeded" xml:space="preserve"><value>Copie marquée obsolète</value></data>
+  <data name="ControlledCopyNotFound" xml:space="preserve"><value>Copie contrôlée introuvable</value></data>
+  <data name="CopyNotEligible" xml:space="preserve"><value>Cette copie n&apos;est pas dans un statut éligible</value></data>
+  <data name="DuplicateCopyNumber" xml:space="preserve"><value>Ce numéro de copie est déjà utilisé</value></data>
+  <data name="CopyAlreadyWithdrawn" xml:space="preserve"><value>Cette copie a déjà été retirée</value></data>
+  <data name="CopyReconciliationRequired" xml:space="preserve"><value>La réconciliation des copies est requise</value></data>
+  <data name="ControlledCopyWithdrawalRequired" xml:space="preserve"><value>Le retrait des copies n&apos;est pas terminé</value></data>
+  <data name="WithdrawalPlans" xml:space="preserve"><value>Plans de retrait</value></data>
+  <data name="WithdrawalPlan" xml:space="preserve"><value>Plan de retrait</value></data>
+  <data name="NoWithdrawalPlansFound" xml:space="preserve"><value>Aucun plan de retrait créé</value></data>
+  <data name="GenerateWithdrawalPlan" xml:space="preserve"><value>Générer un plan</value></data>
+  <data name="CompleteWithdrawalPlan" xml:space="preserve"><value>Terminer le plan</value></data>
+  <data name="PlanCompleteNote" xml:space="preserve"><value>Terminer le plan atteste la fin du retrait. Une copie manquante peut exiger une déviation.</value></data>
+  <data name="PlanStatus" xml:space="preserve"><value>Statut du plan</value></data>
+  <data name="PlanStatusDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="PlanStatusActive" xml:space="preserve"><value>Actif</value></data>
+  <data name="PlanStatusCompleted" xml:space="preserve"><value>Terminé</value></data>
+  <data name="PlanStatusBlocked" xml:space="preserve"><value>Bloqué</value></data>
+  <data name="PlanStatusCancelled" xml:space="preserve"><value>Annulé</value></data>
+  <data name="TriggerType" xml:space="preserve"><value>Déclencheur</value></data>
+  <data name="RequiredCopies" xml:space="preserve"><value>Requises</value></data>
+  <data name="WithdrawnCopiesCount" xml:space="preserve"><value>Retirées</value></data>
+  <data name="MissingCopies" xml:space="preserve"><value>Manquantes</value></data>
+  <data name="PlanGenerateSucceeded" xml:space="preserve"><value>Plan de retrait généré</value></data>
+  <data name="PlanCompleteSucceeded" xml:space="preserve"><value>Plan de retrait terminé</value></data>
+  <data name="PlanIncomplete" xml:space="preserve"><value>Le plan de retrait n&apos;est pas terminé</value></data>
+  <data name="WithdrawalPlanNotFound" xml:space="preserve"><value>Plan de retrait introuvable</value></data>
+  <data name="ObsoleteCopyFindings" xml:space="preserve"><value>Constats de copies obsolètes</value></data>
+  <data name="NoObsoleteFindingsFound" xml:space="preserve"><value>Aucun constat de copie obsolète</value></data>
+  <data name="EvaluateReconciliation" xml:space="preserve"><value>Évaluer la réconciliation</value></data>
+  <data name="ReconciliationEvaluateSucceeded" xml:space="preserve"><value>Réconciliation évaluée</value></data>
+  <data name="ResolveFinding" xml:space="preserve"><value>Résoudre</value></data>
+  <data name="ResolveFindingDoesNotDelete" xml:space="preserve"><value>Résoudre consigne le traitement du constat. Cela ne supprime ni le constat ni la copie.</value></data>
+  <data name="FindingResolveSucceeded" xml:space="preserve"><value>Constat résolu</value></data>
+  <data name="FindingNotFound" xml:space="preserve"><value>Constat introuvable</value></data>
+  <data name="ObsoleteCopyFindingOpen" xml:space="preserve"><value>Un constat de copie obsolète est ouvert</value></data>
+  <data name="FindingStatusOpen" xml:space="preserve"><value>Ouvert</value></data>
+  <data name="FindingStatusAcknowledged" xml:space="preserve"><value>Pris en compte</value></data>
+  <data name="FindingStatusResolved" xml:space="preserve"><value>Résolu</value></data>
+  <data name="FindingStatusClosed" xml:space="preserve"><value>Clos</value></data>
+  <data name="SeverityCritical" xml:space="preserve"><value>Critique</value></data>
+  <data name="SeverityMajor" xml:space="preserve"><value>Majeur</value></data>
+  <data name="SeverityMinor" xml:space="preserve"><value>Mineur</value></data>
+  <data name="CriticalFinding" xml:space="preserve"><value>Constats critiques</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="DeviationReference" xml:space="preserve"><value>Référence de déviation</value></data>
+  <data name="DeviationReferenceHint" xml:space="preserve"><value>Référence à une déviation ou un événement qualité enregistré ailleurs. Cet écran n&apos;est pas un module CAPA.</value></data>
+  <data name="DeviationRequired" xml:space="preserve"><value>Une référence de déviation est requise</value></data>
+  <data name="RetentionTabTitle" xml:space="preserve">
+    <value>Conservation</value>
+  </data>
+  <data name="SignaturesTabTitle" xml:space="preserve">
+    <value>Signatures</value>
+  </data>
+  <data name="QualityEventsTabTitle" xml:space="preserve">
+    <value>Événements qualité</value>
+  </data>
+  <data name="RetentionSummary" xml:space="preserve">
+    <value>Résumé de conservation</value>
+  </data>
+  <data name="RetentionSchedule" xml:space="preserve">
+    <value>Calendrier de conservation</value>
+  </data>
+  <data name="RetentionPolicyKey" xml:space="preserve">
+    <value>Politique de conservation</value>
+  </data>
+  <data name="RetentionTriggerDate" xml:space="preserve">
+    <value>Date de déclenchement</value>
+  </data>
+  <data name="RetentionDueDate" xml:space="preserve">
+    <value>Date d'échéance</value>
+  </data>
+  <data name="RetentionEligibilityDate" xml:space="preserve">
+    <value>Date d'éligibilité</value>
+  </data>
+  <data name="RetentionPermanent" xml:space="preserve">
+    <value>Conservation permanente</value>
+  </data>
+  <data name="RetentionActiveHolds" xml:space="preserve">
+    <value>Conservations légales actives</value>
+  </data>
+  <data name="DispositionReadiness" xml:space="preserve">
+    <value>État de disposition</value>
+  </data>
+  <data name="DispositionStatus" xml:space="preserve">
+    <value>Statut de disposition</value>
+  </data>
+  <data name="DispositionEligible" xml:space="preserve">
+    <value>Éligible</value>
+  </data>
+  <data name="DispositionNotEligible" xml:space="preserve">
+    <value>Non éligible</value>
+  </data>
+  <data name="DispositionBlocked" xml:space="preserve">
+    <value>Disposition bloquée</value>
+  </data>
+  <data name="LegalHold" xml:space="preserve">
+    <value>Conservation légale</value>
+  </data>
+  <data name="LegalHolds" xml:space="preserve">
+    <value>Conservations légales</value>
+  </data>
+  <data name="LegalHoldActive" xml:space="preserve">
+    <value>Conservation légale active</value>
+  </data>
+  <data name="LegalHoldNotFound" xml:space="preserve">
+    <value>Conservation légale introuvable.</value>
+  </data>
+  <data name="LegalHoldNotActive" xml:space="preserve">
+    <value>La conservation légale n'est pas active.</value>
+  </data>
+  <data name="HoldTitle" xml:space="preserve">
+    <value>Titre de la conservation</value>
+  </data>
+  <data name="HoldStatus" xml:space="preserve">
+    <value>Statut de conservation</value>
+  </data>
+  <data name="HoldReason" xml:space="preserve">
+    <value>Motif de conservation</value>
+  </data>
+  <data name="ReleasedAt" xml:space="preserve">
+    <value>Levée le</value>
+  </data>
+  <data name="LegalCaseReference" xml:space="preserve">
+    <value>Référence juridique / dossier</value>
+  </data>
+  <data name="HoldReleaseApprovalRequired" xml:space="preserve">
+    <value>L'approbation juridique et l'accord GQD sont requis pour lever une conservation.</value>
+  </data>
+  <data name="LegalHoldBlocksDisposition" xml:space="preserve">
+    <value>Une conservation légale active bloque la disposition.</value>
+  </data>
+  <data name="ReleaseHoldDoesNotDispose" xml:space="preserve">
+    <value>La levée d'une conservation légale ne supprime pas le document.</value>
+  </data>
+  <data name="NoDispositionOverride" xml:space="preserve">
+    <value>Cet écran ne contourne jamais un blocage de disposition.</value>
+  </data>
+  <data name="NoRetentionScheduleFound" xml:space="preserve">
+    <value>Aucun calendrier de conservation n'a encore été évalué pour cette entrée.</value>
+  </data>
+  <data name="NoLegalHoldsFound" xml:space="preserve">
+    <value>Aucune conservation légale n'affecte cette entrée.</value>
+  </data>
+  <data name="EvaluateRetention" xml:space="preserve">
+    <value>Évaluer la conservation</value>
+  </data>
+  <data name="RetentionEvaluateSucceeded" xml:space="preserve">
+    <value>Conservation évaluée.</value>
+  </data>
+  <data name="RetentionEvaluateFailed" xml:space="preserve">
+    <value>Échec de l'évaluation de conservation.</value>
+  </data>
+  <data name="LastEvaluatedAt" xml:space="preserve">
+    <value>Dernière évaluation</value>
+  </data>
+  <data name="EvaluationStatus" xml:space="preserve">
+    <value>Statut d'évaluation</value>
+  </data>
+  <data name="EvaluationNote" xml:space="preserve">
+    <value>Note d'évaluation</value>
+  </data>
+  <data name="DispositionRequestsTitle" xml:space="preserve">
+    <value>Demandes de disposition</value>
+  </data>
+  <data name="DispositionRequestNumber" xml:space="preserve">
+    <value>N° de demande</value>
+  </data>
+  <data name="EligibilityResult" xml:space="preserve">
+    <value>Résultat d'éligibilité</value>
+  </data>
+  <data name="RequestedAt" xml:space="preserve">
+    <value>Demandé le</value>
+  </data>
+  <data name="ExecutedAt" xml:space="preserve">
+    <value>Exécuté le</value>
+  </data>
+  <data name="NoDispositionRequestsForEntry" xml:space="preserve">
+    <value>Aucune demande de disposition pour cette entrée.</value>
+  </data>
+  <data name="SignatureSummary" xml:space="preserve">
+    <value>Résumé des signatures</value>
+  </data>
+  <data name="SignaturePolicy" xml:space="preserve">
+    <value>Nom de la politique</value>
+  </data>
+  <data name="SignaturePolicies" xml:space="preserve">
+    <value>Politiques de signature</value>
+  </data>
+  <data name="SignaturePolicyCount" xml:space="preserve">
+    <value>Politiques de signature</value>
+  </data>
+  <data name="SignatureSubjectType" xml:space="preserve">
+    <value>Type de sujet</value>
+  </data>
+  <data name="SignatureMeaning" xml:space="preserve">
+    <value>Signification de la signature</value>
+  </data>
+  <data name="SignatureRequests" xml:space="preserve">
+    <value>Demandes de signature</value>
+  </data>
+  <data name="SignatureRequestNumber" xml:space="preserve">
+    <value>N° de demande</value>
+  </data>
+  <data name="SignatureRecords" xml:space="preserve">
+    <value>Enregistrements de signature</value>
+  </data>
+  <data name="SignatureFingerprint" xml:space="preserve">
+    <value>Empreinte</value>
+  </data>
+  <data name="SignerRole" xml:space="preserve">
+    <value>Rôle du signataire</value>
+  </data>
+  <data name="SignerUser" xml:space="preserve">
+    <value>Signataire</value>
+  </data>
+  <data name="SignedAt" xml:space="preserve">
+    <value>Signé le</value>
+  </data>
+  <data name="SignatureDueDate" xml:space="preserve">
+    <value>Échéance</value>
+  </data>
+  <data name="ReAuthenticationRequired" xml:space="preserve">
+    <value>Ré-authentification</value>
+  </data>
+  <data name="TwoFactorRequired" xml:space="preserve">
+    <value>Double facteur</value>
+  </data>
+  <data name="TwoFactorNotImplemented" xml:space="preserve">
+    <value>2FA non implémenté</value>
+  </data>
+  <data name="VerifySignature" xml:space="preserve">
+    <value>Vérifier</value>
+  </data>
+  <data name="FingerprintValid" xml:space="preserve">
+    <value>Empreinte valide — intégrité de l'objet confirmée.</value>
+  </data>
+  <data name="FingerprintInvalid" xml:space="preserve">
+    <value>Empreinte non concordante — l'objet signé a changé.</value>
+  </data>
+  <data name="FingerprintMismatch" xml:space="preserve">
+    <value>Empreinte non concordante.</value>
+  </data>
+  <data name="SubjectNotSignable" xml:space="preserve">
+    <value>Le sujet n'est pas signable.</value>
+  </data>
+  <data name="AuthenticationContextRequired" xml:space="preserve">
+    <value>Le contexte d'authentification est requis.</value>
+  </data>
+  <data name="DuplicateSignature" xml:space="preserve">
+    <value>Une signature existe déjà pour cette demande.</value>
+  </data>
+  <data name="SignatureNotAllowed" xml:space="preserve">
+    <value>La signature n'est pas autorisée ici.</value>
+  </data>
+  <data name="SignaturePolicyNotFound" xml:space="preserve">
+    <value>Politique de signature introuvable.</value>
+  </data>
+  <data name="SignatureRequestNotFound" xml:space="preserve">
+    <value>Demande de signature introuvable.</value>
+  </data>
+  <data name="SignatureNotFound" xml:space="preserve">
+    <value>Signature introuvable.</value>
+  </data>
+  <data name="MetadataFingerprintOnly" xml:space="preserve">
+    <value>Cet écran vérifie uniquement une empreinte de métadonnées stockée.</value>
+  </data>
+  <data name="NoESignComplianceClaim" xml:space="preserve">
+    <value>Ce n'est pas une capacité de signature électronique réglementée et n'implique aucune conformité 21 CFR Part 11 / Annexe 11.</value>
+  </data>
+  <data name="NoCertificateValidationClaim" xml:space="preserve">
+    <value>Aucun fournisseur externe n'est appelé et aucune chaîne de certificats n'est validée.</value>
+  </data>
+  <data name="OpenSignatureRequests" xml:space="preserve">
+    <value>Demandes ouvertes</value>
+  </data>
+  <data name="CompletedSignatures" xml:space="preserve">
+    <value>Signatures effectuées</value>
+  </data>
+  <data name="InvalidVerifications" xml:space="preserve">
+    <value>Invalide / à re-signer</value>
+  </data>
+  <data name="NoSignaturePoliciesFound" xml:space="preserve">
+    <value>Aucune politique de signature trouvée.</value>
+  </data>
+  <data name="NoSignatureRequestsFound" xml:space="preserve">
+    <value>Aucune demande de signature pour cette entrée.</value>
+  </data>
+  <data name="NoSignatureRecordsFound" xml:space="preserve">
+    <value>Aucun enregistrement de signature pour cette entrée.</value>
+  </data>
+  <data name="QualityEventSummary" xml:space="preserve">
+    <value>Résumé des événements qualité</value>
+  </data>
+  <data name="QualityEventLinks" xml:space="preserve">
+    <value>Liens d'événements qualité</value>
+  </data>
+  <data name="LinkedQualityEventsCount" xml:space="preserve">
+    <value>Événements liés</value>
+  </data>
+  <data name="EventType" xml:space="preserve">
+    <value>Type d'événement</value>
+  </data>
+  <data name="EventReference" xml:space="preserve">
+    <value>Réf. événement</value>
+  </data>
+  <data name="EventSeverity" xml:space="preserve">
+    <value>Gravité</value>
+  </data>
+  <data name="EventStatus" xml:space="preserve">
+    <value>Statut</value>
+  </data>
+  <data name="QualityBlockingStatus" xml:space="preserve">
+    <value>Bloquant</value>
+  </data>
+  <data name="QualityBlockingYes" xml:space="preserve">
+    <value>Bloquant</value>
+  </data>
+  <data name="QualityBlockingNo" xml:space="preserve">
+    <value>Non bloquant</value>
+  </data>
+  <data name="DetectedAt" xml:space="preserve">
+    <value>Détecté le</value>
+  </data>
+  <data name="ClosedAt" xml:space="preserve">
+    <value>Clôturé le</value>
+  </data>
+  <data name="ReportedBy" xml:space="preserve">
+    <value>Signalé par</value>
+  </data>
+  <data name="OpenDeviations" xml:space="preserve">
+    <value>Déviations ouvertes</value>
+  </data>
+  <data name="DeviationStatus" xml:space="preserve">
+    <value>Statut de déviation</value>
+  </data>
+  <data name="DeviationOpen" xml:space="preserve">
+    <value>Une déviation ouverte est bloquante.</value>
+  </data>
+  <data name="DeviationNotFoundError" xml:space="preserve">
+    <value>Déviation introuvable.</value>
+  </data>
+  <data name="OpenCapas" xml:space="preserve">
+    <value>CAPA ouvertes</value>
+  </data>
+  <data name="CapaReference" xml:space="preserve">
+    <value>Réf. CAPA</value>
+  </data>
+  <data name="CapaStatus" xml:space="preserve">
+    <value>Statut CAPA</value>
+  </data>
+  <data name="CapaOpen" xml:space="preserve">
+    <value>Une action CAPA ouverte est bloquante.</value>
+  </data>
+  <data name="CapaEffectivenessPending" xml:space="preserve">
+    <value>Efficacité CAPA en attente.</value>
+  </data>
+  <data name="CapaNotFoundError" xml:space="preserve">
+    <value>Action CAPA introuvable.</value>
+  </data>
+  <data name="CapaDueDate" xml:space="preserve">
+    <value>Échéance</value>
+  </data>
+  <data name="ActionOwner" xml:space="preserve">
+    <value>Responsable</value>
+  </data>
+  <data name="LinkDoesNotCloseEvent" xml:space="preserve">
+    <value>Consulter un événement qualité ici ne le clôture ni ne le modifie.</value>
+  </data>
+  <data name="RefreshDoesNotCloseEvent" xml:space="preserve">
+    <value>L'actualisation ne clôture pas une CAPA ou une déviation.</value>
+  </data>
+  <data name="NoExternalQmsCall" xml:space="preserve">
+    <value>Aucun système QMS/CAPA externe n'est appelé.</value>
+  </data>
+  <data name="NoQualityEventsFound" xml:space="preserve">
+    <value>Aucun événement qualité pour cette entrée.</value>
+  </data>
+  <data name="NoDeviationsFound" xml:space="preserve">
+    <value>Aucune déviation pour cette entrée.</value>
+  </data>
+  <data name="NoCapasFound" xml:space="preserve">
+    <value>Aucune action CAPA pour cette entrée.</value>
+  </data>
+  <data name="QualityEventNotFound" xml:space="preserve">
+    <value>Événement qualité introuvable.</value>
+  </data>
+  <data name="QualityEventLinkRequired" xml:space="preserve">
+    <value>Un lien d'événement qualité est requis.</value>
+  </data>
+  <data name="QualityEventBlocking" xml:space="preserve">
+    <value>Un événement qualité bloquant est ouvert.</value>
+  </data>
+  <data name="QualityEventSourceNotFound" xml:space="preserve">
+    <value>Source d'événement qualité introuvable.</value>
+  </data>
+  <data name="LinkAlreadyExists" xml:space="preserve">
+    <value>Ce lien existe déjà.</value>
+  </data>
+  <data name="LinkedControlledDocumentDescription" xml:space="preserve"><value>Relation entre l'entrée gouvernée et le fichier versionné réel.</value></data>
+  <data name="ControlledDocumentLoading" xml:space="preserve"><value>Chargement du document contrôlé…</value></data>
+  <data name="ControlledDocumentNotLinked" xml:space="preserve"><value>Aucun document contrôlé lié</value></data>
+  <data name="ControlledDocumentNotLinkedHint" xml:space="preserve"><value>Sélectionnez un document autorisé pour associer son fichier et son historique des versions.</value></data>
+  <data name="LinkControlledDocument" xml:space="preserve"><value>Lier le document contrôlé</value></data>
+  <data name="LinkControlledDocumentHint" xml:space="preserve"><value>Seuls les documents visibles sont listés. Une fois liée, l'entrée ne peut pas être associée à un autre document.</value></data>
+  <data name="SelectControlledDocument" xml:space="preserve"><value>Sélectionner un document contrôlé</value></data>
+  <data name="OpenControlledDocument" xml:space="preserve"><value>Ouvrir le document contrôlé</value></data>
+  <data name="ViewVersionHistory" xml:space="preserve"><value>Historique des versions</value></data>
+  <data name="ControlledDocumentLinkSucceeded" xml:space="preserve"><value>Document contrôlé lié avec succès.</value></data>
+  <data name="ControlledDocumentListEmpty" xml:space="preserve"><value>Aucun document contrôlé autorisé disponible.</value></data>
+  <data name="ControlledDocumentLoadFailed" xml:space="preserve"><value>Impossible de charger les informations du document contrôlé.</value></data>
+  <data name="ControlledDocumentStatus" xml:space="preserve"><value>Statut</value></data>
+  <data name="ControlledDocumentFolder" xml:space="preserve"><value>Dossier</value></data>
+  <data name="ControlledDocumentVersion" xml:space="preserve"><value>Version actuelle</value></data>
+  <data name="UnifiedCreateTitle" xml:space="preserve"><value>Créer un document contrôlé</value></data>
+  <data name="DocumentKind" xml:space="preserve"><value>Type de document</value></data>
+  <data name="KindControlledDocument" xml:space="preserve"><value>Document contrôlé</value></data>
+  <data name="KindRecord" xml:space="preserve"><value>Enregistrement</value></data>
+  <data name="KindVariant" xml:space="preserve"><value>Variante</value></data>
+  <data name="View" xml:space="preserve"><value>Voir</value></data>
+  <data name="Download" xml:space="preserve"><value>Télécharger</value></data>
+  <data name="VariantDetails" xml:space="preserve"><value>Détails de la variante</value></data>
+  <data name="VariantContentChangeHint" xml:space="preserve"><value>Choisissez le document parent. Le contenu de la variante doit différer du parent.</value></data>
+  <data name="VariantType" xml:space="preserve"><value>Type de variante</value></data>
+  <data name="VariantTypeTranslation" xml:space="preserve"><value>Traduction</value></data>
+  <data name="VariantTypeSiteAdoption" xml:space="preserve"><value>Adoption de site</value></data>
+  <data name="CountryCode" xml:space="preserve"><value>Code pays</value></data>
+  <data name="SiteCode" xml:space="preserve"><value>Code site</value></data>
+  <data name="VariantContentUnchanged" xml:space="preserve"><value>Le contenu de la variante doit différer du document parent. Téléversez un fichier modifié.</value></data>
+  <data name="VariantParentNotFound" xml:space="preserve"><value>Le document contrôlé parent sélectionné est introuvable.</value></data>
+  <data name="RecordCode" xml:space="preserve"><value>Code d'enregistrement</value></data>
+  <data name="RecordCodeHint" xml:space="preserve"><value>Généré automatiquement au format standard si laissé vide. Saisissez une valeur pour utiliser le vôtre.</value></data>
+  <data name="KindHint" xml:space="preserve"><value>Un document contrôlé est gouverné (cycle de vie, approbation, portes de publication). Un enregistrement stocke seulement un fichier et une entrée de registre — sans approbation ni cycle de vie.</value></data>
+  <data name="CreateAndRegister" xml:space="preserve"><value>Créer et enregistrer</value></data>
+  <data name="UnifiedCreatePermissionRequired" xml:space="preserve"><value>Vous ne disposez pas de toutes les autorisations requises pour créer et enregistrer un document contrôlé.</value></data>
+  <data name="Tags" xml:space="preserve"><value>Étiquettes</value></data>
+  <data name="TagsHint" xml:space="preserve"><value>Séparez les étiquettes par des virgules</value></data>
+  <data name="InitialFile" xml:space="preserve"><value>Fichier initial</value></data>
+  <data name="InitialFileHint" xml:space="preserve"><value>Ce fichier devient la première version du document contrôlé.</value></data>
+  <data name="RepositoryPlacement" xml:space="preserve"><value>Emplacement dans le référentiel</value></data>
+  <data name="LegalEntityCompany" xml:space="preserve"><value>Entité juridique / Société</value></data>
+  <data name="RegistrationOperation" xml:space="preserve"><value>Opération d’enregistrement</value></data>
+  <data name="RetryRegistration" xml:space="preserve"><value>Réessayer l’enregistrement</value></data>
+  <data name="RegistrationCompleted" xml:space="preserve"><value>Le document contrôlé et l’entrée du registre maître ont été créés et liés.</value></data>
+  <data name="RegistrationIncomplete" xml:space="preserve"><value>L’enregistrement n’est pas terminé. Vérifiez l’état de l’opération avant de réessayer.</value></data>
+  <data name="RegistrationRetryStarted" xml:space="preserve"><value>La nouvelle tentative a été traitée, mais l’enregistrement n’est pas encore terminé.</value></data>
+  <data name="OperationId" xml:space="preserve"><value>ID de l’opération</value></data>
+  <data name="CorrelationId" xml:space="preserve"><value>ID de corrélation</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Sélectionner</value></data>
+  <data name="NoFolders" xml:space="preserve"><value>Aucun dossier accessible n’a été trouvé.</value></data>
+  <data name="NewControlledDocument" xml:space="preserve"><value>Nouveau document</value></data>
+  <data name="RegistrationSuccessRequiresCompleteRelationship" xml:space="preserve"><value>La réussite n’est affichée qu’après la création complète du registre, du document, de la première version et du lien.</value></data>
+  <data name="RegistrationDoesNotAllocateIdentifiers" xml:space="preserve"><value>L’UID et le code du document ne sont pas attribués ici. Utilisez l’onglet Identifiants après la création.</value></data>
+  <data name="RegistrationDoesNotApproveReleaseSignOrEffective" xml:space="preserve"><value>Cette action n’approuve, ne signe, ne publie ni ne rend le document effectif.</value></data>
+  <data name="DocumentScope" xml:space="preserve"><value>Périmètre du document</value></data>
+  <data name="DocumentScopeCompany" xml:space="preserve"><value>Société</value></data>
+  <data name="DocumentScopeCorporate" xml:space="preserve"><value>Groupe</value></data>
+  <data name="CompanyScopeHelp" xml:space="preserve"><value>Les documents société appartiennent à une instance de collection société.</value></data>
+  <data name="CorporateScopeHelp" xml:space="preserve"><value>Les documents groupe utilisent une instance de collection groupe existante sans CompanyId.</value></data>
+  <data name="ScopeSwitchClearsSelections" xml:space="preserve"><value>Le changement de périmètre efface le propriétaire, l’instance et le dossier.</value></data>
+  <data name="CorporateOwner" xml:space="preserve"><value>Propriétaire groupe</value></data>
+  <data name="CorporateCollectionInstance" xml:space="preserve"><value>Instance de collection groupe</value></data>
+  <data name="CompanyCollectionInstance" xml:space="preserve"><value>Instance de collection société</value></data>
+  <data name="CorporateFolder" xml:space="preserve"><value>Dossier groupe</value></data>
+  <data name="CompanyFolder" xml:space="preserve"><value>Dossier société</value></data>
+  <data name="CorporateCollectionInstanceProvisioningRequired" xml:space="preserve"><value>Une instance de collection groupe existante est requise. Le provisionnement relève de MOD-0028-FU06.</value></data>
+  <data name="NoCorporateCollectionInstancesAvailable" xml:space="preserve"><value>Aucune instance de collection groupe accessible.</value></data>
+  <data name="SelectCorporateOwner" xml:space="preserve"><value>Sélectionner le propriétaire groupe</value></data>
+  <data name="SelectCorporateCollectionInstance" xml:space="preserve"><value>Sélectionner l’instance groupe</value></data>
+  <data name="SelectCorporateFolder" xml:space="preserve"><value>Sélectionner le dossier groupe</value></data>
+  <data name="SelectCompanyCollectionInstance" xml:space="preserve"><value>Sélectionner l’instance société</value></data>
+  <data name="SelectCompanyFolder" xml:space="preserve"><value>Sélectionner le dossier société</value></data>
+  <data name="GovernedRetentionClass" xml:space="preserve"><value>Classe de conservation gouvernée</value></data>
+  <data name="LanguageSelectionRequired" xml:space="preserve"><value>Sélectionnez une langue gouvernée.</value></data>
+  <data name="RetentionClassSelectionRequired" xml:space="preserve"><value>Sélectionnez une classe de conservation gouvernée.</value></data>
+  <data name="GovernedLookupUnavailable" xml:space="preserve"><value>Les valeurs gouvernées de langue ou conservation sont indisponibles. Enregistrement bloqué.</value></data>
+  <data name="IdempotencyScopeConflict" xml:space="preserve"><value>Cette clé est déjà liée à un autre périmètre ou une autre cible.</value></data>
+  <data name="DuplicateDocumentTitle" xml:space="preserve"><value>Un document contrôlé portant ce titre existe déjà dans le dossier sélectionné. Utilisez un autre titre ou ouvrez le document existant.</value></data>
+  <data name="DuplicateRecordCode" xml:space="preserve"><value>Un document ou enregistrement avec ce code existe déjà. Utilisez un autre code.</value></data>
+  <data name="ScopeMismatch" xml:space="preserve"><value>Le propriétaire, l’instance ou le dossier est indisponible ou incompatible avec le périmètre.</value></data>
+  <data name="CorporateAccessDenied" xml:space="preserve"><value>Vous n’avez pas l’accès gouverné à ce dossier groupe.</value></data>
+  <data name="CompanyAccessDenied" xml:space="preserve"><value>Vous n’avez pas accès à la création dans ce dossier société.</value></data>
+  <data name="ManualLinkReconciliationOnly" xml:space="preserve"><value>La liaison manuelle sert uniquement à rapprocher les enregistrements hérités. Le périmètre, le propriétaire, la collection et le dossier doivent correspondre exactement.</value></data>
+  <data name="ReconciliationReason" xml:space="preserve"><value>Motif du rapprochement</value></data>
+  <data name="ReconciliationReasonHint" xml:space="preserve"><value>Expliquez pourquoi cette relation héritée est rapprochée.</value></data>
+</root>

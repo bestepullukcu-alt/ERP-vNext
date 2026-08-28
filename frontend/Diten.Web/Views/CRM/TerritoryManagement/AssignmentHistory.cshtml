@@ -1,0 +1,148 @@
+@model Diten.Web.Models.CRM.TerritoryRuleScopedPageViewModel
+@using Diten.Web.Views.CRM.TerritoryManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TerritoryManagementResources> L
+@inject IHtmlLocalizer<Diten.Web.SharedResource> Shared
+@{
+    var m = Model.Model;
+    var rule = Model.Rule;
+    ViewData["Title"] = $"{L["AssignmentHistory"].Value} — {(rule is not null ? rule.RuleCode : m.Name)}";
+    Layout = "_LayoutTenantShell";
+}
+
+@* ① Inline Filter partial *@
+<partial name="~/Views/CRM/TerritoryManagement/_AssignmentHistoryFilter.cshtml" />
+
+@* Header follows the same convention as the rules grid: title + scope badge → breadcrumb. *@
+<div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-3 gap-3">
+    <div>
+        <h5 class="mb-0 d-flex align-items-center gap-2">
+            @L["AssignmentHistory"]
+            @if (rule is not null)
+            {
+                <span class="badge bg-label-info">@rule.RuleCode — @rule.Name</span>
+            }
+            else
+            {
+                <span class="badge bg-label-secondary">@L["HistoryScopeAllShort"]</span>
+            }
+        </h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/TerritoryManagement">@L["TerritoryModels"]</a></li>
+                <li class="breadcrumb-item"><a href="/CRM/TerritoryManagement/Models/@m.Id">@m.ModelCode — @m.Name</a></li>
+                <li class="breadcrumb-item"><a href="/CRM/TerritoryManagement/Models/@m.Id/AssignmentRules">@L["AssignmentRules"]</a></li>
+                <li class="breadcrumb-item active text-primary">@L["AssignmentHistory"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center flex-wrap gap-2">
+        <div class="btn-group">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bx bx-navigation me-1"></i>@L["GoTo"]
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                @if (rule is not null)
+                {
+                    <li>
+                        <a class="dropdown-item" href="/CRM/TerritoryManagement/Models/@m.Id/AssignmentRules/@rule.Id/Preview">
+                            <i class="bx bx-play-circle me-2"></i>@L["AssignmentPreview"]
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="/CRM/TerritoryManagement/Models/@m.Id/AssignmentRules/History">
+                            <i class="bx bx-layer me-2"></i>@L["HistoryAllRules"]
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    <li>
+                        <a class="dropdown-item" href="/CRM/TerritoryManagement/Models/@m.Id/AssignmentRules/Preview">
+                            <i class="bx bx-play-circle me-2"></i>@L["PreviewAllRules"]
+                        </a>
+                    </li>
+                }
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item" href="/CRM/TerritoryManagement/Models/@m.Id/AssignmentRules">
+                        <i class="bx bx-filter-alt me-2"></i>@L["AssignmentRules"]
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="/CRM/TerritoryManagement/Models/@m.Id/ResourceAssignments">
+                        <i class="bx bx-group me-2"></i>@L["ResourceAssignments"]
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="/CRM/TerritoryManagement/Models/@m.Id">
+                        <i class="bx bx-sitemap me-2"></i>@L["TerritoryHierarchy"]
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item" href="/CRM/TerritoryManagement">
+                        <i class="bx bx-arrow-back me-2"></i>@L["BackToList"]
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@if (rule is not null)
+{
+    <div class="alert alert-info py-2">
+        <i class="bx bx-filter-alt me-1"></i>@L["HistoryScopeSingle"] <strong>@rule.RuleCode</strong>
+    </div>
+}
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-assignmenthistory" data-dt-standard="v2" class="datatables-assignmenthistory table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>@L["AccountCode"]</th>
+                    <th class="all">@L["AccountName"]</th>
+                    <th>@L["TargetNode"]</th>
+                    <th>@L["Status"]</th>
+                    <th>@L["RuleCode"]</th>
+                    <th>@L["AssignmentSource"]</th>
+                    <th>@L["EffectiveFrom"]</th>
+                    <th>@L["EffectiveTo"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<script id="territory-history-data" type="application/json">
+    @Json.Serialize(new
+    {
+        modelId = m.Id,
+        ruleId = rule?.Id,
+        ruleCode = rule?.RuleCode,
+        labels = new
+        {
+            actions = L["Actions"].Value,
+            filter = Shared["Filter"].Value,
+            saveView = Shared["SaveView"].Value,
+            noHistory = L["NoAssignmentHistory"].Value,
+            gatewayError = Shared["GatewayError"].Value
+        }
+    })
+</script>
+
+@section Scripts {
+    <script src="~/assets/js/CRM/TerritoryManagement/territory-filter-chips.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/TerritoryManagement/assignment-history.js" asp-append-version="true"></script>
+}

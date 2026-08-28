@@ -31,7 +31,9 @@ public static class DefaultRolePermissionTemplate
     /// mdm→legal-entity); the old service-name entries were dropped once the catalog no longer carries them. Owner
     /// decision: the Admin baseline stays a curated module list.
     /// </summary>
-    public static readonly IReadOnlyList<string> AdminModules = new[] { "access-governance", "legal-entity" };
+    // MOD-0149 — "crm-account" is the module code carried by the seeded crm.account.* permissions (tenant-scoped).
+    // Adding it here grants the tenant Admin role the full crm.account.* baseline via the standard SelectFor breadth clause.
+    public static readonly IReadOnlyList<string> AdminModules = new[] { "access-governance", "legal-entity", "crm-account", "crm-contact" };
 
     /// <summary>
     /// İŞ3-FAZ0 TRANSITION BRIDGE — derives a permission's authz <see cref="PermissionScope"/> from its existing

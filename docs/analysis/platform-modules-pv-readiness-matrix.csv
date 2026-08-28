@@ -1,0 +1,10 @@
+Module,Blueprint Name,PV Use Area,Usable Now,Missing Contract,PV Blocker Severity,PV Readiness Status
+MOD-0004,Metric & Semantic Registry,PV KPI semantics (overdue submission/case processing time/serious case count/reconciliation),No,Metric def+calc contract+certification+SEMANTIC-BUNDLE,P1,NOT_AVAILABLE
+MOD-0018,RBAC / ABAC Authorization,pv.case.* / regulatory.submission.* / tenant-scoped perms / batch decisions,Partial,PV permission catalog seed + ABAC data-scope (FU15),P1,FOUNDATION_AVAILABLE_BUT_EXTENSION_REQUIRED
+MOD-0019,Data Masking & Row/Field Security,Patient/reporter masking + sensitive medical fields + row-level isolation,No,SEC-DATA-BUNDLE masking policy engine,P0,NOT_AVAILABLE
+MOD-0021,Audit Trail Service,Every Safety Case mutation + before/after + decision reason + non-repudiation,Partial,Tamper-evidence hash chain + e-signature non-repudiation + PV entity types,P1,FOUNDATION_AVAILABLE_BUT_EXTENSION_REQUIRED
+MOD-0023,Workflow Designer,Case assessment/medical review/QPPV approval/submission workflow/SLA-escalation,Partial,PV workflow definition seed + golden-flow smoke,P1,FOUNDATION_AVAILABLE_BUT_EXTENSION_REQUIRED
+MOD-0028,Documentation Management,Case attachments/source docs/regulatory outputs/controlled evidence,Partial,FU06 index fix + PV controlled-doc types + checksum/version-compare,P1,FOUNDATION_AVAILABLE_BUT_EXTENSION_REQUIRED
+MOD-0031,Evidence Linking Service,case-document/assessment-evidence/submission-evidence/audit pack provenance,No,EvidenceLink SoR (no code),P1,CONTRACT_ONLY
+MOD-0040,Canonical ID & Correlation Standard,legacy ObjectId->ExternalReference/case number/document ID/correlation ID,Partial,Canonical/external ID mapping model,P1,FOUNDATION_AVAILABLE_BUT_EXTENSION_REQUIRED
+MOD-0063,Data Warehouse / Lakehouse,PV KPI read models/trend-signal analytics/regulatory reporting analytics,No,LAKEHOUSE-BUNDLE dataset/ingestion/lineage,P2,NOT_AVAILABLE

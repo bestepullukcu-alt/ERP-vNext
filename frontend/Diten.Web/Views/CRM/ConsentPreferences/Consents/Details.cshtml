@@ -1,0 +1,277 @@
+@model Diten.Web.Models.CRM.ConsentDetailPageViewModel
+@using System.Globalization
+@using Diten.Web.Views.CRM.ConsentPreferences
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ConsentPreferencesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["ConsentDetail"].Value;
+    Layout = "_LayoutTenantShell";
+    var c = Model.Consent;
+    var enUs = CultureInfo.GetCultureInfo("en-US");
+    string Show(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    string ShowG(Guid? value) => value is { } g && g != Guid.Empty ? g.ToString() : "-";
+    // DataTable-style stamp: "Jul 04, 26 · 05:38 AM".
+    string Stamp(DateTimeOffset? value) => value?.ToLocalTime().ToString("MMM dd, yy · hh:mm tt", enUs) ?? "-";
+    string ActorName(string? name, string? id) => !string.IsNullOrWhiteSpace(name) ? name! : Show(id);
+    string StatusClass(string s) => s == "granted" ? "success" : (new[] { "denied", "withdrawn", "restricted", "expired" }.Contains(s) ? "danger" : "secondary");
+}
+
+<div id="consentDetailsPage" class="consent-details" data-consent-id="@c.ConsentId" data-archived="@c.IsArchived.ToString().ToLowerInvariant()">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+            <h5 class="mb-0">@Localizer["ConsentDetail"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/CRM/ConsentPreferences">@Localizer["PageTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@Localizer["ConsentDetail"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/CRM/ConsentPreferences" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
+            @if (Model.CanManage)
+            {
+                <a href="/CRM/ConsentPreferences/Consents/@c.ConsentId/Edit" class="btn btn-primary">@Localizer["EditConsent"]</a>
+                <button type="button" id="archiveConsent" class="btn btn-label-warning" data-id="@c.ConsentId">@Localizer["ArchiveConsent"]</button>
+            }
+        </div>
+    </div>
+
+    @if (c.IsArchived) { <div class="alert alert-warning py-2"><i class="bx bx-archive me-1"></i>@Localizer["ArchivedRecordReadOnly"]</div> }
+
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                <div class="row g-4">
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-user-pin"></i><div>
+                            <div class="backbone-preview-label">@Localizer["SubjectType"]</div>
+                            <div class="backbone-preview-value mt-1">@Show(c.SubjectType)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-id-card"></i><div>
+                            <div class="backbone-preview-label">@Localizer["SubjectId"]</div>
+                            @if (!string.IsNullOrWhiteSpace(c.SubjectName))
+                            {
+                                <div class="backbone-preview-value mt-1">@c.SubjectName</div>
+                                <div class="text-muted small text-break">@c.SubjectId</div>
+                            }
+                            else
+                            {
+                                <div class="backbone-preview-value mt-1 text-break">@c.SubjectId</div>
+                            }
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-broadcast"></i><div>
+                            <div class="backbone-preview-label">@Localizer["Channel"]</div>
+                            <div class="backbone-preview-value mt-1"><span class="badge bg-label-primary">@Show(c.Channel)</span></div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-target-lock"></i><div>
+                            <div class="backbone-preview-label">@Localizer["Purpose"]</div>
+                            <div class="backbone-preview-value mt-1">@Show(c.Purpose)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-category"></i><div>
+                            <div class="backbone-preview-label">@Localizer["ScopeType"]</div>
+                            <div class="backbone-preview-value mt-1">@Show(c.ScopeType)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-crosshair"></i><div>
+                            <div class="backbone-preview-label">@Localizer["ScopeId"]</div>
+                            <div class="backbone-preview-value mt-1 text-break">@ShowG(c.ScopeId)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field"><i class="bx bx-hash"></i><div>
+                            <div class="backbone-preview-label">@Localizer["ConsentId"]</div>
+                            <div class="backbone-preview-value mt-1 text-break">@c.ConsentId</div>
+                        </div></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ConsentStatusSection"]</h6>
+                <div class="row g-4">
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-been-here"></i><div>
+                            <div class="backbone-preview-label">@Localizer["ConsentStatus"]</div>
+                            <div class="mt-1"><span class="badge bg-label-@StatusClass(c.ConsentStatus)">@Show(c.ConsentStatus)</span></div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-shield-quarter"></i><div>
+                            <div class="backbone-preview-label">@Localizer["LegalBasis"]</div>
+                            <div class="backbone-preview-value mt-1">@Show(c.LegalBasis)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-data"></i><div>
+                            <div class="backbone-preview-label">@Localizer["Source"]</div>
+                            <div class="backbone-preview-value mt-1">@Show(c.Source)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-undo"></i><div>
+                            <div class="backbone-preview-label">@Localizer["WithdrawalReason"]</div>
+                            <div class="backbone-preview-value mt-1">@Show(c.WithdrawalReason)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-calendar-event"></i><div>
+                            <div class="backbone-preview-label">@Localizer["EffectiveFrom"]</div>
+                            <div class="backbone-preview-value mt-1">@Stamp(c.EffectiveFrom)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-calendar-x"></i><div>
+                            <div class="backbone-preview-label">@Localizer["EffectiveTo"]</div>
+                            <div class="backbone-preview-value mt-1">@Stamp(c.EffectiveTo)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field"><i class="bx bx-note"></i><div>
+                            <div class="backbone-preview-label">@Localizer["Notes"]</div>
+                            <div class="backbone-preview-value mt-1 text-break">@Show(c.Notes)</div>
+                        </div></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["EvidenceSection"]</h6>
+                @if (c.EvidenceRef is null)
+                {
+                    <div class="text-muted">@Localizer["NoEvidence"]</div>
+                }
+                else
+                {
+                    <div class="row g-4">
+                        <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-file"></i><div>
+                            <div class="backbone-preview-label">@Localizer["EvidenceRefType"]</div>
+                            <div class="backbone-preview-value mt-1">@Show(c.EvidenceRef.RefType)</div>
+                        </div></div></div>
+                        <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-hash"></i><div>
+                            <div class="backbone-preview-label">@Localizer["EvidenceRefId"]</div>
+                            <div class="backbone-preview-value mt-1 text-break">@ShowG(c.EvidenceRef.RefId)</div>
+                        </div></div></div>
+                        <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-cube"></i><div>
+                            <div class="backbone-preview-label">@Localizer["EvidenceSourceModule"]</div>
+                            <div class="backbone-preview-value mt-1">@Show(c.EvidenceRef.SourceModule)</div>
+                        </div></div></div>
+                        <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-barcode"></i><div>
+                            <div class="backbone-preview-label">@Localizer["EvidenceRefCode"]</div>
+                            <div class="backbone-preview-value mt-1">@Show(c.EvidenceRef.RefCode)</div>
+                        </div></div></div>
+                    </div>
+                }
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ExternalReferencesSection"]</h6>
+                @if (c.ExternalReferences.Count == 0)
+                {
+                    <div class="text-muted">@Localizer["NoExternalReferences"]</div>
+                }
+                else
+                {
+                    <div class="table-responsive"><table class="table table-sm mb-0">
+                        <thead><tr>
+                            <th>@Localizer["SourceSystem"]</th><th>@Localizer["ExternalId"]</th>
+                            <th>@Localizer["ExternalCode"]</th><th>@Localizer["ExternalName"]</th><th>@Localizer["Primary"]</th>
+                        </tr></thead>
+                        <tbody>
+                            @foreach (var x in c.ExternalReferences)
+                            {
+                                <tr>
+                                    <td>@Show(x.SourceSystem)</td><td>@Show(x.ExternalId)</td>
+                                    <td>@Show(x.ExternalCode)</td><td>@Show(x.ExternalName)</td>
+                                    <td>@(x.IsPrimary ? Localizer["Yes"] : Localizer["No"])</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table></div>
+                }
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["Status"]</h6>
+                <div class="backbone-preview-field"><i class="bx bx-check-shield"></i><div>
+                    <div class="backbone-preview-label">@Localizer["Status"]</div>
+                    <div class="mt-1">
+                        @if (c.IsArchived)
+                        {
+                            <span class="badge bg-label-warning">@Localizer["Archived"]</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-label-success">@Localizer["Active"]</span>
+                        }
+                    </div>
+                </div></div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["AuditSection"]</h6>
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="backbone-preview-field"><i class="bx bx-calendar-plus"></i><div>
+                            <div class="backbone-preview-label">@Localizer["CreatedAt"]</div>
+                            <div class="backbone-preview-value mt-1">@Stamp(c.CreatedAt)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field"><i class="bx bx-user"></i><div>
+                            <div class="backbone-preview-label">@Localizer["CreatedBy"]</div>
+                            <div class="backbone-preview-value mt-1 text-break">@ActorName(c.CreatedByName, c.CreatedBy)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field"><i class="bx bx-calendar-edit"></i><div>
+                            <div class="backbone-preview-label">@Localizer["UpdatedAt"]</div>
+                            <div class="backbone-preview-value mt-1">@Stamp(c.UpdatedAt)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field"><i class="bx bx-user-check"></i><div>
+                            <div class="backbone-preview-label">@Localizer["UpdatedBy"]</div>
+                            <div class="backbone-preview-value mt-1 text-break">@ActorName(c.UpdatedByName, c.UpdatedBy)</div>
+                        </div></div>
+                    </div>
+                    @if (c.ArchivedAt.HasValue || !string.IsNullOrWhiteSpace(c.ArchivedBy))
+                    {
+                        <div class="col-12">
+                            <div class="backbone-preview-field"><i class="bx bx-archive-in"></i><div>
+                                <div class="backbone-preview-label">@Localizer["ArchivedAt"]</div>
+                                <div class="backbone-preview-value mt-1">@Stamp(c.ArchivedAt)</div>
+                            </div></div>
+                        </div>
+                        <div class="col-12">
+                            <div class="backbone-preview-field"><i class="bx bx-user-x"></i><div>
+                                <div class="backbone-preview-label">@Localizer["ArchivedBy"]</div>
+                                <div class="backbone-preview-value mt-1 text-break">@ActorName(c.ArchivedByName, c.ArchivedBy)</div>
+                            </div></div>
+                        </div>
+                    }
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/CRM/ConsentPreferences/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/ConsentPreferences/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/ConsentPreferences/consent-details.js" asp-append-version="true"></script>
+}

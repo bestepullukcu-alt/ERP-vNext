@@ -1,0 +1,74 @@
+@using Diten.Web.Views.CRM.TerritoryManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TerritoryManagementResources> L
+@inject IHtmlLocalizer<Diten.Web.SharedResource> Shared
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateNode" aria-labelledby="offcanvasCreateNodeLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateNodeLabel" class="offcanvas-title">@L["CreateNode"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Shared["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body border-top p-4">
+        <div id="formTerritoryNodeAlert" class="alert alert-danger d-none" role="alert"></div>
+        <form id="formTerritoryNode" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="tnNodeId" name="Id" />
+            <input type="hidden" id="tnCountryCode" name="CountryCode" />
+            <input type="hidden" id="tnDivisionCode" name="DivisionCode" />
+            <input type="hidden" id="tnRegionCode" name="RegionCode" />
+            <input type="hidden" id="tnAreaCode" name="AreaCode" />
+            <input type="hidden" id="tnZoneCode" name="ZoneCode" />
+            <input type="hidden" id="tnMicroZoneCode" name="MicroZoneCode" />
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="tnTerritoryCode" class="form-label fw-medium">@L["TerritoryCode"] <span class="text-danger">*</span></label>
+                    <input id="tnTerritoryCode" name="TerritoryCode" class="form-control" maxlength="100" required />
+                </div>
+                <div class="col-12">
+                    <label for="tnName" class="form-label fw-medium">@L["Name"] <span class="text-danger">*</span></label>
+                    <input id="tnName" name="Name" class="form-control" maxlength="200" required />
+                </div>
+                <div class="col-md-7">
+                    <label for="tnTerritoryLevel" class="form-label fw-medium">@L["TerritoryLevel"] <span class="text-danger">*</span></label>
+                    <select id="tnTerritoryLevel" name="TerritoryLevel" class="form-select" required><option value=""></option></select>
+                </div>
+                <div class="col-md-5">
+                    <label for="tnSortOrder" class="form-label fw-medium">@L["SortOrder"]</label>
+                    <input id="tnSortOrder" name="SortOrder" type="number" class="form-control" value="0" />
+                </div>
+                <div class="col-12">
+                    <label for="tnParentTerritoryId" class="form-label fw-medium">@L["ParentTerritory"]</label>
+                    <select id="tnParentTerritoryId" name="ParentTerritoryId" class="form-select"><option value=""></option></select>
+                </div>
+                <div class="col-md-6">
+                    <label for="tnEffectiveFrom" class="form-label fw-medium">@L["EffectiveFrom"] <span class="text-danger">*</span></label>
+                    <input id="tnEffectiveFrom" name="EffectiveFrom" type="date" class="form-control" required />
+                </div>
+                <div class="col-md-6">
+                    <label for="tnEffectiveTo" class="form-label fw-medium">@L["EffectiveTo"]</label>
+                    <input id="tnEffectiveTo" name="EffectiveTo" type="date" class="form-control" />
+                </div>
+                <div id="tnMicrozoneSection" class="col-12 d-none">
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label for="tnAnchorAccountId" class="form-label fw-medium">@L["AnchorAccountId"]</label>
+                            <select id="tnAnchorAccountId" name="AnchorAccountId" class="form-select"><option value=""></option></select>
+                        </div>
+                        <div class="col-12">
+                            <label for="tnPlanningCenterType" class="form-label fw-medium">@L["PlanningCenterType"]</label>
+                            <select id="tnPlanningCenterType" name="PlanningCenterType" class="form-select"><option value=""></option></select>
+                        </div>
+                        <div class="col-12">
+                            <label for="tnClusterNotes" class="form-label fw-medium">@L["ClusterNotes"]</label>
+                            <textarea id="tnClusterNotes" name="ClusterNotes" class="form-control" rows="3" maxlength="1000"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Shared["Cancel"]</button>
+        <button type="button" id="btnSaveTerritoryNode" class="btn btn-primary">@L["Save"]</button>
+    </div>
+</div>

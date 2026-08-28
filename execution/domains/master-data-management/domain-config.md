@@ -17,6 +17,39 @@ by Platform Shared Services and tenant business modules.
   - Authoritative Enterprise Blueprint repository migration pending as a non-blocking governance follow-up for
     the minimal backend slice.
 
+## In-Scope Reserved Module (boundary-authorized 2026-08-02)
+
+- `MOD-0290 Product / Item / SKU Master`
+  - Blueprint-canonical SoR: product master records, item master records, SKUs, UoM mappings, product identifiers,
+    item lifecycle states.
+  - First boundary slice: [MOD-0290-FU01 Brand / Product Master Boundary](module-packs/MOD-0290-FU01-brand-product-master-boundary.md)
+    — `status: draft`, `runtime_code_allowed: false` (no aggregate, CRUD, endpoint or UI authorized).
+  - CRM / Knowledge / Campaign / Frequency modules **consume by reference only**; no local or duplicate
+    brand/product master may be opened there.
+  - Registry row for `MOD-0290` is still missing — governance follow-up (pack F1), not a pack-authored change.
+  - Runtime slice: [MOD-0290-FU02 Brand / Product Runtime + UI](module-packs/MOD-0290-FU02-brand-product-runtime-ui.md)
+    — `status: ready-for-dev`, `runtime_code_allowed: true` (2026-08-03). Authorizes the `Brand` and `Product`
+    aggregates, CRUD-minus-delete, soft archive lifecycle, list/detail/relation/contract endpoints under
+    `/api/mdm/brands` · `/api/mdm/products` · `/api/mdm/brand-products/contract`, and the tenant-shell
+    `Master Data → Brands / Products` UI. Item / SKU / UoM mapping / product identifier management stay out of
+    scope (separate MOD-0290 follow-ups). Placement was reconfirmed against MOD-0290-FU01 §1: Brand/Product
+    runtime is **MDM-owned**, never CRM-owned.
+
+## Frontend / Gateway Scope Exception (MOD-0290-FU02 only)
+
+The "frontend and gateway remain outside the first implementation slice" restriction recorded below for the
+MOD-0220 Legal Entity slice is **narrowly lifted for MOD-0290-FU02**, per the module-pack-over-domain-config
+authority rule:
+
+- `frontend/Diten.Web/**` — only the `MasterData/Brands` and `MasterData/Products` surfaces plus the single
+  permission-guarded `Master Data` navigation block in `_LayoutTenantShell.cshtml` (exact scope: pack §5/§6).
+- `gateway/Diten.ApiGateway/ocelot.json` — only the five `/api/mdm/brands` · `/api/mdm/products` ·
+  `/api/mdm/brand-products/contract` route blocks, downstream `localhost:5059`, no `DELETE` method
+  (exact scope: pack §15). Ownership remains with `integration-agent`; the existing `/api/legal-entities`
+  routes are untouched.
+
+This exception applies to no other MDM module pack.
+
 ## Domain-Level Owned Boundaries
 
 > Canonicalization (DCP-002): references to "MOD-0040" in this domain config are now canonically **MOD-0288** (Organization, Person & Position Directory). They resolve via the registry deprecated alias and are left unchanged below for boundary stability.

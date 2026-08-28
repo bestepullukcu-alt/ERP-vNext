@@ -1,0 +1,55 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.CRM.Accounts.AccountIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* L10n bridge for the Account 360 Details page (Related Accounts DataTable + relationship canvas).
+   details.l10n.js merges this payload into window.L10n with PascalCase keys. *@
+
+<script id="account-details-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        AddRelatedAccount = Localizer["AddRelatedAccount"].Value,
+        EditRelationship = Localizer["EditRelationship"].Value,
+        EndRelationship = Localizer["EndRelationship"].Value,
+        ViewAccount = Localizer["ViewAccount"].Value,
+        AccountType = Localizer["AccountType"].Value,
+        AddContactLink = Localizer["AddContactLink"].Value,
+        EditContactLink = Localizer["EditContactLink"].Value,
+        EndContactLink = Localizer["EndContactLink"].Value,
+        ViewContact = Localizer["ViewContact"].Value,
+        Primary = Localizer["Primary"].Value,
+        NoRelatedContacts = Localizer["NoRelatedContacts"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        ManagedFromSource = Localizer["ManagedFromSource"].Value,
+        NoRelatedAccounts = Localizer["NoRelatedAccounts"].Value,
+        FormValidationError = Localizer["FormValidationError"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        Active = SharedLocalizer["Active"].Value,
+        CurrentBadge = Localizer["CurrentBadge"].Value,
+        AssignmentSource = Localizer["AssignmentSource"].Value,
+        Details = SharedLocalizer["Details"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Print = SharedLocalizer["Print"].Value,
+        PDF = SharedLocalizer["PDF"].Value,
+        Copy = SharedLocalizer["Copy"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        RecordCreated = SharedLocalizer["RecordCreated"].Value,
+        RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
+        DtNoRecords = SharedLocalizer["DtNoRecords"].Value,
+        DtInfo = SharedLocalizer["DtInfo"].Value,
+        DtInfoEmpty = SharedLocalizer["DtInfoEmpty"].Value,
+        DtInfoFiltered = SharedLocalizer["DtInfoFiltered"].Value,
+        DtZeroRecords = SharedLocalizer["DtZeroRecords"].Value,
+        @* Shared across both 360 tables, so the empty-table text stays section-neutral. *@
+        DtEmptyTable = SharedLocalizer["DtEmptyTable"].Value
+    })
+</script>

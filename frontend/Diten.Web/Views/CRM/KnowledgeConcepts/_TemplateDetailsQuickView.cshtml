@@ -1,0 +1,111 @@
+@using Diten.Web.Views.CRM.KnowledgeConcepts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeConceptsIndex> Localizer
+
+@* ConceptChainTemplate read-only field map inside the shared #offcanvasDetailsPreview shell.
+   The expected TYPE sequence renders as an ordered list so the chain reads in order. *@
+<div class="d-flex flex-column gap-4 d-none" data-preview-kind="concept-chain-templates">
+    <section class="card backbone-preview-section p-4">
+        <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["IdentitySection"]</h6>
+        <div class="row g-4">
+            <div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-purchase-tag-alt"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["ChainCode"]</div>
+                        <div id="pv-tpl-code" class="backbone-preview-value mt-1">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-list-ol"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["ChainName"]</div>
+                        <div id="pv-tpl-name" class="backbone-preview-value mt-1">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-book-content"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["SubjectId"]</div>
+                        <div id="pv-tpl-subject" class="backbone-preview-value mt-1">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-git-branch"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["ChainVersion"]</div>
+                        <div id="pv-tpl-version" class="backbone-preview-value mt-1">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-check-shield"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["Status"]</div>
+                        <div class="mt-1"><span id="pv-tpl-status" class="badge bg-label-secondary">-</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="card backbone-preview-section p-4">
+        <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["OrderedConceptTypes"]</h6>
+        <ol id="pv-tpl-sequence" class="list-group list-group-numbered mb-0"></ol>
+        <div id="pv-tpl-frozen" class="form-text text-warning d-none">@Localizer["PublishedSequenceFrozen"]</div>
+    </section>
+
+    <section class="card backbone-preview-section p-4">
+        <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["Description"]</h6>
+        <div id="pv-tpl-description" class="backbone-preview-description">-</div>
+    </section>
+
+    <section class="card backbone-preview-section p-4">
+        <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["ReferenceSection"]</h6>
+        <div class="row g-4">
+            <div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-calendar-check"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["EffectiveFrom"]</div>
+                        <div id="pv-tpl-from" class="backbone-preview-value mt-1">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-calendar-x"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["EffectiveTo"]</div>
+                        <div id="pv-tpl-to" class="backbone-preview-value mt-1">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-archive"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["Archived"]</div>
+                        <div class="mt-1"><span id="pv-tpl-archived" class="badge bg-label-secondary">-</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="backbone-preview-field">
+                    <i class="bx bx-time-five"></i>
+                    <div class="min-w-0 flex-grow-1">
+                        <div class="backbone-preview-label">@Localizer["UpdatedAt"]</div>
+                        <div id="pv-tpl-updated" class="backbone-preview-value mt-1">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

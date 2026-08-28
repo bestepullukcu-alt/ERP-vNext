@@ -1,0 +1,104 @@
+@model Diten.Web.Models.CRM.TerritoryModelDetailPageViewModel
+@using Diten.Web.Views.CRM.TerritoryManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TerritoryManagementResources> L
+@inject IHtmlLocalizer<Diten.Web.SharedResource> Shared
+
+@* MOD-0151 FU04B — READ-ONLY plan-vs-current comparison. No create/edit/end/replace/transfer/apply action lives
+   here by design (pack §22.4): the tab answers "what was planned, what is it now?" and nothing else. *@
+
+<div class="alert alert-info alert-dismissible d-flex align-items-start" role="alert">
+    <i class="bx bx-git-compare me-2 mt-1"></i>
+    <div>
+        <div>@L["PlanVsCurrentExplainer"]</div>
+        <small class="text-muted d-block">@L["PlanVsCurrentReadOnlyHint"]</small>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<div id="plan-vs-current-state" class="d-none"></div>
+
+<div class="row g-3 mb-3 d-none" id="plan-vs-current-stats"></div>
+
+@* Golden Compact inline filter. JavaScript mounts this host immediately below this table's toolbar. *@
+<div id="pvcInlineFilterHost" class="dt-inline-filter-host">
+    <div class="collapse" id="pvcInlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="pvcFilterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip filter-pvc-change-type">
+                        <select id="filterPvcDiffType" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@L["ChangeType"]"></select>
+                    </div>
+                    <div class="filter-chip filter-pvc-node">
+                        <select id="filterPvcNode" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@L["TerritoryNode"]"></select>
+                    </div>
+                    <div class="filter-chip filter-pvc-business-unit">
+                        <select id="filterPvcBusinessUnit" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@L["BusinessUnitScope"]"></select>
+                    </div>
+                    <div class="filter-chip filter-pvc-position">
+                        <select id="filterPvcPosition" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@L["Position"]"></select>
+                    </div>
+                    <div class="filter-chip filter-pvc-effective-at">
+                        <label class="visually-hidden" for="filterPvcEffectiveAt">@L["EffectiveAt"]</label>
+                        <input type="date" id="filterPvcEffectiveAt" class="form-control form-control-sm" title="@L["EffectiveAt"]" />
+                    </div>
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" id="btnPvcFilterApply" class="btn btn-sm btn-primary">@Shared["Apply"]</button>
+                        <button type="reset" id="btnPvcFilterReset" class="btn btn-sm btn-label-danger">@Shared["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div id="plan-vs-current-skeleton" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-planvscurrent" data-dt-standard="v2" class="datatables-planvscurrent table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="all">@L["ChangeType"]</th>
+                    <th>@L["TerritoryNode"]</th>
+                    <th>@L["BusinessUnitScope"]</th>
+                    <th>@L["Position"]</th>
+                    <th class="all">@L["PlannedResource"]</th>
+                    <th class="all">@L["CurrentResource"]</th>
+                    <th>@L["EffectiveDate"]</th>
+                    <th>@L["Reason"]</th>
+                    <th class="all">@L["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end backbone-preview-offcanvas" tabindex="-1" id="pvcDetailsOffcanvas"
+     aria-labelledby="pvc-details-title">
+    <div class="offcanvas-header p-4">
+        <div class="d-flex align-items-center min-w-0">
+            <div class="backbone-preview-avatar d-flex align-items-center justify-content-center me-3 flex-shrink-0">
+                <i class="bx bx-git-compare fs-4"></i>
+            </div>
+            <div class="min-w-0">
+                <h5 id="pvc-details-title" class="offcanvas-title mb-0 text-truncate">—</h5>
+                <small id="pvc-details-subtitle" class="text-muted d-block text-truncate">—</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                aria-label="@Shared["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+        <div id="pvc-details-body" class="d-flex flex-column gap-4"></div>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 bg-white">
+        <button type="button" class="btn btn-label-secondary w-100" data-bs-dismiss="offcanvas">@Shared["Cancel"]</button>
+    </div>
+</div>

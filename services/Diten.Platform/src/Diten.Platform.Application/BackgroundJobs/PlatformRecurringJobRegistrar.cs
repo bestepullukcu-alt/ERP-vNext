@@ -1,6 +1,7 @@
 using Diten.BuildingBlocks.BackgroundJobs;
 using Diten.Platform.Application.Features.Notifications.BackgroundJobs;
 using Diten.Platform.Application.Features.Workflow.BackgroundJobs;
+using Diten.Platform.Application.Features.WorkingCalendarImport;
 using Microsoft.Extensions.Options;
 
 namespace Diten.Platform.Application.BackgroundJobs;
@@ -9,10 +10,13 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
 {
     private const string ServiceName = "Diten.Platform";
     private readonly BackgroundJobSchedulerOptions _options;
+    private readonly WorkingCalendarImportOptions _workingCalendarOptions;
 
-    public PlatformRecurringJobRegistrar(IOptions<BackgroundJobSchedulerOptions> options)
+    public PlatformRecurringJobRegistrar(IOptions<BackgroundJobSchedulerOptions> options,
+        IOptions<WorkingCalendarImportOptions> workingCalendarOptions)
     {
         _options = options.Value;
+        _workingCalendarOptions = workingCalendarOptions.Value;
     }
 
     public IReadOnlyCollection<RecurringJobRegistration> GetRecurringJobs()
@@ -30,7 +34,29 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
             CreateDeferred("Diten.Platform.MOD-0009.ProvisioningRetryJob", "ProvisioningRetryJob", "MOD-0009", "*/2 * * * *")
         };
 
+        if (_workingCalendarOptions.Schedule.Enabled)
+        {
+            registrations.Add(CreateHolidayAutoFetchRegistration());
+        }
+
         return registrations;
+    }
+
+    private RecurringJobRegistration CreateHolidayAutoFetchRegistration()
+    {
+        const string id = "Diten.Platform.WorkingCalendar.HolidayAutoFetchJob";
+        var enabled = _options.RegisterStandardJobs
+            && _options.EnabledJobs.TryGetValue(id, out var configuredEnabled) && configuredEnabled;
+        var descriptor = new BackgroundJobDescriptor(id, ServiceName, nameof(HolidayAutoFetchJob),
+            "working-calendar", _workingCalendarOptions.Schedule.CronExpression, "UTC", enabled, "platform",
+            _options.DefaultRetryAttempts, BackgroundJobTriggerTypes.Recurring);
+        return new RecurringJobRegistration(descriptor, typeof(HolidayAutoFetchJob), typeof(HolidayAutoFetchJobArgs),
+            new HolidayAutoFetchJobArgs(_workingCalendarOptions.Schedule.YearOffsets,
+                _workingCalendarOptions.Schedule.MaxTargetsPerRun,
+                _workingCalendarOptions.Schedule.IncludeNonPublicTypes), new BackgroundJobContext(
+                TriggerType: BackgroundJobTriggerTypes.Recurring,
+                TriggeredBy: nameof(PlatformRecurringJobRegistrar),
+                Metadata: new Dictionary<string, string> { ["owner"] = "working-calendar", ["execution"] = "fetch-to-staging" }));
     }
 
     private RecurringJobRegistration CreateEmailDispatchSweepRegistration()

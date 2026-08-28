@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>  <data name="Title" xml:space="preserve"><value>Управление территориями</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Управление версионными планами территорий и их иерархией.</value></data>
+  <data name="ContractSection" xml:space="preserve"><value>Готовность контракта</value></data>
+  <data name="ContractReady" xml:space="preserve"><value>Контракт готов</value></data>
+  <data name="ReferenceDataNotReady" xml:space="preserve"><value>Справочные данные не готовы</value></data>
+  <data name="MissingSets" xml:space="preserve"><value>Отсутствующие наборы</value></data>
+  <data name="TerritoryModels" xml:space="preserve"><value>Модели территорий</value></data>
+  <data name="TerritoryNodes" xml:space="preserve"><value>Узлы территорий</value></data>
+  <data name="CreateModel" xml:space="preserve"><value>Создать модель</value></data>
+  <data name="EditModel" xml:space="preserve"><value>Изменить модель</value></data>
+  <data name="NoModels" xml:space="preserve"><value>Пока нет моделей территорий.</value></data>
+  <data name="ModelCode" xml:space="preserve"><value>Код модели</value></data>
+  <data name="Name" xml:space="preserve"><value>Название</value></data>
+  <data name="Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="VersionNumber" xml:space="preserve"><value>Версия</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>Область страны</value></data>
+  <data name="DivisionScope" xml:space="preserve"><value>Область подразделения</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Действует до</value></data>
+  <data name="ChangeReason" xml:space="preserve"><value>Причина изменения</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="View" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="Edit" xml:space="preserve"><value>Изменить</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Назад к списку</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="ModelDetails" xml:space="preserve"><value>Детали модели</value></data>
+  <data name="TerritoryHierarchy" xml:space="preserve"><value>Иерархия территорий</value></data>
+  <data name="NoNodes" xml:space="preserve"><value>В этой модели пока нет узлов.</value></data>
+  <data name="CreateNode" xml:space="preserve"><value>Создать узел территории</value></data>
+  <data name="EditNode" xml:space="preserve"><value>Изменить узел территории</value></data>
+  <data name="TerritoryCode" xml:space="preserve"><value>Код территории</value></data>
+  <data name="TerritoryLevel" xml:space="preserve"><value>Уровень территории</value></data>
+  <data name="ParentTerritory" xml:space="preserve"><value>Родительская территория</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Порядок</value></data>
+  <data name="MicroZoneProfile" xml:space="preserve"><value>Профиль микрозоны</value></data>
+  <data name="MicroZoneProfileHelp" xml:space="preserve"><value>Доступно только при уровне microzone.</value></data>
+  <data name="AnchorAccountId" xml:space="preserve"><value>Идентификатор якорного счёта</value></data>
+  <data name="ClusterNotes" xml:space="preserve"><value>Заметки кластера</value></data>
+  <data name="PlanningCenterType" xml:space="preserve"><value>Тип центра планирования</value></data>
+  <data name="CountryCode" xml:space="preserve"><value>Код страны</value></data>
+  <data name="DivisionCode" xml:space="preserve"><value>Код подразделения</value></data>
+  <data name="RegionCode" xml:space="preserve"><value>Код региона</value></data>
+  <data name="AreaCode" xml:space="preserve"><value>Код района</value></data>
+  <data name="ZoneCode" xml:space="preserve"><value>Код зоны</value></data>
+  <data name="MicroZoneCode" xml:space="preserve"><value>Код микрозоны</value></data>
+  <data name="ReferenceDataUnavailable" xml:space="preserve"><value>Справочные данные недоступны, уровни выбрать нельзя. Повторите позже.</value></data>
+  <data name="LimitationsSection" xml:space="preserve"><value>Объём FU01 — пока недоступно</value></data>
+  <data name="LimAssignmentRules" xml:space="preserve"><value>Правила назначения недоступны в этом FU.</value></data>
+  <data name="LimResourceAssignment" xml:space="preserve"><value>Назначение ресурсов недоступно в этом FU.</value></data>
+  <data name="LimWorkflowActivation" xml:space="preserve"><value>Активация рабочего процесса недоступна в этом FU.</value></data>
+  <data name="LimEvidencePack" xml:space="preserve"><value>Пакет доказательств недоступен в этом FU.</value></data>
+  <data name="LimImportExport" xml:space="preserve"><value>Импорт/экспорт недоступен в этом FU.</value></data>
+  <data name="SelectLevel" xml:space="preserve"><value>Выберите уровень</value></data>
+  <data name="SelectParent" xml:space="preserve"><value>(корень - без родителя)</value></data>
+  <data name="LiveSmokeReady" xml:space="preserve"><value>Готово</value></data>
+  <data name="ModuleId" xml:space="preserve"><value>Модуль</value></data>
+  <data name="RuntimeScope" xml:space="preserve"><value>Область выполнения</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="EffectivePeriodSection" xml:space="preserve"><value>Период действия</value></data>
+  <data name="GeoCodesSection" xml:space="preserve"><value>Гео-коды</value></data>
+  <data name="BusinessUnitScope" xml:space="preserve"><value>Область бизнес-единицы</value></data>
+  <data name="BusinessUnitScopeHelp" xml:space="preserve"><value>Бизнес-единицы, к которым применяется этот территориальный план (напр., Alpha, Beta).</value></data>
+  <data name="BrandScopePlanned" xml:space="preserve"><value>Область бренда запланирована для последующей интеграции с модулем Бренд/Маркетинг.</value></data>
+  <data name="CountryReferenceNotReady" xml:space="preserve"><value>Справочные данные по странам ещё не опубликованы.</value></data>
+  <data name="BusinessUnitReferenceNotReady" xml:space="preserve"><value>Справочные данные по бизнес-единицам ещё не опубликованы.</value></data>
+  <data name="SelectCountry" xml:space="preserve"><value>Выберите страну</value></data>
+  <data name="Activate" xml:space="preserve"><value>Активировать</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Деактивировать</value></data>
+  <data name="Archive" xml:space="preserve"><value>Архивировать</value></data>
+  <data name="DeleteDraft" xml:space="preserve"><value>Удалить черновик</value></data>
+  <data name="DeleteDraftNode" xml:space="preserve"><value>Удалить узел-черновик</value></data>
+  <data name="ExpiredWarning" xml:space="preserve"><value>Срок действия истёк. Сохранённый статус не изменён; запись вычисляется как истёкшая.</value></data>
+  <data name="ConfirmLifecycleAction" xml:space="preserve"><value>Подтвердить действие жизненного цикла</value></data>
+  <data name="LifecycleConfirmation" xml:space="preserve"><value>Это действие изменит рабочий статус. Продолжить?</value></data>
+  <data name="Confirm" xml:space="preserve"><value>Подтвердить</value></data>
+  <data name="AssignmentRules" xml:space="preserve"><value>Правила назначения</value></data>
+  <data name="AssignmentRulesSubtitle" xml:space="preserve"><value>Правила описывают, как клиенты сопоставляются с узлом территории. Они ничего не назначают.</value></data>
+  <data name="RunPreview" xml:space="preserve"><value>Запустить предпросмотр</value></data>
+  <data name="CreateRule" xml:space="preserve"><value>Создать правило</value></data>
+  <data name="EditRule" xml:space="preserve"><value>Изменить правило</value></data>
+  <data name="DeleteRule" xml:space="preserve"><value>Удалить правило</value></data>
+  <data name="DeleteRuleConfirm" xml:space="preserve"><value>Правило будет удалено логически (без физического удаления):</value></data>
+  <data name="PreviewDoesNotAssign" xml:space="preserve"><value>Предпросмотр не назначает клиентов.</value></data>
+  <data name="ApplyComesInFu05" xml:space="preserve"><value>Применение и история назначений появятся в FU05.</value></data>
+  <data name="ResourceComesInFu04" xml:space="preserve"><value>Назначение ресурсов / МП появится в FU04.</value></data>
+  <data name="RulesEditableOnDraftOnly" xml:space="preserve"><value>Правила назначения можно менять только в черновике модели.</value></data>
+  <data name="ArchivedReadOnly" xml:space="preserve"><value>Модель заархивирована и доступна только для чтения.</value></data>
+  <data name="RuleCode" xml:space="preserve"><value>Код правила</value></data>
+  <data name="TargetNode" xml:space="preserve"><value>Целевой узел</value></data>
+  <data name="RuleType" xml:space="preserve"><value>Тип правила</value></data>
+  <data name="Criteria" xml:space="preserve"><value>Критерии</value></data>
+  <data name="CriteriaHint" xml:space="preserve"><value>Коды через запятую. Значения одного поля — ИЛИ, разные поля — И.</value></data>
+  <data name="Priority" xml:space="preserve"><value>Приоритет</value></data>
+  <data name="PriorityHint" xml:space="preserve"><value>При совпадении нескольких правил побеждает меньшее значение.</value></data>
+  <data name="ConflictPolicy" xml:space="preserve"><value>Политика конфликтов</value></data>
+  <data name="Enabled" xml:space="preserve"><value>Включено</value></data>
+  <data name="Disabled" xml:space="preserve"><value>Отключено</value></data>
+  <data name="AssignmentPreview" xml:space="preserve"><value>Предпросмотр назначения</value></data>
+  <data name="NoAssignmentsPersisted" xml:space="preserve"><value>Назначения не сохранялись.</value></data>
+  <data name="MatchedAccounts" xml:space="preserve"><value>Совпавшие клиенты</value></data>
+  <data name="Conflicts" xml:space="preserve"><value>Конфликты</value></data>
+  <data name="RuleSummary" xml:space="preserve"><value>Сводка правил</value></data>
+  <data name="AccountCode" xml:space="preserve"><value>Код клиента</value></data>
+  <data name="AccountName" xml:space="preserve"><value>Название клиента</value></data>
+  <data name="MatchReason" xml:space="preserve"><value>Причина совпадения</value></data>
+  <data name="ConflictStatus" xml:space="preserve"><value>Статус конфликта</value></data>
+  <data name="CandidateNodes" xml:space="preserve"><value>Возможные узлы</value></data>
+  <data name="ResolutionSuggestion" xml:space="preserve"><value>Предлагаемое решение</value></data>
+  <data name="Evaluated" xml:space="preserve"><value>Оценено</value></data>
+  <data name="Matches" xml:space="preserve"><value>Совпадения</value></data>
+  <data name="CountryRefs" xml:space="preserve"><value>Коды стран</value></data>
+  <data name="CityRefs" xml:space="preserve"><value>Коды городов</value></data>
+  <data name="DistrictRefs" xml:space="preserve"><value>Коды районов</value></data>
+  <data name="AccountTypes" xml:space="preserve"><value>Типы клиентов</value></data>
+  <data name="AccountCategories" xml:space="preserve"><value>Категории клиентов</value></data>
+  <data name="AccountStatuses" xml:space="preserve"><value>Статусы клиентов</value></data>
+  <data name="NoRules" xml:space="preserve"><value>Правил назначения пока нет.</value></data>
+  <data name="NoMatches" xml:space="preserve"><value>Ни один клиент не подошёл под правила.</value></data>
+  <data name="NoConflicts" xml:space="preserve"><value>Конфликтов не обнаружено.</value></data>
+  <data name="Candidates" xml:space="preserve"><value>Кандидаты</value></data>
+  <data name="ScannedAccounts" xml:space="preserve"><value>Просмотрено клиентов</value></data>
+  <data name="EvaluatedRules" xml:space="preserve"><value>Оценённые правила</value></data>
+  <data name="GeneratedAt" xml:space="preserve"><value>Сформировано</value></data>
+  <data name="ConflictWinner" xml:space="preserve"><value>Победитель</value></data>
+  <data name="ConflictLoser" xml:space="preserve"><value>Переопределено</value></data>
+  <data name="NoConflict" xml:space="preserve"><value>OK</value></data>
+  <data name="MissingNode" xml:space="preserve"><value>узел отсутствует</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="EvaluatedAsOf" xml:space="preserve"><value>оценено на</value></data>
+  <data name="ResourceAssignments" xml:space="preserve"><value>Назначения ресурсов</value></data>
+  <data name="ResourceAssignmentsSubtitle" xml:space="preserve"><value>Кто отвечает за этот узел территории или коммерческий охват.</value></data>
+  <data name="ResourceAssignmentsExplainer" xml:space="preserve"><value>Эти назначения дают людям ответственность за территории. Клиентов они не назначают.</value></data>
+  <data name="AccountCoverageComesInFu05" xml:space="preserve"><value>Охват клиентов появится в FU05.</value></data>
+  <data name="EndingIsNotDeleting" xml:space="preserve"><value>Завершение назначения сохраняет историю; запись не удаляется.</value></data>
+  <data name="ResourcesEditableOnDraftOnly" xml:space="preserve"><value>Назначения ресурсов можно менять только в черновике модели.</value></data>
+  <data name="AssignResource" xml:space="preserve"><value>Назначить ресурс</value></data>
+  <data name="EditAssignment" xml:space="preserve"><value>Изменить назначение</value></data>
+  <data name="DeleteAssignment" xml:space="preserve"><value>Удалить назначение</value></data>
+  <data name="EndAssignment" xml:space="preserve"><value>Завершить назначение</value></data>
+  <data name="EndAssignmentConfirm" xml:space="preserve"><value>Назначение будет завершено и сохранено в истории:</value></data>
+  <data name="CheckConflicts" xml:space="preserve"><value>Проверить конфликты</value></data>
+  <data name="NoConflictsFound" xml:space="preserve"><value>Конфликтов и предупреждений не найдено.</value></data>
+  <data name="NoAssignments" xml:space="preserve"><value>Назначений ресурсов пока нет.</value></data>
+  <data name="Resource" xml:space="preserve"><value>Ресурс</value></data>
+  <data name="Role" xml:space="preserve"><value>Роль</value></data>
+  <data name="CoverageScope" xml:space="preserve"><value>Область охвата</value></data>
+  <data name="CoverageScopeHint" xml:space="preserve"><value>Оставьте пустым, чтобы использовать значение по умолчанию для роли. Оно определяет необходимость узла и бизнес-единицы.</value></data>
+  <data name="RoleDefaultsCoverage" xml:space="preserve"><value>Оставьте область пустой для значения по умолчанию роли.</value></data>
+  <data name="Primary" xml:space="preserve"><value>Основной</value></data>
+  <data name="ValidPeriod" xml:space="preserve"><value>Период действия</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="ValidTo" xml:space="preserve"><value>Действует по</value></data>
+  <data name="Expired" xml:space="preserve"><value>Истёк</value></data>
+  <data name="ResourceId" xml:space="preserve"><value>Идентификатор ресурса</value></data>
+  <data name="ResourceType" xml:space="preserve"><value>Тип ресурса</value></data>
+  <data name="ResourceDisplayName" xml:space="preserve"><value>Отображаемое имя</value></data>
+  <data name="ResourceEmail" xml:space="preserve"><value>Эл. почта</value></data>
+  <data name="SelectResource" xml:space="preserve"><value>Выберите человека</value></data>
+  <data name="SelectUser" xml:space="preserve"><value>Выберите пользователя</value></data>
+  <data name="Employee" xml:space="preserve"><value>Сотрудник</value></data>
+  <data name="ResourceLookupNotReady" xml:space="preserve"><value>Каталог пользователей недоступен. Выбор сотрудника будет включён после интеграции HR.</value></data>
+  <data name="AssignmentSource" xml:space="preserve"><value>Источник назначения</value></data>
+  <data name="AssignmentSourceHint" xml:space="preserve"><value>Используйте override для исключения; причина обязательна.</value></data>
+  <data name="ChangeReasonHint" xml:space="preserve"><value>Обязательно для ручных и override-назначений.</value></data>
+  <data name="BusinessUnitScopeAssignmentHint" xml:space="preserve"><value>Можно выбрать только бизнес-единицы, уже входящие в область модели.</value></data>
+  <data name="AssignmentHistory" xml:space="preserve"><value>История назначений</value></data>
+  <data name="RunPreviewHint" xml:space="preserve"><value>Предпросмотр ещё не запускался. Нажмите «Запустить предпросмотр» на вкладке «Правила назначения», чтобы увидеть кандидатов.</value></data>
+  <data name="RuleCodeHint" xml:space="preserve"><value>Заполняется автоматически — измените, если хотите свой код. После создания правила изменить нельзя.</value></data>
+  <data name="CriteriaNotReady" xml:space="preserve"><value>Эти справочники ещё не опубликованы, поэтому их критерии недоступны для выбора:</value></data>
+  <data name="PreviewThisRule" xml:space="preserve"><value>Предпросмотр этого правила</value></data>
+  <data name="PreviewScopeAll" xml:space="preserve"><value>Оценены все правила этой модели.</value></data>
+  <data name="PreviewScopeSingle" xml:space="preserve"><value>Оценено только это правило:</value></data>
+  <data name="SingleRuleNoConflicts" xml:space="preserve"><value>У одного правила всегда один целевой узел, поэтому конфликтов здесь не будет. Запустите все правила, чтобы увидеть конфликты.</value></data>
+  <data name="HistoryThisRule" xml:space="preserve"><value>История назначений этого правила</value></data>
+  <data name="PreviewAllRules" xml:space="preserve"><value>Предпросмотр всех правил</value></data>
+  <data name="HistoryAllRules" xml:space="preserve"><value>История всех правил</value></data>
+  <data name="PreviewScopeAllShort" xml:space="preserve"><value>Все правила</value></data>
+  <data name="HistoryScopeAllShort" xml:space="preserve"><value>Все правила</value></data>
+  <data name="HistoryScopeSingle" xml:space="preserve"><value>Показаны только назначения, созданные этим правилом:</value></data>
+  <data name="NoAssignmentHistory" xml:space="preserve"><value>Истории назначений пока нет.</value></data>
+  <data name="RuleHasConflict" xml:space="preserve"><value>Это правило конкурирует с другим как минимум за один клиент. Откройте предпросмотр всех правил для подробностей.</value></data>
+  <data name="GoTo" xml:space="preserve"><value>Перейти</value></data>
+  <data name="ReplaceAssignment" xml:space="preserve"><value>Заменить назначение</value></data>
+  <data name="TransferAssignment" xml:space="preserve"><value>Перенести назначение</value></data>
+  <data name="EffectiveDate" xml:space="preserve"><value>Дата вступления в силу</value></data>
+  <data name="ReplaceAssignmentConfirm" xml:space="preserve"><value>Это назначение будет заменено новым ресурсом:</value></data>
+  <data name="TransferAssignmentConfirm" xml:space="preserve"><value>Это назначение будет перенесено в другой узел:</value></data>
+  <data name="PlanVsCurrent" xml:space="preserve"><value>План и текущее</value></data>
+  <data name="PlanVsCurrentExplainer" xml:space="preserve"><value>Сравнивает план назначения ресурсов, зафиксированный при активации модели, с текущими зонами ответственности.</value></data>
+  <data name="PlanVsCurrentReadOnlyHint" xml:space="preserve"><value>Вкладка доступна только для чтения. Назначения изменяются на странице «Назначения ресурсов».</value></data>
+  <data name="PlanCapturedAt" xml:space="preserve"><value>План зафиксирован</value></data>
+  <data name="PlanCapturedBy" xml:space="preserve"><value>План зафиксировал</value></data>
+  <data name="PlanSnapshotVersion" xml:space="preserve"><value>Версия плана</value></data>
+  <data name="CorrelationId" xml:space="preserve"><value>Идентификатор корреляции</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>Дата действия</value></data>
+  <data name="ChangeType" xml:space="preserve"><value>Тип изменения</value></data>
+  <data name="TerritoryNode" xml:space="preserve"><value>Узел территории</value></data>
+  <data name="Position" xml:space="preserve"><value>Должность</value></data>
+  <data name="PlannedResource" xml:space="preserve"><value>Запланированный ресурс</value></data>
+  <data name="CurrentResource" xml:space="preserve"><value>Текущий ресурс</value></data>
+  <data name="Reason" xml:space="preserve"><value>Причина</value></data>
+  <data name="NoPlanVsCurrentRows" xml:space="preserve"><value>Различий нет.</value></data>
+  <data name="PlanNotYetActivated" xml:space="preserve"><value>Модель ещё не активирована, поэтому базовый план отсутствует. Страница «Назначения ресурсов» показывает предварительный план.</value></data>
+  <data name="PlanSnapshotNotCaptured" xml:space="preserve"><value>Для этой модели базовый план не зафиксирован, поэтому сравнение недоступно.</value></data>
+  <data name="PlanVsCurrentHistorical" xml:space="preserve"><value>Модель больше не активна. Сравнение показано как история только для чтения.</value></data>
+  <data name="Planned" xml:space="preserve"><value>Запланировано</value></data>
+  <data name="Current" xml:space="preserve"><value>Текущее</value></data>
+  <data name="ReplacementLink" xml:space="preserve"><value>Замена</value></data>
+  <data name="TransferLink" xml:space="preserve"><value>Перевод</value></data>
+  <data name="ChangedAt" xml:space="preserve"><value>Изменено</value></data>
+  <data name="ChangedBy" xml:space="preserve"><value>Кем изменено</value></data>
+  <data name="ChangedByUnavailable" xml:space="preserve"><value>Не сохранено в назначении</value></data>
+  <data name="AlsoDiffers" xml:space="preserve"><value>Также отличается</value></data>
+  <data name="LegacyRoleDisplayOnly" xml:space="preserve"><value>Устаревшая роль (только отображение)</value></data>
+  <data name="ChangedRows" xml:space="preserve"><value>Изменено</value></data>
+  <data name="PlannedCount" xml:space="preserve"><value>Запланировано</value></data>
+  <data name="CurrentCount" xml:space="preserve"><value>Текущее</value></data>
+  <data name="DiffUnchanged" xml:space="preserve"><value>Без изменений</value></data>
+  <data name="DiffReplaced" xml:space="preserve"><value>Заменено</value></data>
+  <data name="DiffTransferredOut" xml:space="preserve"><value>Переведено (из)</value></data>
+  <data name="DiffTransferredIn" xml:space="preserve"><value>Переведено (в)</value></data>
+  <data name="DiffAddedAfterActivation" xml:space="preserve"><value>Добавлено после активации</value></data>
+  <data name="DiffEndedAfterActivation" xml:space="preserve"><value>Завершено после активации</value></data>
+  <data name="DiffMissingCurrent" xml:space="preserve"><value>Нет текущего</value></data>
+  <data name="DiffDateChanged" xml:space="preserve"><value>Даты изменены</value></data>
+  <data name="DiffScopeChanged" xml:space="preserve"><value>Область изменена</value></data>
+  <data name="DiffPositionChanged" xml:space="preserve"><value>Должность изменена</value></data>
+  <data name="ApplyRequiresActiveModel" xml:space="preserve"><value>Назначения учетных записей можно применять только к активной модели территорий. Сначала активируйте эту модель.</value></data>
+  <data name="ImportExport" xml:space="preserve">
+    <value>Импорт / Экспорт</value>
+  </data>
+  <data name="ExportXlsx" xml:space="preserve">
+    <value>Экспорт (XLSX)</value>
+  </data>
+  <data name="DownloadImportTemplate" xml:space="preserve">
+    <value>Скачать шаблон импорта</value>
+  </data>
+  <data name="ImportDryRunFirstNotice" xml:space="preserve">
+    <value>Импорт всегда начинается с пробного прогона. Пробный прогон ничего не записывает — ни узел, ни правило, ни назначение, ни строку истории. Записывает только отдельное действие «Применить».</value>
+  </data>
+  <data name="ImportResourceApplyNotSupported" xml:space="preserve">
+    <value>Назначения ресурсов можно экспортировать, включить в шаблон и проверить, но в этой версии их нельзя применить из файла.</value>
+  </data>
+  <data name="ImportReadModelsNotImportable" xml:space="preserve">
+    <value>Coverage Summary и Plan vs Current — модели чтения только для экспорта, их нельзя импортировать.</value>
+  </data>
+  <data name="UploadWorkbook" xml:space="preserve">
+    <value>Загрузить книгу</value>
+  </data>
+  <data name="DryRunWritesNothing" xml:space="preserve">
+    <value>Пробный прогон ничего не записывает</value>
+  </data>
+  <data name="SelectXlsxFile" xml:space="preserve">
+    <value>Выберите файл .xlsx</value>
+  </data>
+  <data name="StrictMode" xml:space="preserve">
+    <value>Строгий режим</value>
+  </data>
+  <data name="StrictModeHint" xml:space="preserve">
+    <value>Одна блокирующая строка останавливает весь файл.</value>
+  </data>
+  <data name="RunDryRun" xml:space="preserve">
+    <value>Запустить пробный прогон</value>
+  </data>
+  <data name="ApplyImport" xml:space="preserve">
+    <value>Применить</value>
+  </data>
+  <data name="DryRunResult" xml:space="preserve">
+    <value>Результат пробного прогона</value>
+  </data>
+  <data name="ApplyResult" xml:space="preserve">
+    <value>Результат применения</value>
+  </data>
+  <data name="Sheet" xml:space="preserve">
+    <value>Лист</value>
+  </data>
+  <data name="Rows" xml:space="preserve">
+    <value>Строки</value>
+  </data>
+  <data name="Blocking" xml:space="preserve">
+    <value>Блокирующие</value>
+  </data>
+  <data name="Creates" xml:space="preserve">
+    <value>Создания</value>
+  </data>
+  <data name="Updates" xml:space="preserve">
+    <value>Обновления</value>
+  </data>
+  <data name="Ends" xml:space="preserve">
+    <value>Завершения</value>
+  </data>
+  <data name="Skips" xml:space="preserve">
+    <value>Пропущено</value>
+  </data>
+  <data name="Outcome" xml:space="preserve">
+    <value>Итог</value>
+  </data>
+  <data name="ShowOnlyBlocking" xml:space="preserve">
+    <value>Показывать только блокирующие строки</value>
+  </data>
+  <data name="RowNumber" xml:space="preserve">
+    <value>Строка</value>
+  </data>
+  <data name="Severity" xml:space="preserve">
+    <value>Уровень</value>
+  </data>
+  <data name="Operation" xml:space="preserve">
+    <value>Операция</value>
+  </data>
+  <data name="ResolvedKey" xml:space="preserve">
+    <value>Запись</value>
+  </data>
+  <data name="Message" xml:space="preserve">
+    <value>Сообщение</value>
+  </data>
+  <data name="SuggestedFix" xml:space="preserve">
+    <value>Рекомендация</value>
+  </data>
+  <data name="ImportRunHistory" xml:space="preserve">
+    <value>История импортов</value>
+  </data>
+  <data name="AppendOnly" xml:space="preserve">
+    <value>Только добавление</value>
+  </data>
+  <data name="UploadedAt" xml:space="preserve">
+    <value>Загружено</value>
+  </data>
+  <data name="FileName" xml:space="preserve">
+    <value>Файл</value>
+  </data>
+  <data name="UploadedBy" xml:space="preserve">
+    <value>Кем загружено</value>
+  </data>
+  <data name="RunStatus" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="Errors" xml:space="preserve">
+    <value>Ошибки</value>
+  </data>
+  <data name="Warnings" xml:space="preserve">
+    <value>Предупреждения</value>
+  </data>
+  <data name="ImportSelectFile" xml:space="preserve">
+    <value>Выберите файл .xlsx для импорта.</value>
+  </data>
+  <data name="ImportXlsxOnly" xml:space="preserve">
+    <value>Поддерживаются только файлы .xlsx, созданные шаблоном импорта или экспортом.</value>
+  </data>
+  <data name="Applied" xml:space="preserve">
+    <value>Применено</value>
+  </data>
+  <data name="NotApplied" xml:space="preserve">
+    <value>Не применено</value>
+  </data>
+  <data name="NothingToApply" xml:space="preserve">
+    <value>Применять нечего.</value>
+  </data>
+  <data name="ApplyBlocked" xml:space="preserve">
+    <value>Сначала выполните пробный прогон этого файла, затем применяйте.</value>
+  </data>
+  <data name="ConfirmApply" xml:space="preserve">
+    <value>Применить этот импорт?</value>
+  </data>
+  <data name="NoImportRuns" xml:space="preserve">
+    <value>К этой модели ещё не применялся импорт.</value>
+  </data>
+  <data name="FileAlreadyApplied" xml:space="preserve">
+    <value>Ранее применялось</value>
+  </data>
+  <data name="CreateDraftVersion" xml:space="preserve"><value>Создать черновую версию</value></data>
+</root>

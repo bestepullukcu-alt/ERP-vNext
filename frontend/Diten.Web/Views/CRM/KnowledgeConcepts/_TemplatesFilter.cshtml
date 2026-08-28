@@ -1,0 +1,35 @@
+@using Diten.Web.Views.CRM.KnowledgeConcepts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeConceptsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* Tab 4 inline filter host. Chain status is its own wider lifecycle (draft to review to approved to published to
+   inactive to archived) and comes from the capability contract, not from a hardcoded list. *@
+<div id="templatesFilterHost" class="dt-inline-filter-host">
+    <div class="collapse" id="templatesFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="templatesFilterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    <div class="filter-chip">
+                        <select id="filterTemplatesSubjectId" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["SubjectId"]"></select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterTemplatesStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Status"]"></select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterTemplatesArchived" class="form-select form-select-sm select2" data-placeholder="@Localizer["IncludeArchived"]">
+                            <option value="true">@Localizer["IncludeArchived"]</option>
+                            <option value="false">@Localizer["Active"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" data-concept-apply="concept-chain-templates">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" data-concept-reset="concept-chain-templates">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

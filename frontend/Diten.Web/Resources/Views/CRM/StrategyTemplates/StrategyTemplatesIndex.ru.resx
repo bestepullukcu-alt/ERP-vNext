@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="ActivateStrategyTemplate" xml:space="preserve"><value>Активировать</value></data>
+  <data name="ActivateStrategyTemplateConfirm" xml:space="preserve"><value>Активировать план? Его связи фиксируются, и каждый связанный сегмент уже должен быть активным.</value></data>
+  <data name="Active" xml:space="preserve"><value>Активный</value></data>
+  <data name="AddContentBinding" xml:space="preserve"><value>Связать контент</value></data>
+  <data name="AddProductLine" xml:space="preserve"><value>Добавить строку продукта</value></data>
+  <data name="AddSegmentBinding" xml:space="preserve"><value>Связать сегмент</value></data>
+  <data name="AddSkuAllocation" xml:space="preserve"><value>Добавить SKU</value></data>
+  <data name="Apply" xml:space="preserve"><value>Применить</value></data>
+  <data name="ApplyIsMicroTargetHelp" xml:space="preserve"><value>Применение плана к периоду (цели, планы) относится к полевому планированию, а не к этой странице.</value></data>
+  <data name="ArchiveStrategyTemplate" xml:space="preserve"><value>В архив</value></data>
+  <data name="ArchiveStrategyTemplateConfirm" xml:space="preserve"><value>Отправить план в архив? Ничего не удаляется; он становится только для чтения и остаётся объяснимым.</value></data>
+  <data name="Archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="ArchivedTemplateReadOnly" xml:space="preserve"><value>Этот шаблон стратегии в архиве и доступен только для чтения.</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Вы уверены?</value></data>
+  <data name="BindingRole" xml:space="preserve"><value>Роль</value></data>
+  <data name="BindingState" xml:space="preserve"><value>Связи</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Массовое удаление</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Удалить выбранные записи?</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>Бизнес-единица</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Классификация</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Столбцы</value></data>
+  <data name="ContainmentNotVerifiedHelp" xml:space="preserve"><value>Принадлежность SKU выбранному продукту здесь не проверяется — проверьте её самостоятельно.</value></data>
+  <data name="ContentBindingCount" xml:space="preserve"><value>Контент</value></data>
+  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Связать можно только опубликованный и неархивный контент, закреплённый за конкретной версией.</value></data>
+  <data name="ContentRef" xml:space="preserve"><value>Контент</value></data>
+  <data name="ContentRefType" xml:space="preserve"><value>Тип контента</value></data>
+  <data name="ContentSection" xml:space="preserve"><value>Какая история — контент</value></data>
+  <data name="CreateStrategyTemplate" xml:space="preserve"><value>Создать шаблон стратегии</value></data>
+  <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>Объявленный ритм фиксирует намерение автора. Он необязателен, и решатель частоты его не читает.</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="Edit" xml:space="preserve"><value>Изменить</value></data>
+  <data name="EditStrategyTemplate" xml:space="preserve"><value>Изменить шаблон стратегии</value></data>
+  <data name="Editable" xml:space="preserve"><value>редактируемо</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Действует по</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Шаблоны стратегии не найдены.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Не удалось выполнить операцию.</value></data>
+  <data name="Export" xml:space="preserve"><value>Экспорт</value></data>
+  <data name="Filter" xml:space="preserve"><value>Фильтр</value></data>
+  <data name="FrequencyIntentHelp" xml:space="preserve"><value>Сошлитесь на действующую политику, объявите необязывающий ритм или выберите «нет». Политика отсюда никогда не записывается.</value></data>
+  <data name="FrequencyIntentMode" xml:space="preserve"><value>Намерение по частоте</value></data>
+  <data name="FrequencyPolicy" xml:space="preserve"><value>Политика частоты визитов</value></data>
+  <data name="FrequencySection" xml:space="preserve"><value>Как часто — намерение</value></data>
+  <data name="FrequencyType" xml:space="preserve"><value>Частота</value></data>
+  <data name="Frozen" xml:space="preserve"><value>заморожено</value></data>
+  <data name="FrozenBindingsHelp" xml:space="preserve"><value>План активен, поэтому его связи заморожены. Создайте новую версию, чтобы изменить их; название и заметки остаются редактируемыми.</value></data>
+  <data name="GlobalProduct" xml:space="preserve"><value>Глобальный продукт</value></data>
+  <data name="Gsku" xml:space="preserve"><value>SKU (GSKU)</value></data>
+  <data name="GskuPickerUnavailable" xml:space="preserve"><value>У вас нет прав для просмотра списка SKU.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="Import" xml:space="preserve"><value>Импорт</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Включая архивные</value></data>
+  <data name="IntentNote" xml:space="preserve"><value>Почему такой ритм</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Жизненный цикл</value></data>
+  <data name="LimitReached" xml:space="preserve"><value>Достигнут предел для этого списка.</value></data>
+  <data name="LineWeightPercentage" xml:space="preserve"><value>Вес строки %</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Новая версия</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Создать новую черновую версию плана? Текущая версия останется доступной для чтения.</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <data name="NoContentBindings" xml:space="preserve"><value>Контент не связан. Тогда у плана нет контентного измерения.</value></data>
+  <data name="NoMembersEverHelp" xml:space="preserve"><value>План связывает идентичность сегмента. Он никогда не перечисляет и не считает людей внутри.</value></data>
+  <data name="NoProductLines" xml:space="preserve"><value>Нет продуктовых строк. Тогда у плана нет продуктового измерения.</value></data>
+  <data name="NoSegmentBindings" xml:space="preserve"><value>Сегмент не связан. План без сегмента не отвечает на вопрос «кто?».</value></data>
+  <data name="Notes" xml:space="preserve"><value>Заметки</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Многоразовые планы, связывающие сегмент, намерение по частоте, продуктовый/SKU-микс и контент. Шаблон связывает и ничего не создаёт.</value></data>
+  <data name="Passive" xml:space="preserve"><value>Неактивный</value></data>
+  <data name="Percentage" xml:space="preserve"><value>Доля %</value></data>
+  <data name="PeriodType" xml:space="preserve"><value>Период</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>У вас нет прав для просмотра этого списка.</value></data>
+  <data name="ProductLineCount" xml:space="preserve"><value>Продуктовые строки</value></data>
+  <data name="ProductSection" xml:space="preserve"><value>Что — продукт и микс SKU</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Активировано.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Отправлено в архив.</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>Создано.</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>Обновлено.</value></data>
+  <data name="Remove" xml:space="preserve"><value>Удалить</value></data>
+  <data name="RequiredVisitCount" xml:space="preserve"><value>Визитов за период</value></data>
+  <data name="Reset" xml:space="preserve"><value>Сбросить</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Сохранить вид</value></data>
+  <data name="Search" xml:space="preserve"><value>Поиск</value></data>
+  <data name="Segment" xml:space="preserve"><value>Сегмент</value></data>
+  <data name="SegmentBindingCount" xml:space="preserve"><value>Сегменты</value></data>
+  <data name="SegmentBindingHelp" xml:space="preserve"><value>Связанный сегмент закрепляется за конкретной версией. Список — это перечисление: объединение и исключение здесь не применяются.</value></data>
+  <data name="SegmentSection" xml:space="preserve"><value>Кто — сегменты</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Выберите…</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Все</value></data>
+  <data name="SkuAllocationCount" xml:space="preserve"><value>Строки SKU</value></data>
+  <data name="SkuAllocationMode" xml:space="preserve"><value>Режим SKU</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Порядок</value></data>
+  <data name="Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="StatusSeparateEndpointHelp" xml:space="preserve"><value>Статус меняется только через «Активировать» / «В архив».</value></data>
+  <data name="StrategyTemplateContractUnavailable" xml:space="preserve"><value>Не удалось прочитать контракт шаблонов стратегии. Страница остаётся только для чтения.</value></data>
+  <data name="StrategyTemplatesTitle" xml:space="preserve"><value>Шаблоны стратегии</value></data>
+  <data name="SubjectType" xml:space="preserve"><value>Тип субъекта</value></data>
+  <data name="SubjectTypeHelp" xml:space="preserve"><value>На что нацелен план. После создания не меняется; каждый связанный сегмент должен совпадать.</value></data>
+  <data name="Superseded" xml:space="preserve"><value>заменено</value></data>
+  <data name="TemplateCode" xml:space="preserve"><value>Код</value></data>
+  <data name="TemplateCodeHelp" xml:space="preserve"><value>Устойчивый бизнес-ключ. Он не переименовывается — измените название.</value></data>
+  <data name="TemplateName" xml:space="preserve"><value>Название</value></data>
+  <data name="TemplateStatus" xml:space="preserve"><value>Статус</value></data>
+  <data name="TemplateVersion" xml:space="preserve"><value>Версия</value></data>
+  <data name="TotalMustBe100" xml:space="preserve"><value>Доли SKU каждой распределённой строки должны давать ровно 100,00. Ничего не округляется и не нормализуется автоматически.</value></data>
+  <data name="TotalPercentage" xml:space="preserve"><value>Итого</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Подробнее</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+</root>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="ActivateSegment" xml:space="preserve"><value>Activer</value></data>
+  <data name="ActivateSegmentConfirm" xml:space="preserve"><value>Activer ce segment ? Ses critères seront figés ; modifier la règle nécessitera alors une nouvelle version.</value></data>
+  <data name="ActivatedAt" xml:space="preserve"><value>Activé le</value></data>
+  <data name="Active" xml:space="preserve"><value>Actif</value></data>
+  <data name="AddGroup" xml:space="preserve"><value>Ajouter un groupe</value></data>
+  <data name="AddGroupAtRoot" xml:space="preserve"><value>Ajouter un groupe</value></data>
+  <data name="AddGroupInside" xml:space="preserve"><value>Groupe imbriqué</value></data>
+  <data name="AddMember" xml:space="preserve"><value>Ajouter un membre</value></data>
+  <data name="AddPredicate" xml:space="preserve"><value>Ajouter un prédicat</value></data>
+  <data name="AddPredicateAtRoot" xml:space="preserve"><value>Ajouter une condition</value></data>
+  <data name="AddPredicateInside" xml:space="preserve"><value>Condition imbriquée</value></data>
+  <data name="Apply" xml:space="preserve"><value>Appliquer</value></data>
+  <data name="ArchiveSegment" xml:space="preserve"><value>Archiver le segment</value></data>
+  <data name="ArchiveSegmentConfirm" xml:space="preserve"><value>Archiver ce segment ? Rien n'est supprimé ; il devient en lecture seule et reste explicable.</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="ArchivedSegmentReadOnly" xml:space="preserve"><value>Ce segment est archivé et en lecture seule.</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Êtes-vous sûr ?</value></data>
+  <data name="Attribute" xml:space="preserve"><value>Attribut</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Retour à la liste</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Suppression groupée</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Supprimer les enregistrements sélectionnés ?</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>Unité opérationnelle</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Annuler</value></data>
+  <data name="CandidateCount" xml:space="preserve"><value>Candidats</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Classification</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Colonnes</value></data>
+  <data name="CommaSeparated" xml:space="preserve"><value>Séparez les valeurs par une virgule</value></data>
+  <data name="CreateSegment" xml:space="preserve"><value>Créer un segment</value></data>
+  <data name="CriteriaHelp" xml:space="preserve"><value>La règle est un arbre de prédicats typé stocké avec le segment. Attributs, opérateurs et paramètres proviennent du catalogue publié.</value></data>
+  <data name="CriteriaSection" xml:space="preserve"><value>Critères</value></data>
+  <data name="CriteriaState" xml:space="preserve"><value>Critères</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="DynamicForbidsManualHelp" xml:space="preserve"><value>Un segment dynamique refuse les lignes manuelles. Passez en hybride si une exception manuelle est nécessaire, pour que l'étiquette ne mente pas sur l'origine d'un membre.</value></data>
+  <data name="Edit" xml:space="preserve"><value>Modifier</value></data>
+  <data name="EditSegment" xml:space="preserve"><value>Modifier le segment</value></data>
+  <data name="Editable" xml:space="preserve"><value>Modifiable</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>En vigueur à partir du</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>En vigueur jusqu'au</value></data>
+  <data name="EmptyGroupHelp" xml:space="preserve"><value>Ce groupe n'a encore aucune condition. Ajoutez-en une ou supprimez le groupe : un groupe vide ne peut pas être enregistré.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Aucun segment trouvé.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Une erreur est survenue.</value></data>
+  <data name="ExcludedCount" xml:space="preserve"><value>Exclus</value></data>
+  <data name="Export" xml:space="preserve"><value>Exporter</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtre</value></data>
+  <data name="From" xml:space="preserve"><value>De</value></data>
+  <data name="Frozen" xml:space="preserve"><value>Figé</value></data>
+  <data name="FrozenCriteriaHelp" xml:space="preserve"><value>Cette version est active et ses critères sont figés. Créez une nouvelle version pour modifier la règle, afin que les sélections passées restent explicables.</value></data>
+  <data name="GroupHelp" xml:space="preserve"><value>Un groupe combine ses enfants ; un groupe NOT prend exactement un enfant.</value></data>
+  <data name="GroupNode" xml:space="preserve"><value>Groupe</value></data>
+  <data name="GroupOperator" xml:space="preserve"><value>Opérateur de groupe</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identité</value></data>
+  <data name="Import" xml:space="preserve"><value>Importer</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Inclure les archivés</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Cycle de vie</value></data>
+  <data name="LimitReached" xml:space="preserve"><value>Limite atteinte</value></data>
+  <data name="Loading" xml:space="preserve"><value>Chargement...</value></data>
+  <data name="MatchMode" xml:space="preserve"><value>Mode de correspondance</value></data>
+  <data name="MatchedCount" xml:space="preserve"><value>Membres</value></data>
+  <data name="MembersHelp" xml:space="preserve"><value>Seules les lignes écrites à la main figurent ici : inclure ou exclure. L'appartenance dérivée n'est jamais écrite.</value></data>
+  <data name="MembersSection" xml:space="preserve"><value>Appartenance manuelle</value></data>
+  <data name="MembershipMode" xml:space="preserve"><value>Mode d'appartenance</value></data>
+  <data name="MembershipNeverStoredHelp" xml:space="preserve"><value>L'appartenance n'est jamais stockée : ni liste de membres, ni compteur, ni horodatage de dernière résolution sur un segment.</value></data>
+  <data name="MembershipSource" xml:space="preserve"><value>Source</value></data>
+  <data name="Move" xml:space="preserve"><value>Déplacer</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Nouvelle version</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Créer une nouvelle version brouillon ? Les critères sont clonés avec de nouveaux identifiants de nœuds et la version actuelle continue de fonctionner.</value></data>
+  <data name="No" xml:space="preserve"><value>Non</value></data>
+  <data name="NoCriteria" xml:space="preserve"><value>Aucun critère pour l'instant.</value></data>
+  <data name="NoMembers" xml:space="preserve"><value>Aucune ligne d'appartenance manuelle.</value></data>
+  <data name="NoValueNeeded" xml:space="preserve"><value>Aucune valeur requise</value></data>
+  <data name="NotGroupHelp" xml:space="preserve"><value>NOT prend exactement une condition.</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notes</value></data>
+  <data name="Operator" xml:space="preserve"><value>Opérateur</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Un segment est la DÉFINITION de qui appartient à un ensemble, jamais une liste stockée. L'appartenance est recalculée à chaque demande.</value></data>
+  <data name="ParentGroup" xml:space="preserve"><value>Parent</value></data>
+  <data name="Passive" xml:space="preserve"><value>Passif</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>Vous n'avez pas le droit de parcourir cette liste ; la valeur doit être saisie par identifiant.</value></data>
+  <data name="PredicateCount" xml:space="preserve"><value>Prédicats</value></data>
+  <data name="PredicateNode" xml:space="preserve"><value>Condition</value></data>
+  <data name="ProductPickerUnavailable" xml:space="preserve"><value>Vous n'avez pas le droit de parcourir les produits globaux ; cette valeur ne peut pas être choisie ici.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Aperçu rapide</value></data>
+  <data name="ReasonCodes" xml:space="preserve"><value>Motifs</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Segment activé.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Enregistrement archivé.</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>Enregistrement créé.</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>Enregistrement mis à jour.</value></data>
+  <data name="Remove" xml:space="preserve"><value>Supprimer</value></data>
+  <data name="Reset" xml:space="preserve"><value>Réinitialiser</value></data>
+  <data name="ResolvePreviewHelp" xml:space="preserve"><value>Calculé à la demande et enregistré nulle part. Les candidats éliminés sont listés avec le motif de leur exclusion.</value></data>
+  <data name="ResolvePreviewSection" xml:space="preserve"><value>Aperçu de l'appartenance</value></data>
+  <data name="RootCombinatorHelp" xml:space="preserve"><value>comment les nœuds de premier niveau se combinent</value></data>
+  <data name="RootLevel" xml:space="preserve"><value>Niveau racine</value></data>
+  <data name="RunResolve" xml:space="preserve"><value>Lancer l'aperçu</value></data>
+  <data name="Save" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="SaveBeforeMembers" xml:space="preserve"><value>Enregistrez d'abord le segment ; les lignes d'appartenance manuelle s'ajoutent ensuite.</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Enregistrer la vue</value></data>
+  <data name="Search" xml:space="preserve"><value>Rechercher</value></data>
+  <data name="SegmentCode" xml:space="preserve"><value>Code du segment</value></data>
+  <data name="SegmentCodeHelp" xml:space="preserve"><value>Clé métier stable. Elle n'est jamais renommée ; modifiez plutôt le nom.</value></data>
+  <data name="SegmentContractUnavailable" xml:space="preserve"><value>Le contrat de capacités Segment est indisponible. Les actions sont désactivées.</value></data>
+  <data name="SegmentName" xml:space="preserve"><value>Nom du segment</value></data>
+  <data name="SegmentStatus" xml:space="preserve"><value>Statut</value></data>
+  <data name="SegmentType" xml:space="preserve"><value>Type de segment</value></data>
+  <data name="SegmentTypeHelp" xml:space="preserve"><value>static = uniquement la liste manuelle. dynamic = uniquement la règle (les lignes manuelles sont refusées). hybrid = la règle plus les inclusions/exclusions manuelles.</value></data>
+  <data name="SegmentVersion" xml:space="preserve"><value>Version</value></data>
+  <data name="SegmentsMenu" xml:space="preserve"><value>Segments</value></data>
+  <data name="SegmentsTitle" xml:space="preserve"><value>Segments</value></data>
+  <data name="SelectAccount" xml:space="preserve"><value>Rechercher un compte</value></data>
+  <data name="SelectContact" xml:space="preserve"><value>Rechercher un contact</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Sélectionner...</value></data>
+  <data name="SelectTerritoryModel" xml:space="preserve"><value>Sélectionnez d'abord un modèle de territoire</value></data>
+  <data name="SelectionReason" xml:space="preserve"><value>Motif de sélection</value></data>
+  <data name="SelectionReasonHelp" xml:space="preserve"><value>Obligatoire : une appartenance manuelle sans motif n'est pas autorisée.</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Tout afficher</value></data>
+  <data name="Status" xml:space="preserve"><value>Statut</value></data>
+  <data name="StatusSeparateEndpointHelp" xml:space="preserve"><value>Le statut ne se change pas ici : activer et archiver sont des actions distinctes avec leurs propres droits.</value></data>
+  <data name="SubjectDisplayName" xml:space="preserve"><value>Nom affiché</value></data>
+  <data name="SubjectDisplayNameHelp" xml:space="preserve"><value>Pour l'affichage et l'audit uniquement. Ce n'est explicitement pas une source de vérité.</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>Identifiant du sujet</value></data>
+  <data name="SubjectIdHelp" xml:space="preserve"><value>L'identifiant est pris tel quel ; le référentiel cible n'est ni lu ni modifié ici.</value></data>
+  <data name="SubjectPickerHelp" xml:space="preserve"><value>Une selection remplit l'identifiant et le nom affiche ci-dessous. L'identifiant reste le champ de reference et peut toujours etre saisi.</value></data>
+  <data name="SubjectType" xml:space="preserve"><value>Type de sujet</value></data>
+  <data name="SubjectTypeHelp" xml:space="preserve"><value>Ce que le segment regroupe. Immuable après création : un segment ne doit pas se mettre à répondre à une autre question.</value></data>
+  <data name="Superseded" xml:space="preserve"><value>Remplacé</value></data>
+  <data name="SupersededHelp" xml:space="preserve"><value>Une version plus récente l'a remplacée. Elle reste résolvable, car expliquer une sélection passée nécessite la règle alors en vigueur.</value></data>
+  <data name="To" xml:space="preserve"><value>À</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Inconnu</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Mis à jour le</value></data>
+  <data name="Verdict" xml:space="preserve"><value>Verdict</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Voir les détails</value></data>
+  <data name="Yes" xml:space="preserve"><value>Oui</value></data>
+</root>

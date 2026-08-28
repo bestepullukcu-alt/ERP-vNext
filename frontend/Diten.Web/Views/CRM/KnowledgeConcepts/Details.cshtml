@@ -1,0 +1,73 @@
+@model Diten.Web.Models.CRM.ConceptNodePageViewModel
+@using Diten.Web.Views.CRM.KnowledgeConcepts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeConceptsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["NodeDetails"].Value;
+    Layout = "_LayoutTenantShell";
+    var n = Model.Node;
+    string Dash(string? v) => string.IsNullOrWhiteSpace(v) ? "—" : v;
+}
+
+<div class="concept-node-details">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0">@n.ConceptNodeName</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/CRM/KnowledgeConcepts">@Localizer["ConceptsTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@n.ConceptNodeCode</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/CRM/KnowledgeConcepts" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
+            @if (Model.CanManage && !n.IsArchived)
+            {
+                <a href="/CRM/KnowledgeConcepts/Edit/@n.ConceptNodeId" class="btn btn-primary">@Localizer["EditNode"]</a>
+            }
+        </div>
+    </div>
+
+    @if (n.IsArchived)
+    {
+        <div class="alert alert-warning" role="alert"><i class="bx bx-archive me-1"></i>@Localizer["ArchivedNodeReadOnly"]</div>
+    }
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted">@Localizer["ConceptNodeCode"]</dt><dd class="col-sm-8">@n.ConceptNodeCode</dd>
+                        <dt class="col-sm-4 text-muted">@Localizer["ConceptNodeName"]</dt><dd class="col-sm-8">@n.ConceptNodeName</dd>
+                        <dt class="col-sm-4 text-muted">@Localizer["SubjectId"]</dt><dd class="col-sm-8">@n.SubjectId</dd>
+                        <dt class="col-sm-4 text-muted">@Localizer["ConceptTypeId"]</dt><dd class="col-sm-8">@n.ConceptTypeId</dd>
+                        <dt class="col-sm-4 text-muted">@Localizer["Status"]</dt><dd class="col-sm-8"><span class="badge bg-label-primary">@Dash(n.Status)</span></dd>
+                        <dt class="col-sm-4 text-muted">@Localizer["Description"]</dt><dd class="col-sm-8">@Dash(n.Description)</dd>
+                    </dl>
+                </div>
+            </section>
+        </div>
+        <div class="col-12 col-lg-4">
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ReferenceSection"]</h6>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5 text-muted">@Localizer["EffectiveFrom"]</dt><dd class="col-sm-7">@n.EffectiveFrom.ToString("yyyy-MM-dd")</dd>
+                        <dt class="col-sm-5 text-muted">@Localizer["EffectiveTo"]</dt><dd class="col-sm-7">@(n.EffectiveTo?.ToString("yyyy-MM-dd") ?? "—")</dd>
+                        <dt class="col-sm-5 text-muted">@Localizer["ExternalRefType"]</dt><dd class="col-sm-7">@Dash(n.ExternalRefType)</dd>
+                        <dt class="col-sm-5 text-muted">@Localizer["ExternalRefId"]</dt><dd class="col-sm-7">@Dash(n.ExternalRefId)</dd>
+                    </dl>
+                    @if (!string.IsNullOrWhiteSpace(n.MetadataJson))
+                    {
+                        <hr />
+                        <label class="text-muted small">@Localizer["MetadataJson"]</label>
+                        <pre class="mb-0 small">@n.MetadataJson</pre>
+                    }
+                </div>
+            </section>
+        </div>
+    </div>
+</div>

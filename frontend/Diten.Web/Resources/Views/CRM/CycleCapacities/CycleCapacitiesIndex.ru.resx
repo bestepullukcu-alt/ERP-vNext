@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="CycleCapacitiesTitle" xml:space="preserve"><value>Ёмкость цикла</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Сколько визитов помещается в период цикла. Оценка на основе опубликованного рабочего календаря и введённого бюджета активности.</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>Служба ёмкости цикла недоступна.</value></data>
+  <data name="CreateCycleCapacity" xml:space="preserve"><value>Новая ёмкость</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Новая ёмкость цикла</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить ёмкость цикла</value></data>
+  <data name="CyclePeriod" xml:space="preserve"><value>Период цикла</value></data>
+  <data name="CycleCode" xml:space="preserve"><value>Код периода</value></data>
+  <data name="CycleName" xml:space="preserve"><value>Название периода</value></data>
+  <data name="PeriodWindow" xml:space="preserve"><value>Окно периода</value></data>
+  <data name="CalendarCountryCode" xml:space="preserve"><value>Страна календаря</value></data>
+  <data name="DailyWorkMinutes" xml:space="preserve"><value>Рабочий день (минуты)</value></data>
+  <data name="MinutesPerVisit" xml:space="preserve"><value>Минут на визит</value></data>
+  <data name="Fte" xml:space="preserve"><value>FTE</value></data>
+  <data name="MonthCount" xml:space="preserve"><value>Месяцев</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="ArchiveCycleCapacity" xml:space="preserve"><value>В архив</value></data>
+  <data name="ArchiveCycleCapacityConfirm" xml:space="preserve"><value>Архивировать эту ёмкость? Ничего не удаляется, и период освобождается для новой ёмкости.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Ёмкость архивирована.</value></data>
+  <data name="ArchivedFilter" xml:space="preserve"><value>Архив</value></data>
+  <data name="ArchivedHidden" xml:space="preserve"><value>Архив скрыт</value></data>
+  <data name="ArchivedOnly" xml:space="preserve"><value>В архиве</value></data>
+  <data name="PeriodClosedLock" xml:space="preserve"><value>Период закрыт</value></data>
+  <data name="EstimateNoticeTitle" xml:space="preserve"><value>Это оценка, а не квота.</value></data>
+  <data name="EstimateNoticeBody" xml:space="preserve"><value>Значение построено на средних длительностях активности и временно настроенном FTE, а не на штатном расписании HR. Рабочие дни берутся из опубликованного календаря и могут измениться.</value></data>
+  <data name="BudgetVisitMinutesZero" xml:space="preserve"><value>Время промотируемого и непромотируемого продукта не может быть нулевым одновременно.</value></data>
+  <data name="BudgetDailySpendExceedsDay" xml:space="preserve"><value>Дорога, отчётность и тестирование не оставляют времени на визиты в рабочем дне.</value></data>
+  <data name="PinnedPeriodSection" xml:space="preserve"><value>Привязанный период</value></data>
+  <data name="ActivityBudgetSection" xml:space="preserve"><value>Бюджет минут активности</value></data>
+  <data name="MonthlyPlanSection" xml:space="preserve"><value>Месячный план</value></data>
+  <data name="FieldForceSection" xml:space="preserve"><value>Полевая команда</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>Заметки</value></data>
+  <data name="EstimateSectionHint" xml:space="preserve"><value>Рабочие дни берутся из календаря платформы и уже исключают выходные, праздники и закрытия. Здесь вычитаются только ваши собственные вычеты.</value></data>
+  <data name="CyclePeriodsBreadcrumb" xml:space="preserve"><value>Периоды цикла</value></data>
+  <data name="NonWorkingDays" xml:space="preserve"><value>Нерабочие дни</value></data>
+  <data name="FteMovedToMonthly" xml:space="preserve"><value>FTE теперь задаётся помесячно, в месячном плане ниже.</value></data>
+  <data name="NoPeriodsAvailable" xml:space="preserve"><value>Периодов цикла ещё нет. Сначала создайте период.</value></data>
+  <data name="CalendarCountryHint" xml:space="preserve"><value>Используется только для чтения рабочего календаря. Область действия периода не меняется.</value></data>
+  <data name="CalendarCountryDerivedHint" xml:space="preserve"><value>Выведено из периода со страновой областью; здесь не изменяется.</value></data>
+  <data name="CalendarCountryNotReady" xml:space="preserve"><value>Доступных стран пока нет: период со страновой областью отсутствует.</value></data>
+  <data name="CalendarCountryDerived" xml:space="preserve"><value>Выведено</value></data>
+  <data name="CalendarCountryIsNotScope" xml:space="preserve"><value>Параметр рабочего календаря, а не область действия.</value></data>
+  <data name="DailyWorkMinutesHint" xml:space="preserve"><value>Минут в полевом рабочем дне (8 ч = 480).</value></data>
+  <data name="PerVisitHint" xml:space="preserve"><value>Минут на визит.</value></data>
+  <data name="PerDayHint" xml:space="preserve"><value>Минут на полевой день.</value></data>
+  <data name="PromoProductTime" xml:space="preserve"><value>Время промотируемого продукта</value></data>
+  <data name="NonPromoProductTime" xml:space="preserve"><value>Время непромотируемого продукта</value></data>
+  <data name="TravelingTime" xml:space="preserve"><value>Время в пути</value></data>
+  <data name="ReportDuration" xml:space="preserve"><value>Время отчётности</value></data>
+  <data name="QuizDuration" xml:space="preserve"><value>Время тестирования</value></data>
+  <data name="MonthlyDeductionsHint" xml:space="preserve"><value>Месяцы берутся из окна периода и не добавляются и не удаляются. Не вычитайте выходные и праздники: рабочий календарь уже их исключил.</value></data>
+  <data name="MonthsPendingPeriod" xml:space="preserve"><value>Сначала выберите период; его окно определяет, какие месяцы появятся.</value></data>
+  <data name="Month" xml:space="preserve"><value>Месяц</value></data>
+  <data name="MeetingDays" xml:space="preserve"><value>Дни совещаний</value></data>
+  <data name="TrainingDays" xml:space="preserve"><value>Дни обучения</value></data>
+  <data name="VacationDays" xml:space="preserve"><value>Дни отпуска</value></data>
+  <data name="MicroTargetingDayCount" xml:space="preserve"><value>Дни микротаргетинга</value></data>
+  <data name="MicroTargetingDuration" xml:space="preserve"><value>Микротаргетинг мин/день</value></data>
+  <data name="FteInterimHint" xml:space="preserve"><value>Временно настроенное среднее значение. После интеграции с HR оно будет приходить автоматически по бизнес-единице и году.</value></data>
+  <data name="CalculationUnavailable" xml:space="preserve"><value>Оценку не удалось прочитать.</value></data>
+  <data name="CalendarForbiddenTitle" xml:space="preserve"><value>Нет прав на чтение рабочего календаря</value></data>
+  <data name="CalendarForbiddenBody" xml:space="preserve"><value>Календарь вполне может существовать; у этой учётной записи нет соответствующего права платформы. Обратитесь к администратору.</value></data>
+  <data name="CalendarUnresolvedTitle" xml:space="preserve"><value>Рабочий календарь не ответил</value></data>
+  <data name="CalendarUnresolvedBody" xml:space="preserve"><value>Вместо угаданного значения оценка не показывается. Опубликуйте рабочий календарь для этой страны и года и повторите попытку.</value></data>
+  <data name="TotalVisitNumber" xml:space="preserve"><value>Визиты</value></data>
+  <data name="WorkingDays" xml:space="preserve"><value>Рабочие дни</value></data>
+  <data name="DeductedDays" xml:space="preserve"><value>Вычтено</value></data>
+  <data name="FieldDays" xml:space="preserve"><value>Полевые дни</value></data>
+  <data name="VisitMinutes" xml:space="preserve"><value>Минуты визитов</value></data>
+  <data name="NoFieldDays" xml:space="preserve"><value>Нет полевых дней</value></data>
+</root>

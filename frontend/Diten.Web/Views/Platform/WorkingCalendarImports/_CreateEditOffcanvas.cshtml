@@ -1,0 +1,68 @@
+@model Diten.Web.Models.WorkingCalendar.WorkingCalendarImportViewModel
+@using Diten.Web.Views.Platform.WorkingCalendarImports
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkingCalendarImportsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">@Localizer["StartImport"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="formWorkingCalendarImportAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formWorkingCalendarImport" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <label asp-for="CountryCode" class="form-label fw-medium">
+                        @Localizer["Country"] <span class="text-danger">*</span>
+                    </label>
+                    <select asp-for="CountryCode" class="form-select select2-offcanvas" required></select>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="CalendarYear" class="form-label fw-medium">
+                        @Localizer["Year"] <span class="text-danger">*</span>
+                    </label>
+                    <input asp-for="CalendarYear" class="form-control" type="number" min="2000" max="2100" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="TargetCalendarId" class="form-label fw-medium">
+                        @Localizer["Target"] <span class="text-danger">*</span>
+                    </label>
+                    <select asp-for="TargetCalendarId" class="form-select select2-offcanvas" required></select>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input asp-for="IncludeNonPublicTypes" class="form-check-input" role="switch" />
+                        <label asp-for="IncludeNonPublicTypes" class="form-check-label ms-2">@Localizer["IncludeNonPublic"]</label>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="Notes" class="form-label fw-medium">@Localizer["Notes"]</label>
+                    <textarea asp-for="Notes" class="form-control" rows="4"></textarea>
+                    <div class="invalid-feedback"></div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+            @SharedLocalizer["Cancel"]
+        </button>
+        <button type="submit" form="formWorkingCalendarImport" id="btnSaveWorkingCalendarImport" class="btn btn-primary">
+            @Localizer["FetchToStaging"]
+        </button>
+    </div>
+</div>

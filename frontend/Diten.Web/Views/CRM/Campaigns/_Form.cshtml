@@ -1,0 +1,321 @@
+@model Diten.Web.Models.CRM.CampaignEditViewModel
+@using Diten.Web.Views.CRM.Campaigns
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CampaignIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["EditCampaign"].Value : Localizer["CreateCampaign"].Value;
+    var action = isEdit ? "Edit" : "Create";
+    var cancelHref = isEdit && Model.CampaignId.HasValue ? $"/CRM/Campaigns/Details/{Model.CampaignId}" : "/CRM/Campaigns";
+    var mode = string.IsNullOrWhiteSpace(Model.TargetingMode) ? "manual" : Model.TargetingMode;
+    // FU11 - rendered only on create. On edit the code already exists, so there is nothing to peek at and the
+    // attribute is omitted entirely (a null value drops the attribute), which is also what form.js keys off.
+    var codePeekUrl = isEdit ? null : "/CRM/Campaigns/api/next-code";
+}
+
+@*
+    Layout mirrors GoldenReferenceCompact/_Form.cshtml: header + breadcrumb + right-aligned Cancel/Save, then a
+    two-column body. The POST path is unchanged - still an MVC model-bound form to CampaignsController.Create/Edit.
+
+    FU11 section order, and it answers the campaign's questions in the order they depend on each other:
+        Summary -> Scope -> Cycle period -> Consent context -> Targeting
+    Scope must precede the cycle picker because the picker only offers periods applicable to the campaign's address.
+
+    Details.cshtml MUST expose these five headings in the SAME order, or the compact form/details section-map check
+    breaks.
+*@
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/CRM/Campaigns">@Localizer["CampaignsTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="@cancelHref" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        <button type="submit" form="campaignForm" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>
+
+<form id="campaignForm" asp-action="@action" asp-route-id="@Model.CampaignId" method="post" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="CampaignId" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+    @if (!string.IsNullOrWhiteSpace(Model.ContractError))
+    {
+        <div class="alert alert-danger" role="alert">@Localizer[Model.ContractError]</div>
+    }
+
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8">
+
+            @* Section 1 - Summary *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SummarySection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label asp-for="CampaignCode" class="form-label fw-medium">@Localizer["CampaignCode"]</label>
+                            @* FU10 - optional on create: an empty value asks the server for CMP-{YYYY}-{sequence} at
+                               SAVE time, so opening this form and walking away never consumes a number.
+
+                               FU11 - the code that WOULD be assigned is fetched read-only and shown as the
+                               PLACEHOLDER. It is a hint, not a value: the field still posts empty, the server still
+                               assigns at save, and a peek that went stale therefore cannot collide with anything.
+                               On edit there is no peek - the real, already-assigned code is shown read-only. *@
+                            <input asp-for="CampaignCode" class="form-control" maxlength="100" readonly="@isEdit"
+                                   data-code-peek-url="@codePeekUrl" />
+                            @if (!isEdit)
+                            {
+                                <div class="form-text">@Localizer["CampaignCodeAutoHint"]</div>
+                            }
+                            <span asp-validation-for="CampaignCode" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-8">
+                            <label asp-for="CampaignName" class="form-label fw-medium">@Localizer["CampaignName"] <span class="text-danger">*</span></label>
+                            <input asp-for="CampaignName" class="form-control" maxlength="240" required />
+                            <span asp-validation-for="CampaignName" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="CampaignType" class="form-label fw-medium">@Localizer["CampaignType"] <span class="text-danger">*</span></label>
+                            <select asp-for="CampaignType" class="select2 form-select" required>
+                                <option value="">@Localizer["SelectOption"]</option>
+                                @foreach (var x in Model.CampaignTypes) { <option value="@x">@x</option> }
+                            </select>
+                            <span asp-validation-for="CampaignType" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="CampaignStatus" class="form-label fw-medium">@Localizer["CampaignStatus"] <span class="text-danger">*</span></label>
+                            <select asp-for="CampaignStatus" class="select2 form-select" required>
+                                <option value="">@Localizer["SelectOption"]</option>
+                                @foreach (var x in Model.CampaignStatuses) { <option value="@x">@x</option> }
+                            </select>
+                            <span asp-validation-for="CampaignStatus" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="ObjectiveType" class="form-label fw-medium">@Localizer["ObjectiveType"]</label>
+                            <select asp-for="ObjectiveType" class="select2 form-select">
+                                <option value="">@Localizer["SelectOption"]</option>
+                                @foreach (var x in Model.ObjectiveTypes) { <option value="@x">@x</option> }
+                            </select>
+                        </div>
+                        @* FU10 - a campaign runs over DAYS, not instants. The picked day is anchored to UTC midnight
+                           on submit and the stored day is read back the same way, so the day an author chooses is the
+                           day that is kept whatever their offset. *@
+                        <div class="col-12 col-md-4">
+                            <label asp-for="StartDate" class="form-label fw-medium">@Localizer["StartDate"] <span class="text-danger">*</span></label>
+                            <input asp-for="StartDate" type="date" class="form-control" required />
+                            <span asp-validation-for="StartDate" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="EndDate" class="form-label fw-medium">@Localizer["EndDate"]</label>
+                            <input asp-for="EndDate" type="date" class="form-control" />
+                            <span asp-validation-for="EndDate" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label fw-medium">@Localizer["Description"]</label>
+                            <textarea asp-for="Description" class="form-control" rows="4" maxlength="4000"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @*
+                Section 3 - Targeting (FU10). A deliberate mirror of the segment's own static/dynamic switch: only the
+                section the chosen mode can actually use is shown.
+
+                Hiding beats disabling here - an author never has to wonder why a section they can see does nothing -
+                but the mode is enforced on the SERVER too: a manual target write is refused while the mode is
+                `segment`, so the hidden control is not the rule, it is the reminder.
+            *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["TargetingSection"]</h6>
+                    <div class="row g-3" id="campaignTargetingSection"
+                         data-segments-url="/CRM/Campaigns/api/segments"
+                         data-mode="@mode">
+                        <div class="col-12">
+                            <label asp-for="TargetingMode" class="form-label fw-medium">
+                                @Localizer["TargetingMode"] <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="TargetingMode" id="targetingMode" class="form-select" required>
+                                <option value="manual" selected="@(mode == "manual")">@Localizer["TargetingMode_manual"]</option>
+                                <option value="segment" selected="@(mode == "segment")">@Localizer["TargetingMode_segment"]</option>
+                            </select>
+                            <div class="form-text">@Localizer["TargetingModeHelp"]</div>
+                        </div>
+
+                        @* segment mode - the picker. Segments already linked are rendered server-side even when they
+                           are archived or superseded, so the round trip cannot silently unlink them. *@
+                        <div class="col-12 d-none" data-targeting-block="segment">
+                            @* No unconditional required marker: the field is mandatory only in segment mode, and the
+                               server says so (campaign_segment_required). Marking it always-required would claim more
+                               than the rule does — form.js sets the attribute when the mode actually demands it. *@
+                            <label asp-for="TargetedSegmentIds" class="form-label fw-medium">
+                                @Localizer["TargetedSegments"]
+                            </label>
+                            @* select2 + multiple => aranabilir, chip'li çoklu seçim. Select2 alttaki <select>'e
+                               yazdığı için post edilen payload aynı kalır ve renderSegmentNote selectedOptions'ı
+                               okumaya devam eder; change.select2 initSelect2 tarafından native change olarak
+                               yeniden yayımlanıyor. *@
+                            <select asp-for="TargetedSegmentIds" id="targetedSegmentIds"
+                                    class="select2 form-select" multiple="multiple"
+                                    data-placeholder="@Localizer["SelectSegments"]">
+                                @foreach (var s in Model.CurrentTargetedSegments)
+                                {
+                                    <option value="@s.SegmentId" selected
+                                            data-subject-type="@s.SubjectType"
+                                            data-status="@s.SegmentStatus"
+                                            data-superseded="@s.Superseded.ToString().ToLowerInvariant()">
+                                        @(s.IsResolvable ? $"{s.SegmentCode} - {s.SegmentName}" : s.SegmentId.ToString())
+                                    </option>
+                                }
+                            </select>
+                            <div id="targetedSegmentsNote" class="form-text"></div>
+                            <div class="form-text">@Localizer["TargetedSegmentsHelp"]</div>
+                        </div>
+
+                        @* manual mode - the targets themselves are child records, authored from Details once the
+                           campaign exists. Saying so beats showing an empty control that cannot work yet. *@
+                        <div class="col-12 d-none" data-targeting-block="manual">
+                            <div class="alert alert-info mb-0 py-2">@Localizer["ManualTargetingHint"]</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="col-12 col-lg-4">
+
+            @* Section 4 - Cycle period. Filtered by the scope chosen above (FU08 + FU09).
+               FU11 moved it into the sidebar: it is a single picker whose options are decided by the scope above,
+               so it reads as a consequence of the main column rather than a peer of it. Details.cshtml carries the
+               SAME order - the two files must expose the same headings in the same sequence or the compact
+               form/details section-map check breaks. *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["CyclePeriod"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="CyclePeriodId" class="form-label fw-medium">@Localizer["CyclePeriod"]</label>
+                            <select asp-for="CyclePeriodId" id="CyclePeriodId" class="select2 form-select"
+                                    data-current-id="@(Model.CyclePeriodId?.ToString() ?? string.Empty)"
+                                    data-scope-filtered="true">
+                                <option value="">@Localizer["NoCyclePeriod"]</option>
+                                @if (Model.CurrentCyclePeriod is { } current)
+                                {
+                                    <option value="@current.CyclePeriodId" selected
+                                            data-start="@current.StartDate.ToString("yyyy-MM-dd")"
+                                            data-end="@current.EndDate.ToString("yyyy-MM-dd")"
+                                            data-status="@current.CycleStatus">
+                                        @current.CycleCode - @current.CycleName
+                                    </option>
+                                }
+                            </select>
+                            <div id="cyclePeriodWindow" class="form-text mt-1"></div>
+                            @* A binding the current scope no longer makes applicable stays selected and is flagged
+                               here. Dropping it would post null and silently unbind the campaign. *@
+                            <div id="cyclePeriodScopeWarning" class="form-text text-danger d-none"></div>
+                            <div class="form-text">@Localizer["CyclePeriodHelp"]</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* Section 5 - Consent context. Two optional defaults and a note; sidebar material for the same reason. *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ConsentContextSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="DefaultConsentChannel" class="form-label fw-medium">@Localizer["DefaultConsentChannel"]</label>
+                            <select asp-for="DefaultConsentChannel" class="select2 form-select">
+                                <option value="">@Localizer["NoDefault"]</option>
+                                @foreach (var x in Model.ConsentChannels) { <option value="@x">@x</option> }
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="DefaultConsentPurpose" class="form-label fw-medium">@Localizer["DefaultConsentPurpose"]</label>
+                            <select asp-for="DefaultConsentPurpose" class="select2 form-select">
+                                <option value="">@Localizer["NoDefault"]</option>
+                                @foreach (var x in Model.ConsentPurposes) { <option value="@x">@x</option> }
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            @* Defaults only: the snapshot still evaluates consent per target through MOD-0164. *@
+                            <div class="alert alert-info mb-0 py-2">@Localizer["ConsentDefaultsHelp"]</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @*
+                Section 5 - Scope (FU09). FU11 round-2 moved it into the sidebar, below the consent defaults;
+                Details.cshtml carries the SAME order - the two files must expose the same headings in the
+                same sequence or the compact form/details section-map check breaks. It precedes the cycle picker because it decides which periods that picker
+                may offer: the campaign's own address, plus the tenant-wide fallback.
+
+                Unlike a cycle period's scope, this one is EDITABLE - a campaign's address is an attribute, not its
+                identity. Changing it re-validates the bound period server-side; the client only warns.
+            *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ScopeSection"]</h6>
+                    <div class="row g-3" id="campaignScopeSection"
+                         data-scope-options-url="/CRM/Campaigns/api/scope-options"
+                         data-applicable-url="/CRM/Campaigns/api/applicable-cycle-periods">
+                        <div class="col-12 col-md-4">
+                            <label asp-for="ScopeType" class="form-label fw-medium">
+                                @Localizer["ScopeType"] <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="ScopeType" id="scopeType" class="form-select" required></select>
+                            <div class="form-text">@Localizer["ScopeEditableHint"]</div>
+                        </div>
+
+                        @* Exactly ONE reference block is visible at a time - the address is discriminated, and a
+                           second reference is refused by the server rather than silently dropped. *@
+                        <div class="col-12 col-md-4 d-none" data-scope-block="country">
+                            <label asp-for="CountryScope" class="form-label fw-medium">@Localizer["CountryScope"]</label>
+                            <select asp-for="CountryScope" id="countryScope" class="form-select"></select>
+                            <div class="form-text d-none" data-scope-note="country"></div>
+                        </div>
+
+                        <div class="col-12 col-md-4 d-none" data-scope-block="legal-entity">
+                            <label asp-for="LegalEntityId" class="form-label fw-medium">@Localizer["LegalEntity"]</label>
+                            <select asp-for="LegalEntityId" id="legalEntityId" class="form-select"></select>
+                            <div class="form-text d-none" data-scope-note="legal-entity"></div>
+                        </div>
+
+                        @* Business unit is a country-first cascade: the country filter narrows the list to the units
+                           the tenant's territory plans actually cover. The filter is NOT the campaign's scope and is
+                           never posted as one. *@
+                        <div class="col-12 col-md-4 d-none" data-scope-block="business-unit">
+                            <label asp-for="BusinessUnitCountryFilter" class="form-label fw-medium">
+                                @Localizer["BusinessUnitCountryFilter"]
+                            </label>
+                            <select asp-for="BusinessUnitCountryFilter" id="buFilterCountry" class="form-select mb-3"></select>
+
+                            <label asp-for="BusinessUnitId" class="form-label fw-medium">@Localizer["BusinessUnit"]</label>
+                            <select asp-for="BusinessUnitId" id="businessUnitId" class="form-select"></select>
+                            <div class="form-text d-none" data-scope-note="business-unit"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-text">@Localizer["ScopeHelp"]</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+</form>

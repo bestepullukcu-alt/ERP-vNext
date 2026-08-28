@@ -219,6 +219,33 @@
                         </li>
                     }
 
+                    @* MOD-0029-FU24 — Document Master Register (TenantShell). FE-B UX guard: shown only with the
+                       seeded master-register view permission; the FU06 backend ([HasPermission]) is authoritative.
+                       Create / metadata-edit / General details are reached from this page. *@
+                    @if (Perms.Has("platform.document-management.master-register.view"))
+                    {
+                        <li class="menu-item @(activeController == "DocumentManagementMasterRegister" ? "active" : "")">
+                            <a href="/DocumentManagementMasterRegister" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-list-check"></i>
+                                <div>@SharedLocalizer["DocumentMasterRegister"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0029-FU28A — Repository Assessments (tenant-global master data). FE-B UX guard: shown only
+                       with the seeded repository-assessment view permission; the FU16 backend ([HasPermission]) is
+                       authoritative. Create / evaluate / approve are reached from this page; documents link to a row
+                       from their Repository tab. *@
+                    @if (Perms.Has("platform.document-management.repository-assessment.view"))
+                    {
+                        <li class="menu-item @(activeController == "DocumentManagementRepositoryAssessments" ? "active" : "")">
+                            <a href="/DocumentManagementRepositoryAssessments" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-server"></i>
+                                <div>@SharedLocalizer["RepositoryAssessments"]</div>
+                            </a>
+                        </li>
+                    }
+
                     @* MOD-0029-FU02 — Corporate Template Masters (TenantShell). FE-B UX guard: shown only with
                        the view permission; backend (FU02 Layer 1) is authoritative. Publish-version, deprecate
                        and adoption-impact actions are reached from this page. *@
@@ -287,6 +314,246 @@
                             <a href="/HCM/Employees/Create" class="menu-link">
                                 <i class="menu-icon tf-icons bx bx-id-card"></i>
                                 <div>@SharedLocalizer["EmployeeDraftsMenu"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0149 — Customer 360 / Account Hierarchy (Commercial Suite). FE-B UX guard only: shown with
+                       crm.account.read; CrmService ([Authorize] + HasPermission) stays authoritative. *@
+                    @if (Perms.Has("crm.account.read"))
+                    {
+                        <li class="menu-header small text-uppercase">
+                            <span class="menu-header-text">@SharedLocalizer["CommercialSuite"]</span>
+                        </li>
+                        <li class="menu-item @(currentPath.StartsWith("/CRM/Accounts", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="/CRM/Accounts" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-buildings"></i>
+                                <div>@SharedLocalizer["AccountsMenu"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0150 FU02 — Contacts (Commercial Suite / CRM). FE-B UX guard only: shown with crm.contact.read;
+                       CrmService ([Authorize] + HasPermission) stays authoritative. Rendered under the same Commercial Suite header. *@
+                    @if (Perms.Has("crm.contact.read"))
+                    {
+                        @if (!Perms.Has("crm.account.read"))
+                        {
+                            <li class="menu-header small text-uppercase">
+                                <span class="menu-header-text">@SharedLocalizer["CommercialSuite"]</span>
+                            </li>
+                        }
+                        <li class="menu-item @(currentPath.StartsWith("/CRM/Contacts", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="/CRM/Contacts" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-user-pin"></i>
+                                <div>@SharedLocalizer["ContactsMenu"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0151 FU02 — Territory Management (Commercial Suite / CRM). FE-B UX guard only: shown with
+                       crm.territory.read; CrmService ([Authorize] + HasPermission) stays authoritative. Rendered under
+                       the same Commercial Suite header. *@
+                    @if (Perms.Has("crm.territory.read"))
+                    {
+                        @if (!Perms.Has("crm.account.read") && !Perms.Has("crm.contact.read"))
+                        {
+                            <li class="menu-header small text-uppercase">
+                                <span class="menu-header-text">@SharedLocalizer["CommercialSuite"]</span>
+                            </li>
+                        }
+                        <li class="menu-item @(currentPath.StartsWith("/CRM/TerritoryManagement", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="/CRM/TerritoryManagement" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-map-alt"></i>
+                                <div>@SharedLocalizer["TerritoryManagementMenu"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0165-FU05 — Campaign / Targeting Admin UI. Narrow module-pack exception: UX visibility
+                       only; CrmService permission guards remain authoritative. *@
+                    @if (Perms.Has("crm.campaign.read"))
+                    {
+                        @if (!Perms.Has("crm.account.read") && !Perms.Has("crm.contact.read") && !Perms.Has("crm.territory.read"))
+                        {
+                            <li class="menu-header small text-uppercase">
+                                <span class="menu-header-text">@SharedLocalizer["CommercialSuite"]</span>
+                            </li>
+                        }
+                        <li class="menu-item @(currentPath.StartsWith("/CRM/Campaigns", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="/CRM/Campaigns" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-megaphone"></i>
+                                <div>@SharedLocalizer["CampaignsMenu"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0162-FU02 — Knowledge / Content Taxonomy Admin UI. Narrow module-pack exception: UX visibility
+                       only; CrmService ([Authorize] + HasPermission) remains authoritative. Menu guard stays canonical
+                       crm.knowledge.read; if the canonical claim is absent under the FU02 territory fallback the entry is
+                       simply hidden (reported PARTIAL/follow-up — no seed/grant, no new resolver). *@
+                    @if (Perms.Has("crm.knowledge.read"))
+                    {
+                        @if (!Perms.Has("crm.account.read") && !Perms.Has("crm.contact.read") && !Perms.Has("crm.territory.read") && !Perms.Has("crm.campaign.read") && !Perms.Has("crm.consent.read"))
+                        {
+                            <li class="menu-header small text-uppercase">
+                                <span class="menu-header-text">@SharedLocalizer["CommercialSuite"]</span>
+                            </li>
+                        }
+                        <li class="menu-item @(currentPath.StartsWith("/CRM/Knowledge", StringComparison.OrdinalIgnoreCase) && !currentPath.StartsWith("/CRM/KnowledgeConcepts", StringComparison.OrdinalIgnoreCase) && !currentPath.StartsWith("/CRM/KnowledgePaths", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="/CRM/Knowledge" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-book-content"></i>
+                                <div>@SharedLocalizer["KnowledgeMenu"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0162-FU03 — Concept Graph Admin UI. Same narrow module-pack exception as FU02 (UX visibility
+                       only; CrmService [Authorize] + HasPermission is authoritative). Menu guard is the canonical
+                       crm.knowledge.concept.read; under the DEV-ONLY territory fallback the entry stays hidden without a
+                       seed/grant (reported PARTIAL/follow-up MOD-0162-FU03-RBAC). *@
+                    @if (Perms.Has("crm.knowledge.concept.read"))
+                    {
+                        <li class="menu-item @(currentPath.StartsWith("/CRM/KnowledgeConcepts", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="/CRM/KnowledgeConcepts" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-network-chart"></i>
+                                <div>@SharedLocalizer["KnowledgeConceptsMenu"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0162-FU04 — KnowledgePath Admin UI. Same narrow module-pack exception as FU02/FU03 (UX
+                       visibility only; CrmService [Authorize] + HasPermission is authoritative). Menu guard is the
+                       canonical crm.knowledge.path.read; under the DEV-ONLY territory fallback the entry stays hidden
+                       without a seed/grant (follow-up MOD-0162-FU04-RBAC). *@
+                    @if (Perms.Has("crm.knowledge.path.read"))
+                    {
+                        <li class="menu-item @(currentPath.StartsWith("/CRM/KnowledgePaths", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="/CRM/KnowledgePaths" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-git-branch"></i>
+                                <div>@SharedLocalizer["KnowledgePathsMenu"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0162-FU05 — ContentEngagementJourney Admin UI. Same narrow module-pack exception as
+                       FU02/FU03/FU04 (UX visibility only; CrmService [Authorize] + HasPermission is authoritative).
+                       Menu guard is the canonical crm.knowledge.content-engagement-journey.read; under the DEV-ONLY
+                       territory fallback the entry stays hidden without a seed/grant (follow-up MOD-0162-FU05-RBAC). *@
+                    @if (Perms.Has("crm.knowledge.content-engagement-journey.read"))
+                    {
+                        <li class="menu-item @(currentPath.StartsWith("/CRM/ContentEngagementJourneys", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="/CRM/ContentEngagementJourneys" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-map-alt"></i>
+                                <div>@SharedLocalizer["ContentEngagementJourneysMenu"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0167-FU02 — Segment Admin UI. Same narrow module-pack exception as the MOD-0162 pages (UX
+                       visibility only; CrmService [Authorize] + HasPermission stays authoritative). Menu guard is the
+                       canonical crm.segment.read; under the DEV-ONLY territory fallback the entry simply stays hidden
+                       rather than being seeded or granted here (follow-up MOD-0167-FU02-RBAC). *@
+                    @if (Perms.Has("crm.segment.read"))
+                    {
+                        <li class="menu-item @(currentPath.StartsWith("/CRM/Segments", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="/CRM/Segments" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-pie-chart-alt-2"></i>
+                                <div>@SharedLocalizer["SegmentsMenu"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0167-FU04 — Strategy Template Admin UI. Same narrow module-pack exception as the sibling CRM
+                       pages (UX visibility only; CrmService [Authorize] + HasPermission stays authoritative). Menu guard
+                       is the canonical crm.strategy-template.read; under the DEV-ONLY territory fallback the entry
+                       simply stays hidden rather than being seeded or granted here (follow-up F-RBAC). *@
+                    @if (Perms.Has("crm.strategy-template.read"))
+                    {
+                        <li class="menu-item @(currentPath.StartsWith("/CRM/StrategyTemplates", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="/CRM/StrategyTemplates" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-chess"></i>
+                                <div>@SharedLocalizer["StrategyTemplatesMenu"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0165-FU06 — Cycle Period Admin UI. Same narrow module-pack exception as the sibling CRM
+                       pages (UX visibility only; CrmService [Authorize] + HasPermission stays authoritative). Menu
+                       guard is the canonical crm.cycle-period.read; under the DEV-ONLY territory fallback the entry
+                       simply stays hidden rather than being seeded or granted here (follow-up F-RBAC). *@
+                    @if (Perms.Has("crm.cycle-period.read"))
+                    {
+                        <li class="menu-item @(currentPath.StartsWith("/CRM/CyclePeriods", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="/CRM/CyclePeriods" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-calendar-event"></i>
+                                <div>@SharedLocalizer["CyclePeriodsMenu"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0155-FU06 — Cycle Capacity UI. Same narrow module-pack exception as the sibling CRM pages
+                       (UX visibility only; CrmService [Authorize] + HasPermission stays authoritative). Menu guard is
+                       the canonical crm.cycle-capacity.read; under the DEV-ONLY territory fallback the entry simply
+                       stays hidden rather than being seeded or granted here (follow-up F-RBAC). *@
+                    @if (Perms.Has("crm.cycle-capacity.read"))
+                    {
+                        <li class="menu-item @(currentPath.StartsWith("/CRM/CycleCapacities", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="/CRM/CycleCapacities" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-tachometer"></i>
+                                <div>@SharedLocalizer["CycleCapacitiesMenu"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0164-FU03 — Consent & Preference Admin UI. Narrow module-pack exception: UX visibility only;
+                       CrmService ([Authorize] + HasPermission) remains authoritative. Menu guard stays canonical
+                       crm.consent.read; if the canonical claim is absent under the FU02 territory fallback the entry is
+                       simply hidden (reported PARTIAL/follow-up — no seed/grant, no new resolver). *@
+                    @if (Perms.Has("crm.consent.read"))
+                    {
+                        @if (!Perms.Has("crm.account.read") && !Perms.Has("crm.contact.read") && !Perms.Has("crm.territory.read") && !Perms.Has("crm.campaign.read"))
+                        {
+                            <li class="menu-header small text-uppercase">
+                                <span class="menu-header-text">@SharedLocalizer["CommercialSuite"]</span>
+                            </li>
+                        }
+                        <li class="menu-item @(currentPath.StartsWith("/CRM/ConsentPreferences", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="/CRM/ConsentPreferences" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-shield-quarter"></i>
+                                <div>@SharedLocalizer["ConsentPreferencesMenu"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @* MOD-0290-FU02 — Brand / Product Master (Master Data). Narrow module-pack exception: UX
+                       visibility only; MdmService ([Authorize] + HasPermission) stays authoritative. The group
+                       header is rendered once, by whichever of the two entries is the first visible one. *@
+                    @if (Perms.Has("mdm.brands.read"))
+                    {
+                        <li class="menu-header small text-uppercase">
+                            <span class="menu-header-text">@SharedLocalizer["MasterData"]</span>
+                        </li>
+                        <li class="menu-item @(currentPath.StartsWith("/MasterData/Brands", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="/MasterData/Brands" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-purchase-tag"></i>
+                                <div>@SharedLocalizer["BrandsMenu"]</div>
+                            </a>
+                        </li>
+                    }
+
+                    @if (Perms.Has("mdm.products.read"))
+                    {
+                        @if (!Perms.Has("mdm.brands.read"))
+                        {
+                            <li class="menu-header small text-uppercase">
+                                <span class="menu-header-text">@SharedLocalizer["MasterData"]</span>
+                            </li>
+                        }
+                        <li class="menu-item @(currentPath.StartsWith("/MasterData/Products", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="/MasterData/Products" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-package"></i>
+                                <div>@SharedLocalizer["ProductsMenu"]</div>
                             </a>
                         </li>
                     }

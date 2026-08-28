@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="Passive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="Unknown" xml:space="preserve"><value>غير معروف</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>عرض التفاصيل</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>حذف جماعي</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>حذف السجلات المحددة؟</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>هل أنت متأكد؟</value></data>
+  <data name="Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="Search" xml:space="preserve"><value>بحث</value></data>
+  <data name="Export" xml:space="preserve"><value>تصدير</value></data>
+  <data name="Import" xml:space="preserve"><value>استيراد</value></data>
+  <data name="Filter" xml:space="preserve"><value>تصفية</value></data>
+  <data name="Apply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="Reset" xml:space="preserve"><value>إعادة تعيين</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>الكل</value></data>
+  <data name="SaveView" xml:space="preserve"><value>حفظ العرض</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>الأعمدة</value></data>
+  <data name="Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>لم يتم العثور على مسارات معرفية.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>حدث خطأ.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>تمت أرشفة السجل.</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>تم إنشاء السجل.</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>تم تحديث السجل.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>اختر…</value></data>
+  <data name="BackToList" xml:space="preserve"><value>العودة إلى القائمة</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>تضمين المؤرشف</value></data>
+  <data name="Archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>آخر تحديث</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>ساري من</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>ساري حتى</value></data>
+  <data name="KnowledgePathsMenu" xml:space="preserve"><value>مسارات المعرفة</value></data>
+  <data name="KnowledgePathsTitle" xml:space="preserve"><value>مسارات المعرفة</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>رتّب محتوى المعرفة في مسارات تعلّم — الترتيب والمتطلبات المسبقة وإصدارات المحتوى المثبّتة.</value></data>
+  <data name="KnowledgePathContractUnavailable" xml:space="preserve"><value>عقد قدرات KnowledgePath غير متاح. الإجراءات معطّلة.</value></data>
+  <data name="PathCode" xml:space="preserve"><value>رمز المسار</value></data>
+  <data name="PathName" xml:space="preserve"><value>اسم المسار</value></data>
+  <data name="PathVersion" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="PathStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>الموضوع</value></data>
+  <data name="TopicId" xml:space="preserve"><value>الفئة</value></data>
+  <data name="AudienceProfileId" xml:space="preserve"><value>ملف الجمهور</value></data>
+  <data name="LanguageCode" xml:space="preserve"><value>اللغة</value></data>
+  <data name="Objective" xml:space="preserve"><value>الهدف</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="Source" xml:space="preserve"><value>المصدر</value></data>
+  <data name="ActiveStepCount" xml:space="preserve"><value>الخطوات النشطة</value></data>
+  <data name="RequiredStepCount" xml:space="preserve"><value>الخطوات الإلزامية</value></data>
+  <data name="ContentResolution" xml:space="preserve"><value>المحتوى</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>غير محلول</value></data>
+  <data name="Resolved" xml:space="preserve"><value>محلول</value></data>
+  <data name="Frozen" xml:space="preserve"><value>مجمّد</value></data>
+  <data name="CreatePath" xml:space="preserve"><value>إنشاء مسار</value></data>
+  <data name="EditPath" xml:space="preserve"><value>تعديل المسار</value></data>
+  <data name="ArchivePath" xml:space="preserve"><value>أرشفة المسار</value></data>
+  <data name="ArchivePathConfirm" xml:space="preserve"><value>أرشفة هذا المسار؟ هذا إجراء دورة حياة ناعم؛ يبقى السجل قابلاً للقراءة.</value></data>
+  <data name="ArchivedPathReadOnly" xml:space="preserve"><value>هذا المسار مؤرشف وللقراءة فقط.</value></data>
+  <data name="PathDetail" xml:space="preserve"><value>تفاصيل المسار</value></data>
+  <data name="Publish" xml:space="preserve"><value>نشر</value></data>
+  <data name="PublishConfirm" xml:space="preserve"><value>نشر هذا المسار؟ ستُجمَّد مجموعة خطواته؛ أنشئ إصداراً جديداً لتغييرها لاحقاً.</value></data>
+  <data name="PublishSeparatelyHelp" xml:space="preserve"><value>النشر إجراء منفصل؛ لا يُنشأ المسار منشوراً أبداً.</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>إصدار جديد</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>إنشاء نسخة مسودة جديدة من هذا المسار المنشور؟</value></data>
+  <data name="FrozenStepsHelp" xml:space="preserve"><value>هذا الإصدار منشور ومجموعة خطواته مجمّدة. أنشئ إصداراً جديداً لتغيير الخطوات.</value></data>
+  <data name="SaveBeforeSteps" xml:space="preserve"><value>احفظ المسار أولاً ثم أضف خطواته هنا.</value></data>
+  <data name="StepsHelp" xml:space="preserve"><value>أضف الخطوات بالترتيب الذي يجب أن يُعرض/يُتعلّم/يُقدَّم به المحتوى.</value></data>
+  <data name="AddStep" xml:space="preserve"><value>إضافة خطوة</value></data>
+  <data name="NoSteps" xml:space="preserve"><value>لا توجد خطوات بعد.</value></data>
+  <data name="StepsSection" xml:space="preserve"><value>الخطوات</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>الهوية</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>التصنيف</value></data>
+  <data name="SchedulingSection" xml:space="preserve"><value>الجدولة ودورة الحياة</value></data>
+  <data name="StepOrder" xml:space="preserve"><value>الترتيب</value></data>
+  <data name="StepCode" xml:space="preserve"><value>رمز الخطوة</value></data>
+  <data name="StepTitle" xml:space="preserve"><value>عنوان الخطوة</value></data>
+  <data name="StepType" xml:space="preserve"><value>نوع الخطوة</value></data>
+  <data name="ContentId" xml:space="preserve"><value>المحتوى</value></data>
+  <data name="VersionPinPolicy" xml:space="preserve"><value>سياسة إصدار المحتوى</value></data>
+  <data name="CompletionRule" xml:space="preserve"><value>قاعدة الإكمال</value></data>
+  <data name="EstimatedDurationMinutes" xml:space="preserve"><value>المدة (دقيقة)</value></data>
+  <data name="PrerequisiteStepId" xml:space="preserve"><value>الخطوة المسبقة</value></data>
+  <data name="ConceptNodeId" xml:space="preserve"><value>عقدة المفهوم</value></data>
+  <data name="IsRequired" xml:space="preserve"><value>إلزامي</value></data>
+  <data name="Notes" xml:space="preserve"><value>ملاحظات</value></data>
+  <data name="BranchConditions" xml:space="preserve"><value>شروط التفرّع</value></data>
+  <data name="AddBranchCondition" xml:space="preserve"><value>إضافة شرط</value></data>
+  <data name="BranchConditionsHelp" xml:space="preserve"><value>بيانات قابلة للتحرير فقط — تُحمَل الشروط ولا تُقيَّم أبداً. يمكن دائماً السير في المسار من دونها.</value></data>
+  <data name="ConditionCode" xml:space="preserve"><value>رمز الشرط</value></data>
+  <data name="ArchiveStepConfirm" xml:space="preserve"><value>أرشفة هذه الخطوة؟ تبقى في المستند كسجل.</value></data>
+  <data name="CrossSubject" xml:space="preserve"><value>عابر للموضوع</value></data>
+  <data name="CrossLanguage" xml:space="preserve"><value>عابر للغة</value></data>
+</root>

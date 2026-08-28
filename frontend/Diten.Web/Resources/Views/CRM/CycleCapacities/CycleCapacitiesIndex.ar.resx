@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="CycleCapacitiesTitle" xml:space="preserve"><value>سعة الدورة</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>كم زيارة تتسع لها فترة الدورة. تقدير مبني على تقويم العمل المنشور وميزانية النشاط المُدخلة.</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>خدمة سعة الدورة غير متاحة.</value></data>
+  <data name="CreateCycleCapacity" xml:space="preserve"><value>سعة جديدة</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>سعة دورة جديدة</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل سعة الدورة</value></data>
+  <data name="CyclePeriod" xml:space="preserve"><value>فترة الدورة</value></data>
+  <data name="CycleCode" xml:space="preserve"><value>رمز الفترة</value></data>
+  <data name="CycleName" xml:space="preserve"><value>اسم الفترة</value></data>
+  <data name="PeriodWindow" xml:space="preserve"><value>نطاق الفترة</value></data>
+  <data name="CalendarCountryCode" xml:space="preserve"><value>دولة التقويم</value></data>
+  <data name="DailyWorkMinutes" xml:space="preserve"><value>يوم العمل (بالدقائق)</value></data>
+  <data name="MinutesPerVisit" xml:space="preserve"><value>دقائق لكل زيارة</value></data>
+  <data name="Fte" xml:space="preserve"><value>المكافئ بدوام كامل</value></data>
+  <data name="MonthCount" xml:space="preserve"><value>عدد الأشهر</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data>
+  <data name="ArchiveCycleCapacity" xml:space="preserve"><value>أرشفة</value></data>
+  <data name="ArchiveCycleCapacityConfirm" xml:space="preserve"><value>هل تريد أرشفة هذه السعة؟ لن يُحذف شيء، وستصبح الفترة متاحة لسعة جديدة.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>تمت أرشفة السعة.</value></data>
+  <data name="ArchivedFilter" xml:space="preserve"><value>الأرشيف</value></data>
+  <data name="ArchivedHidden" xml:space="preserve"><value>إخفاء المؤرشف</value></data>
+  <data name="ArchivedOnly" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="PeriodClosedLock" xml:space="preserve"><value>الفترة مغلقة</value></data>
+  <data name="EstimateNoticeTitle" xml:space="preserve"><value>هذا تقدير وليس حصة ملزمة.</value></data>
+  <data name="EstimateNoticeBody" xml:space="preserve"><value>الرقم مبني على متوسطات أزمنة النشاط وعلى مكافئ دوام كامل مُهيأ مؤقتًا، لا على ملاك الموارد البشرية. أيام العمل مأخوذة من التقويم المنشور وقد تتغير.</value></data>
+  <data name="BudgetVisitMinutesZero" xml:space="preserve"><value>لا يمكن أن يكون وقت المنتج المروَّج وغير المروَّج صفرًا في آنٍ واحد.</value></data>
+  <data name="BudgetDailySpendExceedsDay" xml:space="preserve"><value>وقت التنقل والتقارير والاختبار لا يترك مجالًا للزيارات في يوم العمل.</value></data>
+  <data name="PinnedPeriodSection" xml:space="preserve"><value>الفترة المرتبطة</value></data>
+  <data name="ActivityBudgetSection" xml:space="preserve"><value>ميزانية دقائق النشاط</value></data>
+  <data name="MonthlyPlanSection" xml:space="preserve"><value>الخطة الشهرية</value></data>
+  <data name="FieldForceSection" xml:space="preserve"><value>الفريق الميداني</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>ملاحظات</value></data>
+  <data name="EstimateSectionHint" xml:space="preserve"><value>أيام العمل مأخوذة من تقويم المنصة وتستبعد بالفعل عطل نهاية الأسبوع والعطل الرسمية وأيام الإغلاق. هنا تُخصم خصوماتك الخاصة فقط.</value></data>
+  <data name="CyclePeriodsBreadcrumb" xml:space="preserve"><value>فترات الدورة</value></data>
+  <data name="NonWorkingDays" xml:space="preserve"><value>الأيام غير العملية</value></data>
+  <data name="FteMovedToMonthly" xml:space="preserve"><value>يُحدَّد المكافئ بدوام كامل الآن شهريًا، في الخطة الشهرية أدناه.</value></data>
+  <data name="NoPeriodsAvailable" xml:space="preserve"><value>لا توجد فترة دورة بعد. أنشئ فترة أولًا.</value></data>
+  <data name="CalendarCountryHint" xml:space="preserve"><value>تُستخدم فقط لقراءة تقويم العمل، ولا تغيّر نطاق الفترة.</value></data>
+  <data name="CalendarCountryDerivedHint" xml:space="preserve"><value>مُشتقّة من فترة ذات نطاق دولة، ولا يمكن تغييرها هنا.</value></data>
+  <data name="CalendarCountryNotReady" xml:space="preserve"><value>لا توجد دول متاحة بعد: لا توجد فترة ذات نطاق دولة.</value></data>
+  <data name="CalendarCountryDerived" xml:space="preserve"><value>مُشتقّة</value></data>
+  <data name="CalendarCountryIsNotScope" xml:space="preserve"><value>معامل لتقويم العمل، وليس نطاقًا.</value></data>
+  <data name="DailyWorkMinutesHint" xml:space="preserve"><value>دقائق يوم العمل الميداني (8 ساعات = 480).</value></data>
+  <data name="PerVisitHint" xml:space="preserve"><value>دقائق لكل زيارة.</value></data>
+  <data name="PerDayHint" xml:space="preserve"><value>دقائق لكل يوم ميداني.</value></data>
+  <data name="PromoProductTime" xml:space="preserve"><value>وقت المنتج المروَّج</value></data>
+  <data name="NonPromoProductTime" xml:space="preserve"><value>وقت المنتج غير المروَّج</value></data>
+  <data name="TravelingTime" xml:space="preserve"><value>وقت التنقل</value></data>
+  <data name="ReportDuration" xml:space="preserve"><value>وقت إعداد التقارير</value></data>
+  <data name="QuizDuration" xml:space="preserve"><value>وقت الاختبار</value></data>
+  <data name="MonthlyDeductionsHint" xml:space="preserve"><value>الأشهر مأخوذة من نطاق الفترة ولا يمكن إضافتها أو حذفها. لا تخصم عطل نهاية الأسبوع أو العطل الرسمية: تقويم العمل استبعدها بالفعل.</value></data>
+  <data name="MonthsPendingPeriod" xml:space="preserve"><value>اختر فترة أولًا؛ نطاقها يحدد الأشهر التي تظهر.</value></data>
+  <data name="Month" xml:space="preserve"><value>الشهر</value></data>
+  <data name="MeetingDays" xml:space="preserve"><value>أيام الاجتماعات</value></data>
+  <data name="TrainingDays" xml:space="preserve"><value>أيام التدريب</value></data>
+  <data name="VacationDays" xml:space="preserve"><value>أيام الإجازة</value></data>
+  <data name="MicroTargetingDayCount" xml:space="preserve"><value>أيام الاستهداف الدقيق</value></data>
+  <data name="MicroTargetingDuration" xml:space="preserve"><value>الاستهداف الدقيق دقيقة/يوم</value></data>
+  <data name="FteInterimHint" xml:space="preserve"><value>متوسط مُهيأ مؤقتًا. عند وصول تكامل الموارد البشرية سيأتي تلقائيًا لكل وحدة أعمال وسنة.</value></data>
+  <data name="CalculationUnavailable" xml:space="preserve"><value>تعذّرت قراءة التقدير.</value></data>
+  <data name="CalendarForbiddenTitle" xml:space="preserve"><value>لا توجد صلاحية لقراءة تقويم العمل</value></data>
+  <data name="CalendarForbiddenBody" xml:space="preserve"><value>قد يكون التقويم موجودًا فعلًا؛ هذا الحساب يفتقر إلى صلاحية تقويم العمل في المنصة. اطلب من المسؤول منحها.</value></data>
+  <data name="CalendarUnresolvedTitle" xml:space="preserve"><value>لم يستجب تقويم العمل</value></data>
+  <data name="CalendarUnresolvedBody" xml:space="preserve"><value>لا يُعرض أي تقدير بدلًا من قيمة مُخمّنة. انشر تقويم عمل لهذه الدولة والسنة ثم أعد المحاولة.</value></data>
+  <data name="TotalVisitNumber" xml:space="preserve"><value>الزيارات</value></data>
+  <data name="WorkingDays" xml:space="preserve"><value>أيام العمل</value></data>
+  <data name="DeductedDays" xml:space="preserve"><value>المخصوم</value></data>
+  <data name="FieldDays" xml:space="preserve"><value>الأيام الميدانية</value></data>
+  <data name="VisitMinutes" xml:space="preserve"><value>دقائق الزيارة</value></data>
+  <data name="NoFieldDays" xml:space="preserve"><value>لا توجد أيام ميدانية</value></data>
+</root>

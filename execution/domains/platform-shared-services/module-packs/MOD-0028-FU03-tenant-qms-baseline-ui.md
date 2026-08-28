@@ -519,3 +519,84 @@ owns documentation *structure/baseline governance*; **MOD-0029 owns controlled d
 
 Each follow-up requires its own approved or ready-for-dev scope. FU03 does not authorize any later wave, and does not
 authorize manual create/edit, company adoption, `CollectionInstance`, or document lifecycle.
+
+## 21. DCP-007 Approved Amendment — Import Completion Visibility and Consumer Guardrails
+
+**Amendment status:** `approved`
+**Approved by user:** `2026-08-27`
+**Runtime authority:** `false`
+
+This amendment is a bounded DCP-007 governance contract approved by the user on 2026-08-27. The parent FU03 pack
+remains `approved`; amendment approval does not authorize frontend implementation.
+
+### Amendment ownership
+
+FU03 owns UI consumption of FU07's `202 Accepted` response, self-operation polling, controlled terminal UX, safe
+findings-summary display, Completed-only baseline redirect, and the completed-baseline review surface governed by
+`ReviewVisible`. FU07 owns the operation/status/findings backend contract; FU02 owns the combined guard and baseline
+consumer enforcement. FU03 does not reproduce either backend decision.
+
+### MVP polling policy consumed by the UI
+
+```text
+same tenant
+AND HasPermission("platform.document-management.qms-baselines.import")
+AND operation.RequestedBy == current actor
+```
+
+The server is authoritative for all three predicates. UI visibility, cached state, URL possession, or a previous
+successful import response is never authorization proof.
+
+### Required behavior
+
+- A `202 Accepted` Commit response starts controlled polling and never immediately redirects to a baseline.
+- Polling uses only the server-provided controlled `StatusUrl` through the existing Gateway/same-origin profile.
+- Canonical backend status and localized display phase remain distinct; the display phase never becomes persisted or
+  decision authority.
+- `BaselineReleaseId` is consumed only after canonical `Completed`, then the UI may redirect to the governed review
+  surface.
+- `ValidationFailed` and `FailedTerminal` render controlled terminal outcomes. `FailedRetryable` may be displayed as
+  retryable, but the UI does not create a new operation or invent a retry transition.
+- Cross-tenant and another-actor results are handled as 404 non-leakage. Cross-user reviewer polling is outside MVP and
+  deny-by-default.
+- Safe findings show aggregate counts/categories only. Raw workbook, raw rows, `Implementation Note`, sensitive Notes,
+  secrets, uncontrolled payload, and another actor's metadata are never rendered or retained client-side.
+- Polling access is not baseline review authority. Completed baseline review independently requires same tenant,
+  `platform.document-management.qms-baselines.view`, and `ReviewVisible == true`.
+
+### Amendment acceptance criteria
+
+- [ ] `202 Accepted` produces a polling state and no immediate detail redirect.
+- [ ] Only `StatusUrl` is polled; the client does not construct operation identity or infer completion.
+- [ ] Canonical statuses map to bounded display phases without changing backend semantics.
+- [ ] Redirect and `BaselineReleaseId` consumption occur only after `Completed`.
+- [ ] Terminal and retryable outcomes are controlled, localized, and never start an operation automatically.
+- [ ] 404 polling outcomes disclose neither operation/source identity nor findings.
+- [ ] Findings UI renders only approved aggregate categories/counts and excludes every raw/sensitive field.
+- [ ] Polling permission never exposes list/detail; completed review is gated by `.view + ReviewVisible`.
+
+### Amendment test expectations
+
+- Frontend controller/JS tests cover 202, polling progression, stale version, timeout, replay, all terminal states, and
+  Completed-only redirect.
+- Negative tests cover cross-tenant/another-actor 404, missing/invalid `StatusUrl`, absent pre-Completed baseline ID,
+  and no automatic retry/new operation.
+- Rendering tests prove raw workbook/rows, `Implementation Note`, sensitive Notes, secrets, and actor metadata cannot
+  enter the DOM, toast, log, or cached view state.
+- Permission/view tests distinguish import self-polling from `.view + ReviewVisible` completed-baseline review.
+- No runtime/frontend code is authorized or produced by this approved amendment.
+
+### Amendment governance gates
+
+- DCP-007 remains `under-review`; FU07 remains `draft` with `runtime_code_allowed: false`.
+- This amendment is approved at governance level; runtime/frontend implementation remains prohibited until DCP-007 and
+  the active member-pack execution gates close.
+- DCP-007 G2 is resolved because FU02, FU03, FU05, and FU06 amendments received separate user approval on 2026-08-27.
+- This amendment does not close G12, load/lease/heartbeat, retention/audit, FU07 approval, or runtime-evidence gates.
+- It creates no permission seed, MOD/FU identity, Gateway change, Company sharing/overlay, or template-propagation scope.
+
+### Approval note
+
+- Approval covers only this amendment's scope, acceptance criteria, and test governance contract.
+- Code may start only after DCP-007 and the active member pack pass their separate execution gates.
+- This approval is not runtime implementation, deployment, or activation authority.
