@@ -1275,8 +1275,17 @@ This table is a local-test contract only. It does not reserve a Gateway path or 
 - [ ] **B-07:** Publisher service identity, tenant and actor binding negative tests pass.
 - [ ] **B-08:** Payload allowlist, redaction and byte/depth/count/string-limit evidence passes.
 - [ ] **B-09:** Dead-letter alarm, authorized replay and acceptance-observability evidence passes.
-- [ ] **B-10:** Architecture test proves no direct Platform collection access or authoritative use of the shared-key
-  internal audit endpoint.
+- [x] **B-10:** Architecture test proves no direct Platform collection access or authoritative use of the shared-key
+  internal audit endpoint. Implementation checkpoint `3c27a6884b16f230e97bc09f3fac1f706b2e3f6f` records the
+  exact five-layer project graph, absence of foreign persistence/surfaces and live event publication/provider
+  activation, default-off loopback-only composition and explicit classification of B-11A dispatch/storage as
+  local smoke rather than functional DWS truth. Verification passed the repo-wide architecture gate `2/2`, the
+  service solution `78/78` (`22` unit, `39` architecture, `17` integration), build with zero warnings/errors,
+  MOD-0354 preflight and diff checks. A safe regression mutant reintroduced direct API-layer `MongoClient`
+  construction, compiled successfully and was killed by the global architecture guard; restore returned
+  `Program.cs` to SHA-256 `81dbf9eda082b698e200301d8bd419420514b4fc13f5444e363256b722d163ec`.
+  This evidence does not close B-03 through B-09 or authorize functional DWS completion, production, frontend,
+  Gateway or WorkCenter activation.
 - [x] Bounded compile/test-only `Diten.ManagementGovernanceService` shared shell and Dws module paths received
   explicit user approval; this is not runtime scaffold or host activation authority.
 - [x] **B-11:** Service port `5017` is allocated without collision; `5011` remains exclusively assigned to
