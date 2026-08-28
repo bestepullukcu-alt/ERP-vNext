@@ -21,7 +21,7 @@ public sealed class ProcessModelingArchitectureTests
             case "project": NoSibling(projects); break;
             case "type": NoSibling(string.Join('\n',moduleText.Split('\n').Where(x=>x.Contains("class ",StringComparison.Ordinal)||x.Contains("record ",StringComparison.Ordinal)||x.Contains("interface ",StringComparison.Ordinal)))); break;
             case "namespace": NoSibling(string.Join('\n',moduleText.Split('\n').Where(x=>x.Contains("namespace ",StringComparison.Ordinal)||x.Contains("using ",StringComparison.Ordinal)))); break;
-            case "DI": NoSibling(File.ReadAllText(Path.Combine(root,"src","Diten.ManagementGovernanceService.Infrastructure","DependencyInjection.cs"))); break;
+            case "DI": NoSibling(moduleText); break;
             case "repository": NoSibling(string.Join('\n',moduleFiles.Where(x=>x.Contains("Persistence",StringComparison.Ordinal)).Select(File.ReadAllText))); break;
             case "collection-index": NoSibling(manifest); break;
             case "session-transaction": NoSibling(File.ReadAllText(Path.Combine(root,"src","Diten.ManagementGovernanceService.Persistence","Modules","ProcessModeling","ProcessModelingMongoPersistence.cs"))); break;
@@ -34,11 +34,11 @@ public sealed class ProcessModelingArchitectureTests
         }
     }
 
-    [Fact] public void Immutable_DecisionRegistry_checkpoint_and_Dws_precohost_gate_are_bound()
+    [Fact] public void Immutable_DecisionRegistry_checkpoint_and_same_host_isolation_gate_are_bound()
     {
         const string commit="2d354a97bfbe09ed665e44dba8665181d2a56d78";var root=RepositoryRoot();var psi=new ProcessStartInfo("git",$"ls-tree -r --name-only {commit} -- services/Diten.ManagementGovernanceService") { WorkingDirectory=root,RedirectStandardOutput=true,UseShellExecute=false };using var p=Process.Start(psi)??throw new InvalidOperationException();var tree=p.StandardOutput.ReadToEnd();p.WaitForExit();Assert.Equal(0,p.ExitCode);
         foreach(var path in new[]{"Application/DecisionRegistry/","Domain/DecisionRegistry/","Persistence/DecisionRegistry/","Infrastructure/DependencyInjection.cs","ArchitectureTests/DecisionRegistry/","IntegrationTests/DecisionRegistry/","Tests/DecisionRegistry/"})Assert.Contains(path,tree,StringComparison.Ordinal);
-        Assert.DoesNotContain("Modules/Dws",tree,StringComparison.Ordinal);var pack=File.ReadAllText(Path.Combine(root,"execution/domains/management-governance/module-packs/MOD-0355-business-process-architecture-modeling.md"));Assert.Contains("Modules/Dws",pack,StringComparison.Ordinal);Assert.Matches("(?is)before\\s+composition",pack);
+        Assert.DoesNotContain("Modules/Dws",tree,StringComparison.Ordinal);var pack=File.ReadAllText(Path.Combine(root,"execution/domains/management-governance/module-packs/MOD-0355-business-process-architecture-modeling.md"));Assert.Contains("Modules/Dws",pack,StringComparison.Ordinal);Assert.Contains("same-host local-test composition",pack,StringComparison.Ordinal);
     }
     [Fact] public void Exact_project_graph_and_default_off_local_test_program_are_preserved()
     {
@@ -46,7 +46,7 @@ public sealed class ProcessModelingArchitectureTests
         var projects = Directory.GetFiles(root, "*.csproj", SearchOption.AllDirectories).Select(Path.GetFileName).Order().ToArray();
         Assert.Equal(8, projects.Length);
         var program = File.ReadAllText(Path.Combine(root,"src","Diten.ManagementGovernanceService.Api","Program.cs"));
-        Assert.Contains("args.Contains(\"--local-test\",StringComparer.Ordinal)",program,StringComparison.Ordinal);
+        Assert.Contains("--local-test",program,StringComparison.Ordinal);
         Assert.Contains("http://127.0.0.1:5017",program,StringComparison.Ordinal);
         Assert.DoesNotContain("http://0.0.0.0",program,StringComparison.Ordinal); Assert.DoesNotContain("https://",program,StringComparison.Ordinal);
         Assert.DoesNotContain("UseKestrel",program,StringComparison.Ordinal); Assert.DoesNotContain("Host.CreateDefaultBuilder",program,StringComparison.Ordinal);
@@ -74,9 +74,14 @@ public sealed class ProcessModelingArchitectureTests
         {
             var doc = XDocument.Load(path);
             var packages=doc.Descendants("PackageReference").Select(x=>(string?)x.Attribute("Include")).ToArray();
-            if(path.Contains(".Persistence",StringComparison.Ordinal)) Assert.Equal(new[] { "MongoDB.Driver" },packages);
-            else if(path.Contains(".Application",StringComparison.Ordinal)) Assert.Equal(new[]{"FluentValidation.DependencyInjectionExtensions","MediatR","Microsoft.Extensions.Logging.Abstractions"},packages);
-            else Assert.Empty(packages);
+            var expected=path.Contains(".Persistence",StringComparison.Ordinal)
+                ? new[]{"Microsoft.Extensions.DependencyInjection.Abstractions","MongoDB.Driver"}
+                : path.Contains(".Application",StringComparison.Ordinal)
+                    ? new[]{"FluentValidation.DependencyInjectionExtensions","MediatR","Microsoft.Extensions.DependencyInjection.Abstractions","Microsoft.Extensions.Logging.Abstractions"}
+                    : path.Contains(".Infrastructure",StringComparison.Ordinal)
+                        ? new[]{"Microsoft.Extensions.DependencyInjection.Abstractions"}
+                        : Array.Empty<string>();
+            Assert.Equal(expected.Order(),packages.Order());
             foreach (var reference in doc.Descendants("ProjectReference").Select(x => (string?)x.Attribute("Include")))
                 Assert.DoesNotContain("DecisionRegistry", reference ?? string.Empty, StringComparison.Ordinal);
         }

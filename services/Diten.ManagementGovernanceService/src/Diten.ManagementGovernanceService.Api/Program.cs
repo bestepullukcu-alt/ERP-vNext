@@ -40,7 +40,9 @@ public static class Program
             .ConfigureApiBehaviorOptions(options =>
             {
                 options.InvalidModelStateResponseFactory = _ => new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(
-                    Response<object>.Fail(DwsErrors.InvalidRequest, StatusCodes.Status400BadRequest));
+                    Diten.ManagementGovernanceService.Application.Features.Dws.Response<object>.Fail(
+                        DwsErrors.InvalidRequest,
+                        StatusCodes.Status400BadRequest));
             });
         builder.Services.AddSingleton<DwsLocalTestIdentityFixture>();
         builder.Services.AddSingleton<IDwsLocalTestTrustedContextResolver, DwsLocalTestTrustedContextResolver>();

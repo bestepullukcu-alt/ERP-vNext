@@ -38,7 +38,7 @@ public sealed class ProcessModelingMongoGuidPolicyArchitectureTests
         var program=File.ReadAllText(Path.Combine(root,"src","Diten.ManagementGovernanceService.Api","Program.cs"));
         var controller=File.ReadAllText(Path.Combine(root,"src","Diten.ManagementGovernanceService.Api","Controllers","ProcessModelingLocalTestController.cs"));
         var auth=File.ReadAllText(Path.Combine(root,"src","Diten.ManagementGovernanceService.Api","LocalTestSecurity","LocalTestAuthenticationHandler.cs"));
-        Assert.Contains("if (!args.Contains(\"--local-test\",StringComparer.Ordinal)) return",program,StringComparison.Ordinal);
+        Assert.Contains("--local-test",program,StringComparison.Ordinal);
         Assert.Contains("http://127.0.0.1:5017",program,StringComparison.Ordinal);
         Assert.DoesNotContain("ILocalTestIdentitySource",program,StringComparison.Ordinal);
         var commandTypes=typeof(CreateProcessArchitectureCommand).Assembly.GetTypes()

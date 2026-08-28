@@ -21,21 +21,21 @@
     },
     {
       "id": "cohosted-sibling-project-isolation",
-      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/DependencyInjection.cs",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/Modules/ProcessModeling/CoreInfrastructureBoundary.cs",
       "expectedRedTest": "ProcessModelingArchitectureTests.Module_sources_do_not_reference_cohosted_sibling_implementations",
       "compileExitCode": 0,
       "targetedExitCode": 1,
       "expectedFailure": "forbidden sibling dependency detected",
-      "restoredSha256": "89fd85630b2eed9a56759b63f324ffb90f0158948f53c250393c9b366a6a721b"
+      "restoredSha256": "aa580c0a6e1721f32b513789307a6f2f2cf39e5090a0a5fb13f6008bdad62c6a"
     },
     {
       "id": "server-owned-canonical-content-hash",
-      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Modules/ProcessModeling/CanonicalContentHash.cs",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Modules/ProcessModeling/ProcessModels.cs",
       "expectedRedTest": "CoreDomainTests.Draft_hash_is_server_computed_and_children_are_tenant_owned",
       "compileExitCode": 0,
       "targetedExitCode": 1,
-      "expectedFailure": "caller-controlled hash accepted",
-      "restoredSha256": "648c627f89bb93e7bd40e09c22f51cb2761b58976fb92e36f94d6cb45dcff5ca"
+      "expectedFailure": "caller-controlled hash accepted instead of server-owned computation",
+      "restoredSha256": "e3a5d17991faa38f1be4422dfe79f4feae006b5c9a13d147c58890a66e6f0984"
     },
     {
       "id": "terminal-published-version-pointer",

@@ -4,7 +4,7 @@
     {
       "id": "LT01-port-5017-to-5011",
       "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs",
-      "restoredSha256": "934460a3a80b1476f0a46cf7938705487a9cbf8b4a69dacddf5df1b207a014d6",
+      "restoredSha256": "5871db6f15d7db9a044fe4afe9955bbfc9967721b9887156d8dbbeedcc7c0715",
       "compileExit": 0,
       "targetedExit": 1,
       "failureText": "expected loopback 5017; actual 5011; no listener started",
@@ -16,7 +16,7 @@
     {
       "id": "LT02-default-off-gate",
       "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs",
-      "restoredSha256": "934460a3a80b1476f0a46cf7938705487a9cbf8b4a69dacddf5df1b207a014d6",
+      "restoredSha256": "5871db6f15d7db9a044fe4afe9955bbfc9967721b9887156d8dbbeedcc7c0715",
       "failureText": "mutant would remove --local-test or loopback-only activation gate",
       "testType": "Diten.ManagementGovernanceService.ArchitectureTests.Modules.Dws.DwsLocalTestArchitectureTests",
       "testMethod": "Program_without_local_test_switch_exits_without_host",
@@ -37,7 +37,7 @@
     {
       "id": "LT04-controller-discovery",
       "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs",
-      "restoredSha256": "934460a3a80b1476f0a46cf7938705487a9cbf8b4a69dacddf5df1b207a014d6",
+      "restoredSha256": "5871db6f15d7db9a044fe4afe9955bbfc9967721b9887156d8dbbeedcc7c0715",
       "compileExit": 0,
       "targetedExit": 1,
       "failureText": "create endpoint returned 404 instead of 201",
@@ -61,7 +61,7 @@
     {
       "id": "LT06-fourth-pipeline-behavior",
       "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/DependencyInjection.cs",
-      "restoredSha256": "9a1310ac5d2eb77e0c8f1f8ed267fe979326000893359df602a5a7921d013341",
+      "restoredSha256": "64ee9f52b0c8c60029aa1b542dddd50c3fd1bb676dc6c0ab48a97194c59c0d0d",
       "compileExit": 0,
       "targetedExit": 1,
       "failureText": "three behaviors present instead of exact four",
