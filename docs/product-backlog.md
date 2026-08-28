@@ -6881,3 +6881,47 @@ doğrulama yardımcıları, ayrı değerlendirilmeli).
 - **Karar gerektiren soru:** kaynak bağlantısı çizilecek mi (o zaman anahtar gerekir) yoksa çözümleyiciden
   kaldırılacak mı? Bu bir ürün kararı; kod tarafı iki yönde de hazır.
 - **Gelecek regresyon riski: 🟢** — bugün hiçbir şey kırılmıyor; ölü çıktı.
+
+### BL-310 — Görev Merkezi köprüsünün referans tüketicisi GEÇİCİ; gerçek bir modül ucunu açınca SİLİNECEK (2026-08-28, bilinçli)
+- `Diten.DevEnablementService/…/Controllers/ReferenceWorkItemProviderController.cs` + Platform'un
+  `appsettings.Development.json` içindeki `dev-reference` satırı.
+- **Neden var:** WC-D1 köprüsü yazıldığı gün hiçbir modül `GET api/v1/work-items/projection` ucunu açmamıştı.
+  Gerçek modülü beklemek turu bloke ederdi; kanıtsız kapatmak ise DCP-004'ün kendi yazdığı hatayı — "tek
+  uygulama üzerinde kanıtlanan bir dikiş hiçbir şey kanıtlamaz" — tekrarlardı. İkisi de yapılmadı.
+- **Ne kanıtlıyor:** ayrı bir serviste, gerçek soket üzerinden, çağıranın kendi JWT'si ve kiracı başlığıyla;
+  okuma → düğme → uzak durum değişimi → yeniden okumada yeni durum. Simüle edilen hiçbir halka yok.
+- **Ne değil:** iş anlamı yok, veritabanı yok — durum statik bir sözlükte, süreçle birlikte ölüyor.
+  `WorkItemReferenceProvider:Enabled` olmadan kapalı ve yalnızca dev'de açık.
+- **Silme eşiği:** ilk gerçek modül (PVG ya da Global SKU) kendi projeksiyon ucunu açtığı gün. O gün hem
+  controller hem yapılandırma satırı silinir; köprü kodu değişmez.
+- **Gelecek regresyon riski: 🟢** — üretimde kapalı; riski unutulup "gerçek bir kaynakmış gibi" okunması,
+  bu yüzden `Temporary: true` bayrağı, dosya başlığı ve bu kayıt üçü birden var.
+
+### BL-311 — `TenantPropagationHandler` istek kapsamını GÖREMİYOR; MDM ve Auth istemcileri kiracı başlığını sessizce düşürüyor olabilir (2026-08-28, ÖLÇÜLDÜ)
+- **Ölçüm:** WC-D1 köprüsünün ilk hâli bu paylaşılan handler'ı yeniden kullandı ve uzak servise **hiç kiracı
+  başlığı göndermedi**. Birim testi yeşildi. Uzak servis aldığı kiracıyı ekrana geri yazdığı için görüldü:
+  "(no tenant header)".
+- **Sebep:** `IHttpClientFactory` handler zincirini KENDİ kapsamında kurar ve önbelleğe alır. Zincirdeki bir
+  `DelegatingHandler`, istek kapsamına ait `ITenantContext`'i çözemez; eline hiçbir isteğe ait olmayan bir
+  örnek geçer ve `IsResolved == false` döner. Başlık eklenmez ve hiçbir yerde bir şey söylenmez.
+- **Köprüde nasıl kapatıldı:** başlığı `RemoteWorkItemGateway` (Scoped) kendisi yazıyor; bu istemciden handler
+  kaldırıldı. Gerekçe sınıfın kendi yorumunda.
+- **Kapatılmayan:** `services.AddHttpClient<ILegalEntityReferenceValidator, …>()` ve
+  `AddHttpClient<IUserReferenceValidator, …>()` hâlâ aynı handler'ı taşıyor, ayrıca isimli `TenantAwareClient`.
+  Bu turda dokunulmadı: köprü turuydu, kiracılık turu değil — ve düzeltme, bu iki istemcinin bugün hangi
+  davranışa yaslandığının ayrıca ölçülmesini gerektirir (JWT içindeki `tenant_id` bugün başlığın yokluğunu
+  örtüyor olabilir).
+- **Yeniden bakılacak eşik:** kiracı başlığını zorunlu kılan bir uç eklendiğinde ya da bu iki istemciden biri
+  çapraz kiracı bir hata verdiğinde. Ondan önce de yapılabilir; ölçüm hazır.
+- **Gelecek regresyon riski: 🔴** — SESSİZ ve güvenlikle ilgili sınıfta. Yeşil test kanıt değil: bu kusur tam
+  olarak yeşil bir testin altında yaşıyordu.
+
+### BL-312 — Modül adresinin OTOMATİK gelmesi (D1'in manifest yarısı) hâlâ açık (2026-08-28, bilinçli)
+- WC-D1 adresi **operatörün** yazdığı yapılandırmaya bağladı ve bu bir sahip kararıydı. Kapanan yarı bu.
+- **Kapanmayan yarı:** kendini kaydeden bir modülün adresini Platform'a otomatik bildirmesi. Manifest
+  istemci tarafından üretilir; içindeki bir adres, çağrılan tarafın "beni şuradan ara" demesidir — çağıranın
+  JWT'sini nereye göndereceğini çağrılanın yazması. Depoda örneği yok ve eklemek bir güvenlik kararı.
+- **Karar gerektiren soru:** çağrılan tarafça bildirilen bir host nasıl doğrulanır (imzalı manifest? operatör
+  onayı kuyruğu? sabit host allow-list?). Bu soru cevaplanmadan otomatikleştirme yapılmamalı.
+- **Bugünkü bedel:** modül başına bir satır, elle. Yedi mevcut servis-arası adres zaten böyle duruyor.
+- **Gelecek regresyon riski: 🟢** — bugün hiçbir şey kırılmıyor; yalnızca bir kolaylık eksik.

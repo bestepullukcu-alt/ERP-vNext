@@ -43,9 +43,9 @@ is null in the MOD-0023 phase.
 
 ## 2. Four decisions, and none of them is "write the dispatcher"
 
-### D1 — Where does a module's address come from?
+### D1 — Where does a module's address come from? — **CLOSED (transport) 2026-08-28; the manifest half stays OPEN**
 
-**Measured: nowhere.**
+**Measured on 2026-08-27: nowhere.**
 
 - `ModuleManifestDocument` carries no address field. `Service` is a name
   (`"DITENMDMSERVICE"`), not a host.
@@ -62,6 +62,85 @@ push finishes, Platform holds no way back.
 tell Platform "call me here" — a redirect written by the party being called.
 There is no precedent for that in this repo, and adding one is a security
 decision, not a plumbing one.
+
+**HOW IT CLOSED, and exactly how far.**
+
+The owner took the security decision (2026-08-28): **the address is the
+OPERATOR'S**. It is written by hand in `WorkAggregation:RemoteProviders`, in the
+same shape as the seven inter-service addresses that already live in
+`appsettings` — `MdmService:BaseUrl` among them. Nothing reads a host from a
+manifest, and the manifest is unchanged.
+
+⚠ **What that means for the direction problem, stated plainly.** The sentence
+above — "during registration the module knows Platform's address and calls it;
+Platform never learns the module's" — is **still true**, and this decision does
+not make it false. It makes it not matter: Platform does not learn the address,
+an operator tells it. That is a smaller capability than self-registration and it
+is the intended one. **The manifest half of D1 stays OPEN** and is recorded as
+**BL-312**: if a module's address is ever to arrive automatically, somebody must
+first decide how a callee-supplied host is authenticated, and nobody has.
+
+**ONE BRIDGE, MULTIPLIED BY CONFIGURATION — the part that is architecture and
+not plumbing.** Two classes exist and only two may ever exist:
+
+| Class | Seam | Multiplied by |
+|---|---|---|
+| `HttpWorkItemProvider` | `IWorkItemProvider` (read) | one instance per configuration row |
+| `HttpWorkItemActionDispatcher` | `IWorkItemActionDispatcher` (write) | one instance per configuration row |
+
+⚠ **A module gets a ROW, never a class**, and a guard test refuses a second
+implementation of either seam in the assembly. The reason is a hazard, not
+tidiness: if each team writes its own bridge into Platform, the repository holds
+N teams' error handling and N teams' timeouts, one module slows the whole board,
+and nobody can say which. That turns a discipline problem into an architecture
+problem — which is the sentence this pack was written to prevent coming true.
+
+**READ AND WRITE ARE ONE CONTRACT, deliberately.** Both halves are built from the
+same row, both go through one `RemoteWorkItemGateway`, both forward the CALLER's
+own bearer token (never a service key — a module must authorise the human), both
+carry the same tenant header and the same correlation id, both read the same
+`Response<T>` envelope, and both take their deadline from the ONE option
+`WorkAggregation:Resilience:ProviderTimeout`. Designing them apart would have
+produced two identity models and two error dictionaries for one conversation.
+
+**D3 GOT ITS FIRST REAL CUSTOMER.** D3 was written on the argument that "the first
+network-backed provider is the first one that can be slow or absent". This is
+that provider, and none of D3's machinery was re-invented: an unreachable module
+throws and is reported `ERROR`; an exceeded budget surfaces as the cancellation
+the loop already catches and reports as `TIMEOUT`. **On the write path there is
+no loop, so the dispatcher applies the same option itself and FAILS CLOSED** —
+504 `WORK_ITEM_REMOTE_UNAVAILABLE`, never a success. The write may have landed on
+the far side; that is exactly why the caller is told the outcome is unknown.
+
+**MEASURED LIVE 2026-08-28** — Platform (`:5057`) against a reference consumer in
+a separate service (`:5058`), not inferred from green tests:
+
+- the remote item appeared beside 84 in-process rows, its title carrying the
+  tenant id the far service actually received;
+- `accept` through Platform's one write address moved the far item
+  `Pending → InProgress`, `version 1 → 2`, and the next read showed it;
+- a stale `expectedVersion` returned `409 REFERENCE_CONCURRENCY_CONFLICT` — the
+  module's own code, intact through the bridge;
+- with the far service stopped, the board still drew all 84 rows and named
+  `{dev-reference, ERROR}`, and the write was refused `504
+  WORK_ITEM_REMOTE_UNAVAILABLE`.
+
+⚠ **A defect was found by that live pass and could not have been found any other
+way.** The first implementation reused the shared `TenantPropagationHandler` and
+sent **no tenant header at all** while its unit test passed:
+`IHttpClientFactory` caches its handler chain in its own scope, so a
+`DelegatingHandler` resolving a request-scoped `ITenantContext` gets one that is
+never resolved, and the header is dropped in silence. It was visible only because
+the far service echoed the tenant it received back onto the screen. The gateway
+now writes the header from the request scope. **The MDM and Auth clients still
+carry that handler and are the same defect, unfixed — BL-311.**
+
+⚠ **The reference consumer is TEMPORARY (BL-310).** No module had opened a
+projection endpoint on the day the bridge was written. Waiting for one would have
+blocked the round; closing the round with nothing on the far end would have
+repeated this pack's own documented mistake — a seam proven on one implementation
+proves nothing. So the far end is a marked, dev-only, in-memory reference
+endpoint in `Diten.DevEnablementService`, and it is somebody's job to delete it.
 
 ### D2 — How is an action described on the wire? — **CLOSED 2026-08-28**
 
@@ -286,18 +365,21 @@ months after the change that caused it.
 
 ```
 1. D3  protect aggregation      — DONE (2026-08-28)
-2. D1  address                  — OPEN. A security decision, not plumbing.
+2. D1  address                  — CLOSED 2026-08-28 (operator config + one general
+                                  bridge). The MANIFEST half stays open: BL-312.
 3. D2  action on the wire       — DONE (2026-08-28)
 4. D4  gateway                  — DONE (2026-08-28); reversed a written position, said so
 ```
 
-⚠ **D1 IS STILL OPEN, AND D2 DID NOT SOLVE IT.** D2 removed the *browser's* need
-for an address by giving Platform one endpoint to route from — Platform then
-reaches each module through an in-process MediatR command, because MOD-0023 and
-MOD-0024 both live inside Platform. The moment a provider lives in a DIFFERENT
-SERVICE, D1's question returns unchanged: Platform still holds no way back to a
-module that registered itself, and taking an address from a client-supplied
-manifest is still a security decision nobody has taken.
+⚠ **D2 DID NOT SOLVE D1, AND SAID SO — D1 WAS THEN SOLVED SEPARATELY.** D2
+removed the *browser's* need for an address by giving Platform one endpoint to
+route from; Platform reached each module through an in-process MediatR command,
+because MOD-0023 and MOD-0024 both live inside Platform. The moment a provider
+lived in a DIFFERENT SERVICE, D1's question returned unchanged. **It was answered
+on 2026-08-28** by taking the security decision the paragraph above describes —
+the address is the operator's, written in configuration — and building ONE bridge
+that multiplies by rows. What remains open is only the automatic half: a
+callee-supplied address still has no authentication story (BL-312).
 
 ---
 
@@ -308,12 +390,17 @@ provider AND its dispatcher, and its buttons work in the Task Center on the day
 they are projected — a guard test refuses a provider that publishes actions with
 no dispatcher behind it, so the "inert button" wall cannot be walked into again.
 
-What is still true: a provider in ANOTHER SERVICE can be read from but not
-dispatched to, because D1 (the address) is open. Its own screens remain the place
-where that work is done, and the Task Center remains where it is found.
+**UPDATED AGAIN 2026-08-28 (D1).** A module in ANOTHER SERVICE can now be both
+read from and dispatched to. It opens ONE endpoint pair —
+`GET api/v1/work-items/projection` and
+`POST api/v1/work-items/{itemId}/actions/{actionCode}` — and an operator adds one
+configuration row. The full contract, concrete enough to implement against, is
+`DCP-004-provider-onboarding-note.md` §7, and a working implementation of both
+endpoints is the reference consumer named there.
 
-⚠ Tell that to the module's author explicitly. Both developers who hit this wall
-had already written the provider before discovering the buttons were inert.
+⚠ **What a module must NOT do is write its own bridge class in Platform.** Tell
+its author that explicitly, for the same reason both earlier walls were worth
+telling them about: by the time it is discovered, the work is already done.
 
 ---
 
@@ -321,3 +408,10 @@ had already written the provider before discovering the buttons were inert.
 route table, the projection DTOs, the catalogue entities and the browser
 dispatcher. Every "no" above was checked rather than assumed; where something
 could not be measured it is not claimed.*
+
+---
+
+*D1 closed 2026-08-28: the general HTTP bridge, its two guard-tested classes, and a
+reference consumer in a separate service. Every claim in that section was measured
+against running services, and the one defect it found — a silently dropped tenant
+header that a passing unit test could not see — is written up where it happened.*

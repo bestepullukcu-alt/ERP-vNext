@@ -207,4 +207,5 @@
   <data name="ErrorWorkItemActionUnknown" xml:space="preserve"><value>该条目已不再提供此操作。请刷新页面查看当前可用选项。</value></data>
   <data name="ErrorWorkItemActionForbidden" xml:space="preserve"><value>您没有执行此操作的权限。</value></data>
   <data name="ErrorWorkItemActionPayloadInvalid" xml:space="preserve"><value>此操作所需的信息不完整。请填写必填字段。</value></data>
+  <data name="ErrorWorkItemRemoteUnavailable" xml:space="preserve"><value>拥有此条目的系统没有响应，因此无法确定操作是否已执行。请刷新列表查看当前状态后重试。</value></data>
 </root>

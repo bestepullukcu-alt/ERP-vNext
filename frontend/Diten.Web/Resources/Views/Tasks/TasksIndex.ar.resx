@@ -207,4 +207,5 @@
   <data name="ErrorWorkItemActionUnknown" xml:space="preserve"><value>لم يعد هذا الإجراء متاحًا لهذا العنصر. حدِّث الصفحة لعرض الخيارات الحالية.</value></data>
   <data name="ErrorWorkItemActionForbidden" xml:space="preserve"><value>ليس لديك إذن لتنفيذ هذا الإجراء.</value></data>
   <data name="ErrorWorkItemActionPayloadInvalid" xml:space="preserve"><value>يحتاج هذا الإجراء إلى معلومات أكثر مما تم إرساله. يرجى تعبئة الحقول المطلوبة.</value></data>
+  <data name="ErrorWorkItemRemoteUnavailable" xml:space="preserve"><value>لم يستجب النظام المالك لهذا العنصر، لذا لا يُعرف ما إذا كان الإجراء قد تم تنفيذه. حدِّث القائمة لمعرفة حالته الحالية ثم أعد المحاولة.</value></data>
 </root>

@@ -118,7 +118,11 @@ describe("every refusal the endpoint can answer has a sentence in seven language
     "WORK_ITEM_PROVIDER_NOT_DISPATCHABLE",
     "WORK_ITEM_ACTION_UNKNOWN",
     "WORK_ITEM_ACTION_FORBIDDEN",
-    "WORK_ITEM_ACTION_PAYLOAD_INVALID"
+    "WORK_ITEM_ACTION_PAYLOAD_INVALID",
+    // WC-D1 — a module in ANOTHER SERVICE that did not answer. Listed here the moment the constant was written,
+    // which is the whole point of this test: the set is asserted to be EQUAL, so a code added on the server
+    // without a sentence in seven languages fails here before a reader ever meets the generic message.
+    "WORK_ITEM_REMOTE_UNAVAILABLE"
   ];
 
   const repoRoot = path.resolve(__dirname, "..", "..", "..");
