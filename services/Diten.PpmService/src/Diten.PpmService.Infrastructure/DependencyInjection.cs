@@ -14,6 +14,7 @@ using Diten.Platform.Common.Authorization;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Diten.PpmService.Infrastructure;
@@ -24,6 +25,11 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration? configuration = null)
     {
+        if (configuration is not null)
+        {
+            services.TryAddSingleton<IConfiguration>(configuration);
+        }
+
         services.AddHttpContextAccessor();
         services.AddScoped<JwtRequestContext>();
         services.AddScoped<ITenantContext>(provider => provider.GetRequiredService<JwtRequestContext>());

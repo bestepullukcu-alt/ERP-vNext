@@ -358,16 +358,18 @@ public sealed class UnavailableGateIRelationshipTransportMetadataProvider
                 "Gate I signed transport metadata is not composed."));
 }
 
-public sealed class GateIMutationReceiptIndexInitializer(PpmMongoContext context)
+public sealed class GateIMutationReceiptIndexInitializer(IMongoDatabase database)
     : Microsoft.Extensions.Hosting.IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        var receipts = database.GetCollection<GateIMutationReceiptDocument>(
+            PpmCollectionNames.GateIMutationReceipts);
         var keys = Builders<GateIMutationReceiptDocument>.IndexKeys
             .Ascending(item => item.TenantId)
             .Ascending(item => item.OperationId)
             .Ascending(item => item.IdempotencyKey);
-        await context.GateIMutationReceipts.Indexes.CreateOneAsync(
+        await receipts.Indexes.CreateOneAsync(
             new CreateIndexModel<GateIMutationReceiptDocument>(
                 keys,
                 new CreateIndexOptions

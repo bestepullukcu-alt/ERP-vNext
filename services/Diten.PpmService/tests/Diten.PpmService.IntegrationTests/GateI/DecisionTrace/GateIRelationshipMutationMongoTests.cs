@@ -128,7 +128,7 @@ public sealed class GateIRelationshipMutationMongoTests
                 services.AddSingleton<IGateIRelationshipMutationFaultProbe>(new ThrowingProbe(failAfter));
             var provider = services.BuildServiceProvider();
             var fixture = new Fixture(provider, database);
-            await new GateIMutationReceiptIndexInitializer(fixture.Context).StartAsync(default);
+            await new GateIMutationReceiptIndexInitializer(fixture.Context.Database).StartAsync(default);
             return fixture;
         }
 
