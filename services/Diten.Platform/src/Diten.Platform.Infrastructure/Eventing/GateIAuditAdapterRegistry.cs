@@ -27,6 +27,7 @@ internal sealed class GateIAuditAdapterRegistry
         AddScenarioPlanning(mappings);
         AddOutcomeTracking(mappings);
         AddProcessModeling(mappings);
+        AddProcessPerformanceImprovement(mappings);
         _mappings = mappings.ToDictionary(
             item => (item.Producer, item.EventName, item.EventVersion, item.EntityType, item.Mutation),
             item => item);
@@ -143,6 +144,27 @@ internal sealed class GateIAuditAdapterRegistry
              ("Published", AuditOperation.Activate),
              ("Retired", AuditOperation.Deactivate),
              ("RevisionCreated", AuditOperation.Create)]);
+    }
+
+    private static void AddProcessPerformanceImprovement(List<GateIAuditMapping> values)
+    {
+        const string producer = "Diten.ManagementGovernanceService";
+        const string name = "management-governance.process-performance-improvement-audit-intent.submitted.v1";
+        const string scheme = "HMAC-SHA256-TEST-ONLY";
+        Add(values, producer, "MOD-0355", name, scheme, AuditCategory.Integration,
+            "ProcessKpiBinding", "Created", "ProcessModeling.ProcessKpiBinding", AuditOperation.Create);
+        Add(values, producer, "MOD-0355", name, scheme, AuditCategory.Integration,
+            "ProcessKpiBinding", "Archived", "ProcessModeling.ProcessKpiBinding", AuditOperation.Deactivate);
+        Add(values, producer, "MOD-0355", name, scheme, AuditCategory.Integration,
+            "ProcessImprovementOpportunity", "Created", "ProcessModeling.ProcessImprovementOpportunity", AuditOperation.Create);
+        Add(values, producer, "MOD-0355", name, scheme, AuditCategory.Integration,
+            "ProcessImprovementOpportunity", "Updated", "ProcessModeling.ProcessImprovementOpportunity", AuditOperation.Update);
+        Add(values, producer, "MOD-0355", name, scheme, AuditCategory.Integration,
+            "ProcessImprovementOpportunity", "Qualified", "ProcessModeling.ProcessImprovementOpportunity", AuditOperation.LifecycleTransition);
+        Add(values, producer, "MOD-0355", name, scheme, AuditCategory.Integration,
+            "ProcessImprovementOpportunity", "Closed", "ProcessModeling.ProcessImprovementOpportunity", AuditOperation.LifecycleTransition);
+        Add(values, producer, "MOD-0355", name, scheme, AuditCategory.Integration,
+            "ProcessImprovementOutcome", "Recorded", "ProcessModeling.ProcessImprovementOutcome", AuditOperation.Create);
     }
 
     private static void AddSet(

@@ -11,7 +11,7 @@ public sealed class GateIAuditContractTests
 {
     internal const string MechanicsSigningIdentity = "gate-i-mechanics-fixture-identity";
     [Fact]
-    public void Registry_ContainsTheFiveExplicitGovernanceProfilesAndExactMappings()
+    public void Registry_ContainsTheSixExplicitGovernanceProfilesAndExactMappings()
     {
         var registry = new GateIAuditAdapterRegistry();
         Assert.NotEqual(PpmAuditAcceptanceRepository.ConsumerName, GateIAuditAcceptanceRepository.ConsumerName);
@@ -25,12 +25,20 @@ public sealed class GateIAuditContractTests
             "decision-intelligence.outcome-tracking-audit-intent.submitted.v1", 1).Count);
         Assert.Equal(20, registry.ForProducer("Diten.ManagementGovernanceService",
             "management-governance.process-modeling-audit-intent.submitted.v1", 1).Count);
+        Assert.Equal(7, registry.ForProducer("Diten.ManagementGovernanceService",
+            "management-governance.process-performance-improvement-audit-intent.submitted.v1", 1).Count);
 
         var processModelPublished = registry.Resolve("Diten.ManagementGovernanceService",
             "management-governance.process-modeling-audit-intent.submitted.v1", 1,
             "ProcessModelVersion", "Published");
         Assert.Equal(("MOD-0355", "ProcessModeling.ProcessModelVersion", AuditOperation.Activate),
             (processModelPublished.ModuleCode, processModelPublished.AuditEntityType, processModelPublished.Operation));
+
+        var improvementQualified = registry.Resolve("Diten.ManagementGovernanceService",
+            "management-governance.process-performance-improvement-audit-intent.submitted.v1", 1,
+            "ProcessImprovementOpportunity", "Qualified");
+        Assert.Equal(("MOD-0355", "ProcessModeling.ProcessImprovementOpportunity", AuditOperation.LifecycleTransition),
+            (improvementQualified.ModuleCode, improvementQualified.AuditEntityType, improvementQualified.Operation));
 
         var failed = registry.Resolve("Diten.FpaService",
             "fpa.scenario-planning-audit-intent.submitted.v1", 1, "ComparatorRun", "Failed");

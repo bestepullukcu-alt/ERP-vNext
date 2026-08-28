@@ -1354,3 +1354,44 @@ Checkpoint 2 must close Amendment 20's transactional runtime-evidence boxes befo
 This slice is **READY-FOR-DEV / BOUNDED IMPLEMENTATION AUTHORITY / NON-PRODUCTION**. Authority is sequential,
 path-bounded and fail-closed. It grants no producer publication, production identity/key/vault, HTTP route,
 frontend, deployment or activation authority. Parent and producer statuses remain unchanged.
+
+---
+
+# Amendment 22 — MOD-0355 Performance & Improvement Audit Admission
+
+> **READY-FOR-DEV / BOUNDED ADAPTER EVIDENCE / NON-PRODUCTION / DEFAULT-OFF.** This amendment adds one
+> producer-specific mapping profile. It does not widen or reinterpret the existing MOD-0355
+> `ProcessModelingAuditIntentSubmittedV1` `20/34` profile.
+
+The admitted owner checkpoint is `fa39a659ae58568bfa0a76dcb70a27980e19e0ca`. Its exact identity is:
+
+- type `ProcessPerformanceImprovementAuditIntentSubmittedV1`;
+- EventName `management-governance.process-performance-improvement-audit-intent.submitted.v1`;
+- producer `Diten.ManagementGovernanceService`, ModuleCode `MOD-0355`, JSON integer version `1`;
+- schema `urn:diten:management-governance:process-performance-improvement-audit-intent-submitted:v1`;
+- category `AuditCategory.Integration`.
+
+The exact accepted projection matrix is:
+
+| Entity / mutation | AuditEvent entity | Operation |
+|---|---|---|
+| `ProcessKpiBinding / Created` | `ProcessModeling.ProcessKpiBinding` | `Create` |
+| `ProcessKpiBinding / Archived` | `ProcessModeling.ProcessKpiBinding` | `Deactivate` |
+| `ProcessImprovementOpportunity / Created` | `ProcessModeling.ProcessImprovementOpportunity` | `Create` |
+| `ProcessImprovementOpportunity / Updated` | `ProcessModeling.ProcessImprovementOpportunity` | `Update` |
+| `ProcessImprovementOpportunity / Qualified` | `ProcessModeling.ProcessImprovementOpportunity` | `LifecycleTransition` |
+| `ProcessImprovementOpportunity / Closed` | `ProcessModeling.ProcessImprovementOpportunity` | `LifecycleTransition` |
+| `ProcessImprovementOutcome / Recorded` | `ProcessModeling.ProcessImprovementOutcome` | `Create` |
+
+These are exactly seven positive pairs; the remaining eleven pairs in the producer's closed 3-by-6 matrix are
+terminal `EventUnsupported` outcomes and create no audit projection. Fixture evidence is referenced in place from
+the owner checkpoint; PSS neither copies nor regenerates it. The canonical blob is exactly 271 bytes with SHA-256
+`b1aa7e80335cda8e82676852f3fed5c20cbbed2af3e10f954086f957a4a78531`. Its
+`HMAC-SHA256-TEST-ONLY` vector, identity and KeyId are evidence-only and remain production-rejected. No production
+scheme, signing identity, KeyId, secret, broker, listener, publisher, endpoint, DI activation, deployment or replay
+authority is created.
+
+Acceptance requires the separate evidence manifest
+`fixtures/MOD-0021/gate-i/mod-0355-performance-improvement-bilateral-acceptance-v1.json`, exact 7/11 registry tests,
+unchanged 20/34 ProcessModeling profile regression, existing PPM/Eventing regression and fail-closed production-key
+boundary. Parent status and production authority remain unchanged.
