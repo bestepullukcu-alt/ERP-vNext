@@ -628,3 +628,25 @@ semantics remain unchanged.
 This amendment is `ready-for-dev` governance only. `execution_authority: none`, `production_authority: none` and
 `execution_activation: none` remain binding. It creates no endpoint/runtime code, route, credential, key, migration
 or deployment and grants no production activation authority.
+
+### MOD-0355 Performance & Improvement bilateral manifest closure — NON-PRODUCTION / DEFAULT-OFF
+
+Producer checkpoint `fa39a659ae58568bfa0a76dcb70a27980e19e0ca` adds exactly nine owner-declared
+ordinal operation/permission pairs to the previously accepted sixteen-entry MOD-0355 manifest. FU16 accepts the
+resulting manifest as exactly twenty-five unique operations and twenty-five unique permissions. The additive pairs
+are `management-governance.process-modeling.kpi-bindings.{read,create,archive}` and
+`management-governance.process-modeling.improvements.{read,create,update,qualify,close,record-outcome}`; every
+operation ID equals its permission key byte-for-byte. Alias, wildcard, prefix, trim, case-fold and cross-pair
+matching remain forbidden.
+
+The workload binding is unchanged: owner and entitlement identity `MOD-0355`, service
+`Diten.ManagementGovernanceService`, client `diten.management-governance`, audience
+`diten-management-governance-service` and protocol scope `diten.s2s.delegated.invoke`. Catalog registration creates
+no role grant. MOD-0355 remains tenant-assignable, entitlement-gated and explicit-grant-only; enable/reconcile creates
+zero Admin/Viewer grants, entitlement removal preserves existing explicit rows as dormant, and an inactive
+entitlement returns `403` before the local grant snapshot is consumed. Current principal, credential, membership,
+grant, authorization-version, request-hash and replay gates remain conjunctive and fail closed.
+
+This closure authorizes only the already bounded AuthService manifest/enforcement registry and tests. It creates no
+endpoint, authentication scheme, production credential/key, seed/default grant, migration, deployment or activation.
+`execution_authority: none`, `production_authority: none` and `execution_activation: none` remain binding.

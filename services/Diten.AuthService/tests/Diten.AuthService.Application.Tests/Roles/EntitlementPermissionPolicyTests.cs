@@ -13,6 +13,14 @@ public sealed class EntitlementPermissionPolicyTests
     public void Ppm_is_explicit_only(string moduleCode)
         => Assert.Equal(EntitlementPermissionMode.ExplicitOnlyPreserveOnEntitlementRemoval, _sut.Resolve(moduleCode));
 
+    [Fact]
+    public void Mod0355_is_explicit_only_for_canonical_and_sync_normalized_codes_without_whitespace_alias()
+    {
+        Assert.Equal(EntitlementPermissionMode.ExplicitOnlyPreserveOnEntitlementRemoval, _sut.Resolve("MOD-0355"));
+        Assert.Equal(EntitlementPermissionMode.ExplicitOnlyPreserveOnEntitlementRemoval, _sut.Resolve("mod-0355"));
+        Assert.Equal(EntitlementPermissionMode.LegacyAutoGrantAndRevoke, _sut.Resolve(" MOD-0355 "));
+    }
+
     [Theory]
     [InlineData("MDM")]
     [InlineData("workflow")]

@@ -136,7 +136,7 @@ public static class GateIPermissionCatalogManifests
         E("outcome-tracking.outcomes.read", "decision-intelligence.outcomes.read"), E("outcome-tracking.outcomes.create", "decision-intelligence.outcomes.create"), E("outcome-tracking.outcomes.publish-version", "decision-intelligence.outcomes.version"), E("outcome-tracking.outcomes.retire", "decision-intelligence.outcomes.version"),
         E("outcome-tracking.measurements.append", "decision-intelligence.measurements.append"), E("outcome-tracking.measurements.correct", "decision-intelligence.measurements.correct"), E("outcome-tracking.decision-links.create", "decision-intelligence.decision-links.manage"), E("outcome-tracking.decision-links.retire", "decision-intelligence.decision-links.manage"), E("outcome-tracking.outcome-references.validate", "decision-intelligence.outcome-references.validate"));
 
-    public static readonly PermissionCatalogManifestV1 Mod0355 = M("MOD-0355", "Diten.ManagementGovernanceService", "diten.management-governance", "diten-management-governance-service", "7e8fe7d45ce80cb09f28c0089415d4f40400bc37",
+    public static readonly PermissionCatalogManifestV1 Mod0355 = M("MOD-0355", "Diten.ManagementGovernanceService", "diten.management-governance", "diten-management-governance-service", "fa39a659ae58568bfa0a76dcb70a27980e19e0ca",
         E("management-governance.process-modeling.architectures.read", "management-governance.process-modeling.architectures.read"),
         E("management-governance.process-modeling.architectures.create", "management-governance.process-modeling.architectures.create"),
         E("management-governance.process-modeling.architectures.update", "management-governance.process-modeling.architectures.update"),
@@ -152,7 +152,16 @@ public static class GateIPermissionCatalogManifests
         E("management-governance.process-modeling.models.return-to-draft", "management-governance.process-modeling.models.return-to-draft"),
         E("management-governance.process-modeling.models.publish", "management-governance.process-modeling.models.publish"),
         E("management-governance.process-modeling.models.retire", "management-governance.process-modeling.models.retire"),
-        E("management-governance.process-modeling.models.create-revision", "management-governance.process-modeling.models.create-revision"));
+        E("management-governance.process-modeling.models.create-revision", "management-governance.process-modeling.models.create-revision"),
+        E("management-governance.process-modeling.kpi-bindings.read", "management-governance.process-modeling.kpi-bindings.read"),
+        E("management-governance.process-modeling.kpi-bindings.create", "management-governance.process-modeling.kpi-bindings.create"),
+        E("management-governance.process-modeling.kpi-bindings.archive", "management-governance.process-modeling.kpi-bindings.archive"),
+        E("management-governance.process-modeling.improvements.read", "management-governance.process-modeling.improvements.read"),
+        E("management-governance.process-modeling.improvements.create", "management-governance.process-modeling.improvements.create"),
+        E("management-governance.process-modeling.improvements.update", "management-governance.process-modeling.improvements.update"),
+        E("management-governance.process-modeling.improvements.qualify", "management-governance.process-modeling.improvements.qualify"),
+        E("management-governance.process-modeling.improvements.close", "management-governance.process-modeling.improvements.close"),
+        E("management-governance.process-modeling.improvements.record-outcome", "management-governance.process-modeling.improvements.record-outcome"));
 
     public static IReadOnlyList<PermissionCatalogManifestV1> All { get; } = new[] { Mod0007, Mod0136, Mod0138, Mod0072, Mod0355 };
 }

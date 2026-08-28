@@ -95,6 +95,27 @@ public sealed class EntitlementPermissionSyncServiceTests
         Assert.Single(rolePerms.Rows);
     }
 
+    [Fact]
+    public async Task Mod0355_enable_creates_no_default_grant_and_removal_preserves_explicit_row_dormant()
+    {
+        var catalog = new List<Permission>
+        {
+            new("management-governance", "process-modeling.improvements", "read", "", null,
+                moduleOverride: "MOD-0355")
+        };
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+
+        await svc.GrantModuleWithKeysAsync(TenantA, "MOD-0355", [catalog[0].Key], Actor);
+        Assert.Empty(rolePerms.Rows);
+
+        rolePerms.Seed(RolePermission.ManualGrant(
+            roles.IdOf(TenantA, "Admin"), catalog[0].Id, TenantA, "explicit-provisioner"));
+        await svc.RevokeModuleAsync(TenantA, "MOD-0355", Actor);
+
+        Assert.Single(rolePerms.Rows);
+        Assert.Equal(GrantSource.Manual, rolePerms.Rows[0].GrantSource);
+    }
+
     // Catalog spanning two modules that SHARE one permission key shape (different modules, so distinct
     // Permission rows) is not needed; sharing across modules is modelled via two ModuleGrant rows for
     // the SAME permission id below.

@@ -10,9 +10,9 @@ public sealed class PermissionCatalogManifestV1Tests
     {
         var manifests = GateIPermissionCatalogManifests.All;
         Assert.Equal(new[] { "MOD-0007", "MOD-0136", "MOD-0138", "MOD-0072", "MOD-0355" }, manifests.Select(x => x.OwnerModuleId));
-        Assert.Equal(new[] { 8, 15, 16, 9, 16 }, manifests.Select(x => x.Entries.Count));
-        Assert.Equal(64, manifests.Sum(x => x.Entries.Count));
-        Assert.Equal(61, manifests.SelectMany(x => x.Entries).Select(x => x.PermissionKey).Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(new[] { 8, 15, 16, 9, 25 }, manifests.Select(x => x.Entries.Count));
+        Assert.Equal(73, manifests.Sum(x => x.Entries.Count));
+        Assert.Equal(70, manifests.SelectMany(x => x.Entries).Select(x => x.PermissionKey).Distinct(StringComparer.Ordinal).Count());
         Assert.All(manifests, x =>
         {
             Assert.Equal(x.OwnerModuleId, x.ModuleEntitlementCode);
@@ -33,13 +33,14 @@ public sealed class PermissionCatalogManifestV1Tests
         Assert.Equal(decisions.ServiceIdentity, modeling.ServiceIdentity);
         Assert.NotEqual(decisions.OwnerModuleId, modeling.OwnerModuleId);
         Assert.NotEqual(decisions.ModuleEntitlementCode, modeling.ModuleEntitlementCode);
-        Assert.Equal(16, modeling.Entries.Count);
+        Assert.Equal("MOD-0355 checkpoint fa39a659ae58568bfa0a76dcb70a27980e19e0ca", modeling.RegistrationProvenance);
+        Assert.Equal(25, modeling.Entries.Count);
         Assert.All(modeling.Entries, x => Assert.Equal(x.OperationId, x.PermissionKey));
         Assert.Empty(decisions.Entries.Select(x => x.PermissionKey).Intersect(modeling.Entries.Select(x => x.PermissionKey), StringComparer.Ordinal));
     }
 
     [Fact]
-    public void Mod0355_manifest_has_exact_sixteen_ordinal_pairs_without_aliases()
+    public void Mod0355_manifest_has_exact_twenty_five_ordinal_pairs_without_aliases()
     {
         var expected = new[]
         {
@@ -58,7 +59,16 @@ public sealed class PermissionCatalogManifestV1Tests
             "management-governance.process-modeling.models.return-to-draft",
             "management-governance.process-modeling.models.publish",
             "management-governance.process-modeling.models.retire",
-            "management-governance.process-modeling.models.create-revision"
+            "management-governance.process-modeling.models.create-revision",
+            "management-governance.process-modeling.kpi-bindings.read",
+            "management-governance.process-modeling.kpi-bindings.create",
+            "management-governance.process-modeling.kpi-bindings.archive",
+            "management-governance.process-modeling.improvements.read",
+            "management-governance.process-modeling.improvements.create",
+            "management-governance.process-modeling.improvements.update",
+            "management-governance.process-modeling.improvements.qualify",
+            "management-governance.process-modeling.improvements.close",
+            "management-governance.process-modeling.improvements.record-outcome"
         };
         Assert.Equal(expected, GateIPermissionCatalogManifests.Mod0355.Entries.Select(x => x.OperationId));
         Assert.Equal(expected, GateIPermissionCatalogManifests.Mod0355.Entries.Select(x => x.PermissionKey));

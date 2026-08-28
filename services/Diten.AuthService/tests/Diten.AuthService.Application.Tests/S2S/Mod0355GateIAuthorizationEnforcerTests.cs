@@ -13,7 +13,7 @@ public sealed class Mod0355GateIAuthorizationEnforcerTests : IDisposable
     private readonly RSA _rsa = RSA.Create(3072);
 
     [Fact]
-    public async Task Exact_sixteen_operation_permission_pairs_require_current_entitlement_and_local_grant_snapshot()
+    public async Task Exact_twenty_five_operation_permission_pairs_require_current_entitlement_and_local_grant_snapshot()
     {
         var local = new Local(Fu16LocalAuthorizationResultKind.Accepted);
         var enforcer = Enforcer(local: local);
@@ -22,7 +22,7 @@ public sealed class Mod0355GateIAuthorizationEnforcerTests : IDisposable
             var result = await enforcer.EnforceAsync(Binding(entry.OperationId, entry.PermissionKey), Snapshot(), default);
             Assert.Equal(EntitlementAttestationOutcomeKind.Continue, result.Kind);
         }
-        Assert.Equal(16, local.Calls);
+        Assert.Equal(25, local.Calls);
     }
 
     [Fact]

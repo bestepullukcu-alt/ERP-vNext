@@ -123,9 +123,9 @@ public sealed class PermissionCatalogManifestMongoTests
             }
 
             Assert.Equal(5, await database.GetCollection<ManifestDocument>("s2sPermissionCatalogManifests").CountDocumentsAsync(FilterDefinition<ManifestDocument>.Empty));
-            Assert.Equal(64, await database.GetCollection<OperationDocument>("s2sPermissionCatalogOperations").CountDocumentsAsync(FilterDefinition<OperationDocument>.Empty));
-            Assert.Equal(61, await database.GetCollection<PermissionOwnerDocument>("s2sPermissionCatalogPermissionOwners").CountDocumentsAsync(FilterDefinition<PermissionOwnerDocument>.Empty));
-            Assert.Equal(61, await database.GetCollection<Permission>("permissions").CountDocumentsAsync(FilterDefinition<Permission>.Empty));
+            Assert.Equal(73, await database.GetCollection<OperationDocument>("s2sPermissionCatalogOperations").CountDocumentsAsync(FilterDefinition<OperationDocument>.Empty));
+            Assert.Equal(70, await database.GetCollection<PermissionOwnerDocument>("s2sPermissionCatalogPermissionOwners").CountDocumentsAsync(FilterDefinition<PermissionOwnerDocument>.Empty));
+            Assert.Equal(70, await database.GetCollection<Permission>("permissions").CountDocumentsAsync(FilterDefinition<Permission>.Empty));
             Assert.Equal(0, await CountAsync(database, "rolePermissions"));
             Assert.Equal(0, await CountAsync(database, "roleAssignmentVersions"));
             Assert.Equal(0, await CountAsync(database, "entitlementStates"));
