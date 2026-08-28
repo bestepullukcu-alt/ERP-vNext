@@ -6897,7 +6897,46 @@ doğrulama yardımcıları, ayrı değerlendirilmeli).
 - **Gelecek regresyon riski: 🟢** — üretimde kapalı; riski unutulup "gerçek bir kaynakmış gibi" okunması,
   bu yüzden `Temporary: true` bayrağı, dosya başlığı ve bu kayıt üçü birden var.
 
-### BL-311 — `TenantPropagationHandler` istek kapsamını GÖREMİYOR; MDM ve Auth istemcileri kiracı başlığını sessizce düşürüyor olabilir (2026-08-28, ÖLÇÜLDÜ)
+### BL-311 — 🟠 `TenantPropagationHandler` istek kapsamını GÖREMİYOR; başlık düşüyor ama SIZINTI DEĞİL (2026-08-28, ölçüldü; 2026-08-28 yeniden ölçülüp 🔴→🟠 düşürüldü)
+
+> **SAHİP: CONTROL TOWER (biz).** Codex'in "aynı güvenlik dalgasında paralel kapanacak"
+> kararının 2. maddesi; sahiplik 2026-08-28'de netleştirildi.
+
+**⚠ İLK DEĞERLENDİRME YANLIŞTI — düzeltmesi burada.** İlk kayıt "çapraz-kiracı veri
+görme riski" ihtimalini yazdı ve bunun ÖLÇÜLMEDİĞİNİ belirtti. Ölçüldü, öyle değil:
+
+- Her iki doğrulayıcı da **çağıranın kendi jetonunu iletiyor**
+  (`PropagateAuthorizationHeader`, her iki dosyada da mevcut).
+- `TenantResolutionMiddleware` (MDM): `var resolvedTenant = jwtTenant ?? headerTenant;`
+  → **JWT önce gelir.** İkisi de yoksa `400 Missing Tenant` — **fail-closed**.
+- AuthService'teki kontrol bir **uyuşmazlık dedektörü**: başlık yoksa "uyuşmazlık yok"
+  döner, kiracıyı yine JWT'den alır.
+- **Sonuç: kiracı doğru çözülüyor. Çapraz-kiracı sızıntısı YOK.**
+
+**Gerçekte kalan kusur — üç madde:**
+
+1. **MDM'in çapraz kontrolü SESSİZCE ÖLÜ.** `jwtTenant != headerTenant → 400 Tenant mismatch`
+   kontrolü hiç ateşlenemiyor, çünkü başlık hiç gönderilmiyor. Kodda duran bir savunma
+   hiçbir şey yapmıyor ve bunu kimse fark etmez.
+2. **Yorum yalan söylüyor.** `AuthServiceUserReferenceValidator.cs:15`:
+   *"X-Tenant-Id via the shared TenantPropagationHandler (registered in DI)"* —
+   ölçüm handler'ın onu teslim etmediğini söylüyor.
+3. **ÖLÇÜLMEDİ:** platform yöneticisi bir kiracı adına işlem yaptığında jetonunda
+   `tenant_id` claim'i var mı? Yoksa o akışlarda çağrı `400` alır — gürültülü hata,
+   sessiz zarar değil. **Düzeltmeden önce ilk ölçülecek şey budur.**
+
+**Sebep (değişmedi):** `IHttpClientFactory` handler zincirini KENDİ kapsamında kurup
+önbelleğe alıyor; zincirdeki `DelegatingHandler` istek kapsamına ait `ITenantContext`'i
+çözemiyor, `IsResolved == false` dönüyor, başlık eklenmiyor, hiçbir yerde bir şey denmiyor.
+
+**Doğru desen elimizde:** `RemoteWorkItemGateway` bunu bir kez çözdü — handler yerine
+çağıran sınıfa `ITenantContext` enjekte etmek. `RemoteWorkItemProviderRegistration.cs:75`
+handler'ın denendiğini ve ölçümle reddedildiğini yazıyor.
+
+**Etki alanı:** handler üç serviste kayıtlı (Platform, Auth, DevEnablement); Platform'da
+üç istemciye takılı — `TenantAwareClient` + iki referans doğrulayıcı.
+
+### BL-311-ESKI — `TenantPropagationHandler` istek kapsamını GÖREMİYOR; MDM ve Auth istemcileri kiracı başlığını sessizce düşürüyor olabilir (2026-08-28, ÖLÇÜLDÜ)
 - **Ölçüm:** WC-D1 köprüsünün ilk hâli bu paylaşılan handler'ı yeniden kullandı ve uzak servise **hiç kiracı
   başlığı göndermedi**. Birim testi yeşildi. Uzak servis aldığı kiracıyı ekrana geri yazdığı için görüldü:
   "(no tenant header)".
