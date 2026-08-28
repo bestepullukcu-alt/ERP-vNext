@@ -68,6 +68,19 @@ pending-EA → future EA `MOD-xxxx`. The future canonical Blueprint `MOD-xxxx` a
 Enterprise Architect decision** (EA follow-up); the candidate ID is never written into runtime literals.
 Identity gate: `verify_module_id.py --candidate CAND-CAP-0006 --name "Work Aggregation / Task Center (Görev Merkezi)"` → exit 0 (2026-07-24).
 
+### CAND-CAP-0007-FU01 reconciliation (Enterprise Strategy security perimeter)
+
+`CAND-CAP-0007-FU01` is the temporary, governance-only follow-up identity for the technical hardening slice
+under canonical parent `MOD-0352`. It does not create a new business capability and is never written into
+runtime literals. Its bounded **SECURITY-PERIMETER / READY-FOR-DEV / NON-MIGRATING / DEFAULT-DENY** amendment
+authorizes only ES API authentication, trusted tenant-context resolution, permission enforcement and their
+tests. Existing tenantless records are not assigned to a default tenant; endpoints without authoritative
+tenant-ownership evidence remain fail-closed. Schema/data migration, Gate-2 objects, uploads, frontend,
+Gateway and WorkCenter remain non-executable. The future canonical FU identity remains an Enterprise
+Architect decision.
+
+Identity gate: `verify_module_id.py --candidate CAND-CAP-0007-FU01 --name "Enterprise Strategy Security, Tenancy & Data Migration Foundation"`.
+
 ## Minimal SoR Reconciliation Records
 
 | Field | Value |

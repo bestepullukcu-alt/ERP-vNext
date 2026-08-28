@@ -136,7 +136,7 @@ task, approval, demand or workflow systems.
 
 | Order | Member ID | Delivery role | Status in this DCP |
 |---:|---|---|---|
-| 0 | `CAND-CAP-0007-FU01` | ES security, tenancy and data-migration foundation | Candidate; module pack not yet authored |
+| 0 | `CAND-CAP-0007-FU01` | ES security, tenancy and data-migration foundation | Pack authored; bounded SECURITY-PERIMETER ready-for-dev, non-migrating/default-deny; full migration remains blocked |
 | 1 | `MOD-0352` | Enterprise Strategy Management | Blueprint 8.1 canonical; subdomain 1.1 and outside active DCP-006 scope |
 | 2 | `MOD-0117` | Canonical Demand/PPM owner | Blueprint canonical; Demand FU/pack identity still required |
 | 3 | `MOD-0354` | Standalone DWS structural engine | Blueprint 8.1 canonical; draft pack; applicable Gate 2 + approval required |
@@ -235,14 +235,20 @@ Gate 1 PASS
 
 ### Slice 1 — Security, tenancy and migration design
 
-- Author `CAND-CAP-0007-FU01` module pack.
+- Maintain the authored `CAND-CAP-0007-FU01` module pack and its canonical reconciliation record.
+- Implement only the approved bounded SECURITY-PERIMETER amendment: ES API authentication, trusted
+  tenant-context resolution, fail-closed permission enforcement and tests. This sub-slice is
+  READY-FOR-DEV / NON-MIGRATING / DEFAULT-DENY.
 - Inventory every ES collection, schema version, count, index and current tenant evidence.
 - Classify records as deterministic mapping, manual mapping or quarantine.
 - Choose base-entity/BSON date representation and BL-030 mitigation.
 - Define forward, retry, partial-failure, quarantine, verification and rollback behavior.
 - Baseline current tests and runtime behavior.
 
-This design is read-only and may inspect protected hazards. It may not change them.
+The full migration design is read-only and may inspect protected hazards. It may not change them. The
+bounded security-perimeter sub-slice does not authorize schema/data migration, default-tenant assignment,
+Gate-2 objects, uploads, frontend, Gateway or WorkCenter. Endpoints without proven tenant ownership remain
+fail-closed.
 
 **Gate:** Module pack approved/ready-for-dev; Gate 2 package is complete.
 
@@ -516,7 +522,7 @@ These questions require explicit resolution before the named slice, not necessar
 ### Implementation-start gate for every slice
 
 - [ ] DCP-005 approved/ready-for-execution
-- [ ] Slice module pack approved/ready-for-dev
+- [ ] Slice module pack approved/ready-for-dev, or an exact bounded ready-for-dev amendment exists
 - [ ] Domain config exists
 - [ ] Exact repo scope/protected paths declared
 - [ ] Data/migration backup and rollback defined where applicable
@@ -618,8 +624,12 @@ These questions require explicit resolution before the named slice, not necessar
   Demand SoR, decision status, BL-030, tenancy, Gate 2 and TaskAggregate deletion boundaries.
 - 2026-07-27: Gate 1 conditions closed by moving Gate 2 before DWS work, excluding DWS execution lifecycle
   from Wave 1 and assigning approval authority to MOD-0023.
-- 2026-07-27: CAND-CAP-0007, 0007-FU01, 0008 and 0009 registry/ledger reservations added; all candidate
-  preflights exit 0.
+- 2026-07-27: CAND-CAP-0007, 0008 and 0009 registry/ledger reservations added; candidate preflights exit 0.
+  The CAND-CAP-0007-FU01 registry reservation was recorded; its missing reconciliation-ledger entry was
+  corrected with the bounded security-perimeter promotion.
+- 2026-08-28: CAND-CAP-0007-FU01 module pack and reconciliation ledger aligned. Only the bounded
+  SECURITY-PERIMETER / READY-FOR-DEV / NON-MIGRATING / DEFAULT-DENY amendment is executable; full data
+  migration and protected hazards remain blocked.
 - 2026-07-28: Master 8.1 became canonical; base candidates 0007/0008/0009 transitioned to
   MOD-0352/MOD-0354/MOD-0355. OD-10 partially closed; FU01 remains temporary pending a separate EA
   allocation. MOD-0352 is subdomain 1.1 and is not added to DCP-006 active implementation scope.
