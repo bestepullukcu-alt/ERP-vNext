@@ -5,8 +5,57 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Diten.PpmService.Application.GateI;
+using Diten.Platform.Common.Authorization.Fu16;
 
 namespace Diten.PpmService.Infrastructure.GateI;
+
+internal sealed class UnavailableFu16TrustedRequestContextAccessor : IFu16TrustedRequestContextAccessor
+{
+    public Fu16TrustedRequestContext? Current => null;
+
+    public void Publish(Fu16TrustedRequestContext context) =>
+        throw new InvalidOperationException("FU16 trusted request context is not composed.");
+}
+
+internal sealed class PlatformCommonGateITrustedMutationContextAccessor(
+    IFu16TrustedRequestContextAccessor accessor) : IGateITrustedMutationContextAccessor
+{
+    public GateITrustedMutationContext? Current
+    {
+        get
+        {
+            Fu16TrustedRequestContext trusted;
+            try
+            {
+                trusted = accessor.Current?.Validate()
+                    ?? throw new ArgumentException("FU16 trusted context is unavailable.");
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
+
+            return new GateITrustedMutationContext(
+                trusted.TenantId,
+                trusted.EffectiveActorId,
+                trusted.DelegatedActorId,
+                trusted.DelegationId,
+                trusted.ServicePrincipalId,
+                trusted.CredentialId,
+                trusted.ClientId,
+                trusted.Issuer,
+                trusted.Audience,
+                trusted.TokenType,
+                trusted.ProtocolScope,
+                trusted.OperationId,
+                trusted.Permissions,
+                trusted.RequestHash,
+                trusted.TenantGrantVersion,
+                trusted.ServicePrincipalVersion,
+                trusted.CredentialGeneration);
+        }
+    }
+}
 
 public enum GateICompositionLane
 {

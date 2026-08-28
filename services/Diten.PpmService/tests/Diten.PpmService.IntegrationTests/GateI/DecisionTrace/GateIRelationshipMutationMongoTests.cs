@@ -21,6 +21,9 @@ public sealed class GateIRelationshipMutationMongoTests
         Environment.GetEnvironmentVariable("PPM_GATE_I_TEST_MONGO_URI")
         ?? throw new InvalidOperationException("PPM_GATE_I_TEST_MONGO_URI is required for Gate I Mongo evidence.");
 
+    private static string Hash(string value) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
+
     [Fact]
     public async Task Relationship_receipt_audit_and_outbox_commit_once_and_reconcile()
     {
@@ -53,6 +56,11 @@ public sealed class GateIRelationshipMutationMongoTests
 
         var conflict = await fixture.Persistence.ReconcileAsync(fixture.Scope("same-key", "request-b"), default);
         Assert.Equal(GateIReceiptDisposition.Conflict, conflict.Disposition);
+
+        var provenanceConflict = await fixture.Persistence.ReconcileAsync(
+            fixture.Scope("same-key", "request-a") with { ProvenanceHash = Hash("different-provenance") },
+            default);
+        Assert.Equal(GateIReceiptDisposition.Conflict, provenanceConflict.Disposition);
     }
 
     [Theory]

@@ -11,10 +11,12 @@ using Diten.PpmService.Application.Features.BenefitCommitments.GateI.BenefitReal
 using Diten.PpmService.Application.Features.InvestmentCases.GateI.DecisionTrace;
 using Diten.PpmService.Application.Features.InvestmentCases.GateI.FundingScenario;
 using Diten.Platform.Common.Authorization;
+using Diten.Platform.Common.Authorization.Fu16;
 using Diten.PpmService.Application.GateI;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Diten.PpmService.Infrastructure;
@@ -38,6 +40,8 @@ public static class DependencyInjection
             provider.GetRequiredService<GateICompositionGate>());
         services.AddScoped<GateICompositionPreflight>();
         services.AddSingleton<IFu16OutboundProofProvider, UnavailableFu16OutboundProofProvider>();
+        services.TryAddScoped<IFu16TrustedRequestContextAccessor, UnavailableFu16TrustedRequestContextAccessor>();
+        services.AddScoped<IGateITrustedMutationContextAccessor, PlatformCommonGateITrustedMutationContextAccessor>();
         services.AddHttpClient<GateIOwnerReferenceHttpClients>();
         services.AddScoped<IDecisionReferenceValidationPort>(provider => provider.GetRequiredService<GateIOwnerReferenceHttpClients>());
         services.AddScoped<IBudgetVersionReferenceValidationPort>(provider => provider.GetRequiredService<GateIOwnerReferenceHttpClients>());

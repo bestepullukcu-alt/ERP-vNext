@@ -143,13 +143,18 @@ internal sealed class GateIOwnerReferenceHttpClients(
             request.TenantId, receiver.Operation, [receiver.Permission]);
         var response = await SendAsync(
             receiver,
-            new(request.TenantId, request.ActorId, request.ActorId, true),
+            new(
+                request.TrustedContext.TenantId,
+                request.TrustedContext.EffectiveActorId,
+                request.TrustedContext.DelegatedActorId,
+                true),
             request.CanonicalWrapperUtf8,
             requestHash,
             cancellationToken).ConfigureAwait(false);
         return response.Status switch
         {
             200 => new(200, "ppm_gate_i_authority_accepted", requestHash, true),
+            400 => new(400, "ppm_gate_i_authority_malformed", new string('0', 64), false),
             401 => new(401, "ppm_gate_i_authority_unauthenticated", new string('0', 64), false),
             403 => new(403, "ppm_gate_i_authority_forbidden", new string('0', 64), false),
             404 => new(404, "ppm_gate_i_authority_not_found", new string('0', 64), false),

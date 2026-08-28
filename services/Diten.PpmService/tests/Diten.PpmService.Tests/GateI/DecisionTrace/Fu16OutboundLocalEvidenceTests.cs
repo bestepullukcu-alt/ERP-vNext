@@ -5,6 +5,9 @@ using Diten.Platform.Common.Authorization.Fu16;
 using Diten.PpmService.Application.Features.InvestmentCases.GateI.DecisionTrace;
 using Diten.PpmService.Application.GateI;
 using Diten.PpmService.Infrastructure.GateI;
+using Diten.PpmService.Infrastructure;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Http;
 using Xunit;
 
@@ -51,6 +54,20 @@ public sealed class Fu16OutboundLocalEvidenceTests
     }
 
     [Fact]
+    public async Task Default_off_composition_has_no_test_proof_issuer_or_trusted_context()
+    {
+        var services = new ServiceCollection();
+        services.AddInfrastructure(new ConfigurationBuilder().Build());
+        await using var provider = services.BuildServiceProvider();
+
+        var proof = provider.GetRequiredService<IFu16OutboundProofProvider>();
+        var trusted = provider.GetRequiredService<IGateITrustedMutationContextAccessor>();
+
+        Assert.False(proof.IsAvailable);
+        Assert.Null(trusted.Current);
+    }
+
+    [Fact]
     public async Task Exact_four_profiles_use_only_named_bearer_family_and_raw_body()
     {
         var handler = new CaptureHandler();
@@ -92,6 +109,36 @@ public sealed class Fu16OutboundLocalEvidenceTests
             Assert.Equal(profile.Permission, payload.RootElement.GetProperty("permission").GetString());
             Assert.Equal("ppm-gate-i-r3-local-evidence-v1", payload.RootElement.GetProperty("test_identity").GetString());
             Assert.NotEqual("HS256", header.RootElement.GetProperty("alg").GetString());
+        }
+    }
+
+    [Theory]
+    [InlineData(400)]
+    [InlineData(401)]
+    [InlineData(403)]
+    [InlineData(404)]
+    [InlineData(409)]
+    [InlineData(503)]
+    public async Task Every_owner_preserves_closed_terminal_status(int statusCode)
+    {
+        foreach (var kind in new[]
+                 {
+                     GateIRelationshipKind.GoverningDecision,
+                     GateIRelationshipKind.SelectedBudgetVersion,
+                     GateIRelationshipKind.ScenarioVersion,
+                     GateIRelationshipKind.BenefitOutcome
+                 })
+        {
+            var handler = new CaptureHandler(statusCode);
+            var ports = GateIOwnerReferenceLocalEvidenceTestHost.Create(
+                new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1:65534") },
+                Fu16OutboundLocalEvidenceTestHost.CreateEphemeralProvider());
+
+            var result = await ports.RelationshipAuthority.ValidateAsync(Request(kind), default);
+
+            Assert.Equal(statusCode, result.StatusCode);
+            Assert.False(result.Accepted);
+            Assert.Equal(1, handler.CallCount);
         }
     }
 
@@ -140,10 +187,19 @@ public sealed class Fu16OutboundLocalEvidenceTests
     private static GateIAuthorityValidationRequest Request(GateIRelationshipKind kind) => new(
         kind,
         GateIRelationshipAction.AttachOrReplace,
-        Tenant,
-        Actor,
+        Trusted(),
         "ppm.gate-i.local-evidence",
         Encoding.UTF8.GetBytes("{\"canonical\":true}"));
+
+    private static GateITrustedMutationContext Trusted()
+    {
+        return new(
+            Tenant, Actor, Guid.Parse("01170000-0000-4000-8000-000000000003"),
+            Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "diten.ppm", "diten-auth-service.test-only",
+            "diten-ppm-service", "diten-delegated-actor-proof+jwt", "diten.s2s.delegated.invoke",
+            "ppm.gate-i.local-evidence", ["ppm.investment-cases.update"], new string('a', 64),
+            1, 1, 1);
+    }
 
     private static JsonDocument Decode(string encoded)
     {
@@ -160,7 +216,7 @@ public sealed class Fu16OutboundLocalEvidenceTests
             CancellationToken cancellationToken) => throw new InvalidOperationException("Must not be called.");
     }
 
-    private sealed class CaptureHandler : HttpMessageHandler
+    private sealed class CaptureHandler(int statusCode = 200) : HttpMessageHandler
     {
         public int CallCount { get; private set; }
         public string? Method { get; private set; }
@@ -186,7 +242,7 @@ public sealed class Fu16OutboundLocalEvidenceTests
             Scheme = request.Headers.Authorization?.Scheme;
             Token = request.Headers.Authorization?.Parameter;
             Body = await request.Content!.ReadAsByteArrayAsync(cancellationToken);
-            return new HttpResponseMessage(HttpStatusCode.OK)
+            return new HttpResponseMessage((HttpStatusCode)statusCode)
             {
                 Content = new ByteArrayContent([])
             };

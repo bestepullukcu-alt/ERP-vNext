@@ -43,11 +43,12 @@ public sealed record GateIRelationshipMutationResult(
 public sealed record GateIAuthorityValidationRequest(
     GateIRelationshipKind Kind,
     GateIRelationshipAction Action,
-    Guid TenantId,
-    Guid ActorId,
+    GateITrustedMutationContext TrustedContext,
     string OperationId,
     ReadOnlyMemory<byte> CanonicalWrapperUtf8)
 {
+    public Guid TenantId => TrustedContext.TenantId;
+    public Guid ActorId => TrustedContext.EffectiveActorId;
     public Fu16OutboundReceiverProfile Receiver => Kind switch
     {
         GateIRelationshipKind.GoverningDecision or GateIRelationshipKind.SupportingDecision =>
@@ -58,6 +59,30 @@ public sealed record GateIAuthorityValidationRequest(
         GateIRelationshipKind.BenefitOutcome => Fu16OutboundReceiverProfiles.OutcomeTracking,
         _ => throw new ArgumentOutOfRangeException(nameof(Kind))
     };
+}
+
+public sealed record GateITrustedMutationContext(
+    Guid TenantId,
+    Guid EffectiveActorId,
+    Guid DelegatedActorId,
+    Guid DelegationId,
+    Guid ServicePrincipalId,
+    Guid CredentialId,
+    string ClientId,
+    string Issuer,
+    string Audience,
+    string TokenType,
+    string ProtocolScope,
+    string OperationId,
+    IReadOnlyList<string> Permissions,
+    string RequestHash,
+    long TenantGrantVersion,
+    long ServicePrincipalVersion,
+    long CredentialGeneration);
+
+public interface IGateITrustedMutationContextAccessor
+{
+    GateITrustedMutationContext? Current { get; }
 }
 
 public sealed record GateIAuthorityValidationResult(
@@ -117,7 +142,8 @@ public sealed class GateIRelationshipMutationHandler(
     IPpmAccessAuthorizer access,
     ITenantContext tenant,
     ICurrentActorContext actor,
-    ICorrelationContext correlation)
+    ICorrelationContext correlation,
+    IGateITrustedMutationContextAccessor trustedContextAccessor)
     : IRequestHandler<GateIRelationshipMutationCommand, Response<GateIRelationshipMutationResult>>
 {
     public async Task<Response<GateIRelationshipMutationResult>> Handle(
@@ -137,15 +163,27 @@ public sealed class GateIRelationshipMutationHandler(
         if (tenant.TenantId == Guid.Empty || actor.ActorId == Guid.Empty)
             return Response<GateIRelationshipMutationResult>.Fail("Authentication context is invalid.", 401);
 
-        var requestHash = HashRequest(request, tenant.TenantId, actor.ActorId);
+        var trustedContext = trustedContextAccessor.Current;
+        if (trustedContext is null)
+            return Response<GateIRelationshipMutationResult>.Fail("FU16 trusted context is invalid.", 401);
+
+        if (trustedContext.TenantId != tenant.TenantId
+            || trustedContext.EffectiveActorId != actor.ActorId
+            || !string.Equals(trustedContext.OperationId, request.OperationId, StringComparison.Ordinal))
+        {
+            return Response<GateIRelationshipMutationResult>.Fail("FU16 trusted context is invalid.", 401);
+        }
+        if (trustedContext.Permissions.Count != 1
+            || !string.Equals(trustedContext.Permissions[0], permission, StringComparison.Ordinal))
+            return Response<GateIRelationshipMutationResult>.Fail("FU16 trusted permission is forbidden.", 403);
+
+        var requestHash = HashRequest(request, trustedContext);
         var preliminary = new GateIMutationScope(
             tenant.TenantId, actor.ActorId, correlation.CorrelationId,
             request.OperationId, request.IdempotencyKey, requestHash, string.Empty);
         var receipt = await persistence.ReconcileAsync(preliminary, cancellationToken);
         if (receipt.Disposition == GateIReceiptDisposition.Conflict)
             return Response<GateIRelationshipMutationResult>.Fail("Idempotency key payload conflict.", 409);
-        if (receipt is { Disposition: GateIReceiptDisposition.Matching, StoredResult: not null })
-            return Response<GateIRelationshipMutationResult>.Success(receipt.StoredResult with { Replayed = true });
 
         GateIAuthorityValidationResult authorityResult;
         if (request.Action == GateIRelationshipAction.Remove)
@@ -157,7 +195,7 @@ public sealed class GateIRelationshipMutationHandler(
         {
             authorityResult = await authority.ValidateAsync(
                 new GateIAuthorityValidationRequest(
-                    request.Kind, request.Action, tenant.TenantId, actor.ActorId,
+                    request.Kind, request.Action, trustedContext,
                     request.OperationId, request.CanonicalWrapperUtf8),
                 cancellationToken);
         }
@@ -170,6 +208,18 @@ public sealed class GateIRelationshipMutationHandler(
             return Response<GateIRelationshipMutationResult>.Fail("Authoritative provenance is malformed.", 503);
 
         var scope = preliminary with { ProvenanceHash = authorityResult.ProvenanceHash };
+        if (receipt.Disposition == GateIReceiptDisposition.Matching)
+        {
+            var provenanceReceipt = await persistence.ReconcileAsync(scope, cancellationToken);
+            if (provenanceReceipt.Disposition == GateIReceiptDisposition.Conflict)
+                return Response<GateIRelationshipMutationResult>.Fail("Idempotency key provenance conflict.", 409);
+            if (provenanceReceipt is { Disposition: GateIReceiptDisposition.Matching, StoredResult: not null })
+                return Response<GateIRelationshipMutationResult>.Success(
+                    provenanceReceipt.StoredResult with { Replayed = true });
+            return Response<GateIRelationshipMutationResult>.Fail(
+                "Idempotency receipt provenance is indeterminate.", 503);
+        }
+
         try
         {
             GateIRelationshipMutationResult result;
@@ -296,12 +346,30 @@ public sealed class GateIRelationshipMutationHandler(
             : request.ReferenceId.HasValue || request.Kind is GateIRelationshipKind.GoverningDecision
                 or GateIRelationshipKind.SelectedBudgetVersion or GateIRelationshipKind.SelectedScenario);
 
-    private static string HashRequest(GateIRelationshipMutationCommand request, Guid tenantId, Guid actorId)
+    private static string HashRequest(
+        GateIRelationshipMutationCommand request,
+        GateITrustedMutationContext trustedContext)
     {
         using var stream = new MemoryStream();
         Write(stream, Encoding.UTF8.GetBytes("DITEN-PPM-GATE-I-MUTATION-V1"));
-        Write(stream, Encoding.UTF8.GetBytes(tenantId.ToString("D")));
-        Write(stream, Encoding.UTF8.GetBytes(actorId.ToString("D")));
+        Write(stream, Encoding.UTF8.GetBytes(trustedContext.TenantId.ToString("D")));
+        Write(stream, Encoding.UTF8.GetBytes(trustedContext.EffectiveActorId.ToString("D")));
+        Write(stream, Encoding.UTF8.GetBytes(trustedContext.DelegatedActorId.ToString("D")));
+        Write(stream, Encoding.UTF8.GetBytes(trustedContext.DelegationId.ToString("D")));
+        Write(stream, Encoding.UTF8.GetBytes(trustedContext.ServicePrincipalId.ToString("D")));
+        Write(stream, Encoding.UTF8.GetBytes(trustedContext.CredentialId.ToString("D")));
+        Write(stream, Encoding.UTF8.GetBytes(trustedContext.ClientId));
+        Write(stream, Encoding.UTF8.GetBytes(trustedContext.Issuer));
+        Write(stream, Encoding.UTF8.GetBytes(trustedContext.Audience));
+        Write(stream, Encoding.UTF8.GetBytes(trustedContext.TokenType));
+        Write(stream, Encoding.UTF8.GetBytes(trustedContext.ProtocolScope));
+        Write(stream, Encoding.UTF8.GetBytes(trustedContext.OperationId));
+        foreach (var permission in trustedContext.Permissions)
+            Write(stream, Encoding.UTF8.GetBytes(permission));
+        Write(stream, Encoding.UTF8.GetBytes(trustedContext.RequestHash));
+        Write(stream, Encoding.UTF8.GetBytes(trustedContext.TenantGrantVersion.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        Write(stream, Encoding.UTF8.GetBytes(trustedContext.ServicePrincipalVersion.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        Write(stream, Encoding.UTF8.GetBytes(trustedContext.CredentialGeneration.ToString(System.Globalization.CultureInfo.InvariantCulture)));
         Write(stream, Encoding.UTF8.GetBytes(request.OperationId));
         Write(stream, Encoding.UTF8.GetBytes(request.AggregateId.ToString("D")));
         Write(stream, Encoding.UTF8.GetBytes(request.ExpectedVersion.ToString(System.Globalization.CultureInfo.InvariantCulture)));
