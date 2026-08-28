@@ -391,7 +391,7 @@ public sealed class EnterpriseStrategyModuleTests
                 Id = "pc-archive-1",
                 Code = "PC-ARCHIVE-1",
                 Name = "Cycle Archive Guard",
-                PlanningCycleType = "Annual",
+                PlanningCycleType = "Annual Plan",
                 OwnerCompanyId = ActiveCompanyId,
                 OwnerPositionId = "pos-1",
                 Status = "Active",
@@ -431,7 +431,7 @@ public sealed class EnterpriseStrategyModuleTests
                 Id = "pc-shrink-1",
                 Code = "PC-SHRINK-1",
                 Name = "Cycle Shrink Guard",
-                PlanningCycleType = "Annual",
+                PlanningCycleType = "Annual Plan",
                 OwnerCompanyId = ActiveCompanyId,
                 OwnerPositionId = "pos-1",
                 Status = "Active",
@@ -457,7 +457,7 @@ public sealed class EnterpriseStrategyModuleTests
             Id = "pc-shrink-1",
             Code = "PC-SHRINK-1",
             Name = "Cycle Shrink Guard",
-            PlanningCycleType = "Annual",
+            PlanningCycleType = "Annual Plan",
             OwnerCompanyId = ActiveCompanyId,
             OwnerPositionId = "pos-1",
             Status = "Active",
@@ -480,7 +480,7 @@ public sealed class EnterpriseStrategyModuleTests
                 Id = "pc-expand-1",
                 Code = "PC-EXPAND-1",
                 Name = "Cycle Expand Guard",
-                PlanningCycleType = "Annual",
+                PlanningCycleType = "Annual Plan",
                 OwnerCompanyId = ActiveCompanyId,
                 OwnerPositionId = "pos-1",
                 Status = "Active",
@@ -506,7 +506,7 @@ public sealed class EnterpriseStrategyModuleTests
             Id = "pc-expand-1",
             Code = "PC-EXPAND-1",
             Name = "Cycle Expand Guard",
-            PlanningCycleType = "Annual",
+            PlanningCycleType = "Annual Plan",
             OwnerCompanyId = ActiveCompanyId,
             OwnerPositionId = "pos-1",
             Status = "Active",
@@ -543,7 +543,7 @@ public sealed class EnterpriseStrategyModuleTests
     }
 
     [Fact]
-    public async Task Initiative_Duplicate_Alignment_Rejected()
+    public async Task Initiative_Allows_Multiple_Ids_To_Reference_One_Objective()
     {
         var goals = new InMemoryGoalRepository(new GoalAggregate
         {
@@ -570,6 +570,38 @@ public sealed class EnterpriseStrategyModuleTests
             StrategyLinkStatus = "Linked",
             SponsoringCompanyId = "cmp-001"
         }, 0, "tester", "corr");
+
+        Assert.True(result.Success);
+        Assert.Equal("init-002", result.Data!.InitiativeId);
+        Assert.Equal("obj-1", result.Data.ParentObjectiveId);
+        Assert.Equal(2, (await links.ListByObjectiveIdAsync("obj-1")).Count);
+    }
+
+    [Fact]
+    public async Task Initiative_Create_Rejects_Exact_Duplicate_InitiativeId()
+    {
+        var links = new InMemoryInitiativeLinkRepository(new InitiativeStrategyLinkAggregate
+        {
+            Id = "lnk-existing",
+            InitiativeId = "init-001",
+            ParentObjectiveId = "obj-1",
+            ParentGoalId = "goal-1"
+        });
+        var service = new InitiativeOrchestrationService(
+            new MockPpmInitiativeReadAdapter(),
+            new InMemoryPpmInitiativeCacheRepository(),
+            links,
+            new InMemoryProjectLinkRepository(),
+            new InMemoryObjectiveRepository(),
+            new InMemoryGoalRepository(),
+            new NoOpEnterpriseStrategyAuditSink());
+
+        var result = await service.CreateAsync(new InitiativeStrategyLinkViewDto
+        {
+            InitiativeId = "init-001",
+            InitiativeName = "Duplicate",
+            ParentObjectiveId = "obj-1"
+        }, "tester", "corr");
 
         Assert.False(result.Success);
         Assert.Equal(EnterpriseStrategyErrorCodes.Conflict, result.Error?.Code);
