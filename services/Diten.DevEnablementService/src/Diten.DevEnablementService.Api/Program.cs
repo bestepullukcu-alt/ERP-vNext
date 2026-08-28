@@ -48,7 +48,7 @@ builder.Services
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
             IssuerSigningKeys = jwtRotationResolver.GetValidationKeys(),
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = JwtValidationDefaults.ClockSkew
         };
     });
 
