@@ -33,6 +33,13 @@ authorized_slice: strategy-link-contract-reconciliation
 > existing Strategy records have no authoritative `TenantId`, and the approved work explicitly excludes schema
 > or data migration. The existing `TENANT_SAFETY_NOT_READY` 503 boundary must not be bypassed.
 
+> **Direct owner override — WORKCENTER REMOTE-READ PREPARATION / READY-FOR-DEV / NON-PRODUCTION /
+> DEFAULT-OFF / NON-MIGRATING (2026-08-28):** the owner explicitly supersedes earlier “WorkCenter excluded”
+> language only for a DCP-004 default GET preparation endpoint. The endpoint is executable API source but must
+> remain disabled, expose no actions, read no repository and return exact `TENANT_SAFETY_NOT_READY` 503 while
+> authoritative tenant ownership is absent. Platform, frontend, Gateway, action dispatch, configuration
+> activation and migration remain excluded.
+
 ## 1. Module Summary
 
 MOD-0352 owns Enterprise Strategy goal, objective, cascade, planning-cycle and strategy-alignment semantics.
@@ -75,6 +82,15 @@ Implementation authority is exact:
 - `services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.Application/EnterpriseStrategy/Services/EnterpriseStrategyOrchestrationServices.cs`
 - `services/Diten.EnterpriseStrategyService/tests/Diten.Application.Tests/UnitTest1.cs`
 - `services/Diten.EnterpriseStrategyService/tests/Diten.EnterpriseStrategy.EndToEnd.Tests/EnterpriseStrategyLineageE2ETests.cs`
+
+WorkCenter remote-read preparation authority is additionally exact:
+
+- `services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.API/Program.cs`
+- `services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.API/Controllers/WorkItemsController.cs`
+- `services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.Application/WorkCenter/EnterpriseStrategyWorkItemContracts.cs`
+- `services/Diten.EnterpriseStrategyService/src/Diten.EnterpriseStrategy.Application/WorkCenter/EnterpriseStrategyWorkItemProjectionService.cs`
+- `services/Diten.EnterpriseStrategyService/tests/Diten.Application.Tests/WorkCenter/EnterpriseStrategyWorkItemProjectionTests.cs`
+- `services/Diten.EnterpriseStrategyService/tests/Diten.EnterpriseStrategy.EndToEnd.Tests/WorkCenter/EnterpriseStrategyWorkItemEndpointTests.cs`
 
 ## 6. Protected Paths
 
@@ -143,6 +159,10 @@ perimeter remains authoritative. This pack grants no anonymous or production act
 ## 15. Gateway / API Routing Decision
 
 No Gateway or API route change is required or authorized.
+
+The sole exception is the service-local DCP-004 default read route
+`GET /api/v1/work-items/projection?scope=self|team`. It is not a Gateway route and is not activated as a
+Platform remote provider. No POST action route exists in this slice.
 
 ## 16. Acceptance Criteria
 

@@ -111,3 +111,10 @@ blocked. After an explicitly authorized tenant schema/data migration, this table
 real tenant-owned Objective review occurrence. Only then may the two DCP-004 endpoints be implemented, the
 operator-owned provider row be prepared default-off, and old/new browser evidence be recorded. No legacy route
 may be retired before that acceptance.
+
+## Authorized preparation checkpoint
+
+The DCP-004 default GET route may now be implemented as executable, default-off preparation evidence. Its only
+allowed business result is exact 503 `TENANT_SAFETY_NOT_READY`; the service must prove zero repository reads and
+an empty action contract. This does not authorize a successful projection, POST action route, Platform provider
+row, frontend/Gateway change, activation or migration.

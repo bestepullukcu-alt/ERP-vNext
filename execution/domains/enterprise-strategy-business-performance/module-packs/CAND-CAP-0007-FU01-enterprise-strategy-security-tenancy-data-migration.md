@@ -91,6 +91,15 @@ that code safe to inspect and migrate without creating a second Demand, task, ap
 - Local approval behavior based on `ApprovedAt/ApprovedBy`.
 - WorkCenter projection from free-text Demand identity.
 - WC-5/cross-service bridge or ES `IWorkItemProvider`; these require separate DCP-004 approval.
+
+### DCP-004 remote-read preparation override — bounded and non-migrating
+
+The owner explicitly supersedes the WorkCenter exclusion only for the exact MOD-0352 default-off remote-read
+preparation allowlist. The service-local default GET contract may exist and return exact
+`TENANT_SAFETY_NOT_READY` 503 without repository access. It may not emit a work item, define an action endpoint,
+register a Platform provider, change frontend/Gateway configuration, assign a tenant, migrate data or weaken
+this pack's security middleware. This override supplies executable contract evidence only; it does not satisfy
+the tenant migration gate.
 - Changes to MOD-0023, MOD-0024, MOD-0117, MOD-0288 or shared evidence systems.
 - Gateway route implementation.
 
