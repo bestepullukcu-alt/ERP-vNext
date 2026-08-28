@@ -2136,4 +2136,28 @@
   <data name="SignalSnoozed" xml:space="preserve">
     <value>Ertelenmiş</value>
   </data>
+  <data name="PartialBoardBanner" xml:space="preserve">
+    <value>Bazı kaynaklar yanıt vermedi — liste eksik olabilir.</value>
+  </data>
+  <data name="PartialCountHint" xml:space="preserve">
+    <value>Bazı kaynaklar yanıt vermediği için bu sayı eksik olabilir.</value>
+  </data>
+  <data name="SourceUnavailableTimeout" xml:space="preserve">
+    <value>zamanında yanıt vermedi</value>
+  </data>
+  <data name="SourceUnavailableError" xml:space="preserve">
+    <value>hata döndürdü</value>
+  </data>
+  <data name="SourceUnavailableUnsupportedVersion" xml:space="preserve">
+    <value>desteklenmeyen bir sözleşme sürümü bildiriyor</value>
+  </data>
+  <data name="SourceUnavailableUnknown" xml:space="preserve">
+    <value>ulaşılamıyor, sebebi bilinmiyor</value>
+  </data>
+  <data name="EmptyPartialBoardTitle" xml:space="preserve">
+    <value>Bu liste tamamlanamadı</value>
+  </data>
+  <data name="EmptyPartialBoardDesc" xml:space="preserve">
+    <value>En az bir kaynak yanıt vermedi; burada görünen şey tablonun tamamı değil. Birazdan yeniden deneyin.</value>
+  </data>
 </root>

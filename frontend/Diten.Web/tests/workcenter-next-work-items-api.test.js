@@ -155,6 +155,85 @@ describe("WorkCenterNext work-items API seam (WC-1b)", () => {
     expect(result.status).toBe(global.WorkCenterNextApi.STATUS.UNAVAILABLE);
   });
 
+  /*
+   * ── WC-D3 (DCP-004 §2 D3) — A PARTIAL BOARD REACHES THE SHELL AS A PARTIAL BOARD ──────────────────────────
+   *
+   * The server answers `{ items, unavailableSources }` now, because a provider that failed or timed out used to
+   * leave nothing behind: the list simply got shorter and looked exactly as complete as a healthy one.
+   */
+  it("reads the BOARD envelope: items arrive AND the missing sources are carried, not dropped", async () => {
+    global.fetch = () => Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        isSuccessful: true,
+        data: {
+          items: [projectionItem()],
+          unavailableSources: [{ providerCode: "tasks", reasonCode: "TIMEOUT" }]
+        }
+      })
+    });
+
+    const result = await global.WorkCenterNextApi.fetchWorkItems();
+
+    // A partial board is a SUCCESS with rows on it — the rows that did arrive are never thrown away.
+    expect(result.status).toBe(global.WorkCenterNextApi.STATUS.OK);
+    expect(result.items).toHaveLength(1);
+    expect(result.unavailableSources).toEqual([{ providerCode: "tasks", reasonCode: "TIMEOUT" }]);
+  });
+
+  it("reports NO missing source when every provider answered", async () => {
+    global.fetch = () => Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        isSuccessful: true,
+        data: { items: [projectionItem()], unavailableSources: [] }
+      })
+    });
+
+    const result = await global.WorkCenterNextApi.fetchWorkItems();
+
+    expect(result.items).toHaveLength(1);
+    expect(result.unavailableSources).toEqual([]);   // the state the shell reads as "complete"
+  });
+
+  // The older shapes still have to render: the fixture path and these tests feed bare arrays, and a proxy in
+  // front of an older Platform must not produce an empty page.
+  it("still unwraps a bare array and a data-as-array envelope", () => {
+    const api = global.WorkCenterNextApi;
+    expect(api.unwrap([1, 2])).toEqual([1, 2]);
+    expect(api.unwrap({ data: [1] })).toEqual([1]);
+    expect(api.unwrap({ data: { items: [1, 2, 3] } })).toEqual([1, 2, 3]);
+    expect(api.unwrap({ data: null })).toEqual([]);
+    expect(api.unwrapUnavailable({ data: [1] })).toEqual([]);      // legacy shape: nothing claimed missing
+  });
+
+  /*
+   * An unknown reason CODE is kept, a nameless source is dropped. "A source is missing and we cannot say why"
+   * is still true and still worth showing; a blank provider name is not information, it is furniture.
+   */
+  it("keeps an unrecognised reason code but drops an entry with no provider code", async () => {
+    global.fetch = () => Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        isSuccessful: true,
+        data: {
+          items: [],
+          unavailableSources: [
+            { providerCode: "tasks", reasonCode: "SOMETHING_NEW" },
+            { reasonCode: "TIMEOUT" }
+          ]
+        }
+      })
+    });
+
+    const result = await global.WorkCenterNextApi.fetchWorkItems();
+
+    expect(result.unavailableSources).toEqual([{ providerCode: "tasks", reasonCode: "SOMETHING_NEW" }]);
+  });
+
   // DEC-1 — production must have NO client-reachable path to showcase fixture data. The switch is the
   // server-rendered attribute; without it the fixture source yields nothing no matter what the client does.
   it("yields no fixture data unless the SERVER enabled the showcase catalog", () => {

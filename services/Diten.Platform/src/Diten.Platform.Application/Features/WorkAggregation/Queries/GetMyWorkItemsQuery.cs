@@ -15,4 +15,4 @@ public sealed record GetMyWorkItemsQuery(
     string CorrelationId,
     // BL-023 — whose work. Defaulted so every existing caller is unchanged.
     WorkItemScope Scope = WorkItemScope.Self)
-    : IRequest<Response<IReadOnlyList<WorkItemProjectionDto>>>;
+    : IRequest<Response<WorkItemBoardDto>>;

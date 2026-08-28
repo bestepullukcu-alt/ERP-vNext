@@ -2136,4 +2136,28 @@
   <data name="SignalSnoozed" xml:space="preserve">
     <value>Reportés</value>
   </data>
+  <data name="PartialBoardBanner" xml:space="preserve">
+    <value>Certaines sources n'ont pas répondu — cette liste peut être incomplète.</value>
+  </data>
+  <data name="PartialCountHint" xml:space="preserve">
+    <value>Certaines sources n'ont pas répondu ; ce nombre peut donc être incomplet.</value>
+  </data>
+  <data name="SourceUnavailableTimeout" xml:space="preserve">
+    <value>n'a pas répondu à temps</value>
+  </data>
+  <data name="SourceUnavailableError" xml:space="preserve">
+    <value>a renvoyé une erreur</value>
+  </data>
+  <data name="SourceUnavailableUnsupportedVersion" xml:space="preserve">
+    <value>déclare une version de contrat non prise en charge</value>
+  </data>
+  <data name="SourceUnavailableUnknown" xml:space="preserve">
+    <value>indisponible, raison inconnue</value>
+  </data>
+  <data name="EmptyPartialBoardTitle" xml:space="preserve">
+    <value>Cette liste n'a pas pu être complétée</value>
+  </data>
+  <data name="EmptyPartialBoardDesc" xml:space="preserve">
+    <value>Au moins une source n'a pas répondu : ce qui s'affiche ici n'est pas l'ensemble. Réessayez dans un instant.</value>
+  </data>
 </root>

@@ -42,10 +42,12 @@ const loadModules = () => {
  * @param {boolean} [config.withoutTasksScripts] Reproduce a host view that forgot to load Tasks/api.js + form.js.
  * @param {object}  [config.wcn]              Translator override — see the default below.
  * @param {Function} [config.now]             "Today", for surfaces whose wording is measured against it.
+ * @param {object[]} [config.unavailableSources] Providers the board is missing — WC-D3's partial-board answer.
  * @returns {Promise<{created: object[], posted: object[], checklistAdds: object[]}>} What the write stubs recorded.
  */
 const bootSurface = ({
-  rootAttrs = "", items = [], neverResolve = false, withoutTasksScripts = false, wcn = null, now = null
+  rootAttrs = "", items = [], neverResolve = false, withoutTasksScripts = false, wcn = null, now = null,
+  unavailableSources = []
 } = {}) => {
   // A previous boot leaves its modules on `global`; app.js would then read the OLD data module and the new DOM.
   ["WorkCenterNextData", "WorkCenterNextApi", "WorkCenterNextContract", "WorkCenterNextFixtures"]
@@ -68,7 +70,19 @@ const bootSurface = ({
    * A caller may pass its own (BL-046): when the ARGUMENT is the thing under test — a day count that must stop
    * moving — the key alone cannot tell a frozen sentence from a drifting one.
    */
-  global.WCN = wcn || { t: (key) => key, tf: (key) => key, tn: (key) => key };
+  /*
+   * The REAL localization bridge is loaded, then the test translator is layered on top of it.
+   *
+   * Loading it matters because l10n.js owns more than t/tf/tn now — WCN.moduleLabel, the provider-code → module
+   * name rule the partial-board banner renders through. A harness that hand-built the whole WCN object would boot
+   * an app.js missing that function, and the banner test would be asserting against a shell no host ever serves.
+   *
+   * Object.assign, not reassignment: l10n.js's own t reads an empty store here (there is no #workcenternext-l10n
+   * element in jsdom) and the caller's translator must win.
+   */
+  delete global.WCN;
+  loadScript(SCRIPT_ROOT + "l10n.js");
+  Object.assign(global.WCN, wcn || { t: (key) => key, tf: (key) => key, tn: (key) => key });
   document.body.innerHTML = `<div id="wcnApp" class="wcn-app" ${rootAttrs} data-wcn-fixtures=""></div>`;
 
   loadModules();
@@ -86,7 +100,8 @@ const bootSurface = ({
   // The network, and ONLY the network, is stubbed — at the module seam. Everything downstream is real code.
   global.WorkCenterNextApi.fetchWorkItems = neverResolve
     ? () => new Promise(() => { /* a request that never settles — the page must stay in its loading state */ })
-    : () => Promise.resolve({ status: "ok", httpStatus: 200, items: mapped.items, errors: [] });
+    // A partial board is still STATUS.OK with rows; the missing providers ride alongside (work-items-api §WC-D3).
+    : () => Promise.resolve({ status: "ok", httpStatus: 200, items: mapped.items, errors: [], unavailableSources });
 
   const created = [];
   const posted = [];
